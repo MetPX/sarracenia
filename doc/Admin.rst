@@ -28,24 +28,29 @@ built as they are see `Concepts.rst <Concepts.rst>`_
 Minimum Requirements
 ~~~~~~~~~~~~~~~~~~~~
 
-The AMQP broker is extremely light on today's servers. The examples in this manual were implemented
-on a commercial virtual private server (VPS) with 256 MB of RAM, and 700MB of swap taken from a 20 GByte
-disk. Such a tiny configuration is able to keep up with almost a full feed from dd.weather.gc.ca
-(which includes, all public facing weather and environmental data from Environment and Climate Change
-Canada.) the large numerical prediction files (GRIB and multiple GRIB's in tar files) were excluded
-to reduce bandwidth usage, but in terms of performance in message passing, it kept up with one client
-quite well.
+The AMQP broker is extremely light on today's servers. The examples in 
+this manual were implemented on a commercial virtual private server (VPS) 
+with 256 MB of RAM, and 700MB of swap taken from a 20 GByte disk. Such 
+a tiny configuration is able to keep up with almost a full feed 
+from dd.weather.gc.ca (which includes, all public facing weather and 
+environmental data from Environment and Climate Change Canada.) the 
+large numerical prediction files (GRIB and multiple GRIB's in tar files) 
+were excluded to reduce bandwidth usage, but in terms of performance 
+in message passing, it kept up with one client quite well.
 
-Each Sarra process is around 80 mb of virtual memory, but only about 3 mb is resident, and you need to run
-enough of them to keep up (on the small VPS, ran 10 of them.) so about 30 mbytes of RAM actually used.
-The broker's RAM usage is what determines the number of clients which can be served. Slower clients require
-more RAM for their queues. So running brokerage tasks and aggressive cleaning can reduce the overall
-memory footprint. The broker was configured to use 128 MB of RAM in the examples in this manual.
-The rest of the RAM was used by the apache processes for the web transport engine.
+Each Sarra process is around 80 mb of virtual memory, but only about 3 mb 
+is resident, and you need to run enough of them to keep up (on the small VPS, 
+ran 10 of them.) so about 30 mbytes of RAM actually used. The broker's RAM 
+usage is what determines the number of clients which can be served. Slower 
+clients require more RAM for their queues. So running brokerage tasks and
+aggressive cleaning can reduce the overall memory footprint. The broker was
+configured to use 128 MB of RAM in the examples in this manual. The rest 
+of the RAM was used by the apache processes for the web transport engine.
 
-While the above was adequate for proof of concept, it would be impractical to be clearing out
-data from disk after only an hour, and the number of clients supportable is likely quite limited.
-1GB of RAM for all the sarra related activities should be ample for many useful cases.
+While the above was adequate for proof of concept, it would be impractical to
+be clearing out data from disk after only an hour, and the number of clients
+supportable is likely quite limited. 1GB of RAM for all the sarra related
+activities should be ample for many useful cases.
 
 
 
@@ -104,7 +109,6 @@ can choose to have the client self-destruct when disconnected (*auto-delete*), o
 it *durable* which means it should remain, waiting for the client to connect again, even across
 reboots. Clients often want to pick up where they left off, so the queues need to stay around.
 
-sr_audit
 The rabbitmq broker will never destroy a queue that is not in auto-delete (or durable.)  This means
 they will build up over time. We have a script that looks for unused queues, and cleans them out.
 Currently, the default is set that any unused queue having more than 25000 messages will be deleted.
@@ -120,12 +124,14 @@ subscriber is unavailable for some reason. In many cases, one can simply shutdow
 and delete the queue on the broker. While that solves the broker performance issue, the user
 will not receive the notifications.
 
-To avoid data loss, please consult the sr_sender(1) manual page *DESTINATION UNAVAILABLE* section
-for details of save and restore options. Briefly, when a sender is placed in *save* mode, rather
-than attempting to send each file, the messages written to a disk file. When the remote user
-is back, one invokes *restore* mode, and the disk file is read back, and the files are sent.
-In vesions >= 2.18, there is logic to automatically save failed transfers for later retry,
-offloading the queue from the broker to the instances' cache storage, so no intervention is 
+To avoid data loss, please consult the 
+`sr_sender(1) manual page *DESTINATION UNAVAILABLE* <sr_sender.1.rst#destination-unavailable>`_
+section for details of save and restore options. Briefly, when a sender is placed 
+in *save* mode, rather than attempting to send each file, the messages written 
+to a disk file. When the remote user is back, one invokes *restore* mode, and 
+the disk file is read back, and the files are sent. In versions >= 2.18, there 
+is logic to automatically save failed transfers for later retry, offloading the
+queue from the broker to the instances' cache storage, so no intervention is 
 needed.
 
 In the case of components other than a sender, please consult the QUEUE Save/Restore section
@@ -155,16 +161,18 @@ a **second layer of subscibers (sr_winnow) whose duplicate suppression caches ar
 Routing
 -------
 
-The inter-connection of multiple pumps is done, on the data side, simply by daisy-chaining
+The inter-connection of multiple pumps is done, on the data side, by daisy-chaining
 sr_sarra and/or sr_sender configurations from one pump to the next. 
 
-.. warning::
-  **FIXME**: sample sender to push to another pump.
-  describe the to_cluster, gateway_for , and cluster options.
+the *to_clusters*, and *source*  headers are used for routing decisions
+implemented in the *msg_to_clusters*, and *msg_by_source* plugins respectively
+to be user by sender or sarra components to limit data transfers between pumps.
 
-Report messages are defined in the sr_report(7) man page. They are emitted by *consumers* at the end,
-as well as *feeders* as the messages traverse pumps. Report messages are posted to
-the xs\_<user> exchange, and after validation sent to the xreport exchange by the shovel component 
+For report routing, the *from_cluster* header is interpreted by the 
+*msg_from_cluster* plugin. Report messages are defined in the sr_report(7) man
+page. They are emitted by *consumers* at the end, as well as *feeders* as the 
+messages traverse pumps. Report messages are posted to the xs\_<user> exchange,
+and after validation sent to the xreport exchange by the shovel component 
 configurations created by sr_audit.
 
 Messages in xreports destined for other clusters are routed to destinations by
@@ -174,8 +182,8 @@ manually configured shovels. See the Reports_ section for more details.
 What is Going On?
 -----------------
 
-The sr_report command can be invoked to bind to 'xreport' instead of the default user exchange
-to get report information for an entire broker.
+The sr_report command can be invoked to bind to 'xreport' instead of the 
+default user exchange to get report information for an entire broker.
 
 
 Canned sr_report configuration with an *on_message* action can be configured to
@@ -187,19 +195,12 @@ gather statisical information.
    question: should posts go to the log as well?
    before operations, we need to figure out how Nagios will monitor it.
 
-   sr_report is weird... works on one server, but not another... dunno bug?
-   more testing needed.
-
    Is any of this needed, or is the rabbit GUI enough on it's own?
 
 
 
 Init Integration
 ~~~~~~~~~~~~~~~~
-
-System integration is highly non-portable and general instructions are not provided.
-No attempt is made at this sort of integration on non-linux systems yet. The information here
-pertains only to Linux servers.
 
 By default, when sarracenia is installed, it is done as a user tool and not a system-wide resource.
 the tools/ sub-directory directory allows for integration with tools for different usage scenarios.
@@ -209,8 +210,6 @@ the tools/ sub-directory directory allows for integration with tools for differe
    tools/sarra_system.service -- for systemd base systems for a 'daemon' style deployment.
    tools/sarra_user.service -- for systemd as a per user service.
 
-.. NOTE:: 
-   The following is not well tested
 
 Systemd installation process, by administrator::
 
@@ -683,7 +682,8 @@ Then we create a configuration::
   broker amqp://anonymous@dd.weather.gc.ca/
   exchange xpublic
 
-  gateway_for DD
+  msg_to_clusters DD
+  on_message msg_to_clusters
 
   mirror False  # usually True, except for this server!
 
@@ -706,7 +706,10 @@ Compared to the subscription example provided in the previous example, We have a
 exchange xpublic
   sarra is often used for specialized transfers, so the xpublic exchange is not assumed, as it is with subscribe.
 
-gateway_for DD
+msg_to_clusters DD
+
+on_message msg_to_clusters
+
    sarra implements routing by cluster, so if data is not destined for this cluster, it will skip (not download) a product.
    Inspection of the sr_subscribe output above reveals that products are destined for the DD cluster, so lets pretend to route
    for that, so that downloading happens.
