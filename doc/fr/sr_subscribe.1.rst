@@ -125,7 +125,7 @@ utilisateurs :
 
 Administrateurs :
 
-* `Guide d'administration (anglais) <../Admin.rst>`_ - Configuration des pompes.
+* `Guide d'administration <Admin.rst>`_ - Configuration des pompes.
 * `Guide de mise à niveau <UPGRADING.rst>`_ - DOIT LIRE lors de la mise à niveau des pompes.
 
 et les contributeurs :
