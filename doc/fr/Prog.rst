@@ -4,6 +4,7 @@
 ===================================
 
 [ `version anglaise <../Prog.rst>`_ ] 
+
 ------------------------
  Programmer des Plugins
 ------------------------
@@ -835,7 +836,7 @@ méthode de téléchargement plus efficace.  Commencez par un script
 on_message qui évalue la condition pour déterminer s'il faut invoquer le
 téléchargeur personnalisé:
 
-.. include:: ../sarra/plugins/msg_download.py 
+.. include:: ../../sarra/plugins/msg_download.py 
    :code:
 
 Ainsi, on "invente" un nouveau schéma d'URL qui fait référence au
@@ -850,7 +851,7 @@ plugin do_download.  Lorsque le schéma alternatif est rencontré, le
 composant invoquera ce plugin. Exemple de ce plugin:
 
 
-.. include:: ../sarra/plugins/download_wget.py
+.. include:: ../../sarra/plugins/download_wget.py
    :code:
 
 -------------------------------------
