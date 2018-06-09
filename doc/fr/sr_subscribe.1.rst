@@ -120,17 +120,17 @@ utilisateurs :
 * `Survol <sarra.rst>`_ - Introduction à l´application.
 * `Installation <Install.rst>`_ - installation initiale.
 * `Guide de l'abonné <subscriber.rst>`_ - téléchargement efficace à partir d'une pompe.
-* `Guide source <source.rst>`_ - téléchargement efficace vers une pompe.
-* `Guide de programmation <Prog.rst>`_ - Programmation de plugins personnalisés pour l'intégration du flux de travail.
+* `Guide source (incomplet) <source.rst>`_ - téléchargement efficace vers une pompe.
+* `Guide de programmation (anglais) <../Prog.rst>`_ - Programmation de plugins personnalisés pour l'intégration du flux de travail.
 
 Administrateurs :
 
-* `Guide d'administration <Admin.rst>`_ - Configuration des pompes.
+* `Guide d'administration (anglais) <../Admin.rst>`_ - Configuration des pompes.
 * `Guide de mise à niveau <UPGRADING.rst>`_ - DOIT LIRE lors de la mise à niveau des pompes.
 
 et les contributeurs :
 
-* `Guide du développeur <Dev.rst>`_ - contribuant au développement de la Sarracenia.
+* `Guide du développeur (anglais) <../Dev.rst>`_ - contribuant au développement de la Sarracenia.
 
 Pour tous les indexes de référence: `AUSSI VOIR`_. 
 
