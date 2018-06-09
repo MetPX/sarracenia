@@ -498,6 +498,7 @@ class sr_subscribe(sr_instances):
            print("\tflatten   <string>   filename= message relpath replacing '/' by *flatten*(default:'/')")
            print("\tinflight  <.string>  suffix (or prefix) on filename during downloads (default: .tmp)\n")
            print("\tmirror    <boolean>  same directory tree as message relpath or flat. (default: True)")
+           print("\tnotify_only|no_download  <boolean>  Do not download files (default: False)")
            print("\tstrip     <count>    nb. of directories to remove from message relpath. (default: 0)")
            print("\tbase_dir             <base_dir>      (if file is local and msg_2localfile.py is used)")
            print("\tdo_download          <script>        (default None)")

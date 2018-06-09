@@ -34,7 +34,7 @@ notifications. Sr_subscribe can be configured to post messages after they are do
 to make them available to consumers for further processing or transfers.
 
 **sr_subscribe** can also be used for purposes other than downloading, (such as for 
-supplying to an external program) specifying the -n (*notify_only*, or *no download*) will
+supplying to an external program) specifying the -n (*notify_only*, or *no_download*) will
 suppress the download behaviour and only post the URL on standard output.  The standard
 output can be piped to other processes in classic UNIX text filter style.  
 
@@ -650,6 +650,7 @@ and under which name.
 - **kbytes_ps <count>               (default: 0)**
 - **inflight  <string>         (default: .tmp or NONE if post_broker set)** 
 - **mirror    <boolean>        (default: off)** 
+- **no_download|notify_only    <boolean>        (default: off)** 
 - **outlet    post|json|url    (default: post)** 
 - **overwrite <boolean>        (default: off)** 
 - **recompute_chksum <boolean> (default: off)**

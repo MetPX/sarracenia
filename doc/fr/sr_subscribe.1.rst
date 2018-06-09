@@ -121,7 +121,7 @@ utilisateurs :
 * `Installation <Install.rst>`_ - installation initiale.
 * `Guide de l'abonné <subscriber.rst>`_ - téléchargement efficace à partir d'une pompe.
 * `Guide source (incomplet) <source.rst>`_ - téléchargement efficace vers une pompe.
-* `Guide de programmation (anglais) <../Prog.rst>`_ - Programmation de plugins personnalisés pour l'intégration du flux de travail.
+* `Guide de programmation <Prog.rst>`_ - Programmation de plugins personnalisés pour l'intégration du flux de travail.
 
 Administrateurs :
 
