@@ -2,6 +2,8 @@
 Sarracenia
 ==========
 
+[ `version française <fr/sarra.rst>`_ ]
+
 .. contents::
 
 **MetPX-Sarracenia** is a data duplication or distribution engine that leverages existing
