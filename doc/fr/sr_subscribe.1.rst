@@ -130,7 +130,7 @@ Administrateurs :
 
 et les contributeurs :
 
-* `Guide du développeur (anglais) <../Dev.rst>`_ - contribuant au développement de la Sarracenia.
+* `Guide du développeur <Dev.rst>`_ - contribuant au développement de la Sarracenia.
 
 Pour tous les indexes de référence: `AUSSI VOIR`_. 
 

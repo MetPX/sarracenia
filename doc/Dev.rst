@@ -59,6 +59,19 @@ www.deepl.com) to provide a starting point. (and same procedure in reverse
 for francophones.)
 
 
+Where to Put Options 
+~~~~~~~~~~~~~~~~~~~~
+
+Most options are documented in sr_subscribe(1), which is kind of a *parent* to all other consuming components.
+Any options used by multiple components should be documented there. Options which are unique to a
+single component, should be documented in the man page for that component.
+
+Where the default value for an option varies among components, each component's man page should indicate 
+the option's default for that component. Sr_sarra, sr_winnow, sr_shovel, and sr_report components which
+only exist because they use the base sr_subscribe with different defaults. There is no code difference
+between them.
+
+
 Development
 -----------
 
@@ -997,19 +1010,6 @@ any notifications or report messages (don't report report messages, it becomes a
 For debugging and other information, the local log file is used.  For example, sr_shovel does
 not emit any sr_report(7) messages, because no data is transferred, only messages.
 
-
-
-Where to Put Option Documentation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Most options are documented in sr_subscribe(1), which is kind of a *parent* to all other consuming components.
-Any options used by multiple components should be documented there. Options which are unique to a 
-single component, should be documented in the man page for that component.
-
-Where the default value for an option varies among components, each component's man page should indicate 
-the option's default for that component. Sr_sarra, sr_winnow, sr_shovel, and sr_report components which
-only exist because they use the base sr_subscribe with different defaults. There is no code difference
-between them.
 
 
 Adding Checksum Algorithms
