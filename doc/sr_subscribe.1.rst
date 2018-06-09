@@ -22,6 +22,8 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
+[ `version francaise <fr/sr_subscribe.1.rst>`_ ]
+
 .. contents::
 
 Sr_subscribe is a program to download files from websites or file servers 

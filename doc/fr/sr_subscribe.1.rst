@@ -22,6 +22,8 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
+[ `English version <../sr_subscribe.1.rst>`_ ]
+
 .. contents::
 
 
