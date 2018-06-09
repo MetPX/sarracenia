@@ -176,7 +176,7 @@ testé.  Veuillez ajouter des autotests au besoin à ce processus afin de reflé
 
 La configuration que l'on essaie de répliquer:
 
-... image:: ../Flow_test.svg
+.. image:: ../Flow_test.svg
 
 Hypothèse : l'environnement de test est un PC linux, soit un ordinateur portable/desktop, soit un serveur sur lequel un serveur
 peut démarrer un navigateur. Si vous travaillez aussi avec l'implémentation c, il y a aussi ce qui suit
