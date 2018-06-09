@@ -2,7 +2,7 @@
  MetPX-Sarracenia
 ==================
 
-[ Français_ ]
+[ Français_ ] [ `English Documentation <doc/sr_subscribe.1.rst#documentation>`_ ] [ `Documentation (en francais) <doc/fr/sr_subscribe.1.rst#documentation>`_ ]
 
 Overview
 --------
