@@ -2,8 +2,10 @@
  MetPX-Sarracenia
 ==================
 
-Guides: [ `Guides <doc/sr_subscribe.1.rst#documentation>`_ ] [ `en français <doc/fr/sr_subscribe.1.rst#documentation>`_ ]
-Reference (man pages): [ `Manual Pages <doc/sr_subscribe.1.rst#see-also>`_ ] [ `en français <doc/fr/sr_subscribe.1.rst#aussi-voir>`_ ]
+**Documentation**
+
+* Guides: [ `Guides <doc/sr_subscribe.1.rst#documentation>`_ ] [ `en français <doc/fr/sr_subscribe.1.rst#documentation>`_ ]
+* Reference: [ `Manual Pages <doc/sr_subscribe.1.rst#see-also>`_ ] [ `en français <doc/fr/sr_subscribe.1.rst#aussi-voir>`_ ]
 
 +-------------------------------------------------+--------------------------------------------------+
 |         Overview                                |            Survol                                |
