@@ -1829,7 +1829,7 @@ SEE ALSO
 ========
 
 
-User Commands:
+**User Commands:**
 
 `sr_subscribe(1) <sr_subscribe.1.rst>`_ - Select and Conditionally Download Posted Files
 
@@ -1842,7 +1842,7 @@ User Commands:
 `sr_report(1) <sr_report.1.rst>`_ - process report messages.
 
 
-Pump Adminisitrators:
+**Pump Adminisitrator Commands:**
 
 `sr_shovel(8) <sr_shovel.8.rst>`_ - process messages (no downloading.)
 
@@ -1855,7 +1855,7 @@ Pump Adminisitrators:
 `sr_log2save(8) <sr_log2save.8.rst>`_ - Convert logfile lines to .save Format for reload/resend.
 
 
-Formats: 
+**Formats:**
 
 `sr_post(7) <sr_post.7.rst>`_ - The format of announcement messages.
 
@@ -1863,7 +1863,7 @@ Formats:
 
 `sr_pulse(7) <sr_pulse.7.rst>`_ - The format of pulse messages.
 
-Home Page:
+**Home Page:**
 
 `https://github.com/MetPX/ <https://github.com/MetPX>`_ - sr_subscribe is a component of MetPX-Sarracenia, the AMQP based data pump.
 
