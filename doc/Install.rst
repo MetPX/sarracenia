@@ -31,6 +31,29 @@ On Ubuntu 14.04/16.04/17.10/18.04 and derivatives of same::
   sudo apt-get install python3-paramiko   # adds SFTP support.
   sudo apt-get install sarrac # optional C client.
 
+Currently, only the debian packages include man pages.  The guides are only available in the source repository.
+
+Redhat/Suse distros (rpm based)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+On fedora 28::
+ 
+  sudo dnf install python3-amqplib
+  sudo dnf install python3-appdirs
+  sudo dnf install python3-watchdog
+  sudo dnf install python3-netifaces
+  sudo dnf install python3-humanize
+  sudo dnf install python3-psutil
+  sudo dnf install python3-paramiko   # adds SFTP support.
+
+  python3 setup.py bdist_rpm
+  sudo rpm -i dist/*.noarch.rpm
+
+The RPM´s built do not include dependency information, so these must be manually installed
+with dnf. This procedured installs only the python application (not the C one.)
+no man pages or other documentation are installed.
+
+
 PIP
 ~~~
 

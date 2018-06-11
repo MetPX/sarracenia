@@ -3,6 +3,8 @@
 Sarracenia
 ==========
 
+[ `English version <../sarra.rst>`_ ]
+
 .. contents::
 
 

@@ -9,219 +9,233 @@
 .. contents::
 
 
-Tools you Need
---------------
 
-To hack on the sarracenia source, you need:
+Outillage
+---------
 
-- python3. The application is developed in and depends on python versions > 3.
-- some python-amqp bindings (like python-amqplib for current implementations)
-- a bunch of other modules indicated in the dependencies (setup.py or debian/control)
-- paramiko. For SSH/SFTP support you need to install the python-paramiko package (which
-  works with python3 even though the documentation says it is for python2.)
-- python3 pyftpdlib module, used to run an ftpserver on a high port during the flow test.
-- git. in order to download the source from the github repository.
-- a dedicated rabbitmq broker, with administrative access, to run the flow_test.
-  The flow test creates and destroys exchanges and will disrupt any active flows on the broker.
+Pour travailler sur la source de la sarracénie, il faut :
 
-after you have cloned the source code::
+- python3. L'application est développée en et dépend des versions de python > 3.
+- certains bindings python-amqp (comme python-amqplib pour les implémentations courantes)
+- un tas d'autres modules indiqués dans les dépendances (setup.py ou debian/control)
+- paramiko. Pour le support de SSH/SFTP, vous devez installer le paquet python-paramiko (lequel
+  fonctionne avec python3 même si la documentation dit qu'il s'agit de python2).
+- python3 pyftpdlib module, utilisé pour faire tourner un serveur ftps sur un port haut pendant le test de flux.
+- git. afin de télécharger les sources depuis le dépôt github.
+- un courtier rabbitmq dédié, avec accès administratif, pour exécuter le flow_test.
+  Le test de flux crée et détruit les échanges et perturbera tout flux actif sur le courtier.
+
+après avoir cloné le code source::
+
 
     git clone https://github.com/MetPX/sarracenia sarracenia
     git clone https://github.com/MetPX/sarracenia sarrac
     cd sarracenia
 
-The rest of the Guide assumes you are there.
+Le reste du guide suppose que vous y êtes.
+
 
 Documentation
 -------------
 
-The development process is to write up what one intends to do or have done into
-a restructured text file in the doc/design sub-directory.  The files there provide
-a basis for discussion. Ideally, the information there acts as a pieces which can
-be edited into documentation for the features as they are implemented.
+Le processus de développement consiste à écrire ce que l'on a l'intention 
+de faire ou de faire faire en un fichier texte restructuré dans le 
+sous-répertoire doc/design.  Les fichiers qui s'y trouvent fournissent une base
+de discussion. Idéalement, l'information qui s'y trouve agit comme un ensemble
+de pièces qui peuvent être édité dans la documentation des fonctionnalités au 
+fur et à mesure qu'elles sont implémentées.  Généralement le dév sur se
+projet se fait en anglais, avec une traduction une fois qu´on a finalisé 
+(mais l´inverse est parfaitement possible aussi.)
 
-Each new component sr\_whatever, should have relevant man pages implemented.
-The Guides should also be revised to reflect additions or changes:
+Chaque nouveau composant sr\_whatever, devrait avoir des pages de manuel 
+pertinentes mises en œuvre. Les guides devraient également être révisés pour
+tenir compte des ajouts ou des changements :
 
-- `Install.rst <Install.rst>`_ (Installation)
-- `Dev.rst <Dev.rst>`_ (this guide for developers)
-- `Subscribers.rst <Subscribers.rst>`_ (a guide for how to read data from a pump.)
-- `Source.rst <Source.rst>`_ (a guide for those publishing data to a pump.)
-- `Admin.rst <Admin.rst>`_ (an Admininistrator´s Guide.)
+- `Installer.rst <Install.rst>`_ (Installation)
+- `Dev.rst <Dev.rst>`_ (ce guide pour les développeurs)
+- `subscriber.rst <subscriber.rst>`_ (un guide pour savoir comment lire les données d'une pompe.).
+- `source.rst <source.rst>`_ (un guide pour ceux qui publient des données vers une pompe.).
+- `Admin.rst <Admin.rst>`_ (un guide Admininistrator´s).
 
-When there are new sections, they should likely start out in design/ and after
-review, graduate into the main documentation.  
+Lorsqu'il y a de nouvelles sections, elles devraient probablement commencer 
+par la conception/ et après passer à la documentation principale.
 
-The french documentation has the same file names as the English, but it placed
-under the fr/ sub-directory.  It's easiest if the documentation is produced in 
-both languages at once. At least use an auto translation too (such as 
-www.deepl.com) to provide a starting point. (and same procedure in reverse 
-for francophones.)
-
-
-Where to Put Options 
-~~~~~~~~~~~~~~~~~~~~
-
-Most options are documented in sr_subscribe(1), which is kind of a *parent* to all other consuming components.
-Any options used by multiple components should be documented there. Options which are unique to a
-single component, should be documented in the man page for that component.
-
-Where the default value for an option varies among components, each component's man page should indicate 
-the option's default for that component. Sr_sarra, sr_winnow, sr_shovel, and sr_report components which
-only exist because they use the base sr_subscribe with different defaults. There is no code difference
-between them.
+La documentation française a les mêmes noms de fichiers que la documentation 
+anglaise, mais elle a placé sous le sous-répertoire fr/.  C'est plus facile 
+si la documentation est produite dans le format les deux langues en même temps. 
+Utilisez au moins une traduction automatique aussi (par exemple www.deepl.com) 
+pour fournir un point de départ. (et la même procédure à l'envers pour les 
+francophones).
 
 
-Development
------------
+Où documenter les options 
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Development occurs on the master branch, which may be in any state at any given
-time, and should not be relied upon.  From time to time releases are tagged, and
-maintenance results in a branch.  Releases are classified as follows:
+La plupart des options sont documentées dans sr_subscribe(1), qui est une sorte de *parent* de tous les autres composants de consommation.
+Toute option utilisée par plusieurs composants doit y être documentée. Les options qui sont uniques à un
+doit être documenté dans la page de manuel de ce composant.
+
+Lorsque la valeur par défaut d'une option varie d'un composant à l'autre, la page de manuel de chaque composant doit indiquer 
+l'option par défaut pour ce composant. Sr_sarra, sr_winnow, sr_shovel, et sr_reportent les composants suivants
+n'existent que parce qu'ils utilisent la base sr_subscribe avec des valeurs par défaut différentes. Il n'y a pas de différence de code
+entre eux.
+
+
+
+
+Développement
+-------------
+
+Le développement se produit sur la branche maître, qui peut être dans n'importe quel état à n'importe quel endroit donné.
+et on ne devrait pas s'y fier.  De temps en temps, les versions sont étiquetées, et
+la maintenance aboutit à une branche.  Les rejets sont classés comme suit :
 
 Alpha
-  snapshot releases taken directly from master, with no other qualitative guarantees.
-  no gurantee of functionality, some components may be partially implemented, some
-  breakage may occur.
-  no bug-fixes, issues addressed by subsequent version.
-  Often used for early end-to-end testing (rather than installing custom from tree on
-  each test machine.)
+  des instantanés pris directement du master, sans autres garanties qualitatives.
+  aucune garantie de fonctionnalité, certains composants peuvent être partiellement implémentés, d'autres non.
+  une rupture peut se produire.
+  pas de corrections de bogues, problèmes traités par la version suivante.
+  Souvent utilisé pour les tests de bout en bout (plutôt que d'installer une version personnalisée à partir de l'arborescence sur
+  chaque machine d'essai.
 
-Beta
-  Feature Complete for a given release.  Components in their final form for this release.
-  Documentation exists in at least one language.
-  All previously known release block bugs addressed.
-  no bug-fixes, issues addressed by subsequent version.
+Bêta
+  Fonctionnalité Complète pour une version donnée.  Composants dans leur forme finale pour cette version.
+  La documentation existe dans au moins une langue.
+  Tous les bogues de blocage de version connus précédemment ont été corrigés.
+  pas de corrections de bogues, problèmes traités par la version suivante.
 
-RC - Release Candidate.
-  implies it has gone through beta to identify and address major issues.
-  Translated documentation available.
-  no bug-fixes, issues addressed by subsequent version.
+RC - Candidat à la libération.
+  implique qu'il est passé par la version bêta pour identifier et traiter les principaux problèmes.
+  Documentation traduite disponible.
+  pas de corrections de bogues, problèmes traités par la version suivante.
 
-Final versions have no suffix and are considered stable and supported.
-Stable should receive bug-fixes if necessary from time to time.
-One can build python wheels, or debian packages for local testing purposes
-during development.
+Les versions finales n'ont pas de suffixe et sont considérées comme stables et supportées.
+Stable devrait recevoir des corrections de bogues si nécessaire de temps en temps.
+On peut construire des roues python, ou des paquets debian à des fins de tests locaux.
+pendant le développement.
 
-.. Note:: If you change default settings for exchanges / queues  as
-      part of a new version, keep in mind that all components have to use
-      the same settings or the bind will fail, and they will not be able
-      to connect.  If a new version declares different queue or exchange
-      settings, then the simplest means of upgrading (preserving data) is to
-      drain the queues prior to upgrading, for example by
-      setting, the access to the resource will not be granted by the server.
-      (??? perhaps there is a way to get access to a resource as is... no declare)
-      (??? should be investigated)
+.. Note:: Si vous modifiez les paramètres par défaut pour les échanges / 
+      files d'attente en tant que partie d'une nouvelle version, gardez à 
+      l'esprit que tous les composants doivent utiliser les mêmes paramètres 
+      ou le bind échouera, et ils ne seront pas en mesure de pour se connecter. 
+      Si une nouvelle version déclare une file d'attente ou un échange différent.
+      le moyen le plus simple de mise à niveau (préservation des données) consiste
+      à drainer les files d'attente avant la mise à niveau, par exemple en
+      l'accès à la ressource ne sera pas accordé par le serveur.
+      ( ????? peut-être qu'il y a un moyen d'avoir accès à une ressource telle quelle... pas de déclaration)
+      ( ????? doit faire l'objet d'une enquête)
 
-      Changing the default require the removal and recreation of the resource.
-      This has a major impact on processes...
+      La modification de la valeur par défaut nécessite la suppression et la reconstitution de la ressource.
+      Cela a un impact majeur sur les processus.....
 
 
 Python Wheel
 ~~~~~~~~~~~~
 
-For testing and development::
+Pour les tests et le développement::
 
     python3 setup.py bdist_wheel
 
-should build a wheel in the dist sub-directory.
+devrait construire une roue dans le sous-répertoire dist.
 
 
 Debian/Ubuntu
 ~~~~~~~~~~~~~
 
-This process builds a local .deb in the parent directory using standard debian mechanisms.
-- check the **build-depends** line in *debian/control* for dependencies that might be needed to build from source.
-- The following steps will build sarracenia but not sign the changes or the source package::
+Ce processus construit un fichier.deb local dans le répertoire parent en 
+utilisant les mécanismes debian standard. Vérifier la ligne **build-depends** 
+dans *debian/control* pour les dépendances qui pourraient être nécessaires 
+pour construire à partir des sources. Les étapes suivantes construiront
+Sarracenia mais ne signeront pas les changements ou le paquet source::
 
-    cd metpx/sarracenia
-    sudo apt-get install devscripts
-    debuild -uc -us
-    sudo dpkg -i ../<the package just built>
+    cd sarracenia
+    sudo apt-get install devscripts install devscripts
+    debuild -uc -uc -us
+    sudo dpkg -i.../<le paquet qui vient d'être construit>>.
+
+Commetre au Dépôt Principale
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Que faut-il faire avant de s'engager dans la branche master ?
+Liste de contrôle :
+
+- La branche maître doit toujours être fonctionnelle, ne pas commettre de code si le *flow_test* ne fonctionne pas.
+- Conséquence naturelle : si le changement de code signifie que les tests doivent changer, inclure le changement de test dans le commit.
+- les docs devraient idéalement recevoir leurs mises à jour en même temps que le code.
+- Mettre à jour CHANGES.txt pour faciliter le processus de publication.  Décrire les changements dans le code.
+- Si le code a un impact (configuration différente, changement de comportement) Mettre à jour doc/UPGRADING.rst.
 
 
-Committing Code
-~~~~~~~~~~~~~~~
 
-What should be done prior to committing to the master branch?
-Checklist:
-
-- **flow_test works** (See Testing) The master branch should always be functional, do not commit code if the flow_test is not working.
-- Natural consequence: if the code changes means tests need to change, include the test change in the commit.
-- **update doc/** manual pages should get their updates ideally at the same time as the code.
-- Update CHANGES.txt to assist in the release process.  Describe changes in code.
-- If the code has an impact (different configuration, change in behaviour) Update doc/UPGRADING.rst
-
-
-
-Testing
+Tests
 -------
 
-Before commiting code to the master branch, as a Quality Assurance measure one should run all available self-tests.
-It is assumed that the specific changes in the code have already been unit
-tested.  Please add self-tests as appropriate to this process to reflect the new ones.
+Avant de livrer du code à la branche maître, comme mesure d'assurance qualité, il faut exécuter tous les auto-tests disponibles.
+Il est supposé que les modifications spécifiques du code ont déjà été apportées à l'unité.
+testé.  Veuillez ajouter des autotests au besoin à ce processus afin de refléter les nouveaux tests.
 
-The configuration one is trying to replicate:
+La configuration que l'on essaie de répliquer:
 
-.. image:: Flow_test.svg
+.. image:: ../Flow_test.svg
 
-Assumption: test environment is a linux PC, either a laptop/desktop, or a server on which one
-can start a browser. If working with the c implementation as well, there are also the following
-flows defined:
+Hypothèse : l'environnement de test est un PC linux, soit un ordinateur portable/desktop, soit un serveur sur lequel un serveur
+peut démarrer un navigateur. Si vous travaillez aussi avec l'implémentation c, il y a aussi ce qui suit
+flux définis:
 
-.. image:: cFlow_test.svg
+.. image:: ../cFlow_test.svg
 
-A typical development workflow will be::
+Un flux de travail de développement typique sera::
+
 
    cd sarra ; *make coding changes*
    cd ..
    debuild -uc -us
-   cd ../sarrac
+   cd ../../sarrac
    debuild -uc -us
    sudo dpkg -i ../*.deb
-   cd ../sarracenia/test
+   cd test
    ./flow_cleanup.sh
    rm directories with state (indicated by flow_cleanup.sh)
    ./flow_setup.sh  ; *starts the flows*
    ./flow_check.sh  ; *checks the flows*
    ./flow_cleanup.sh  ; *cleans up the flows*
-   
-One can then study the results, and determing the next cycle of modifications to make.
-The rest of this section documents these steps in much more detail.  
-Before one can run the flow_test, some pre-requisites must be taken care of.
+  
 
-   
+On peut alors étudier les résultats et déterminer le prochain cycle de 
+modifications à apporter.  Le reste de cette section documente ces étapes
+de façon beaucoup plus détaillée.  Avant de pouvoir exécuter le flow_test,
+certains pré-requis doivent être pris en compte.
 
-Local Installation on Workstation
+Installation locale sur le poste de travail
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The flow_test invokes the version of metpx-sarracenia that is installed on the system,
-and not what is in the development tree.  It is necessary to install the package on 
-the system in order to have it run the flow_test.
+Le flow_test invoque la version de metpx-sarracenia qui est installée sur le système,
+et non pas ce qu'il y a dans l'arbre de développement.  Il est nécessaire d'installer le paquet sur
+le système afin qu'il exécute le flow_test.
 
-In your development tree ...    
-One can either create a wheel by running either::
+Dans votre arbre de développement....
+On peut soit créer une roue en cours d'exécution soit::
 
-       python3 setup.py bdist_wheel
+       python3 setup.py bdist_wheel_bdist_wheel
 
-whitch creates a wheel package under  dist/metpx*.whl
-then as root  install that new package::
+qui crée un paquet de roues sous dist/metpx*.whl.
+puis en tant que root installez ce nouveau paquet::
 
-       pip3 install --upgrade ...<path>/dist/metpx*.whl
+       pip3 install --upgrade ....<path>/dist/metpx*.whl
 
-or one can use debian packaging::
+ou on peut utiliser l'emballage debian::
 
-       debuild -us -uc
-       sudo dpkg -i ../python3-metpx-...
+       debuild -us -uc -uc
+       sudo dpkg -i ../python3-metpx-.....
 
-which accomplishes the same thing using debian packaging.
+qui accomplit la même chose en utilisant l'empaquetage debian.
 
+Installer les serveurs sur le poste de travail
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Install Servers on Workstation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Installez un minimum localhost broker, configurez les utilisateurs de test.
+avec les informations d'identification stockées pour localhost::
 
-Install a minimal localhost broker, configure test users.
-with credentials stored for localhost::
 
      sudo apt-get install rabbitmq-server
      sudo rabbitmq-plugins enable rabbitmq_management
@@ -249,29 +263,30 @@ with credentials stored for localhost::
      chmod 755 rabbbitmqadmin
      sr_audit --users foreground
 
+
 .. Note::
 
-    Please use other passwords in credentials for your configuration, just in case.
-    Passwords are not to be hard coded in self test suite.
-    The users bunnymaster, tsource, tsub, and tfeed are to be used for running tests
+    Veuillez utiliser d'autres mots de passe dans les informations d'identification pour votre configuration, juste au cas où.
+    Les mots de passe ne doivent pas être codés en dur dans la suite d'auto-test.
+    Les utilisateurs bunnymaster, tsource, tsub et tfeed doivent être utilisés pour l'exécution des tests.
 
-    The idea here is to use tsource, tsub, and tfeed as broker accounts for all
-    self-test operations, and store the credentials in the normal credentials.conf file.
-    No passwords or key files should be stored in the source tree, as part of a self-test
+    L'idée ici est d'utiliser tsource, tsub et tfeed comme comptes de courtage pour tous les comptes de courtage.
+    et stockez les informations d'identification dans le fichier normal credentials.conf.
+    Aucun mot de passe ou fichier clé ne doit être stocké dans l'arborescence des sources, dans le cadre d'un auto-test.
     suite.
 
-
-Setup Flow Test Environment
+Configuration de l'environnement de test de débit
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One part of the flow test runs an sftp server, and uses sftp client functions.
-Need the following package for that::
+Une partie du test de flux exécute un serveur sftp et utilise les fonctions client sftp.
+Besoin du paquet suivant pour cela::
 
     sudo apt-get install python3-pyftpdlib python3-paramiko
 
-The setup script starts a trivial web server, and ftp server, and a daemon that invokes sr_post.
-It also tests the C components, which need to have been already installed as well.
-and defines some fixed test clients that will be used during self-tests::
+Le script d'installation démarre un serveur web trivial, un serveur ftp et un démon qui invoque sr_post.
+Il teste également les composants C, qui doivent être déjà installés.
+et définit quelques clients de test fixes qui seront utilisés lors des auto-tests::
+
 
     cd sarracenia/test
     . ./flow_setup.sh
@@ -356,21 +371,22 @@ and defines some fixed test clients that will be used during self-tests::
     blacklab% 
 
 
-As it runs the setup, it also executes all existing unit_tests.
-Only proceed to the flow_check tests if all the tests in flow_setup.sh pass.
+Comme il exécute le setup, il exécute également tous les unit_tests existants.
+Ne passez aux tests flow_check que si tous les tests dans flow_setup.sh passent avec succès.
 
 
+Rouler le flow_test
+~~~~~~~~~~~~~~~~~~~
 
-Run Flow Test
-~~~~~~~~~~~~~
-
-The flow_check.sh script reads the log files of all the components started, and compares the number
-of messages, looking for a correspondence within +- 10%   It takes a few minutes for the
-configuration to run before there is enough data to do the proper measurements::
+Le script flow_check.sh lit les fichiers journaux de tous les composants 
+démarrés, et compare les nombres de messages, à la recherche d'une correspondance 
+dans un délai de +- 10% pour exécuter la configuration avant qu'il y ait assez 
+de données pour effectuer les bonnes mesures::
 
      ./flow_check.sh
 
-sample output::
+sortie::
+
 
     initial sample building sample size 8 need at least 1000 
     sample now   1021 
@@ -409,42 +425,43 @@ sample output::
       1 /home/peter/.cache/sarra/log/sr_cpump_xvan_f15_001.log [ERROR] binding failed: server channel error 404h, message: NOT_FOUND - no exchange 'xcvan01' in vhost '/'
     blacklab% 
 
-if the flow_check.sh passes, then one has a reasonable confidence in the overall functionality of the 
-python application, but the test coverage is not exhaustive. this is the lowest gate for committing
-changes to thy python code into the master branch. It is more qualitative sampling of the most
-common use cases rather than a thorough examination of all functionality. While not
-thorough, it is good to know the flows are working.
 
-(As of Nov. 2017) NOTE:  the packages (deb+pip) are created with a dependency for python3-amqplib for the AMQP support.
-We want to migrate to python3-pika. Therefore, the programs now supports both AMQP api. Should you have python3-pika
-installed, it will be used as default. If you have both amqplib and pika installed, you can use the option::
+si le fichier flow_check.sh passe, alors on a une confiance raisonnable dans la fonctionnalité globale du fichier
+application python, mais la couverture de test n'est pas exhaustive. c'est la porte la plus basse pour commettre un commit.
+change ton code python en branche maître. Il s'agit d'un échantillonnage plus qualitatif du plus grand nombre d'entre eux.
+des cas d'utilisation commune plutôt qu'un examen approfondi de toutes les fonctionnalités. Même si ce n'est pas le cas
+Il est bon de savoir que les flux fonctionnent.
+
+(à partir de nov. 2017) NOTE : les paquets (deb+pip) sont créés avec une dépendance pour python3-amqplib pour le support AMQP.
+Nous voulons migrer vers python3-pika. Par conséquent, les programmes soutiennent maintenant les deux AMQP api. Si vous avez python3-pika
+installé, il sera utilisé par défaut. Si vous avez installé amqplib et pika, vous pouvez utiliser l'option::
 
 *use_pika [true/false]*
 
-To use or not pika. Should you set  use_pika to True and python3-pika not installed, the programs will fall back to
-amqplib.  The developpers should test both API until we are totally migrated to PIKA.
+Utiliser ou non pika. Si vous définissez use_pika sur True et que python3-pika n'est pas installé, les programmes retomberont sur
+amqplib.  Les développeurs devraient tester les deux API jusqu'à ce que nous soyons totalement migrés vers PIKA.
 
-Note that the *fclean* subscriber looks at files in and keeps files around long enough for them to go through all the other
-tests.  It does this by waiting a reasonable amount of time (45 seconds, the last time checked.) then it compares the file
-that have been posted by sr_watch to the files created by downloading from it.  As the *sample now* count proceeds,
-it prints "OK" if the files downloaded are identical to the ones posted by sr_watch.   The addition of fclean and
-the corresponding cfclean for the cflow_test, are broken.  The default setup which uses *fclean* and *cfclean* ensures
-that only a few minutes worth of disk space is used at a given time, and allows for much longer tests.
+Notez que l'abonné *fclean* regarde les fichiers et conserve les fichiers assez longtemps pour qu'ils puissent passer par tous les autres.
+tests.  Il le fait en attendant un temps raisonnable (45 secondes, la dernière fois vérifiée) puis il compare le fichier.
+qui ont été postées par sr_watch dans les fichiers créés par téléchargement.  Au fur et à mesure que le comptage *sample now* se poursuit,
+il imprime "OK" si les fichiers téléchargés sont identiques à ceux postés par sr_watch.   L'ajout de fclean et de fclean
+les cfclean correspondants pour le cflow_test, sont cassés.  La configuration par défaut qui utilise *fclean* et *cfclean* garantit que
+que seules quelques minutes d'espace disque sont utilisées à un moment donné, ce qui permet des tests beaucoup plus longs.
 
-By default, the flow_test is only 1000 files, but one can ask it to run longer, like so::
+Par défaut, le flow_test n'est que de 1000 fichiers, mais on peut lui demander de s'exécuter plus longtemps, comme ceci::
 
  ./flow_check.sh 50000
 
-To accumulate fifty thousand files before ending the test.  This allows testing of long term performance, especially
-memory usage over time, and the housekeeping functions of on_heartbeat processing.
+Accumuler cinquante mille fichiers avant la fin du test.  Ceci permet de tester les performances à long terme, en particulier
+l'utilisation de la mémoire au fil du temps et les fonctions d'entretien ménager du traitement on_heartbeat.
 
+Nettoyage du flux
+~~~~~~~~~~~~~~~~~
 
-Flow Cleanup
-~~~~~~~~~~~~
-
-When done testing, the ./flow_cleanup.sh script, Which will kill the running servers and daemons, and 
-delete all configuration files installed for the flow test, all queues, exchanges, and logs.  This also 
-needs to be done between each run of the flow test::
+Une fois les tests terminés, le script ./flow_cleanup.sh, qui tuera les serveurs et daemons en cours d'exécution, et
+supprimer tous les fichiers de configuration installés pour le test de flux, toutes les files d'attente, les échanges et les journaux.  C'est aussi
+doit être effectuée entre chaque exécution de l'essai de débit::
+  
   
   blacklab% ./flow_cleanup.sh
   Stopping sr...
@@ -526,7 +543,7 @@ needs to be done between each run of the flow test::
   2018-02-10 09:17:39,658 [INFO] sr_subscribe t_f30 cleanup
   2018-02-10 09:17:39,658 [INFO] AMQP  broker(localhost) user(tsub) vhost(/)
   2018-02-10 09:17:39,660 [INFO] deleting queue q_tsub.sr_subscribe.t_f30.26453890.50752396 (tsub@localhost)
-  2018-02-10 09:17:39,924 [INFO] sr_subscribe u_sftp_f60 cleanup
+                                                                 2018-02-10 09:17:39,924 [INFO] sr_subscribe u_sftp_f60 cleanup
   2018-02-10 09:17:39,924 [INFO] AMQP  broker(localhost) user(tsource) vhost(/)
   2018-02-10 09:17:39,927 [INFO] deleting queue q_tsource.sr_subscribe.u_sftp_f60.81353341.03950190 (tsource@localhost)
   2018-02-10 09:17:40,196 [WARNING] option url deprecated please use post_base_url
@@ -548,19 +565,21 @@ needs to be done between each run of the flow test::
   Done!
 
 
-Flow Test Length
-~~~~~~~~~~~~~~~~
 
-The flow_test length defaults to 1000 files being flowed through the test cases.  when in rapid
-development, one can supply an argument to shorten that::
+Longueur de l'essai de débit
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+La longueur de flow_test par défaut est de 1000 fichiers en cours d'exécution à travers les cas de test. dans rapid
+développement, on peut fournir un argument pour raccourcir ce qui suit::
 
   ./flow_test 200
 
-Towards the end of a development cycle, longer flow_tests are adviseable::
+Vers la fin d'un cycle de développement, des flow_tests plus longs sont conseillés::
 
-  ./flow_test 20000 
+  ./flow_test 2000000 
 
-to identify more issues. sample run to 100,000 entries::
+pour identifier d'autres problèmes. échantillonnage jusqu'à 100 000 entrées::
+
 
   blacklab% ./flow_check.sh 100000
   initial sample building sample size 155 need at least 100000 
@@ -591,7 +610,7 @@ to identify more issues. sample run to 100,000 entries::
     File "/usr/bin/rabbitmqadmin", line 742, in add
       add(column, depth + 1, subitem, fun)
     File "/usr/bin/rabbitmqadmin", line 754, in add
-      fun(column, subitem)
+      fun(column, subitem)
     File "/usr/bin/rabbitmqadmin", line 761, in add_to_row
       row[column_ix[col]] = maybe_utf8(val)
     File "/usr/bin/rabbitmqadmin", line 431, in maybe_utf8
@@ -635,17 +654,18 @@ to identify more issues. sample run to 100,000 entries::
   more than 10 TYPES OF ERRORS found... for the rest, have a look at /home/peter/src/sarracenia/test/flow_check_errors_logged.txt for details
   blacklab% 
 
-This test was fired up at the end of the day, as it takes several hours, and results examined the next morning.
+Ce test a été lancé à la fin de la journée, car cela prend plusieurs heures, et les résultats ont été examinés le lendemain matin.
 
-Flow Test Stuck
-~~~~~~~~~~~~~~~
 
-Sometimes flow tests (especially for large numbers) get stuck because of problems with the data stream (where multiple files get 
-the same name, and so earlier versions remove later versions and then retries will always fail.  Eventually, we will succeed in cleaning
-up the dd.weather.gc.ca stream, but for now sometimes a flow_check gets stuck 'Retrying.' The test has run all the messages required,
-and is at a phase of emptying out retries, but just keeps retrying forever with a variable number of items that never drops to zero.
+Test Poigné
+~~~~~~~~~~~
 
-To recover from this state without discarding the results of a long test, do::
+Parfois, les tests de flux (en particulier pour les grands nombres) sont bloqués en raison de problèmes avec le flux de données (où plusieurs fichiers se retrouvent
+le même nom, et donc les versions antérieures suppriment les versions ultérieures et les tentatives échoueront toujours.  Éventuellement, nous réussirons à nettoyer.
+en haut du flux dd.weather.gc.ca, mais pour l'instant un flow_check se bloque parfois'Retrying'. Le test a exécuté tous les messages requis,
+et est à une phase de vider les tentatives, mais continue d'essayer de nouveau pour toujours avec un nombre variable d'articles qui ne tombe jamais à zéro.::
+
+
 
   ^C to interrupt the flow_check.sh 100000
   blacklab% sr stop
@@ -691,10 +711,7 @@ To recover from this state without discarding the results of a long test, do::
     File "/usr/bin/rabbitmqadmin", line 761, in add_to_row
       row[column_ix[col]] = maybe_utf8(val)
     File "/usr/bin/rabbitmqadmin", line 431, in maybe_utf8
-      return s.encode('utf-8')
   AttributeError: 'float' object has no attribute 'encode'
-  
-  
   
   maximum of the shovels is: 100075
   
@@ -739,7 +756,6 @@ To recover from this state without discarding the results of a long test, do::
   test 18 success: cpump both pelles (c shovel) should receive about the
   same number of messages (161365) (161365)
   test 19 success: cdnld_f21 subscribe downloaded (47950) the same
-  number of files that was published by both van_14 and van_15 (47950)
   test 20 success: veille_f34 should post twice as many files (95846) as
   subscribe cdnld_f21 downloaded (47950)
   test 21 success: veille_f34 should post twice as many files (95846) as
@@ -748,70 +764,64 @@ To recover from this state without discarding the results of a long test, do::
   
   NB retries for sr_subscribe t_f30 0
   NB retries for sr_sender 36
-  
-
-So, in this case, the results are still good in spite of not quite being 
-able to terminate. If there was a significant problem, the cumulation
-would indicate it.
 
 
 
-Building a Release
-------------------
-
-MetPX-Sarracenia is distributed in a few different ways, and each has it's own build process.
-Packaged releases are always preferable to one off builds, because they are reproducible.
-
-When development requires testing across a wide range of servers, it is preferred to make
-an alpha release, rather than installing one off packages.  So the preferred mechanisms is
-to build the ubuntu and pip packages at least, and install on the test machines using
-the relevant public repositories.
-
-To publish a release one needs to:
-
-- Set the version.
-- upload the release to pypi.org so that installation with pip succeeds.
-- upload the release to launchpad.net, so that the installation of debian packages
-  using the repository succeeds.
+Ainsi, dans ce cas, les résultats sont encore bons, même s'ils ne sont pas tout à fait satisfaisants.
+capable d'y mettre fin. S'il y a eu un problème important, le cumul
+l'indiquerait.
 
 
-Versioning Scheme
-~~~~~~~~~~~~~~~~~
+Bâtire un *release*
+-------------------
 
-Each release will be versioned as ``<protocol version>.<YY>.<MM> <segment>``
+MetPX-Sarracenia est distribué de différentes manières, et chacun a son propre processus de construction.
+Les versions empaquetées sont toujours préférables aux versions uniques, parce qu'elles sont reproductibles.
 
-Where:
+Lorsque le développement nécessite des tests sur une large gamme de serveurs, il est préférable d'effectuer les opérations suivantes
+une version alpha, plutôt que d'installer un seul paquet.  Les mécanismes préférés sont donc les suivants
+pour construire les paquets ubuntu et pip au moins, et l'installer sur les machines de test à l'aide de
+les dépôts publics pertinents.
 
-- **protocol version** is the message version. In Sarra messages, they are all prefixed with v02 (at the moment).
-- **YY** is the last two digits of the year of the initial release in the series.
-- **MM** is a TWO digit month number i.e. for April: 04.
-- **segment** is what would be used within a series.
-  from pep0440:
-  X.YaN   # Alpha release
-  X.YbN   # Beta release
-  X.YrcN  # Release Candidate
-  X.Y     # Final release
+Pour publier une version, il faut le faire :
 
-Example:
+- Définir la version.
+- télécharger la version sur pypi.org pour que l'installation avec pip réussisse.
+- télécharger la version sur launchpad.net, afin que l'installation des paquets debian
+  l'utilisation du référentiel réussit.
 
-The first alpha release in January 2016 would be versioned as ``metpx-sarracenia-2.16.01a01``
+Schéma de versionnement
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Chaque version sera versionnée en tant que ``<version du protocole>.<YY>.<MMM> <segment>````.
+
+Où :
+
+La version protocole**** est la version message. Dans les messages Sarra, ils sont tous préfixés avec v02 (pour le moment).
+YYYY** est les deux derniers chiffres de l'année de la sortie initiale de la série.
+MM**** est un numéro de mois à DEUX chiffres, c'est-à-dire pour le mois d'avril : 04.
+Le segment**** est ce qui serait utilisé au sein d'une série.
+  de pep0440 :
+  X.YaN # Alpha release
+  X.YbN # Lancement de la version bêta
+  X.YrcN # Release Candidate
+  X.Y # Libération finale
 
 
-Setting the Version
-~~~~~~~~~~~~~~~~~~~
+Réglage de la version
+~~~~~~~~~~~~~~~~~~~~~
 
-Each new release triggers a *tag* in the git repository ( executes *git tag -a sarra-v2.16.01a01 -m "release 2.16.01a01"* )
+Chaque nouvelle version déclenche un *tag* dans le référentiel git (exécute *git tag -a sarra-v2.16.01a01 -m "release 2.16.01a01"*)
 
-A convenience script has been created to automate the release process. Simply run ``release.sh`` and it will guide you in cutting a new release.
+Un script de commodité a été créé pour automatiser le processus de publication. Lancez simplement ``release.sh``` et il vous guidera dans la coupe d'une nouvelle version.
 
-
-* Edit ``sarra/__init__.py`` manually and set the version number.
+* Editez ``sarra/__init__init__.py`` manuellement et réglez le numéro de version.
 * git commit -a
-* Run ```release.sh``` example::
+* Exécuter ``release.sh`` exemple: :
 
     ./release.sh "release 2.16.01a01"
 
-* you will be prompted to enter information about the release.
+* vous serez invité à entrer des informations sur la version.
 
 * git push
 
@@ -819,221 +829,214 @@ A convenience script has been created to automate the release process. Simply ru
 PyPi
 ~~~~
 
-Pypi Credentials go in ~/.pypirc.  Sample Content::
+Pypi Credentials go in ~/.pypirc.  Contenu de l'échantillon: :
 
   [pypi]
-  username: SupercomputingGCCA
-  password: <get this from someone>
+  nom d'utilisateur : SupercomputingGCCA
+  mot de passe : <obtenir ceci de quelqu'un>>.
 
-Assuming pypi upload credentials are in place, uploading a new release used to be a one liner::
+En supposant que les identifiants de téléchargement de pypi sont en place, 
+le téléchargement d'une nouvelle version n'était qu'un liner::
 
-    python3 setup.py bdist_wheel upload
+    python3 setup.py bdist_wheel 
 
-This still works with setuptools > 24, but ubuntu 16 only has version 20, so it can no longer be used there.
-Instead, one is supposed to use the twine package.  We have tried it once installing it vi pip3,
-next time, we should try the one provided with ubuntu 16.04 (via apt-get.)::
+Cela fonctionne toujours avec setuptools > 24, mais ubuntu 16 n'a que 
+la version 20, donc il ne peut plus y être utilisé.  Au lieu de cela, on 
+est censé utiliser le paquet *twine*::
 
-   python3 setup.py bdist_wheel 
-   twine upload dist/metpx_sarracenia-2.17.7a2-py3-none-any.whl
+   python3 setup.py bdist_wheel_bdist_wheel 
+   twine upload dist/metpx_sarracenia-2.17.7a2-py3-none-any.whlhl
 
-Note that the same version can never be uploaded twice.
+Notez que la même version ne peut jamais être téléchargée deux fois.
 
-A convenience script has been created to build and publish the *wheel* file. Simply run ``publish-to-pypi.sh`` and it will guide you in that.
+Un script de commodité a été créé pour construire et publier le fichier *wheel*. Il suffit d'exécuter ``publish-to-pypi.sh`` et il vous guidera dans cette voie.
 
-.. Note::
-   When uploading pre-release packages (alpha,beta, or RC) PYpi does not serve those to users by default.
-   For seamless upgrade, early testers need to do supply the ``--pre`` switch to pip::
+.. Note ::
+   Lorsque vous téléchargez des paquets pré-version (alpha, bêta ou RC), PYpi ne les met pas à la disposition des utilisateurs par défaut.
+   Pour une mise à niveau sans faille, les premiers testeurs doivent fournir le commutateur ``-précédent``à pip::
 
-     pip3 install --upgrade --pre metpx-sarracenia
+       pip3 install --upgrade --pre metpx-sarracenia 
 
-   On occasion you may wish to install a specific version::
+   A l'occasion, vous pouvez souhaiter installer une version spécifique::
 
-     pip3 install --upgrade metpx-sarracenia==2.16.03a9
-
+     pip3 install --upgrade metpx-sarracenia===2.16.03.03a9
 
 
 Launchpad
 ~~~~~~~~~
 
-Automated Build
-+++++++++++++++
-
-* Ensure the code mirror is updated by checking the **Import details** by checking `this page for sarracenia <https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/+git/trunk>`_
-* if the code is out of date, do **Import Now** , and wait a few minutes while it is updated.
-* Ensure the code mirror is updated by checking the **Import details** by checking `this page for sarrac <https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarrac/+git/master>`_
-* if the code is out of date, do **Import Now** , and wait a few minutes while it is updated.
-* once the repository is upto date, proceed with the build request.
-* Go to the `sarracenia release <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/sarracenia-release>`_ recipe
-* Click on the **Request build(s)** button to create a new release
-* Go to the `Sarrac release <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sarrac>`_ recipe
-* Click on the **Request build(s)** button to create a new release
-* The built packages will be available in the `metpx ppa <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx>`_
-
-Daily Builds
-++++++++++++
-
-Daily builds are configured 
-using `this recipe for python <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/sarracenia-daily>`_ 
-and `this recipe for C <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sarrac-daily>`_ and 
-are run once per day when changes to the repository occur. These packages are stored in the `metpx-daily ppa <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily>`_.
-One can also **Request build(s)** on demand if desired.
-
-
-Manual Process
-++++++++++++++
-
-The process for manually publishing packages to Launchpad ( https://launchpad.net/~ssc-hpc-chp-spc ) involves a more complex set of steps, and so the convenience script ``publish-to-launchpad.sh`` will be the easiest way to do that. Currently the only supported releases are **trusty** and **xenial**. So the command used is::
-
-    publish-to-launchpad.sh sarra-v2.15.12a1 trusty xenial
-
-
-However, the steps below are a summary of what the script does:
-
-- for each distribution (precise, trusty, etc) update ``debian/changelog`` to reflect the distribution
-- build the source package using::
-
-    debuild -S -uc -us
-
-- sign the ``.changes`` and ``.dsc`` files::
-
-    debsign -k<key id> <.changes file>
-
-- upload to launchpad::
-
-    dput ppa:ssc-hpc-chp-spc/metpx-<dist> <.changes file>
-
-**Note:** The GPG keys associated with the launchpad account must be configured in order to do the last two steps.
-
-Backporting a Dependency
+Construction automatisée
 ++++++++++++++++++++++++
 
-Example::
+Assurez-vous que le miroir de code est mis à jour en vérifiant les détails **Import** en vérifiant `cette page pour la sarracénie <https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/+git/trunk>`_
+Si le code n'est pas à jour, faites **Import Now**, et attendez quelques minutes pendant qu'il est mis à jour.
+Assurez-vous que le miroir de code est mis à jour en vérifiant les détails **Import** en vérifiant `cette page pour sarrac <https://code.launchpad.net/~ssc-hpc-chp-chp-spc/metpx-sarrac/+git/master>`__`.
+Si le code n'est pas à jour, faites **Import Now**, et attendez quelques minutes pendant qu'il est mis à jour.
+une fois que le référentiel est à jour, procéder à la demande de compilation.
+Allez au `sarracenia release <https://code.launchpad.net/~ssc-hpc-hpc-chp-spc/+recipe/sarracenia-release>`_ recette (*recipe*)
+Cliquez sur le bouton **Request build(s)** pour créer une nouvelle version.
+Allez au `Sarrac release 
 
-  backportpackage -k<key id> -s bionic -d xenial -u ppa:ssc-hpc-chp-spc/ubuntu/metpx-daily librabbitmq
+Constructions quotidiennes
+++++++++++++++++++++++++++
+
+Les constructions quotidiennes sont configurées
+en utilisant `cette recette pour python <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/sarracenia-daily>`_`https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/sarracenia-daily
+et `cette recette pour C <https://code.launchpad.net/~ssc-hpc-chp-chp-spc/+recipe/metpx-sarrac-daily>`_ et
+sont exécutés une fois par jour lorsque des modifications sont apportées au référentiel. Ces paquets sont stockés dans le `metpx-daily ppa <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily>`_.
+On peut aussi **Demander la construction(s) sur demande si désiré.**
 
 
 
+Processus manuel
+++++++++++++++
+
+Le processus de publication manuelle des paquets sur Launchpad ( https://launchpad.net/~ssc-hpc-chp-spc) implique un ensemble plus complexe d'étapes, et donc le script de commodité ``publish-to-launchpad.sh`` sera le moyen le plus facile de le faire. Actuellement, les seules versions supportées sont **trusty** et **xenial**. La commande utilisée est donc::
+
+    publish-to-launchpad.sh sarra-v2.15.12a1 trusty xenial trusty
+
+
+Cependant, les étapes ci-dessous sont un résumé de ce que fait le script :
+
+pour chaque distribution (précise, fiable, etc) mettre à jour ``debian/changelog`` pour refléter la distribution.
+construire le paquet source en utilisant::
+
+    debuild -S -uc -uc -us
+
+signer les fichiers ``.changes`` et ``.dsc``::
+
+    debsign -k<key id> <.changes file>> fichier debsign -k<key id> <.changes
+
+upload sur launchpad::
+
+    dput ppa:ssc-hpc-chp-spc/metpx-<dist> <.changes file> fichier>.
+
+Note:** Les clés GPG associées au compte launchpad doivent être configurées pour effectuer les deux dernières étapes.
+
+Rétroportage d'une dépendance
++++++++++++++++++++++++++++++
+
+Exemple::
+
+  backportpackage -k<key id> -s bionic -d xenial -d xenial -u ppa:ssc-hpc-chip-chp-spc/ubuntu/metpx-daily librabbitmq librabbitmq
 
 
 
-Updating The Project Website
+Mise à jour du site Web du projet
 ----------------------------
 
-Prior to March 2018, the primary web-site for the project was metpx.sf.net.
-That MetPX website was built from the documentation in the various modules
-in the project. It builds using all **.rst** files found in 
-**sarracenia/doc** as well as *some* of the **.rst** files found in 
-**sundew/doc**. In the Spring of 2018, development moved to github.com.
-That site renders .rst when showing pages, so separate processing to render
-web pages is no longer needed.
+Avant mars 2018, le site Web principal du projet était metpx.sf.net.
+Ce site MetPX a été construit à partir de la documentation des différents modules.
+dans le projet. Il construit en utilisant tous les fichiers **.rst**** trouvés
+dans le répertoire **sarracénie/doc** ainsi que *certains* des fichiers 
+**.rst** trouvés dans le fichier **Sundew/doc**. Au printemps 2018, le 
+développement a été transféré sur github.com.  Ce site rend .rst lors de 
+l'affichage des pages, donc un traitement séparé pour le transformer n'est 
+plus nécessaire.
 
-On the current web site, updating is done by committing changes to .rst files
-directly on github. There is no post-processing required. As the links are all
-relative and other services such as gitlabl also support such rendering, the
-*website* is portable to gitlab.science, etc...  And the entry point is from
-the README.rst file at the root directory of each repository.
+Sur le site Web actuel, la mise à jour se fait en validant les modifications
+apportées aux fichiers.rst directement sur Github. Il n'y a pas de 
+post-traitement requis. Comme les liens sont tous les liens et d'autres 
+services tels que gitlabl supportent également ce type d'interprétation, 
+l'application *website* est portable à gitlab.science, etc....  Et le 
+point d'entrée est de le fichier README.rst à la racine de chaque référentiel.
 
-
-Building Locally
+Bâtir Localement
 ~~~~~~~~~~~~~~~~
 
-In order to build the HTML pages, the following software must be available on your workstation:
+Afin de construire les pages HTML, les logiciels suivants doivent être disponibles sur votre poste de travail :
 
 * `dia <http://dia-installer.de/>`_
 * `docutils <http://docutils.sourceforge.net/>`_
 * `groff <http://www.gnu.org/software/groff/>`_
 
-From a command shell::
+A partir d'un shell de commande::
 
   cd site
-  make
+  fabriquer
 
-note::  the makefile contains a commented line *sed that replaces .rst with .html in the files.
-To build the pages locally, this sed is needed, so un-comment it, but don't commit the change
-because it will break the *updating The website* procedure.
+note: : le fichier makefile contient une ligne commentée *sed qui remplace.rst par.html dans les fichiers.
+Pour construire les pages localement, ce sed est nécessaire, donc ne le commentez pas, mais n'engagez pas le changement.
+parce qu'il brisera la procédure de *mise à jour du site Web*.
 
+Mise à jour du site Web
+~~~~~~~~~~~~~~~~~~~~~~~
 
-Updating The Website
-~~~~~~~~~~~~~~~~~~~~
+Aujourd'hui, il suffit d'éditer les pages dans le dépôt git, et elles 
+seront actives dès qu'elles seront poussées à la branche principale.
 
-Today, just edit the pages in the git repository, and they will be active as soon as they are pushed
-to the master branch.
+Pour publier le site à sourceforge (mise à jour de metpx.sourceforge.net), vous 
+devez avoir un compte sourceforge.net et avoir les permissions requises 
+pour modifier le site.  A partir d'un shell, lancez::
 
-To publish the site to sourceforge (updating metpx.sourceforge.net), you must have a sourceforge.net account
-and have the required permissions to modify the site.
+  make SFUSER=myuser deploy deploy
 
-From a shell, run::
-
-  make SFUSER=myuser deploy
-
-Only the index-e.html and index-f.html pages are used on the sf.net website 
-today. Unless you want to change those pages, this operation is useless.
-For all other pages, the links go directly into the various .rst files on
+Seules les pages index-f.html et index-f.html sont utilisées sur le site sf.net.
+aujourd'hui. A moins que vous ne vouliez changer ces pages, cette opération est inutile.
+Pour toutes les autres pages, les liens vont directement dans les différents fichiers.rst sur
 github.com.
 
 
 
-Development Environment
------------------------
+Environnement de développement
+------------------------------
 
 
-Local Python
+Python local
 ~~~~~~~~~~~~
 
-Working with a non-packaged version:
+Travailler avec une version non empaquetée :
 
-notes::
+notes: :
 
-    python3 setup.py build
-    python3 setup.py install
+    python3 setup.py build.py build
+    python3 setup.py install.py installer
 
 
 Windows
 ~~~~~~~
 
-Install winpython from github.io version 3.4 or higher.  Then use pip to install from PyPI.
-
+Installez winpython à partir de la version 3.4 ou supérieure de github.io.  Utilisez ensuite pip pour installer à partir de PyPI.
 
 
 Conventions
 -----------
 
-Below are some coding practices that are meant to guide developers when contributing to sarracenia.
-They are not hard and fast rules, just guidance.
+Vous trouverez ci-dessous quelques pratiques de codage destinées à guider les développeurs lorsqu'ils contribuent à la sarracénie.
+Il ne s'agit pas de règles strictes et rapides, mais simplement de directives.
 
 
-When to Report
-~~~~~~~~~~~~~~
+Quand fair un *report*
+~~~~~~~~~~~~~~~~~~~~~~
 
-sr_report(7) messages should be emitted to indicate final disposition of the data itself, not
-any notifications or report messages (don't report report messages, it becomes an infinite loop!)
-For debugging and other information, the local log file is used.  For example, sr_shovel does
-not emit any sr_report(7) messages, because no data is transferred, only messages.
+sr_report(7) les messages doivent être émis pour indiquer la disposition finale des données elles-mêmes, et non pas la disposition finale.
+toute notification ou message de rapport (ne rapportez pas les messages de rapport, cela devient une boucle infinie !
+Pour le débogage et d'autres informations, le fichier journal local est utilisé.  Par exemple, sr_shovel fait ce qui suit
+n'émettent aucun message sr_report(7), car aucune donnée n'est transférée, seulement des messages.
 
 
+Ajout d'algorithmes de somme de contrôle
 
-Adding Checksum Algorithms
-~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. note::
-   That addition of a checksum requires code modification is considered a weakness.
-   There will be an API to be able to plugin checksums at some point.  Not done yet.
+... note: :
+   Le fait que l'ajout d'une somme de contrôle nécessite une modification du code est considéré comme une faiblesse.
+   Il y aura une API pour être en mesure de plugin checksums à un certain point.  Ce n'est pas encore fait.
 
-To add a checksum algorithm, need to add a new class to sr_util.py, and then modify sr_config.py
-to associate it with a label.  Reading of sr_util.py makes this pretty clear.
-Each algorithm needs:
-- an initializer (sets it to 0)
-- an algorithm selector.
-- an updater to add info of a given block to an existing sum,
-- get_value to obtain the hash (usually after all blocks have updated it)
+Pour ajouter un algorithme de checksum, il faut ajouter une nouvelle classe à sr_util.py, puis modifier sr_config.py.
+pour l'associer à une étiquette.  La lecture de sr_util.py rend cela assez clair.
+Chaque algorithme a besoin :
+un initialisateur (le met à 0)
+un sélecteur d'algorithme.
+une mise à jour pour ajouter les informations d'un bloc donné à une somme existante,
+get_value pour obtenir le hash (généralement après que tous les blocs l'aient mis à jour).
 
-These are called by the code as files are downloaded, so that processing and transfer are overlapped.
+Ceux-ci sont appelés par le code au fur et à mesure que les fichiers sont téléchargés, de sorte que le traitement et le transfert se chevauchent.
 
-For example, to add SHA-2 encoding::
+Par exemple, pour ajouter l'encodage SHA-2::
 
   from hashlib import sha256
 
-  class checksum_s(object):
+  class checksum_r(object):
       """
       checksum the entire contents of the file, using SHA256.
       """
@@ -1050,12 +1053,14 @@ For example, to add SHA-2 encoding::
       def set_path(self,path):
           self.filehash = sha256()
 
-Then in sr_config.py, in the set_sumalgo routine::
+ensuite en sr_config.py, on le rajoute ainsi::
 
       if flgs == 'c':
-          self.sumalgo = checksum_s()
+          self.sumalgo = checksum_r()
 
-Might want to add 's' to the list of valid sums in validate_sum( as well.
 
-It is planned for a future version to make a plugin interface for this so that adding checksums
-becomes an application programmer activity.
+On peut vouloir ajouter 'r' à la liste des sommes valides dans 
+validate_sum( aussi.
+
+Il est prévu pour une future version de faire une interface de plugin pour cela de sorte que l'ajout de sommes de contrôle devient une activité de programmeur d'application.
+

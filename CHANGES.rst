@@ -4,17 +4,26 @@
 
 lists all changes between versions.
 
+**2.18.06b1**
+
+* bugfix      sr_audit now runs for all users (restarts crashed components.)
+* new         start post (sleep <= 0) now does nothing.
+*             tested and added build instructions for RPM systems.
+* doc         French docs done.
+*             *sci-fi* (future planned features) removed from docs.
+*             website migrated from sf.net to git repo ones (github, gitlab)
+
 **2.18.05b4**
 
-* bugfix       plugin msg_filter_wmo2msc.py fixed
-*              sr_poll now uses its own set_dir_pattern to replace variables
-*              sr_post/sr_poll/sr_watch fixed that a cache file for instance 000 was created
-*              sr_post/sr_poll/sr_watch add caching of 'L' message
-* new          sr_amqp for consumer sets channel.basic_recover(requeue=True)
-* update       flow_post.sh posts lot of files within one call (load problem fixed)
-*              flow_test does not test filename with space anymore
-*              flow_test 5 instances for sender
-* doc          miscellaneous doc fixups.
+* bugfix      plugin msg_filter_wmo2msc.py fixed
+*             sr_poll now uses its own set_dir_pattern to replace variables
+*             sr_post/sr_poll/sr_watch fixed that a cache file for instance 000 was created
+*             sr_post/sr_poll/sr_watch add caching of 'L' message
+* new         sr_amqp for consumer sets channel.basic_recover(requeue=True)
+* update      flow_post.sh posts lot of files within one call (load problem fixed)
+*             flow_test does not test filename with space anymore
+*             flow_test 5 instances for sender
+* doc         miscellaneous doc fixups.
 
 **2.18.05b2**
 
