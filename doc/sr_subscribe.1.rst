@@ -1829,17 +1829,24 @@ SEE ALSO
 ========
 
 
-`sr_shovel(8) <sr_shovel.8.rst>`_ - process messages (no downloading.)
+User Commands:
 
-`sr_winnow(8) <sr_winnow.8.rst>`_ - a shovel with cache on, to winnow wheat from chaff.
+`sr_subscribe(1) <sr_subscribe.1.rst>`_ - Select and Conditionally Download Posted Files
+
+`sr_post(1) <sr_post.1.rst>`_ - post announcemensts of specific files.
+
+`sr_watch(1) <sr_watch.1.rst>`_ - post that loops, watching over directories.
 
 `sr_sender(1) <sr_sender.1.rst>`_ - subscribes to messages pointing at local files, and sends them to remote systems and reannounces them there.
 
 `sr_report(1) <sr_report.1.rst>`_ - process report messages.
 
-`sr_post(1) <sr_post.1.rst>`_ - post announcemensts of specific files.
 
-`sr_watch(1) <sr_watch.1.rst>`_ - post that loops, watching over directories.
+Pump Adminisitrators:
+
+`sr_shovel(8) <sr_shovel.8.rst>`_ - process messages (no downloading.)
+
+`sr_winnow(8) <sr_winnow.8.rst>`_ - a shovel with cache on, to winnow wheat from chaff.
 
 `sr_sarra(8) <sr_sarra.8.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
@@ -1847,11 +1854,16 @@ SEE ALSO
 
 `sr_log2save(8) <sr_log2save.8.rst>`_ - Convert logfile lines to .save Format for reload/resend.
 
+
+Formats: 
+
 `sr_post(7) <sr_post.7.rst>`_ - The format of announcement messages.
 
 `sr_report(7) <sr_report.7.rst>`_ - the format of report messages.
 
 `sr_pulse(7) <sr_pulse.7.rst>`_ - The format of pulse messages.
+
+Home Page:
 
 `https://github.com/MetPX/ <https://github.com/MetPX>`_ - sr_subscribe is a component of MetPX-Sarracenia, the AMQP based data pump.
 

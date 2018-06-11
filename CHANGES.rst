@@ -6,7 +6,9 @@ lists all changes between versions.
 
 **2.18.06b1**
 
+* bugfix      sr_audit now runs for all users (restarts crashed components.)
 * new         start post (sleep <= 0) now does nothing.
+*             tested and added build instructions for RPM systems.
 * doc         French docs done.
 *             *sci-fi* (future planned features) removed from docs.
 *             website migrated from sf.net to git repo ones (github, gitlab)
