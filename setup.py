@@ -24,7 +24,7 @@ setup(
     version=sarra.__version__,
     description='Subscribe, Acquire, and Re-Advertise products.',
     long_description=(read('README.rst') + '\n\n' +
-                      read('CHANGES.rst') + '\n\n' +
+                      read('CHANGES.txt') + '\n\n' +
                       read('AUTHORS.txt')),
     url='https://github.com/MetPX/sarracenia',
     license='GPLv2',
