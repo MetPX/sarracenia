@@ -417,10 +417,14 @@ Setting the queue on broker :
 - **restore_to_queue <queuename> (default: None)**
 - **save          <boolean>      (default: False)**
 
+
 Usually components guess reasonable defaults for all these values
 and users do not need to set them.  For less usual cases, the user
 may need to override the defaults.  The queue is where the notifications
 are held on the server for each subscriber.
+
+[ queue_name|qn <name>]
+~~~~~~~~~~~~~~~~~~~~~~~
 
 By default, components create a queue name that should be unique. The default queue_name
 components create follows :  **q_<brokerUser>.<programName>.<configName>** .
@@ -428,8 +432,14 @@ Users can override the defaul provided that it starts with **q_<brokerUser>**.
 Some variables can also be used within the queue_name like
 **${BROKER_USER},${PROGRAM},${CONFIG},${HOSTNAME}**
 
+durable <boolean> (default: False)
+-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 The  **durable** option, if set to True, means writes the queue
 on disk if the broker is restarted.
+
+expire <duration> (default: 5m  == five minutes. RECOMMEND OVERRIDING)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The  **expire**  option is expressed as a duration... it sets how long should live
 a queue without connections. A raw integer is expressed in seconds, if the suffix m,h.d,w
@@ -444,9 +454,14 @@ and in early use (when default was 1 week) brokers would often get overloaded wi
 long queues for left-over experiments.  
 
 
+message-ttl <duration>  (default: None)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The  **message-ttl**  option set the time a message can live in the queue.
 Past that time, the message is taken out of the queue by the broker.
+
+prefetch <N> (default: 1)
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The **prefetch** option sets the number of messages to fetch at one time.
 When multiple instances are running and prefetch is 4, each instance will obtain upto four
@@ -454,6 +469,9 @@ messages at a time.  To minimize the number of messages lost if an instance dies
 optimal load sharing, the prefetch should be set as low as possible.  However, over long
 haul links, it is necessary to raise this number, to hide round-trip latency, so a setting
 of 10 or more may be needed.
+
+reset <boolean> (default: False)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When **reset** is set, and a component is (re)started, its queue is
 deleted (if it already exists) and recreated according to the component's
@@ -465,6 +483,9 @@ the reception cache is also discarded.
 
 The AMQP protocol defines other queue options which are not exposed
 via sarracenia, because sarracenia itself picks appropriate values.
+
+save/restore
+~~~~~~~~~~~~
 
 The **save** option is used to read messages from the queue and write them
 to a local file, saving them for future processing, rather than processing
@@ -495,11 +516,17 @@ These options define which messages (URL notifications) the program receives:
  - **topic_prefix  <amqp pattern> (default: v02.post -- developer option)** 
  - **subtopic      <amqp pattern> (subtopic need to be set)** 
 
+exchange <name> (default: xpublic) and exchange_suffix
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 The convention on data pumps is to use the *xpublic* exchange. Users can establish
 private data flow for their own processing. Users can declare their own exchanges
 that always begin with *xs_<username>*, so to save having to specify that each
 time, one can just declare *exchange_suffix kk* which will result in the exchange
 being set to *xs_<username>_kk* (overriding the *xpublic* default.) 
+
+subtopic <amqp pattern> (subtopic need to be set)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Several topic options may be declared. To give a correct value to the subtopic,
 one has the choice of filtering using **subtopic** with only AMQP's limited wildcarding and
@@ -582,8 +609,8 @@ variety of matching possible with regular expressions:
  - http://www.regular-expressions.info/ 
 
 
-Regexp in Sarracenia
-~~~~~~~~~~~~~~~~~~~~
+accept, reject and accept_unmatch
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - **accept    <regexp pattern> (optional)**
 - **reject    <regexp pattern> (optional)**
@@ -661,6 +688,9 @@ and under which name.
 - **timeout     <float>         (default: 0)**
 
 
+attempts <count> (default: 3)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 The **attempts** option indicates how many times to 
 attempt downloading the data before giving up.  The default of 3 should be appropriate 
 in most cases.  When the **retry** option is false, the file is then dropped immediately.
@@ -670,12 +700,21 @@ of **attempts** (or send, in a sender) will cause the message to be added to a q
 for later retry.  When there are no messages ready to consume from the AMQP queue, 
 the retry queue will be queried.
 
+retry_ttl <duration> (default: same as expire)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 The **retry_ttl** (retry time to live) option indicates how long to keep trying to send 
 a file before it is aged out of a the queue.  Default is two days.  If a file has not 
 been transferred after two days of attempts, it is discarded.
 
+timeout <float> (default: 0)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 The **timeout** option, sets the number of seconds to wait before aborting a
 connection or download transfer (applied per buffer during transfer.)
+
+inflight <string> (default: .tmp or NONE if post_broker set)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The  **inflight**  option sets how to ignore files when they are being transferred
 or (in mid-flight betweeen two systems.) Incorrect setting of this option causes
@@ -701,8 +740,14 @@ of the file's arrival.  This is the fastest, lowest overhead option when it is a
 It is also the default when a *post_broker* is given, indicating that some
 other process is to be notified after delivery.
 
+delete <boolean> (default: off)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 When the **delete** option is set, after a download has completed successfully, the subscriber
 will delete the file at the upstream source.  Default is false.
+
+batch <count> (default: 100)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The **batch** option is used to indicate how many files should be transferred 
 over a connection, before it is torn down, and re-established.  On very low 
@@ -710,6 +755,9 @@ volume transfers, where timeouts can occur between transfers, this should be
 lowered to 1.  For most usual situations the default is fine. for higher volume
 cases, one could raise it to reduce transfer overhead. It is only used for file
 transfer protocols, not HTTP ones at the moment.
+
+directory <path> (default: .)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The *directory* option defines where to put the files on your server.
 Combined with  **accept** / **reject**  options, the user can select the
@@ -732,6 +780,9 @@ declared by the closest  **directory**  option above the matching  **accept** op
         reject    .*Reg.*
         accept    .*GRIB.*
 
+mirror <boolean> (default: off)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 The  **mirror**  option can be used to mirror the dd.weather.gc.ca tree of the files.
 If set to  **True**  the directory given by the  **directory**  option
 will be the basename of a tree. Accepted files under that directory will be
@@ -747,8 +798,11 @@ For example retrieving the following url, with options::
 would result in the creation of the directories and the file
 /mylocaldirectory/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
 
-You can modify the mirrored directoties with the option **strip**  .
-If set to N  (an integer) the first 'N' directories are withdrawn.
+strip <count|regexp> (default: 0)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can modify the mirrored directoties with the **strip** option. 
+If set to N  (an integer) the first 'N' directories are removed.
 For example ::
 
  http://dd.weather.gc.ca/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
@@ -775,6 +829,8 @@ NOTE::
     The expression:  .*?GIF   matches: radar/PRECIP/GIF
     whereas the expression: .*GIF matches the entire name.
 
+flatten <string> (default: '/')
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The  **flatten**  option is use to set a separator character. The default value ( '/' )
 nullifies the effect of this option.  This character replaces the '/' in the url 
@@ -787,7 +843,7 @@ For example retrieving the following url, with options::
    directory /mylocaldirectory
    accept    .*model_gem_global.*
 
-would result in the creation of the filepath ::
+would result in the creation of the filepath::
 
  /mylocaldirectory/model_gem_global-25km-grib2-lat_lon-12-015-CMC_glb_TMP_TGL_2_latlon.24x.24_2013121612_P015.grib2
 
@@ -808,6 +864,9 @@ All date/times in Sarracenia are in UTC.
 Refer to *source_from_exchange* for a common example of usage.  Note that any sarracenia
 built-in value takes precedence over a variable of the same name in the environment.
 
+base_dir <path> (default: /)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 **base_dir** supplies the directory path that, when combined with the relative
 one in the selected notification gives the absolute path of the file to be sent.
 The defaults is None which means that the path in the notification is the absolute one.
@@ -817,16 +876,22 @@ The defaults is None which means that the path in the notification is the absolu
     in a subscriber, if it is set... will it download? or will it assume it is local?
     in a sender.
 
+
+inplace <boolean> (default: On)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Large files may be sent as a series of parts, rather than all at once.
 When downloading, if **inplace** is true, these parts will be appended to the file 
 in an orderly fashion. Each part, after it is inserted in the file, is announced to subscribers.
 This can be set to false for some deployments of sarracenia where one pump will 
 only ever see a few parts, and not the entirety, of multi-part files. 
 
-
 The **inplace** option defaults to True. 
 Depending of **inplace** and if the message was a part, the path can
 change again (adding a part suffix if necessary).
+
+outlet post|json|url (default: post)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The **outlet** option is used to allow writing of posts to file instead of
 posting to a broker. The valid argument values are:
@@ -858,6 +923,9 @@ posting to a broker. The valid argument values are:
 FIXME: The **outlet** option came from the C implementation ( *sr_cpump*  ) and it has not
 been used much in the python implementation. 
 
+overwrite <boolean> (default: off)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 The  **overwrite**  option,if set to false, avoid unnecessary downloads under these conditions :
 
 1- the file to be downloaded is already on the user's file system at the right place and
@@ -866,8 +934,14 @@ The  **overwrite**  option,if set to false, avoid unnecessary downloads under th
 
 The default is False (overwrite without checking). 
 
+discard <boolean> (default: off)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 The  **discard**  option,if set to true, deletes the file once downloaded. This option can be
 usefull when debugging or testing a configuration.
+
+source_from_exchange <boolean> (default: off)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The **source_from_exchange** option is mainly for use by administrators.
 If messages is received posted directly from a source, the exchange used 
@@ -890,8 +964,14 @@ It is commonly combined with::
   
 To have data arrive in the standard format tree.
 
+heartbeat <count> (default: 300 seconds)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 The **heartbeat** option sets how often to execute periodic processing as determined by 
 the list of on_heartbeat plugins. By default, it prints a log message every heartbeat.
+
+suppress_duplicates <off|on|999> (default: off)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When **suppress_duplicates** (also **cache** ) is set to a non-zero value, each new message
 is compared against previous ones received, to see if it is a duplicate. If the message is 
@@ -913,12 +993,16 @@ a **first layer of subscribers (sr_shovels)** with duplicate suppression turned
 off and output with *post_exchange_split*, which route posts by checksum to 
 a **second layer of subscibers (sr_winnow) whose duplicate suppression caches are active.**
   
+kbytes_ps <count> (default: 0)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 **kbytes_ps** is greater than 0, the process attempts to respect this delivery
 speed in kilobytes per second... ftp,ftps,or sftp)
 
 **FIXME**: kbytes_ps... only implemented by sender? or subscriber as well, data only, or messages also?
 
-**default_mode, default_dir_mode, preserve_modes**, 
+default_mode, default_dir_mode, preserve_modes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Permission bits on the destination files written are controlled by the *preserve_mode* directives.
 *preserve_modes* will apply the mode permissions posted by the source of the file.
@@ -927,6 +1011,9 @@ If no source mode is available, the *default_mode* will be applied to files, and
 then the operating system  defaults (on linux, controlled by umask settings)
 will determine file permissions. (note that the *chmod* option is interpreted as a synonym
 for *default_mode*, and *chmod_dir* is a synonym for *default_dir_mode*.)
+
+recompute_chksum <boolean> (default: off)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For each download, the checksum is computed during transfer. If **recompute_chksum**
 is set to True, and the recomputed checksum differ from the on in the message,
@@ -1184,8 +1271,8 @@ and that download stream can be multi-streamed as well.
   loss of notifications.
 
 
-REPORTING
-=========
+report_back and report_exchange
+===============================
 
 For each download, by default, an amqp report message is sent back to the broker.
 This is done with option :
@@ -1264,8 +1351,8 @@ The logs can be written in another directory than the default one with option :
           sr_audit acts when a queue gets to the max_queue_size and not running.
           
 
-ACTIVE/PASSIVE OPTIONS
-----------------------
+vip - ACTIVE/PASSIVE OPTIONS
+----------------------------
 
 **sr_subscribe** can be used on a single server node, or multiple nodes
 could share responsibility. Some other, separately configured, high availability
@@ -1304,13 +1391,16 @@ the download of a file has occured. To build the notification and send it to
 the next hop broker, the user sets these options :
 
  - **[--blocksize <value>]            (default: 0 (auto))**
- - **[--outlet <post|json|url>]            (default: post)**
- - **[-pbd|--post_base_dir <path>]     (optional)**
+ - **[--outlet <post|json|url>]       (default: post)**
+ - **[-pbd|--post_base_dir <path>]    (optional)**
  - **post_exchange     <name>         (default: xpublic)**
  - **post_exchange_split   <number>   (default: 0)**
- - **post_url          <url>          (MANDATORY)**
+ - **post_base_url          <url>     (MANDATORY)**
  - **on_post           <script>       (default: None)**
 
+
+[--blocksize <value>] (default: 0 (auto))
+-----------------------------------------
 
 This **blocksize** option controls the partitioning strategy used to post files.
 the value should be one of::
@@ -1327,6 +1417,9 @@ optimized by only sending parts which have changed.
 The *outlet* option allows the final output to be other than a post.  
 See `sr_cpump(1) <sr_cpump.1.rst>`_ for details.
 
+[-pbd|--post_base_dir <path>] (optional)
+----------------------------------------
+
 The *post_base_dir* option supplies the directory path that, when combined (or found) 
 in the given *path*, gives the local absolute path to the data file to be posted.
 The *post_base_dir* part of the path will be removed from the posted announcement.
@@ -1335,15 +1428,24 @@ Example of that usage would be:  -pbd ~user  -url sftp:user@host
 for file: url's, base_dir is usually not appropriate.  To post an absolute path,
 omit the -pbd setting, and just specify the complete path as an argument.
 
-The **url** option sets how to get the file... it defines the protocol,
+post_url <url> (MANDATORY)
+--------------------------
+
+The **post_base_url** option sets how to get the file... it defines the protocol,
 host, port, and optionally, the user. It is best practice to not include 
 passwords in urls.
+
+post_exchange <name> (default: xpublic)
+---------------------------------------
 
 The **post_exchange** option set under which exchange the new notification
 will be posted.  Im most cases it is 'xpublic'.
 
 Whenever a publish happens for a product, a user can set to trigger a script.
 The option **on_post** would be used to do such a setup.
+
+post_exchange_split   <number>   (default: 0)
+---------------------------------------------
 
 The **post_exchange_split** option appends a two digit suffix resulting from 
 hashing the last character of the checksum to the post_exchange name,
@@ -1857,14 +1959,16 @@ SUNDEW COMPATIBILITY OPTIONS
 
 For compatibility with sundew, there are some additional delivery options which can be specified.
 
-**destfn_script <script> (default:None)**
+destfn_script <script> (default:None)
+-------------------------------------
 
 This option defines a script to be run when everything is ready
 for the delivery of the product.  The script receives the sr_sender class
 instance.  The script takes the parent as an argument, and for example, any
 modification to  **parent.msg.new_file**  will change the name of the file written locally.
 
-**filename <keyword> (default:WHATFN)**
+filename <keyword> (default:WHATFN)
+-----------------------------------
 
 From **metpx-sundew** the support of this option give all sorts of possibilities
 for setting the remote filename. Some **keywords** are based on the fact that

@@ -113,11 +113,13 @@ ARGUMENTS AND OPTIONS
 Please refer to the `sr_subscribe(1) <sr_subscribe.1.rst>`_ manual page for a detailed description of 
 common settings, and methods of specifying them.
 
-**[-c|--config <configfile>]**
+[-c|--config <configfile>]
+--------------------------
 
   A list of settings in a configuration file 
 
-**[-p|--path path1 path2 ... pathN]**
+[-p|--path path1 path2 ... pathN]
+---------------------------------
 
   **sr_post** evaluates the filesystem paths from the **path** option 
   and possibly the **base_dir** if the option is used.
@@ -127,11 +129,13 @@ common settings, and methods of specifying them.
   If a path defines a directory, then all files in that directory are
   announced... 
 
-**[-pb|--post_broker <broker>]**
+[-pb|--post_broker <broker>]
+----------------------------
 
   the broker to which the post is sent.
 
-**[-pbd|--post_base_dir <path>]**
+[-pbd|--post_base_dir <path>]
+-----------------------------
 
   The *base_dir* option supplies the directory path that,
   when combined (or found) in the given *path*, 
@@ -142,16 +146,19 @@ common settings, and methods of specifying them.
   for file: url's, base_dir is usually not appropriate.  To post an absolute path, 
   omit the -dr setting, and just specify the complete path as an argument.
 
-**[-ex|--exchange <exchange>]**
+[-ex|--exchange <exchange>]
+---------------------------
 
   Sr_post publishes to an exchange named *xs_*"broker_username" by default.
   Use the *exchange* option to override that default.
 
-**[-h|-help|--help**
+[-h|-help|--help]
+-----------------
 
   Display program options.
 
-**[--blocksize <value>]**
+[--blocksize <value>]
+---------------------
 
   This option controls the partitioning strategy used to post files.
   the value should be one of::
@@ -185,7 +192,8 @@ common settings, and methods of specifying them.
   to avoid having the file split into parts, so one would specify '1' to force all files to be send
   as a single part.
 
-**[-pbu|--post_base_url <url>]**
+[-pbu|--post_base_url <url>]
+----------------------------
 
   The **url** option sets the protocol, credentials, host and port under
   which the product can be fetched.
@@ -197,27 +205,32 @@ common settings, and methods of specifying them.
   The concatenation of the two last fields of the announcement defines
   what the subscribers will use to download the product. 
 
-**[-pipe <boolean>]**
+[-pipe <boolean>]
+-----------------
 
   The pipe option is for sr_post to read the names of the files to post from standard input to read from
   redirected files, or piped output of other commands. Default is False, accepting file names only on the command line.
 
-**[--pulse_message <message>]**
+[--pulse_message <message>]
+---------------------------
 
   Administrator option to send a message to all subscribers.  Similar to "wall" functionality.
   When this option is set, a pulse message is sent, ignoring any topic settings or files given as arguments.
 
-**[--reset]**
+[--reset]
+---------
 
   When one has used **--suppress_duplicates|--cache**, this option empties the cache.
 
 
-**[-rn|--rename <path>]**
+[-rn|--rename <path>]
+---------------------
 
   With the *rename*  option, the user can suggest a destination path to its files. If the given
   path ends with '/' it suggests a directory path...  If it doesn't, the option specifies a file renaming.
 
-**[--sleep <time> ]**
+[--sleep <time> ]
+-----------------
 
    **This option is only available in the c implementation (sr_cpost)**
 
@@ -233,12 +246,14 @@ common settings, and methods of specifying them.
 
    
 
-**[-sub|--subtopic <key>]**
+[-sub|--subtopic <key>]
+-----------------------
 
   The subtopic default can be overwritten with the *subtopic* option.
 
 
-**[--suppress_duplicates|-sd|-nd|--no_duplicates|--cache on|off|999]**
+[--suppress_duplicates|-sd|-nd|--no_duplicates|--cache on|off|999]
+------------------------------------------------------------------
 
   Avoid posting duplicates. When posting directories, this option caches
   what was posted and will post only files (or parts of files) that were new
@@ -252,7 +267,8 @@ common settings, and methods of specifying them.
   used ( set to a value other than 0 ) as otherwise blocksize will vary as files grow,
   and much duplicate data transfer will result.
 
-**[-to|--to <destination>,<destination>,... ]** 
+[-to|--to <destination>,<destination>,... ]
+-------------------------------------------
 
   A comma-separated list of destination clusters to which the posted data should be sent.
   Ask pump administrators for a list of valid destinations.
@@ -261,22 +277,26 @@ common settings, and methods of specifying them.
 
   *FIXME: a good list of destination should be discoverable.*
 
-**[-sum|--sum <string>]**
+[-sum|--sum <string>]
+---------------------
 
   All file posts include a checksum.  The *sum* option specifies how to calculate the it.
   It is a comma separated string.  Valid checksum flags are ::
 
-    [0|n|d|c=<scriptname>]
-    where 0 : no checksum... value in post is random integer (for load balancing purposes.)
-          n : do checksum on filename
-          d : do md5sum on file content (default... for compatibility with older releases.)
-          s : do SHA512 on file content (future default)
+    [0|n|d|s|N|z]
+    where 0 : no checksum... value in post is a random integer (only for testing/debugging.)
+          d : do md5sum on file content (default for now, compatibility)
+          n : do md5sum checksum on filename
+          N : do SHA512 checksum on filename
+          s : do SHA512 on file content (default in future)
+          z,a : calculate checksum value using algorithm a and assign after download.
 
   Then using a checksum script, it must be registered with the pumping network, so that consumers
   of the postings have access to the algorithm.
 
 
-**[-tp|--topic_prefix <key>]**
+[-tp|--topic_prefix <key>]
+--------------------------
 
   *Not usually used*
   By default, the topic is made of the default topic_prefix : version *V02*, an action *post*,
@@ -285,7 +305,8 @@ common settings, and methods of specifying them.
 
 
 
-**[-header <name>=<value>]**
+[-header <name>=<value>]
+------------------------
 
   Add a <name> header with the given value to advertisements. Used to pass strings as metadata.
 
@@ -295,7 +316,8 @@ common settings, and methods of specifying them.
 ADMINISTRATOR SPECIFIC
 ======================
 
-**[--queue|--queue_name|-qn] <queue>**
+[--queue|--queue_name|-qn] <queue>
+----------------------------------
 
   If a client wants a product to be reannounced,
   the broker administrator can use *sr_post*  and publish
@@ -316,21 +338,25 @@ ADMINISTRATOR SPECIFIC
 DEVELOPER SPECIFIC OPTIONS
 ==========================
 
-**[-debug|--debug]**
+[-debug|--debug]
+----------------
 
   put more messages in the log.
 
-**[-r|--randomize]**
+[-r|--randomize]
+----------------
 
   If a file is posted in several blocks, the posting order
   is randomized so that the subcribe receives them out of order.
 
-**[-rc|--reconnect]**
+[-rc|--reconnect]
+-----------------
 
   If a file is posted in several blocks, reconnect to the broker
   for every post. 
 
-**[--parts]**
+[--parts]
+---------
 
   The usual usage of the *blocksize* option is described above, which is what is usually used to set
   the *parts* header in the messages produced, however there are a number of ways of using the parts flag 

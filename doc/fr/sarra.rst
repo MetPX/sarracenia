@@ -17,7 +17,7 @@ source. Alors que le transfert de fichier traditionnel est une affaire de point 
 est seulement entre chaque segment, dans Sarracenia, l'information circule d'un bout à l'autre dans les deux sens.
 
 Aperçu
---------
+------
 
 
 Sarracenia expose une arborescence de dossiers accessibles sur le Web (WAF), en utilisant n'importe quel
@@ -126,13 +126,13 @@ Pourquoi?
 ---------
 
 Pourquoi ne pas simplement utiliser Rsync ?
-~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Il existe un certain nombre d'outils de réplication d'arbres qui sont largement
 utilisés, pourquoi en inventer un autre ? `RSync <https://rsync.samba.org/>`_, 
 par exemple, est un outil fabuleux, et nous avons Il est fortement recommandé 
 pour de nombreux cas d'utilisation. mais il y a des moments où la Sarracenia peut
-72 fois plus rapide que rsync : Étude de cas : `HPC Mirroring Use Case <mirroring_use_use_case.rst>`_
+72 fois plus rapide que rsync : Étude de cas : `HPC Mirroring Use Case (anglais) <../mirroring_use_use_case.rst>`_
 
 Rsync et d'autres outils sont basés sur la comparaison (traitant d'une source et d'une destination 
 unique) Sarracénie, bien qu´elle n'utilisent pas la multidiffusion, est orienté vers une livraison 

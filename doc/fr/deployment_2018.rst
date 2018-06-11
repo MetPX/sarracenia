@@ -181,7 +181,7 @@ Tout au long de l'année 2017, les travaux se poursuivaient pour mettre en place
 un miroir à grande vitesse entre les magasins du site du superordinateur pour
 permettre le basculement. Ces travaux sont maintenant dans une phase finale de
 déploiement et devraient être opérationnels d'ici le printemps 2018.
-Pour plus de détails, voir : `HPC Mirroring Use Case <mirroring_use_use_case.rst>`_
+Pour plus de détails, voir : `HPC Mirroring Use Case (anglais) <../mirroring_use_use_case.rst>`_
 
 
 
