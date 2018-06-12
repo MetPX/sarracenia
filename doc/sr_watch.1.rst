@@ -134,7 +134,8 @@ ARGUMENTS AND OPTIONS
 Please refer to the `sr_subscribe(1) <sr_subscribe.1.rst>`_ manual page for a detailed description of
 common settings, and methods of specifying them.
 
-**[--blocksize <value>]**
+[--blocksize <value>]
+---------------------
 
 the value should be one of::
 
@@ -160,13 +161,18 @@ as a single part.
 The value of the *blocksize*  is an integer that may be followed by  letter designator *[B|K|M|G|T]* meaning:
 for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All theses references are powers of 2.
 
-**[-b|--broker <broker>]**
+[-b|--broker <broker>]
+----------------------
+
        *broker*  is the broker to connect to to send the post.
 
-**[-c|--config <configfile>]**
+[-c|--config <configfile>]
+--------------------------
+
        A file filled with options.
 
-**[--delete <boolean>]**
+[--delete <boolean>]
+--------------------
 
 In force_polling mode, assume that directories empty themselves, so that every file in each *path*
 should be posted at every polling pass, instead of just new ones.  Use caching to ignore the ones
@@ -174,13 +180,15 @@ seen before.  In polling mode, the speed of reconition of files is limited to th
 a tree can be traversed.  The scanning method needs to be chosen based on the performance sought.
 
 
-**[-pbd|--post_base_dir <path>]**
+[-pbd|--post_base_dir <path>]
+-----------------------------
 
 The  *base_dir*  option supplies the directory path that,
 when combined with the relative one from  *source url* , 
 gives the local absolute path to the data file to be posted.
 
-**[-e|--events <event|event|...>]**
+[-e|--events <event|event|...>]
+-------------------------------
 
 A list of event types to monitor separated by a 'pipe symbol'.
 Available events:  create, delete, follow, link, modify, poll
@@ -195,20 +203,25 @@ how to process them. if it is not set, then no symbolic link events will ever be
    and a field *newname* set, and a second post with the new name, and a field *oldname* set. 
    This allows subscribers to perform an actual rename, and avoid triggering a download when possible.
 
-**[-ex|--exchange <exchange>]**
+[-ex|--exchange <exchange>]
+---------------------------
 
   sr_watch publishes to an exchange named *xs_*"broker_username" by default.
   Use the *exchange* option to override that default.
 
-**[-fp|--force_polling <boolean>]**
+[-fp|--force_polling <boolean>]
+-------------------------------
 
-By Default, sr_watch selects a (OS dependent) optimal method to watch a directory.   For large trees,
-the optimal method can be manyfold (10x or even 100x) faster to recognize when a file has been modified.
-In some cases, however, platform optimal methods do not work (such as with some network shares, or distributed 
-file systems), so one must use a slower but more reliable and portable polling method.  The *force_polling* 
-keyword causes sr_watch to select the polling method in spite of the availability of a normally better one.
-KNOWN LIMITATION: When *force_polling* is set, the *sleep* setting, should be at least 5 seconds. It is not
-currently clear why.
+By Default, sr_watch selects a (OS dependent) optimal method to watch a 
+directory. For large trees, the optimal method can be manyfold (10x or even 
+100x) faster to recognize when a file has been modified. In some cases, 
+however, platform optimal methods do not work (such as with some network 
+shares, or distributed file systems), so one must use a slower but more
+reliable and portable polling method.  The *force_polling* keyword causes
+sr_watch to select the polling method in spite of the availability of a
+normally better one.  KNOWN LIMITATION: When *force_polling* is set, 
+the *sleep* setting, should be at least 5 seconds. It is not currently clear
+why.
 
 NOTE::
 
@@ -220,7 +233,8 @@ NOTE::
   entirely and turn on the *delete* option, which will have sr_watch attempt to post the entire tree
   every time (ignoring mtime)
 
-**[-fs|--follow_symlinks <boolean>]**
+[-fs|--follow_symlinks <boolean>]
+---------------------------------
 
 The *follow_symlinks* option causes symbolic links to be traversed.  if *follow_symlinks* is set
 and the destination of a symbolic link is a file, then that destination file should be posted as well as the link.
@@ -228,23 +242,27 @@ If the destination of the symbolic link is a directory, then the directory shoul
 monitored by sr_watch.   If *follow_symlinks* is false, then no action related to the destination of the symbolic 
 link is taken.
 
-**[-header <name>=<value>]**
+[-header <name>=<value>]
+------------------------
 
 Add a <name> header with the given value to advertisements. Used to pass strings as metadata in the
 advertisements to improve decision making for consumers.  Should be used sparingly. There are limits
 on how many headers can be used, and the minimizing the size of messages has important performance
 impacts.
 
-**[-h|-help|--help]**
+[-h|-help|--help]
+-----------------
 
 Display program options.
 
-**[-l <logpath>]**
+[-l <logpath>]
+--------------
 
 Set a file where all the logs will be written.
 Logfile will rotate at 'midnight' and kept for an history of 5 files.
 
-**[-p|--path path]**
+[-p|--path path]
+----------------
 
 **sr_post** evaluates the filesystem path from the **path** option 
 and possibly the **post_base_dir** if the option is used.
@@ -262,7 +280,8 @@ The AMQP announcements are made of the tree fields, the announcement time,
 the **url** option value and the resolved paths to which were withdrawn
 the *post_base_dir* present and needed.
 
-**[-real|--realpath <boolean>]**  
+[-real|--realpath <boolean>]
+----------------------------
 
 The realpath option resolves paths given to their canonical ones, eliminating 
 any indirection via symlinks. The behaviour improves the ability of sr_watch to 
@@ -271,18 +290,21 @@ given. This option also enforces traversing of symbolic links. This is implement
 to preserve the behaviour of an earlier iteration of sr_watch, but it is not 
 clear if it required or useful. Feedback welcome.
 
-**[-rn|--rename <path>]**
+[-rn|--rename <path>]
+---------------------
 
 With the  *rename*   option, the user can
 suggest a destination path for its files. If the given
 path ends with '/' it suggests a directory path... 
 If it doesn't, the option specifies a file renaming.
 
-**[-sub|--subtopic <key>]**
+[-sub|--subtopic <key>]
+-----------------------
 
 The subtopic default can be overwritten with the  *subtopic*  option.
 
-**[--sleep <time> ]**
+[--sleep <time> ]
+-----------------
 
 The time to wait between generating events.  When files are written frequently, it is counter productive
 to produce a post for every change, as it can produce a continuous stream of changes where the transfers
@@ -290,7 +312,8 @@ cannot be done quickly enough to keep up.  In such circumstances, one can group 
 in *sleep* time, and produce a single post.
 
 
-**[-to|--to <destination>,<destination>,... ]** 
+[-to|--to <destination>,<destination>,... ]
+-------------------------------------------
 
   A comma-separated list of destination clusters to which the posted data should be sent.
   Ask pump administrators for a list of valid destinations.
@@ -300,13 +323,15 @@ in *sleep* time, and produce a single post.
 .. note:: 
   FIXME: a good list of destination should be discoverable.
 
-**[-tp|--topic_prefix <key>]**
+[-tp|--topic_prefix <key>]
+--------------------------
 
 By default, the topic is made of the default topic_prefix : version  *V02* , an action  *post* ,
 followed by the default subtopic: the file path separated with dots (dot being the topic separator for amqp).
 You can overwrite the topic_prefix by setting this option.
 
-**[-u|--url <url>]**
+[-u|--url <url>]
+----------------
 
 The **url** option sets the protocol, credentials, host and port under
 which the product can be fetched.
@@ -317,7 +342,8 @@ this **base_url** value and the **path**, relative from *post_base_dir*, if nece
 The concatenation of the two last fields of the post gives the complete URL 
 subscribers use to download the file. 
 
-**[-sum|--sum <string>]**
+[-sum|--sum <string>]
+---------------------
 
 All file posts include a checksum.  It is placed in the amqp message header will have as an
 entry *sum* with default value 'd,md5_checksum_on_data'.
@@ -512,12 +538,14 @@ File Detection Strategy Table
 DEVELOPER SPECIFIC OPTIONS
 ==========================
 
-**[-debug|--debug]**
+[-debug|--debug]
+----------------
 
 Active if *-debug|--debug* appears in the command line... or
 *debug* is set to True in the configuration file used.
 
-**[-r|--randomize]**
+[-r|--randomize]
+----------------
 
 Active if *-r|--randomize* appears in the command line... or
 *randomize* is set to True in the configuration file used.
@@ -526,7 +554,8 @@ by block because the *blocksize* option was set, the block
 posts are randomized meaning that the will not be posted
 ordered by block number.
 
-**[-rr|--reconnect]**
+[-rr|--reconnect]
+-----------------
 
 Active if *-rc|--reconnect* appears in the command line... or
 *reconnect* is set to True in the configuration file used.
@@ -534,12 +563,14 @@ Active if *-rc|--reconnect* appears in the command line... or
 by block because the *blocksize* option was set, there is a
 reconnection to the broker everytime a post is to be sent.
 
-**[--on_heartbeat]**
+[--on_heartbeat]
+----------------
 
 Every *heartbeat* seconds, the *on_heartbeat* is invoked.  For periodic operationsl that happen relatively rarely,
 scale of many minutes, usually. The argument is actually a duration, so it can be expressed in various time units:  5m (five minutes),  2h (two hours), days, or weeks. 
 
-**[--on_watch]**
+[--on_watch]
+------------
 
 Every *sleep* seconds, file system changes occurred are processed in a batch.  Prior to this processing,
 the *on_watch* plugin is invoked.  It can be used to put a file in one of the watched directories... 
