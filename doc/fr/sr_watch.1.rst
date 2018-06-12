@@ -28,7 +28,7 @@ Ses arguments sont très similaires à `sr_post <sr_post <sr_post.1.rst>`_.
 Dans la suite MetPX-Sarracenia, l'objectif principal est d'afficher la disponibilité et modifications 
 de ses dossiers. Les abonnés utilisent *sr_subscribe* pour consommer le message et télécharger les fichiers changés.
 
-Les messages sont envoyés à un serveur AMQP, également appelé courtier, spécifié avec l'option [ *-b|--b|--broker broker_url* ].
+Les messages sont envoyés à un serveur AMQP, également appelé courtier, spécifié avec l'option [ *-pb|--post_broker broker_url* ].
 
 CREDENTIALS
 -----------
@@ -137,7 +137,8 @@ ARGUMENTS ET OPTIONS
 Veuillez vous référer à la page `sr_subscribe(1) <sr_subscribe.1.rst>`_ manuel pour une description détaillée des éléments suivants
 les paramètres communs et les méthodes de spécification.
 
-**[--blocksize <valeur>>]** **
+[--blocksize <valeur>>]
+-----------------------
 
 la valeur doit être l'une des valeurs suivantes: :
 
@@ -163,13 +164,18 @@ comme une seule pièce.
 La valeur du *blocksize* est un entier qui peut être suivi de l'indicatif *[B|K|M|M|G|G|T]* :
 pour les Bytes, Kilobytes, Megabytes, Gigabytes, Gigabytes, Terabytes respectivement.  Toutes ces références sont des pouvoirs de 2.
 
-**[-b|--courtier <courtier>]****.
+[-b|--courtier <courtier>]
+--------------------------
+
        courtier* est le courtier auquel se connecter pour envoyer le courrier.
 
-**[-c|--config <configfile>]** **[-c|--config <configfile>]**
+[-c|--config <configfile>]
+--------------------------
+
        Un fichier rempli d'options.
 
-**[--delete <boolean>]**
+[--delete <boolean>]
+--------------------
 
 En mode force_polling, supposons que les répertoires se vident, de sorte que chaque fichier dans chaque *path*.
 devrait être affiché à chaque carte d'électeur, au lieu d'en afficher de nouvelles.  Utiliser la mise en cache 
@@ -178,15 +184,17 @@ pour ignorer les fichiers qu´on a déjà vu. En mode polling, la vitesse de rec
 de la performance recherchée.
 
 
-**[-pbd|--post_base_base_dir <path>]** **
+[-pbd|--post_base_base_dir <path>]
+----------------------------------
 
 L'option *base_dir* fournit le chemin du répertoire qui, lorsqu'il est combiné avec l'url relative de *source url*,
 donne le chemin absolu local vers le fichier de données à enregistrer.
 
-**[-e|--événements <événement|événement|événement|événement|.....>]**
+[-e|--events <événement|événement|événement|événement|...>]
+---------------------------------------------------------------
 
 Une liste des types d'événements à surveiller séparés par un 'symbole de tuyau'.
-Événements disponibles : create, delete, follow, link, modify, poll
+events disponibles : create, delete, follow, link, modify, poll
 Par défaut : ils sont tous par défaut, à l'exception de poll.
 
 Les événements *create*, *modify* et *delete* reflètent ce qui est attendu : un fichier en cours 
@@ -200,12 +208,14 @@ S'il n'est pas défini, aucun événement de lien symbolique ne sera jamais post
    et un champ *newname* set, et un second post avec le nouveau nom, et un champ *oldname* set. 
    Cela permet aux abonnés d'effectuer un renommage réel et d'éviter de déclencher un téléchargement lorsque c'est possible.
 
-**[-ex|--exchange <échange>]** **
+[-ex|--exchange <échange>]
+--------------------------
 
 sr_watch publie à une échange nommée *xs_*"broker_username" par défaut.
 Utilisez l'option *exchange* pour remplacer cette valeur par défaut.
 
-**[-fp|--force_polling <boolean>]****.
+[-fp|--force_polling <boolean>]
+-------------------------------
 
 Par défaut, sr_watch sélectionne une méthode optimale (en fonction du système d'exploitation) pour 
 regarder un répertoire.   Pour les grands arbres, la méthode optimale peut être beaucoup plus 
@@ -229,7 +239,8 @@ NOTE::
   l'arbre entier chaque fois (en ignorant mtime)
 
 
-**[-fs|--follow_symlinks <boolean>]****.
+[-fs|--follow_symlinks <boolean>]
+---------------------------------
 
 L'option *follow_symlinks* provoque la traversée de liens symboliques. si *follow_symlinks* est activé.
 et que la destination d'un lien symbolique est un fichier, alors ce fichier de destination doit être posté ainsi que le lien.
@@ -237,7 +248,8 @@ Si la destination du lien symbolique est un répertoire, alors le répertoire do
 surveillé par sr_watch.   Si *follow_symlinks* est faux, alors aucune action liée à la destination de la symbolique
 est pris.
 
-**[-header <nom>=<valeur>]** 
+[-header <nom>=<valeur>]
+------------------------
 
 Ajout d'un en-tête <nom> avec la valeur donnée aux avis. Utilisé pour passer des chaînes 
 de caractères en tant que métadonnées dans le fichier les publicités visant à améliorer la 
@@ -245,16 +257,19 @@ prise de décision pour les consommateurs.  Doit être utilisé avec parcimonie.
 sur le nombre d'en-têtes pouvant être utilisés, et la réduction de la taille des messages a 
 des impacts sur la performance importantes.
 
-**[-h|-help|--help]**
+[-h|-help|--help]
+-----------------
 
 Afficher les options du programme.
 
-**[-l <logpath>]**
+[-l <logpath>]
+--------------
 
 Définissez un fichier dans lequel tous les journaux seront écrits.
 Le fichier journal tournera à minuit et sera conservé pour un historique de 5 fichiers.
 
-**[-p|--path path]**
+[-p|--path path]
+----------------
 
 **sr_post** évalue le chemin du système de fichiers à partir de l'option **path**.
 et éventuellement le **post_base_dir** si l'option est utilisée.
@@ -272,7 +287,8 @@ Les avis AMQP sont faites des champs arborescents, l'heure de l'avis,
 la valeur de l'option **url** et les chemins résolus vers lesquels ont été retirés.
 le *post_base_dir* présent et nécessaire.
 
-**[-real|--realpath <boolean>]** 
+[-real|--realpath <boolean>]
+----------------------------
 
 L'option realpath résout les chemins donnés à leurs chemins canoniques, éliminant 
 toute indirection via des liens symboliques. Le comportement améliore la capacité 
@@ -282,18 +298,21 @@ traversée des liens symboliques. Ceci est implémenté pour préserver le
 comportement d'une itération précédente de sr_watch, mais il n'est pas clair 
 s'il est nécessaire ou utile. Vos commentaires sont les bienvenus.
 
-**[-rn|--rename <path>]** **
+[-rn|--rename <path>]
+---------------------
 
 Avec l'option *rename*, l'utilisateur peut
 suggérer un chemin de destination pour ses fichiers. Si le
 se termine par'/', il suggère un chemin d'accès au répertoire......
 Si ce n'est pas le cas, l'option spécifie un renommage de fichier.
 
-**[-sub|--subtopic <key>]** **
+[-sub|--subtopic <key>]
+-----------------------
 
 La valeur par défaut du sous-thème peut être écrasée par l'option *subtopic*.
 
-**[--sleep <time> <time> ]** **
+[--sleep <time> <time> ]
+------------------------
 
 Le temps d'attente entre la génération d'événements.  Lorsque les fichiers sont écrits 
 fréquemment, c'est contre-productif de produire un avis pour chaque changement, car 
@@ -303,7 +322,8 @@ peut regrouper tous les changements apportés à un dossier durant l´intervalle
 de produire un seul avis.
 
 
-**[-to|--to <destination>,<destination>,<destination>,..... ]**
+[-to|--to <destination>,<destination>,<destination>,... ]
+---------------------------------------------------------
 
   Une liste séparée par des virgules des grappes de destination auxquelles les données affichées doivent être envoyées.
   Demandez aux administrateurs de pompes la liste des destinations valides.
@@ -313,17 +333,19 @@ de produire un seul avis.
 ... note: : 
   FIXME: une bonne liste de destination devrait pouvoir être découverte.
 
-**[-tp|--topic_prefix <key>]** **
+[-tp|--topic_prefix <key>]
+--------------------------
 
 Par défaut, le sujet est fait du topic_prefix par défaut : version *V02*, une action *post*..,
 suivi du sous-thème par défaut : le chemin du fichier séparé par des points (le point 
 étant le séparateur de thème pour amqp). Vous pouvez écraser le préfixe du sujet
 en définissant cette option.
 
-**[-u|--url <url>]** **
+[-pbu|--post_base_url <url>]
+----------------------------
 
-L'option **url** définit le protocole, les informations d'identification, l'hôte et le port
-sous que le produit peut être récupéré. 
+L'option **post_base_url** définit le protocole, les informations d'
+identification, l'hôte et le port sous que le produit peut être récupéré. 
 
 Le corps d´un avis contient trois champs : l'heure de l'avis,
 cette valeur **base_url** et le chemin****, relatif à *post_base_dir*, si nécessaire.
@@ -331,7 +353,8 @@ cette valeur **base_url** et le chemin****, relatif à *post_base_dir*, si néce
 la concaténation des deux derniers champs de l'avis définit l´URL complete que les abonnés 
 utiliseront pour télécharger le produit.
 
-**[sum|--sum <string>]**
+[sum|--sum <string>]
+--------------------
 
 Tous les avis incluent une somme de contrôle.  Il est placé dans un en-tête du 
 message amqp qui aura la forme d'un entrée *sum* avec la valeur par défaut 
@@ -354,8 +377,8 @@ D'autres algorithmes peuvent être contribués. Voir la Programmer´s Guide.
 Stratégies de détection de fichiers
 -----------------------------------
 
-Le travail fondamental de sr_watch est de remarquer quand les fichiers sont disponibles pour être transférés.
-La stratégie appropriée varie en fonction de :
+Le travail fondamental de sr_watch est de remarquer quand les fichiers sont 
+disponibles pour être transférés. La stratégie appropriée varie en fonction de:
 
  le **nombre de fichiers de l'arbre** à surveiller, 
  le délai **minimum pour signaler les changements** aux fichiers qui est acceptable, et
@@ -545,12 +568,14 @@ Tableau de stratégie de détection de fichiers
 OPTIONS SPÉCIFIQUES AUX DÉVELOPPEURS
 ====================================
 
-**[-debug|--debug]**
+[-debug|--debug]
+----------------
 
 Active si *-debug|--debug* apparaît dans la ligne de commande.... ou
 *debug* est réglé sur True dans le fichier de configuration utilisé.
 
-**[-r|--randomize]**
+[-r|--randomize]
+----------------
 
 Actif si *-r|--r|--randomize* apparaît dans la ligne de commande.... ou
 randomomize* est réglé sur True dans le fichier de configuration utilisé.
@@ -559,7 +584,8 @@ par bloc parce que l'option *blocksize* a été définie, le bloc
 sont aléatoires, ce qui signifie que les messages ne seront pas affichés.
 classés par numéro de bloc.
 
-**[-rr|--reconnect]**
+[-rr|--reconnect]
+-----------------
 
 Actif si *-rc|--reconnect* apparaît dans la ligne de commande.... ou
 Reconnect* est réglé sur True dans le fichier de configuration utilisé.
@@ -567,7 +593,8 @@ S'il y a plusieurs messages parce que le fichier est annoncé.
 par bloc parce que l'option *blocksize* a été définie, il y a un
 la reconnexion au courtier à chaque fois qu'un courrier doit être publié.
 
-**[--on_heartbeat]**
+[--on_heartbeat]
+----------------
 
 Toutes les *heartbeat* secondes, le *on_heartbeat* est invoqué.  
 Pour les opérations périodiques, cela se produit relativement rarement,
@@ -575,7 +602,8 @@ l'échelle de plusieurs minutes, habituellement. L'argument est en fait une
 durée, de sorte qu'il peut être exprimé en différentes unités de temps :  5m 
 (cinq minutes), 2h (deux heures), jours ou semaines.
 
-**[--on_watch]**
+[--on_watch]
+------------
 
 Toutes les *sleep* secondes, les modifications apportées au système de 
 fichiers sont traitées par lots.  Avant ce traitement, le plugin *on_watch* 

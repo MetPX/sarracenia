@@ -252,9 +252,9 @@ aussi spécifier cette option dans un fichier de configuration. Pour ce faire,
 tilisez le formulaire long sans le'--', et mettez sa valeur séparée par un 
 espace. Les éléments suivants sont tous équivalents :
 
-  **url <url>**.
-  **-u <url>**.
-  **--url <url <url>**.
+  **post_base_url <url>**.
+  **-pbuu <url>**.
+  **--post_base_url <url>**.
 
 Les paramètres d'un fichier.conf individuel sont lus après le fichier *default.conf*.
 et peut donc remplacer les valeurs par défaut. Options spécifiées sur
@@ -442,21 +442,24 @@ Une fois connecté à un courtier AMQP, l'utilisateur doit créer une file d'att
 
 Mise en file d'attente sur broker :
 
-- **nom_de_queue <nom> (par défaut : q_<brokerUser>.<programName>.<configName>.<configName>)**
+- **queue_name <nom> (par défaut : q_<brokerUser>.<programName>.<configName>.<configName>)**
 - **durable <boolean> (par défaut : False)**
 - **expire <durée> (par défaut : 5m == cinq minutes. À OUTREPASSER)**
 - **message-ttl <durée> (par défaut : Aucun)**
 - **prefetch <N> (par défaut : 1)****
 - **reset <boolean> (par défaut : False)**
-- **restaurer <boolean> (par défaut : False)**
-- **restore_to_to_queue <queuename> (par défaut : Aucun)**
-- **sauvegarder <boolean> (par défaut : False)**
+- **restore <boolean> (par défaut : False)**
+- **restore_to_queue <queuename> (par défaut : Aucun)**
+- **save <boolean> (par défaut : False)**
 
 Habituellement, les composants devinent des valeurs par défaut raisonnables pour
 toutes ces valeurs et les utilisateurs n'ont pas besoin de les définir.  Pour 
 les cas moins habituels, l'utilisateur peut avoir besoin a remplacer les valeurs
 par défaut. La file d'attente est l'endroit où les avis sont conservés
 sur le serveur pour chaque abonné.
+
+queue_name <nom> (par défaut : q_<brokerUser>.<programName>.<configName>.<configName>)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Par défaut, les composants créent un nom de file d'attente qui doit être unique.
 Le nom_de_la_files_d'attente par défaut composants créent suit.. :  
@@ -465,8 +468,14 @@ peuvent remplacer la valeur par défaut à condition qu'elle commence par
 **q_<brokerUser>****. Certaines variables peuvent aussi être utilisées dans 
 le nom_de_la_file d'attente comme **${BROKER_USER},${PROGRAMME},${CONFIG},${HOSTNAME}******
 
+durable <boolean> (par défaut : False)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 L'option **durable**, si elle est définie sur True, signifie que la file d'attente est écrite.
 sur disque si le courtier est redémarré.
+
+expire <durée> (par défaut : 5m == cinq minutes. À REGLER)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 L'option **expire** est exprimée sous forme de durée.... elle fixe la durée de vie...
 une file d'attente sans connexions. Un entier brut est exprimé en secondes, si le suffixe m,h.d,w
@@ -484,10 +493,15 @@ les ressources du courtier seront assignées, et au début de l'utilisation
 surchargés de très peu d'argent. de longues files d'attente pour les 
 expériences restantes.
 
+message-ttl <durée> (par défaut : Aucun)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 L'option **message-ttl** (*message time to live*) définit la durée de vie
 d´un message dans la file d'attente. Passé ce délai, le message est retiré de 
 la file d'attente par le courtier.
+
+prefetch <N> (par défaut : 1)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 L'option **prefetch** définit le nombre de messages à récupérer en une seule fois. 
 Lorsque plusieurs instances sont en cours d'exécution et que prefetch est 4, 
@@ -497,6 +511,9 @@ Partage optimal de la charge, le préréglage doit être réglé aussi bas que p
 Cependant, dans les cas de connexion longue distance, il est nécessaire d'augmenter 
 ce nombre, afin de cacher la latence de l'aller-retour, donc un paramètre
 de 10 ou plus peut être nécessaire.
+
+reset <boolean> (par défaut : False)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Lorsque **reset** est réglé et qu'un composant est (re)démarré, sa file d'attente 
 est supprimé (s'il existe déjà) et recréé d'après les données du composant au démarrage.
@@ -510,11 +527,17 @@ effacé.
 Le protocole AMQP définit d'autres options de file d'attente qui ne sont pas exposées.
 via Sarracenia, car l´application choisit les valeurs appropriées.
 
-L'option **sauve** est utilisée pour lire les messages de la file d'attente, les écrire
+save <boolean> (par défaut : False)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+L'option **save** est utilisée pour lire les messages de la file d'attente, les écrire
 dans un fichier local, afin de les sauvegarder pour un traitement ultérieur, au lieu de les traiter
 immédiatement.  Voir la section " Destination de l'expéditeur non disponible " pour plus de détails.
 L'option **restore** met en œuvre la fonction inverse, la lecture à partir du fichier.
 pour traitement.
+
+restore_to_queue <queuename> (par défaut : Aucun)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Si **restore_to_queue** est spécifié, alors plutôt que de déclencher le mode local
 les messages restaurés sont enregistrés dans un échange temporaire.
@@ -636,8 +659,8 @@ Veuillez consulter diverses ressources Internet pour obtenir de plus amples rens
  - `https://fr.wikipedia.org/wiki/Expression_r%C3%A9guli%C3%A8re <https://fr.wikipedia.org/wiki/Expression_r%C3%A9guli%C3%A8re>`_
 
 
-Regexp en Sarracenia
-~~~~~~~~~~~~~~~~~~~~
+accept, reject, accept_unmatch
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - **accept <expression régulière (regexp)>  (facultatif)**.
 - **reject <expression régulière (regexp)> (facultatif)**.

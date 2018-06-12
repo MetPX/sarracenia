@@ -168,7 +168,7 @@ Liste de contrôle :
 
 
 Tests
--------
+-----
 
 Avant de livrer du code à la branche maître, comme mesure d'assurance qualité, il faut exécuter tous les auto-tests disponibles.
 Il est supposé que les modifications spécifiques du code ont déjà été apportées à l'unité.
@@ -207,7 +207,7 @@ de façon beaucoup plus détaillée.  Avant de pouvoir exécuter le flow_test,
 certains pré-requis doivent être pris en compte.
 
 Installation locale sur le poste de travail
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Le flow_test invoque la version de metpx-sarracenia qui est installée sur le système,
 et non pas ce qu'il y a dans l'arbre de développement.  Il est nécessaire d'installer le paquet sur
@@ -276,7 +276,7 @@ avec les informations d'identification stockées pour localhost::
     suite.
 
 Configuration de l'environnement de test de débit
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Une partie du test de flux exécute un serveur sftp et utilise les fonctions client sftp.
 Besoin du paquet suivant pour cela::
@@ -793,15 +793,16 @@ Pour publier une version, il faut le faire :
 Schéma de versionnement
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Chaque version sera versionnée en tant que ``<version du protocole>.<YY>.<MMM> <segment>````.
+Chaque version sera versionnée en tant que ``<version du protocole>.<YY>.<MMM> <segment>``
 
 Où :
 
-La version protocole**** est la version message. Dans les messages Sarra, ils sont tous préfixés avec v02 (pour le moment).
-YYYY** est les deux derniers chiffres de l'année de la sortie initiale de la série.
-MM**** est un numéro de mois à DEUX chiffres, c'est-à-dire pour le mois d'avril : 04.
-Le segment**** est ce qui serait utilisé au sein d'une série.
-  de pep0440 :
+La version protocole est la version message. Dans les messages Sarra, ils 
+sont tous préfixés avec v02 (pour le moment).  **YYYY** est les deux derniers
+chiffres de l'année de la sortie initiale de la série.  **MM** est un numéro
+de mois à DEUX chiffres, c'est-à-dire pour le mois d'avril : 04.
+Le segment est ce qui serait utilisé au sein d'une série.  de PEP0440 ::
+
   X.YaN # Alpha release
   X.YbN # Lancement de la version bêta
   X.YrcN # Release Candidate
@@ -852,8 +853,11 @@ Notez que la même version ne peut jamais être téléchargée deux fois.
 Un script de commodité a été créé pour construire et publier le fichier *wheel*. Il suffit d'exécuter ``publish-to-pypi.sh`` et il vous guidera dans cette voie.
 
 .. Note ::
-   Lorsque vous téléchargez des paquets pré-version (alpha, bêta ou RC), PYpi ne les met pas à la disposition des utilisateurs par défaut.
-   Pour une mise à niveau sans faille, les premiers testeurs doivent fournir le commutateur ``-précédent``à pip::
+
+   Lorsque vous téléchargez des paquets pré-version (alpha, bêta ou RC), PYpi
+   ne les met pas à la disposition des utilisateurs par défaut.
+   Pour une mise à niveau sans faille, les premiers testeurs doivent fournir le
+   commutateur ``-précédent`` à pip::
 
        pip3 install --upgrade --pre metpx-sarracenia 
 
@@ -868,14 +872,18 @@ Launchpad
 Construction automatisée
 ++++++++++++++++++++++++
 
-Assurez-vous que le miroir de code est mis à jour en vérifiant les détails **Import** en vérifiant `cette page pour la sarracénie <https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/+git/trunk>`_
-Si le code n'est pas à jour, faites **Import Now**, et attendez quelques minutes pendant qu'il est mis à jour.
-Assurez-vous que le miroir de code est mis à jour en vérifiant les détails **Import** en vérifiant `cette page pour sarrac <https://code.launchpad.net/~ssc-hpc-chp-chp-spc/metpx-sarrac/+git/master>`__`.
-Si le code n'est pas à jour, faites **Import Now**, et attendez quelques minutes pendant qu'il est mis à jour.
-une fois que le référentiel est à jour, procéder à la demande de compilation.
-Allez au `sarracenia release <https://code.launchpad.net/~ssc-hpc-hpc-chp-spc/+recipe/sarracenia-release>`_ recette (*recipe*)
-Cliquez sur le bouton **Request build(s)** pour créer une nouvelle version.
-Allez au `Sarrac release 
+Assurez-vous que le miroir de code est mis à jour en vérifiant les détails
+**Import** en vérifiant `cette page pour la sarracénie 
+<https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/+git/trunk>`_
+Si le code n'est pas à jour, faites **Import Now**, et attendez quelques 
+minutes pendant qu'il est mis à jour. Assurez-vous que le miroir de code est
+mis à jour en vérifiant les détails **Import** en vérifiant `cette page pour
+sarrac <https://code.launchpad.net/~ssc-hpc-chp-chp-spc/metpx-sarrac/+git/master>`__`.
+Si le code n'est pas à jour, faites **Import Now**, et attendez quelques
+minutes pendant qu'il est mis à jour.  Une fois que le référentiel est à jour,
+procéder à la demande de compilation.  Allez 
+au `sarracenia release <https://code.launchpad.net/~ssc-hpc-hpc-chp-spc/+recipe/sarracenia-release>`_ recette (*recipe*)
+et similairement pour sarrac.
 
 Constructions quotidiennes
 ++++++++++++++++++++++++++
@@ -889,7 +897,7 @@ On peut aussi **Demander la construction(s) sur demande si désiré.**
 
 
 Processus manuel
-++++++++++++++
+++++++++++++++++
 
 Le processus de publication manuelle des paquets sur Launchpad ( https://launchpad.net/~ssc-hpc-chp-spc) implique un ensemble plus complexe d'étapes, et donc le script de commodité ``publish-to-launchpad.sh`` sera le moyen le plus facile de le faire. Actuellement, les seules versions supportées sont **trusty** et **xenial**. La commande utilisée est donc::
 
@@ -923,7 +931,7 @@ Exemple::
 
 
 Mise à jour du site Web du projet
-----------------------------
+---------------------------------
 
 Avant mars 2018, le site Web principal du projet était metpx.sf.net.
 Ce site MetPX a été construit à partir de la documentation des différents modules.

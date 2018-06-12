@@ -544,7 +544,7 @@ est installé (visible avec *sr_subscribe list*)
 sortie de l'échantillon::
 
 
-cklab% sr_subscribe list
+   blacklab% sr_subscribe list
    
    packaged plugins: ( /usr/lib/python3/dist-packages/sarra/plugins ) 
             __pycache__     destfn_sample.py       download_cp.py       download_dd.py 
@@ -585,7 +585,7 @@ cklab% sr_subscribe list
 Pour tous les plugins, le préfixe indique comment le plugin doit être utilisé : un file\_ plugin est
 à utiliser avec *on_file*, les plugins *Msg\_* sont à utiliser avec on_message, etc....
 Lorsque les plugins ont des options, les options doivent être placées avant la déclaration du plugin.
-dans le fichier de configuration.
+dans le fichier de configuration::
 
   msg_total_interval 5
   on_message msg_total

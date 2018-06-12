@@ -14,6 +14,7 @@ Publier la disponibilité d'un fichier aux abonnés.
 
 .. contents::
 
+
 SYNOPSIS
 ========
 
@@ -111,11 +112,13 @@ Veuillez vous référer à la page `sr_subscribe(1) <sr_subscribe.1.rst>`_ manue
 description détaillée des éléments suivants les paramètres communs et les méthodes 
 de spécification.
 
-**[-c|--config <configfile>]** 
+[-c|--config <configfile>]
+--------------------------
 
   Une liste des paramètres d'un fichier de configuration.
 
-**[--cache|--suppress_duplicates on|off|999]**
+[--cache|--suppress_duplicates on|off|999]
+------------------------------------------
 
   Lorsque l'on planifie le repostage de répertoires, cette option met en cache
   ce qui a été affiché et n'affichera que des fichiers (ou des parties de fichiers) qui étaient nouveaux.
@@ -124,7 +127,8 @@ de spécification.
   Si la mise en cache est utilisée, **blocksize** doit être réglé à 1 (soit 1 (annoncer le fichier entier).
   ou une taille de bloc fixe), sinon la taille du bloc variera en fonction de la taille du fichier.
 
-**[-p|--path chemin1 chemin1 chemin2 chemin2 .... cheminN]**
+[-p|--path chemin1 chemin1 chemin2 chemin2 .... cheminN]
+--------------------------------------------------------
 
   **sr_post** évalue les chemins du système de fichiers à partir de l'option **path**.
   et éventuellement le **base_dir** si l'option est utilisée.
@@ -134,11 +138,13 @@ de spécification.
   Si un chemin d'accès définit un répertoire, alors tous les fichiers de ce répertoire sont les suivants
   annoncé.
 
-**[-pb|--post_broker <broker>]** **
+[-pb|--post_broker <broker>]
+----------------------------
 
   le courtier auquel la poste est envoyée (publié.)
 
-**[-pbd|--post_base_base_dir <path>]** **
+[-pbd|--post_base_base_dir <path>]
+----------------------------------
 
   L'option *base_dir* fournit le chemin du répertoire qui,
   lorsqu'ils sont combinés avec les chemins d'accès données, 
@@ -149,17 +155,20 @@ de spécification.
   pour file : url's, base_dir n'est généralement pas approprié.  Pour afficher un chemin absolu,
   omettez le paramètre -dr, et spécifiez simplement le chemin complet en argument.
   
-**[-ex|--échange <échange <échange>]** **
+[-ex|--échange <échange <échange>]
+----------------------------------
 
   Sr_post publie à une échange nommée *xs_*"broker_username" par défaut.
   Utilisez l'option *exchange* pour remplacer cette valeur par défaut.
   
-**[-h|-help|--help**
+[-h|-help|--help]
+-----------------
 
   Afficher les options du programme.
 
 
-**[--blocksize <valeur>>]** **
+[--blocksize <valeur>>]
+-----------------------
 
   Cette option contrôle la stratégie de partitionnement utilisée pour poster des fichiers.
   la valeur doit être l'une des valeurs suivantes: :
@@ -197,7 +206,8 @@ de spécification.
   spécifierait '1' pour forcer l'envoi de tous les fichiers en entier (sans partitions.)
 
 
-**[-pbu|--post_base_url <url>]**
+[-pbu|--post_base_url <url>]
+----------------------------
 
   L'option **url** définit le protocole, les informations d'identification, l'hôte et le port sous
   que le produit peut être récupéré.  L'avis en AMQP est faite des trois champs, l'heure de l'annonce,
@@ -206,30 +216,35 @@ de spécification.
   La concaténation des deux derniers champs de l'annonce définit ce que les abonnés utiliseront 
   pour télécharger le produit.
 
-**[-pipe <boolean>>]**
+[-pipe <boolean>>]
+------------------
 
   L'option pipe est pour sr_post pour lire les noms des fichiers à poster à partir de l'entrée 
   standard pour lire à partir de fichiers redirigés, ou sortie en pipeline d'autres commandes. 
   La valeur par défaut est *off*, n'acceptant les noms de fichiers que sur la ligne de commande.
 
-**[--pulse_message <message>]****.
+[--pulse_message <message>]
+---------------------------
 
   Option administrateur pour envoyer un message à tous les abonnés.  Similaire à la 
   fonctionnalité "wall" (sur Linux/UNIX). Lorsque cette option est activée, un message 
   d'impulsion est envoyé, ignorant les paramètres du thème ou les fichiers donnés en argument.
 
-**[--reset]**
+[--reset]
+---------
 
   Quand on a utilisé **--suppress_duplicates|--cache**, cette option vide le cache.
 
 
-**[-rn|--rename <path>]** **
+[-rn|--rename <path>]
+---------------------
 
   Avec l'option *rename*, l'utilisateur peut suggérer un chemin d'accès à ses fichiers. Si le
   se termine par'/', il suggère un chemin d'accès au répertoire......  Si ce n'est pas le cas, 
   l'option spécifie un renommage de fichier.
 
-**[--sleep <time> <time> ]** **
+[--sleep <time> <time> ]
+------------------------
 
    Cette option n'est disponible que dans l'implémentation c (sr_cpost)**.
 
@@ -246,12 +261,14 @@ de spécification.
        certains fichiers ne soient pas affichés. *FIXME: Vrai? à confirmer.*
 
 
-**[-sub|--subtopic <key>]** **
+[-sub|--subtopic <key>]
+-----------------------
 
   La valeur par défaut du sous-thème peut être écrasée par l'option *subtopic*.
 
 
-**[--suppress_duplicates|-sd|-sd|-nd|--no_duplicates|--cache on|off|999]** **
+[--suppress_duplicates|-sd|-sd|-nd|--no_duplicates|--cache on|off|999]
+----------------------------------------------------------------------
 
   Évitez de publier des doublons. Lors de la publication de répertoires, cette option met en cache
   ce qui a été affiché et n'affichera que des fichiers (ou des parties de fichiers) nouveaux.
@@ -266,7 +283,8 @@ de spécification.
   taille des fichiers augmente, et il en résultera beaucoup de transfert de données en double.
 
 
-**[-to|--to <destination>,<destination>,... ]**
+[-to|--to <destination>,<destination>,... ]
+-------------------------------------------
 
   Une liste séparée par des virgules des grappes de destination auxquelles les données publiés 
   doivent être envoyées. Demandez aux administrateurs de pompes la liste des destinations valides.
@@ -275,7 +293,8 @@ de spécification.
 
   FIXME: une bonne liste de destination devrait être découvrable.
 
-**[-sum|--sum <string>]** **
+[-sum|--sum <string>]
+---------------------
 
 
   Tous les avis incluent une somme de contrôle.  Il est placé dans un en-tête du
@@ -294,7 +313,8 @@ de spécification.
 
   D'autres algorithmes peuvent être contribués. Voir la Programmer´s Guide.
 
-**[-tp|--topic_prefix <key>]** **
+[-tp|--topic_prefix <key>]
+--------------------------
 
   *Non utilisé d'habitude*
   Par défaut, le sujet est fait du topic_prefix : version *V02*, une action *post*,
@@ -304,7 +324,8 @@ de spécification.
 
 
 
-**[-header <nom>=<valeur>]** 
+[-header <nom>=<valeur>]
+------------------------
 
   Ajout d'un en-tête <nom> avec la valeur donnée aux annonces. Utilisé pour passer des chaînes de caractères comme métadonnées.
 
@@ -312,7 +333,8 @@ de spécification.
 SPÉCIFIQUE À L'ADMINISTRATEUR
 =============================
 
-**[--queue|--queue_name|-qn] <queue>**
+[--queue|--queue_name|-qn] <queue>
+----------------------------------
 
   Si un client veut qu'un produit soit publié de nouveau,
   l'administrateur du courtier peut utiliser *sr_post* et publier
@@ -332,22 +354,26 @@ SPÉCIFIQUE À L'ADMINISTRATEUR
 OPTIONS SPÉCIFIQUES AUX DÉVELOPPEURS
 ====================================
 
-**[-debug|--debug]**
+[-debug|--debug]
+----------------
 
   afficher plus de messages diagnostique dans les journeaux.
 
-**[-r|--randomize]**
+[-r|--randomize]
+----------------
 
   Si un fichier est comptabilisé dans plusieurs blocs, l'ordre de publication
   est randomisé de façon à ce que l'abonné ne les reçoive pas en ordre.
   
-**[-rc|--reconnect]**
+[-rc|--reconnect]
+-----------------
 
   Si un fichier est affiché dans plusieurs blocs, reconnecter au courtier
   pour chaque publication de block.
 
 
-**[--parts]**
+[--parts]
+---------
 
   L'utilisation habituelle de l'option *blocksize* est décrite ci-dessus.
   l'en-tête *parts* dans les messages produits, mais il existe plusieurs 
