@@ -15,9 +15,9 @@ Sélectionner et télécharger les fichiers publiés
 SYNOPSIS
 ========
 
- sr_subscribe** foreground|start|start|stop|restart|restart|reload|sanity|status fichierDeConfiguration
+ **sr_subscribe** foreground|start|start|stop|restart|restart|reload|sanity|status fichierDeConfiguration
 
- sr_subscribe** cleanup|declare|setup|setup|disable|enable|list|add|remove fichierDeConfiguration
+ **sr_subscribe** cleanup|declare|setup|setup|disable|enable|list|add|remove fichierDeConfiguration
 
 DESCRIPTION
 ===========
@@ -719,13 +719,13 @@ est un option qui a une valeur logique: vrai/faux)
 - **accept    <patron regexp>  (requis sauf si accept_unmatch est True)** 
 - **accept_unmatch   <booléan> (défaut: False)**
 - **attempts     <compte>      (défaut: 3)**
+- **base_dir <chemin>          (défaut: /)**
 - **batch     <compte>         (défaut: 100)**
-- **défaut_mode     <octalint> (défaut: 0 - umask)**
-- **défaut_dir_mode <octalint> (défaut: 0755)**
+- **default_mode     <octalint> (défaut: 0 - umask)**
+- **default_dir_mode <octalint> (défaut: 0755)**
 - **delete    <booléan>>       (défaut: False)**
 - **directory <chemin>         (défaut: .)** 
 - **discard   <booléan>        (défaut: false)**
-- **base_dir <chemin>          (défaut: /)**
 - **flatten   <string>         (défaut: '/')** 
 - **heartbeat <durée>          (défaut: 300 secondes)**
 - **inplace       <booléan>    (défaut: true)**
@@ -744,10 +744,16 @@ est un option qui a une valeur logique: vrai/faux)
 - **timeout     <numéro flottante>         (défaut: 0.0)**
 
 
+attempts <compte> (défaut: 3)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 L'option **attempts** indique combien de fois pour tenter de télécharger 
 les données avant d'abandonner.  La valeur par défaut de 3 devrait être appropriée.
 dans la plupart des cas.  Lorsque l'option **retry** est fausse, le fichier 
 est alors immédiatement abandonné.
+
+retry <booléan> (défaut: True)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Lorsque l'option **retry** est activée (par défaut), l'échec du 
 téléchargement après les **attempts** tentatives (où d'envoi, dans un 
@@ -755,14 +761,23 @@ expéditeur) entraînera l'ajout du message dans un fichier de file d'attente,
 pour réessayer plus tard.  Lorsqu'il n'y a pas de messages prêts à consommer 
 dans la file d'attente de l'AMQP, la file d'attente de réessai sera interrogée.
 
+retry_ttl <durée> (défaut: pareil que expire)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 L'option **retry_ttl** (temps de réessai à vivre) indique combien de 
 temps il faut continuer à essayer d'envoyer.  Un fichier avant qu'il ne 
 soit vieilli d'une file d'attente.  La valeur par défaut est de deux jours.
 Si un fichier n'a pas de a été transféré après deux jours de tentatives, 
 il est jeté.
 
+timeout <numéro flottante> (défaut: 0.0)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 L'option **timeout**, définit le nombre de secondes d'attente avant l'annulation d'un appel.
 connexion ou transfert de téléchargement (appliqué par tampon pendant le transfert).
+
+inflight <chaine> (défaut: .tmp où NONE si post_broker est setté)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 L'option **inflight** définit comment ignorer les fichiers lors de leur transfert
 (*en vol* entre deux systèmes.) Un mauvais réglage de cette option provoque
@@ -794,10 +809,12 @@ C'est aussi la valeur par défaut lorsqu'un *post_broker* est donné, ce qui
 indique qu'un autre processus va être notifié après la livraison, par un
 message publié au post_broker.
 
+delete <booléan> (défaut: False)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Lorsque l'option **supprimer** est activée, une fois le téléchargement 
 terminé avec succès, l'abonné supprimera le fichier à la source amont.  
 utile pour des tests, mais la valeur par défaut est false.
-
 
 L'option **batch** est utilisée pour indiquer le nombre de fichiers à 
 transférer avec une connexion, avant qu'elle ne soit démolie et rétablie.
@@ -807,6 +824,9 @@ Pour la plupart des situations habituelles, la valeur par défaut est très bien
 on pourrait l'augmenter pour réduire les frais généraux de transfert. 
 Il ne sert que pour le fichiers les protocoles de transfert (e.g. SFTP), pas 
 les protocoles HTTP pour le moment.
+
+directory <chemin> (défaut: .)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 L´option *directory* définit où placer les fichiers sur votre serveur.
 Combiné avec les options **accept** / **reject**, l'utilisateur peut sélectionner 
@@ -833,6 +853,9 @@ clause de rejet ou d'acceptation ne correspond.
         reject    .*Reg.*
         accept    .*GRIB.*
 
+
+mirror <booléan> (défaut: false)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 L'option **mirror** peut être utilisée pour refléter l'arborescence dd.weather.gc.ca des fichiers.
 Si réglé sur **True** le répertoire donné par l'option **directory**,
@@ -885,6 +908,9 @@ NOTE::
     alors que l'expression : .*GIF correspond au nom entier.
 
 
+flatten <string> (défaut: '/')
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 L'option **flatten** (aplatir) est utilisée pour définir un caractère de 
 séparation. La valeur par défaut ('/') annule l'effet de cette option.  
 Ce caractère remplace le'/' dans l'url.  et créer un fichier "flatten" à 
@@ -923,6 +949,9 @@ Référez-vous à *source_from_exchange* pour un exemple d'utilisation.  Notez q
 option explicite dans un fichier de confiuguration Sarracenia prime sur une variable 
 du même nom dans l'environnement.
 
+base_dir <chemin> (défaut: /)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 **base_dir** fournit le chemin d'accès au répertoire qui, lorsqu'il est combiné avec 
 le chemin d'accès relatif dans la notification donne le chemin absolu du fichier à envoyer.
 La valeur par défaut est None, ce qui signifie que le chemin d'accès dans la 
@@ -934,6 +963,9 @@ notification est le chemin absolu.
     qu'elle se téléchargera ? ou supposera-t-elle qu'elle est locale ?
     dans un expéditeur.
 
+inplace <booléan>  (défaut: true)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Les fichiers volumineux peuvent être envoyés en une série de parties, plutôt que tous en même temps.
 Lors du téléchargement, si **inplace** est vrai, ces parties seront ajoutées au fichier.
 d'une manière ordonnée. Chaque partie, après son insertion dans le fichier, est publié aux abonnés.
@@ -943,6 +975,9 @@ ne verra jamais que quelques pièces, pas l'intégralité, des fichiers en plusi
 L'option **inplace** est *True* par défaut.
 En fonction de **inplace** et si le message était une partie, le chemin d'accès peut
 changer à nouveau (en ajoutant un suffixe de pièce si nécessaire).
+
+outlet post|json|url (defaut: post)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 L'option **outlet** est utilisée pour permettre l'écriture des messages dans un fichier au lieu de
 l'affectation à un courtier. Les valeurs d'argument valables sont :
@@ -975,6 +1010,9 @@ FIXME : L'option **outlet** est issue de l'implémentation C ( *sr_cpump*) et el
 a été beaucoup utilisé dans l'implémentation de python. 
 
 
+overwrite <booléan> (défaut: false)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 L'option **overwrite**,si elle est définie sur false, évite les téléchargements 
 inutiles dans ces conditions:
 
@@ -984,9 +1022,16 @@ inutiles dans ces conditions:
 
 La valeur par défaut est True (écraser sans vérifier).
 
+
+discard <booléan> (défaut: false)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 L'option **discard**, si elle est réglée sur true, supprime le fichier une 
 fois téléchargé. Cette option peut être utile pour déboguer ou tester une
 configuration.
+
+source_from_exchange <booléan> (défaut: False)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 L'option **source_from_exchange** est principalement destinée aux administrateurs.
 Si les messages sont reçus directement d'une *source* de données, l'échange utilisé 
@@ -1012,9 +1057,15 @@ des données injectées. Il est généralement combiné avec: :
   
 Pour que les données arrivent dans l'arbre de format standard.
 
+heartbeat <durée> (défaut: 300 secondes)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 L'option **heartbeat** définit la fréquence d'exécution du traitement périodique 
 déterminé par la liste des plugins on_heartbeat. Par défaut, il imprime un message 
 de journal à chaque intervale.
+
+suppress_duplicates <off|on|999> (défaut: off)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Lorsque **suppress_duplicates** (aussi **cache**) est mis à une valeur non nulle, 
 chaque nouveau message est comparé aux précédents reçus, pour voir s'il s'agit d'un 
@@ -1033,21 +1084,24 @@ et à mesure que le fichier grandit.
 
 **La cache pour supprimer les doublons est locale à chaque instance** 
 
-Lorsque N instances partagent une file d´attente, la première fois qu'un message est reçu, il 
-pourrait être choisi par une instance, et quand une copie sera reçue, il est 
-probable qu'il sera pris en charge par une autre instance. Pour une suppression 
-efficace des doublons avec les instances**, il faut **déployer deux couches d'abonnés**. 
-Il faut une **première couche d'abonnés (sr_shovels)** avec suppression des doublons désactivée,
-et l´option *post_exchange_split* activé, ce qui route les messages aux instance
-selon leur checksum vers une **seconde couche de d´abonnés (sr_winnow) dont les 
-caches de suppression de doublons sont actives. 
+Lorsque N instances partagent une file d'attente, la première fois qu'un message
+est reçu, il pourrait être choisi par une instance, et quand une copie sera 
+reçue, il est probable qu'il sera pris en charge par une autre instance. Pour
+une suppression efficace des doublons avec les instances**, il faut **déployer
+deux couches d'abonnés**. Il faut une **première couche d'abonnés (sr_shovels)**
+avec suppression des doublons désactivée, et l´option *post_exchange_split*
+activé, ce qui route les messages aux instance selon leur checksum vers une 
+**seconde couche de d´abonnés (sr_winnow) dont les caches de suppression de
+doublons sont actives. 
 
-Lorsque **kbytes_ps** est supérieur à 0, le processus tente de respecter cette limite de
-vitesse en kilo-octets par seconde... ftp,ftps,ou sftp)
+Lorsque **kbytes_ps** est supérieur à 0, le processus tente de respecter
+cette limite de vitesse en kilo-octets par seconde... ftp,ftps,ou sftp)
 
-**FIXME** : kbytes_ps.... implémenté uniquement par l'expéditeur ? ou l'abonné également, uniquement les données, ou les messages également ?
+**FIXME** : kbytes_ps.... implémenté uniquement par l'expéditeur ? ou 
+l'abonné également, uniquement les données, ou les messages également ?
 
-**default_mode, default_dir_mode, preserve_modes**,
+default_mode, default_dir_mode, preserve_modes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Les bits de permission sur les fichiers de destination écrits sont contrôlés 
 par les directives *preserve_mode*.  *preserve_modes* appliquera les permissions de 
@@ -1058,6 +1112,9 @@ système d'exploitation par défaut (sur linux, contrôlé par les paramètres u
 déterminera les permissions de fichiers. (notez que l'option *chmod* est 
 interprétée comme un synonyme de *default_mode*, et *chmod_dir* est un 
 synonyme de *default_dir_mode*).
+
+recompute_chksum <booléan> (défaut: False)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Pour chaque téléchargement, la somme de contrôle est calculée lors du 
 transfert. Si **recompute_chksum** est réglé sur Vrai, et la somme de contrôle
@@ -1468,10 +1525,14 @@ le courtier suivant, l'utilisateur définit les options suivantes :
  - **[--blocksize <valeur>]            (défaut: 0 (auto))**
  - **[--outlet <post|json|url>]            (défaut: post)**
  - **[-pbd|--post_base_dir <path>]     (optionelle)**
- - **post_exchange     <name>         (défaut: xpublic)**
- - **post_exchange_split   <number>   (défaut: 0)**
- - **post_url          <url>          (MANDATORY)**
- - **on_post           <script>       (défaut: None)**
+ - **post_exchange           <name>    (défaut: xpublic)**
+ - **post_exchange_split   <number>    (défaut: 0)**
+ - **post_base_url            <url>    (MANDATORY)**
+ - **on_post               <script>    (défaut: None)**
+
+
+[--blocksize <valeur>] (défaut: 0 (auto))
+-----------------------------------------
 
 L´option **blocksize** contrôle la stratégie de partitionnement utilisée pour poster des fichiers.
 la valeur doit être l'une des valeurs suivantes: :
@@ -1490,19 +1551,28 @@ L'option *outlet*, implémentée uniquement dans *sr_cpump*, permet la sortie fi
 d'être autre chose qu'un message AMQP.  Voir `sr_cpump(1) <sr_cpump.1.rst>`_ pour 
 plus de détails.
 
+[-pbd|--post_base_dir <path>] (optionelle)
+------------------------------------------
+
 L'option *post_base_dir* fournit le chemin du répertoire qui, lorsqu'il est 
 combiné (ou trouvé) dans le chemin d'accès donné, donne le chemin absolu local 
-vers le fichier de données à enregistrer. La *post_document_root* du chemin sera 
-supprimée du avis. Pour sftp : url's il peut être approprié de 
-spécifier un chemin relatif à un compte utilisateur.
-Un exemple de cette utilisation serait :  -pbd ~user -url sftp:user@host
+vers le fichier de données à enregistrer. La *post_base_dir* du chemin sera 
+supprimée du avis. Pour sftp : url's il peut être approprié de spécifier un
+chemin relatif à un compte utilisateur.  Un exemple de cette utilisation 
+serait :  -pbd ~user -url sftp:user@host
 pour file : url's, base_dir n'est généralement pas approprié.  Pour publier 
 un chemin absolu, omettez le paramètre -pbd, et spécifiez simplement le chemin 
 complet en argument.
 
-L'option **url** définit comment obtenir le fichier.... il définit le protocole,
-hôte, port, et optionnellement, l'utilisateur.  C'est une bonne pratique de ne 
-pas inclure les mots de passe dans l´URL.
+post_base_url <url> (MANDATORY)
+-------------------------------
+
+L'option **post_base_url** définit comment obtenir le fichier.... il définit
+le protocole, hôte, port, et optionnellement, l'utilisateur.  C'est une 
+bonne pratique de ne pas inclure les mots de passe dans l´URL.
+
+post_exchange <name> (défaut: xpublic)
+--------------------------------------
 
 L'option **post_exchange**, qui permet d'échanger la nouvelle notification.
 sera publié.  Dans la plupart des cas, il s'agit d'un'xpublic'.
@@ -1510,6 +1580,9 @@ sera publié.  Dans la plupart des cas, il s'agit d'un'xpublic'.
 Chaque fois qu'une avis se produit pour un produit, un utilisateur peut 
 définir de déclencher un script. L'option **on_post** serait utilisée pour faire 
 une telle configuration.
+
+post_exchange_split <number> (défaut: 0)
+----------------------------------------
 
 L'option **post_exchange_split** ajoute un suffixe à deux chiffres résultant d'une
 division entière du dernier digit de la somme de contrôle, afin de répartir les 
