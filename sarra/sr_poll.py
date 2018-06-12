@@ -289,7 +289,7 @@ class sr_poll(sr_post):
         # try registered do_poll first... might overload defaults
 
         try:
-                if   scheme in self.do_pools :
+                if   scheme in self.do_polls :
                      self.logger.debug("using registered do_poll for %s" % scheme)
                      do_poll = self.do_polls[scheme]
                      ok = do_poll(self)
@@ -308,6 +308,12 @@ class sr_poll(sr_post):
              except : from sarra.sr_sftp import sr_sftp
              self.dest = sr_sftp(self)
 
+        # user defined poll scripts
+        # if many are configured, this one is the last one in config
+        if self.do_poll :
+           ok = self.do_poll(self)
+           return ok
+
         # standard poll to post new urls
 
         if self.dest != None :
@@ -317,9 +323,9 @@ class sr_poll(sr_post):
         # user defined poll scripts
         # if many are configured, this one is the last one in config
 
-        if self.do_poll :
-           ok = self.do_poll(self)
-           return ok
+        #if self.do_poll :
+        #   ok = self.do_poll(self)
+        #   return ok
 
         # something went wrong
 
