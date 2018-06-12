@@ -1,3 +1,9 @@
+metpx-sarracenia (2.18.06b2) unstable; urgency=medium
+
+  *bugfix	Jun's do_poll fix. 
+
+ -- Peter Silva <peter@idefix>  Tue, 12 Jun 2018 18:42:37 -0400
+
 metpx-sarracenia (2.18.06b1) unstable; urgency=medium
 
   * bugfix      sr_audit now runs for all users (restarts crashed components.)
