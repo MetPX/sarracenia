@@ -22,11 +22,11 @@
 |intervening pumps until they arrive at a         |configurations sur mesure et permutations de      |
 |client. The client can provide explicit          |données multiples, Sarracenia cherche à           |
 |acknowledgement that propagates back through     |maintenir l'intégrité de la structure des         |
-|the network to the source. Whereas traditional   |données, tel que proposée et organisée par la source    |
-|file switching is a point-to-point affair        |jusqu'à destination. Le client peut fournir       |
-|where knowledge is only between each segment,    |des accusés de réception qui se propagent      |
-|in Sarracenia, information flows from end to     |à travers tous les noeuds de la chaîne,   |
-|end in both directions.                          |en sens inverse jusqu'à la source. Tandis qu'un      |
+|the network to the source. Whereas traditional   |données, tel que proposée et organisée par la     |
+|file switching is a point-to-point affair        |source jusqu'à destination. Le client peut fournir|
+|where knowledge is only between each segment,    |des accusés de réception qui se propagent         |
+|in Sarracenia, information flows from end to     |à travers tous les noeuds de la chaîne,           |
+|end in both directions.                          |en sens inverse jusqu'à la source. Tandis qu'un   |
 |                                                 |commutateur traditionnel échange les données      |
 |At it's heart, sarracenia exposes a tree of      |de point à point, Sarracenia permet le passage    |
 |web accessible folders (WAF), using any standard |des données d'un bout à l'autre du réseau,        |
@@ -43,7 +43,7 @@
 |minutes. Advanced Message Queueing Protocol      |passante et de ressouces lorsqu'elles doivent     |
 |(AMQP) messaging brings true push to             |répondre à ces contraintes. Ces standards         |
 |notifications, and makes real-time sending       |limitent la fréquence maximale de vérification    |
-|far more efficient.                              |du serveur à cinq minutes. Le protocole de         |
+|far more efficient.                              |du serveur à cinq minutes. Le protocole de        |
 |                                                 |séquencement de messages avancés (Advanced        |
 |                                                 |Message Queuing Protocol, AMQP) est une           |
 |                                                 |approche beaucoup plus efficace pour la           |
