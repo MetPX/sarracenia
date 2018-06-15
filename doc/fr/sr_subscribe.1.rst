@@ -36,15 +36,15 @@ Les clients se connectent à un
 pour les dossiers accessibles sur la toile  
 (*web-accessible folders* - WAF), et sont beaucoup plus efficaces que le sondage
 périodique des répertoires ou le style ATOM/RSS. Sr_subscribe
-peut être configuré aussie pour aviser à sont tour après le téléchargement, 
-pour informer d´autres processus locales de la disponibilité de fichiers.
+peut aussi être configuré pour publier un message une fois un fichier téléchargé 
+afin d'informer d´autres processus locaux de la disponibilité de ce fichier.
 
 **sr_subscribe** peut également être utilisé à d'autres fins que le téléchargement, 
-(par exemple pour à un programme externe) en spécifiant le -n (*notify_only*, 
-ou *notify_only*, ou *no download*). supprimer le téléchargement et n'afficher
-l'URL que sur la sortie standard.  La sortie standard peut être relié à d'autres
+(par exemple pour fournir un programme externe) en spécifiant le -n (*notify_only*, 
+ou *no download*) pour prévenir le téléchargement et n'afficher que
+l'URL sur la sortie standard.  La sortie standard peut être reliée à d'autres
 processus dans le style classique d'un filtre de texte UNIX. Sr_subscribe est 
-très configurable et constitue la base plusieurs autres composants de Sarracenia:
+très configurable et constitue la base de plusieurs autres composants de Sarracenia:
 
  - `sr_report(1) <sr_report.1.rst>`_ - afficher les rapports de disposition des fichiers.
  - `sr_sender(1) <sr_sender.1.rst>`_ - envoyer des fichiers.
@@ -54,26 +54,26 @@ très configurable et constitue la base plusieurs autres composants de Sarraceni
 
 Tous ces composants acceptent les mêmes options, avec les mêmes effets.
 Il y a aussi `sr_cpump(1) <sr_cpump.1.rst>`_ qui est une version en C qui 
-implémente un sous-ensemble des options ici, mais lorsqu'elles sont présentes,
+implémente un sous-ensemble des options qui, lorsqu'elles sont présentes,
 ont le même effet.
 
-La commande **sr_subscribe** prend deux arguments : une action 
+La commande **sr_subscribe** requiert deux arguments : une action 
 start|stop|stop|restart|reload|reload|status, suivi d'un fichier de configuration.
 
 Lorsqu'un composant est invoqué, une action et un fichier de configuration sont
-spécifiés. L'action en est une de:
+spécifiés. L'action est une de:
 
- - foreground: exécuter une seule instance dans le journal de premier plan à l´erreur standard.
+ - foreground: exécuter une seule instance au premier plan, écrivant le journal à l´erreur standard.
  - restart: arrêter puis démarrer la configuration.
- - sanity: recherche les instances qui se sont plantées ou bloquées et les redémarre.
+ - sanity: recherche les instances qui se sont plantées ou ont bloqué et les redémarre.
  - start:  démarrer la configuration
  - status: vérifier si la configuration est en cours d'exécution.
  - stop: arrêter la configuration.
 
-Notez que *sanity* est invoqué par le traitement périodique *Heartbeat* dans
-sr_audit sur une base régulière. Les action restantes gèrent les ressources 
-(échanges, files d'attente) utilisées par le composant sur le serveur 
-rabbitmq, ou gérent les configurations.
+Notez que *sanity* est invoqué sur une base régulière par le traitement périodique *Heartbeat* dans
+sr_audit. Les action restantes gèrent les ressources 
+(échanges, files d'attente) utilisées par les composants sur le serveur 
+rabbitmq, ou gèrent les configurations.
 
  - cleanup:  supprime les ressources du composant sur le serveur
  - declare:  crée les ressources du composant sur le serveur.
@@ -86,28 +86,26 @@ rabbitmq, ou gérent les configurations.
  - enable:   marquer une configuration comme éligible à l'exécution.
 
 
-Par exemple: *sr_subscribe foreground dd* exécute le composant sr_subscribe
-avec la commande en se servant de la configuration dd en tant qu'instance de premier
-plan unique.
+Par exemple: *sr_subscribe foreground dd* exécute une instance du composant sr_subscribe en avant plan
+en se servant de la configuration dd.
 
 L'action **foreground** est utilisée lors de la construction d'une 
 configuration ou pour le débogage. L'instance **foreground** sera exécutée
 indépendamment des autres instances qui sont en cours d'exécution.
 Si des instances sont en cours d'exécution, il partage la même file d'attente
-de avis avec eux. Un utilisateur arrête l'instance **foreground** en
-utilisant simplement <ctrl-c> sur linux. ou utiliser d'autres moyens pour tuer le processus.
+d'avis avec eux. Un utilisateur arrête l'instance **foreground** en
+utilisant simplement <ctrl-c> sur linux. ou utilise d'autres moyens pour tuer le processus.
 
-Les actions **cleanup**, **declare**, **setup**, **setup** peuvent être utilisées pour gérer les 
+Les actions **cleanup**, **declare**, **setup** peuvent être utilisées pour gérer les 
 ressources sur le courtier rabbitmq. Les ressources sont soit des files d'attente,
 soit des échanges. **declare** crée les ressources. **setup** crée les files 
 d'attente et les liaisons.
 
-Les actions **add, remove, list, edit, enable & disable** sont utilisées pour gérer la liste.
-de configurations. On peut voir toutes les configurations disponibles en utilisant l´action *list*.
-en utilisant l'option **edit**, on peut travailler sur une configuration particulière.
-Une configuration *disabled* ne sera pas démarrée ou redémarrée par le **start**,
-ou **restart** actions. Il peut être utilisé pour mettre de côté une configuration.
-temporairement.
+Les actions **add, remove, list, edit, enable & disable** sont utilisées pour gérer la liste
+de configurations. On peut voir toutes les configurations disponibles en utilisant l´action **list**.
+En utilisant l'option **edit**, on peut travailler sur une configuration particulière.
+Une configuration **disabled** ne sera pas démarrée ou redémarrée par les actions **start**
+ou **restart**. Cela peut être utilisé pour mettre une configuration temporairement de côté.
 
 
 Documentation
@@ -117,41 +115,41 @@ Bien que les pages du manuel fournissent des informations exhaustives,
 Les nouveaux utilisateurs à la recherche d´exemples et démonstrations
 seront plus heureux avec les guides:
 
-utilisateurs :
+Utilisateurs :
 
 * `Survol <sarra.rst>`_ - Introduction à l´application.
 * `Installation <Install.rst>`_ - installation initiale.
 * `Guide de l'abonné <subscriber.rst>`_ - téléchargement efficace à partir d'une pompe.
-* `Guide source (incomplet) <source.rst>`_ - téléchargement efficace vers une pompe.
+* `Guide source (incomplet) <source.rst>`_ - téléversement efficace vers une pompe.
 * `Guide de programmation <Prog.rst>`_ - Programmation de plugins personnalisés pour l'intégration du flux de travail.
 
 Administrateurs :
 
 * `Guide d'administration <Admin.rst>`_ - Configuration des pompes.
-* `Guide de mise à niveau <UPGRADING.rst>`_ - DOIT LIRE lors de la mise à niveau des pompes.
+* `Guide de mise à niveau <UPGRADING.rst>`_ - DOIT ÊTRE LU lors de la mise à niveau des pompes.
 
 et les contributeurs :
 
-* `Guide du développeur <Dev.rst>`_ - contribuant au développement de la Sarracenia.
+* `Guide du développeur <Dev.rst>`_ - contribuant au développement de Sarracenia.
 
 Pour tous les indexes de référence: `AUSSI VOIR`_. 
 
-Pour usage rapide, Lorsque la ligne de commande est invoquée avec 
-l'action *help*, ou *-help* op **help** a un composant qui imprime une 
-liste d'options valides. 
+Pour assistance immédiate, lorsque qu'un composant est invoqué avec 
+l'action *help*, ou *-help* ou **help**, une liste d'options valides 
+est affichée. 
 
 
 Configurations
 --------------
 
-Si on a une configuration prête à l'emploi appelée *q_f71.conf*, il peut être
-ajouté à la liste des noms connus avec: :
+Si on a une configuration prête à l'emploi appelée *q_f71.conf*, elle peut être
+ajoutée à la liste des noms connus avec: :
 
   sr_subscribe add q_f71.conf
 
 
-Dans ce cas, xvan_f14 est inclus avec les exemples fournis, donc *add* le trouve
-dans les exemples et le copie dans le répertoire de configurations actif.
+Dans ce cas-ci, q_f71.conf est inclus avec les exemples fournis, donc *add* le trouve
+dans les exemples et le copie dans le répertoire des configurations actives.
 Chaque fichier de configuration gère les consommateurs pour une seule file 
 d'attente sur le courtier. Pour visualiser les configurations disponibles, 
 utilisez::
@@ -194,7 +192,7 @@ On peut ensuite le modifier à l'aide de: :
   sr_subscribe edit q_f71.conf
 
 (La commande d'édition utilise la variable d'environnement EDITOR, si elle est présente.
-Une fois satisfait, on peut démarrer la configuration en cours d'exécution: :
+Une fois les changements complétés, on peut démarrer la configuration avec: :
 
   sr_subscibe foreground q_f71.conf
 
@@ -204,7 +202,7 @@ Que contiennent les fichiers ? Voir la section suivante :
 Syntaxe des options
 -------------------
 
-Les options sont placées dans les fichiers de configuration, une par ligne, dans le formulaire :
+Les options sont placées dans les fichiers de configuration, une par ligne, ans le format suivant :
 
   option <valeur>******.
 
@@ -213,16 +211,16 @@ Par exemple::
   **debug true****
   **debug****
 
-définit l'option *debug* pour activer la journalisation plus verbale.  Si aucune valeur n'est spécifiée,
-la valeur true est implicite. les valeurs ci-dessus sont donc équivalentes.  Un deuxième exemple
+définit l'option *debug* pour activer une journalisation plus verbeuse.  Si aucune valeur n'est spécifiée,
+la valeur true est implicite. Les exemples ci-dessus sont donc équivalents.  Un deuxième exemple
 ligne de configuration::
 
   broker amqp://anonymous@dd.weather.gc.ca
 
 Dans l'exemple ci-dessus, *broker* est le mot clé de l'option, et le reste de la 
-ligne est la valeur assignée au réglage. Les fichiers de configuration sont 
-une séquence de réglages, un par ligne.  Notez que les fichiers sont lus en 
-ordre, surtout pour les clauses *directory* et *accept*.
+ligne est la valeur qui lui est assignée. Les fichiers de configuration sont 
+une séquence de réglages, un par ligne.  Notez que l'ordre des options est significatif, 
+surtout pour les clauses *directory* et *accept*.
 Exemple::
 
     directory A
@@ -236,7 +234,7 @@ versus::
     directory A
 
 Place les fichiers correspondant à X dans le répertoire de travail actuel, 
-et le paramètre *répertoire A*.  ne fait rien par rapport à X.
+et le paramètre *directory A* ne fait rien par rapport à X.
 
 Pour fournir une description non fonctionnelle de la configuration ou des 
 commentaires, utilisez des lignes commençant par **#****.  Toutes les options
@@ -245,20 +243,20 @@ que **debug** ou **DEBUG**. Il s'agit de trois options différentes (dont deux
 n'existent pas et n'auront aucun effet, mais devrait générer une 
 avertissement ´unknown option´).
 
-Les options et les arguments de ligne de commande sont équivalents.  Chaque 
-argument de ligne de commande a une version longue correspondante commençant 
-par'--'.  Par exemple, *-u* a l'attribut sous forme longue *--url*. On peut
+Les options et les paramètres de ligne de commande sont équivalents.  Chaque 
+paramètre de ligne de commande a une version longue correspondante commençant 
+par'--'.  Par exemple, *-u* est la forme courte de *--url*. On peut
 aussi spécifier cette option dans un fichier de configuration. Pour ce faire, 
-tilisez le formulaire long sans le'--', et mettez sa valeur séparée par un 
+utilisez la forme longue sans le'--', suivi de sa valeur séparée par un 
 espace. Les éléments suivants sont tous équivalents :
 
   **post_base_url <url>**.
-  **-pbuu <url>**.
+  **-pbu <url>**.
   **--post_base_url <url>**.
 
 Les paramètres d'un fichier.conf individuel sont lus après le fichier *default.conf*.
-et peut donc remplacer les valeurs par défaut. Options spécifiées sur
-la ligne de commande priment sur le contenu de fichiers de configuration.
+et peuvent donc remplacer les valeurs par défaut. Les options spécifiées sur
+la ligne de commande ont préséance sur le contenu des fichiers de configuration.
 
 Les réglages sont interprétés dans l'ordre.  Chaque fichier est lu de haut en bas.
 par exemple :
@@ -284,50 +282,51 @@ sequence #2::
 Dans la séquence #1, tous les fichiers se terminant par 'gif' sont rejetés. Dans la séquence #2, le 
 accept .* (qui accepte tout) est rencontré avant l'instruction *reject*, qui n'a donc aucun effet.
 
-Plusieurs options qui doivent être réutilisées dans différents fichiers de configuration peuvent 
+Si plusieurs options doivent être réutilisées dans différents fichiers de configuration, elle peuvent 
 être regroupées dans un fichier. Dans chaque configuration où le sous-ensemble
-d'options devrait apparaître, l'utilisateur utiliserait alors:
+d'options devrait être inclus, l'utilisateur spécifierait alors:
 
   **--include <IncludeConfigPath>**
 
-L'includeConfigPath devrait normalement résider sous le même répertoire de 
-configuration de son fichier configs maître. Il n'y a pas de restriction, 
-n'importe quelle option peut être placée dans un fichier de configuration.
-inclus. L'utilisateur doit être conscient que, pour beaucoup d'options, 
-multiples déclarations signifie que les occurrence subséquents prime sur les
-valeurs rencontré plus tôt.
+IncludeConfigPath devrait normalement résider dans le même répertoire de 
+configuration que son fichier configs maître. Il n'y a pas de restriction, 
+n'importe quelle option peut être placée dans un fichier de configuration chargé via
+l'optin **include**. L'utilisateur doit être conscient que, pour beaucoup d'options, 
+multiples déclarations signifient que les occurrence subséquentes ont préséance sur les
+valeurs rencontrées plus tôt.
+FIXME : pas clair quelles options ont préséance.
 
 LOG FILES
 ---------
 
 Comme sr_subscribe fonctionne généralement comme un démon (à moins d'être 
-invoqué en mode *foreground*). On examine normalement son fichier journal pour
+invoqué en mode *foreground*), on examine normalement son fichier journal pour
 savoir comment se déroule le traitement.  Quand seulement une seule instance 
 est en cours d'exécution, on peut normalement visualiser le journal du
-processus en cours d'exécution.  comme ça::
+processus en cours d'exécution de cette façon::
 
-   sr_subscribe log *myconfig *myconfig*
+   sr_subscribe log *myconfig*
 
-Où *myconfig* est le nom de la configuration en cours d'exécution. les Fichiers
+Où *myconfig* est le nom de la configuration en cours d'exécution. Les fichiers
 journaux sont placés conformément à la spécification XDG Open Directory. Il y 
 a un fichier journal pour chaque *instance* (processus de téléchargement) 
-sr_subscribe exécutant la configuration myflow::
+sr_subscribe exécutant la configuration *myconfig*::
 
-   sur linux : ~/.cache/sarra/log/sr_subscribe_subscribe_myflow_01.log
+   sur linux : ~/.cache/sarra/log/sr_subscribe_subscribe_myconfig_01.log
 
 On peut outrepasser le placement sur linux en définissant la variable 
 d'environnement XDG_CACHE_HOME.
 
 
-CREDENTIALS
------------
+IDENTIFICATION
+--------------
 
 Normalement, on ne spécifie pas de mots de passe dans les fichiers de 
 configuration. Ils sont plutôt placés dans le fichier d´information d´identifcation::
 
    sr_subscribe edit credentials
 
-Pour chaque url spécifiée qui nécessite un mot de passe, on place une entrée
+Pour chaque url spécifié qui nécessite un mot de passe, on place une entrée
 correspondante dans *credentials.conf*. L'option broker définit toutes les 
 informations d'identification pour se connecter au serveur **RabbitMQ**.
 
@@ -339,9 +338,8 @@ informations d'identification pour se connecter au serveur **RabbitMQ**.
 
 Pour tous les programmes de **sarracenia**, les parties confidentielles 
 des justificatifs d'identité sont stockées uniquement dans 
-~/.config/sarra/credentials.conf. Cela comprend la destination et le courtier.
-mots de passe et paramètres nécessaires aux composants.  Le format 
-est d'une entrée par ligne.  Exemples :
+~/.config/sarra/credentials.conf. Cela comprend les mots de passe pour la destination 
+et le courtier ainsi que les paramètres requis par les composants.  Une entrée par ligne.  Exemples :
 
 - **amqp://user1:password1@host/**.
 - **amqps://user2:password2@host:5671/dev**.
@@ -352,19 +350,19 @@ est d'une entrée par ligne.  Exemples :
 - **ftp://user7:password7@host passive,binaire**
 - **ftp://user8:password8@host:2121 active,ascii**
 
-- **ftp://user7:De%3Aize@host passive,binaire,tls***
+- **ftp://user7:De%3Aolonize@host passive,binaire,tls***
 - **ftps://user8:%2fdot8@host:2121 active,ascii,tls,prot_p**
 
 
 Dans d'autres fichiers de configuration ou sur la ligne de commande, l'url 
-n'inclut pas le mot de passe ou spécification de clé.  L'url donnée dans les 
-autres fichiers est utilisé comme index pour le recherche dans credentials.conf.
+n'inclut pas le mot de passe ou spécification de clé.  L'url donné dans les 
+autres fichiers est utilisé comme clé de recherche pour credentials.conf.
 
 
 Note: :
- Les informations d'identification SFTP sont optionnelles, en ce sens que 
+ Les informations d'identification SFTP sont optionnelles car 
  sarracenia cherchera dans le répertoire .ssh et utilisers les identifiants 
- SSH normaux qui s'y trouvent.
+ SSH qui s'y trouvent.
 
  Ces chaînes sont codées par URL, donc si un compte a un mot de passe avec un
  mot de passe spécial. Son équivalent URL encodé peut être fourni.  Dans le 
@@ -374,8 +372,8 @@ Note: :
  codée en url d'un caractère deux-points. )
 
 
-CONSUMER
-========
+CONSOMMATEUR
+============
 
 La plupart des composants Metpx Sarracenia boucle sur la réception et la 
 consommation de messages AMQP. Habituellement, les messages d'intérêt sont 
