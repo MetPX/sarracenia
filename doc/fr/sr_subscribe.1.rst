@@ -296,6 +296,33 @@ multiples déclarations signifient que les occurrence subséquentes ont préséa
 valeurs rencontrées plus tôt.
 FIXME : pas clair quelles options ont préséance.
 
+Variables de plugin
+~~~~~~~~~~~~~~~~~~~
+
+Sarracenia utilise beaucoups de petits modules en python (appellés *plugins*)
+afin de modifier le traitement. les *plugins* définisse et utilise des
+options, qui ont le nom du plugin comme préfix::
+
+  msg_to_clusters DDI
+  msg_to_clusters DD
+
+  on_message msg_to_clusters
+
+L´option *msg_to_clusters* est utilisé par le plugin *msg_to_clusters* qui
+est invoqué lors de chaque réception de message ( *on_message* )
+
+Variables de l´environnement
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+On peut aussi utiliser des variables d´environnement avec le syntax
+*${ENV}* ou *ENV* est le nom d´un variable de l´environnement. S´il faut
+définir un variable d´environnement pour utilisation par Sarracenia,
+on peut l´indiquer dans un fichier de configuration::
+
+  declare env HTTP_PROXY=localhost
+
+
+
 LOG FILES
 ---------
 

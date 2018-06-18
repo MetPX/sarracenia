@@ -280,6 +280,31 @@ master configs. There is no restriction, any option can be placed in a config fi
 included. The user must be aware that, for many options, several declarations
 means overwriting their values.
 
+
+plugin options
+~~~~~~~~~~~~~~
+
+Sarracenia makes extensive use of small python code snippets that customize
+processing called *plugins.* Plugins define and use additional settings,
+that are usually prefixed with the name of the plugin::
+
+  msg_to_clusters DDI
+  msg_to_clusters DD
+
+  on_message msg_to_clusters
+
+A setting 'msg_to_clusters' is needed by the *msg_to_clusters* plugin
+referenced in the *on_message*
+
+Environment Variables
+~~~~~~~~~~~~~~~~~~~~~
+
+On can also reference environment variables in configuration files,
+using the *${ENV}* syntax.  If Sarracenia routines needs to make use
+of an environment variable, then they can be set in configuration files::
+
+  declare env HTTP_PROXY=localhost
+
     
 LOG FILES
 ---------
@@ -525,7 +550,7 @@ exchange <name> (default: xpublic) and exchange_suffix
 The convention on data pumps is to use the *xpublic* exchange. Users can establish
 private data flow for their own processing. Users can declare their own exchanges
 that always begin with *xs_<username>*, so to save having to specify that each
-time, one can just declare *exchange_suffix kk* which will result in the exchange
+time, one can just set *exchange_suffix kk* which will result in the exchange
 being set to *xs_<username>_kk* (overriding the *xpublic* default.) 
 
 subtopic <amqp pattern> (subtopic need to be set)
@@ -1834,8 +1859,8 @@ will create the save files in the current directory named here_000x.save where x
 
 
 
-ROLES
-=====
+ROLES - feeder/admin/declare
+============================
 
 *of interest only to administrators*
 

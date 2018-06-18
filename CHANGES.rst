@@ -4,6 +4,9 @@
 
 lists all changes between versions.
 
+**2.18.06b2**
+*             sr_poll bug for polling scripts fix from Jun.
+
 **2.18.06b1**
 
 * bugfix      sr_audit now runs for all users (restarts crashed components.)
