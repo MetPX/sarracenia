@@ -230,7 +230,7 @@ with credentials stored for localhost::
      echo "amqp://tsub:TestSUBSCibe@localhost/" >>~/.config/sarra/credentials.conf
      echo "amqp://tfeed:TestFeeding@localhost/" >>~/.config/sarra/credentials.conf
 
-     cat >~/.config/sarra/default.conf <<EOT
+     cat >~/.config/sarra/admin.conf <<EOT
 
      broker amqp://tfeed@localhost/
      cluster localhost
@@ -244,6 +244,8 @@ with credentials stored for localhost::
      sudo rabbitmqctl add_user bunnymaster MaestroDelConejito
      sudo rabbitmqctl set_permissions bunnymaster ".*" ".*" ".*"
      sudo rabbitmqctl set_user_tags bunnymaster administrator
+     
+     systemctl restart rabbitmq-server
      cd /usr/local/bin
      sudo wget http://localhost:15672/cli/rabbitmqadmin
      chmod 755 rabbbitmqadmin
