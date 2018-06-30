@@ -2,7 +2,7 @@
 
 """
 msg_filter_wmo2msc.py is an on_message plugin script to convert WMO bulletins on local disk
-to MSC internal format in an alternate tree.  It is analogous to sundew 'bulletin-file'.
+to MSC internal format in an alternate tree.  It is analogous to Sundew's 'bulletin-file'.
 Meant to be called as an sr_shovel plugin.
 
 It prints an output line:
@@ -46,9 +46,31 @@ Parameters:
      - if on, then traditional conversion to MSC-BULLETINS is done as per TANDEM/APPS & MetPX Sundew
        this involves \n as termination character, and other charater substitutions.
 
- msg_filter_use_symlink on|off
+ msg_filter_wmo2msc_use_symlink on|off
 
      - if on, instead of copying the bulletin is will be symlink from is original filepath
+
+ msg_filter_wmo2msc_tree  on|off
+
+     if tree is off, files are just placed in destination directory.
+     if tree is on, then the file is placed in a subdirectory tree, based on
+     the WMO 386 AHL:
+
+      TTAAii CCCC YYGGgg  ( example: SACN37 CWAO 300104 )
+ 
+      TT = SA - surface observation.
+      AA = CN - Canada ( but the AA depends on TT value, in many cases not a national code. )
+      ii = 37 - a number.. there are various conventions, they are picked to avoid duplication.
+     
+     The first line of the file is expected to contain an AHL. and when we build a tree
+     from it, we build it as follows:
+
+     TT/CCCC/GG/TTAAii_CCCC_YYGGgg_<uniquify>
+
+     assuming tree=on, uniquify=hash:
+
+     SA/CWAO/01/SACN37_CWAO_300104_1c699da91817cc4a84ab19ee4abe4e22
+
 
 NOTE: Look at the end of the file for SUPPLEMENTARY INFORMATION 
       including hints about debugging.
@@ -252,7 +274,6 @@ class Xwmo2msc(object):
             AHLfn += '_' + sumstr
 
         if parent.treeify :
-            #d = parent.currentDir + os.sep + self.bulletin[0][0:2].decode('ascii') 
             d = os.path.dirname(input_file)
             logger.debug( 'filter_wmo2msc check %s start match: %s' % (d, parent.filter_olddir) )
             d = d.replace( parent.filter_olddir, parent.filter_newdir )
@@ -260,7 +281,8 @@ class Xwmo2msc(object):
             if not os.path.isdir( d ):
                 os.makedirs( d, parent.chmod_dir, True ) 
 
-            d = d + os.sep + self.bulletin[0][2:4].decode('ascii') 
+            d = d + os.sep + self.bulletin[0][0:2].decode('ascii') 
+            d = d + os.sep + self.bulletin[0][7:11].decode('ascii') 
             logger.debug( 'filter_wmo2msc check %s' % (d) )
             if not os.path.isdir( d ):
                 os.makedirs( d, parent.chmod_dir, True ) 
@@ -361,7 +383,6 @@ else:
 """
 
 SUPPLEMENTARY INFORMATION
-
 
 SUNDEW COMPATIBILITY:   This script is the sarra version of a 'bulletin-file' receiver.
 
