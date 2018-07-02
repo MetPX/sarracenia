@@ -904,7 +904,8 @@ However, the steps below are a summary of what the script does:
 
     dput ppa:ssc-hpc-chp-spc/metpx-<dist> <.changes file>
 
-**Note:** The GPG keys associated with the launchpad account must be configured in order to do the last two steps.
+**Note:** The GPG keys associated with the launchpad account must be configured
+in order to do the last two steps.
 
 Backporting a Dependency
 ++++++++++++++++++++++++
@@ -914,7 +915,17 @@ Example::
   backportpackage -k<key id> -s bionic -d xenial -u ppa:ssc-hpc-chp-spc/ubuntu/metpx-daily librabbitmq
 
 
+Building an RPM
++++++++++++++++
 
+One can build a very limited sort of rpm package on an rpm based distro by
+using the python distutils::
+
+   python3 setup.py bdist_rpm
+
+Unfortunately, it doesn't add proper dependencies, so one must install those 
+manually. So it will help if you must use .rpm's for compliance reasons, but
+it isn't really properly done.  `Help Wanted  <https://github.com/MetPX/sarracenia/issues57>`_
 
 
 
