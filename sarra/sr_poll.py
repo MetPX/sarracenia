@@ -245,7 +245,7 @@ class sr_poll(sr_post):
 
           epoch  = time.mktime(time.gmtime()) - seconds
           YYYY1D = time.strftime("%Y", time.localtime(epoch) ) 
-          new_dir = re.sub('\$\{YYYY-\d+\D\}',YYYY1D, newdir)
+          new_dir = re.sub('\$\{YYYY-\d+\D\}',YYYY1D, new_dir)
 
         # ${MM-[number][time_unit]}
         offset_check = re.search(r'\$\{MM-(\d+)(\D)\}', cdir)
@@ -254,7 +254,7 @@ class sr_poll(sr_post):
 
           epoch = time.mktime(time.gmtime()) - seconds
           MM1D  =  time.strftime("%m", time.localtime(epoch) ) 
-          new_dir = re.sub('\$\{MM-\d+\D\}',MM1D, newdir)
+          new_dir = re.sub('\$\{MM-\d+\D\}',MM1D, new_dir)
 
         # ${JJJ-[number][time_unit]}
         offset_check = re.search(r'\$\{JJJ-(\d+)(\D)\}', cdir)
@@ -263,7 +263,7 @@ class sr_poll(sr_post):
 
           epoch = time.mktime(time.gmtime()) - seconds
           JJJ1D = time.strftime("%j", time.localtime(epoch) )
-          new_dir = re.sub('\$\{JJJ-\d+\D\}',JJJ1D, newdir)
+          new_dir = re.sub('\$\{JJJ-\d+\D\}',JJJ1D, new_dir)
 
         # ${YYYYMMDD-[number][time_unit]}
         offset_check = re.search(r'\$\{YYYYMMDD-(\d+)(\D)\}', cdir)  
