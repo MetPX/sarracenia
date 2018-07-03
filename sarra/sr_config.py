@@ -790,11 +790,12 @@ class sr_config:
         self.execfile("on_line",'line_mode')
 
 
+    # this function converts duration into a specifid unit: [milliseconds, seconds or days]
+    # str_value should be a number followed by a unit [s,m,h,d,w] ex. 1w, 4d, 12h
+    # setting_units specifies the factor to convert the value into [d,s] seconds by default
+    # ex. duration_from_str('48h', 'd') -> 2, for 2 days
     def duration_from_str(self,str_value,setting_units='s'):
         self.logger.debug("sr_config duration_from_str %s unit %s" % (str_value,setting_units))
-
-        # str_value should be expressed in secs 
-        # unit is used to initialise the factor (ex: 's': factor = 1  'ms' : factor = 1000 )
 
         factor    = 1
 

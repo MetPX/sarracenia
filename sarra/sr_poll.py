@@ -94,6 +94,7 @@ except :
          from sarra.sr_util      import *
 
 
+
 class sr_poll(sr_post):
 
     def cd(self, path):
@@ -250,56 +251,23 @@ class sr_poll(sr_post):
            new_dir = new_dir.replace('${JJJ-1D}',JJJ1D)
 
 ##########
-
-        # search Vs match
-        offset_check = re.search(r'\$\{YYYYMMDD-(\d+)(\D)\}', cdir)  #YYYYMMDD-[number][period: hour/day/week/month] 
+        
+        # checking if an offset is requested
+        # YYYYMMDD-[number][period: [m]inutes/[h]our/[d]ay/[w]eek] 
+        offset_check = re.search(r'\$\{YYYYMMDD-(\d+)(\D)\}', cdir)  
         if offset_check:
-          t = time.gmtime()
-          try:
-              num = int(offset_check.group(1))
-              period = offset_check.group(2)
 
-              if (period.lower() == 'd'):
-                  hours = offset_num * 24
-     
-              elif (period.lower() == 'w'):
-                  hours = hours * 7 * 24
+          # getting the offset in seconds. Function is in sr_config
+          seconds = self.duration_from_str(''.join(offset_check.group(1,2)), 's') 
 
-              elif (period.lower() == 'm'):
-                  y = t.tm_year
-                  m = t.tm_mon - hours # Subtracting a month
-                  d = t.tm_mday
-
-                  if m == 0:  # Landed on December
-                      m = 12
-                      y = y - 1
-
-
-                  d = min(d, calendar.monthrange(y, m)[1])  # Adjusting the month date
-
-                  t = list(t) # Casting to list to edit it
-                  t.tm_year = y
-                  t.tm_mon = m
-                  t.tm_mday = d
-                  t = time.struct_time(tuple(t)) # casting back to tuple and recreating the struct
-                  hours = 0   # Already accounted for the offset in the t object
-
-
-          except:
-              hours = 0
-
-          epoch  = time.mktime(t) - hours*60*60
+          epoch = time.mktime(time.gmtime()) - seconds
           YYYYMMDD = time.strftime("%Y%m%d", time.localtime(epoch) )
-          new_dir = re.sub('\$\{YYYYMMDD-\d+\D\}', YYYYMMDD, new_dir)
-
-          print(new_dir)
-        print("test")
+          new_dir = re.sub('\$\{YYYYMMDD-\d+\D\}', YYYYMMDD, new_dir) 
 
         new_dir = self.varsub(new_dir)
 
         return new_dir
-
-
+        
 ##########
   
 
