@@ -249,34 +249,59 @@ class sr_poll(sr_post):
            JJJ1D = time.strftime("%j", time.localtime(epoch) )
            new_dir = new_dir.replace('${JJJ-1D}',JJJ1D)
 
-        if '${YYYYMMDD-1D}' in cdir :
-           epoch  = time.mktime(time.gmtime()) - 24*60*60
-           YYYYMMDD1D = time.strftime("%Y%m%d", time.localtime(epoch) )
-           new_dir = new_dir.replace('${YYYYMMDD-1D}',YYYYMMDD1D)
+##########
 
-        if '${YYYYMMDD-2D}' in cdir :
-           epoch  = time.mktime(time.gmtime()) - 2*24*60*60
-           YYYYMMDD2D = time.strftime("%Y%m%d", time.localtime(epoch) )
-           new_dir = new_dir.replace('${YYYYMMDD-2D}',YYYYMMDD2D)
+        # search Vs match
+        offset_check = re.search(r'\$\{YYYYMMDD-(\d+)(\D)\}', cdir)  #YYYYMMDD-[number][period: hour/day/week/month] 
+        if offset_check:
+          t = time.gmtime()
+          try:
+              num = int(offset_check.group(1))
+              period = offset_check.group(2)
 
-        if '${YYYYMMDD-3D}' in cdir :
-           epoch  = time.mktime(time.gmtime()) - 3*24*60*60
-           YYYYMMDD3D = time.strftime("%Y%m%d", time.localtime(epoch) )
-           new_dir = new_dir.replace('${YYYYMMDD-3D}',YYYYMMDD3D)
+              if (period.lower() == 'd'):
+                  hours = offset_num * 24
+     
+              elif (period.lower() == 'w'):
+                  hours = hours * 7 * 24
 
-        if '${YYYYMMDD-4D}' in cdir :
-           epoch  = time.mktime(time.gmtime()) - 4*24*60*60
-           YYYYMMDD4D = time.strftime("%Y%m%d", time.localtime(epoch) )
-           new_dir = new_dir.replace('${YYYYMMDD-4D}',YYYYMMDD4D)
+              elif (period.lower() == 'm'):
+                  y = t.tm_year
+                  m = t.tm_mon - hours # Subtracting a month
+                  d = t.tm_mday
 
-        if '${YYYYMMDD-5D}' in cdir :
-           epoch  = time.mktime(time.gmtime()) - 5*24*60*60
-           YYYYMMDD5D = time.strftime("%Y%m%d", time.localtime(epoch) )
-           new_dir = new_dir.replace('${YYYYMMDD-5D}',YYYYMMDD5D)
+                  if m == 0:  # Landed on December
+                      m = 12
+                      y = y - 1
+
+
+                  d = min(d, calendar.monthrange(y, m)[1])  # Adjusting the month date
+
+                  t = list(t) # Casting to list to edit it
+                  t.tm_year = y
+                  t.tm_mon = m
+                  t.tm_mday = d
+                  t = time.struct_time(tuple(t)) # casting back to tuple and recreating the struct
+                  hours = 0   # Already accounted for the offset in the t object
+
+
+          except:
+              hours = 0
+
+          epoch  = time.mktime(t) - hours*60*60
+          YYYYMMDD = time.strftime("%Y%m%d", time.localtime(epoch) )
+          new_dir = re.sub('\$\{YYYYMMDD-\d+\D\}', YYYYMMDD, new_dir)
+
+          print(new_dir)
+        print("test")
 
         new_dir = self.varsub(new_dir)
 
         return new_dir
+
+
+##########
+  
 
     # =============
     # __do_poll__
