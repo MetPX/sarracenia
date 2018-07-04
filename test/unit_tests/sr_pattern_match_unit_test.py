@@ -3,7 +3,6 @@
 import time, sys
 
 try :
-    sys.path.append('/home/wahaj/Desktop/gitlab-projects/sarracenia/sarra') # change this!
     from sr_config         import *
 except :
     from sarra.sr_config   import *
