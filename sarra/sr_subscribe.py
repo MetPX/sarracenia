@@ -1615,6 +1615,8 @@ class sr_subscribe(sr_instances):
         self.save_fp.write(json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ], sort_keys=True ) + '\n' ) 
         self.save_fp.flush()
 
+
+    '''
     def set_dir_pattern(self,cdir):
 
         new_dir = cdir
@@ -1647,7 +1649,7 @@ class sr_subscribe(sr_instances):
         new_dir = self.varsub(new_dir)
 
         return new_dir
-
+    '''
 
     # ==============================================
     # how will the download file land on this server

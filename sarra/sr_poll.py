@@ -184,7 +184,7 @@ class sr_poll(sr_post):
 
         return filelst,desclst
 
-
+    '''
     # check for pattern matching in directory name
     # FIXME MG  this set_dir_pattern starts with the same as the one in sr_subscribe
     #           to which I added things that sr_poll was supporting
@@ -237,6 +237,7 @@ class sr_poll(sr_post):
 
 
         # Parsing cdir to subtract time from it in the following formats
+        # time unit can be: sec/mins/hours/days/weeks
 
         # ${YYYY-[number][time_unit]}
         offset_check = re.search(r'\$\{YYYY-(\d+)(\D)\}', cdir)
@@ -277,6 +278,7 @@ class sr_poll(sr_post):
         new_dir = self.varsub(new_dir)
 
         return new_dir  
+        '''
 
     # =============
     # __do_poll__
