@@ -942,13 +942,15 @@ web pages is no longer needed.
 
 On the current web site, updating is done by committing changes to .rst files
 directly on github. There is no post-processing required. As the links are all
-relative and other services such as gitlabl also support such rendering, the
-*website* is portable to gitlab.science, etc...  And the entry point is from
+relative and other services such as gitlab also support such rendering, the
+*website* is portable any gitlab instance, etc...  And the entry point is from
 the README.rst file at the root directory of each repository.
 
 
 Building Locally
 ~~~~~~~~~~~~~~~~
+
+**OBSOLETE, See above**
 
 In order to build the HTML pages, the following software must be available on your workstation:
 
@@ -971,6 +973,9 @@ Updating The Website
 
 Today, just edit the pages in the git repository, and they will be active as soon as they are pushed
 to the master branch.
+
+
+**OBSOLETE, See above**
 
 To publish the site to sourceforge (updating metpx.sourceforge.net), you must have a sourceforge.net account
 and have the required permissions to modify the site.
