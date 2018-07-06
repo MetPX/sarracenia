@@ -274,6 +274,7 @@ class sr_retry:
 
         now               = time.time()
         self.retry_cache  = {}
+        N    = 0
 
         # put this in try/except in case ctrl-c breaks something
 
@@ -306,7 +307,6 @@ class sr_retry:
              #self.logger.debug("MG DEBUG has state %s" % os.path.isfile(self.state_path))
      
              i    = 0
-             N    = 0
              last = None
 
              fp   = None

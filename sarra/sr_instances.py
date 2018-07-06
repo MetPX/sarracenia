@@ -540,7 +540,11 @@ class sr_instances(sr_config):
 
         # check log age 
 
-        log_age  = os.stat(self.logpath)[stat.ST_MTIME]
+        if os.path.exists(self.logpath):
+           log_age  = os.stat(self.logpath)[stat.ST_MTIME]
+        else:
+           log_age = 0
+
         now      = time.time()
         elapse   = now - log_age
 
