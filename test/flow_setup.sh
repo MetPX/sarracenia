@@ -7,7 +7,7 @@ export LD_PRELOAD=""
 
 
 export TESTDIR="`pwd`"
-export PYTHONPATH="`pwd`/../"
+#export PYTHONPATH="`pwd`/../"
 testdocroot="$HOME/sarra_devdocroot"
 testhost=localhost
 sftpuser=`whoami`
