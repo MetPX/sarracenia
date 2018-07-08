@@ -200,7 +200,7 @@ class sr_instances(sr_config):
               if self.pid != None :
                  try    : 
                           p = psutil.Process(self.pid)
-                          self.logger.info("%s running" % self.instance_str)
+                          self.logger.info("%s running (pid=%d)" % (self.instance_str,self.pid) )
                           stopped = False
                  except : pass
               no = no + 1
@@ -689,17 +689,17 @@ class sr_instances(sr_config):
            if not sanity : self.logger.info("%s is stopped" % self.instance_str)
            return
 
-        try    : 
-                 p = psutil.Process(self.pid)
-                 status = p.status
-                 if not isinstance(p.status,str): status = p.status()
-                 status = status.lower()
-                 status = status.replace('sleeping','running')
-                 if not sanity : self.logger.info("%s is %s" % (self.instance_str,status))
-                 return
-        except : pass
+        if psutil.pid_exists(self.pid):
+             p = psutil.Process(self.pid)
+             status = p.status
+             if not isinstance(p.status,str): status = p.status()
+             status = status.lower()
+             status = status.replace('sleeping','running')
+             if not sanity : self.logger.info("%s is %s (pid=%d)" % (self.instance_str,status,self.pid))
+             return
+        else:
+             self.logger.info("%s instance missing (pid=%d)" % (self.instance_str, self.pid) )
 
-        self.logger.info("%s no status ... strange state" % self.instance_str)
         if sanity :
            self.logger.info("%s restart" % self.instance_str)
            self.restart_instance()
@@ -727,7 +727,7 @@ class sr_instances(sr_config):
            self.logger.info("%s already stopped" % self.instance_str)
            return
 
-        self.logger.info("%s stopping" % self.instance_str)
+        self.logger.info("%s stopping (pid=%d)" % (self.instance_str, self.pid) )
 
         sleep_max = 7.0
         sleep_now = 0.5
@@ -742,7 +742,7 @@ class sr_instances(sr_config):
 
               try    : 
                        p=psutil.Process(self.pid)
-                       self.logger.debug("stillAlive %s pid = %d" % (self.instance_str,self.pid))
+                       self.logger.debug("stillAlive %s (pid=%d)" % (self.instance_str,self.pid))
                        stillAlive = True
               except :
                        stillAlive = False
@@ -772,14 +772,13 @@ class sr_instances(sr_config):
            time.sleep(2)
            try   : os.kill(self.pid, signal.SIGKILL)
            except: self.logger.debug("SIGKILL %s pid = %d, will check if still alive" % (self.instance_str,self.pid))
-
-        # if program is running... we could not stop it
-
-        try    : 
+        else:
+           # if program is running... we could not stop it
+           try: 
                  p=psutil.Process(self.pid)
                  self.logger.error("unable to stop instance = %s (pid=%d)" % (self.instance_str,self.pid))
                  return
-        except : pass
+           except : pass
 
         # not running anymore...
 
