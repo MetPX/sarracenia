@@ -643,7 +643,7 @@ class sr_instances(sr_config):
            self.build_path_migration(self.instance)
         # ===
 
-        self.logger.error("cmd = %s" % cmd)
+        self.logger.debug("cmd = %s" % cmd)
 
         # FIXME: at around 3.4, https://docs.python.org/3/library/os.html#fd-inheritance 
         #   inheritance of file descriptors changed.  I think earlier versions require PIPE
