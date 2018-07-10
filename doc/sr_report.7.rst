@@ -54,7 +54,7 @@ The topic of a report message is similar to sr_post except that the second sub-t
 THE FIRST LINE
 ==============
 
-the first line of a message contains all mandatory elements of an sr_post(7) announcement.
+The first line of a message contains all mandatory elements of an sr_post(7) announcement.
 There is a series of white space separated fields::
 
   *<date stamp>* : the date the posting was emitted.
@@ -92,7 +92,7 @@ As per the RFC, any code returned should be interpreted as follows:
    expressed above... does a 3xx mean we expect the client to do something? does 5xx mean
    that the failure was on the broker/server side?
 
-The specific error codes returned, and their meaning are implementation dependent.
+The specific error codes returned, and their meanings are implementation-dependent.
 For the sarracenia implementation, the following codes are defined:
 
 +----------+--------------------------------------------------------------------------------------------+
@@ -100,14 +100,14 @@ For the sarracenia implementation, the following codes are defined:
 +==========+============================================================================================+
 |   201    | Download successful. (variations: Downloaded, Inserted, Published, Copied, or Linked)      |
 +----------+--------------------------------------------------------------------------------------------+
-|   205    | Reset Content: truncated. file is shorter than originally expected (changed length         |
+|   205    | Reset Content: truncated. File is shorter than originally expected (changed length         |
 |          | during transfer) This only arises during multi-part transfers.                             |
 +----------+--------------------------------------------------------------------------------------------+
 |   205    | Reset Content: checksum recalculated on receipt.                                           |
 +----------+--------------------------------------------------------------------------------------------+
-|   304    | not modified (Checksum validated, unchanged, so no download resulted.)                     |
+|   304    | Not modified (Checksum validated, unchanged, so no download resulted.)                     |
 +----------+--------------------------------------------------------------------------------------------+
-|   307    | insertion deferred (writing to temporary part file for the moment.)                        |
+|   307    | Insertion deferred (writing to temporary part file for the moment.)                        |
 +----------+--------------------------------------------------------------------------------------------+
 |   417    | Expectation Failed: invalid message (corrupt headers)                                      |
 +----------+--------------------------------------------------------------------------------------------+
@@ -115,11 +115,11 @@ For the sarracenia implementation, the following codes are defined:
 +----------+--------------------------------------------------------------------------------------------+
 |   503    | Service unavailable. delete (File removal not currently supported.)                        |
 +----------+--------------------------------------------------------------------------------------------+
-|   503    | Unable to process: Service unavailable,                                                    |
+|   503    | Unable to process: Service unavailable                                                    |
 +----------+--------------------------------------------------------------------------------------------+
-|   503    | unsupported transport protocol specified in posting.                                       |
+|   503    | Unsupported transport protocol specified in posting.                                       |
 +----------+--------------------------------------------------------------------------------------------+
-|   xxx    | message and file validation status codes are script dependent                              |
+|   xxx    | Message and file validation status codes are script dependent                              |
 +----------+--------------------------------------------------------------------------------------------+
 
 
@@ -128,7 +128,7 @@ For the sarracenia implementation, the following codes are defined:
 
 *<consuminguser>*  broker username from which the retrieval was initiated.
 
-*<duration>*  how long processing took, in (decimal) seconds
+*<duration>*  how long processing took, in (decimal) seconds.
 
 *<newline>* signals the end of the first line of the message and is denoted by a single line feed character.
 
@@ -149,7 +149,7 @@ following report-specific headers are defined:
 
 message=<msgstring>
 
-An English textual representation of the status code. as per w3.org/IETF RFC 2616 Status Code Definitions.
+An English textual representation of the status code as per w3.org/IETF RFC 2616 Status Code Definitions.
 
 
 
@@ -209,9 +209,9 @@ SEE ALSO
 
 `sr_post(1) <sr_post.1.rst>`_ - post announcements of specific files.
 
-`sr_post(7) <sr_post.7.rst>`_ - The format of announcement messages.
+`sr_post(7) <sr_post.7.rst>`_ - the format of announcement messages.
 
-`sr_pulse(7) <sr_pulse.7.rst>`_ - The format of pulse messages.
+`sr_pulse(7) <sr_pulse.7.rst>`_ - the format of pulse messages.
 
 `sr_report(1) <sr_report.1.rst>`_ - process report messages.
 

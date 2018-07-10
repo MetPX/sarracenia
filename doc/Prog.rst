@@ -23,29 +23,29 @@ Revision Record
 Audience
 --------
 
-Readers of this manual should be comfortable with light scripting in python version 3.
+Readers of this manual should be comfortable with light scripting in Python version 3.
 Sarracenia includes a number of points where processing can be customized by
 small snippets of user provided code, known as plugins.  The plugins themselves
-are expected to be concise, and an elementary knowledge of python should suffice to
+are expected to be concise, and an elementary knowledge of Python should suffice to
 build new plugins in a copy/paste manner, with many samples being available to read.  
 
 
 Plugin Script Ideas
 -------------------
 
-Examples of things that would be fun to do with plugins.
+Examples of things that would be fun to do with plugins:
 
-- Common Alerting Protocol or CAP, is an XML format that provides a warnings
+- Common Alerting Protocol (CAP), is an XML format that provides a warnings
   for many types of events, indicating the area of coverage.  There is a 
   'polygon' field in the warning, that the source could add to messages using
   an on_post plugin.  Subscribers would have access to the 'polygon' header
-  through use of an on_message plugin, enabling them  determine whether the
+  through use of an on_message plugin, enabling them to determine whether the
   alert affected an area of interest without downloading the entire warning.
 
 - A source that applies compression to products before posting, could add a
   header such as 'uncompressed_size' and 'uncompressed_sum' to allow 
-  subscribers, with an on_message plugin to compare a file that has been locally
-  uncompressed to an upstream file offerred in compressed form.
+  subscribers with an on_message plugin to compare a file that has been locally
+  uncompressed to an upstream file offered in compressed form.
 
 
 ------------
@@ -55,14 +55,14 @@ Introduction
 A Sarracenia data pump is a web server with notifications for subscribers to
 know, quickly, when new data has arrived.  To find out what data is already
 available on a pump, view the tree with a web browser.  For simple immediate
-needs, one can download data using the browser itself, or a standard tool
+needs, one can download data using the browser itself or through a standard tool
 such as wget.  The usual intent is for sr_subscribe to automatically download
 the data wanted to a directory on a subscriber machine where other software
 can process it.
 
 Often, the purpose of automated downloading is to have other code ingest
 the files and perform further processing. Rather than having a separate
-process have to look at a file in a directory, One can insert customized
+process look at a file in a directory, one can insert customized
 processing at various points.
 
 Examples are available using the list command::
@@ -141,12 +141,12 @@ And then modify it for the purpose::
 
   blacklab% sr_subscribe edit msg_log.py
 
-The msg_log.py plugin above is a single entry one. For single entry point plugins, consult bad_plugins1, 2, and 3 
-to identify the mandatory elements. as one would imagine, all the plugins that begin with msg\_ are for *on_msg* events.
+The msg_log.py plugin above is a single entry one. For single entry point plugins, consult bad_plugins 1, 2, and 3 
+to identify the mandatory elements. As one would imagine, all the plugins that begin with msg\_ are for *on_msg* events.
 Similarly, file\_ ones provide examples of *on_file*, etc... for the other types of single entry plugins.
 
 If a plugin doesn't have such a prefix, there is a second form of plugins called simply a *plugin*, where a group
-of routines to implement an overall function.  Examine The *log.py* and *wget.py* routines for examples of this format.
+of routines implement an overall function.  Examine the *log.py* and *wget.py* routines for examples of this format.
 
 One can also see which plugins are active in a configuration by looking at the messages on startup::
 
@@ -176,7 +176,7 @@ One can also see which plugins are active in a configuration by looking at the m
 Plugin Script Basics
 --------------------
 
-An example, of the *plugin* format, one can configure use of file_noop.py in a configuration like so::
+An example of the *plugin* format, one can use of file_noop.py in a configuration like so::
 
   plugin file_noop
 
@@ -200,26 +200,26 @@ The content of the file to be placed (on Linux) in ~/.config/sarra/plugins would
   self.plugin = 'File_Noop'   # MUST: set the value of the plugin variable to the name of the class.
 
 
-There is an initialization portion which runs when the component is started,
+There is an initialization portion which runs when the component is started and
 a perform section which is to be invoked on the appropriate event.  Setting
 the plugin requires the magic last two lines in the sample plugin, where the last
-line needs to reflect the type of plugin (on_file for an on_file plugin, on_message,
+line needs to reflect the type of plugin (on_file for an on_file plugin, on_message
 for an on_message one, etc...)
 
-The only argument the script receives is **parent**, which has all of option
+The only argument the script receives is **parent**, which has all of the option
 settings from configuration files and command line as attributes.  For example,
 if a setting like::
 
   msg_speedo_interval 10
 
 is set in a configuration file, then the plugin script will see
-*parent.msg_speedo_interval* as a variable set to '10' (the string, not the number)
+*parent.msg_speedo_interval* as a variable set to '10' (the string, not the number).
 By convention when inventing new configuration settings, the name of the
-plugin is used as a prefix (In this example, msg_speedo)
+plugin is used as a prefix (in this example, msg_speedo).
 
 
 In addition to the command line options, there is also a logger available
-as shown in the sample above.  The *logger* is a python3 logger object, as documented
+as shown in the sample above.  The *logger* is a Python3 logger object, as documented
 here: https://docs.python.org/3/library/logging.html.   To allow users to tune the
 verbosity of logs, use priority specific method to classify messages::
 
@@ -229,7 +229,7 @@ verbosity of logs, use priority specific method to classify messages::
   logger.error - The component failed to do something.
 
 In the above message, logger.info is used, indicating an informative message.
-Another useful attribute available in parent, is 'msg', which has all the attributes
+Another useful attribute available in parent is 'msg', which has all the attributes
 of the message being processed.  All of the headers from the message, as defined
 in the `sr_post(1) <sr_post.1.rst>` configuration file, are available to the plugin,
 such as the message checksum as *parent.msg.headers.sum*.  Consult the `Variables Available`_
@@ -247,14 +247,14 @@ Popular Variables in Plugins
 A popular variable in on_file and on_part plugins is: *parent.msg.new_file*,
 giving the file name the downloaded product has been written to.  When the
 same variable is modified in an on_message plugin, it changes the name of
-the file to be downloaded. Similarly Another oft used variable is 
+the file to be downloaded. Similarly another often used variable is 
 *parent.new_dir*, which operates on the directory to which the file
 will be downloaded.
 
 There is also parent.msg.urlstr which is the completed download URL of the file,
-and parent.msg.url, which is the equivalent url after it has been parsed with urlparse.
-(see python3 documentation of urlparse for detailed usage.) This gives access
-to, for example *parent.msg.url.hostname* for the remote host from which a file is to be obtained,
+and parent.msg.url, which is the equivalent url after it has been parsed with urlparse
+(see Python3 documentation of urlparse for detailed usage). This gives access
+to, for example, *parent.msg.url.hostname* for the remote host from which a file is to be obtained,
 or *parent.msg.url.username* for the account to use, parent.url.path gives the path on the
 remote host.
 
@@ -264,8 +264,8 @@ Other popular fields are the (AMQP) headers set for a file, accessible as
 Note that headers are limited by the AMQP protocol to 255 bytes, and will be truncated if
 application code creates values longer than that.
 
-These are the variable which are most often of interest, but much other 
-program state is available.  See the  `Variables Available`_ section for a more thorough
+These are the variable which are most often of interest, but many other 
+program states are available.  See the  `Variables Available`_ section for a more thorough
 discussion.
 
 
@@ -273,7 +273,7 @@ discussion.
 Better File Reception
 ---------------------
 
-For example, rather than using the file system, sr_subscribe could indicates when each file is ready
+For example, rather than using the file system, sr_subscribe could indicate when each file is ready
 by writing to a named pipe::
 
   blacklab% sr_subscribe edit dd_swob.conf 
@@ -302,7 +302,7 @@ completely avoided.
 
 .. NOTE::
    In the case where a large number of sr_subscribe instances are working
-   On the same configuration, there is slight probability that notifications
+   on the same configuration, there is slight probability that notifications
    may corrupt one another in the named pipe.
    We should probably verify whether this probability is negligeable or not.
 
@@ -311,8 +311,8 @@ Advanced File Reception
 -----------------------
 
 While the *on_file* directive specifies the name of an action to perform on receipt
-of a file, those actions are not fixed, but simply small scripts provided with the
-package, and customizable by end users.  The rxpipe module is just an example
+of a file, those actions are not fixed but simply small scripts provided with the
+package and customizable by end users.  The rxpipe module is just an example
 provided with sarracenia::
 
   class File_RxPipe(object):
@@ -333,15 +333,15 @@ provided with sarracenia::
 
   self.plugin = 'File_RxPipe'
 
-With this fragment of python, when sr_subscribe is first called, it ensures that
+With this fragment of Python, when sr_subscribe is first called, it ensures that
 a pipe named npipe is opened in the specified directory by executing
 the __init__ function within the declared RxPipe python class.  Then, whenever
 a file reception is completed, the assignment of *self.on_file* ensures that
 the rx.on_file function is called.
 
-The rxpipe.on_file function just writes the name of the file dowloaded to
+The rxpipe.on_file function just writes the name of the file downloaded to
 the named pipe.  The use of the named pipe renders data reception asynchronous
-from data processing.   as shown in the previous example, one can then
+from data processing. As shown in the previous example, one can then
 start a single task *do_something* which processes the list of files fed
 as standard input to it, from a named pipe.
 
@@ -367,7 +367,7 @@ Using Credentials in Plugins
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To implement support of additional protocols, one would write
-a **_do_download** script.  the scripts would access the credentials
+a **_do_download** script.  The scripts would access the credentials
 value in the script with the code :
 
 - **ok, details = parent.credentials.get(msg.urlcred)**
@@ -382,18 +382,18 @@ The details options are element of the details class (hardcoded):
 - **print(details.prot_p)**
 
 For the credential that defines protocol for download (upload),
-the connection, once opened, is kept opened. It is reset
+the connection, once opened, is kept open. It is reset
 (closed and reopened) only when the number of downloads (uploads)
-reaches the number given by the  **batch**  option (default 100)
+reaches the number given by the  **batch**  option (default 100).
 
-All download (upload) operations uses a buffer. The size, in bytes,
-of the buffer used is given by the **bufsize** option (default 8192)
+All download (upload) operations use a buffer. The size, in bytes,
+of the buffer used is given by the **bufsize** option (default 8192).
 
 
 Variables Available
 -------------------
 
-Without peering into the python source code of sarracenia, it is hard to know
+Without peering into the Python source code of sarracenia, it is hard to know
 what values are available to plugin scripts.  As a cheat to save developers
 from having to understand the source code, a diagnostic plugin might be helpful.
 
@@ -402,9 +402,9 @@ list of available variables can be displayed in a log file.
 
 Make the above file an on_file (or other trigger) script in a configuration, start up a receiver
 (and if it is a busy one, then stop it immediately, as it creates very large report messages for
-every message received.)  Essentially the entire program state is available to plugins.
+every message received).  Essentially the entire program state is available to plugins.
 
-A sample output is shown (reformatted for legibility) is given below.  For every field *xx* listed,
+A sample output (reformatted for legibility) is given below.  For every field *xx* listed,
 a plugin script can access it as *parent.xx*  (e.g. *parent.queue_name* )::
 
   peter@idefix:~/test$ sr_subscribe foreground dd.conf 
@@ -532,11 +532,11 @@ a plugin script can access it as *parent.xx*  (e.g. *parent.queue_name* )::
   'flow': None}
 
 
-No thought has yet been given to plug_in compatatibility across versions.  Unclear how much of
+No thought has yet been given to plugin compatibility across versions.  Unclear how much of
 this state will vary over time.  Similar to program configuration settings, all of the fields
 involved in processing individual messages are available in the parent.msg object.  A similar
-dump to the above is here (e.g of a python scripts can use *parent.msg.partsr* ,
-and/or *parent.msg.header.parts*  in their code.)::
+dump to the above is here (e.g of a Python scripts can use *parent.msg.partsr* ,
+and/or *parent.msg.header.parts*  in their code)::
 
 
  2016-01-14 17:13:01,649 [INFO] message =
@@ -670,7 +670,7 @@ script, like so::
    self.on_file(self)
 
 
-and then the routine will run. the more complex the plugin, the more needs to be added to the
+and then the routine will run. The more complex the plugin, the more needs to be added to the
 debugging scaffolding.  Once that sort of basic testing is completed, just remove the scaffolding.
 
 For more complicated tests, just add more testing code::
@@ -750,7 +750,7 @@ File Notification Without Downloading
 -------------------------------------
 
 If the data pump exists in a large shared environment, such as
-a Supercomputing Centre with a site file system.  In that case,
+a Supercomputing Centre with a site file system, 
 the file might be available without downloading.  So just
 obtaining the file notification and transforming it into a
 local file is sufficient::
@@ -789,7 +789,7 @@ do_scripts
 
 In the case where large files are being downloaded, and one wants to do it quickly, the sarracenia's
 built-in methods are inherently a bit limited by the speed of python for low-level operations.  While
-built-in methods are reasonably efficient and low overhead, it could be argued that when large files
+built-in methods are reasonably efficient and have low overhead, it could be argued that when large files
 are to be downloaded, using an efficient, dedicated downloader written in a low level language like
 C is more effective.  These examples are included with every installation of sarracenia, and
 can be modified to be used with other tools.
@@ -818,7 +818,7 @@ Why Doesn't Import Work?
 ------------------------
 
 There is an issue where the place in the code where plugins are read is different
-from where the plugin routines are executed, and so class level imports do not work as expected
+from where the plugin routines are executed, and so class level imports do not work as expected.
 
 .. code:: python
 

@@ -104,7 +104,7 @@ around::
   post_broker amqp://tfeed@localhost/
 
 The configuration relies on the use of an administrator or feeder account.
-note the queue which has messages in it, in this case q_tsub.sr_subscribe.t.99524171.43129428.  Invoke the shovel in save mode to consumer messages from the queue
+Note the queue which has messages in it, in this case q_tsub.sr_subscribe.t.99524171.43129428.  Invoke the shovel in save mode to consume messages from the queue
 and save them to disk::
 
   % cd ~/tools
@@ -135,10 +135,10 @@ and save them to disk::
   % 
 
 The messages are written to a file in the caching directory for future use, with
-the name of the file being based on the configuration name used.   the file is in
-json format, one message per line (lines are very long.) and so filtering with other tools 
+the name of the file being based on the configuration name used.   The file is in
+json format, one message per line (lines are very long) and so filtering with other tools 
 is possible to modify the list of saved messages.  Note that a single save file per 
-configuration is automatically set, so to save multiple queues, one would need one configurations 
+configuration is automatically set, so to save multiple queues, one would need one configuration 
 file per queue to be saved.  Once the subscriber is back in service, one can return the messages 
 saved to a file into the same queue::
 
@@ -167,12 +167,12 @@ All the messages saved are returned to the named *return_to_queue*. Note that th
 plugin prevents the queue from being flooded with hundreds of messages per second. The rate limit to use will need
 to be tuned in practice. 
 
-by default the file name for the save file is chosen to be in ~/.cache/sarra/shovel/<config>_<instance>.save.
-To Choose a different destination, *save_file* option is available::
+By default the file name for the save file is chosen to be in ~/.cache/sarra/shovel/<config>_<instance>.save.
+To choose a different destination, *save_file* option is available::
 
   sr_shovel -save_file `pwd`/here -restore_to_queue q_tsub.sr_subscribe.t.99524171.43129428 ./save.conf foreground
 
-will create the save files in the current directory named here_000x.save where x is the instance number (0 for foreground.)
+It will create the save files in the current directory named here_000x.save where x is the instance number (0 for foreground.)
 
 
 SEE ALSO
@@ -186,7 +186,7 @@ SEE ALSO
 
 `sr_post(1) <sr_post.1.rst>`_ - post announcemensts of specific files.
 
-`sr_post(7) <sr_post.7.rst>`_ - The format of announcement messages.
+`sr_post(7) <sr_post.7.rst>`_ - the format of announcement messages.
 
 `sr_sarra(8) <sr_sarra.8.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
 

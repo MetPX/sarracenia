@@ -30,16 +30,16 @@ written in early 2018, explores progress made mostly in 2017.
 
 Use cases mentioned in the video which were implemented:
 
-- Central meteorological pumping has made substantially progress in migrating
+- Central meteorological pumping has made substantial progress in migrating
   to the new stack. This was the central initial use case that drove initial work.
   The transformation is not complete but is well in hand. 
 
-- Redundant RADAR acquisition through two national hubs. (spring 2016)
+- Redundant RADAR acquisition through two national hubs (spring 2016)
 
 - National Ninjo (main workstation for Forecasters) Dissemination (summer 2016)
 
 - Unified RADAR Processing (application to transform volume scans to products)
-  data flows. (through 2017.)
+  data flows (through 2017)
 
 
 Use cases in the video, but not yet realized:
@@ -57,20 +57,20 @@ Use cases in the video, but not yet realized:
   pumps is done by pump administrators, rather than end users. Without end-user
   on-boarding, routing by sources was a low priority. 
 
-- The mesh interconnect model envisioned has not seen had an appropriate use
+- The mesh interconnect model envisioned has not seen an appropriate use
   case.
 
 
-Un-anticipated use cases implemented:
+Unanticipated use cases implemented:
 
 - GTS data exchange: CMC <-> NWS. NWS requested a change in connectivity
   in December 2015. 
 
-- HPC mirroring (to be completed in Spring 2018)
+- HPC mirroring (to be completed in Spring 2018).
 
-- Legacy Application 7-way replication (for SPC's) implemented last year.
+- Legacy Application 7-way replication (for SPCs) implemented last year.
  
-- GOES-R acquisition (live as of January 2018.)
+- GOES-R acquisition (live as of January 2018).
 
 Details to follow.
 
@@ -85,24 +85,24 @@ January 2018.
 
 .. image:: E-services_data-volume_pas.png
 
-Sarracenia is being used operationally to acquire about four terabytes 
-observations from automated weather observing systems, Weather RADARS which
-deliver data directly to our hubs, international peer operated public file
+Sarracenia is being used operationally to acquire about four terabytes of 
+observations from automated weather observing systems, weather RADARS which
+deliver data directly to our hubs, and international peer operated public file
 services, which provide satellite imagery and numerical products from other
 national weather centres.
 
 Within the main high performance computing (HPC) data centre, there are two
-supercomputers, two site stores, and two pre and post-processing clusters.
+supercomputers, two site stores, and two pre- and post-processing clusters.
 Should a component in one chain fail, the other can take over. The input
 data is sent to a primary chain, and then processing on that chain is mirrored,
-using sarracenia to copy the data to the other chain. That´s about 16 of the
+using sarracenia to copy the data to the other chain. That's about 16 of the
 25 terabytes of the data centre traffic in this diagram.
 
 A distillation of the data acquired, and the analysis and forecasts done in HPC,
-is the seven terabytes at the top right, that is sent to the seven regional
-Storm Prediction Centres (SPC´s.)
+is the 7 terabytes at the top right, that is sent to the seven regional
+Storm Prediction Centres (SPCs).
 
-The products of the SPC´s and the central HPC are then shared with the public
+The products of the SPCs and the central HPC are then shared with the public
 and partners in industry, academia and other governments.
 
 
@@ -111,7 +111,7 @@ Weather Application Flows
 
 FIXME: picture?
 
-There is a number (perhaps a dozen?) older applications (most prominent ones 
+There is a number (perhaps a dozen?) of older applications (the most prominent ones 
 being BULLPREP and Scribe) used for decades in the Storm Prediction Centres
 to create forecast and warning products. These applications are based on a file
 tree that they read and write. Formerly, each application had its own backup
@@ -121,7 +121,7 @@ to copy specific data among the trees.
 In January 2017, complete 7-way replication of the state file trees of the
 applications was implemented so that all offices have copies of files in
 real-time. This is accomplished using Sarracenia through the eastern hub. Any 
-forecast office can now take over work on any product for any other, with no specific 
+forecast office can now take over work of any product for any other, with no specific 
 application work needed at all.
 
 
@@ -139,11 +139,11 @@ HPC Acquisition Feeds
 
 FIXME: picture?
 
-There supercomputing environment was entirely replaced in 2017. As part of that,
-the client Environmental Data acquisition suite (ADE French acronym) was
-re-factored to work with much higher performance than formerly, and to accept
+The supercomputing environment was entirely replaced in 2017. As part of that,
+the client Environmental Data acquisition suite (ADE in French) was
+refactored to work with much higher performance than previously, and to accept
 Sarracenia feeds directly, rather than accepting feeds from previous generation
-pump (Sundew.)  The volume and speed of data acquisition has been substantially
+pump (Sundew).  The volume and speed of data acquisition has been substantially
 improved as a result.
 
 
@@ -195,21 +195,21 @@ national deployment of NinJo and the Weather.
 
 Expanded use cases explored:
 
-* Mirroring: Prior to this use case, sarracenia was used for raw data dissemination without regard for 
+* Mirroring: Prior to this use case, Sarracenia was used for raw data dissemination without regard for 
   permissions, ownership, symbolic links, etc...  For the mirroring use case, exact metadata 
   replication was a surprisingly complex requirement.
 
 * C-implementation: In exploring large scale mirroring, it became obvious that for sufficiently large 
   trees (27 Million files), the only practical method available was the use of a C shim library.  
-  Having all user codes invoke a python3 script, is complete nonsense in an HPC environment, so 
-  It was necessary to implement a C version of Sarracenia posting code for use by the shim library.  
+  Having all user codes invoke a Python3 script is complete nonsense in an HPC environment, so 
+  it was necessary to implement a C version of Sarracenia posting code for use by the shim library.  
   Once the C implementation was begun, it was only a little additional work to implement a C version 
-  of sr_watch (called sr_cpost) which was much more memory and CPU efficient than the python original.
+  of sr_watch (called sr_cpost) which was much more memory and CPU efficient than the Python original.
 
-* Node.js implementation: A client of the public datamart decided to implement enough of sarracenia 
+* Node.js implementation: A client of the public datamart decided to implement enough of Sarracenia 
   to download warnings in real-time.
 
-* The application was re-factored to maximize consistency through code re-use, reducing about 20% of 
+* The application was refactored to maximize consistency through code reuse, reducing about 20% of 
   the code size at one point. The code returned to the initial size when new features were added,
   but it remains quite compact at less than 20 kloc.
 
@@ -227,14 +227,14 @@ Changes to support end user usage:
 
 - It was hard to find where to put settings files. The *list/add/remove/edit* commands simplify that. 
 
-- In each plugin entry point, one had to modify different instance variables, was re-factored for consistency
-  across all all of them (on_msg, on_file, on_part, on_post, do_download, do_send, etc...)
+- In each plugin entry point, one had to modify different instance variables, was refactored for consistency
+  across all of them (on_msg, on_file, on_part, on_post, do_download, do_send, etc...).
 
 - Partitioning specifications were arcane and were replaced with the 
   *blocksize* option, with only three possibilities: 0, 1, many.
 
 - Routing across multiple pumps was arcane. The original algorithm was 
-  replaced by simpler one with with some smarter defaults. Users can now usually
+  replaced by a simpler one with some smarter defaults. Users can now usually
   ignore it. 
 
 - A much more elegant plugin interface is available to have multiple routines that
@@ -244,11 +244,11 @@ Changes to support end user usage:
   non-root base URL support was added.
 
 The only major operational feature introduced in 2017 was 
-**save/restore/retry**: If a destination has a problem, there is
+**save/restore/retry**: if a destination has a problem, there is
 substantial risk of overloading AMQP brokers by letting queues of products to
 transfer grow into millions of entries. Functionality to efficiently (in 
 parallel) offload broker queues to local disk was implemented to address 
-this. At first, recovery needed to be manually triggerred (restore) but by
+this. At first, recovery needed to be manually triggered (restore) but by
 the end of the year, an automated recovery (retry) mechanism was working its
 way to deployment, which will reduce requirements for oversight and 
 intervention in operations.
@@ -287,7 +287,7 @@ long-lived stable version some time in 2018.
 - The Sarrasemina indexing tool, which facilitates finding feeds, to be deployed 
   to assist onboarding.
 
-- Improved onboarding documentation. Reference materials are thurough, but 
+- Improved onboarding documentation. Reference materials are thorough, but 
   introductory quick-start and *gateway* oriented materials need work. 
   French translations are also needed.
 
@@ -298,7 +298,7 @@ long-lived stable version some time in 2018.
   as everything is already in the application, but mostly not used. Use may
   uncover additional issues.
 
-- pluggable checksum algorithms. Currently checksum algorithms are baked into 
+- Pluggable checksum algorithms. Currently checksum algorithms are baked into 
   the implementations. There is a need to support plugins to support 
   user-defined checksum algorithms (expected in 2.18.02a1).
 
