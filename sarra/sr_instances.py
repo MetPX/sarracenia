@@ -686,6 +686,12 @@ class sr_instances(sr_config):
              self.pid = os.getpid()
              ok = self.file_set_int(self.pidfile,self.pid)
              self.setlog()
+             if self.no > 0:
+                os.close(0)
+                lfd=os.open( self.logpath, os.O_CREAT|os.O_APPEND )
+                os.dup2(lfd,1)
+                os.dup2(lfd,2)
+  
              if not ok :
                 self.logger.error("could not write pid for instance %s" % self.instance_str)
                 self.logger.error("instance not started")

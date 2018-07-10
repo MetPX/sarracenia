@@ -1084,7 +1084,7 @@ class sr_config:
                         self.logger.debug("using subprocess.check_call")
                         subprocess.check_call(cmd_list)
                 else :
-                        self.logger.error("using subprocess.run %s" % cmd_list)
+                        self.logger.debug("using subprocess.run %s" % cmd_list)
                         subprocess.run(cmd_list,check=True)
         except: self.logger.error("trying run command %s" %  ' '.join(cmd_list) )
 
