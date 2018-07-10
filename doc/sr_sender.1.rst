@@ -24,14 +24,14 @@ DESCRIPTION
 ===========
 
 **sr_sender** is a component derived from `sr_subscribe(1) <sr_subscribe.1.rst>`_
-used to send loca files to a remote one using a file transfer protocol, primarily SFTP.
-**sr_sender** is a standard consumer, using all the normal AMQP settings for brokers,exchanges,
-queues, and all the standard client side filtering with accept, reject, on_message.
+used to send local files to a remote server using a file transfer protocol, primarily SFTP.
+**sr_sender** is a standard consumer, using all the normal AMQP settings for brokers, exchanges,
+queues, and all the standard client side filtering with accept, reject, and on_message.
 
 Often, a broker will announce files using a remote protocol such as HTTP,
 but for the sender it is actually a local file.  In such cases, one will
 see a message: **ERROR: The file to send is not local.** 
-An on message plugin will convert the web url into a local file one::
+An on_message plugin will convert the web url into a local file one::
 
   base_dir /var/httpd/www
   on_message msg_2localfile
@@ -48,12 +48,12 @@ DESTINATION UNAVAILABLE
 -----------------------
 
 If the server to which the files are being sent is going to be unavailable for 
-a prolonged period, and there is a large number of messages to send to them, then
+a prolonged period, and there is a large number of messages to send to it, then
 the queue will build up on the broker. As the performance of the entire broker
 is affected by large queues, one needs to minimize such queues.
 
 The *-save* and *-restore* options are used get the messages away from the broker
-when too large a queue will certainly build up.
+when a very large a queue will certainly build up.
 The *-save* option copies the messages to a (per instance) disk file (in the same directory
 that stores state and pid files), as json encoded strings, one per line.
 When a queue is building up::
@@ -101,37 +101,37 @@ SETUP 1 : PUMP TO PUMP REPLICATION
  - **post_broker        amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
  - **url                <url>       (default: destination)** 
 
-For pump replication, **mirror** is set to True (default)
+For pump replication, **mirror** is set to True (default).
 
 **base_dir** supplies the directory path that, when combined with the relative
 one in the selected notification gives the absolute path of the file to be sent.
-The defaults is None which means that the path in the notification is the absolute one.
+The default is None which means that the path in the notification is the absolute one.
 
 The **destination** defines the protocol and server to be used to deliver the products.
 Its form is a partial url, for example:  **ftp://myuser@myhost**
 The program uses the file ~/.conf/sarra/credentials.conf to get the remaining details
-(password and connection options).  Supported protocol are ftp,ftps and sftp. Should the
+(password and connection options).  Supported protocol are ftp, ftps and sftp. Should the
 user need to implement another sending mechanism, he would provide the plugin script 
 through option **do_send**.
 
 On the remote site, the **post_base_dir** serves the same purpose as the
-**base_dir** on this server.  The defaults is None which means that the delivered path
+**base_dir** on this server.  The default is None which means that the delivered path
 is the absolute one.
 
-Now we are ready to send the product... For example, if the selected notification looks like this :
+Now we are ready to send the product... for example, if the selected notification looks like this :
 
 **20150813161959.854 http://this.pump.com/ relative/path/to/IMPORTANT_product**
 
 **sr_sender**  performs the following pseudo-delivery:
 
-sends local file [**base_dir**]/relative/path/to/IMPORTANT_product
+Sends local file [**base_dir**]/relative/path/to/IMPORTANT_product
 to    **destination**/[**post_base_dir**]/relative/path/to/IMPORTANT_product
 (**kbytes_ps** is greater than 0, the process attempts to respect this delivery speed... ftp,ftps,or sftp)
 
-At this point, a pump to pump setup need needs to send the remote notification...
+At this point, a pump-to-pump setup needs to send the remote notification...
 (If the post_broker is not set, there will be no posting... just products replication)
 
-The selected notification contains all the right informations 
+The selected notification contains all the right information
 (topic and header attributes) except for url field in the
 notice... in our example :  **http://this.pump.com/**
 
@@ -142,7 +142,7 @@ The user can overwrite this by specifying the option **post_base_url**. For exam
 
 The user can provide an **on_post** script. Just before the message is
 published on the **post_broker**  and **post_exchange**, the 
-**on_post** script is called... with the **sr_sender** class instance as argument.
+**on_post** script is called... with the **sr_sender** class instance as an argument.
 The script can perform whatever you want... if it returns False, the message will not 
 be published. If True, the program will continue processing from there.  
 
@@ -152,9 +152,9 @@ DESTINATION SETUP 2 : METPX-SUNDEW LIKE DISSEMINATION
 
 In this type of usage, we would not usually repost... but if the 
 **post_broker** and **post_exchange** (**url**,**on_post**) are set,
-the product will be announced (with its possibly new location and new name)
-Lets reintroduce the options in a different order 
-with some new ones  to ease explanation.
+the product will be announced (with its possibly new location and new name).
+Let's reintroduce the options in a different order 
+with some new ones to ease explanation.
 
 
  - **mirror             <boolean>   (default: True)** 
@@ -205,7 +205,7 @@ to    **destination**/[**post_base_dir**]/my/new/important_location/IMPORTANT_pr
 
 Usually this way of using **sr_sender** would not require posting of the product.
 But if **post_broker** and **post_exchange** are provided, and **url** , as above, is set to
-**http://remote.apache.com**,  than **sr_sender** would reconstruct :
+**http://remote.apache.com**,  then **sr_sender** would reconstruct :
 
 Topic:
 **v02.post.my.new.important_location.IMPORTANT_product**
@@ -225,7 +225,7 @@ SEE ALSO
 
 `sr_post(1) <sr_post.1.rst>`_ - post announcemensts of specific files.
 
-`sr_post(7) <sr_post.7.rst>`_ - The format of announcements.
+`sr_post(7) <sr_post.7.rst>`_ - the format of announcements.
 
 `sr_subscribe(1) <sr_subscribe.1.rst>`_ - the download client.
 

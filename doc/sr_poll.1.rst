@@ -47,7 +47,7 @@ followed by an action start|stop|restart|reload|status...
 
 The actions **cleanup**, **declare**, **setup** can be used to manage resources on
 the rabbitmq server. The resources are either queues or exchanges. **declare** creates
-the resources. **setup** creates and additionnaly does the bindings of queues.
+the resources. **setup** creates and additionally does the bindings of queues.
 
 
 CONFIGURATION
@@ -99,7 +99,7 @@ Ex.:
 **filename  rename=/naefs/grib2/**
 
 For all posts created, the *rename* option would be set to '/naefs/grib2/filename'
-because I specified a directory (path that ends with /)
+because I specified a directory (path that ends with /).
 
 The option *directory*  defines where to get the files on the server.
 Combined with  **accept** / **reject**  options, the user can select the
@@ -112,7 +112,7 @@ Files matching an  **accept**  pattern are published.
 Again a *rename*  can be added to the *accept* option... matching products
 for that *accept* option would get renamed as described... unless the *accept* matches
 one file, the *rename* option should describe a directory into which the files
-will be placed (prepending instead of replacing the file name.)
+will be placed (prepending instead of replacing the file name).
 
 The directory can have some patterns. These supported patterns concern date/time .
 They are fixed...
@@ -145,7 +145,7 @@ permission mask::
   chmod 040
 
 means that a file will not be posted unless the group has read permission 
-(on an ls output that looks like: ---r-----, like a chmod 040 <file> command.)
+(on an ls output that looks like: ---r-----, like a chmod 040 <file> command).
 The **chmod** options specifies a mask, that is the permissions must be 
 at least what is specified.  
 
@@ -165,12 +165,12 @@ an AMQP server, also called a broker.  Format of argument to the *broker* option
 
 The announcement will have its url built from the *destination* option, with
 the product's path (*directory*/"matched file").  There is one post per file.
-The file's size is taken from the directory "ls"... but it's checksum cannot
+The file's size is taken from the directory "ls"... but its checksum cannot
 be determined, so the "sum" header in the posting is set to "0,0."
 
 By default, sr_poll sends its post message to the broker with default exchange
-is the prefix *xs_* followed by the broker username. The *broker* is mandatory.
-It can be given incomplete if, it is well defined in the credentials.conf file.
+(the prefix *xs_* followed by the broker username). The *broker* is mandatory.
+It can be given incomplete if it is well defined in the credentials.conf file.
 
 Refer to `sr_post(1) <sr_post.1.rst>`_ - to understand the complete notification process.
 Refer to `sr_post(7) <sr_post.7.rst>`_ - to understand the complete notification format.
@@ -178,7 +178,7 @@ Refer to `sr_post(7) <sr_post.7.rst>`_ - to understand the complete notification
 Here it is important to say that :
 
 The *sum=0,0* is used because no checksum computation was performed. It is often
-desirable use the *sum=z,s* to have downloaders calculate a useful checksum as
+desirable to use the *sum=z,s* to have downloaders calculate a useful checksum as
 they download for use by others.
 
 The *parts=1,fsiz,1,0,0* is used and the file's size is taken from the ls of the file.
@@ -197,16 +197,16 @@ Should you want to implement tasks in various part of the execution of the progr
 - **on_html_page <script>        (default: html_page)**
 
 The **on_line** plugin gives scripts that can read each line of an 'ls' on the polled
-site, to interpret it further.  return True, if the line should be further processed,
+site, to interpret it further. It returns True if the line should be further processed,
 or False to reject it.  By default, there is a line_mode plugin included with the package
-which implements the comparison of file permission on the remote server against
+which implements the comparison of file permissions on the remote server against
 the **chmod** mask. The program assumes that the very last word of the ls line is the
-filename. This might not be the case if filenames might contains spaces. For this purpose, 
+filename. This might not be the case if filenames contain spaces. For this purpose, 
 the option **ls_file_index** can be used to set the first word where the filename starts.
 
 If the poll fetches using the http protocol, the 'ls' like entries must be derived from
-an html page. The default plugin **html_page** provided with the package, gives an idea
-how to parse such a page into a python directory managable by **sr_poll**.
+an html page. The default plugin **html_page** provided with the package, gives an idea of
+how to parse such a page into a python directory manageable by **sr_poll**.
 
 A do_nothing.py script for **on_post** could be:
 
@@ -224,10 +224,10 @@ class Transformer(object):
 transformer  = Transformer()
 self.on_post = transformer.perform
 
-The only arguments the script receives it **parent**, which is an instance of
-the **sr_poll** class
+The only arguments the script receives is **parent**, which is an instance of
+the **sr_poll** class.
 
-The **do_poll** script could be written to support other protocol than
+The **do_poll** script could be written to support other protocols than
 ftp,ftps,sftp.  Again this script would be responsible to determine
 what to do under its protocol with the various options **destination**,
 **directory**, and should it determine to post a
@@ -258,7 +258,7 @@ SEE ALSO
 
 `sr_post(1) <sr_post.1.rst>`_ - post announcemensts of specific files.
 
-`sr_post(7) <sr_post.7.rst>`_ - The format of announcement messages.
+`sr_post(7) <sr_post.7.rst>`_ - the format of announcement messages.
 
 `sr_sarra(8) <sr_sarra.8.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
 

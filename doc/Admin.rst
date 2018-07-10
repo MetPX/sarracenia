@@ -20,7 +20,7 @@ Pre-Requisites
 --------------
 
 Ideally, one should be familiar with user-level access to existing pumps
-as either a `subscriber <subscriber.rst>`_ or a `source <source.rst>`_  before proceeding to adminsitration.
+as either a `subscriber <subscriber.rst>`_ or a `source <source.rst>`_  before proceeding to administration.
 This manual aims to be prescriptive, rather than explanatory.  For the reasons why things are
 built as they are see `Concepts.rst <Concepts.rst>`_
 
@@ -33,7 +33,7 @@ this manual were implemented on a commercial virtual private server (VPS)
 with 256 MB of RAM, and 700MB of swap taken from a 20 GByte disk. Such 
 a tiny configuration is able to keep up with almost a full feed 
 from dd.weather.gc.ca (which includes, all public facing weather and 
-environmental data from Environment and Climate Change Canada.) the 
+environmental data from Environment and Climate Change Canada). The 
 large numerical prediction files (GRIB and multiple GRIB's in tar files) 
 were excluded to reduce bandwidth usage, but in terms of performance 
 in message passing, it kept up with one client quite well.
@@ -67,7 +67,7 @@ The administrative user name is an installation choice, and exactly as for any o
 user, the configuration files are placed under ~/.config/sarra/, with the
 defaults under admin.conf, and the configurations for components under
 directories named after each component. In the component directories,
-Configuration files have the .conf suffix.
+configuration files have the .conf suffix.
 
 The administrative processes perform validation of postings from sources. Once
 they are validated, forward the postings to the public exchanges for subscribers to access.
@@ -109,7 +109,7 @@ can choose to have the client self-destruct when disconnected (*auto-delete*), o
 it *durable* which means it should remain, waiting for the client to connect again, even across
 reboots. Clients often want to pick up where they left off, so the queues need to stay around.
 
-The rabbitmq broker will never destroy a queue that is not in auto-delete (or durable.)  This means
+The rabbitmq broker will never destroy a queue that is not in auto-delete (or durable).  This means
 they will build up over time. We have a script that looks for unused queues, and cleans them out.
 Currently, the default is set that any unused queue having more than 25000 messages will be deleted.
 One can change this limit by having option *max_queue_size 50000* in default.conf.
@@ -153,7 +153,7 @@ first time a posting is received, it could be picked by one instance, and if a d
 it would likely be picked up by another instance. **For effective duplicate suppression with instances**,
 one must **deploy two layers of subscribers**. Use a **first layer of subscribers (sr_shovels)** with duplicate
 suppression turned off and output with *post_exchange_split*, which route posts by checksum to
-a **second layer of subscibers (sr_winnow) whose duplicate suppression caches are active.**
+a **second layer of subscribers (sr_winnow) whose duplicate suppression caches are active.**
 
 
 
@@ -164,7 +164,7 @@ Routing
 The inter-connection of multiple pumps is done, on the data side, by daisy-chaining
 sr_sarra and/or sr_sender configurations from one pump to the next. 
 
-the *to_clusters*, and *source*  headers are used for routing decisions
+The *to_clusters*, and *source*  headers are used for routing decisions
 implemented in the *msg_to_clusters*, and *msg_by_source* plugins respectively
 to be user by sender or sarra components to limit data transfers between pumps.
 
@@ -203,7 +203,7 @@ Init Integration
 ~~~~~~~~~~~~~~~~
 
 By default, when sarracenia is installed, it is done as a user tool and not a system-wide resource.
-the tools/ sub-directory directory allows for integration with tools for different usage scenarios.
+The tools/ sub-directory directory allows for integration with tools for different usage scenarios.
 
 .. NOTE::
    tools/sr.init -- a sample init script suitable for sysv-init or upstart based systems.
@@ -254,7 +254,7 @@ Briefly::
  apt-get install erlang-nox
  apt-get install rabbitmq-server
 
-in upto-date distros, you likely can just take the distro version.
+In upto-date distros, you likely can just take the distro version.
 
 
 WebUI
@@ -310,7 +310,7 @@ the example, one method is to obtain certificates from `letsencrypt <http://www.
     root@boule:~#
 
 This process produces key files readable only by root. To make the files
-readable by the broker (which runs under the rabbitmq users name) one will have
+readable by the broker (which runs under the rabbitmq user's name) one will have
 to adjust the permissions to allow the broker to read the files.
 probably the simplest way to do this is to copy them elsewhere::
 
@@ -404,7 +404,7 @@ access is needed, so the user is added to the sudo group::
   root@boule:~# mkdir ~sarra/.config
   root@boule:~# mkdir ~sarra/.config/sarra
 
-first need entries in the credentials.conf and admin.conf files::
+You would first need entries in the credentials.conf and admin.conf files::
 
   root@boule:~# echo "amqps://bunnymaster:MaestroDelConejito@boule.example.com/" >~sarra/.config/sarra/credentials.conf
   root@boule:~# echo "admin amqps://bunnymaster@boule.example.com/" >~sarra/.config/sarra/admin.conf
@@ -454,8 +454,8 @@ un-privileged *sarra* account.
 Managing Users on a Pump Using Sr_audit
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To set up a pump, one needs a broker administrative user (in the examples: sarra.)
-and a feeder user (in the examples: feeder.) Management of other users is done with
+To set up a pump, one needs a broker administrative user (in the examples: sarra)
+and a feeder user (in the examples: feeder). Management of other users is done with
 the sr_audit program.
 
 First, write the correct credentials for the admin and feeder users in
@@ -475,7 +475,7 @@ engine nodes.) Next step is to put roles in .config/sarra/admin.conf ::
  admin  amqps://root@boule.example.com/
  feeder amqp://feeder@localhost/
 
-Specify all knows users that you want to implement with their roles
+Specify all known users that you want to implement with their roles
 in the file  .config/sarra/admin.conf ::
 
  declare subscriber anonymous
@@ -527,7 +527,7 @@ The *sr_audit* program:
    The program runs as a daemon. After the initial pass to create the users,
    It will go into to sleep, and then audit the configuration again.
    To stop it from running in the foreground, stop it with: <ctrl-c>
-   (most common linux default intterupt character)
+   (most common linux default interrupt character)
    or find some other way to kill the running process.
 
    **FIXME:** when invoked with --users, sr_audit, should set a 'once' flag,
@@ -569,7 +569,7 @@ or the command line tool::
   ...done.
   sarra@boule:~$
 
-The above looks like *sr_audit* did it's job.
+The above looks like *sr_audit* did its job.
 In short, here are the permissions and exchanges *sr_audit* manages::
 
   admin user        : the only one creating users...
@@ -655,7 +655,7 @@ want the server to discard the queue::
 
   sarra@boule:~/.config/sarra/subscribe$ sr_subscribe cleanup dd
 
-now lets make sure the subscription does not start automatically::
+now let's make sure the subscription does not start automatically::
 
   sarra@boule:~/.config/sarra/subscribe$ mv dd.conf dd.off
 
@@ -666,9 +666,9 @@ and turn to a sarra set up.
 Sarra from Another Pump
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Sarra is used to have a downstream pump re-advertise products from an upstream one. Sarra needs all the configuration of a subscription,
+Sarra works by having a downstream pump re-advertise products from an upstream one. Sarra needs all the configuration of a subscription,
 but also needs the configuration to post to the downstream broker. The feeder account on the broker is used for this sort
-of work, and is a semi-administrative user, able to publish data to any exchange. Assume Apache is set up (not covered here) with a
+of work, and is a semi-administrative user, able to publish data to any exchange. Assume apache is set up (not covered here) with a
 document root of /var/www/html. The linux account we have created to run all the sr processes is '*sarra*', so we make sure
 the document root is writable to those processes::
 
@@ -711,7 +711,7 @@ msg_to_clusters DD
 on_message msg_to_clusters
 
    sarra implements routing by cluster, so if data is not destined for this cluster, it will skip (not download) a product.
-   Inspection of the sr_subscribe output above reveals that products are destined for the DD cluster, so lets pretend to route
+   Inspection of the sr_subscribe output above reveals that products are destined for the DD cluster, so let's pretend to route
    for that, so that downloading happens.
 
 url and document_root
@@ -726,7 +726,7 @@ mirror False
   ease of cleanup.
 
 
-so then try it out::
+So then try it out::
 
   sarra@boule:~/.config/sarra/sarra$ sr_sarra foreground dd.off 
   2016-03-28 10:38:16,999 [INFO] sr_sarra start
@@ -743,8 +743,8 @@ so then try it out::
   sarra@boule:~/.config/sarra/sarra$
 
 The file has the suffix 'off' so that it will not be invoked by default when the entire sarra configuration is started.
-One can still start the file when it is in the off setting, by specifying the path (in this case, it is in the current directory)
-so initially have 'off' files while debugging the settings.
+One can still start the file when it is in the off setting, by specifying the path (in this case, it is in the current directory).
+So initially have 'off' files while debugging the settings.
 As the configuration is working properly, rename it to so that it will be used on startup::
 
   sarra@boule:~/.config/sarra/sarra$ mv dd.off dd.conf
@@ -758,7 +758,7 @@ Now that data is flowing, we need to take a look at the flow of report messages,
 upstream that data has been downloaded. Sr_audit helps with routing by creating the following configurations:
 
  - for each subscriber, a shovel configuration named rr_<user>2xreport.conf is created
- - for each source, a shovel configureation named rr_xreport2<user>user.conf is created
+ - for each source, a shovel configuration named rr_xreport2<user>user.conf is created
 
 The *2xreport* shovels subscribes to messages posted in each user's xs_ exchange and posts them to the common xreport exchange.
 Sample configuration file::
@@ -843,7 +843,7 @@ Example::
   blacklab%
 
 From this listing, we can see that a subscriber on blacklab is actively downloading from the new pump on boule.
-Basically, The two sorts of shovels built automatically by sr_audit will do all the routing needed within a cluster. 
+Basically, the two sorts of shovels built automatically by sr_audit will do all the routing needed within a cluster. 
 When there are volume issues, these configurations can be tweaked to increase the number of instances or use
 post_exchange_split where appropriate.
 
@@ -869,7 +869,7 @@ Cleanup
 
 These are examples, the implementation of cleanup is not covered by sarracenia. Given a reasonably small tree as
 given above, it can be practical to scan the tree and prune the old files from it.
-a cron job like so::
+A cron job like so::
 
   root@boule:/etc/cron.d# more sarra_clean
   # remove files one hour after they show up.
@@ -882,18 +882,18 @@ intended for real-time data transfer so keeping data around for extended periods
 filled the disk and stopped all transfers. In large scale transfers, there is always a trade
 off between the practicality of keeping the data around forever, and the need for performance,
 which requires us to prune directory trees regularly. File system performance is optimal with
-reasonably sized trees, and when the trees get to large, the 'find' process to traverse it, can
+reasonably sized trees, and when the trees get too large, the 'find' process to traverse it, can
 become too onerous.
 
 One can more easily maintain smaller directory trees by having them roll over regularly. If you
 have enough disk space to last one or more days, then a single logical cron job that would operate
-on the daily trees without incurring the penalty of a find, is a good approach.
+on the daily trees without incurring the penalty of a find is a good approach.
 
 Replace the contents above with::
 
   34 4 * * * root find /var/www/html -mindepth 1 -maxdepth 1  -type d -regex '/var/www/html/[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]' -mtime +1 | xargs rm -rf
 
-where the +1 can be replaced by the number of days to retain. ( would have preferred to
+where the +1 can be replaced by the number of days to retain. ( Would have preferred to
 use [0-9]{8}, but it would appear that find's regex syntax does not include repetitions. )
 
 Note that the logs will clean up themselves, by default after 5 days they will be discarded.
@@ -960,7 +960,7 @@ is managed separately.
 Advanced Installations
 ----------------------
 
-On some configurations (we usually call them *bunny*), we use a clusterd rabbitmq, like so::
+On some configurations (we usually call them *bunny*), we use a clustered rabbitmq, like so::
 
         /var/lib/rabbitmq/.erlang.cookie  same on all nodes
 
@@ -1113,14 +1113,14 @@ to sarracenia. The early work on Sarracenia used only the subscribe client as a 
 from MetPX as the data source. There was no concept of multiple users, as the switch operates as a single dissemination
 and routing tool. This section describes the kinds of *glue* used to feed Sarracenia subscribers from a Sundew source.
 It assumes a deep understanding of MetPX-Sundew. Currently, the dd_notify.py script creates messages for the
-protocol exp., v00. and v02 (latest sarracenia protocol version)
+protocol exp., v00. and v02 (latest sarracenia protocol version).
 
 
 Notifications on DD
 ~~~~~~~~~~~~~~~~~~~
 
 As a higher performance replacement for Atom/RSS feeds which tell subscribers when new data is available, we put a broker
-on our data dissemination server (dd.weather.gc.ca.) Clients can subscribe to it. To create the notifications, we have
+on our data dissemination server (dd.weather.gc.ca). Clients can subscribe to it. To create the notifications, we have
 one Sundew Sender (named wxo-b1-oper-dd.conf) with a send script::
 
   type script
