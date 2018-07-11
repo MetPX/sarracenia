@@ -940,7 +940,6 @@ class sr_config:
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.error("sr_config/__on_heartbeat__ 3 Type: %s, Value: %s,  ..." % (stype, svalue))
                 self.logger.error( "plugin %s, execution failed." % plugin )
-           #if not plugin(self): return False
 
         return True
 
@@ -1079,13 +1078,13 @@ class sr_config:
         self.run_command([ cmd, path ] )
 
     def run_command(self,cmd_list):
-        try   :
-                if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5) :
-                        self.logger.debug("using subprocess.check_call")
+        import sys,subprocess
+        try:
+                if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 4) :
                         subprocess.check_call(cmd_list)
                 else :
-                        self.logger.debug("using subprocess.run %s" % cmd_list)
-                        subprocess.run(cmd_list,check=True)
+                        subprocess.run(cmd_list, check=True, close_fds=False )
+
         except: self.logger.error("trying run command %s" %  ' '.join(cmd_list) )
 
     def register_plugins(self):
