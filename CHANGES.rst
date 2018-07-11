@@ -4,6 +4,15 @@
 
 lists all changes between versions.
 
+**2.18.07b1**
+
+* bugfix      sr_audit now fixes missing instances. (issue #62 & #63 )
+*             two different crashes fixed in flow_test.sh
+*             filter_wmo2msc directory tree naming improved ( issue #60 )
+*             many documentation improvements. (Alain & Marie)
+* new         enhanced parsing of date substitution (issue #55 Wahaj!)
+*
+
 **2.18.06b2**
 *             sr_poll bug for polling scripts fix from Jun.
 
