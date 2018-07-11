@@ -3,7 +3,7 @@
 ==========
 
 -----------------------------------------------------------
-watch a directory and post messages when files in it change
+Watch a directory and post messages when files in it change
 -----------------------------------------------------------
 
 :Manual section: 1 
@@ -23,7 +23,7 @@ DESCRIPTION
 ===========
 
 Watches a directory and publishes posts when files in the directory change
-(are added, modified, or deleted.) Its arguments are very similar to  `sr_post <sr_post.1.rst>`_.
+( added, modified, or deleted). Its arguments are very similar to  `sr_post <sr_post.1.rst>`_.
 In the MetPX-Sarracenia suite, the main goal is to post the availability and readiness
 of one's files. Subscribers use  *sr_subscribe*  to consume the post and download the files.
 
@@ -41,8 +41,8 @@ The broker option sets all the credential information to connect to the  **Rabbi
       (default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) 
 
 All sr\_ tools store all sensitive authentication info in the credentials.conf file.
-Passwords for SFTP, AMQP, and HTTP accounts are stored in URL´s there, as well as other pointers
-to thins such as private keys, or FTP modes.
+Passwords for SFTP, AMQP, and HTTP accounts are stored in URLs there, as well as other pointers
+to things such as private keys or FTP modes.
 
 For more details, see: `sr_subscribe(1) credentials <sr_subscribe.1.html#credentials>`_
 
@@ -52,7 +52,7 @@ Mandatory Settings
 The [*-u|--url url*] option specifies the protocol, credentials, host and port to which subscribers 
 will connect to get the file. 
 
-format of argument to the *url* option::
+Format of argument to the *url* option::
 
        [ftp|http|sftp]://[user[:password]@]host[:port]/
        or
@@ -62,14 +62,14 @@ format of argument to the *url* option::
 
 
 The [*-p|--path path*] option tells *sr_watch* what to look for.
-If the *path* specifies a directory, *sr_watches* create a posts for any time
-a file in that directory that is created, modified or deleted. 
-If the *path* specifies a file,  *sr_watch*  watches that only that file.
+If the *path* specifies a directory, *sr_watches* creates a post for any time
+a file in that directory is created, modified or deleted. 
+If the *path* specifies a file,  *sr_watch*  watches only that file.
 In the announcement, it is specified with the *path* of the product.
 There is usually one post per file.
 
 
-An example of an excution of  *sr_watch*  checking a file::
+An example of an execution of  *sr_watch*  checking a file::
 
  sr_watch -s sftp://stanley@mysftpserver.com/ -p /data/shared/products/foo -pb amqp://broker.com -action start
 
@@ -98,7 +98,7 @@ and the source url of the file in the last 2 fields.
 
 The remaining line gives informations that are placed in the amqp message header.
 Here it consists of  *source=guest* , which is the amqp user,  *parts=1,256,0,0,1* ,
-which suggest to download the file in 1 part of 256 bytes (the actual filesize), trailing 1,0,0
+which suggests to download the file in 1 part of 256 bytes (the actual filesize), trailing 1,0,0
 gives the number of block, the remaining in bytes and the current 
 block.  *sum=d,fc473c7a2801babbd3818260f50859de*  mentions checksum information,
 here,  *d*  means md5 checksum performed on the data, and  *fc473c7a2801babbd3818260f50859de* 
@@ -137,13 +137,13 @@ common settings, and methods of specifying them.
 [--blocksize <value>]
 ---------------------
 
-the value should be one of::
+The value should be one of::
 
    0 - autocompute an appropriate partitioning strategy (default)
    1 - always send files in a single part.
    p,<sz> - used a fixed partition size (example size: 1M )
 
-Files can be announced as multiple blocks (or parts.) Each part has a separate checksum.
+Files can be announced as multiple blocks (or parts). Each part has a separate checksum.
 The parts and their checksums are stored in the cache. Partitions can traverse
 the network separately, and in paralllel.  When files change, transfers are
 optimized by only sending parts which have changed.
@@ -151,15 +151,15 @@ optimized by only sending parts which have changed.
 The autocomputation algorithm determines a blocksize that encourages a reasonable number of parts
 for files of various sizes.  As the file size varies, the automatic computation will give different
 results. This will result in resending information which has not changed as partitions of a different
-size will have different sums.  Where large files are being appended to, it make sense to specify a 
+size will have different sums.  Where large files are being appended to, it makes sense to specify a 
 fixed partition size. 
 
-In cases where a custom downloader is used which does not understand partitioning, it is necessary
-to avoid having the file split into parts, so one would specify '1' to force all files to be send
+In cases where a custom downloader is used that does not understand partitioning, it is necessary
+to avoid having the file split into parts, so one would specify '1' to force all files to be sent
 as a single part.
 
 The value of the *blocksize*  is an integer that may be followed by  letter designator *[B|K|M|G|T]* meaning:
-for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All theses references are powers of 2.
+for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All these references are powers of 2.
 
 [-pb|--post_broker <broker>]
 ----------------------------
@@ -176,7 +176,7 @@ for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All theses 
 
 In force_polling mode, assume that directories empty themselves, so that every file in each *path*
 should be posted at every polling pass, instead of just new ones.  Use caching to ignore the ones
-seen before.  In polling mode, the speed of reconition of files is limited to the speed at which
+seen before.  In polling mode, the speed of recognition of files is limited to the speed at which
 a tree can be traversed.  The scanning method needs to be chosen based on the performance sought.
 
 
@@ -196,7 +196,7 @@ Default: default is all of them, except poll
 
 The *create*, *modify*, and *delete* events reflect what is expected: a file being created, modified, or deleted.
 If *link* is set, symbolic links will be posted as links so that consumers can choose 
-how to process them. if it is not set, then no symbolic link events will ever be posted.
+how to process them. If it is not set, then no symbolic link events will ever be posted.
 
 .. note::
    move or rename events result in a special double post pattern, with one post as the old name
@@ -212,7 +212,7 @@ how to process them. if it is not set, then no symbolic link events will ever be
 [-fp|--force_polling <boolean>]
 -------------------------------
 
-By Default, sr_watch selects a (OS dependent) optimal method to watch a 
+By default, sr_watch selects an (OS dependent) optimal method to watch a 
 directory. For large trees, the optimal method can be manyfold (10x or even 
 100x) faster to recognize when a file has been modified. In some cases, 
 however, platform optimal methods do not work (such as with some network 
@@ -220,7 +220,7 @@ shares, or distributed file systems), so one must use a slower but more
 reliable and portable polling method.  The *force_polling* keyword causes
 sr_watch to select the polling method in spite of the availability of a
 normally better one.  KNOWN LIMITATION: When *force_polling* is set, 
-the *sleep* setting, should be at least 5 seconds. It is not currently clear
+the *sleep* setting should be at least 5 seconds. It is not currently clear
 why.
 
 NOTE::
@@ -231,12 +231,12 @@ NOTE::
   File are posted if their modification time is newer than that.  This will result in many multiple posts
   by sr_watch, which can be minimized with the use of cache.   One could even depend on the cache
   entirely and turn on the *delete* option, which will have sr_watch attempt to post the entire tree
-  every time (ignoring mtime)
+  every time (ignoring mtime).
 
 [-fs|--follow_symlinks <boolean>]
 ---------------------------------
 
-The *follow_symlinks* option causes symbolic links to be traversed.  if *follow_symlinks* is set
+The *follow_symlinks* option causes symbolic links to be traversed.  If *follow_symlinks* is set
 and the destination of a symbolic link is a file, then that destination file should be posted as well as the link.
 If the destination of the symbolic link is a directory, then the directory should be added to those being
 monitored by sr_watch.   If *follow_symlinks* is false, then no action related to the destination of the symbolic 
@@ -247,7 +247,7 @@ link is taken.
 
 Add a <name> header with the given value to advertisements. Used to pass strings as metadata in the
 advertisements to improve decision making for consumers.  Should be used sparingly. There are limits
-on how many headers can be used, and the minimizing the size of messages has important performance
+on how many headers can be used, and minimizing the size of messages has important performance
 impacts.
 
 [-h|-help|--help]
@@ -259,7 +259,7 @@ Display program options.
 --------------
 
 Set a file where all the logs will be written.
-Logfile will rotate at 'midnight' and kept for an history of 5 files.
+Logfile will rotate at 'midnight' and kept with a history of 5 files.
 
 [-p|--path path]
 ----------------
@@ -267,7 +267,7 @@ Logfile will rotate at 'midnight' and kept for an history of 5 files.
 **sr_post** evaluates the filesystem path from the **path** option 
 and possibly the **post_base_dir** if the option is used.
 
-If a path defines a file this file is watched.
+If a path defines a file then this file is watched.
 
 If a path defines a directory then all files in that directory are
 watched... 
@@ -288,7 +288,7 @@ any indirection via symlinks. The behaviour improves the ability of sr_watch to
 monitor trees, but the trees may have completely different paths than the arguments 
 given. This option also enforces traversing of symbolic links. This is implemented 
 to preserve the behaviour of an earlier iteration of sr_watch, but it is not 
-clear if it required or useful. Feedback welcome.
+clear if it is required or useful. Feedback welcome.
 
 [-rn|--rename <path>]
 ---------------------
@@ -378,7 +378,7 @@ watch where one is posting for an *sr_sarra* component, then use of the
 small and minimize the time to notice new ones. In such optimal conditions, 
 noticing files in a hundredth of a second is reasonable to expect. Any method
 will work well for such trees, but the sr_watch defaults (inotify) are usually
-lowest overhead.
+the lowest overhead.
 
 sr_watch is sr_post with the added *sleep* option that will cause it to loop
 over directories given as arguments.  sr_cpost is a C version that functions
@@ -386,7 +386,7 @@ identically, except it is faster and uses much less memory, at the cost of the
 loss of plugin support.  With sr_watch (and sr_cpost) The default method of
 noticing changes in directories uses OS specific mechanisms (on Linux: INOTIFY)
 to recognize changes without having to scan the entire directory tree manually. 
-Once primed, file changes are noticed instantaneously, but requires a an 
+Once primed, file changes are noticed instantaneously, but requires an 
 initial walk across the tree, *a priming pass*.
 
 For example, **assume a server can examine 1500 files/second**. If a **medium
@@ -413,7 +413,7 @@ running on every node. If that is undesirable, then one can deploy it on a
 single node with *force_polling* but the timing will be constrained by the
 directory size.
 
-As the tree being monitored grows in size, sr_watch´s latency on startup grows,
+As the tree being monitored grows in size, sr_watch's latency on startup grows,
 and if polling is used the latency to notice file modifications will grow as
 well. For example, with a tree with 1 million files, one should expect, at best,
 a startup latency of 11 minutes. If using polling, then a reasonable expectation 
@@ -443,7 +443,7 @@ likely to determine the time to posting. The check sum will used by
 downstream consumers to determine whether the file being announced is new,
 or one that has already been seen, and is really handy.
 
-**For smaller files, checksum calculation time is negligeable, but it is
+**For smaller files, checksum calculation time is negligible, but it is
 generally true that bigger files take longer to post.** When **using the
 shim library** method, the same process that wrote the file is the one
 **calculating the checksum**, the likelihood of the file data being in a
@@ -570,9 +570,9 @@ Active if *-debug|--debug* appears in the command line... or
 Active if *-r|--randomize* appears in the command line... or
 *randomize* is set to True in the configuration file used.
 If there are several posts because the file is posted
-by block because the *blocksize* option was set, the block 
-posts are randomized meaning that the will not be posted
-ordered by block number.
+by block (the *blocksize* option was set), the block 
+posts are randomized meaning that they will not be posted
+in order of block number.
 
 [-rr|--reconnect]
 -----------------
@@ -586,7 +586,7 @@ reconnection to the broker everytime a post is to be sent.
 [--on_heartbeat]
 ----------------
 
-Every *heartbeat* seconds, the *on_heartbeat* is invoked.  For periodic operationsl that happen relatively rarely,
+Every *heartbeat* seconds, the *on_heartbeat* is invoked.  For periodic operations that happen relatively rarely, on the
 scale of many minutes, usually. The argument is actually a duration, so it can be expressed in various time units:  5m (five minutes),  2h (two hours), days, or weeks. 
 
 [--on_watch]
@@ -622,8 +622,8 @@ kernel memory usage.  If you see a message like so::
     raise OSError("inotify instance limit reached")
     OSError: inotify instance limit reached
 
-In that case, use adminsitrative privileges to set *sysctl fs.inotify.max_user_instance=<enough>* to a number 
-that is big enough.  More kernel memory will be allocated for this, no other effects if changeing this setting are known.
+In that case, use administrative privileges to set *sysctl fs.inotify.max_user_instance=<enough>* to a number 
+that is big enough.  More kernel memory will be allocated for this, no other effects of changing this setting are known.
 
 
 

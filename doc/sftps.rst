@@ -28,10 +28,10 @@ In the early days of the internet, before even the advent
 of the world-wide web, one of the earliest applications was
 file transfer, as first defined by the Internet Engineering Task
 Force standard Request for Comments (original IETF RFC 114, 
-dating from 1971 ) it evolved over the following decades with 
+dating from 1971 ). It evolved over the following decades with 
 the same basic ideas.  On the internet, every device
 has an internet address, and for every address there is
-on the order of 65,000 ports available (kind of sub-addresses.)
+on the order of 65,000 ports available (kind of sub-addresses).
 
 If Alice wants to communicate with Bob, she initiates
 a connection to Bob's device on port 21.  Bob indicates he 
@@ -95,7 +95,7 @@ Which maintains the mapping of a private address & port to a public
 address & port for every connection traversing a given device.
 
 When we get to a firewall, especially when organizations use
-private addressing, the process is repeated. so the address
+private addressing, the process is repeated. So the address
 and port might get re-mapped to different ones again.
 
 The same operations happen at the other end, with the firewall
@@ -110,7 +110,7 @@ The algorithmic complexity of such operations is a small
 constant amount, small in terms of memory and cpu.
 
 Recall that the control path indicates the method by which the data 
-connection is established.  In order have the FTP data channel connect the 
+connection is established.  In order to have the FTP data channel connect the 
 two servers, each firewall or load balancer between the two servers 
 ideally observes the control path, looks for the data port specification, 
 and proactively creates a mapping for it, creating a second pair of relationships
@@ -118,9 +118,9 @@ to manage in the table for every connection.  This activity is termed
 FTP proxying.  A proxy should be run at any point where network or port 
 translation occurs, with at least double the (still small) memory overhead 
 of other protocols, but the cpu work is about the same (just using 
-two entries in mapping tables instead of one.)  Optimally, some sort of 
+two entries in mapping tables instead of one).  Optimally, some sort of 
 proxy or watcher on firewalls is able to adjust firewall rules 
-dynamically to permit only specific the data connections in use through
+dynamically to permit only specific data connections in use through
 when they need to, minimizing exposure to the internet to only double 
 that of other protocols.
 
@@ -138,7 +138,7 @@ FTPS - is FTP with Transport Level Security added to it.
 The control path is now encrypted, and thus not available 
 to proxies on each of the firewalls and load balancers (such
 as LVS (linux virtual server), or standard products from F5, barracuda or
-a number of others.) The straightforward answer to that problem is to 
+a number of others). The straightforward answer to that problem is to 
 terminate the encryption on each firewall and load balancer, so that 
 the control traffic can be viewed to obtain the needed port numbers, 
 and then re-encrypted.  Essentially one would need to decrypt and 
@@ -149,7 +149,7 @@ Ideally one would decrypt only the control path, the router would intercept
 connection requests and return a local encryption response.  But if the data path 
 is not also intercepted, then the server will have one encryption key for the control
 path and another for the data path, which will break TLS.  So most likely,
-Each intervening router and firewall is obligated to decrypt and re-encrypt
+each intervening router and firewall is obligated to decrypt and re-encrypt
 all the data going through as well.
 
 Essentially, this means that Alice and Bob accept that every
@@ -168,7 +168,7 @@ mapping specific ports at specific times, because the firewall
 cannot read the control path traffic.
 
 In the original *active* case of FTPS, the client initiates the control 
-connection, and the server initiates the data connection. requiring the
+connection, and the server initiates the data connection, requiring the
 client firewall to permit an arbitrary inbound connection.  This method
 is basically limited to functioning where there no NAT at all, and extremely 
 limited firewalling in both directions for a transfer to occur at all.  
@@ -177,16 +177,16 @@ The *passive* case, where the client initiates both control and data
 connections, is much more common in modern environments. That one
 complicates NAT/PAT and the use of load balancers on the 
 destination server side. When setting up two way exchanges,
-FTPS complicates  both sides use of load balancers or NAT
-and reduces the effectiveness firewalling measures available.
+FTPS complicates  both sides' use of load balancers or NAT
+and reduces the effectiveness of firewalling measures available.
 
 FTPS is fundamentally more difficult to configure for many common configurations.  One 
-has to build a clusters differently, and arguably *worse*, because standard 
+has to build a cluster differently, and arguably *worse*, because standard 
 mechanisms used for other protocols do not work.  That lowers a variety of 
 configuration choices available only to support FTPS, with less protection 
 than is afforded when using other protocols. 
 
-Lastly, all of the peers one exchanges traffic with face the same
+Lastly, all of the peers one exchanges traffic with will face the same
 issues and will find it difficult to deploy. It is rare to
 find a peer that prefers FTPS.
 
@@ -203,7 +203,7 @@ than other protocols require.  This places a higher load on load balancers and f
 which are more complex to parallellize and generally more expensive than 
 the general purpose servers used in a product exchange array.  This effect will 
 be more pronounced for short sessions (primarily related to connection
-establishment, rather than sustained transfer.)
+establishment, rather than sustained transfer).
 
 In actuality, it is more likely that the data must be re-encrypted as well
 as the control path, in which case the capacity for encryption of an array
@@ -224,7 +224,7 @@ by limiting all configuration to being placed in a DMZ with no load balancer,
 or a load balancer with static port maps per real server, and lesser firewall 
 protection.  In which case the cost of equipment is likely no different,
 but the maintenance load will be slightly heavier (more frequent credential
-updates, need to maintain additional static maps, more firewall monitoring.)
+updates, need to maintain additional static maps, more firewall monitoring).
 
 
 
@@ -275,7 +275,7 @@ in practice there are many details which may render this point moot.)
 As per IETF RFC 2228, FTPS servers can be FTP servers with enhanced
 security available when explicitly requested, so called *explicit* mode.
 It is therefore possible to connect to FTPS servers and transfer in FTP 
-(unsecured mode.) careful configuration of servers is required to 
+(unsecured mode). Careful configuration of servers is required to 
 ensure this is not inadvertantly permitted.
 
 On receiving systems, it is true that a default OpenSSH configuration permits
@@ -286,13 +286,13 @@ difference between FTPS and SFTP from the server account point of view.
 In terms of firewalling, assuming the static port mapping method is used, then
 a relatively simple attack on an FTPS server with that sort of configuration
 would be to DDOS the data ports.  Assuming the ability to watch the traffic at
-some point between the ends points, An evildoer could determine the port range
+some point between the ends points, an evildoer could determine the port range
 mapped, and then constantly send traffic to the data ports with either incorrect 
 data, or to close the connection immediately preventing actual data transfer.
 This is additional surface area to defend when compared to other protocols.
 
 The use of the encrypted second port, where the port range used is variable 
-from site to site means that most normal firewalls operating at the TCP level 
+from site to site, means that most normal firewalls operating at the TCP level 
 will less easily distinguish file transfer traffic from web or other traffic 
 as there is no specific port number involved.   For example, note this
 bug report from checkpoint which says that to permit FTPS to traverse it, 
@@ -319,11 +319,11 @@ There are several modes of FTP:  ascii/binary, active/passive, that create more 
 FTPS adds more cases: explicit/implicit to the number to allow for.  Encryption can be 
 enabled and disabled at various points in the control and data paths.
 
-Example of mode causing additional complexity: Active or passive? Very common issue. Yes, the question
-can be answered in practice, but one must ask: Why does this question need to be answered? No other protocol
+Example of the mode causing additional complexity: active or passive? Very common issue. Yes, the question
+can be answered in practice, but one must ask: why does this question need to be answered? No other protocol
 needs it. 
 
-Example of mode causing complexity from a decade ago: A common FTP server on linux systems is set by 
+Example of mode causing complexity from a decade ago: a common FTP server on linux systems is set by 
 default to ignore the 'ascii' setting on ftp sessions for performance reasons.  It took quite a 
 while to understand why data acquisition from VAX/VMS machines were failing.
 
@@ -333,9 +333,9 @@ everything is correctly configured, there is room for difficulties.  Recall that
 tables need to be maintained to associate control and data connections with the correct end points.  
 When connections are closed, the entries have to be shutdown.  
 
-Example of correct configuration still having issues: In our experience, very rarely, the mapping tables get 
-confused.  At the main Canadian weather data product exchange array, occasionally one file out of many millions, 
-the file name would not match the file content.  although neither the file name, nor the content was corrupted, 
+Example of correct configuration still having issues: in our experience, very rarely, the mapping tables get 
+confused.  At the main Canadian weather data product exchange array, occasionally with one file out of many millions, 
+the file name would not match the file content.  Although neither the file name, nor the content was corrupted, 
 the data set did not correspond to the name given the file.  Many possible sources were examined, but the suspected 
 cause was some sort of timing issue with ports being re-used and the mapping on load balancers, where the 
 file name flows over the control path, and the data flows over the other port. As a test, the transfers 
@@ -359,13 +359,13 @@ Either FTPS proxying is done in a fully general manner:
 
 - FTPS imposes a higher computational load on all intervening 
   devices than most alternatives available.  By imposing an increased load
-  on specialized devices,  It is generally more expensive to deploy at scale.
+  on specialized devices,  it is generally more expensive to deploy at scale.
 
 - Since the above is impractical and undesirable, it is rarely done.
   There are therefore commonplace situations where one simply cannot deploy 
   the protocol.
 
-or, if only static port mapping is done:
+Or, if only static port mapping is done:
 
 - Usual FTPS firewall configurations leave a larger surface of attack for
   evildoers because the lack of visibility into the control path forces
@@ -380,7 +380,7 @@ In either case:
   the overall security when compared to SSH/SFTP where use of long public/private key pairs 
   is commonplace, and lengthening the key length requirement is straight-forward.
 - FTPS does not support byte ranges which are useful in some applications,
-  and is supported by SFTP and HTTP (with or without (S))
+  and is supported by SFTP and HTTP (with or without (S)).
 - In the event of a compromise of a remote server, the password of the account
   is easily determined.  While best practice would mean this password is of little
   or no value, some bad habits, such as password re-use, may mean the password has
@@ -401,11 +401,11 @@ In contrast to FTPS, SFTP:
 - works behind any type of load balancers, making scaling of product exchange arrays simple.
 - does not require any intervening party to decrypt anything. 
 - puts less load (both cpu and memory) on intervening network devices.
-- has similar commonplace methods for securing accounts on servers (e.g. restricted shells in chroot jails.)
+- has similar commonplace methods for securing accounts on servers (e.g. restricted shells in chroot jails).
 - supports byte ranges, which are useful.
 - is simpler, with fewer options, therefore more reliable.
 - is simpler to monitor and firewall, and permits more constrained firewall configurations.
-- is much more common (e.g. Microsoft announcing built-in support in an upcoming windows version [*]_ )
+- is much more common (e.g. Microsoft announcing built-in support in an upcoming windows version [*]_ ).
 - normally uses public/private key pairs, which are usually considered *stronger* than passwords. 
 - does not require any shared secrets (or a mechanism to send them.), and usually the credentials need to be replaced less
   often.

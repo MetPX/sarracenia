@@ -75,8 +75,8 @@ to be tolerated, more days will be kept.
 
 Under the first level of date trees, there is a directory
 per source.  A Source in Sarracenia is an account used to inject
-data into the pump network.  Data can cross many pumps on it´s
-way to the visible one::
+data into the pump network.  Data can cross many pumps on its
+way to the visible ones::
 
   Index of /20151110
   
@@ -93,7 +93,7 @@ The data under each of these directories was obtained from the named
 source. In these examples, it is actually injected by DataInterchange
 staff, and the names are chosen to represent the origin of the data.
 
-you should be able to list the available configurations with *sr_subscribe list* ::
+You should be able to list the available configurations with *sr_subscribe list* ::
 
   blacklab% sr_subscribe list
   
@@ -212,7 +212,7 @@ a configuration to obtain the swob files::
 NOTE:
 
   The above will write the files in the current working directory, and they will arrive quickly.
-  It might be bettter to make a dedicated directory and use the *directory* option to place the files there.
+  It might be better to make a dedicated directory and use the *directory* option to place the files there.
   for example:  
   mkdir /tmp/swob_downloads
   *directory /tmp/swob_downloads*
@@ -230,7 +230,7 @@ Now start up a subscriber (assume the config file was called dd_swob.conf)::
   2015-12-03 06:53:35,269 [INFO] instances 1 
   2015-12-03 06:53:35,270 [INFO] sr subscribe dd swob 0001 started
 
-one can monitor activity with the *log* command::
+One can monitor activity with the *log* command::
 
   blacklab% sr_subscribe log dd_swob
   
@@ -249,7 +249,7 @@ The sr_subscribe will get the notification and download the file into the
 current working directory. As the start up is normal, that means the 
 authentication information was good. Passwords are stored in 
 the ~/.config/sarra/credentials.conf file. The format is just a complete 
-url on each line. Example for above would be::
+url on each line. An example of that would be::
   
   amqp://anonymous:anonymous@dd.weather.gc.ca/
 
@@ -274,7 +274,7 @@ Giving all the information contained in the notification.  Here is a failure::
   2015-12-03 17:32:30,787 [ERROR] Server couldn't fulfill the request. Error code: 404, Not Found
 
 Note that this message is not always a failure, as sr_subscribe retries 
-a few times before giving up. In any event, after a few minutes, Here is what 
+a few times before giving up. In any event, after a few minutes, here is what 
 the current directory looks like::
 
   blacklab% ls -al | tail
@@ -300,7 +300,7 @@ a configuration for an extended period of time, it is best to::
 
   sr_subscribe cleanup swob.conf
 
-which will de-allocate the queue (and it's bindings) on the server.
+which will de-allocate the queue (and its bindings) on the server.
 
 Why? Whenever a subscriber is started, a queue is created on the data pump, with 
 the topic bindings set by the configuration file. If the subscriber is stopped, 
@@ -312,7 +312,7 @@ if one has a subtopic that contains SATELLITE, and then stops the subscriber,
 edit the file and now the topic contains only RADAR, when the subscriber is 
 restarted, not only will all the queued satellite files be sent to the consumer, 
 but the RADAR is added to the bindings, rather than replacing them, so the 
-subscriber will get bothe SATELLITE and RADAR data even though the configuration 
+subscriber will get both the SATELLITE and RADAR data even though the configuration 
 no longer contains the former.
 
 Also, if one is experimenting, and a queue is to be stopped for a very long 
@@ -387,7 +387,7 @@ To ensure prompt processing of data in this case, define one configuration to su
 to weather warnings (which are a very small number of products), a second for the RADARS
 (a larger but still relatively small group), and a third (largest grouping) for all
 the other data. Each configuration will use a separate queue. Warnings will be
-processed fastest, RADARS will queue up against each other and so experience some
+processed the fastest, RADARS will queue up against each other and so experience some
 more delay, and other products will share a single queue and be subject to more
 delay in cases of backlog.
 
@@ -598,17 +598,17 @@ The *msg_total* plugin is invoked whenever a message is received, and the *msg_t
 option, used by that plugin, has been set to 5. To learn more: *sr_subscribe list msg_total.py*
 
 Plugins are all written in python, and users can create their own and place them in ~/.config/sarra/plugins. 
-For information on creating new custom plugins, see The `Sarracenia Programing Guide <Prog.rst>`_  
+For information on creating new custom plugins, see The `Sarracenia Programming Guide <Prog.rst>`_  
 
 
-to recap:
+To recap:
 
 * To view the plugins currently available on the system  *sr_subscribe list*
-* To view the contents a plugin: *sr_subscribe list <plugin>*
-* the beginning of the plugin describes it's function and settings
-* plugins can have option settings, just like built-in ones
-* to set them, place the options in the configuration file before the plugin call itself
-* to make your own new plugin: *sr_subscribe edit <plugin>.py*
+* To view the contents of a plugin: *sr_subscribe list <plugin>*
+* The beginning of the plugin describes its function and settings
+* Plugins can have option settings, just like built-in ones
+* To set them, place the options in the configuration file before the plugin call itself
+* To make your own new plugin: *sr_subscribe edit <plugin>.py*
 
 
 file_rxpipe
@@ -660,7 +660,7 @@ configuration file::
   accept .*
 
 so that each file downloaded (or each part of the file if it is large),
-to be AV scanned. Sample run::
+is to be AV scanned. Sample run::
 
   blacklab% sr_subscribe --reset foreground ../dd_swob.conf 
   clam_scan on_part plugin initialized
@@ -679,7 +679,7 @@ to be AV scanned. Sample run::
 Speedo Metrics
 --------------
   
-activating the speedo plugin lets one understand how much bandwidth
+Activating the speedo plugin lets one understand how much bandwidth
 and how many messages per second a given set of selection criteria
 result in::
   
@@ -718,7 +718,7 @@ In environments where high reliability is required, multiple servers
 are often configured to provide services. The Sarracenia approach to
 high availability is ´Active-Active´ in that all sources are online
 and producing data in parallel. Each source publishes data,
-and consumers obtain it from the first source that makes it availble,
+and consumers obtain it from the first source that makes it available,
 using checksums to determine whether the given datum has been obtained
 or not.
 

@@ -53,7 +53,7 @@ There is also `sr_cpump(1) <sr_cpump.1.rst>`_ which is a C version that implemen
 subset of the options here, but where they are implemented, they have the same effect.
 
 The **sr_subscribe** command takes two arguments: an action start|stop|restart|reload|status, 
-followed by an a configuration file. 
+followed by a configuration file. 
 
 When any component is invoked, an operation and a configuration file are specified. The operation is one of:
 
@@ -65,16 +65,16 @@ When any component is invoked, an operation and a configuration file are specifi
  - stop: stop the configuration from running
 
 Note that the *sanity* check is invoked by heartbeat processing in sr_audit on a regular basis.
-The remaining operations manage the resources (exchanges,queues) used by the component on
+The remaining operations manage the resources (exchanges, queues) used by the component on
 the rabbitmq server, or manage the configurations.
 
- - cleanup:  deletes the component's resources on the server
- - declare:  creates the component's resources on the server
- - setup:    like declare, additionally does queue bindings
+ - cleanup:  deletes the component's resources on the server.
+ - declare:  creates the component's resources on the server.
+ - setup:    like declare, additionally does queue bindings.
  - add:      copy to the list of available configurations.
- - list:     List all the configurations available.
+ - list:     list all the configurations available.
  - edit:     modify an existing configuration.
- - remove:   Remove a configuration
+ - remove:   remove a configuration.
  - disable:  mark a configuration as ineligible to run. 
  - enable:   mark a configuration as eligible to run. 
 
@@ -94,7 +94,7 @@ the resources. **setup** creates and additionally binds the queues.
 
 The **add, remove, list, edit, enable & disable** actions are used to manage the list 
 of configurations.  One can see all of the configurations available using the **list**
-action.  using the **edit** option, one can work on a particular configuarion.
+action.  Using the **edit** option, one can work on a particular configuration.
 A *disabled* configuration will not be started or restarted by the **start**,  
 **foreground**, or **restart** actions. It can be used to set aside a configuration
 temporarily.
@@ -106,7 +106,7 @@ While manual pages provide an index or reference for all options,
 new users will find the guides provide more helpful examples and walk 
 throughs and should start with them.
 
-users:
+Users:
 
 * `Installation <Install.rst>`_ - initial installation.
 * `Subscriber Guide <subscriber.rst>`_ - effective downloading from a pump.
@@ -118,18 +118,18 @@ Administrators:
 * `Admin Guide <Admin.rst>`_ - Configuration of Pumps
 * `Upgrade Guide <UPGRADING.rst>`_ - MUST READ when upgrading pumps.
  
-contributors:
+Contributors:
 
 * `Developer Guide <Dev.rst>`_ - contributing to sarracenia development.
 
-meta:
+Meta:
 
 * `Overview <sarra.rst>`_ - Introduction.
 * `Concepts <Concepts.rst>`_ - Concepts and Glossary
 
 There are also other manual pages available here: `See Also`_
 
-Some quick hints are also available When the command line is invoked with 
+Some quick hints are also available when the command line is invoked with 
 either the *help* action, or *-help* op **help** to have a component print 
 a list of valid options. 
 
@@ -204,7 +204,7 @@ For example::
   **debug**
 
 sets the *debug* option to enable more verbose logging.  If no value is specified,
-the value true is implicit. so the above are equivalent.  An second example 
+the value true is implicit, so the above are equivalent.  A second example 
 configuration line::
 
   broker amqp://anonymous@dd.weather.gc.ca
@@ -226,11 +226,11 @@ vs::
 Places files matching X in the current working directory, and the *directory A* setting 
 does nothing in relation to X.
 
-To provide non-functional description of configuration, or comments, use lines that begin with a **#**.
+To provide non-functional descriptions of configurations, or comments, use lines that begin with a **#**.
 
 **All options are case sensitive.**  **Debug** is not the same as **debug** or **DEBUG**.
 Those are three different options (two of which do not exist and will have no effect,
-but should generate an ´unknown option warning´.)
+but should generate an ´unknown option warning´).
 
 Options and command line arguments are equivalent.  Every command line argument
 has a corresponding long version starting with '--'.  For example *-u* has the
@@ -247,7 +247,7 @@ file, and so can override defaults.   Options specified on
 the command line override configuration files.
 
 Settings are interpreted in order.  Each file is read from top to bottom.
-for example:
+For example:
 
 sequence #1::
 
@@ -270,7 +270,7 @@ In sequence #1, all files ending in 'gif' are rejected. In sequence #2, the
 accept .* (which accepts everything) is encountered before the reject statement, 
 so the reject has no effect.
 
-Several options that need to be reused in different config file can be grouped in a file.
+Several options that need to be reused in different config files can be grouped in a file.
 In each config where the options subset should appear, the user would then use :
 
   - **--include <includeConfigPath>**
@@ -379,17 +379,17 @@ CONSUMER
 
 Most Metpx Sarracenia components loop on reception and consumption of sarracenia 
 AMQP messages.  Usually, the messages of interest are `sr_post(7) <sr_post.7.rst>`_ 
-messages, announcing the availability of a file by publishing it´s URL ( or a part 
+messages, announcing the availability of a file by publishing its URL ( or a part 
 of a file ), but there are also `sr_report(7) <sr_report.7.rst>`_ messages which 
 can be processed using the same tools. AMQP messages are published to an exchange 
-on a broker (AMQP server.) The exchange delivers messages to queues. To receive 
+on a broker (AMQP server). The exchange delivers messages to queues. To receive 
 messages, one must provide the credentials to connect to the broker (AMQP message 
 pump). Once connected, a consumer needs to create a queue to hold pending messages.
 The consumer must then bind the queue to one or more exchanges so that they put 
 messages in its queue.
 
 Once the bindings are set, the program can receive messages. When a message is received,
-further filtering is possible using regular expression onto the AMQP messages.
+further filtering is possible using regular expressions onto the AMQP messages.
 After a message passes this selection process, and other internal validation, the
 component can run an **on_message** plugin script to perform additional message 
 processing. If this plugin returns False, the message is discarded. If True, 
@@ -456,7 +456,7 @@ are held on the server for each subscriber.
 
 By default, components create a queue name that should be unique. The default queue_name
 components create follows :  **q_<brokerUser>.<programName>.<configName>** .
-Users can override the defaul provided that it starts with **q_<brokerUser>**.
+Users can override the default provided that it starts with **q_<brokerUser>**.
 Some variables can also be used within the queue_name like
 **${BROKER_USER},${PROGRAM},${CONFIG},${HOSTNAME}**
 
@@ -472,7 +472,7 @@ expire <duration> (default: 5m  == five minutes. RECOMMEND OVERRIDING)
 The  **expire**  option is expressed as a duration... it sets how long should live
 a queue without connections. A raw integer is expressed in seconds, if the suffix m,h.d,w
 are used, then the interval is in minutes, hours, days, or weeks. After the queue expires,
-the contents is dropped, and so gaps in the download data flow can arise.  A value of
+the contents are dropped, and so gaps in the download data flow can arise.  A value of
 1d (day) or 1w (week) can be appropriate to avoid data loss. It depends on how long
 the subscriber is expected to shutdown, and not suffer data loss.
 
@@ -492,7 +492,7 @@ prefetch <N> (default: 1)
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The **prefetch** option sets the number of messages to fetch at one time.
-When multiple instances are running and prefetch is 4, each instance will obtain upto four
+When multiple instances are running and prefetch is 4, each instance will obtain up to four
 messages at a time.  To minimize the number of messages lost if an instance dies and have
 optimal load sharing, the prefetch should be set as low as possible.  However, over long
 haul links, it is necessary to raise this number, to hide round-trip latency, so a setting
@@ -506,7 +506,7 @@ deleted (if it already exists) and recreated according to the component's
 queue options.  This is when a broker option is modified, as the broker will
 refuse access to a queue declared with options that differ from what was
 set at creation.  It can also be used to discard a queue quickly when a receiver 
-has been shut down for a long period. if duplicate suppression is active, then
+has been shut down for a long period. If duplicate suppression is active, then
 the reception cache is also discarded.
 
 The AMQP protocol defines other queue options which are not exposed
@@ -551,7 +551,7 @@ The convention on data pumps is to use the *xpublic* exchange. Users can establi
 private data flow for their own processing. Users can declare their own exchanges
 that always begin with *xs_<username>*, so to save having to specify that each
 time, one can just set *exchange_suffix kk* which will result in the exchange
-being set to *xs_<username>_kk* (overriding the *xpublic* default.) 
+being set to *xs_<username>_kk* (overriding the *xpublic* default). 
 
 subtopic <amqp pattern> (subtopic need to be set)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -608,9 +608,9 @@ Client-side Filtering
 
 We have selected our messages through **exchange**, **subtopic** and
 perhaps patterned  **subtopic** with AMQP's limited wildcarding which
-is all done by the broker (server-side.) The broker puts the 
+is all done by the broker (server-side). The broker puts the 
 corresponding messages in our queue. The subscribed component 
-downloads the these messages.  Once the message is downloaded, Sarracenia 
+downloads these messages.  Once the message is downloaded, Sarracenia 
 clients apply more flexible client side filtering using regular expressions.
 
 Brief Introduction to Regular Expressions
@@ -620,13 +620,13 @@ Regular expressions are a very powerful way of expressing pattern matches.
 They provide extreme flexibility, but in these examples we will only use a
 very trivial subset: The . is a wildcard matching any single character. If it
 is followed by an occurrence count, it indicates how many letters will match
-the pattern. the * (asterisk) character, means any number of occurrences.
-so:
+the pattern. The * (asterisk) character, means any number of occurrences.
+So:
 
  - .* means any sequence of characters of any length. In other words, match anything.
  - cap.* means any sequence of characters that starts with cap.
  - .*CAP.* means any sequence of characters with CAP somewhere in it. 
- - .*cap means any sequence of characters that ends with CAP.  In case where multiple portions of the string could match, the longest one is selected.
+ - .*cap means any sequence of characters that ends with CAP.  In the case where multiple portions of the string could match, the longest one is selected.
  - .*?cap same as above, but *non-greedy*, meaning the shortest match is chosen.
 
 Please consult various internet resources for more information on the full
@@ -657,7 +657,7 @@ with the **directory** option.  They then relate accepted messages
 to the **directory** value they are specified under.
 
 After all **accept** / **reject**  options are processed, normally
-the message acknowledged as consumed and skipped. To override that
+the message is acknowledged as consumed and skipped. To override that
 default, set **accept_unmatch** to True. The **accept/reject** 
 settings are interpreted in order. Each option is processed orderly 
 from top to bottom. For example:
@@ -678,7 +678,7 @@ accepts everything) is encountered before the reject statement, so the reject ha
 
 It is best practice to use server side filtering to reduce the number of announcements sent
 to the component to a small superset of what is relevant, and perform only a fine-tuning with the
-client side mechanisms, saving bandwidth and processing for all. more details on how
+client side mechanisms, saving bandwidth and processing for all. More details on how
 to apply the directives follow:
 
 
@@ -740,13 +740,13 @@ timeout <float> (default: 0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The **timeout** option, sets the number of seconds to wait before aborting a
-connection or download transfer (applied per buffer during transfer.)
+connection or download transfer (applied per buffer during transfer).
 
 inflight <string> (default: .tmp or NONE if post_broker set)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The  **inflight**  option sets how to ignore files when they are being transferred
-or (in mid-flight betweeen two systems.) Incorrect setting of this option causes
+or (in mid-flight betweeen two systems). Incorrect setting of this option causes
 unreliable transfers, and care must be taken.  See `Delivery Completion (inflight)`_ for more details.
 
 The value can be a file name suffix, which is appended to create a temporary name during 
@@ -756,7 +756,7 @@ If **inflight**  ends in / (example: *tmp/* ), then it is a prefix, and specifie
 sub-directory of the destination into which the file should be written while in flight. 
 
 Whether a prefix or suffix is specified, when the transfer is 
-complete, the file is renamed to it's permanent name to allow further processing.
+complete, the file is renamed to its permanent name to allow further processing.
 
 The  **inflight**  option can also be specified as a time interval, for example, 
 10 for 10 seconds.  When set to a time interval, a reader of a file ensures that 
@@ -781,7 +781,7 @@ batch <count> (default: 100)
 The **batch** option is used to indicate how many files should be transferred 
 over a connection, before it is torn down, and re-established.  On very low 
 volume transfers, where timeouts can occur between transfers, this should be
-lowered to 1.  For most usual situations the default is fine. for higher volume
+lowered to 1.  For most usual situations the default is fine. For higher volume
 cases, one could raise it to reduce transfer overhead. It is only used for file
 transfer protocols, not HTTP ones at the moment.
 
@@ -790,13 +790,13 @@ directory <path> (default: .)
 
 The *directory* option defines where to put the files on your server.
 Combined with  **accept** / **reject**  options, the user can select the
-files of interest and their directories of residence. (see the  **mirror**
+files of interest and their directories of residence (see the  **mirror**
 option for more directory settings).
 
 The  **accept**  and  **reject**  options use regular expressions (regexp) to match URL.
-Theses options are processed sequentially. 
+These options are processed sequentially. 
 The URL of a file that matches a  **reject**  pattern is never downloaded.
-One that match an  **accept**  pattern is downloaded into the directory
+One that matches an  **accept**  pattern is downloaded into the directory
 declared by the closest  **directory**  option above the matching  **accept** option.
 **accept_unmatch** is used to decide what to do when no reject or accept clauses matched.
 
@@ -844,7 +844,7 @@ For example ::
 would result in the creation of the directories and the file
 /mylocaldirectory/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
 when a regexp is provide in place of a number, it indicates a pattern to be removed
-from the relative path.  for example if::
+from the relative path.  For example if::
 
    strip  .*?GIF/
 
@@ -863,7 +863,7 @@ flatten <string> (default: '/')
 
 The  **flatten**  option is use to set a separator character. The default value ( '/' )
 nullifies the effect of this option.  This character replaces the '/' in the url 
-directory and create a "flatten" filename form its dd.weather.gc.ca path.  
+directory and create a "flatten" filename from its dd.weather.gc.ca path.  
 For example retrieving the following url, with options::
 
  http://dd.weather.gc.ca/model_gem_global/25km/grib2/lat_lon/12/015/CMC_glb_TMP_TGL_2_latlon.24x.24_2013121612_P015.grib2
@@ -898,7 +898,7 @@ base_dir <path> (default: /)
 
 **base_dir** supplies the directory path that, when combined with the relative
 one in the selected notification gives the absolute path of the file to be sent.
-The defaults is None which means that the path in the notification is the absolute one.
+The default is None which means that the path in the notification is the absolute one.
 
 **FIXME**::
     cannot explain this... do not know what it is myself. This is taken from sender.
@@ -973,8 +973,8 @@ source_from_exchange <boolean> (default: off)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The **source_from_exchange** option is mainly for use by administrators.
-If messages is received posted directly from a source, the exchange used 
-is 'xs_<brokerSourceUsername>'. Such messages be missing *source* and *from_cluster* 
+If messages received are posted directly from a source, the exchange used 
+is 'xs_<brokerSourceUsername>'. Such messages could be missing *source* and *from_cluster* 
 headings, or a malicious user may set the values incorrectly.
 To protect against both problems, administrators should set the **source_from_exchange** option.
 
@@ -1038,18 +1038,18 @@ Permission bits on the destination files written are controlled by the *preserve
 If no source mode is available, the *default_mode* will be applied to files, and the
 *default_dir_mode* will be applied to directories. If no default is specified,
 then the operating system  defaults (on linux, controlled by umask settings)
-will determine file permissions. (note that the *chmod* option is interpreted as a synonym
-for *default_mode*, and *chmod_dir* is a synonym for *default_dir_mode*.)
+will determine file permissions. (Note that the *chmod* option is interpreted as a synonym
+for *default_mode*, and *chmod_dir* is a synonym for *default_dir_mode*).
 
 recompute_chksum <boolean> (default: off)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For each download, the checksum is computed during transfer. If **recompute_chksum**
-is set to True, and the recomputed checksum differ from the on in the message,
+is set to True, and the recomputed checksum differs from the one in the message,
 the new value will overwrite the one from the incoming amqp message. This is used
 when a file is being pulled from a remote non-sarracenia source, in which case a place
 holder 0 checksum is specified. On receipt, a proper checksum should be placed in the
-message for downstream consumers. On can also use this method to override checksum choice.
+message for downstream consumers. One can also use this method to override checksum choice.
 For example, older versions of sarracenia lack SHA-512 hash support, so one could re-write
 the checksums with MD5.   There are also cases, where, for various reasons, the upstream
 checksums are simply wrong, and should be overridden for downstream consumers.
@@ -1059,7 +1059,7 @@ Delivery Completion (inflight)
 ------------------------------
 
 Failing to properly set file completion protocols is a common source of intermittent and
-difficult to diagnose file transfer issues. For reliable file transfers, it is 
+difficult-to-diagnose file transfer issues. For reliable file transfers, it is 
 critical that both the sender and receiver agree on how to represent a file that isn't complete.
 The *inflight* option (meaning a file is *in flight* between the sender and the receiver) supports
 many protocols appropriate for different situations:
@@ -1151,7 +1151,7 @@ Frequent Configuration Errors
    the destination after the file is complete, so there is no danger of it being 
    picked up early.
 
-   When used in-appropriately, there will occasionally be incomplete files delivered.
+   When used inappropriately, there will occasionally be incomplete files delivered.
 
 
 
@@ -1171,13 +1171,13 @@ configured *on_heartbeat* plugins are run. By default there are three present:
  * heartbeat_pulse - confirms that connectivity with brokers is still good. Restores if needed.
 
 The log will contain messages from all three plugins every heartbeat interval, and
-if additional periodic processing is needed, the user can add configure addition
+if additional periodic processing is needed, the user can configure addition
 plugins to run with the *on_heartbeat* option. 
 
 ERROR RECOVERY
 ==============
 
-The tools are meant to work well un-attended, and so when transient errors occur, they do
+The tools are meant to work well unattended, and so when transient errors occur, they do
 their best to recover elegantly.  There are timeouts on all operations, and when a failure
 is detected, the problem is noted for retry.  Errors can happen at many times:
  
@@ -1191,7 +1191,7 @@ Initially, the programs try to download (or send) a file a fixed number (*attemp
 If all three attempts to process the file are unsuccessful, then the file is placed in an instance's
 retry file. The program then continues processing of new items. When there are no new items to
 process, the program looks for a file to process in the retry queue. It then checks if the file
-is so old that it is beyond the *retry_expire* (default: 2 days.) If the file is not expired, then
+is so old that it is beyond the *retry_expire* (default: 2 days). If the file is not expired, then
 it triggers a new round of attempts at processing the file. If the attempts fail, it goes back
 on the retry queue.
 
@@ -1256,15 +1256,15 @@ For example, xpublic does not have xs_ and a username pattern, so it can only be
 Since it ends in public, any user can bind to it to subscribe to messages posted.
 Users can create exchanges such as xs_<amqpUserName>_public which can be written to by that user (by rule 3), 
 and read by others (by rule 2.) A description of the conventional flow of messages through exchanges on a pump.  
-Subscribers usually bind to the xpublic exchange to get the main data feed. this is the default in sr_subscribe.
+Subscribers usually bind to the xpublic exchange to get the main data feed. This is the default in sr_subscribe.
 
 Another example, a user named Alice will have at least two exchanges:
 
-  - xs_Alice the exhange where Alice posts her file notifications and report messages.(via many tools)
-  - xr_Alice the exchange where Alice reads her report messages from (via sr_report)
-  - Alice can create a new exchange by just posting to it (with sr_post or sr_cpost.) if it meets the naming rules.
+  - xs_Alice the exhange where Alice posts her file notifications and report messages (via many tools).
+  - xr_Alice the exchange where Alice reads her report messages from (via sr_report).
+  - Alice can create a new exchange by just posting to it (with sr_post or sr_cpost) if it meets the naming rules.
 
-usually an sr_sarra run by a pump administrator will read from an exchange such as xs_Alice_mydata, 
+Usually an sr_sarra run by a pump administrator will read from an exchange such as xs_Alice_mydata, 
 retrieve the data corresponding to Alice´s *post* message, and make it available on the pump, 
 by re-announcing it on the xpublic exchange.
 
@@ -1284,7 +1284,7 @@ stored in that file to connect to the same queue, and not lose any messages.
 File downloads can be parallelized by running multiple sr_subscribes using
 the same queue.  The processes will share the queue and each download 
 part of what has been selected.  Simply launch multiple instances
-of sr_subscribe in the same user/directory using the same configuration file, 
+of sr_subscribe in the same user/directory using the same configuration file. 
 
 You can also run several sr_subscribe with different configuration files to
 have multiple download streams delivering into the the same directory,
@@ -1309,9 +1309,9 @@ This is done with option :
 - **report_back <boolean>        (default: True)** 
 - **report_exchange <report_exchangename> (default: xreport|xs_*username* )**
 
-When a report is generated, it is sent to the configured *report_exchange*. Administrive
+When a report is generated, it is sent to the configured *report_exchange*. Administrative
 components post directly to *xreport*, whereas user components post to their own 
-exchanges (xs_*username*.) The report daemons then copy the messages to *xreport* after validation.
+exchanges (xs_*username*). The report daemons then copy the messages to *xreport* after validation.
 
 These reports are used for delivery tuning and for data sources to generate statistical information.
 Set this option to **False**, to prevent generation of reports.
@@ -1322,7 +1322,7 @@ LOGS
 ====
 
 Components write to log files, which by default are found in ~/.cache/sarra/var/log/<component>_<config>_<instance>.log.
-at the end of the day, These logs are rotated automatically by the components, and the old log gets a date suffix.
+At the end of the day, these logs are rotated automatically by the components, and the old log gets a date suffix.
 The directory in which the logs are stored can be overridden by the **log** option, and the number of days' logs to keep
 is set by the 'logrotate' parameter.  Log files older than **logrotate** duration are deleted.  A duration takes a time unit suffix, such as 'd' for days, 'w' for weeks, or 'h' for hours.
 
@@ -1337,7 +1337,7 @@ is set by the 'logrotate' parameter.  Log files older than **logrotate** duratio
 
 - **chmod_log** the permission bits to set on log files (default 0600 )
 
-placement is as per: `XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.rst>`_ ) setting the XDG_CACHE_HOME environment variable.
+Placement is as per: `XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.rst>`_ ) setting the XDG_CACHE_HOME environment variable.
 
 
 INSTANCES
@@ -1347,8 +1347,8 @@ Sometimes one instance of a component and configuration is not enough to process
 
 **instances      <integer>     (default:1)**
 
-The instance option allows launching serveral instances of a component and configuration.
-When running sr_sender for example, a number of runtime files that are created.
+The instance option allows launching several instances of a component and configuration.
+When running sr_sender for example, a number of runtime files are created.
 In the ~/.cache/sarra/sender/configName directory::
 
   A .sr_sender_configname.state         is created, containing the number instances.
@@ -1376,7 +1376,7 @@ The logs can be written in another directory than the default one with option :
   period will be destroyed. 
 
 .. Note::
-   FIXME  The last sentence is not really right...sr_audit does track the queues'age. 
+   FIXME  The last sentence is not really right...sr_audit does track the queues' age. 
           sr_audit acts when a queue gets to the max_queue_size and not running.
           
 
@@ -1401,7 +1401,7 @@ moving vip.
 **vip 153.14.126.3**
 
 When **sr_subscribe** does not find the vip, it sleeps for 5 seconds and retries.
-If it does, it consumes and process a message and than rechecks for the vip.
+If it does, it consumes and processes a message and than rechecks for the vip.
 
 
 POSTING OPTIONS
@@ -1416,7 +1416,7 @@ output **AMQP** broker.
 **post_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
 Once connected to the source AMQP broker, the program builds notifications after
-the download of a file has occured. To build the notification and send it to
+the download of a file has occurred. To build the notification and send it to
 the next hop broker, the user sets these options :
 
  - **[--blocksize <value>]            (default: 0 (auto))**
@@ -1432,7 +1432,7 @@ the next hop broker, the user sets these options :
 -----------------------------------------
 
 This **blocksize** option controls the partitioning strategy used to post files.
-the value should be one of::
+The value should be one of::
 
    0 - autocompute an appropriate partitioning strategy (default)
    1 - always send entire files in a single part.
@@ -1440,7 +1440,7 @@ the value should be one of::
 
 Files can be announced as multiple parts.  Each part has a separate checksum.
 The parts and their checksums are stored in the cache. Partitions can traverse
-the network separately, and in paralllel.  When files change, transfers are
+the network separately, and in parallel.  When files change, transfers are
 optimized by only sending parts which have changed.
 
 The *outlet* option allows the final output to be other than a post.  
@@ -1452,9 +1452,9 @@ See `sr_cpump(1) <sr_cpump.1.rst>`_ for details.
 The *post_base_dir* option supplies the directory path that, when combined (or found) 
 in the given *path*, gives the local absolute path to the data file to be posted.
 The *post_base_dir* part of the path will be removed from the posted announcement.
-for sftp: url's it can be appropriate to specify a path relative to a user account.
+For sftp urls it can be appropriate to specify a path relative to a user account.
 Example of that usage would be:  -pbd ~user  -url sftp:user@host
-for file: url's, base_dir is usually not appropriate.  To post an absolute path,
+For file: url's, base_dir is usually not appropriate.  To post an absolute path,
 omit the -pbd setting, and just specify the complete path as an argument.
 
 post_url <url> (MANDATORY)
@@ -1468,7 +1468,7 @@ post_exchange <name> (default: xpublic)
 ---------------------------------------
 
 The **post_exchange** option set under which exchange the new notification
-will be posted.  Im most cases it is 'xpublic'.
+will be posted.  In most cases it is 'xpublic'.
 
 Whenever a publish happens for a product, a user can set to trigger a script.
 The option **on_post** would be used to do such a setup.
@@ -1480,7 +1480,7 @@ The **post_exchange_split** option appends a two digit suffix resulting from
 hashing the last character of the checksum to the post_exchange name,
 in order to divide the output amongst a number of exchanges.  This is currently used
 in high traffic pumps to allow multiple instances of sr_winnow, which cannot be
-instanced in the normal way.  example::
+instanced in the normal way.  Example::
 
     post_exchange_split 5
     post_exchange xwinnow
@@ -1520,7 +1520,7 @@ Sources of data need to indicate the clusters to which they would like data to b
 PUMPING is implemented by administrators, and refers copying data between pumps. Pumping is
 accomplished using on_message plugins which are provided with the package.
 
-when messages are posted, if not destination is specified, the delivery is assumed to be 
+When messages are posted, if no destination is specified, the delivery is assumed to be 
 only the pump itself.  To specify the further destination pumps for a file, sources use 
 the *to* option on the post.  This option sets the to_clusters field for interpretation 
 by administrators.
@@ -1528,7 +1528,7 @@ by administrators.
 Data pumps, when ingesting data from other pumps (using shovel, subscribe or sarra components)
 should include the *msg_to_clusters* plugin and specify the clusters which are reachable from
 the local pump, which should have the data copied to the local pump, for further dissemination.
-sample settings::
+Sample settings::
 
   msg_to_clusters DDI
   msg_to_clusters DD
@@ -1536,12 +1536,12 @@ sample settings::
   on_message msg_to_clusters
 
 Given this example, the local pump (called DDI) would select messages destined for the DD or DDI clusters,
-and reject those for DDSR, which isn't in the list.  This implies that there DD pump may flow
+and reject those for DDSR, which isn't in the list.  This implies that the DD pump may flow
 messages to the DD pump.
 
-The above takes care of forward routing of messages and data to data consumers.  Once consumers
+The above takes care of forward routing of messages and data-to-data consumers.  Once consumers
 obtain data, they generate reports, and those reports need to propagate in the opposite direction,
-not necessarily by the same route, back to the sources.  report routing is done using the *from_cluster*
+not necessarily by the same route, back to the sources.  Report routing is done using the *from_cluster*
 header.  Again, this defaults to the pump where the data is injected, but may be overridden by
 administrator action.
 
@@ -1561,10 +1561,10 @@ PLUGIN SCRIPTS
 
 One can override or add functionality with python plugins scripts.
 Sarracenia comes with a variety of example plugins, and uses some to implement base functionality,
-such as logging (implemented by default use of msg_log, file_log, post_log plugins. )
+such as logging (implemented by default use of msg_log, file_log, post_log plugins).
 
 Users can place their own scripts in the script sub-directory
-of their config directory tree ( on Linux, the ~/.config/sarra/plugins.) 
+of their config directory tree ( on Linux, the ~/.config/sarra/plugins). 
 
 There are three varieties of scripts:  do\_* and on\_*.  Do\_* scripts are used
 to implement functions, adding or replacing built-in functionality, for example, to implement
@@ -1582,13 +1582,13 @@ additional transfer protocols.
 
 These transfer protocol scripts should be declared using the **plugin** option.
 Aside the targetted built-in function(s), a module **registered_as** that defines
-a list of protocols that theses functions supports.  Exemple :
+a list of protocols that these functions supports.  Example :
 
 def registered_as(self) :
        return ['ftp','ftps']
 
 Registering in such a way a plugin, if function **do_download** was provided in that plugin
-than for any download of a message with an ftp or ftps url, it is that function that would be called.
+then for any download of a message with an ftp or ftps url, it is that function that would be called.
 
 
 On\_* plugins are used more often. They allow actions to be inserted to augment the default
@@ -1611,9 +1611,9 @@ configuration file specify an on_<event> option. The event can be one of:
 - on_line -- In **sr_poll** a line from the ls on the remote host is read in.
 
 - on_message -- when an sr_post(7) message has been received.  For example, a message has been received
-  and additional criteria are being evaluated for download of the corresponding file.  if the on_msg
-  script returns false, then it is not downloaded.  (see discard_when_lagging.py, for example,
-  which decides that data that is too old is not worth downloading.)
+  and additional criteria are being evaluated for download of the corresponding file.  If the on_msg
+  script returns false, then it is not downloaded.  (See discard_when_lagging.py, for example,
+  which decides that data that is too old is not worth downloading).
 
 - on_part -- Large file transfers are split into parts.  Each part is transferred separately.
   When a completed part is received, one can specify additional processing.
@@ -1647,22 +1647,22 @@ The simplest example of a plugin: A do_nothing.py script for **on_file**::
 
 The last line of the script is specific to the kind of plugin being
 written, and must be modified to correspond (on_file or an on_file, on_message 
-for an on_message, etc...) The plugins stack. For example, one can have 
+for an on_message, etc...) the plugin's stack. For example, one can have 
 multiple *on_message* plugins specified, and they will be invoked in the order 
 given in the configuration file.  Should one of these scripts return False, 
 the processing of the message/file will stop there.  Processing will only 
 continue if all configured plugins return True.  One can specify *on_message None* to 
-reset the list to no plugins (removes msg_log, so it suppresses logging of message receipt.)
+reset the list to no plugins (removes msg_log, so it suppresses logging of message receipt).
 
 The only argument the script receives is **parent**, which is a data
 structure containing all the settings, as **parent.<setting>**, and
 the content of the message itself as **parent.msg** and the headers
 are available as **parent.msg[ <header> ]**.  The path to write a file
-to is available as There is also **parent.msg.new_dir** / **parent.msg.new_file**
+to is available as there is also **parent.msg.new_dir** / **parent.msg.new_file**
 
-There is also registered plugins used to add or overwrite built-in 
+There are also registered plugins used to add or overwrite built-in 
 transfer protocol scripts. They should be declared using the **plugin** option.
-They must register the protocol (url scheme) that they indent to provide services for.
+They must register the protocol (url scheme) that they intend to provide services for.
 The script for transfer protocols are :
 
 - do_download - to implement additional download protocols.
@@ -1709,11 +1709,11 @@ The simplest example of a plugin: A do_nothing.py script for **on_file**::
 This plugin registers for sftp. A sender with such a plugin would put the product using scp.
 It would be confusing for scp to have the source path with a ':' in the filename... Here the
 case is handled by returning None and letting python sending the file over. The **parent**
-argument holds all the needed program informations.
+argument holds all the needed program information.
 Some other available variables::
 
-  parent.msg.new_file     :  name of the file to write.
-  parent.msg.new_dir      :  name of the directory in which to write the file.
+  parent.msg.new_file     :  name of the file to write
+  parent.msg.new_dir      :  name of the directory in which to write the file
   parent.msg.local_offset :  offset position in the local file
   parent.msg.offset       :  offset position of the remote file
   parent.msg.length       :  length of file or part
@@ -1787,7 +1787,7 @@ around::
   post_broker amqp://tfeed@localhost/
 
 The configuration relies on the use of an administrator or feeder account.
-note the queue which has messages in it, in this case q_tsub.sr_subscribe.t.99524171.43129428.  Invoke the shovel in save mode to consumer messages from the queue
+Note the queue which has messages in it, in this case q_tsub.sr_subscribe.t.99524171.43129428.  Invoke the shovel in save mode to consume messages from the queue
 and save them to disk::
 
   % cd ~/tools
@@ -1817,8 +1817,8 @@ and save them to disk::
   % 
 
 The messages are written to a file in the caching directory for future use, with
-the name of the file being based on the configuration name used.   the file is in
-json format, one message per line (lines are very long.) and so filtering with other tools
+the name of the file being based on the configuration name used.   The file is in
+json format, one message per line (lines are very long) and so filtering with other tools
 is possible to modify the list of saved messages.  Note that a single save file per
 configuration is automatically set, so to save multiple queues, one would need one configurations
 file per queue to be saved.  Once the subscriber is back in service, one can return the messages
@@ -1849,8 +1849,8 @@ All the messages saved are returned to the named *return_to_queue*. Note that th
 plugin prevents the queue from being flooded with hundreds of messages per second. The rate limit to use will need
 to be tuned in practice.
 
-by default the file name for the save file is chosen to be in ~/.cache/sarra/shovel/<config>_<instance>.save.
-To Choose a different destination, *save_file* option is available::
+By default the file name for the save file is chosen to be in ~/.cache/sarra/shovel/<config>_<instance>.save.
+To choose a different destination, *save_file* option is available::
 
   sr_shovel -save_file `pwd`/here -restore_to_queue q_tsub.sr_subscribe.t.99524171.43129428 ./save.conf foreground
 
@@ -1887,7 +1887,7 @@ subscriber
   A subscriber is user that can only subscribe to data and return report messages. Subscribers are
   not permitted to inject data.  Each subscriber has an xs_<user> named exchange on the pump,
   where if a user is named *Acme*, the corresponding exchange will be *xs_Acme*.  This exchange
-  is where an sr_subscribe process will send it's report messages.
+  is where an sr_subscribe process will send its report messages.
 
   By convention/default, the *anonymous* user is created on all pumps to permit subscription without
   a specific account.
@@ -1898,11 +1898,11 @@ source
   A user permitted to subscribe or originate data.  A source does not necessarily represent
   one person or type of data, but rather an organization responsible for the data produced.
   So if an organization gathers and makes available ten kinds of data with a single contact
-  email or phone number for questions about the data and it's availability, then all of
+  email or phone number for questions about the data and its availability, then all of
   those collection activities might use a single 'source' account.
 
   Each source gets a xs_<user> exchange for injection of data posts, and, similar to a subscriber
-  to send report messages about processing and receipt of data. source may also have an xl_<user>
+  to send report messages about processing and receipt of data. Source may also have an xl_<user>
   exchange where, as per report routing configurations, report messages of consumers will be sent.
 
 User credentials are placed in the credentials files, and *sr_audit* will update
@@ -1928,7 +1928,7 @@ called *myflow* would be here:
  - MAC: FIXME.
 
 The top of the tree has  *~/.config/sarra/default.conf* which contains settings that
-are read as defaults for any component on start up.  in the same directory, *~/.config/sarra/credentials.conf* contains credentials (passwords) to be used by sarracenia ( `CREDENTIALS`_ for details. )
+are read as defaults for any component on start up.  In the same directory, *~/.config/sarra/credentials.conf* contains credentials (passwords) to be used by sarracenia ( `CREDENTIALS`_ for details. )
 
 One can also set the XDG_CONFIG_HOME environment variable to override default placement, or 
 individual configuration files can be placed in any directory and invoked with the 
@@ -1971,7 +1971,7 @@ SEE ALSO
 
 **Pump Adminisitrator Commands:**
 
-`sr_shovel(8) <sr_shovel.8.rst>`_ - process messages (no downloading.)
+`sr_shovel(8) <sr_shovel.8.rst>`_ - process messages (no downloading).
 
 `sr_winnow(8) <sr_winnow.8.rst>`_ - a shovel with cache on, to winnow wheat from chaff.
 
@@ -1986,7 +1986,7 @@ SEE ALSO
 
 `sr_post(7) <sr_post.7.rst>`_ - The format of announcement messages.
 
-`sr_report(7) <sr_report.7.rst>`_ - the format of report messages.
+`sr_report(7) <sr_report.7.rst>`_ - The format of report messages.
 
 `sr_pulse(7) <sr_pulse.7.rst>`_ - The format of pulse messages.
 
@@ -2048,7 +2048,7 @@ The possible keywords are :
 **accept <regexp pattern> [<keyword>]**
 
 keyword can be added to the **accept** option. The keyword is any one of the **filename**
-tion.  A message that matched against the accept regexp pattern, will have its remote_file
+options.  A message that matched against the accept regexp pattern, will have its remote_file
 plied this keyword option.  This keyword has priority over the preceeding **filename** one.
 
 The **regexp pattern** can be use to set directory parts if part of the message is put
@@ -2056,7 +2056,7 @@ to parenthesis. **sr_sender** can use these parts to build the directory name. T
 rst enclosed parenthesis strings will replace keyword **${0}** in the directory name...
 the second **${1}** etc.
 
-example of use::
+Example of use::
 
 
       filename NONE
@@ -2084,7 +2084,7 @@ A selected message by the third accept would be renamed "file_of_type3" in the s
 
 A selected message by the forth accept would be delivered unchanged to a directory.
 
-named  */this/20160123/pattern/RAW_MERGER_GRIB/directory* if the message would have a notice like:
+It's named  */this/20160123/pattern/RAW_MERGER_GRIB/directory* if the message would have a notice like:
 
 **20150813161959.854 http://this.pump.com/ relative/path/to/20160123_product_RAW_MERGER_GRIB_from_CMC**
 
@@ -2101,14 +2101,14 @@ gives the WMO (386 style) Abbreviated Header Line (AHL) with underscores replaci
    TTAAii CCCC YYGGGg BBB ...  
 
 (see WMO manuals for details) followed by numbers to render the product unique (as in practice, 
-though not in theory, there are a large number of products which have the same identifiers.)
+though not in theory, there are a large number of products which have the same identifiers).
 The meanings of the fifth field is a priority, and the last field is a date/time stamp.  
 The other fields vary in meaning depending on context.  A sample file name::
 
    SACN43_CWAO_012000_AAA_41613:ncp1:CWAO:SA:3.A.I.E:3:20050201200339
 
 If a file is sent to sarracenia and it is named according to the sundew conventions, then the 
-following substition fields are available::
+following substitution fields are available::
 
   ${T1}    replace by bulletin's T1
   ${T2}    replace by bulletin's T2
@@ -2127,7 +2127,7 @@ following substition fields are available::
   ${RMN}   replace by reception minutes
   ${RSS}   replace by reception second
 
-The 'R' fields from from the sixth field, and the others come from the first one.
+The 'R' fields come from the sixth field, and the others come from the first one.
 When data is injected into sarracenia from Sundew, the *sundew_extension* message header
 will provide the source for these substitions even if the fields have been removed
 from the delivered file names.
@@ -2155,10 +2155,10 @@ HISTORY
 
 Dd_subscribe was initially developed for  **dd.weather.gc.ca**, an Environment Canada website 
 where a wide variety of meteorological products are made available to the public. It is from
-the name of this site that the sarracenia suite takes the dd\_ prefix for it's tools.  The initial
+the name of this site that the sarracenia suite takes the dd\_ prefix for its tools.  The initial
 version was deployed in 2013 on an experimental basis.  The following year, support of checksums
 was added, and in the fall of 2015, the feeds were updated to v02.  dd_subscribe still works,
-but it uses the deprecated settings described above.  It is implemented python2, whereas
+but it uses the deprecated settings described above.  It is implemented in python2, whereas
 the sarracenia toolkit is in python3.
 
 In 2007, when the MetPX was originally open sourced, the staff responsible were part of
@@ -2168,9 +2168,9 @@ because search engines will find references to names which are more unusual more
 the original MetPX WMO switch was named after a carnivorous plant on the Species At
 Risk Registry:  The *Thread-leaved Sundew*.  
 
-The organization behind Metpx have since moved to Shared Services Canada, but when
+The organization behind MetPX have since moved to Shared Services Canada, but when
 it came time to name a new module, we kept with a theme of carnivorous plants, and 
-chose another one indigenous to some parts of Canada: *Sarracenia* any of a variety
+chose another one indigenous to some parts of Canada: *Sarracenia*,  a variety
 of insectivorous pitcher plants. We like plants that eat meat!  
 
 
@@ -2178,7 +2178,7 @@ dd_subscribe Renaming
 ---------------------
 
 The new module (MetPX-Sarracenia) has many components, is used for more than 
-distribution, and more than one web site, and causes confusion for sys-admins thinking
+distribution, and more than one website, and causes confusion for sysadmins thinking
 it is associated with the dd(1) command (to convert and copy files).  So, we switched
 all the components to use the sr\_ prefix.
 

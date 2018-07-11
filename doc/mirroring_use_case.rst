@@ -9,7 +9,7 @@
 .. warning::
 
    **CAVEAT:** 
-   This is a bit speculative at the time of this writing (2018/01) We expect to deploy over the winter
+   This is a bit speculative at the time of this writing (2018/01). We expect to deploy over the winter
    and be completed in 2018/03. Given the volumes being copied the exact performance isn't easily measured.
    This article will be amended to reflect the advancing solution, until complete, then this note will be removed.
 
@@ -21,7 +21,7 @@ Summary
 
 This project has taken longer than expected, over a year, as the problem space was explored with the 
 help of a very patient client while the tool to design and implement the efficient solution was eventually 
-settled on. The client as actually more of a partner, who had very large test cases available and 
+settled on. The client is actually more of a partner, who had very large test cases available and 
 ended up shouldering the responsibility for all of us to understand whether the solution was working or not. 
 While there are many specificities of this implementation, the resulting tool relies on no specific features 
 beyond a normal Linux file system to achieve a 72:1 speedup compared to rsync on real-time continuous 
@@ -70,7 +70,7 @@ HPCR Solution Overview
 
 
 In the diagram above, if operations are in Data Hall 1 (left of centre) and they fail, then the goal is to resume 
-operations promptly from data hall 2 (on the right.) For this to be realistic, production data must be available 
+operations promptly from Data Hall 2 (on the right). For this to be realistic, production data must be available 
 in the other hall, on the other site store, quickly. The *mirroring* problem is synchronizing a very large 
 subset of data between site store 1 and site store 2. For monitoring purposes, at the same time, a smaller 
 subset to must be mirrored to data hall 0.
@@ -80,14 +80,14 @@ Continuous Mirrorring
 ---------------------
 
 There is a pair of clusters running these simulations, one normally mostly working on operations,
-and the other as a *spare* (running only research and development loads.)  When the primary fails,
+and the other as a *spare* (running only research and development loads).  When the primary fails,
 the intent is to run operations on the other supercomputer, using a *spare* disk to which all the
 live data has been mirrored. As there are (nearly) always runs in progress, the directories never 
 stop being modified, and there is no maintenance period when one can catch up if one falls behind.
 
 There are essentially three parts of the problem:
  
- * Detection: obtain the list of files which have been modified (recently.)
+ * Detection: obtain the list of files which have been modified (recently).
  * Transfer: copy them to the other cluster.
  * Performance: aspirational deadline to deliver a mirrored file: five minutes.
  
@@ -112,9 +112,9 @@ amounts involved.  Nor was that data even available until much later.
 The most efficient way to copy these trees, as was stated at the outset, would be for all of the jobs 
 writing files in the trees to explicitly announce the files to be copied. This would involve users 
 modifying their jobs to include invocation of sr_post (a command which queues up file transfers for 
-third parties to perform.) ECCC set the additional constraint that modification of user jobs was 
+third parties to perform). ECCC set the additional constraint that modification of user jobs was 
 not feasible, so the method used to obtain the list of files to copy had to be implicit (done by the 
-system without active user involvement.)
+system without active user involvement).
  
 Reading the Tree Takes Too Long
 -------------------------------
@@ -122,7 +122,7 @@ Reading the Tree Takes Too Long
 One could just scan at a higher level in order to scan a single parent directory, but the half-dozen 
 sub-trees trees were picked in order to have smaller ones which worked more quickly, regardless of the 
 method being used to obtain lists of new files. What do we mean when we say these trees are too large? 
-The largest of these trees is *hubs* ( /fs/site1/ops/eccc/cmod/prod/hubs. ) rsync was run on the *hubs* 
+The largest of these trees is *hubs* ( /fs/site1/ops/eccc/cmod/prod/hubs ). rsync was run on the *hubs* 
 directory, as just walking the tree once, without any file copying going on. The walk of the tree, using 
 rsync with checksumming disabled as an optimization, resulted in the log below::
  
@@ -150,21 +150,21 @@ in the tree. This was the initial approach taken. It turns out (in January 2017)
 Linux feature, in that the INOTIFY events only propagate across a single server. With a cluster file 
 system like GPFS, one needs to run an INOTIFY monitor on every kernel where files are written. So rather 
 than running a single daemon, we were faced with running several hundred daemons (one per physical node), 
-each monitoring the same set of 10's of millions of files. Since the deamons were running on many nodes, 
+each monitoring the same set of tens of millions of files. Since the deamons were running on many nodes, 
 the memory use rose into the terabyte range. 
  
 An alternate approach is, instead of running the modification detection at the Linux level, use the file 
 system itself, which is database driven, to indicate which files had been modified. The HPC solution's main 
 storage system uses IBM's General Parallel File System, or GPFS. Using the *GPFS-policy* method, a query is 
 run against the file system database at as high a rhythm as can be sustained (around five to ten minutes per 
-query.) combined with sr_poll to announce of files modified (and thus eligible for copying.) This is 
+query) combined with sr_poll to announce the files modified (and thus eligible for copying). This is 
 completely non-portable, but was expected to be much faster than file tree traversal.
  
-Over the winter 2016/2017, both of these methods were implemented. The Inotify based sr_watch was the 
+Over the winter 2016/2017, both of these methods were implemented. The INOTIFY-based sr_watch was the 
 fastest method (instantaneous), but the daemons were having stability and memory consumption problems, 
-and they also took too long to startup ( requires an initial tree traversal, which takes the same time 
+and they also took too long to startup (requires an initial tree traversal, which takes the same time 
 as the rsync). While slower (taking longer to notice a file was modified), the GPFS policy had *acceptable* 
-performance and was far more reliable than the parallel sr_watch method,and by the spring, with deployment 
+performance and was far more reliable than the parallel sr_watch method, and by the spring, with deployment 
 expected for early July 2017, the GPFS policy approach was selected.
  
 As the migration progressed, the file systems grew in that they had more files in the trees, and the GPFS-policy 
@@ -183,36 +183,36 @@ files to be copied' part of the problem, we were also working on the 'copy the f
 other side' part of the problem. Over the summer, results of performance tests and other 
 considerations militated frequent changes in tactics.  The *site stores* are clusters in 
 their own right.  They have protocol nodes for serving traffic outside of the GPFS cluster. There are
-siteio nodes with infiniband connections and actual disks.  the protocol nodes (called nfs or proto) 
+siteio nodes with infiniband connections and actual disks.  The protocol nodes (called nfs or proto) 
 are participants in the GPFS cluster dedicated to i/o operations, used to offload i/o from the 
 main compute clusters (PPP and Supercomputer), which have comparable connections to the site store
 as the protocol nodes. 
 
-There are multiple networks (40GigE, Infiniband, as well as management networks.) and the one
+There are multiple networks (40GigE, Infiniband, as well as management networks) and the one
 to use needs to be chosen as well.  Then there are the methods of communication (ssh over tcp/ip?
-bbcp over tcp/ip? GPFS over tcpip? ipoib? native-ib? )
+bbcp over tcp/ip? GPFS over tcpip? ipoib? native-ib?).
 
 .. image:: site-store.jpg
 
 Many different sources and destinations (ppp, nfs, and protocol nodes), as well many different 
-methods ( rcp, scp, bbcp, sscp, cp, dd ) and were all trialled to different degrees at different 
+methods (rcp, scp, bbcp, sscp, cp, dd) and were all trialled to different degrees at different 
 times. At this point several strengths of sarracenia were evident:
 
 * The separation of publishing from subscribing means that one can subscribe on the source node 
   and push to the destination, or on the destination and pull from the source. It is easy to 
-  adapt for either approach. (ended up on destination protocol nodes, pulling from the source 
+  adapt for either approach (ended up on destination protocol nodes, pulling from the source).
 
 * The separation of copying from the computational jobs means that the models run times are 
   unaffected, as the i/o jobs are completely separate.
 
-* The ability to scale the number of workers to the performance needed.  (Eventually settled 
-  on 40 workers performing copies in parallel.)
+* The ability to scale the number of workers to the performance needed (eventually settled 
+  on 40 workers performing copies in parallel).
 
 * The availability of plugins *download_cp*, *download_rcp*, *download_dd*, allow many different 
   copy programs (and hence protocols) to be easily applied to the transfer problem.
 
 Many different criteria were considered (such as: load on nfs/protocol nodes, other nodes, 
-transfer speed, load on PPP nodes,) The final configuration selected of using *cp* (via the 
+transfer speed, load on PPP nodes). The final configuration selected of using *cp* (via the 
 *download_cp* plugin) initiated from the receiving site store's protocol nodes.  So the reads
 would occur via GPFS over IPoIB, and the writes would be done over native GPFS over IB.
 This was not the fastest transfer method tested (*bbcp* was faster) but it was selected because 
@@ -224,33 +224,33 @@ is minimized.
 Shim Library Necessary
 ----------------------
 
-Unfortunately, the mirroring between sites was running with about a 10 minutes lag on the source files 
-system ( about 30 times faster than a naive rsync approach. ), and was only working in principle, with 
-many files missing in practice, it wasn't usable for it's intended purpose. The operational commissioning of the 
-HPCR solution as a whole (with mirroring deferred.) occurred in September of 2017, and work on mirroring essentially 
-stopped until October (because of activities related to the commissioning work.)
+Unfortunately, the mirroring between sites was running with about a 10-minute lag on the source files 
+system (about 30 times faster than a naive rsync approach), and was only working in principle, with 
+many files missing in practice, it wasn't usable for its intended purpose. The operational commissioning of the 
+HPCR solution as a whole (with mirroring deferred) occurred in September of 2017, and work on mirroring essentially 
+stopped until October (because of activities related to the commissioning work).
 
 We continued work on two approaches, the libcshim, and the GPFS-policy. The queries run by the GPFS-policy had to to be tuned, eventually 
 an overlap of 75 seconds (where a succeeding query would ask for file modifications up to a point 75 seconds before the last one 
-ended.) because there were issues with files being missing in the copies. Even with this level of overlap, there were still missing 
+ended) because there were issues with files being missing in the copies. Even with this level of overlap, there were still missing 
 files. At this point, in late November, early December, the libcshim was working well enough to be so encouraging that folks lost 
-interest in the GPFS policy. In contrast to an average of about 10 minutes delay starting a file copy with GPFS-policy queries, 
+interest in the GPFS policy. In contrast to an average of about a 10-minute delay starting a file copy with GPFS-policy queries, 
 the libcshim approach has the copy queued as soon as the file is closed on the source file system.
 
 It should be noted that when the work began, the python implementation of Sarracenia was a data distribution tool, with no support for mirroring.
-as the year progressed features:  symbolic link support, file attribute transportation, file removal support were added to the initial package.
+As the year progressed features (symbolic link support, file attribute transportation, file removal support) were added to the initial package.
 The idea of periodic processing (called heartbeats) was added, first to detect failures of clients (by seeing idle logs) but later to initiate
 garbage collection for the duplicates cache, memory use policing, and complex error recovery. The use case precipitated many improvements in
-the application, including a second implementation in C for environments where a python3 environment was difficult to establish, or
-where efficiency was paramount (the libcshim case.)
+the application, including a second implementation in C for environments where a Python3 environment was difficult to establish, or
+where efficiency was paramount (the libcshim case).
 
 Does it Work?
 -------------
 
-In December 2017, the software for the libcshim approach looks ready, it is deployed in some small parallel (non-operational runs.) It is
+In December 2017, the software for the libcshim approach looks ready, it is deployed in some small parallel (non-operational runs). It is
 expected that in January 2018, more parallel runs will be tried, and it should proceed to operations this winter. It is expected that the
 delay in files appearing on the second file system will be on the order of five minutes after they are written on the source tree, 
-or 72 times faster than rsync (see next section for performance info.)
+or 72 times faster than rsync (see next section for performance info).
 
 The question naturally arose, if the directory tree cannot be traversed, how do we know that the source and destination trees are the same?
 A program to pick random files on the source tree is used to feed an sr_poll, which then adjusts the path to compare it to the same file
@@ -267,8 +267,8 @@ is still in development.
 Is it Fast?
 -----------
 
-The GPFS-policy runs are the still the method in use operatonally as this is written (2018/01.) The performance numbers given in 
-the summary are taken from the logs of one days of GPFS-policy runs. 
+The GPFS-policy runs are the still the method in use operationally as this is written (2018/01). The performance numbers given in 
+the summary are taken from the logs of one day of GPFS-policy runs. 
 
  * Hall1 to Hall2: bytes/days: 18615163646615 = 16T, nb file/day:  1901463
  * Hall2 yo CMC: bytes/days: 4421909953006 = 4T, nb file/day: 475085
@@ -276,19 +276,19 @@ the summary are taken from the logs of one days of GPFS-policy runs.
 All indications are that the shim library copies more data more quickly than the policy based runs, 
 but so far (2018/01) only subsets of the main tree have been tested.  On one tree of 142000 files, the GPFS-policy run had a mean 
 transfer time of 1355 seconds (about 23 minutes), where the shim library approach had a mean transfer time of 239 seconds (less than 
-five minutes.) or a speedup for libshim vs. GPFS-policy of about 4:1. On a second tree where the shim library transferred 144 
+five minutes) or a speedup for libshim vs. GPFS-policy of about 4:1. On a second tree where the shim library transferred 144 
 thousand files in a day, the mean transfer time was 264 seconds, where the same tree with the GPFS-policy approach took 1175 
-(basically 20 minutes) The stats are accumulated for particular hours, and at low traffic times, the average transfer time with 
-the shim library was 0.5 seconds, vs. 166 seconds with the policy. One could claim a 300:1 speedup, but this is just inherent to 
+(basically 20 minutes). The stats are accumulated for particular hours, and at low traffic times, the average transfer time with 
+the shim library was 0.5 seconds vs. 166 seconds with the policy. One could claim a 300:1 speedup, but this is just inherent to 
 the fact that GPFS-policy method must be limited to a certain polling interval (five minutes) to limit impact on the file system, 
 and that provides a lower bound on transfer latency. 
 
 On comparable trees, the number of files being copied with the shim library is always higher than with the GPFS-policy. While 
 correctness is still being evaluated, the shim method is apparently working better than the policy runs. If we return to the 
-original rsync performance of 6 hours for the tree, then the ratio we expect to deliver on is six hours vs. 5 minutes ... 
+original rsync performance of 6 hours for the tree, then the ratio we expect to deliver on is 6 hours vs. 5 minutes ... 
 or 72:1 speedup. 
 
-the above is based on the following client report:
+The above is based on the following client report:
 
 .. code:: bash
  
@@ -406,7 +406,7 @@ Contributions
 **Dominic Racette** - ECCC CMC Operations Implementation 
 
    Client lead on the mirroring project.  A lot of auditing and running of tests.
-   integration/deployment of copying plugins. a great deal of testing and extraction of log reports.
+   Integration/deployment of copying plugins. A great deal of testing and extraction of log reports.
 
 **Doug Bender** - ECCC CMC Operations Implementation
 
@@ -432,8 +432,8 @@ Contributions
 
 **Jun Hu**  - SSC DCSB Supercomputing Data Interchange
 
-   Deployment lead for SSC, Developed GPFS-policy Sarracenia integration plugins, 
-   implemented them within sr_poll, worked with CMOI on deployments
+   Deployment lead for SSC, developed GPFS-policy Sarracenia integration plugins, 
+   implemented them within sr_poll, worked with CMOI on deployments.
    Shouldered most of SSC's deployment load. Deployment of inotify/sr_watch implementation.
 
 **Noureddine Habili**  - SSC DCSB Supercomputing Data Interchange

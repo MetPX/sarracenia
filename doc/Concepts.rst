@@ -22,7 +22,7 @@ permitted flows. Ideally, no firewall exceptions are needed.
 Sarracenia does no data transport. It is a management layer to co-ordinate
 the use of transport layers. So to get a running pump, actual transport mechanisms
 need to be set up as well. The two mechanisms currently supported are web
-servers, and SFTP. In the simplest case, all of the components are on the
+servers and SFTP. In the simplest case, all of the components are on the
 same server, but there is no need for that. The broker could be on a
 different server from both ends of a given hop of a data transfer.
 
@@ -44,7 +44,7 @@ Mapping AMQP Concepts to Sarracenia
 -----------------------------------
 
 One thing that is safe to say is that one needs to understand a bit about AMQP to work
-with Sarracenia. AMQP is a vast and interesting topic in it's own right. No attempt is
+with Sarracenia. AMQP is a vast and interesting topic in its own right. No attempt is
 made to explain all of it here. This section just provides a little context, and introduces
 only background concepts needed to understand and/or use Sarracenia. For more information
 on AMQP itself, a set of links is maintained at the 
@@ -62,7 +62,7 @@ many different broker software implementations. We use rabbitmq. We are not tryi
 be rabbitmq specific, but management functions differ between implementations.
 
 *Queues* are usually taken care of transparently, but you need to know
-   - A Consumer/subscriber creates a queue to receive messages.
+   - A consumer/subscriber creates a queue to receive messages.
    - Consumer queues are *bound* to exchanges (AMQP-speak)
 
 An *exchange* is a matchmaker between *publisher* and *consumer* queues.
@@ -82,7 +82,7 @@ Multiple processes can share a *queue*, they just take turns removing messages f
 How to Decide if Someone is Interested.
    - For Sarracenia, we use (AMQP standard) *topic based exchanges*.
    - Subscribers indicate what topics they are interested in, and the filtering occurs server/broker side.
-   - Topics are just keywords separated by a dot. wildcards: # matches anything, * matches one word.
+   - Topics are just keywords separated by a dot. Wildcards: # matches anything, * matches one word.
    - We create the topic hierarchy from the path name (mapping to AMQP syntax)
    - Resolution & syntax of server filtering is set by AMQP. (. separator, # and * wildcards)
    - Server side filtering is coarse, messages can be further filtered after download using regexp on the actual paths (the reject/accept directives.)
@@ -106,7 +106,7 @@ MetPX-Sarracenia is only a light wrapper/coating around AMQP.
   If someone knows AMQP, they understand. If not, they can research.
 
   - Users configure a *broker*, instead of a pump.
-  - by convention, the default vhost '/' is always used. (did not feel the need to use other vhosts yet)
+  - by convention, the default vhost '/' is always used (did not feel the need to use other vhosts yet)
   - users explicitly can pick their *queue* names.
   - users set *subtopic*,
   - topics with dot separator are minimally transformed, rather than encoded.
@@ -135,7 +135,7 @@ Flow Through Pumps
 A description of the conventional flow of messages through exchanges on a pump:
 
 - subscribers usually bind to the xpublic exchange to get the main data feed.
-  this is the default in sr_subscribe.
+  This is the default in sr_subscribe.
 
 - A user named Alice will have two exchanges:
 
@@ -181,13 +181,13 @@ are shared between the two accounts with the same name.
 
 Pump users are defined with the *declare* option. Each option starts with the *declare*
 keyword, followed by the specified role, and lastly the user name which has that role.
-role can be one of:
+Role can be one of:
 
 subscriber
   A subscriber is user that can only subscribe to data and report messages. Not permitted to inject data.
   Each subscriber gets an xs_<user> named exchange on the pump, where if a user is named *Acme*,
   the corresponding exchange will be *xs_Acme*. This exchange is where an sr_subscribe
-  process will send it's report messages.
+  process will send its report messages.
 
   By convention/default, the *anonymous* user is created on all pumps to permit subscription without
   a specific account.
@@ -220,13 +220,13 @@ source
   after a standard number of days, data is just deleted from the root.
 
   Since all clients will see the directories, and therefore client configurations will include them.
-  it would be wise to consider the account name public, and relatively static.
+  It would be wise to consider the account name public, and relatively static.
 
   Sources determine who can access their data, by specifying which cluster to send the data to.
 
 feeder
   a user permitted to subscribe or originate data, but understood to represent a pump.
-  this local pump user would be used to, run processes like sarra, report routing shovels, etc...
+  This local pump user would be used to, run processes like sarra, report routing shovels, etc...
 
 
 admin
@@ -266,7 +266,7 @@ described in the Programming Guide.
 IPv6
 ~~~~
 
-A sample pumps was implemented on a small VPS with IPv6 enabled. A client
+A sample pump was implemented on a small VPS with IPv6 enabled. A client
 from far away connected to the rabbitmq broker using IPv6, and the 
 subscription to the apache httpd worked without issues. *It just works*. There
 is no difference between IPv4 and IPv6 for sarra tools, which are agnostic of
@@ -274,7 +274,7 @@ IP addresses.
 
 On the other hand, one is expected to use hostnames, since use of IP addresses
 will break certificate use for securing the transport layer (TLS, aka SSL) No
-testing of ip addresses in URLs (in either IP version) has been done.
+testing of IP addresses in URLs (in either IP version) has been done.
 
 
 
@@ -343,8 +343,8 @@ Dataless With Sr_poll
 
 The sr_poll program can verify if products on a remote server are ready or modified.
 For each of the product, it emits an announcement on the local pump. One could use
-sr_subscribe anywhere, listen to announcements and get the products (privided the
-having the credentials to access it)
+sr_subscribe anywhere, listen to announcements and get the products (provided the
+credentials to access it)
 
 
 Standalone
@@ -355,7 +355,7 @@ and shares none with any other nodes. That means the Broker and data services su
 apache are on the one node.
 
 One appropriate usage would be a small non-24x7 data acquisition setup, to take responsibility of data
-queueing and transmission away from the instrument. It is restarted when the opportunity arises.
+queuing and transmission away from the instrument. It is restarted when the opportunity arises.
 It is just a matter of installing and configuring all a data flow engine, a broker, and the package
 itself on a single server. The *ddi* systems are generally configured this way.
 
@@ -364,12 +364,12 @@ itself on a single server. The *ddi* systems are generally configured this way.
 Switching/Routing
 ~~~~~~~~~~~~~~~~~
 
-In switching/routing configuration, there is a pair of machines running a 
-single broker for a pool of transfer engines. So each transfer engine´s view of
+In a switching/routing configuration, there is a pair of machines running a 
+single broker for a pool of transfer engines. So each transfer engine's view of
 the file space is local, but the queues are global to the pump.  
 
 Note: On such clusters, all nodes that run a component with the
-same config file create by default an identical **queue_name**. Targetting the
+same config file created by default have an identical **queue_name**. Targetting the
 same broker, it forces the queue to be shared. If it should be avoided,
 the user can just overwrite the default **queue_name** inserting **${HOSTNAME}**.
 Each node will have its own queue, only shared by the node instances.
@@ -428,7 +428,7 @@ objects, but not their types. Thus, given the ability to create a queue named q_
 a malicious Alice could create an exchange named q_Alice_xspecial, and then configure
 queues to bind to it, and establish a separate usage of the broker unrelated to sarracenia.
 
-To prevent such mis-use, sr_audit is a component that is invoked regularly looking
+To prevent such misuse, sr_audit is a component that is invoked regularly looking
 for mis-use, and cleaning it up.
 
 
@@ -472,7 +472,7 @@ like an scp command. The pump administrator account also runs under a normal lin
 given requires privileges only on the AMQP broker, but nothing on the underlying operating system.
 It is convenient to grant the pump administrator sudo privileges for the rabbitmqctl command.
 
-The may be a single task which must operate with privileges: cleaning up the database, which is an easily
+There may be a single task which must operate with privileges: cleaning up the database, which is an easily
 auditable script that must be run on a regular basis. If all acquisition is done via sarra, then all of
 the files will belong to the pump administrator, and privileged access is not required for this either.
 
@@ -582,7 +582,7 @@ The components just have different default settings:
  +------------------------+--------------------------+
 
 Components are easily composed using AMQP brokers, which create elegant networks
-of communicating sequential processes. (in the `Hoare <http://dl.acm.org/citation.cfm?doid=359576.359585>`_ sense)
+of communicating sequential processes (in the `Hoare <http://dl.acm.org/citation.cfm?doid=359576.359585>`_ sense).
 
 Glossary
 --------
@@ -592,9 +592,9 @@ This glossary should make it easier to understand the rest of the documentation.
 
 
 Source
-  Someone who wants to ship data to someone else. They do that by advertise a 
+  Someone who wants to ship data to someone else. They do that by advertising a 
   trees of files that are copied from the starting point to one or more pumps
-  in the network. The advertisement sources produce tell others exactly where 
+  in the network. The advertisement sources produced tell others exactly where 
   and how to download the files, and Sources have to say where they want the 
   data to go to.
 
@@ -632,8 +632,8 @@ Pump or broker
   as a dedicated resource.  Some sort of transport engine, like an apache 
   server, or an openssh server, is used to support file transfers. SFTP, and 
   HTTP/HTTPS are the protocols which are fully supported by sarracenia. Pumps
-  copy files from somewhere, and write them locally. They then re-advertised the
-  local copy to it's neighbouring pumps, and end user subscribers, they can 
+  copy files from somewhere, and write them locally. They then re-advertise the
+  local copy to its neighbouring pumps, and end user subscribers, they can 
   obtain the data from this pump.
 
 .. Note::

@@ -28,10 +28,10 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-Sr_pulse messages are sent out periodically (default is every minute) so that subscribers with very low frequency of subscription matches
-will well maintain a connection, across firewalls. Consumers can check every heartbeat (10 minutes by default) if they have received
+sr_pulse messages are sent out periodically (default is every minute) so that subscribers with a very low frequency of subscription matches
+will well maintain a connection across firewalls. Consumers can check every heartbeat (10 minutes by default) if they have received
 any pulses.  If no pulse has been received, the consumer can try an operation on the channel to confirm connection with the broker.
-If no connection is present, then consumers should teardown and re-build the it.
+If no connection is present, then consumers should teardown and re-build it.
 
 
 AMQP TOPIC
@@ -65,11 +65,10 @@ SEE ALSO
 
 `sr_post(1) <sr_post.1.rst>`_ - post announcements of specific files.
 
-`sr_post(7) <sr_post.7.rst>`_ - The format of announcement messages.
+`sr_post(7) <sr_post.7.rst>`_ - the format of announcement messages.
 
 `sr_report(1) <sr_report.1.rst>`_ - process report messages.
 
 `sr_sarra(8) <sr_sarra.8.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
-
 
 `sr_watch(1) <sr_watch.1.rst>`_ - the directory watching daemon.

@@ -46,7 +46,7 @@ but should the configured instances be running, it shares the same (configured) 
 
 The actions **cleanup**, **declare**, **setup** can be used to manage resources on
 the rabbitmq server. The resources are either queues or exchanges. **declare** creates
-the resources. **setup** creates and additionnaly does the bindings of queues.
+the resources. **setup** creates and additionally does the bindings of queues.
 
 CONFIGURATION
 =============
@@ -82,7 +82,7 @@ SEE ALSO
 
 `sr_post(1) <sr_post.1.rst>`_ - post announcemensts of specific files.
 
-`sr_post(7) <sr_post.7.rst>`_ - The format of announcement messages.
+`sr_post(7) <sr_post.7.rst>`_ - the format of announcement messages.
 
 `sr_sarra(8) <sr_sarra.8.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
