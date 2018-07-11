@@ -242,10 +242,6 @@ The following are all equivalent:
   - **-u <url>**
   - **--url <url>**
 
-Settings in an individual .conf file are read in after the default.conf
-file, and so can override defaults.   Options specified on
-the command line override configuration files.
-
 Settings are interpreted in order.  Each file is read from top to bottom.
 For example:
 
@@ -279,6 +275,25 @@ The includeConfigPath would normally reside under the same config dir of its
 master configs. There is no restriction, any option can be placed in a config file
 included. The user must be aware that, for many options, several declarations
 means overwriting their values.
+
+Option Order
+~~~~~~~~~~~~
+
+When a component is started up, a series of configuration files are read in
+the following sequence:
+
+ 1. default.conf
+
+ 2. admin.conf
+
+ 3. <prog>.conf (subscribe.conf, audit.conf, etc...)
+
+ 4. <progr>/<config>.conf
+
+Settings in an individual .conf file are read in after the default.conf
+file, and so can override defaults. Options specified on
+the command line override configuration files.
+
 
 
 plugin options

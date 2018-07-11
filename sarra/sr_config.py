@@ -216,6 +216,9 @@ class sr_config:
            self.logger.debug("sr_config config_name  %s " % self.config_name )
            self.logger.debug("sr_config user_config  %s " % self.user_config )
 
+        self.prog_config = self.user_config_dir + os.sep + self.program_dir + '.conf'
+        self.logger.debug("sr_config prog_config  %s " % self.prog_config )
+
         # build user_cache_dir/program_name/[config_name|None] and make sure it exists
 
         self.user_cache_dir  = user_cache_dir (self.appname,self.appauthor)
@@ -986,6 +989,12 @@ class sr_config:
            self.config(adminconf)
            self.config_dir  = config_dir
 
+        if os.path.isfile(self.prog_config):
+           config_dir       = self.config_dir
+           self.config_dir  = ''
+           self.config(self.prog_config)
+           self.config_dir  = config_dir
+            
     def has_vip(self): 
 
         # no vip given... standalone always has vip.
