@@ -12,6 +12,7 @@ lists all changes between versions.
 *             many documentation improvements. (Alain & Marie)
 * new         enhanced parsing of date substitution (issue #55 Wahaj!)
 *             now have program settings audit.conf  (issue #64 )
+*             more output of plugin programs present in logs (issue #63)
 
 
 **2.18.06b2**
