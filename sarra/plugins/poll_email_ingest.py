@@ -14,13 +14,11 @@ poll_email_ingest: a sample do_poll option for sr_poll.
 usage:
         in an sr_poll configuration file:
 
-        poll_email_ingest_setting [imap|pop]://[user[:password]@]host[:port]/
-        poll_email_ingest_use_ssl True|False
+        poll_email_ingest_setting [imap|imaps|pop|pops]://[user[:password]@]host[:port]/
 
         IMAP over SSL uses 993, POP3 over SSL uses 995
         IMAP unsecured uses 143, POP3 unsecured uses 110
 
-        poll_email_ingest_use_ssl defaults to True.
         Full credentials must be in credentials.conf.
         If port is not specified it'll default to the ones above based on protocol/ssl setting.
 
@@ -34,15 +32,18 @@ class Fetcher(object):
 
         def __init__(self, parent):
                 parent.declare_option( 'poll_email_ingest_setting' )
-                parent.declare_option( 'poll_email_ingest_use_ssl' )
 
-        def perform(self, parent):
+        def do_poll(self, parent):
                 import poplib, imaplib, datetime, logging
-                logger = parent.logger
-                odir = parent.currentDir
+                try: 
+                        from sr_util import timestr2flt
+                except:
+                        from sarra.sr_util import timestr2flt
 
+                logger = parent.logger
+                odir = parent.post_base_dir
+                m = parent.msg
                 if not hasattr(parent, 'poll_email_ingest_setting'): return
-                ssl = "true" if not hasattr(parent, 'poll_email_ingest_use_ssl') else parent.poll_email_ingest_use_ssl[0].lower()
             
                 ok, details = parent.credentials.get(parent.poll_email_ingest_setting[0])
                 if ok: 
@@ -60,17 +61,17 @@ class Fetcher(object):
                         odir += '/'
 
                 if not port:
-                        if ssl == "true" and protocol == "imap":
+                        if protocol == "imaps":
                                 port = 993
-                        elif ssl == "true" and protocol == "pop":
+                        elif protocol == "pops":
                                 port = 995
-                        elif ssl == "false" and protocol == "imap":
+                        elif protocol == "imap":
                                 port = 143
                         else:
                                 port = 110
 
-                if protocol == "imap":
-                        if ssl == "true":
+                if "imap" in protocol:
+                        if protocol == "imaps":
                                 try:
                                         mailman = imaplib.IMAP4_SSL(server, port=port)
                                         mailman.login(user, password)
@@ -78,14 +79,14 @@ class Fetcher(object):
                                         logger.error("Imaplib connection error: {}".format(e))
                                         return
 
-                        else:
+                        elif protocol == "imap":
                                 try:
                                         mailman = imaplib.IMAP4(server, port=port)
                                         mailman.login(user, password)
                                 except imaplib.IMAP4.error as e:
                                         logger.error("Imaplib connection error: {}".format(e))
                                         return
-
+                        else: return
                         # only retrieves unread mail from inbox, change these values as to your preference
                         mailman.select(mailbox='INBOX')
                         resp, data = mailman.search(None, '(UNSEEN)')
@@ -98,6 +99,13 @@ class Fetcher(object):
                                         with open(odir + ofile, 'w') as f:
                                                 f.write(msg)
                                         logger.info("Msg received: {}".format(odir + ofile))
+                                        fst = os.stat(odir+ofile)
+                                        m.partstr = '1,%s,1,0,0' % fst.st_size
+                                        m.sumstr = '0,0'
+                                        mtimestr = timeflt2str(fst.st_mtime)
+                                        atimestr = timeflt2str(fst.st_atime)
+                                        logger.debug("poll_email_ingest exchange: %s url: %s to_cluster: %s partst    r: %s " % (parent.exchange, m.new_baseurl, parent.to_clusters, m.partstr) )
+                                        ok = parent.post(parent.exchange,parent.destination,odir+ofile,parent.to_clusters,m.partstr,m.sumstr,mtime=mtimestr,atime=atimestr)
 
                                 except IOError as e:
                                         logger.error("Error writing to file: {}".format(e))
@@ -105,9 +113,9 @@ class Fetcher(object):
 
                         mailman.close()
                         mailman.logout()
-
-                elif protocol == "pop":
-                        if ssl == "true":
+                        
+                elif "pop" in protocol:
+                        if protocol == "pops":
                                 try:
                                         mailman = poplib.POP3_SSL(server, port=port)
                                         mailman.user(user)
@@ -116,7 +124,7 @@ class Fetcher(object):
                                         logger.error("Poplib connection error: {}".format(e))
                                         return
 
-                        else:
+                        elif protocol == "pop":
                                 try:
                                         mailman = poplib.POP3(server, port=port)
                                         mailman.user(user)
@@ -124,7 +132,7 @@ class Fetcher(object):
                                 except poplib.error_proto as e:
                                         logger.error("Poplib connection error: {}".format(e))
                                         return
-
+                        else: return
                         # only retrieves msgs that haven't triggered internal pop3 'read' flag
                         numMsgs = len(mailman.list()[1])
                         for index in range(numMsgs):
@@ -137,6 +145,13 @@ class Fetcher(object):
                                         with open(odir + ofile, 'w') as f:
                                                 f.write(msg)
                                         logger.info("Msg received: {}".format(odir + ofile))
+                                        fst = os.stat(odir+ofile)
+                                        m.partstr = '1,%s,1,0,0' % fst.st_size
+                                        m.sumstr = '0,0'
+                                        mtimestr = timeflt2str(fst.st_mtime)
+                                        atimestr = timeflt2str(fst.st_atime)
+                                        logger.debug("poll_email_ingest exchange: %s url: %s to_cluster: %s partst    r: %s " % (parent.exchange, m.new_baseurl, parent.to_clusters, m.partstr) )
+                                        ok = parent.post(parent.exchange,parent.destination,odir+ofile,parent.to_clusters,m.partstr,m.sumstr,mtime=mtimestr,atime=atimestr)
 
                                 except IOError as e:
                                         logger.error("Error writing to file: {}".format(e))
@@ -145,8 +160,10 @@ class Fetcher(object):
                         mailman.quit()
 
                 else:
-                        logger.error("poll_email_ingest_setting proto must be one of 'imap' or 'pop'.")
+                        logger.error("poll_email_ingest_setting proto must be one of 'imap/imaps' or 'pop/pops'.")
                         return
+def registered_as(self):
+        return ['imap','imaps','pop','pops']
 
 fetcher = Fetcher(self)
-self.do_poll = fetcher.perform
+self.do_poll = fetcher.do_poll
