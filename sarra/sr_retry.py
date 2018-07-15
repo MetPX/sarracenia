@@ -88,7 +88,7 @@ class sr_retry:
         self.retry_fp = None
         self.state_fp = None
 
-    def decode(self, line ):
+    def msgFromJSON(self, line ):
         try:
             topic, headers, notice = json.loads(line)
         except:
@@ -102,7 +102,7 @@ class sr_retry:
 
         return self.message
 
-    def encode(self, message, done=False ):
+    def msgToJSON(self, message, done=False ):
         topic   = message.delivery_info['routing_key']
         headers = message.properties['application_headers']
         notice  = message.body
@@ -239,11 +239,11 @@ class sr_retry:
                             fp.seek(0,2)
 
         try:
-           line = self.encode(message,done)
+           line = self.msgToJSON(message,done)
            fp.write( line )
            fp.flush()
         except:
-           self.logger.error("failed to encode message: %s" % message.body )
+           self.logger.error("failed to serialize message to JSON: %s" % message.body )
            pass
 
         return fp
@@ -260,7 +260,7 @@ class sr_retry:
            except: pass
            return None,None
 
-        msg = self.decode(line)
+        msg = self.msgFromJSON(line)
         # a corrupted line : go to the next
         if msg == None : return self.msg_get_from_file(fp,path)
 

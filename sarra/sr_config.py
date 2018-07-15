@@ -237,8 +237,8 @@ class sr_config:
 
         self.logger.info( "log settings start for %s (version: %s):" % (self.program_name, sarra.__version__) )
         self.logger.info( "\tinflight=%s events=%s use_pika=%s" % ( self.inflight, self.events, self.use_pika, ) )
-        self.logger.info( "\tsuppress_duplicates=%s retry_mode=%s retry_ttl=%s" % ( self.caching, self.retry_mode, self.retry_ttl ) )
-        self.logger.info( "\texpire=%s reset=%s message_ttl=%s prefetch=%s accept_unmatch=%s delete=%s" % \
+        self.logger.info( "\tsuppress_duplicates=%s retry_mode=%s retry_ttl=%sms" % ( self.caching, self.retry_mode, self.retry_ttl ) )
+        self.logger.info( "\texpire=%sms reset=%s message_ttl=%s prefetch=%s accept_unmatch=%s delete=%s" % \
            ( self.expire, self.reset, self.message_ttl, self.prefetch, self.accept_unmatch, self.delete ) )
         self.logger.info( "\theartbeat=%s default_mode=%03o default_mode_dir=%03o default_mode_log=%03o discard=%s durable=%s" % \
            ( self.heartbeat, self.chmod, self.chmod_dir, self.chmod_log, self.discard, self.durable ) )
