@@ -206,7 +206,7 @@ class sr_retry:
 
         # expired ?
 
-        expired = msg_age > self.retry_ttl
+        expired = msg_age > (self.retry_ttl/1000)
 
         #self.logger.debug("DEBUG message is %d seconds old, retry_ttl is %d" % (msg_age, self.retry_ttl ) )
 
@@ -238,10 +238,13 @@ class sr_retry:
                             fp = open(path,'r+')
                             fp.seek(0,2)
 
-        line = self.encode(message,done)
-
-        fp.write( line )
-        fp.flush()
+        try:
+           line = self.encode(message,done)
+           fp.write( line )
+           fp.flush()
+        except:
+           self.logger.error("failed to encode message: %s" % message.body )
+           pass
 
         return fp
 
