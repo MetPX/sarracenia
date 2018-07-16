@@ -4,7 +4,7 @@
 
 lists all changes between versions.
 
-**2.18.07b1**
+**2.18.07b2**
 * bugfix      HPC mirroring reports crash in retry logic, work-around, 
 *             add try/except around it.
 *             retry_ttl unit conversion error (was comparing milliseconds to seconds.) 
