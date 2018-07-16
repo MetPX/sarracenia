@@ -715,7 +715,8 @@ def main():
           config = None
 
     audit = sr_audit(config,args)
-
+ 
+    #audit.heartbeat=100
     #if old :
     #   audit.logger.warning("Should invoke 1: %s [args] action config" % sys.argv[0])
 

@@ -115,7 +115,7 @@ For the sarracenia implementation, the following codes are defined:
 +----------+--------------------------------------------------------------------------------------------+
 |   503    | Service unavailable. delete (File removal not currently supported.)                        |
 +----------+--------------------------------------------------------------------------------------------+
-|   503    | Unable to process: Service unavailable                                                    |
+|   503    | Unable to process: Service unavailable                                                     |
 +----------+--------------------------------------------------------------------------------------------+
 |   503    | Unsupported transport protocol specified in posting.                                       |
 +----------+--------------------------------------------------------------------------------------------+

@@ -216,6 +216,9 @@ class sr_config:
            self.logger.debug("sr_config config_name  %s " % self.config_name )
            self.logger.debug("sr_config user_config  %s " % self.user_config )
 
+        self.prog_config = self.user_config_dir + os.sep + self.program_dir + '.conf'
+        self.logger.debug("sr_config prog_config  %s " % self.prog_config )
+
         # build user_cache_dir/program_name/[config_name|None] and make sure it exists
 
         self.user_cache_dir  = user_cache_dir (self.appname,self.appauthor)
@@ -234,8 +237,8 @@ class sr_config:
 
         self.logger.info( "log settings start for %s (version: %s):" % (self.program_name, sarra.__version__) )
         self.logger.info( "\tinflight=%s events=%s use_pika=%s" % ( self.inflight, self.events, self.use_pika, ) )
-        self.logger.info( "\tsuppress_duplicates=%s retry_mode=%s retry_ttl=%s" % ( self.caching, self.retry_mode, self.retry_ttl ) )
-        self.logger.info( "\texpire=%s reset=%s message_ttl=%s prefetch=%s accept_unmatch=%s delete=%s" % \
+        self.logger.info( "\tsuppress_duplicates=%s retry_mode=%s retry_ttl=%sms" % ( self.caching, self.retry_mode, self.retry_ttl ) )
+        self.logger.info( "\texpire=%sms reset=%s message_ttl=%s prefetch=%s accept_unmatch=%s delete=%s" % \
            ( self.expire, self.reset, self.message_ttl, self.prefetch, self.accept_unmatch, self.delete ) )
         self.logger.info( "\theartbeat=%s default_mode=%03o default_mode_dir=%03o default_mode_log=%03o discard=%s durable=%s" % \
            ( self.heartbeat, self.chmod, self.chmod_dir, self.chmod_log, self.discard, self.durable ) )
@@ -940,7 +943,6 @@ class sr_config:
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.error("sr_config/__on_heartbeat__ 3 Type: %s, Value: %s,  ..." % (stype, svalue))
                 self.logger.error( "plugin %s, execution failed." % plugin )
-           #if not plugin(self): return False
 
         return True
 
@@ -987,6 +989,12 @@ class sr_config:
            self.config(adminconf)
            self.config_dir  = config_dir
 
+        if os.path.isfile(self.prog_config):
+           config_dir       = self.config_dir
+           self.config_dir  = ''
+           self.config(self.prog_config)
+           self.config_dir  = config_dir
+            
     def has_vip(self): 
 
         # no vip given... standalone always has vip.
@@ -1079,13 +1087,13 @@ class sr_config:
         self.run_command([ cmd, path ] )
 
     def run_command(self,cmd_list):
-        try   :
-                if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5) :
-                        self.logger.debug("using subprocess.check_call")
+        import sys,subprocess
+        try:
+                if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 4) :
                         subprocess.check_call(cmd_list)
                 else :
-                        self.logger.debug("using subprocess.run %s" % cmd_list)
-                        subprocess.run(cmd_list,check=True)
+                        subprocess.run(cmd_list, check=True, close_fds=False )
+
         except: self.logger.error("trying run command %s" %  ' '.join(cmd_list) )
 
     def register_plugins(self):

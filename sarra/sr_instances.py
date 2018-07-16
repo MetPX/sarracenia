@@ -253,6 +253,7 @@ class sr_instances(sr_config):
                self.foreground_parent()
                return
            elif action == 'sanity' :
+               self.foreground_parent()
                return
            elif (action == 'start' or action == 'restart' ) and (self.sleep <= 0):
                self.logger.info("start|restart do nothing if sleep <= 0. exiting." )
@@ -650,12 +651,11 @@ class sr_instances(sr_config):
         #   later versions None is better.
         #   use of Pipe causes issue: https://github.com/MetPX/sarracenia/issues/63
 
-        if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5) :
+        if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 4) :
             pid = subprocess.Popen(cmd,shell=False,\
                 stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         else:  
-            pid = subprocess.Popen(cmd,shell=False, \
-                 stdin=None, stdout=None, stderr=None)
+            pid = subprocess.Popen(cmd,shell=False,close_fds=False)
 
 
     def start_parent(self):
@@ -681,17 +681,18 @@ class sr_instances(sr_config):
 
         # as instance
         else:
-             self.logger.debug("start instance %d \n" % self.no)
              self.build_instance(self.no)
              self.pid = os.getpid()
              ok = self.file_set_int(self.pidfile,self.pid)
              self.setlog()
              if self.no > 0:
                 os.close(0)
-                lfd=os.open( self.logpath, os.O_CREAT|os.O_APPEND )
+                lfd=os.open( self.logpath, os.O_CREAT|os.O_WRONLY|os.O_APPEND )
                 os.dup2(lfd,1)
                 os.dup2(lfd,2)
   
+             self.logger.debug("start instance %d (pid=%d)\n" % (self.no, self.pid) )
+
              if not ok :
                 self.logger.error("could not write pid for instance %s" % self.instance_str)
                 self.logger.error("instance not started")
