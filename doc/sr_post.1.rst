@@ -146,11 +146,11 @@ common settings, and methods of specifying them.
   For file URLs: base_dir is usually not appropriate.  To post an absolute path, 
   omit the -dr setting, and just specify the complete path as an argument.
 
-[-ex|--exchange <exchange>]
----------------------------
+[-px|--post_exchange <exchange>]
+--------------------------------
 
   Sr_post publishes to an exchange named *xs_*"broker_username" by default.
-  Use the *exchange* option to override that default.
+  Use the *post_exchange* option to override that default.
 
 [-h|-help|--help]
 -----------------
