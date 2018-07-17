@@ -1,5 +1,13 @@
 #!/bin/bash
 
+if [[ ":$SARRA_LIB/../:" != *":$PYTHONPATH:"* ]]; then
+    if [ "${PYTHONPATH:${#PYTHONPATH}-1}" == ":" ]; then
+        export PYTHONPATH="$PYTHONPATH$SARRA_LIB/../"
+    else 
+        export PYTHONPATH="$PYTHONPATH:$SARRA_LIB/../"
+    fi
+fi
+
 function application_dirs {
 python3 << EOF
 import appdirs
@@ -24,10 +32,18 @@ export TESTDIR="`pwd`"
 eval `application_dirs`
 
 echo "Stopping sr..."
-sr stop >$LOGDIR/sr_stop_f99.log 2>&1
+if [ ! "$SARRA_LIB" ]; then
+    sr stop >$LOGDIR/sr_stop_f99.log 2>&1
+else
+    "$SARRA_LIB"/sr.py stop >$LOGDIR/sr_stop_f99.log 2>&1
+fi
 
 echo "Cleanup sr..."
-sr cleanup >$LOGDIR/sr_cleanup_f99.log 2>&1
+if [ ! "$SARRA_LIB" ]; then
+    sr cleanup >$LOGDIR/sr_cleanup_f99.log 2>&1
+else
+    "$SARRA_LIB"/sr.py cleanup >$LOGDIR/sr_cleanup_f99.log 2>&1
+fi 
 
 #echo extra lines for the sr_cpump cleanup hanging
 #sleep 10
@@ -130,7 +146,17 @@ flow_confs="`cd ../sarra/examples; ls */*f[0-9][0-9].conf`"
 flow_incs="`cd ../sarra/examples; ls */*f[0-9][0-9].inc`"
 
 echo "Removing flow configs..."
-echo $flow_confs $flow_incs | sed 's/ / ; sr_/g' | sed 's/^/sr_/'| sed 's+/+ remove +g' | sh
+if [ "$SARRAC_LIB" ]; then
+  echo $flow_confs $flow_incs | sed 's/ / ; sr_/g' | sed 's/^/ sr_/' | sed 's+/+ remove +g' | grep -Po 'sr_c[\w]*[\w\_\. ]* ;' | sed 's~^~"$SARRAC_LIB"/~' | sh
+else
+  echo $flow_confs $flow_incs | sed 's/ / ; sr_/g' | sed 's/^/ sr_/' | sed 's+/+ remove +g' | grep -Po 'sr_c[\w]*[\w\_\. ]* ;' | sh 
+fi
+
+if [ "$SARRA_LIB" ]; then
+  echo $flow_confs $flow_incs | sed 's/ / ; sr_/g' | sed 's/^/ sr_/' | sed 's+/+ remove +g' | grep -vPo 'sr_c[\w]*[\w\_\. ]* ;' | sed 's~^~"$SARRA_LIB"/~' | sh
+else
+  echo $flow_confs $flow_incs | sed 's/ / ; sr_/g' | sed 's/^/ sr_/' | sed 's+/+ remove +g' | grep -vPo 'sr_c[\w]*[\w\_\. ]* ;' | sh 
+fi
 
 echo "Removing flow config logs..."
 echo $flow_confs |  sed 's/ / ; rm sr_/g' | sed 's/^/rm sr_/' | sed 's+/+_+g' | sed 's/\.conf/_0?.log\*/g' | (cd $LOGDIR; sh )

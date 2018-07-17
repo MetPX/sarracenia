@@ -3,7 +3,7 @@
 # script to be started by flow_setup.sh which runs sr_post in the background.
 
 #adding libcshim posting as well.
-export SR_POST_CONFIG='shim_f63.conf'
+export SR_POST_CONFIG='/users/dor/aspy/map/.config/sarra/post/shim_f63.conf'
 # The directory we run the flow test scripts in...
 tstdir="`pwd`"
 
@@ -17,6 +17,13 @@ if [ ! -d ${httpdocroot}/posted_by_shim ]; then
    mkdir  ${httpdocroot}/posted_by_shim
 fi
 
+if [[ ":$SARRA_LIB/../:" != *":$PYTHONPATH:"* ]]; then
+    if [ "${PYTHONPATH:${#PYTHONPATH}-1}" == ":" ]; then
+        export PYTHONPATH="$PYTHONPATH$SARRA_LIB/../"
+    else 
+        export PYTHONPATH="$PYTHONPATH:$SARRA_LIB/../"
+    fi
+fi
 
 # sr_post initial start
 srpostdir=`cat $tstdir/.httpdocroot`/sent_by_tsource2send
@@ -30,7 +37,6 @@ echo > ${srpostlstfile_old}
 function do_sr_post {
 
    cd $srpostdir
-
    # sr_post testing START
    # TODO - consider if .httpdocroot ends with a '/' ?
    find . -type f -print | grep -v '.tmp$'  > $srpostlstfile
@@ -41,10 +47,10 @@ function do_sr_post {
 
    rm    /tmp/diffs.txt 2> /dev/null
    touch /tmp/diffs.txt
-   comm -23 $srpostlstfile_new $srpostlstfile_old > /tmp/diffs.txt
-
+   comm -23 $srpostlstfile_new $srpostlstfile_old | sed '/.slink$/d' | sed '/.moved$/d' | sed '/.hlink$/d' > /tmp/diffs.txt
+   cat /tmp/diffs.txt
    srpostdelta=`cat /tmp/diffs.txt`
-
+   # | sed 's/^..//'
    if [ "$srpostdelta" == "" ]; then
       return
    fi
@@ -57,9 +63,15 @@ function do_sr_post {
    #cat /tmp/diffs.txt | sed "s/\(.*S P C\)/'\1'/" > /tmp/diffs2.txt
    #cat /tmp/diffs.txt | sed "s/\(.*S P C\)/'\1'/" | sed 's/S P C/S\\ P\\ C/' > /tmp/diffs2.txt
 
-   sr_post -c test2_f61.conf -p `cat /tmp/diffs.txt`
-   LD_PRELOAD="libsrshim.so.1" cp -p --parents `cat /tmp/diffs.txt`  ${httpdocroot}/posted_by_shim 
-   
+   cd /
+   if [ ! "$SARRA_LIB" ]; then
+       sr_post -c test2_f61.conf -p `cat /tmp/diffs.txt`
+   else 
+       "$SARRA_LIB"/sr_post.py -c /users/dor/aspy/map/.config/sarra/post/test2_f61.conf -p `cat /tmp/diffs.txt`
+   fi
+   LD_PRELOAD="/users/dor/aspy/map/Documents/sarracenia/sc/libsrshim.so.1.0.0"
+   cd $srpostdir 
+   cp -p --parents `cat /tmp/diffs.txt`  ${httpdocroot}/posted_by_shim 
    cp -p $srpostlstfile_new $srpostlstfile_old
 
    do_sr_post

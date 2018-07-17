@@ -2,15 +2,29 @@
 
 # make sure libsrshim is off
 
+# if running local sarra/sarrac versions, specify path to them with 
+# $SARRA_LIB and $SARRAC_LIB, and make sure $LD_PRELOAD contains path
+# to libsrshim.so.1.0.0 in your sarrac directory, and $SR_POST_CONFIG 
+# contains the path to shim_f63.conf 
 export SR_POST_CONFIG=""
 export LD_PRELOAD=""
+#export SARRA_LIB=""
+#export SARRAC_LIB=""
 
 
 export TESTDIR="`pwd`"
-export PYTHONPATH="`pwd`/../"
+#export PYTHONPATH="`pwd`/../"
 testdocroot="$HOME/sarra_devdocroot"
 testhost=localhost
 sftpuser=`whoami`
+
+if [[ ":$SARRA_LIB/../:" != *":$PYTHONPATH:"* ]]; then
+    if [ "${PYTHONPATH:${#PYTHONPATH}-1}" == ":" ]; then
+        export PYTHONPATH="$PYTHONPATH$SARRA_LIB/../"
+    else 
+        export PYTHONPATH="$PYTHONPATH:$SARRA_LIB/../"
+    fi
+fi
 
 function application_dirs {
 python3 << EOF
@@ -35,7 +49,8 @@ eval `application_dirs`
 
 if [ -d $CACHEDIR/log ]; then
    echo "cleaning logs, just in case"
-   rm $CACHEDIR/log/*
+   rm $(ls "$CACHEDIR"/log/)
+   #rm "$CACHEDIR/log/"*
 fi
 
 if [ ! -f "$CONFDIR"/admin.conf -o ! -f "$CONFDIR"/credentials.conf ]; then
@@ -102,8 +117,17 @@ flow_confs="`cd ../sarra/examples; ls */*f[0-9][0-9].conf`"
 flow_incs="`cd ../sarra/examples; ls */*f[0-9][0-9].inc`"
 
 echo "Adding flow test configurations..."
-echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/^/ sr_/' | sed 's+/+ add +g' | sh 
+if [ "$SARRAC_LIB" ]; then
+  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -Po 'sr_c[\w]*[\w\_\. ]* ;' | sed 's~^~"$SARRAC_LIB"/~' | sh
+else
+  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -Po 'sr_c[\w]*[\w\_\. ]* ;' | sh 
+fi
 
+if [ "$SARRA_LIB" ]; then
+  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -vPo 'sr_c[\w]*[\w\_\. ]* ;' | sed 's~^~"$SARRA_LIB"/~' | sh
+else
+  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -vPo 'sr_c[\w]*[\w\_\. ]* ;' | sh 
+fi
 # sr_post "add" doesn't. so a little help:
 
 mkdir ${CONFDIR}/post 2> /dev/null
@@ -171,7 +195,11 @@ count_of_checks=$((${count_of_checks}+1))
 # ensure users have exchanges:
 
 echo "Initializing with sr_audit... takes a minute or two"
-sr_audit --users foreground >$LOGDIR/sr_audit_f00.log 2>&1
+if [ ! "$SARRA_LIB" ]; then
+    sr_audit --users foreground >$LOGDIR/sr_audit_f00.log 2>&1
+else
+    "$SARRA_LIB"/sr_audit.py --users foreground >$LOGDIR/sr_audit_f00.log 2>&1
+fi
 
 adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; exit }; ' "$CONFDIR"/credentials.conf`"
 
@@ -245,7 +273,11 @@ echo $MAX_MESSAGES
 fi
 
 echo "Starting up all components (sr start)..."
-sr start >$LOGDIR/sr_start_f00.log 2>&1
+if [ ! "$SARRA_LIB" ]; then
+    sr start >$LOGDIR/sr_start_f00.log 2>&1
+else
+    "$SARRA_LIB"/sr.py start >$LOGDIR/sr_start_f00.log 2>&1
+fi
 echo "done."
 
 #sr_subscribe stop fclean

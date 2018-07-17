@@ -1,5 +1,13 @@
 #!/bin/bash
 
+if [[ ":$SARRA_LIB/../:" != *":$PYTHONPATH:"* ]]; then
+    if [ "${PYTHONPATH:${#PYTHONPATH}-1}" == ":" ]; then
+        export PYTHONPATH="$PYTHONPATH$SARRA_LIB/../"
+    else 
+        export PYTHONPATH="$PYTHONPATH:$SARRA_LIB/../"
+    fi
+fi
+
 function application_dirs {
 python3 << EOF
 import appdirs
@@ -242,7 +250,7 @@ function countall {
   countthem "`grep post_log "$LOGDIR"/sr_sarra_download_f20_*.log* | wc -l`"
   totsarp="${tot}"
 
-  if [ ! "$C_ALSO" ]; then
+  if [[ ! "$C_ALSO" && ! -d "$SARRAC_LIB" ]]; then
      return
   fi
 
@@ -308,17 +316,38 @@ while [ "${totsarra}" == 0 ]; do
 done
 
 while [ $totsarra -lt $smin ]; do
-   if [ "`sr_shovel t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" == 'stopped' ]; then 
-      echo "starting shovels and waiting..."
-      sr_shovel start t_dd1_f00 &
-      sr_shovel start t_dd2_f00 
-      if [ "${C_ALSO}" ]; then
-         sr_cpump start pelle_dd1_f04 &
-         sr_cpump start pelle_dd2_f05
-      fi
-   fi
-   sleep 10
 
+    if [ ! "$SARRA_LIB" ]; then
+
+       if [ "`sr_shovel t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" == 'stopped' ]; then 
+          echo "starting shovels and waiting..."
+          sr_shovel start t_dd1_f00 &
+          sr_shovel start t_dd2_f00
+          if [ "$SARRAC_LIB" ]; then
+             "$SARRAC_LIB"/sr_cpump start pelle_dd1_f04 &
+             "$SARRAC_LIB"/sr_cpump start pelle_dd2_f05             
+          elif [ "${C_ALSO}" ]; then
+             sr_cpump start pelle_dd1_f04 &
+             sr_cpump start pelle_dd2_f05
+          fi
+       fi
+   else
+       
+       if [ "`"$SARRA_LIB"/sr_shovel.py t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" == 'stopped' ]; then 
+          echo "starting shovels and waiting..."
+          "$SARRA_LIB"/sr_shovel.py start t_dd1_f00 &
+          "$SARRA_LIB"/sr_shovel.py start t_dd2_f00 
+          if [ "$SARRAC_LIB" ]; then
+             "$SARRAC_LIB"/sr_cpump start pelle_dd1_f04 &
+             "$SARRAC_LIB"/sr_cpump start pelle_dd2_f05  
+          elif [ "${C_ALSO}" ]; then
+             sr_cpump start pelle_dd1_f04 &
+             sr_cpump start pelle_dd2_f05
+          fi  
+       fi
+   fi
+ 
+   sleep 10
    countall
 
    printf  "sample now %6d content_checks:%4s missed_dispositions:%d\r"  "$totsarra" "$audit_state" "$missed_dispositions"
@@ -327,20 +356,37 @@ done
 printf  "\nSufficient!\n" 
 
 # if msg_stopper plugin is used this should not happen
-if [ "`sr_shovel t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" != 'stopped' ]; then 
-   echo "stopping shovels and waiting..."
-   sr_shovel stop t_dd2_f00 &
-   sr_shovel stop t_dd1_f00 
+if [ ! "$SARRA_LIB" ]; then
+   if [ "`sr_shovel t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" != 'stopped' ]; then 
+       echo "stopping shovels and waiting..."
+       sr_shovel stop t_dd2_f00 &
+       sr_shovel stop t_dd1_f00 
+   fi
+else 
+   if [ "`$SARRA_LIB/sr_shovel.py t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" != 'stopped' ]; then
+       echo "stopping shovels and waiting..."
+       "$SARRA_LIB"/sr_shovel.py stop t_dd2_f00 &
+       "$SARRA_LIB"/sr_shovel.py stop t_dd1_f00
+   fi
 fi
 
-if [ "${C_ALSO}" ]; then
-      sr_cpump stop pelle_dd1_f04 &
-      sr_cpump stop pelle_dd2_f05
+if [ "$SARRAC_LIB" ]; then
+   "$SARRAC_LIB"/sr_cpump stop pelle_dd1_f04 &
+   "$SARRAC_LIB"/sr_cpump stop pelle_dd2_f05
+elif [ "${C_ALSO}" ]; then
+   sr_cpump stop pelle_dd1_f04 &
+   sr_cpump stop pelle_dd2_f05
 fi
 
 sleep 10
 
-if [ "`sr_shovel t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" == 'stopped' ]; then 
+if [ ! "$SARRA_LIB" ]; then
+    cmd="`sr_shovel t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`"
+else
+    cmd="`"$SARRA_LIB"/sr_shovel.py t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`"
+fi
+
+if [ $cmd == 'stopped' ]; then 
 
    stalled=0
    stalled_value=-1
@@ -430,7 +476,7 @@ calcres ${totpost1} ${totshimpost1} "sr_post test2_f61 (${totpost1}) should have
 echo "                 | py infos   routing |"
 calcres ${totpropagated} ${totwinpost} "sr_shovel pclean_f90 (${totpropagated}) should have the same number of watched items winnows'post (${totwinpost})"
 calcres ${totremoved}    ${totwinpost} "sr_shovel pclean_f92 (${totremoved}}) should have the same number of removed items winnows'post (${totwinpost})"
-zerowanted "${missed_dispositions}" "messages received that we don't know what happenned."
+zerowanted "${missed_dispositions}" "messages received that we don't know what happened."
 calcres ${totshortened} ${totfilet} \
    "count of truncated headers (${totshortened}) and subscribed messages (${totmsgt}) should have about the same number of items"
 
@@ -441,7 +487,7 @@ calcres ${totshortened} ${totfilet} \
 # tallyres ${totcpelle04r} ${totcpelle04p} "pump pelle_dd1_f04 (c shovel) should publish (${totcpelle04p}) as many messages as are received (${totcpelle04r})"
 # tallyres ${totcpelle05r} ${totcpelle05p} "pump pelle_dd2_f05 (c shovel) should publish (${totcpelle05p}) as many messages as are received (${totcpelle05r})"
 
-if [ "$C_ALSO" ]; then
+if [[ "$C_ALSO" || -d "$SARRAC_LIB" ]]; then
 
 echo "                 | C          routing |"
   calcres  ${totcpelle04r} ${totcpelle05r} "cpump both pelles (c shovel) should receive about the same number of messages (${totcpelle05r}) (${totcpelle04r})"
@@ -460,8 +506,13 @@ calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed (sample size: $
 # MG shows retries
 
 echo
-echo NB retries for sr_subscribe t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f30*.log* | wc -l`
-echo NB retries for sr_sender    `grep Retrying "$LOGDIR"/sr_sender*.log* | wc -l`
+if [ ! "$SARRA_LIB" ]; then
+   echo NB retries for sr_subscribe t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f30*.log* | wc -l`
+   echo NB retries for sr_sender    `grep Retrying "$LOGDIR"/sr_sender*.log* | wc -l`
+else
+   echo NB retries for "$SARRA_LIB"/sr_subscribe.py t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f30*.log* | wc -l`
+   echo NB retries for "$SARRA_LIB"/sr_sender.py    `grep Retrying "$LOGDIR"/sr_sender*.log* | wc -l`
+fi
 
 # MG shows errors in logs if any
 

@@ -1078,13 +1078,20 @@ class sr_config:
         self.run_command([ cmd, path ] )
 
     def run_command(self,cmd_list):
+        sr_path = os.environ.get('SARRA_LIB')
+        sc_path = os.environ.get('SARRAC_LIB')
         try   :
                 if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5) :
                         self.logger.debug("using subprocess.check_call")
                         subprocess.check_call(cmd_list)
                 else :
                         self.logger.debug("using subprocess.run")
-                        subprocess.run(cmd_list,check=True)
+                        if sc_path and cmd_list[0].startswith("sr_cp"):
+                          subprocess.run([sc_path+'/'+cmd_list[0]]+cmd_list[1:],check=True)
+                        elif sr_path and cmd_list[0].startswith("sr"):
+                          subprocess.run([sr_path+'/'+cmd_list[0]+'.py']+cmd_list[1:],check=True)
+                        else:
+                          subprocess.run(cmd_list,check=True)
         except: self.logger.error("trying run command %s %s" %  ' '.join(cmd_list) )
 
     def register_plugins(self):
