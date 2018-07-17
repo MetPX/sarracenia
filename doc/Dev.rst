@@ -423,7 +423,7 @@ installed, it will be used as default. If you have both amqplib and pika install
 
 *use_pika [true/false]*
 
-To use or not pika. Should you set use_pika to True and python3-pika not installed, the programs will fall back to
+To use pika or not. Should you set use_pika to True and python3-pika not installed, the programs will fall back to
 amqplib.  The developers should test both API until we are totally migrated to PIKA.
 
 Note that the *fclean* subscriber looks at files in and keeps files around long enough for them to go through all the other
