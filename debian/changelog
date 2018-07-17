@@ -1,3 +1,9 @@
+metpx-sarracenia (2.18.07b3) unstable; urgency=medium
+
+  * bugfix     regression for subprocess api change @ V3.5
+
+ -- Peter Silva <peter@idefix>  Tue, 17 Jul 2018 11:51:15 -0400
+
 metpx-sarracenia (2.18.07b2) unstable; urgency=medium
 
   * bugfix      HPC mirroring reports crash in retry logic, work-around,
