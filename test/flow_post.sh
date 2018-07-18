@@ -66,7 +66,7 @@ function do_sr_post {
    if [ ! "$SARRA_LIB" ]; then
        sr_post -c test2_f61.conf -p `cat /tmp/diffs.txt`
    else 
-       "$SARRA_LIB"/sr_post.py -c /users/dor/aspy/map/.config/sarra/post/test2_f61.conf -p `cat /tmp/diffs.txt`
+       "$SARRA_LIB"/sr_post.py -c "$CONFDIR"/sarra/post/test2_f61.conf -p `cat /tmp/diffs.txt`
    fi
    LD_PRELOAD="libsrshim.so.1.0.0"
    cd $srpostdir 
