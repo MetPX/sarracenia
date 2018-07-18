@@ -3,7 +3,7 @@
 # script to be started by flow_setup.sh which runs sr_post in the background.
 
 #adding libcshim posting as well.
-export SR_POST_CONFIG='/users/dor/aspy/map/.config/sarra/post/shim_f63.conf'
+# change LD_PRELOAD with path to libsrshim if not using system one
 # The directory we run the flow test scripts in...
 tstdir="`pwd`"
 
@@ -68,7 +68,7 @@ function do_sr_post {
    else 
        "$SARRA_LIB"/sr_post.py -c /users/dor/aspy/map/.config/sarra/post/test2_f61.conf -p `cat /tmp/diffs.txt`
    fi
-   LD_PRELOAD="/users/dor/aspy/map/Documents/sarracenia/sc/libsrshim.so.1.0.0"
+   LD_PRELOAD="libsrshim.1.0"
    cd $srpostdir 
    cp -p --parents `cat /tmp/diffs.txt`  ${httpdocroot}/posted_by_shim 
    cp -p $srpostlstfile_new $srpostlstfile_old
