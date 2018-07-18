@@ -48,7 +48,6 @@ function do_sr_post {
    rm    /tmp/diffs.txt 2> /dev/null
    touch /tmp/diffs.txt
    comm -23 $srpostlstfile_new $srpostlstfile_old | sed '/.slink$/d' | sed '/.moved$/d' | sed '/.hlink$/d' > /tmp/diffs.txt
-   cat /tmp/diffs.txt
    srpostdelta=`cat /tmp/diffs.txt`
    # | sed 's/^..//'
    if [ "$srpostdelta" == "" ]; then
