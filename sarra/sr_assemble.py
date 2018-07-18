@@ -35,10 +35,11 @@
 # usage example
 #
 # sr_assemble [/path/to/]file* 
+# sr_assemble [/path/to/]file.10485760.100.0.0.d.Part
+#   check par_name for details of partition file name format
 #
 #============================================================
 
-#
 
 
 try :    
@@ -49,24 +50,24 @@ except :
 
 
 
-class sr_assemble(sr_instances):
+class sr_assemble(sr_instances):  
   
-
   # ===============
   # __do_assemble__
   # ===============
+  # 
+  # This function takes a list of all the file partitions and loops through them 
+  # creating one file called file.assembled
+  #
   def __do_assemble__(self, files):
-    logger = self.logger
-
 
     num_files = len(files)
 
-    # Making sure there is more than 1 file
-    if num_files <= 1:
-      logger.warning('Nothing to assemble...')
-      return
+    # Maybe check if each partition is present? Possibly use os.listdir(path) then check if files end with .Part?
 
-    # Check for data gaps?
+    # Parse the file name 
+    # Current file partitions naming format: "filename.file-size.number-of-files.remainder-of-last-block.index.checksum-type.suffix" 
+    # Ex. my.file.104857600.100.0.1.d.Part
     try:
       file_info = files[0].rsplit('.', 6)
       
@@ -78,15 +79,13 @@ class sr_assemble(sr_instances):
       file_sumflag = file_info[5]
       file_suffix = file_info[6]
 
-      
     except Exception as e:
-      logger.error("Could not parse file name, are these the right files?")
-      raise e
-
+      self.logger.error("Could not parse file name, are these the right files?")
+      self.logger.error(e)
 
     # Make sure correct number of partitions are present
-    if num_files != file_partitions:
-      logger.info('files given: %s, Need exactly %s files. Something\'s not right...' % (num_files, file_partitions) ) 
+    if num_files != file_partitions: 
+      self.logger.info('files given: %s, Need exactly %s files. Something\'s not right...' % (num_files, file_partitions) ) 
       return
 
 
@@ -97,33 +96,46 @@ class sr_assemble(sr_instances):
     f_curr = file_name+'.assembled'
 
     with open(f_curr, 'ab') as fo_curr: # Open file for appending in binary
-      logger.info( "File: %s is open for writing" % fo_curr.name)
+      self.logger.info( "File: %s is open for writing" % fo_curr.name)
     
       # Loop through partitions
       while i < file_partitions:
         f_next = file_name+'.'+str(file_size)+'.'+str(file_partitions)+'.'+str(file_remainder)+'.'+str(i)+'.'+file_sumflag+'.'+file_suffix
         
-        with open(f_next, 'rb') as fo_next: # Open file for reading in binary
-          
-          # Loop through each partition in 4 KiB piece
-          piece = fo_next.read(4096)
-          while piece:
-            fo_curr.write(piece)
-            piece = fo_next.read(4096)
+        self.__do_concat__(fo_curr, f_next) # Concat next file into file.assembled
 
-        fo_next.closed
-
-        logger.info( "File: %s has been written to %s, and is being removed" % (fo_next.name, fo_curr.name))
+        self.logger.info( "File: %s has been written to %s, and is being removed" % (f_next, fo_curr.name))
         
         try:
-          os.remove(fo_next.name)
+          pass # testing
+          #os.remove(fo_next.name)
         except Exception as e:
-          logger.error("Failed to remove %s", fo_next.name)          
+          self.logger.error("Failed to remove %s", fo_next.name)          
 
         i+=1  
 
     fo_curr.closed
-    
+
+  # ===============
+  # __do_concat__
+  # ===============
+  #
+  # Helper function for __do_assemble__ takes a file object and the next file name 
+  # and appends the next file to the cuirrent file object
+  def __do_concat__(self, fo_curr, file2):
+    try:
+      with open(file2, 'rb') as fo_next: # Open file for reading in binary 
+        # Loop through each partition in 100 KiB piece
+        piece = fo_next.read(102400)
+        while piece:
+          fo_curr.write(piece)
+          piece = fo_next.read(102400)
+
+      fo_next.closed
+
+    except Exception as e:
+      self.logger.error(e)
+
 
 # ===================================
 # MAIN
