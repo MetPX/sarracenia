@@ -6,8 +6,9 @@
 # $SARRA_LIB and $SARRAC_LIB, and make sure $LD_PRELOAD contains path
 # to libsrshim.so.1.0.0 in your sarrac directory, and $SR_POST_CONFIG 
 # contains the path to shim_f63.conf 
-export SR_POST_CONFIG=""
-export LD_PRELOAD=""
+# defaults:
+#export SR_POST_CONFIG="$CONFDIR/post/shim_f63.conf"
+#export LD_PRELOAD="$SARRAC_LIB/libsrshim.so.1.0.0"
 #export SARRA_LIB=""
 #export SARRAC_LIB=""
 
