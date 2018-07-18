@@ -66,9 +66,9 @@ function do_sr_post {
    if [ ! "$SARRA_LIB" ]; then
        sr_post -c test2_f61.conf -p `cat /tmp/diffs.txt`
    else 
-       "$SARRA_LIB"/sr_post.py -c "$CONFDIR"/sarra/post/test2_f61.conf -p `cat /tmp/diffs.txt`
+       "$SARRA_LIB"/sr_post.py -c "$CONFDIR"/post/test2_f61.conf -p `cat /tmp/diffs.txt`
    fi
-   LD_PRELOAD="libsrshim.so.1.0.0"
+   LD_PRELOAD="$SARRAC_LIB/libsrshim.so.1.0.0"
    cd $srpostdir 
    cp -p --parents `cat /tmp/diffs.txt`  ${httpdocroot}/posted_by_shim 
    cp -p $srpostlstfile_new $srpostlstfile_old
