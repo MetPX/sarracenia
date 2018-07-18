@@ -68,7 +68,7 @@ function do_sr_post {
    else 
        "$SARRA_LIB"/sr_post.py -c /users/dor/aspy/map/.config/sarra/post/test2_f61.conf -p `cat /tmp/diffs.txt`
    fi
-   LD_PRELOAD="libsrshim.1.0"
+   LD_PRELOAD="libsrshim.so.1.0.0"
    cd $srpostdir 
    cp -p --parents `cat /tmp/diffs.txt`  ${httpdocroot}/posted_by_shim 
    cp -p $srpostlstfile_new $srpostlstfile_old
