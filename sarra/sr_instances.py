@@ -200,7 +200,7 @@ class sr_instances(sr_config):
               if self.pid != None :
                  try    : 
                           p = psutil.Process(self.pid)
-                          self.logger.info("%s running" % self.instance_str)
+                          self.logger.info("%s running (pid=%d)" % (self.instance_str,self.pid) )
                           stopped = False
                  except : pass
               no = no + 1
@@ -253,6 +253,7 @@ class sr_instances(sr_config):
                self.foreground_parent()
                return
            elif action == 'sanity' :
+               self.foreground_parent()
                return
            elif (action == 'start' or action == 'restart' ) and (self.sleep <= 0):
                self.logger.info("start|restart do nothing if sleep <= 0. exiting." )
@@ -402,13 +403,22 @@ class sr_instances(sr_config):
         elif action == 'edit'    :
              if not usr_fil:
                 f  = self.find_conf_file(usr_cfg)
+                if not f:
+                    self.logger.error('could not identify file to edit: %s' % usr_cfg  )
+                    return
+
                 if self.user_config_dir in f : usr_fil = f
              else:
                 usr_fil = self.user_config
 
              edit_fil = usr_fil
 
-             self.run_command([ os.environ.get('EDITOR'), edit_fil] )
+             editor=os.environ.get('EDITOR')
+             
+             if editor:
+                 self.run_command([ editor, edit_fil] )
+             else:
+                 self.logger.error('Please set EDITOR variable to use edit command')
 
         # enable
 
@@ -540,7 +550,11 @@ class sr_instances(sr_config):
 
         # check log age 
 
-        log_age  = os.stat(self.logpath)[stat.ST_MTIME]
+        if os.path.exists(self.logpath):
+           log_age  = os.stat(self.logpath)[stat.ST_MTIME]
+        else:
+           log_age = 0
+
         now      = time.time()
         elapse   = now - log_age
 
@@ -641,8 +655,17 @@ class sr_instances(sr_config):
 
         self.logger.debug("cmd = %s" % cmd)
 
-        pid = subprocess.Popen(cmd,shell=False,\
-              stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        # FIXME: at around 3.4, https://docs.python.org/3/library/os.html#fd-inheritance 
+        #   inheritance of file descriptors changed.  I think earlier versions require PIPE
+        #   later versions None is better.
+        #   use of Pipe causes issue: https://github.com/MetPX/sarracenia/issues/63
+
+        if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 4) :
+            pid = subprocess.Popen(cmd,shell=False,\
+                stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        else:  
+            pid = subprocess.Popen(cmd,shell=False,close_fds=False)
+
 
     def start_parent(self):
         self.logger.debug(" pid %d instances %d no %d \n" % (os.getpid(),self.nbr_instances,self.no))
@@ -667,11 +690,18 @@ class sr_instances(sr_config):
 
         # as instance
         else:
-             self.logger.debug("start instance %d \n" % self.no)
              self.build_instance(self.no)
              self.pid = os.getpid()
              ok = self.file_set_int(self.pidfile,self.pid)
              self.setlog()
+             if self.no > 0:
+                os.close(0)
+                lfd=os.open( self.logpath, os.O_CREAT|os.O_WRONLY|os.O_APPEND )
+                os.dup2(lfd,1)
+                os.dup2(lfd,2)
+  
+             self.logger.debug("start instance %d (pid=%d)\n" % (self.no, self.pid) )
+
              if not ok :
                 self.logger.error("could not write pid for instance %s" % self.instance_str)
                 self.logger.error("instance not started")
@@ -685,17 +715,17 @@ class sr_instances(sr_config):
            if not sanity : self.logger.info("%s is stopped" % self.instance_str)
            return
 
-        try    : 
-                 p = psutil.Process(self.pid)
-                 status = p.status
-                 if not isinstance(p.status,str): status = p.status()
-                 status = status.lower()
-                 status = status.replace('sleeping','running')
-                 if not sanity : self.logger.info("%s is %s" % (self.instance_str,status))
-                 return
-        except : pass
+        if psutil.pid_exists(self.pid):
+             p = psutil.Process(self.pid)
+             status = p.status
+             if not isinstance(p.status,str): status = p.status()
+             status = status.lower()
+             status = status.replace('sleeping','running')
+             if not sanity : self.logger.info("%s is %s (pid=%d)" % (self.instance_str,status,self.pid))
+             return
+        else:
+             self.logger.info("%s instance missing (pid=%d)" % (self.instance_str, self.pid) )
 
-        self.logger.info("%s no status ... strange state" % self.instance_str)
         if sanity :
            self.logger.info("%s restart" % self.instance_str)
            self.restart_instance()
@@ -723,7 +753,7 @@ class sr_instances(sr_config):
            self.logger.info("%s already stopped" % self.instance_str)
            return
 
-        self.logger.info("%s stopping" % self.instance_str)
+        self.logger.info("%s stopping (pid=%d)" % (self.instance_str, self.pid) )
 
         sleep_max = 7.0
         sleep_now = 0.5
@@ -738,7 +768,7 @@ class sr_instances(sr_config):
 
               try    : 
                        p=psutil.Process(self.pid)
-                       self.logger.debug("stillAlive %s pid = %d" % (self.instance_str,self.pid))
+                       self.logger.debug("stillAlive %s (pid=%d)" % (self.instance_str,self.pid))
                        stillAlive = True
               except :
                        stillAlive = False
@@ -768,14 +798,13 @@ class sr_instances(sr_config):
            time.sleep(2)
            try   : os.kill(self.pid, signal.SIGKILL)
            except: self.logger.debug("SIGKILL %s pid = %d, will check if still alive" % (self.instance_str,self.pid))
-
-        # if program is running... we could not stop it
-
-        try    : 
+        else:
+           # if program is running... we could not stop it
+           try: 
                  p=psutil.Process(self.pid)
                  self.logger.error("unable to stop instance = %s (pid=%d)" % (self.instance_str,self.pid))
                  return
-        except : pass
+           except : pass
 
         # not running anymore...
 

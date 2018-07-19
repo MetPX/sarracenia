@@ -715,9 +715,10 @@ def main():
           config = None
 
     audit = sr_audit(config,args)
-
-    if old :
-       audit.logger.warning("Should invoke 1: %s [args] action config" % sys.argv[0])
+ 
+    #audit.heartbeat=100
+    #if old :
+    #   audit.logger.warning("Should invoke 1: %s [args] action config" % sys.argv[0])
 
     #if hasattr( audit.admin, 'username') :
     #    audit.logger.debug("Admin set to %s @ %s " % ( audit.admin.username, audit.admin.hostname ) )

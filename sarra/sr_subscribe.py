@@ -1615,39 +1615,6 @@ class sr_subscribe(sr_instances):
         self.save_fp.write(json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ], sort_keys=True ) + '\n' ) 
         self.save_fp.flush()
 
-    def set_dir_pattern(self,cdir):
-
-        new_dir = cdir
-
-        if '${BD}' in cdir and self.base_dir != None :
-           new_dir = new_dir.replace('${BD}',self.base_dir)
-
-        if '${PBD}' in cdir and self.post_base_dir != None :
-           new_dir = new_dir.replace('${PBD}',self.post_base_dir)
-
-        if '${DR}' in cdir and self.document_root != None :
-           self.logger.warning("DR = document_root should be replaced by BD for base_dir")
-           new_dir = new_dir.replace('${DR}',self.document_root)
-
-        if '${PDR}' in cdir and self.post_base_dir != None :
-           self.logger.warning("PDR = post_document_root should be replaced by PBD for post_base_dir")
-           new_dir = new_dir.replace('${PDR}',self.post_base_dir)
-
-        if '${YYYYMMDD}' in cdir :
-           YYYYMMDD = time.strftime("%Y%m%d", time.gmtime()) 
-           new_dir  = new_dir.replace('${YYYYMMDD}',YYYYMMDD)
-
-        if '${SOURCE}' in cdir :
-           new_dir = new_dir.replace('${SOURCE}',self.msg.headers['source'])
-
-        if '${HH}' in cdir :
-           HH = time.strftime("%H", time.gmtime()) 
-           new_dir = new_dir.replace('${HH}',HH)
-
-        new_dir = self.varsub(new_dir)
-
-        return new_dir
-
 
     # ==============================================
     # how will the download file land on this server

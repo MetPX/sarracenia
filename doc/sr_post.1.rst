@@ -32,7 +32,7 @@ To make files available to subscribers, **sr_post** sends the announcements
 to an AMQP server, also called a broker.  
 
 This manual page is primarily concerned with the python implementation,
-but there is also an implementation in C, which works nearly identically,
+but there is also an implementation in C, which works nearly identically.
 Differences:
 
  - plugins are not supported in the C implementation.
@@ -60,7 +60,7 @@ Format of argument to the *path* option::
        or
        relative_path_to_the/filename
 
-the *-pipe* option can be specified to have sr_post read path names from standard 
+The *-pipe* option can be specified to have sr_post read path names from standard 
 input as well.
 
 
@@ -81,12 +81,12 @@ The output of the command is as follows ::
 In MetPX-Sarracenia, each post is published under a certain topic.
 The log line starts with '[INFO]', followed by the **topic** of the
 post. Topics in *AMQP* are fields separated by dot. The complete topic starts with
-a topic_prefix (see option)  version *V02*, an action *post*,
+a topic_prefix (see option), version *V02*, an action *post*,
 followed by a subtopic (see option) here the default, the file path separated with dots
-*data.shared.products.foo*
+*data.shared.products.foo*.
 
 The second field in the log line is the message notice.  It consists of a time 
-stamp *20150813161959.854*, and the source url of the file in the last 2 fields.
+stamp *20150813161959.854*, and the source URL of the file in the last 2 fields.
 
 The rest of the information is stored in AMQP message headers, consisting of key=value pairs.
 The *sum=d,82edc8eb735fd99598a1fe04541f558d* header gives file fingerprint (or checksum
@@ -101,7 +101,7 @@ Another example::
 By default, sr_post reads the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
 (concatenating the post_base_dir and relative path of the source url to obtain the local file path)
 and calculates its checksum. It then builds a post message, logs into broker.com as user 'guest'
-(default credentials) and sends the post to defaults vhost '/' and exchange 'xs_guest'
+(default credentials) and sends the post to defaults vhost '/' and exchange 'xs_guest'.
 
 A subscriber can download the file http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 using http
 without authentication on dd.weather.gc.ca.
@@ -141,16 +141,16 @@ common settings, and methods of specifying them.
   when combined (or found) in the given *path*, 
   gives the local absolute path to the data file to be posted.
   The document root part of the local path will be removed from the posted announcement.
-  for sftp: url's it can be appropriate to specify a path relative to a user account.
+  For sftp URLs: it can be appropriate to specify a path relative to a user account.
   Example of that usage would be:  -dr ~user  -post_base_url sftp:user@host  
-  for file: url's, base_dir is usually not appropriate.  To post an absolute path, 
+  For file URLs: base_dir is usually not appropriate.  To post an absolute path, 
   omit the -dr setting, and just specify the complete path as an argument.
 
-[-ex|--exchange <exchange>]
----------------------------
+[-px|--post_exchange <exchange>]
+--------------------------------
 
   Sr_post publishes to an exchange named *xs_*"broker_username" by default.
-  Use the *exchange* option to override that default.
+  Use the *post_exchange* option to override that default.
 
 [-h|-help|--help]
 -----------------
@@ -161,7 +161,7 @@ common settings, and methods of specifying them.
 ---------------------
 
   This option controls the partitioning strategy used to post files.
-  the value should be one of::
+  The value should be one of::
 
      0 - autocompute an appropriate partitioning strategy (default)
      1 - always send entire files in a single part.
@@ -169,16 +169,16 @@ common settings, and methods of specifying them.
 
   Files can be announced as multiple parts.  Each part has a separate checksum.
   The parts and their checksums are stored in the cache. Partitions can traverse
-  the network separately, and in paralllel.  When files change, transfers are
+  the network separately, and in parallel.  When files change, transfers are
   optimized by only sending parts which have changed.  
   
   The value of the *blocksize*  is an integer that may be followed by  letter designator *[B|K|M|G|T]* meaning:
-  for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All theses references are powers of 2.
+  for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All these references are powers of 2.
   Files bigger than this value will get announced with *blocksize* sized parts.
   
   The autocomputation algorithm determines a blocksize that encourages a reasonable number of parts
   for files of various sizes.  As the file size varies, the automatic computation will give different
-  results.  this will result in resending information which has not changed as partitions of a different 
+  results.  This will result in resending information which has not changed as partitions of a different 
   size will have different sums, and therefore be tagged as different.  
   
   By default, **sr_post** computes a reasonable blocksize that depends on the file size.
@@ -189,7 +189,7 @@ common settings, and methods of specifying them.
   of '10M' would make sense in that case.  
   
   In cases where a custom downloader is used which does not understand partitioning, it is necessary
-  to avoid having the file split into parts, so one would specify '1' to force all files to be send
+  to avoid having the file split into parts, so one would specify '1' to force all files to be sent
   as a single part.
 
 [-pbu|--post_base_url <url>]
@@ -260,8 +260,8 @@ common settings, and methods of specifying them.
   when invoked again. 
  
   Over time the number of files in the cache can grow too large, and so it is cleaned out of
-  old entries.  The default lifetime of a cache entry is five minutes (300 seconds.) This
-  lifetime can be overridden with a time interval as argument ( the 999 above )
+  old entries.  The default lifetime of a cache entry is five minutes (300 seconds). This
+  lifetime can be overridden with a time interval as argument ( the 999 above ).
 
   If duplicate suppression is in use,  one should ensure that a fixed **blocksize** is
   used ( set to a value other than 0 ) as otherwise blocksize will vary as files grow,
@@ -273,7 +273,7 @@ common settings, and methods of specifying them.
   A comma-separated list of destination clusters to which the posted data should be sent.
   Ask pump administrators for a list of valid destinations.
 
-  default: the hostname of the broker.
+  Default: the hostname of the broker.
 
   *FIXME: a good list of destination should be discoverable.*
 
@@ -347,7 +347,7 @@ DEVELOPER SPECIFIC OPTIONS
 ----------------
 
   If a file is posted in several blocks, the posting order
-  is randomized so that the subcribe receives them out of order.
+  is randomized so that the subcriber receives them out of order.
 
 [-rc|--reconnect]
 -----------------

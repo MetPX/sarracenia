@@ -164,7 +164,8 @@ class sr_cache():
 
         # close,remove file, open new empty file
         self.fp.close()
-        os.unlink(self.cache_file)
+        if os.path.exists( self.cache_file ):
+            os.unlink( self.cache_file )
         self.fp = open(self.cache_file,'w')
 
         # clean cache removing delpath

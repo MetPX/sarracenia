@@ -9,7 +9,7 @@ dd_subscribe Guide
 meteorological data access repository.
 
 2- For each product posted on the Datamart, an AMQP message is
-immediately transmitted. This message contains :
+immediately transmitted. This message contains:
 "md5sum filesize http://servername/ filepath".
 The product's URL is described by the last two fields.
 Any application which can subscribe to an AMQP service can
@@ -23,29 +23,29 @@ in the Python language.
 
 * Sarracenia ( http://github.com/MetPX/sarracenia ) a complete reference implementation in Python >= 3.4. 
   It runs on Linux, Mac, and Windows. This is the best choice to use, if you can.
-* Sarrac ( https://github.com/MetPX/sarrac ) is a C implementation of data insertion (post & watch.) 
+* Sarrac ( https://github.com/MetPX/sarrac ) is a C implementation of data insertion (post & watch). 
   It is Linux only. There is also a libcshim to be able to tranparently implement data insertion with 
   this tool, and libsarra allows C programs to post directly. There is consumer code as well 
   (to read queues) so messages can be passed to the downloader of your choice, but no built-in 
   downloading so far. This subset is meant to be used where python3 environments are 
-  impractical (example: high performance computing environments.), or where memory & cpu is usage
+  impractical (example: high performance computing environments), or where memory & CPU usage
   is particularly important such as in embedded systems.
 * node-sarra ( https://github.com/darkskyapp/node-sarra ) An embryonic implementation for node.js.
-* dd_subscribe is a python2 program that uses python-amqplib to receive these amqp notification 
-  messages, retrieve the products from the datamart via HTTP and place them in a 
+* dd_subscribe is a Python2 program that uses python-amqplib to receive these amqp notification 
+  messages, retrieve the products from the datamart via HTTP, and place them in a 
   chosen local directory.
 
 4- dd_subscribe's usage is : dd_subscribe [-n] [-l logdir] config_file.
 By default, the program will automatically initiate product download
 upon notification. If you want dd_subscribe to simply display the
-notification message without retrieving the products,use the "-n"
+notification message without retrieving the products, use the "-n".
 The -l option sets a logging directory, and a file named config_file_PID.log
-will be written.(where PID is the process id)
+will be written (where PID is the process id).
 
 5- The config file is simple (see dd_subscribe manpage).  To make
 things even easier, the example config files provided with the script
 contain valid configuration parameters that should be enough to get
-you started.  The config files may contain :
+you started.  The config files may contain:
 
       a) credentials for the rabbitmq server. These options are 
 
@@ -65,7 +65,7 @@ you started.  The config files may contain :
          - several subtopic options may be declared
          - to arrive at a valid subtopic, browse the datamart (http://dd.weather.gc.ca)
            and pick any directories where the products are interesting for you. For each
-           directory, create a subtopicas follows:
+           directory, create a subtopic as follows:
 
                  subtopic directory1.subdirectory2.*.subdirectory4.#
 
@@ -108,14 +108,14 @@ you started.  The config files may contain :
          - The 'directory' option defines the target directory on your server.
            Combined with accept/reject options, the user can select the
            files of interest and their directories of residence.
-           Theses options are processed sequentially. A rejected product is never downloaded.
+           These options are processed sequentially. A rejected product is never downloaded.
            Accepted products are placed in the closest directory declared above the 'accept'
            option that picked it. The accept and reject option use regexp to match URLs.
            The patterns in accept/reject clauses use regular expression syntax, more
            information here: https://en.wikipedia.org/wiki/Regular_expression
-           briefly ´.´ is a one character wildcard matching any single character
+           Briefly ´.´ is a one character wildcard matching any single character
            ´*´ means ´any number of repetitions.  so ´.*´ means any sequence of characters,
-           (a wildcard.)
+           (a wildcard).
 
            ex.     directory /mylocal/myradars
                    accept    .*RADAR.*
@@ -135,14 +135,14 @@ you started.  The config files may contain :
            
          - The option 'timeout' sets a limit in seconds of time under which the file should
            have been downloaded and placed under the proper directory/name... If the timeout
-           is reached the download is retried ... until succes.
+           is reached the download is retried ... until success.
 
 
-6- Under samples/config you will find working configuration files, provided as is,
-   without guaranty. Under samples/program you will find other programs we played with.
+6- Under samples/config you will find working configuration files, provided as-is,
+   without guarantee. Under samples/program you will find other programs we played with.
 
-7- FUN FACT: sarracenia : another rare, mostly carnivorous, Canadian
-   plant... (as are sundew,columbo)
+7- FUN FACT: Sarracenia : another rare, mostly carnivorous, Canadian
+   plant... (as are Sundew, Columbo).
 
 _____________________________________________________________________________________
 
@@ -157,7 +157,7 @@ données météorologiques d'Environnement Canada
 2- Chaque fois qu'un produit arrive dans le datamart, un message AMQP
 est immédiatement transmis. Ce message a la forme :
 "md5sum taillefichier http://servername/ filepath".
-Le URL du produit est décrit par les deux derniers chanps.
+Le URL du produit est décrit par les deux derniers champs.
 Toute application capable de s'abonner à un service AMQP
 peut recevoir les notifications des produits en qui sont publiés et
 les récupérer en temps réel par HTTP. Il existe un grand nombre de
@@ -165,7 +165,7 @@ langages et de plateformes qui peuvent être utilisées pour mettre en
 oeuvre cette procédure. Vous trouverez ici un script de démonstration
 simple, "dd_subscribe". Le script est écrit en Python.
 
-3- dd_subscribe est un programme en python, utilisant python-amqplib pour
+3- dd_subscribe est un programme en Python, utilisant python-amqplib pour
 recevoir les notification AMQP, récupérer les produits sur le datamart
 par HTTP et les placer dans un répertoire local choisi par l'usager.
 

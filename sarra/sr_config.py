@@ -216,6 +216,9 @@ class sr_config:
            self.logger.debug("sr_config config_name  %s " % self.config_name )
            self.logger.debug("sr_config user_config  %s " % self.user_config )
 
+        self.prog_config = self.user_config_dir + os.sep + self.program_dir + '.conf'
+        self.logger.debug("sr_config prog_config  %s " % self.prog_config )
+
         # build user_cache_dir/program_name/[config_name|None] and make sure it exists
 
         self.user_cache_dir  = user_cache_dir (self.appname,self.appauthor)
@@ -234,8 +237,8 @@ class sr_config:
 
         self.logger.info( "log settings start for %s (version: %s):" % (self.program_name, sarra.__version__) )
         self.logger.info( "\tinflight=%s events=%s use_pika=%s" % ( self.inflight, self.events, self.use_pika, ) )
-        self.logger.info( "\tsuppress_duplicates=%s retry_mode=%s retry_ttl=%s" % ( self.caching, self.retry_mode, self.retry_ttl ) )
-        self.logger.info( "\texpire=%s reset=%s message_ttl=%s prefetch=%s accept_unmatch=%s delete=%s" % \
+        self.logger.info( "\tsuppress_duplicates=%s retry_mode=%s retry_ttl=%sms" % ( self.caching, self.retry_mode, self.retry_ttl ) )
+        self.logger.info( "\texpire=%sms reset=%s message_ttl=%s prefetch=%s accept_unmatch=%s delete=%s" % \
            ( self.expire, self.reset, self.message_ttl, self.prefetch, self.accept_unmatch, self.delete ) )
         self.logger.info( "\theartbeat=%s default_mode=%03o default_mode_dir=%03o default_mode_log=%03o discard=%s durable=%s" % \
            ( self.heartbeat, self.chmod, self.chmod_dir, self.chmod_log, self.discard, self.durable ) )
@@ -790,11 +793,12 @@ class sr_config:
         self.execfile("on_line",'line_mode')
 
 
+    # this function converts duration into a specifid unit: [milliseconds, seconds or days]
+    # str_value should be a number followed by a unit [s,m,h,d,w] ex. 1w, 4d, 12h
+    # setting_units specifies the factor to convert the value into [d,s] seconds by default
+    # ex. duration_from_str('48h', 'd') -> 2, for 2 days
     def duration_from_str(self,str_value,setting_units='s'):
         self.logger.debug("sr_config duration_from_str %s unit %s" % (str_value,setting_units))
-
-        # str_value should be expressed in secs 
-        # unit is used to initialise the factor (ex: 's': factor = 1  'ms' : factor = 1000 )
 
         factor    = 1
 
@@ -939,7 +943,6 @@ class sr_config:
                 (stype, svalue, tb) = sys.exc_info()
                 self.logger.error("sr_config/__on_heartbeat__ 3 Type: %s, Value: %s,  ..." % (stype, svalue))
                 self.logger.error( "plugin %s, execution failed." % plugin )
-           #if not plugin(self): return False
 
         return True
 
@@ -986,6 +989,12 @@ class sr_config:
            self.config(adminconf)
            self.config_dir  = config_dir
 
+        if os.path.isfile(self.prog_config):
+           config_dir       = self.config_dir
+           self.config_dir  = ''
+           self.config(self.prog_config)
+           self.config_dir  = config_dir
+            
     def has_vip(self): 
 
         # no vip given... standalone always has vip.
@@ -1081,8 +1090,9 @@ class sr_config:
         sr_path = os.environ.get('SARRA_LIB')
         sc_path = os.environ.get('SARRAC_LIB')
         try   :
+        import sys,subprocess
+        try:
                 if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5) :
-                        self.logger.debug("using subprocess.check_call")
                         subprocess.check_call(cmd_list)
                 else :
                         self.logger.debug("using subprocess.run")
@@ -2161,8 +2171,10 @@ class sr_config:
                      if words0 in [ 'role' ]:
                         self.logger.warning("role option deprecated, please replace with 'declare'" )
 
-                     if item in [ 'source' , 'subscriber' ]:
+                     if item in [ 'source' , 'subscriber', 'subscribe' ]:
                         roles  = item
+                        if item == 'subscribe' :
+                           roles += 'r'
                         user   = words2
                         self.users[user] = roles
                      elif item in [ 'exchange' ]:
@@ -2170,6 +2182,9 @@ class sr_config:
                      elif item in [ 'env', 'envvar', 'var', 'value' ]:
                         name, value = words2.split('=')
                         os.environ[ name ] = value
+                     else:
+                        self.logger.error("declare not understood: %s %s" % ( item, words2 ) )
+ 
                      n = 3
 
                 elif words0 in ['sanity_log_dead','sld'] :   # FIXME ... to document
@@ -2570,3 +2585,89 @@ class sr_config:
            self.logger.warning("continue using existing %s"%path)
 
         return False
+
+
+    def set_dir_pattern(self,cdir):
+
+        new_dir = cdir
+
+        if '${BD}' in cdir and self.base_dir != None :
+           new_dir = new_dir.replace('${BD}',self.base_dir)
+
+        if '${PBD}' in cdir and self.post_base_dir != None :
+           new_dir = new_dir.replace('${PBD}',self.post_base_dir)
+
+        if '${DR}' in cdir and self.document_root != None :
+           self.logger.warning("DR = document_root should be replaced by BD for base_dir")
+           new_dir = new_dir.replace('${DR}',self.document_root)
+
+        if '${PDR}' in cdir and self.post_base_dir != None :
+           self.logger.warning("PDR = post_document_root should be replaced by PBD for post_base_dir")
+           new_dir = new_dir.replace('${PDR}',self.post_base_dir)
+
+        if '${YYYYMMDD}' in cdir :
+           YYYYMMDD = time.strftime("%Y%m%d", time.gmtime()) 
+           new_dir  = new_dir.replace('${YYYYMMDD}',YYYYMMDD)
+
+        if '${SOURCE}' in cdir :
+           new_dir = new_dir.replace('${SOURCE}',self.msg.headers['source'])
+
+        if '${HH}' in cdir :
+           HH = time.strftime("%H", time.gmtime()) 
+           new_dir = new_dir.replace('${HH}',HH)
+
+        if '${YYYY}' in cdir : 
+           YYYY = time.strftime("%Y", time.gmtime())
+           new_dir = new_dir.replace('${YYYY}',YYYY)
+
+        if '${MM}' in cdir : 
+           MM = time.strftime("%m", time.gmtime())
+           new_dir = new_dir.replace('${MM}',MM)
+
+        if '${JJJ}' in cdir : 
+           JJJ = time.strftime("%j", time.gmtime()) 
+           new_dir = new_dir.replace('${JJJ}',JJJ)
+
+
+        # Parsing cdir to subtract time from it in the following formats
+        # time unit can be: sec/mins/hours/days/weeks
+
+        # ${YYYY-[number][time_unit]}
+        offset_check = re.search(r'\$\{YYYY-(\d+)(\D)\}', cdir)
+        if offset_check:
+          seconds = self.duration_from_str(''.join(offset_check.group(1,2)), 's') 
+
+          epoch  = time.mktime(time.gmtime()) - seconds
+          YYYY1D = time.strftime("%Y", time.localtime(epoch) ) 
+          new_dir = re.sub('\$\{YYYY-\d+\D\}',YYYY1D, new_dir)
+
+        # ${MM-[number][time_unit]}
+        offset_check = re.search(r'\$\{MM-(\d+)(\D)\}', cdir)
+        if offset_check:
+          seconds = self.duration_from_str(''.join(offset_check.group(1,2)), 's') 
+
+          epoch = time.mktime(time.gmtime()) - seconds
+          MM1D  =  time.strftime("%m", time.localtime(epoch) ) 
+          new_dir = re.sub('\$\{MM-\d+\D\}',MM1D, new_dir)
+
+        # ${JJJ-[number][time_unit]}
+        offset_check = re.search(r'\$\{JJJ-(\d+)(\D)\}', cdir)
+        if offset_check:
+          seconds = self.duration_from_str(''.join(offset_check.group(1,2)), 's') 
+
+          epoch = time.mktime(time.gmtime()) - seconds
+          JJJ1D = time.strftime("%j", time.localtime(epoch) )
+          new_dir = re.sub('\$\{JJJ-\d+\D\}',JJJ1D, new_dir)
+
+        # ${YYYYMMDD-[number][time_unit]}
+        offset_check = re.search(r'\$\{YYYYMMDD-(\d+)(\D)\}', cdir)  
+        if offset_check:
+          seconds = self.duration_from_str(''.join(offset_check.group(1,2)), 's') 
+
+          epoch = time.mktime(time.gmtime()) - seconds
+          YYYYMMDD = time.strftime("%Y%m%d", time.localtime(epoch) )
+          new_dir = re.sub('\$\{YYYYMMDD-\d+\D\}', YYYYMMDD, new_dir) 
+
+        new_dir = self.varsub(new_dir)
+
+        return new_dir  

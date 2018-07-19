@@ -52,11 +52,11 @@ The Guides should also be revised to reflect additions or changes:
 When there are new sections, they should likely start out in design/ and after
 review, graduate into the main documentation.  
 
-The french documentation has the same file names as the English, but it placed
+The French documentation has the same file names as the English, but it placed
 under the fr/ sub-directory.  It's easiest if the documentation is produced in 
-both languages at once. At least use an auto translation too (such as 
+both languages at once. At least use an auto translation tool (such as 
 www.deepl.com) to provide a starting point. (and same procedure in reverse 
-for francophones.)
+for Francophones.)
 
 
 Where to Put Options 
@@ -64,7 +64,7 @@ Where to Put Options
 
 Most options are documented in sr_subscribe(1), which is kind of a *parent* to all other consuming components.
 Any options used by multiple components should be documented there. Options which are unique to a
-single component, should be documented in the man page for that component.
+single component should be documented in the man page for that component.
 
 Where the default value for an option varies among components, each component's man page should indicate 
 the option's default for that component. Sr_sarra, sr_winnow, sr_shovel, and sr_report components which
@@ -80,10 +80,10 @@ time, and should not be relied upon.  From time to time releases are tagged, and
 maintenance results in a branch.  Releases are classified as follows:
 
 Alpha
-  snapshot releases taken directly from master, with no other qualitative guarantees.
-  no gurantee of functionality, some components may be partially implemented, some
+  Snapshot releases taken directly from master, with no other qualitative guarantees.
+  No guarantee of functionality, some components may be partially implemented, some
   breakage may occur.
-  no bug-fixes, issues addressed by subsequent version.
+  No bug-fixes, issues addressed by subsequent version.
   Often used for early end-to-end testing (rather than installing custom from tree on
   each test machine.)
 
@@ -91,12 +91,12 @@ Beta
   Feature Complete for a given release.  Components in their final form for this release.
   Documentation exists in at least one language.
   All previously known release block bugs addressed.
-  no bug-fixes, issues addressed by subsequent version.
+  No bug-fixes, issues addressed by subsequent version.
 
 RC - Release Candidate.
-  implies it has gone through beta to identify and address major issues.
+  Implies it has gone through beta to identify and address major issues.
   Translated documentation available.
-  no bug-fixes, issues addressed by subsequent version.
+  No bug-fixes, issues addressed by subsequent version.
 
 Final versions have no suffix and are considered stable and supported.
 Stable should receive bug-fixes if necessary from time to time.
@@ -113,7 +113,7 @@ during development.
       (??? perhaps there is a way to get access to a resource as is... no declare)
       (??? should be investigated)
 
-      Changing the default require the removal and recreation of the resource.
+      Changing the default requires the removal and recreation of the resource.
       This has a major impact on processes...
 
 
@@ -124,14 +124,14 @@ For testing and development::
 
     python3 setup.py bdist_wheel
 
-should build a wheel in the dist sub-directory.
+Should build a wheel in the dist sub-directory.
 
 
 Debian/Ubuntu
 ~~~~~~~~~~~~~
 
 This process builds a local .deb in the parent directory using standard debian mechanisms.
-- check the **build-depends** line in *debian/control* for dependencies that might be needed to build from source.
+- Check the **build-depends** line in *debian/control* for dependencies that might be needed to build from source.
 - The following steps will build sarracenia but not sign the changes or the source package::
 
     cd metpx/sarracenia
@@ -157,7 +157,7 @@ Checklist:
 Testing
 -------
 
-Before commiting code to the master branch, as a Quality Assurance measure one should run all available self-tests.
+Before committing code to the master branch, as a Quality Assurance measure one should run all available self-tests.
 It is assumed that the specific changes in the code have already been unit
 tested.  Please add self-tests as appropriate to this process to reflect the new ones.
 
@@ -165,7 +165,7 @@ The configuration one is trying to replicate:
 
 .. image:: Flow_test.svg
 
-Assumption: test environment is a linux PC, either a laptop/desktop, or a server on which one
+Assumption: test environment is a Linux PC, either a laptop/desktop, or a server on which one
 can start a browser. If working with the c implementation as well, there are also the following
 flows defined:
 
@@ -186,7 +186,7 @@ A typical development workflow will be::
    ./flow_check.sh  ; *checks the flows*
    ./flow_cleanup.sh  ; *cleans up the flows*
    
-One can then study the results, and determing the next cycle of modifications to make.
+One can then study the results, and determine the next cycle of modifications to make.
 The rest of this section documents these steps in much more detail.  
 Before one can run the flow_test, some pre-requisites must be taken care of.
 
@@ -221,7 +221,7 @@ Install Servers on Workstation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Install a minimal localhost broker, configure test users.
-with credentials stored for localhost::
+With credentials stored for localhost::
 
      sudo apt-get install rabbitmq-server
      sudo rabbitmq-plugins enable rabbitmq_management
@@ -229,6 +229,8 @@ with credentials stored for localhost::
      echo "amqp://tsource:TestSOUrCs@localhost/" >>~/.config/sarra/credentials.conf
      echo "amqp://tsub:TestSUBSCibe@localhost/" >>~/.config/sarra/credentials.conf
      echo "amqp://tfeed:TestFeeding@localhost/" >>~/.config/sarra/credentials.conf
+     echo "amqp://anoymous:anonymous@dd.weather.gc.ca" >>~/.config/sarra/credentials.conf
+     echo "ftp://anonymous:anonymous@localhost:2121/" >>~/.config/sarra/credentials.conf
 
      cat >~/.config/sarra/admin.conf <<EOT
 
@@ -237,7 +239,7 @@ with credentials stored for localhost::
      admin amqp://bunnymaster@localhost/
      feeder amqp://tfeed@localhost/
      declare source tsource
-     declare subscribe tsub
+     declare subscriber tsub
      EOT
 
      sudo rabbitmqctl delete_user guest
@@ -272,7 +274,7 @@ Need the following package for that::
     sudo apt-get install python3-pyftpdlib python3-paramiko
 
 The setup script starts a trivial web server, and ftp server, and a daemon that invokes sr_post.
-It also tests the C components, which need to have been already installed as well.
+It also tests the C components, which need to have been already installed as well 
 and defines some fixed test clients that will be used during self-tests::
 
     cd sarracenia/test
@@ -411,8 +413,8 @@ sample output::
       1 /home/peter/.cache/sarra/log/sr_cpump_xvan_f15_001.log [ERROR] binding failed: server channel error 404h, message: NOT_FOUND - no exchange 'xcvan01' in vhost '/'
     blacklab% 
 
-if the flow_check.sh passes, then one has a reasonable confidence in the overall functionality of the 
-python application, but the test coverage is not exhaustive. this is the lowest gate for committing
+If the flow_check.sh passes, then one has a reasonable confidence in the overall functionality of the 
+python application, but the test coverage is not exhaustive. This is the lowest gate for committing
 changes to thy python code into the master branch. It is more qualitative sampling of the most
 common use cases rather than a thorough examination of all functionality. While not
 thorough, it is good to know the flows are working.
@@ -423,8 +425,8 @@ installed, it will be used as default. If you have both amqplib and pika install
 
 *use_pika [true/false]*
 
-To use or not pika. Should you set  use_pika to True and python3-pika not installed, the programs will fall back to
-amqplib.  The developpers should test both API until we are totally migrated to PIKA.
+To use pika or not. Should you set use_pika to True and python3-pika not installed, the programs will fall back to
+amqplib.  The developers should test both API until we are totally migrated to PIKA.
 
 Note that the *fclean* subscriber looks at files in and keeps files around long enough for them to go through all the other
 tests.  It does this by waiting a reasonable amount of time (45 seconds, the last time checked.) then it compares the file
@@ -444,7 +446,7 @@ memory usage over time, and the housekeeping functions of on_heartbeat processin
 Flow Cleanup
 ~~~~~~~~~~~~
 
-When done testing, the ./flow_cleanup.sh script, Which will kill the running servers and daemons, and 
+When done testing, run the ./flow_cleanup.sh script, which will kill the running servers and daemons, and 
 delete all configuration files installed for the flow test, all queues, exchanges, and logs.  This also 
 needs to be done between each run of the flow test::
   
@@ -642,10 +644,7 @@ This test was fired up at the end of the day, as it takes several hours, and res
 Flow Test Stuck
 ~~~~~~~~~~~~~~~
 
-Sometimes flow tests (especially for large numbers) get stuck because of problems with the data stream (where multiple files get 
-the same name, and so earlier versions remove later versions and then retries will always fail.  Eventually, we will succeed in cleaning
-up the dd.weather.gc.ca stream, but for now sometimes a flow_check gets stuck 'Retrying.' The test has run all the messages required,
-and is at a phase of emptying out retries, but just keeps retrying forever with a variable number of items that never drops to zero.
+Sometimes flow tests (especially for large numbers) get stuck because of problems with the data stream (where multiple files get the same name) and so earlier versions remove later versions and then retries will always fail. Eventually, we will succeed in cleaning up the dd.weather.gc.ca stream, but for now sometimes a flow_check gets stuck 'Retrying.' The test has run all the messages required, and is at a phase of emptying out retries, but just keeps retrying forever with a variable number of items that never drops to zero.
 
 To recover from this state without discarding the results of a long test, do::
 
@@ -804,7 +803,7 @@ Setting the Version
 
 Each new release triggers a *tag* in the git repository ( executes *git tag -a sarra-v2.16.01a01 -m "release 2.16.01a01"* )
 
-A convenience script has been created to automate the release process. Simply run ``release.sh`` and it will guide you in cutting a new release.
+A convenient script has been created to automate the release process. Simply run ``release.sh`` and it will guide you in cutting a new release.
 
 
 * Edit ``sarra/__init__.py`` manually and set the version number.
@@ -840,7 +839,7 @@ next time, we should try the one provided with ubuntu 16.04 (via apt-get.)::
 
 Note that the same version can never be uploaded twice.
 
-A convenience script has been created to build and publish the *wheel* file. Simply run ``publish-to-pypi.sh`` and it will guide you in that.
+A convenient script has been created to build and publish the *wheel* file. Simply run ``publish-to-pypi.sh`` and it will guide you in that.
 
 .. Note::
    When uploading pre-release packages (alpha,beta, or RC) PYpi does not serve those to users by default.
@@ -884,7 +883,7 @@ One can also **Request build(s)** on demand if desired.
 Manual Process
 ++++++++++++++
 
-The process for manually publishing packages to Launchpad ( https://launchpad.net/~ssc-hpc-chp-spc ) involves a more complex set of steps, and so the convenience script ``publish-to-launchpad.sh`` will be the easiest way to do that. Currently the only supported releases are **trusty** and **xenial**. So the command used is::
+The process for manually publishing packages to Launchpad ( https://launchpad.net/~ssc-hpc-chp-spc ) involves a more complex set of steps, and so the convenient script ``publish-to-launchpad.sh`` will be the easiest way to do that. Currently the only supported releases are **trusty** and **xenial**. So the command used is::
 
     publish-to-launchpad.sh sarra-v2.15.12a1 trusty xenial
 
@@ -1073,7 +1072,8 @@ Then in sr_config.py, in the set_sumalgo routine::
       if flgs == 'c':
           self.sumalgo = checksum_s()
 
-Might want to add 's' to the list of valid sums in validate_sum( as well.
+Might want to add 's' to the list of valid sums in validate_sum as well.
 
 It is planned for a future version to make a plugin interface for this so that adding checksums
 becomes an application programmer activity.
+

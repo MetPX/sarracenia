@@ -22,9 +22,9 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-**sr_winnow** is a program that Subscribes to file notifications, 
+**sr_winnow** is a program that subscribes to file notifications 
 and reposts the notifications, suppressing the redundant ones by comparing their 
-fingerprints (or checksums.)  The **sum** header stores a file's fingerprint as described
+fingerprints (or checksums).  The **sum** header stores a file's fingerprint as described
 in the `sr_post(7) <sr_post.7.rst>`_ man page.
 
 **sr_winnow** is an `sr_subscribe(1) <sr_subscribe.1.rst>`_ with the following options forced::
@@ -36,8 +36,8 @@ in the `sr_post(7) <sr_post.7.rst>`_ man page.
 The suppress_duplicates lifetime can be adjusted, but it is always on.
 
 **sr_winnow** connects to a *broker* (often the same as the posting broker)
-and subscribes to the notifications of interest. On reception if a notification,
-it looks up its **sum** in its cache.  if it is found, the file has already come through,
+and subscribes to the notifications of interest. On reception of a notification,
+it looks up its **sum** in its cache.  If it is found, the file has already come through,
 so the notification is ignored. If not, then the file is new, and the **sum** is added 
 to the cache and the notification is posted.  
 
@@ -54,14 +54,14 @@ run the program and its configfile interactively.
 
 The actions **cleanup**, **declare**, **setup** can be used to manage resources on
 the rabbitmq server. The resources are either queues or exchanges. **declare** creates
-the resources. **setup** creates and additionnaly does the bindings of queues.
+the resources. **setup** creates and additionally does the bindings of queues.
 
 CONFIGURATION
 =============
 
 In general, the options for this component are described by the
 `sr_subscribe(1) <sr_subscribe.1.rst>`_  page which should be read first.
-It fully explains the option configuration language, and how to find
+It fully explains the option configuration language and how to find
 the option settings.
 
 See `sr_subscribe(1) <sr_subscribe.1.rst>`_  for more details.
@@ -76,7 +76,7 @@ SEE ALSO
 
 `sr_post(1) <sr_post.1.rst>`_ - post announcemensts of specific files.
 
-`sr_post(7) <sr_post.7.rst>`_ - The format of announcements.
+`sr_post(7) <sr_post.7.rst>`_ - the format of announcements.
 
 `sr_subscribe(1) <sr_subscribe.1.rst>`_ - the download client.
 

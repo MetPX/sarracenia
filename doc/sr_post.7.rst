@@ -19,7 +19,7 @@ SYNOPSIS
 
 The format of file change announcements for sr_post.  
 
-A sr_post message consists of four parts: **AMQP TOPIC, First Line, Rest of Message, AMQP HEADERS.**
+An sr_post message consists of four parts: **AMQP TOPIC, First Line, Rest of Message, AMQP HEADERS.**
 
 **AMQP Topic:** *<version>.post.{<dir>.}*
 
@@ -56,9 +56,9 @@ Sources create messages in the *sr_post* format to announce file changes. Subscr
 read the post to decide whether a download of the content being announced is warranted.  This 
 manual page completely describes the format of those messages.  The messages are payloads 
 for an Advanced Message Queuing Protocol (AMQP) message bus, but file data transport 
-is separate, using more common protocols such as SFTP, HTTP, HTTPS, or FTP (or other?)
+is separate, using more common protocols such as SFTP, HTTP, HTTPS, or FTP (or other?).
 Files are transported as pure byte streams, no metadata beyond the file contents is 
-transported (permission bits, extended attributes, etc...) Permissions of files 
+transported (permission bits, extended attributes, etc...). Permissions of files 
 on the destination system are upto the receiver to decide.
 
 With this method, AMQP messages provide a 'control plane' for data transfers.  While each post message 
@@ -88,7 +88,7 @@ Fingerprint Winnowing (use of the sum_ header)
    Propagating only the first occurrence of a datum received downstream, based on
    its fingerprint, is termed: *Fingerprint Winnowing*.
 
-   *Fingerprint Winnowing* is the basis for a robust strategy for high availability:  Setting up
+   *Fingerprint Winnowing* is the basis for a robust strategy for high availability:  setting up
    multiple sources for the same data, consumers accept announcements from all of them, but only
    forwarding the first one received downstream.  In normal operation, one source may be faster 
    than the others, and so the other sources' files are usually 'winnowed'. When one source
@@ -145,8 +145,8 @@ encoded, so actual length limit may be less than that.
 THE FIRST LINE 
 --------------
 
-the first line of a message contains all mandatory elements of an announcement.
-There is a series of white space separated fields:
+The first line of a message contains all mandatory elements of an announcement.
+There are a series of white space separated fields:
 
 *<date stamp>*: the date the posting was emitted.  Format: YYYYMMDDHHMMSS. *<decimalseconds>*
 
@@ -183,7 +183,7 @@ in messages when appropriate.
    It is used to return the logs back to the cluster whenever its products are used.
 
 **link=<value of symbolic link>**
-   when file to transfer is a symbolic link, the 'link' header is created to contain its value.
+   When file to transfer is a symbolic link, the 'link' header is created to contain its value.
 
 .. _parts:
 
@@ -191,10 +191,10 @@ in messages when appropriate.
 
  A header indicating the method and parameters for partitioning applied for the file.
  Partitioning is used to send a single file as a collection of segments, rather than as
- a single entity.  Partitioning is used to accellerate transfers of large data sets by using
+ a single entity.  Partitioning is used to accelerate transfers of large data sets by using
  multiple streams, and/or to reduce storage use for extremely large files.
 
- when transferring partitioned files, each partition is advertised and potentially transported
+ When transferring partitioned files, each partition is advertised and potentially transported
  independently across a data pumping network.
 
  *<method>*
@@ -206,10 +206,10 @@ in messages when appropriate.
  +-----------+---------------------------------------------------------------------+
  |    p      | File is partitioned, individual part files are created.             |
  +-----------+---------------------------------------------------------------------+
- |    i      | file is partitioned, but blocks are read from a single file,        |
+ |    i      | File is partitioned, but blocks are read from a single file,        |
  |           | rather than parts.                                                  |
  +-----------+---------------------------------------------------------------------+
- |    1      | file is in a single part (no partitioning)                          |
+ |    1      | File is in a single part (no partitioning).                         |
  +-----------+---------------------------------------------------------------------+
 
  - analogous to rsync options: --inplace, --partial,
@@ -244,20 +244,20 @@ in messages when appropriate.
 **newname=<path>**
 
  when a file is renamed at the source, to send it to subscribers, two posts 
- result: One message is announced with the new name as the base_url, 
+ result: one message is announced with the new name as the base_url, 
  and the oldname header set to the previous file name.
- Another message is send with the old name as the src path, and the *newname* 
+ Another message is sent with the old name as the src path, and the *newname* 
  as a header.  This ensures that *accept/reject* clauses are correctly
  interpreted, as a *rename* may result in a download if the former name
  matches a *reject*  clause, or a file removal if the new name
- is matches a *reject* clause.
+ matches a *reject* clause.
 
- hard links are also handled as an ordinary post of the file with a *oldname*
+ Hard links are also handled as an ordinary post of the file with a *oldname*
  header set.
 
 **source=<sourceid>**
  a character field indicating the source of the data injected into the network.
- should be unique within a data pumping network.  Usually is the same as the
+ should be unique within a data pumping network.  It's usually the same as the
  account used to authenticate to the broker.
 
 .. _sum:
@@ -272,25 +272,25 @@ in messages when appropriate.
  +-----------+---------------------------------------------------------------------+
  |   Method  | Description                                                         |
  +-----------+---------------------------------------------------------------------+
- |     0     | no checksums (unconditional copy.) Skips reading file (faster)      |
+ |     0     | No checksums (unconditional copy.) Skips reading file (faster)      |
  +-----------+---------------------------------------------------------------------+
- |     d     | checksum the entire data (MD-5 as per IETF RFC 1321)                |
+ |     d     | Checksum the entire data (MD-5 as per IETF RFC 1321)                |
  +-----------+---------------------------------------------------------------------+
  |     L     | Linked: SHA512 sum of link value                                    |
  +-----------+---------------------------------------------------------------------+
- |     n     | checksum the file name (MD-5 as per IETF RFC 1321)                  |
+ |     n     | Checksum the file name (MD-5 as per IETF RFC 1321)                  |
  +-----------+---------------------------------------------------------------------+
  |     R     | Removed: SHA512 of file name.                                       |
  +-----------+---------------------------------------------------------------------+
- |     s     | checksum the entire data (SHA512 as per IETF RFC 6234)              |
+ |     s     | Checksum the entire data (SHA512 as per IETF RFC 6234)              |
  +-----------+---------------------------------------------------------------------+
- |     z     | checksum on download, with algorithm as argument                    |
- |           | example:  z,d means download, applying d checksum, and advertise    |
+ |     z     | Checksum on download, with algorithm as argument                    |
+ |           | Example:  z,d means download, applying d checksum, and advertise    |
  |           | with that calculated checksum when propagating further.             |
  +-----------+---------------------------------------------------------------------+
- |  *<name>* | checksum with a some other algorithm, named *<name>*                |
+ |  *<name>* | Checksum with some other algorithm, named *<name>*                  |
  |           | *<name>* should be *registered* in the data pumping network.        |
- |           | registered means that all downstream subscribers can obtain the     |
+ |           | Registered means that all downstream subscribers can obtain the     |
  |           | algorithm to validate the checksum.                                 |
  +-----------+---------------------------------------------------------------------+
 
@@ -344,16 +344,16 @@ EXAMPLE
 Another example
 ---------------
 
-The post resulting from the following sr_watch command, noticing creation of the file 'foor'::
+The post resulting from the following sr_watch command, noticing creation of the file 'foo'::
 
  sr_watch -s sftp://stanley@mysftpserver.com//data/shared/products/foo -pb amqp://broker.com
 
 Here, *sr_watch* checks if the file /data/shared/products/foo is modified.
 When it happens, *sr_watch*  reads the file /data/shared/products/foo and calculates its checksum.
 It then builds a post message, logs into broker.com as user 'guest' (default credentials)
-and sends the post to defaults vhost '/' and exchange 'sx_guest' (default exchange)
+and sends the post to defaults vhost '/' and exchange 'sx_guest' (default exchange).
 
-A subscriber can download the file /data/shared/products/foo  by logging as user stanley
+A subscriber can download the file /data/shared/products/foo  by logging in as user stanley
 on mysftpserver.com using the sftp protocol to  broker.com assuming he has proper credentials.
 
 The output of the command is as follows ::
@@ -364,16 +364,16 @@ The output of the command is as follows ::
 
 Posts are published on AMQP topic exchanges, meaning every message has a topic header.
 The body consists of a time *20150813161959.854*, followed by the two parts of the retrieval URL.
-The headers follow with firs the *parts*, a size in bytes *256*,
+The headers follow with first the *parts*, a size in bytes *256*,
 the number of block of that size *1*, the remaining bytes *0*, the
 current block *0*, a flag *d* meaning the md5 checksum is
-performed on the data, the checksum *25d231ec0ae3c569ba27ab7a74dd72ce*,
+performed on the data, and the checksum *25d231ec0ae3c569ba27ab7a74dd72ce*.
 
 
 MetPX-Sarracenia
 ----------------
 
-The Metpx project ( https://github.com/MetPX ) has a sub-project called Sarracenia which is intended
+The MetPX project ( https://github.com/MetPX ) has a sub-project called Sarracenia which is intended
 as a testbed and reference implementation for this protocol.  This implementation is licensed
 using the General Public License (Gnu GPL v2), and is thus free to use, and can be used to
 confirm interoperability with any other implementations that may arise.   While Sarracenia
@@ -399,25 +399,25 @@ need to be made above and beyond the protocol.
 
         - authenticated or anonymous use?
         - how to signal that a file transfer has completed (permission bits? suffix? prefix?)
-        - naming convention.
-        - text or binary transfer.
+        - naming convention
+        - text or binary transfer
 
 Agreed conventions above and beyond simply FTP (IETF RFC 959) are needed.  Similar to the use 
 of FTP alone as a transfer protocol is insufficient to specify a complete data transfer 
 procedure, use of AMQP, without more information, is incomplete.   The intent of the conventions
 layered on top of AMQP is to be a minimum amount to achieve meaningful data exchange.
 
-AMQP 1.0 standardizes the on the wire protocol, but leaves out many features of broker interaction.   
+AMQP 1.0 standardizes the on-the-wire protocol, but leaves out many features of broker interaction.   
 As the use of brokers is key to sarracenia´s use of, was a fundamental element of earlier standards, 
 and as the 1.0 standard is relatively controversial, this protocol assumes a pre 1.0 standard broker, 
 as is provided by many free brokers, such as rabbitmq, often referred to as 0.8, but 0.9 and post
 0.9 brokers are also likely to inter-operate well.
 
-In AMQP, many different actors can define communication parameters.  in RabbitMQ
+In AMQP, many different actors can define communication parameters.  In RabbitMQ
 (the initial broker used), permissions are assigned using regular expressions. So
 a permission model where AMQP users can define and use *their* exchanges and queues
 is enforced by a naming convention easily mapped to regular expressions (all such
-resources include the username near the beginning.) Exchanges begin with: xs_<user>_.
+resources include the username near the beginning). Exchanges begin with: xs_<user>_.
 Queue names begin with: q_<user>_.
 
 .. NOTE::
@@ -433,7 +433,7 @@ The root of the topic tree is the version of the message payload.  This allows s
 to easily support multiple versions of the protocol at the same time during transitions.  *v02*,
 created in 2015, is the third iteration of the protocol and existing servers routinely support previous 
 versions simultaneously in this way.  The second sub-topic defines the type of message.
-at the time of writing:  v02.post is the topic prefix for current post messages.
+At the time of writing:  v02.post is the topic prefix for current post messages.
 
 The AMQP messages contain announcements, no actual file data.  AMQP is optimized for and assumes 
 small messages.  Keeping the messages small allows for maximum message throughtput and permits
@@ -443,7 +443,7 @@ the definition of a maximum file size to be included in the message itself, resu
 complexity to cover multiple cases. 
 
 sr_post is intended for use with arbitrarily large files, via segmentation and multi-streaming.
-blocks of large files are announced independently. and blocks can follow different paths
+Blocks of large files are announced independently and blocks can follow different paths
 between initial pump and final delivery.  The protocol is unidirectional, in that there 
 is no dialogue between publisher and subscriber.  Each post is a stand-alone item that 
 is one message in a stream, which on receipt may be spread over a number of nodes. 
@@ -453,7 +453,7 @@ CHARACTER SET & ENCODING
 ------------------------
 
 All messages are expected to use the UNICODE character set (ISO 10646), 
-represented by UTF-8 encoding (IETF RFC 3629.)
+represented by UTF-8 encoding (IETF RFC 3629).
 URL encoding, as per IETF RFC 1738, is used to escape unsafe characters where appropriate.
 
 
@@ -470,7 +470,7 @@ SEE ALSO
 
 `sr_report(7) <sr_report.7.rst>`_ - the format of report messages.
 
-`sr_pulse(7) <sr_pulse.7.rst>`_ - The format of pulse messages.
+`sr_pulse(7) <sr_pulse.7.rst>`_ - the format of pulse messages.
 
 `sr_report(1) <sr_report.1.rst>`_ - process report messages.
 

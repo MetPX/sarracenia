@@ -32,12 +32,12 @@ The notification protocol is defined here `sr_post(7) <sr_post.7.rst>`_
 
 **sr_sarra** connects to a *broker* (often the same as the remote file server
 itself) and subscribes to the notifications of interest. It uses the notification
-information to download the file on the local server its running on.
+information to download the file on the local server it's running on.
 It then posts a notification for the downloaded files on a broker (usually on the local server).
 
 **sr_sarra** can be used to acquire files from `sr_post(1) <sr_post.1.rst>`_
 or `sr_watch(1) <sr_watch.1.rst>`_  or to reproduce a web-accessible folders (WAF),
-that announce its' products.
+that announce its products.
 
 The **sr_sarra** is an `sr_subscribe(1) <sr_subscribe.1.rst>`_  with the following presets::
 
@@ -80,7 +80,7 @@ SEE ALSO
 
 `sr_post(1) <sr_post.1.rst>`_ - post announcemensts of specific files.
 
-`sr_post(7) <sr_post.7.rst>`_ - The format of announcements.
+`sr_post(7) <sr_post.7.rst>`_ - the format of announcements.
 
 `sr_subscribe(1) <sr_subscribe.1.rst>`_ - the download client.
 
