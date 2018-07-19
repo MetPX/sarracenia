@@ -229,6 +229,8 @@ With credentials stored for localhost::
      echo "amqp://tsource:TestSOUrCs@localhost/" >>~/.config/sarra/credentials.conf
      echo "amqp://tsub:TestSUBSCibe@localhost/" >>~/.config/sarra/credentials.conf
      echo "amqp://tfeed:TestFeeding@localhost/" >>~/.config/sarra/credentials.conf
+     echo "amqp://anoymous:anonymous@dd.weather.gc.ca" >>~/.config/sarra/credentials.conf
+     echo "ftp://anonymous:anonymous@localhost:2121/" >>~/.config/sarra/credentials.conf
 
      cat >~/.config/sarra/admin.conf <<EOT
 
@@ -237,7 +239,7 @@ With credentials stored for localhost::
      admin amqp://bunnymaster@localhost/
      feeder amqp://tfeed@localhost/
      declare source tsource
-     declare subscribe tsub
+     declare subscriber tsub
      EOT
 
      sudo rabbitmqctl delete_user guest

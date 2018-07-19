@@ -2163,8 +2163,10 @@ class sr_config:
                      if words0 in [ 'role' ]:
                         self.logger.warning("role option deprecated, please replace with 'declare'" )
 
-                     if item in [ 'source' , 'subscriber' ]:
+                     if item in [ 'source' , 'subscriber', 'subscribe' ]:
                         roles  = item
+                        if item == 'subscribe' :
+                           roles += 'r'
                         user   = words2
                         self.users[user] = roles
                      elif item in [ 'exchange' ]:
@@ -2172,6 +2174,9 @@ class sr_config:
                      elif item in [ 'env', 'envvar', 'var', 'value' ]:
                         name, value = words2.split('=')
                         os.environ[ name ] = value
+                     else:
+                        self.logger.error("declare not understood: %s %s" % ( item, words2 ) )
+ 
                      n = 3
 
                 elif words0 in ['sanity_log_dead','sld'] :   # FIXME ... to document

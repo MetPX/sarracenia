@@ -403,13 +403,22 @@ class sr_instances(sr_config):
         elif action == 'edit'    :
              if not usr_fil:
                 f  = self.find_conf_file(usr_cfg)
+                if not f:
+                    self.logger.error('could not identify file to edit: %s' % usr_cfg  )
+                    return
+
                 if self.user_config_dir in f : usr_fil = f
              else:
                 usr_fil = self.user_config
 
              edit_fil = usr_fil
 
-             self.run_command([ os.environ.get('EDITOR'), edit_fil] )
+             editor=os.environ.get('EDITOR')
+             
+             if editor:
+                 self.run_command([ editor, edit_fil] )
+             else:
+                 self.logger.error('Please set EDITOR variable to use edit command')
 
         # enable
 
