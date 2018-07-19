@@ -1089,8 +1089,8 @@ class sr_config:
     def run_command(self,cmd_list):
         sr_path = os.environ.get('SARRA_LIB')
         sc_path = os.environ.get('SARRAC_LIB')
-        try   :
         import sys,subprocess
+
         try:
                 if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5) :
                         subprocess.check_call(cmd_list)
