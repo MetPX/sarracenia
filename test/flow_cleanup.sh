@@ -147,15 +147,15 @@ flow_incs="`cd ../sarra/examples; ls */*f[0-9][0-9].inc`"
 
 echo "Removing flow configs..."
 if [ "$SARRAC_LIB" ]; then
-  echo $flow_confs $flow_incs | sed 's/ / ; sr_/g' | sed 's/^/ sr_/' | sed 's+/+ remove +g' | grep -Po 'sr_c[\w]*[\w\_\. ]* ;' | sed 's~^~"$SARRAC_LIB"/~' | sh
+  echo $flow_confs $flow_incs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ remove +g' | grep -Po 'sr_c[\w]*[\w\_\. ]* ;' | sed 's~^~"$SARRAC_LIB"/~' | sh
 else
-  echo $flow_confs $flow_incs | sed 's/ / ; sr_/g' | sed 's/^/ sr_/' | sed 's+/+ remove +g' | grep -Po 'sr_c[\w]*[\w\_\. ]* ;' | sh 
+  echo $flow_confs $flow_incs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ remove +g' | grep -Po 'sr_c[\w]*[\w\_\. ]* ;' | sh 
 fi
 
 if [ "$SARRA_LIB" ]; then
-  echo $flow_confs $flow_incs | sed 's/ / ; sr_/g' | sed 's/^/ sr_/' | sed 's+/+ remove +g' | grep -vPo 'sr_c[\w]*[\w\_\. ]* ;' | sed 's~^~"$SARRA_LIB"/~' | sh
+  echo $flow_confs $flow_incs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ remove +g' | grep -Po 'sr_[^c][\w]*[\w\_\. ]* ;' | sed 's/ /.py /' | sed 's~^~"$SARRA_LIB"/~' | sh
 else
-  echo $flow_confs $flow_incs | sed 's/ / ; sr_/g' | sed 's/^/ sr_/' | sed 's+/+ remove +g' | grep -vPo 'sr_c[\w]*[\w\_\. ]* ;' | sh 
+  echo $flow_confs $flow_incs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ remove +g' | grep -Po 'sr_[^c][\w]*[\w\_\. ]* ;' | sh 
 fi
 
 echo "Removing flow config logs..."

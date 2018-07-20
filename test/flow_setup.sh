@@ -3,12 +3,11 @@
 # make sure libsrshim is off
 
 # if running local sarra/sarrac versions, specify path to them with 
-# $SARRA_LIB and $SARRAC_LIB, and make sure $LD_PRELOAD contains path
-# to libsrshim.so.1.0.0 in your sarrac directory, and $SR_POST_CONFIG 
-# contains the path to shim_f63.conf 
+# $SARRA_LIB and $SARRAC_LIB, and $SR_POST_CONFIG 
+# contains the path to shim_f63.conf (usually in $CONFDIR/cpost/
+# shimpost.conf, but specify if otherwise)
 # defaults:
-#export SR_POST_CONFIG="$CONFDIR/post/shim_f63.conf"
-#export LD_PRELOAD="$SARRAC_LIB/libsrshim.so.1.0.0"
+export SR_POST_CONFIG="$CONFDIR/post/shim_f63.conf"
 #export SARRA_LIB=""
 #export SARRAC_LIB=""
 
@@ -119,15 +118,15 @@ flow_incs="`cd ../sarra/examples; ls */*f[0-9][0-9].inc`"
 
 echo "Adding flow test configurations..."
 if [ "$SARRAC_LIB" ]; then
-  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -Po 'sr_c[\w]*[\w\_\. ]* ;' | sed 's~^~"$SARRAC_LIB"/~' | sh
+  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -Po 'sr_c[\w]*[\w\_\. ]* ;' | sed 's~^~"$SARRAC_LIB"/~' | sh
 else
-  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -Po 'sr_c[\w]*[\w\_\. ]* ;' | sh 
+  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -Po 'sr_c[\w]*[\w\_\. ]* ;' | sh 
 fi
 
 if [ "$SARRA_LIB" ]; then
-  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -vPo 'sr_c[\w]*[\w\_\. ]* ;' | sed 's~^~"$SARRA_LIB"/~' | sh
+  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -Po 'sr_[^c][\w]*[\w\_\. ]* ;' | sed 's/ /.py /' | sed 's~^~"$SARRA_LIB"/~' | sh
 else
-  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -vPo 'sr_c[\w]*[\w\_\. ]* ;' | sh 
+  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -Po 'sr_[^c][\w]*[\w\_\. ]* ;' | sh 
 fi
 # sr_post "add" doesn't. so a little help:
 

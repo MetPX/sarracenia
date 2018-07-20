@@ -475,7 +475,7 @@ calcres ${totpost1} ${totshimpost1} "sr_post test2_f61 (${totpost1}) should have
 
 echo "                 | py infos   routing |"
 calcres ${totpropagated} ${totwinpost} "sr_shovel pclean_f90 (${totpropagated}) should have the same number of watched items winnows'post (${totwinpost})"
-calcres ${totremoved}    ${totwinpost} "sr_shovel pclean_f92 (${totremoved}}) should have the same number of removed items winnows'post (${totwinpost})"
+calcres ${totremoved}    ${totwinpost} "sr_shovel pclean_f92 (${totremoved}) should have the same number of removed items winnows'post (${totwinpost})"
 zerowanted "${missed_dispositions}" "messages received that we don't know what happened."
 calcres ${totshortened} ${totfilet} \
    "count of truncated headers (${totshortened}) and subscribed messages (${totmsgt}) should have about the same number of items"

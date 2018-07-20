@@ -47,11 +47,11 @@ function do_sr_post {
 
    rm    /tmp/diffs.txt 2> /dev/null
    touch /tmp/diffs.txt
-   comm -23 $srpostlstfile_new $srpostlstfile_old | sed '/.slink$/d' | sed '/.moved$/d' | sed '/.hlink$/d' > /tmp/diffs.txt
+   comm -23 $srpostlstfile_new $srpostlstfile_old | sed '/slink$/d' | sed '/moved$/d' | sed '/hlink$/d' > /tmp/diffs.txt
    srpostdelta=`cat /tmp/diffs.txt`
    # | sed 's/^..//'
    if [ "$srpostdelta" == "" ]; then
-      return
+    return
    fi
 
    # loop on each line to properly post filename with space *** makes too much load on CPU ***
@@ -64,11 +64,16 @@ function do_sr_post {
 
    cd /
    if [ ! "$SARRA_LIB" ]; then
-       sr_post -c test2_f61.conf -p `cat /tmp/diffs.txt`
+    sr_post -c test2_f61.conf -p `cat /tmp/diffs.txt`
    else 
-       "$SARRA_LIB"/sr_post.py -c "$CONFDIR"/post/test2_f61.conf -p `cat /tmp/diffs.txt`
+    "$SARRA_LIB"/sr_post.py -c "$CONFDIR"/post/test2_f61.conf -p `cat /tmp/diffs.txt`
    fi
-   LD_PRELOAD="$SARRAC_LIB/libsrshim.so.1.0.0"
+   if [ "$SARRAC_LIB" ]; then
+    LD_PRELOAD="$SARRAC_LIB/libsrshim.so.1.0.0"
+   else 
+    LD_PRELOAD="libsrshim.so.1.0.0"
+   fi
+
    cd $srpostdir 
    cp -p --parents `cat /tmp/diffs.txt`  ${httpdocroot}/posted_by_shim 
    cp -p $srpostlstfile_new $srpostlstfile_old
