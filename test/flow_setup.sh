@@ -198,6 +198,8 @@ echo "Starting trivial ftp server on: $testdocroot, saving pid in .ftpserverpid"
 python3 -m pyftpdlib >trivialftpserver.log 2>&1 &
 ftpserverpid=$!
 
+sleep 3
+
 if [ ! "`head trivialftpserver.log | grep 'starting'`" ]; then
    echo "FAILED to start FTP server, is pyftpdlib installed?"
 else
