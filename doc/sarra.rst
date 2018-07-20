@@ -20,7 +20,7 @@ Overview
 --------
 
 
-At it's heart, Sarracenia exposes a tree of web accessible folders (WAF), using any
+At its heart, Sarracenia exposes a tree of web accessible folders (WAF), using any
 standard HTTP server (tested with apache) or SFTP server, with other types of servers as
 a pluggable option. Weather applications are soft real-time, where data should be delivered 
 as quickly as possible to the next hop, and minutes, perhaps seconds, count. The 
@@ -61,10 +61,10 @@ in use since 2013, was replaced in 2016 by the full blown Sarracenia package,
 with all components necessary for production as well as consumption of file trees.
 
 Sarracenia is expected to be a far simpler application than sundew from every
-point of view: Operator, Developer, Analyst, Data Sources, Data consumers.
+point of view: Operator, Developer, Analyst, Data Sources, Data Consumers.
 Sarracenia imposes a single interface mechanism, but that mechanism is
 completely portable and generic. It should run without issue on any modern
-platform (Linux, Windows, Mac)
+platform (Linux, Windows, Mac).
 
 For more information about Sarra, view the
 `Sarracenia in 10 Minutes Video <https://www.youtube.com/watch?v=G47DRwzwckk>`_
@@ -74,15 +74,15 @@ Implementations
 ---------------
 
 Part of Sarracenia defines an application layer message over AMQP as a transport.
-Sarracenia's has multiple implementations:
+Sarracenia has multiple implementations:
 
 - Sarracenia itself ( http://github.com/MetPX/sarracenia ) a complete reference implementation in Python >= 3.4. It runs on Linux, Mac, and Windows.
 
-- sarrac ( https://github.com/MetPX/sarrac ) is a C implementation of data insertion (post & watch.) It is Linux only. There is also a libcshim to be able to tranparently implement data insertion with this tool, and libsarra allows C programs to post directly. There is consumer code as well (to read queues) but no downloading so far. This subset is meant to be used where python3 environments are impractical (some HPC environments.) 
+- sarrac ( https://github.com/MetPX/sarrac ) is a C implementation of data insertion (post & watch). It is Linux only. There is also a libcshim to be able to tranparently implement data insertion with this tool, and libsarra allows C programs to post directly. There is consumer code as well (to read queues) but no downloading so far. This subset is meant to be used where python3 environments are impractical (some HPC environments). 
 
 - node-sarra ( https://github.com/darkskyapp/node-sarra ) An embryonic implementation for node.js.
 
-- dd_subscribe ( https://github.com/MetPX/sarracenia ) python2 stripped down download only client.  The predecessor of Sarracenia. still compatible.
+- dd_subscribe ( https://github.com/MetPX/sarracenia ) python2 stripped-down download-only client.  The predecessor of Sarracenia. Still compatible.
 
 More implementations are welcome.
 
@@ -124,12 +124,12 @@ Why Not Just Use Rsync?
 
 There are a number of tree replication tools that are widely used, why invent another?
 `RSync <https://rsync.samba.org/>`_, for example is a fabulous tool, and we 
-recommend it highly for many use cases. but there are times when Sarracenia can
+recommend it highly for many use cases. But there are times when Sarracenia can
 go 72 times faster than rsync: Case Study: `HPC Mirroring Use Case <mirroring_use_case.rst>`_
 
-Rsync and other tools are comparison based (dealing with a single Source and Destination) Sarracenia, while it does 
-not require or use multi-casting, is oriented towards a delivery to multiple receivers, particularly when the source
-does not know who all the receivers are (pub/sub.) Where rsync synchronization is typically done by walking a 
+Rsync and other tools are comparison based (dealing with a single Source and Destination). Sarracenia, while it does 
+not require or use multi-casting, is oriented towards delivery to multiple receivers, particularly when the source
+does not know who all the receivers are (pub/sub). Where rsync synchronization is typically done by walking a 
 large tree, that means that the synchronization interval is inherently limited to the frequency at which you 
 can do the file tree walks (in large trees, that can be a long time.) Each file tree walk reads 
 the entire tree in order to generate signatures, so supporting larger numbers of clients causes 
@@ -147,8 +147,8 @@ new files. Updates to files were not common initially. `ZSync <http://zsync.mori
 is much closer in spirit to this use case. Sarracenia now has a similar 
 approach based on file partitions (or blocks), but with user selectable size
 (50M is a good choice), generally much larger than Zsync blocks (typically 4k),
-more amenable to accelleration. Using an announcement per checksummed block 
-allows transfers to be accellerated more easily. 
+more amenable to acceleration. Using an announcement per checksummed block 
+allows transfers to be accelerated more easily. 
 
 The use of the AMQP message bus enables use of flexible third party transfers,
 straight-forward system-wide monitoring and integration of other features such as security
@@ -156,7 +156,7 @@ scanning within the flow.
 
 Another consideration is that Sarracenia doesn't actually implement any transport. It is completely agnostic 
 to the actual protocol used to tranfer data. Once can post arbitrary protocol URLs, and add plugins to work 
-with those arbitrary protocols, or substitute accellerated downloaders to deal with certain types of downloads. 
+with those arbitrary protocols, or substitute accelerated downloaders to deal with certain types of downloads. 
 The `download_scp <download_scp.py>`_ plugin, included with the package, shows
 the use of the built-in python transfer mechanisms, but the simple use of a 
 binary to accellerate downloads when the file exceeds a threshold size, making
@@ -168,7 +168,7 @@ plugins is also straightforward.
 Why No FTP?
 ~~~~~~~~~~~
 
-The transport protocols fully supported by Sarracenia are http(s) and SFTP (SSH File Transfer Protocol.)
+The transport protocols fully supported by Sarracenia are http(s) and SFTP (SSH File Transfer Protocol).
 In many cases, when public data is being exchanged, `FTP <https://tools.ietf.org/html/rfc959>`_ 
 is a lingua franca that is used. The main advantage being relatively simple
 programmatic access, but that advantage is obviated by the use of Sarracenia
@@ -186,11 +186,11 @@ AMQP
 
 AMQP is the Advanced Message Queuing Protocol, which emerged from the financial trading industry and has gradually
 matured. Implementations first appeared in 2007, and there are now several open source ones. AMQP implementations
-are not JMS plumbing. JMS standardizes the API programmers use, but not the on the wire protocol. So 
+are not JMS plumbing. JMS standardizes the API programmers use, but not the on-the-wire protocol. So 
 typically, one cannot exchange messages between people using different JMS providers. AMQP standardizes 
 for interoperability, and functions effectively as an interoperability shim for JMS, without being 
-limited to Java. AMQP is language neutral, and message neutral. there are many deployments using 
-python, C++, and ruby. One could adapt WMO-GTS protocols very easily to function over AMQP. JMS 
+limited to Java. AMQP is language neutral, and message neutral. There are many deployments using 
+Python, C++, and Ruby. One could adapt WMO-GTS protocols very easily to function over AMQP. JMS 
 providers are very Java oriented.
 
 

@@ -15,7 +15,7 @@ Injecting Data into a MetPX-Sarracenia Pump Network
 
 .. note::
   **FIXME**: known missing elements: good discussion of checksum choice.
-  Caveat about file update strategies. Use case of a file file that is constantly updated,
+  Caveat about file update strategies. Use case of a file that is constantly updated,
   rather than issuing new files.)
 
 Revision Record
@@ -38,7 +38,7 @@ this one.
 Regardless of how it is done, injecting data means telling the pump where the data
 is so that it can be forwarded to and/or by the pump. This can be done by either
 using the active and explicit sr_post command, or just using sr_watch on a directory.
-Where there are large numbers of file, and/or tight timeliness constraints, invocation
+Where there are large numbers of files, and/or tight timeliness constraints, invocation
 of sr_post directly by the producer of the file is optimal, as sr_watch may provide
 disappointing performance. Another explicit, but low frequency approach is the
 sr_poll command, which allows one to query remote systems to pull data
@@ -48,13 +48,13 @@ While sr_watch is written as an optimal directory watching system, there simply 
 quick way to watch large (say, more than 100,000 files) directory trees. On
 dd.weather.gc.ca, as an example, there are 60 million files in about a million
 directories. To walk that directory tree once takes several hours. To find new files,
-the best temporal resolution is every few (say 3) hours. So on average notification
+the best temporal resolution is every few (say 3) hours. So on average a notification
 will occur 1.5 hours after the file has showed up. Using I_NOTIFY (on Linux), it still
 takes several hours to start up, because it needs to do an initial file tree walk to
 set up all the watches. After that it will be instant, but if there are too many
 files (and 60 million is very likely too many) it will just crash and refuse to work.
 These are inherent limitations of watching directories, no matter how it is done.
-If it is really necesary to do this, there is hope.  Please 
+If it is really neccessary to do this, there is hope.  Please 
 consult `Quickly Announcing Very Large Trees On Linux`_
 
 With sr_post, the program that puts the file anywhere in the arbitrarily deep tree[1]_ tells
@@ -62,7 +62,7 @@ the pump (which will tell subscribers) exactly where to look. There are no syste
 to worry about. That’s how dd.weather.gc.ca works, and notifications are sub-second, with
 60 million files on the disk. It is much more efficient, in general, to do direct
 notifications rather than pass by the indirection of the file system, but in small
-and simple cases, it make little practical difference.
+and simple cases, it makes little practical difference.
 
 In the simplest case, the pump takes data from your account, wherever you have it,
 providing you give it permission. We describe that case first.
@@ -83,19 +83,19 @@ SFTP Injection
 Using the sr_post(1) command directly is the most straightforward way to inject data
 into the pump network. To use sr_post, you have to know:
 
-- the name of the local broker: ( say: ddsr.cmc.ec.gc.ca. )
+- the name of the local broker: ( say: ddsr.cmc.ec.gc.ca )
 - your authentication info for that broker ( say: user=rnd : password=rndpw )
-- your own server name. (say: grumpy.cmc.ec.gc.ca )
+- your own server name (say: grumpy.cmc.ec.gc.ca )
 - your own user name on your server (say: peter)
 
 Assume the goal is for the pump to access peter's account via SFTP. Then you need
-to take the pump´s public key, and place it in peter's .ssh/authorized_keys.
+to take the pump's public key, and place it in peter's .ssh/authorized_keys.
 On the server you are using (*grumpy*), one needs to do something like this::
 
   cat pump.pub >>~peter/.ssh/authorized_keys
 
 This will enable the pump to access peter's account on grumpy using his private key.
-So assuming one is logged in to Peter's account on grumpy, one can store the broker
+So assuming one is logged in to peter's account on grumpy, one can store the broker
 credentials safely::
 
   echo 'amqps://rnd:rndpw@ddsr.cmc.ec.gc.ca' >> ~/.config/sarra/credentials.conf:
@@ -103,7 +103,7 @@ credentials safely::
 .. Note::
   Passwords are always stored in the credentials.conf file.
 
-So now the command line for sr_post is just the url to for ddsr to retrieve the
+So now the command line for sr_post is just the url for ddsr to retrieve the
 file on grumpy::
 
   sr_post -post_broker amqp://guest:guest@localhost/ -post_base_dir /var/www/posts/ \
@@ -115,7 +115,7 @@ file on grumpy::
   2016-01-20 14:53:49,019 [INFO] notice   20160120145349.19 http://localhost:81/ frog.dna
   2016-01-20 14:53:49,020 [INFO] headers  parts=1,16,1,0,0 sum=d,d108dcff28200e8d26d15d1b3dfeac1c to_clusters=localhost
 
-There is a sr_subscribe to subscribe to all ``*.dna`` posts. The subscribe log said. Here is the config file::
+There is a sr_subscribe to subscribe to all ``*.dna`` posts the subscribe log said. Here is the config file::
 
   broker amqp://guest:guest@localhost
   directory /var/www/subscribed
@@ -140,8 +140,8 @@ Or alternatively, here is the log from an sr_sarra instance::
   2016-01-20 14:53:49,381 [INFO] notice   20160120145349.19 http://grumpy:80/ 20160120/guest/frog.dna
   @
 
-the command asks ddsr to retrieve the treefrog/frog.dna file by logging
-in to grumpy as peter (using the pump's private key.) to retrieve it, and posting it
+The command asks ddsr to retrieve the treefrog/frog.dna file by logging
+in to grumpy as peter (using the pump's private key) to retrieve it, and posting it
 on the pump, for forwarding to the other pump destinations.
 
 Similar to sr_subscribe, one can also place configuration files in an sr_post specific directory::
@@ -164,21 +164,21 @@ If there are different varieties of posting used, configurations can be saved fo
 
    sr_post command lines can be a lot simpler if it did.
 
-sr_post typically returns immediately as its only job is to advice the pump of the availability
-of files. The files are not transferred when sr_post returns, so one should note delete files
+sr_post typically returns immediately as its only job is to advise the pump of the availability
+of files. The files are not transferred when sr_post returns, so one should not delete files
 after posting without being sure the pump actually picked them up.
 
 .. NOTE::
 
   sftp is perhaps the simplest for the user to implement and understand, but it is also
   the most costly in terms of CPU on the server.  All of the work of data transfer is
-  done at the python application level when sftp acquisition is done, which isn´t great.
+  done at the python application level when sftp acquisition is done, which isn't great.
 
-  a lower cpu version would be for the client to send somehow (sftp?) and then just
-  tell where the file is on the pump (basically the sr_sender2 version.)
+  A lower CPU version would be for the client to send somehow (sftp?) and then just
+  tell where the file is on the pump (basically the sr_sender2 version).
 
 Note that this example used sftp, but if the file is available on a local web site,
-then http work work, or if the data pump and the source server share a file system,
+then http would work, or if the data pump and the source server share a file system,
 then even a file url could work.
 
 
@@ -189,11 +189,11 @@ If we take a similar case, but in this case there is some http accessible space,
 the steps are the same or even simpler if no authentication is required for the pump
 to acquire the data. One needs to install a web server of some kind.
 
-Assume a configuration that show all files under /var/www as folders, running under
+Assume a configuration that shows all files under /var/www as folders, running under
 the www-data users. Data posted in such directories must be readable to the www-data
 user, to allow the web server to read it. The server running the web server
 is called *blacklab*, and the user on the server is *peter* running as peter on blacklab,
-a directory is created under /var/www/project/outgoing, that is writable by peter,
+a directory is created under /var/www/project/outgoing, writable by peter,
 which results in a configuration like so::
 
   sr_watch edit project.conf 
@@ -203,7 +203,7 @@ which results in a configuration like so::
   post_base_dir /var/www/project/outgoing
 
 
-then a watch is started::
+Then a watch is started::
 
   sr_watch start project 
 
@@ -214,7 +214,7 @@ then a watch is started::
    been modified to that effect yet.
 
 While sr_watch is running, any time a file is created in the *document_root* directory,
-it will be announced to the pump (on localhost, ie. the server blacklab itself.)::
+it will be announced to the pump (on localhost, ie. the server blacklab itself).::
 
  cp frog.dna  /var/www/project/outgoing
 
@@ -232,7 +232,7 @@ the file.
 Polling External Sources
 ------------------------
 
-Some sources are inherently remote, and we are unable to interest of affect them.
+Some sources are inherently remote, and we are unable to interest or affect them.
 One can configure sr_poll to pull in data from external sources, typically web sites.
 The sr_poll command typically runs as a singleton that tracks what is new at a source tree
 and creates source messages for the pump network to process.
@@ -251,7 +251,7 @@ Report Messages
 ---------------
 
 If the sr_post worked, that means the pump accepted to take a look at your file.
-To find out where your data goes to afterward , one needs to examine source
+To find out where your data goes to afterward, one needs to examine source
 log messages. It is also important to note that the initial pump, or any other pump
 downstream, may refuse to forward your data for various reasons, that will only
 be reported to the source in these report messages.
@@ -264,7 +264,7 @@ is set up, then all that is needed is::
   sr_report
 
 To view report messages indicating what has happenned to the items inserted into the
-network from the same pump using that account (rnd, in the example.) One can trigger
+network from the same pump using that account (rnd, in the example). One can trigger
 arbitrary post processing of report messages by using on_message plugin.
 
 .. warning::
@@ -293,14 +293,14 @@ files.
 Reliability and Checksums
 -------------------------
 
-Every piece of data injected into the pumping network needs to have a unique fingerprint (or checksum.)
+Every piece of data injected into the pumping network needs to have a unique fingerprint (or checksum).
 Data will flow if it is new, and determining if the data is new is based on the fingerprint.
 To get reliability in a sarracenia network, multiple independent sources are provisioned.
 Each source announces their products, and if they have the same name and fingerprint, then
 the products are considered the same.
 
 The sr_winnow component of sarracenia looks at incoming announcements and notes which products
-are received (by file name and checksum.) If a product is new, it is forwarded on to other components
+are received (by file name and checksum). If a product is new, it is forwarded on to other components
 for processing. If a product is a duplicate, then the announcement is not forwarded further.
 Similarly, when sr_subscribe or sr_sarra components receive an announcement for a product that is already
 present on the local system, they will examine the fingerprint and not download the data unless it is different.
@@ -501,7 +501,7 @@ Note::
       bash -c 'echo "hoho" >kk.conf' 
   
    This is a limitation of the technique, as the dynamic library load order is resolved on 
-   process startup, and is cannot be modified afterward. one work-around::
+   process startup, and cannot be modified afterward. One work-around::
 
      if [ ! "${LD_PRELOAD}" ]; then
        export SR_POST_CONFIG=`pwd`/test_post.conf
@@ -509,7 +509,7 @@ Note::
        exec $*
      fi
 
-  Which will activate the shim library for the calling environment, by restarting it.
+  Which will activate the shim library for the calling environment by restarting it.
   This particular code may have impact on command line options and may not be directly applicable.
 
 

@@ -26,11 +26,11 @@ DESCRIPTION
 ===========
 
 Sr_audit is a daemon that runs periodically to examine what is running 
-on a system to fixes issues it sees.  When run as a non-administrative user, 
+on a system to fix issues it sees.  When run as a non-administrative user, 
 it looks for components which state files indicate are running, but for 
-which the corresponding process is missing.  It will restart those. Any 
+which the corresponding processes are missing.  It will restart those. Any 
 running process should also be writing at least a heartbeat message 
-to it´s log file periodically, so if the log file is too old,
+to its log file periodically, so if the log file is too old,
 the component will be assumed frozen, and restarted.
 
 When run by an administrative user,  Sr_audit configures a broker to 
@@ -42,7 +42,7 @@ When **Sr_audit** is *started* in admin mode, it connects to the broker
 using the **admin** account. It sleeps the time required to trigger the next heartbeat.
 
 The default behavior of **sr_audit** is to manage and control the queues on the broker.
-The queues are validated and deleted if there is no client connected to it and has more 
+The queues are validated and deleted if there is no client connected to them and has more 
 than **max_queue_size** messages waiting or if there are queues or exchanges that do 
 not conform to sarracenia naming conventions (queue names start with **q_"brokerusername"** 
 where "brokerusername" is a valid user on the broker).
@@ -73,7 +73,7 @@ There are very few options that **sr_audit** uses:
 
 **max_queue_size <int>     (default: 25000 nbr messages in queue)** 
 
-The **admin** option must be defined it normally be set in the file **default.conf**
+The **admin** option must be defined and normally be set in the file **default.conf**
 and the credential details would be found in the file **credentials.conf**
 Normally when users are created, the passwords for communications with the broker are set based
 on the values found in the credentials file.
@@ -85,7 +85,7 @@ values.  Normally, an existing user's permissions are left untouched by an audit
 VERIFY PUMP SETTINGS
 ====================
 
-Use **sr_audit** invoke with **--pump**  to set up it's configuration.  It makes sure the **feeder** 
+Use **sr_audit** invoke with **--pump**  to set up its configuration.  It makes sure the **feeder** 
 user credentials are given and the **admin** user is defined and valid.  
 
 
@@ -103,10 +103,10 @@ To verify user exchanges, **sr_audit** gets the list of exchanges present on the
 From the users and roles, it determines the exchanges that should be present and creates the one
 missing. Extra exchanges are deleted if their names do not start with 'x'.
 
-When adding or deleting a user, the broker administrator adds or delete the role declaration for a
+When adding or deleting a user, the broker administrator adds or deletes the role declaration for a
 username and in the **default.conf** file.  Then he runs **sr_audit --users foreground configfile**. 
 The log on standard output would tell the administrator what broker resources were 
-added/deleted (user,exchanges, queue, etc).   
+added/deleted (users, exchanges, queues, etc).   
 
 
  
@@ -121,7 +121,7 @@ SEE ALSO
 
 `sr_post(1) <sr_post.1.rst>`_ - post announcemensts of specific files.
 
-`sr_post(7) <sr_post.7.rst>`_ - The format of announcement messages.
+`sr_post(7) <sr_post.7.rst>`_ - the format of announcement messages.
 
 `sr_sarra(8) <sr_sarra.8.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
 

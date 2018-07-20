@@ -177,7 +177,7 @@ def scandir(dirconf,pgm,action):
     for confname in os.listdir(path) :
         if len(confname) < 5                 : continue
         if not '.conf' in confname[-5:]      : continue
-        cfg.logger.info("%s %s %s" % (pgm,confname,action))
+        cfg.logger.info("%s %s %s" % (pgm,action,confname))
         if action in ['cleanup','declare','setup']:
               instantiate(dirconf,pgm,confname,action)
         else:

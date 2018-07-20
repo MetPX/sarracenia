@@ -26,9 +26,9 @@ class test_logger:
 # test encode/decode
 def test_retry_encode_decode(retry,message,done=False):
 
-    if done : line  = retry.encode(message,done)
-    else    : line  = retry.encode(message)
-    msg   = retry.decode(line)
+    if done : line  = retry.msgToJSON(message,done)
+    else    : line  = retry.msgToJSON(message)
+    msg   = retry.msgFromJSON(line)
 
     if msg.body != message.body :
        retry.logger.error("test 01: encode_decode body (done %s)" % done)
@@ -455,8 +455,8 @@ def self_test():
     now = time.time()
     while i<top:
           i = i+1
-          line  = retry.encode(message)
-          msg   = retry.decode(line)
+          line  = retry.msgToJSON(message)
+          msg   = retry.msgFromJSON(line)
 
     e=time.time()-now
 
@@ -464,8 +464,8 @@ def self_test():
     now = time.time()
     while i<top:
           i = i+1
-          line  = retry.encode(message,True)
-          msg   = retry.decode(line)
+          line  = retry.msgToJSON(message,True)
+          msg   = retry.msgFromJSON(line)
           del msg.properties['application_headers']['_retry_tag_']
 
     e=time.time()-now

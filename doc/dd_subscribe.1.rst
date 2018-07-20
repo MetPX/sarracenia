@@ -62,17 +62,17 @@ The broker option sets all the credential information to connect to the  **Rabbi
 
       (default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) 
 
-one can use a single *broker* option as above, or it can be 
+One can use a single *broker* option as above, or it can be 
 broken out: protocol,amqp-user,amqp-password,host,port,vhost
 
 **host     <hostname> (default: dd.weather.gc.ca)** 
-     the server running an AMQP broker which is publishing file announcements postings.
+     the server running an AMQP broker which is publishing file announcements postings
 
 **port       <number> (default: 5672)** 
-     the port on which a the AMQP broker service is running.
+     the port on which a the AMQP broker service is running
 
 **protocol [amqp|amqps] (default: amqp)**
-     the protocol used to communicate with the AMQP broker.
+     the protocol used to communicate with the AMQP broker
 
 **amqp-user    <user> (default: anonymous)** 
      the user name to authenticate to the broker to obtain the announcements
@@ -81,7 +81,7 @@ broken out: protocol,amqp-user,amqp-password,host,port,vhost
      the password for the user name to authenticate to the broker to obtain the announcements
 
 **vhost    <string>  (default: /)**
-     AMQP broker vhost specification. 
+     AMQP broker vhost specification 
 
 
 AMQP QUEUE BINDINGS
@@ -95,7 +95,7 @@ to an exchange.  These options define which messages (URL notifications) the pro
  - **subtopic      <amqp pattern> (subtopic need to be set)** 
 
 Several topic options may be declared. To give a correct value to the subtopic,
-browse the our website  **http://dd.weather.gc.ca**  and write down all directories of interest.
+browse to our website  **http://dd.weather.gc.ca**  and write down all directories of interest.
 For each directories write an  **subtopic**  option as follow:
 
  **subtopic  directory1.*.subdirectory3.*.subdirectory5.#** 
@@ -138,10 +138,10 @@ By default, dd_subscribe creates a queue name that should be unique and starts w
 and puts it into a file .<configname>.queue, where <configname> is the config filename.
 The  **queue**  option sets a queue name. It should always start with  **cmc** .
 
-The  **expire**  option is expressed in minutes... it sets how long should live
-a queue without connections The  **durable** option set to True, means writes the queue
+The  **expire**  option is expressed in minutes... it sets how long a queue should live
+without connections. The  **durable** option, if set to True, means writes the queue
 on disk if the broker is restarted.
-The  **message-ttl**  option set the time in minutes a message can live in the queue.
+The  **message-ttl**  option sets the time in minutes a message can live in the queue.
 Past that time, the message is taken out of the queue by the broker.
 
 HTTP DOWNLOAD CREDENTIALS 
@@ -155,7 +155,7 @@ HTTP DOWNLOAD CREDENTIALS
 DELIVERY SPECIFICATIONS
 -----------------------
 
-Theses options set what files the user wants and where it will be placed,
+These options set what files the user wants and where it will be placed,
 and under which name.
 
 ::
@@ -172,15 +172,15 @@ and under which name.
 The  **lock**  option is a suffix given to the file during the download
 and taken away when it is completed... If  **lock**  is set to  **.** 
 then it is prefixed with it and taken away when it is completed...
-This gives a mean to avoid processing the file prematurely.
+This gives a means to avoid processing the file prematurely.
 
 The option directory  defines where to put the files on your server.
 Combined with  **accept** / **reject**  options, the user can select the
-files of interest and their directories of residence. (see the  **mirror**
+files of interest and their directories of residence. (See the  **mirror**
 option for more directory settings).
 
 The  **accept**  and  **reject**  options use regular expressions (regexp) to match URL.
-Theses options are processed sequentially. 
+These options are processed sequentially. 
 The URL of a file that matches a  **reject**  pattern is never downloaded.
 One that match an  **accept**  pattern is downloaded into the directory
 declared by the closest  **directory**  option above the matching  **accept**  option.
@@ -209,7 +209,7 @@ For example retrieving the following url, with options::
 would result in the creation of the directories and the file
 /mylocaldirectory/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
 
-You can modify the mirrored directoties with the option **strip**  .
+You ran modify the mirrored directories with the option **strip**  .
 If set to N  (an integer) the first 'N' directories are withdrawn.
 For example :
 
@@ -223,9 +223,9 @@ For example :
 would result in the creation of the directories and the file
 /mylocaldirectory/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
 
-The  **flatten**  option is use to set a separator character. This character
+The  **flatten**  option is used to set a separator character. This character
 will be used to replace the '/' in the url directory and create a "flatten" filename
-form its dd.weather.gc.ca path.  For example retrieving the following url, 
+from its dd.weather.gc.ca path.  For example retrieving the following url 
 with options::
 
  http://dd.weather.gc.ca/model_gem_global/25km/grib2/lat_lon/12/015/CMC_glb_TMP_TGL_2_latlon.24x.24_2013121612_P015.grib2
@@ -239,7 +239,7 @@ would result in the creation of the filepath ::
  /mylocaldirectory/model_gem_global-25km-grib2-lat_lon-12-015-CMC_glb_TMP_TGL_2_latlon.24x.24_2013121612_P015.grib2
 
 
-The  **overwrite**  option,if set to false, avoid unnecessary downloads under these conditions :
+The  **overwrite**  option, if set to false, avoids unnecessary downloads under these conditions:
 1- the file to be downloaded is already on the user's file system at the right place and
 2- the checksum of the amqp message matched the one of the file.
 The default is True (overwrite without checking).
@@ -254,12 +254,12 @@ Here is a short complete example configuration file::
   subtopic model_gem_global.25km.grib2.#
   accept .*
 
-This above file will connect to the dd.weather.gc.ca broker, connecting as
+The above file will connect to the dd.weather.gc.ca broker, connecting as
 anonymous with password anonymous (defaults) to obtain announcements about
 files in the http://dd.weather.gc.ca/model_gem_global/25km/grib2 directory.
 All files which arrive in that directory or below it will be downloaded 
 into the current directory (or just printed to standard output if -n option 
-was specified.) 
+was specified). 
 
 A variety of example configuration files are available here:
 
@@ -280,7 +280,7 @@ stored in that file to connect to the same queue, and not lose any messages.
 File downloads can be parallelized by running multiple dd_subscribe using
 the same queue.  The processes will share the queue and each download 
 part of what has been selected.  Simply launch multiple instances
-of dd_subscribe in the same user/directory using the same configuration file, 
+of dd_subscribe in the same user/directory using the same configuration file. 
 
 You can also run several dd_subscribe with different configuration files to
 have multiple download streams delivering into the the same directory,
@@ -288,7 +288,7 @@ and that download stream can be multi-streamed as well.
 
 .. Note::
 
-  While the brokers keep the queues available for some time, Queues take resources on 
+  While the brokers keep the queues available for some time, queues take resources on 
   brokers, and are cleaned up from time to time.  A queue which is not accessed for 
   a long (implementation dependent) period will be destroyed.  A queue which is not
   accessed and has too many (implementation defined) files queued will be destroyed.
@@ -325,7 +325,7 @@ SEE ALSO
 
 `sr_post(1) <sr_post.1.rst>`_ - post announcemensts of specific files.
 
-`sr_post(7) <sr_post.7.rst>`_ - The format of announcement messages.
+`sr_post(7) <sr_post.7.rst>`_ - the format of announcement messages.
 
 `sr_sarra(8) <sr_sarra.8.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
@@ -338,8 +338,8 @@ HISTORY
 -------
 
 dd_subscribe was initially developed for  **dd.weather.gc.ca**, an Environment Canada website 
-where a wide variety of meteorological products are made available to the public. it is from
-the name of this site that the sarracenia suite takes the sr\_ prefix for it's tools.  The initial
+where a wide variety of meteorological products are made available to the public. It is from
+the name of this site that the sarracenia suite takes the sr\_ prefix for its tools.  The initial
 version was deployed in 2013 on an experimental basis.  The following year, support of checksums
 was added, and in the fall of 2015, the feeds were updated to v02.
 

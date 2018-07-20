@@ -13,12 +13,12 @@ Executive Summary
 
 Over the past decade, the World Meteorological Organization (WMO) Information
 Service WIS Part 1 has implemented meta data catalogues for some world-wide
-meteorological datasets. In WIS-DAR, *Discovery, Access, and Retreival*,
+meteorological datasets. In WIS-DAR, *Discovery, Access, and Retrieval*,
 the emphasis on this early work was on *Discovery*, as this was a major 
 difficulty. In terms of actual data exchange, the pre-existing network: the
 Global Telecommunications System (GTS) has remained the WMO's accepted method 
-to circulate of weather data in *meteorological real-time* [1]_ used to
-achieve *Access* and support *Retrieval* It does so by established 
+to circulate weather data in *meteorological real-time* [1]_ used to
+achieve *Access* and support *Retrieval*. It does so by established 
 bi-lateral agreements among individual members. 
 
 The pre-existing network feeds pre-existing systems that operate on different
@@ -56,9 +56,9 @@ to engage in some experimental data exchanges to validate the approach,
 and be able to collaboratively determine implementation details.
 
 .. [1] *real-time*, in meteorological circles refers to *immediately* or ASAP,
- which can mean anything between a few seconds, and a few minutes. This is very 
+ which can mean anything between a few seconds and a few minutes. This is very 
  different from the computing use of the term, where it refers to hard deadlines
- in usually expressed in milliseconds. When this document uses *real-time* it 
+ usually expressed in milliseconds. When this document uses *real-time* it 
  uses it in the meteorologically accepted meaning.
 
 
@@ -69,7 +69,7 @@ GTS was Designed Long Ago
    :align: center
 
 The World Meteorological Organization (WMO) Information Service (WIS)'s Global
-Telecommunications System (GTS) is the WMO's accepted method to circulate of
+Telecommunications System (GTS) is the WMO's accepted method to circulate 
 weather data in *meteorological real-time* [1]_ It does so by pre-established
 bi-lateral agreements about who circulates what to whom. When data 
 arrives, it is sent to the proper destinations immediately. In hardware terms,
@@ -84,7 +84,7 @@ bandwidth, very little computational power, and few existing standards for
 reliable data transfer. Today, The underlying technologies embodied by 
 Internet and `Regional Main Data Communications Network (RMDCN) <https://www.ecmwf.int/en/computing/our-facilities/rmdcn>`_
 (which have already subsumed the physical links of GTS) are completely
-different: Bandwidth and storage are relatively cheap, computing power is 
+different: bandwidth and storage are relatively cheap, computing power is 
 cheaper, point-to-point links are now more expensive than multi-point clouds. 
 Today's WMO members want to exchange orders of magnitude more data types 
 and higher volumes at higher speed.
@@ -108,11 +108,11 @@ GTS is Limited & Inflexible
 
 In the traditional GTS, when new data is made available by a National 
 Meteorological Centre (NMC), it needs to issue notices, and likely discuss with
-their (Regional Telecommunications Hub) RTH, about accepting and routing the
-new data. The RTH's must discuss amongst eachother whether to exchange the 
+their Regional Telecommunications Hub (RTH), about accepting and routing the
+new data. The RTHs must discuss amongst each other whether to exchange the 
 data, and other NMC must further request from their RTH. For NMC *A* to make
 data available to NMC *B*, the GTS staff at both NMC's and all intervening
-RTH's must agree and action the request.
+RTHs must agree and action the request.
 
 Also, the routing tables at each NMC and each RTH are theoretically, but in
 practice, not easily, inspectable. It may be that the product NMC *B* is looking
@@ -122,8 +122,8 @@ RTH. Manual routing is ineffective, opaque and human resource intensive.
 
 Lastly, the GTS has a maximum message size, which though it was raised from 
 14,000 bytes to 500,000 bytes in the last few years, is still very limiting.
-This rules out many modern important data sets  (e.g. RADAR, Satellite, NWP.)
-WMO doesn't need it's own data transport, as is demonstrated by many
+This rules out many modern important data sets  (e.g. RADAR, Satellite, NWP).
+WMO doesn't need its own data transport, as is demonstrated by many
 members' use of protocols without such limitations, adopted from the broader
 internet, such as FTP, SFTP, and HTTP. Even more often, such transfers
 are accomplished by bi-lateral arrangement, as transfers of larger datasets
@@ -132,14 +132,14 @@ cannot be expressed in current GTS protocols.
 The initial WIS, as formulated over a decade ago, was in part an attempt to address
 this opaqueness by introducing some Information Management (IM) concepts, and 
 support for DAR: Discovery, Access, and Retrieval. All WMO members want to
-know which data is available from which centres. So we publish metadata to 
+know is which data is available from which centres. So we publish metadata to 
 Global Information Service Centres, where the world's real-time weather
 information is available and some means of retrieval is specified.
 
 When dealing in the abstract, without time constraints, add/or with small
 datasets, retrieval time does not matter, but the access penalty imposed by
-storing using databases for individual retrieval grows with the number of
-items stored, and the number of queries or retrievals to be sustained. 
+using databases for individual retrieval grows with the number of
+items stored and the number of queries or retrievals to be sustained. 
 Initially, WIS was most concerned with getting higher visibilty of data, 
 understanding what data was available. WIS Part 1 primarily implemented a
 metadata layer, while the GTS has persisted to transfer actual data. Once
@@ -154,25 +154,25 @@ The WIS architecture tends to concentrate load at the GISCS, whether they want i
 or not. Even assuming they want it, answering large volumes of queries in such
 an architecture is a problem. The mental model for this is a database and each
 retrieval is conceptualized as a query.  From computational complexity theory[2]_, 
-each query is a often O(N) operation (or in the best case of perfect indexing,
-log n) and retrieval of specific items by their key is also, at best, O(log n).
+each query is often an O(N) operation (or in the best case of perfect indexing,
+O(log N)) and retrieval of specific items by their key is also, at best, O(log N).
 
-To perform Retrieval (the R in DAR), of all of the items from an index, one 
-at a time, the best algorithm has complexity *N \* log n*. The best case only
+To perform Retrieval (the R in DAR) of all the items from an index, one 
+at a time, the best algorithm has complexity *N \* log N*. The best case only
 arises if the indices are properly designed for the access method intended.
 In practice, without careful design & implementation, the performance can 
 devolve to N**2.
 
-.. [2] algorithmic complexity expresses how many computer operations are
+.. [2] Algorithmic complexity expresses how many computer operations are
   needed to perform a function.  For example, to search through a list of 
   N items sequentially would require a computer to perform N operations, 
-  we then say the algorithm if on the order of N, or O(N). if one sorts 
-  the list, a binary search takes only log n operations to find a 
-  entry, written O(log n)
-  more: `Big O notation <https://en.wikipedia.org/wiki/Analysis_of_algorithms>`_
-  also: `Time complexity <https://en.wikipedia.org/wiki/Time_complexity>`_
+  we then say the algorithm if on the order of N, or O(N). If one sorts 
+  the list, a binary search takes only log N operations to find a 
+  entry, written O(log N)
+  More: `Big O notation <https://en.wikipedia.org/wiki/Analysis_of_algorithms>`_
+  Also: `Time complexity <https://en.wikipedia.org/wiki/Time_complexity>`_
 
-Databases are Optimal for Fixed Sized Records. No-one Uses Them That Way
+Databases are Optimal for Fixed Sized Records. No One Uses Them That Way
 ------------------------------------------------------------------------
 
 .. note:
@@ -188,17 +188,17 @@ with enough analysis one could normalize them down to fixed size fields.
 Relational databases were invented a decade or two after the GTS, and they 
 optimize storage and retrieval of fixed size data. They achieve near optimal 
 performance by careful selection of the data model and extensive use of 
-fixed sized fields. In practice, the use of fixed size fields turns out to 
+fixed size fields. In practice, the use of fixed size fields turns out to 
 be a difficult constraint to satisfy and many interesting data sets, especially
 on systems whose primary function is data transmisssion, are most logically 
 stored as arbitarily sized byte sequences, generally termed: Binary Large 
 Objects, or BLOBS. When one stores BLOBS, a database becomes 
-algorithmically little different from a file system.  
+algorithmically a little different from a file system.  
 
 Essentially BLOBS are an indexed list of byte streams. Once a database
 uses BLOBS, it incurs the same overhead for data retrieval as
 a properly used file system. Regardless of the storage method,
-the cost of retrieval is going to be O(log n) for a known key.
+the cost of retrieval is going to be O(log N) for a known key.
 In a file system, the key is the name. In a DB, the key is an object-id
 or index value.  If one wishes to use multiple indices, then one
 can still use a database, which is largely what WIS Part 1 is. It
@@ -214,32 +214,32 @@ items stored in files.
 Internet Push is a Poor Fit for Large Feeds
 -------------------------------------------
 
-So called *Push* technologies, are actually *Pull*. A client asks a server if
+So called *Push* technologies are actually *Pull*. A client asks a server if
 they have new data available for them. The server responds with the list of new
 data available, then the client pulls the data. This means that an entity
-storing data has to retrieve the items from the data store (with a log n) cost 
+storing data has to retrieve the items from the data store (with an O(log N) cost 
 to each retrieval.) As the domain is *real-time* processing, the time for data
 to be obtained by a client is also relevant, and bound by the maximum frequency
 that a client is allowed to ask for updates. In general, the ATOM/RSS protocols
 expect a minimum interval between polling events of five minutes. 
 
-Each polling event requires the server to examine it's database for all 
+Each polling event requires the server to examine its database for all 
 matching entries, this search is likely an order N operation. So the responses
 to polling requests are expensive, and the retrievals from the data system are
 likewise expensive, which likely motivates the usual discouragement of rapid
 polling. 
 
 In the best case, indices based on time will be present, and one will be able
-to search table with that dimension and incur log(n) operations to find the 
+to search table with that dimension and incur log(N) operations to find the 
 earliest observation to retrieve, and then walk forward along that index.
 In many practical cases, databases are not indexed by time, and so the initial
 search is for all stations, and then one must examine the time for the entries
-retrieved, which will incur n**2 operations, and in some cases it can be
+retrieved, which will incur N**2 operations, and in some cases it can be
 even worse.
 
 The actual cost of serving a client depends critically on the server's indices 
 being optimally constructed. These characteristics are hidden in a database
-not easily inspected by anyone but the database adminsitrator.
+and are not easily inspected by anyone but the database administrator.
 
 
 
@@ -253,12 +253,12 @@ retrieval expense problem by storing and forwarding at the same time. When
 a datum is received, a table of interested parties is consulted, and then 
 the forwarding is done based on the data already "retrieved". 
 
-The cost to forward an item to a given client is closer to O( log n ).
+The cost to forward an item to a given client is closer to O( log N ).
 
 This works as an optimization because one is forwarding the message at exactly 
 the time it is received, so the entire lookup and search process is skipped 
 for all those known consumers. For comparison, the polling web standards
-standards the cost of search at every polling interval.
+standardizes the cost of search at every polling interval.
 
 The cost of the search is highly variable and not under server control. Poorly
 structured queries (e.g. by station, and then time) can result in an N*log(N) 
@@ -266,14 +266,14 @@ query or even N-squared complexity.
 
 This is especially acute for weather alert information, where a high polling 
 frequency is a business need, but the volume of data is relatively low (alerts
-are rare.) In such cases the polling data can be 10 times or even 100 times the
+are rare). In such cases the polling data can be 10 times or even 100 times the
 amount of data transfer needed to send the warnings themselves.  
 
 In practice, the load on servers with large real-time flows to many clients will
 be orders of magnitude lower with a real push technology, such as the 
 traditional GTS, than supporting the same load with Internet Push technologies. 
 A separate but related cost of polling is the bandwidth for the polling data.
-By forwarding notifications on receipt, rather then having to service polls, one
+By forwarding notifications on receipt, rather than having to service polls, one
 reduces overall load, eliminating the vast majority of read traffic.
 
 
@@ -283,7 +283,7 @@ reduces overall load, eliminating the vast majority of read traffic.
 A real-world example of bandwidth savings, from 2015, would be that of a German 
 company that began retrieving NWP outputs from the Canadian datamart using web-scraping 
 (periodic polling of the directory) and when they transitioned to using the 
-AMQP push method, the total bytes downloaded by they went from 90 Gbytes/day to
+AMQP push method, the total bytes downloaded went from 90 Gbytes/day to
 60 Gbytes per day for the same data being transferred. 30 GBytes/day was just 
 (polling) information about whether new model run outputs were available.
 
@@ -300,12 +300,12 @@ interest will further optimize traffic.
 In terms of internet technologies, the main protocols for real-time data 
 exchange are XMPP and websocket. XMPP provides real-time messaging, but it does
 not include any concept of subscriptions, hierarchical or otherwise, or 
-queueing. Web socket is a transport type technology. Adopting either of these
+queueing. Web sockets are a transport type technology. Adopting either of these
 would mean building a domain specific stack to handle subscriptions and 
-queueing. The Advanced Message Queueing Protocol (AMQP), is not web technology,
+queueing. The Advanced Message Queueing Protocol (AMQP) is not web technology,
 but it is a fairly mature internet standard, which came from the financial 
 industry and includes all of the above characteristics. It can be adopted 
-as-is by and a relatively simple AMQP application can be built to to serve
+as-is and a relatively simple AMQP application can be built to to serve
 notifications about newly arrived data. 
 
 While AMQP provides a robust messaging and queueing layer, a small additional 
@@ -349,7 +349,7 @@ Several robust and mature protocols and software stacks are available for many
 data transport protocols: FTP, HTTP, HTTP(S), SFTP. Transporting data is a 
 solved problem with many solutions available from the broader industry. The
 existing cloud servers used for the GISC cache are done using FTP, and that is
-a reasonable solution. Servers subscribe to each other's advertisements, and
+a reasonable solution. Servers subscribe to each others' advertisements, and
 advertisements are transitive, in that each node can advertise whatever it has
 downloaded from any other node so that other nodes connected to it can consume
 them. This is analogous to implementing mesh networking amongst all 
@@ -358,29 +358,29 @@ NC/DCPC/GISCs.
 Adding an AMQP notification layer to the existing file transfer network would:
 
 - improve security because users never upload, never have to write to a remote server.
-  (all transfers can be done by client initiated subscriptions, no write to peer servers needed.)
+  (all transfers can be done by client initiated subscriptions, no write to peer servers needed).
 
 - permit ad-hoc exchanges among members across the RMDCN without having to involve third parties.
 
 - can function with only *anonymous* exchanges, to eliminate the need for authentication entirely.
 
-- provide a like-for-like mechanism to supplant the traditional GTS.
-  (similar performance to existing GTS, no huge efficiency penalties.)
+- provide a like-for-like mechanism to supplant the traditional GTS
+  (similar performance to existing GTS, no huge efficiency penalties).
 
-- transparent (can see what data is on a node, without requiring human exchanges.)
-  (authorized persons can browse an FTP/SFTP/HTTP tree.)
+- transparent (can see what data is on a node, without requiring human exchanges).
+  (Authorized persons can browse an FTP/SFTP/HTTP tree).
 
-- enable/support arbitrary interconnection topologies among NC/DCPC/GISCs.
-  (cycles in the graph are a feature, not a problem, with fingerprints)
+- enable/support arbitrary interconnection topologies among NC/DCPC/GISCs
+  (cycles in the graph are a feature, not a problem, with fingerprints).
 
-- Shorten the time for data to propagate from NMC to other data centres across the world.
-  (fewer hops between nodes than in GTS, load more distributed among nodes.)
+- Shorten the time for data to propagate from NMC to other data centres across the world
+  (fewer hops between nodes than in GTS, load more distributed among nodes).
 
-- relatively simple to configure for arbitrary topologies.
-  (configure subscriptions, little need to configure publication.)
+- relatively simple to configure for arbitrary topologies
+  (configure subscriptions, little need to configure publication).
 
-- route around node failures within the network in real-time without human intervention.
-  (routing is implicit and dynamic, rather than explicit and static.)
+- route around node failures within the network in real-time without human intervention
+  (routing is implicit and dynamic, rather than explicit and static).
 
 
 And an Agreed Directory Tree
@@ -388,7 +388,7 @@ And an Agreed Directory Tree
 
 Similar to the choice of indices in databases, efficiency of exchange in file
 servers depends critically on balancing the hierarchy in terms of numbers of files per 
-directory. A hierarchy which ensures less than 10,000 files per directory, performs
+directory. A hierarchy which ensures less than 10,000 files per directory performs
 well. 
 
 Example server: http://dd.weather.gc.ca
@@ -399,9 +399,9 @@ it has directory ordering as follows:
 
  http://dd.weather.gc.ca/bulletins/alphanumeric/20180211/SA/CWAO/12/
 
-there is an initially fixed base url:
+There is an initially fixed base url:
 http://dd.weather.gc.ca/bulletins/alphanumeric/, 
-then the subdirectories begin: date (YYYYMMDD), WMO-TT, CCCC, GG, )  then
+Then the subdirectories begin: date (YYYYMMDD), WMO-TT, CCCC, GG, then
 the bulletins, whose content is::
 
   Parent Directory                                               -   
@@ -467,7 +467,7 @@ a node are::
 
 .. note::
 
-   the *topic prefix* (beginning of the topic tree) is constant for this discussion. Explanation:
+   The *topic prefix* (beginning of the topic tree) is constant for this discussion. Explanation:
 
    v02 - identifies the protocol version.  Should the scheme change in future, this allows for a server
    to serve multiple versions at once. This has already been used to progressively migrate from exp, to v00, to v02.
@@ -491,8 +491,8 @@ co-ordination with intervening parties is needed.
 
 Should two countries decide to exchange Numerical Weather Products (NWP), or 
 RADAR data, in addition to the core types exchanged today, they simply agree on
-the directories where these data are to be placed, and subscribe to each others
-nodes' feeds.
+the directories where this data is to be placed, and subscribe to each others'
+node feeds.
 
 
 
@@ -510,8 +510,8 @@ follow the speed of downloading from each node. If one node slows,
 neighbours will get advertisements from other nodes that present
 new data earlier. So the network should balance bandwidth naturally.
 
-National centres and can have as much, or as little, information locally as
-they see fit. Minimum set is only the country's own data. Redundancy is 
+National centres can have as much, or as little, information locally as
+they see fit. The minimum set is only the country's own data. Redundancy is 
 achieved by many nations being interested in other nations' data sets. If
 one NC has an issue, the data can likely be obtained from another node. NC's
 can also behave *selfishly* if they so choose, downloading data to internal
@@ -520,7 +520,7 @@ national nodes may be provisioned in the cloud, for management or resource
 optimization purposes. These nodes will ease communication by adding 
 redundancy to routes between nations. With mesh style interconnection, in the 
 case of a failure of a cloud provisioned node, it is likely that connections 
-between countries automatically compensates for individual failures.
+between countries automatically compensate for individual failures.
 
 There is also little to no requirement for the super-national GISC in this 
 model. Nodes can be established with greater or lesser capacity and they can 
@@ -548,7 +548,7 @@ bandwidth and server performance. The motivation would be to obtain the data
 most quickly for themselves, however by implementing this excellent service, it
 attracts more demand for data from the rest of the world. If one node feels 
 they are shouldering too much of the global load of traffic exchange, there 
-are many straight-forward means encourage use of other nodes: not posting, 
+are many straight-forward means to encourage use of other nodes: not posting, 
 delayed posting, traffic shaping, etc... All of these techniques are 
 straight-forward applications of industry technology, without the need to 
 resort to WMO specific standards.
@@ -570,7 +570,7 @@ following elements:
 
 - AMQP broker serve notifications ( Rabbitmq ) 
 
-- http server to serve downloads (plain old apache-httpd, with indexes.)
+- http server to serve downloads (plain old apache-httpd, with indexes).
 
 - ssh server for management and local uploads by national entities (OpenSSH)
 
@@ -583,17 +583,17 @@ forecasting, and the plan is to offer it to other for in other domains to suppor
 speed data transfers. 
 
 Sarracenia's reference implementation is less than 20 thousand lines in Python 3,
-although a partial implementations in node.js was done by one client, and 
+although a partial implementation in node.js was done by one client, and 
 another in C was done to support the `High Performance Computing use case. <mirroring_use_case.rst>`_
 The message format is `published <sr_post.7.rst>`_ 
-and can be re-implemented any a wide variety of programming languages. 
+and can be re-implemented in a wide variety of programming languages. 
 Another client has recently started work on a C# implementation.
 
 This stack can be deployed on very small configurations, such as a Raspberry Pi
 or a very inexpensive hosted virtual server. Performance will scale with 
 resources available. The main Canadian internal meteorological data pump is
 implemented across 10 physical servers (likely too many, as all of them are 
-lightly loaded.) 
+lightly loaded). 
 
 
 Statelessness/Crawlable
@@ -626,16 +626,16 @@ Caveat: Solution for This Problem, Not Every Problem
 
 AMQP brokers work well, with the sarracenia implementations at the Canadian 
 meteorological service, they are used for tens of millions of file transfers
-totally 30 terabytes per day. Adoption is still limited as it is more 
+for a total of 30 terabytes per day. Adoption is still limited as it is more 
 complicated to understand and use than say, rsync. There are additional 
 concepts (brokers, exchanges, queues) that are a technical barrier to 
 entry. 
 
 Also, while brokers work well for the moderate volumes in use (hundreds of 
-message per second per server.) it is completely unclear if this is suitable 
-as a wider Internet technology (ie. for the 10K problem.) For now, this sort 
+message per second per server) it is completely unclear if this is suitable 
+as a wider Internet technology (ie. for the 10K problem). For now, this sort 
 of feed is intended for sophisticated clients with a demonstrated need for 
-real-time file services. Demonstrating Scaling to an internet scale
+real-time file services. Demonstrating scaling to an internet scale
 deployment is future work.
 
 Note that AMQP has overhead and size limits that make it a poor fit for 
