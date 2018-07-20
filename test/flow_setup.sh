@@ -189,10 +189,23 @@ cd $testdocroot
 $testrundir/trivialserver.py >trivialhttpserver.log 2>&1 &
 httpserverpid=$!
 
+
 echo "Starting trivial ftp server on: $testdocroot, saving pid in .ftpserverpid"
+
+# note, on older OS, pyftpdlib might need to be installed as a python2 extension.
+# 
 # note, defaults to port 2121 so devs can start it.
 python3 -m pyftpdlib >trivialftpserver.log 2>&1 &
 ftpserverpid=$!
+
+if [ ! "`head trivialftpserver.log | grep 'starting'`" ]; then
+   echo "FAILED to start FTP server, is pyftpdlib installed?"
+else
+   echo "FTP server started." 
+   passed_checks=$((${passed_checks}+1))
+fi
+count_of_checks=$((${count_of_checks}+1))
+
 
 echo "running self test ... takes a minute or two"
 
