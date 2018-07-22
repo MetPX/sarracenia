@@ -82,6 +82,8 @@ Sarracenia has multiple implementations:
 
 - node-sarra ( https://github.com/darkskyapp/node-sarra ) An embryonic implementation for node.js.
 
+- ecpush ( https://github.com/TheTannerRyan/ecpush ) an simple client in Go ( http://golang.org ) 
+
 - dd_subscribe ( https://github.com/MetPX/sarracenia ) python2 stripped-down download-only client.  The predecessor of Sarracenia. Still compatible.
 
 More implementations are welcome.
