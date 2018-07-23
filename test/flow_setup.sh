@@ -30,15 +30,19 @@ fi
 function application_dirs {
 python3 << EOF
 import appdirs
+
 cachedir  = appdirs.user_cache_dir('sarra','science.gc.ca')
 cachedir  = cachedir.replace(' ','\ ')
 print('export CACHEDIR=%s'% cachedir)
+
 confdir = appdirs.user_config_dir('sarra','science.gc.ca')
 confdir = confdir.replace(' ','\ ')
 print('export CONFDIR=%s'% confdir)
+
 logdir  = appdirs.user_log_dir('sarra','science.gc.ca')
 logdir  = logdir.replace(' ','\ ')
 print('export LOGDIR=%s'% logdir)
+
 EOF
 }
 
@@ -57,16 +61,20 @@ if [ ! -f "$CONFDIR"/admin.conf -o ! -f "$CONFDIR"/credentials.conf ]; then
  need to be created before this script can be run.
  rabbitmq-server needs to be installed on a machine (FLOWBROKER) with admin account set and
  manually setup in "$CONFDIR"/admin.conf, something like this:
+
 declare env FLOWBROKER=localhost
 declare env SFTPUSER="`whoami`"
 declare env TESTDOCROOT=${HOME}/sarra_devdocroot
+
 broker amqp://tsource@localhost/
 admin amqp://bunnymaster@localhost
 feeder  amqp://tfeed@localhost
 declare source tsource
 declare subscriber tsub
 declare subscriber anonymous
+
 and "$CONFDIR"/credentials.conf will need to contain something like:
+
 amqp://bunnymaster:PickAPassword@localhost
 ftp://anonymous:anonymous@localhost:2121/
 amqp://tsource:PickAPassword2@localhost
@@ -76,6 +84,7 @@ amqp://anonymous:PickAPassword5@localhost
 amqp://anonymous:anonymous@dd.weather.gc.ca
 amqp://anonymous:anonymous@dd1.weather.gc.ca
 amqp://anonymous:anonymous@dd2.weather.gc.ca
+
 EOT
  exit 1
 fi
@@ -171,9 +180,8 @@ if [ "$x_cnt" = $expected_cnt ]; then
     passed_checks=$((${passed_checks}+1))
 else
     echo "FAILED, expected $expected_cnt, but there are $x_cnt $1"
-    #printf "Missing exchanges: %s\n" "`comm -23 $exex $exnow`"
-    #printf "Extra exchanges: %s\n" "`comm -13 $exex $exnow`"
-    printf "Differences: %s\n" "`diff -w $exex $exnow`"
+    printf "Missing exchanges: %s\n" "`comm -23 $exex $exnow`"
+    printf "Extra exchanges: %s\n" "`comm -13 $exex $exnow`"
 fi
 
 count_of_checks=$((${count_of_checks}+1))
