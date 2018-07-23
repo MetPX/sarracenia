@@ -306,13 +306,13 @@ else
    smin=1000
 fi
 
-printf "initial sample building sample size $totsarra need at least $smin \n"
+printf "Initial sample building sample size $totsarra need at least $smin \n"
 
 while [ "${totsarra}" == 0 ]; do
    sleep 10
    countthem "`grep msg_total "$LOGDIR"/sr_report_tsarra_f20_01.log | tail -1 | awk ' { print $5; }; '`" 
    totsarra="${tot}"
-   printf "waiting to start...\n"
+   printf "Waiting to start...\n"
 done
 
 while [ $totsarra -lt $smin ]; do
@@ -320,7 +320,7 @@ while [ $totsarra -lt $smin ]; do
     if [ ! "$SARRA_LIB" ]; then
 
        if [ "`sr_shovel t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" == 'stopped' ]; then 
-          echo "starting shovels and waiting..."
+          echo "Starting shovels and waiting..."
           sr_shovel start t_dd1_f00 &
           sr_shovel start t_dd2_f00
           if [ "$SARRAC_LIB" ]; then
@@ -334,7 +334,7 @@ while [ $totsarra -lt $smin ]; do
    else
        
        if [ "`"$SARRA_LIB"/sr_shovel.py t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" == 'stopped' ]; then 
-          echo "starting shovels and waiting..."
+          echo "Starting shovels and waiting..."
           "$SARRA_LIB"/sr_shovel.py start t_dd1_f00 &
           "$SARRA_LIB"/sr_shovel.py start t_dd2_f00 
           if [ "$SARRAC_LIB" ]; then
@@ -350,7 +350,7 @@ while [ $totsarra -lt $smin ]; do
    sleep 10
    countall
 
-   printf  "sample now %6d content_checks:%4s missed_dispositions:%d\r"  "$totsarra" "$audit_state" "$missed_dispositions"
+   printf  "Sample now: %6d Content_checks:%4s Missed_dispositions:%d\r"  "$totsarra" "$audit_state" "$missed_dispositions"
 
 done
 printf  "\nSufficient!\n" 
@@ -358,13 +358,13 @@ printf  "\nSufficient!\n"
 # if msg_stopper plugin is used this should not happen
 if [ ! "$SARRA_LIB" ]; then
    if [ "`sr_shovel t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" != 'stopped' ]; then 
-       echo "stopping shovels and waiting..."
+       echo "Stopping shovels and waiting..."
        sr_shovel stop t_dd2_f00 &
        sr_shovel stop t_dd1_f00 
    fi
 else 
    if [ "`$SARRA_LIB/sr_shovel.py t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" != 'stopped' ]; then
-       echo "stopping shovels and waiting..."
+       echo "Stopping shovels and waiting..."
        "$SARRA_LIB"/sr_shovel.py stop t_dd2_f00 &
        "$SARRA_LIB"/sr_shovel.py stop t_dd1_f00
    fi
@@ -447,7 +447,7 @@ if [ "${totshovel2}" -gt "${totshovel1}" ]; then
 else 
    maxshovel=${totshovel1}
 fi
-printf "\tmaximum of the shovels is: ${maxshovel}\n\n"
+printf "\tMaximum of the shovels is: ${maxshovel}\n\n"
 
 
 
@@ -456,26 +456,26 @@ t4=$(( ${totfilet}*4 ))
 t5=$(( ${totsent}/2 ))
 
 echo "                 | dd.weather routing |"
-calcres ${totshovel1} ${totshovel2} "sr_shovel (${totshovel1}) t_dd1 should have the same number of items as t_dd2 (${totshovel2})"
-calcres ${totwinnow}  ${tot2shov}   "sr_winnow (${totwinnow}) should have the same of the number of items of shovels (${tot2shov})"
-calcres ${totsarp}    ${totwinpost} "sr_sarra (${totsarp}) should have the same number of items as winnows'post (${totwinpost})"
-calcres ${totfilet}   ${totsarp}    "sr_subscribe (${totfilet}) should have the same number of items as sarra (${totsarp})"
+calcres ${totshovel1} ${totshovel2} "sr_shovel\t (${totshovel1}) t_dd1 should have the same number of items as t_dd2\t (${totshovel2})"
+calcres ${totwinnow}  ${tot2shov}   "sr_winnow\t (${totwinnow}) should have the same of the number of items of shovels\t (${tot2shov})"
+calcres ${totsarp}    ${totwinpost} "sr_sarra\t (${totsarp}) should have the same number of items as winnows'post\t (${totwinpost})"
+calcres ${totfilet}   ${totsarp}    "sr_subscribe\t (${totfilet}) should have the same number of items as sarra\t\t (${totsarp})"
 echo "                 | watch      routing |"
-calcres ${totwatch}   ${t4}         "sr_watch (${totwatch}) should be 4 times subscribe t_f30 (${totfilet})"
-calcres ${totsent}    ${totwatch}   "sr_sender (${totsent}) should have the same number of items as sr_watch (${totwatch})"
+calcres ${totwatch}   ${t4}         "sr_watch\t\t (${totwatch}) should be 4 times subscribe t_f30\t\t  (${totfilet})"
+calcres ${totsent}    ${totwatch}   "sr_sender\t\t (${totsent}) should have the same number of items as sr_watch  (${totwatch})"
 calcres ${totsubu}    ${totsent}    "sr_subscribe u_sftp_f60 (${totsubu}) should have the same number of items as sr_sender (${totsent})"
-calcres ${totsubcp}   ${totsent}    "sr_subscribe cp_f61 (${totsubcp}) should have the same number of items as sr_sender (${totsent})"
+calcres ${totsubcp}   ${totsent}    "sr_subscribe cp_f61\t (${totsubcp}) should have the same number of items as sr_sender (${totsent})"
 echo "                 | poll       routing |"
-calcres ${totpoll1}   ${t5}         "sr_poll test1_f62 (${totpoll1}) should have half the same number of items of sr_sender(${totsent})"
-calcres ${totsubq}    ${totpoll1}   "sr_subscribe q_f71 (${totsubq}) should have the same number of items as sr_poll test1_f62(${totpoll1})"
+calcres ${totpoll1}   ${t5}         "sr_poll test1_f62\t (${totpoll1}) should have half the same number of items of sr_sender\t (${totsent})"
+calcres ${totsubq}    ${totpoll1}   "sr_subscribe q_f71\t (${totsubq}) should have the same number of items as sr_poll test1_f62 (${totpoll1})"
 echo "                 | flow_post  routing |"
-calcres ${totpost1}   ${t5}         "sr_post test2_f61 (${totpost1}) should have half the same number of items of sr_sender(${totsent})"
-calcres ${totsubftp}  ${totpost1}   "sr_subscribe ftp_f70 (${totsubftp}) should have the same number of items as sr_post test2_f61(${totpost1})"
-calcres ${totpost1} ${totshimpost1} "sr_post test2_f61 (${totpost1}) should have about the same number of items as shim_f63 ${totshimpost1}"
+calcres ${totpost1}   ${t5}         "sr_post test2_f61\t (${totpost1}) should have half the same number of items of sr_sender \t (${totsent})"
+calcres ${totsubftp}  ${totpost1}   "sr_subscribe ftp_f70\t (${totsubftp}) should have the same number of items as sr_post test2_f61 (${totpost1})"
+calcres ${totpost1} ${totshimpost1} "sr_post test2_f61\t (${totpost1}) should have about the same number of items as shim_f63\t (${totshimpost1})"
 
 echo "                 | py infos   routing |"
-calcres ${totpropagated} ${totwinpost} "sr_shovel pclean_f90 (${totpropagated}) should have the same number of watched items winnows'post (${totwinpost})"
-calcres ${totremoved}    ${totwinpost} "sr_shovel pclean_f92 (${totremoved}) should have the same number of removed items winnows'post (${totwinpost})"
+calcres ${totpropagated} ${totwinpost} "sr_shovel pclean_f90 (${totpropagated}) should have the same number of watched items winnows' post\t (${totwinpost})"
+calcres ${totremoved}    ${totwinpost} "sr_shovel pclean_f92 (${totremoved}) should have the same number of removed items winnows' post\t (${totwinpost})"
 zerowanted "${missed_dispositions}" "messages received that we don't know what happened."
 calcres ${totshortened} ${totfilet} \
    "count of truncated headers (${totshortened}) and subscribed messages (${totmsgt}) should have about the same number of items"
@@ -528,7 +528,7 @@ if ((NERROR>0)); then
    result="`wc -l $fcel|cut -d' ' -f1`"
    if [ $result -gt 10 ]; then
        head $fcel
-       echo "more than 10 TYPES OF ERRORS found... for the rest, have a look at `pwd`/$fcel for details"
+       echo "More than 10 TYPES OF ERRORS found... for the rest, have a look at `pwd`/$fcel for details"
    else
        echo TYPE OF ERRORS IN LOG :
        echo

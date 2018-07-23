@@ -7,7 +7,7 @@
 # contains the path to shim_f63.conf (usually in $CONFDIR/cpost/
 # shimpost.conf, but specify if otherwise)
 # defaults:
-export SR_POST_CONFIG="$CONFDIR/post/shim_f63.conf"
+#export SR_POST_CONFIG="$CONFDIR/post/shim_f63.conf"
 #export SARRA_LIB=""
 #export SARRAC_LIB=""
 
@@ -17,6 +17,7 @@ export TESTDIR="`pwd`"
 testdocroot="$HOME/sarra_devdocroot"
 testhost=localhost
 sftpuser=`whoami`
+
 
 if [[ ":$SARRA_LIB/../:" != *":$PYTHONPATH:"* ]]; then
     if [ "${PYTHONPATH:${#PYTHONPATH}-1}" == ":" ]; then
@@ -29,26 +30,22 @@ fi
 function application_dirs {
 python3 << EOF
 import appdirs
-
 cachedir  = appdirs.user_cache_dir('sarra','science.gc.ca')
 cachedir  = cachedir.replace(' ','\ ')
 print('export CACHEDIR=%s'% cachedir)
-
 confdir = appdirs.user_config_dir('sarra','science.gc.ca')
 confdir = confdir.replace(' ','\ ')
 print('export CONFDIR=%s'% confdir)
-
 logdir  = appdirs.user_log_dir('sarra','science.gc.ca')
 logdir  = logdir.replace(' ','\ ')
 print('export LOGDIR=%s'% logdir)
-
 EOF
 }
 
 eval `application_dirs`
 
 if [ -d $CACHEDIR/log ]; then
-   echo "cleaning logs, just in case"
+   echo "Cleaning logs, just in case"
    rm $(ls "$CACHEDIR"/log/)
    #rm "$CACHEDIR/log/"*
 fi
@@ -60,20 +57,16 @@ if [ ! -f "$CONFDIR"/admin.conf -o ! -f "$CONFDIR"/credentials.conf ]; then
  need to be created before this script can be run.
  rabbitmq-server needs to be installed on a machine (FLOWBROKER) with admin account set and
  manually setup in "$CONFDIR"/admin.conf, something like this:
-
 declare env FLOWBROKER=localhost
 declare env SFTPUSER="`whoami`"
 declare env TESTDOCROOT=${HOME}/sarra_devdocroot
-
 broker amqp://tsource@localhost/
 admin amqp://bunnymaster@localhost
 feeder  amqp://tfeed@localhost
 declare source tsource
 declare subscriber tsub
 declare subscriber anonymous
-
 and "$CONFDIR"/credentials.conf will need to contain something like:
-
 amqp://bunnymaster:PickAPassword@localhost
 ftp://anonymous:anonymous@localhost:2121/
 amqp://tsource:PickAPassword2@localhost
@@ -83,7 +76,6 @@ amqp://anonymous:PickAPassword5@localhost
 amqp://anonymous:anonymous@dd.weather.gc.ca
 amqp://anonymous:anonymous@dd1.weather.gc.ca
 amqp://anonymous:anonymous@dd2.weather.gc.ca
-
 EOT
  exit 1
 fi
@@ -103,7 +95,7 @@ fi
 
 lo="`netstat -an | grep '127.0.0.1:8000'|wc -l`"
 while [ ${lo} -gt 0 ]; do
-   echo "waiting for $lo leftover sockets to clean themselves up from last run."
+   echo "Waiting for $lo leftover sockets to clean themselves up from last run."
    sleep 10 
    lo="`netstat -an | grep '127.0.0.1:8000'|wc -l`"
    sleep 5 
@@ -118,15 +110,15 @@ flow_incs="`cd ../sarra/examples; ls */*f[0-9][0-9].inc`"
 
 echo "Adding flow test configurations..."
 if [ "$SARRAC_LIB" ]; then
-  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -Po 'sr_c[\w]*[\w\_\. ]* ;' | sed 's~^~"$SARRAC_LIB"/~' | sh
+  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -Po 'sr_c[\w]* add [\w\_\. ]* ;' | sed 's~^~"$SARRAC_LIB"/~' | sh
 else
-  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -Po 'sr_c[\w]*[\w\_\. ]* ;' | sh 
+  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -Po 'sr_c[\w]* add [\w\_\. ]* ;' | sh 
 fi
 
 if [ "$SARRA_LIB" ]; then
-  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -Po 'sr_[^c][\w]*[\w\_\. ]* ;' | sed 's/ /.py /' | sed 's~^~"$SARRA_LIB"/~' | sh
+  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -Po 'sr_[^c][\w]* add [\w\_\. ]* ;' | sed 's/ /.py /' | sed 's~^~"$SARRA_LIB"/~' | sh
 else
-  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -Po 'sr_[^c][\w]*[\w\_\. ]* ;' | sh 
+  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -Po 'sr_[^c][\w]* add [\w\_\. ]* ;' | sh 
 fi
 # sr_post "add" doesn't. so a little help:
 
@@ -136,8 +128,6 @@ cp ../sarra/examples/post/*f[0-9][0-9].conf ${CONFDIR}/post
 
 passed_checks=0
 count_of_checks=0
-
-queued_msgcnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv $query |awk '(NR == 2) { print $3; };'`"
 
 function qchk {
 #
@@ -181,8 +171,9 @@ if [ "$x_cnt" = $expected_cnt ]; then
     passed_checks=$((${passed_checks}+1))
 else
     echo "FAILED, expected $expected_cnt, but there are $x_cnt $1"
-    printf "Missing exchanges: %s\n" "`comm -23 $exex $exnow`"
-    printf "Extra exchanges: %s\n" "`comm -13 $exex $exnow`"
+    #printf "Missing exchanges: %s\n" "`comm -23 $exex $exnow`"
+    #printf "Extra exchanges: %s\n" "`comm -13 $exex $exnow`"
+    printf "Differences: %s\n" "`diff -w $exex $exnow`"
 fi
 
 count_of_checks=$((${count_of_checks}+1))
@@ -204,7 +195,7 @@ fi
 adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; exit }; ' "$CONFDIR"/credentials.conf`"
 
 qchk 20 "queues existing after 1st audit" "show overview" 
-xchk "exchanges for flow test created."
+xchk "exchanges for flow test created"
 
 if [ "$1" = "declare" ]; then
    exit 0
@@ -222,7 +213,7 @@ echo "Starting trivial ftp server on: $testdocroot, saving pid in .ftpserverpid"
 python3 -m pyftpdlib >trivialftpserver.log 2>&1 &
 ftpserverpid=$!
 
-echo "running self test ... takes a minute or two"
+echo "Running self tests ... takes a minute or two"
 
 cd ${TESTDIR}
 echo "Unit tests ("`date`")" > ${testdocroot}/unit_tests.log
@@ -233,14 +224,14 @@ nbr_fail=0
 count_of_checks=$((${count_of_checks}+1))
 
 for t in sr_util sr_credentials sr_config sr_cache sr_retry sr_consumer sr_http sr_sftp sr_instances sr_pattern_match; do
-    echo "======= testing "${t}  >>  ${testdocroot}/unit_tests.log
+    echo "======= Testing :"${t}  >>  ${testdocroot}/unit_tests.log
     nbr_test=$(( ${nbr_test}+1 ))
-	    ${TESTDIR}/unit_tests/${t}_unit_test.py >> ${testdocroot}/unit_tests.log 2>&1
-	    status=${?}
+      ${TESTDIR}/unit_tests/${t}_unit_test.py >> ${testdocroot}/unit_tests.log 2>&1
+      status=${?}
             if [ $nbr_fail -ne 0 ]; then
-               echo "======= testing "${t}" Failed"
+               echo "======= Testing "${t}": Failed"
             else
-               echo "======= testing "${t}" Succeeded"
+               echo "======= Testing "${t}": Succeeded"
             fi
 
     nbr_fail=$(( ${nbr_fail}+${status} ))
@@ -278,7 +269,7 @@ if [ ! "$SARRA_LIB" ]; then
 else
     "$SARRA_LIB"/sr.py start >$LOGDIR/sr_start_f00.log 2>&1
 fi
-echo "done."
+echo "Done."
 
 #sr_subscribe stop fclean
 #sr_subscribe cleanup fclean
@@ -295,7 +286,7 @@ else
 fi
 
 if [ $passed_checks = $count_of_checks ]; then
-   echo "Overall PASSED $passed_checks/$count_of_checks checks passed!"
+   echo "Overall: PASSED $passed_checks/$count_of_checks checks passed!"
 else
    echo "Overall: FAILED $passed_checks/$count_of_checks passed."
 fi

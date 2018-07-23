@@ -11,19 +11,15 @@ fi
 function application_dirs {
 python3 << EOF
 import appdirs
-
 cachedir  = appdirs.user_cache_dir('sarra','science.gc.ca')
 cachedir  = cachedir.replace(' ','\ ')
 print('export CACHEDIR=%s'% cachedir)
-
 confdir = appdirs.user_config_dir('sarra','science.gc.ca')
 confdir = confdir.replace(' ','\ ')
 print('export CONFDIR=%s'% confdir)
-
 logdir  = appdirs.user_log_dir('sarra','science.gc.ca')
 logdir  = logdir.replace(' ','\ ')
 print('export LOGDIR=%s'% logdir)
-
 EOF
 }
 
@@ -55,18 +51,18 @@ if [ -f .httpserverpid ]; then
    httpserverpid="`cat .httpserverpid`"
    if [ "`ps ax | awk ' $1 == '${httpserverpid}' { print $1; }; '`" ]; then
        kill $httpserverpid
-       echo "web server stopped."
+       echo "Web server stopped."
        sleep 2
    else
-       echo "no web server found running from pid file"
+       echo "No web server found running from pid file"
    fi
 
-   echo "if other web servers with lost pid kill them"
+   echo "If other web servers with lost pid kill them"
    pgrep -al python3 | grep trivialserver.py | grep -v grep  | xargs -n1 kill 2> /dev/null
 
    if [ "`netstat -an | grep LISTEN | grep 8000`" ]; then
        pid="`ps ax | grep trivialserver.py | grep -v grep| awk '{print $1;};'`" 
-       echo "killing rogue web server found on port 8000 at pid=$pid"
+       echo "Killing rogue web server found on port 8000 at pid=$pid"
        if [ "$pid" ]; then
           kill -9 $pid
        else
@@ -80,18 +76,18 @@ if [ -f .ftpserverpid ]; then
    ftpserverpid="`cat .ftpserverpid`"
    if [ "`ps ax | awk ' $1 == '${ftpserverpid}' { print $1; }; '`" ]; then
        kill $ftpserverpid
-       echo "ftp server stopped."
+       echo "Ftp server stopped."
        sleep 2
    else
-       echo "no properly started ftp server found running from pid file"
+       echo "No properly started ftp server found running from pid file"
    fi
 
-   echo "if other ftp servers with lost pid kill them"
+   echo "If other ftp servers with lost pid kill them"
    pgrep -al python3 | grep pyftpdlib.py | grep -v grep  | xargs -n1 kill 2> /dev/null
 
    if [ "`netstat -an | grep LISTEN | grep 2121`" ]; then
        pid="`ps ax | grep ftpdlib | grep -v grep| awk '{print $1;};'`" 
-       echo "killing rogue ftp server on port 2121 found at pid=$pid"
+       echo "Killing rogue ftp server on port 2121 found at pid=$pid"
        if [ "$pid" ]; then
           kill -9 $pid
        else
@@ -100,18 +96,18 @@ if [ -f .ftpserverpid ]; then
   fi
 fi
 
-echo "Cleanup flow poster... "
+echo "Cleanup flow_post... "
 if [ -f .flowpostpid ]; then
    flowpostpid="`cat .flowpostpid`"
    if [ "`ps ax | awk ' $1 == '${flowpostpid}' { print $1; }; '`" ]; then
        kill $flowpostpid
-       echo "flow poster stopped."
+       echo "Flow_post stopped."
        sleep 2
    else
-       echo "no properly started flow poster found running from pid file"
+       echo "No properly started flow_post found running from pid file"
    fi
 
-   echo "if other flow_post.sh with lost pid kill them"
+   echo "If other flow_post with lost pid kill them"
    pgrep flow_post.sh  | grep -v grep | xargs -n1 kill 2> /dev/null
 
 fi
@@ -147,9 +143,9 @@ flow_incs="`cd ../sarra/examples; ls */*f[0-9][0-9].inc`"
 
 echo "Removing flow configs..."
 if [ "$SARRAC_LIB" ]; then
-  echo $flow_confs $flow_incs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ remove +g' | grep -Po 'sr_c[\w]*[\w\_\. ]* ;' | sed 's~^~"$SARRAC_LIB"/~' | sh
+  echo $flow_confs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ remove +g' | grep -Po 'sr_c[\w]*[\w\_\. ]* ;' | sed 's~^~"$SARRAC_LIB"/~' | sh
 else
-  echo $flow_confs $flow_incs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ remove +g' | grep -Po 'sr_c[\w]*[\w\_\. ]* ;' | sh 
+  echo $flow_confs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ remove +g' | grep -Po 'sr_c[\w]*[\w\_\. ]* ;' | sh 
 fi
 
 if [ "$SARRA_LIB" ]; then
@@ -159,12 +155,12 @@ else
 fi
 
 echo "Removing flow config logs..."
-echo $flow_confs |  sed 's/ / ; rm sr_/g' | sed 's/^/rm sr_/' | sed 's+/+_+g' | sed 's/\.conf/_0?.log\*/g' | (cd $LOGDIR; sh )
+echo $flow_confs |  sed 's/ / ;\n rm -f sr_/g' | sed '1 s|^| rm -f sr_|' | sed '/^ rm -f sr_post/d' | sed 's+/+_+g' | sed '/conf[ ;]*$/!d' | sed 's/\.conf/_0?.log\*/g' | (cd $LOGDIR; sh )
 
 #echo "Removing flow cache/state files ..."
 #echo $flow_confs |  sed 's/ / ; rm /g' | sed 's/^/rm /' | sed 's+\.conf+/*+g' | (cd $CACHEDIR; sh )
 
-rm $LOGDIR/sr_audit* $LOGDIR/sr_poll_pulse* $LOGDIR/*f[0-9][0-9].log 
+rm -f $LOGDIR/sr_audit* $LOGDIR/sr_poll_pulse* $LOGDIR/*f[0-9][0-9].log 
 
 httpdr=""
 if [ -f .httpdocroot ]; then

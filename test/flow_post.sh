@@ -4,9 +4,9 @@
 
 #adding libcshim posting as well.
 # change LD_PRELOAD with path to libsrshim if not using system one
+export SR_POST_CONFIG="$CONFDIR/post/shim_f63.conf"
 # The directory we run the flow test scripts in...
 tstdir="`pwd`"
-
 httpdocroot=`cat $tstdir/.httpdocroot`
 
 if [ ! -d ${httpdocroot} ]; then
@@ -44,10 +44,9 @@ function do_sr_post {
    cat $srpostlstfile    | sort > $srpostlstfile_new
 
    # Obtain file listing delta
-
    rm    /tmp/diffs.txt 2> /dev/null
    touch /tmp/diffs.txt
-   comm -23 $srpostlstfile_new $srpostlstfile_old | sed '/slink$/d' | sed '/moved$/d' | sed '/hlink$/d' > /tmp/diffs.txt
+   comm -23 $srpostlstfile_new $srpostlstfile_old > /tmp/diffs.txt
    srpostdelta=`cat /tmp/diffs.txt`
    # | sed 's/^..//'
    if [ "$srpostdelta" == "" ]; then
@@ -61,21 +60,21 @@ function do_sr_post {
    #cat /tmp/diffs.txt | sed 's/\(.*S P C\)/"\1"/' | sed 's/S P C/S\\ P\\ C/' > /tmp/diffs2.txt
    #cat /tmp/diffs.txt | sed "s/\(.*S P C\)/'\1'/" > /tmp/diffs2.txt
    #cat /tmp/diffs.txt | sed "s/\(.*S P C\)/'\1'/" | sed 's/S P C/S\\ P\\ C/' > /tmp/diffs2.txt
-
+   # | sed '/slink$/d' | sed '/moved$/d' | sed '/hlink$/d' | sed '/tmp$/d'
    cd /
    if [ ! "$SARRA_LIB" ]; then
     sr_post -c test2_f61.conf -p `cat /tmp/diffs.txt`
    else 
     "$SARRA_LIB"/sr_post.py -c "$CONFDIR"/post/test2_f61.conf -p `cat /tmp/diffs.txt`
    fi
+   cd $srpostdir  
    if [ "$SARRAC_LIB" ]; then
-    LD_PRELOAD="$SARRAC_LIB/libsrshim.so.1.0.0"
+    LD_PRELOAD="$SARRAC_LIB/libsrshim.so.1.0.0" cp -p --parents `cat /tmp/diffs.txt`  ${httpdocroot}/posted_by_shim
    else 
-    LD_PRELOAD="libsrshim.so.1.0.0"
+    LD_PRELOAD="libsrshim.so.1.0.0" cp -p --parents `cat /tmp/diffs.txt`  ${httpdocroot}/posted_by_shim
    fi
 
-   cd $srpostdir 
-   cp -p --parents `cat /tmp/diffs.txt`  ${httpdocroot}/posted_by_shim 
+   
    cp -p $srpostlstfile_new $srpostlstfile_old
 
    do_sr_post
