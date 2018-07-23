@@ -1090,7 +1090,7 @@ class sr_config:
         import sys,subprocess
         try:
                 if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5) :
-                        subprocess.check_call(cmd_list)
+                        subprocess.check_call(cmd_list, close_fds=False )
                 else :
                         subprocess.run(cmd_list, check=True, close_fds=False )
 
