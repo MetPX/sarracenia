@@ -86,6 +86,8 @@ Sarracenia has multiple implementations:
 
 - dd_subscribe ( https://github.com/MetPX/sarracenia ) python2 stripped-down download-only client.  The predecessor of Sarracenia. Still compatible.
 
+- PySarra ( https://github.com/JohnTheNerd/PySarra ) a very dumbed-down client for python3, allowing you to abstract away all the complexity.
+
 More implementations are welcome.
 
 Downloading Sarracenia
