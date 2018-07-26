@@ -137,22 +137,22 @@ Pourquoi ne pas simplement utiliser Rsync ?
 Il existe un certain nombre d'outils de réplication d'arbres qui sont largement
 utilisés, pourquoi en inventer un autre ? `RSync <https://rsync.samba.org/>`_, 
 par exemple, est un outil fabuleux, et nous avons Il est fortement recommandé 
-pour de nombreux cas d'utilisation. mais il y a des moments où la Sarracenia peut
+pour de nombreux cas d'utilisation. mais il y a des moments où la Sarracenia peut aller
 72 fois plus rapide que rsync : Étude de cas : `HPC Mirroring Use Case (anglais) <../mirroring_use_case.rst>`_
 
 Rsync et d'autres outils sont basés sur la comparaison (traitant d'une source et d'une destination 
 unique) Sarracénie, bien qu´elle n'utilisent pas la multidiffusion, est orienté vers une livraison 
 à plusieurs récepteurs, en particulier lorsque la source ne sait pas qui sont tous les 
 récepteurs (pub/sub.) La synchronisation rsync est typiquement faite en marchant un à un.
-C'est-à-dire que l'intervalle de synchronisation est intrinsèquement limité à la fréquence 
+L'intervalle de synchronisation est intrinsèquement limité à la fréquence 
 à laquelle on peut traverser (sonder?) l'arbre de fichiers (dans les grands arbres, cela peut être long).
 La Sarracenia évite les promenades dans les arbres de fichiers en demandant
-aux sources de données de calculer les sommes de contrôle une fois pour toutes,
-et de les signaler directement aux lecteurs par des messages, réduisant ainsi 
-les frais généraux de plusieurs ordres de grandeur.  Lsyncd <https://github.com/axkibe/lsyncd>`_ 
+aux sources de données de signaler directement aux lecteurs par des messages, réduisant ainsi 
+les frais généraux de plusieurs ordres de grandeur. Lsyncd <https://github.com/axkibe/lsyncd>`_ 
 est un outil qui exploite les fonctionnalités INOTIFY de Linux. pour atteindre le même genre
 de rapidité de détection the changement, et il pourrait être plus approprié, mais il n'est 
-évidemment pas portable.  Faire faire cela par le système de fichiers est considéré comme 
+évidemment pas portable, et reste très lente en comparaison avec les avis émis directement 
+par les sources. De plus, faire faire cela par le système de fichiers est considéré comme 
 lourd et moins général qu'explicite passage de messages via middleware, qui gère également
 les logs de manière simple.
 
