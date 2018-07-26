@@ -23,16 +23,14 @@ Aperçu
 
 
 Sarracenia expose une arborescence de dossiers accessibles sur le Web (WAF), en utilisant n'importe quel
-serveur HTTP standard (testé avec apache) ou serveur SFTP, avec d'autres types de serveurs tels que
-une option enfichable. Les applications météorologiques sont douces et en temps réel, où les données 
+serveur HTTP standard (testé avec apache) ou serveur SFTP, avec d'autres types de serveurs possible via des modules. Les applications météorologiques sont en temps réel douce (anglais: soft real-time), où les données 
 doivent être transmises le plus rapidement possible jusqu'au prochain saut, et les minutes, peut-être 
 les secondes, comptent. Les technologies web push standard, ATOM, RSS, etc.... sont en fait des 
 technologies de sondage qui, lorsqu'elles sont utilisées dans des applications à faible latence, 
 consomment beaucoup de bande passante et surcharge les serveurs et réseaux inutilement.  Pour ces raisons 
 précises, ces normes stipulent un intervalle minimal de sondage de cinq minutes. La messagerie AMQP (Advanced 
-Message Queueing Protocol) apporte une véritable *push*  aux notifications et rend l'envoi en 
+Message Queueing Protocol) apporte une véritable *push* aux notifications et rend l'envoi en 
 temps réel beaucoup plus efficace.
-
 
 .. image:: f-ddsr-components.gif
 
@@ -61,12 +59,12 @@ stocker et transférer des fichiers entiers, la taille maximale de fichier qui p
 le réseau est maximisé.
 
 Sundew prend en charge une grande variété de formats de fichiers, de 
-protocoles et de conventions.  spécifique à la météorologie en temps réel. 
+protocoles et de conventions spécifique à la météorologie en temps réel. 
 Sarracenia s´enligne plus loin d´applications spécifiques et est plus un 
 moteur de réplication d'arbre impitoyablement générique, qui
 devrait permettre son utilisation dans d'autres domaines. Le client prototype 
 initial, dd_subscribe, en service depuis 2013, a été remplacé en 2016 par 
-l'ensemble Sarracenia entièrement soufflé, avec tous les composants nécessaires
+l'ensemble Sarracenia entièrement refaite, avec tous les composants nécessaires
 à la production ainsi qu'à la consommation d'arbres de fichiers.
 
 On s'attend à ce que la Sarracenia soit une application beaucoup plus simple 
@@ -83,8 +81,8 @@ ou passer à la documentation détaillée `documentation <sr_subscribe.1.rst#doc
 Implémentations
 ---------------
 
-Une partie de Sarracénie définit un message de couche d'application sur AMQP comme un transport.
-La Sarracenia a des implémentations multiples :
+Une partie de Sarracénie définit un message d'application avec AMQP comme transport.
+Il y a des implémentations multiples qui acceptent ses messages:
 
 - Sarracenia elle-même (http://github.com/MetPX/sarracenia) une implémentation de référence complète en Python >= 3.4. Il fonctionne sous Linux, Mac et Windows.
 
