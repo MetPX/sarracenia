@@ -315,7 +315,8 @@ class sr_consumer:
            self.logger.info("declaring queue %s on %s" % (self.queue_name,self.broker.hostname))
            self.msg_queue.build()
 
-    def random_queue_name(self) :
+    #def random_queue_name(self) :
+    def set_queue_name(self):
 
         # queue file : fix it 
 
@@ -347,31 +348,29 @@ class sr_consumer:
            f.close()
            return
         
-        self.queue_name  = self.queue_prefix 
-        self.queue_name += '.'  + self.parent.program_name
+        self.queue_prefix = 'q_'+ self.broker.username
+        self.queue_name   = self.parent.queue_name
 
-        if self.parent.config_name : self.queue_name += '.'  + self.parent.config_name
-        if self.parent.queue_suffix: self.queue_name += '.'  + self.parent.queue_suffix
+        if self.queue_name :
+           if not self.queue_prefix in self.queue_name : 
+               self.logger.warning("non standard queue name %s" % self.queue_name )
+               #self.queue_name = self.queue_prefix + '.'+ self.queue_name
 
-        self.queue_name += '.'  + str(random.randint(0,100000000)).zfill(8)
-        self.queue_name += '.'  + str(random.randint(0,100000000)).zfill(8)
+        else:
+           self.queue_name  = self.queue_prefix 
+           self.queue_name += '.'  + self.parent.program_name
+
+           if self.parent.config_name : self.queue_name += '.'  + self.parent.config_name
+           if self.parent.queue_suffix: self.queue_name += '.'  + self.parent.queue_suffix
+
+           self.queue_name += '.'  + str(random.randint(0,100000000)).zfill(8)
+           self.queue_name += '.'  + str(random.randint(0,100000000)).zfill(8)
 
         f = open(self.queuepath,'w')
         f.write(self.queue_name)
         f.close()
 
-    def set_queue_name(self):
-
-        self.queue_prefix = 'q_'+ self.broker.username
-        self.queue_name   = self.parent.queue_name
-
-        if self.queue_name :
-           if self.queue_prefix in self.queue_name : return
-           self.logger.warning("non standard queue name %s" % self.queue_name )
-           #self.queue_name = self.queue_prefix + '.'+ self.queue_name
-           return
-
-        self.random_queue_name()
+        #self.random_queue_name()
 
     def cleanup(self):
         self.logger.debug("sr_consume cleanup")

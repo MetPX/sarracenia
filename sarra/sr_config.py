@@ -142,6 +142,7 @@ class sr_config:
         # hostname
 
         self.hostname  = socket.getfqdn()
+        self.randid    = "%04x" % random.randint(0,65536)
 
         # logging is interactive at start
 
@@ -1348,6 +1349,7 @@ class sr_config:
               result = result.replace('${PROGRAM}',    self.program_name)
               result = result.replace('${CONFIG}',     config)
               result = result.replace('${BROKER_USER}',buser)
+              result = result.replace('${RANDID}',  self.randid )
 
         if '$' in result :
               elst = []
