@@ -54,16 +54,20 @@ def exec_rabbitmqadmin(url,options,logger=None):
                    if logger : logger.debug("using subprocess.getstatusoutput")
                    return subprocess.getstatusoutput(command)
            else :
-                   if logger : logger.debug("using subprocess.run")
                    cmdlin = command.replace("'",'')
                    cmdlst = cmdlin.split()
+                   if logger : logger.debug("using subprocess.run cmdlst=%s" %  ' '.join(cmdlst) )
                    rclass = subprocess.run(cmdlst,stdout=subprocess.PIPE)
                    if rclass.returncode == 0 : 
                        output =rclass.stdout
                        if type(output) == bytes: output = output.decode("utf-8")
-                   return rclass.returncode,output
+                       return rclass.returncode,output
+                   return rclass.returncode,None
     except :
-           if logger : logger.error("trying run command %s %s" %  ' '.join(cmd_lst) )
+           if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5) :
+                if logger : logger.error("trying run command %s %s" %  command )
+           else :
+                if logger : logger.error("trying run command %s %s" %  ' '.join(cmdlst) )
 
     return 0,None
     
