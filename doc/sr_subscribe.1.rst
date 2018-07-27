@@ -276,6 +276,15 @@ master configs. There is no restriction, any option can be placed in a config fi
 included. The user must be aware that, for many options, several declarations
 means overwriting their values.
 
+Any environment variable, or some built-in variables can also be put on the
+right hand side to be evaluated, surrounded by ${..} The built-in variables are:
+ 
+ - ${BROKER_USER} - the user name for authenticating to the broker (e.g. anonymous)
+ - ${PROGRAM}     - the name of the component (sr_subscribe, sr_shovel, etc...)
+ - ${CONFIG}      - the name of the configuration file being run.
+ - ${HOSTNAME}    - the hostname running the client.
+ - ${RANDID}      - a random id that will be consistent within a single invocation.
+
 Option Order
 ~~~~~~~~~~~~
 
@@ -471,9 +480,8 @@ are held on the server for each subscriber.
 
 By default, components create a queue name that should be unique. The default queue_name
 components create follows :  **q_<brokerUser>.<programName>.<configName>** .
+
 Users can override the default provided that it starts with **q_<brokerUser>**.
-Some variables can also be used within the queue_name like
-**${BROKER_USER},${PROGRAM},${CONFIG},${HOSTNAME}**
 
 durable <boolean> (default: False)
 -~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
