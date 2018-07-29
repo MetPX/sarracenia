@@ -58,11 +58,14 @@ import calendar
 class DOWNLOAD_REWRITE(object): 
 
       import urllib.parse
-
+ 
       def __init__(self,parent):
+
+          parent.declare_option( 'msg_download_threshold' )
           if not hasattr( parent, "msg_download_threshold" ):
              parent.msg_download_threshold = [ "10M" ]
 
+          parent.declare_option( 'msg_download_protocol' )
           if not hasattr( parent, "msg_download_protocol" ):
              parent.msg_download_protocol = [ "http" ]
           

@@ -984,7 +984,7 @@ The  **overwrite**  option,if set to false, avoid unnecessary downloads under th
 
 2- the checksum of the amqp message matched the one of the file.
 
-The default is False (overwrite without checking). 
+The default is False. 
 
 discard <boolean> (default: off)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1605,12 +1605,12 @@ additional transfer protocols.
 
 These transfer protocol scripts should be declared using the **plugin** option.
 Aside the targetted built-in function(s), a module **registered_as** that defines
-a list of protocols that these functions supports.  Example :
+a list of protocols that these functions provide.  Example :
 
 def registered_as(self) :
        return ['ftp','ftps']
 
-Registering in such a way a plugin, if function **do_download** was provided in that plugin
+In the example above, if function **do_download** was provided in that plugin
 then for any download of a message with an ftp or ftps url, it is that function that would be called.
 
 
@@ -1744,7 +1744,7 @@ Some other available variables::
   parent.msg.local_url    :  url for reannouncement
 
 
-See the `Programming Guide <Prog.rst>`_ for more details.
+See the `Programming Guide <Prog.rst>`_ for more information on plugin development.
 
 
 Queue Save/Restore
