@@ -446,7 +446,7 @@ a given routine should be called.
 |                   | return False to stop further processing.           |
 |                   | return True to proceed                             |
 |                   |                                                    |
-|                   | Examples:  part_*[#]_ in the examples directory    |
+|                   | Examples:  part_* [#]_ in the examples directory   |
 |                   | part_clamav_scan returns False when a virus is     |
 |                   | detected, so the downloaded file is not posted.    |
 |                   |                                                    |
@@ -517,7 +517,7 @@ a given routine should be called.
 |                   |                                                    |
 |                   | return value ignored                               |
 |                   |                                                    |
-|                   | example: file_total_save.py[#]_                    |
+|                   | example: file_total_save.py [#]_                   |
 |                   |                                                    |
 +-------------------+----------------------------------------------------+
 |                   | when a component (e.g. sr_subscribe) is stopped.   |
@@ -530,7 +530,7 @@ a given routine should be called.
 +-------------------+----------------------------------------------------+
 |                   | Returns one or more labels, often protocols,       |
 | registered_as     | examples [ 'imap', 'pop', 'imaps', 'pops' ]        |
-|                   | example: samples/poll_email_ingest.py[#]_          |
+|                   | example: samples/poll_email_ingest.py [#]_         |
 +-------------------+----------------------------------------------------+
 
 .. [#] see `smc_download_cp <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/smc_download_cp.py>`_
