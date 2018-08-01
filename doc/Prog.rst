@@ -323,6 +323,10 @@ Some examples:
 *parent.base_dir*
   the base directory for where files are when consuming a post.
 
+*parent.caching*
+  Numerical value indicating the caching lifetime (how old entries should be before they age out.)
+  Value of 0 indicates caching is disabled.
+
 *parent.inflight*
   The current setting of *inflight* (see `Delivery Completion <sr_subscribe.1.rst#Delivery%20Completion%20(inflight)>`_
 
@@ -513,7 +517,7 @@ a given routine should be called.
 |                   |                                                    |
 |                   | return value ignored                               |
 |                   |                                                    |
-|                   | example: file_total_save.py[#]                     |
+|                   | example: file_total_save.py[#]_                    |
 |                   |                                                    |
 +-------------------+----------------------------------------------------+
 |                   | when a component (e.g. sr_subscribe) is stopped.   |
