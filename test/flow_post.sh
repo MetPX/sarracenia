@@ -61,7 +61,7 @@ function do_sr_post {
    #cat /tmp/diffs.txt | sed "s/\(.*S P C\)/'\1'/" > /tmp/diffs2.txt
    #cat /tmp/diffs.txt | sed "s/\(.*S P C\)/'\1'/" | sed 's/S P C/S\\ P\\ C/' > /tmp/diffs2.txt
    # | sed '/slink$/d' | sed '/moved$/d' | sed '/hlink$/d' | sed '/tmp$/d'
-   #cd /
+
    if [ ! "$SARRA_LIB" ]; then
     sr_post -c test2_f61.conf -p `cat /tmp/diffs.txt`
    else 

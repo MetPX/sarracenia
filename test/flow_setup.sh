@@ -112,7 +112,8 @@ done
 
 mkdir -p "$CONFDIR" 2> /dev/null
 
-export SR_CONFIG_EXAMPLES=../sarra/examples
+
+export SR_CONFIG_EXAMPLES=`pwd`/../sarra/examples
 
 flow_confs="`cd ../sarra/examples; ls */*f[0-9][0-9].conf`"
 flow_incs="`cd ../sarra/examples; ls */*f[0-9][0-9].inc`"
@@ -121,13 +122,13 @@ echo "Adding flow test configurations..."
 if [ "$SARRAC_LIB" ]; then
   echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -Po 'sr_c[\w]* add [\w\_\. ]* ;' | sed 's~^~"$SARRAC_LIB"/~' | sh
 else
-  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -Po 'sr_c[\w]* add [\w\_\. ]* ;' | sh 
+  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -Po 'sr_c[\w]* add [\w\_\. ]* ;' | sh
 fi
 
 if [ "$SARRA_LIB" ]; then
   echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -Po 'sr_[^c][\w]* add [\w\_\. ]* ;' | sed 's/ /.py /' | sed 's~^~"$SARRA_LIB"/~' | sh
 else
-  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -Po 'sr_[^c][\w]* add [\w\_\. ]* ;' | sh 
+  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -Po 'sr_[^c][\w]* add [\w\_\. ]* ;' | sh
 fi
 # sr_post "add" doesn't. so a little help:
 
