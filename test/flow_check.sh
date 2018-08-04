@@ -523,12 +523,12 @@ fi
 echo
 NERROR=`grep ERROR "$LOGDIR"/*.log* | grep -v ftps | grep -v retryhost | wc -l`
 if ((NERROR>0)); then
-   fcel=flow_check_errors_logged.txt
+   fcel=$LOGDIR/flow_check_errors_logged.txt
    grep ERROR "$LOGDIR"/*.log* | grep -v ftps | grep -v retryhost | sed 's/:.*ERROR/ \[ERROR/' | uniq -c >$fcel
    result="`wc -l $fcel|cut -d' ' -f1`"
    if [ $result -gt 10 ]; then
        head $fcel
-       echo "More than 10 TYPES OF ERRORS found... for the rest, have a look at `pwd`/$fcel for details"
+       echo "More than 10 TYPES OF ERRORS found... for the rest, have a look at $fcel for details"
    else
        echo TYPE OF ERRORS IN LOG :
        echo
