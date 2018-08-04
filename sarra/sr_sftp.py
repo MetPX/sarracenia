@@ -209,10 +209,14 @@ class sr_sftp(sr_proto):
                 self.ssh = paramiko.SSHClient()
                 # FIXME this should be an option... for security reasons... not forced
                 self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                self.ssh.connect(self.host,self.port,self.user,self.password, \
-                                 pkey=None,key_filename=self.ssh_keyfile,\
-                                 timeout=self.timeout)
-
+                if self.password:
+                   self.ssh.connect(self.host,self.port,self.user,self.password, \
+                                    pkey=None,key_filename=self.ssh_keyfile,\
+                                    timeout=self.timeout,allow_agent=False,look_for_keys=False)
+                else:
+                   self.ssh.connect(self.host,self.port,self.user,self.password, \
+                                    pkey=None,key_filename=self.ssh_keyfile,\
+                                    timeout=self.timeout)
                 #if ssh_keyfile != None :
                 #  key=DSSKey.from_private_key_file(ssh_keyfile,password=None)
 

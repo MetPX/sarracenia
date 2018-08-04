@@ -25,6 +25,7 @@ class Override(object):
 
 
     def __init__(self,parent):
+          parent.declare_option( 'post_override' )
           parent.logger.info('post_override settings: %s' % parent.post_override )
           pass
           

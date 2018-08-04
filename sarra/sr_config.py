@@ -142,6 +142,7 @@ class sr_config:
         # hostname
 
         self.hostname  = socket.getfqdn()
+        self.randid    = "%04x" % random.randint(0,65536)
 
         # logging is interactive at start
 
@@ -770,7 +771,7 @@ class sr_config:
         self.on_watch             = None
 
         self.plugin_times = [ 'destfn_script', 'on_message', 'on_file', 'on_post', 'on_heartbeat', \
-            'on_html_page', 'on_part', 'on_line', 'on_watch', 'do_task', 'do_poll', \
+            'on_html_page', 'on_part', 'on_line', 'on_watch', 'do_poll', \
             'do_download', 'do_get', 'do_put', 'do_send', 'do_task', 'on_report', \
             'on_start', 'on_stop' ]
 
@@ -1093,7 +1094,7 @@ class sr_config:
 
         try:
                 if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5) :
-                        subprocess.check_call(cmd_list)
+                        subprocess.check_call(cmd_list, close_fds=False )
                 else :
                         self.logger.debug("using subprocess.run")
                         if sc_path and cmd_list[0].startswith("sr_cp"):
@@ -1356,6 +1357,7 @@ class sr_config:
               result = result.replace('${PROGRAM}',    self.program_name)
               result = result.replace('${CONFIG}',     config)
               result = result.replace('${BROKER_USER}',buser)
+              result = result.replace('${RANDID}',  self.randid )
 
         if '$' in result :
               elst = []

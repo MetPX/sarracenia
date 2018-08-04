@@ -276,6 +276,15 @@ master configs. There is no restriction, any option can be placed in a config fi
 included. The user must be aware that, for many options, several declarations
 means overwriting their values.
 
+Any environment variable, or some built-in variables can also be put on the
+right hand side to be evaluated, surrounded by ${..} The built-in variables are:
+ 
+ - ${BROKER_USER} - the user name for authenticating to the broker (e.g. anonymous)
+ - ${PROGRAM}     - the name of the component (sr_subscribe, sr_shovel, etc...)
+ - ${CONFIG}      - the name of the configuration file being run.
+ - ${HOSTNAME}    - the hostname running the client.
+ - ${RANDID}      - a random id that will be consistent within a single invocation.
+
 Option Order
 ~~~~~~~~~~~~
 
@@ -471,9 +480,8 @@ are held on the server for each subscriber.
 
 By default, components create a queue name that should be unique. The default queue_name
 components create follows :  **q_<brokerUser>.<programName>.<configName>** .
+
 Users can override the default provided that it starts with **q_<brokerUser>**.
-Some variables can also be used within the queue_name like
-**${BROKER_USER},${PROGRAM},${CONFIG},${HOSTNAME}**
 
 durable <boolean> (default: False)
 -~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -976,7 +984,7 @@ The  **overwrite**  option,if set to false, avoid unnecessary downloads under th
 
 2- the checksum of the amqp message matched the one of the file.
 
-The default is False (overwrite without checking). 
+The default is False. 
 
 discard <boolean> (default: off)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1597,12 +1605,12 @@ additional transfer protocols.
 
 These transfer protocol scripts should be declared using the **plugin** option.
 Aside the targetted built-in function(s), a module **registered_as** that defines
-a list of protocols that these functions supports.  Example :
+a list of protocols that these functions provide.  Example :
 
 def registered_as(self) :
        return ['ftp','ftps']
 
-Registering in such a way a plugin, if function **do_download** was provided in that plugin
+In the example above, if function **do_download** was provided in that plugin
 then for any download of a message with an ftp or ftps url, it is that function that would be called.
 
 
@@ -1736,7 +1744,7 @@ Some other available variables::
   parent.msg.local_url    :  url for reannouncement
 
 
-See the `Programming Guide <Prog.rst>`_ for more details.
+See the `Programming Guide <Prog.rst>`_ for more information on plugin development.
 
 
 Queue Save/Restore
