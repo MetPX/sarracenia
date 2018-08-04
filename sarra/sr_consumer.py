@@ -384,6 +384,9 @@ class sr_consumer:
         if self.report_manage :
            self.hc.exchange_delete(self.report_exchange)
 
+        self.retry.cleanup()
+
+
     def declare(self):
         self.logger.debug("sr_consume declare")
         self.build_connection()
