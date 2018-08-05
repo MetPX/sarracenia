@@ -849,11 +849,12 @@ For example retrieving the following url, with options::
 
 would result in the creation of the directories and the file
 /mylocaldirectory/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
+mirror settings can be changed between directory options.
 
 strip <count|regexp> (default: 0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can modify the mirrored directoties with the **strip** option. 
+You can modify the mirrored directories with the **strip** option. 
 If set to N  (an integer) the first 'N' directories are removed.
 For example ::
 
@@ -872,6 +873,7 @@ from the relative path.  For example if::
    strip  .*?GIF/
 
 Will also result in the file being placed the same location. 
+Note that strip settings can be changed between directory options.
 
 NOTE::
     with **strip**, use of **?** modifier (to prevent regular expression *greediness* ) is often helpful. 
@@ -915,6 +917,7 @@ All date/times in Sarracenia are in UTC.
 
 Refer to *source_from_exchange* for a common example of usage.  Note that any sarracenia
 built-in value takes precedence over a variable of the same name in the environment.
+Note that flatten settings can be changed between directory options.
 
 base_dir <path> (default: /)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

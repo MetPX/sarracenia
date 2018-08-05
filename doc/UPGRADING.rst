@@ -38,6 +38,10 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+*CHANGE*: sr_subscribe strip, mirror, flatten,  options were formerly global ones.
+          Now they are processed in order in the same way as directory options.
+ 
+
 upto 2.18.05b4
 --------------
 
