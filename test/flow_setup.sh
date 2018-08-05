@@ -51,7 +51,6 @@ eval `application_dirs`
 if [ -d $CACHEDIR/log ]; then
    echo "Cleaning logs, just in case"
    rm $(ls "$CACHEDIR"/log/)
-   #rm "$CACHEDIR/log/"*
 fi
 
 if [ ! -f "$CONFDIR"/admin.conf -o ! -f "$CONFDIR"/credentials.conf ]; then

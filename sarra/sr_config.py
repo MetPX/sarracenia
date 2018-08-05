@@ -1012,11 +1012,15 @@ class sr_config:
 
         for mask in self.masks:
             self.logger.debug(mask)
-            pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
+            pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
             self.currentPattern    = pattern
             self.currentDir        = maskDir
             self.currentFileOption = maskFileOption
             self.currentRegexp     = mask_regexp
+            self.mirror = mirror
+            self.strip = strip
+            self.pstrip = pstrip
+            self.flatten = flatten
             if mask_regexp.match(chaine) :
                if not accepting : return False
                return True
@@ -1416,7 +1420,7 @@ class sr_config:
                         n = 3
                      
 
-                     self.masks.append((pattern, self.currentDir, self.currentFileOption, mask_regexp, accepting))
+                     self.masks.append((pattern, self.currentDir, self.currentFileOption, mask_regexp, accepting, self.mirror, self.strip, self.pstrip, self.flatten ))
 
                      if len(words) > 2:
                          self.currentFileOption = save_currentFileOption 

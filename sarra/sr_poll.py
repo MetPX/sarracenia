@@ -139,7 +139,7 @@ class sr_poll(sr_post):
 
         self.pulls   = {}
         for mask in self.masks:
-            pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
+            pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
             self.logger.debug(mask)
             if not maskDir in self.pulls :
                self.pulls[maskDir] = []
@@ -317,7 +317,7 @@ class sr_poll(sr_post):
                    continue
 
                 for mask in self.pulllst :
-                   pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
+                   pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
                    if mask_regexp.match(f):
                        if accepting:
                            matched=True
@@ -449,7 +449,7 @@ class sr_poll(sr_post):
 
         FileOption = None
         for mask in self.pulllst :
-            pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
+            pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
             if mask_regexp.match(remote_file) and accepting :
                FileOption = maskFileOption
 
