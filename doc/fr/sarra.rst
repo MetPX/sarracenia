@@ -9,14 +9,14 @@ Sarracenia
 
 
 **MetPX-Sarracenia** est un moteur de duplication ou de distribution de données qui exploite les technologies standards
-(serveurs de fichiers, serveurs Web et courtiers AMQP_) pour obtenir des messages en temps réel, et la transparence 
-de transferts de fichiers à travers une chaines de serveurs. Alors que dans Sundew, chaque pompe
-est une configuration autonome qui transforme les données de manière complexe, dans Sarracenia, l'application
-à la sources de données établissent une hiérarchie dans l'arborescence des fichiers qui 
+(serveurs de fichiers, serveurs Web et courtiers AMQP_) pour accomplir la livraison de messages en temps réel, et la 
+transparence bout en bout des transferts de fichiers. Alors que dans Sundew chaque pompe
+est une configuration autonome qui transforme les données de manière complexe, dans Sarracenia l'application
+à la source des données établit une hiérarchie dans l'arborescence des fichiers qui 
 se propage à travers n'importe quel nombre de maillons dans la chaîne jusqu'à ce qu'ils arrivent chez un client.
-Le client peut fournir une reconnaissance explicite du fait que se propage à travers le réseau jusqu'à la 
+Le client peut explicitement fournir un accusé-réception qui se propage à travers le réseau, jusqu'à la 
 source. Alors que le transfert de fichier traditionnel est une affaire de point à point où la connaissance 
-est seulement entre chaque segment, dans Sarracenia, l'information circule d'un bout à l'autre dans les deux sens.
+est seulement entre chaque segment, dans Sarracenia l'information circule de bout en bout, dans les deux sens.
 
 Aperçu
 ------
