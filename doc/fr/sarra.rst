@@ -240,19 +240,30 @@ Références et liens
 
 D'autres logiciels, quelque peu similaires, aucun endossement ou jugement ne devrait être tiré de ces liens :
 
-- Manual sur le système global de Telecommunications, de l´OMM : *WMO Manual 386*. le standard pour ce domaine. (Voilà une copie probablement désuète `here <WMO-386.pdf>`_.) Essayez: http://www.wmo.int  pour une version plus à jour.
+ - Manual sur le système global de Telecommunications, de l´OMM : *WMO Manual 386*. le standard pour ce domaine. (Voilà une copie probablement désuète `here <WMO-386.pdf>`_.) Essayez: http://www.wmo.int  pour une version plus à jour.
+ 
 - `Local Data Manager <http://www.unidata.ucar.edu/software/ldm>`_ LDM  protocol américaine populaire dans la dissémination météorologique.
+
 - `Automatic File Distributor  <http://www.dwd.de/AFD>`_ -  Distribution de fichiers automatiquement... Venant de la service Allemend, 
+
 - `Corobor <http://www.corobor.com>`_ - commutateur WMO commercial
+
 - `Netsys  <http://www.netsys.co.za>`_ - commutateur WMO commercial
+
 - `IBLSoft <http://www.iblsoft.com>`_ - commutateur WMO commercial
-- Variété de moteurs de transferts: Standard Networks Move IT DMZ, Softlink B-HUB & FEST, Globalscape EFT Server, Axway XFB, Primeur Spazio, Tumbleweed Secure File Transfer, Messageway.
+
+- Variété de moteurs de transferts: Standard Networks Move IT DMZ, Softlink B-HUB & FEST, 
+  Globalscape EFT Server, Axway XFB, Primeur Spazio, Tumbleweed Secure File Transfer, Messageway.
+
 - `Quantum <https://www.websocket.org/quantum.rst>`_ à propos des sockets web HTML5. Une bonne discussion 
-des raisons pour lesquelles le push web traditionnel est horrible, montrant comment les sockets web 
-peuvent aider. AMQP est une solution de socket pure qui a les mêmes avantages que les 
-webockets pour l'efficacité. Note : KAAZING a écrit la pièce, pas désintéressé.
+  des raisons pour lesquelles le push web traditionnel est horrible, montrant comment les sockets web 
+  peuvent aider. AMQP est une solution de socket pure qui a les mêmes avantages que les 
+  webockets pour l'efficacité. Note : la compagnie derrière KAAZING a écrit la pièce... pas désintéressé.
+
 - `Rsync  <https://rsync.samba.org/>`_ - moteur de transfert.
+
 - `Lsyncd <https://github.com/axkibe/lsyncd>`_ ( Live syncing (Mirror) Daemon. ) moteur de transfert.
+
 - `Zsync <http://zsync.moria.org.uk>`_ ( optimised rsync over HTTP. ) moteur de transfer.
                                                                       
 
