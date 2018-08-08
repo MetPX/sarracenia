@@ -240,7 +240,9 @@ Références et liens
 
 D'autres logiciels, quelque peu similaires, aucun endossement ou jugement ne devrait être tiré de ces liens :
 
- - Manual sur le système global de Telecommunications, de l´OMM : *WMO Manual 386*. le standard pour ce domaine. (Voilà une copie probablement désuète `here <WMO-386.pdf>`_.) Essayez: http://www.wmo.int  pour une version plus à jour.
+- Manual sur le système global de Telecommunications, de l´OMM : *WMO Manual 386*. le standard 
+  pour ce domaine. (Voilà une copie probablement désuète `here <WMO-386.pdf>`_.) 
+  Essayez: http://www.wmo.int  pour une version plus à jour.
  
 - `Local Data Manager <http://www.unidata.ucar.edu/software/ldm>`_ LDM  protocol américaine populaire dans la dissémination météorologique.
 
