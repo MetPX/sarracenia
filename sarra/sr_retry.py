@@ -70,6 +70,16 @@ class sr_retry:
         # performance issue... only do before close
         #os.fsync(self.new_fp)
 
+    def cleanup(self):
+
+        if os.path.exists(self.parent.retry_path):
+            os.unlink(self.parent.retry_path)
+
+        if hasattr(self.parent,'retry_work') : 
+            if os.path.exists(self.parent.retry_work):
+                os.unlink(self.parent.retry_work)
+
+
     def close(self):
         try   : self.heart_fp.close()
         except: pass

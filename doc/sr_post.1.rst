@@ -17,7 +17,7 @@ Publish the Availability of a File to Subcribers
 SYNOPSIS
 ========
 
-**sr_post|sr_cpost** [ *OPTIONS* ][ *-pb|--post_broker broker* ][ *-pbu|--post_base_url url* ] 
+**sr_post|sr_cpost** [ *OPTIONS* ][ *-pb|--post_broker broker* ][ *-pbu|--post_base_url url[,url]...** ] 
 [ *-p|--path ] path1 path2...pathN* ]
 
 DESCRIPTION
@@ -44,13 +44,16 @@ Differences:
 Mandatory Settings
 ------------------
 
-The [*-pbu|--post_base_url url*] option specifies the location 
+The [*-pbu|--post_base_url url,url,...*] option specifies the location 
 subscribers will download the file from.  There is usually one post per file.
 Format of argument to the *post_base_url* option::
 
        [ftp|http|sftp]://[user[:password]@]host[:port]/
        or
        file:
+
+When several urls are given as a comma separated list to *post_base_url*, the
+url´s provided are used round-robin style, to provide a coarse form of load balancing.
 
 The [*-p|--path path1 path2 .. pathN*] option specifies the path of the files
 to be announced. There is usually one post per file.

@@ -142,6 +142,7 @@ class sr_config:
         # hostname
 
         self.hostname  = socket.getfqdn()
+        self.randid    = "%04x" % random.randint(0,65536)
 
         # logging is interactive at start
 
@@ -770,7 +771,7 @@ class sr_config:
         self.on_watch             = None
 
         self.plugin_times = [ 'destfn_script', 'on_message', 'on_file', 'on_post', 'on_heartbeat', \
-            'on_html_page', 'on_part', 'on_line', 'on_watch', 'do_task', 'do_poll', \
+            'on_html_page', 'on_part', 'on_line', 'on_watch', 'do_poll', \
             'do_download', 'do_get', 'do_put', 'do_send', 'do_task', 'on_report', \
             'on_start', 'on_stop' ]
 
@@ -1011,11 +1012,15 @@ class sr_config:
 
         for mask in self.masks:
             self.logger.debug(mask)
-            pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
+            pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
             self.currentPattern    = pattern
             self.currentDir        = maskDir
             self.currentFileOption = maskFileOption
             self.currentRegexp     = mask_regexp
+            self.mirror = mirror
+            self.strip = strip
+            self.pstrip = pstrip
+            self.flatten = flatten
             if mask_regexp.match(chaine) :
                if not accepting : return False
                return True
@@ -1087,14 +1092,22 @@ class sr_config:
         self.run_command([ cmd, path ] )
 
     def run_command(self,cmd_list):
+        sr_path = os.environ.get('SARRA_LIB')
+        sc_path = os.environ.get('SARRAC_LIB')
         import sys,subprocess
+
         try:
                 if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5) :
                         subprocess.check_call(cmd_list, close_fds=False )
                 else :
-                        subprocess.run(cmd_list, check=True, close_fds=False )
-
-        except: self.logger.error("trying run command %s" %  ' '.join(cmd_list) )
+                        self.logger.debug("using subprocess.run")
+                        if sc_path and cmd_list[0].startswith("sr_cp"):
+                          subprocess.run([sc_path+'/'+cmd_list[0]]+cmd_list[1:],check=True)
+                        elif sr_path and cmd_list[0].startswith("sr"):
+                          subprocess.run([sr_path+'/'+cmd_list[0]+'.py']+cmd_list[1:],check=True)
+                        else:
+                          subprocess.run(cmd_list,check=True)
+        except: self.logger.error("trying run command %s %s" %  ' '.join(cmd_list) )
 
     def register_plugins(self):
         self.logger.debug("register_plugins")
@@ -1348,6 +1361,7 @@ class sr_config:
               result = result.replace('${PROGRAM}',    self.program_name)
               result = result.replace('${CONFIG}',     config)
               result = result.replace('${BROKER_USER}',buser)
+              result = result.replace('${RANDID}',  self.randid )
 
         if '$' in result :
               elst = []
@@ -1406,7 +1420,7 @@ class sr_config:
                         n = 3
                      
 
-                     self.masks.append((pattern, self.currentDir, self.currentFileOption, mask_regexp, accepting))
+                     self.masks.append((pattern, self.currentDir, self.currentFileOption, mask_regexp, accepting, self.mirror, self.strip, self.pstrip, self.flatten ))
 
                      if len(words) > 2:
                          self.currentFileOption = save_currentFileOption 

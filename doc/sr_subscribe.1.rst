@@ -276,6 +276,15 @@ master configs. There is no restriction, any option can be placed in a config fi
 included. The user must be aware that, for many options, several declarations
 means overwriting their values.
 
+Any environment variable, or some built-in variables can also be put on the
+right hand side to be evaluated, surrounded by ${..} The built-in variables are:
+ 
+ - ${BROKER_USER} - the user name for authenticating to the broker (e.g. anonymous)
+ - ${PROGRAM}     - the name of the component (sr_subscribe, sr_shovel, etc...)
+ - ${CONFIG}      - the name of the configuration file being run.
+ - ${HOSTNAME}    - the hostname running the client.
+ - ${RANDID}      - a random id that will be consistent within a single invocation.
+
 Option Order
 ~~~~~~~~~~~~
 
@@ -471,9 +480,8 @@ are held on the server for each subscriber.
 
 By default, components create a queue name that should be unique. The default queue_name
 components create follows :  **q_<brokerUser>.<programName>.<configName>** .
+
 Users can override the default provided that it starts with **q_<brokerUser>**.
-Some variables can also be used within the queue_name like
-**${BROKER_USER},${PROGRAM},${CONFIG},${HOSTNAME}**
 
 durable <boolean> (default: False)
 -~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -841,11 +849,12 @@ For example retrieving the following url, with options::
 
 would result in the creation of the directories and the file
 /mylocaldirectory/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
+mirror settings can be changed between directory options.
 
 strip <count|regexp> (default: 0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can modify the mirrored directoties with the **strip** option. 
+You can modify the mirrored directories with the **strip** option. 
 If set to N  (an integer) the first 'N' directories are removed.
 For example ::
 
@@ -864,6 +873,7 @@ from the relative path.  For example if::
    strip  .*?GIF/
 
 Will also result in the file being placed the same location. 
+Note that strip settings can be changed between directory options.
 
 NOTE::
     with **strip**, use of **?** modifier (to prevent regular expression *greediness* ) is often helpful. 
@@ -907,6 +917,7 @@ All date/times in Sarracenia are in UTC.
 
 Refer to *source_from_exchange* for a common example of usage.  Note that any sarracenia
 built-in value takes precedence over a variable of the same name in the environment.
+Note that flatten settings can be changed between directory options.
 
 base_dir <path> (default: /)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -976,7 +987,7 @@ The  **overwrite**  option,if set to false, avoid unnecessary downloads under th
 
 2- the checksum of the amqp message matched the one of the file.
 
-The default is False (overwrite without checking). 
+The default is False. 
 
 discard <boolean> (default: off)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1597,12 +1608,12 @@ additional transfer protocols.
 
 These transfer protocol scripts should be declared using the **plugin** option.
 Aside the targetted built-in function(s), a module **registered_as** that defines
-a list of protocols that these functions supports.  Example :
+a list of protocols that these functions provide.  Example :
 
 def registered_as(self) :
        return ['ftp','ftps']
 
-Registering in such a way a plugin, if function **do_download** was provided in that plugin
+In the example above, if function **do_download** was provided in that plugin
 then for any download of a message with an ftp or ftps url, it is that function that would be called.
 
 
@@ -1736,7 +1747,7 @@ Some other available variables::
   parent.msg.local_url    :  url for reannouncement
 
 
-See the `Programming Guide <Prog.rst>`_ for more details.
+See the `Programming Guide <Prog.rst>`_ for more information on plugin development.
 
 
 Queue Save/Restore

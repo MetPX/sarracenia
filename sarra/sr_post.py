@@ -603,9 +603,13 @@ class sr_post(sr_instances):
 
         # loop on chunks
 
-        i = 0
-        #self.logger.debug("block_count = %d" % block_count)
-        while i < block_count :
+        blocks = list(range(0,block_count))
+        if self.randomize:
+            random.shuffle(blocks)
+            #blocks = [9,1,3,2,0,5,6,4,8,7] # test with specific sequence
+            self.logger.info('Randomize set. Sending partitions in the following order: %s' %blocks)
+
+        for i in blocks: 
 
               # setting sumalgo for that part
 
@@ -673,10 +677,9 @@ class sr_post(sr_instances):
               # post message
 
               ok = self.__on_post__()
+              if not ok:
+                self.logger.error('Something went wrong while posting: %s' %self.msg.notice[2])
 
-              # increment count
-
-              i = i + 1
 
         return True
 

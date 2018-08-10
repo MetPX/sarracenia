@@ -2,8 +2,14 @@
 
 # make sure libsrshim is off
 
-export SR_POST_CONFIG=""
-export LD_PRELOAD=""
+# if running local sarra/sarrac versions, specify path to them with 
+# $SARRA_LIB and $SARRAC_LIB, and $SR_POST_CONFIG 
+# contains the path to shim_f63.conf (usually in $CONFDIR/cpost/
+# shimpost.conf, but specify if otherwise)
+# defaults:
+#export SR_POST_CONFIG="$CONFDIR/post/shim_f63.conf"
+#export SARRA_LIB=""
+#export SARRAC_LIB=""
 
 
 export TESTDIR="`pwd`"
@@ -11,6 +17,15 @@ export TESTDIR="`pwd`"
 testdocroot="$HOME/sarra_devdocroot"
 testhost=localhost
 sftpuser=`whoami`
+
+
+if [[ ":$SARRA_LIB/../:" != *":$PYTHONPATH:"* ]]; then
+    if [ "${PYTHONPATH:${#PYTHONPATH}-1}" == ":" ]; then
+        export PYTHONPATH="$PYTHONPATH$SARRA_LIB/../"
+    else 
+        export PYTHONPATH="$PYTHONPATH:$SARRA_LIB/../"
+    fi
+fi
 
 function application_dirs {
 python3 << EOF
@@ -34,8 +49,8 @@ EOF
 eval `application_dirs`
 
 if [ -d $CACHEDIR/log ]; then
-   echo "cleaning logs, just in case"
-   rm $CACHEDIR/log/*
+   echo "Cleaning logs, just in case"
+   rm $(ls "$CACHEDIR"/log/)
 fi
 
 if [ ! -f "$CONFDIR"/admin.conf -o ! -f "$CONFDIR"/credentials.conf ]; then
@@ -88,7 +103,7 @@ fi
 
 lo="`netstat -an | grep '127.0.0.1:8000'|wc -l`"
 while [ ${lo} -gt 0 ]; do
-   echo "waiting for $lo leftover sockets to clean themselves up from last run."
+   echo "Waiting for $lo leftover sockets to clean themselves up from last run."
    sleep 10 
    lo="`netstat -an | grep '127.0.0.1:8000'|wc -l`"
    sleep 5 
@@ -96,14 +111,24 @@ done
 
 mkdir -p "$CONFDIR" 2> /dev/null
 
-export SR_CONFIG_EXAMPLES=../sarra/examples
+
+export SR_CONFIG_EXAMPLES=`pwd`/../sarra/examples
 
 flow_confs="`cd ../sarra/examples; ls */*f[0-9][0-9].conf`"
 flow_incs="`cd ../sarra/examples; ls */*f[0-9][0-9].inc`"
 
 echo "Adding flow test configurations..."
-echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/^/ sr_/' | sed 's+/+ add +g' | sh 
+if [ "$SARRAC_LIB" ]; then
+  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -Po 'sr_c[\w]* add [\w\_\. ]* ;' | sed 's~^~"$SARRAC_LIB"/~' | sh
+else
+  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -Po 'sr_c[\w]* add [\w\_\. ]* ;' | sh
+fi
 
+if [ "$SARRA_LIB" ]; then
+  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -Po 'sr_[^c][\w]* add [\w\_\. ]* ;' | sed 's/ /.py /' | sed 's~^~"$SARRA_LIB"/~' | sh
+else
+  echo $flow_incs $flow_confs | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed 's+/+ add +g' | grep -Po 'sr_[^c][\w]* add [\w\_\. ]* ;' | sh
+fi
 # sr_post "add" doesn't. so a little help:
 
 mkdir ${CONFDIR}/post 2> /dev/null
@@ -112,8 +137,6 @@ cp ../sarra/examples/post/*f[0-9][0-9].conf ${CONFDIR}/post
 
 passed_checks=0
 count_of_checks=0
-
-queued_msgcnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv $query |awk '(NR == 2) { print $3; };'`"
 
 function qchk {
 #
@@ -171,12 +194,16 @@ count_of_checks=$((${count_of_checks}+1))
 # ensure users have exchanges:
 
 echo "Initializing with sr_audit... takes a minute or two"
-sr_audit --users foreground >$LOGDIR/sr_audit_f00.log 2>&1
+if [ ! "$SARRA_LIB" ]; then
+    sr_audit --users foreground >$LOGDIR/sr_audit_f00.log 2>&1
+else
+    "$SARRA_LIB"/sr_audit.py --users foreground >$LOGDIR/sr_audit_f00.log 2>&1
+fi
 
 adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; exit }; ' "$CONFDIR"/credentials.conf`"
 
 qchk 20 "queues existing after 1st audit" "show overview" 
-xchk "exchanges for flow test created."
+xchk "exchanges for flow test created"
 
 if [ "$1" = "declare" ]; then
    exit 0
@@ -220,14 +247,14 @@ nbr_fail=0
 count_of_checks=$((${count_of_checks}+1))
 
 for t in sr_util sr_credentials sr_config sr_cache sr_retry sr_consumer sr_http sr_sftp sr_instances sr_pattern_match; do
-    echo "======= testing "${t}  >>  ${testdocroot}/unit_tests.log
+    echo "======= Testing :"${t}  >>  ${testdocroot}/unit_tests.log
     nbr_test=$(( ${nbr_test}+1 ))
-	    ${TESTDIR}/unit_tests/${t}_unit_test.py >> ${testdocroot}/unit_tests.log 2>&1
-	    status=${?}
+      ${TESTDIR}/unit_tests/${t}_unit_test.py >> ${testdocroot}/unit_tests.log 2>&1
+      status=${?}
             if [ $nbr_fail -ne 0 ]; then
-               echo "======= testing "${t}" Failed"
+               echo "======= Testing "${t}": Failed"
             else
-               echo "======= testing "${t}" Succeeded"
+               echo "======= Testing "${t}": Succeeded"
             fi
 
     nbr_fail=$(( ${nbr_fail}+${status} ))
@@ -260,8 +287,12 @@ echo $MAX_MESSAGES
 fi
 
 echo "Starting up all components (sr start)..."
-sr start >$LOGDIR/sr_start_f00.log 2>&1
-echo "done."
+if [ ! "$SARRA_LIB" ]; then
+    sr start >$LOGDIR/sr_start_f00.log 2>&1
+else
+    "$SARRA_LIB"/sr.py start >$LOGDIR/sr_start_f00.log 2>&1
+fi
+echo "Done."
 
 #sr_subscribe stop fclean
 #sr_subscribe cleanup fclean
@@ -278,7 +309,7 @@ else
 fi
 
 if [ $passed_checks = $count_of_checks ]; then
-   echo "Overall PASSED $passed_checks/$count_of_checks checks passed!"
+   echo "Overall: PASSED $passed_checks/$count_of_checks checks passed!"
 else
    echo "Overall: FAILED $passed_checks/$count_of_checks passed."
 fi
