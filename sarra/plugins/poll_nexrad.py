@@ -124,8 +124,8 @@ class AWSPoller(object):
 			parent.to_clusters = 'ALL'
 			parent.msg.new_file = keys[i] 
 			parent.msg.partstr = '1,%s,1,0,0' % keysizes[i]
-			parent.msg.sumflg = 'd'
-			parent.msg.sumstr = '0,0'
+			parent.msg.sumflg = 'z'
+			parent.msg.sumstr = 'z,d'
 			parent.post(parent.exchange,parent.msg.new_baseurl,parent.msg.new_file,parent.to_clusters,parent.msg.partstr,parent.msg.sumstr)
 
 			i+=1
