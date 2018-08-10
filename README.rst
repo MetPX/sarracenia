@@ -16,7 +16,7 @@
 |existing standard technologies (web              |technologies standards (tel que les services      |
 |servers and the `AMQP <http://www.amqp.org>`_    |web et le courtier de messages AMQP) afin         |
 |brokers) to achieve real-time message delivery   |d'effectuer des transferts de données en          |
-|and end to end transparency in file transfers.   |temps réel tout en permettant une transparence    |
+|and end-to-end transparency in file transfers.   |temps réel tout en permettant une transparence    |
 |Data sources establish a directory structure     |de bout en bout. Alors que chaque commutateur     |
 |which is carried through any number of           |Sundew est unique en soit, offrant des            |
 |intervening pumps until they arrive at a         |configurations sur mesure et permutations de      |
@@ -25,10 +25,10 @@
 |the network to the source. Whereas traditional   |données, tel que proposée et organisée par la     |
 |file switching is a point-to-point affair        |source jusqu'à destination. Le client peut fournir|
 |where knowledge is only between each segment,    |des accusés de réception qui se propagent         |
-|in Sarracenia, information flows from end to     |à travers tous les noeuds de la chaîne,           |
+|in Sarracenia, information flows from end-to-    |à travers tous les noeuds de la chaîne,           |
 |end in both directions.                          |en sens inverse jusqu'à la source. Tandis qu'un   |
 |                                                 |commutateur traditionnel échange les données      |
-|At it's heart, sarracenia exposes a tree of      |de point à point, Sarracenia permet le passage    |
+|At its heart, Sarracenia exposes a tree of       |de point à point, Sarracenia permet le passage    |
 |web accessible folders (WAF), using any standard |des données d'un bout à l'autre du réseau,        |
 |HTTP server (tested with apache).  Weather       |tant dans une direction que dans l'autre.         |
 |applications are soft real-time, where data      |                                                  |
@@ -37,7 +37,7 @@
 |count. The standard web push technologies, ATOM, |sur la toile ("Web Accessible Folders"). Le       |
 |RSS, etc... are actually polling technologies    |temps de latence est une composante névralgique   |
 |that when used in low latency applications       |des applications météo: les minutes, et parfois   |
-|consume a great deal of bandwidth an overhead.   |les secondes, sont comptées. Les technologies     |
+|consume a great deal of bandwidth and overhead.  |les secondes, sont comptées. Les technologies     |
 |For exactly these reasons, those standards       |standards, telles que ATOM et RSS, sont des       |
 |stipulate a minimum polling interval of five     |technologies qui consomment beaucoup de bande     |
 |minutes. Advanced Message Queueing Protocol      |passante et de ressouces lorsqu'elles doivent     |
@@ -50,7 +50,7 @@
 |                                                 |livraison d'annonces de nouveaux produits.        |
 |                                                 |                                                  |
 +-------------------------------------------------+--------------------------------------------------+
-|An initiave of Shared Services Canada            |Une initiative de Services partagés Canada        |
+|An initiative of Shared Services Canada          |Une initiative de Services partagés Canada        |
 |http://ssc-spc.gc.ca in support of internal      |https://ssc-spc.gc.ca pour appuyer les opérations |
 |needs of the Government of Canada                |du gouvernement du Canada                         |
 |                                                 |                                                  |
