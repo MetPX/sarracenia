@@ -18,7 +18,7 @@ Publier la disponibilité d'un fichier aux abonnés.
 SYNOPSIS
 ========
 
-**sr_post|sr_cpost** [ *OPTIONS* ][ *-pb|--post_broker broker* ][ *-pbu|--post_base_url url* ][ *-pbu|--post_base_url url* ]
+**sr_post|sr_cpost** [ *OPTIONS* ][ *-pb|--post_broker broker* ][ *-pbu|--post_base_url url[,url]...* ][ *-pbu|--post_base_url url* ]
 [ *-p|--path ] path1 path1 path2...pathN* ]
 
 DESCRIPTION
@@ -43,13 +43,16 @@ Différences :
    il transforme sr_cpost en un démon qui fonctionne comme `sr_watch(1) <sr_watch.1.rst>`_.
 
 
-L'option [*-pbu|--post_base_url url*] spécifie l'emplacement des fichiers sur le serveur
+L'option [*-pbu|--post_base_url url,url,...*] spécifie l'emplacement des fichiers sur le serveur
 à publier pour les abonnés.  Il y a généralement un avis par fichier. le Format de l'argument 
 de l'option *post_base_url* est naturellement un *url* ::
 
        ftp|http|http|sftp]://[user[:password]@]host[:port]/ /[:port
        ou
        fichier :
+
+Quand plusieurs url sont offerts, et il y a plusieurs fichiers à annoncer, on va choisir un 
+url parmi la liste pour chaque fichier annoncer afin de faire un genre d´équilibrage de charge.
 
 L'option[*-p|--path path1 path2. pathN*] spécifie le chemin des fichiers local au serveur.
 Il y a généralement un message par fichier.  Format de l'argument de l'option *path*::
