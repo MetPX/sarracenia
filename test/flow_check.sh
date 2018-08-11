@@ -411,11 +411,14 @@ if [ $cmd == 'stopped' ]; then
 
    done
 
+   #queued_msgcnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues | awk ' BEGIN {t=0;} (NR > 1) { t+=$(23); }; END { print t; };'`"
    queued_msgcnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv show overview |awk '(NR == 2) { print $3; };'`"
+
    while [ $queued_msgcnt -gt 0 ]; do
         printf "Still %4s messages flowing, waiting...\r" "$queued_msgcnt"
         sleep 10
         queued_msgcnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv show overview |awk '(NR == 2) { print $3; };'`"
+        #queued_msgcnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues | awk ' BEGIN {t=0;} (NR > 1) { t+=$(23); }; END { print t; };'`"
    done
 
    ack="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.ack_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"

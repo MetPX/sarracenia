@@ -222,7 +222,12 @@ echo "Starting trivial ftp server on: $testdocroot, saving pid in .ftpserverpid"
 # note, on older OS, pyftpdlib might need to be installed as a python2 extension.
 # 
 # note, defaults to port 2121 so devs can start it.
-python3 -m pyftpdlib >trivialftpserver.log 2>&1 &
+
+if [ "`lsb_release -rs`" = "14.04"  ]; then
+   python -m pyftpdlib >trivialftpserver.log 2>&1 &
+else
+   python3 -m pyftpdlib >trivialftpserver.log 2>&1 &
+fi
 ftpserverpid=$!
 
 sleep 3
