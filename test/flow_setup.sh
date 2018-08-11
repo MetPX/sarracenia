@@ -146,7 +146,8 @@ function qchk {
 # 2 - Description string.
 # 3 - query
 #
-queue_cnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv $3 |awk '(NR == 2) { print $4 };'`"
+
+queue_cnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues | awk ' BEGIN {t=0;} (NR > 1)  && /_f[0-9][0-9]/ { t+=1; }; END { print t; };'`"
 
 if [ "$queue_cnt" = $1 ]; then
     echo "OK, as expected $1 $2" 
@@ -168,12 +169,10 @@ function xchk {
 #
 exnow=${LOGDIR}/flow_setup.exchanges.txt
 exex=flow_lists/exchanges_expected.txt
-rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list exchanges | grep -v '^name' | sort >$exnow
+rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list exchanges | grep -v '^name' | grep -v amq\. | grep -v direct| sort >$exnow
 
 x_cnt="`wc -l <$exnow`"
 expected_cnt="`wc -l <$exex`"
-# remove column header...
-x_cnt=$((${x_cnt}-1))
 
 if [ "$x_cnt" = $expected_cnt ]; then
     echo "OK, as expected $expected_cnt $1" 
@@ -202,7 +201,7 @@ fi
 
 adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; exit }; ' "$CONFDIR"/credentials.conf`"
 
-qchk 20 "queues existing after 1st audit" "show overview" 
+qchk 20 "queues existing after 1st audit" 
 xchk "exchanges for flow test created"
 
 if [ "$1" = "declare" ]; then
@@ -222,7 +221,12 @@ echo "Starting trivial ftp server on: $testdocroot, saving pid in .ftpserverpid"
 # note, on older OS, pyftpdlib might need to be installed as a python2 extension.
 # 
 # note, defaults to port 2121 so devs can start it.
-python3 -m pyftpdlib >trivialftpserver.log 2>&1 &
+
+if [ "`lsb_release -rs`" = "14.04"  ]; then
+   python -m pyftpdlib >trivialftpserver.log 2>&1 &
+else
+   python3 -m pyftpdlib >trivialftpserver.log 2>&1 &
+fi
 ftpserverpid=$!
 
 sleep 3

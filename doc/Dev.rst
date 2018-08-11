@@ -240,6 +240,7 @@ With credentials stored for localhost::
      feeder amqp://tfeed@localhost/
      declare source tsource
      declare subscriber tsub
+     declare subscriber anonymous
      EOT
 
      sudo rabbitmqctl delete_user guest
