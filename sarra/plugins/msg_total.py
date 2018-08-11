@@ -12,6 +12,7 @@
   msg_total_interval -- how often the total is updated. (default: 5)
   msg_total_maxlag  -- if the message flow indicates that messages are 'late', emit warnings.
                     (default 60)
+  msg_total_count -- how many messages to process before stopping the program.
 
   dependency:
      requires python3-humanize module.
@@ -33,6 +34,13 @@ class Msg_Total(object):
 
         parent.declare_option('msg_total_interval')
         parent.declare_option('msg_total_maxlag')
+        parent.declare_option('msg_total_count')
+
+        if hasattr(parent,'msg_total_count'):
+            if type(parent.msg_total_count) is list:
+                parent.msg_total_count=int(parent.msg_total_count[0])
+        else:
+            parent.msg_total_count=0
 
         if hasattr(parent,'msg_total_maxlag'):
             if type(parent.msg_total_maxlag) is list:
@@ -68,6 +76,7 @@ class Msg_Total(object):
         import calendar
         import humanize
         import datetime
+        import sys
 
         if (parent.msg_total_msgcount == 0): 
             logger.info("msg_total: 0 messages received: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"  )
@@ -102,6 +111,9 @@ class Msg_Total(object):
                humanize.naturaltime(datetime.timedelta(seconds=lag)))
 
         parent.msg_total_last = now
+
+        if ( parent.msg_total_count > 0 ) and (parent.msg_total_msgcount >= parent.msg_total_count) :
+           os._exit(0)
 
         return True
 
