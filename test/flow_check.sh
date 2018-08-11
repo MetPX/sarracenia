@@ -350,7 +350,7 @@ while [ $totsarra -lt $smin ]; do
    sleep 10
    countall
 
-   printf  "Sample now: %6d Content_checks:%4s Missed_dispositions:%d\r"  "$totsarra" "$audit_state" "$missed_dispositions"
+   printf  "Sample now: %6d Missed_dispositions:%d\r"  "$totsarra" "$missed_dispositions"
 
 done
 printf  "\nSufficient!\n" 
@@ -411,15 +411,14 @@ if [ $cmd == 'stopped' ]; then
 
    done
 
-   #queued_msgcnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues | awk ' BEGIN {t=0;} (NR > 1) { t+=$(23); }; END { print t; };'`"
-   queued_msgcnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv show overview |awk '(NR == 2) { print $3; };'`"
-
+   #queued_msgcnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues | awk ' BEGIN {t=0;} (NR > 1)  && /_f[0-9][0-9]/ { t+=$(23); }; END { print t; };'`"
+   queued_msgcnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues | awk ' BEGIN {t=0;} (NR > 1)  && /_f[0-9][0-9]/ { t+=$2; }; END { print t; };'`"
    while [ $queued_msgcnt -gt 0 ]; do
         printf "Still %4s messages flowing, waiting...\r" "$queued_msgcnt"
         sleep 10
-        queued_msgcnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv show overview |awk '(NR == 2) { print $3; };'`"
-        #queued_msgcnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues | awk ' BEGIN {t=0;} (NR > 1) { t+=$(23); }; END { print t; };'`"
+        queued_msgcnt="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues | awk ' BEGIN {t=0;} (NR > 1)  && /_f[0-9][0-9]/ { t+=$2; }; END { print t; };'`"
    done
+   echo "No messages left in queues..."
 
    ack="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.ack_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
    inc="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.incoming_dektails.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
@@ -437,7 +436,7 @@ if [ $cmd == 'stopped' ]; then
 
 fi
 
-sleep 60
+#sleep 60
 
 countall
 
