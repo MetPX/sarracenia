@@ -420,7 +420,7 @@ if [ $cmd == 'stopped' ]; then
    done
    echo "No messages left in queues..."
 
-echo ¨FIXME: skipping rabbitmqadmin rate stuff that doesn´t work at all... need some plugin, but no idea which¨
+echo "FIXME: skipping rabbitmqadmin rate stuff that doesn´t work at all... need some plugin, but no idea which"
 # 2018 - following stuff does not work on m
 #   ack="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.ack_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
 #   inc="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.incoming_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
@@ -482,17 +482,17 @@ printf "WARNING Sumary:\n\n"
 
 NWARNING=`grep WARNING "$LOGDIR"/*.log* | grep -v ftps | grep -v retryhost | wc -l`
 if ((NWARNING>0)); then
-   fcel=$LOGDIR/flow_check_errors_logged.txt
-   grep WARNING "$LOGDIR"/*.log* | grep -v ftps | grep -v retryhost | sed 's/:.*WARNING/ \[WARNING/' | uniq -c >$fcel
-   result="`wc -l $fcel|cut -d' ' -f1`"
+   fcwl=$LOGDIR/flow_check_warnings_logged.txt
+   grep WARNING "$LOGDIR"/*.log* | grep -v ftps | grep -v retryhost | sed 's/:.*WARNING/ \[WARNING/' | uniq -c >$fcwl
+   result="`wc -l $fcwl|cut -d' ' -f1`"
    if [ $result -gt 10 ]; then
-       head $fcel
+       head $fcwl
        echo
-       echo "More than 10 TYPES OF WARNINGS found... for the rest, have a look at $fcel for details"
+       echo "More than 10 TYPES OF WARNINGS found... for the rest, have a look at $fcwl for details"
    else
        echo TYPE OF WARNINGS IN LOG :
        echo
-       cat $fcel
+       cat $fcwl
    fi
 fi
 if ((NWARNING==0)); then
@@ -508,9 +508,9 @@ if [ "${totshovel2}" -gt "${totshovel1}" ]; then
 else 
    maxshovel=${totshovel1}
 fi
-printf "\tMaximum of the shovels is: ${maxshovel}\n\n"
+printf "\n\tMaximum of the shovels is: ${maxshovel}\n\n"
 
-printf "TEST RESULTS\n\n"
+printf "\t\tTEST RESULTS\n\n"
 
 tot2shov=$(( ${totshovel1} + ${totshovel2} ))
 t4=$(( ${totfilet}*4 ))
