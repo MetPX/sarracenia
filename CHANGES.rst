@@ -10,7 +10,7 @@ lists all changes between versions.
 *           flow_setup fixed so it works with 14.04 (use python2 for pyftpdlib )
 *
 *    new    added dd_ping.conf to do easy test of broker function to examples.
-*           
+*           flow_check.sh now does a spot check, flow_limit.sh limits the length of the test.
 
 **2.18.08b1**
 
