@@ -420,25 +420,84 @@ if [ $cmd == 'stopped' ]; then
    done
    echo "No messages left in queues..."
 
-   ack="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.ack_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
-   inc="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.incoming_dektails.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
-   del="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.deliver_dektails.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
-   message_rates=$((ack+inc+del))
-   while [ $message_rates -gt 0 ]; do
-        echo "Still $message_rates live message rates, waiting..."
-        sleep 10
-        ack="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.ack_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
-        inc="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.incoming_dektails.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
-        del="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.deliver_dektails.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
-        message_rates=$((ack+inc+del))
-        ack="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.ack_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
-   done
-
+echo ¨FIXME: skipping rabbitmqadmin rate stuff that doesn´t work at all... need some plugin, but no idea which¨
+# 2018 - following stuff does not work on m
+#   ack="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.ack_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
+#   inc="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.incoming_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
+#   del="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.deliver_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
+# 
+#   if [ "$ack" -a "$inc" -a "$del" ]; then
+#       message_rates=$((ack+inc+del))
+#       while [ $message_rates -gt 0 ]; do
+#            echo "Still $message_rates live message rates, waiting..."
+#            sleep 10
+#            ack="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.ack_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
+#            inc="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.incoming_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
+#            del="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.deliver_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
+#            message_rates=$((ack+inc+del))
+#            ack="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.ack_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
+#       done
+#   fi
 fi
 
 #sleep 60
 
 countall
+
+# MG shows retries
+
+echo
+if [ ! "$SARRA_LIB" ]; then
+   echo NB retries for sr_subscribe t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f30*.log* | wc -l`
+   echo NB retries for sr_sender    `grep Retrying "$LOGDIR"/sr_sender*.log* | wc -l`
+else
+   echo NB retries for "$SARRA_LIB"/sr_subscribe.py t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f30*.log* | wc -l`
+   echo NB retries for "$SARRA_LIB"/sr_sender.py    `grep Retrying "$LOGDIR"/sr_sender*.log* | wc -l`
+fi
+
+
+printf "ERROR Sumary:\n\n"
+
+NERROR=`grep ERROR "$LOGDIR"/*.log* | grep -v ftps | grep -v retryhost | wc -l`
+if ((NERROR>0)); then
+   fcel=$LOGDIR/flow_check_errors_logged.txt
+   grep ERROR "$LOGDIR"/*.log* | grep -v ftps | grep -v retryhost | sed 's/:.*ERROR/ \[ERROR/' | uniq -c >$fcel
+   result="`wc -l $fcel|cut -d' ' -f1`"
+   if [ $result -gt 10 ]; then
+       head $fcel
+       echo
+       echo "More than 10 TYPES OF ERRORS found... for the rest, have a look at $fcel for details"
+   else
+       echo TYPE OF ERRORS IN LOG :
+       echo
+       cat $fcel
+   fi
+fi
+
+if ((NERROR==0)); then
+   echo NO ERRORS IN LOGS
+fi
+
+printf "WARNING Sumary:\n\n"
+
+NWARNING=`grep WARNING "$LOGDIR"/*.log* | grep -v ftps | grep -v retryhost | wc -l`
+if ((NWARNING>0)); then
+   fcel=$LOGDIR/flow_check_errors_logged.txt
+   grep WARNING "$LOGDIR"/*.log* | grep -v ftps | grep -v retryhost | sed 's/:.*WARNING/ \[WARNING/' | uniq -c >$fcel
+   result="`wc -l $fcel|cut -d' ' -f1`"
+   if [ $result -gt 10 ]; then
+       head $fcel
+       echo
+       echo "More than 10 TYPES OF WARNINGS found... for the rest, have a look at $fcel for details"
+   else
+       echo TYPE OF WARNINGS IN LOG :
+       echo
+       cat $fcel
+   fi
+fi
+if ((NWARNING==0)); then
+   echo NO WARNINGS IN LOGS
+fi
 
 
 passedno=0
@@ -451,7 +510,7 @@ else
 fi
 printf "\tMaximum of the shovels is: ${maxshovel}\n\n"
 
-
+printf "TEST RESULTS\n\n"
 
 tot2shov=$(( ${totshovel1} + ${totshovel2} ))
 t4=$(( ${totfilet}*4 ))
@@ -505,39 +564,11 @@ fi
 
 calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed (sample size: $totsarra) !"
 
-# MG shows retries
-
-echo
-if [ ! "$SARRA_LIB" ]; then
-   echo NB retries for sr_subscribe t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f30*.log* | wc -l`
-   echo NB retries for sr_sender    `grep Retrying "$LOGDIR"/sr_sender*.log* | wc -l`
-else
-   echo NB retries for "$SARRA_LIB"/sr_subscribe.py t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f30*.log* | wc -l`
-   echo NB retries for "$SARRA_LIB"/sr_sender.py    `grep Retrying "$LOGDIR"/sr_sender*.log* | wc -l`
-fi
-
-# MG shows errors in logs if any
+# PAS missed_dispositions means definite Sarra bug, very serious.
 
 if (("${missed_dispositions}">0)); then 
    echo "Please review $LOGDIR/missed_dispositions.report" 
 fi
 
 echo
-NERROR=`grep ERROR "$LOGDIR"/*.log* | grep -v ftps | grep -v retryhost | wc -l`
-if ((NERROR>0)); then
-   fcel=$LOGDIR/flow_check_errors_logged.txt
-   grep ERROR "$LOGDIR"/*.log* | grep -v ftps | grep -v retryhost | sed 's/:.*ERROR/ \[ERROR/' | uniq -c >$fcel
-   result="`wc -l $fcel|cut -d' ' -f1`"
-   if [ $result -gt 10 ]; then
-       head $fcel
-       echo "More than 10 TYPES OF ERRORS found... for the rest, have a look at $fcel for details"
-   else
-       echo TYPE OF ERRORS IN LOG :
-       echo
-       cat $fcel
-   fi
-fi
-if ((NERROR==0)); then
-   echo NO ERRORS IN LOGS
-fi
 
