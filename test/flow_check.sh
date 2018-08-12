@@ -8,6 +8,12 @@ countall
 
 printf "\n\n\t\tDownload Performance Summaries:\n\n"
 
+for i in t_dd1 t_dd2 ;
+do
+   printf "\n\t$i\n\n"
+   grep 'msg_total' "$LOGDIR"/sr_shovel_${i}_*.log* | sed 's/:/ /' | sort  -k 2,3 | tail -10
+done
+
 for i in cdnld_f21 t_f30 cfile_f44 u_sftp_f60 ftp_f70 q_f71 ;
 do
    printf "\n\t$i\n\n"
