@@ -444,6 +444,18 @@ fi
 
 countall
 
+# PAS performance summaries
+
+printf "\n\n\t\tDownload Performance Summaries:\n\n"
+
+for i in cdnld_f21 t_f30 cfile_f44 u_sftp_f60 ftp_f70 q_f71 cclean_f91 ;
+do
+   printf "\n\t$i\n\n"
+   grep 'file_total' "$LOGDIR"/sr_subscribe_${i}_*.log* | sed 's/:/ /' | sort  -k 2,3 | tail -10
+done
+
+echo
+
 # MG shows retries
 
 echo
