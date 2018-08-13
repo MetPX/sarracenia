@@ -3,10 +3,13 @@
 """
   msg_total
   
-  give a running total of the messages going through an exchange.
+  give a running total of the messages received from a broker.
   as this is an on_msg 
 
-  accumulate the number of messages and the bytes they represent over a period of time.
+  NOTE: BYTE COUNT DOES NOT MATCH msg_log:
+  accumulate the number of messages and the bytes transferred in the messages over a period of time.
+  the bytes represent the message traffic, not the file traffic, msg_log reports file byte counts.
+
   options:
 
   msg_total_interval -- how often the total is updated. (default: 5)
@@ -90,10 +93,8 @@ class Msg_Total(object):
         lag=now-msgtime
         parent.msg_total_lag = parent.msg_total_lag + lag
 
-        # message with sum 'R' and 'L' have no partstr
-        if parent.msg.partstr :
-          (method,psize,ptot,prem,pno) = msg.partstr.split(',')
-          parent.msg_total_bytecount   = parent.msg_total_bytecount + int(psize)
+        # guess the size of the message payload, ignoring overheads.
+        parent.msg_total_bytecount += ( len(parent.msg.exchange) + len(parent.msg.topic) + len(parent.msg.notice) + len(parent.msg.hdrstr) )
         
         #not time to report yet.
         if parent.msg_total_interval > now-parent.msg_total_last :
