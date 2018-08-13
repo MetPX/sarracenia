@@ -36,10 +36,10 @@ fi
 
 printf "ERROR Sumary:\n\n"
 
-NERROR=`grep ERROR "$LOGDIR"/*.log* | grep -v ftps | grep -v retryhost | wc -l`
+NERROR=`grep ERROR "$LOGDIR"/*_f[0-9[0-9]_*.log* | grep -v ftps | grep -v retryhost | wc -l`
 if ((NERROR>0)); then
    fcel=$LOGDIR/flow_check_errors_logged.txt
-   grep ERROR "$LOGDIR"/*.log* | grep -v ftps | grep -v retryhost | sed 's/:.*ERROR/ \[ERROR/' | uniq -c >$fcel
+   grep ERROR "$LOGDIR"/*_f[0-9[0-9]_*.log* | grep -v ftps | grep -v retryhost | sed 's/:.*ERROR/ \[ERROR/' | uniq -c >$fcel
    result="`wc -l $fcel|cut -d' ' -f1`"
    if [ $result -gt 10 ]; then
        head $fcel
@@ -58,10 +58,10 @@ fi
 
 printf "WARNING Sumary:\n\n"
 
-NWARNING=`grep WARNING "$LOGDIR"/*.log* | grep -v ftps | grep -v retryhost | wc -l`
+NWARNING=`grep WARNING "$LOGDIR"/*_f[0-9[0-9]_*.log* | grep -v ftps | grep -v retryhost | wc -l`
 if ((NWARNING>0)); then
    fcwl=$LOGDIR/flow_check_warnings_logged.txt
-   grep WARNING "$LOGDIR"/*.log* | grep -v ftps | grep -v retryhost | sed 's/:.*WARNING/ \[WARNING/' | uniq -c >$fcwl
+   grep WARNING "$LOGDIR"/*_f[0-9[0-9]_*.log* | grep -v ftps | grep -v retryhost | sed 's/:.*WARNING/ \[WARNING/' | uniq -c >$fcwl
    result="`wc -l $fcwl|cut -d' ' -f1`"
    if [ $result -gt 10 ]; then
        head $fcwl
