@@ -6,18 +6,24 @@ countall
 
 # PAS performance summaries
 
-printf "\n\n\t\tDownload Performance Summaries:\n\n"
+printf "\n\n\t\tDownload Performance Summaries:\n\n\tLOGDIR=$LOGDIR"
+
 
 for i in t_dd1 t_dd2 ;
 do
    printf "\n\t$i\n\n"
-   grep 'msg_total' "$LOGDIR"/sr_shovel_${i}_*.log* | sed 's/:/ /' | sort  -k 2,3 | tail -10
+   #grep 'msg_total' "$LOGDIR"/sr_shovel_${i}_*.log* | sed 's/:/ /' | sort  -k 2,3 | tail -10
+   for j in "$LOGDIR"/sr_shovel_${i}_*.log* ; do
+       echo "`basename $j` `grep 'msg_total' $j | tail -1`"
+   done
 done
 
 for i in cdnld_f21 t_f30 cfile_f44 u_sftp_f60 ftp_f70 q_f71 ;
 do
    printf "\n\t$i\n\n"
-   grep 'file_total' "$LOGDIR"/sr_subscribe_${i}_*.log* | sed 's/:/ /' | sort  -k 2,3 | tail -10
+   for j in "$LOGDIR"/sr_subscribe_${i}_*.log* ; do
+       echo "`basename $j` `grep 'file_total' $j | tail -1`"
+   done
 done
 
 echo
@@ -39,7 +45,7 @@ printf "ERROR Sumary:\n\n"
 NERROR=`grep ERROR "$LOGDIR"/*_f[0-9][0-9]_*.log* | grep -v ftps | grep -v retryhost | wc -l`
 if ((NERROR>0)); then
    fcel=$LOGDIR/flow_check_errors_logged.txt
-   grep ERROR "$LOGDIR"/*_f[0-9][0-9]_*.log* | grep -v ftps | grep -v retryhost | sed 's/:.*ERROR/ \[ERROR/' | uniq -c >$fcel
+   grep ERROR "$LOGDIR"/*_f[0-9][0-9]_*.log* | sed "s+${LOGDIR}/++" | grep -v ftps | grep -v retryhost | sed 's/:.*ERROR/ \[ERROR/' | uniq -c >$fcel
    result="`wc -l $fcel|cut -d' ' -f1`"
    if [ $result -gt 10 ]; then
        head $fcel
@@ -61,7 +67,7 @@ printf "WARNING Sumary:\n\n"
 NWARNING=`grep WARNING "$LOGDIR"/*_f[0-9][0-9]_*.log* | grep -v ftps | grep -v retryhost | wc -l`
 if ((NWARNING>0)); then
    fcwl=$LOGDIR/flow_check_warnings_logged.txt
-   grep WARNING "$LOGDIR"/*_f[0-9][0-9]_*.log* | grep -v ftps | grep -v retryhost | grep -v truncating | sed 's/:.*WARNING/ \[WARNING/' | uniq -c >$fcwl
+   grep WARNING "$LOGDIR"/*_f[0-9][0-9]_*.log* | sed "s+${LOGDIR}/++" | grep -v ftps | grep -v retryhost | grep -v truncating | sed 's/:.*WARNING/ \[WARNING/' | uniq -c >$fcwl
    result="`wc -l $fcwl|cut -d' ' -f1`"
    if [ $result -gt 10 ]; then
        head $fcwl
@@ -115,7 +121,7 @@ calcres ${totpost1} ${totshimpost1} "sr_post test2_f61\t (${totpost1}) should ha
 echo "                 | py infos   routing |"
 calcres ${totpropagated} ${totwinpost} "sr_shovel pclean_f90 (${totpropagated}) should have the same number of watched items winnows' post\t (${totwinpost})"
 calcres ${totremoved}    ${totwinpost} "sr_shovel pclean_f92 (${totremoved}) should have the same number of removed items winnows' post\t (${totwinpost})"
-zerowanted "${missed_dispositions}" "messages received that we don't know what happened."
+zerowanted "${missed_dispositions}" "${maxshovel}" "messages received that we don't know what happened."
 calcres ${totshortened} ${totfilet} \
    "count of truncated headers (${totshortened}) and subscribed messages (${totmsgt}) should have about the same number of items"
 

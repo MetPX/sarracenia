@@ -144,14 +144,20 @@ function zerowanted {
    # compare first and second totals, and report agreement if within 10% of one another.
    # emit description based on agreement.  Arguments:
    # 1 - value obtained 
-   # 2 - test description string.
+   # 2 - samplesize
+   # 3 - test description string.
 
    tno=$((${tno}+1))
 
+   if [ "${2}" -eq 0 ]; then
+      printf "test %2d FAILURE: no data! ${3}\n" ${tno}
+      return
+   fi
+
    if [ "${1}" -gt 0 ]; then
-      printf "test %2d FAILURE: ${1} ${2}\n" ${tno}
+      printf "test %2d FAILURE: ${1} ${3}\n" ${tno}
    else
-      printf "test %2d success: ${1} ${2}\n" ${tno}
+      printf "test %2d success: ${1} ${3}\n" ${tno}
       passedno=$((${passedno}+1))
    fi
 }
