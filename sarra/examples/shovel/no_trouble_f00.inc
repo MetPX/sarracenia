@@ -12,10 +12,13 @@ reject .*/model_giops/.*
 reject .*/GIF/.*
 
 # reject moving targets (file overwritten in a matter of secs)
-reject .*citypage.*
-reject .*marine_weather.*
-reject .*hydrometric.*
-reject .*/hourly/.*
-reject .*/today/.*
-reject .*/yesterday/.*
-reject .*swob.xml.*
+# this problem eliminated 2018/08 with introduction of SSL broker
+# (and 1 minute delay of feeds for these files.)
+#
+#reject .*citypage.*
+#reject .*marine_weather.*
+#reject .*hydrometric.*
+#reject .*/hourly/.*
+#reject .*/today/.*
+#reject .*/yesterday/.*
+#reject .*swob.xml.*
