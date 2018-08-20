@@ -38,6 +38,12 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+*CHANGE*: sr_poll ls now takes the [8:]th index instead of the -1 index to be 
+          the name, resolves bug with names containing spaces. If SFTP/FTP server 
+          being polled is not an Open BSD variant, an *ls_file_index* might need 
+          to be specified in the poll config to get previous behaviour. See sr\_
+          poll.1.rst for more info.
+
 2.18.08b1
 ---------
 
