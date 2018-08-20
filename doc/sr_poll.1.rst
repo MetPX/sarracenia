@@ -200,9 +200,19 @@ The **on_line** plugin gives scripts that can read each line of an 'ls' on the p
 site, to interpret it further. It returns True if the line should be further processed,
 or False to reject it.  By default, there is a line_mode plugin included with the package
 which implements the comparison of file permissions on the remote server against
-the **chmod** mask. The program assumes that the very last word of the ls line is the
-filename. This might not be the case if filenames contain spaces. For this purpose, 
-the option **ls_file_index** can be used to set the first word where the filename starts.
+the **chmod** mask. The program assumes that the 8th index to the end of the line will 
+contain the filename, for example for the line::
+
+	drwxr-xr-x  2 aayla-secura root     4096 Jul 24 13:32 name with spaces
+
+it would take the name to be 'name with spaces'. If the SFTP/FTP server being connected to
+does not use the standard Open BSD version of ls and the name of the entry begins at a 
+different index, the option **ls_file_index** must be used. For example, in the case a Debian unstable
+derivative is used on the server and an ls line looks like this::
+
+	drwx------  2 ahsoka-tano root     4096 2018-08-20 11:44 name with spaces
+	
+**ls_file_index 7** should be used.
 
 If the poll fetches using the http protocol, the 'ls' like entries must be derived from
 an html page. The default plugin **html_page** provided with the package, gives an idea of

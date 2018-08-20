@@ -373,13 +373,17 @@ class sr_sftp(sr_proto):
         alarm_cancel()
         for index in range(len(dir_attr)):
             attr = dir_attr[index]
+            try:
+                fil = attr.filename
+            except:
+                fil = ''
             line = attr.__str__()
-            self.line_callback(line)
+            self.line_callback(fil,line)
         #self.logger.debug("sr_sftp ls = %s" % self.entries )
         return self.entries
 
     # line_callback: ls[filename] = 'stripped_file_description'
-    def line_callback(self,iline):
+    def line_callback(self,ifil,iline):
         #self.logger.debug("sr_sftp line_callback %s" % iline)
 
         oline  = iline
@@ -393,7 +397,10 @@ class sr_sftp(sr_proto):
             if p == ''  : continue
             opart2.append(p)
 
-        fil  = opart2[-1]
+        if ifil:
+            fil = ifil
+        else:
+            fil = ' '.join(opart2[8:])
         if not self.parent.ls_file_index in [-1,len(opart2)-1] : fil =  ' '.join(opart2[self.parent.ls_file_index:])
         line = ' '.join(opart2)
 

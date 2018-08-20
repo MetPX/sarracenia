@@ -322,7 +322,7 @@ class sr_ftp(sr_proto):
             if p == ''  : continue
             opart2.append(p)
 
-        fil  = opart2[-1]
+        fil  = ' '.join(opart2[8:])
         if not self.parent.ls_file_index in [-1,len(opart2)-1] : fil =  ' '.join(opart2[self.parent.ls_file_index:])
         line = ' '.join(opart2)
 
