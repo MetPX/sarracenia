@@ -35,6 +35,7 @@
 
 import logging,os,psutil,signal,subprocess,sys
 from sys import platform as _platform
+from pathlib import PureWindowsPath
 
 if sys.hexversion > 0x03030000 :
    from shutil import copyfile,get_terminal_size
@@ -355,8 +356,7 @@ class sr_instances(sr_config):
         if plugin: sub_dir = 'plugins'
         else     : sub_dir = self.program_dir
 
-        if sub_dir in usr_cfg: def_fil = self.user_config_dir + os.sep + usr_cfg
-        else                 : def_fil = self.user_config_dir + os.sep + sub_dir + os.sep + usr_cfg
+        def_fil = self.user_config_dir + os.sep + sub_dir + os.sep + PureWindowsPath(usr_cfg).name
 
         if self.config_found : def_fil = self.user_config
 
@@ -374,7 +374,7 @@ class sr_instances(sr_config):
                 except : pass
 
              if not usr_fil:
-                f  = self.find_conf_file('/'+usr_cfg)
+                f  = self.find_conf_file(os.sep + sub_dir + os.sep + usr_cfg)
                 if f and 'examples' in f : usr_fil = f
 
              if not usr_fil or not os.path.isfile(usr_fil):
