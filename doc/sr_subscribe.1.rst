@@ -1032,14 +1032,14 @@ suppress_duplicates <off|on|999> (default: off)
 
 When **suppress_duplicates** (also **cache** ) is set to a non-zero time interval, each new message
 is compared against ones received within that interval, to see if it is a duplicate. 
-Duplicate are not processed further. What is a duplicate? A file with the same name (including 
+Duplicates are not processed further. What is a duplicate? A file with the same name (including 
 parts header) and checksum. Every *hearbeat* interval, a cleanup process looks for files in the 
 cache that have not been referenced in **cache** seconds, and deletes them, in order to keep 
 the cache size limited. Different settings are appropriate for different use cases.
 
-A raw integer interval is in seconds, if the suffix m,h,d,w
-are used, then the interval is in minutes, hours, days, or weeks. After the interval expires
-the contents are dropped, so duplicates separate by a large enough interval will get through.
+A raw integer interval is in seconds, if the suffix m,h,d, or w are used, then the interval 
+is in minutes, hours, days, or weeks. After the interval expires the contents are 
+dropped, so duplicates separated by a large enough interval will get through.
 A value of 1d (day) or 1w (week) can be appropriate. 
 
 **Use of the cache is incompatible with the default *parts 0* strategy**, one must specify an 
