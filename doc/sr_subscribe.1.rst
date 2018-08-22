@@ -493,7 +493,9 @@ expire <duration> (default: 5m  == five minutes. RECOMMEND OVERRIDING)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The  **expire**  option is expressed as a duration... it sets how long should live
-a queue without connections. A raw integer is expressed in seconds, if the suffix m,h.d,w
+a queue without connections. 
+
+A raw integer is expressed in seconds, if the suffix m,h,d,w
 are used, then the interval is in minutes, hours, days, or weeks. After the queue expires,
 the contents are dropped, and so gaps in the download data flow can arise.  A value of
 1d (day) or 1w (week) can be appropriate to avoid data loss. It depends on how long
@@ -1028,12 +1030,17 @@ the list of on_heartbeat plugins. By default, it prints a log message every hear
 suppress_duplicates <off|on|999> (default: off)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When **suppress_duplicates** (also **cache** ) is set to a non-zero value, each new message
-is compared against previous ones received, to see if it is a duplicate. If the message is 
-considered a duplicate, it is skipped. What is a duplicate? A file with the same name (including 
+When **suppress_duplicates** (also **cache** ) is set to a non-zero time interval, each new message
+is compared against ones received within that interval, to see if it is a duplicate. 
+Duplicate are not processed further. What is a duplicate? A file with the same name (including 
 parts header) and checksum. Every *hearbeat* interval, a cleanup process looks for files in the 
 cache that have not been referenced in **cache** seconds, and deletes them, in order to keep 
 the cache size limited. Different settings are appropriate for different use cases.
+
+A raw integer interval is in seconds, if the suffix m,h,d,w
+are used, then the interval is in minutes, hours, days, or weeks. After the interval expires
+the contents are dropped, so duplicates separate by a large enough interval will get through.
+A value of 1d (day) or 1w (week) can be appropriate. 
 
 **Use of the cache is incompatible with the default *parts 0* strategy**, one must specify an 
 alternate strategy.  One must use either a fixed blocksize, or always never partition files. 
@@ -1182,8 +1189,6 @@ Frequent Configuration Errors
 
 
 
-
-
 PERIODIC PROCESSING
 ===================
 
@@ -1191,15 +1196,23 @@ Most processing occurs on receipt of a message, but there is some periodic maint
 work that happens every *heartbeat* (default is 5 minutes.)  Evey heartbeat, all of the
 configured *on_heartbeat* plugins are run. By default there are three present:
 
- * heartbeat_log - prints "heartbeat" in the log.
- * heartbeat_cache - ages out old entries in the cache, to minimize its size.
- * heartbeat_memory - checks the process memory usage, and restart if too big.
- * heartbeat_pulse - confirms that connectivity with brokers is still good. Restores if needed.
+ * hb_log - prints "heartbeat" in the log.
+ * hb_cache - ages out old entries in the cache, to minimize its size.
+ * hb_memory - checks the process memory usage, and restart if too big.
+ * hb_pulse - confirms that connectivity with brokers is still good. Restores if needed.
+ * hb_sanity - runs sanity check.
 
 The log will contain messages from all three plugins every heartbeat interval, and
 if additional periodic processing is needed, the user can configure addition
 plugins to run with the *on_heartbeat* option. 
 
+sanity_log_dead <interval> (default: 1.5*heartbeat)
+---------------------------------------------------
+
+The **sanity_log_dead** option sets how long to consider too long before restarting
+a component.
+
+suppress_duplicates <off|on|999> (default: off)
 ERROR RECOVERY
 ==============
 

@@ -258,12 +258,12 @@ common settings, and methods of specifying them.
 [--suppress_duplicates|-sd|-nd|--no_duplicates|--cache on|off|999]
 ------------------------------------------------------------------
 
-  Avoid posting duplicates. When posting directories, this option caches
-  what was posted and will post only files (or parts of files) that were new
-  when invoked again. 
+  Avoid posting duplicates by comparing each file to those seen during the
+  *suppress_duplicates* interval. When posting directories, will cause
+  *sr_post* post only files (or parts of files) that were new when invoked again. 
  
-  Over time the number of files in the cache can grow too large, and so it is cleaned out of
-  old entries.  The default lifetime of a cache entry is five minutes (300 seconds). This
+  Over time, the number of files in the cache can grow too large, and so it is cleaned out of
+  old entries. The default lifetime of a cache entry is five minutes (300 seconds). This
   lifetime can be overridden with a time interval as argument ( the 999 above ).
 
   If duplicate suppression is in use,  one should ensure that a fixed **blocksize** is
