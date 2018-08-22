@@ -233,7 +233,9 @@ class sr_sftp(sr_proto):
                 self.connected   = True
                 self.sftp        = sftp
 
-                alarm_cancel()
+                self.init_ls()
+
+                #alarm_cancel()
                 return True
 
         except:
@@ -363,6 +365,21 @@ class sr_sftp(sr_proto):
 
         self.batch       = 0
 
+    # init_ls
+    def init_ls(self):
+        self.logger.debug("sr_sftp init_ls")
+        dir_fils = self.sftp.listdir()
+        self.logger.debug("sr_sftp listdir(): %s" % dir_fils)
+        if dir_fils:
+            dir_attr = self.sftp.listdir_attr()
+            alarm_cancel()
+            for index in range(len(dir_fils)):
+                attr = dir_attr[index]
+                line = attr.__str__()
+                fil = dir_fils[index]
+                self.ls_file_index(fil,line)
+        self.logger.debug("sr_sftp file_index: %s" % self.file_index)
+
     # ls
     def ls(self):
         self.logger.debug("sr_sftp ls")
@@ -373,17 +390,13 @@ class sr_sftp(sr_proto):
         alarm_cancel()
         for index in range(len(dir_attr)):
             attr = dir_attr[index]
-            try:
-                fil = attr.filename
-            except:
-                fil = ''
             line = attr.__str__()
-            self.line_callback(fil,line)
+            self.line_callback(line)
         #self.logger.debug("sr_sftp ls = %s" % self.entries )
         return self.entries
 
     # line_callback: ls[filename] = 'stripped_file_description'
-    def line_callback(self,ifil,iline):
+    def line_callback(self,iline):
         #self.logger.debug("sr_sftp line_callback %s" % iline)
 
         oline  = iline
@@ -396,15 +409,33 @@ class sr_sftp(sr_proto):
         for p in opart1 :
             if p == ''  : continue
             opart2.append(p)
-
-        if ifil:
-            fil = ifil
-        else:
-            fil = ' '.join(opart2[8:])
+        # else case is in the event of unlikely race condition
+        if hasattr(self, 'file_index'): fil = ' '.join(opart2[self.file_index:])
+        else: fil = ' '.join(opart2[8:])
+        # next line is for backwards compatibility only
         if not self.parent.ls_file_index in [-1,len(opart2)-1] : fil =  ' '.join(opart2[self.parent.ls_file_index:])
         line = ' '.join(opart2)
 
         self.entries[fil] = line
+
+    # ls_file_index
+    def ls_file_index(self,ifil,iline):
+        oline = iline
+        oline = oline.strip('\n')
+        oline  = oline.strip()
+        oline  = oline.replace('\t',' ')
+        opart1 = oline.split(' ')
+        opart2 = []
+
+        for p in opart1 :
+            if p == ''  : continue
+            opart2.append(p)
+
+        try:
+            file_index = opart2.index(ifil)
+            self.file_index = file_index
+        except:
+            pass
 
     # mkdir
     def mkdir(self, remote_dir):
