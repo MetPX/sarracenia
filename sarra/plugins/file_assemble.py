@@ -2,19 +2,14 @@
 
 """
 
-File_Assemble: This plugin is used by sr_watch. Gets triggered by on_post when a file arrives
-				It checks the file name then finds all the other part files in the directory,
-				if all are present and it hasn't already been assembled, then it calls sr_assemble 
+File_Assemble: This plugin is used by sr_watch. Gets triggered by on_part when a file arrives
+				then it calls the assembly code from sr_file 
 
 Usage: in an sr_watch configuration file, you need:
-		broker <ampq://user@server>
-		post_exchange: <exchange>
 		path <path of directory to watch>
-		post_base_url file:/ 
-		on_post /path-to-plugin/file_assemble.py
-		accept .Part
-		suppress_duplicates on -- doesn't seem to disable the cache
-
+		on_part /usr/lib/python3/dist-packages/sarra/plugins/file_assemble.py
+		accept *.Part
+		accept_unmatch False # Makes it only acccept the pattern above
 """
 
 class File_Assemble(object):
