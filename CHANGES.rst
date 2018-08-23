@@ -4,6 +4,27 @@
 
 lists all changes between versions.
 
+**git repo**
+
+* bugfix    flow_setup was failing tests on rabbitmq server 3.7.7 (though it still worked.)
+*           flow_setup fixed so it works with 14.04 (use python2 for pyftpdlib )
+*
+*    new    added dd_ping.conf to do easy test of broker function to examples.
+*           flow_check.sh now does a spot check, flow_limit.sh limits the length of the test.
+
+**2.18.08b1**
+
+* BUG       claims to be 2.18.07b3 (missed commit of changing that.)
+* bugfix    issue #76 sftp login passwords broken when any keys present. (from Marie!)
+*           updated configuration for ECCC RDPS (from Sandrine.)
+*           close_fds=false for older python to fix flow_test on ubuntu 14.04.
+*
+*    new    NEXRAD AWS polling (from Marie!)
+*           more plugin documentation. 
+*           dd.weather.gc.ca polling migrated to amqps.
+*           catalogued two contributed implementations (Thanks Canberk & Tanner)
+
+
 **2.18.07b3**
 
 * bugfix     regression for subprocess api change @ V3.5

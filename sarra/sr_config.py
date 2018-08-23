@@ -142,6 +142,7 @@ class sr_config:
         # hostname
 
         self.hostname  = socket.getfqdn()
+        self.randid    = "%04x" % random.randint(0,65536)
 
         # logging is interactive at start
 
@@ -240,8 +241,8 @@ class sr_config:
         self.logger.info( "\tsuppress_duplicates=%s retry_mode=%s retry_ttl=%sms" % ( self.caching, self.retry_mode, self.retry_ttl ) )
         self.logger.info( "\texpire=%sms reset=%s message_ttl=%s prefetch=%s accept_unmatch=%s delete=%s" % \
            ( self.expire, self.reset, self.message_ttl, self.prefetch, self.accept_unmatch, self.delete ) )
-        self.logger.info( "\theartbeat=%s default_mode=%03o default_mode_dir=%03o default_mode_log=%03o discard=%s durable=%s" % \
-           ( self.heartbeat, self.chmod, self.chmod_dir, self.chmod_log, self.discard, self.durable ) )
+        self.logger.info( "\theartbeat=%s sanity_log_dead=%s default_mode=%03o default_mode_dir=%03o default_mode_log=%03o discard=%s durable=%s" % \
+           ( self.heartbeat, self.sanity_log_dead, self.chmod, self.chmod_dir, self.chmod_log, self.discard, self.durable ) )
         self.logger.info( "\tpreserve_mode=%s preserve_time=%s realpath_post=%s base_dir=%s follow_symlinks=%s" % \
            ( self.preserve_mode, self.preserve_time, self.realpath_post, self.base_dir, self.follow_symlinks ) )
         self.logger.info( "\tmirror=%s flatten=%s realpath_post=%s strip=%s base_dir=%s report_back=%s" % \
@@ -770,7 +771,7 @@ class sr_config:
         self.on_watch             = None
 
         self.plugin_times = [ 'destfn_script', 'on_message', 'on_file', 'on_post', 'on_heartbeat', \
-            'on_html_page', 'on_part', 'on_line', 'on_watch', 'do_task', 'do_poll', \
+            'on_html_page', 'on_part', 'on_line', 'on_watch', 'do_poll', \
             'do_download', 'do_get', 'do_put', 'do_send', 'do_task', 'on_report', \
             'on_start', 'on_stop' ]
 
@@ -1011,11 +1012,15 @@ class sr_config:
 
         for mask in self.masks:
             self.logger.debug(mask)
-            pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
+            pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
             self.currentPattern    = pattern
             self.currentDir        = maskDir
             self.currentFileOption = maskFileOption
             self.currentRegexp     = mask_regexp
+            self.mirror = mirror
+            self.strip = strip
+            self.pstrip = pstrip
+            self.flatten = flatten
             if mask_regexp.match(chaine) :
                if not accepting : return False
                return True
@@ -1087,14 +1092,22 @@ class sr_config:
         self.run_command([ cmd, path ] )
 
     def run_command(self,cmd_list):
+        sr_path = os.environ.get('SARRA_LIB')
+        sc_path = os.environ.get('SARRAC_LIB')
         import sys,subprocess
+
         try:
                 if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5) :
-                        subprocess.check_call(cmd_list)
+                        subprocess.check_call(cmd_list, close_fds=False )
                 else :
-                        subprocess.run(cmd_list, check=True, close_fds=False )
-
-        except: self.logger.error("trying run command %s" %  ' '.join(cmd_list) )
+                        self.logger.debug("using subprocess.run")
+                        if sc_path and cmd_list[0].startswith("sr_cp"):
+                          subprocess.run([sc_path+'/'+cmd_list[0]]+cmd_list[1:],check=True)
+                        elif sr_path and cmd_list[0].startswith("sr"):
+                          subprocess.run([sr_path+'/'+cmd_list[0]+'.py']+cmd_list[1:],check=True)
+                        else:
+                          subprocess.run(cmd_list,check=True)
+        except: self.logger.error("trying run command %s %s" %  ' '.join(cmd_list) )
 
     def register_plugins(self):
         self.logger.debug("register_plugins")
@@ -1348,6 +1361,7 @@ class sr_config:
               result = result.replace('${PROGRAM}',    self.program_name)
               result = result.replace('${CONFIG}',     config)
               result = result.replace('${BROKER_USER}',buser)
+              result = result.replace('${RANDID}',  self.randid )
 
         if '$' in result :
               elst = []
@@ -1406,7 +1420,7 @@ class sr_config:
                         n = 3
                      
 
-                     self.masks.append((pattern, self.currentDir, self.currentFileOption, mask_regexp, accepting))
+                     self.masks.append((pattern, self.currentDir, self.currentFileOption, mask_regexp, accepting, self.mirror, self.strip, self.pstrip, self.flatten ))
 
                      if len(words) > 2:
                          self.currentFileOption = save_currentFileOption 
@@ -2165,8 +2179,10 @@ class sr_config:
                      if words0 in [ 'role' ]:
                         self.logger.warning("role option deprecated, please replace with 'declare'" )
 
-                     if item in [ 'source' , 'subscriber' ]:
+                     if item in [ 'source' , 'subscriber', 'subscribe' ]:
                         roles  = item
+                        if item == 'subscribe' :
+                           roles += 'r'
                         user   = words2
                         self.users[user] = roles
                      elif item in [ 'exchange' ]:
@@ -2174,6 +2190,9 @@ class sr_config:
                      elif item in [ 'env', 'envvar', 'var', 'value' ]:
                         name, value = words2.split('=')
                         os.environ[ name ] = value
+                     else:
+                        self.logger.error("declare not understood: %s %s" % ( item, words2 ) )
+ 
                      n = 3
 
                 elif words0 in ['sanity_log_dead','sld'] :   # FIXME ... to document

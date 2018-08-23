@@ -3,6 +3,14 @@
 export SR_POST_CONFIG=""
 export LD_PRELOAD=""
 
+if [[ ":$SARRA_LIB/../:" != *":$PYTHONPATH:"* ]]; then
+    if [ "${PYTHONPATH:${#PYTHONPATH}-1}" == ":" ]; then
+        export PYTHONPATH="$PYTHONPATH$SARRA_LIB/../"
+    else 
+        export PYTHONPATH="$PYTHONPATH:$SARRA_LIB/../"
+    fi
+fi
+
 function application_dirs {
 python3 << EOF
 import appdirs
@@ -46,15 +54,29 @@ function wait_dir_to_be_the_same {
 # sr_post initial start
 # MIRROR TEST
 
-sr_cpost stop veille_f34 > /dev/null 2>&1
-sr_cpost cleanup veille_f34 > /dev/null 2>&1
-rm "$LOGDIR"/sr_cpost_veille_f34*.log  2>&1
-sr_cpost setup veille_f34 > /dev/null 2>&1
+if [ ! "$SARRAC_LIB" ]; then
+    sr_cpost stop veille_f34 > /dev/null 2>&1
+    sr_cpost cleanup veille_f34 > /dev/null 2>&1
+    rm "$LOGDIR"/sr_cpost_veille_f34*.log  2>&1
+    sr_cpost setup veille_f34 > /dev/null 2>&1
+else
+    "$SARRAC_LIB"/sr_cpost.py stop veille_f34 > /dev/null 2>&1
+    "$SARRAC_LIB"/sr_cpost.py cleanup veille_f34 > /dev/null 2>&1
+    rm "$LOGDIR"/sr_cpost_veille_f34*.log  2>&1
+    "$SARRAC_LIB"/sr_cpost.py setup veille_f34 > /dev/null 2>&1
+fi
 
-sr_subscribe stop cfile_f44 > /dev/null 2>&1
-sr_subscribe cleanup cfile_f44 > /dev/null 2>&1
-rm "$LOGDIR"/sr_subscribe_cfile_f44*.log  2>&1
-sr_subscribe setup cfile_f44 > /dev/null 2>&1
+if [ ! "$SARRA_LIB" ]; then 
+    sr_subscribe stop cfile_f44 > /dev/null 2>&1
+    sr_subscribe cleanup cfile_f44 > /dev/null 2>&1
+    rm "$LOGDIR"/sr_subscribe_cfile_f44*.log  2>&1
+    sr_subscribe setup cfile_f44 > /dev/null 2>&1
+else
+    "$SARRA_LIB"/sr_subscribe.py stop cfile_f44 > /dev/null 2>&1
+    "$SARRA_LIB"/sr_subscribe.py cleanup cfile_f44 > /dev/null 2>&1
+    rm "$LOGDIR"/sr_subscribe_cfile_f44*.log  2>&1
+    "$SARRA_LIB"/sr_subscribe.py setup cfile_f44 > /dev/null 2>&1
+fi
 
 # preventive cleanup (previous runs)
 
@@ -70,9 +92,17 @@ find . -type l -print | grep LINK | xargs -n1 rm 2> /dev/null
 find . -type f -print | grep LINK | xargs -n1 rm 2> /dev/null
 find . -type f -print | grep MOVE | xargs -n1 rm 2> /dev/null
 
-sr_cpost start veille_f34 > /dev/null 2>&1
-sr_subscribe -debug start cfile_f44 > /dev/null 2>&1
+if [ ! $SARRAC_LIB ]; then
+    sr_cpost start veille_f34 > /dev/null 2>&1
+else 
+    $SARRAC_LIB/sr_cpost.py start veille_f34 > /dev/null 2>&1
+fi
 
+if [ ! $SARRA_LIB ]; then
+    sr_subscribe -debug start cfile_f44 > /dev/null 2>&1
+else 
+    $SARRA_LIB/sr_subscribe.py -debug start cfile_f44 > /dev/null 2>&1
+fi
 # copy 
 
 echo "checking sr_cpost copy"

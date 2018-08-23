@@ -38,6 +38,17 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+2.18.08b1
+---------
+
+*CHANGE*: sr_subscribe strip, mirror, flatten,  options were formerly global ones.
+          Now they are processed in order in the same way as directory options.
+          configuration files where these directives appear after accept clauses
+          will behave differently. inspection of existing usage indicates that
+          users naturally put the accept clauses at the end so it should not
+          affect many.
+ 
+
 upto 2.18.05b4
 --------------
 

@@ -209,10 +209,14 @@ class sr_sftp(sr_proto):
                 self.ssh = paramiko.SSHClient()
                 # FIXME this should be an option... for security reasons... not forced
                 self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                self.ssh.connect(self.host,self.port,self.user,self.password, \
-                                 pkey=None,key_filename=self.ssh_keyfile,\
-                                 timeout=self.timeout)
-
+                if self.password:
+                   self.ssh.connect(self.host,self.port,self.user,self.password, \
+                                    pkey=None,key_filename=self.ssh_keyfile,\
+                                    timeout=self.timeout,allow_agent=False,look_for_keys=False)
+                else:
+                   self.ssh.connect(self.host,self.port,self.user,self.password, \
+                                    pkey=None,key_filename=self.ssh_keyfile,\
+                                    timeout=self.timeout)
                 #if ssh_keyfile != None :
                 #  key=DSSKey.from_private_key_file(ssh_keyfile,password=None)
 
@@ -229,7 +233,9 @@ class sr_sftp(sr_proto):
                 self.connected   = True
                 self.sftp        = sftp
 
-                alarm_cancel()
+                self.init_ls()
+
+                #alarm_cancel()
                 return True
 
         except:
@@ -359,6 +365,21 @@ class sr_sftp(sr_proto):
 
         self.batch       = 0
 
+    # init_ls
+    def init_ls(self):
+        self.logger.debug("sr_sftp init_ls")
+        dir_fils = self.sftp.listdir()
+        self.logger.debug("sr_sftp listdir(): %s" % dir_fils)
+        if dir_fils:
+            dir_attr = self.sftp.listdir_attr()
+            alarm_cancel()
+            for index in range(len(dir_fils)):
+                attr = dir_attr[index]
+                line = attr.__str__()
+                fil = dir_fils[index]
+                self.ls_file_index(fil,line)
+        self.logger.debug("sr_sftp file_index: %s" % self.file_index)
+
     # ls
     def ls(self):
         self.logger.debug("sr_sftp ls")
@@ -388,12 +409,33 @@ class sr_sftp(sr_proto):
         for p in opart1 :
             if p == ''  : continue
             opart2.append(p)
-
-        fil  = opart2[-1]
+        # else case is in the event of unlikely race condition
+        if hasattr(self, 'file_index'): fil = ' '.join(opart2[self.file_index:])
+        else: fil = ' '.join(opart2[8:])
+        # next line is for backwards compatibility only
         if not self.parent.ls_file_index in [-1,len(opart2)-1] : fil =  ' '.join(opart2[self.parent.ls_file_index:])
         line = ' '.join(opart2)
 
         self.entries[fil] = line
+
+    # ls_file_index
+    def ls_file_index(self,ifil,iline):
+        oline = iline
+        oline = oline.strip('\n')
+        oline  = oline.strip()
+        oline  = oline.replace('\t',' ')
+        opart1 = oline.split(' ')
+        opart2 = []
+
+        for p in opart1 :
+            if p == ''  : continue
+            opart2.append(p)
+
+        try:
+            file_index = opart2.index(ifil)
+            self.file_index = file_index
+        except:
+            pass
 
     # mkdir
     def mkdir(self, remote_dir):

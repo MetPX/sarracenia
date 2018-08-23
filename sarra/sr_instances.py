@@ -35,6 +35,7 @@
 
 import logging,os,psutil,signal,subprocess,sys
 from sys import platform as _platform
+from pathlib import PureWindowsPath
 
 if sys.hexversion > 0x03030000 :
    from shutil import copyfile,get_terminal_size
@@ -355,8 +356,7 @@ class sr_instances(sr_config):
         if plugin: sub_dir = 'plugins'
         else     : sub_dir = self.program_dir
 
-        if sub_dir in usr_cfg: def_fil = self.user_config_dir + os.sep + usr_cfg
-        else                 : def_fil = self.user_config_dir + os.sep + sub_dir + os.sep + usr_cfg
+        def_fil = self.user_config_dir + os.sep + sub_dir + os.sep + PureWindowsPath(usr_cfg).name
 
         if self.config_found : def_fil = self.user_config
 
@@ -374,7 +374,7 @@ class sr_instances(sr_config):
                 except : pass
 
              if not usr_fil:
-                f  = self.find_conf_file('/'+usr_cfg)
+                f  = self.find_conf_file(os.sep + sub_dir + os.sep + usr_cfg)
                 if f and 'examples' in f : usr_fil = f
 
              if not usr_fil or not os.path.isfile(usr_fil):
@@ -403,13 +403,22 @@ class sr_instances(sr_config):
         elif action == 'edit'    :
              if not usr_fil:
                 f  = self.find_conf_file(usr_cfg)
+                if not f:
+                    self.logger.error('could not identify file to edit: %s' % usr_cfg  )
+                    return
+
                 if self.user_config_dir in f : usr_fil = f
              else:
                 usr_fil = self.user_config
 
              edit_fil = usr_fil
 
-             self.run_command([ os.environ.get('EDITOR'), edit_fil] )
+             editor=os.environ.get('EDITOR')
+             
+             if editor:
+                 self.run_command([ editor, edit_fil] )
+             else:
+                 self.logger.error('Please set EDITOR variable to use edit command')
 
         # enable
 

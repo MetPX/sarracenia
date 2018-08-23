@@ -629,7 +629,7 @@ class sr_post(sr_instances):
         blocks = list(range(0,block_count))
         if self.randomize:
             random.shuffle(blocks)
-            #blocks = [8, 3, 1, 2, 9, 6, 0, 7, 4, 5]
+            #blocks = [8, 3, 1, 2, 9, 6, 0, 7, 4, 5] # Testing
             self.logger.info('Sending partitions in the following order: '+str(blocks))
 
         for i in blocks: 

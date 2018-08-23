@@ -42,7 +42,7 @@ class CP_DOWNLOAD(object):
 
       # rebuild an scp compatible source specification from the provide url ( proto://user@host// --> user@host: )
 
-      cmd = parent.download_cp_command[0].split() + [ msg.url.path, msg.new_file ] 
+      cmd = parent.download_cp_command[0].split() + [ msg.url.path, msg.new_dir + os.sep + msg.new_file ] 
 
       logger.debug("download_cp invoking: %s " % cmd )
       

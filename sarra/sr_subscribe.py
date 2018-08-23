@@ -945,7 +945,7 @@ class sr_subscribe(sr_instances):
         except: found = False
 
         if not found:
-           self.logger.warning("directory containing old file (%s) to be renamed is not present, so download required." % self.msg.new_dir)
+           self.logger.info("directory containing old file (%s) to be renamed is not present, so download required." % self.msg.new_dir)
            pass
 
         # if it is for 'newname' verify if the files are the same

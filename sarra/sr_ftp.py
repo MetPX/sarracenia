@@ -211,6 +211,8 @@ class sr_ftp(sr_proto):
 
                 self.ftp = ftp
 
+                self.init_ls()
+
                 alarm_cancel()
                 return True
 
@@ -295,6 +297,15 @@ class sr_ftp(sr_proto):
 
         self.batch       = 0
 
+    # init_ls
+    def init_ls(self):
+        self.logger.debug("sr_ftp init_ls")
+        self.init_nlst = sorted(self.ftp.nlst())
+        self.logger.debug("sr_ftp nlst: %s" % self.init_nlst)
+        self.init_nlst_index = 0
+        if self.init_nlst:
+            self.ftp.retrlines('LIST', self.ls_file_index )
+
     # ls
     def ls(self):
         self.logger.debug("sr_ftp ls")
@@ -321,12 +332,41 @@ class sr_ftp(sr_proto):
         for p in opart1 :
             if p == ''  : continue
             opart2.append(p)
-
-        fil  = opart2[-1]
+        # else case is in the event of unlikely race condition
+        if hasattr(self, 'file_index'): fil = ' '.join(opart2[self.file_index:])
+        else: fil = ' '.join(opart2[8:])
+        # next line is for backwards compatibility only
         if not self.parent.ls_file_index in [-1,len(opart2)-1] : fil =  ' '.join(opart2[self.parent.ls_file_index:])
         line = ' '.join(opart2)
 
         self.entries[fil] = line
+
+        alarm_set(self.iotime)
+
+    # ls_file_index
+    def ls_file_index(self,iline):
+        self.logger.debug("sr_ftp ls_file_index %s" % iline)
+
+        alarm_cancel()
+
+        oline = iline
+        oline = oline.strip('\n')
+        oline = oline.strip()
+        oline = oline.replace('\t',' ')
+        opart1 = oline.split(' ')
+        opart2 = []
+
+        for p in opart1 :
+            if p == ''  : continue
+            opart2.append(p)
+
+        try:
+            file_index = opart2.index(self.init_nlst[self.init_nlst_index])
+            self.file_index = file_index
+        except:
+            pass
+        finally:
+            self.init_nlst_index += 1
 
         alarm_set(self.iotime)
 

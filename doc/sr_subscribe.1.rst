@@ -276,6 +276,15 @@ master configs. There is no restriction, any option can be placed in a config fi
 included. The user must be aware that, for many options, several declarations
 means overwriting their values.
 
+Any environment variable, or some built-in variables can also be put on the
+right hand side to be evaluated, surrounded by ${..} The built-in variables are:
+ 
+ - ${BROKER_USER} - the user name for authenticating to the broker (e.g. anonymous)
+ - ${PROGRAM}     - the name of the component (sr_subscribe, sr_shovel, etc...)
+ - ${CONFIG}      - the name of the configuration file being run.
+ - ${HOSTNAME}    - the hostname running the client.
+ - ${RANDID}      - a random id that will be consistent within a single invocation.
+
 Option Order
 ~~~~~~~~~~~~
 
@@ -471,9 +480,8 @@ are held on the server for each subscriber.
 
 By default, components create a queue name that should be unique. The default queue_name
 components create follows :  **q_<brokerUser>.<programName>.<configName>** .
+
 Users can override the default provided that it starts with **q_<brokerUser>**.
-Some variables can also be used within the queue_name like
-**${BROKER_USER},${PROGRAM},${CONFIG},${HOSTNAME}**
 
 durable <boolean> (default: False)
 -~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -485,7 +493,9 @@ expire <duration> (default: 5m  == five minutes. RECOMMEND OVERRIDING)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The  **expire**  option is expressed as a duration... it sets how long should live
-a queue without connections. A raw integer is expressed in seconds, if the suffix m,h.d,w
+a queue without connections. 
+
+A raw integer is expressed in seconds, if the suffix m,h,d,w
 are used, then the interval is in minutes, hours, days, or weeks. After the queue expires,
 the contents are dropped, and so gaps in the download data flow can arise.  A value of
 1d (day) or 1w (week) can be appropriate to avoid data loss. It depends on how long
@@ -841,11 +851,12 @@ For example retrieving the following url, with options::
 
 would result in the creation of the directories and the file
 /mylocaldirectory/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
+mirror settings can be changed between directory options.
 
 strip <count|regexp> (default: 0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can modify the mirrored directoties with the **strip** option. 
+You can modify the mirrored directories with the **strip** option. 
 If set to N  (an integer) the first 'N' directories are removed.
 For example ::
 
@@ -864,6 +875,7 @@ from the relative path.  For example if::
    strip  .*?GIF/
 
 Will also result in the file being placed the same location. 
+Note that strip settings can be changed between directory options.
 
 NOTE::
     with **strip**, use of **?** modifier (to prevent regular expression *greediness* ) is often helpful. 
@@ -907,6 +919,7 @@ All date/times in Sarracenia are in UTC.
 
 Refer to *source_from_exchange* for a common example of usage.  Note that any sarracenia
 built-in value takes precedence over a variable of the same name in the environment.
+Note that flatten settings can be changed between directory options.
 
 base_dir <path> (default: /)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -976,7 +989,7 @@ The  **overwrite**  option,if set to false, avoid unnecessary downloads under th
 
 2- the checksum of the amqp message matched the one of the file.
 
-The default is False (overwrite without checking). 
+The default is False. 
 
 discard <boolean> (default: off)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1017,12 +1030,17 @@ the list of on_heartbeat plugins. By default, it prints a log message every hear
 suppress_duplicates <off|on|999> (default: off)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When **suppress_duplicates** (also **cache** ) is set to a non-zero value, each new message
-is compared against previous ones received, to see if it is a duplicate. If the message is 
-considered a duplicate, it is skipped. What is a duplicate? A file with the same name (including 
+When **suppress_duplicates** (also **cache** ) is set to a non-zero time interval, each new message
+is compared against ones received within that interval, to see if it is a duplicate. 
+Duplicate are not processed further. What is a duplicate? A file with the same name (including 
 parts header) and checksum. Every *hearbeat* interval, a cleanup process looks for files in the 
 cache that have not been referenced in **cache** seconds, and deletes them, in order to keep 
 the cache size limited. Different settings are appropriate for different use cases.
+
+A raw integer interval is in seconds, if the suffix m,h,d,w
+are used, then the interval is in minutes, hours, days, or weeks. After the interval expires
+the contents are dropped, so duplicates separate by a large enough interval will get through.
+A value of 1d (day) or 1w (week) can be appropriate. 
 
 **Use of the cache is incompatible with the default *parts 0* strategy**, one must specify an 
 alternate strategy.  One must use either a fixed blocksize, or always never partition files. 
@@ -1171,8 +1189,6 @@ Frequent Configuration Errors
 
 
 
-
-
 PERIODIC PROCESSING
 ===================
 
@@ -1180,15 +1196,23 @@ Most processing occurs on receipt of a message, but there is some periodic maint
 work that happens every *heartbeat* (default is 5 minutes.)  Evey heartbeat, all of the
 configured *on_heartbeat* plugins are run. By default there are three present:
 
- * heartbeat_log - prints "heartbeat" in the log.
- * heartbeat_cache - ages out old entries in the cache, to minimize its size.
- * heartbeat_memory - checks the process memory usage, and restart if too big.
- * heartbeat_pulse - confirms that connectivity with brokers is still good. Restores if needed.
+ * hb_log - prints "heartbeat" in the log.
+ * hb_cache - ages out old entries in the cache, to minimize its size.
+ * hb_memory - checks the process memory usage, and restart if too big.
+ * hb_pulse - confirms that connectivity with brokers is still good. Restores if needed.
+ * hb_sanity - runs sanity check.
 
 The log will contain messages from all three plugins every heartbeat interval, and
 if additional periodic processing is needed, the user can configure addition
 plugins to run with the *on_heartbeat* option. 
 
+sanity_log_dead <interval> (default: 1.5*heartbeat)
+---------------------------------------------------
+
+The **sanity_log_dead** option sets how long to consider too long before restarting
+a component.
+
+suppress_duplicates <off|on|999> (default: off)
 ERROR RECOVERY
 ==============
 
@@ -1597,12 +1621,12 @@ additional transfer protocols.
 
 These transfer protocol scripts should be declared using the **plugin** option.
 Aside the targetted built-in function(s), a module **registered_as** that defines
-a list of protocols that these functions supports.  Example :
+a list of protocols that these functions provide.  Example :
 
 def registered_as(self) :
        return ['ftp','ftps']
 
-Registering in such a way a plugin, if function **do_download** was provided in that plugin
+In the example above, if function **do_download** was provided in that plugin
 then for any download of a message with an ftp or ftps url, it is that function that would be called.
 
 
@@ -1736,7 +1760,7 @@ Some other available variables::
   parent.msg.local_url    :  url for reannouncement
 
 
-See the `Programming Guide <Prog.rst>`_ for more details.
+See the `Programming Guide <Prog.rst>`_ for more information on plugin development.
 
 
 Queue Save/Restore
