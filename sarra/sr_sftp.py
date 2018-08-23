@@ -233,7 +233,7 @@ class sr_sftp(sr_proto):
                 self.connected   = True
                 self.sftp        = sftp
 
-                self.init_ls()
+                self.init_file_index()
 
                 #alarm_cancel()
                 return True
@@ -365,9 +365,9 @@ class sr_sftp(sr_proto):
 
         self.batch       = 0
 
-    # init_ls
-    def init_ls(self):
-        self.logger.debug("sr_sftp init_ls")
+    # init_file_index
+    def init_file_index(self):
+        self.logger.debug("sr_sftp init_file_index")
         dir_fils = self.sftp.listdir()
         self.logger.debug("sr_sftp listdir(): %s" % dir_fils)
         if dir_fils:

@@ -211,7 +211,7 @@ class sr_ftp(sr_proto):
 
                 self.ftp = ftp
 
-                self.init_ls()
+                self.init_file_index()
 
                 alarm_cancel()
                 return True
@@ -297,9 +297,9 @@ class sr_ftp(sr_proto):
 
         self.batch       = 0
 
-    # init_ls
-    def init_ls(self):
-        self.logger.debug("sr_ftp init_ls")
+    # init_file_index
+    def init_file_index(self):
+        self.logger.debug("sr_ftp init_file_index")
         self.init_nlst = sorted(self.ftp.nlst())
         self.logger.debug("sr_ftp nlst: %s" % self.init_nlst)
         self.init_nlst_index = 0
