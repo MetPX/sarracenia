@@ -738,7 +738,7 @@ and under which name.
 - **retry_ttl    <duration>         (default: same as expire)** 
 - **source_from_exchange  <boolean> (default: off)**
 - **strip     <count|regexp>   (default: 0)**
-- **suppress_duplicates   <off|on|999>     (default: off)**
+- **suppress_duplicates   <off|on|999[smhdw]>     (default: off)**
 - **timeout     <float>         (default: 0)**
 
 
@@ -1027,7 +1027,7 @@ heartbeat <count> (default: 300 seconds)
 The **heartbeat** option sets how often to execute periodic processing as determined by 
 the list of on_heartbeat plugins. By default, it prints a log message every heartbeat.
 
-suppress_duplicates <off|on|999> (default: off)
+suppress_duplicates <off|on|999[smhdw]> (default: off)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When **suppress_duplicates** (also **cache** ) is set to a non-zero time interval, each new message
@@ -1826,7 +1826,7 @@ around::
   post_broker amqp://tfeed@localhost/
 
 The configuration relies on the use of an administrator or feeder account.
-Note the queue which has messages in it, in this case q_tsub.sr_subscribe.t.99524171.43129428.  Invoke the shovel in save mode to consume messages from the queue
+Note the queue which has messages in it, in this case q_tsub.sr_subscribe.t.99524171.43129428. Invoke the shovel in save mode to consume messages from the queue
 and save them to disk::
 
   % cd ~/tools
@@ -1856,9 +1856,9 @@ and save them to disk::
   % 
 
 The messages are written to a file in the caching directory for future use, with
-the name of the file being based on the configuration name used.   The file is in
+the name of the file being based on the configuration name used. The file is in
 json format, one message per line (lines are very long) and so filtering with other tools
-is possible to modify the list of saved messages.  Note that a single save file per
+is possible to modify the list of saved messages. Note that a single save file per
 configuration is automatically set, so to save multiple queues, one would need one configurations
 file per queue to be saved.  Once the subscriber is back in service, one can return the messages
 saved to a file into the same queue::
