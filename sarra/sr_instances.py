@@ -322,9 +322,9 @@ class sr_instances(sr_config):
         configdir = self.user_config_dir + os.sep + self.program_dir
 
         if action == 'list':
-            self.print_configdir("packaged plugins",       self.package_dir     +os.sep+ 'plugins')
+            #self.print_configdir("packaged plugins",       self.package_dir     +os.sep+ 'plugins')
             self.print_configdir("configuration examples", self.package_dir     +os.sep+ 'examples' +os.sep+ self.program_dir)
-            self.print_configdir("user plugins",           self.user_config_dir +os.sep+ 'plugins')
+            #self.print_configdir("user plugins",           self.user_config_dir +os.sep+ 'plugins')
             self.print_configdir("general",                self.user_config_dir )
             self.print_configdir("user configurations",    configdir)
             return
@@ -434,9 +434,14 @@ class sr_instances(sr_config):
         # list
 
         elif action == 'list'    :
-             if not usr_fil:
-                usr_fil  = self.find_conf_file(usr_cfg)
-             self.list_file(usr_fil)
+             if usr_cfg ==  'plugins':
+                 self.print_configdir("packaged plugins",           self.package_dir     +os.sep+ 'plugins')
+                 self.print_configdir("user plugins",               self.user_config_dir +os.sep+ 'plugins')
+
+             else:
+                if not usr_fil:
+                   usr_fil  = self.find_conf_file(usr_cfg)
+                self.list_file(usr_fil)
 
         # log
 

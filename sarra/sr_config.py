@@ -457,7 +457,7 @@ class sr_config:
         # return bad file ... 
         if mandatory :
           if subdir == 'plugins' : self.logger.error("script not found %s" % config)
-          else                   : self.logger.error("file not found %s" % config)
+          elif config_name != 'plugins' : self.logger.error("file not found %s" % config)
 
         return False,config
 
@@ -2375,7 +2375,7 @@ class sr_config:
                  i+=1
                  print( "%20s " % confname, end='' )
 
-        print("")
+        print("\n")
 
     def set_sumalgo(self,sumflg):
         self.logger.debug("sr_config set_sumalgo %s" % sumflg)

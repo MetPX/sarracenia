@@ -99,7 +99,7 @@ sont choisis pour représenter l'origine des données.
 Vous devriez pouvoir lister les configurations disponibles avec *sr_subscribe list* ::
 
 
-  blacklab% sr_subscribe list
+  blacklab% sr_subscribe list plugins
   
   packaged plugins: ( /usr/lib/python3/dist-packages/sarra/plugins ) 
            __pycache__     destfn_sample.py       download_cp.py       download_dd.py 
@@ -117,6 +117,12 @@ Vous devriez pouvoir lister les configurations disponibles avec *sr_subscribe li
          poll_pulse.py       poll_script.py    post_hour_tree.py          post_log.py 
      post_long_flow.py     post_override.py   post_rate_limit.py        post_total.py 
           watch_log.py 
+
+  user plugins: ( /home/peter/.config/sarra/plugins ) 
+          destfn_am.py         destfn_nz.py       msg_tarpush.py 
+
+  blacklab% sr_subscribe list
+
   configuration examples: ( /usr/lib/python3/dist-packages/sarra/examples/subscribe ) 
               all.conf     all_but_cap.conf            amis.conf            aqhi.conf 
               cap.conf      cclean_f91.conf       cdnld_f21.conf       cfile_f44.conf 
@@ -125,8 +131,6 @@ Vous devriez pouvoir lister les configurations disponibles avec *sr_subscribe li
             q_f71.conf           radar.conf            rdps.conf            swob.conf 
             t_f30.conf      u_sftp_f60.conf 
   
-  user plugins: ( /home/peter/.config/sarra/plugins ) 
-          destfn_am.py         destfn_nz.py       msg_tarpush.py 
   
   general: ( /home/peter/.config/sarra ) 
             admin.conf     credentials.conf         default.conf
@@ -600,7 +604,7 @@ personnalisés, consultez: `Guide de programmation de Sarracenia <Prog.rst>`_
 
 pour récapituler :
 
-* Pour afficher les plugins actuellement disponibles sur le système *sr_subscribe list*
+* Pour afficher les plugins actuellement disponibles sur le système *sr_subscribe list plugins*
 * Pour visualiser le contenu d'un plugin : *sr_subscribe list <plugin>*
 * le début du plugin décrit sa fonction et ses paramètres
 * Les plugins peuvent avoir des paramètres d'options, tout comme les plugins intégrés

@@ -68,15 +68,16 @@ Note that the *sanity* check is invoked by heartbeat processing in sr_audit on a
 The remaining operations manage the resources (exchanges, queues) used by the component on
 the rabbitmq server, or manage the configurations.
 
- - cleanup:  deletes the component's resources on the server.
- - declare:  creates the component's resources on the server.
- - setup:    like declare, additionally does queue bindings.
- - add:      copy to the list of available configurations.
- - list:     list all the configurations available.
- - edit:     modify an existing configuration.
- - remove:   remove a configuration.
- - disable:  mark a configuration as ineligible to run. 
- - enable:   mark a configuration as eligible to run. 
+ - cleanup:       deletes the component's resources on the server.
+ - declare:       creates the component's resources on the server.
+ - setup:         like declare, additionally does queue bindings.
+ - add:           copy to the list of available configurations.
+ - list:          list all the configurations available. 
+ - list plugins:  list all the plugins available. 
+ - edit:          modify an existing configuration.
+ - remove:        remove a configuration.
+ - disable:       mark a configuration as ineligible to run. 
+ - enable:        mark a configuration as eligible to run. 
 
 
 For example:  *sr_subscribe foreground dd* runs the sr_subscribe component with
@@ -94,10 +95,11 @@ the resources. **setup** creates and additionally binds the queues.
 
 The **add, remove, list, edit, enable & disable** actions are used to manage the list 
 of configurations.  One can see all of the configurations available using the **list**
-action.  Using the **edit** option, one can work on a particular configuration.
-A *disabled* configuration will not be started or restarted by the **start**,  
+action.   to view available plugins use **list plugins**.  Using the **edit** option, 
+one can work on a particular configuration.  A *disabled* configuration will not be 
+started or restarted by the **start**,  
 **foreground**, or **restart** actions. It can be used to set aside a configuration
-temporarily.
+temporarily. 
 
 Documentation
 -------------
