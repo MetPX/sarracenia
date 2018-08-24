@@ -75,6 +75,7 @@ class sr_sftp(sr_proto):
     def __init__(self, parent) :
         parent.logger.debug("sr_sftp __init__")
         sr_proto.__init__(self,parent)
+        self.user_cache_dir = parent.user_cache_dir
 
         # sftp command times out after 20 secs
         # this setting is different from the computed iotime (sr_proto)
@@ -233,7 +234,9 @@ class sr_sftp(sr_proto):
                 self.connected   = True
                 self.sftp        = sftp
 
-                self.init_ls()
+                self.file_index_cache = self.user_cache_dir + os.sep + '.dest_file_index'
+                if os.path.isfile(self.file_index_cache): self.load_file_index()
+                else: self.init_file_index()
 
                 #alarm_cancel()
                 return True
@@ -365,9 +368,9 @@ class sr_sftp(sr_proto):
 
         self.batch       = 0
 
-    # init_ls
-    def init_ls(self):
-        self.logger.debug("sr_sftp init_ls")
+    # init_file_index
+    def init_file_index(self):
+        self.logger.debug("sr_sftp init_file_index")
         dir_fils = self.sftp.listdir()
         self.logger.debug("sr_sftp listdir(): %s" % dir_fils)
         if dir_fils:
@@ -378,7 +381,20 @@ class sr_sftp(sr_proto):
                 line = attr.__str__()
                 fil = dir_fils[index]
                 self.ls_file_index(fil,line)
-        self.logger.debug("sr_sftp file_index: %s" % self.file_index)
+        else:
+            alarm_cancel()
+        if hasattr(self,'file_index'): self.write_file_index()
+
+    # load_file_index
+    def load_file_index(self):
+        self.logger.debug("sr_sftp load_file_index")
+        alarm_cancel()
+        try:
+            with open(self.file_index_cache,'r') as fp:
+                index = int(fp.read())
+                self.file_index = index
+        except:
+            self.logger.error("load_file_index: Unable to determine file index from %s" % self.file_index_cache)
 
     # ls
     def ls(self):
@@ -506,6 +522,15 @@ class sr_sftp(sr_proto):
         alarm_set(self.iotime)
         self.sftp.utime(path,tup)
         alarm_cancel()
+
+    # write_file_index
+    def write_file_index(self):
+        self.logger.debug("sr_sftp write_file_index")
+        try:
+            with open(self.file_index_cache,'w') as fp:
+                fp.write(str(self.file_index))
+        except:
+            self.logger.warning("Unable to write file_index to cache file %s" % self.file_index_cache)
 
 #============================================================
 #
