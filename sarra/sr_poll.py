@@ -282,8 +282,11 @@ class sr_poll(sr_post):
                 for line in lines :
                     line  = line.strip('\n')
                     parts = line.split()
-                    fil   = parts[-1]
-                    if not self.ls_file_index in [-1,len(parts)-1] : fil = ' '.join(parts[self.ls_file_index:])
+                    if hasattr(self,'dest_file_index'):
+                        fil = ' '.join(parts[self.dest_file_index:])
+                    else:
+                        fil   = parts[-1]
+                        if not self.ls_file_index in [-1,len(parts)-1] : fil = ' '.join(parts[self.ls_file_index:])
                     lsold[fil] = line
 
                 return lsold
@@ -533,6 +536,7 @@ class sr_poll(sr_post):
             time.sleep(30)
             return True
 
+        if hasattr(self.dest,'file_index'): self.dest_file_index = self.dest.file_index
         # loop on all directories where there are pulls to do
 
         for destDir in self.pulls :
