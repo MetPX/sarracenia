@@ -21,11 +21,11 @@ Algorithm
 
 After being triggered by a downloaded part file:  
   
- * if the target_file doesn't exist:
+ - if the target_file doesn't exist:
      - if the downloaded part file was the first partition (Part 0):
          + create a new empty target_file
- * find which partition number needs to be inserted next (i)
- * while i < total blocks:
+ - find which partition number needs to be inserted next (i)
+ - while i < total blocks:
      - file_insert_part()
          + inserts the part file into target file and computes checksum of the inserted portion
      - verify insertion by comparing checksums of partition file and inserted block in the file
