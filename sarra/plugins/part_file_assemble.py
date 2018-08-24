@@ -2,17 +2,18 @@
 
 """
 
-File_Assemble: This plugin is used by sr_watch. Gets triggered by on_part when a file arrives
+Part_File_Assemble: This plugin is used by sr_watch. Gets triggered by on_part when a file arrives
 				then it calls the assembly code from sr_file 
 
 Usage: in an sr_watch configuration file, you need:
+		
 		path <path of directory to watch>
-		on_part /usr/lib/python3/dist-packages/sarra/plugins/file_assemble.py
+		on_part /usr/lib/python3/dist-packages/sarra/plugins/part_file_assemble.py
 		accept *.Part
 		accept_unmatch False # Makes it only acccept the pattern above
 """
 
-class File_Assemble(object):
+class Part_File_Assemble(object):
 
 	def __init__(self, parent):
 		parent.logger.debug("Assembler initialized")
@@ -50,5 +51,5 @@ class File_Assemble(object):
 
 
 
-file_assemble = File_Assemble(self)
-self.on_part = file_assemble.perform
+part_file_assemble = Part_File_Assemble(self)
+self.on_part = part_file_assemble.perform

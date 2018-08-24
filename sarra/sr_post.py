@@ -495,7 +495,7 @@ class sr_post(sr_instances):
         if path.endswith('.'+self.msg.part_ext):
            return self.post_file_part(path,lstat)
         
-        # This variable means that file_assemble plugin is loaded and will handle posting the original file (being assembled)
+        # This variable means that part_file_assemble plugin is loaded and will handle posting the original file (being assembled)
 
         elif hasattr(self, 'suppress_posting_partial_assembled_file'):
             return False
