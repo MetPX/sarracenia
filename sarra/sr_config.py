@@ -1508,6 +1508,8 @@ class sr_config:
                      if self.caching and not hasattr(self,'heartbeat_cache_installed') :
                         self.execfile("on_heartbeat",'hb_cache')
                         self.heartbeat_cache_installed = True
+                     #if self.caching: ####@
+                     #   self.cache = sr_cache(self) ####@
 
                 elif words0 == 'cache_stat'   : # FIXME! what is this?
                      if (words1 is None) or words[0][0:1] == '-' : 
