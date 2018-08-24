@@ -8,7 +8,7 @@ Components
 - **sr_watch:** You can use sr_watch to watch a directory for incoming partition files (.Part) from sr_subscribe or sr_sender, both have the ability to send a file in partitions. In the config file for sr_watch the important parameters to include are:  
 
 		- path <path of directory to watch>
-		- on_part /usr/lib/python3/dist-packages/sarra/plugins/file_assemble.py
+		- on_part /usr/lib/python3/dist-packages/sarra/plugins/part_file_assemble.py
 		- accept *.Part
 		- accept_unmatch False # Makes it only acccept the pattern above
 
