@@ -18,7 +18,8 @@ Components
 
 Algorithm 
 ----------
- After being triggered by a downloaded part file:  
+
+After being triggered by a downloaded part file:  
   
  * if the target_file doesn't exist:
      - if the downloaded part file was the first partition (Part 0):

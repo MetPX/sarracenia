@@ -202,6 +202,7 @@ fi
 adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; exit }; ' "$CONFDIR"/credentials.conf`"
 
 qchk 20 "queues existing after 1st audit" 
+
 xchk "exchanges for flow test created"
 
 if [ "$1" = "declare" ]; then
