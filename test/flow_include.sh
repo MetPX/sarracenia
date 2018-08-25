@@ -180,18 +180,18 @@ function countall {
   sumlogs msg_total $LOGDIR/sr_report_tsarra_f20_*.log
   totsarra="${tot}"
 
-  sumlogs msg_total $LOGDIR/sr_report_twinnow00_f10_*.log
+  sumlogs msg_total $LOGDIR/sr_report_twinnow00_f10_*.log*
   totwinnow00="${tot}"
 
-  sumlogs msg_total $LOGDIR/sr_report_twinnow01_f10_*.log 
+  sumlogs msg_total $LOGDIR/sr_report_twinnow01_f10_*.log*
   totwinnow01="${tot}"
 
   totwinnow=$(( ${totwinnow00} + ${totwinnow01} ))
 
-  sumlogs msg_total $LOGDIR/sr_shovel_t_dd1_f00_*.log
+  sumlogs msg_total $LOGDIR/sr_shovel_t_dd1_f00_*.log*
   totshovel1="${tot}"
 
-  sumlogs msg_total $LOGDIR/sr_shovel_t_dd2_f00_*.log
+  sumlogs msg_total $LOGDIR/sr_shovel_t_dd2_f00_*.log*
   totshovel2="${tot}"
 
   countthem "`grep post_log "$LOGDIR"/sr_winnow*.log* | wc -l`"
@@ -200,13 +200,13 @@ function countall {
   countthem "`grep truncating "$LOGDIR"/sr_sarra_download_f20_*.log* | wc -l`"
   totshortened="${tot}"
 
-  sumlogs post_total $LOGDIR/sr_watch_f40_*.log
+  sumlogs post_total $LOGDIR/sr_watch_f40_*.log*
   totwatch="${tot}"
 
-  sumlogs msg_total $LOGDIR/sr_subscribe_t_f30_*.log
+  sumlogs msg_total $LOGDIR/sr_subscribe_t_f30_*.log*
   totmsgt="${tot}"
 
-  sumlogs file_total $LOGDIR/sr_subscribe_t_f30_*.log
+  sumlogs file_total $LOGDIR/sr_subscribe_t_f30_*.log*
   totfilet="${tot}"
 
   countthem "`grep post_log "$LOGDIR"/sr_sender_tsource2send_f50_*.log* | wc -l`"
