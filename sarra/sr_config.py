@@ -1107,7 +1107,7 @@ class sr_config:
                           subprocess.run([sr_path+'/'+cmd_list[0]+'.py']+cmd_list[1:],check=True)
                         else:
                           subprocess.run(cmd_list,check=True)
-        except: self.logger.error("trying run command %s %s" %  ' '.join(cmd_list) )
+        except: self.logger.error("trying run command %s " %  ' '.join(cmd_list) )
 
     def register_plugins(self):
         self.logger.debug("register_plugins")
@@ -1508,6 +1508,8 @@ class sr_config:
                      if self.caching and not hasattr(self,'heartbeat_cache_installed') :
                         self.execfile("on_heartbeat",'hb_cache')
                         self.heartbeat_cache_installed = True
+                     #if self.caching: ####@
+                     #   self.cache = sr_cache(self) ####@
 
                 elif words0 == 'cache_stat'   : # FIXME! what is this?
                      if (words1 is None) or words[0][0:1] == '-' : 

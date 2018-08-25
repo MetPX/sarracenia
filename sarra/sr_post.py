@@ -319,6 +319,19 @@ class sr_post(sr_instances):
         return True
 
     # =============
+    # __on_part__
+    # =============
+
+    def __on_part__(self):
+
+        # invoke user defined on_part when provided
+
+        for plugin in self.on_part_list:
+           if not plugin(self): return False
+
+        return True
+
+    # =============
     # overwride defaults
     # =============
 
@@ -395,6 +408,9 @@ class sr_post(sr_instances):
     def path_rejected(self,path):
         #self.logger.debug("path_rejected %s" % path )
 
+        if not self.post_base_url:
+            self.post_base_url = 'file:/'
+        
         if self.masks == [] : return False
 
         self.post_relpath = path
@@ -478,6 +494,11 @@ class sr_post(sr_instances):
 
         if path.endswith('.'+self.msg.part_ext):
            return self.post_file_part(path,lstat)
+        
+        # This variable means that part_file_assemble plugin is loaded and will handle posting the original file (being assembled)
+
+        elif hasattr(self, 'suppress_posting_partial_assembled_file'):
+            return False
 
         # check the value of blocksize
 
@@ -507,48 +528,8 @@ class sr_post(sr_instances):
         #          self.logger.debug("sum set by xattr")
         #          sumstr = (attr['user.sr_sum'].decode("utf-8")).split()[1]
         #except: pass
-
-        if sumstr == '' :
-          
-              # sumstr
-
-              sumflg = self.sumflg
-
-              if sumflg[:2] == 'z,' and len(sumflg) > 2 :
-                 sumstr = sumflg
-
-              else:
-
-                 if not sumflg[0] in ['0','d','n','s','z' ]: sumflg = 'd'
-
-                 self.set_sumalgo(sumflg)
-                 sumalgo = self.sumalgo
-                 sumalgo.set_path(path)
-
-                 # compute checksum
-
-                 if sumflg in ['d','s'] :
-
-                    fp = open(path,'rb')
-                    i  = 0
-                    while i<fsiz :
-                          buf = fp.read(self.bufsize)
-                          if not buf: break
-                          sumalgo.update(buf)
-                          i  += len(buf)
-                    fp.close()
-
-                 # setting sumstr
-
-                 checksum = sumalgo.get_value()
-                 sumstr   = '%s,%s' % (sumflg,checksum)
-
-                 # xattr turned off PS 20180424
-                 # setting extended attributes
-                 #self.logger.debug("xattr set for time and sum")
-                 #sr_attr = self.msg.time + ' ' + sumstr
-                 #attr['user.sr_sum' ] = bytes( sr_attr, encoding='utf-8')
-
+        sumstr = self.compute_sumstr(path, fsiz, sumstr)
+        
         # caching
 
         if self.caching :
@@ -575,6 +556,48 @@ class sr_post(sr_instances):
         ok = self.__on_post__()
 
         return ok
+
+    def compute_sumstr(self, path, fsiz, sumstr = ''):
+
+        sumflg = self.sumflg
+
+        if sumflg[:2] == 'z,' and len(sumflg) > 2 :
+            sumstr = sumflg
+
+        else:
+
+            if not sumflg[0] in ['0','d','n','s','z' ]: sumflg = 'd'
+
+            self.set_sumalgo(sumflg)
+            sumalgo = self.sumalgo
+            sumalgo.set_path(path)
+
+            # compute checksum
+
+            if sumflg in ['d','s'] :
+
+                fp = open(path,'rb')
+                i  = 0
+                while i<fsiz :
+                    buf = fp.read(self.bufsize)
+                    if not buf: break
+                    sumalgo.update(buf)
+                    i  += len(buf)
+                fp.close()
+
+            # setting sumstr
+
+            checksum = sumalgo.get_value()
+            sumstr   = '%s,%s' % (sumflg,checksum)
+
+        return sumstr
+
+            # xattr turned off PS 20180424
+            # setting extended attributes
+            #self.logger.debug("xattr set for time and sum")
+            #sr_attr = self.msg.time + ' ' + sumstr
+            #attr['user.sr_sum' ] = bytes( sr_attr, encoding='utf-8')
+    
 
     # =============
     # post_file_in_parts
@@ -606,8 +629,8 @@ class sr_post(sr_instances):
         blocks = list(range(0,block_count))
         if self.randomize:
             random.shuffle(blocks)
-            #blocks = [9,1,3,2,0,5,6,4,8,7] # test with specific sequence
-            self.logger.info('Randomize set. Sending partitions in the following order: %s' %blocks)
+            #blocks = [8, 3, 1, 2, 9, 6, 0, 7, 4, 5] # Testing
+            self.logger.info('Sending partitions in the following order: '+str(blocks))
 
         for i in blocks: 
 
@@ -688,7 +711,6 @@ class sr_post(sr_instances):
     # =============
 
     def post_file_part(self, path, lstat):
-        #self.logger.debug("post_file_part %s" % path )
 
         # post_init (message)
         self.post_init(path,lstat)
@@ -700,11 +722,10 @@ class sr_post(sr_instances):
         # something went wrong
 
         if not ok:
-           self.logger.error("file part extension but %s for file %s" % (log_msg,path))
+           self.logger.debug("file part extension but %s for file %s" % (log_msg,path))
            return False
 
         # check rename see if it has the right part suffix (if present)
-
         if 'rename' in self.msg.headers and not suffix in self.msg.headers['rename']:
            self.msg.headers['rename'] += suffix
 
@@ -722,9 +743,10 @@ class sr_post(sr_instances):
         self.msg.headers['parts'] = partstr
         self.msg.headers['sum']   = sumstr
 
-        # post message
+        # post message and trigger part plugins
+        ok = self.__on_part__()
 
-        ok = self.__on_post__()
+        if ok: ok = self.__on_post__()
 
         return ok
 

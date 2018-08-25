@@ -49,7 +49,7 @@ For more details, see: `sr_subscribe(1) credentials <sr_subscribe.1.html#credent
 Mandatory Settings
 ------------------
 
-The [*-u|--url url*] option specifies the protocol, credentials, host and port to which subscribers 
+The [*-post_base_url|--pbu|--url url*] option specifies the protocol, credentials, host and port to which subscribers 
 will connect to get the file. 
 
 Format of argument to the *url* option::
@@ -141,7 +141,7 @@ The value should be one of::
 
    0 - autocompute an appropriate partitioning strategy (default)
    1 - always send files in a single part.
-   p,<sz> - used a fixed partition size (example size: 1M )
+   <sz> - used a fixed partition size (example size: 1M )
 
 Files can be announced as multiple blocks (or parts). Each part has a separate checksum.
 The parts and their checksums are stored in the cache. Partitions can traverse
@@ -191,8 +191,7 @@ gives the local absolute path to the data file to be posted.
 -------------------------------
 
 A list of event types to monitor separated by a 'pipe symbol'.
-Available events:  create, delete, follow, link, modify, poll
-Default: default is all of them, except poll
+Available events:  create, delete, link, modify
 
 The *create*, *modify*, and *delete* events reflect what is expected: a file being created, modified, or deleted.
 If *link* is set, symbolic links will be posted as links so that consumers can choose 
@@ -207,7 +206,7 @@ how to process them. If it is not set, then no symbolic link events will ever be
 --------------------------------
 
   sr_watch publishes to an exchange named *xs_*"broker_username" by default.
-  Use the *exchange* option to override that default.
+  Use the *post_exchange* option to override that default.
 
 [-fp|--force_polling <boolean>]
 -------------------------------
@@ -286,9 +285,7 @@ the *post_base_dir* present and needed.
 The realpath option resolves paths given to their canonical ones, eliminating 
 any indirection via symlinks. The behaviour improves the ability of sr_watch to 
 monitor trees, but the trees may have completely different paths than the arguments 
-given. This option also enforces traversing of symbolic links. This is implemented 
-to preserve the behaviour of an earlier iteration of sr_watch, but it is not 
-clear if it is required or useful. Feedback welcome.
+given. This option also enforces traversing of symbolic links. 
 
 [-rn|--rename <path>]
 ---------------------

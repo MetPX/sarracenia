@@ -13,7 +13,7 @@
 #
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
-#  Last Changed   : Sep 22 10:41:32 EDT 2015
+#  Last Changed   : Aug 23 10:41:32 EDT 2018
 #  Last Revision  : Feb  5 09:48:34 EST 2016
 #
 ########################################################################
@@ -155,6 +155,8 @@ def file_insert( parent,msg ) :
 # when inserting, anything that goes wrong means that
 # another process is working with this part_file
 # so errors are ignored silently 
+#
+# Returns True if the file has been fully assembled, otherwise False
 
 def file_insert_part(parent,msg,part_file):
     parent.logger.debug("file_insert_part %s" % part_file)
@@ -163,34 +165,30 @@ def file_insert_part(parent,msg,part_file):
              # file disappeared ...
              # probably inserted by another process in parallel
              if not os.path.isfile(part_file):
-                parent.logger.debug("file doesnt exist %s" % part_file)
+                parent.logger.dedbug("file doesn't exist %s" % part_file)
                 return False
 
              # file with wrong size
              # probably being written now by another process in parallel
-
              lstat    = os.stat(part_file)
              fsiz     = lstat[stat.ST_SIZE] 
              if fsiz != msg.length : 
-                parent.logger.debug("file wrong size %s %d %d" % (part_file,fsiz,msg.length))
+                parent.logger.debug("file not complete yet %s %d %d" % (part_file,fsiz,msg.length))
                 return False
 
              # proceed with insertion
-
              fp = open(part_file,'rb')
              ft = open(msg.target_file,'r+b')
              ft.seek(msg.offset,0)
 
              # no worry with length, read all of part_file
              # compute onfly_checksum ...
-
              bufsize = parent.bufsize
              if bufsize > msg.length : bufsize = msg.length
-
              if chk : chk.set_path(os.path.basename(msg.target_file))
 
              i  = 0
-             while i<msg.length :
+             while i < msg.length:
                    buf = fp.read(bufsize)
                    if not buf: break
                    ft.write(buf)
@@ -213,58 +211,30 @@ def file_insert_part(parent,msg,part_file):
              # set checksum in msg
              if chk : msg.onfly_checksum = chk.get_value()
 
-             # remove inserted part file
-
-             try    : os.unlink(part_file)
-             except : pass
-
-             # run on part... if provided
-
-             if parent.on_part :
-                ok = parent.on_part(parent)
-                if not ok : 
-                   msg.logger.warning("inserted but rejected by on_part %s " % part_file)
-                   msg.logger.warning("the file may not be correctly reassemble %s " % msg.target_file)
-                   return ok
-
     # oops something went wrong
-
     except :
              (stype, svalue, tb) = sys.exc_info()
-             msg.logger.debug("sr_file/file_insert_part Type: %s, Value: %s,  ..." % (stype, svalue))
-             msg.logger.debug("did not insert %s " % part_file)
+             msg.logger.info("sr_file/file_insert_part Type: %s, Value: %s,  ..." % (stype, svalue))
+             msg.logger.info("did not insert %s " % part_file)
              return False
 
     # success: log insertion
 
     msg.report_publish(201,'Inserted')
-
     # publish now, if needed, that it is inserted
 
-    if msg.publisher : 
-       msg.set_topic('v02.post',msg.target_relpath)
-       msg.set_notice(msg.new_baseurl,msg.target_relpath,msg.time)
-       if chk :
-          if    msg.sumflg == 'z' :
-                msg.set_sum(msg.checksum,msg.onfly_checksum)
-          else: msg.set_sum(msg.sumflg,  msg.onfly_checksum)
-
-       parent.__on_post__()
-       msg.report_publish(201,'Publish')
-
-    # if lastchunk, check if file needs to be truncated
-    file_truncate(parent,msg)
-
-    # ok we reassembled the file and it is the last chunk... call on_file
-    if msg.lastchunk : 
-       msg.logger.warning("file assumed complete with last part %s" % msg.target_file)
-       #if parent.on_file:
-       #   ok = parent.on_file(parent)
-       for plugin in parent.on_file_list:
-          ok = plugin(parent)
-          if not ok: return False
-
-    return True
+    # FIXME: Need to figure out when/how to further post messages about the partitions 
+    #if msg.publisher : 
+    #   msg.set_topic('v02.post',msg.target_relpath)
+    #   msg.set_notice(msg.new_baseurl,msg.target_relpath,msg.time)
+    #   if chk :
+    #      if    msg.sumflg == 'z' :
+    #            msg.set_sum(msg.checksum,msg.onfly_checksum)
+    #      else: msg.set_sum(msg.sumflg,  msg.onfly_checksum)
+    #
+    #   parent.__on_post__()
+    #msg.report_publish(201,'Publish')
+    return True 
 
 
 # file_link
@@ -361,10 +331,9 @@ def file_process( parent ) :
 
 def file_reassemble(parent):
     parent.logger.debug("file_reassemble")
-
     msg = parent.msg
 
-    if not hasattr(msg,'target_file') or msg.target_file == None : return
+    if not hasattr(msg,'target_file') or msg.target_file == None : return False
 
     try:    curdir = os.getcwd()
     except: curdir = None
@@ -372,24 +341,40 @@ def file_reassemble(parent):
     if curdir != parent.msg.new_dir:
        os.chdir(parent.msg.new_dir)
 
-    # target file does not exit yet
+    # target file does not exit yet... check for first partition if it's fully downloaded then create target_file 
 
-    if not os.path.isfile(msg.target_file) :
-       msg.logger.debug("insert_from_parts: target_file not found %s" % msg.target_file)
-       return
+    if not os.path.isfile(msg.target_file): 
+      msg.current_block = 0
+      msg.set_parts('i',msg.chunksize,msg.block_count,msg.remainder,msg.current_block)
+      msg.set_suffix()
+      part_file = msg.target_file + msg.suffix
+
+      if os.path.isfile(part_file):
+        lstat    = os.stat(part_file)
+        fsiz     = lstat[stat.ST_SIZE] 
+        if fsiz != msg.length : 
+          parent.logger.debug("file not complete yet %s %d %d" % (part_file,fsiz,msg.length))
+          return False
+
+        # Creating empty target file because part 0 is ready to get written
+        ftarget = open(msg.target_file, 'wb')
+        ftarget.close()
+        msg.logger.info('Created new target file: %s' %msg.target_file) 
+      
+      else:
+        msg.logger.debug('Waiting for partition 0 or target file to begin assembling...')
+        return False
+
 
     # check target file size and pick starting part from that
 
     lstat   = os.stat(msg.target_file)
     fsiz    = lstat[stat.ST_SIZE] 
-    i       = int(fsiz /msg.chunksize)
+    i       = int(fsiz /msg.chunksize) 
 
-    msg.logger.debug("verify ingestion : block = %d of %d" % (i,msg.block_count))
-       
     while i < msg.block_count:
 
           # setting block i in message
-
           msg.current_block = i
           msg.set_parts('i',msg.chunksize,msg.block_count,msg.remainder,msg.current_block)
           msg.set_suffix()
@@ -398,7 +383,7 @@ def file_reassemble(parent):
 
           part_file = msg.target_file + msg.suffix
           if not os.path.isfile(part_file) :
-             msg.logger.debug("part file %s not found, stop insertion" % part_file)
+             msg.logger.debug("part file %s not found, stop insertion" % part_file) 
              # break and not return because we want to check the lastchunk processing
              break
 
@@ -407,19 +392,94 @@ def file_reassemble(parent):
           lstat   = os.stat(msg.target_file)
           fsiz    = lstat[stat.ST_SIZE] 
           if msg.offset > fsiz :
-             msg.logger.debug("part file %s no ready for insertion (fsiz %d, offset %d)" % (part_file,fsiz,msg.offset))
-             break
-
+             msg.logger.debug("part file %s not ready for insertion (fsiz %d, offset %d)" % (part_file,fsiz,msg.offset))
+             return False
 
           # insertion attempt... should work unless there is some race condition
-
           ok = file_insert_part(parent,msg,part_file)
-          # break and not return because we want to check the lastchunk processing
-          if not ok : break
+          if not ok : return False
+
+          # verify the inserted portion
+          if (msg.sumstr.split(',')[1] != msg.onfly_checksum):
+            # Retry once
+            msg.logger.warning('Insertion did not complete properly, retrying...')
+            #msg.logger.warning('Partition\'s checksum: '+ msg.sumstr.split(',')[1]+ ' Inserted sum: '+msg.onfly_checksum)              
+
+            ok = file_insert_part(parent,msg,part_file)
+            if not ok: return False
+
+
+          # remove inserted part file
+          try    : 
+            os.unlink(part_file)
+          except : 
+            parent.logger.info('Unable to delete part file: %s' %part_file)
+
+
+          msg.logger.info("Verified ingestion : block = %d of %d" % (i,msg.block_count))
           i = i + 1
 
-    # if lastchunk, check if file needs to be truncated
-    file_truncate(parent,msg)
+    # because of randomize need a better way to check if complete
+    lstat   = os.stat(msg.target_file)
+    fsiz    = lstat[stat.ST_SIZE] 
+
+    if (fsiz == msg.filesize): # Make sure target_relpath and new_baseurl are defined... 
+      file_truncate(parent,msg)
+
+      partstr = '1,%d,1,0,0' % fsiz
+      sumstr = compute_sumstr(parent, msg.target_file, fsiz, 0)
+
+      msg.new_file = msg.target_file
+      msg.set_file(msg.target_relpath, sumstr) 
+      msg.set_notice(msg.new_baseurl,msg.target_relpath)
+
+      msg.headers['parts'] = partstr
+      msg.headers['sum']   = sumstr
+      
+      # If sr_watch is reassembling through the plugin
+      if not hasattr(parent, 'inplace') or not parent.inplace:
+        for plugin in parent.on_file_list:
+          ok = plugin(parent) 
+          if not ok: return False 
+      return True
+
+    return False
+
+# You can also find this function in sr_post but
+# they have both been slightly modified to fit their context
+def compute_sumstr(parent, path, fsiz, i = 0):
+  sumstr = ''
+  sumflg = parent.sumflg
+
+  if sumflg[:2] == 'z,' and len(sumflg) > 2 :
+     sumstr = sumflg
+
+  else:
+
+     if not sumflg[0] in ['0','d','n','s','z' ]: sumflg = 'd'
+
+     parent.set_sumalgo(sumflg)
+     sumalgo = parent.sumalgo
+     sumalgo.set_path(path)
+
+     # compute checksum
+
+     if sumflg in ['d','s'] :
+
+        fp = open(path,'rb')
+        fp.seek(i)
+        while i<fsiz :
+              buf = fp.read(parent.bufsize)
+              if not buf: break
+              sumalgo.update(buf)
+              i  += len(buf)
+        fp.close()
+
+     # setting sumstr
+
+     checksum = sumalgo.get_value()
+     sumstr   = '%s,%s' % (sumflg,checksum)
+  return sumstr
 
 
 
@@ -489,7 +549,7 @@ def file_truncate(parent,msg):
 
     # will do this when processing the last chunk
     # whenever that is
-    if not msg.lastchunk : return
+    if (not parent.randomize) and (not msg.lastchunk) : return
 
     try :
              lstat   = os.stat(msg.target_file)

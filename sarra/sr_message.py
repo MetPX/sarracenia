@@ -115,6 +115,11 @@ class sr_message():
         fsiz  = lstat[stat.ST_SIZE] 
         end   = self.local_offset + self.length
 
+        # compare sizes... if (sr_subscribe is downloading partitions into taget file) and (target_file isn't fully done)
+        # This check prevents random halting of subscriber (inplace on) if the messages come in non-sequential order
+        if (self.target_file == self.new_file) and (fsiz != self.filesize):
+          return False
+
         # compare dates...
 
         if self.parent.preserve_time and 'mtime' in self.headers:
