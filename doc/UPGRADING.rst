@@ -38,11 +38,6 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
-*SHOULD*: sr_poll ls_file_index now deprecated.
-          sr_poll now automatically detects what version of ls is being used in the
-          SFTP/FTP servers it's connecting to and uses that instead, the burden is no
-          longer on the end user to determine this. Still supported in config files,
-          won't break any pre-existing setups, but safe to remove.
 
 2.18.08b1
 ---------

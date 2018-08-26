@@ -1030,7 +1030,7 @@ The **heartbeat** option sets how often to execute periodic processing as determ
 the list of on_heartbeat plugins. By default, it prints a log message every heartbeat.
 
 suppress_duplicates <off|on|999[smhdw]> (default: off)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When **suppress_duplicates** (also **cache** ) is set to a non-zero time interval, each new message
 is compared against ones received within that interval, to see if it is a duplicate. 

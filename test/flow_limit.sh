@@ -127,26 +127,10 @@ if [ $cmd == 'stopped' ]; then
    done
    echo "No messages left in queues..."
 
-echo "FIXME: skipping rabbitmqadmin rate stuff that doesn´t work at all... need some plugin, but no idea which"
-# 2018 - following stuff does not work on m
-#   ack="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.ack_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
-#   inc="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.incoming_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
-#   del="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.deliver_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
-# 
-#   if [ "$ack" -a "$inc" -a "$del" ]; then
-#       message_rates=$((ack+inc+del))
-#       while [ $message_rates -gt 0 ]; do
-#            echo "Still $message_rates live message rates, waiting..."
-#            sleep 10
-#            ack="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.ack_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
-#            inc="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.incoming_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
-#            del="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.deliver_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
-#            message_rates=$((ack+inc+del))
-#            ack="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.ack_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
-#       done
-#   fi
 fi
 
 #sleep 60
 
-printf "\n\nflow test stopped at $smin\n\n"
+
+printf "\n\nflow test stopped at $totsarra (limit: $smin)\n\n"
+
