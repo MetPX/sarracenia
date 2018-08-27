@@ -35,7 +35,7 @@
 import logging
 import inspect
 import netifaces
-import os,re,socket,sys,random
+import os,re,socket,sys,random,glob
 import urllib,urllib.parse, urllib.request, urllib.error
 from   appdirs import *
 import shutil
@@ -1542,8 +1542,13 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['config','c','include']: # See: sr_config.7
-                     ok, include = self.config_path(self.config_dir,words1,mandatory=True,ctype='inc')
-                     self.config(include)
+                     confs = glob.glob(words1)
+                     for conf in confs:
+                         ok, include = self.config_path(self.config_dir,conf,mandatory=True,ctype='inc')
+                         self.config(include)
+                     if not confs:
+                         ok, include = self.config_path(self.config_dir,words1,mandatory=True,ctype='inc')
+                         self.config(include)
                      n = 2
 
                 elif words0 == 'debug': # See: sr_config.7
