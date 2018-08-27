@@ -38,6 +38,10 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+*CHANGE*: sr_config include option now supports globbing. If your config filename
+          contains special regex characters (e.g. '?', '*' and '[' ']') then they
+          need to be escaped in the config or else it will attempt to interpret
+          them as regex.
 
 2.18.08b1
 ---------
