@@ -1542,13 +1542,18 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['config','c','include']: # See: sr_config.7
-                     confs = glob.glob(words1)
-                     for conf in confs:
+                     current_dir_confs = glob.glob(words1)
+                     for conf in current_dir_confs:
                          ok, include = self.config_path(self.config_dir,conf,mandatory=True,ctype='inc')
                          self.config(include)
-                     if not confs:
-                         ok, include = self.config_path(self.config_dir,words1,mandatory=True,ctype='inc')
-                         self.config(include)
+                     if not current_dir_confs:
+                         config_dir_confs = glob.glob(self.user_config_dir + os.sep + self.program_dir + os.sep + words1)
+                         for conf in config_dir_confs:
+                             ok, include = self.config_path(self.config_dir,conf,mandatory=True,ctype='inc')
+                             self.config(include)
+                         if not config_dir_confs:
+                             ok, include = self.config_path(self.config_dir,words1,mandatory=True,ctype='inc')
+                             self.config(include)
                      n = 2
 
                 elif words0 == 'debug': # See: sr_config.7
