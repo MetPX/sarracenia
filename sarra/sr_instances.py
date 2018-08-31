@@ -283,6 +283,7 @@ class sr_instances(sr_config):
            elif action == 'enable'   : self.exec_action_on_config(action)
            elif action == 'list'     : self.exec_action_on_config(action)
            elif action == 'remove'   : self.exec_action_on_config(action)
+           elif action == 'rename'   : self.exec_action_on_config(action)
            else :
                 self.logger.warning("Should invoke 5: %s [args] action config" % sys.argv[0])
            os._exit(0)
@@ -311,6 +312,7 @@ class sr_instances(sr_config):
         elif action == 'list'       : self.exec_action_on_config(action)
         elif action == 'log'        : self.exec_action_on_config(action)
         elif action == 'remove'     : self.exec_action_on_config(action)
+        elif action == 'rename'     : self.exec_action_on_config(action)
 
         else :
            self.logger.error("action unknown %s" % action)
@@ -478,6 +480,12 @@ class sr_instances(sr_config):
              if not os.path.isfile(def_fil) : return
              try   : os.unlink(def_fil)
              except: self.logger.error("could not remove %s" % self.def_fil)
+
+        # rename
+
+        elif action == 'rename' :
+            self.logger.debug("sr_instances: rename %s %s" % (usr_cfg,str(self.user_args)))
+            
 
     
     def file_get_int(self,path):

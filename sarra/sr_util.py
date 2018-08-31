@@ -767,7 +767,7 @@ class sr_transport():
 def startup_args(sys_argv):
 
     actions = ['foreground', 'start', 'stop', 'status', 'sanity', 'restart', 'reload', 'cleanup', 'declare', 'setup' ]
-    actions.extend( ['add','disable', 'edit', 'enable', 'list',    'log',    'remove' ] )
+    actions.extend( ['add','disable', 'edit', 'enable', 'list',    'log',    'remove', 'rename'] )
 
     args    = None
     action  = None
