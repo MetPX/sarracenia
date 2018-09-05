@@ -70,7 +70,7 @@ else:
 class sr_config:
 
     def __init__(self,config=None,args=None,action=None):
-        if '-V' in sys.argv :
+        if '-V' in sys.argv or '--version' in sys.argv:
            print("Version %s" % sarra.__version__ )
            os._exit(0)
 
