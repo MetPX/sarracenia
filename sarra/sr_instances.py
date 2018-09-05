@@ -484,10 +484,19 @@ class sr_instances(sr_config):
         # rename
 
         elif action == 'rename' :
-            self.logger.debug("sr_instances: rename %s %s" % (usr_cfg,str(self.user_args)))
-            
+            old_fil = self.user_config_dir + os.sep + sub_dir + os.sep + self.user_args[-1]
+            self.config_name = self.user_args[-1]
+            ok = self.cleanup_parent(log_cleanup=True)
+            self.config_name = usr_cfg
+            if not ok : return
+            if not os.path.isfile(old_fil) : return
+            if not def_fil                 : return
 
-    
+            copyfile(old_fil,def_fil)
+            self.logger.info("renaming %s to %s" % (old_fil,def_fil))
+            try    : os.unlink(old_fil)
+            except : pass
+
     def file_get_int(self,path):
         i = None
         try :
