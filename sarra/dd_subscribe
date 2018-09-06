@@ -2719,7 +2719,7 @@ def help():
           "\t\t  <amqp pattern> = <directory>.<directory>.<directory>...\n" +
           "\t\t\t* single directory wildcard (matches one directory)\n" +
           "\t\t\t# wildcard (matches rest)\n" +
-          "\ttopic_prefix  <amqp pattern> (invariant prefix, currently v00.dd.notify)\n" +
+          "\ttopic_prefix  <amqp pattern> (invariant prefix, currently v02.post)\n" +
           "\nHTTP Settings:\n" +
           "\thttp-password <pw> (default: None)\n" +
           "\thttp-user   <user> (default: None)\n" +
