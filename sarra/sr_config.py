@@ -2630,6 +2630,10 @@ class sr_config:
         if '${SOURCE}' in cdir :
            new_dir = new_dir.replace('${SOURCE}',self.msg.headers['source'])
 
+        if '${DD}' in cdir :
+           DD = time.strftime("%d", time.gmtime()) 
+           new_dir = new_dir.replace('${DD}',DD)
+
         if '${HH}' in cdir :
            HH = time.strftime("%H", time.gmtime()) 
            new_dir = new_dir.replace('${HH}',HH)
