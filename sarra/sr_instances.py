@@ -485,10 +485,6 @@ class sr_instances(sr_config):
 
         elif action == 'rename' :
             old_fil = self.user_config_dir + os.sep + sub_dir + os.sep + self.user_args[-1]
-            self.config_name = self.user_args[-1]
-            ok = self.cleanup_parent(log_cleanup=True)
-            self.config_name = usr_cfg
-            if not ok : return
             if not os.path.isfile(old_fil) : return
             if not def_fil                 : return
 
