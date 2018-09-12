@@ -27,9 +27,8 @@ If the data source doesn't abide to this convention (see `NOAA CO-OPS API`_ and 
 Web Service`_ for examples of two data sources that don't), a module **registered_as** can be included at 
 the bottom of a plugin file to define the list of protocols being extended or implemented. 
 
-.. code-block:: python
-	def registered_as(self):
-	        return ['http','https']
+def registered_as(self):
+        return ['http','https']
 
 It would then overload the method of transfer and use the one as described in the plugin.
 
@@ -55,11 +54,12 @@ using the :code:`add` action, edit the proper variables in the config (the flowb
 If running off a local RabbitMQ server, some of the documentation under **doc/Dev.rst** on how to set up the
 server might be useful), then open two terminals and run:
 
-.. code-block:: bash
-      sr_poll foreground pollnoaa.conf foreground
+sr_poll foreground pollnoaa.conf foreground
+
 in one and:
-.. code-block:: bash
-      sr_subscribe foreground subnoaa.conf foreground
+
+sr_subscribe foreground subnoaa.conf foreground
+
 in the other. If everything was configured correctly, the output should look something like this:
 FIXME: run this stuff and put your logs here
 
