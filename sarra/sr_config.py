@@ -199,7 +199,7 @@ class sr_config:
 
         if config != None :
            mandatory = True
-           if action in ['add','edit','enable','remove']: mandatory = False
+           if action in ['add','edit','enable','remove','rename']: mandatory = False
            usr_cfg = config
            if not config.endswith('.conf') : usr_cfg += '.conf'
            cdir = os.path.dirname(usr_cfg)
