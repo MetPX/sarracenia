@@ -1,3 +1,16 @@
+metpx-sarracenia (2.18.09b1) unstable; urgency=medium
+
+  * disabling timeouts on windows, as they were not working anyways.
+  * added ${DD} to substitutions in directives
+  * added --version option. ( issue #25 )
+  * added rename option. ( Issue #92 )
+  * added globbing to include directive ( Issue #31 )
+  * many corrections to French documentation.
+  * bugfix issues #85 #86 
+ 
+
+ -- Peter Silva <peter@blacklab>  Thu, 13 Sep 2018 23:34:52 -0400
+
 metpx-sarracenia (2.18.08b1) unstable; urgency=medium
 
   * bugfix    issue #76 sftp login passwords broken when any keys present. (from Marie!)
