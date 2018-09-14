@@ -296,7 +296,7 @@ function countall {
   # flags when two lines include *msg_log received* (with no other message between them) indicating no user will know what happenned.
 
   # flags when two lines include *msg_log received* (with no other message between them) indicating no user will know what happenned.
-  awk 'BEGIN { lr=0; }; /msg_log received/ { lr++; print lr, FILENAME, $0 ; next; }; { lr=0; } '  $LOGDIR/sr_subscribe_*_0*.log*  | grep -v '^1 ' >$LOGDIR/missed_dispositions.report
+  awk 'BEGIN { lr=0; }; /msg_log received/ { lr++; print lr, FILENAME, $0 ; next; }; { lr=0; } '  $LOGDIR/sr_subscribe_*_f??_??.log*  | grep -v '^1 ' >$LOGDIR/missed_dispositions.report
   missed_dispositions="`wc -l <$LOGDIR/missed_dispositions.report`"
 
 }
