@@ -1087,7 +1087,7 @@ class sr_config:
          
     def list_file(self,path):
         cmd = os.environ.get('PAGER')
-        if cmd == None: cmd="/bin/more"
+        if cmd == None: cmd="more"
 
         self.run_command([ cmd, path ] )
 

@@ -387,7 +387,17 @@ class sr_instances(sr_config):
                 self.logger.info("copying %s to %s" % (usr_fil,def_fil))
                 try   : os.unlink(def_fil)
                 except: pass
-                copyfile(usr_fil,def_fil)
+                if _platform != 'win32' :
+                    copyfile(usr_fil,def_fil)
+                else: # on windows convert text files...
+                    excf = open(usr_fil,'r')
+                    exfl = excf.readlines()
+                    excf.close()
+                    dsfl = list(map( lambda x: x.replace( '\n', '\r\n' ), exfl ))
+                    dscf = open( def_fil, 'w' )
+                    dscf.write(''.join(dsfl))
+                    dscf.close() 
+                    
 
         # disable
 
@@ -417,10 +427,14 @@ class sr_instances(sr_config):
 
              editor=os.environ.get('EDITOR')
              
-             if editor:
-                 self.run_command([ editor, edit_fil] )
-             else:
-                 self.logger.error('Please set EDITOR variable to use edit command')
+             if not editor:
+                 if _platform == 'win32' :
+                    editor='notepad'
+                 else:
+                    editor='vi'
+                 self.logger.info('using %s. Set EDITOR variable pick another one.' % editor )
+
+             self.run_command([ editor, edit_fil] )
 
         # enable
 
