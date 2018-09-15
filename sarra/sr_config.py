@@ -1087,7 +1087,11 @@ class sr_config:
          
     def list_file(self,path):
         cmd = os.environ.get('PAGER')
-        if cmd == None: cmd="more"
+        if cmd == None: 
+            if sys.platform != 'win32':
+                cmd="more"
+            else:
+                cmd="more.com"
 
         self.run_command([ cmd, path ] )
 
