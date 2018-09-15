@@ -2382,10 +2382,9 @@ class sr_config:
             if os.path.isdir(configdir+os.sep+confname) : continue
             if ( ((i+1)*21) >= columns ): 
                  print('')
-                 i=1
-            else:
-                 i+=1
-                 print( "%20s " % confname, end='' )
+                 i=0
+            i+=1
+            print( "%20s " % confname, end='' )
 
         print("\n")
 
