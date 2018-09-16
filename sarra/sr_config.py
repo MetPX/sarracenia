@@ -139,6 +139,17 @@ class sr_config:
         try    : os.makedirs(self.http_dir,        0o775,True)
         except : pass
 
+        # default config files
+        defn = self.user_config_dir + os.sep + "default.conf"
+        if not os.path.exists( defn ):
+            with open( defn, 'w' ) as f: 
+                f.writelines( [ "# set environment variables for all components to use." ] )
+
+        defn = self.user_config_dir + os.sep + "credentials.conf"
+        if not os.path.exists( defn ):
+            with open( defn, 'w' ) as f: 
+                f.writelines( [ "amqps://anonymous:anonymous@dd.weather.gc.ca" ] )
+
         # hostname
 
         self.hostname  = socket.getfqdn()
