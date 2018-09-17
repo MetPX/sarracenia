@@ -2394,6 +2394,7 @@ class sr_config:
            return
 
         for confname in sorted( os.listdir(configdir) ):
+            if confname[0] == '.' or confname[-1] == '~' : continue
             if os.path.isdir(configdir+os.sep+confname) : continue
             if ( ((i+1)*21) >= columns ): 
                  print('')
