@@ -266,19 +266,19 @@ sequence #2::
 
 In sequence #1, all files ending in 'gif' are rejected. In sequence #2, the 
 accept .* (which accepts everything) is encountered before the reject statement, 
-so the reject has no effect.
+so the reject has no effect.  Some options have global scope, rather than being
+interpreted in order.  for thoses cases, a second declaration overrides the first.
 
-Several options that need to be reused in different config files can be grouped in a file.
-In each config where the options subset should appear, the user would then use :
+Options to be reused in different config files can be grouped in an *include* file:
 
   - **--include <includeConfigPath>**
 
 The includeConfigPath would normally reside under the same config dir of its
-master configs. There is no restriction, any option can be placed in a config file
-included. The user must be aware that, for many options, several declarations
-means overwriting their values.
+master configs. If a URL is supplied as an includeConfigPATH, then a remote 
+configuraiton will be downloaded and cached (used until an update on the server 
+is detected.) See `Remote Configurations`_ for details.
 
-Any environment variable, or some built-in variables can also be put on the
+Environment variables, and some built-in variables can also be put on the
 right hand side to be evaluated, surrounded by ${..} The built-in variables are:
  
  - ${BROKER_USER} - the user name for authenticating to the broker (e.g. anonymous)
@@ -1537,7 +1537,7 @@ One can specify URI's as configuration files, rather than local files. Example:
 
   - **--config http://dd.weather.gc.ca/alerts/doc/cap.conf**
 
-On startup, sr_subscribe check if the local file cap.conf exists in the 
+On startup, sr_subscribe checks if the local file cap.conf exists in the 
 local configuration directory.  If it does, then the file will be read to find
 a line like so:
 

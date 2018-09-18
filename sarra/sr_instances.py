@@ -329,6 +329,7 @@ class sr_instances(sr_config):
             #self.print_configdir("user plugins",           self.user_config_dir +os.sep+ 'plugins')
             self.print_configdir("general",                self.user_config_dir )
             self.print_configdir("user configurations",    configdir)
+            print( "logs are in: %s\n" % self.user_log_dir )
             return
 
         for confname in sorted( os.listdir(configdir) ):
