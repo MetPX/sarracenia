@@ -1718,6 +1718,8 @@ class sr_subscribe(sr_instances):
         # when sr_sender did not derived from sr_subscribe it was always called
         new_dir = self.sundew_dirPattern(self.msg.urlstr,tfname,new_dir,filename)
 
+        self.logger.debug( "set_new new_dir = %s" % new_dir )
+
         # reset relpath from new_dir
 
         relpath = new_dir + '/' + filename
