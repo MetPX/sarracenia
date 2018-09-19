@@ -8,6 +8,7 @@ lists all changes between versions.
 
 * bugfix   on windows: many issues with on \ vs. / addressed.
 * bugfix   on windows, *edit* directive now works using notepad.exe by default.
+* bugfix   on windows, *add* adds carriage returns to example files added, so notepad is happy.
 * bugfix   on windows, *log* now works.
 * bugfix   on windows, *list* now works for individual files.
 * new      list now prints out log directory (which is hard to guess on windows)
