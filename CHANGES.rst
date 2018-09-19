@@ -6,9 +6,14 @@ lists all changes between versions.
 
 **git repo**
 
-* bugfix   many issues with on \ vs. / on windows.
+* bugfix   on windows: many issues with on \ vs. / addressed.
 * bugfix   on windows, *edit* directive now works using notepad.exe by default.
 * bugfix   on windows, *log* now works.
+* bugfix   on windows, *list* now works for individual files.
+* new      list now prints out log directory (which is hard to guess on windows)
+* bugfix   examples for sr_Pitcher use case where inaccurate.
+* bugfix   issue #99 *list* missed some items it should have listed.
+* bugfix   *list* no longer list dot files or those ending in ~ (tmp/work/hidden files)
 
 **2.18.09b1**
 
