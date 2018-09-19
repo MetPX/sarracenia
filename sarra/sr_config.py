@@ -1416,8 +1416,13 @@ class sr_config:
         if len(words) > 1 :
            config = ''
            words1 = self.varsub(words[1])
+           if sys.platform == 'win32':
+               words1 = words1.replace('\\','/')
+           
            if len(words) > 2:
               words2 = self.varsub(words[2])
+              if sys.platform == 'win32':
+                   words2 = words2.replace('\\','/')
 
         # parsing
 
