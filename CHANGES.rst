@@ -6,14 +6,17 @@ lists all changes between versions.
 
 **git repo**
 
+* bugfix   many issues with on \ vs. / on windows.
+* bugfix   on windows, *edit* directive now works using notepad.exe by default.
+* bugfix   on windows, *log* now works.
+
+**2.18.09b1**
+
 * bugfix    flow_setup was failing tests on rabbitmq server 3.7.7 (though it still worked.)
 *           flow_setup fixed so it works with 14.04 (use python2 for pyftpdlib )
 *
 *    new    added dd_ping.conf to do easy test of broker function to examples.
 *           flow_check.sh now does a spot check, flow_limit.sh limits the length of the test.
-
-**2.18.09b1**
-
 * change: flatten, mirror and strip options now affect only succeeding accept clauses. (Issue #80)
 * disabling timeouts on windows, as they were not working anyways.
 * added ${DD} to substitutions in directives
