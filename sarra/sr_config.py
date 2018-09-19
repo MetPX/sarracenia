@@ -1022,7 +1022,7 @@ class sr_config:
     def isMatchingPattern(self, chaine, accept_unmatch = False): 
 
         for mask in self.masks:
-            self.logger.debug( "isMatchingPattern: mask=%s" % mask)
+            self.logger.debug( "isMatchingPattern: mask: %s" % str(mask) )
             pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
             self.currentPattern    = pattern
             self.currentDir        = maskDir
@@ -1034,7 +1034,7 @@ class sr_config:
             self.flatten = flatten
             if mask_regexp.match(chaine) :
                if not accepting : return False
-               self.logger.debug( "isMatchingPattern: mask=%s strip=%s" % (mask, strip) )
+               self.logger.debug( "isMatchingPattern: mask=%s strip=%s" % (str(mask), strip) )
                return True
 
         return accept_unmatch
