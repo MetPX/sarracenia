@@ -2465,7 +2465,10 @@ class sr_config:
 
         del self.logger
 
-        LOG_FORMAT   = ('%(asctime)s [%(levelname)s] %(message)s')
+        if self.debug:
+            LOG_FORMAT   = ('%(asctime)s [%(levelname)s] %(pathname) %(lineno) %(message)s')
+        else:
+            LOG_FORMAT   = ('%(asctime)s [%(levelname)s] %(message)s')
           
         self.handler = logging.handlers.TimedRotatingFileHandler(self.logpath, when='midnight', \
                        interval=1, backupCount=self.logrotate)
