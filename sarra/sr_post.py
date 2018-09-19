@@ -428,6 +428,7 @@ class sr_post(sr_instances):
            self.logger.debug("%s Rejected by accept/reject options" % urlstr )
            return True
 
+        self.logger.debug( "%s not rejected" % urlstr )
         return False
 
     # =============
