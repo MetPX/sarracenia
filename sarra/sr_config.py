@@ -2288,6 +2288,7 @@ class sr_config:
                         self.pstrip = None
                      else:                   
                         self.strip  = 0
+                        self.logger.debug("FIXME: pstrip=%s" % words1 )
                         self.pstrip = words1
                      n = 2
 
