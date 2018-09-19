@@ -27,8 +27,8 @@ If the data source doesn't abide to this convention (see `NOAA CO-OPS API`_ and 
 Web Service`_ for examples of two data sources that don't), a module **registered_as** can be included at 
 the bottom of a plugin file to define the list of protocols being extended or implemented. 
 
-def registered_as(self):
-        return ['http','https']
+:code:`def registered_as(self):
+           return ['http','https']`
 
 It would then overload the method of transfer and use the one as described in the plugin.
 
@@ -47,24 +47,30 @@ that the data source is maintaining their end of the bargain). To download this 
 an sr_subscribe to the same exchange it got announced on, and it would retrieve the URL, which a **do_download**
 plugin could then take and download. An example polling plugin which grabs all water temperature and water level 
 data from the last hour, from all CO-OPS stations, and publishes them is included under **plugins/** as 
-*poll_noaa.py*. A corresponding **do_download** plugin for a sarra instance to download this file is included 
-as *download_noaa_hydro.py*. Example configurations for both sr_poll and sr_subscribe are included under 
-**examples/**, named pollnoaa.conf and subnoaa.conf. To run, add both plugins and configurations
+**poll_noaa.py**. A corresponding **do_download** plugin for a sarra instance to download this file is included 
+as **download_noaa_hydro.py**. Example configurations for both sr_poll and sr_subscribe are included under 
+**examples/**, named **pollnoaa.conf** and **subnoaa.conf**. To run, add both plugins and configurations
 using the :code:`add` action, edit the proper variables in the config (the flowbroker, destination among others. 
 If running off a local RabbitMQ server, some of the documentation under **doc/Dev.rst** on how to set up the
 server might be useful), then open two terminals and run:
 
-sr_poll foreground pollnoaa.conf foreground
+:code:`sr_poll foreground pollnoaa.conf foreground`
 
 in one and:
 
-sr_subscribe foreground subnoaa.conf foreground
+:code:`sr_subscribe foreground subnoaa.conf foreground`
 
 in the other. If everything was configured correctly, the output should look something like this:
 FIXME: run this stuff and put your logs here
 
 SHC SOAP Web Service
 ~~~~~~~~~~~~~~~~~~~~
+A SOAP web service (Simple Object Access Protocol) uses an XML-based messaging system to supply requested 
+data over a network. The client can specify parameters for a supported operation on the web service (for 
+example a search), denoted with a wdsl file extension, and the server will return an XML-formatted SOAP 
+response. The Service Hydrographique du Canada (SHC) uses this web service as an API to get hydrometric
+data depending on the parameters sent. It
 
 USGS Instantaneous Values Web Service
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
