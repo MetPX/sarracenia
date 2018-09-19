@@ -54,11 +54,11 @@ using the :code:`add` action, edit the proper variables in the config (the flowb
 If running off a local RabbitMQ server, some of the documentation under **doc/Dev.rst** on how to set up the
 server might be useful), then open two terminals and run:
 
-:code:`sr_poll foreground pollnoaa.conf foreground`
+:code:`[aspymap:~]$ sr_poll foreground pollnoaa.conf foreground`
 
 in one and:
 
-:code:`sr_subscribe foreground subnoaa.conf foreground`
+:code:`[aspymap:~]$ sr_subscribe foreground subnoaa.conf foreground`
 
 in the other. If everything was configured correctly, the output should look something like this:
 FIXME: run this stuff and put your logs here
@@ -66,11 +66,27 @@ FIXME: run this stuff and put your logs here
 SHC SOAP Web Service
 ~~~~~~~~~~~~~~~~~~~~
 A SOAP web service (Simple Object Access Protocol) uses an XML-based messaging system to supply requested 
-data over a network. The client can specify parameters for a supported operation on the web service (for 
-example a search), denoted with a wdsl file extension, and the server will return an XML-formatted SOAP 
+data over a network. The client can specify parameters for a supported operation (for example a search) on 
+the web service, denoted with a wdsl file extension, and the server will return an XML-formatted SOAP 
 response. The Service Hydrographique du Canada (SHC) uses this web service as an API to get hydrometric
-data depending on the parameters sent. It
+data depending on the parameters sent. It only supports one operation, search, which accepts the following 
+parameters: dataName, latitudeMin, latitudeMax, longitudeMin, longitudeMax, depthMin, depthMax, dateMin, 
+dateMax, start, end, sizeMax, metadata, metadataSelection, order. For example, a search will return all the
+water level data available from Acadia Cove in Nunavut on September 1st, 2018 if your search contains
+the following parameters: 'wl', 40.0, 85.0, -145.0, -50.0, 0.0, 0.0, '2018-09-01 00:00:00', 
+'2018-09-01 23:59:59', 1, 1000, 'true', 'station_id=4170, 'asc'. The response can then be converted into a 
+file and dumped, which can be advertised, or the parameters can be advertised themselves in the report
+notice, which a sarra **do_download** plugin could then decipher and process the data into a file user-side. 
+In order to only advertise new data from SHC, a polling instance could be configured to sleep every 30 minutes,
+and a **do_poll** plugin could set the start-end range to the last half hour before forming the request. 
+Each request is returned with a status message confirming if it was a valid function call. The plugin could
+ then check the status message is ok before posting the message advertising new data to the exchange.
+A **do_download** plugin takes these parameters passed in the message, forms a SOAP query with them, and
+extracts the data/saves it to a file. Examples of plugins that do both of these steps can be found under
+**plugins/**, named **poll_shc_soap.py** and **download_shc_soap.py**. Example configurations for running
+both are included under **examples/**, named **pollsoapshc.conf** and **subsoapshc.conf**. 
 
 USGS Instantaneous Values Web Service
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+The United States Geological Survey publishes their water data through their Instantaneous Values RESTful
+Web Service, which uses HTTP GET requests to filter their data. 
