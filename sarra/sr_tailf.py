@@ -38,8 +38,10 @@ def tail_file(filename, nlines):
            else:
               time.sleep(0.2)
 
-
-if __name__ == '__main__':
+def main():
     filename = sys.argv[1]
     #nlines = int(sys.argv[2])
     tail_file(filename, 10)
+
+if __name__ == '__main__':
+    main()
