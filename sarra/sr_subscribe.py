@@ -1659,6 +1659,8 @@ class sr_subscribe(sr_instances):
         # strip using a pattern
 
         elif self.pstrip != None :
+           self.logger.debug( 'set_new, pattern stripping active: %s' % self.pstrip )
+
            #MG FIXME Peter's wish to have replacement in pstrip (ex.:${SOURCE}...)
            try:    relstrip = re.sub(self.pstrip,'',relpath,1)
            except: relstrip = relpath
