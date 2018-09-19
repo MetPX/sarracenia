@@ -1396,7 +1396,10 @@ class sr_config:
                           continue
                   except: pass
 
-                  try:    result = result.replace('${'+e+'}',os.environ.get(e))
+                  try:    
+                      result = result.replace('${'+e+'}',os.environ.get(e))
+                      if sys.platform == 'win32':
+                               result = result.replace('\\','/')
                   except: pass
 
         return(result)
