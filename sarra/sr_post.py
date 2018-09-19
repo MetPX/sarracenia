@@ -902,6 +902,10 @@ class sr_post(sr_instances):
 
         path = path.replace(os.sep + '.' + os.sep, os.sep )
 
+        # always use / as separator for paths being posted.
+        if os.sep != '/' :  # windows
+            path = path.replace( os.sep, '/' )
+
         # path is a link
 
         if os.path.islink(path):
