@@ -1416,13 +1416,9 @@ class sr_config:
         if len(words) > 1 :
            config = ''
            words1 = self.varsub(words[1])
-           if sys.platform == 'win32':
-               words1 = words1.replace('\\','/')
            
            if len(words) > 2:
               words2 = self.varsub(words[2])
-              if sys.platform == 'win32':
-                   words2 = words2.replace('\\','/')
 
         # parsing
 
@@ -2295,6 +2291,8 @@ class sr_config:
                         self.strip  = 0
                         self.logger.debug("FIXME: pstrip=%s" % words1 )
                         self.pstrip = words1
+                        if sys.platform == 'win32': # why windows does this? no clue...
+                             words2 = words2.replace('\\\\','/')
                      n = 2
 
                 elif words0 in ['subtopic','sub'] : # See: sr_config.7 
