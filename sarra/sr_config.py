@@ -2457,6 +2457,7 @@ class sr_config:
 
         if self.logpath  == None :
            self.logger.debug("on screen logging")
+           LOG_FORMAT   = ('%(asctime)s [%(levelname)s] %(pathname) %(lineno) %(message)s')
            return
 
         # to file
@@ -2465,10 +2466,7 @@ class sr_config:
 
         del self.logger
 
-        if self.debug:
-            LOG_FORMAT   = ('%(asctime)s [%(levelname)s] %(pathname) %(lineno) %(message)s')
-        else:
-            LOG_FORMAT   = ('%(asctime)s [%(levelname)s] %(message)s')
+        LOG_FORMAT   = ('%(asctime)s [%(levelname)s] %(message)s')
           
         self.handler = logging.handlers.TimedRotatingFileHandler(self.logpath, when='midnight', \
                        interval=1, backupCount=self.logrotate)
