@@ -2035,6 +2035,10 @@ class sr_config:
                                  path = os.path.abspath(path)
                                  if self.realpath_post:
                                      path = os.path.realpath(path)
+                                
+                                 if sys.platform == 'win32':
+                                     path = path.replace('\\','/')
+
                                  self.postpath.append(path)
                                  n = n + 1
                          except: break

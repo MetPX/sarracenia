@@ -421,6 +421,9 @@ class sr_post(sr_instances):
         if self.realpath_filter and not self.realpath_post :
            if os.path.exist(path) :
               fltr_post_relpath = os.path.realpath(path)
+              if sys.platform == 'win32':
+                  fltr_post_relpath = fltr_post_relpath.replace('\\','/')
+
               if self.post_base_dir : fltr_post_relpath = fltr_post_relpath.replace(self.post_base_dir, '')
               urlstr = self.post_base_url + '/' + fltr_post_relpath
         
@@ -862,6 +865,8 @@ class sr_post(sr_instances):
 
         if os.path.islink(dst) and self.realpath_post:
            dst = os.path.realpath(dst)
+           if sys.platform == 'win32':
+                  dst = dst.replace('\\','/')
 
         # file
 
@@ -914,7 +919,11 @@ class sr_post(sr_instances):
 
            if self.follow_symlinks :
               link  = os.readlink(path)
-              try   : rpath = os.path.realpath(link)
+              try   : 
+                   rpath = os.path.realpath(link)
+                   if sys.platform == 'win32':
+                       rpath = rpath.replace('\\','/')
+
               except: return done
 
               lstat = None
@@ -1132,6 +1141,8 @@ class sr_post(sr_instances):
 
         if os.path.islink(src) and self.realpath_post :
            src = os.path.realpath(src)
+           if sys.platform == 'win32':
+               src = src.replace('\\','/')
 
         # walk src directory, this walk is depth first... there could be a lot of time
         # between *listdir* run, and when a file is visited, if there are subdirectories before you get there.
@@ -1157,6 +1168,9 @@ class sr_post(sr_instances):
         """
         if os.path.islink(p):
             realp = os.path.realpath(p)
+            if sys.platform == 'win32':
+               realp = realp.replace('\\','/')
+
             self.logger.info("sr_watch %s is a link to directory %s" % ( p, realp) )
             if self.realpath_post:
                 d=realp
@@ -1291,6 +1305,9 @@ class sr_post(sr_instances):
            if self.post_base_dir : path = self.post_base_dir + '/' + path
            if os.path.exist(path) :
               fltr_post_relpath = os.path.realpath(path)
+              if sys.platform == 'win32':
+                  fltr_post_relpath = fltr_post_relpath.replace('\\','/')
+
               if self.post_base_dir : fltr_post_relpath = fltr_post_relpath.replace(self.post_base_dir, '')
               urlstr = self.post_base_url + '/' + fltr_post_relpath
 
