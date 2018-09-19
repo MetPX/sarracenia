@@ -383,7 +383,7 @@ class sr_post(sr_instances):
 
         if self.rename :
            newname = self.rename
-           if self.rename[-1] == os.sep :
+           if self.rename[-1] == '/' :
               newname += os.path.basename(path)
 
         # strip 'N' heading directories
@@ -395,7 +395,7 @@ class sr_post(sr_instances):
            token = path.split('/')
            try :   token   = token[strip:]
            except: token   = [os.path.basename(path)]
-           newname = os.sep+os.sep.join(token)
+           newname = '/'+'/'.join(token)
 
         if newname == path : return None
 
@@ -856,8 +856,8 @@ class sr_post(sr_instances):
 
         # watchdog funny ./ added at end of directory path ... removed
 
-        src = src.replace(os.sep + '.' + os.sep, os.sep )
-        dst = dst.replace(os.sep + '.' + os.sep, os.sep )
+        src = src.replace('/./', '/' )
+        dst = dst.replace('/./', '/' )
 
         if os.path.islink(dst) and self.realpath_post:
            dst = os.path.realpath(dst)
@@ -880,8 +880,8 @@ class sr_post(sr_instances):
         if os.path.isdir(dst) :
             for x in os.listdir(dst):
 
-                dst_x = dst + os.sep + x
-                src_x = src + os.sep + x
+                dst_x = dst + '/' + x
+                src_x = src + '/' + x
 
                 ok = self.post_move(src_x,dst_x)
 
@@ -900,7 +900,7 @@ class sr_post(sr_instances):
 
         # watchdog funny ./ added at end of directory path ... removed
 
-        path = path.replace(os.sep + '.' + os.sep, os.sep )
+        path = path.replace( '/./', '/' )
 
         # always use / as separator for paths being posted.
         if os.sep != '/' :  # windows
@@ -1136,7 +1136,7 @@ class sr_post(sr_instances):
         # between *listdir* run, and when a file is visited, if there are subdirectories before you get there.
         # hence the existence check after listdir (crashed in flow_tests of > 20,000)
         for x in os.listdir(src):
-            path = src + os.sep + x
+            path = src + '/' + x
             if os.path.isdir(path):
                self.walk(path)
                continue
@@ -1160,7 +1160,7 @@ class sr_post(sr_instances):
             if self.realpath_post:
                 d=realp
             else:
-                d=p + os.sep + '.'
+                d=p + '/' + '.'
         else:
             d=p
 
@@ -1387,7 +1387,7 @@ class sr_post(sr_instances):
 
         for d in self.postpath :
             self.logger.debug("postpath = %s" % d)
-            if pbd and not d.startswith(pbd) : d = pbd + os.sep + d
+            if pbd and not d.startswith(pbd) : d = pbd + '/' + d
 
             if self.sleep > 0 : 
                self.watch_dir(d)
@@ -1591,7 +1591,7 @@ def main():
         arg   = sys.argv[i]
         value = '%s' % arg
         i     = i - 1
-        if pbd and not pbd in value : value = pbd + os.sep + value
+        if pbd and not pbd in value : value = pbd + '/' + value
         if os.path.exists(value) or os.path.islink(value):
            postpath.append(value)
            try:    args.remove(arg)

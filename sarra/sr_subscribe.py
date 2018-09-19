@@ -744,7 +744,7 @@ class sr_subscribe(sr_instances):
         self.pbc_new_baseurl = self.msg.new_baseurl
         self.pbc_new_relpath = self.msg.new_relpath
         self.pbc_local_dir   = self.msg.new_dir
-        self.pbc_local_file  = self.msg.new_dir + os.sep + self.msg.new_file
+        self.pbc_local_file  = self.msg.new_dir + '/' + self.msg.new_file
         self.pbc_remote_file = self.msg.new_file
 
         self.pbc_new_url     = urllib.parse.urlparse(self.msg.new_baseurl + '/' + self.msg.new_relpath)
@@ -1151,7 +1151,7 @@ class sr_subscribe(sr_instances):
               if self.msg.isRetry: self.consumer.msg_worked()
               return True
 
-           path = self.msg.new_dir + os.sep + self.msg.new_file
+           path = self.msg.new_dir + '/' + self.msg.new_file
 
            try : 
                if os.path.isfile(path) : os.unlink(path)
@@ -1198,7 +1198,7 @@ class sr_subscribe(sr_instances):
 
            ok = True
            try : 
-               path = self.msg.new_dir + os.sep + self.msg.new_file
+               path = self.msg.new_dir + '/' + self.msg.new_file
 
                if os.path.isfile(path) : os.unlink(path)
                if os.path.islink(path) : os.unlink(path)
