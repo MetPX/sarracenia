@@ -283,6 +283,7 @@ class sr_instances(sr_config):
            elif action == 'enable'   : self.exec_action_on_config(action)
            elif action == 'list'     : self.exec_action_on_config(action)
            elif action == 'remove'   : self.exec_action_on_config(action)
+           elif action == 'rename'   : self.exec_action_on_config(action)
            else :
                 self.logger.warning("Should invoke 5: %s [args] action config" % sys.argv[0])
            os._exit(0)
@@ -311,6 +312,7 @@ class sr_instances(sr_config):
         elif action == 'list'       : self.exec_action_on_config(action)
         elif action == 'log'        : self.exec_action_on_config(action)
         elif action == 'remove'     : self.exec_action_on_config(action)
+        elif action == 'rename'     : self.exec_action_on_config(action)
 
         else :
            self.logger.error("action unknown %s" % action)
@@ -327,6 +329,7 @@ class sr_instances(sr_config):
             #self.print_configdir("user plugins",           self.user_config_dir +os.sep+ 'plugins')
             self.print_configdir("general",                self.user_config_dir )
             self.print_configdir("user configurations",    configdir)
+            print( "logs are in: %s\n" % self.user_log_dir )
             return
 
         for confname in sorted( os.listdir(configdir) ):
@@ -385,7 +388,17 @@ class sr_instances(sr_config):
                 self.logger.info("copying %s to %s" % (usr_fil,def_fil))
                 try   : os.unlink(def_fil)
                 except: pass
-                copyfile(usr_fil,def_fil)
+                if _platform != 'win32' :
+                    copyfile(usr_fil,def_fil)
+                else: # on windows convert text files...
+                    excf = open(usr_fil,'r')
+                    exfl = excf.readlines()
+                    excf.close()
+                    dsfl = list(map( lambda x: x.replace( '\n', '\r\n' ), exfl ))
+                    dscf = open( def_fil, 'w' )
+                    dscf.write(''.join(dsfl))
+                    dscf.close() 
+                    
 
         # disable
 
@@ -415,10 +428,14 @@ class sr_instances(sr_config):
 
              editor=os.environ.get('EDITOR')
              
-             if editor:
-                 self.run_command([ editor, edit_fil] )
-             else:
-                 self.logger.error('Please set EDITOR variable to use edit command')
+             if not editor:
+                 if _platform == 'win32' :
+                    editor='notepad'
+                 else:
+                    editor='vi'
+                 self.logger.info('using %s. Set EDITOR variable pick another one.' % editor )
+
+             self.run_command([ editor, edit_fil] )
 
         # enable
 
@@ -479,7 +496,18 @@ class sr_instances(sr_config):
              try   : os.unlink(def_fil)
              except: self.logger.error("could not remove %s" % self.def_fil)
 
-    
+        # rename
+
+        elif action == 'rename' :
+            old_fil = self.user_config_dir + os.sep + sub_dir + os.sep + self.user_args[-1]
+            if not os.path.isfile(old_fil) : return
+            if not def_fil                 : return
+
+            copyfile(old_fil,def_fil)
+            self.logger.info("renaming %s to %s" % (old_fil,def_fil))
+            try    : os.unlink(old_fil)
+            except : pass
+
     def file_get_int(self,path):
         i = None
         try :

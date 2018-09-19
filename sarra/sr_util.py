@@ -35,6 +35,7 @@
 from hashlib import md5
 from hashlib import sha512
 
+import sys
 import calendar,datetime
 import os,random,signal,stat,sys,time
 import urllib
@@ -50,7 +51,8 @@ class TimeoutException(Exception):
 
 # alarm_cancel
 def alarm_cancel():
-    signal.alarm(0)
+    if sys.platform != 'win32' :
+        signal.alarm(0)
 
 # alarm_raise
 def alarm_raise(n, f):
@@ -58,8 +60,9 @@ def alarm_raise(n, f):
 
 # alarm_set
 def alarm_set(time):
-    signal.signal(signal.SIGALRM, alarm_raise)
-    signal.alarm(time)
+    if sys.platform != 'win32' :
+        signal.signal(signal.SIGALRM, alarm_raise)
+        signal.alarm(time)
 
 # =========================================
 # raw_message to mimic raw amqplib
@@ -767,7 +770,7 @@ class sr_transport():
 def startup_args(sys_argv):
 
     actions = ['foreground', 'start', 'stop', 'status', 'sanity', 'restart', 'reload', 'cleanup', 'declare', 'setup' ]
-    actions.extend( ['add','disable', 'edit', 'enable', 'list',    'log',    'remove' ] )
+    actions.extend( ['add','disable', 'edit', 'enable', 'list',    'log',    'remove', 'rename'] )
 
     args    = None
     action  = None

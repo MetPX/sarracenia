@@ -70,7 +70,7 @@ else:
 class sr_config:
 
     def __init__(self,config=None,args=None,action=None):
-        if '-V' in sys.argv :
+        if '-V' in sys.argv or '--version' in sys.argv:
            print("Version %s" % sarra.__version__ )
            os._exit(0)
 
@@ -139,6 +139,17 @@ class sr_config:
         try    : os.makedirs(self.http_dir,        0o775,True)
         except : pass
 
+        # default config files
+        defn = self.user_config_dir + os.sep + "default.conf"
+        if not os.path.exists( defn ):
+            with open( defn, 'w' ) as f: 
+                f.writelines( [ "# set environment variables for all components to use." ] )
+
+        defn = self.user_config_dir + os.sep + "credentials.conf"
+        if not os.path.exists( defn ):
+            with open( defn, 'w' ) as f: 
+                f.writelines( [ "amqps://anonymous:anonymous@dd.weather.gc.ca" ] )
+
         # hostname
 
         self.hostname  = socket.getfqdn()
@@ -199,7 +210,7 @@ class sr_config:
 
         if config != None :
            mandatory = True
-           if action in ['add','edit','enable','remove']: mandatory = False
+           if action in ['add','edit','enable','remove','rename']: mandatory = False
            usr_cfg = config
            if not config.endswith('.conf') : usr_cfg += '.conf'
            cdir = os.path.dirname(usr_cfg)
@@ -1087,7 +1098,11 @@ class sr_config:
          
     def list_file(self,path):
         cmd = os.environ.get('PAGER')
-        if cmd == None: cmd="/bin/more"
+        if cmd == None: 
+            if sys.platform != 'win32':
+                cmd="more"
+            else:
+                cmd="more.com"
 
         self.run_command([ cmd, path ] )
 
@@ -2379,13 +2394,13 @@ class sr_config:
            return
 
         for confname in sorted( os.listdir(configdir) ):
+            if confname[0] == '.' or confname[-1] == '~' : continue
             if os.path.isdir(configdir+os.sep+confname) : continue
             if ( ((i+1)*21) >= columns ): 
                  print('')
-                 i=1
-            else:
-                 i+=1
-                 print( "%20s " % confname, end='' )
+                 i=0
+            i+=1
+            print( "%20s " % confname, end='' )
 
         print("\n")
 
@@ -2629,6 +2644,10 @@ class sr_config:
 
         if '${SOURCE}' in cdir :
            new_dir = new_dir.replace('${SOURCE}',self.msg.headers['source'])
+
+        if '${DD}' in cdir :
+           DD = time.strftime("%d", time.gmtime()) 
+           new_dir = new_dir.replace('${DD}',DD)
 
         if '${HH}' in cdir :
            HH = time.strftime("%H", time.gmtime()) 

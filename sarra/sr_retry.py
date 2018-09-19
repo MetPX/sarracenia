@@ -245,8 +245,9 @@ class sr_retry:
                             #self.logger.debug("DEBUG %s is created" % path)
            else           :
                             #self.logger.debug("DEBUG %s is appended" % path)
-                            fp = open(path,'r+')
-                            fp.seek(0,2)
+                            #fp = open(path,'r+')
+                            #fp.seek(0,2)
+                            fp = open(path,'a')
 
         try:
            line = self.msgToJSON(message,done)
@@ -301,19 +302,25 @@ class sr_retry:
              # rename to working file to avoid corruption
 
              if not os.path.isfile(self.retry_work) :
-                fp = open(self.retry_work,'w')
-                fp.close()
-                if os.path.isfile(self.retry_path) : os.rename(self.retry_path,self.retry_work)
+                if os.path.isfile(self.retry_path) : 
+                    os.rename(self.retry_path,self.retry_work)
+                else:
+                    fp = open(self.retry_work,'w')
+                    fp.close()
 
              if not os.path.isfile(self.state_work):
-                fp = open(self.state_work,'w')
-                fp.close()
-                if os.path.isfile(self.state_path) : os.rename(self.state_path,self.state_work)
+                if os.path.isfile(self.state_path) : 
+                    os.rename(self.state_path,self.state_work)
+                else:
+                    fp = open(self.state_work,'w')
+                    fp.close()
 
              if not os.path.isfile(self.new_work):
-                fp = open(self.new_work,'w')
-                fp.close()
-                if os.path.isfile(self.new_path) : os.rename(self.new_path,self.new_work)
+                if os.path.isfile(self.new_path) : 
+                    os.rename(self.new_path,self.new_work)
+                else:
+                    fp = open(self.new_work,'w')
+                    fp.close()
 
              # state to heart
 

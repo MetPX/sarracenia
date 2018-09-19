@@ -12,6 +12,18 @@ lists all changes between versions.
 *    new    added dd_ping.conf to do easy test of broker function to examples.
 *           flow_check.sh now does a spot check, flow_limit.sh limits the length of the test.
 
+**2.18.09b1**
+
+* change: flatten, mirror and strip options now affect only succeeding accept clauses. (Issue #80)
+* disabling timeouts on windows, as they were not working anyways.
+* added ${DD} to substitutions in directives
+* added --version option. ( issue #25 )
+* added rename option. ( Issue #92 )
+* added globbing to include directive ( Issue #31 )
+* many corrections to French documentation.
+* bugfix issues #85 #86 
+
+
 **2.18.08b1**
 
 * BUG       claims to be 2.18.07b3 (missed commit of changing that.)
