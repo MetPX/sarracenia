@@ -1403,7 +1403,7 @@ class sr_config:
 
 
     def option(self,words):
-        self.logger.debug("sr_config option %s" % words[0])
+        self.logger.debug("sr_config option %s" % words)
 
         # option strip out '-' 
 
