@@ -33,6 +33,8 @@
 
 import os,sys,time
 
+import urllib.parse
+
 
 #============================================================
 # sr_cache supports/uses :
@@ -65,6 +67,7 @@ class sr_cache():
     def check(self, key, path, part):
         self.logger.debug("sr_cache check")
 
+        qpath = urllib.parse.quote(path)
         # set time and value
         now   = time.time()
         value = '%s*%s' % (path,part)
@@ -75,7 +78,7 @@ class sr_cache():
            kdict = {}
            kdict[value] = now
            self.cache_dict[key] = kdict
-           self.fp.write("%s %f %s %s\n"%(key,now,path,part))
+           self.fp.write("%s %f %s %s\n"%(key,now,qpath,part))
            self.count += 1
            return True
 
@@ -92,7 +95,7 @@ class sr_cache():
 
         # differ or newer, write to file
 
-        self.fp.write("%s %f %s %s\n"%(key,now,path,part))
+        self.fp.write("%s %f %s %s\n"%(key,now,qpath,part))
         self.count += 1
         return not present
 
@@ -116,6 +119,7 @@ class sr_cache():
         now        = time.time()
         new_dict   = {}
         self.count = 0
+        qdelpath = urllib.parse.quote(delpath)
 
         # from  cache[sum] = [(time,[path,part]), ... ]
         for key in self.cache_dict.keys() :
@@ -129,15 +133,15 @@ class sr_cache():
                 if ttl > self.expire : continue
 
                 parts = value.split('*')
-                path  = parts[0]
+                qpath  = parts[0]
                 part  = parts[1]
 
-                if path == delpath  : continue
+                if qpath == qdelpath  : continue
 
                 ndict[value] = t
                 self.count  += 1
 
-                if fp : fp.write("%s %f %s %s\n"%(key,t,path,part))
+                if fp : fp.write("%s %f %s %s\n"%(key,t,qpath,part))
 
             if len(ndict) > 0 : new_dict[key] = ndict
 
@@ -210,7 +214,8 @@ class sr_cache():
                   words    = line.split()
                   key      = words[0]
                   ctime    = float(words[1])
-                  path     = words[2]
+                  qpath     = words[2]
+                  path     = urllib.parse.unquote(qpath)
                   part     = words[3]
                   value    = '%s*%s' % (path,part)
 
