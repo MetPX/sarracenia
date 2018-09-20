@@ -6,6 +6,9 @@ lists all changes between versions.
 
 **git repo**
 
+**2.18.09b2**
+
+* bugfix   fixed duplicate suppression corruption when files have spaces in their names.
 * bugfix   on windows: many issues with on \ vs. / addressed.
 * bugfix   on windows, *edit* directive now works using notepad.exe by default.
 * bugfix   on windows, *add* adds carriage returns to example files added, so notepad is happy.
