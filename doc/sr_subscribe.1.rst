@@ -151,19 +151,6 @@ the broker. To view the available configurations, use::
 
   blacklab% sr_subscribe list
 
-  packaged plugins: ( /usr/lib/python3/dist-packages/sarra/plugins ) 
-         __pycache__       bad_plugin1.py       bad_plugin2.py       bad_plugin3.py     destfn_sample.py       download_cp.py 
-      download_dd.py      download_scp.py     download_wget.py          file_age.py        file_check.py          file_log.py 
-      file_rxpipe.py        file_total.py           harness.py          hb_cache.py            hb_log.py         hb_memory.py 
-         hb_pulse.py         html_page.py          line_log.py         line_mode.py               log.py         msg_2http.py 
-       msg_2local.py    msg_2localfile.py     msg_auditflow.py     msg_by_source.py       msg_by_user.py         msg_delay.py 
-       msg_delete.py      msg_download.py          msg_dump.py        msg_fdelay.py msg_filter_wmo2msc.py  msg_from_cluster.py 
-    msg_hour_tree.py           msg_log.py     msg_print_lag.py   msg_rename4jicc.py    msg_rename_dmf.py msg_rename_whatfn.py 
-      msg_renamer.py msg_replace_new_dir.py          msg_save.py      msg_skip_old.py        msg_speedo.py msg_sundew_pxroute.py 
-   msg_test_retry.py   msg_to_clusters.py         msg_total.py        part_check.py  part_clamav_scan.py        poll_pulse.py 
-      poll_script.py    post_hour_tree.py          post_log.py    post_long_flow.py     post_override.py   post_rate_limit.py 
-       post_total.py         watch_log.py 
-
   configuration examples: ( /usr/lib/python3/dist-packages/sarra/examples/subscribe ) 
             all.conf     all_but_cap.conf            amis.conf            aqhi.conf             cap.conf      cclean_f91.conf 
       cdnld_f21.conf       cfile_f44.conf        citypage.conf       clean_f90.conf            cmml.conf cscn22_bulletins.conf 
@@ -213,7 +200,18 @@ configuration line::
 
 In the above example, *broker* is the option keyword, and the rest of the line is the 
 value assigned to the setting. Configuration files are a sequence of settings, one per line. 
-Note that the files are read in order, most importantly for *directory* and *accept* clauses.  
+Note:
+
+* the files are read from top to bottom, most importantly for *directory*, *strip*, *mirror*,
+  and *flatten* options apply to *accept* clauses that occur after them in the file.
+
+* The forward slash (/) as the path separator in Sarracenia configuration files on all 
+  operating systems. Use of the backslash character as a path separator (as used in the 
+  cmd shell on Windows) may not work properly. When files are read on Windows, the path
+  separator is immediately converted to the forward slash, so all pattern matching,
+  in accept, reject, strip etc... directives should use forward slashes when a path
+  separator is needed.
+  
 Example::
 
     directory A

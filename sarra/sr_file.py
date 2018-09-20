@@ -116,7 +116,7 @@ class sr_file():
 
     def ls_python(self,dpath):
         for x in os.listdir(dpath):
-            dst = dpath + os.sep + x
+            dst = dpath + '/' + x
             if os.path.isdir(dst):
                if self.recursive : self.ls_python(dst)
                continue
