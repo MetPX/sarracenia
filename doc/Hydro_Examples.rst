@@ -13,8 +13,8 @@ Polling Protocols Natively Supported
 Out of the box, Sarracenia supports polling of HTTP/HTTPS and SFTP/FTP sources where the filename
 gets appended to the end of the base URL. For example, if you're trying to access the water level
 data of Ghost Lake Reservoir near Cochrane in Alberta, which can be accessed by navigating to 
-http://environment.alberta.ca/apps/Basins/data/figures/river/abrivers/stationdata/L_HG_05BE005_table.json,
-the base URL in this case would be considered the http://environment.alberta.ca/apps/Basins/data/figures/river/abrivers/stationdata/ part, and the filename the L_HG_05BE005_table.json part. Since the base URL doesn't
+`http://environment.alberta.ca/apps/Basins/data/figures/river/abrivers/stationdata/L_HG_05BE005_table.json`,
+the base URL in this case would be considered the `http://environment.alberta.ca/apps/Basins/data/figures/river/abrivers/stationdata/` part, and the filename the `L_HG_05BE005_table.json` part. Since the base URL doesn't
 contain a nice directory with all the JSON files, if you wanted to check if new water level data has 
 been added at the locator above, since it's a JSON file, you could check the last-modified header to
 see if it has been modified since you last polled. From there, you would need to set the new_baseurl to the 
@@ -37,9 +37,9 @@ Examples of Integrating APIs into Plugins
 NOAA CO-OPS API
 ~~~~~~~~~~~~~~~
 The National Oceanic and Atmospheric Administration Tides and Currents Department releases their CO-OPS 
-station observations and predictions data through a GET RESTful web service, available at 
-https://tidesandcurrents.noaa.gov/api/. For example, if you want to access the water temperature data 
-from the last hour in Honolulu, you can navigate to https://tidesandcurrents.noaa.gov/api/datagetter?range=1&station=1612340&product=water_temperature&units=metric&time_zone=gmt&application=web_services&format=csv.
+station observations and predictions data through a GET RESTful web service, available at `the NOAA Tides
+and Currents website <https://tidesandcurrents.noaa.gov/api/>`_. For example, if you want to access the 
+water temperature data from the last hour in Honolulu, you can navigate to `https://tidesandcurrents.noaa.gov/api/datagetter?range=1&station=1612340&product=water_temperature&units=metric&time_zone=gmt&application=web_services&format=csv`.
 A new observation gets recorded every six minutes, so if you wanted to advertise solely new data through
 Sarracenia, you would configure an sr_poll instance to connect to the API, sleep every hour, and build
 it a GET request to announce every time it woke up (this operates under the potentially misguided assumption 
@@ -54,11 +54,11 @@ using the :code:`add` action, edit the proper variables in the config (the flowb
 If running off a local RabbitMQ server, some of the documentation under **doc/Dev.rst** on how to set up the
 server might be useful), then open two terminals and run:
 
-:code:`[aspymap:~]$ sr_poll foreground pollnoaa.conf foreground`
+:code:`[aspymap:~]$ sr_poll foreground pollnoaa.conf`
 
 in one and:
 
-:code:`[aspymap:~]$ sr_subscribe foreground subnoaa.conf foreground`
+:code:`[aspymap:~]$ sr_subscribe foreground subnoaa.conf`
 
 in the other. If everything was configured correctly, the output should look something like this:
 FIXME: run this stuff and put your logs here
@@ -89,4 +89,28 @@ both are included under **examples/**, named **pollsoapshc.conf** and **subsoaps
 USGS Instantaneous Values Web Service
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The United States Geological Survey publishes their water data through their Instantaneous Values RESTful
-Web Service, which uses HTTP GET requests to filter their data. 
+Web Service, which uses HTTP GET requests to filter their data. It returns the data in XML files once 
+requested, and can support more than one station ID argument at a time (bulk data download). More info on 
+the service can be found `at the water services website <https://waterservices.usgs.gov/rest/IV-Service.html>`_. 
+They have a long list of parameters to specify based on the type of water data you would like to retrieve as well,
+which is passed through the parameterCd argument. For example, if you wanted to fetch water discharge, level, and
+temperature data from the last three hours from North Fork Vermilion River near Bismarck, IL, you would use 
+the following URL:
+https://waterservices.usgs.gov/nwis/iv/?format=waterml,2.0&indent=on&site=03338780&period=PT3H&parameterCd=00060,00065,00011.
+A list of parameter codes to use to tailor your results can be found `here <https://help.waterdata.usgs.gov/code/parameter_cd_query?fmt=rdb&inline=true&group_cd=%25>`_.
+The plugins for any GET web service can be generalized for use, so the plugins used for the NOAA CO-OPS API
+can be reused in this context as well. By default, the station IDs to pass are different, as well as the 
+method of passing them, so the plugin code that determines which station IDs to use differs. 
+
+To run this example, the configs and plugins can be found under **plugins/** (**poll_usgs.py** and 
+**download_usgs.py**) and **examples/** (**pollusgs.conf** and **subusgs.conf**).
+
+Use Case
+~~~~~~~~
+The hydrometric plugins were developed for the EC canhys use case, where files containing station metadata
+would be used as input to gather the hydrometric data. Each plugin also works by generating all valid 
+station IDs from the water authority itself and plugging those inputs in. This option can be toggled by
+omitting the plugin config variable that would otherwise specify the station metadata file. 
+
+Most of these sources have disclaimers that this data is not quality assured, but it is gathered in soft
+realtime (advertised seconds/minutes from when it was recorded).
