@@ -17,8 +17,8 @@ data of Ghost Lake Reservoir near Cochrane in Alberta, which can be accessed by 
 the base URL in this case would be considered the `http://environment.alberta.ca/apps/Basins/data/figures/river/abrivers/stationdata/` part, and the filename the `L_HG_05BE005_table.json` part. Since the base URL doesn't
 contain a nice directory with all the JSON files, if you wanted to check if new water level data has 
 been added at the locator above, since it's a JSON file, you could check the last-modified header to
-see if it has been modified since you last polled. From there, you would need to set the new_baseurl to the 
-first part, and the new_file set to the second, and an sr_subscribe instance would know how to assemble 
+see if it has been modified since you last polled. From there, you would need to set the *new_baseurl* to the 
+first part, and the *new_file* set to the second, and an sr_subscribe instance would know how to assemble 
 them to locate the file and download it. 
 
 Extending Polling Protocols
@@ -27,8 +27,8 @@ If the data source doesn't abide to this convention (see `NOAA CO-OPS API`_ and 
 Web Service`_ for examples of two data sources that don't), a module **registered_as** can be included at 
 the bottom of a plugin file to define the list of protocols being extended or implemented. 
 
-:code:`def registered_as(self):
-           return ['http','https']`
+`def registered_as(self):
+    return ['http','https']`
 
 It would then overload the method of transfer and use the one as described in the plugin.
 
@@ -46,10 +46,10 @@ it a GET request to announce every time it woke up (this operates under the pote
 that the data source is maintaining their end of the bargain). To download this shiny new file, you would connect
 an sr_subscribe to the same exchange it got announced on, and it would retrieve the URL, which a **do_download**
 plugin could then take and download. An example polling plugin which grabs all water temperature and water level 
-data from the last hour, from all CO-OPS stations, and publishes them is included under **plugins/** as 
+data from the last hour, from all CO-OPS stations, and publishes them is included under **plugins** as 
 **poll_noaa.py**. A corresponding **do_download** plugin for a sarra instance to download this file is included 
 as **download_noaa_hydro.py**. Example configurations for both sr_poll and sr_subscribe are included under 
-**examples/**, named **pollnoaa.conf** and **subnoaa.conf**. To run, add both plugins and configurations
+**examples**, named **pollnoaa.conf** and **subnoaa.conf**. To run, add both plugins and configurations
 using the :code:`add` action, edit the proper variables in the config (the flowbroker, destination among others. 
 If running off a local RabbitMQ server, some of the documentation under **doc/Dev.rst** on how to set up the
 server might be useful), then open two terminals and run:
@@ -79,12 +79,12 @@ file and dumped, which can be advertised, or the parameters can be advertised th
 notice, which a sarra **do_download** plugin could then decipher and process the data into a file user-side. 
 In order to only advertise new data from SHC, a polling instance could be configured to sleep every 30 minutes,
 and a **do_poll** plugin could set the start-end range to the last half hour before forming the request. 
-Each request is returned with a status message confirming if it was a valid function call. The plugin could
- then check the status message is ok before posting the message advertising new data to the exchange.
+Each request is returned with a status message confirming if it was a valid function call. The plugin could 
+then check the status message is ok before posting the message advertising new data to the exchange.
 A **do_download** plugin takes these parameters passed in the message, forms a SOAP query with them, and
 extracts the data/saves it to a file. Examples of plugins that do both of these steps can be found under
-**plugins/**, named **poll_shc_soap.py** and **download_shc_soap.py**. Example configurations for running
-both are included under **examples/**, named **pollsoapshc.conf** and **subsoapshc.conf**. 
+**plugins**, named **poll_shc_soap.py** and **download_shc_soap.py**. Example configurations for running
+both are included under **examples**, named **pollsoapshc.conf** and **subsoapshc.conf**. 
 
 USGS Instantaneous Values Web Service
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -102,11 +102,11 @@ The plugins for any GET web service can be generalized for use, so the plugins u
 can be reused in this context as well. By default, the station IDs to pass are different, as well as the 
 method of passing them, so the plugin code that determines which station IDs to use differs. 
 
-To run this example, the configs and plugins can be found under **plugins/** (**poll_usgs.py** and 
-**download_usgs.py**) and **examples/** (**pollusgs.conf** and **subusgs.conf**).
+To run this example, the configs and plugins can be found under **plugins** (**poll_usgs.py** and 
+**download_usgs.py**) and **examples** (**pollusgs.conf** and **subusgs.conf**).
 
 Use Case
-~~~~~~~~
+--------
 The hydrometric plugins were developed for the EC canhys use case, where files containing station metadata
 would be used as input to gather the hydrometric data. Each plugin also works by generating all valid 
 station IDs from the water authority itself and plugging those inputs in. This option can be toggled by
