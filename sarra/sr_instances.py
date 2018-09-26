@@ -467,14 +467,20 @@ class sr_instances(sr_config):
 
              if self.nbr_instances == 1 :
                 self.build_instance(1)
-                print("\ntail -f %s\n" % self.logpath)
-                self.run_command([ 'tail', '-f', self.logpath])
+                if _platform == 'win32' :
+                    self.run_command([ 'sr_tailf', self.logpath])
+                else:
+                    print("\ntail -f %s\n" % self.logpath)
+                    self.run_command([ 'tail', '-f', self.logpath])
                 return
 
              if self.no > 0 :
                 self.build_instance(self.no)
-                print("\ntail -f %s\n" % self.logpath)
-                self.run_command([ 'tail', '-f', self.logpath] )
+                if _platform == 'win32' :
+                    self.run_command([ 'sr_tailf', self.logpath])
+                else:
+                    print("\ntail -f %s\n" % self.logpath)
+                    self.run_command([ 'tail', '-f', self.logpath] )
                 return
 
              no=1

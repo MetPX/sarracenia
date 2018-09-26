@@ -268,6 +268,7 @@ class sr_sender(sr_subscribe):
     def doit_send(self,parent=None):
         self.logger.debug("doit_send with %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
 
+        self.logger.debug("doit_send to: %s / %s " % ( self.msg.new_dir, self.msg.new_file)  )
         # the code of msg_2localfile could be put here...
 
         #=================================

@@ -537,13 +537,13 @@ class sr_transport():
         self.logger = parent.logger
         self.parent = parent
         msg         = parent.msg
-        self.logger.debug("%s_transport send" % self.scheme)
+        self.logger.debug("%s_transport send %s %s" % (self.scheme,msg.new_dir, msg.new_file) )
 
         local_path = msg.relpath
-        local_dir  = os.path.dirname( local_path)
-        local_file = os.path.basename(local_path)
-        new_dir    = msg.new_dir
-        new_file   = msg.new_file
+        local_dir  = os.path.dirname( local_path).replace('\\','/')
+        local_file = os.path.basename(local_path).replace('\\','/')
+        new_dir    = msg.new_dir.replace('\\','/')
+        new_file   = msg.new_file.replace('\\','/')
         new_lock   = None
 
         try:    curdir = os.getcwd()

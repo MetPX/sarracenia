@@ -1022,7 +1022,7 @@ class sr_config:
     def isMatchingPattern(self, chaine, accept_unmatch = False): 
 
         for mask in self.masks:
-            self.logger.debug(mask)
+            self.logger.debug( "isMatchingPattern: mask: %s" % str(mask) )
             pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
             self.currentPattern    = pattern
             self.currentDir        = maskDir
@@ -1034,6 +1034,7 @@ class sr_config:
             self.flatten = flatten
             if mask_regexp.match(chaine) :
                if not accepting : return False
+               self.logger.debug( "isMatchingPattern: mask=%s strip=%s" % (str(mask), strip) )
                return True
 
         return accept_unmatch
@@ -1395,14 +1396,17 @@ class sr_config:
                           continue
                   except: pass
 
-                  try:    result = result.replace('${'+e+'}',os.environ.get(e))
+                  try:    
+                      result = result.replace('${'+e+'}',os.environ.get(e))
+                      if sys.platform == 'win32':
+                               result = result.replace('\\','/')
                   except: pass
 
         return(result)
 
 
     def option(self,words):
-        self.logger.debug("sr_config option %s" % words[0])
+        self.logger.debug("sr_config option %s" % words)
 
         # option strip out '-' 
 
@@ -1415,6 +1419,7 @@ class sr_config:
         if len(words) > 1 :
            config = ''
            words1 = self.varsub(words[1])
+           
            if len(words) > 2:
               words2 = self.varsub(words[2])
 
@@ -2035,6 +2040,10 @@ class sr_config:
                                  path = os.path.abspath(path)
                                  if self.realpath_post:
                                      path = os.path.realpath(path)
+                                
+                                 if sys.platform == 'win32':
+                                     path = path.replace('\\','/')
+
                                  self.postpath.append(path)
                                  n = n + 1
                          except: break
@@ -2283,7 +2292,11 @@ class sr_config:
                         self.pstrip = None
                      else:                   
                         self.strip  = 0
-                        self.pstrip = words1
+                        self.logger.debug("FIXME: pstrip=%s" % words1 )
+                        if sys.platform == 'win32': # why windows does this? no clue...
+                             self.pstrip = words1.replace('\\\\','/')
+                        else:
+                             self.pstrip = words1
                      n = 2
 
                 elif words0 in ['subtopic','sub'] : # See: sr_config.7 
@@ -2457,6 +2470,7 @@ class sr_config:
 
         if self.logpath  == None :
            self.logger.debug("on screen logging")
+           LOG_FORMAT   = ('%(asctime)s [%(levelname)s] %(pathname) %(lineno) %(message)s')
            return
 
         # to file

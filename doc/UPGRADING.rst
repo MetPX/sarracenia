@@ -38,10 +38,14 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
-*CHANGE*: sr_config include option now supports globbing. If your config filename
-          contains special regex characters (e.g. '?', '*' and '[' ']') then they
-          need to be escaped in the config or else it will attempt to interpret
-          them as regex.
+2.18.09b2
+---------
+
+*CHANGE*: The recent_files cache file stored in the state directory has change
+          encoding for filenames. file names are now encoded as per 
+          urllib.parse.quote() routine (for example: space becomes %20)
+          it would be advised to --reset (erase the cache file) when upgrading.
+        
 
 2.18.08b1
 ---------
