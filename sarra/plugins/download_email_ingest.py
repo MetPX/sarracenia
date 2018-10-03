@@ -32,7 +32,7 @@ except: from sarra.sr_credentials import *
 class Fetcher(object):
 
         def __init__(self, parent):
-                pass
+                parent.logger.info("download_email_ingest init")
 
         def do_download(self, parent):
                 import poplib, imaplib, datetime, logging, email
@@ -48,8 +48,8 @@ class Fetcher(object):
                         protocol        = setting.scheme.lower() 
                         port            = setting.port
                 else:
-                        logger.error("download_email_ingest: destination has invalid credentials: %s" % parent.destination)
-                        return False
+                        logger.error("download_email_ingest: destination has invalid credentials: %s" % parent.msg.new_baseurl)
+                        return
 
                 if not port:
                         if protocol == "imaps":
@@ -68,7 +68,7 @@ class Fetcher(object):
                                         mailman.login(user, password)
                                 except imaplib.IMAP4.error as e:
                                         logger.error("download_email_ingest imaplib connection error: {}".format(e))
-                                        return False
+                                        return
 
                         elif protocol == "imap":
                                 try:
@@ -76,21 +76,18 @@ class Fetcher(object):
                                         mailman.login(user, password)
                                 except imaplib.IMAP4.error as e:
                                         logger.error("download_email_ingest imaplib connection error: {}".format(e))
-                                        return False
-                        else: return False
+                                        return
+                        else: return
 
                         mailman.select(mailbox='INBOX')
                         resp, data = mailman.search(None, 'ALL')
                         for index in data[0].split():
                                 r, d = mailman.fetch(index, '(RFC822)')
                                 msg = d[0][1].decode("utf-8", "ignore") + "\n"
-                                msgid = email.message_from_string(msg).get('Message-ID').strip('<>') 
-                                        
-                                if msgid == parent.msg.new_file:
-                                       logger.info("download_email_ingest downloaded file: %s" % parent.directory+msgid)
-                                       with open(parent.directory+msgid, 'w') as f:
-                                             f.write(msg)
-                                       break
+                                logger.info("download_email_ingest downloaded file: %s" % parent.msg.new_dir+'/'+parent.msg.new_file)
+                                with open(parent.msg.new_dir+'/'+parent.msg.new_file, 'w') as f:
+                                       f.write(msg)
+                                return True
 
                         mailman.close()
                         mailman.logout()
@@ -102,8 +99,8 @@ class Fetcher(object):
                                         mailman.user(user)
                                         mailman.pass_(password)
                                 except poplib.error_proto as e:
-                                        logger.error("download_email_ingest pop3 connection error: {}".format(e))
-                                        return False
+                                        logger.error("download_email_ingest_exchange pop3 connection error: {}".format(e))
+                                        return
 
                         elif protocol == "pop":
                                 try:
@@ -111,29 +108,29 @@ class Fetcher(object):
                                         mailman.user(user)
                                         mailman.pass_(password)
                                 except poplib.error_proto as e:
-                                        logger.error("download_email_ingest pop3 connection error: {}".format(e))
-                                        return False
-                        else: return False
+                                        logger.error("download_email_ingest_exchange pop3 connection error: {}".format(e))
+                                        return
+                        else: return
                         # only retrieves msgs that haven't triggered internal pop3 'read' flag
                         numMsgs = len(mailman.list()[1])
                         for index in range(numMsgs):
                                 msg=""
                                 for line in mailman.retr(index+1)[1]:
                                         msg += line.decode("utf-8", "ignore") + "\n"
-                                msgid = email.message_from_string(msg).get('Message-ID').strip('<>')
-                              
-                                if msgid == parent.msg.new_file:
-                                        logger.info("download_email_ingest downloaded file: %s" % parent.directory+msgid)
-                                        with open(parent.directory+msgid, 'w') as f:
-                                              f.write(msg)
- 
-                                        break
+                                        
+                                logger.info("download_email_ingest downloaded file: %s" % parent.msg.new_dir+'/'+parent.msg.new_file)
+                                with open(parent.msg.new_dir+'/'+parent.msg.new_file, 'w') as f:
+                                        f.write(msg)
+                                return True
 
                         mailman.quit()
 
                 else:
-                        logger.error("download_email_ingest parent.destination protocol must be one of 'imap/imaps' or 'pop/pops'.")
-                        return False
+                        logger.error("download_email_ingest destination protocol must be one of 'imap/imaps' or 'pop/pops'.")
+                        return
+
+def registered_as(self):
+	return ['imap','imaps','pop','pops']
 
 fetcher = Fetcher(self)
 self.do_download = fetcher.do_download
