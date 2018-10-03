@@ -49,7 +49,36 @@ config to work, open a new terminal and run::
 If the credentials have been included correctly, and all the variables were set, the output should look 
 something like this::
 
-	FIXME: run this and include output
+	[aspymap:~/sarra_test_output]$ sr_poll foreground pollingest.conf 
+	2018-10-03 15:24:58,611 [INFO] poll_email_ingest init
+	2018-10-03 15:24:58,617 [INFO] sr_poll pollingest startup
+	2018-10-03 15:24:58,617 [INFO] log settings start for sr_poll (version: 2.18.07b3):
+	2018-10-03 15:24:58,617 [INFO]  inflight=unspecified events=create|delete|link|modify use_pika=False
+	2018-10-03 15:24:58,617 [INFO]  suppress_duplicates=1200 retry_mode=True retry_ttl=Nonems
+	2018-10-03 15:24:58,617 [INFO]  expire=300000ms reset=False message_ttl=None prefetch=25 accept_unmatch=False delete=False
+	2018-10-03 15:24:58,617 [INFO]  heartbeat=300 default_mode=400 default_mode_dir=775 default_mode_log=600 discard=False durable=True
+	2018-10-03 15:24:58,617 [INFO]  preserve_mode=True preserve_time=True realpath_post=False base_dir=None follow_symlinks=False
+	2018-10-03 15:24:58,617 [INFO]  mirror=False flatten=/ realpath_post=False strip=0 base_dir=None report_back=True
+	2018-10-03 15:24:58,617 [INFO]  post_base_dir=None post_base_url=pops://dfsghfgsdfg24@hotmail.com@outlook.office365.com:995/ sum=z,d blocksize=209715200 
+	2018-10-03 15:24:58,617 [INFO]  Plugins configured:
+	2018-10-03 15:24:58,617 [INFO]          on_line: Line_Mode 
+	2018-10-03 15:24:58,617 [INFO]          on_html_page: Html_parser 
+	2018-10-03 15:24:58,617 [INFO]          do_poll: Fetcher 
+	2018-10-03 15:24:58,617 [INFO]          on_message: 
+	2018-10-03 15:24:58,617 [INFO]          on_part: 
+	2018-10-03 15:24:58,618 [INFO]          on_file: File_Log 
+	2018-10-03 15:24:58,618 [INFO]          on_post: Post_Log 
+	2018-10-03 15:24:58,618 [INFO]          on_heartbeat: Hb_Log Hb_Memory Hb_Pulse 
+	2018-10-03 15:24:58,618 [INFO]          on_report: 
+	2018-10-03 15:24:58,618 [INFO]          on_start: 
+	2018-10-03 15:24:58,618 [INFO]          on_stop: 
+	2018-10-03 15:24:58,618 [INFO] log_settings end.
+	2018-10-03 15:24:58,621 [INFO] Output AMQP broker(localhost) user(tsource) vhost(/)
+	2018-10-03 15:24:58,621 [INFO] Output AMQP exchange(xs_tsource)
+	2018-10-03 15:24:58,621 [INFO] declaring exchange xs_tsource (tsource@localhost)
+	2018-10-03 15:24:59,452 [INFO] post_log notice=20181003192459.452392 pops://dfsghfgsdfg24@hotmail.com@outlook.office365.com:995/ sarra%20demo20181003_15241538594699_452125 headers={'parts': '1,1,1,0,0', 'sum': 'z,d', 'from_cluster': 'localhost', 'to_clusters': 'ALL'}
+	^C2018-10-03 15:25:00,355 [INFO] signal stop (SIGINT)
+	2018-10-03 15:25:00,355 [INFO] sr_poll stop
 
 Downloading
 -----------
@@ -76,7 +105,41 @@ terminal and run::
 
 If everything was supplied correctly, the output should look something like this::
 
-	FIXME: run this and include output
+	[aspymap:~/sarra_output_test]$ sr_subscribe foreground downloademail.conf 
+	2018-10-03 15:24:57,153 [INFO] download_email_ingest init
+	2018-10-03 15:24:57,159 [INFO] sr_subscribe downloademail start
+	2018-10-03 15:24:57,159 [INFO] log settings start for sr_subscribe (version: 2.18.07b3):
+	2018-10-03 15:24:57,159 [INFO]  inflight=.tmp events=create|delete|link|modify use_pika=False
+	2018-10-03 15:24:57,159 [INFO]  suppress_duplicates=False retry_mode=True retry_ttl=300000ms
+	2018-10-03 15:24:57,159 [INFO]  expire=300000ms reset=False message_ttl=None prefetch=25 accept_unmatch=False delete=False
+	2018-10-03 15:24:57,159 [INFO]  heartbeat=300 default_mode=000 default_mode_dir=775 default_mode_log=600 discard=False durable=True
+	2018-10-03 15:24:57,159 [INFO]  preserve_mode=True preserve_time=True realpath_post=False base_dir=None follow_symlinks=False
+	2018-10-03 15:24:57,159 [INFO]  mirror=False flatten=/ realpath_post=False strip=0 base_dir=None report_back=True
+	2018-10-03 15:24:57,159 [INFO]  Plugins configured:
+	2018-10-03 15:24:57,159 [INFO]          do_download: Fetcher 
+	2018-10-03 15:24:57,159 [INFO]          do_get     : 
+	2018-10-03 15:24:57,159 [INFO]          on_message: 
+	2018-10-03 15:24:57,159 [INFO]          on_part: 
+	2018-10-03 15:24:57,159 [INFO]          on_file: File_Log Decoder 
+	2018-10-03 15:24:57,159 [INFO]          on_post: Post_Log 
+	2018-10-03 15:24:57,159 [INFO]          on_heartbeat: Hb_Log Hb_Memory Hb_Pulse RETRY 
+	2018-10-03 15:24:57,159 [INFO]          on_report: 
+	2018-10-03 15:24:57,159 [INFO]          on_start: 
+	2018-10-03 15:24:57,159 [INFO]          on_stop: 
+	2018-10-03 15:24:57,159 [INFO] log_settings end.
+	2018-10-03 15:24:57,159 [INFO] sr_subscribe run
+	2018-10-03 15:24:57,160 [INFO] AMQP  broker(localhost) user(tsource) vhost(/)
+	2018-10-03 15:24:57,164 [INFO] Binding queue q_tsource.sr_subscribe.downloademail.64168876.31529683 with key v02.post.# from exchange xs_tsource on broker amqp://tsource@localhost/
+	2018-10-03 15:24:57,166 [INFO] reading from to tsource@localhost, exchange: xs_tsource
+	2018-10-03 15:24:57,167 [INFO] report_back to tsource@localhost, exchange: xs_tsource
+	2018-10-03 15:24:57,167 [INFO] sr_retry on_heartbeat
+	2018-10-03 15:24:57,172 [INFO] No retry in list
+	2018-10-03 15:24:57,173 [INFO] sr_retry on_heartbeat elapse 0.006333
+	2018-10-03 15:25:00,497 [INFO] download_email_ingest downloaded file: /home/ib/dads/map/.cache/sarra/sarra_doc_test/sarra demo20181003_15241538594699_452125
+	2018-10-03 15:25:00,500 [INFO] file_log downloaded to: /home/ib/dads/map/.cache/sarra/sarra_doc_test/sarra demo20181003_15241538594699_452125
+	^C2018-10-03 15:25:03,675 [INFO] signal stop (SIGINT)
+	2018-10-03 15:25:03,675 [INFO] sr_subscribe stop
+
 
 Use Case
 --------
