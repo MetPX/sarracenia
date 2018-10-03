@@ -49,7 +49,7 @@ class Fetcher(object):
                         port            = setting.port
                         logger.debug("poll_email_ingest destination valid")
                 else:
-                        logger.error("Destination: invalid credentials")
+                        logger.error("poll_email_ingest destination: invalid credentials")
                         return
 
                 if not port:
@@ -106,7 +106,7 @@ class Fetcher(object):
                                         mailman.pass_(password)
                                         logger.debug("poll_email_ingest connection started")
                                 except poplib.error_proto as e:
-                                        logger.error("poll_email_ingest_exchange pop3 connection error: {}".format(e))
+                                        logger.error("poll_email_ingest pop3 connection error: {}".format(e))
                                         return
 
                         elif protocol == "pop":
@@ -115,7 +115,7 @@ class Fetcher(object):
                                         mailman.user(user)
                                         mailman.pass_(password)
                                 except poplib.error_proto as e:
-                                        logger.error("poll_email_ingest_exchange pop3 connection error: {}".format(e))
+                                        logger.error("poll_email_ingest pop3 connection error: {}".format(e))
                                         return
                         else: return
                         # only retrieves msgs that haven't triggered internal pop3 'read' flag

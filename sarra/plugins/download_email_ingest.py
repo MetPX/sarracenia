@@ -48,8 +48,8 @@ class Fetcher(object):
                         protocol        = setting.scheme.lower() 
                         port            = setting.port
                 else:
-                        logger.error("download_email_ingest: destination has invalid credentials: %s" % parent.msg.new_baseurl)
-                        return
+                        logger.error("download_email_ingest: destination has invalid credentials: %s" % parent.destination)
+                        return False
 
                 if not port:
                         if protocol == "imaps":
@@ -68,7 +68,7 @@ class Fetcher(object):
                                         mailman.login(user, password)
                                 except imaplib.IMAP4.error as e:
                                         logger.error("download_email_ingest imaplib connection error: {}".format(e))
-                                        return
+                                        return False
 
                         elif protocol == "imap":
                                 try:
@@ -76,8 +76,8 @@ class Fetcher(object):
                                         mailman.login(user, password)
                                 except imaplib.IMAP4.error as e:
                                         logger.error("download_email_ingest imaplib connection error: {}".format(e))
-                                        return
-                        else: return
+                                        return False
+                        else: return False
 
                         mailman.select(mailbox='INBOX')
                         resp, data = mailman.search(None, 'ALL')
@@ -99,8 +99,8 @@ class Fetcher(object):
                                         mailman.user(user)
                                         mailman.pass_(password)
                                 except poplib.error_proto as e:
-                                        logger.error("download_email_ingest_exchange pop3 connection error: {}".format(e))
-                                        return
+                                        logger.error("download_email_ingest pop3 connection error: {}".format(e))
+                                        return False
 
                         elif protocol == "pop":
                                 try:
@@ -108,9 +108,9 @@ class Fetcher(object):
                                         mailman.user(user)
                                         mailman.pass_(password)
                                 except poplib.error_proto as e:
-                                        logger.error("download_email_ingest_exchange pop3 connection error: {}".format(e))
-                                        return
-                        else: return
+                                        logger.error("download_email_ingest pop3 connection error: {}".format(e))
+                                        return False
+                        else: return False
                         # only retrieves msgs that haven't triggered internal pop3 'read' flag
                         numMsgs = len(mailman.list()[1])
                         for index in range(numMsgs):
@@ -127,7 +127,7 @@ class Fetcher(object):
 
                 else:
                         logger.error("download_email_ingest destination protocol must be one of 'imap/imaps' or 'pop/pops'.")
-                        return
+                        return False
 
 def registered_as(self):
 	return ['imap','imaps','pop','pops']
