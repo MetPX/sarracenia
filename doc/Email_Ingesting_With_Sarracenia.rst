@@ -4,7 +4,7 @@ Email Ingesting with Sarracenia
 
 Email is an easy way to route data between servers. Using the Post Office Protocol (POP3) and
 Internet Message Access Protocol (IMAP), email files can be disseminated through Sarracenia 
-by extending the polling anddownloading functions.
+by extending the polling and downloading functions.
 
 .. contents::
 
@@ -14,7 +14,7 @@ Extending Polling Protocols
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Out of the box, Sarracenia supports polling destinations with HTTP/HTTPS and SFTP/FTP protocols. Other
 protocols can be supported by creating a *do_poll* plugin, with the new protocol registered at the 
-bottom of the plugin file in the form of a **registered_as** plugin::
+bottom of the plugin file in the form of a **registered_as** function::
 
 	def registered_as(self):
 		return ['pop','pops','imap','imaps']
@@ -29,12 +29,12 @@ With Python's *poplib* and *imaplib* modules, the destination can be parsed and 
 connected to as per the scheme specified. Sarracenia can extract the credentials from the destination
 through its built-in classes, so no passwords need to be stored in the config file to connect. POP3
 uses an internal read-flag to determine if a message has been seen or not. If a message is unread, after
-retrieving it with POP3 it will be marked as read, and it won't be picked up on further polls. Python's
-*poplib* offers further options like deleting the file after it's been read, but IMAP offers more mail
+retrieving it with POP3 it will be marked as read, and it won't be picked up on further polls. 
+POP3 offers further options like deleting the file after it's been read, but IMAP offers more mail
 management options like moving between folders and generating more complex queries. IMAP also allows
 more than one client to connect to a mailbox at the same time, and supports tracking message flags like
 whether the message is read/unread, replied to/not yet replied to, or deleted/still in the inbox. The 
-example polling plugin,
+example polling plugin
 `poll_email_ingest.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/poll_email_ingest.py>`_
 only retrieves unread email in the inbox and marks them as unread after retrieving them, in both the 
 POP and IMAP versions. This setting can be easily changed as per the end user's intentions. If there
