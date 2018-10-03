@@ -31,12 +31,13 @@ except: from sarra.sr_credentials import *
 class Fetcher(object):
 
         def __init__(self, parent):
-                pass
+                parent.logger.info("poll_email_ingest init")
 
         def do_poll(self, parent):
                 import poplib, imaplib, datetime, logging, email
 
                 logger = parent.logger
+                logger.debug("poll_email_ingest do_poll")
             
                 ok, details = parent.credentials.get(parent.destination)
                 if ok: 
@@ -46,8 +47,9 @@ class Fetcher(object):
                         server          = setting.hostname
                         protocol        = setting.scheme.lower() 
                         port            = setting.port
+                        logger.debug("poll_email_ingest destination valid")
                 else:
-                        logger.error("poll_email_ingest destination: invalid credentials")
+                        logger.error("Destination: invalid credentials")
                         return
 
                 if not port:
@@ -83,11 +85,15 @@ class Fetcher(object):
                         for index in data[0].split():
                                 r, d = mailman.fetch(index, '(RFC822)')
                                 msg = d[0][1].decode("utf-8", "ignore") + "\n"
-                                msgid = email.message_from_string(msg).get('Message-ID').strip('<>') 
-                                
+                                msg_subject = email.message_from_string(msg).get('Subject')
+                                msg_filename = msg_subject + datetime.datetime.now().strftime('%Y%m%d_%H%M%s_%f')
+
                                 parent.msg.new_baseurl = parent.destination
-                                parent.msg.new_file = msgid
-                                logger.debug("poll_email_ingest exchange: %s url: %s new_file: %s " % (parent.exchange, parent.msg.new_baseurl, parent.msg.new_file) )
+                                parent.to_clusters = 'ALL'
+                                parent.msg.new_file = msg_filename
+                                parent.msg.sumflg = 'z'
+                                parent.msg.sumstr = 'z,d'
+                                parent.post(parent.exchange,parent.msg.new_baseurl,parent.msg.new_file,parent.to_clusters,parent.msg.partstr,parent.msg.sumstr)
 
                         mailman.close()
                         mailman.logout()
@@ -98,8 +104,9 @@ class Fetcher(object):
                                         mailman = poplib.POP3_SSL(server, port=port)
                                         mailman.user(user)
                                         mailman.pass_(password)
+                                        logger.debug("poll_email_ingest connection started")
                                 except poplib.error_proto as e:
-                                        logger.error("poll_email_ingest pop3 connection error: {}".format(e))
+                                        logger.error("poll_email_ingest_exchange pop3 connection error: {}".format(e))
                                         return
 
                         elif protocol == "pop":
@@ -108,7 +115,7 @@ class Fetcher(object):
                                         mailman.user(user)
                                         mailman.pass_(password)
                                 except poplib.error_proto as e:
-                                        logger.error("poll_email_ingest pop3 connection error: {}".format(e))
+                                        logger.error("poll_email_ingest_exchange pop3 connection error: {}".format(e))
                                         return
                         else: return
                         # only retrieves msgs that haven't triggered internal pop3 'read' flag
@@ -117,11 +124,15 @@ class Fetcher(object):
                                 msg=""
                                 for line in mailman.retr(index+1)[1]:
                                         msg += line.decode("utf-8", "ignore") + "\n"
-                                msgid = email.message_from_string(msg).get('Message-ID').strip('<>')
-                                        
+                                msg_subject = email.message_from_string(msg).get('Subject')
+                                msg_filename = msg_subject + datetime.datetime.now().strftime('%Y%m%d_%H%M%s_%f')
                                 parent.msg.new_baseurl = parent.destination
-                                parent.msg.new_file = msgid
-                                logger.debug("poll_email_ingest exchange: %s url: %s new_file: %s " % (parent.exchange, parent.msg.new_baseurl, parent.msg.new_file) )
+                                parent.msg.new_file = msg_filename
+                                parent.to_clusters = 'ALL'
+                                parent.msg.sumflg = 'z'
+                                parent.msg.partstr = '1,1,1,0,0'
+                                parent.msg.sumstr = 'z,d'
+                                parent.post(parent.exchange,parent.msg.new_baseurl,parent.msg.new_file,parent.to_clusters,parent.msg.partstr,parent.msg.sumstr)
 
                         mailman.quit()
 
