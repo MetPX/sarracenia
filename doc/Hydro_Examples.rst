@@ -197,9 +197,9 @@ and `subusgs.conf <https://github.com/MetPX/sarracenia/blob/master/sarra/example
 
 Use Case
 --------
-The hydrometric plugins were developed for the EC canhys use case, where files containing station metadata
-would be used as input to gather the hydrometric data. Each plugin also works by generating all valid 
-station IDs from the water authority itself and plugging those inputs in. This alternative option can be 
+The hydrometric plugins were developed for the Environment Canada canhys use case, where files containing 
+station metadata would be used as input to gather the hydrometric data. Each plugin also works by generating 
+all valid station IDs from the water authority itself and plugging those inputs in. This alternative option can be 
 toggled by omitting the plugin config variable that would otherwise specify the station metadata file. 
 The downloader plugins also rename the file according to the specific convention of this use case.
 
