@@ -3,6 +3,14 @@
 export SR_POST_CONFIG=""
 export LD_PRELOAD=""
 
+if [[ ":$SARRA_LIB/../:" != *":$PYTHONPATH:"* ]]; then
+    if [ "${PYTHONPATH:${#PYTHONPATH}-1}" == ":" ]; then
+        export PYTHONPATH="$PYTHONPATH$SARRA_LIB/../"
+    else 
+        export PYTHONPATH="$PYTHONPATH:$SARRA_LIB/../"
+    fi
+fi
+
 function application_dirs {
 python3 << EOF
 import appdirs
@@ -45,16 +53,31 @@ function wait_dir_to_be_the_same {
 
 # sr_post initial start
 # MIRROR TEST
+if [ ! "$SARRAC_LIB" ]; then
+  sr_cpost stop veille_f34 > /dev/null 2>&1
+  sr_cpost cleanup veille_f34 > /dev/null 2>&1
+  rm "$LOGDIR"/sr_cpost_veille_f34*.log  2>&1
+  sr_cpost setup veille_f34 > /dev/null 2>&1
+else 
+  "$SARRAC_LIB"/sr_cpost stop veille_f34 > /dev/null 2>&1
+  "$SARRAC_LIB"/sr_cpost cleanup veille_f34 > /dev/null 2>&1
+  rm "$LOGDIR"/sr_cpost_veille_f34*.log  2>&1
+  "$SARRAC_LIB"/sr_cpost setup veille_f34 > /dev/null 2>&1
+fi
 
-sr_cpost stop veille_f34 > /dev/null 2>&1
-sr_cpost cleanup veille_f34 > /dev/null 2>&1
-rm "$LOGDIR"/sr_cpost_veille_f34*.log  2>&1
-sr_cpost setup veille_f34 > /dev/null 2>&1
+if [ ! "$SARRA_LIB" ]; then
+  sr_subscribe stop cfile_f44 > /dev/null 2>&1
+  sr_subscribe cleanup cfile_f44 > /dev/null 2>&1
+  rm "$LOGDIR"/sr_subscribe_cfile_f44*.log  2>&1
+  sr_subscribe setup cfile_f44 > /dev/null 2>&1
 
-sr_subscribe stop cfile_f44 > /dev/null 2>&1
-sr_subscribe cleanup cfile_f44 > /dev/null 2>&1
-rm "$LOGDIR"/sr_subscribe_cfile_f44*.log  2>&1
-sr_subscribe setup cfile_f44 > /dev/null 2>&1
+else 
+  "$SARRA_LIB"/sr_subscribe.py stop cfile_f44 > /dev/null 2>&1
+  "$SARRA_LIB"/sr_subscribe.py cleanup cfile_f44 > /dev/null 2>&1
+  rm "$LOGDIR"/sr_subscribe_cfile_f44*.log  2>&1
+  "$SARRA_LIB"/sr_subscribe.py setup cfile_f44 > /dev/null 2>&1
+fi
+
 
 # preventive cleanup (previous runs)
 
@@ -70,11 +93,19 @@ find . -type l -print | grep LINK | xargs -n1 rm 2> /dev/null
 find . -type f -print | grep LINK | xargs -n1 rm 2> /dev/null
 find . -type f -print | grep MOVE | xargs -n1 rm 2> /dev/null
 
-sr_watch stop    ${CONFDIR}/cpost/veille_f34.conf > /dev/null 2>&1
-sr_watch cleanup ${CONFDIR}/cpost/veille_f34.conf > /dev/null 2>&1
-sr_watch setup   ${CONFDIR}/cpost/veille_f34.conf > /dev/null 2>&1
-sr_watch -debug start ${CONFDIR}/cpost/veille_f34.conf > /dev/null 2>&1
-sr_subscribe -debug start cfile_f44 > /dev/null 2>&1
+if [ ! "$SARRA_LIB" ]; then 
+  sr_watch stop    ${CONFDIR}/cpost/veille_f34.conf > /dev/null 2>&1
+  sr_watch cleanup ${CONFDIR}/cpost/veille_f34.conf > /dev/null 2>&1
+  sr_watch setup   ${CONFDIR}/cpost/veille_f34.conf > /dev/null 2>&1
+  sr_watch -debug start ${CONFDIR}/cpost/veille_f34.conf > /dev/null 2>&1
+  sr_subscribe -debug start cfile_f44 > /dev/null 2>&1
+else 
+  "$SARRA_LIB"/sr_watch.py stop    ${CONFDIR}/cpost/veille_f34.conf > /dev/null 2>&1
+  "$SARRA_LIB"/sr_watch.py cleanup ${CONFDIR}/cpost/veille_f34.conf > /dev/null 2>&1
+  "$SARRA_LIB"/sr_watch.py setup   ${CONFDIR}/cpost/veille_f34.conf > /dev/null 2>&1
+  "$SARRA_LIB"/sr_watch.py -debug start ${CONFDIR}/cpost/veille_f34.conf > /dev/null 2>&1
+  "$SARRA_LIB"/sr_subscribe.py -debug start cfile_f44 > /dev/null 2>&1
+fi
 
 # copy 
 

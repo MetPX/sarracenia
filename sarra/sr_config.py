@@ -35,7 +35,7 @@
 import logging
 import inspect
 import netifaces
-import os,re,socket,sys,random
+import os,re,socket,sys,random,glob
 import urllib,urllib.parse, urllib.request, urllib.error
 from   appdirs import *
 import shutil
@@ -70,7 +70,7 @@ else:
 class sr_config:
 
     def __init__(self,config=None,args=None,action=None):
-        if '-V' in sys.argv :
+        if '-V' in sys.argv or '--version' in sys.argv:
            print("Version %s" % sarra.__version__ )
            os._exit(0)
 
@@ -139,9 +139,21 @@ class sr_config:
         try    : os.makedirs(self.http_dir,        0o775,True)
         except : pass
 
+        # default config files
+        defn = self.user_config_dir + os.sep + "default.conf"
+        if not os.path.exists( defn ):
+            with open( defn, 'w' ) as f: 
+                f.writelines( [ "# set environment variables for all components to use." ] )
+
+        defn = self.user_config_dir + os.sep + "credentials.conf"
+        if not os.path.exists( defn ):
+            with open( defn, 'w' ) as f: 
+                f.writelines( [ "amqps://anonymous:anonymous@dd.weather.gc.ca" ] )
+
         # hostname
 
         self.hostname  = socket.getfqdn()
+        self.randid    = "%04x" % random.randint(0,65536)
 
         # logging is interactive at start
 
@@ -198,7 +210,7 @@ class sr_config:
 
         if config != None :
            mandatory = True
-           if action in ['add','edit','enable','remove']: mandatory = False
+           if action in ['add','edit','enable','remove','rename']: mandatory = False
            usr_cfg = config
            if not config.endswith('.conf') : usr_cfg += '.conf'
            cdir = os.path.dirname(usr_cfg)
@@ -240,8 +252,8 @@ class sr_config:
         self.logger.info( "\tsuppress_duplicates=%s retry_mode=%s retry_ttl=%sms" % ( self.caching, self.retry_mode, self.retry_ttl ) )
         self.logger.info( "\texpire=%sms reset=%s message_ttl=%s prefetch=%s accept_unmatch=%s delete=%s" % \
            ( self.expire, self.reset, self.message_ttl, self.prefetch, self.accept_unmatch, self.delete ) )
-        self.logger.info( "\theartbeat=%s default_mode=%03o default_mode_dir=%03o default_mode_log=%03o discard=%s durable=%s" % \
-           ( self.heartbeat, self.chmod, self.chmod_dir, self.chmod_log, self.discard, self.durable ) )
+        self.logger.info( "\theartbeat=%s sanity_log_dead=%s default_mode=%03o default_mode_dir=%03o default_mode_log=%03o discard=%s durable=%s" % \
+           ( self.heartbeat, self.sanity_log_dead, self.chmod, self.chmod_dir, self.chmod_log, self.discard, self.durable ) )
         self.logger.info( "\tpreserve_mode=%s preserve_time=%s realpath_post=%s base_dir=%s follow_symlinks=%s" % \
            ( self.preserve_mode, self.preserve_time, self.realpath_post, self.base_dir, self.follow_symlinks ) )
         self.logger.info( "\tmirror=%s flatten=%s realpath_post=%s strip=%s base_dir=%s report_back=%s" % \
@@ -456,7 +468,7 @@ class sr_config:
         # return bad file ... 
         if mandatory :
           if subdir == 'plugins' : self.logger.error("script not found %s" % config)
-          else                   : self.logger.error("file not found %s" % config)
+          elif config_name != 'plugins' : self.logger.error("file not found %s" % config)
 
         return False,config
 
@@ -770,7 +782,7 @@ class sr_config:
         self.on_watch             = None
 
         self.plugin_times = [ 'destfn_script', 'on_message', 'on_file', 'on_post', 'on_heartbeat', \
-            'on_html_page', 'on_part', 'on_line', 'on_watch', 'do_task', 'do_poll', \
+            'on_html_page', 'on_part', 'on_line', 'on_watch', 'do_poll', \
             'do_download', 'do_get', 'do_put', 'do_send', 'do_task', 'on_report', \
             'on_start', 'on_stop' ]
 
@@ -1010,14 +1022,19 @@ class sr_config:
     def isMatchingPattern(self, chaine, accept_unmatch = False): 
 
         for mask in self.masks:
-            self.logger.debug(mask)
-            pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
+            self.logger.debug( "isMatchingPattern: mask: %s" % str(mask) )
+            pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
             self.currentPattern    = pattern
             self.currentDir        = maskDir
             self.currentFileOption = maskFileOption
             self.currentRegexp     = mask_regexp
+            self.mirror = mirror
+            self.strip = strip
+            self.pstrip = pstrip
+            self.flatten = flatten
             if mask_regexp.match(chaine) :
                if not accepting : return False
+               self.logger.debug( "isMatchingPattern: mask=%s strip=%s" % (str(mask), strip) )
                return True
 
         return accept_unmatch
@@ -1082,19 +1099,31 @@ class sr_config:
          
     def list_file(self,path):
         cmd = os.environ.get('PAGER')
-        if cmd == None: cmd="/bin/more"
+        if cmd == None: 
+            if sys.platform != 'win32':
+                cmd="more"
+            else:
+                cmd="more.com"
 
         self.run_command([ cmd, path ] )
 
     def run_command(self,cmd_list):
+        sr_path = os.environ.get('SARRA_LIB')
+        sc_path = os.environ.get('SARRAC_LIB')
         import sys,subprocess
+
         try:
                 if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5) :
                         subprocess.check_call(cmd_list, close_fds=False )
                 else :
-                        subprocess.run(cmd_list, check=True, close_fds=False )
-
-        except: self.logger.error("trying run command %s" %  ' '.join(cmd_list) )
+                        self.logger.debug("using subprocess.run")
+                        if sc_path and cmd_list[0].startswith("sr_cp"):
+                          subprocess.run([sc_path+'/'+cmd_list[0]]+cmd_list[1:],check=True)
+                        elif sr_path and cmd_list[0].startswith("sr"):
+                          subprocess.run([sr_path+'/'+cmd_list[0]+'.py']+cmd_list[1:],check=True)
+                        else:
+                          subprocess.run(cmd_list,check=True)
+        except: self.logger.error("trying run command %s " %  ' '.join(cmd_list) )
 
     def register_plugins(self):
         self.logger.debug("register_plugins")
@@ -1348,6 +1377,7 @@ class sr_config:
               result = result.replace('${PROGRAM}',    self.program_name)
               result = result.replace('${CONFIG}',     config)
               result = result.replace('${BROKER_USER}',buser)
+              result = result.replace('${RANDID}',  self.randid )
 
         if '$' in result :
               elst = []
@@ -1366,14 +1396,17 @@ class sr_config:
                           continue
                   except: pass
 
-                  try:    result = result.replace('${'+e+'}',os.environ.get(e))
+                  try:    
+                      result = result.replace('${'+e+'}',os.environ.get(e))
+                      if sys.platform == 'win32':
+                               result = result.replace('\\','/')
                   except: pass
 
         return(result)
 
 
     def option(self,words):
-        self.logger.debug("sr_config option %s" % words[0])
+        self.logger.debug("sr_config option %s" % words)
 
         # option strip out '-' 
 
@@ -1386,6 +1419,7 @@ class sr_config:
         if len(words) > 1 :
            config = ''
            words1 = self.varsub(words[1])
+           
            if len(words) > 2:
               words2 = self.varsub(words[2])
 
@@ -1406,7 +1440,7 @@ class sr_config:
                         n = 3
                      
 
-                     self.masks.append((pattern, self.currentDir, self.currentFileOption, mask_regexp, accepting))
+                     self.masks.append((pattern, self.currentDir, self.currentFileOption, mask_regexp, accepting, self.mirror, self.strip, self.pstrip, self.flatten ))
 
                      if len(words) > 2:
                          self.currentFileOption = save_currentFileOption 
@@ -1494,6 +1528,8 @@ class sr_config:
                      if self.caching and not hasattr(self,'heartbeat_cache_installed') :
                         self.execfile("on_heartbeat",'hb_cache')
                         self.heartbeat_cache_installed = True
+                     #if self.caching: ####@
+                     #   self.cache = sr_cache(self) ####@
 
                 elif words0 == 'cache_stat'   : # FIXME! what is this?
                      if (words1 is None) or words[0][0:1] == '-' : 
@@ -1526,8 +1562,18 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['config','c','include']: # See: sr_config.7
-                     ok, include = self.config_path(self.config_dir,words1,mandatory=True,ctype='inc')
-                     self.config(include)
+                     current_dir_confs = glob.glob(words1)
+                     for conf in current_dir_confs:
+                         ok, include = self.config_path(self.config_dir,conf,mandatory=True,ctype='inc')
+                         self.config(include)
+                     if not current_dir_confs:
+                         config_dir_confs = glob.glob(self.user_config_dir + os.sep + self.program_dir + os.sep + words1)
+                         for conf in config_dir_confs:
+                             ok, include = self.config_path(self.config_dir,conf,mandatory=True,ctype='inc')
+                             self.config(include)
+                         if not config_dir_confs:
+                             ok, include = self.config_path(self.config_dir,words1,mandatory=True,ctype='inc')
+                             self.config(include)
                      n = 2
 
                 elif words0 == 'debug': # See: sr_config.7
@@ -1994,6 +2040,10 @@ class sr_config:
                                  path = os.path.abspath(path)
                                  if self.realpath_post:
                                      path = os.path.realpath(path)
+                                
+                                 if sys.platform == 'win32':
+                                     path = path.replace('\\','/')
+
                                  self.postpath.append(path)
                                  n = n + 1
                          except: break
@@ -2242,7 +2292,11 @@ class sr_config:
                         self.pstrip = None
                      else:                   
                         self.strip  = 0
-                        self.pstrip = words1
+                        self.logger.debug("FIXME: pstrip=%s" % words1 )
+                        if sys.platform == 'win32': # why windows does this? no clue...
+                             self.pstrip = words1.replace('\\\\','/')
+                        else:
+                             self.pstrip = words1
                      n = 2
 
                 elif words0 in ['subtopic','sub'] : # See: sr_config.7 
@@ -2353,15 +2407,15 @@ class sr_config:
            return
 
         for confname in sorted( os.listdir(configdir) ):
+            if confname[0] == '.' or confname[-1] == '~' : continue
             if os.path.isdir(configdir+os.sep+confname) : continue
             if ( ((i+1)*21) >= columns ): 
                  print('')
-                 i=1
-            else:
-                 i+=1
-                 print( "%20s " % confname, end='' )
+                 i=0
+            i+=1
+            print( "%20s " % confname, end='' )
 
-        print("")
+        print("\n")
 
     def set_sumalgo(self,sumflg):
         self.logger.debug("sr_config set_sumalgo %s" % sumflg)
@@ -2416,6 +2470,7 @@ class sr_config:
 
         if self.logpath  == None :
            self.logger.debug("on screen logging")
+           LOG_FORMAT   = ('%(asctime)s [%(levelname)s] %(pathname) %(lineno) %(message)s')
            return
 
         # to file
@@ -2603,6 +2658,10 @@ class sr_config:
 
         if '${SOURCE}' in cdir :
            new_dir = new_dir.replace('${SOURCE}',self.msg.headers['source'])
+
+        if '${DD}' in cdir :
+           DD = time.strftime("%d", time.gmtime()) 
+           new_dir = new_dir.replace('${DD}',DD)
 
         if '${HH}' in cdir :
            HH = time.strftime("%H", time.gmtime()) 

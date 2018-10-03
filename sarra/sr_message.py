@@ -102,7 +102,7 @@ class sr_message():
         if the file advertised is newer than the local one, and it has a different checksum, return True.
 
         """
-        fname = "%s%s%s" %  (self.new_dir, os.sep, self.new_file )
+        fname = "%s%s%s" %  (self.new_dir, '/', self.new_file )
         self.logger.debug("sr_message content_match %s" % (fname ) )
         
         self.local_checksum = None
@@ -114,6 +114,11 @@ class sr_message():
         lstat = os.stat(fname)
         fsiz  = lstat[stat.ST_SIZE] 
         end   = self.local_offset + self.length
+
+        # compare sizes... if (sr_subscribe is downloading partitions into taget file) and (target_file isn't fully done)
+        # This check prevents random halting of subscriber (inplace on) if the messages come in non-sequential order
+        if (self.target_file == self.new_file) and (fsiz != self.filesize):
+          return False
 
         # compare dates...
 
@@ -531,7 +536,7 @@ class sr_message():
            # try to make this message a file insert
 
            # file exists
-           self.target_path = self.new_dir + os.sep + self.target_file
+           self.target_path = self.new_dir + '/' + self.target_file
            if os.path.isfile(self.target_path) :
               self.logger.debug("new_file exists")
               lstat   = os.stat(self.target_path)

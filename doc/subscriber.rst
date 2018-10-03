@@ -95,7 +95,7 @@ staff, and the names are chosen to represent the origin of the data.
 
 You should be able to list the available configurations with *sr_subscribe list* ::
 
-  blacklab% sr_subscribe list
+  blacklab% sr_subscribe list plugins
   
   packaged plugins: ( /usr/lib/python3/dist-packages/sarra/plugins ) 
            __pycache__     destfn_sample.py       download_cp.py       download_dd.py 
@@ -124,6 +124,8 @@ You should be able to list the available configurations with *sr_subscribe list*
   user plugins: ( /home/peter/.config/sarra/plugins ) 
           destfn_am.py         destfn_nz.py       msg_tarpush.py 
   
+  blacklab% sr_subscribe list
+
   general: ( /home/peter/.config/sarra ) 
             admin.conf     credentials.conf         default.conf
   
@@ -603,7 +605,7 @@ For information on creating new custom plugins, see The `Sarracenia Programming 
 
 To recap:
 
-* To view the plugins currently available on the system  *sr_subscribe list*
+* To view the plugins currently available on the system  *sr_subscribe list plugins*
 * To view the contents of a plugin: *sr_subscribe list <plugin>*
 * The beginning of the plugin describes its function and settings
 * Plugins can have option settings, just like built-in ones

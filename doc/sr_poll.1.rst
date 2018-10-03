@@ -200,9 +200,7 @@ The **on_line** plugin gives scripts that can read each line of an 'ls' on the p
 site, to interpret it further. It returns True if the line should be further processed,
 or False to reject it.  By default, there is a line_mode plugin included with the package
 which implements the comparison of file permissions on the remote server against
-the **chmod** mask. The program assumes that the very last word of the ls line is the
-filename. This might not be the case if filenames contain spaces. For this purpose, 
-the option **ls_file_index** can be used to set the first word where the filename starts.
+the **chmod** mask.
 
 If the poll fetches using the http protocol, the 'ls' like entries must be derived from
 an html page. The default plugin **html_page** provided with the package, gives an idea of

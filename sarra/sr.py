@@ -213,16 +213,19 @@ def main():
 
     if action == 'list' :
        if config :
-             result = cfg.find_conf_file(config)
-             if  not result :
-                 print("no file named %s found in all sarra configs" % config )
-                 sys.exit(1)
-             cfg.list_file(result)
+           if config == 'plugins' :
+               cfg.print_configdir("packaged plugins",           cfg.package_dir     +os.sep+ 'plugins')
+               cfg.print_configdir("user plugins",               cfg.user_config_dir +os.sep+ 'plugins')
+
+           else:
+               result = cfg.find_conf_file(config)
+               if  not result :
+                   print("no file named %s found in all sarra configs" % config )
+                   sys.exit(1)
+               cfg.list_file(result)
        else:
-             cfg.print_configdir("packaged plugins",           cfg.package_dir     +os.sep+ 'plugins')
              for d in sorted(cfg.programs):
                  cfg.print_configdir("configuration examples", cfg.package_dir     +os.sep+ 'examples' +os.sep+ d)
-             cfg.print_configdir("user plugins",               cfg.user_config_dir +os.sep+ 'plugins')
              cfg.print_configdir("general",                    cfg.user_config_dir )
              for d in sorted(cfg.programs):
                  cfg.print_configdir("user configurations",    cfg.user_config_dir + os.sep + d)

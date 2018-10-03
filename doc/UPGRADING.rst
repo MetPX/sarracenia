@@ -38,6 +38,26 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+2.18.09b2
+---------
+
+*CHANGE*: The recent_files cache file stored in the state directory has change
+          encoding for filenames. file names are now encoded as per 
+          urllib.parse.quote() routine (for example: space becomes %20)
+          it would be advised to --reset (erase the cache file) when upgrading.
+        
+
+2.18.08b1
+---------
+
+*CHANGE*: sr_subscribe strip, mirror, flatten,  options were formerly global ones.
+          Now they are processed in order in the same way as directory options.
+          configuration files where these directives appear after accept clauses
+          will behave differently. inspection of existing usage indicates that
+          users naturally put the accept clauses at the end so it should not
+          affect many.
+ 
+
 upto 2.18.05b4
 --------------
 

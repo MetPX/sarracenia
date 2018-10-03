@@ -45,7 +45,8 @@ setup(
               "sr_shovel=sarra.sr_shovel:main",
               "sr_sender=sarra.sr_sender:main",
               "sr_subscribe=sarra.sr_subscribe:main",
-              "sr_log2save=sarra.sr_log2save:main"
+              "sr_log2save=sarra.sr_log2save:main",
+              "sr_tailf=sarra.sr_tailf:main"
               ]
     },
     classifiers=[

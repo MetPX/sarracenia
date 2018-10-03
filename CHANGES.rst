@@ -4,6 +4,51 @@
 
 lists all changes between versions.
 
+**git repo**
+
+**2.18.09b2**
+
+* bugfix   fixed duplicate suppression corruption when files have spaces in their names.
+* bugfix   on windows: many issues with on \ vs. / addressed.
+* bugfix   on windows, *edit* directive now works using notepad.exe by default.
+* bugfix   on windows, *add* adds carriage returns to example files added, so notepad is happy.
+* bugfix   on windows, *log* now works.
+* bugfix   on windows, *list* now works for individual files.
+* new      list now prints out log directory (which is hard to guess on windows)
+* bugfix   examples for sr_Pitcher use case where inaccurate.
+* bugfix   issue #99 *list* missed some items it should have listed.
+* bugfix   *list* no longer list dot files or those ending in ~ (tmp/work/hidden files)
+
+**2.18.09b1**
+
+* bugfix    flow_setup was failing tests on rabbitmq server 3.7.7 (though it still worked.)
+*           flow_setup fixed so it works with 14.04 (use python2 for pyftpdlib )
+*
+*    new    added dd_ping.conf to do easy test of broker function to examples.
+*           flow_check.sh now does a spot check, flow_limit.sh limits the length of the test.
+* change: flatten, mirror and strip options now affect only succeeding accept clauses. (Issue #80)
+* disabling timeouts on windows, as they were not working anyways.
+* added ${DD} to substitutions in directives
+* added --version option. ( issue #25 )
+* added rename option. ( Issue #92 )
+* added globbing to include directive ( Issue #31 )
+* many corrections to French documentation.
+* bugfix issues #85 #86 
+
+
+**2.18.08b1**
+
+* BUG       claims to be 2.18.07b3 (missed commit of changing that.)
+* bugfix    issue #76 sftp login passwords broken when any keys present. (from Marie!)
+*           updated configuration for ECCC RDPS (from Sandrine.)
+*           close_fds=false for older python to fix flow_test on ubuntu 14.04.
+*
+*    new    NEXRAD AWS polling (from Marie!)
+*           more plugin documentation. 
+*           dd.weather.gc.ca polling migrated to amqps.
+*           catalogued two contributed implementations (Thanks Canberk & Tanner)
+
+
 **2.18.07b3**
 
 * bugfix     regression for subprocess api change @ V3.5

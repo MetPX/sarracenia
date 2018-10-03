@@ -170,8 +170,6 @@ One can also see which plugins are active in a configuration by looking at the m
    blacklab% 
 
 
-
-
 --------------------
 Plugin Script Basics
 --------------------
@@ -199,6 +197,8 @@ The content of the file to be placed (on Linux) in ~/.config/sarra/plugins would
 
   self.plugin = 'File_Noop'   # MUST: set the value of the plugin variable to the name of the class.
 
+
+See `Plugin Entry Points`_ for a full list of names of methods which are significant.
 
 There is an initialization portion which runs when the component is started and
 a perform section which is to be invoked on the appropriate event.  Setting
@@ -241,33 +241,303 @@ Should one of these scripts return False, the processing of the message/file
 will stop there and another message will be consumed from the broker.
 
 
-Popular Variables in Plugins
------------------------------
 
-A popular variable in on_file and on_part plugins is: *parent.msg.new_file*,
-giving the file name the downloaded product has been written to.  When the
-same variable is modified in an on_message plugin, it changes the name of
-the file to be downloaded. Similarly another often used variable is 
-*parent.new_dir*, which operates on the directory to which the file
-will be downloaded.
+Variables in Messages
+---------------------
 
-There is also parent.msg.urlstr which is the completed download URL of the file,
-and parent.msg.url, which is the equivalent url after it has been parsed with urlparse
-(see Python3 documentation of urlparse for detailed usage). This gives access
-to, for example, *parent.msg.url.hostname* for the remote host from which a file is to be obtained,
-or *parent.msg.url.username* for the account to use, parent.url.path gives the path on the
-remote host.
+plugins, receive parent as a parameter.  parameter.msg is the message
+being processed. variables variables most used:
 
-Other popular fields are the (AMQP) headers set for a file, accessible as
+*parent.msg.exchange*  
+  The exchange through which the message is being posted or consumed.
+
 *parent.msg.headers[ 'headername' ]*  
+  The (AMQP) headers set for a file, accessible as python dictionary strings.
 
-Note that headers are limited by the AMQP protocol to 255 bytes, and will be truncated if
-application code creates values longer than that.
+  Note that headers are limited by the AMQP protocol to 255 bytes, and will be truncated if
+  application code creates values longer than that.
+
+*parent.msg.isPulse*
+  If this is a Pulse message (not a post or a report.)
+
+*parent.msg.isRetry*
+  If this is a subsequent attempt to send or download a message.
+
+*parent.msg.new_dir*
+  The directory which will contain *parent.msg.new_file*
+
+*parent.msg.new_file*
+  A popular variable in on_file and on_part plugins is: *parent.msg.new_file*,
+  giving the file name the downloaded product has been written to.  When the
+  same variable is modified in an on_message plugin, it changes the name of
+  the file to be downloaded. Similarly another often used variable is 
+  *parent.new_dir*, which operates on the directory to which the file
+  will be downloaded.
+
+*parent.msg.notice*
+  The body of the message being processed. see `sr_post(7) <sr_post.7.rst>`_
+  If parts here are modified, one must modify extracted fields for full effect.
+
+*parent.msg.time*
+  The time the message was originally inserted into the network (first field of a notice.)
+
+*parent.msg.partstr*
+  The partition string ( same as parent.msg.headers['parts'] )
+
+*parent.msg.sumstr*
+  The checksum string ( same as parent.msg.headers['sum'] ) indicating the checksum
+  algorithm used, and the 
+
+*parent.msg.topic*
+  the AMQP topic of the message.
+
+*parent.msg.url*
+  The equivalent url after it has been parsed with urlparse
+  (see Python3 documentation of urlparse for detailed usage). This gives access
+  to, for example, *parent.msg.url.hostname* for the remote host from which a file is to be obtained,
+  or *parent.msg.url.username* for the account to use, parent.url.path gives the path on the
+  remote host.
+
+*parent.msg.urlstr*
+  There is also parent.msg.urlstr which is the completed download URL of the file,
+
 
 These are the variable which are most often of interest, but many other 
 program states are available.  See the  `Variables Available`_ section for a more thorough
 discussion.
 
+
+
+Accessing Options
+-----------------
+
+The settings resulting from parsing the configuration files are also readily available.
+Plugins can define their own options by calling parent.declare_option( 'name_of_option' ).
+Options so declared just become instance variables in parent.
+
+All the built-in options are similarly processing.  If consult the `sr_subscribe(1) <sr_subscribe.1.rst>`_
+manual page, and most of the options will have a corresponing instance variable.
+
+Some examples:
+
+*parent.base_dir*
+  the base directory for where files are when consuming a post.
+
+*parent.caching*
+  Numerical value indicating the caching lifetime (how old entries should be before they age out.)
+  Value of 0 indicates caching is disabled.
+
+*parent.inflight*
+  The current setting of *inflight* (see `Delivery Completion <sr_subscribe.1.rst#Delivery%20Completion%20(inflight)>`_
+
+*parent.overwrite*
+  setting which controls whether to files already downloaded should be overwritten unconditionally.
+
+*parent.discard*
+  Whether files should be removed after they are downloaded.
+
+
+
+
+Plugin Entry Points
+-------------------
+
+Sarracenia will interpret the names of functions as indicating times in processing when
+a given routine should be called.
+
++-------------------+----------------------------------------------------+
+|  Name             | When/Why it is Called                              |
++===================+====================================================+
+|                   | current:                                           |
+|                   | Context: subscribers downloading files             |
+|                   | arguments: self, parent                            |
+|                   |                                                    |
+|                   | Available:                                         |
+|                   | msg = parent.msg                                   |
+|                   |                                                    |
+|                   |                                                    |
+| do_download       | What the code needs to do:                         |
+|                   |                                                    |
+|                   | download msg.url -> msg.new_dir / msg.new_file     |
+|                   |                                                    |
+|                   | interpret parent.inflight                          |
+|                   | interpret parent.preserve_mode                     |
+|                   | interpret parent.preserve_ownership (if root)      |
+|                   | interpret parent.parts/partflg                     |
+|                   |                                                    |
+|                   | plugin must interpret all of the above.            |
+|                   |                                                    |
+|                   | example: smc_download_cp.py [#]_                   |
+|                   |                                                    |
+|                   |                                                    |
+|                   | Proposed: This should be much simpler  [#]_        |
+|                   |                                                    |
+|                   | cwd is msg.new_dir so all it needs to do is:       |
+|                   | download msg.url -> msg.new_inflight_file          |
+|                   |                                                    |
+|                   | Rest is taken of by Sarracenia                     |
+|                   |                                                    |
++-------------------+----------------------------------------------------+
+|                   | undocumented variant of do_download.               |
+| do_get            | not actually sure how it works. FIXME.             |
+|                   |                                                    |
++-------------------+----------------------------------------------------+
+|                   | called by sr_poll, meant select files to be posted |
+| do_poll           | For local files, use parent.post1file(self,stat)   |
+|                   | Where stat is the return tuple from an os.lstat()  |
+|                   | call.                                              |
+|                   |                                                    |
+|                   | Example:                                           |
+|                   | FIXME: the GPFS poll script should be here.        |
+|                   |                                                    |
++-------------------+----------------------------------------------------+
+|                   | undocumented new api to work with do_get.          |
+| do_put            | FIXME.                                             |
+|                   |                                                    |
++-------------------+----------------------------------------------------+
+|                   | FIXME not properly implemented at this time.       |
+| do_task           | eventually allows replacing of action after        |
+|                   | a message has been received.                       |
++-------------------+----------------------------------------------------+
+|                   | very freqently used.                               |
+|                   | examine parent.msg for finer grained filtering.    |
+| on_message        | Return False to stop further processing of message.|
+|                   | return True to proceed                             |
+|                   |                                                    |
+|                   | Examples: msg_* in the examples directory          |
+|                   |                                                    |
+|                   | msg_delay - make sure messages are old before      |
+|                   | processing them.                                   |
+|                   |                                                    |
+|                   | msg_download - change messages to use different    |
+|                   | downloaders based on file size (built-in for small |
+|                   | ones, binary downloaders for large files.)         |
+|                   |                                                    |
+|                   | msg_http_to_https.py - change url to use SSL       |
+|                   |                                                    |
+|                   |                                                    |
+|                   |                                                    |
+|                   |                                                    |
+|                   |                                                    |
+|                   |                                                    |
+|                   |                                                    |
++-------------------+----------------------------------------------------+
+|                   | change parent.msg.new_file to taste.               |
+| destfn_script     | called when renaming the file from inflight to     |
+|                   | permanent name.                                    |
+|                   |                                                    |
+|                   | Examples: destfn_* in the examples directory       |
+|                   |                                                    |
++-------------------+----------------------------------------------------+
+|                   | when a file is completely received (rather than    |
+| on_file           | just a part of it.)                                |
+|                   |                                                    |
+|                   | return False to stop further processing.           |
+|                   | return True to proceed                             |
+|                   |                                                    |
+|                   | Examples:  file_* in the examples directory        |
+|                   |                                                    |
+|                   |                                                    |
+|                   |                                                    |
++-------------------+----------------------------------------------------+
+|                   | when a part of a file is completely received.      |
+| on_part           | it is in parent.msg.new_dir / parent.msg.new_file  |
+|                   |                                                    |
+|                   | return False to stop further processing.           |
+|                   | return True to proceed                             |
+|                   |                                                    |
+|                   | Examples:  part_* [#]_ in the examples directory   |
+|                   | part_clamav_scan returns False when a virus is     |
+|                   | detected, so the downloaded file is not posted.    |
+|                   |                                                    |
++-------------------+----------------------------------------------------+
+|                   | All fields of parent.msg ready to be posted.       |
+| on_post           | Can add parent.msg.headers[ ]                      |
+|                   | return False to prevent posting.                   |
+|                   | return True to proceed                             |
+|                   |                                                    |
+|                   | examples: post_* in the examples                   |
+|                   | (sr_subscriber list)                               |
+|                   |                                                    |
+|                   |                                                    |
++-------------------+----------------------------------------------------+
+|                   | Called every heartbeat interval (several minutes)  |
+|                   | used to clean cache, check for occasional issues.  |
+|                   | manage retry queues.                               |
+| on_heartbeat      |                                                    |
+|                   | return False to abort further processing           |
+|                   | return True to proceed                             |
+|                   |                                                    |
+|                   | Examples:  hb_* in the examples directory          |
+|                   |                                                    |
+|                   |                                                    |
++-------------------+----------------------------------------------------+
+|                   | in sr_poll if you only want to change how the      |
+| on_html_page      | downloaded html URL is parsed, override this       |
+|                   |                                                    |
+|                   | action:                                            |
+|                   | parse parent.entries to make self.entries          |
+|                   |                                                    |
+|                   | Examples:  html_page* in the examples directory    |
+|                   |                                                    |
+|                   |                                                    |
++-------------------+----------------------------------------------------+
+|                   | in sr_poll if sites have different remote formats  |
+|                   | called to parse each line in parent.entries.       |
+| on_line           |                                                    |
+|                   | Work on parent.line                                |
+|                   |                                                    |
+|                   | return False to abort further processing           |
+|                   | return True to proceed                             |
+|                   |                                                    |
+|                   | Examples:  line_* in the examples directory        |
+|                   |                                                    |
++-------------------+----------------------------------------------------+
+|                   | invoked whenever a watch interval (sleep) expires  |
+|                   | this happens very often.                           |
+| on_watch          |                                                    |
+|                   | return False to abort further processing           |
+|                   | return True to proceed                             |
+|                   |                                                    |
+|                   | Examples: watch_* in the examples directory        |
+|                   |                                                    |
++-------------------+----------------------------------------------------+
+|                   | like on_post, but for reports.                     |
+| on_report         |                                                    |
+|                   | return False to abort further processing           |
+|                   | return True to proceed                             |
+|                   |                                                    |
+|                   | Examples: report_* in the examples directory       |
+|                   |                                                    |
++-------------------+----------------------------------------------------+
+|                   | when a componente (e.g. sr_subscribe) is started.  |
+| on_start          | Can be used to read state from files.              |
+|                   |                                                    |
+|                   | state files in parent.user_cache_dir               |
+|                   |                                                    |
+|                   | return value ignored                               |
+|                   |                                                    |
+|                   | example: file_total_save.py [#]_                   |
+|                   |                                                    |
++-------------------+----------------------------------------------------+
+|                   | when a component (e.g. sr_subscribe) is stopped.   |
+| on_stop           | can be used to persist state.                      |
+|                   |                                                    |
+|                   | state files in parent.user_cache_dir               |
+|                   |                                                    |
+|                   | return value ignored                               |
+|                   |                                                    |
++-------------------+----------------------------------------------------+
+|                   | Returns one or more labels, often protocols,       |
+| registered_as     | examples [ 'imap', 'pop', 'imaps', 'pops' ]        |
+|                   | example: samples/poll_email_ingest.py [#]_         |
++-------------------+----------------------------------------------------+
+
+.. [#] see `smc_download_cp <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/smc_download_cp.py>`_
+.. [#] see `Issue 74 <https://github.com/MetPX/sarracenia/issues/74>`_
+.. [#] see `part_clanav_scan.py  <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/part_clanav_scan.py>`_
+.. [#] see `file_total_save.py  <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/file_total_save.py>`_
+.. [#] see `poll_email_ingest.py  <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/poll_email_ingest.py>`_
 
 ---------------------
 Better File Reception
@@ -283,10 +553,10 @@ by writing to a named pipe::
 
   file_rxpipe_name /local/home/peter/test/rxpipe
 
-  on_file file_rxpipe
-  directory /tmp
+  on_file file_rxpipe directory /tmp
   mirror True
   accept .*
+
   # rxpipe is a builtin on_file script which writes the name of the file received to
   # a pipe named '.rxpipe' in the current working directory.
 
@@ -389,12 +659,28 @@ reaches the number given by the  **batch**  option (default 100).
 All download (upload) operations use a buffer. The size, in bytes,
 of the buffer used is given by the **bufsize** option (default 8192).
 
+Methods Available
+-----------------
+
+parent.post1file(path,stat):
+
+Used in poll or posting scripts when a local file is available, to create 
+a post using existing settings (for ownership, partitioning, checksums, 
+symlink handling, etc...) The path is that of the local file to be posted, 
+and the stat record is a tuple as returned by os.lstat() that corresponds 
+to the file. If the stat record is None, then a remove posting event is 
+generated. If the stat record corresponds to a symbolic link, then a 
+link record is generated. If the stat record corresponds to an regular 
+file, then a normal posting will be generated.
+
+
 
 Variables Available
 -------------------
 
+
 Without peering into the Python source code of sarracenia, it is hard to know
-what values are available to plugin scripts.  As a cheat to save developers
+what values are available to plugin scripts. As a cheat to save developers
 from having to understand the source code, a diagnostic plugin might be helpful.
 
 If one sets **on_message msg_dump** in a configuration, the entire

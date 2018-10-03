@@ -1,3 +1,47 @@
+metpx-sarracenia (2.18.09b2) unstable; urgency=medium
+
+  * bugfix   fixed duplicate suppression corruption when files have spaces in their names.
+  * bugfix   on windows: many issues with on \ vs. / addressed.
+  * bugfix   on windows, *edit* directive now works using notepad.exe by default.
+  * bugfix   #100 on windows, *add* adds carriage returns to example files added, so notepad is happy.
+  * bugfix   on windows, *log* now works.
+  * bugfix   on windows, *list* now works for individual files.
+  * new      list now prints out log directory (which is hard to guess on windows)
+  * bugfix   examples for sr_Pitcher use case where inaccurate.
+  * bugfix   issue #99 *list* missed some items it should have listed.
+  * bugfix   *list* no longer list dot files or those ending in ~ (tmp/work/hidden files)
+
+
+ -- Peter Silva <peter@blacklab>  Wed, 19 Sep 2018 21:02:22 -0400
+
+metpx-sarracenia (2.18.09b1) unstable; urgency=medium
+
+  * disabling timeouts on windows, as they were not working anyways.
+  * added ${DD} to substitutions in directives
+  * added --version option. ( issue #25 )
+  * added rename option. ( Issue #92 )
+  * added globbing to include directive ( Issue #31 )
+  * many corrections to French documentation.
+  * bugfix issues #85 #86 
+ 
+
+ -- Peter Silva <peter@blacklab>  Thu, 13 Sep 2018 23:34:52 -0400
+
+metpx-sarracenia (2.18.08b1) unstable; urgency=medium
+
+  * bugfix    issue #76 sftp login passwords broken when any keys present. (from Marie!)
+  *           updated configuration for ECCC RDPS (from Sandrine.)
+  *           close_fds=false for older python to fix flow_test on ubuntu 14.04.
+  *
+  *    new    NEXRAD AWS polling (from Marie!)
+  *           more plugin documentation. 
+  *           dd.weather.gc.ca polling migrated to amqps.
+  *           catalogued two contributed implementations (Thanks Canberk & Tanner)
+  *           issue #80: mirror/strip/flatten affect each accept, rather than global.
+
+
+ -- Peter Silva <peter@blacklab>  Thu, 09 Aug 2018 22:53:54 -0400
+
 metpx-sarracenia (2.18.07b3) unstable; urgency=medium
 
   * bugfix     regression for subprocess api change @ V3.5

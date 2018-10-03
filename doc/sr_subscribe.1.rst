@@ -68,15 +68,16 @@ Note that the *sanity* check is invoked by heartbeat processing in sr_audit on a
 The remaining operations manage the resources (exchanges, queues) used by the component on
 the rabbitmq server, or manage the configurations.
 
- - cleanup:  deletes the component's resources on the server.
- - declare:  creates the component's resources on the server.
- - setup:    like declare, additionally does queue bindings.
- - add:      copy to the list of available configurations.
- - list:     list all the configurations available.
- - edit:     modify an existing configuration.
- - remove:   remove a configuration.
- - disable:  mark a configuration as ineligible to run. 
- - enable:   mark a configuration as eligible to run. 
+ - cleanup:       deletes the component's resources on the server.
+ - declare:       creates the component's resources on the server.
+ - setup:         like declare, additionally does queue bindings.
+ - add:           copy to the list of available configurations.
+ - list:          list all the configurations available. 
+ - list plugins:  list all the plugins available. 
+ - edit:          modify an existing configuration.
+ - remove:        remove a configuration.
+ - disable:       mark a configuration as ineligible to run. 
+ - enable:        mark a configuration as eligible to run. 
 
 
 For example:  *sr_subscribe foreground dd* runs the sr_subscribe component with
@@ -94,10 +95,11 @@ the resources. **setup** creates and additionally binds the queues.
 
 The **add, remove, list, edit, enable & disable** actions are used to manage the list 
 of configurations.  One can see all of the configurations available using the **list**
-action.  Using the **edit** option, one can work on a particular configuration.
-A *disabled* configuration will not be started or restarted by the **start**,  
+action.   to view available plugins use **list plugins**.  Using the **edit** option, 
+one can work on a particular configuration.  A *disabled* configuration will not be 
+started or restarted by the **start**,  
 **foreground**, or **restart** actions. It can be used to set aside a configuration
-temporarily.
+temporarily. 
 
 Documentation
 -------------
@@ -149,19 +151,6 @@ the broker. To view the available configurations, use::
 
   blacklab% sr_subscribe list
 
-  packaged plugins: ( /usr/lib/python3/dist-packages/sarra/plugins ) 
-         __pycache__       bad_plugin1.py       bad_plugin2.py       bad_plugin3.py     destfn_sample.py       download_cp.py 
-      download_dd.py      download_scp.py     download_wget.py          file_age.py        file_check.py          file_log.py 
-      file_rxpipe.py        file_total.py           harness.py          hb_cache.py            hb_log.py         hb_memory.py 
-         hb_pulse.py         html_page.py          line_log.py         line_mode.py               log.py         msg_2http.py 
-       msg_2local.py    msg_2localfile.py     msg_auditflow.py     msg_by_source.py       msg_by_user.py         msg_delay.py 
-       msg_delete.py      msg_download.py          msg_dump.py        msg_fdelay.py msg_filter_wmo2msc.py  msg_from_cluster.py 
-    msg_hour_tree.py           msg_log.py     msg_print_lag.py   msg_rename4jicc.py    msg_rename_dmf.py msg_rename_whatfn.py 
-      msg_renamer.py msg_replace_new_dir.py          msg_save.py      msg_skip_old.py        msg_speedo.py msg_sundew_pxroute.py 
-   msg_test_retry.py   msg_to_clusters.py         msg_total.py        part_check.py  part_clamav_scan.py        poll_pulse.py 
-      poll_script.py    post_hour_tree.py          post_log.py    post_long_flow.py     post_override.py   post_rate_limit.py 
-       post_total.py         watch_log.py 
-
   configuration examples: ( /usr/lib/python3/dist-packages/sarra/examples/subscribe ) 
             all.conf     all_but_cap.conf            amis.conf            aqhi.conf             cap.conf      cclean_f91.conf 
       cdnld_f21.conf       cfile_f44.conf        citypage.conf       clean_f90.conf            cmml.conf cscn22_bulletins.conf 
@@ -211,7 +200,18 @@ configuration line::
 
 In the above example, *broker* is the option keyword, and the rest of the line is the 
 value assigned to the setting. Configuration files are a sequence of settings, one per line. 
-Note that the files are read in order, most importantly for *directory* and *accept* clauses.  
+Note:
+
+* the files are read from top to bottom, most importantly for *directory*, *strip*, *mirror*,
+  and *flatten* options apply to *accept* clauses that occur after them in the file.
+
+* The forward slash (/) as the path separator in Sarracenia configuration files on all 
+  operating systems. Use of the backslash character as a path separator (as used in the 
+  cmd shell on Windows) may not work properly. When files are read on Windows, the path
+  separator is immediately converted to the forward slash, so all pattern matching,
+  in accept, reject, strip etc... directives should use forward slashes when a path
+  separator is needed.
+  
 Example::
 
     directory A
@@ -264,17 +264,26 @@ sequence #2::
 
 In sequence #1, all files ending in 'gif' are rejected. In sequence #2, the 
 accept .* (which accepts everything) is encountered before the reject statement, 
-so the reject has no effect.
+so the reject has no effect.  Some options have global scope, rather than being
+interpreted in order.  for thoses cases, a second declaration overrides the first.
 
-Several options that need to be reused in different config files can be grouped in a file.
-In each config where the options subset should appear, the user would then use :
+Options to be reused in different config files can be grouped in an *include* file:
 
   - **--include <includeConfigPath>**
 
 The includeConfigPath would normally reside under the same config dir of its
-master configs. There is no restriction, any option can be placed in a config file
-included. The user must be aware that, for many options, several declarations
-means overwriting their values.
+master configs. If a URL is supplied as an includeConfigPATH, then a remote 
+configuraiton will be downloaded and cached (used until an update on the server 
+is detected.) See `Remote Configurations`_ for details.
+
+Environment variables, and some built-in variables can also be put on the
+right hand side to be evaluated, surrounded by ${..} The built-in variables are:
+ 
+ - ${BROKER_USER} - the user name for authenticating to the broker (e.g. anonymous)
+ - ${PROGRAM}     - the name of the component (sr_subscribe, sr_shovel, etc...)
+ - ${CONFIG}      - the name of the configuration file being run.
+ - ${HOSTNAME}    - the hostname running the client.
+ - ${RANDID}      - a random id that will be consistent within a single invocation.
 
 Option Order
 ~~~~~~~~~~~~
@@ -471,9 +480,8 @@ are held on the server for each subscriber.
 
 By default, components create a queue name that should be unique. The default queue_name
 components create follows :  **q_<brokerUser>.<programName>.<configName>** .
+
 Users can override the default provided that it starts with **q_<brokerUser>**.
-Some variables can also be used within the queue_name like
-**${BROKER_USER},${PROGRAM},${CONFIG},${HOSTNAME}**
 
 durable <boolean> (default: False)
 -~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -485,7 +493,9 @@ expire <duration> (default: 5m  == five minutes. RECOMMEND OVERRIDING)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The  **expire**  option is expressed as a duration... it sets how long should live
-a queue without connections. A raw integer is expressed in seconds, if the suffix m,h.d,w
+a queue without connections. 
+
+A raw integer is expressed in seconds, if the suffix m,h,d,w
 are used, then the interval is in minutes, hours, days, or weeks. After the queue expires,
 the contents are dropped, and so gaps in the download data flow can arise.  A value of
 1d (day) or 1w (week) can be appropriate to avoid data loss. It depends on how long
@@ -728,7 +738,7 @@ and under which name.
 - **retry_ttl    <duration>         (default: same as expire)** 
 - **source_from_exchange  <boolean> (default: off)**
 - **strip     <count|regexp>   (default: 0)**
-- **suppress_duplicates   <off|on|999>     (default: off)**
+- **suppress_duplicates   <off|on|999[smhdw]>     (default: off)**
 - **timeout     <float>         (default: 0)**
 
 
@@ -841,11 +851,12 @@ For example retrieving the following url, with options::
 
 would result in the creation of the directories and the file
 /mylocaldirectory/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
+mirror settings can be changed between directory options.
 
 strip <count|regexp> (default: 0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can modify the mirrored directoties with the **strip** option. 
+You can modify the mirrored directories with the **strip** option. 
 If set to N  (an integer) the first 'N' directories are removed.
 For example ::
 
@@ -864,6 +875,7 @@ from the relative path.  For example if::
    strip  .*?GIF/
 
 Will also result in the file being placed the same location. 
+Note that strip settings can be changed between directory options.
 
 NOTE::
     with **strip**, use of **?** modifier (to prevent regular expression *greediness* ) is often helpful. 
@@ -907,6 +919,7 @@ All date/times in Sarracenia are in UTC.
 
 Refer to *source_from_exchange* for a common example of usage.  Note that any sarracenia
 built-in value takes precedence over a variable of the same name in the environment.
+Note that flatten settings can be changed between directory options.
 
 base_dir <path> (default: /)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -976,7 +989,7 @@ The  **overwrite**  option,if set to false, avoid unnecessary downloads under th
 
 2- the checksum of the amqp message matched the one of the file.
 
-The default is False (overwrite without checking). 
+The default is False. 
 
 discard <boolean> (default: off)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1014,15 +1027,20 @@ heartbeat <count> (default: 300 seconds)
 The **heartbeat** option sets how often to execute periodic processing as determined by 
 the list of on_heartbeat plugins. By default, it prints a log message every heartbeat.
 
-suppress_duplicates <off|on|999> (default: off)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+suppress_duplicates <off|on|999[smhdw]> (default: off)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When **suppress_duplicates** (also **cache** ) is set to a non-zero value, each new message
-is compared against previous ones received, to see if it is a duplicate. If the message is 
-considered a duplicate, it is skipped. What is a duplicate? A file with the same name (including 
+When **suppress_duplicates** (also **cache** ) is set to a non-zero time interval, each new message
+is compared against ones received within that interval, to see if it is a duplicate. 
+Duplicates are not processed further. What is a duplicate? A file with the same name (including 
 parts header) and checksum. Every *hearbeat* interval, a cleanup process looks for files in the 
 cache that have not been referenced in **cache** seconds, and deletes them, in order to keep 
 the cache size limited. Different settings are appropriate for different use cases.
+
+A raw integer interval is in seconds, if the suffix m,h,d, or w are used, then the interval 
+is in minutes, hours, days, or weeks. After the interval expires the contents are 
+dropped, so duplicates separated by a large enough interval will get through.
+A value of 1d (day) or 1w (week) can be appropriate. 
 
 **Use of the cache is incompatible with the default *parts 0* strategy**, one must specify an 
 alternate strategy.  One must use either a fixed blocksize, or always never partition files. 
@@ -1171,8 +1189,6 @@ Frequent Configuration Errors
 
 
 
-
-
 PERIODIC PROCESSING
 ===================
 
@@ -1180,15 +1196,23 @@ Most processing occurs on receipt of a message, but there is some periodic maint
 work that happens every *heartbeat* (default is 5 minutes.)  Evey heartbeat, all of the
 configured *on_heartbeat* plugins are run. By default there are three present:
 
- * heartbeat_log - prints "heartbeat" in the log.
- * heartbeat_cache - ages out old entries in the cache, to minimize its size.
- * heartbeat_memory - checks the process memory usage, and restart if too big.
- * heartbeat_pulse - confirms that connectivity with brokers is still good. Restores if needed.
+ * hb_log - prints "heartbeat" in the log.
+ * hb_cache - ages out old entries in the cache, to minimize its size.
+ * hb_memory - checks the process memory usage, and restart if too big.
+ * hb_pulse - confirms that connectivity with brokers is still good. Restores if needed.
+ * hb_sanity - runs sanity check.
 
 The log will contain messages from all three plugins every heartbeat interval, and
 if additional periodic processing is needed, the user can configure addition
 plugins to run with the *on_heartbeat* option. 
 
+sanity_log_dead <interval> (default: 1.5*heartbeat)
+---------------------------------------------------
+
+The **sanity_log_dead** option sets how long to consider too long before restarting
+a component.
+
+suppress_duplicates <off|on|999> (default: off)
 ERROR RECOVERY
 ==============
 
@@ -1511,7 +1535,7 @@ One can specify URI's as configuration files, rather than local files. Example:
 
   - **--config http://dd.weather.gc.ca/alerts/doc/cap.conf**
 
-On startup, sr_subscribe check if the local file cap.conf exists in the 
+On startup, sr_subscribe checks if the local file cap.conf exists in the 
 local configuration directory.  If it does, then the file will be read to find
 a line like so:
 
@@ -1597,12 +1621,12 @@ additional transfer protocols.
 
 These transfer protocol scripts should be declared using the **plugin** option.
 Aside the targetted built-in function(s), a module **registered_as** that defines
-a list of protocols that these functions supports.  Example :
+a list of protocols that these functions provide.  Example :
 
 def registered_as(self) :
        return ['ftp','ftps']
 
-Registering in such a way a plugin, if function **do_download** was provided in that plugin
+In the example above, if function **do_download** was provided in that plugin
 then for any download of a message with an ftp or ftps url, it is that function that would be called.
 
 
@@ -1736,7 +1760,7 @@ Some other available variables::
   parent.msg.local_url    :  url for reannouncement
 
 
-See the `Programming Guide <Prog.rst>`_ for more details.
+See the `Programming Guide <Prog.rst>`_ for more information on plugin development.
 
 
 Queue Save/Restore
@@ -1802,7 +1826,7 @@ around::
   post_broker amqp://tfeed@localhost/
 
 The configuration relies on the use of an administrator or feeder account.
-Note the queue which has messages in it, in this case q_tsub.sr_subscribe.t.99524171.43129428.  Invoke the shovel in save mode to consume messages from the queue
+Note the queue which has messages in it, in this case q_tsub.sr_subscribe.t.99524171.43129428. Invoke the shovel in save mode to consume messages from the queue
 and save them to disk::
 
   % cd ~/tools
@@ -1832,9 +1856,9 @@ and save them to disk::
   % 
 
 The messages are written to a file in the caching directory for future use, with
-the name of the file being based on the configuration name used.   The file is in
+the name of the file being based on the configuration name used. The file is in
 json format, one message per line (lines are very long) and so filtering with other tools
-is possible to modify the list of saved messages.  Note that a single save file per
+is possible to modify the list of saved messages. Note that a single save file per
 configuration is automatically set, so to save multiple queues, one would need one configurations
 file per queue to be saved.  Once the subscriber is back in service, one can return the messages
 saved to a file into the same queue::

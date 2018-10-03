@@ -49,7 +49,7 @@ class DD_DOWNLOAD(object):
 
       import subprocess
 
-      args = [ "if=%s" % msg.url.path, "of=%s" % msg.new_file, \
+      args = [ "if=%s" % msg.url.path, "of=%s" % (msg.new_dir + os.sep + msg.new_file), \
          "bs=%d" % parent.download_dd_blocksize ] 
 
       # parse 'parts' header to find slice to transfer.
