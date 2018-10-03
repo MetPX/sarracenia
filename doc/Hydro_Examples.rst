@@ -44,27 +44,28 @@ A new observation gets recorded every six minutes, so if you wanted to advertise
 Sarracenia, you would configure an sr_poll instance to connect to the API, sleep every hour, and build
 it a GET request to announce every time it woke up (this operates under the potentially misguided assumption 
 that the data source is maintaining their end of the bargain). To download this shiny new file, you would connect
-an sr_subscribe to the same exchange it got announced on, and it would retrieve the URL, which a **do_download**
+an sr_subscribe to the same exchange it got announced on, and it would retrieve the URL, which a *do_download*
 plugin could then take and download. An example polling plugin which grabs all water temperature and water level 
-data from the last hour, from all CO-OPS stations, and publishes them is included under **plugins** as 
+data from the last hour, from all CO-OPS stations, and publishes them is included under *plugins* as 
 `poll_noaa.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/poll_noaa.py>`_. 
-A corresponding **do_download** plugin for a sarra instance to download this file is included 
+A corresponding *do_download* plugin for a sarra instance to download this file is included 
 as `download_noaa.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/download_noaa.py>`_
 . Example configurations for both sr_poll and sr_subscribe are included under 
-**examples**, named `pollnoaa.conf <https://github.com/MetPX/sarracenia/blob/master/sarra/examples/poll/pollnoaa.conf>`_ 
+*examples*, named `pollnoaa.conf <https://github.com/MetPX/sarracenia/blob/master/sarra/examples/poll/pollnoaa.conf>`_ 
 and `subnoaa.conf <https://github.com/MetPX/sarracenia/blob/master/sarra/examples/subscribe/subnoaa.conf>`_. 
 To run, add both plugins and configurations using the :code:`add` action, edit the proper variables in the 
 config (the flowbroker, destination among others. If running off a local RabbitMQ server, some of the 
 documentation under `doc/Dev.rst <https://github.com/MetPX/sarracenia/blob/master/doc/Dev.rst>`_ 
-on how to set up the server might be useful), then open two terminals and run:
+on how to set up the server might be useful), then open two terminals and run::
 
-:code:`[aspymap:~]$ sr_poll foreground pollnoaa.conf`
+	`[aspymap:~]$ sr_poll foreground pollnoaa.conf`
 
-in one and:
+in one and::
 
-:code:`[aspymap:~]$ sr_subscribe foreground subnoaa.conf`
+	`[aspymap:~]$ sr_subscribe foreground subnoaa.conf`
 
 in the other. If everything was configured correctly, the output should look something like this::
+
 	[aspymap:~]$ sr_poll foreground pollnoaa.conf 
 	2018-09-26 15:26:57,704 [INFO] sr_poll pollnoaa startup
 	2018-09-26 15:26:57,704 [INFO] log settings start for sr_poll (version: 2.18.07b3):
@@ -101,7 +102,9 @@ in the other. If everything was configured correctly, the output should look som
 	2018-09-26 15:26:58,834 [INFO] post_log notice=20180926192658.833992 http://tidesandcurrents.noaa.gov/api/datagetter?range=1&station=1612340&product=water_level&units=metric&time_zone=gmt&application=web_services&format=csv&datum=STND CO-OPS__1612340__wl.csv headers={'source': 'noaa', 'to_clusters': 'ALL', 'sum': 'z,d', 'from_cluster': 'localhost'}
 	^C2018-09-26 15:26:58,965 [INFO] signal stop (SIGINT)
 	2018-09-26 15:26:58,965 [INFO] sr_poll stop
+
 for the polling and::
+
 	[aspymap:~]$ sr_subscribe foreground subnoaa.conf 
 	2018-09-26 15:26:53,473 [INFO] sr_subscribe subnoaa start
 	2018-09-26 15:26:53,473 [INFO] log settings start for sr_subscribe (version: 2.18.07b3):
@@ -141,6 +144,7 @@ for the polling and::
 	2018-09-26 15:26:59,171 [INFO] file_log downloaded to: /home/ib/dads/map/hydro_examples_sarra/fetch/noaa//CO-OPS__1612340__wl.csv
 	^C2018-09-26 15:27:00,597 [INFO] signal stop (SIGINT)
 	2018-09-26 15:27:00,597 [INFO] sr_subscribe stop
+
 for the downloading.
 
 SHC SOAP Web Service
@@ -156,16 +160,16 @@ water level data available from Acadia Cove in Nunavut on September 1st, 2018 if
 the following parameters: 'wl', 40.0, 85.0, -145.0, -50.0, 0.0, 0.0, '2018-09-01 00:00:00', 
 '2018-09-01 23:59:59', 1, 1000, 'true', 'station_id=4170, 'asc'. The response can then be converted into a 
 file and dumped, which can be advertised, or the parameters can be advertised themselves in the report
-notice, which a sarra **do_download** plugin could then decipher and process the data into a file user-side. 
+notice, which a sarra *do_download* plugin could then decipher and process the data into a file user-side. 
 In order to only advertise new data from SHC, a polling instance could be configured to sleep every 30 minutes,
-and a **do_poll** plugin could set the start-end range to the last half hour before forming the request. 
+and a *do_poll* plugin could set the start-end range to the last half hour before forming the request. 
 Each request is returned with a status message confirming if it was a valid function call. The plugin could 
 then check the status message is ok before posting the message advertising new data to the exchange.
-A **do_download** plugin takes these parameters passed in the message, forms a SOAP query with them, and
+A *do_download* plugin takes these parameters passed in the message, forms a SOAP query with them, and
 extracts the data/saves it to a file. Examples of plugins that do both of these steps can be found under
-**plugins**, named `poll_shc_soap.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/poll_shc_soap.py>`_ 
+*plugins*, named `poll_shc_soap.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/poll_shc_soap.py>`_ 
 and `download_shc_soap.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/download_shc_soap.py>`_. 
-Example configurations for running both are included under **examples**, named 
+Example configurations for running both are included under *examples*, named 
 `pollsoapshc.conf <https://github.com/MetPX/sarracenia/blob/master/sarra/examples/poll/pollsoapshc.conf>`_ and 
 `subsoapshc.conf <https://github.com/MetPX/sarracenia/blob/master/sarra/examples/subscribe/subsoapshc.conf>`_. 
 
@@ -185,10 +189,10 @@ The plugins for any GET web service can be generalized for use, so the plugins u
 can be reused in this context as well. By default, the station IDs to pass are different, as well as the 
 method of passing them, so the plugin code that determines which station IDs to use differs. 
 
-To run this example, the configs and plugins can be found under **plugins** 
+To run this example, the configs and plugins can be found under *plugins* 
 (`poll_usgs.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/poll_usgs.py>`_ 
 and `download_usgs.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/download_usgs.py>`_) 
-and **examples** (`pollusgs.conf <https://github.com/MetPX/sarracenia/blob/master/sarra/examples/poll/pollusgs.conf>`_ 
+and *examples* (`pollusgs.conf <https://github.com/MetPX/sarracenia/blob/master/sarra/examples/poll/pollusgs.conf>`_ 
 and `subusgs.conf <https://github.com/MetPX/sarracenia/blob/master/sarra/examples/subscribe/subusgs.conf>`_).
 
 Use Case
