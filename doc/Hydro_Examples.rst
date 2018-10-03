@@ -25,7 +25,7 @@ Extending Polling Protocols
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 If the data source doesn't abide to this convention (see `NOAA CO-OPS API`_ and `USGS Instantaneous Values 
 Web Service`_ for examples of two data sources that don't), a module **registered_as** can be included at 
-the bottom of a plugin file to define the list of protocols being extended or implemented.:: 
+the bottom of a plugin file to define the list of protocols being extended or implemented:: 
 
 	def registered_as(self):
 		return ['http','https']
@@ -58,11 +58,11 @@ config (the flowbroker, destination among others. If running off a local RabbitM
 documentation under `doc/Dev.rst <https://github.com/MetPX/sarracenia/blob/master/doc/Dev.rst>`_ 
 on how to set up the server might be useful), then open two terminals and run::
 
-	`[aspymap:~]$ sr_poll foreground pollnoaa.conf`
+	[aspymap:~]$ sr_poll foreground pollnoaa.conf
 
 in one and::
 
-	`[aspymap:~]$ sr_subscribe foreground subnoaa.conf`
+	[aspymap:~]$ sr_subscribe foreground subnoaa.conf
 
 in the other. If everything was configured correctly, the output should look something like this::
 
