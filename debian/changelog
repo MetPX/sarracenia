@@ -1,3 +1,11 @@
+metpx-sarracenia (2.18.10b1) unstable; urgency=medium
+
+  * bugfix   corruption in cache cleaning introduced by pathname encoding.
+  * new      email ingest support added ( Issue #59 )
+
+
+ -- Peter Silva <peter@idefix>  Fri, 05 Oct 2018 18:02:47 -0400
+
 metpx-sarracenia (2.18.09b2) unstable; urgency=medium
 
   * bugfix   fixed duplicate suppression corruption when files have spaces in their names.
