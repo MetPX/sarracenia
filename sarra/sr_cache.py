@@ -119,7 +119,11 @@ class sr_cache():
         now        = time.time()
         new_dict   = {}
         self.count = 0
-        qdelpath = urllib.parse.quote(delpath)
+
+        if delpath != None:
+            qdelpath = urllib.parse.quote(delpath)
+        else:
+            qdelpath = None
 
         # from  cache[sum] = [(time,[path,part]), ... ]
         for key in self.cache_dict.keys() :
@@ -133,7 +137,8 @@ class sr_cache():
                 if ttl > self.expire : continue
 
                 parts = value.split('*')
-                qpath  = parts[0]
+                path  = parts[0]
+                qpath = urllib.parse.quote(path)
                 part  = parts[1]
 
                 if qpath == qdelpath  : continue
