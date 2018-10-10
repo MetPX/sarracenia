@@ -6,6 +6,11 @@ lists all changes between versions.
 
 **git repo**
 
+**2.18.10b1**
+
+* bugfix   corruption in cache cleaning introduced by pathname encoding.
+* new      email ingest support added ( Issue #59 )
+
 **2.18.09b2**
 
 * bugfix   fixed duplicate suppression corruption when files have spaces in their names.
