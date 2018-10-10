@@ -187,7 +187,16 @@ https://waterservices.usgs.gov/nwis/iv/?format=waterml,2.0&indent=on&site=033387
 A list of parameter codes to use to tailor your results can be found `here <https://help.waterdata.usgs.gov/code/parameter_cd_query?fmt=rdb&inline=true&group_cd=%25>`_.
 The plugins for any GET web service can be generalized for use, so the plugins used for the NOAA CO-OPS API
 can be reused in this context as well. By default, the station IDs to pass are different, as well as the 
-method of passing them, so the plugin code that determines which station IDs to use differs. 
+method of passing them, so the plugin code that determines which station IDs to use differs, but the method
+conceptually is still the same. You would pass a generalized version of the URL in as the destination in the 
+config, e.g. https://waterservices.usgs.gov/nwis/iv/?format=waterml,2.0&indent=on&site={0}&period=PT3H&parameterCd=00060,00065,00011
+and in the plugin you would replace the '{0}' (Python makes this easy with string formatting) with the sites
+you're interested in, and if any other parameters need to be varied they can be replaced in a similar way.
+If a station site ID file wasn't passed as a plugin config option, then the plugin defaults to grabbing all
+the registered site IDs from `the USGS website <https://water.usgs.gov/osw/hcdn-2009/HCDN-2009_Station_Info.xlsx>`_.
+The IV Web Service supports queries with multiple site IDs specified (comma-separated). If the plugin option
+*poll_usgs_nb_stn* was specified to the chunk size in the config, it'll take groups of stations' data based on
+the number passed (this reduces web requests and speeds up the data collection if collecting in bulk).  
 
 To run this example, the configs and plugins can be found under *plugins* 
 (`poll_usgs.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/poll_usgs.py>`_ 
