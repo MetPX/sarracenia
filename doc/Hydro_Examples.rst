@@ -56,15 +56,8 @@ and `subnoaa.conf <https://github.com/MetPX/sarracenia/blob/master/sarra/example
 To run, add both plugins and configurations using the :code:`add` action, edit the proper variables in the 
 config (the flowbroker, destination among others. If running off a local RabbitMQ server, some of the 
 documentation under `doc/Dev.rst <https://github.com/MetPX/sarracenia/blob/master/doc/Dev.rst>`_ 
-on how to set up the server might be useful), then open two terminals and run::
-
-	[aspymap:~]$ sr_poll foreground pollnoaa.conf
-
-in one and::
-
-	[aspymap:~]$ sr_subscribe foreground subnoaa.conf
-
-in the other. If everything was configured correctly, the output should look something like this::
+on how to set up the server might be useful). If everything was configured correctly, the output should 
+look something like this::
 
 	[aspymap:~]$ sr_poll foreground pollnoaa.conf 
 	2018-09-26 15:26:57,704 [INFO] sr_poll pollnoaa startup
