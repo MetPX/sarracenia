@@ -27,7 +27,7 @@ To hack on the sarracenia source, you need:
 after you have cloned the source code::
 
     git clone https://github.com/MetPX/sarracenia sarracenia
-    git clone https://github.com/MetPX/sarracenia sarrac
+    git clone https://github.com/MetPX/sarrac sarrac
     cd sarracenia
 
 The rest of the Guide assumes you are there.
