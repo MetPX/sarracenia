@@ -39,7 +39,6 @@ class Fetcher(object):
 
                 logger = parent.logger                
                 deleteflg = parent.delete
-                logger.info("delete FLAG sdfjasndjkgnaskjdfgndsfg %s" % deleteflg)
 
                 ok, details = parent.credentials.get(parent.msg.notice.split()[1])
                 if ok: 
