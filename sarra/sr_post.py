@@ -39,7 +39,7 @@
 #============================================================
 
 import json,os,random,sys,time
-#import xattr
+import xattr
 
 from collections import *
 
@@ -526,13 +526,15 @@ class sr_post(sr_instances):
 
         sumstr = ''
 
-        #try :
-        #       attr = xattr.xattr(path)
-        #       if 'user.sr_sum' in attr :
-        #          self.logger.debug("sum set by xattr")
-        #          sumstr = (attr['user.sr_sum'].decode("utf-8")).split()[1]
-        #except: pass
-        sumstr = self.compute_sumstr(path, fsiz, sumstr)
+        self.logger.debug("SUMSTR SETTING OPTION")
+        try :
+               attr = dict(xattr.get_all(path))
+               if 'user.sr_sum' in attr :
+                  self.logger.debug("sum set by xattr")
+                  sumstr = attr['user.sr_sum'].decode("utf-8")
+        except: 
+               self.logger.debug("sum set by compute_sumstr")
+               sumstr = self.compute_sumstr(path, fsiz, sumstr)
         
         # caching
 
