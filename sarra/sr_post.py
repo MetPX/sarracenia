@@ -528,7 +528,7 @@ class sr_post(sr_instances):
 
         self.logger.debug("SUMSTR SETTING OPTION")
         try :
-               attr = dict(xattr.get_all(path))
+               attr = xattr.xattr(path)
                if 'user.sr_sum' in attr :
                   self.logger.debug("sum set by xattr")
                   sumstr = attr['user.sr_sum'].decode("utf-8")
