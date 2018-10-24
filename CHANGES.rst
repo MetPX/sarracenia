@@ -6,6 +6,10 @@ lists all changes between versions.
 
 **git repo**
 
+* new      Issue #106 plugins for hydrometric forecast data acquisition.
+*          now have many more examples of polls.
+*
+
 **2.18.10b1**
 
 * bugfix   corruption in cache cleaning introduced by pathname encoding.
