@@ -500,7 +500,7 @@ When multiple instances are used, they will all use the same queue, for trivial
 multi-tasking. If multiple computers have a shared home file system, then the
 queue_name is written to: 
 
- ~/.cache/sarra/&lt;programName&gt;/&lt;configName&gt;/&lt;programName&gt;_&lt;configName&gt;_&lt;brokerUser&gt;.qname
+ ~/.cache/sarra/<programName>/<configName>/<programName>_<configName>_<brokerUser>.qname
 
 Instances started on any node with access to the same shared file will use the
 same queue. Some may want use the *queue_name* option as a more explicit method
