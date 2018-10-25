@@ -96,7 +96,7 @@ class HostConnect:
 
        self.connection = None
        self.channel    = None
-       self.ssl        = False
+       self.ssl        = True
 
        self.logger     = logger
 
@@ -2185,7 +2185,7 @@ class ConsumerX(object):
 
         self.protocol      = 'amqp'
         self.host          = 'dd.weather.gc.ca'
-        self.port          = 5672
+        self.port          = 5671
         self.amqp_user     = 'anonymous'
         self.amqp_passwd   = 'anonymous'
         self.vhost         = '/'
