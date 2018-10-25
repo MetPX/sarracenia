@@ -469,7 +469,7 @@ Une fois connecté à un courtier AMQP, l'utilisateur doit créer une file d'att
 
 Mise en file d'attente sur broker :
 
-- **queue_name <nom> (par défaut : q_<brokerUser>.<programName>.<configName>.<configName>)**
+- **queue <nom> (par défaut : q_<brokerUser>.<programName>.<configName>.<configName>)**
 - **durable <boolean> (par défaut : False)**
 - **expire <durée> (par défaut : 5m == cinq minutes. À OUTREPASSER)**
 - **message-ttl <durée> (par défaut : Aucun)**
@@ -485,8 +485,8 @@ les cas moins habituels, l'utilisateur peut avoir besoin a remplacer les valeurs
 par défaut. La file d'attente est l'endroit où les avis sont conservés
 sur le serveur pour chaque abonné.
 
-queue_name <nom> (par défaut : q_<brokerUser>.<programName>.<configName>.<configName>)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[ queue|queue_name <nom> (par défaut : q_<brokerUser>.<programName>.<configName>.<configName>) ]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Par défaut, les composants créent un nom de file d'attente qui doit être unique.
 Le nom_de_la_files_d'attente par défaut composants créent suit.. :  
@@ -494,6 +494,13 @@ Le nom_de_la_files_d'attente par défaut composants créent suit.. :
 peuvent remplacer la valeur par défaut à condition qu'elle commence par 
 **q_<brokerUser>****. Certaines variables peuvent aussi être utilisées dans 
 le nom_de_la_file d'attente comme **${BROKER_USER},${PROGRAMME},${CONFIG},${HOSTNAME}******
+
+Quand plusieurs processus (*instances*) roulent sur un même serveurs, ils 
+partagent le même *home* alors ils vont tous partager le même fil.  On peut
+explicitement spécifier le nom du fil d´attente pour être plus claire ou 
+dans les cas ou on veut que le même queue soit partagé en dépit de ne pas
+avoir de *home* partagé.
+
 
 durable <boolean> (par défaut : False)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
