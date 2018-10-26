@@ -34,7 +34,7 @@ def self_test():
     cfg.load_sums()
     cfg.logger         = logger
     cfg.debug          = True
-    cfg.broker         = urllib.parse.urlparse("amqp://anonymous:anonymous@dd.weather.gc.ca/")
+    cfg.broker         = urllib.parse.urlparse("amqps://anonymous:anonymous@dd.weather.gc.ca/")
     cfg.prefetch       = 10
     cfg.bindings       = [ ( 'xpublic', 'v02.post.#') ]
     cfg.durable        = False
