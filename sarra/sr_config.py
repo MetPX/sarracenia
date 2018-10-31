@@ -1015,8 +1015,11 @@ class sr_config:
 
         for i in netifaces.interfaces():
             for a in netifaces.ifaddresses(i):
-                if self.vip in netifaces.ifaddresses(i)[a][0].get('addr'):
-                   return True
+                j=0
+                while( j < len(netifaces.ifaddresses(i)[a]) ) :
+                    if self.vip in netifaces.ifaddresses(i)[a][j].get('addr'):
+                       return True
+                    j+=1
         return False
  
     def isMatchingPattern(self, chaine, accept_unmatch = False): 

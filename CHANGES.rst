@@ -8,7 +8,9 @@ lists all changes between versions.
 
 * new      Issue #106 plugins for hydrometric forecast data acquisition.
 *          now have many more examples of polls.
-*
+* bugfix:  Issue #110 has_vip does not find vips.
+*          unit tests referred to non SSL datamart, were broken
+*          when it was de-commissioned.
 
 **2.18.10b1**
 

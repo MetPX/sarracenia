@@ -80,9 +80,9 @@ amqp://tsource:PickAPassword2@localhost
 amqp://tfeed:PickAPassword3@localhost
 amqp://tsub:PickAPassword4@localhost
 amqp://anonymous:PickAPassword5@localhost
-amqp://anonymous:anonymous@dd.weather.gc.ca
-amqp://anonymous:anonymous@dd1.weather.gc.ca
-amqp://anonymous:anonymous@dd2.weather.gc.ca
+amqps://anonymous:anonymous@dd.weather.gc.ca
+amqps://anonymous:anonymous@dd1.weather.gc.ca
+amqps://anonymous:anonymous@dd2.weather.gc.ca
 
 EOT
  exit 1

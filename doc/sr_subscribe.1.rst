@@ -459,7 +459,7 @@ Once connected to an AMQP broker, the user needs to create a queue.
 
 Setting the queue on broker :
 
-- **queue_name    <name>         (default: q_<brokerUser>.<programName>.<configName>)**
+- **queue         <name>         (default: q_<brokerUser>.<programName>.<configName>)**
 - **durable       <boolean>      (default: False)**
 - **expire        <duration>      (default: 5m  == five minutes. RECOMMEND OVERRIDING)**
 - **message-ttl   <duration>      (default: None)**
@@ -475,16 +475,41 @@ and users do not need to set them.  For less usual cases, the user
 may need to override the defaults.  The queue is where the notifications
 are held on the server for each subscriber.
 
-[ queue_name|qn <name>]
-~~~~~~~~~~~~~~~~~~~~~~~
+[ queue|queue_name|qn <name>]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-By default, components create a queue name that should be unique. The default queue_name
-components create follows :  **q_<brokerUser>.<programName>.<configName>** .
+By default, components create a queue name that should be unique. The 
+default queue_name components create follows the following convention: 
+
+   **q_<brokerUser>.<programName>.<configName>.<random>.<random>** 
+
+Where:
+
+* *brokerUser* is the username used to connect to the broker (often: *anonymous* )
+
+* *programName* is the component using the queue (e.g. *sr_subscribe* ),
+
+* *configName* is the configuration file used to tune component behaviour.
+
+* *random* is just a series of characters chosen to avoid clashes from multiple
+  people using the same configurations
 
 Users can override the default provided that it starts with **q_<brokerUser>**.
 
+When multiple instances are used, they will all use the same queue, for trivial
+multi-tasking. If multiple computers have a shared home file system, then the
+queue_name is written to: 
+
+ ~/.cache/sarra/<programName>/<configName>/<programName>_<configName>_<brokerUser>.qname
+
+Instances started on any node with access to the same shared file will use the
+same queue. Some may want use the *queue_name* option as a more explicit method
+of sharing work across multiple nodes.
+
+
+
 durable <boolean> (default: False)
--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The  **durable** option, if set to True, means writes the queue
 on disk if the broker is restarted.
