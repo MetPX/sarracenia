@@ -2063,7 +2063,7 @@ class ConsumerX(object):
         self.ssl        = False
 
         self.queue      = None
-        self.durable    = False
+        self.durable    = True
         self.expire     = None
 
         self.notify_only = False
