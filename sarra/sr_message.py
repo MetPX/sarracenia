@@ -33,7 +33,7 @@
 #
 #
 
-import calendar,os,socket,sys,time,urllib,urllib.parse
+import calendar,os,socket,sys,time,urllib,urllib.parse,xattr
 
 # AMQP limits headers to 'short string', or 255 characters, so truncate and warn.
 amqp_ss_maxlen = 253
@@ -104,7 +104,7 @@ class sr_message():
         """
         fname = os.path.join(self.new_dir, self.new_file)
         self.logger.debug("sr_message content_match %s" % (fname ) )
-        
+
         self.local_checksum = None
 
         if not os.path.isfile(fname) : return False
