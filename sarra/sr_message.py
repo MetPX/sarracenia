@@ -414,8 +414,8 @@ class sr_message():
         # to same shard. do that by keying on the last character of the checksum.
         # 
         if self.post_exchange_split > 0 :
-           suffix= "%02d" % ( ord(self.sumstr[-1]) % self.post_exchange_split )
-           self.logger.debug( "post_exchange_split set, keying on %s , suffix is %s" % ( self.sumstr[-1], suffix) )
+           suffix= "%02d" % ( ord(self.headers['sum'][-1]) % self.post_exchange_split )
+           self.logger.debug( "post_exchange_split set, keying on %s , suffix is %s" % ( self.headers['sum'][-1], suffix) )
         else:
            suffix=""
 

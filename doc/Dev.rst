@@ -849,13 +849,10 @@ Automated Build
 
 * Ensure the code mirror is updated by checking the **Import details** by checking `this page for sarracenia <https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/+git/trunk>`_
 * if the code is out of date, do **Import Now** , and wait a few minutes while it is updated.
-* Ensure the code mirror is updated by checking the **Import details** by checking `this page for sarrac <https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarrac/+git/master>`_
-* if the code is out of date, do **Import Now** , and wait a few minutes while it is updated.
 * once the repository is upto date, proceed with the build request.
 * Go to the `sarracenia release <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/sarracenia-release>`_ recipe
 * Click on the **Request build(s)** button to create a new release
-* Go to the `Sarrac release <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sarrac>`_ recipe
-* Click on the **Request build(s)** button to create a new release
+* for Sarrac, follow the procedure `here <https://github.com/MetPX/sarrac#release-process>`_
 * The built packages will be available in the `metpx ppa <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx>`_
 
 Daily Builds

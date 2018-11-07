@@ -6,6 +6,8 @@ lists all changes between versions.
 
 **git repo**
 
+**2.18.10b2**
+
 * new      Issue #106 plugins for hydrometric forecast data acquisition.
 *          now have many more examples of polls.
 * bugfix:  Issue #110 has_vip does not find vips.
