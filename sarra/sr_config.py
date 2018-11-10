@@ -2484,8 +2484,10 @@ class sr_config:
 
         LOG_FORMAT   = ('%(asctime)s [%(levelname)s] %(message)s')
           
-        self.handler = logging.handlers.TimedRotatingFileHandler(self.logpath, when='midnight', \
+        self.handler = logging.handlers.TimedRotatingFileHandler(self.logpath, when='M', \
                        interval=1, backupCount=self.logrotate)
+        #self.handler = logging.handlers.TimedRotatingFileHandler(self.logpath, when='midnight', \
+        #               interval=1, backupCount=self.logrotate)
         fmt          = logging.Formatter( LOG_FORMAT )
         self.handler.setFormatter(fmt)
 
