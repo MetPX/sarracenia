@@ -733,7 +733,7 @@ class sr_instances(sr_config):
              self.pid = os.getpid()
              ok = self.file_set_int(self.pidfile,self.pid)
              self.setlog()
-             if self.no > 0 and sys.platform != 'win32':
+             if self.no > 0: 
                 os.close(0)
                 lfd=os.open( self.logpath, os.O_CREAT|os.O_WRONLY|os.O_APPEND )
                 os.dup2(lfd,1)
