@@ -351,13 +351,13 @@ It is a comma separated string.  Valid checksum flags are ::
     where 0 : no checksum... value in post is a random integer (only for testing/debugging.)
           d : do md5sum on file content (default for now, compatibility)
           n : do md5sum checksum on filename
-          N : do SHA512 checksum on filename
+          p : do SHA512 checksum on filename and partstr [#]_
           s : do SHA512 on file content (default in future)
           z,a : calculate checksum value using algorithm a and assign after download.
 
 Other checksum algorithms can be added. See Programming Guide.
 
-
+.. [#] only implemented in C. ( see https://github.com/MetPX/sarracenia/issues/117 )
 
 File Detection Strategies
 -------------------------
