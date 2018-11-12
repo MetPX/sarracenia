@@ -32,6 +32,7 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 
+import logging
 import inspect
 import netifaces
 import os,re,socket,sys,random,glob
@@ -64,11 +65,6 @@ if sys.hexversion > 0x03030000 :
    py2old=False
 else: 
    py2old=True 
-
-
-import logging
-
-import  concurrent_log_handler 
 
 
 class sr_config:
@@ -2488,13 +2484,10 @@ class sr_config:
 
         LOG_FORMAT   = ('%(asctime)s [%(levelname)s] %(message)s')
           
-        if sys.platform == 'win32' :
-            self.handler = concurrent_log_handler.ConcurrentRotatingFileHandler(self.logpath, mode='a', \
-                       maxBytes=10*1024, backupCount=5, encoding=None, delay=False )
-        else:
-            self.handler = logging.handlers.TimedRotatingFileHandler(self.logpath, when='midnight', \
+        self.handler = logging.handlers.TimedRotatingFileHandler(self.logpath, when='M', \
                        interval=1, backupCount=self.logrotate)
-
+        #self.handler = logging.handlers.TimedRotatingFileHandler(self.logpath, when='midnight', \
+        #               interval=1, backupCount=self.logrotate)
         fmt          = logging.Formatter( LOG_FORMAT )
         self.handler.setFormatter(fmt)
 
