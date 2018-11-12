@@ -1,5 +1,4 @@
 dist
-*~
 *.egg
 *.egg-info
 .vagrant
