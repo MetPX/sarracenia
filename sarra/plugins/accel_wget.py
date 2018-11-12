@@ -101,13 +101,16 @@ class ACCEL_WGET(object):
       result = p.returncode
 
       if result == 0:  # Success!
-         logger.info("%s" % outstr)
+         for line in outstr.splitlines():
+              logger.info("%s" % line.decode('utf-8') )
+         #logger.info("%s" % outstr)
          logger.info("wget Downloaded: %s " % ( msg.new_dir + os.sep + msg.new_file ) )
          if parent.reportback:
             msg.report_publish(201,'Downloaded')
          return True
 
-      logger.error("%s" % outstr)
+      for line in outstr.splitlines():
+              logger.error("%s" % line.decode('utf-8') )
          
       if parent.reportback:
          msg.report_publish(499,'wget download failed')
