@@ -70,6 +70,7 @@ import logging
 
 import  concurrent_log_handler 
 
+class srlogg: logging
 
 class sr_config:
 
@@ -2463,6 +2464,23 @@ class sr_config:
 
         self.logger.setLevel(self.loglevel)
 
+    def rotlog(source,dest):
+        """
+           overriding default rotator of log.
+        """
+        os.close(1)
+        os.close(2)
+        if os.path.exists(source):
+            os.rename(source,dest)
+        lfd=os.open( self.dest, os.O_CREAT|os.O_WRONLY|os.O_APPEND )
+        os.chmod( self.dest, self.chmod_log )
+        os.dup2(lfd,1)
+        os.dup2(lfd,2)
+
+
+         
+
+
     def setlog(self):
 
         import logging.handlers
@@ -2480,15 +2498,11 @@ class sr_config:
            LOG_FORMAT   = ('%(asctime)s [%(levelname)s] %(pathname) %(lineno) %(message)s')
            return
 
-        # to file
-
-        self.logger.debug("switching to log file %s" % self.logpath )
-
         del self.logger
 
         LOG_FORMAT   = ('%(asctime)s [%(levelname)s] %(message)s')
           
-        if sys.platform == 'win32' :
+        if True or sys.platform == 'win32' :
             self.handler = concurrent_log_handler.ConcurrentRotatingFileHandler(self.logpath, mode='a', \
                        maxBytes=10*1024, backupCount=5, encoding=None, delay=False )
         else:
@@ -2501,7 +2515,12 @@ class sr_config:
         self.logger = logging.RootLogger(logging.WARNING)
         self.logger.setLevel(self.loglevel)
         self.logger.addHandler(self.handler)
-        os.chmod( self.logpath, self.chmod_log )
+        self.logger.rotator = self.rotlog
+
+        if os.path.exists(self.logpath):
+            os.chmod( self.logpath, self.chmod_log )
+
+        self.logger.debug("logging to: %s" % self.logpath )
 
 
     # check url and add credentials if needed from credential file
