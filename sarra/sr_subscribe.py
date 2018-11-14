@@ -1327,7 +1327,7 @@ class sr_subscribe(sr_instances):
                           attr = xattr.xattr(path)
                           onfly_sumstr = self.msg.sumflg+','+self.msg.onfly_checksum
                           if attr['user.sr_sum'] != onfly_sumstr:
-                              xattr.setxattr(path, 'user.sr_sum', bytes(onfly_sumstr, "utf-8")
+                              xattr.setxattr(path, 'user.sr_sum', bytes(onfly_sumstr, "utf-8"))
                       except:
                           pass
                       self.msg.set_sum(self.msg.sumflg,self.msg.onfly_checksum)
