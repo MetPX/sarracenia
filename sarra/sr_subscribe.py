@@ -1151,7 +1151,7 @@ class sr_subscribe(sr_instances):
               if self.msg.isRetry: self.consumer.msg_worked()
               return True
 
-           path = self.msg.new_dir + '/' + self.msg.new_file
+           path = os.path.join(self.msg.new_dir, self.msg.new_file)
 
            try : 
                if os.path.isfile(path) : os.unlink(path)
@@ -1324,9 +1324,10 @@ class sr_subscribe(sr_instances):
                    if self.recompute_chksum :
                       #self.msg.compute_local_checksum()
                       try:
-                          attr = xattr.xattr(os.path.join(self.msg.new_dir, self.msg.new_file))
-                          if attr['user.sr_sum'] != (self.msg.sumflg+','+self.msg.onfly_checksum):
-                              attr['user.sr_sum'] = self.msg.sumflg+','+self.msg.onfly_checksum
+                          attr = xattr.xattr(path)
+                          onfly_sumstr = self.msg.sumflg+','+self.msg.onfly_checksum
+                          if attr['user.sr_sum'] != onfly_sumstr:
+                              xattr.setxattr(path, 'user.sr_sum', bytes(onfly_sumstr, "utf-8")
                       except:
                           pass
                       self.msg.set_sum(self.msg.sumflg,self.msg.onfly_checksum)
