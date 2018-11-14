@@ -76,7 +76,7 @@ subset of data between site store 1 and site store 2. For monitoring purposes, a
 subset to must be mirrored to data hall 0.
 
 
-Continuous Mirrorring
+Continuous Mirroring
 ---------------------
 
 There is a pair of clusters running these simulations, one normally mostly working on operations,
