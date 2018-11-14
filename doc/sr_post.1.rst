@@ -290,13 +290,14 @@ common settings, and methods of specifying them.
     where 0 : no checksum... value in post is a random integer (only for testing/debugging.)
           d : do md5sum on file content (default for now, compatibility)
           n : do md5sum checksum on filename
-          N : do SHA512 checksum on filename
+          p : do SHA512 checksum on filename and partition string [#]_
           s : do SHA512 on file content (default in future)
           z,a : calculate checksum value using algorithm a and assign after download.
 
   Then using a checksum script, it must be registered with the pumping network, so that consumers
   of the postings have access to the algorithm.
 
+.. [#] The *p* algorithm is only implemented in C ( https://github.com/MetPX/sarracenia/issues/117 )
 
 [-tp|--topic_prefix <key>]
 --------------------------

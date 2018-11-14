@@ -6,6 +6,11 @@ lists all changes between versions.
 
 **git repo**
 
+* bugfix:  Issue #113 crash on sr_post/watch with post_exchange_split
+*          Issue #112 log rollover on windows.
+*          Issue #101 git checkout corruption on windows
+
+
 **2.18.10b2**
 
 * new      Issue #106 plugins for hydrometric forecast data acquisition.

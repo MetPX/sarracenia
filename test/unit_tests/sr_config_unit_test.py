@@ -123,20 +123,21 @@ def self_test():
 
     # checksum_N
 
-    cfg.set_sumalgo('N')
-    chkN = cfg.sumalgo
-    chkN.set_path(tmpfilname,'i,1,256,1,0,0')
-    v = chkN.get_value()
+    #cfg.set_sumalgo('N')
+    #chkN = cfg.sumalgo
+    #chkN.set_path(tmpfilname,'i,1,256,1,0,0')
+    #v = chkN.get_value()
   
     # this should do nothing
-    chunk = 'aaa'
-    chkN.update(chunk)
+    #chunk = 'aaa'
+    #chkN.update(chunk)
 
-    if chkN.get_value() != 'a0847ab809f83cb573b76671bb500a430372d2e3d5bce4c4cd663c4ea1b5c40f5eda439c09c7776ff19e3cc30459acc2a387cf10d056296b9dc03a6556da291f' :
-       print("test 04: checksum_N did not work")
-       failed = True
+    #if chkN.get_value() != 'a0847ab809f83cb573b76671bb500a430372d2e3d5bce4c4cd663c4ea1b5c40f5eda439c09c7776ff19e3cc30459acc2a387cf10d056296b9dc03a6556da291f' :
+    #   print("test 04: checksum_N did not work")
+    #   failed = True
 
     # checksum_s
+    
 
     cfg.set_sumalgo('s')
     chks = cfg.sumalgo
@@ -280,11 +281,11 @@ def self_test():
        cfg.logger.error("test 19: option sum or module validate_sum")
        failed = True
 
-    opt1 = "sum N"
-    cfg.option(opt1.split())
-    if cfg.sumflg != 'N' or cfg.sumalgo.registered_as() != 'N':
-       cfg.logger.error("test 19b: option sum or module validate_sum")
-       failed = True
+    #opt1 = "sum N"
+    #cfg.option(opt1.split())
+    #if cfg.sumflg != 'N' or cfg.sumalgo.registered_as() != 'N':
+    #   cfg.logger.error("test 19b: option sum or module validate_sum")
+    #   failed = True
 
     opt1 = "move toto titi"
     cfg.option(opt1.split())

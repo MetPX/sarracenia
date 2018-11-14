@@ -256,7 +256,7 @@ for t in sr_util sr_credentials sr_config sr_cache sr_retry sr_consumer sr_http 
     nbr_test=$(( ${nbr_test}+1 ))
       ${TESTDIR}/unit_tests/${t}_unit_test.py >> ${testdocroot}/unit_tests.log 2>&1
       status=${?}
-            if [ $nbr_fail -ne 0 ]; then
+            if [ $status -ne 0 ]; then
                echo "======= Testing "${t}": Failed"
             else
                echo "======= Testing "${t}": Succeeded"

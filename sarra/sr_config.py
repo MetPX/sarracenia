@@ -66,6 +66,20 @@ if sys.hexversion > 0x03030000 :
 else: 
    py2old=True 
 
+class StreamToLogger(object):
+   """
+   Fake file-like stream object that redirects writes to a logger instance.
+   """
+   def __init__(self, logger, log_level=logging.INFO):
+      self.logger = logger
+      self.log_level = log_level
+      self.linebuf = ''
+
+   def write(self, buf):
+      for line in buf.rstrip().splitlines():
+         self.logger.log(self.log_level, line.rstrip())
+
+
 
 class sr_config:
 
@@ -172,7 +186,7 @@ class sr_config:
 
         # program_name
 
-        self.program_name = re.sub(r'(-script\.pyw|\.exe|\.py)?$', '', os.path.basename(sys.argv[0]) )
+        self.program_name = re.sub(r'(-script\.(pyw|py)|\.exe|\.py)?$', '', os.path.basename(sys.argv[0]) )
         self.program_dir  = self.program_name[3:]
         self.logger.debug("sr_config program_name %s " % self.program_name)
 
@@ -2493,6 +2507,14 @@ class sr_config:
         self.logger.setLevel(self.loglevel)
         self.logger.addHandler(self.handler)
         os.chmod( self.logpath, self.chmod_log )
+
+        stdout_logger = logging.getLogger('STDOUT')
+        slo = StreamToLogger(stdout_logger, logging.INFO)
+        sys.stdout = slo
+        
+        stderr_logger = logging.getLogger('STDERR')
+        sle = StreamToLogger(stderr_logger, logging.ERROR)
+        sys.stderr = sle
 
 
     # check url and add credentials if needed from credential file
