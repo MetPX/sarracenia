@@ -271,7 +271,7 @@ The GPFS-policy runs are the still the method in use operationally as this is wr
 the summary are taken from the logs of one day of GPFS-policy runs. 
 
  * Hall1 to Hall2: bytes/days: 18615163646615 = 16T, nb file/day:  1901463
- * Hall2 yo CMC: bytes/days: 4421909953006 = 4T, nb file/day: 475085
+ * Hall2 to CMC: bytes/days: 4421909953006 = 4T, nb file/day: 475085
 
 All indications are that the shim library copies more data more quickly than the policy based runs, 
 but so far (2018/01) only subsets of the main tree have been tested.  On one tree of 142000 files, the GPFS-policy run had a mean 
