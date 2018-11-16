@@ -186,7 +186,7 @@ class sr_config:
 
         # program_name
 
-        self.program_name = re.sub(r'(-script\.pyw|\.exe|\.py)?$', '', os.path.basename(sys.argv[0]) )
+        self.program_name = re.sub(r'(-script\.(pyw|py)|\.exe|\.py)?$', '', os.path.basename(sys.argv[0]) )
         self.program_dir  = self.program_name[3:]
         self.logger.debug("sr_config program_name %s " % self.program_name)
 
