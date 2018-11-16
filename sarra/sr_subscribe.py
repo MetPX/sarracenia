@@ -381,7 +381,7 @@ class sr_subscribe(sr_instances):
         # general startup and version
         # ---------------------------
 
-        print("\nUsage: %s [OPTIONS] [foreground|start|stop|restart|reload|status|cleanup|setup] configfile\n" % self.program_name )
+        print("\nUsage: %s [OPTIONS] [add|cleanup|declare|edit|foreground|list|start|stop|restart|reload|remove|setup|status] configfile\n" % self.program_name )
         print("version: %s \n" % sarra.__version__ )
 
         # ---------------------------
