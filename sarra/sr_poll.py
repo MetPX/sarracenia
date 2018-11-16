@@ -241,7 +241,7 @@ class sr_poll(sr_post):
         return False
 
     def help(self):
-        print("Usage: %s [OPTIONS] configfile [add|cleanup|declare|edit|foreground|remove|start|stop|restart|reload|setup|status]\n" % self.program_name )
+        print("Usage: %s [OPTIONS] configfile [add|cleanup|declare|disable|edit|enable|foreground|remove|start|stop|restart|reload|setup|status]\n" % self.program_name )
         print("version: %s \n" % sarra.__version__ )
         print("\n\tPoll a remote server to produce announcements of new files appearing there\n" +
           "\npoll.conf file settings, MANDATORY ones must be set for a valid configuration:\n" +

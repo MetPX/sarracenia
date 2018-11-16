@@ -16,7 +16,7 @@ SYNOPSIS
 
  **sr_subscribe** foreground|start|stop|restart|reload|sanity|status configfile
 
- **sr_subscribe** cleanup|declare|setup|disable|enable|list|add|remove configfile
+ **sr_subscribe** cleanup|declare|edit|setup|disable|enable|list|add|remove configfile
 
 
 DESCRIPTION
