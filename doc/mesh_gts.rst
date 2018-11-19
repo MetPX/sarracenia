@@ -612,13 +612,38 @@ Programmability/Interoperability
 --------------------------------
 
 A new application to process sr_post messages can be re-implemented if there
-is a desire to do so as all design and implementation information, for all
+is a desire to do so, as all design and implementation information, for all
 three implementations (Python, C, node.js) as well as source code, is 
 publically available. The python implementation has an extensive plugin
 interface available to customize processing in a wide variety of ways, such as
 to add file transfer protocols, and perform pre or post processing before
 sending or after receipt of products. Interoperability with Apache NiFi has
 been demonstrated by some clients.
+
+
+Priorities
+----------
+
+FIXME: Make a picture, with separate queues for separate data types?
+
+In WMO GTS, data is segregated into alphanumeric vs. binary data, and within 
+a single flow, a priority mechanism was available, whose implementation was not
+really specified. The goal is essentially for the most time critical data
+to be transferrred before other queued information. When too much data 
+is sent over a high priority channel, some implementations can end up
+starving the lower priority data, which is not always desirable. 
+
+The effect of priority is to establish separate queue for products at 
+each priority level. In this proposal, rather than having explicit priorities
+within a single queue, one just uses separate queues for different 
+data sets. As high priority data must be smaller or infrequent than
+other data in order to transferred and processed quickly, the queueing
+on these high priority queues will naturally be shorter than those containing 
+other data. Since the mechanism is general, the details of implementation
+do not require rigid standardization, but can be implemented by each
+NMC to fit their needs.
+
+
 
 
 
@@ -635,12 +660,11 @@ entry.
 Also, while brokers work well for the moderate volumes in use (hundreds of 
 message per second per server) it is completely unclear if this is suitable 
 as a wider Internet technology (ie. for the 10K problem). For now, this sort 
-of feed is intended for sophisticated clients with a demonstrated need for 
-real-time file services. Demonstrating scaling to an internet scale
-deployment is future work.
+of feed is intended for dozens or hundreds of sophisticated peers with a 
+demonstrated need for real-time file services. Demonstrating scaling to 
+internet scale deployment is future work.
 
 Note that AMQP has overhead and size limits that make it a poor fit for 
 arbitrary file transfers. However, there are many other robust solutions for
-the file transfer problem. AMQP is best used only to transfer notifications 
-of data, which can be very large in number but individually small, and not 
-the data itself.
+the file transfer problem. AMQP is best used only to transfer notifications, 
+which can be very large in number but small in volume, and not the data itself.
