@@ -347,15 +347,35 @@ With AMQP Notices on a Standard File Server
 
 Several robust and mature protocols and software stacks are available for many
 data transport protocols: FTP, HTTP, HTTP(S), SFTP. Transporting data is a 
-solved problem with many solutions available from the broader industry. The
-existing cloud servers used for the GISC cache are done using FTP, and that is
-a reasonable solution. Servers subscribe to each others' advertisements, and
-advertisements are transitive, in that each node can advertise whatever it has
-downloaded from any other node so that other nodes connected to it can consume
-them. This is analogous to implementing mesh networking amongst all 
-NC/DCPC/GISCs.
+solved problem with many solutions available from the broader industry.  In 
+contrast to data transport, pub/sub is an atomized area with myriad niche
+solutions, and not clearly dominant solution.
 
-Adding an AMQP notification layer to the existing file transfer network would:
+The Advanced Message Queueing Protocol (AMQP), is an open standard, pioneered 
+by financial institutions, by later adopted by many software houses, large
+and small. AMQP is a replacement for proprietary message passing systems
+such as IBM/MQ, Tibco, Oracle SOA and/or Tuxedo. RabbitMQ is a prominent
+AMQP implementation, with deployments in many different domains:
+
+* `Backend processing at an Internet startup ( Soundcloud ) <https://content.pivotal.io/blog/scaling-with-rabbitmq-soundcloud>`_
+
+* `HPC Monitoring System @ Los Alamos National Lab <https://www.osti.gov/servlets/purl/1347071>`_
+
+* `Cloud Infrastructure (inside OpenStack) <https://docs.openstack.org/nova/rocky/reference/rpc.html>`_  
+
+Rabbitmq provides a mature, reliable message passing implementation
+currently, but there is are many other open source and proprietary
+implementations should that ever change. and AMQP *brokers* are 
+servers that provide message publish and subscribe services, with
+robust queuing support, and hierarchical topic based exchanges.
+
+Servers subscribe to each others' advertisements which are published using
+their own (software) broker. Advertisements are transitive, in that each 
+node can advertise whatever it has downloaded from any other node so that other
+nodes connected to it can consume them. This implements mesh networking 
+amongst all NC/DCPC/GISCs.
+
+An AMQP notification layer to the existing file transfer network would:
 
 - improve security because users never upload, never have to write to a remote server.
   (all transfers can be done by client initiated subscriptions, no write to peer servers needed).
@@ -381,6 +401,7 @@ Adding an AMQP notification layer to the existing file transfer network would:
 
 - route around node failures within the network in real-time without human intervention
   (routing is implicit and dynamic, rather than explicit and static).
+
 
 
 And an Agreed Directory Tree
@@ -560,10 +581,11 @@ Using An Open Reference Stack
 .. image:: A2B_oldtech.png
    :align: center
 
-A sample national mesh node (Linux/UNIX most likely) configuration would include the 
-following elements:
+A sample national mesh node (Linux/UNIX most likely) configuration would 
+include the following elements:
 
-- subscription application to post national data to the local broker for others ( Sarracenia )
+- subscription application to post national data to the local broker for 
+  others ( Sarracenia )
 
 - subscription application connects to other nodes' brokers ( Sarracenia ) 
   and post it on the local broker for download by clients.
@@ -577,18 +599,18 @@ following elements:
 
 The stack consists of entirely free software, and other implementations can be
 substituted. The only uncommon element in the stack is Sarracenia, which so far 
-as only been used with the RabbitMQ broker. While Sarracenia ( https://github.com/MetPX/sarracenia/blob/master/doc/sarra.rst ) 
-was inspired by the GISC data exchange problem, it is in no way specialized to weather 
-forecasting, and the plan is to offer it to other for in other domains to support high 
-speed data transfers. 
+as only been used with the RabbitMQ broker. While Sarracenia 
+( https://github.com/MetPX/sarracenia/blob/master/doc/sarra.rst ) 
+was inspired by the GISC data exchange problem, it is in no way specialized to
+weather forecasting, and the plan is to offer it to other for in other domains
+to support high speed data transfers. 
 
-Sarracenia's reference implementation is less than 20 thousand lines in Python 3,
-although partial open source implementations have been implemented in javascript and Go 
-by clients, and another in C was done to support 
-the `High Performance Computing use case. <mirroring_use_case.rst>`_
-The message format is `published <sr_post.7.rst>`_ 
-and can be re-implemented in a wide variety of programming languages. 
-Another client has recently started work on a C# implementation.
+Sarracenia's reference implementation is less than 20 thousand lines in Python 
+3. Clients have contributed open source partial implementations in javascript,
+C#, and Go, and have implemented another in C was done to support the 
+`High Performance Computing use case. <mirroring_use_case.rst>`_
+The message format is `published <sr_post.7.rst>`_ and demonstrably program 
+language agnostic.
 
 This stack can be deployed on very small configurations, such as a Raspberry Pi
 or a very inexpensive hosted virtual server. Performance will scale with 
@@ -664,7 +686,6 @@ of feed is intended for dozens or hundreds of sophisticated peers with a
 demonstrated need for real-time file services. Demonstrating scaling to 
 internet scale deployment is future work.
 
-Note that AMQP has overhead and size limits that make it a poor fit for 
-arbitrary file transfers. However, there are many other robust solutions for
-the file transfer problem. AMQP is best used only to transfer notifications, 
-which can be very large in number but small in volume, and not the data itself.
+There are many other robust solutions for the file transfer problem. AMQP 
+is best used only to transfer notifications (real-time transfer metadata), which
+can be very large in number but small in volume, and not the data itself.
