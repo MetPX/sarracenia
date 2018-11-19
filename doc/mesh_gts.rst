@@ -349,10 +349,10 @@ Several robust and mature protocols and software stacks are available for many
 data transport protocols: FTP, HTTP, HTTP(S), SFTP. Transporting data is a 
 solved problem with many solutions available from the broader industry.  In 
 contrast to data transport, pub/sub is an atomized area with myriad niche
-solutions, and not clearly dominant solution.
+solutions, and no clearly dominant solution.
 
-The Advanced Message Queueing Protocol (AMQP), is an open standard, pioneered 
-by financial institutions, by later adopted by many software houses, large
+The Advanced Message Queueing Protocol is an open standard, pioneered 
+by financial institutions, later adopted by many software houses large
 and small. AMQP is a replacement for proprietary message passing systems
 such as IBM/MQ, Tibco, Oracle SOA and/or Tuxedo. RabbitMQ is a prominent
 AMQP implementation, with deployments in many different domains:
@@ -364,8 +364,8 @@ AMQP implementation, with deployments in many different domains:
 * `Cloud Infrastructure (inside OpenStack) <https://docs.openstack.org/nova/rocky/reference/rpc.html>`_  
 
 Rabbitmq provides a mature, reliable message passing implementation
-currently, but there is are many other open source and proprietary
-implementations should that ever change. and AMQP *brokers* are 
+currently, but there are many other open source and proprietary
+implementations should that ever change. AMQP *brokers* are 
 servers that provide message publish and subscribe services, with
 robust queuing support, and hierarchical topic based exchanges.
 
@@ -451,7 +451,7 @@ the bulletins, whose content is::
 
 Aside from the contents of the tree, the rest of the functionality proposed 
 would be as described. One can easily subscribe to the datamart to replicate 
-the entire tree as the data is delivered to it.  While the application does not
+the entire tree as the data is delivered to it. While the application does not
 require it, the standardization of the tree to be exchanged by WMO members
 will substantially simplify data exchange. Most likely, an appropriate 
 tree to standardize for WMO uses would be something along the lines of::
@@ -462,7 +462,7 @@ tree to standardize for WMO uses would be something along the lines of::
                SA/   -- TT
                     follow the naming convention from WMO-386...
                                
-If we have an ordering by Day ( YYYYMMDD ), then ORIGIN ( CCCC? ) , then data
+If we have an ordering by Day ( YYYYMMDD ), then ORIGIN ( CCCC? ), then data
 types, and perhaps hour then the trees that result would be nearly optimally
 balanced, and ensure rapid retrieval. The optimal configuration is also clearly
 visible since this tree is can be inspected by any WMO member simply by browsing
@@ -475,12 +475,13 @@ programmatically modified to refer to the nearest node for data, or a
 straight-forward search algorithm can be implemented to ask other nodes, without
 the need to resort to an expensive search query.
 
-In AMQP, subscriptions can be organized into hierarchical topics, with the period character ('.') as
-a separator. For this application, the directory tree, with '/' or '\' as a separator replaced
-by AMQP's separator is is translated into an AMQP topic tree.  AMQP has rudimentary wildcarding, 
-in that it uses the asterisk ('*') to denote any single topic, and the hash symbol ('#') is used
-to match any remainder of the topic tree.  So examples of how one could subscribe selectively on 
-a node are::
+In AMQP, subscriptions can be organized into hierarchical topics, with the 
+period character ('.') as a separator. For this application, the directory tree,
+with '/' or '\' as a separator replaced by AMQP's separator is is translated 
+into an AMQP topic tree.  AMQP has rudimentary wildcarding, in that it uses the
+asterisk ('*') to denote any single topic, and the hash symbol ('#') is used to 
+match any remainder of the topic tree.  So examples of how one could subscribe
+selectively on a node are::
 
   v02.post.#            -- all products from all Origins (CCCC)'s on a node.
   v02.post.*.CWAO.#     -- all products from CWAO (Canada) on a node
