@@ -346,10 +346,10 @@ With AMQP Notices on a Standard File Server
 
 
 Several robust and mature protocols and software stacks are available for many
-data transport protocols: FTP, HTTP, HTTP(S), SFTP. Transporting data is a 
-solved problem with many solutions available from the broader industry.  In 
-contrast to data transport, pub/sub is an atomized area with myriad niche
-solutions, and no clearly dominant solution.
+data transport protocols: FTP, HTTP, HTTP(S), SFTP. A file server, as a means
+of Transporting data is a solved problem with many solutions available from 
+the broader industry.  In contrast to data transport, pub/sub is an atomized
+area with myriad niche solutions, and no clearly dominant solution.
 
 The Advanced Message Queueing Protocol is an open standard, pioneered 
 by financial institutions, later adopted by many software houses large
@@ -369,13 +369,13 @@ implementations should that ever change. AMQP *brokers* are
 servers that provide message publish and subscribe services, with
 robust queuing support, and hierarchical topic based exchanges.
 
-Servers subscribe to each others' advertisements which are published using
-their own (software) broker. Advertisements are transitive, in that each 
+Each Server runs a broker to advertise their own contribution, and they subscribes to 
+each others' advertisements. Advertisements are transitive, in that each 
 node can advertise whatever it has downloaded from any other node so that other
 nodes connected to it can consume them. This implements mesh networking 
 amongst all NC/DCPC/GISCs.
 
-An AMQP notification layer to the existing file transfer network would:
+An AMQP notification layer added to the existing file transfer network would:
 
 - improve security because users never upload, never have to write to a remote server.
   (all transfers can be done by client initiated subscriptions, no write to peer servers needed).
