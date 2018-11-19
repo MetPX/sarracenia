@@ -359,9 +359,9 @@ AMQP implementation, with deployments in many different domains:
 
 * `Backend processing at an Internet startup ( Soundcloud ) <https://content.pivotal.io/blog/scaling-with-rabbitmq-soundcloud>`_
 
-* `HPC Monitoring System @ Los Alamos National Lab <https://www.osti.gov/servlets/purl/1347071>`_
+* `HPC Monitoring System ( Los Alamos National Lab ) <https://www.osti.gov/servlets/purl/1347071>`_
 
-* `Cloud Infrastructure (inside OpenStack) <https://docs.openstack.org/nova/rocky/reference/rpc.html>`_  
+* `Cloud Infrastructure ( OpenStack ) <https://docs.openstack.org/nova/rocky/reference/rpc.html>`_  
 
 Rabbitmq provides a mature, reliable message passing implementation
 currently, but there are many other open source and proprietary
