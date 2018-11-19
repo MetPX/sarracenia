@@ -454,7 +454,7 @@ programmatically modified to refer to the nearest node for data, or a
 straight-forward search algorithm can be implemented to ask other nodes, without
 the need to resort to an expensive search query.
 
-In AMQP, subscriptions can be organized into hierarhical topics, with the period character ('.') as
+In AMQP, subscriptions can be organized into hierarchical topics, with the period character ('.') as
 a separator. For this application, the directory tree, with '/' or '\' as a separator replaced
 by AMQP's separator is is translated into an AMQP topic tree.  AMQP has rudimentary wildcarding, 
 in that it uses the asterisk ('*') to denote any single topic, and the hash symbol ('#') is used
@@ -583,8 +583,9 @@ forecasting, and the plan is to offer it to other for in other domains to suppor
 speed data transfers. 
 
 Sarracenia's reference implementation is less than 20 thousand lines in Python 3,
-although a partial implementation in node.js was done by one client, and 
-another in C was done to support the `High Performance Computing use case. <mirroring_use_case.rst>`_
+although partial open source implementations have been implemented in javascript and Go 
+by clients, and another in C was done to support 
+the `High Performance Computing use case. <mirroring_use_case.rst>`_
 The message format is `published <sr_post.7.rst>`_ 
 and can be re-implemented in a wide variety of programming languages. 
 Another client has recently started work on a C# implementation.
