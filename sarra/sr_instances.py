@@ -673,7 +673,21 @@ class sr_instances(sr_config):
                        self.logger.error("%s could not stop... not started " % self.instance_str)
                        return
 
-        cmd = []
+        if _platform == 'win32' :
+            #! does not work on windows, and subcomponents are actual scripts, not entry points.
+            #  need to invoke interpreter manually.
+            for p in os.getenv("PATH").split(";") :
+               q= p + '\pythonw.exe' 
+               if os.path.exists( q ):
+                   cmd = [ q ]
+                   break
+               q= p + '\python.exe' 
+               if os.path.exists( q ):
+                   cmd = [ q ]
+                   break
+        else:
+            cmd = []
+
         cmd.append(sys.argv[0])
         if not self.user_args or not "--no" in self.user_args :
            cmd.append("--no")
