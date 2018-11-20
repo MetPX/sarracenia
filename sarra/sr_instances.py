@@ -678,6 +678,7 @@ class sr_instances(sr_config):
             #  need to invoke interpreter manually.
             #  FIXME: pythonw preferred because it continues living after cmd window is closed.
             #
+            cmd = []
             for p in os.getenv("PATH").split(";") :
                 q= p + '\pythonw.exe' 
                 if os.path.exists( q ):
@@ -687,10 +688,10 @@ class sr_instances(sr_config):
                 if os.path.exists( q ):
                     cmd = [ q ]
                     break
-                if not os.path.exists( sys.argv[0] ):
-                    cmd.append(  sys.argv[0] + '-script.py' )
-                else:
-                    cmd.append( sys.argv[0] )
+            if os.path.exists( sys.argv[0] ):
+                 cmd.append( sys.argv[0] )
+            else:
+                 cmd.append(  sys.argv[0] + '-script.py' )
         else:
             cmd = [ sys.argv[0] ]
 
