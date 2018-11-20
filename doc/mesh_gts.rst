@@ -346,16 +346,36 @@ With AMQP Notices on a Standard File Server
 
 
 Several robust and mature protocols and software stacks are available for many
-data transport protocols: FTP, HTTP, HTTP(S), SFTP. Transporting data is a 
-solved problem with many solutions available from the broader industry. The
-existing cloud servers used for the GISC cache are done using FTP, and that is
-a reasonable solution. Servers subscribe to each others' advertisements, and
-advertisements are transitive, in that each node can advertise whatever it has
-downloaded from any other node so that other nodes connected to it can consume
-them. This is analogous to implementing mesh networking amongst all 
-NC/DCPC/GISCs.
+data transport protocols: FTP, HTTP, HTTP(S), SFTP. A file server, as a means
+of Transporting data is a solved problem with many solutions available from 
+the broader industry.  In contrast to data transport, pub/sub is an atomized
+area with myriad niche solutions, and no clearly dominant solution.
 
-Adding an AMQP notification layer to the existing file transfer network would:
+The Advanced Message Queueing Protocol is an open standard, pioneered 
+by financial institutions, later adopted by many software houses large
+and small. AMQP is a replacement for proprietary message passing systems
+such as IBM/MQ, Tibco, Oracle SOA and/or Tuxedo. RabbitMQ is a prominent
+AMQP implementation, with deployments in many different domains:
+
+* `Backend processing at an Internet startup ( Soundcloud ) <https://content.pivotal.io/blog/scaling-with-rabbitmq-soundcloud>`_
+
+* `HPC Monitoring System ( Los Alamos National Lab ) <https://www.osti.gov/servlets/purl/1347071>`_
+
+* `Cloud Infrastructure ( OpenStack ) <https://docs.openstack.org/nova/rocky/reference/rpc.html>`_  
+
+Rabbitmq provides a mature, reliable message passing implementation
+currently, but there are many other open source and proprietary
+implementations should that ever change. AMQP *brokers* are 
+servers that provide message publish and subscribe services, with
+robust queuing support, and hierarchical topic based exchanges.
+
+Each Server runs a broker to advertise their own contribution, and they subscribes to 
+each others' advertisements. Advertisements are transitive, in that each 
+node can advertise whatever it has downloaded from any other node so that other
+nodes connected to it can consume them. This implements mesh networking 
+amongst all NC/DCPC/GISCs.
+
+An AMQP notification layer added to the existing file transfer network would:
 
 - improve security because users never upload, never have to write to a remote server.
   (all transfers can be done by client initiated subscriptions, no write to peer servers needed).
@@ -381,6 +401,7 @@ Adding an AMQP notification layer to the existing file transfer network would:
 
 - route around node failures within the network in real-time without human intervention
   (routing is implicit and dynamic, rather than explicit and static).
+
 
 
 And an Agreed Directory Tree
@@ -430,7 +451,7 @@ the bulletins, whose content is::
 
 Aside from the contents of the tree, the rest of the functionality proposed 
 would be as described. One can easily subscribe to the datamart to replicate 
-the entire tree as the data is delivered to it.  While the application does not
+the entire tree as the data is delivered to it. While the application does not
 require it, the standardization of the tree to be exchanged by WMO members
 will substantially simplify data exchange. Most likely, an appropriate 
 tree to standardize for WMO uses would be something along the lines of::
@@ -441,7 +462,7 @@ tree to standardize for WMO uses would be something along the lines of::
                SA/   -- TT
                     follow the naming convention from WMO-386...
                                
-If we have an ordering by Day ( YYYYMMDD ), then ORIGIN ( CCCC? ) , then data
+If we have an ordering by Day ( YYYYMMDD ), then ORIGIN ( CCCC? ), then data
 types, and perhaps hour then the trees that result would be nearly optimally
 balanced, and ensure rapid retrieval. The optimal configuration is also clearly
 visible since this tree is can be inspected by any WMO member simply by browsing
@@ -454,12 +475,13 @@ programmatically modified to refer to the nearest node for data, or a
 straight-forward search algorithm can be implemented to ask other nodes, without
 the need to resort to an expensive search query.
 
-In AMQP, subscriptions can be organized into hierarhical topics, with the period character ('.') as
-a separator. For this application, the directory tree, with '/' or '\' as a separator replaced
-by AMQP's separator is is translated into an AMQP topic tree.  AMQP has rudimentary wildcarding, 
-in that it uses the asterisk ('*') to denote any single topic, and the hash symbol ('#') is used
-to match any remainder of the topic tree.  So examples of how one could subscribe selectively on 
-a node are::
+In AMQP, subscriptions can be organized into hierarchical topics, with the 
+period character ('.') as a separator. For this application, the directory tree,
+with '/' or '\' as a separator replaced by AMQP's separator is is translated 
+into an AMQP topic tree.  AMQP has rudimentary wildcarding, in that it uses the
+asterisk ('*') to denote any single topic, and the hash symbol ('#') is used to 
+match any remainder of the topic tree.  So examples of how one could subscribe
+selectively on a node are::
 
   v02.post.#            -- all products from all Origins (CCCC)'s on a node.
   v02.post.*.CWAO.#     -- all products from CWAO (Canada) on a node
@@ -560,10 +582,11 @@ Using An Open Reference Stack
 .. image:: A2B_oldtech.png
    :align: center
 
-A sample national mesh node (Linux/UNIX most likely) configuration would include the 
-following elements:
+A sample national mesh node (Linux/UNIX most likely) configuration would 
+include the following elements:
 
-- subscription application to post national data to the local broker for others ( Sarracenia )
+- subscription application to post national data to the local broker for 
+  others ( Sarracenia )
 
 - subscription application connects to other nodes' brokers ( Sarracenia ) 
   and post it on the local broker for download by clients.
@@ -577,17 +600,18 @@ following elements:
 
 The stack consists of entirely free software, and other implementations can be
 substituted. The only uncommon element in the stack is Sarracenia, which so far 
-as only been used with the RabbitMQ broker. While Sarracenia ( https://github.com/MetPX/sarracenia/blob/master/doc/sarra.rst ) 
-was inspired by the GISC data exchange problem, it is in no way specialized to weather 
-forecasting, and the plan is to offer it to other for in other domains to support high 
-speed data transfers. 
+as only been used with the RabbitMQ broker. While Sarracenia 
+( https://github.com/MetPX/sarracenia/blob/master/doc/sarra.rst ) 
+was inspired by the GISC data exchange problem, it is in no way specialized to
+weather forecasting, and the plan is to offer it to other for in other domains
+to support high speed data transfers. 
 
-Sarracenia's reference implementation is less than 20 thousand lines in Python 3,
-although a partial implementation in node.js was done by one client, and 
-another in C was done to support the `High Performance Computing use case. <mirroring_use_case.rst>`_
-The message format is `published <sr_post.7.rst>`_ 
-and can be re-implemented in a wide variety of programming languages. 
-Another client has recently started work on a C# implementation.
+Sarracenia's reference implementation is less than 20 thousand lines in Python 
+3. Clients have contributed open source partial implementations in javascript,
+C#, and Go, and have implemented another in C was done to support the 
+`High Performance Computing use case. <mirroring_use_case.rst>`_
+The message format is `published <sr_post.7.rst>`_ and demonstrably program 
+language agnostic.
 
 This stack can be deployed on very small configurations, such as a Raspberry Pi
 or a very inexpensive hosted virtual server. Performance will scale with 
@@ -611,13 +635,38 @@ Programmability/Interoperability
 --------------------------------
 
 A new application to process sr_post messages can be re-implemented if there
-is a desire to do so as all design and implementation information, for all
+is a desire to do so, as all design and implementation information, for all
 three implementations (Python, C, node.js) as well as source code, is 
 publically available. The python implementation has an extensive plugin
 interface available to customize processing in a wide variety of ways, such as
 to add file transfer protocols, and perform pre or post processing before
 sending or after receipt of products. Interoperability with Apache NiFi has
 been demonstrated by some clients.
+
+
+Priorities
+----------
+
+FIXME: Make a picture, with separate queues for separate data types?
+
+In WMO GTS, data is segregated into alphanumeric vs. binary data, and within 
+a single flow, a priority mechanism was available, whose implementation was not
+really specified. The goal is essentially for the most time critical data
+to be transferrred before other queued information. When too much data 
+is sent over a high priority channel, some implementations can end up
+starving the lower priority data, which is not always desirable. 
+
+The effect of priority is to establish separate queue for products at 
+each priority level. In this proposal, rather than having explicit priorities
+within a single queue, one just uses separate queues for different 
+data sets. As high priority data must be smaller or infrequent than
+other data in order to transferred and processed quickly, the queueing
+on these high priority queues will naturally be shorter than those containing 
+other data. Since the mechanism is general, the details of implementation
+do not require rigid standardization, but can be implemented by each
+NMC to fit their needs.
+
+
 
 
 
@@ -634,12 +683,10 @@ entry.
 Also, while brokers work well for the moderate volumes in use (hundreds of 
 message per second per server) it is completely unclear if this is suitable 
 as a wider Internet technology (ie. for the 10K problem). For now, this sort 
-of feed is intended for sophisticated clients with a demonstrated need for 
-real-time file services. Demonstrating scaling to an internet scale
-deployment is future work.
+of feed is intended for dozens or hundreds of sophisticated peers with a 
+demonstrated need for real-time file services. Demonstrating scaling to 
+internet scale deployment is future work.
 
-Note that AMQP has overhead and size limits that make it a poor fit for 
-arbitrary file transfers. However, there are many other robust solutions for
-the file transfer problem. AMQP is best used only to transfer notifications 
-of data, which can be very large in number but individually small, and not 
-the data itself.
+There are many other robust solutions for the file transfer problem. AMQP 
+is best used only to transfer notifications (real-time transfer metadata), which
+can be very large in number but small in volume, and not the data itself.
