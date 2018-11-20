@@ -676,18 +676,21 @@ class sr_instances(sr_config):
         if _platform == 'win32' :
             #! does not work on windows, and subcomponents are actual scripts, not entry points.
             #  need to invoke interpreter manually.
-            #for p in os.getenv("PATH").split(";") :
-            #   q= p + '\pythonw.exe' 
-            #   if os.path.exists( q ):
-            #       cmd = [ q ]
-            #       break
-            #   q= p + '\python.exe' 
-            #   if os.path.exists( q ):
-            #       cmd = [ q ]
-            #       break
-            if sys.argv[0][-3:] == '.py' :
-                 cmd = [ re.sub( '-script', '', sys.argv[0][0:-2] + 'exe' ) ]
-                 
+            #  FIXME: pythonw preferred because it continues living after cmd window is closed.
+            #
+            for p in os.getenv("PATH").split(";") :
+                q= p + '\pythonw.exe' 
+                if os.path.exists( q ):
+                    cmd = [ q ]
+                    break
+                q= p + '\python.exe' 
+                if os.path.exists( q ):
+                    cmd = [ q ]
+                    break
+                if not os.path.exists( sys.argv[0] ):
+                    cmd.append(  sys.argv[0] + '-script.py' )
+                else:
+                    cmd.append( sys.argv[0] )
         else:
             cmd = [ sys.argv[0] ]
 
