@@ -686,7 +686,8 @@ class sr_instances(sr_config):
             #       cmd = [ q ]
             #       break
             if sys.argv[0][-3:] == '.py' :
-                 cmd = [ sys.argv[0][0:-2] + 'exe' ]
+                 cmd = [ re.sub( '-script', '', sys.argv[0][0:-2] + 'exe' ) ]
+                 
         else:
             cmd = [ sys.argv[0] ]
 
