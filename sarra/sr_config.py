@@ -513,7 +513,7 @@ class sr_config:
         # dont need to configure if it is not a config file or for theses actions
 
         if self.config_found and \
-           not self.action   in  [ 'add','edit','enable', 'list' ]:
+           not self.action   in  [ 'add','edit','enable', 'list', 'rename', 'remove' ]:
            self.config (self.user_config)
 
         # configure some directories if statehost was set
@@ -523,7 +523,7 @@ class sr_config:
         # verify / complete settings
 
         if self.config_found and \
-           not self.action   in  [ 'add','edit','enable', 'list' ]:
+           not self.action   in  [ 'add','edit','enable', 'list', 'rename', 'remove' ]:
            self.check()
 
         # sr_audit is the only program working without config
