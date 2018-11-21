@@ -75,9 +75,9 @@ class sr_report(sr_subscribe):
         self.accept_unmatch       = True
 
     def help(self):
-        print("Usage: %s [OPTIONS] configfile [foreground|start|stop|restart|reload|status|cleanup|setup]\n" % self.program_name )
+        print("Usage: %s [OPTIONS] configfile [add|cleanup|edit|foreground|start|stop|restart|reload|remove|setup|status]\n" % self.program_name )
         print("version: %s \n" % sarra.__version__ )
-        print("Or   : %s [OPTIONS] -b <broker> [foreground|start|stop|restart|reload|status|cleanup|setup]\n" % self.program_name )
+        print("Or   : %s [OPTIONS] -b <broker> [add|cleanup|edit|foreground|start|stop|restart|reload|remove|setup|status]\n" % self.program_name )
         self.logger.info("OPTIONS:")
         self.logger.info("-b   <broker>   default:amqp://guest:guest@localhost/")
 

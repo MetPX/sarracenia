@@ -673,8 +673,28 @@ class sr_instances(sr_config):
                        self.logger.error("%s could not stop... not started " % self.instance_str)
                        return
 
-        cmd = []
-        cmd.append(sys.argv[0])
+        if _platform == 'win32' :
+            #! does not work on windows, and subcomponents are actual scripts, not entry points.
+            #  need to invoke interpreter manually.
+            #  FIXME: pythonw preferred because it continues living after cmd window is closed.
+            #
+            cmd = []
+            for p in os.getenv("PATH").split(";") :
+                q= p + '\pythonw.exe' 
+                if os.path.exists( q ):
+                    cmd = [ q ]
+                    break
+                q= p + '\python.exe' 
+                if os.path.exists( q ):
+                    cmd = [ q ]
+                    break
+            if os.path.exists( sys.argv[0] ):
+                 cmd.append( sys.argv[0] )
+            else:
+                 cmd.append(  sys.argv[0] + '-script.py' )
+        else:
+            cmd = [ sys.argv[0] ]
+
         if not self.user_args or not "--no" in self.user_args :
            cmd.append("--no")
            cmd.append("%d" % self.instance)

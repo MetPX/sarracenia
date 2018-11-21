@@ -218,6 +218,8 @@ class sr_post(sr_instances):
         print("\nUsage: %s -u <url> -pb <post_broker> ... [OPTIONS]\n" % self.program_name )
         print("version: %s \n" % sarra.__version__ )
         print("OPTIONS:")
+        print("-a|action   <action>    default:foreground")
+        print("                        keyword: add|cleanup|declare|disable|edit|enable|foreground|list|start|stop|restart|reload|remove|setup|status")
         print("-pb|post_broker   <broker>          default:amqp://guest:guest@localhost/")
         print("-c|config   <config_file>")
         print("-pbd <post_base_dir>   default:None")
