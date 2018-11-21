@@ -1151,7 +1151,7 @@ class sr_subscribe(sr_instances):
               if self.msg.isRetry: self.consumer.msg_worked()
               return True
 
-           path = os.path.join(self.msg.new_dir, self.msg.new_file)
+           path = self.msg.new_dir + '/' + self.msg.new_file
 
            try : 
                if os.path.isfile(path) : os.unlink(path)

@@ -102,7 +102,7 @@ class sr_message():
         if the file advertised is newer than the local one, and it has a different checksum, return True.
 
         """
-        fname = os.path.join(self.new_dir, self.new_file)
+        fname = "%s%s%s" % (self.new_dir, '/', self.new_file )
         self.logger.debug("sr_message content_match %s" % (fname ) )
 
         self.local_checksum = None
