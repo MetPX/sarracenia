@@ -21,7 +21,7 @@ class SumWriter(object):
 
 		logger = parent.logger
 
-		parent.msg.headers['sum'] = '%.4d' % random.randint(0,9999)
+		parent.msg.headers['sum'] = 'a,%.4d' % random.randint(0,9999)
 		parent.logger.debug("msg_overwrite_sum overwrote the msg sum to be: %s" % parent.msg.headers['sum'])
 		return True
 
