@@ -250,6 +250,8 @@ class sr_instances(sr_config):
         # sr_post special case : may not have config_name
 
         if self.program_name == 'sr_post' :
+           if action == 'status' :
+               return
            if action == 'foreground' :
                self.foreground_parent()
                return

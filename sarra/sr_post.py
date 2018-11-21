@@ -34,7 +34,7 @@
 #============================================================
 # usage example
 #
-# sr_post [options] [config] [foreground|start|stop|restart|reload|status|cleanup|setup]
+# sr_post [options] [config] [foreground|add|remove|edit|cleanup|setup]
 #
 #============================================================
 
@@ -219,7 +219,7 @@ class sr_post(sr_instances):
         print("version: %s \n" % sarra.__version__ )
         print("OPTIONS:")
         print("-a|action   <action>    default:foreground")
-        print("                        keyword: add|cleanup|declare|disable|edit|enable|foreground|list|start|stop|restart|reload|remove|setup|status")
+        print("                        keyword: add|cleanup|declare|disable|edit|enable|foreground|list|remove|setup")
         print("-pb|post_broker   <broker>          default:amqp://guest:guest@localhost/")
         print("-c|config   <config_file>")
         print("-pbd <post_base_dir>   default:None")
