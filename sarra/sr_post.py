@@ -39,7 +39,7 @@
 #============================================================
 
 import json,os,random,sys,time
-#import xattr
+import xattr
 
 from collections import *
 
@@ -523,19 +523,8 @@ class sr_post(sr_instances):
 
         partstr = '1,%d,1,0,0' % fsiz
 
-        # xattr turned off  PS 20180423
-        # xattr ... check if sum is set in extended fileattributes
-
-        sumstr = ''
-
-        #try :
-        #       attr = xattr.xattr(path)
-        #       if 'user.sr_sum' in attr :
-        #          self.logger.debug("sum set by xattr")
-        #          sumstr = (attr['user.sr_sum'].decode("utf-8")).split()[1]
-        #except: pass
-        sumstr = self.compute_sumstr(path, fsiz, sumstr)
-        
+        sumstr = self.compute_sumstr(path, fsiz)
+ 
         # caching
 
         if self.caching :
@@ -563,7 +552,28 @@ class sr_post(sr_instances):
 
         return ok
 
-    def compute_sumstr(self, path, fsiz, sumstr = ''):
+    def compute_sumstr(self, path, fsiz):
+
+        sumstr = '' 
+
+        try:
+               attr = xattr.xattr(path)
+               if 'user.sr_sum' in attr:
+                  if 'user.sr_mtime' in attr:
+                     if attr['user.sr_mtime'].decode("utf-8") == self.msg.headers['mtime']:
+                        self.logger.debug("sum set by xattr")
+                        sumstr = attr['user.sr_sum'].decode("utf-8")
+                        return sumstr
+                  else:
+                     xattr.setxattr(path, 'user.sr_mtime', bytes(self.msg.headers['mtime'], "utf-8"))
+                     self.logger.debug("sum set by xattr")
+                     sumstr = attr['user.sr_sum'].decode("utf-8")
+                     return sumstr
+
+        except:
+               pass
+
+        self.logger.debug("sum set by compute_sumstr")
 
         sumflg = self.sumflg
 
@@ -597,13 +607,6 @@ class sr_post(sr_instances):
             sumstr   = '%s,%s' % (sumflg,checksum)
 
         return sumstr
-
-            # xattr turned off PS 20180424
-            # setting extended attributes
-            #self.logger.debug("xattr set for time and sum")
-            #sr_attr = self.msg.time + ' ' + sumstr
-            #attr['user.sr_sum' ] = bytes( sr_attr, encoding='utf-8')
-    
 
     # =============
     # post_file_in_parts

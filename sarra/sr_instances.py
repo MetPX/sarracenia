@@ -326,12 +326,10 @@ class sr_instances(sr_config):
         configdir = self.user_config_dir + os.sep + self.program_dir
 
         if action == 'list':
-            #self.print_configdir("packaged plugins",       self.package_dir     +os.sep+ 'plugins')
-            self.print_configdir("configuration examples", self.package_dir     +os.sep+ 'examples' +os.sep+ self.program_dir)
-            #self.print_configdir("user plugins",           self.user_config_dir +os.sep+ 'plugins')
-            self.print_configdir("general",                self.user_config_dir )
-            self.print_configdir("user configurations",    configdir)
-            print( "logs are in: %s\n" % self.user_log_dir )
+            self.print_configdir("configuration examples", os.path.normpath( self.package_dir +os.sep+ 'examples' +os.sep+ self.program_dir) )
+            self.print_configdir("general",                os.path.normpath( self.user_config_dir ))
+            self.print_configdir("user configurations",    os.path.normpath(configdir))
+            print( "logs are in: %s\n" % os.path.normpath( self.user_log_dir ))
             return
 
         for confname in sorted( os.listdir(configdir) ):
@@ -454,8 +452,8 @@ class sr_instances(sr_config):
 
         elif action == 'list'    :
              if usr_cfg ==  'plugins':
-                 self.print_configdir("packaged plugins",           self.package_dir     +os.sep+ 'plugins')
-                 self.print_configdir("user plugins",               self.user_config_dir +os.sep+ 'plugins')
+                 self.print_configdir("packaged plugins", os.path.normpath( self.package_dir     +os.sep+ 'plugins'))
+                 self.print_configdir("user plugins",     os.path.normpath( self.user_config_dir +os.sep+ 'plugins'))
 
              else:
                 if not usr_fil:

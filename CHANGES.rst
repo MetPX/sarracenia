@@ -6,10 +6,14 @@ lists all changes between versions.
 
 **git repo**
 
+* New:     Issue #54 initial support for *fake* (application defined) checksums.
+*
 * bugfix:  Issue #118 windows commands started from cmd.exe exit when window closed.
 *          Issue #113 crash on sr_post/watch with post_exchange_split
 *          Issue #112 windows log rollover 
 *          Issue #101 windows git checkout corruption 
+*
+*
 
 
 **2.18.10b2**

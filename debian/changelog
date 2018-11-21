@@ -1,3 +1,14 @@
+metpx-sarracenia (2.18.11b1) unstable; urgency=medium
+
+  * New:     Issue #54 initial support for *fake* (application defined) checksums.
+  *
+  * bugfix:  Issue #118 windows commands started from cmd.exe exit when window closed.
+  *          Issue #113 crash on sr_post/watch with post_exchange_split
+  *          Issue #112 windows log rollover 
+  *          Issue #101 windows git checkout corruption 
+
+ -- Peter Silva <peter@idefix>  Wed, 21 Nov 2018 13:35:06 -0500
+
 metpx-sarracenia (2.18.10b2) unstable; urgency=medium
 
   * new      Issue #106 plugins for hydrometric forecast data acquisition.

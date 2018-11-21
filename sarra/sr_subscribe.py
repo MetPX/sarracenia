@@ -42,7 +42,7 @@
 #
 #============================================================
 
-import json,os,sys,time
+import json,os,sys,time,xattr
 
 try :    
          from sr_cache           import *
@@ -1323,6 +1323,13 @@ class sr_subscribe(sr_instances):
 
                    if self.recompute_chksum :
                       #self.msg.compute_local_checksum()
+                      try:
+                          attr = xattr.xattr(path)
+                          onfly_sumstr = self.msg.sumflg+','+self.msg.onfly_checksum
+                          if attr['user.sr_sum'] != onfly_sumstr:
+                              xattr.setxattr(path, 'user.sr_sum', bytes(onfly_sumstr, "utf-8"))
+                      except:
+                          pass
                       self.msg.set_sum(self.msg.sumflg,self.msg.onfly_checksum)
                       if self.reportback: self.msg.report_publish(205,'Reset Content : checksum')
 
