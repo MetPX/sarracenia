@@ -15,7 +15,7 @@ class File_Log(object):
           
     def perform(self,parent):
         import os.path
-        parent.logger.info("file_log downloaded to: %s/%s" % os.path.normpath( parent.msg.new_dir + '/' + parent.msg.new_file ) )
+        parent.logger.info("file_log downloaded to: %s" % os.path.normpath( parent.msg.new_dir + '/' + parent.msg.new_file ) )
         return True
 
 file_log = File_Log(self)
