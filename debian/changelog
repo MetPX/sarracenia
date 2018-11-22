@@ -1,3 +1,10 @@
+metpx-sarracenia (2.18.11b2) unstable; urgency=medium
+
+  * bugfix:  windows: Issue #54 support is broken on windows, disabled there.
+  *          print slashes the right way round on windows in more cases.
+
+ -- Peter Silva <peter@blacklab>  Wed, 21 Nov 2018 23:04:49 -0500
+
 metpx-sarracenia (2.18.11b1) unstable; urgency=medium
 
   * New:     Issue #54 initial support for *fake* (application defined) checksums.
