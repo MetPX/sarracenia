@@ -6,6 +6,12 @@ lists all changes between versions.
 
 **git repo**
 
+**2.18.11.b2**
+* bugfix:  windows: Issue #54 support is broken on windows, disabled there.
+*          print slashes the right way round on windows in more cases.
+*
+**2.18.11.b1**
+
 * New:     Issue #54 initial support for *fake* (application defined) checksums.
 *
 * bugfix:  Issue #118 windows commands started from cmd.exe exit when window closed.
