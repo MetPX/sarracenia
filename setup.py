@@ -70,7 +70,8 @@ setup(
     "watchdog", 
     "netifaces", 
     "humanize",
-    "xattr",
-    "psutil" ],
+    "psutil" ] \
+    + ( [ "xattr" ] if not sys.platform.startswith("win") else [] ) 
+    
     
 )
