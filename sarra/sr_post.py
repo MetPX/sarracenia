@@ -39,7 +39,11 @@
 #============================================================
 
 import json,os,random,sys,time
-import xattr
+
+from sys import platform as _platform
+
+if _platform == 'win32':
+    import xattr
 
 from collections import *
 
@@ -556,7 +560,8 @@ class sr_post(sr_instances):
 
         sumstr = '' 
 
-        try:
+        if _platform != 'win32' :
+           try:
                attr = xattr.xattr(path)
                if 'user.sr_sum' in attr:
                   if 'user.sr_mtime' in attr:
@@ -570,7 +575,7 @@ class sr_post(sr_instances):
                      sumstr = attr['user.sr_sum'].decode("utf-8")
                      return sumstr
 
-        except:
+           except:
                pass
 
         self.logger.debug("sum set by compute_sumstr")

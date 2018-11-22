@@ -33,7 +33,12 @@
 #
 #
 
-import calendar,os,socket,sys,time,urllib,urllib.parse,xattr
+import calendar,os,socket,sys,time,urllib,urllib.parse
+
+from sys import platform as _platform
+
+if _platform != 'win32':
+    import xattr
 
 # AMQP limits headers to 'short string', or 255 characters, so truncate and warn.
 amqp_ss_maxlen = 253
@@ -144,14 +149,15 @@ class sr_message():
     def compute_local_checksum(self):
         self.logger.debug("sr_message compute_local_checksum new_dir=%s, new_file=%s" % ( self.new_dir, self.new_file ) )
 
-        try:
-              attr = xattr.xattr(os.path.join(self.new_dir, self.new_file))
-              if 'user.sr_sum' in attr:
+        if _platform != 'win32':
+            try:
+                attr = xattr.xattr(os.path.join(self.new_dir, self.new_file))
+                if 'user.sr_sum' in attr:
                     self.logger.debug("checksum extracted using xattr")
                     self.local_checksum = attr['user.sr_sum'].decode("utf-8")
                     return
-        except:
-              pass
+            except:
+                pass
 
         self.logger.debug("checksum extracted by reading file/calculating")
 

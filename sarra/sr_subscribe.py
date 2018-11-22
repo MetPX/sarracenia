@@ -42,7 +42,12 @@
 #
 #============================================================
 
-import json,os,sys,time,xattr
+import json,os,sys,time
+
+from sys import platform as _platform
+
+if _platform != 'win32':
+    import xattr
 
 try :    
          from sr_cache           import *
@@ -1321,7 +1326,7 @@ class sr_subscribe(sr_instances):
 
                    # force onfly checksum  in message
 
-                   if self.recompute_chksum :
+                   if self.recompute_chksum and _platform != 'win32' :
                       #self.msg.compute_local_checksum()
                       try:
                           attr = xattr.xattr(path)
