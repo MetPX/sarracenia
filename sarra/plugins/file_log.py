@@ -14,8 +14,8 @@ class File_Log(object):
         parent.logger.debug("file_log initialized")
           
     def perform(self,parent):
-
-        parent.logger.info("file_log downloaded to: %s/%s" % ( parent.msg.new_dir, parent.msg.new_file) )
+        import os.path
+        parent.logger.info("file_log downloaded to: %s/%s" % os.path.normpath( parent.msg.new_dir + '/' + parent.msg.new_file ) )
         return True
 
 file_log = File_Log(self)
