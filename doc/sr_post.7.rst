@@ -36,15 +36,15 @@ An sr_post message consists of four parts: **AMQP TOPIC, First Line, Rest of Mes
            "parts" = size and partitioning information.
            "sum" = checksum algorithm and value.
 
-**Body:** *<first line> = <date stamp> <base_url> <relpath> <newline>*
+**Body:** *<first line> = <date stamp> <base_url> <relpath> [ <rename> ] <newline>*
 
 
 ::
 
           <date stamp> - YYYYMMDDHHMMSS.ss - UTC date/timestamp.
           <base_url>   - root of the url to download.
-          <relpath>    - relative path perhaps catenated to <base_url>
-                         may instead be a rename.
+          <relpath>    - relative path can be catenated to <base_url>
+          <rename>     - name to write file locally.
 
 <*rest of body is reserved for future use*>
 
