@@ -70,6 +70,7 @@ setup(
     "watchdog", 
     "netifaces", 
     "humanize",
+    'paramiko;python_version>="3.4"',
     "psutil" ] \
     + ( [ "xattr" ] if not sys.platform.startswith("win") else [] ) 
     
