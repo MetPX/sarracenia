@@ -6,6 +6,11 @@ lists all changes between versions.
 
 **git repo**
 
+**2.18.11.b3**
+
+* bugfix:  dependencies now correct for windows.
+*
+
 **2.18.11.b2**
 * bugfix:  windows: Issue #54 support is broken on windows, disabled there.
 *          print slashes the right way round on windows in more cases.
