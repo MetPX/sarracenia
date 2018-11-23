@@ -1,3 +1,9 @@
+metpx-sarracenia (2.18.11b3) unstable; urgency=medium
+
+  *bugfix: windows depedencies corrected. 
+
+ -- Peter Silva <peter@blacklab>  Fri, 23 Nov 2018 01:21:41 -0500
+
 metpx-sarracenia (2.18.11b2) unstable; urgency=medium
 
   * bugfix:  windows: Issue #54 support is broken on windows, disabled there.
