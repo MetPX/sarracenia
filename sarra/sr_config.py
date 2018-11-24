@@ -1448,6 +1448,11 @@ class sr_config:
                 if words0 in ['accept','get','reject']: # See: sr_config.7
                      accepting   = words0 in [ 'accept', 'get' ]
                      pattern     = words1
+
+                     if words1.find( '\\' ) :
+                         self.logger.warning( "%s %s" % ( words0, words1 ) )
+                         self.logger.warning( "use of backslash \\ is an escape character. For a path separator, use forward slash." )
+
                      mask_regexp = re.compile(pattern)
                      n = 2
 
@@ -1496,6 +1501,10 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['base_dir','bd']: # See: sr_config.7  for sr_post.1,sarra,sender,watch
+                     if sys.platform == 'win32' and words1.find( '\\' ) :
+                         self.logger.warning( "%s %s" % ( words0, words1 ) )
+                         self.logger.warning( "use of backslash \\ is an escape character. For a path separator, use forward slash." )
+
                      if words1.lower() == 'none' : self.base_dir = None
                      else:
                            path = os.path.abspath(words1)
@@ -1634,6 +1643,10 @@ class sr_config:
 
                 elif words0 == 'directory': # See: sr_config.7 
                      self.currentDir = words1.replace('//','/')
+                     if sys.platform == 'win32' and self.currentDir.find( '\\' ) :
+                         self.logger.warning( "directory %s" % self.currentDir )
+                         self.logger.warning( "use of backslash ( \\ ) is an escape character. For a path separator, use forward slash ( / )." )
+
                      n = 2
 
                 elif words0 in ['discard','d','download-and-discard']:  # sr_subscribe.1
@@ -1648,6 +1661,11 @@ class sr_config:
                      path = os.path.abspath(words1)
                      if self.realpath_post:
                          path = os.path.realpath(path)
+
+                     if sys.platform == 'win32' and words0.find( '\\' ) :
+                         self.logger.warning( "%s %s" % (words0, words1) )
+                         self.logger.warning( "use of backslash ( \\ ) is an escape character. For a path separator use forward slash ( / )." )
+
                      if sys.platform == 'win32':
                          self.document_root = path.replace('\\','/')
                      else:
@@ -2082,6 +2100,11 @@ class sr_config:
                                self.post_base_dir = words1.replace('\\','/')
                            else:
                                self.post_base_dir = words1
+
+                     if sys.platform == 'win32' and words1.find( '\\' ) :
+                         self.logger.warning( "%s %s" % (words0, words1) )
+                         self.logger.warning( "use of backslash ( \\ ) is an escape character, for a path separator use forward slash ( / )." )
+
                      n = 2
 
 
@@ -2095,6 +2118,11 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['post_document_root','pdr']: # See: sr_sarra,sender,shovel,winnow
+
+                     if sys.platform == 'win32' and words1.find( '\\' ) :
+                         self.logger.warning( "%s %s" % (words0, words1) )
+                         self.logger.warning( "use of backslash ( \\ ) is an escape character, for a path separator use forward slash ( / )." )
+
                      if sys.platform == 'win32':
                          self.post_document_root = words1.replace('\\','/')
                      else:
