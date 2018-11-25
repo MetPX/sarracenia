@@ -1,6 +1,13 @@
+metpx-sarracenia (2.18.11b4) unstable; urgency=medium
+
+  * revert depedency on paramiko which breaks build on ubuntu 14.04.
+  * adding a warning about backslashes in paths on windows
+
+ -- Peter Silva <peter@blacklab>  Sat, 24 Nov 2018 23:16:14 -0500
+
 metpx-sarracenia (2.18.11b3) unstable; urgency=medium
 
-  *bugfix: windows depedencies corrected. 
+  *bugfix: windows dependencies corrected. 
 
  -- Peter Silva <peter@blacklab>  Fri, 23 Nov 2018 01:21:41 -0500
 
