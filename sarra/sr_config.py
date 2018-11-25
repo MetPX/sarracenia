@@ -1449,7 +1449,7 @@ class sr_config:
                      accepting   = words0 in [ 'accept', 'get' ]
                      pattern     = words1
 
-                     if words1.find( '\\' ) :
+                     if sys.platform == 'win32' and words1.find( '\\' ) :
                          self.logger.warning( "%s %s" % ( words0, words1 ) )
                          self.logger.warning( "use of backslash \\ is an escape character. For a path separator, use forward slash." )
 

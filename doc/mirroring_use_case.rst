@@ -405,9 +405,16 @@ Contributions
 
 **Dominic Racette** - ECCC CMC Operations Implementation 
 
-   Client lead on the mirroring project.  A lot of auditing and running of tests.
+   Client lead on the mirroring project. A lot of auditing and running of tests.
    Integration/deployment of copying plugins. A great deal of testing and extraction of log reports.
+   This was a project relied extensive client participation to provide a hugely varied test suite, 
+   and Dominic was responsible for the lion´s share of that work.
 
+**Anthony Chartier** - ECCC CMC Development
+
+   Client lead on the *Acquisition de Données Environnementales* the data acquisition system used by
+   Canadian numerical weather prediction suites. 
+   
 **Doug Bender** - ECCC CMC Operations Implementation
 
    Another client analyst participating in the project.  Awareness, engagement, etc...
@@ -419,7 +426,7 @@ Contributions
 
 **Alain St-Denis** - Manager, SSC DCSB Supercomputing HPC Optimization
 
-   Inspiration, consultation, wise man. Initially proposed shim library.
+   Inspiration, consultation, wise man. Initially proposed shim library. Helped with debugging.
    
 **Daniel Pelissier** - SSC DCSB Supercomputing HPC Integration / then replacing Alain.
 
