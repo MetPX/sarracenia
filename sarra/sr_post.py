@@ -403,7 +403,7 @@ class sr_post(sr_instances):
         urlstr = self.post_base_url + '/' + self.post_relpath
 
         if self.realpath_filter and not self.realpath_post :
-           if os.path.exist(path) :
+           if os.path.exists(path) :
               fltr_post_relpath = os.path.realpath(path)
               if self.post_base_dir : fltr_post_relpath = fltr_post_relpath.replace(self.post_base_dir, '')
               urlstr = self.post_base_url + '/' + fltr_post_relpath
