@@ -35,6 +35,11 @@
 
 import calendar,os,socket,sys,time,urllib,urllib.parse
 
+from sys import platform as _platform
+
+if _platform != 'win32':
+    import xattr
+
 # AMQP limits headers to 'short string', or 255 characters, so truncate and warn.
 amqp_ss_maxlen = 253
 
@@ -102,7 +107,7 @@ class sr_message():
         if the file advertised is newer than the local one, and it has a different checksum, return True.
 
         """
-        fname = "%s%s%s" %  (self.new_dir, os.sep, self.new_file )
+        fname = "%s%s%s" %  (self.new_dir, '/', self.new_file )
         self.logger.debug("sr_message content_match %s" % (fname ) )
         
         self.local_checksum = None
@@ -114,6 +119,11 @@ class sr_message():
         lstat = os.stat(fname)
         fsiz  = lstat[stat.ST_SIZE] 
         end   = self.local_offset + self.length
+
+        # compare sizes... if (sr_subscribe is downloading partitions into taget file) and (target_file isn't fully done)
+        # This check prevents random halting of subscriber (inplace on) if the messages come in non-sequential order
+        if (self.target_file == self.new_file) and (fsiz != self.filesize):
+          return False
 
         # compare dates...
 
@@ -138,6 +148,18 @@ class sr_message():
 
     def compute_local_checksum(self):
         self.logger.debug("sr_message compute_local_checksum new_dir=%s, new_file=%s" % ( self.new_dir, self.new_file ) )
+
+        if _platform != 'win32':
+            try:
+                attr = xattr.xattr(os.path.join(self.new_dir, self.new_file))
+                if 'user.sr_sum' in attr:
+                    self.logger.debug("checksum extracted using xattr")
+                    self.local_checksum = attr['user.sr_sum'].decode("utf-8")
+                    return
+            except:
+                pass
+
+        self.logger.debug("checksum extracted by reading file/calculating")
 
         bufsize = self.bufsize
         if self.length < bufsize : bufsize = self.length
@@ -398,8 +420,8 @@ class sr_message():
         # to same shard. do that by keying on the last character of the checksum.
         # 
         if self.post_exchange_split > 0 :
-           suffix= "%02d" % ( ord(self.sumstr[-1]) % self.post_exchange_split )
-           self.logger.debug( "post_exchange_split set, keying on %s , suffix is %s" % ( self.sumstr[-1], suffix) )
+           suffix= "%02d" % ( ord(self.headers['sum'][-1]) % self.post_exchange_split )
+           self.logger.debug( "post_exchange_split set, keying on %s , suffix is %s" % ( self.headers['sum'][-1], suffix) )
         else:
            suffix=""
 
@@ -531,7 +553,7 @@ class sr_message():
            # try to make this message a file insert
 
            # file exists
-           self.target_path = self.new_dir + os.sep + self.target_file
+           self.target_path = self.new_dir + '/' + self.target_file
            if os.path.isfile(self.target_path) :
               self.logger.debug("new_file exists")
               lstat   = os.stat(self.target_path)

@@ -75,6 +75,7 @@ class sr_sftp(sr_proto):
     def __init__(self, parent) :
         parent.logger.debug("sr_sftp __init__")
         sr_proto.__init__(self,parent)
+        self.user_cache_dir = parent.user_cache_dir
 
         # sftp command times out after 20 secs
         # this setting is different from the computed iotime (sr_proto)
@@ -209,10 +210,14 @@ class sr_sftp(sr_proto):
                 self.ssh = paramiko.SSHClient()
                 # FIXME this should be an option... for security reasons... not forced
                 self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                self.ssh.connect(self.host,self.port,self.user,self.password, \
-                                 pkey=None,key_filename=self.ssh_keyfile,\
-                                 timeout=self.timeout)
-
+                if self.password:
+                   self.ssh.connect(self.host,self.port,self.user,self.password, \
+                                    pkey=None,key_filename=self.ssh_keyfile,\
+                                    timeout=self.timeout,allow_agent=False,look_for_keys=False)
+                else:
+                   self.ssh.connect(self.host,self.port,self.user,self.password, \
+                                    pkey=None,key_filename=self.ssh_keyfile,\
+                                    timeout=self.timeout)
                 #if ssh_keyfile != None :
                 #  key=DSSKey.from_private_key_file(ssh_keyfile,password=None)
 
@@ -229,7 +234,11 @@ class sr_sftp(sr_proto):
                 self.connected   = True
                 self.sftp        = sftp
 
-                alarm_cancel()
+                self.file_index_cache = self.user_cache_dir + os.sep + '.dest_file_index'
+                if os.path.isfile(self.file_index_cache): self.load_file_index()
+                else: self.init_file_index()
+
+                #alarm_cancel()
                 return True
 
         except:
@@ -359,6 +368,34 @@ class sr_sftp(sr_proto):
 
         self.batch       = 0
 
+    # init_file_index
+    def init_file_index(self):
+        self.logger.debug("sr_sftp init_file_index")
+        dir_fils = self.sftp.listdir()
+        self.logger.debug("sr_sftp listdir(): %s" % dir_fils)
+        if dir_fils:
+            dir_attr = self.sftp.listdir_attr()
+            alarm_cancel()
+            for index in range(len(dir_fils)):
+                attr = dir_attr[index]
+                line = attr.__str__()
+                fil = dir_fils[index]
+                self.ls_file_index(fil,line)
+        else:
+            alarm_cancel()
+        if hasattr(self,'file_index'): self.write_file_index()
+
+    # load_file_index
+    def load_file_index(self):
+        self.logger.debug("sr_sftp load_file_index")
+        alarm_cancel()
+        try:
+            with open(self.file_index_cache,'r') as fp:
+                index = int(fp.read())
+                self.file_index = index
+        except:
+            self.logger.error("load_file_index: Unable to determine file index from %s" % self.file_index_cache)
+
     # ls
     def ls(self):
         self.logger.debug("sr_sftp ls")
@@ -388,12 +425,33 @@ class sr_sftp(sr_proto):
         for p in opart1 :
             if p == ''  : continue
             opart2.append(p)
-
-        fil  = opart2[-1]
+        # else case is in the event of unlikely race condition
+        if hasattr(self, 'file_index'): fil = ' '.join(opart2[self.file_index:])
+        else: fil = ' '.join(opart2[8:])
+        # next line is for backwards compatibility only
         if not self.parent.ls_file_index in [-1,len(opart2)-1] : fil =  ' '.join(opart2[self.parent.ls_file_index:])
         line = ' '.join(opart2)
 
         self.entries[fil] = line
+
+    # ls_file_index
+    def ls_file_index(self,ifil,iline):
+        oline = iline
+        oline = oline.strip('\n')
+        oline  = oline.strip()
+        oline  = oline.replace('\t',' ')
+        opart1 = oline.split(' ')
+        opart2 = []
+
+        for p in opart1 :
+            if p == ''  : continue
+            opart2.append(p)
+
+        try:
+            file_index = opart2.index(ifil)
+            self.file_index = file_index
+        except:
+            pass
 
     # mkdir
     def mkdir(self, remote_dir):
@@ -464,6 +522,15 @@ class sr_sftp(sr_proto):
         alarm_set(self.iotime)
         self.sftp.utime(path,tup)
         alarm_cancel()
+
+    # write_file_index
+    def write_file_index(self):
+        self.logger.debug("sr_sftp write_file_index")
+        try:
+            with open(self.file_index_cache,'w') as fp:
+                fp.write(str(self.file_index))
+        except:
+            self.logger.warning("Unable to write file_index to cache file %s" % self.file_index_cache)
 
 #============================================================
 #

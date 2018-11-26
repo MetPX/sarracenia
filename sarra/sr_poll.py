@@ -139,7 +139,7 @@ class sr_poll(sr_post):
 
         self.pulls   = {}
         for mask in self.masks:
-            pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
+            pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
             self.logger.debug(mask)
             if not maskDir in self.pulls :
                self.pulls[maskDir] = []
@@ -241,7 +241,7 @@ class sr_poll(sr_post):
         return False
 
     def help(self):
-        print("Usage: %s [OPTIONS] configfile [foreground|start|stop|restart|reload|status|cleanup|setup]\n" % self.program_name )
+        print("Usage: %s [OPTIONS] configfile [add|cleanup|declare|disable|edit|enable|foreground|remove|start|stop|restart|reload|setup|status]\n" % self.program_name )
         print("version: %s \n" % sarra.__version__ )
         print("\n\tPoll a remote server to produce announcements of new files appearing there\n" +
           "\npoll.conf file settings, MANDATORY ones must be set for a valid configuration:\n" +
@@ -282,8 +282,11 @@ class sr_poll(sr_post):
                 for line in lines :
                     line  = line.strip('\n')
                     parts = line.split()
-                    fil   = parts[-1]
-                    if not self.ls_file_index in [-1,len(parts)-1] : fil = ' '.join(parts[self.ls_file_index:])
+                    if hasattr(self,'dest_file_index'):
+                        fil = ' '.join(parts[self.dest_file_index:])
+                    else:
+                        fil   = parts[-1]
+                        if not self.ls_file_index in [-1,len(parts)-1] : fil = ' '.join(parts[self.ls_file_index:])
                     lsold[fil] = line
 
                 return lsold
@@ -317,7 +320,7 @@ class sr_poll(sr_post):
                    continue
 
                 for mask in self.pulllst :
-                   pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
+                   pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
                    if mask_regexp.match(f):
                        if accepting:
                            matched=True
@@ -449,7 +452,7 @@ class sr_poll(sr_post):
 
         FileOption = None
         for mask in self.pulllst :
-            pattern, maskDir, maskFileOption, mask_regexp, accepting = mask
+            pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
             if mask_regexp.match(remote_file) and accepting :
                FileOption = maskFileOption
 
@@ -533,6 +536,7 @@ class sr_poll(sr_post):
             time.sleep(30)
             return True
 
+        if hasattr(self.dest,'file_index'): self.dest_file_index = self.dest.file_index
         # loop on all directories where there are pulls to do
 
         for destDir in self.pulls :

@@ -17,7 +17,7 @@ Publish the Availability of a File to Subcribers
 SYNOPSIS
 ========
 
-**sr_post|sr_cpost** [ *OPTIONS* ][ *-pb|--post_broker broker* ][ *-pbu|--post_base_url url* ] 
+**sr_post|sr_cpost** [ *OPTIONS* ][ *-pb|--post_broker broker* ][ *-pbu|--post_base_url url[,url]...** ] 
 [ *-p|--path ] path1 path2...pathN* ]
 
 DESCRIPTION
@@ -44,13 +44,16 @@ Differences:
 Mandatory Settings
 ------------------
 
-The [*-pbu|--post_base_url url*] option specifies the location 
+The [*-pbu|--post_base_url url,url,...*] option specifies the location 
 subscribers will download the file from.  There is usually one post per file.
 Format of argument to the *post_base_url* option::
 
        [ftp|http|sftp]://[user[:password]@]host[:port]/
        or
        file:
+
+When several urls are given as a comma separated list to *post_base_url*, the
+url´s provided are used round-robin style, to provide a coarse form of load balancing.
 
 The [*-p|--path path1 path2 .. pathN*] option specifies the path of the files
 to be announced. There is usually one post per file.
@@ -255,12 +258,12 @@ common settings, and methods of specifying them.
 [--suppress_duplicates|-sd|-nd|--no_duplicates|--cache on|off|999]
 ------------------------------------------------------------------
 
-  Avoid posting duplicates. When posting directories, this option caches
-  what was posted and will post only files (or parts of files) that were new
-  when invoked again. 
+  Avoid posting duplicates by comparing each file to those seen during the
+  *suppress_duplicates* interval. When posting directories, will cause
+  *sr_post* post only files (or parts of files) that were new when invoked again. 
  
-  Over time the number of files in the cache can grow too large, and so it is cleaned out of
-  old entries.  The default lifetime of a cache entry is five minutes (300 seconds). This
+  Over time, the number of files in the cache can grow too large, and so it is cleaned out of
+  old entries. The default lifetime of a cache entry is five minutes (300 seconds). This
   lifetime can be overridden with a time interval as argument ( the 999 above ).
 
   If duplicate suppression is in use,  one should ensure that a fixed **blocksize** is
@@ -287,13 +290,14 @@ common settings, and methods of specifying them.
     where 0 : no checksum... value in post is a random integer (only for testing/debugging.)
           d : do md5sum on file content (default for now, compatibility)
           n : do md5sum checksum on filename
-          N : do SHA512 checksum on filename
+          p : do SHA512 checksum on filename and partition string [#]_
           s : do SHA512 on file content (default in future)
           z,a : calculate checksum value using algorithm a and assign after download.
 
   Then using a checksum script, it must be registered with the pumping network, so that consumers
   of the postings have access to the algorithm.
 
+.. [#] The *p* algorithm is only implemented in C ( https://github.com/MetPX/sarracenia/issues/117 )
 
 [-tp|--topic_prefix <key>]
 --------------------------

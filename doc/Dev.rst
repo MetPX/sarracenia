@@ -27,7 +27,7 @@ To hack on the sarracenia source, you need:
 after you have cloned the source code::
 
     git clone https://github.com/MetPX/sarracenia sarracenia
-    git clone https://github.com/MetPX/sarracenia sarrac
+    git clone https://github.com/MetPX/sarrac sarrac
     cd sarracenia
 
 The rest of the Guide assumes you are there.
@@ -183,6 +183,7 @@ A typical development workflow will be::
    ./flow_cleanup.sh
    rm directories with state (indicated by flow_cleanup.sh)
    ./flow_setup.sh  ; *starts the flows*
+   ./flow_limit.sh  ; *stops the flows after some period (default: 1000) *
    ./flow_check.sh  ; *checks the flows*
    ./flow_cleanup.sh  ; *cleans up the flows*
    
@@ -240,6 +241,7 @@ With credentials stored for localhost::
      feeder amqp://tfeed@localhost/
      declare source tsource
      declare subscriber tsub
+     declare subscriber anonymous
      EOT
 
      sudo rabbitmqctl delete_user guest
@@ -372,7 +374,7 @@ The flow_check.sh script reads the log files of all the components started, and 
 of messages, looking for a correspondence within +- 10%   It takes a few minutes for the
 configuration to run before there is enough data to do the proper measurements::
 
-     ./flow_check.sh
+     ./flow_limit.sh
 
 sample output::
 
@@ -389,6 +391,15 @@ sample output::
     running instance for config pelle_dd1_f04 (pid 15872) stopped.
     running instance for config pelle_dd2_f05 (pid 15847) stopped.
         maximum of the shovels is: 1022
+
+
+Then check show it went with flow_check.sh::
+
+    TYPE OF ERRORS IN LOG :
+
+      1 /home/peter/.cache/sarra/log/sr_cpump_xvan_f14_001.log [ERROR] binding failed: server channel error 404h, message: NOT_FOUND - no exchange 'xcvan00' in vhost '/'
+      1 /home/peter/.cache/sarra/log/sr_cpump_xvan_f15_001.log [ERROR] binding failed: server channel error 404h, message: NOT_FOUND - no exchange 'xcvan01' in vhost '/'
+
     
     test  1 success: shovels t_dd1_f00 ( 1022 ) and t_dd2_f00 ( 1022 ) should have about the same number of items read
     test  2 success: sarra tsarra (1022) should be reading about half as many items as (both) winnows (2240)
@@ -407,10 +418,6 @@ sample output::
     test 15 success: veille_f34 should post the same number of files (1022) that subscribe cfile_f44 downloaded (1022)
     test 16 success: Overall 15 of 15 passed!
 
-    TYPE OF ERRORS IN LOG :
-
-      1 /home/peter/.cache/sarra/log/sr_cpump_xvan_f14_001.log [ERROR] binding failed: server channel error 404h, message: NOT_FOUND - no exchange 'xcvan00' in vhost '/'
-      1 /home/peter/.cache/sarra/log/sr_cpump_xvan_f15_001.log [ERROR] binding failed: server channel error 404h, message: NOT_FOUND - no exchange 'xcvan01' in vhost '/'
     blacklab% 
 
 If the flow_check.sh passes, then one has a reasonable confidence in the overall functionality of the 
@@ -437,7 +444,7 @@ that only a few minutes worth of disk space is used at a given time, and allows 
 
 By default, the flow_test is only 1000 files, but one can ask it to run longer, like so::
 
- ./flow_check.sh 50000
+ ./flow_limit.sh 50000
 
 To accumulate fifty thousand files before ending the test.  This allows testing of long term performance, especially
 memory usage over time, and the housekeeping functions of on_heartbeat processing.
@@ -566,7 +573,7 @@ Towards the end of a development cycle, longer flow_tests are adviseable::
 
 to identify more issues. sample run to 100,000 entries::
 
-  blacklab% ./flow_check.sh 100000
+  blacklab% ./flow_limit.sh 100000
   initial sample building sample size 155 need at least 100000 
   sample now 100003 content_checks:GOOD missed_dispositions:0s:0
   Sufficient!
@@ -603,6 +610,24 @@ to identify more issues. sample run to 100,000 entries::
   AttributeError: 'float' object has no attribute 'encode'
   maximum of the shovels is: 100008
   
+
+While it is runnig one can run flow_check.sh at any time::
+
+  NB retries for sr_subscribe t_f30 0
+  NB retries for sr_sender 18
+  
+        1 /home/peter/.cache/sarra/log/sr_cpost_veille_f34_0001.log [ERROR] sr_cpost rename: /home/peter/sarra_devdocroot/cfr/observations/xml/AB/today/today_ab_20180210_e.xml cannot stat.
+        1 /home/peter/.cache/sarra/log/sr_cpump_xvan_f14_0001.log [ERROR] binding failed: server channel error 404h, message: NOT_FOUND - no exchange 'xcvan00' in vhost '/'
+        1 /home/peter/.cache/sarra/log/sr_cpump_xvan_f15_0001.log [ERROR] binding failed: server channel error 404h, message: NOT_FOUND - no exchange 'xcvan01' in vhost '/'
+        1 /home/peter/.cache/sarra/log/sr_sarra_download_f20_0002.log [ERROR] Download failed http://dd2.weather.gc.ca//bulletins/alphanumeric/20180210/CA/CWAO/09/CACN00_CWAO_100857__WDK_10905 
+        1 /home/peter/.cache/sarra/log/sr_sarra_download_f20_0002.log [ERROR] Failed to reach server. Reason: [Errno 110] Connection timed out
+        1 /home/peter/.cache/sarra/log/sr_sarra_download_f20_0002.log [ERROR] Download failed http://dd2.weather.gc.ca//bulletins/alphanumeric/20180210/CA/CWAO/09/CACN00_CWAO_100857__WDK_10905. Type: <class 'urllib.error.URLError'>, Value: <urlopen error [Errno 110] Connection timed out>
+        1 /home/peter/.cache/sarra/log/sr_sarra_download_f20_0004.log [ERROR] Download failed http://dd2.weather.gc.ca//bulletins/alphanumeric/20180210/SA/CYMM/09/SACN61_CYMM_100900___53321 
+        1 /home/peter/.cache/sarra/log/sr_sarra_download_f20_0004.log [ERROR] Failed to reach server. Reason: [Errno 110] Connection timed out
+        1 /home/peter/.cache/sarra/log/sr_sarra_download_f20_0004.log [ERROR] Download failed http://dd2.weather.gc.ca//bulletins/alphanumeric/20180210/SA/CYMM/09/SACN61_CYMM_100900___53321. Type: <class 'urllib.error.URLError'>, Value: <urlopen error [Errno 110] Connection timed out>
+        1 /home/peter/.cache/sarra/log/sr_sarra_download_f20_0004.log [ERROR] Download failed http://dd2.weather.gc.ca//bulletins/alphanumeric/20180210/CS/CWEG/12/CSCN03_CWEG_101200___12074 
+  more than 10 TYPES OF ERRORS found... for the rest, have a look at /home/peter/src/sarracenia/test/flow_check_errors_logged.txt for details
+
   test  1 success: shovels t_dd1_f00 (100008) and t_dd2_f00 (100008) should have about the same number of items read
   test  2 success: sarra tsarra (100008) should be reading about half as many items as (both) winnows (200016)
   test  3 success: tsarra (100008) and sub t_f30 (99953) should have about the same number of items
@@ -623,20 +648,6 @@ to identify more issues. sample run to 100,000 entries::
   test 18 success: veille_f34 should post twice as many files (100205) as subscribe cfile_f44 downloaded (49985)
   test 19 success: Overall 18 of 18 passed (sample size: 100008) !
   
-  NB retries for sr_subscribe t_f30 0
-  NB retries for sr_sender 18
-  
-        1 /home/peter/.cache/sarra/log/sr_cpost_veille_f34_0001.log [ERROR] sr_cpost rename: /home/peter/sarra_devdocroot/cfr/observations/xml/AB/today/today_ab_20180210_e.xml cannot stat.
-        1 /home/peter/.cache/sarra/log/sr_cpump_xvan_f14_0001.log [ERROR] binding failed: server channel error 404h, message: NOT_FOUND - no exchange 'xcvan00' in vhost '/'
-        1 /home/peter/.cache/sarra/log/sr_cpump_xvan_f15_0001.log [ERROR] binding failed: server channel error 404h, message: NOT_FOUND - no exchange 'xcvan01' in vhost '/'
-        1 /home/peter/.cache/sarra/log/sr_sarra_download_f20_0002.log [ERROR] Download failed http://dd2.weather.gc.ca//bulletins/alphanumeric/20180210/CA/CWAO/09/CACN00_CWAO_100857__WDK_10905 
-        1 /home/peter/.cache/sarra/log/sr_sarra_download_f20_0002.log [ERROR] Failed to reach server. Reason: [Errno 110] Connection timed out
-        1 /home/peter/.cache/sarra/log/sr_sarra_download_f20_0002.log [ERROR] Download failed http://dd2.weather.gc.ca//bulletins/alphanumeric/20180210/CA/CWAO/09/CACN00_CWAO_100857__WDK_10905. Type: <class 'urllib.error.URLError'>, Value: <urlopen error [Errno 110] Connection timed out>
-        1 /home/peter/.cache/sarra/log/sr_sarra_download_f20_0004.log [ERROR] Download failed http://dd2.weather.gc.ca//bulletins/alphanumeric/20180210/SA/CYMM/09/SACN61_CYMM_100900___53321 
-        1 /home/peter/.cache/sarra/log/sr_sarra_download_f20_0004.log [ERROR] Failed to reach server. Reason: [Errno 110] Connection timed out
-        1 /home/peter/.cache/sarra/log/sr_sarra_download_f20_0004.log [ERROR] Download failed http://dd2.weather.gc.ca//bulletins/alphanumeric/20180210/SA/CYMM/09/SACN61_CYMM_100900___53321. Type: <class 'urllib.error.URLError'>, Value: <urlopen error [Errno 110] Connection timed out>
-        1 /home/peter/.cache/sarra/log/sr_sarra_download_f20_0004.log [ERROR] Download failed http://dd2.weather.gc.ca//bulletins/alphanumeric/20180210/CS/CWEG/12/CSCN03_CWEG_101200___12074 
-  more than 10 TYPES OF ERRORS found... for the rest, have a look at /home/peter/src/sarracenia/test/flow_check_errors_logged.txt for details
   blacklab% 
 
 This test was fired up at the end of the day, as it takes several hours, and results examined the next morning.
@@ -658,6 +669,7 @@ To recover from this state without discarding the results of a long test, do::
   blacklab% rm */*/*retry*
   blacklab% sr start
   blacklab% 
+  blacklab%  ./flow_check.sh 100000
   Sufficient!
   stopping shovels and waiting...
   2018-04-07 10:50:16,167 [INFO] sr_shovel t_dd2_f00 0001 stopped
@@ -670,35 +682,11 @@ To recover from this state without discarding the results of a long test, do::
   implemented, ignored.
   running instance for config pelle_dd1_f04 (pid 12435) stopped.
   running instance for config pelle_dd2_f05 (pid 12428) stopped.
-  Traceback (most recent call last):ing...
-    File "/usr/bin/rabbitmqadmin", line 1012, in <module>
-      main()
-    File "/usr/bin/rabbitmqadmin", line 413, in main
-      method()
-    File "/usr/bin/rabbitmqadmin", line 593, in invoke_list
-      format_list(self.get(uri), cols, obj_info, self.options)
-    File "/usr/bin/rabbitmqadmin", line 710, in format_list
-      formatter_instance.display(json_list)
-    File "/usr/bin/rabbitmqadmin", line 721, in display
-      (columns, table) = self.list_to_table(json.loads(json_list), depth)
-    File "/usr/bin/rabbitmqadmin", line 775, in list_to_table
-      add('', 1, item, add_to_row)
-    File "/usr/bin/rabbitmqadmin", line 742, in add
-      add(column, depth + 1, subitem, fun)
-    File "/usr/bin/rabbitmqadmin", line 742, in add
-      add(column, depth + 1, subitem, fun)
-    File "/usr/bin/rabbitmqadmin", line 754, in add
-      fun(column, subitem)
-    File "/usr/bin/rabbitmqadmin", line 761, in add_to_row
-      row[column_ix[col]] = maybe_utf8(val)
-    File "/usr/bin/rabbitmqadmin", line 431, in maybe_utf8
-      return s.encode('utf-8')
-  AttributeError: 'float' object has no attribute 'encode'
-  
-  
-  
   maximum of the shovels is: 100075
   
+
+  blacklab% ./flow_check.sh
+
                    | dd.weather routing |
   test  1 success: sr_shovel (100075) t_dd1 should have the same number
   of items as t_dd2 (100068)
@@ -861,13 +849,10 @@ Automated Build
 
 * Ensure the code mirror is updated by checking the **Import details** by checking `this page for sarracenia <https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/+git/trunk>`_
 * if the code is out of date, do **Import Now** , and wait a few minutes while it is updated.
-* Ensure the code mirror is updated by checking the **Import details** by checking `this page for sarrac <https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarrac/+git/master>`_
-* if the code is out of date, do **Import Now** , and wait a few minutes while it is updated.
 * once the repository is upto date, proceed with the build request.
 * Go to the `sarracenia release <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/sarracenia-release>`_ recipe
 * Click on the **Request build(s)** button to create a new release
-* Go to the `Sarrac release <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sarrac>`_ recipe
-* Click on the **Request build(s)** button to create a new release
+* for Sarrac, follow the procedure `here <https://github.com/MetPX/sarrac#release-process>`_
 * The built packages will be available in the `metpx ppa <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx>`_
 
 Daily Builds

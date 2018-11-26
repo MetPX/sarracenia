@@ -35,6 +35,7 @@
 from hashlib import md5
 from hashlib import sha512
 
+import sys
 import calendar,datetime
 import os,random,signal,stat,sys,time
 import urllib
@@ -50,7 +51,8 @@ class TimeoutException(Exception):
 
 # alarm_cancel
 def alarm_cancel():
-    signal.alarm(0)
+    if sys.platform != 'win32' :
+        signal.alarm(0)
 
 # alarm_raise
 def alarm_raise(n, f):
@@ -58,8 +60,9 @@ def alarm_raise(n, f):
 
 # alarm_set
 def alarm_set(time):
-    signal.signal(signal.SIGALRM, alarm_raise)
-    signal.alarm(time)
+    if sys.platform != 'win32' :
+        signal.signal(signal.SIGALRM, alarm_raise)
+        signal.alarm(time)
 
 # =========================================
 # raw_message to mimic raw amqplib
@@ -534,13 +537,13 @@ class sr_transport():
         self.logger = parent.logger
         self.parent = parent
         msg         = parent.msg
-        self.logger.debug("%s_transport send" % self.scheme)
+        self.logger.debug("%s_transport send %s %s" % (self.scheme,msg.new_dir, msg.new_file) )
 
         local_path = msg.relpath
-        local_dir  = os.path.dirname( local_path)
-        local_file = os.path.basename(local_path)
-        new_dir    = msg.new_dir
-        new_file   = msg.new_file
+        local_dir  = os.path.dirname( local_path).replace('\\','/')
+        local_file = os.path.basename(local_path).replace('\\','/')
+        new_dir    = msg.new_dir.replace('\\','/')
+        new_file   = msg.new_file.replace('\\','/')
         new_lock   = None
 
         try:    curdir = os.getcwd()
@@ -644,7 +647,9 @@ class sr_transport():
                 #upload file
     
                 if inflight == None or msg.partflg == 'i' :
-                   self.put(local_file, new_file, offset, offset, msg.length)
+                   #self.put(local_file, new_file, offset, offset, msg.length)
+                   # If remote offset is not 0 then partitions are prepender with all 0s...
+                   self.put(local_file, new_file, offset, 0, msg.length)
                 elif inflight == '.' :
                    new_lock = '.'  + new_file
                    self.put(local_file, new_lock )
@@ -765,7 +770,7 @@ class sr_transport():
 def startup_args(sys_argv):
 
     actions = ['foreground', 'start', 'stop', 'status', 'sanity', 'restart', 'reload', 'cleanup', 'declare', 'setup' ]
-    actions.extend( ['add','disable', 'edit', 'enable', 'list',    'log',    'remove' ] )
+    actions.extend( ['add','disable', 'edit', 'enable', 'list',    'log',    'remove', 'rename'] )
 
     args    = None
     action  = None

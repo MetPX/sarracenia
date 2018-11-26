@@ -91,7 +91,7 @@ Once connected to an AMQP broker, the user needs to create a queue and bind it
 to an exchange.  These options define which messages (URL notifications) the program receives:
 
  - **exchange      <name>         (default: xpublic)** 
- - **topic_prefix  <amqp pattern> (default: v00.dd.notify -- developer option)** 
+ - **topic_prefix  <amqp pattern> (default: v02.post -- developer option)** 
  - **subtopic      <amqp pattern> (subtopic need to be set)** 
 
 Several topic options may be declared. To give a correct value to the subtopic,

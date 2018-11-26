@@ -49,7 +49,8 @@ class sr_watch(sr_post):
         self.logger.debug("%s check" % self.program_name)
 
         if self.sleep <= 0  : self.sleep = 0.1
-        if not self.caching : self.caching = 300
+        # This gets executed after the config file parameters are read so you can't turn off caching with the line
+        #if not self.caching : self.caching = 300 
 
         sr_post.check(self)
 

@@ -34,12 +34,16 @@
 #============================================================
 # usage example
 #
-# sr_post [options] [config] [foreground|start|stop|restart|reload|status|cleanup|setup]
+# sr_post [options] [config] [foreground|add|remove|edit|cleanup|setup]
 #
 #============================================================
 
 import json,os,random,sys,time
-#import xattr
+
+from sys import platform as _platform
+
+if _platform == 'win32':
+    import xattr
 
 from collections import *
 
@@ -218,6 +222,8 @@ class sr_post(sr_instances):
         print("\nUsage: %s -u <url> -pb <post_broker> ... [OPTIONS]\n" % self.program_name )
         print("version: %s \n" % sarra.__version__ )
         print("OPTIONS:")
+        print("-a|action   <action>    default:foreground")
+        print("                        keyword: add|cleanup|declare|disable|edit|enable|foreground|list|remove|setup")
         print("-pb|post_broker   <broker>          default:amqp://guest:guest@localhost/")
         print("-c|config   <config_file>")
         print("-pbd <post_base_dir>   default:None")
@@ -319,6 +325,19 @@ class sr_post(sr_instances):
         return True
 
     # =============
+    # __on_part__
+    # =============
+
+    def __on_part__(self):
+
+        # invoke user defined on_part when provided
+
+        for plugin in self.on_part_list:
+           if not plugin(self): return False
+
+        return True
+
+    # =============
     # overwride defaults
     # =============
 
@@ -370,7 +389,7 @@ class sr_post(sr_instances):
 
         if self.rename :
            newname = self.rename
-           if self.rename[-1] == os.sep :
+           if self.rename[-1] == '/' :
               newname += os.path.basename(path)
 
         # strip 'N' heading directories
@@ -382,7 +401,7 @@ class sr_post(sr_instances):
            token = path.split('/')
            try :   token   = token[strip:]
            except: token   = [os.path.basename(path)]
-           newname = os.sep+os.sep.join(token)
+           newname = '/'+'/'.join(token)
 
         if newname == path : return None
 
@@ -395,6 +414,9 @@ class sr_post(sr_instances):
     def path_rejected(self,path):
         #self.logger.debug("path_rejected %s" % path )
 
+        if not self.post_base_url:
+            self.post_base_url = 'file:/'
+        
         if self.masks == [] : return False
 
         self.post_relpath = path
@@ -405,6 +427,9 @@ class sr_post(sr_instances):
         if self.realpath_filter and not self.realpath_post :
            if os.path.exists(path) :
               fltr_post_relpath = os.path.realpath(path)
+              if sys.platform == 'win32':
+                  fltr_post_relpath = fltr_post_relpath.replace('\\','/')
+
               if self.post_base_dir : fltr_post_relpath = fltr_post_relpath.replace(self.post_base_dir, '')
               urlstr = self.post_base_url + '/' + fltr_post_relpath
         
@@ -412,6 +437,7 @@ class sr_post(sr_instances):
            self.logger.debug("%s Rejected by accept/reject options" % urlstr )
            return True
 
+        self.logger.debug( "%s not rejected" % urlstr )
         return False
 
     # =============
@@ -478,6 +504,11 @@ class sr_post(sr_instances):
 
         if path.endswith('.'+self.msg.part_ext):
            return self.post_file_part(path,lstat)
+        
+        # This variable means that part_file_assemble plugin is loaded and will handle posting the original file (being assembled)
+
+        elif hasattr(self, 'suppress_posting_partial_assembled_file'):
+            return False
 
         # check the value of blocksize
 
@@ -496,59 +527,8 @@ class sr_post(sr_instances):
 
         partstr = '1,%d,1,0,0' % fsiz
 
-        # xattr turned off  PS 20180423
-        # xattr ... check if sum is set in extended fileattributes
-
-        sumstr = ''
-
-        #try :
-        #       attr = xattr.xattr(path)
-        #       if 'user.sr_sum' in attr :
-        #          self.logger.debug("sum set by xattr")
-        #          sumstr = (attr['user.sr_sum'].decode("utf-8")).split()[1]
-        #except: pass
-
-        if sumstr == '' :
-          
-              # sumstr
-
-              sumflg = self.sumflg
-
-              if sumflg[:2] == 'z,' and len(sumflg) > 2 :
-                 sumstr = sumflg
-
-              else:
-
-                 if not sumflg[0] in ['0','d','n','s','z' ]: sumflg = 'd'
-
-                 self.set_sumalgo(sumflg)
-                 sumalgo = self.sumalgo
-                 sumalgo.set_path(path)
-
-                 # compute checksum
-
-                 if sumflg in ['d','s'] :
-
-                    fp = open(path,'rb')
-                    i  = 0
-                    while i<fsiz :
-                          buf = fp.read(self.bufsize)
-                          if not buf: break
-                          sumalgo.update(buf)
-                          i  += len(buf)
-                    fp.close()
-
-                 # setting sumstr
-
-                 checksum = sumalgo.get_value()
-                 sumstr   = '%s,%s' % (sumflg,checksum)
-
-                 # xattr turned off PS 20180424
-                 # setting extended attributes
-                 #self.logger.debug("xattr set for time and sum")
-                 #sr_attr = self.msg.time + ' ' + sumstr
-                 #attr['user.sr_sum' ] = bytes( sr_attr, encoding='utf-8')
-
+        sumstr = self.compute_sumstr(path, fsiz)
+ 
         # caching
 
         if self.caching :
@@ -575,6 +555,63 @@ class sr_post(sr_instances):
         ok = self.__on_post__()
 
         return ok
+
+    def compute_sumstr(self, path, fsiz):
+
+        sumstr = '' 
+
+        if _platform != 'win32' :
+           try:
+               attr = xattr.xattr(path)
+               if 'user.sr_sum' in attr:
+                  if 'user.sr_mtime' in attr:
+                     if attr['user.sr_mtime'].decode("utf-8") == self.msg.headers['mtime']:
+                        self.logger.debug("sum set by xattr")
+                        sumstr = attr['user.sr_sum'].decode("utf-8")
+                        return sumstr
+                  else:
+                     xattr.setxattr(path, 'user.sr_mtime', bytes(self.msg.headers['mtime'], "utf-8"))
+                     self.logger.debug("sum set by xattr")
+                     sumstr = attr['user.sr_sum'].decode("utf-8")
+                     return sumstr
+
+           except:
+               pass
+
+        self.logger.debug("sum set by compute_sumstr")
+
+        sumflg = self.sumflg
+
+        if sumflg[:2] == 'z,' and len(sumflg) > 2 :
+            sumstr = sumflg
+
+        else:
+
+            if not sumflg[0] in ['0','d','n','s','z' ]: sumflg = 'd'
+
+            self.set_sumalgo(sumflg)
+            sumalgo = self.sumalgo
+            sumalgo.set_path(path)
+
+            # compute checksum
+
+            if sumflg in ['d','s'] :
+
+                fp = open(path,'rb')
+                i  = 0
+                while i<fsiz :
+                    buf = fp.read(self.bufsize)
+                    if not buf: break
+                    sumalgo.update(buf)
+                    i  += len(buf)
+                fp.close()
+
+            # setting sumstr
+
+            checksum = sumalgo.get_value()
+            sumstr   = '%s,%s' % (sumflg,checksum)
+
+        return sumstr
 
     # =============
     # post_file_in_parts
@@ -603,9 +640,13 @@ class sr_post(sr_instances):
 
         # loop on chunks
 
-        i = 0
-        #self.logger.debug("block_count = %d" % block_count)
-        while i < block_count :
+        blocks = list(range(0,block_count))
+        if self.randomize:
+            random.shuffle(blocks)
+            #blocks = [8, 3, 1, 2, 9, 6, 0, 7, 4, 5] # Testing
+            self.logger.info('Sending partitions in the following order: '+str(blocks))
+
+        for i in blocks: 
 
               # setting sumalgo for that part
 
@@ -673,10 +714,9 @@ class sr_post(sr_instances):
               # post message
 
               ok = self.__on_post__()
+              if not ok:
+                self.logger.error('Something went wrong while posting: %s' %self.msg.notice[2])
 
-              # increment count
-
-              i = i + 1
 
         return True
 
@@ -685,7 +725,6 @@ class sr_post(sr_instances):
     # =============
 
     def post_file_part(self, path, lstat):
-        #self.logger.debug("post_file_part %s" % path )
 
         # post_init (message)
         self.post_init(path,lstat)
@@ -697,11 +736,10 @@ class sr_post(sr_instances):
         # something went wrong
 
         if not ok:
-           self.logger.error("file part extension but %s for file %s" % (log_msg,path))
+           self.logger.debug("file part extension but %s for file %s" % (log_msg,path))
            return False
 
         # check rename see if it has the right part suffix (if present)
-
         if 'rename' in self.msg.headers and not suffix in self.msg.headers['rename']:
            self.msg.headers['rename'] += suffix
 
@@ -719,9 +757,10 @@ class sr_post(sr_instances):
         self.msg.headers['parts'] = partstr
         self.msg.headers['sum']   = sumstr
 
-        # post message
+        # post message and trigger part plugins
+        ok = self.__on_part__()
 
-        ok = self.__on_post__()
+        if ok: ok = self.__on_post__()
 
         return ok
 
@@ -831,11 +870,13 @@ class sr_post(sr_instances):
 
         # watchdog funny ./ added at end of directory path ... removed
 
-        src = src.replace(os.sep + '.' + os.sep, os.sep )
-        dst = dst.replace(os.sep + '.' + os.sep, os.sep )
+        src = src.replace('/./', '/' )
+        dst = dst.replace('/./', '/' )
 
         if os.path.islink(dst) and self.realpath_post:
            dst = os.path.realpath(dst)
+           if sys.platform == 'win32':
+                  dst = dst.replace('\\','/')
 
         # file
 
@@ -855,8 +896,8 @@ class sr_post(sr_instances):
         if os.path.isdir(dst) :
             for x in os.listdir(dst):
 
-                dst_x = dst + os.sep + x
-                src_x = src + os.sep + x
+                dst_x = dst + '/' + x
+                src_x = src + '/' + x
 
                 ok = self.post_move(src_x,dst_x)
 
@@ -875,7 +916,11 @@ class sr_post(sr_instances):
 
         # watchdog funny ./ added at end of directory path ... removed
 
-        path = path.replace(os.sep + '.' + os.sep, os.sep )
+        path = path.replace( '/./', '/' )
+
+        # always use / as separator for paths being posted.
+        if os.sep != '/' :  # windows
+            path = path.replace( os.sep, '/' )
 
         # path is a link
 
@@ -884,7 +929,11 @@ class sr_post(sr_instances):
 
            if self.follow_symlinks :
               link  = os.readlink(path)
-              try   : rpath = os.path.realpath(link)
+              try   : 
+                   rpath = os.path.realpath(link)
+                   if sys.platform == 'win32':
+                       rpath = rpath.replace('\\','/')
+
               except: return done
 
               lstat = None
@@ -1102,12 +1151,14 @@ class sr_post(sr_instances):
 
         if os.path.islink(src) and self.realpath_post :
            src = os.path.realpath(src)
+           if sys.platform == 'win32':
+               src = src.replace('\\','/')
 
         # walk src directory, this walk is depth first... there could be a lot of time
         # between *listdir* run, and when a file is visited, if there are subdirectories before you get there.
         # hence the existence check after listdir (crashed in flow_tests of > 20,000)
         for x in os.listdir(src):
-            path = src + os.sep + x
+            path = src + '/' + x
             if os.path.isdir(path):
                self.walk(path)
                continue
@@ -1127,11 +1178,14 @@ class sr_post(sr_instances):
         """
         if os.path.islink(p):
             realp = os.path.realpath(p)
+            if sys.platform == 'win32':
+               realp = realp.replace('\\','/')
+
             self.logger.info("sr_watch %s is a link to directory %s" % ( p, realp) )
             if self.realpath_post:
                 d=realp
             else:
-                d=p + os.sep + '.'
+                d=p + '/' + '.'
         else:
             d=p
 
@@ -1261,6 +1315,9 @@ class sr_post(sr_instances):
            if self.post_base_dir : path = self.post_base_dir + '/' + path
            if os.path.exist(path) :
               fltr_post_relpath = os.path.realpath(path)
+              if sys.platform == 'win32':
+                  fltr_post_relpath = fltr_post_relpath.replace('\\','/')
+
               if self.post_base_dir : fltr_post_relpath = fltr_post_relpath.replace(self.post_base_dir, '')
               urlstr = self.post_base_url + '/' + fltr_post_relpath
 
@@ -1358,7 +1415,7 @@ class sr_post(sr_instances):
 
         for d in self.postpath :
             self.logger.debug("postpath = %s" % d)
-            if pbd and not d.startswith(pbd) : d = pbd + os.sep + d
+            if pbd and not d.startswith(pbd) : d = pbd + '/' + d
 
             if self.sleep > 0 : 
                self.watch_dir(d)
@@ -1562,7 +1619,7 @@ def main():
         arg   = sys.argv[i]
         value = '%s' % arg
         i     = i - 1
-        if pbd and not pbd in value : value = pbd + os.sep + value
+        if pbd and not pbd in value : value = pbd + '/' + value
         if os.path.exists(value) or os.path.islink(value):
            postpath.append(value)
            try:    args.remove(arg)

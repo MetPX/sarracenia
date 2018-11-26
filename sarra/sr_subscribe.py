@@ -44,6 +44,11 @@
 
 import json,os,sys,time
 
+from sys import platform as _platform
+
+if _platform != 'win32':
+    import xattr
+
 try :    
          from sr_cache           import *
          from sr_consumer        import *
@@ -381,7 +386,7 @@ class sr_subscribe(sr_instances):
         # general startup and version
         # ---------------------------
 
-        print("\nUsage: %s [OPTIONS] [foreground|start|stop|restart|reload|status|cleanup|setup] configfile\n" % self.program_name )
+        print("\nUsage: %s [OPTIONS] [add|cleanup|declare|disable|edit|enable|foreground|list|start|stop|restart|reload|remove|setup|status] configfile\n" % self.program_name )
         print("version: %s \n" % sarra.__version__ )
 
         # ---------------------------
@@ -744,7 +749,7 @@ class sr_subscribe(sr_instances):
         self.pbc_new_baseurl = self.msg.new_baseurl
         self.pbc_new_relpath = self.msg.new_relpath
         self.pbc_local_dir   = self.msg.new_dir
-        self.pbc_local_file  = self.msg.new_dir + os.sep + self.msg.new_file
+        self.pbc_local_file  = self.msg.new_dir + '/' + self.msg.new_file
         self.pbc_remote_file = self.msg.new_file
 
         self.pbc_new_url     = urllib.parse.urlparse(self.msg.new_baseurl + '/' + self.msg.new_relpath)
@@ -945,7 +950,7 @@ class sr_subscribe(sr_instances):
         except: found = False
 
         if not found:
-           self.logger.warning("directory containing old file (%s) to be renamed is not present, so download required." % self.msg.new_dir)
+           self.logger.info("directory containing old file (%s) to be renamed is not present, so download required." % self.msg.new_dir)
            pass
 
         # if it is for 'newname' verify if the files are the same
@@ -1151,7 +1156,7 @@ class sr_subscribe(sr_instances):
               if self.msg.isRetry: self.consumer.msg_worked()
               return True
 
-           path = self.msg.new_dir + os.sep + self.msg.new_file
+           path = self.msg.new_dir + '/' + self.msg.new_file
 
            try : 
                if os.path.isfile(path) : os.unlink(path)
@@ -1198,7 +1203,7 @@ class sr_subscribe(sr_instances):
 
            ok = True
            try : 
-               path = self.msg.new_dir + os.sep + self.msg.new_file
+               path = self.msg.new_dir + '/' + self.msg.new_file
 
                if os.path.isfile(path) : os.unlink(path)
                if os.path.islink(path) : os.unlink(path)
@@ -1321,8 +1326,15 @@ class sr_subscribe(sr_instances):
 
                    # force onfly checksum  in message
 
-                   if self.recompute_chksum :
+                   if self.recompute_chksum and _platform != 'win32' :
                       #self.msg.compute_local_checksum()
+                      try:
+                          attr = xattr.xattr(path)
+                          onfly_sumstr = self.msg.sumflg+','+self.msg.onfly_checksum
+                          if attr['user.sr_sum'] != onfly_sumstr:
+                              xattr.setxattr(path, 'user.sr_sum', bytes(onfly_sumstr, "utf-8"))
+                      except:
+                          pass
                       self.msg.set_sum(self.msg.sumflg,self.msg.onfly_checksum)
                       if self.reportback: self.msg.report_publish(205,'Reset Content : checksum')
 
@@ -1659,6 +1671,8 @@ class sr_subscribe(sr_instances):
         # strip using a pattern
 
         elif self.pstrip != None :
+           self.logger.debug( 'set_new, pattern stripping active: %s' % self.pstrip )
+
            #MG FIXME Peter's wish to have replacement in pstrip (ex.:${SOURCE}...)
            try:    relstrip = re.sub(self.pstrip,'',relpath,1)
            except: relstrip = relpath
@@ -1718,6 +1732,8 @@ class sr_subscribe(sr_instances):
         # when sr_sender did not derived from sr_subscribe it was always called
         new_dir = self.sundew_dirPattern(self.msg.urlstr,tfname,new_dir,filename)
 
+        self.logger.debug( "set_new new_dir = %s" % new_dir )
+
         # reset relpath from new_dir
 
         relpath = new_dir + '/' + filename
@@ -1734,8 +1750,13 @@ class sr_subscribe(sr_instances):
         #        but if the number of / starting the path > 2  ... it will result into 1 /
 
         self.msg.new_dir     = os.path.normpath(new_dir)
+        if sys.platform == 'win32':
+            self.msg.new_dir = self.msg.new_dir.replace('\\','/')
+   
         self.msg.new_file    = filename
         self.msg.new_relpath = os.path.normpath(relpath)
+        if sys.platform == 'win32':
+            self.msg.new_relpath = self.msg.new_relpath.replace('\\','/')
 
         if self.post_broker and self.post_base_url :
            self.msg.new_baseurl = self.post_base_url

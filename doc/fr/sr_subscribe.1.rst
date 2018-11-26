@@ -75,15 +75,16 @@ sr_audit. Les action restantes gèrent les ressources
 (échanges, files d'attente) utilisées par les composants sur le serveur 
 rabbitmq, ou gèrent les configurations.
 
- - cleanup:  supprime les ressources du composant sur le serveur
- - declare:  crée les ressources du composant sur le serveur.
- - setup:    comme declare, fait en plus des liaisons de file d'attente.
- - add:      copie une configuration à la liste des configurations disponibles.
- - list:     Énumérer toutes les configurations disponibles.
- - edit:     modifier une configuration existante.
- - remove:   Supprimer une configuration
- - disable:  marquer une configuration comme non éligible à l'exécution.
- - enable:   marquer une configuration comme éligible à l'exécution.
+ - cleanup:      supprime les ressources du composant sur le serveur
+ - declare:      crée les ressources du composant sur le serveur.
+ - setup:        comme declare, fait en plus des liaisons de file d'attente.
+ - add:          copie une configuration à la liste des configurations disponibles.
+ - list:         Énumérer toutes les configurations disponibles.
+ - list plugins: Énumérer toutes les *plugins* disponibles.
+ - edit:         modifier une configuration existante.
+ - remove:       Supprimer une configuration
+ - disable:      marquer une configuration comme non éligible à l'exécution.
+ - enable:       marquer une configuration comme éligible à l'exécution.
 
 
 Par exemple: *sr_subscribe foreground dd* exécute une instance du composant sr_subscribe en avant plan
@@ -102,7 +103,8 @@ soit des échanges. **declare** crée les ressources. **setup** crée les files
 d'attente et les liaisons.
 
 Les actions **add, remove, list, edit, enable & disable** sont utilisées pour gérer la liste
-de configurations. On peut voir toutes les configurations disponibles en utilisant l´action **list**.
+de configurations et *plugins*. On peut voir toutes les configurations disponibles en utilisant l´action **list**.
+et les *plugins* disponibles avec **list plugins**.
 En utilisant l'option **edit**, on peut travailler sur une configuration particulière.
 Une configuration **disabled** ne sera pas démarrée ou redémarrée par les actions **start**
 ou **restart**. Cela peut être utilisé pour mettre une configuration temporairement de côté.
@@ -467,7 +469,7 @@ Une fois connecté à un courtier AMQP, l'utilisateur doit créer une file d'att
 
 Mise en file d'attente sur broker :
 
-- **queue_name <nom> (par défaut : q_<brokerUser>.<programName>.<configName>.<configName>)**
+- **queue <nom> (par défaut : q_<brokerUser>.<programName>.<configName>.<configName>)**
 - **durable <boolean> (par défaut : False)**
 - **expire <durée> (par défaut : 5m == cinq minutes. À OUTREPASSER)**
 - **message-ttl <durée> (par défaut : Aucun)**
@@ -483,8 +485,8 @@ les cas moins habituels, l'utilisateur peut avoir besoin a remplacer les valeurs
 par défaut. La file d'attente est l'endroit où les avis sont conservés
 sur le serveur pour chaque abonné.
 
-queue_name <nom> (par défaut : q_<brokerUser>.<programName>.<configName>.<configName>)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[ queue|queue_name <nom> (par défaut : q_<brokerUser>.<programName>.<configName>.<configName>) ]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Par défaut, les composants créent un nom de file d'attente qui doit être unique.
 Le nom_de_la_files_d'attente par défaut composants créent suit.. :  
@@ -492,6 +494,13 @@ Le nom_de_la_files_d'attente par défaut composants créent suit.. :
 peuvent remplacer la valeur par défaut à condition qu'elle commence par 
 **q_<brokerUser>****. Certaines variables peuvent aussi être utilisées dans 
 le nom_de_la_file d'attente comme **${BROKER_USER},${PROGRAMME},${CONFIG},${HOSTNAME}******
+
+Quand plusieurs processus (*instances*) roulent sur un même serveurs, ils 
+partagent le même *home* alors ils vont tous partager le même fil.  On peut
+explicitement spécifier le nom du fil d´attente pour être plus claire ou 
+dans les cas ou on veut que le même queue soit partagé en dépit de ne pas
+avoir de *home* partagé.
+
 
 durable <boolean> (par défaut : False)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
