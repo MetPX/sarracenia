@@ -1,3 +1,9 @@
+metpx-sarracenia (2.18.11b5) unstable; urgency=medium
+
+  * revert xattr dependency, causing issues on windows and older linux. 
+
+ -- Peter Silva <peter@idefix>  Tue, 27 Nov 2018 13:41:03 -0500
+
 metpx-sarracenia (2.18.11b4) unstable; urgency=medium
 
   * revert depedency on paramiko which breaks build on ubuntu 14.04.
