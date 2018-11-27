@@ -42,9 +42,13 @@ import json,os,random,sys,time
 
 from sys import platform as _platform
 
-if _platform == 'win32':
+try:
     import xattr
+    supports_extended_attributes=True
 
+except:
+    supports_extended_attributes=False
+    
 from collections import *
 
 from watchdog.observers         import Observer
@@ -560,7 +564,7 @@ class sr_post(sr_instances):
 
         sumstr = '' 
 
-        if _platform != 'win32' :
+        if supports_extended_attributes:
            try:
                attr = xattr.xattr(path)
                if 'user.sr_sum' in attr:

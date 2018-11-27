@@ -6,6 +6,15 @@ lists all changes between versions.
 
 **git repo**
 
+**2.18.11.b5**
+
+* bugfix:  reverting xattr dependency.
+
+**2.18.11.b4**
+
+* bugfix:  reverting paramiko dependency.
+*          changing backslash warning text.
+
 **2.18.11.b3**
 
 * bugfix:  dependencies now correct for windows.
