@@ -1,3 +1,9 @@
+metpx-sarracenia (2.18.11b6) unstable; urgency=medium
+
+  * missed a commit... just completing b5 changes... 
+
+ -- Peter Silva <peter@idefix>  Tue, 27 Nov 2018 15:20:18 -0500
+
 metpx-sarracenia (2.18.11b5) unstable; urgency=medium
 
   * revert xattr dependency, causing issues on windows and older linux. 
