@@ -35,7 +35,7 @@
 import logging
 import inspect
 import netifaces
-import os,re,socket,sys,random,glob
+import os,re,socket,sys,random,glob,time
 import urllib,urllib.parse, urllib.request, urllib.error
 from   appdirs import *
 import shutil
@@ -50,6 +50,13 @@ except: pass
 
 import paramiko
 from   paramiko import *
+
+try:
+    import xattr
+    supports_extended_attributes=True
+
+except:
+    supports_extended_attributes=False
 
 try :
          from sr_checksum          import *
@@ -1796,7 +1803,19 @@ class sr_config:
                         self.headers_to_del.append(key)
                      else :
                         self.headers_to_add [key] = value
-                     n = 2
+
+                     if supports_extended_attributes:
+                        if key.lower() == "sum":
+                           n = len(words[2:]) + 2
+                           for xfile in words[2:]:
+                              xattr.setxattr(xfile, 'user.sr_sum', bytes(value,"utf-8"))
+                              xmtime = timeflt2str(time.time())
+                              xattr.setxattr(xfile, 'user.sr_mtime', bytes(xmtime,"utf-8"))
+                              self.logger.debug("xattr sum set for file: {0} => {1}".format(xfile, value))
+                        else:
+                           n = 2
+                     else:
+                        n = 2
 
                 elif words0 in ['gateway_for','gf']: # See: sr_config.7, sr_sarra.8, sr_sender.1 
                      self.gateway_for = words1.split(',')
