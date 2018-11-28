@@ -2014,6 +2014,28 @@ look in the *plugins* directory in the users config tree, then in the site
 directory, then in the sarracenia package itself, and finally it will look remotely.
 
 
+EXTENDED FILE ATTRIBUTES
+========================
+
+Files can be posted with extended attributes containing their checksum data to prevent unneccessary file
+reads for checksum computation. This optimization can be useful when dealing with a lot of posted/downloaded
+files and for using application- or user-defined checksums.
+
+Extended file attributes are filesystem features that allow users to associate files with extra customized
+metadata in the form of name=value pairs (RFC 8276). This functionality is only available on certain Linux
+filesystems.
+
+Checksums can be attached to a file by specifying the sum string value in the header on startup with the 
+'a' (application) scheme indicated::
+
+    sr_subscribe -header sum=a,65537 <fileName(s)> <configName> start|foreground
+
+where **fileName(s)** can be a list of space separated files or a value containing regex syntax. The 
+**user.sr_sum** and **user.sr_mtime** extended attributes of the files will be updated before starting
+the sarra process. These attributes can also be set using commandline utilities like xattr. Likewise, 
+the optimization extends towards sarra instances that post the files as well, as outlined in the 
+`sr_post(7) <sr_post.7.rst>`_ documentation.
+
 
 
 SEE ALSO

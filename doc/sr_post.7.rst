@@ -457,6 +457,20 @@ represented by UTF-8 encoding (IETF RFC 3629).
 URL encoding, as per IETF RFC 1738, is used to escape unsafe characters where appropriate.
 
 
+EXTENDED FILE ATTRIBUTES
+------------------------
+
+Checksums can be attached to a file by specifying the sum string value in the header on startup with the
+'a' (application) scheme indicated::
+
+    sr_post -header sum=a,65537 <fileName(s)> <configName> start|foreground
+
+where **fileName(s)** can be a list of space separated files or a value containing regex syntax. The
+**user.sr_sum** and **user.sr_mtime** extended attributes of the files will be updated before being 
+posted. These attributes can also be set using commandline utilities like xattr. Likewise, the 
+optimization extends towards sarra instances that download the files as well, as outlined in the 
+`sr_subscribe(1) <sr_subscribe.1.rst>`_ documentation.
+
 FURTHER READING
 ---------------
 

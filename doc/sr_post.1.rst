@@ -4,7 +4,7 @@
 =========
 
 ------------------------------------------------
-Publish the Availability of a File to Subcribers
+Publish the Availability of a File to Subscribers
 ------------------------------------------------
 
 :Manual section: 1 
