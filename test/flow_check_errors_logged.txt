@@ -1,0 +1,1 @@
+      1 /users/dor/aspy/map/.cache/sarra/log/sr_sender_tsource2send_f50_03.log [ERROR] Delivery failed /users/dor/aspy/map/sarra_devdocroot/sent_by_tsource2send/bulletins/alphanumeric/20180725/SR/KWAL/17/SRCN40_KWAL_251750___18771. Type: <class 'OSError'>, Value: Failure
