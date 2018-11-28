@@ -44,6 +44,15 @@
 
 import json,os,sys,time
 
+from sys import platform as _platform
+
+try:
+    import xattr
+    supports_extended_attributes=True
+except:
+    supports_extended_attributes=False
+
+
 try :    
          from sr_cache           import *
          from sr_consumer        import *
@@ -1321,8 +1330,15 @@ class sr_subscribe(sr_instances):
 
                    # force onfly checksum  in message
 
-                   if self.recompute_chksum :
+                   if self.recompute_chksum and supports_extended_attributes:
                       #self.msg.compute_local_checksum()
+                      try:
+                          attr = xattr.xattr(path)
+                          onfly_sumstr = self.msg.sumflg+','+self.msg.onfly_checksum
+                          if attr['user.sr_sum'] != onfly_sumstr:
+                              xattr.setxattr(path, 'user.sr_sum', bytes(onfly_sumstr, "utf-8"))
+                      except:
+                          pass
                       self.msg.set_sum(self.msg.sumflg,self.msg.onfly_checksum)
                       if self.reportback: self.msg.report_publish(205,'Reset Content : checksum')
 

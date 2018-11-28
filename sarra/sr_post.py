@@ -34,13 +34,21 @@
 #============================================================
 # usage example
 #
-# sr_post [options] [config] [foreground|start|stop|restart|reload|status|cleanup|setup]
+# sr_post [options] [config] [foreground|add|remove|edit|cleanup|setup]
 #
 #============================================================
 
 import json,os,random,sys,time
-#import xattr
 
+from sys import platform as _platform
+
+try:
+    import xattr
+    supports_extended_attributes=True
+
+except:
+    supports_extended_attributes=False
+    
 from collections import *
 
 from watchdog.observers         import Observer
@@ -219,7 +227,7 @@ class sr_post(sr_instances):
         print("version: %s \n" % sarra.__version__ )
         print("OPTIONS:")
         print("-a|action   <action>    default:foreground")
-        print("                        keyword: add|cleanup|declare|disable|edit|enable|foreground|list|start|stop|restart|reload|remove|setup|status")
+        print("                        keyword: add|cleanup|declare|disable|edit|enable|foreground|list|remove|setup")
         print("-pb|post_broker   <broker>          default:amqp://guest:guest@localhost/")
         print("-c|config   <config_file>")
         print("-pbd <post_base_dir>   default:None")
@@ -421,7 +429,7 @@ class sr_post(sr_instances):
         urlstr = self.post_base_url + '/' + self.post_relpath
 
         if self.realpath_filter and not self.realpath_post :
-           if os.path.exist(path) :
+           if os.path.exists(path) :
               fltr_post_relpath = os.path.realpath(path)
               if sys.platform == 'win32':
                   fltr_post_relpath = fltr_post_relpath.replace('\\','/')
@@ -523,19 +531,8 @@ class sr_post(sr_instances):
 
         partstr = '1,%d,1,0,0' % fsiz
 
-        # xattr turned off  PS 20180423
-        # xattr ... check if sum is set in extended fileattributes
-
-        sumstr = ''
-
-        #try :
-        #       attr = xattr.xattr(path)
-        #       if 'user.sr_sum' in attr :
-        #          self.logger.debug("sum set by xattr")
-        #          sumstr = (attr['user.sr_sum'].decode("utf-8")).split()[1]
-        #except: pass
-        sumstr = self.compute_sumstr(path, fsiz, sumstr)
-        
+        sumstr = self.compute_sumstr(path, fsiz)
+ 
         # caching
 
         if self.caching :
@@ -563,7 +560,29 @@ class sr_post(sr_instances):
 
         return ok
 
-    def compute_sumstr(self, path, fsiz, sumstr = ''):
+    def compute_sumstr(self, path, fsiz):
+
+        sumstr = '' 
+
+        if supports_extended_attributes:
+           try:
+               attr = xattr.xattr(path)
+               if 'user.sr_sum' in attr:
+                  if 'user.sr_mtime' in attr:
+                     if attr['user.sr_mtime'].decode("utf-8") == self.msg.headers['mtime']:
+                        self.logger.debug("sum set by xattr")
+                        sumstr = attr['user.sr_sum'].decode("utf-8")
+                        return sumstr
+                  else:
+                     xattr.setxattr(path, 'user.sr_mtime', bytes(self.msg.headers['mtime'], "utf-8"))
+                     self.logger.debug("sum set by xattr")
+                     sumstr = attr['user.sr_sum'].decode("utf-8")
+                     return sumstr
+
+           except:
+               pass
+
+        self.logger.debug("sum set by compute_sumstr")
 
         sumflg = self.sumflg
 
@@ -597,13 +616,6 @@ class sr_post(sr_instances):
             sumstr   = '%s,%s' % (sumflg,checksum)
 
         return sumstr
-
-            # xattr turned off PS 20180424
-            # setting extended attributes
-            #self.logger.debug("xattr set for time and sum")
-            #sr_attr = self.msg.time + ' ' + sumstr
-            #attr['user.sr_sum' ] = bytes( sr_attr, encoding='utf-8')
-    
 
     # =============
     # post_file_in_parts

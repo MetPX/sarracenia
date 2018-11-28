@@ -6,10 +6,34 @@ lists all changes between versions.
 
 **git repo**
 
+**2.18.11.b5**
+
+* bugfix:  reverting xattr dependency.
+
+**2.18.11.b4**
+
+* bugfix:  reverting paramiko dependency.
+*          changing backslash warning text.
+
+**2.18.11.b3**
+
+* bugfix:  dependencies now correct for windows.
+*
+
+**2.18.11.b2**
+* bugfix:  windows: Issue #54 support is broken on windows, disabled there.
+*          print slashes the right way round on windows in more cases.
+*
+**2.18.11.b1**
+
+* New:     Issue #54 initial support for *fake* (application defined) checksums.
+*
 * bugfix:  Issue #118 windows commands started from cmd.exe exit when window closed.
 *          Issue #113 crash on sr_post/watch with post_exchange_split
 *          Issue #112 windows log rollover 
 *          Issue #101 windows git checkout corruption 
+*
+*
 
 
 **2.18.10b2**

@@ -1,3 +1,46 @@
+metpx-sarracenia (2.18.11b6) unstable; urgency=medium
+
+  * missed a commit... just completing b5 changes... 
+
+ -- Peter Silva <peter@idefix>  Tue, 27 Nov 2018 15:20:18 -0500
+
+metpx-sarracenia (2.18.11b5) unstable; urgency=medium
+
+  * revert xattr dependency, causing issues on windows and older linux. 
+
+ -- Peter Silva <peter@idefix>  Tue, 27 Nov 2018 13:41:03 -0500
+
+metpx-sarracenia (2.18.11b4) unstable; urgency=medium
+
+  * revert depedency on paramiko which breaks build on ubuntu 14.04.
+  * adding a warning about backslashes in paths on windows
+
+ -- Peter Silva <peter@blacklab>  Sat, 24 Nov 2018 23:16:14 -0500
+
+metpx-sarracenia (2.18.11b3) unstable; urgency=medium
+
+  *bugfix: windows dependencies corrected. 
+
+ -- Peter Silva <peter@blacklab>  Fri, 23 Nov 2018 01:21:41 -0500
+
+metpx-sarracenia (2.18.11b2) unstable; urgency=medium
+
+  * bugfix:  windows: Issue #54 support is broken on windows, disabled there.
+  *          print slashes the right way round on windows in more cases.
+
+ -- Peter Silva <peter@blacklab>  Wed, 21 Nov 2018 23:04:49 -0500
+
+metpx-sarracenia (2.18.11b1) unstable; urgency=medium
+
+  * New:     Issue #54 initial support for *fake* (application defined) checksums.
+  *
+  * bugfix:  Issue #118 windows commands started from cmd.exe exit when window closed.
+  *          Issue #113 crash on sr_post/watch with post_exchange_split
+  *          Issue #112 windows log rollover 
+  *          Issue #101 windows git checkout corruption 
+
+ -- Peter Silva <peter@idefix>  Wed, 21 Nov 2018 13:35:06 -0500
+
 metpx-sarracenia (2.18.10b2) unstable; urgency=medium
 
   * new      Issue #106 plugins for hydrometric forecast data acquisition.
