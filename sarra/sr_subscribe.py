@@ -2036,15 +2036,12 @@ def main():
 
     args,action,config,old = startup_args(sys.argv)
  
-    print('FIXME: hoho last action is: %s' % action )
     subscribe = sr_subscribe(config,args,action)
-    print('FIXME: hoho')
     if action == 'help':
        subscribe.help()
        os._exit(0)
 
     subscribe.exec_action(action,old)
-    print('FIXME: hoho last')
 
     os._exit(0)
 
