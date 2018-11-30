@@ -667,6 +667,95 @@ do not require rigid standardization, but can be implemented by each
 NMC to fit their needs.
 
 
+On Including Content in the Messages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+It is tempting to inline (or include) data within the AMQP messages 
+for *small* data types. The hope is that we avoid a connection initiation 
+and an extra round-trip. The typical example would be weather warnings. 
+Can we improve timeliness by including weather warnings in the AMQP data 
+flow rather than downloading them separately? 
+
+Whenever messaging brokers are benchmarked, the benchmarks always include
+notes about message size, and the performance of the systems in terms
+of messages per second are invariably higher with shorter messages. It
+is fairly obvious that every system imposes a maximum message size, 
+that messages are normally kept in memory, and that the maximum message
+size each peer would need to support would need to be specified in
+order to assure interoperability.
+
+With the above in mind, there are three possible approaches to 
+limiting message size:  truncation, segmentation, and thresholds.
+
+Truncation: the current WMO limits messages to being less than 500,000
+bytes. This prevents many modern data types from being transferred 
+(radar volume scans, satellite imagery, video, etc...) People
+will suggest only warnings would be sent inline.  The current
+format for warning messages is Common Alerting Protocol, a highly
+flexible XML format which permits things like embedding media. 
+There is no maximum message size for CAP messages, and so one 
+could not guarantee that all CAP messages would fit into any
+truncation limit we would impose.
+
+Segmentation: To avoid truncation one could instead implement
+sending of products segmented into multiple messages.  There is a 
+long, troubled, history of message segmentation in the GTS,
+to the extent that segmentation was purged from GTS when 
+the message size limit was raised to 500,000 bytes.
+Protocols like FTP, HTTP, TCP already do this work. Adding 
+another layer of software that replicates what is done at
+lower levels is unlikely to be helpful. There is likely 
+very little appetite to define message segmentation to be 
+overlaid on AMQP message passing.
+
+Note: The Sarracenia protocol implements file segmentation
+(partitioning) over the data transfer protocols, with a 
+view to using it a far larger segment sizes, on the order 
+of 50 megabytes per segment. The purpose is to overlap file 
+transfer and processing (allowing the beginning of multi-gigabyte 
+files to begin before it is completely delivered.) 
+
+Threshold: if the datum is larger than X bytes, use
+another transport mechanism. This guarantees that only
+data smaller than X bytes will be inlined. It provides
+a message size for all brokers to optimize for. On
+the other hand, it means that one must always implement
+two transfer methods, since one cannot guarantee that
+all data will fit into the AMQP stream, one must provision
+for the alternate data path to be used when the threshold
+is exceeded.
+
+Picking X isn´t obvious. Data types are growing, with
+future or current formats like: AvXML, CAP, ODIM, GIF
+being an order of magnitude or more larger than traditional
+alphanumeric codes (TAC.) It isn´t clear that the value
+of X we pick for today wil make sense in ten years.
+but it will likely be difficult to pick that value.
+This will use more memory in the brokers, and the will 
+reduce absolute message passing performance. The brokers 
+are the most critical elements of these data pumps, 
+and minimizing complexity there is a benefit.
+
+Another consideration is how much time is saved. The
+Sarracenia application maintain connections, so
+it does not cost a connection establishment to transfer
+a file. One typically operates a number of parallel
+downloaders sharing a queue to achieve parallelism.
+With the Canadian acquisition of data from NWS,
+there are 40 processes pulling data simultaneously,
+and there is very little queueing.  If most of the
+data exceeds X, then obviously there is little to
+no benefit.
+
+In summary, there is added complexity in the application,
+and added load on the broker when data is inlined,
+while there is likely a performance benefit, it isn´t
+clear that it will make a worthwhile difference
+in real world loads.
+
+
+
+
 
 
 
