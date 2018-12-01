@@ -667,11 +667,12 @@ do not require rigid standardization, but can be implemented by each
 NMC to fit their needs.
 
 In practice, Canadian deployments achieve sub-second warning forwarding
-using only this strategy of separate queues for high priority warnings.
+using only separate queues for high priority data types, such as warnings
+and RADAR.
 
 
-On Including Content in the Messages
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Inline Content in Messages
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It is tempting to inline (or include) data within the AMQP messages 
 for *small* data types. The hope is that we avoid a connection initiation 
@@ -720,7 +721,7 @@ of 50 megabytes per segment. The purpose is to overlap file
 transfer and processing (allowing the beginning of multi-gigabyte 
 files to begin before it is completely delivered.) 
 
-Threshold: It is likely that thresholding is only reasonable 
+Threshold: It is likely that thresholding is the only reasonable 
 data inlining strategy. If the datum is larger than X bytes, use
 another transport mechanism. This guarantees that only
 data smaller than X bytes will be inlined. It provides
@@ -737,6 +738,15 @@ being an order of magnitude or more larger than traditional
 alphanumeric codes (TAC.)  Picking an X sufficient
 for such data types is likely to be much harder on 
 the brokers, and no value we can pick will take *all warnings*.
+
+As going forward, the intent is to use this method
+with satellite imagery, RADAR data, and large GRIB data
+sets, it is suspected that a great deal of high priority
+data will exceed any reasonable value of X.  If we don't 
+use separate queues for high priority data, then a 
+downward pressure on X comes from avoiding large 
+messages from overly delaying a higher priority
+message from being sent.
 
 To guarantee warning transfer performance, one would need
 to guarantee it for the large warnings as well, which is
@@ -755,9 +765,10 @@ connection establishment to transfer a file. One typically
 operates a number of parallel downloaders sharing a queue 
 to achieve parallelism.  With the Canadian acquisition 
 of data from NWS, there are 40 processes pulling data 
-simultaneously, and there is very little queueing.  If 
-most of the data exceeds X, then obviously there is 
-little to no benefit.
+simultaneously, and there is very little queueing.  It may
+be more important to initiate transfers more quickly
+rather than to accellerate individual streams.
+
 
 A final consideration is the separation of control and data paths. 
 The AMQP end point might not be the data transfer end point.
@@ -771,13 +782,23 @@ forwarding.) The Canadian main data pump deployments
 transfer several hundred messages per second, and we
 are not sanguine about adding payloads into that mix.
 
-In summary, without inlining, current deployment already achieve
-sub-second forwarding. Inlining is likely only practical with a fixed
-maximum payload size. That threshold adds complexity in 
-the application, and adds load on the broker, which is harder
-to scale than transport. It isn´t clear that the benefits
-will be worthwhile compared to the overhead cost in real 
-world loads.
+In summary, without inlining, current deployments already achieve
+sub-second forwarding using separate queues alone. If we wish to
+avoid re-introducing segmentation and reassembly, inlining is 
+likely only practical with a fixed maximum payload size. Determining
+a reasonable threshold is not obvious, and once the threshold is 
+established, one must ensure that high priority traffic above 
+the threshold also transfers quickly, which means
+arranging for multiple methods to achieve performant transfers.
+High performance deplyments often feature brokers completely
+separate from the data transfer path, where the broker has
+a load distribution function, and simpler data transfer nodes
+do the transport work. A threshold adds complexity in the 
+application, adds load on the broker, which is the most 
+complex element and more complex to scale than transport, and
+may make the overall system slower. It isn´t clear that the 
+benefits will be worthwhile compared to the overhead 
+cost in real world loads.
 
 
 
