@@ -41,9 +41,6 @@ class AWSPoller(object):
 
 		logger = parent.logger
 
-        if not self.has_vip():
-           return True
-
 		if not hasattr(parent, 'poll_nexrad_day'): 
 			day = "" 
 		else: 

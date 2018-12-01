@@ -666,6 +666,9 @@ other data. Since the mechanism is general, the details of implementation
 do not require rigid standardization, but can be implemented by each
 NMC to fit their needs.
 
+In practice, Canadian deployments achieve sub-second warning forwarding
+using only this strategy of separate queues for high priority warnings.
+
 
 On Including Content in the Messages
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -682,7 +685,9 @@ of messages per second are invariably higher with shorter messages. It
 is fairly obvious that every system imposes a maximum message size, 
 that messages are normally kept in memory, and that the maximum message
 size each peer would need to support would need to be specified in
-order to assure interoperability.
+order to assure interoperability. It isn't clear that while individual 
+messages could benefit from inlining, that there isn't a cost in overall
+data pump performance that outweighs it.
 
 With the above in mind, there are three possible approaches to 
 limiting message size:  truncation, segmentation, and thresholds.
@@ -715,7 +720,8 @@ of 50 megabytes per segment. The purpose is to overlap file
 transfer and processing (allowing the beginning of multi-gigabyte 
 files to begin before it is completely delivered.) 
 
-Threshold: if the datum is larger than X bytes, use
+Threshold: It is likely that thresholding is only reasonable 
+data inlining strategy. If the datum is larger than X bytes, use
 another transport mechanism. This guarantees that only
 data smaller than X bytes will be inlined. It provides
 a message size for all brokers to optimize for. On
@@ -728,32 +734,50 @@ is exceeded.
 Picking X isn´t obvious. Data types are growing, with
 future or current formats like: AvXML, CAP, ODIM, GIF
 being an order of magnitude or more larger than traditional
-alphanumeric codes (TAC.) It isn´t clear that the value
-of X we pick for today wil make sense in ten years.
-but it will likely be difficult to pick that value.
-This will use more memory in the brokers, and the will 
+alphanumeric codes (TAC.)  Picking an X sufficient
+for such data types is likely to be much harder on 
+the brokers, and no value we can pick will take *all warnings*.
+
+To guarantee warning transfer performance, one would need
+to guarantee it for the large warnings as well, which is
+accomplished quite well using separate queues alone.
+
+It isn´t clear that the value of X we pick for today 
+wil make sense in ten years. A higher X
+will use more memory in the brokers, and will 
 reduce absolute message passing performance. The brokers 
 are the most critical elements of these data pumps, 
 and minimizing complexity there is a benefit.
 
-Another consideration is how much time is saved. The
-Sarracenia application maintain connections, so
-it does not cost a connection establishment to transfer
-a file. One typically operates a number of parallel
-downloaders sharing a queue to achieve parallelism.
-With the Canadian acquisition of data from NWS,
-there are 40 processes pulling data simultaneously,
-and there is very little queueing.  If most of the
-data exceeds X, then obviously there is little to
-no benefit.
+Another consideration is how much time is saved. The Sarracenia 
+application maintain connections, so it does not cost a 
+connection establishment to transfer a file. One typically 
+operates a number of parallel downloaders sharing a queue 
+to achieve parallelism.  With the Canadian acquisition 
+of data from NWS, there are 40 processes pulling data 
+simultaneously, and there is very little queueing.  If 
+most of the data exceeds X, then obviously there is 
+little to no benefit.
 
-In summary, there is added complexity in the application,
-and added load on the broker when data is inlined,
-while there is likely a performance benefit, it isn´t
-clear that it will make a worthwhile difference
-in real world loads.
+A final consideration is the separation of control and data paths. 
+The AMQP end point might not be the data transfer end point.
+In some Canadian deployments, there are brokers which are separate 
+servers from the data movers. The broker's only purpose is to distribute
+load among the data mover nodes, where the ideal is for that distribution
+to be as even as possible. In that design, It makes little sense to 
+download messages to the brokers, and may actually delay forwarding
+by adding a hop (a further transfer to a data mover node before
+forwarding.) The Canadian main data pump deployments
+transfer several hundred messages per second, and we
+are not sanguine about adding payloads into that mix.
 
-
+In summary, without inlining, current deployment already achieve
+sub-second forwarding. Inlining is likely only practical with a fixed
+maximum payload size. That threshold adds complexity in 
+the application, and adds load on the broker, which is harder
+to scale than transport. It isn´t clear that the benefits
+will be worthwhile compared to the overhead cost in real 
+world loads.
 
 
 
