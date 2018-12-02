@@ -661,6 +661,7 @@ Timeline:
 |                              |                                |
 | 2013 MetPX/Sarracenia        | Decision to base Next Gen.     |
 |      begins.                 | *WMO* data pump on AMQP.       |
+|                              |                                |
 +------------------------------+--------------------------------+
 |                              |                                |
 | 2015 to present              | data mart clients have used    |
@@ -704,7 +705,10 @@ Timeline:
 +------------------------------+--------------------------------+
 |                              |                                |
 | 2016-2017 HPC Mirroring.     | mirror between to HPC clusters |
-|    Gen 1: GPFS Policy        |  12x faster than rsync         |
+|                              |                                |
+| Gen 1: GPFS Policy           | 12x faster than rsync          |
+|                              |                                |
+|                              | 5 to 40 minutes lag            |
 +------------------------------+--------------------------------+
 |                              |                                |
 | 2018 US FAA radar feed.      | FAA use sarracenia package to  | 
@@ -713,7 +717,11 @@ Timeline:
 +------------------------------+--------------------------------+
 |                              |                                |
 | 2017-2019 HPC Mirroring.     | mirror between to HPC clusters |
-|    Gen 2: shim library       |   72x faster than rsync        |
+|                              |                                |
+| Gen 2: shim library          | 72x faster than rsync          |
+|                              |                                |
+|                              | less than 5 minutes lag        |
+|                              |                                |
 +------------------------------+--------------------------------+
 
 Description of deployments as of January 2018:
