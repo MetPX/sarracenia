@@ -632,45 +632,58 @@ operational data pumping.
 
 Timeline:
 
-+------------------------------+--------------------------------+
++==============================+================================+
 | Date                         | Milestone                      |
-+------------------------------+--------------------------------+
++==============================+================================+
+|                              |                                |
 | 2008 for MetPX/Sundew        | Initial experiments            |
 | sender and receiver added.   |                                |
+|                              |                                |
 +------------------------------+--------------------------------+
-| 2010 national Unified RADAR  |  Experiment in improving       |
-|      processing deployment.  |  reliability by first-come     |
+|                              |                                |
+| 2010 National Unified RADAR  |  Experiment in improving       |
+|      processing outputs      |  reliability by first-come     |
 |                              |  first-serve algorithm.        |
 |                              |  for outputs of NURP.          |
+|                              |                                |
 |                              |  mutliple calls per month ->0  |
+|                              |                                |
 +------------------------------+--------------------------------+
+|                              |                                |
 | 2010 WMO CBS-Ext 10 Windhoek |  Initial WMO discussions.      |
 |                              |  work was still experimental.  |
 +------------------------------+--------------------------------+
+|                              |                                |
 | 2013 dd.weather.gc.ca        |  first public deployment       |
 |      dd_subscribe            |                                |
 |                              |                                |
 +------------------------------+--------------------------------+
+|                              |                                |
 | 2013 MetPX/Sarracenia        | Decision to base Next Gen.     |
 |      begins.                 | *WMO* data pump on AMQP.       |
 +------------------------------+--------------------------------+
+|                              |                                |
 | 2015 to present              | data mart clients have used    |
 |      variety of clients.     | clients provided and/or built  |
 |                              | their own.                     |
 +------------------------------+--------------------------------+
+|                              |                                |
 | 2015 Sarracenia in 10 Minutes| Maps out vision for Sarracenia |
 | (to give own analysts big    |                                |
 |  picture )                   |                                |
 +------------------------------+--------------------------------+
+|                              |                                |
 | 2015 NWS WMO socket replaced | NWS offers only SFTP tree.     |
 |                              | Tree consumption via sarracenia|
 |                              | poll on broker distributes to  |
 |                              | with 40 tranfer processes      |
 |                              | on eight transfer nodes.       |
 +------------------------------+--------------------------------+
+|                              |                                |
 | 2015 PanAmerican Games       | Fed Ninjo over internet        |
 |                              | via Sarracenia subscription.   |
 +------------------------------+--------------------------------+
+|                              |                                |
 | 2016 Ninjo deployment        | Central office feeds all       |
 |                              | ninjo servers over WAN         |
 |                              | use of caching/proxies reduces |
@@ -684,17 +697,21 @@ Timeline:
 | Now any                      | to provide common view         |
 |                              |                                |
 +------------------------------+--------------------------------+
+|                              |                                |
 | 2016 Redundant RADAR Acq.    | C-band radars uplink to two    |
 |                              | locations, first-come,         |
 |                              | first-serve for inputs to URP. |
 +------------------------------+--------------------------------+
+|                              |                                |
 | 2016-2017 HPC Mirroring.     | mirror between to HPC clusters |
 |    Gen 1: GPFS Policy        |  12x faster than rsync         |
 +------------------------------+--------------------------------+
+|                              |                                |
 | 2018 US FAA radar feed.      | FAA use sarracenia package to  | 
 | ( trial in progress )        | subscribe to Canadian RADAR    |
 |                              | volume scans (C and S Band)    |
 +------------------------------+--------------------------------+
+|                              |                                |
 | 2017-2019 HPC Mirroring.     | mirror between to HPC clusters |
 |    Gen 2: shim library       |   72x faster than rsync        |
 +------------------------------+--------------------------------+
