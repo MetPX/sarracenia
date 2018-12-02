@@ -5,6 +5,7 @@
 
 
 DRAFT: working document, subject to change.
+Original `here: <https://github.com/MetPX/sarracenia/blob/master/doc/mesh_gts.rst>`_
 
 .. contents::
 
@@ -383,11 +384,15 @@ An AMQP notification layer added to the existing file transfer network would:
 - permit ad-hoc exchanges among members across the RMDCN without having to involve third parties.
 
 - can function with only *anonymous* exchanges, to eliminate the need for authentication entirely.
+  additional explicit authentication is available if desired.
 
 - provide a like-for-like mechanism to supplant the traditional GTS
   (similar performance to existing GTS, no huge efficiency penalties).
 
-- transparent (can see what data is on a node, without requiring human exchanges).
+- in contrast to current GTS: no product size limit, can function with any format.
+  inserting data is a matter of picking a file hierarchy (name)
+
+- transparent (can see what data is on any node, without requiring human exchanges).
   (Authorized persons can browse an FTP/SFTP/HTTP tree).
 
 - enable/support arbitrary interconnection topologies among NC/DCPC/GISCs
@@ -518,8 +523,6 @@ node feeds.
 
 
 
-
-
 Simple/Scalable Peer Configurations for Nations
 -----------------------------------------------
 
@@ -620,6 +623,86 @@ implemented across 10 physical servers (likely too many, as all of them are
 lightly loaded). 
 
 
+Maturity
+--------
+
+For Canada, this is not an experimental project beside other initiatives,
+it is the focus of basically a decade of work and the core of currently
+operational data pumping.
+
+Timeline:
+
++------------------------------+--------------------------------+
+| Date                         | Milestone                      |
++------------------------------+--------------------------------+
+| 2008 for MetPX/Sundew        | Initial experiments            |
+| sender and receiver added.   |                                |
++------------------------------+--------------------------------+
+| 2010 national Unified RADAR  |  Experiment in improving       |
+|      processing deployment.  |  reliability by first-come     |
+|                              |  first-serve algorithm.        |
+|                              |  for outputs of NURP.          |
+|                              |  mutliple calls per month ->0  |
++------------------------------+--------------------------------+
+| 2010 WMO CBS-Ext 10 Windhoek |  Initial WMO discussions.      |
+|                              |  work was still experimental.  |
++------------------------------+--------------------------------+
+| 2013 dd.weather.gc.ca        |  first public deployment       |
+|      dd_subscribe            |                                |
+|                              |                                |
++------------------------------+--------------------------------+
+| 2013 MetPX/Sarracenia        | Decision to base Next Gen.     |
+|      begins.                 | *WMO* data pump on AMQP.       |
++------------------------------+--------------------------------+
+| 2015 to present              | data mart clients have used    |
+|      variety of clients.     | clients provided and/or built  |
+|                              | their own.                     |
++------------------------------+--------------------------------+
+| 2015 Sarracenia in 10 Minutes| Maps out vision for Sarracenia |
+| (to give own analysts big    |                                |
+|  picture )                   |                                |
++------------------------------+--------------------------------+
+| 2015 NWS WMO socket replaced | NWS offers only SFTP tree.     |
+|                              | Tree consumption via sarracenia|
+|                              | poll on broker distributes to  |
+|                              | with 40 tranfer processes      |
+|                              | on eight transfer nodes.       |
++------------------------------+--------------------------------+
+| 2015 PanAmerican Games       | Fed Ninjo over internet        |
+|                              | via Sarracenia subscription.   |
++------------------------------+--------------------------------+
+| 2016 Ninjo deployment        | Central office feeds all       |
+|                              | ninjo servers over WAN         |
+|                              | use of caching/proxies reduces |
+|                              | WAN traffic after deployment   |
++------------------------------+--------------------------------+
+|                              | Consistent, National failover  |
+|                              | for BULLPREP, Scribe, etc...   |
+|                              | (key forecaster applications)  |
+|                              |                                |
+| 2016 Weather Apps.           | implement a *shared drive*     |
+| Now any                      | to provide common view         |
+|                              |                                |
++------------------------------+--------------------------------+
+| 2016 Redundant RADAR Acq.    | C-band radars uplink to two    |
+|                              | locations, first-come,         |
+|                              | first-serve for inputs to URP. |
++------------------------------+--------------------------------+
+| 2016-2017 HPC Mirroring.     | mirror between to HPC clusters |
+|    Gen 1: GPFS Policy        |  12x faster than rsync         |
++------------------------------+--------------------------------+
+| 2018 US FAA radar feed.      | FAA use sarracenia package to  | 
+| ( trial in progress )        | subscribe to Canadian RADAR    |
+|                              | volume scans (C and S Band)    |
++------------------------------+--------------------------------+
+| 2017-2019 HPC Mirroring.     | mirror between to HPC clusters |
+|    Gen 2: shim library       |   72x faster than rsync        |
++------------------------------+--------------------------------+
+
+Description of deployments as of January 2018:
+https://github.com/MetPX/sarracenia/blob/master/doc/deployment_2018.rst
+
+
 Statelessness/Crawlable
 -----------------------
 
@@ -635,13 +718,15 @@ Programmability/Interoperability
 --------------------------------
 
 A new application to process sr_post messages can be re-implemented if there
-is a desire to do so, as all design and implementation information, for all
-three implementations (Python, C, node.js) as well as source code, is 
-publically available. The python implementation has an extensive plugin
-interface available to customize processing in a wide variety of ways, such as
-to add file transfer protocols, and perform pre or post processing before
-sending or after receipt of products. Interoperability with Apache NiFi has
-been demonstrated by some clients.
+is a desire to do so, as in addition to full documentation, source code
+for a handful of `implementations <https://github.com/MetPX/sarracenia/blob/master/doc/sarra.rst#implementations>`_
+(Python, C, Go, node.js), is readily publically available. 
+The python implementation has an extensive plugin interface available to 
+customize processing in a wide variety of ways, such as to add file 
+transfer protocols, and perform pre or post processing before sending 
+or after receipt of products. Interoperability with Apache NiFi has
+been demonstrated by some clients, but they declined to release
+the work.
 
 
 Priorities
@@ -735,7 +820,7 @@ is exceeded.
 Picking X isn´t obvious. Data types are growing, with
 future or current formats like: AvXML, CAP, ODIM, GIF
 being an order of magnitude or more larger than traditional
-alphanumeric codes (TAC.)  Picking an X sufficient
+alphanumeric codes (TAC.) Picking an X sufficient
 for such data types is likely to be much harder on 
 the brokers, and no value we can pick will take *all warnings*.
 
@@ -772,33 +857,31 @@ rather than to accellerate individual streams.
 
 A final consideration is the separation of control and data paths. 
 The AMQP end point might not be the data transfer end point.
-In some Canadian deployments, there are brokers which are separate 
+In Canadian high performance deployments, there are brokers which are separate 
 servers from the data movers. The broker's only purpose is to distribute
 load among the data mover nodes, where the ideal is for that distribution
 to be as even as possible. In that design, It makes little sense to 
 download messages to the brokers, and may actually delay forwarding
 by adding a hop (a further transfer to a data mover node before
-forwarding.) The Canadian main data pump deployments
-transfer several hundred messages per second, and we
-are not sanguine about adding payloads into that mix.
+forwarding.) The Canadian main data pump deployments transfer several 
+hundred messages per second, and we are not sanguine about adding 
+payloads into that mix.
 
-In summary, without inlining, current deployments already achieve
+In summary: Without inlining, current deployments already achieve
 sub-second forwarding using separate queues alone. If we wish to
 avoid re-introducing segmentation and reassembly, inlining is 
 likely only practical with a fixed maximum payload size. Determining
 a reasonable threshold is not obvious, and once the threshold is 
 established, one must ensure that high priority traffic above 
-the threshold also transfers quickly, which means
-arranging for multiple methods to achieve performant transfers.
-High performance deplyments often feature brokers completely
-separate from the data transfer path, where the broker has
+the threshold also transfers quickly, obviating the motivation
+for inlining. High performance deployments often feature brokers 
+completely separate from the data transfer path, where the broker has
 a load distribution function, and simpler data transfer nodes
 do the transport work. A threshold adds complexity in the 
 application, adds load on the broker, which is the most 
-complex element and more complex to scale than transport, and
-may make the overall system slower. It isn´t clear that the 
-benefits will be worthwhile compared to the overhead 
-cost in real world loads.
+complex element to scale, and so may make the overall system 
+slower. It isn´t clear that the benefits will be worthwhile 
+compared to the overhead cost in real world loads.
 
 
 
