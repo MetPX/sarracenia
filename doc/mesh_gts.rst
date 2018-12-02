@@ -626,9 +626,10 @@ lightly loaded).
 Maturity
 --------
 
-For Canada, this is not an experimental project beside other initiatives,
-it is the focus of basically a decade of work and the core of currently
-operational data pumping.
+For Canada, this is not an experimental project beside other initiatives.
+Sarracenia is the focus of around a decade of work and the core of currently
+operational data pumping. It is in operational use to transfer
+tens of terabytes per day in a wide variety of different use cases.
 
 Timeline:
 
@@ -641,12 +642,12 @@ Timeline:
 |                              |                                |
 +------------------------------+--------------------------------+
 |                              |                                |
-| 2010 National Unified RADAR  |  Experiment in improving       |
-| processing outputs           |  reliability by first-come     |
-|                              |  first-serve algorithm.        |
-|                              |  for outputs of NURP.          |
+| 2010 National Unified RADAR  | Experiment in improving        |
+| processing outputs           | reliability by first-come      |
+|                              | first-serve algorithm.         |
+|                              | for outputs of NURP.           |
 |                              |                                |
-|                              |  mutliple calls per month ->0  |
+|                              | mutliple calls per month ->0   |
 |                              |                                |
 +------------------------------+--------------------------------+
 |                              |                                |
@@ -676,10 +677,11 @@ Timeline:
 +------------------------------+--------------------------------+
 |                              |                                |
 | 2015 NWS WMO socket replaced | NWS offers only SFTP tree.     |
-|                              | Tree consumption via sarracenia|
+|                              | Tree consumption via Sarracenia|
 |                              | poll on broker distributes to  |
 |                              | with 40 tranfer processes      |
 |                              | on eight transfer nodes.       |
+|                              |                                |
 +------------------------------+--------------------------------+
 |                              |                                |
 | 2015 PanAmerican Games       | Fed Ninjo over internet        |
@@ -690,43 +692,47 @@ Timeline:
 |                              | ninjo servers over WAN         |
 |                              | use of caching/proxies reduces |
 |                              | WAN traffic after deployment   |
+|                              |                                |
 +------------------------------+--------------------------------+
+|                              |                                |
 |                              | Consistent, National failover  |
 |                              | for BULLPREP, Scribe, etc...   |
 |                              | (key forecaster applications)  |
 |                              |                                |
 | 2016 Weather Apps.           | implement a *shared drive*     |
-| Now any                      | to provide common view         |
+|                              | to provide common view of      |
+|                              | application state across 9     |
+|                              | offices                        |
 |                              |                                |
 +------------------------------+--------------------------------+
 |                              |                                |
 | 2016 Redundant RADAR Acq.    | C-band radars uplink to two    |
 |                              | locations, first-come,         |
 |                              | first-serve for inputs to URP. |
+|                              |                                |
 +------------------------------+--------------------------------+
 |                              |                                |
 | 2016-2017 HPC Mirroring.     | mirror between to HPC clusters |
 |                              |                                |
 | Gen 1: GPFS Policy           | 12x faster than rsync          |
+|                              | (5 to 40 minutes lag)          |
 |                              |                                |
-|                              | 5 to 40 minutes lag            |
 +------------------------------+--------------------------------+
 |                              |                                |
 | 2018 US FAA radar feed.      | FAA use sarracenia package to  | 
 | ( trial in progress )        | subscribe to Canadian RADAR    |
 |                              | volume scans (C and S Band)    |
+|                              |                                |
 +------------------------------+--------------------------------+
 |                              |                                |
 | 2017-2019 HPC Mirroring.     | mirror between to HPC clusters |
 |                              |                                |
 | Gen 2: shim library          | 72x faster than rsync          |
-|                              |                                |
-|                              | less than 5 minutes lag        |
+|                              | (less than 5 minutes lag)      |
 |                              |                                |
 +------------------------------+--------------------------------+
 
-Description of deployments as of January 2018:
-https://github.com/MetPX/sarracenia/blob/master/doc/deployment_2018.rst
+For more information: `Deployments as of January 2018 <https://github.com/MetPX/sarracenia/blob/master/doc/deployment_2018.rst>`_
 
 
 Statelessness/Crawlable
