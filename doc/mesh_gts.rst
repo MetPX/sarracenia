@@ -666,9 +666,10 @@ Timeline:
 |                              |                                |
 +------------------------------+--------------------------------+
 |                              |                                |
-| 2015 to present              | data mart clients have used    |
-| variety of clients.          | clients provided and/or built  |
+| 2015 to present              | datamart clients have used     |
+| (variety of clients)         | clients provided and/or built  |
 |                              | their own.                     |
+|                              |                                |
 +------------------------------+--------------------------------+
 |                              |                                |
 | 2015 Sarracenia in 10 Minutes| Maps out vision for Sarracenia |
