@@ -642,7 +642,7 @@ Timeline:
 +------------------------------+--------------------------------+
 |                              |                                |
 | 2010 National Unified RADAR  |  Experiment in improving       |
-|      processing outputs      |  reliability by first-come     |
+| processing outputs           |  reliability by first-come     |
 |                              |  first-serve algorithm.        |
 |                              |  for outputs of NURP.          |
 |                              |                                |
@@ -655,23 +655,24 @@ Timeline:
 +------------------------------+--------------------------------+
 |                              |                                |
 | 2013 dd.weather.gc.ca        |  first public deployment       |
+|                              |                                |
 |      dd_subscribe            |                                |
 |                              |                                |
 +------------------------------+--------------------------------+
 |                              |                                |
-| 2013 MetPX/Sarracenia        | Decision to base Next Gen.     |
-|      begins.                 | *WMO* data pump on AMQP.       |
+| 2013 MetPX/Sarracenia begins | Decision to base Next Gen.     |
+|                              | *WMO* data pump on AMQP.       |
 |                              |                                |
 +------------------------------+--------------------------------+
 |                              |                                |
 | 2015 to present              | data mart clients have used    |
-|      variety of clients.     | clients provided and/or built  |
+| variety of clients.          | clients provided and/or built  |
 |                              | their own.                     |
 +------------------------------+--------------------------------+
 |                              |                                |
 | 2015 Sarracenia in 10 Minutes| Maps out vision for Sarracenia |
 | (to give own analysts big    |                                |
-|  picture )                   |                                |
+| picture )                    |                                |
 +------------------------------+--------------------------------+
 |                              |                                |
 | 2015 NWS WMO socket replaced | NWS offers only SFTP tree.     |
