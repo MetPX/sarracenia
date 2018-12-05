@@ -236,8 +236,7 @@ in messages when appropriate.
 
 **rename=<relpath>** 
 
- *DEPRECATED* Do Not use.
- The relative path from the current directory in which to
+ *DEPRECATED* Do Not use.  The relative path from the current directory in which to
  place the file.
 
 **oldname=<path>**
@@ -305,6 +304,17 @@ in messages when appropriate.
  Each name should be unique within all exchanging rabbitmq clusters. It is used to do the transit
  of the products and their notices through the exchanging clusters.
 
+*optional headers follow*
+
+for the file mirroring use case, additional files will be present:
+
+**atime,mtime,mode**
+
+  man 2 stat - the linux/unix standard file metadata:
+  access time, modification time, and permission (mode bits)
+  the times are in the same decimal date format as the date stamp field.
+  the permission string is four characters intended to be interpreted as
+  traditional octal linux/unix permissions.
 
 All other headers are reserved for future use.  
 Headers which are unknown to a given client should be forwarded without modification.

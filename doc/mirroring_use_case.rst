@@ -398,6 +398,28 @@ The above is based on the following client report:
     Files over 600s: 0
  
 
+Overheads
+---------
+
+What is the effect on user jobs of putting the shim library in service?
+When used in large models with good i/o patterns necessary for high 
+performance, the overhead added by the shim library can be negligeable.
+However there is additional overhead introduced whenever a process is spawned,
+closes a file, and when it terminates.  Shell scripts, which 
+function by spawning and reaping processes continuously, see maximum
+impact from the shim library.  This is explored in Issue https://github.com/MetPX/sarrac/issues/15 :
+
+Issue 15 describes the worst case shell script that re-writes a file, one line
+at a time, spawning and reaping a process every time. In that case, we see as
+much as an 18 fold penalty in shell script performance. However re-writing
+the shell script in python can yield a 20 fold improvement in performance, 
+with almost no overhead from the shim library (360 times faster than the
+equivalent shell script with the shim library active.)
+
+So shell scripts that were slow before, may be much slower with the shim
+library, but the accelleration available by re-formulating to more efficient
+methods can have much larger benefits as well.
+
 
 Contributions
 -------------
