@@ -21,8 +21,7 @@
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+#  the Free Software Foundation; version 2 of the License.
 #
 #  This program is distributed in the hope that it will be useful, 
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of 
@@ -423,11 +422,11 @@ class sr_subscribe(sr_instances):
 
            print("\nExamples:\n")    
 
-           print("%s subscribe.conf start # download files and display log in stdout" % self.program_name)
-           print("%s -d subscribe.conf start # discard files after downloaded and display log in stout" % self.program_name)
-           print("%s -l /tmp subscribe.conf start # download files,write log file in directory /tmp" % self.program_name)
-           print("%s -n subscribe.conf start # get notice only, no file downloaded and display log in stout" % self.program_name)
-           print("subscribe.conf file settings, MANDATORY ones must be set for a valid configuration:")
+           print("\n%s subscribe.conf start # download files and display log in stdout" % self.program_name)
+           print("\n%s -d subscribe.conf start # discard files after downloaded and display log in stout" % self.program_name)
+           print("\n%s -l /tmp subscribe.conf start # download files,write log file in directory /tmp" % self.program_name)
+           print("\n%s -n subscribe.conf start # get notice only, no file downloaded and display log in stout" % self.program_name)
+           print("\nsubscribe.conf file settings, MANDATORY ones must be set for a valid configuration:")
            print("\t\t(broker amqp://anonymous:anonymous@dd.weather.gc.ca/ )")
 
         # ---------------------------
@@ -559,6 +558,7 @@ class sr_subscribe(sr_instances):
 
         print("\nDEBUG:")
         print("\t-debug")
+        print("\n for more information: https://github.com/MetPX/sarracenia/blob/master/doc/sr_subscribe.1.rst#documentation\n" )
 
     # =============
     # __on_file__
@@ -2035,8 +2035,12 @@ def test_sr_subscribe():
 def main():
 
     args,action,config,old = startup_args(sys.argv)
-
+ 
     subscribe = sr_subscribe(config,args,action)
+    if action == 'help':
+       subscribe.help()
+       os._exit(0)
+
     subscribe.exec_action(action,old)
 
     os._exit(0)

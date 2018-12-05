@@ -121,6 +121,14 @@ common settings, and methods of specifying them.
 
   A list of settings in a configuration file 
 
+[--defer_posting_to_exit]  EXPERIMENTAL
+--------------------------------------- 
+
+  Honoured only in the shim library. Postpones file posting until the process exits.
+  Default: False. In cases where the same file is repeatedly opened and appended to, this
+  setting can avoid redundant posts. 
+
+
 [-p|--path path1 path2 ... pathN]
 ---------------------------------
 

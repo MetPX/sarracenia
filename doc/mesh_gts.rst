@@ -5,6 +5,7 @@
 
 
 DRAFT: working document, subject to change.
+Original `here: <https://github.com/MetPX/sarracenia/blob/master/doc/mesh_gts.rst>`_
 
 .. contents::
 
@@ -383,11 +384,15 @@ An AMQP notification layer added to the existing file transfer network would:
 - permit ad-hoc exchanges among members across the RMDCN without having to involve third parties.
 
 - can function with only *anonymous* exchanges, to eliminate the need for authentication entirely.
+  additional explicit authentication is available if desired.
 
 - provide a like-for-like mechanism to supplant the traditional GTS
   (similar performance to existing GTS, no huge efficiency penalties).
 
-- transparent (can see what data is on a node, without requiring human exchanges).
+- in contrast to current GTS: no product size limit, can function with any format.
+  inserting data is a matter of picking a file hierarchy (name)
+
+- transparent (can see what data is on any node, without requiring human exchanges).
   (Authorized persons can browse an FTP/SFTP/HTTP tree).
 
 - enable/support arbitrary interconnection topologies among NC/DCPC/GISCs
@@ -518,8 +523,6 @@ node feeds.
 
 
 
-
-
 Simple/Scalable Peer Configurations for Nations
 -----------------------------------------------
 
@@ -620,6 +623,119 @@ implemented across 10 physical servers (likely too many, as all of them are
 lightly loaded). 
 
 
+Maturity
+--------
+
+For Canada, this is not an experimental project beside other initiatives.
+Sarracenia is the focus of around a decade of work and the core of currently
+operational data pumping. It is in operational use to transfer
+tens of terabytes per day in a wide variety of different use cases.
+
+Timeline:
+
++------------------------------+--------------------------------+
+| Date                         | Milestone                      |
++------------------------------+--------------------------------+
+|                              |                                |
+| 2008 for MetPX/Sundew        | Initial experiments            |
+| sender and receiver added.   |                                |
+|                              |                                |
++------------------------------+--------------------------------+
+|                              |                                |
+| 2010 National Unified RADAR  | Experiment in improving        |
+| processing outputs           | reliability by first-come      |
+|                              | first-serve algorithm.         |
+|                              | for outputs of NURP.           |
+|                              |                                |
+|                              | mutliple calls per month ->0   |
+|                              |                                |
++------------------------------+--------------------------------+
+|                              |                                |
+| 2010 WMO CBS-Ext 10 Windhoek |  Initial WMO discussions.      |
+|                              |  work was still experimental.  |
++------------------------------+--------------------------------+
+|                              |                                |
+| 2013 dd.weather.gc.ca        |  first public deployment       |
+|                              |                                |
+|      dd_subscribe            |                                |
+|                              |                                |
++------------------------------+--------------------------------+
+|                              |                                |
+| 2013 MetPX/Sarracenia begins | Decision to base Next Gen.     |
+|                              | *WMO* data pump on AMQP.       |
+|                              |                                |
++------------------------------+--------------------------------+
+|                              |                                |
+| 2015 to present              | datamart clients have used     |
+| (variety of clients)         | clients provided and/or built  |
+|                              | their own.                     |
+|                              |                                |
++------------------------------+--------------------------------+
+|                              |                                |
+| 2015 Sarracenia in 10 Minutes| Maps out vision for Sarracenia |
+| (to give own analysts big    |                                |
+| picture )                    |                                |
++------------------------------+--------------------------------+
+|                              |                                |
+| 2015 NWS WMO socket replaced | NWS offers only SFTP tree.     |
+|                              | Tree consumption via Sarracenia|
+|                              | poll on broker distributes to  |
+|                              | with 40 tranfer processes      |
+|                              | on eight transfer nodes.       |
+|                              |                                |
++------------------------------+--------------------------------+
+|                              |                                |
+| 2015 PanAmerican Games       | Fed Ninjo over internet        |
+|                              | via Sarracenia subscription.   |
++------------------------------+--------------------------------+
+|                              |                                |
+| 2016 Ninjo deployment        | Central office feeds all       |
+|                              | ninjo servers over WAN         |
+|                              | use of caching/proxies reduces |
+|                              | WAN traffic after deployment   |
+|                              |                                |
++------------------------------+--------------------------------+
+|                              |                                |
+|                              | Consistent, National failover  |
+|                              | for BULLPREP, Scribe, etc...   |
+|                              | (key forecaster applications)  |
+|                              |                                |
+| 2016 Weather Apps.           | implement a *shared drive*     |
+|                              | to provide common view of      |
+|                              | application state across 9     |
+|                              | offices                        |
+|                              |                                |
++------------------------------+--------------------------------+
+|                              |                                |
+| 2016 Redundant RADAR Acq.    | C-band radars uplink to two    |
+|                              | locations, first-come,         |
+|                              | first-serve for inputs to URP. |
+|                              |                                |
++------------------------------+--------------------------------+
+|                              |                                |
+| 2016-2017 HPC Mirroring.     | mirror between to HPC clusters |
+|                              |                                |
+| Gen 1: GPFS Policy           | 12x faster than rsync          |
+|                              | (5 to 40 minutes lag)          |
+|                              |                                |
++------------------------------+--------------------------------+
+|                              |                                |
+| 2018 US FAA radar feed.      | FAA use sarracenia package to  | 
+| ( trial in progress )        | subscribe to Canadian RADAR    |
+|                              | volume scans (C and S Band)    |
+|                              |                                |
++------------------------------+--------------------------------+
+|                              |                                |
+| 2017-2019 HPC Mirroring.     | mirror between to HPC clusters |
+|                              |                                |
+| Gen 2: shim library          | 72x faster than rsync          |
+|                              | (less than 5 minutes lag)      |
+|                              |                                |
++------------------------------+--------------------------------+
+
+For more information: `Deployments as of January 2018 <https://github.com/MetPX/sarracenia/blob/master/doc/deployment_2018.rst>`_
+
+
 Statelessness/Crawlable
 -----------------------
 
@@ -635,13 +751,15 @@ Programmability/Interoperability
 --------------------------------
 
 A new application to process sr_post messages can be re-implemented if there
-is a desire to do so, as all design and implementation information, for all
-three implementations (Python, C, node.js) as well as source code, is 
-publically available. The python implementation has an extensive plugin
-interface available to customize processing in a wide variety of ways, such as
-to add file transfer protocols, and perform pre or post processing before
-sending or after receipt of products. Interoperability with Apache NiFi has
-been demonstrated by some clients.
+is a desire to do so, as in addition to full documentation, source code
+for a handful of `implementations <https://github.com/MetPX/sarracenia/blob/master/doc/sarra.rst#implementations>`_
+(Python, C, Go, node.js), is readily publically available. 
+The python implementation has an extensive plugin interface available to 
+customize processing in a wide variety of ways, such as to add file 
+transfer protocols, and perform pre or post processing before sending 
+or after receipt of products. Interoperability with Apache NiFi has
+been demonstrated by some clients, but they declined to release
+the work.
 
 
 Priorities
@@ -665,6 +783,138 @@ on these high priority queues will naturally be shorter than those containing
 other data. Since the mechanism is general, the details of implementation
 do not require rigid standardization, but can be implemented by each
 NMC to fit their needs.
+
+In practice, Canadian deployments achieve sub-second warning forwarding
+using only separate queues for high priority data types, such as warnings
+and RADAR.
+
+
+Inline Content in Messages
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+It is tempting to inline (or include) data within the AMQP messages 
+for *small* data types. The hope is that we avoid a connection initiation 
+and an extra round-trip. The typical example would be weather warnings. 
+Can we improve timeliness by including weather warnings in the AMQP data 
+flow rather than downloading them separately? 
+
+Whenever messaging brokers are benchmarked, the benchmarks always include
+notes about message size, and the performance of the systems in terms
+of messages per second are invariably higher with shorter messages. It
+is fairly obvious that every system imposes a maximum message size, 
+that messages are normally kept in memory, and that the maximum message
+size each peer would need to support would need to be specified in
+order to assure interoperability. It isn't clear that while individual 
+messages could benefit from inlining, that there isn't a cost in overall
+data pump performance that outweighs it.
+
+With the above in mind, there are three possible approaches to 
+limiting message size:  truncation, segmentation, and thresholds.
+
+Truncation: the current WMO limits messages to being less than 500,000
+bytes. This prevents many modern data types from being transferred 
+(radar volume scans, satellite imagery, video, etc...) People
+will suggest only warnings would be sent inline.  The current
+format for warning messages is Common Alerting Protocol, a highly
+flexible XML format which permits things like embedding media. 
+There is no maximum message size for CAP messages, and so one 
+could not guarantee that all CAP messages would fit into any
+truncation limit we would impose.
+
+Segmentation: To avoid truncation one could instead implement
+sending of products segmented into multiple messages.  There is a 
+long, troubled, history of message segmentation in the GTS,
+to the extent that segmentation was purged from GTS when 
+the message size limit was raised to 500,000 bytes.
+Protocols like FTP, HTTP, TCP already do this work. Adding 
+another layer of software that replicates what is done at
+lower levels is unlikely to be helpful. There is likely 
+very little appetite to define message segmentation to be 
+overlaid on AMQP message passing.
+
+Note: The Sarracenia protocol implements file segmentation
+(partitioning) over the data transfer protocols, with a 
+view to using it a far larger segment sizes, on the order 
+of 50 megabytes per segment. The purpose is to overlap file 
+transfer and processing (allowing the beginning of multi-gigabyte 
+files to begin before it is completely delivered.) 
+
+Threshold: It is likely that thresholding is the only reasonable 
+data inlining strategy. If the datum is larger than X bytes, use
+another transport mechanism. This guarantees that only
+data smaller than X bytes will be inlined. It provides
+a message size for all brokers to optimize for. On
+the other hand, it means that one must always implement
+two transfer methods, since one cannot guarantee that
+all data will fit into the AMQP stream, one must provision
+for the alternate data path to be used when the threshold
+is exceeded.
+
+Picking X isn´t obvious. Data types are growing, with
+future or current formats like: AvXML, CAP, ODIM, GIF
+being an order of magnitude or more larger than traditional
+alphanumeric codes (TAC.) Picking an X sufficient
+for such data types is likely to be much harder on 
+the brokers, and no value we can pick will take *all warnings*.
+
+As going forward, the intent is to use this method
+with satellite imagery, RADAR data, and large GRIB data
+sets, it is suspected that a great deal of high priority
+data will exceed any reasonable value of X.  If we don't 
+use separate queues for high priority data, then a 
+downward pressure on X comes from avoiding large 
+messages from overly delaying a higher priority
+message from being sent.
+
+To guarantee warning transfer performance, one would need
+to guarantee it for the large warnings as well, which is
+accomplished quite well using separate queues alone.
+
+It isn´t clear that the value of X we pick for today 
+wil make sense in ten years. A higher X
+will use more memory in the brokers, and will 
+reduce absolute message passing performance. The brokers 
+are the most critical elements of these data pumps, 
+and minimizing complexity there is a benefit.
+
+Another consideration is how much time is saved. The Sarracenia 
+application maintain connections, so it does not cost a 
+connection establishment to transfer a file. One typically 
+operates a number of parallel downloaders sharing a queue 
+to achieve parallelism.  With the Canadian acquisition 
+of data from NWS, there are 40 processes pulling data 
+simultaneously, and there is very little queueing.  It may
+be more important to initiate transfers more quickly
+rather than to accellerate individual streams.
+
+
+A final consideration is the separation of control and data paths. 
+The AMQP end point might not be the data transfer end point.
+In Canadian high performance deployments, there are brokers which are separate 
+servers from the data movers. The broker's only purpose is to distribute
+load among the data mover nodes, where the ideal is for that distribution
+to be as even as possible. In that design, It makes little sense to 
+download messages to the brokers, and may actually delay forwarding
+by adding a hop (a further transfer to a data mover node before
+forwarding.) The Canadian main data pump deployments transfer several 
+hundred messages per second, and we are not sanguine about adding 
+payloads into that mix.
+
+In summary: Without inlining, current deployments already achieve
+sub-second forwarding using separate queues alone. If we wish to
+avoid re-introducing segmentation and reassembly, inlining is 
+likely only practical with a fixed maximum payload size. Determining
+a reasonable threshold is not obvious, and once the threshold is 
+established, one must ensure that high priority traffic above 
+the threshold also transfers quickly, obviating the motivation
+for inlining. High performance deployments often feature brokers 
+completely separate from the data transfer path, where the broker has
+a load distribution function, and simpler data transfer nodes
+do the transport work. A threshold adds complexity in the 
+application, adds load on the broker, which is the most 
+complex element to scale, and so may make the overall system 
+slower. It isn´t clear that the benefits will be worthwhile 
+compared to the overhead cost in real world loads.
 
 
 

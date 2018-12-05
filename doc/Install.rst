@@ -36,6 +36,8 @@ Currently, only the debian packages include man pages.  The guides are only avai
 Redhat/Suse distros (rpm based)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Python distutils on redhat package manager based distributions does not handle dependencies
+with the current packaging, so one needs to manually install them.  For example:
 On fedora 28::
  
   sudo dnf install python3-amqplib
@@ -46,12 +48,19 @@ On fedora 28::
   sudo dnf install python3-psutil
   sudo dnf install python3-paramiko   # adds SFTP support.
 
+  sudo dnf install python3-setuptools # needed to build rpm package.
+
+
+Once the dependencies are in place, one can build an RPM file using setuptools::
+
+  git clone https://github.com/MetPX/sarracenia
+  cd sarracenia
+
   python3 setup.py bdist_rpm
   sudo rpm -i dist/*.noarch.rpm
 
-The RPM´s built do not include dependency information, so these must be manually installed
-with dnf. This procedured installs only the python application (not the C one.)
-no man pages or other documentation are installed.
+This procedured installs only the python application (not the C one.)
+No man pages or other documentation are installed either.
 
 
 PIP
@@ -85,10 +94,13 @@ installation require the installation of a C-Compiler as well, so it gets a bit 
 If you have an existing python installation that works with c-modules within it, then the
 complete package should install with all features.
 
-If you do not have a python environment handy, then the easiest one to get going with
+If you do not have a python environment handy, then one choice to get going with
 is winpython, which includes many scientifically relevant modules, and will easily install
 all dependencies for Sarracenia. You can obtain winpython from `<http://winpython.github.io/>`_ 
 (note: select python version >3 ) Then one can install with pip (as above.)
+
+Another python environment choice is Anaconda.
+
 
 Packages
 ~~~~~~~~
