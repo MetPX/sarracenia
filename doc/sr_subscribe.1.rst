@@ -2014,8 +2014,6 @@ look in the *plugins* directory in the users config tree, then in the site
 directory, then in the sarracenia package itself, and finally it will look remotely.
 
 
-
-
 SEE ALSO
 ========
 

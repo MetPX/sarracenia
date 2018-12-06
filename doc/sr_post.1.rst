@@ -4,7 +4,7 @@
 =========
 
 ------------------------------------------------
-Publish the Availability of a File to Subcribers
+Publish the Availability of a File to Subscribers
 ------------------------------------------------
 
 :Manual section: 1 
@@ -340,7 +340,18 @@ post if that is the case. (default: True)
 
   Add a <name> header with the given value to advertisements. Used to pass strings as metadata.
 
+[-header sum=<flag,sum>]
+~~~~~~~~~~~~~~~~~~~~~~~~
 
+  Checksums can be attached to a file by specifying the sum string value in the header on startup with the 
+  'a' (application) scheme indicated::
+
+      sr_post -header sum=a,65537 <fileName(s)> <configName> start|foreground
+
+  where **fileName(s)** can be a list of space separated files or a value containing regex syntax (path must
+  be specified if not located in the current directory). The **user.sr_sum** and **user.sr_mtime** extended 
+  attributes of the files will be updated before being posted. These attributes can also be set using 
+  commandline utilities like xattr. 
 
 
 ADMINISTRATOR SPECIFIC

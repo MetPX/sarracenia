@@ -568,7 +568,7 @@ class sr_post(sr_instances):
                attr = xattr.xattr(path)
                if 'user.sr_sum' in attr:
                   if 'user.sr_mtime' in attr:
-                     if attr['user.sr_mtime'].decode("utf-8") == self.msg.headers['mtime']:
+                     if attr['user.sr_mtime'].decode("utf-8") >= self.msg.headers['mtime']:
                         self.logger.debug("sum set by xattr")
                         sumstr = attr['user.sr_sum'].decode("utf-8")
                         return sumstr
