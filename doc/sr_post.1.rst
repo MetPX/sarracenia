@@ -121,12 +121,6 @@ common settings, and methods of specifying them.
 
   A list of settings in a configuration file 
 
-[--defer_posting_to_exit]  EXPERIMENTAL
---------------------------------------- 
-
-  Honoured only in the shim library. Postpones file posting until the process exits.
-  Default: False. In cases where the same file is repeatedly opened and appended to, this
-  setting can avoid redundant posts. 
 
 
 [-p|--path path1 path2 ... pathN]
@@ -239,6 +233,30 @@ common settings, and methods of specifying them.
 
   With the *rename*  option, the user can suggest a destination path to its files. If the given
   path ends with '/' it suggests a directory path...  If it doesn't, the option specifies a file renaming.
+
+[--shim_defer_posting_to_exit] EXPERIMENTAL
+------------------------------------------- 
+
+  Honoured only in the shim library. Postpones file posting until the process exits.
+  Default: False. In cases where the same file is repeatedly opened and appended to, this
+  setting can avoid redundant posts.  (default: False)
+
+[--shim_post_once] EXPERIMENTAL
+-------------------------------
+
+  The shim_post_once does duplicate suppression based only on the file
+  name within a single process. the shim library cannot use the duplicate
+  suppression cache used by other calls, because the cache is not multi-thread
+  safe (expects to be run by a single task.) A per process cache might
+  *do the right thing*. (default: False)
+
+[--shim_skip_parent_open_files] EXPERIMENTAL
+------------------------------------------
+ 
+The shim_skip_ppid_open_files option means that a process checks
+whether the parent process has the same file open, and does not
+post if that is the case. (default: True)
+
 
 [--sleep <time> ]
 -----------------
