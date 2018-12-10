@@ -236,8 +236,7 @@ in messages when appropriate.
 
 **rename=<relpath>** 
 
- *DEPRECATED* Do Not use.  The relative path from the current directory in which to
- place the file.
+ The relative path from the current directory in which to place the file.
 
 **oldname=<path>**
 **newname=<path>**
