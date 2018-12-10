@@ -27,8 +27,8 @@ On Ubuntu 14.04/16.04/17.10/18.04 and derivatives of same::
 
   sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx
   sudo apt-get update
+  sudo apt-get install python3-paramiko   # required SFTP support.
   sudo apt-get install python3-metpx-sarracenia  # only supports HTTP/HTTPS
-  sudo apt-get install python3-paramiko   # adds SFTP support.
   sudo apt-get install sarrac # optional C client.
 
 Currently, only the debian packages include man pages.  The guides are only available in the source repository.
@@ -72,6 +72,7 @@ python in virtual env, where it is more practical to install the package using
 pip (python install package) from `<http://pypi.python.org/>`_.  It is straightforward
 to do that::
 
+  sudo pip install paramiko
   sudo pip install metpx-sarracenia
 
 and to upgrade after the initial installation::
