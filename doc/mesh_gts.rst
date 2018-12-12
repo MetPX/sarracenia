@@ -1,11 +1,12 @@
 
 --------------------------------------------------
- Mesh-Style Data Exchange for the WIS-GTS in 2018 
+ Mesh-Style Data Exchange for the WIS-GTS in 2019 
 --------------------------------------------------
 
 
 DRAFT: working document, subject to change.
 Original `here: <https://github.com/MetPX/sarracenia/blob/master/doc/mesh_gts.rst>`_
+( https://github.com/MetPX/sarracenia/blob/master/doc/mesh_gts.rst )
 
 .. contents::
 
@@ -47,14 +48,15 @@ data using standardized open methods, with a straightforward mapping
 from the metadata. As the proposed implementation uses
 existing standards, the WMO does not need to define any additional ones, 
 and interoperability and access for other players in the broader
-society should be straightforward.  
+society should be straightforward. The sr_post protocol, and
+a number of existing implementations of it, are a great fit.
 
-While it is believed that this technology has great potential
+While it is believed that sr_post protocol has great potential
 to improve WMO data exchange, it will take a few years to adopt it,
-and prior to adoption, there needs to be agreement on the approach.
+and prior to adoption, there needs to be agreement on the file tree content.
 Today, the next step would be to find some partner countries with which 
 to engage in some experimental data exchanges to validate the approach,
-and be able to collaboratively determine implementation details.
+and collaboratively determine implementation details.
 
 .. [1] *real-time*, in meteorological circles refers to *immediately* or ASAP,
  which can mean anything between a few seconds and a few minutes. This is very 
@@ -277,15 +279,11 @@ A separate but related cost of polling is the bandwidth for the polling data.
 By forwarding notifications on receipt, rather than having to service polls, one
 reduces overall load, eliminating the vast majority of read traffic.
 
-
-.. note: not clear at all that polling traffic is significant from this example.
- am I wrong, is the example wrong? dunno. FIXME.
-
 A real-world example of bandwidth savings, from 2015, would be that of a German 
 company that began retrieving NWP outputs from the Canadian datamart using web-scraping 
-(periodic polling of the directory) and when they transitioned to using the 
+(periodic polling of the directory.) When they transitioned to using the 
 AMQP push method, the total bytes downloaded went from 90 Gbytes/day to
-60 Gbytes per day for the same data being transferred. 30 GBytes/day was just 
+60 Gbytes per day for the same data obtained. 30 GBytes/day was just 
 (polling) information about whether new model run outputs were available.
 
 The requirements for a store and forward system:
@@ -609,6 +607,9 @@ was inspired by the GISC data exchange problem, it is in no way specialized to
 weather forecasting, and the plan is to offer it to other for in other domains
 to support high speed data transfers. 
 
+FIXME: add diagram comparing size of various code bases.
+
+
 Sarracenia's reference implementation is less than 20 thousand lines in Python 
 3. Clients have contributed open source partial implementations in javascript,
 C#, and Go, and have implemented another in C was done to support the 
@@ -651,13 +652,21 @@ Timeline:
 |                              |                                |
 +------------------------------+--------------------------------+
 |                              |                                |
-| 2010 WMO CBS-Ext 10 Windhoek |  Initial WMO discussions.      |
-|                              |  work was still experimental.  |
+| 2010 WMO CBS-Ext 10 Windhoek | Initial WMO discussions.       |
+|                              | mesh model for GISCs conceived |
+|                              | (work was still experimental)  |
+|                              |                                |
 +------------------------------+--------------------------------+
+|                              | first public deployment        |
+| 2013 dd.weather.gc.ca        |                                |
+| to present...                | some used provided client      |
+| dd_subscribe (initial client)| software, others wrote their   |
+|                              | own. handful of implementations|
+|                              | now.                           |
 |                              |                                |
-| 2013 dd.weather.gc.ca        |  first public deployment       |
-|                              |                                |
-|      dd_subscribe            |                                |
+|                              | one German client for          |
+|                              | Grib output download traffic   |
+|                              | saves 30 G/day of bandwidth    |
 |                              |                                |
 +------------------------------+--------------------------------+
 |                              |                                |

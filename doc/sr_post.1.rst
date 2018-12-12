@@ -4,7 +4,7 @@
 =========
 
 ------------------------------------------------
-Publish the Availability of a File to Subcribers
+Publish the Availability of a File to Subscribers
 ------------------------------------------------
 
 :Manual section: 1 
@@ -121,12 +121,6 @@ common settings, and methods of specifying them.
 
   A list of settings in a configuration file 
 
-[--defer_posting_to_exit]  EXPERIMENTAL
---------------------------------------- 
-
-  Honoured only in the shim library. Postpones file posting until the process exits.
-  Default: False. In cases where the same file is repeatedly opened and appended to, this
-  setting can avoid redundant posts. 
 
 
 [-p|--path path1 path2 ... pathN]
@@ -240,6 +234,30 @@ common settings, and methods of specifying them.
   With the *rename*  option, the user can suggest a destination path to its files. If the given
   path ends with '/' it suggests a directory path...  If it doesn't, the option specifies a file renaming.
 
+[--shim_defer_posting_to_exit] EXPERIMENTAL
+------------------------------------------- 
+
+  Honoured only in the shim library. Postpones file posting until the process exits.
+  Default: False. In cases where the same file is repeatedly opened and appended to, this
+  setting can avoid redundant posts.  (default: False)
+
+[--shim_post_once] EXPERIMENTAL
+-------------------------------
+
+  The shim_post_once does duplicate suppression based only on the file
+  name within a single process. the shim library cannot use the duplicate
+  suppression cache used by other calls, because the cache is not multi-thread
+  safe (expects to be run by a single task.) A per process cache might
+  *do the right thing*. (default: False)
+
+[--shim_skip_parent_open_files] EXPERIMENTAL
+------------------------------------------
+ 
+The shim_skip_ppid_open_files option means that a process checks
+whether the parent process has the same file open, and does not
+post if that is the case. (default: True)
+
+
 [--sleep <time> ]
 -----------------
 
@@ -322,7 +340,18 @@ common settings, and methods of specifying them.
 
   Add a <name> header with the given value to advertisements. Used to pass strings as metadata.
 
+[-header sum=<flag,sum>]
+~~~~~~~~~~~~~~~~~~~~~~~~
 
+  Checksums can be attached to a file by specifying the sum string value in the header on startup with the 
+  'a' (application) scheme indicated::
+
+      sr_post -header sum=a,65537 <fileName(s)> <configName> start|foreground
+
+  where **fileName(s)** can be a list of space separated files or a value containing regex syntax (path must
+  be specified if not located in the current directory). The **user.sr_sum** and **user.sr_mtime** extended 
+  attributes of the files will be updated before being posted. These attributes can also be set using 
+  commandline utilities like xattr. 
 
 
 ADMINISTRATOR SPECIFIC
