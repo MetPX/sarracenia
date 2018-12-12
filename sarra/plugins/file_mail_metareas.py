@@ -10,8 +10,13 @@ Usage:
 
 	on_file file_mail_metareas.py
 	file_mail_metareas_user <user_emails>
+	file_mail_metareas_telnet telnet://user@host
 
 	where <user_emails> is the space-separated email list where the EGC command is being sent.
+	The email will also contain the telnet credentials to send the egc. The file_mail_metareas_telnet
+	must contain the user and host in the above format, where the password is taken from your 
+	~/.config/sarra/credentials.conf file, where it must follow the format: 
+	telnet://user:password@host
 
 The EGC code (i.e: egc ocean,c1,c2,c3,c4,c5) in the subject field to represent the following:
 
@@ -28,10 +33,13 @@ The EGC code (i.e: egc ocean,c1,c2,c3,c4,c5) in the subject field to represent t
 
 import logging, subprocess, sys, os, os.path, string
 from stat import ST_SIZE
+try: from sr_credentials import *
+except: from sarra.sr_credentials import * 
 
 class MetMailer(object):
 	def __init__(self, parent):
 		parent.declare_option('file_mail_metareas_user')
+		parent.declare_option('file_mail_metareas_telnet')
 		parent.logger.debug("file_mail_metareas init")
 
 	def on_file(self, parent):
@@ -44,10 +52,23 @@ class MetMailer(object):
 		ipath = parent.msg.new_relpath
 		subp = parent.msg.new_file.split('_')
 
-		# TODO: grab credentials from credentials.conf that were given in a config option
-		tlx = "a1: " + "<host here>"
-		usr = "Userid: " + "<userid here>"
-		pw = "Password: " + "<password here>"
+		# Grabs credentials from credentials.conf that were given in a config option
+		ok, details = parent.credentials.get(parent.file_mail_metareas_telnet[0])
+		if ok:
+			setting = details.url
+			user = setting.username
+			password = setting.password
+			server = setting.hostname
+			logger.debug("file_mail_metareas telnet scheme valid")
+		else:
+			user = ""
+			password = ""
+			server = ""
+			logger.debug("file_mail_metareas telnet scheme invalid, not being sent in email")
+
+		tlx = "al: " + server if server else ""
+		usr = "Userid: " + user if user else ""
+		pw = "Password: " + password if password else ""
 
 		fil = "/tmp/metareas.tmp"
 
@@ -143,8 +164,10 @@ class MetMailer(object):
 					return False
 			except:
 				return False	
-			logger.info("(%i Bytes) File %s mailed to %s" % (fsize, ipath, useremail))
+			logger.info("file_mail_metareas (%i Bytes) File %s mailed to %s" % (fsize, ipath, useremail))
 
+		try: os.remove(fil)
+		except: pass
 		return True
 		
 
