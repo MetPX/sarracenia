@@ -6,16 +6,16 @@ Sends metareas Enhanced Group Call (EGC) command to LES12 over telnet given an M
 Parses the filename to determine what kind of EGC info to send.
 
 Usage:
-        In an sr_subscribe config:
+	In an sr_subscribe config:
 
-        on_file file_send_egc_les.py
-        file_send_egc_les_telnet telnet://user@host
+	on_file file_send_egc_les.py
+	file_send_egc_les_telnet telnet://user@host
 	file_send_egc_les_timeout timeout
 
 	where file_send_egc_les_timeout is the timeout for the telnet connection to LES12, and
-        file_send_egc_les_telnet must contain the user and host in the above format, where the 
+	file_send_egc_les_telnet must contain the user and host in the above format, where the 
 	password is taken from your ~/.config/sarra/credentials.conf file, following the format: 
-        telnet://user:password@host[:port]/ If port isn't specified, it will use telnet's
+	telnet://user:password@host[:port]/ If port isn't specified, it will use telnet's
 	default port number, 23.
 
 The EGC code (i.e: egc ocean,c1,c2,c3,c4,c5) in the subject field to represent the following:
