@@ -592,7 +592,7 @@ These options define which messages (URL notifications) the program receives:
  - **exchange      <name>         (default: xpublic)** 
  - **exchange_suffix      <name>  (default: None)** 
  - **topic_prefix  <amqp pattern> (default: v02.post -- developer option)** 
- - **subtopic      <amqp pattern> (subtopic need to be set)** 
+ - **subtopic      <amqp pattern> (no default, must appear after exchange)** 
 
 exchange <name> (default: xpublic) and exchange_suffix
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -602,11 +602,14 @@ private data flow for their own processing. Users can declare their own exchange
 that always begin with *xs_<username>*, so to save having to specify that each
 time, one can just set *exchange_suffix kk* which will result in the exchange
 being set to *xs_<username>_kk* (overriding the *xpublic* default). 
+These settings must appear in the configuration file before the corresponding 
+*topic_prefix* and *subtopic* settings.
 
 subtopic <amqp pattern> (subtopic need to be set)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Several topic options may be declared. To give a correct value to the subtopic,
+Within an exchange's postings, the subtopic setting narrows the product selection.
+To give a correct value to the subtopic,
 one has the choice of filtering using **subtopic** with only AMQP's limited wildcarding and
 length limited to 255 encoded bytes, or the more powerful regular expression 
 based  **accept/reject**  mechanisms described below. The difference being that the 
@@ -652,6 +655,17 @@ note:
       Review whether asterisks in directory names in topics should be URL-encoded.
       Review whether periods in directory names in topics should be URL-encoded.
  
+One can use multiple bindings to multiple exchanges as follows::
+
+  exchange A
+  subtopic directory1.*.directory2.#
+
+  exchange B
+  subtopic *.directory4.#
+
+Will declare two separate bindings to two different exchanges, and two different file trees.
+
+
 
 Client-side Filtering
 ---------------------
