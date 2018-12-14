@@ -257,6 +257,9 @@ the following shim\_ options.
   subscribers will not be able to make copies quickly enough in any event, so
   there is little benefit, in say, 100 posts of the same file in the same second.
   It is wise set an upper limit on the frequency of posting a given file. (default: 5s)
+  Note: if a file is still open, or has been closed after its previous post, then
+  during process exit processing it will be posted again, even if the interval
+  is not respected, in order to provide the most accurate final post.
 
 
 [--shim_skip_parent_open_files] EXPERIMENTAL
