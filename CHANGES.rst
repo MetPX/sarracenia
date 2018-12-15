@@ -6,6 +6,15 @@ lists all changes between versions.
 
 **git repo**
 
+* new: print exceptions on failure of makedirs, so "permission denied" is obvious
+* documentation: shim\_ options for sarrac
+* documentation: made importance of ordering between exchange and subtopic options clearer 
+* documentation: change installation instructions so that paramiko is always installed.
+* documentation: removed deprecation of *rename* header, there are valid use cases for it.
+* documentation: extensive revision of mesh_gts briefing.
+* bugfix: copyright is GPLv2 only.  Notices incorrectly listed GPLv2 OR LATER.
+* bugfix: more progress on issue #54 (application-defined checksums with extended attributes.)
+
 **2.18.11.b5**
 
 * bugfix:  reverting xattr dependency.
@@ -24,6 +33,7 @@ lists all changes between versions.
 * bugfix:  windows: Issue #54 support is broken on windows, disabled there.
 *          print slashes the right way round on windows in more cases.
 *
+
 **2.18.11.b1**
 
 * New:     Issue #54 initial support for *fake* (application defined) checksums.
