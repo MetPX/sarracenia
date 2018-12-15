@@ -6,6 +6,8 @@ lists all changes between versions.
 
 **git repo**
 
+**2.18.12.b4**
+
 * new: print exceptions on failure of makedirs, so "permission denied" is obvious
 * documentation: shim\_ options for sarrac
 * documentation: made importance of ordering between exchange and subtopic options clearer 
