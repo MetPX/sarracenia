@@ -12,6 +12,7 @@ lists all changes between versions.
 * documentation: change installation instructions so that paramiko is always installed.
 * documentation: removed deprecation of *rename* header, there are valid use cases for it.
 * documentation: extensive revision of mesh_gts briefing.
+* bugfix: in pitcher_client.conf sample config, order of echange_suffix and subtopic option corrected.
 * bugfix: copyright is GPLv2 only.  Notices incorrectly listed GPLv2 OR LATER.
 * bugfix: more progress on issue #54 (application-defined checksums with extended attributes.)
 
