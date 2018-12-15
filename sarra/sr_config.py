@@ -152,12 +152,21 @@ class sr_config:
                  os.symlink( "." , var )
 
 
-        try    : os.makedirs(self.user_config_dir, 0o775,True)
-        except : pass
-        try    : os.makedirs(self.user_plugins_dir,0o775,True)
-        except : pass
-        try    : os.makedirs(self.http_dir,        0o775,True)
-        except : pass
+        try: 
+            os.makedirs(self.user_config_dir, 0o775,True)
+        except Exception as ex:
+            self.logger.warning( "making %s: %s" % ( self.user_config_dir, ex ) )
+
+        try: 
+            os.makedirs(self.user_plugins_dir,0o775,True)
+        except Exception as ex:
+            self.logger.warning( "making %s: %s" % ( self.user_plugins_dir, ex ) )
+
+        try: 
+            os.makedirs(self.http_dir, 0o775,True)
+        except Exception as ex:
+            self.logger.warning( "making %s: %s" % ( self.user_http_dir, ex ) )
+
 
         # default config files
         defn = self.user_config_dir + os.sep + "default.conf"
@@ -564,8 +573,10 @@ class sr_config:
         # create user_log_dir 
 
         self.logger.debug("sr_config user_log_dir  %s " % self.user_log_dir ) 
-        try    : os.makedirs(self.user_log_dir, 0o775,True)
-        except : pass
+        try: 
+            os.makedirs(self.user_log_dir, 0o775,True)
+        except Exception as ex:
+            self.logger.warning( "making %s: %s" % ( self.user_log_dir, ex ) )
 
         # finalize user_cache_dir
 
@@ -579,8 +590,10 @@ class sr_config:
 
         if not self.program_name in [ 'sr', 'sr_config' ]:
            self.logger.debug("sr_config user_cache_dir  %s " % self.user_cache_dir ) 
-           try    : os.makedirs(self.user_cache_dir,  0o775,True)
-           except : pass
+           try: 
+                os.makedirs(self.user_cache_dir,  0o775,True)
+           except Exception as ex:
+                self.logger.warning( "making %s: %s" % ( self.user_cache_dir, ex ) )
 
     def declare_option(self,option):
         self.logger.debug("sr_config declare_option")

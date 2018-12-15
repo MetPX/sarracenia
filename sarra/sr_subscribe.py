@@ -1045,8 +1045,11 @@ class sr_subscribe(sr_instances):
 
                     # make sure directory exists, create it if not
                     if not os.path.isdir(newdir):
-                       try   : os.makedirs(newdir,0o775,True)
-                       except: pass
+                       try: 
+                           os.makedirs(newdir,0o775,True)
+                       except Exception as ex:
+                           self.logger.warning( "making %s: %s" % ( newdir, ex ) )
+
                        #MG FIXME : except: return False  maybe ?
 
                     # move
@@ -1061,7 +1064,8 @@ class sr_subscribe(sr_instances):
                                self.logger.info("move %s to %s (rename)" % (oldpath,newpath))
                             if self.reportback: self.msg.report_publish(201, 'moved')
                             need_download = False
-                    except: pass
+                    except Exception as ex:
+                            self.logger.warning( "mv %s %s: %s" % ( oldpath, newdir, ex ) )
                     #MG FIXME : except: return False  maybe ?
 
                  # if the newpath exists log a message in debug only
@@ -1104,9 +1108,10 @@ class sr_subscribe(sr_instances):
               if os.path.exists(oldpath) : 
 
                  if not os.path.isdir(self.msg.new_dir):
-                    try   : os.makedirs(self.msg.new_dir,0o775,True)
-                    except: pass
-                    #MG FIXME : except: return False  maybe ?
+                    try: 
+                        os.makedirs(self.msg.new_dir,0o775,True)
+                    except Exception as ex:
+                        self.logger.warning( "making %s: %s" % ( self.msg.new_dir, ex ) )
 
                  # move
                  ok = True
@@ -1202,8 +1207,10 @@ class sr_subscribe(sr_instances):
               return True
 
            if not os.path.isdir(self.msg.new_dir):
-              try   : os.makedirs(self.msg.new_dir,0o775,True)
-              except: pass
+              try: 
+                 os.makedirs(self.msg.new_dir,0o775,True)
+              except Exception as ex:
+                 self.logger.warning( "making %s: %s" % ( self.msg.new_dir, ex ) )
 
            ok = True
            try : 
@@ -1254,8 +1261,11 @@ class sr_subscribe(sr_instances):
               return False
 
         # pass no warning it may already exists
-        try    : os.makedirs(self.msg.new_dir,0o775,True)
-        except : pass
+        try: 
+           os.makedirs(self.msg.new_dir,0o775,True)
+        except Exception as ex: 
+           self.logger.warning( "making %s: %s" % ( self.msg.new_dir, ex ) )
+           
         try    : os.chdir(self.msg.new_dir)
         except : self.logger.error("could not cd to directory %s" % self.msg.new_dir)
 
@@ -1337,8 +1347,8 @@ class sr_subscribe(sr_instances):
                           onfly_sumstr = self.msg.sumflg+','+self.msg.onfly_checksum
                           if attr['user.sr_sum'] != onfly_sumstr:
                               xattr.setxattr(path, 'user.sr_sum', bytes(onfly_sumstr, "utf-8"))
-                      except:
-                          pass
+                      except Exception as ex:
+                          self.logger.warning( "failed to set sattributes %s: %s" % ( path, ex ) )
                       self.msg.set_sum(self.msg.sumflg,self.msg.onfly_checksum)
                       if self.reportback: self.msg.report_publish(205,'Reset Content : checksum')
 
