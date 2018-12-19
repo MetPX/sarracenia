@@ -598,16 +598,25 @@ Ces options définissent les messages (notifications URL) que le programme reço
  - **topic_prefix  <amqp pattern> (default: v02.post -- developer option)** 
  - **subtopic      <amqp pattern> (sousthème au choix de l´utilisateur)** 
 
+exchange <nom> (defaut: xpublic) et exchange_suffix
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 La convention sur les pompes de données est d'utiliser l'échange *xpublic*. 
 Les utilisateurs peuvent établir les flux de données privées pour leur propre 
 traitement. Les utilisateurs peuvent déclarer leurs propres échanges,
 qui commencent toujours par *xs_<nom_utilisateur>*. Pour éviter d'avoir à 
 spécifier que chaque temps, on peut déclarer *exchange_suffix kk* qui se 
 traduira résultera dans la déclaration de l´échange: *xs_<username>_kkk* (remplaçant 
-la valeur par défaut *xpublic*).
+la valeur par défaut *xpublic*).  Il faut établir la valeur de l´*exchange* auquel
+on s´abonne avant de passer à *subtopic* pour les filtrer.
 
-Plusieurs options de thème peuvent être déclarées. Donner une valeur correcte au sous-thème,
-On a le choix de filtrer en utilisant **subtopic** avec seulement les *wildcard* (caractères 
+subtopic <patron amqp> (doit être spécifié)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+On se sert de subtopic afin de raffiner la selection de produits parmi la gamme publié
+sur un *exchange* donné. Plusieurs options de thème (*subtopic*) peuvent être déclarées. 
+Donner une valeur correcte au sous-thème, On a le choix de filtrer en utilisant
+**subtopic** avec seulement les *wildcard* (caractères 
 de substitution) limité de l'AMQP et longueur limitée à 255 octets codés, ou bien les
 expressions régulières plus puissantes, avec les options **accept/reject** décrits 
 ci-dessous. Tandis que Le filtrage AMQP est appliqué par le courtier lui-même, 
@@ -654,6 +663,17 @@ FIXME :
       les dièses sont encodés, mais pas vu le code pour les autres valeurs.
       Vérifiez si les astérisques dans les noms de répertoires des thèmes doivent être codés par URL.
       Vérifiez si les périodes dans les noms de répertoires dans les rubriques doivent être codées par URL.
+
+On peut plusiers liaisons au plusieurs *exchange* :: 
+
+  exchange A
+  subtopic directory1.*.directory2.#
+
+  exchange B
+  subtopic *.directory4.#
+
+ce qui déclare deux abonnements à deux arborescences publiés par deux *exchange*  distincts.
+
 
 
 Filtrage Côté Client

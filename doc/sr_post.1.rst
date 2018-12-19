@@ -3,9 +3,9 @@
  SR_Post
 =========
 
-------------------------------------------------
+-------------------------------------------------
 Publish the Availability of a File to Subscribers
-------------------------------------------------
+-------------------------------------------------
 
 :Manual section: 1 
 :Date: @Date@
@@ -234,44 +234,56 @@ common settings, and methods of specifying them.
   With the *rename*  option, the user can suggest a destination path to its files. If the given
   path ends with '/' it suggests a directory path...  If it doesn't, the option specifies a file renaming.
 
+*sr_post*, and *sr_watch* use a file based model based on a process and a disk cache,
+whose design is single threaded. The shim library is typically used by many processes
+at once, and would have resource contention and/or corruption issues with the cache.
+The shim library therefore has a purely memory-based cache, tunable with 
+the following shim\_ options. 
+
+
 [--shim_defer_posting_to_exit] EXPERIMENTAL
 ------------------------------------------- 
 
-  Honoured only in the shim library. Postpones file posting until the process exits.
-  Default: False. In cases where the same file is repeatedly opened and appended to, this
+  Postpones file posting until the process exits.
+  In cases where the same file is repeatedly opened and appended to, this
   setting can avoid redundant posts.  (default: False)
 
-[--shim_post_once] EXPERIMENTAL
--------------------------------
+[--shim_post_minterval *interval* ] EXPERIMENTAL
+------------------------------------------------
 
-  The shim_post_once does duplicate suppression based only on the file
-  name within a single process. the shim library cannot use the duplicate
-  suppression cache used by other calls, because the cache is not multi-thread
-  safe (expects to be run by a single task.) A per process cache might
-  *do the right thing*. (default: False)
+  If a file is opened for writing and closed multiple times within the interval,
+  it will only be posted once. When a file is written to many times, particularly 
+  in a shell script, it makes for many posts, and shell script affects performance.  
+  subscribers will not be able to make copies quickly enough in any event, so
+  there is little benefit, in say, 100 posts of the same file in the same second.
+  It is wise set an upper limit on the frequency of posting a given file. (default: 5s)
+  Note: if a file is still open, or has been closed after its previous post, then
+  during process exit processing it will be posted again, even if the interval
+  is not respected, in order to provide the most accurate final post.
+
 
 [--shim_skip_parent_open_files] EXPERIMENTAL
-------------------------------------------
+--------------------------------------------
  
-The shim_skip_ppid_open_files option means that a process checks
-whether the parent process has the same file open, and does not
-post if that is the case. (default: True)
+  The shim_skip_ppid_open_files option means that a process checks
+  whether the parent process has the same file open, and does not
+  post if that is the case. (default: True)
 
 
-[--sleep <time> ]
+[--sleep *time* ]
 -----------------
 
-   **This option is only available in the c implementation (sr_cpost)**
+  **This option is only available in the c implementation (sr_cpost)**
 
-   When the option is set, it transforms cpost into a sr_watch, with *sleep* being the time to wait between 
-   generating events.  When files are written frequently, it is counter productive to produce a post for 
-   every change, as it can produce a continuous stream of changes where the transfers cannot be done quickly 
-   enough to keep up.  In such circumstances, one can group all changes made to a file
-   in *sleep* time, and produce a single post.
+  When the option is set, it transforms cpost into a sr_watch, with *sleep* being the time to wait between 
+  generating events.  When files are written frequently, it is counter productive to produce a post for 
+  every change, as it can produce a continuous stream of changes where the transfers cannot be done quickly 
+  enough to keep up.  In such circumstances, one can group all changes made to a file
+  in *sleep* time, and produce a single post.
 
-   NOTE::
-       in sr_cpost, when combined with force_polling (see `sr_watch(1) <sr_watch.1.rst>`_ ) the sleep 
-       interval should not be less than about five seconds, as it may miss posting some files.
+  NOTE::
+      in sr_cpost, when combined with force_polling (see `sr_watch(1) <sr_watch.1.rst>`_ ) the sleep 
+      interval should not be less than about five seconds, as it may miss posting some files.
 
    
 
