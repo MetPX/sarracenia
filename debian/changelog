@@ -1,3 +1,17 @@
+metpx-sarracenia (2.18.12b4) unstable; urgency=medium
+
+  * new: print exceptions on failure of makedirs, so "permission denied" is obvious
+  * documentation: shim\_ options for sarrac
+  * documentation: made importance of ordering between exchange and subtopic options clearer 
+  * documentation: change installation instructions so that paramiko is always installed.
+  * documentation: removed deprecation of *rename* header, there are valid use cases for it.
+  * documentation: extensive revision of mesh_gts briefing.
+  * bugfix: in pitcher_client.conf sample config, order of echange_suffix and subtopic option corrected.
+  * bugfix: copyright is GPLv2 only.  Notices incorrectly listed GPLv2 OR LATER.
+  * bugfix: more progress on issue #54 (application-defined checksums with extended attributes.)
+
+ -- Peter Silva <peter@blacklab>  Sat, 15 Dec 2018 13:04:13 -0500
+
 metpx-sarracenia (2.18.11b6) unstable; urgency=medium
 
   * missed a commit... just completing b5 changes... 
