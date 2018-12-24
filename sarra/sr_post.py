@@ -1297,9 +1297,6 @@ class sr_post(sr_instances):
         addmodule = namedtuple('AddModule', ['post'])
         self.poster = addmodule(self.post_url)
 
-        if self.poster.post == self.post_url :
-           self.logger.debug("MY POSTER TRICK DID WORK !!!")
-
     def post_url(self,post_exchange,url,to_clusters,\
                       partstr=None,sumstr=None,rename=None,filename=None, \
                       mtime=None,atime=None,mode=None,link=None):
