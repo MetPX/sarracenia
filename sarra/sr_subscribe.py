@@ -1813,13 +1813,15 @@ class sr_subscribe(sr_instances):
         # if posting
 
         if self.post_broker :
-           self.post_hc = self.consumer.hc
            if self.post_broker != self.broker :
               self.post_hc = HostConnect( logger = self.logger )
               self.post_hc.set_pika( self.use_pika )
               self.post_hc.set_url( self.post_broker )
               self.post_hc.loop=False
               self.post_hc.connect()
+           else:
+              self.post_hc = self.consumer.hc
+
            self.declare_exchanges(cleanup=True)
 
         # caching

@@ -378,28 +378,29 @@ class sr_consumer:
 
         if self.build_connection(loop=False):
             self.hc.queue_delete(self.queue_name)
+            if self.report_manage :
+                self.hc.exchange_delete(self.report_exchange)
 
         try    :
                  if hasattr(self,'queuepath') :
                     os.unlink(self.queuepath)
         except : pass
-        if self.report_manage :
-           self.hc.exchange_delete(self.report_exchange)
 
         self.retry.cleanup()
 
 
     def declare(self):
         self.logger.debug("sr_consume declare")
-        self.build_connection()
-        self.queue_declare(build=True)
-        if self.report_manage :
-           self.hc.exchange_declare(self.report_exchange)
+
+        if self.build_connection(loop=False):
+            self.queue_declare(build=True)
+            if self.report_manage :
+               self.hc.exchange_declare(self.report_exchange)
                   
     def setup(self):
         self.logger.debug("sr_consume setup")
-        self.build_connection()
-        self.build_queue()
-        if self.report_manage :
-           self.hc.exchange_declare(self.report_exchange)
+        if self.build_connection(loop=False):
+            self.build_queue()
+            if self.report_manage :
+               self.hc.exchange_declare(self.report_exchange)
 
