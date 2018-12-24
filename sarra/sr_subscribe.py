@@ -1807,7 +1807,7 @@ class sr_subscribe(sr_instances):
 
         # consumer declare
 
-        self.consumer = sr_consumer(self,admin=True)
+        self.consumer = sr_consumer(self,admin=True,loop=False)
         self.consumer.cleanup()
 
         # if posting
@@ -1818,6 +1818,7 @@ class sr_subscribe(sr_instances):
               self.post_hc = HostConnect( logger = self.logger )
               self.post_hc.set_pika( self.use_pika )
               self.post_hc.set_url( self.post_broker )
+              self.post_hc.loop=False
               self.post_hc.connect()
            self.declare_exchanges(cleanup=True)
 
