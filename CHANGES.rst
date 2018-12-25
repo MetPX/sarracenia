@@ -6,6 +6,9 @@ lists all changes between versions.
 
 **git repo**
 
+* bugfix: change cleanup, setup, declare to connect once and fail, rather than hang.
+* bugfix: when sr_post is a one-shot configuration, status makes no sense.
+
 **2.18.12.b4**
 
 * new: print exceptions on failure of makedirs, so "permission denied" is obvious
@@ -46,8 +49,6 @@ lists all changes between versions.
 *          Issue #112 windows log rollover 
 *          Issue #101 windows git checkout corruption 
 *
-*
-
 
 **2.18.10b2**
 
@@ -56,6 +57,7 @@ lists all changes between versions.
 * bugfix:  Issue #110 has_vip does not find vips.
 *          unit tests referred to non SSL datamart, were broken
 *          when it was de-commissioned.
+*
 
 **2.18.10b1**
 
