@@ -183,7 +183,9 @@ class sr_post(sr_instances):
         self.post_hc.set_pika( self.use_pika )
         self.post_hc.set_url( self.post_broker )
         self.post_hc.loop = loop
-        self.post_hc.connect()
+
+        if not self.post_hc.connect():
+           return
 
         self.publisher = Publisher(self.post_hc)
         self.publisher.build()
