@@ -6,6 +6,21 @@ lists all changes between versions.
 
 **git repo**
 
+* bugfix: change cleanup, setup, declare to connect once and fail, rather than hang.
+* bugfix: when sr_post is a one-shot configuration, status makes no sense.
+
+**2.18.12.b4**
+
+* new: print exceptions on failure of makedirs, so "permission denied" is obvious
+* documentation: shim\_ options for sarrac
+* documentation: made importance of ordering between exchange and subtopic options clearer 
+* documentation: change installation instructions so that paramiko is always installed.
+* documentation: removed deprecation of *rename* header, there are valid use cases for it.
+* documentation: extensive revision of mesh_gts briefing.
+* bugfix: in pitcher_client.conf sample config, order of echange_suffix and subtopic option corrected.
+* bugfix: copyright is GPLv2 only.  Notices incorrectly listed GPLv2 OR LATER.
+* bugfix: more progress on issue #54 (application-defined checksums with extended attributes.)
+
 **2.18.11.b5**
 
 * bugfix:  reverting xattr dependency.
@@ -24,6 +39,7 @@ lists all changes between versions.
 * bugfix:  windows: Issue #54 support is broken on windows, disabled there.
 *          print slashes the right way round on windows in more cases.
 *
+
 **2.18.11.b1**
 
 * New:     Issue #54 initial support for *fake* (application defined) checksums.
@@ -33,8 +49,6 @@ lists all changes between versions.
 *          Issue #112 windows log rollover 
 *          Issue #101 windows git checkout corruption 
 *
-*
-
 
 **2.18.10b2**
 
@@ -43,6 +57,7 @@ lists all changes between versions.
 * bugfix:  Issue #110 has_vip does not find vips.
 *          unit tests referred to non SSL datamart, were broken
 *          when it was de-commissioned.
+*
 
 **2.18.10b1**
 

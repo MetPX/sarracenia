@@ -48,7 +48,7 @@ except :
 
 class sr_consumer:
 
-    def __init__(self, parent, admin=False ):
+    def __init__(self, parent, admin=False, loop=True ):
         self.logger         = parent.logger
         self.logger.debug("sr_consumer __init__")
         self.parent         = parent
@@ -76,12 +76,12 @@ class sr_consumer:
         self.sleep_min = 0.01
         self.sleep_now = self.sleep_min
 
-        self.build_connection()
+        self.build_connection(loop=loop)
         self.build_consumer()
         self.build_queue()
         self.get_message()
 
-    def build_connection(self):
+    def build_connection(self,loop=True):
         self.logger.debug("sr_consumer build_broker")
 
         self.logger.info("AMQP  broker(%s) user(%s) vhost(%s)" % \
@@ -90,7 +90,8 @@ class sr_consumer:
         self.hc = HostConnect( logger = self.logger )
         self.hc.set_pika(self.parent.use_pika)
         self.hc.set_url(self.broker)
-        self.hc.connect()
+        self.hc.loop=loop
+        return self.hc.connect()
 
     def build_consumer(self):
         self.logger.debug("sr_consumer build_consumer")
@@ -373,30 +374,33 @@ class sr_consumer:
 
     def cleanup(self):
         self.logger.debug("sr_consume cleanup")
-        self.build_connection()
         self.set_queue_name()
-        self.hc.queue_delete(self.queue_name)
+
+        if self.build_connection(loop=False):
+            self.hc.queue_delete(self.queue_name)
+            if self.report_manage :
+                self.hc.exchange_delete(self.report_exchange)
+
         try    :
                  if hasattr(self,'queuepath') :
                     os.unlink(self.queuepath)
         except : pass
-        if self.report_manage :
-           self.hc.exchange_delete(self.report_exchange)
 
         self.retry.cleanup()
 
 
     def declare(self):
         self.logger.debug("sr_consume declare")
-        self.build_connection()
-        self.queue_declare(build=True)
-        if self.report_manage :
-           self.hc.exchange_declare(self.report_exchange)
+
+        if self.build_connection(loop=False):
+            self.queue_declare(build=True)
+            if self.report_manage :
+               self.hc.exchange_declare(self.report_exchange)
                   
     def setup(self):
         self.logger.debug("sr_consume setup")
-        self.build_connection()
-        self.build_queue()
-        if self.report_manage :
-           self.hc.exchange_declare(self.report_exchange)
+        if self.build_connection(loop=False):
+            self.build_queue()
+            if self.report_manage :
+               self.hc.exchange_declare(self.report_exchange)
 

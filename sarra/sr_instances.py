@@ -498,8 +498,11 @@ class sr_instances(sr_config):
 
         elif action == 'remove'  :
              if self.config_found :
-                ok = self.cleanup_parent(log_cleanup=True)
-                if not ok : return
+                try:
+                   ok = self.cleanup_parent(log_cleanup=True)
+                   if not ok : return
+                except:
+                   return
              if not def_fil                 : return
              if not os.path.isfile(def_fil) : return
              try   : os.unlink(def_fil)

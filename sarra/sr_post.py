@@ -1297,9 +1297,6 @@ class sr_post(sr_instances):
         addmodule = namedtuple('AddModule', ['post'])
         self.poster = addmodule(self.post_url)
 
-        if self.poster.post == self.post_url :
-           self.logger.debug("MY POSTER TRICK DID WORK !!!")
-
     def post_url(self,post_exchange,url,to_clusters,\
                       partstr=None,sumstr=None,rename=None,filename=None, \
                       mtime=None,atime=None,mode=None,link=None):
@@ -1460,8 +1457,9 @@ class sr_post(sr_instances):
            self.post_hc = HostConnect( logger = self.logger )
            self.post_hc.set_pika( self.use_pika )
            self.post_hc.set_url( self.post_broker )
-           self.post_hc.connect()
-           self.declare_exchanges(cleanup=True)
+           self.post_hc.loop=False
+           if self.post_hc.connect():
+               self.declare_exchanges(cleanup=True)
 
         # caching
 
@@ -1479,8 +1477,9 @@ class sr_post(sr_instances):
            self.post_hc = HostConnect( logger = self.logger )
            self.post_hc.set_pika( self.use_pika )
            self.post_hc.set_url( self.post_broker )
-           self.post_hc.connect()
-           self.declare_exchanges()
+           self.post_hc.loop=False;
+           if self.post_hc.connect():
+               self.declare_exchanges()
 
         self.close()
 
@@ -1510,15 +1509,8 @@ class sr_post(sr_instances):
     def setup(self):
         self.logger.info("%s %s setup" % (self.program_name,self.config_name))
 
-        # on posting host
-        if self.post_broker :
-           self.post_hc = HostConnect( logger = self.logger )
-           self.post_hc.set_pika( self.use_pika )
-           self.post_hc.set_url( self.post_broker )
-           self.post_hc.connect()
-           self.declare_exchanges()
+        self.declare()
 
-        self.close()
                  
 # ===================================
 # MAIN

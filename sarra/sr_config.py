@@ -152,12 +152,21 @@ class sr_config:
                  os.symlink( "." , var )
 
 
-        try    : os.makedirs(self.user_config_dir, 0o775,True)
-        except : pass
-        try    : os.makedirs(self.user_plugins_dir,0o775,True)
-        except : pass
-        try    : os.makedirs(self.http_dir,        0o775,True)
-        except : pass
+        try: 
+            os.makedirs(self.user_config_dir, 0o775,True)
+        except Exception as ex:
+            self.logger.warning( "making %s: %s" % ( self.user_config_dir, ex ) )
+
+        try: 
+            os.makedirs(self.user_plugins_dir,0o775,True)
+        except Exception as ex:
+            self.logger.warning( "making %s: %s" % ( self.user_plugins_dir, ex ) )
+
+        try: 
+            os.makedirs(self.http_dir, 0o775,True)
+        except Exception as ex:
+            self.logger.warning( "making %s: %s" % ( self.user_http_dir, ex ) )
+
 
         # default config files
         defn = self.user_config_dir + os.sep + "default.conf"
@@ -519,7 +528,7 @@ class sr_config:
         # dont need to configure if it is not a config file or for theses actions
 
         if self.config_found and \
-           not self.action   in  [ 'add','edit','enable', 'list' ]:
+           not self.action   in  [ 'add','edit','enable', 'list', 'rename', 'remove' ]:
            self.config (self.user_config)
 
         # configure some directories if statehost was set
@@ -529,7 +538,7 @@ class sr_config:
         # verify / complete settings
 
         if self.config_found and \
-           not self.action   in  [ 'add','edit','enable', 'list' ]:
+           not self.action   in  [ 'add','edit','enable', 'list', 'rename', 'remove' ]:
            self.check()
 
         # sr_audit is the only program working without config
@@ -564,8 +573,10 @@ class sr_config:
         # create user_log_dir 
 
         self.logger.debug("sr_config user_log_dir  %s " % self.user_log_dir ) 
-        try    : os.makedirs(self.user_log_dir, 0o775,True)
-        except : pass
+        try: 
+            os.makedirs(self.user_log_dir, 0o775,True)
+        except Exception as ex:
+            self.logger.warning( "making %s: %s" % ( self.user_log_dir, ex ) )
 
         # finalize user_cache_dir
 
@@ -579,8 +590,10 @@ class sr_config:
 
         if not self.program_name in [ 'sr', 'sr_config' ]:
            self.logger.debug("sr_config user_cache_dir  %s " % self.user_cache_dir ) 
-           try    : os.makedirs(self.user_cache_dir,  0o775,True)
-           except : pass
+           try: 
+                os.makedirs(self.user_cache_dir,  0o775,True)
+           except Exception as ex:
+                self.logger.warning( "making %s: %s" % ( self.user_cache_dir, ex ) )
 
     def declare_option(self,option):
         self.logger.debug("sr_config declare_option")
@@ -1805,16 +1818,15 @@ class sr_config:
 
                      if supports_extended_attributes:
                         if key.lower() == "sum":
-                           n = len(words[2:]) + 2
-                           for xfile in words[2:]:
+                           glob_lst = []
+                           glob_lst.extend(glob.glob(word) for word in words[2:] if word != [])
+                           file_lst = [f for sub_lst in glob_lst for f in sub_lst]  
+                           for xfile in file_lst:
                               xattr.setxattr(xfile, 'user.sr_sum', bytes(value,"utf-8"))
                               xmtime = timeflt2str(time.time())
                               xattr.setxattr(xfile, 'user.sr_mtime', bytes(xmtime,"utf-8"))
                               self.logger.debug("xattr sum set for file: {0} => {1}".format(xfile, value))
-                        else:
-                           n = 2
-                     else:
-                        n = 2
+                     n = 2
 
                 elif words0 in ['gateway_for','gf']: # See: sr_config.7, sr_sarra.8, sr_sender.1 
                      self.gateway_for = words1.split(',')

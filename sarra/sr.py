@@ -136,6 +136,23 @@ def invoke(dirconf,pgm,confname,action):
              # sr_post needs -c with absolute confpath
 
              confpath = dirconf + os.sep + pgm + os.sep + confname
+             sleeps=False
+
+             if ( action == 'status' ) :
+                 f=open(confpath,'r')
+                 for li in f.readlines():
+                     l = li.split()
+                     if len(l) < 2 :
+                        continue
+
+                     if l[0] == 'sleep' :
+                        if  float(l[1]) > 0:
+                           sleeps=True
+                 f.close()
+
+             if not sleeps:
+                 return
+
              post = sr_post(confpath)
 
              cfg.logger.debug("INVOKE %s %s %s %s" % (program,'-c',confpath,action))

@@ -97,6 +97,9 @@ class HostConnect:
        self.connection = None
 
    def connect(self):
+       """
+          connect to broker, return True if successful, False if not.
+       """
 
        if self.sleeping != None :
           self.asleep = self.sleeping()
@@ -129,12 +132,16 @@ class HostConnect:
                self.logger.debug("Connected ")
                for func in self.rebuilds:
                    func()
-               break
+               return True
           except:
                (stype, svalue, tb) = sys.exc_info()
                self.logger.error("AMQP Sender cannot connect to: %s" % self.host)
                self.logger.error("Type=%s, Value=%s" % (stype, svalue))
-               if not self.loop : sys.exit(1)
+
+               if not self.loop : 
+                  self.logger.error("Could not connect to broker")
+                  return False
+
                self.logger.error("Sleeping 5 seconds ...")
                time.sleep(5)
 
