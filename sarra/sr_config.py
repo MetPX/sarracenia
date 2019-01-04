@@ -277,7 +277,7 @@ class sr_config:
     def log_settings(self):
 
         self.logger.info( "log settings start for %s (version: %s):" % (self.program_name, sarra.__version__) )
-        self.logger.info( "\tinflight=%s events=%s use_pika=%s" % ( self.inflight, self.events, self.use_pika, ) )
+        self.logger.info( "\tinflight=%s events=%s use_pika=%s topic_prefix=%s" % ( self.inflight, self.events, self.use_pika, self.topic_prefix) )
         self.logger.info( "\tsuppress_duplicates=%s retry_mode=%s retry_ttl=%sms" % ( self.caching, self.retry_mode, self.retry_ttl ) )
         self.logger.info( "\texpire=%sms reset=%s message_ttl=%s prefetch=%s accept_unmatch=%s delete=%s" % \
            ( self.expire, self.reset, self.message_ttl, self.prefetch, self.accept_unmatch, self.delete ) )
