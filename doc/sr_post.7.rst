@@ -516,7 +516,7 @@ http://rabbitmq.net - home page of the AMQP broker used to develop Sarracenia.
 
 
 SEE ALSO
-========
+--------
 
 `sr_report(7) <sr_report.7.rst>`_ - the format of report messages.
 
