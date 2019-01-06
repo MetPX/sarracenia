@@ -499,12 +499,17 @@ a broker at once, optimizing streaming.
 
 
 
-CHARACTER SET & ENCODING
-------------------------
+Applicable Standards
+--------------------
 
-All messages are expected to use the UNICODE character set (ISO 10646), 
-represented by UTF-8 encoding (IETF RFC 3629).
-URL encoding, as per IETF RFC 1738, is used to escape unsafe characters where appropriate.
+* Sarracenia relies on `AMQP pre 1.0 <https://www.rabbitmq.com/resources/specs/amqp0-9-1.pdf>`_  as the
+  1.0 standard eliminated concepts: broker, exchange, queue, and binding.  The 1.0 feature set is below the 
+  minimum needed to support Sarracenia's pub-sub architecture.
+
+* All messages are expected to use the UNICODE character set (ISO 10646), 
+  represented by UTF-8 encoding (IETF RFC 3629).
+
+* URL encoding, as per IETF RFC 1738, is used to escape unsafe characters where appropriate.
 
 
 FURTHER READING
