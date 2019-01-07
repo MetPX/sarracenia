@@ -1538,7 +1538,7 @@ def main():
 
     post        = sr_post(None,None,action)
     logger      = post.logger
-    post.logger = Silent_Logger()
+    #post.logger = Silent_Logger()
 
     config_ok, user_config = post.config_path(post.program_dir,config)
     #print("config_ok,user_config = %s %s" % (config_ok, user_config))
