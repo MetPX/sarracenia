@@ -48,6 +48,7 @@ lists all changes between versions.
 *          Issue #113 crash on sr_post/watch with post_exchange_split
 *          Issue #112 windows log rollover 
 *          Issue #101 windows git checkout corruption 
+*          Issue #100 sr_subscribe add on windows gives files all on one line...
 *
 
 **2.18.10b2**
