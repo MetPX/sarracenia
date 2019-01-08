@@ -28,7 +28,7 @@ class Msg_Delay(object):
         import calendar
 
         msg = parent.msg
-        mt=msg.time
+        mt=msg.pubtime
         msgtime=calendar.timegm(time.strptime(mt[:mt.find('.')],"%Y%m%d%H%M%S")) + float(mt[mt.find('.'):])
         now=time.time()
 

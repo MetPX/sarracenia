@@ -225,7 +225,7 @@ def file_insert_part(parent,msg,part_file):
     # FIXME: Need to figure out when/how to further post messages about the partitions 
     #if msg.publisher : 
     #   msg.set_topic('v02.post',msg.target_relpath)
-    #   msg.set_notice(msg.new_baseurl,msg.target_relpath,msg.time)
+    #   msg.set_notice(msg.new_baseurl,msg.target_relpath,msg.pubtime)
     #   if chk :
     #      if    msg.sumflg == 'z' :
     #            msg.set_sum(msg.checksum,msg.onfly_checksum)
@@ -560,7 +560,7 @@ def file_truncate(parent,msg):
                 fp.close()
 
                 msg.set_topic('v02.post',msg.target_relpath)
-                msg.set_notice(msg.new_baseurl,msg.target_relpath,msg.time)
+                msg.set_notice(msg.new_baseurl,msg.target_relpath,msg.pubtime)
                 msg.report_publish(205, 'Reset Content :truncated')
 
     except : pass

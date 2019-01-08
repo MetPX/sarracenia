@@ -213,8 +213,8 @@ class sr_message():
            self.isPulse = True
 
            # parse pulse notice
-           token     = self.notice.split(' ')
-           self.time = token[0]
+           token        = self.notice.split(' ')
+           self.pubtime = token[0]
            self.set_msg_time()
 
            # pulse message
@@ -348,7 +348,7 @@ class sr_message():
         self.subtopic     = '.'.join(token[3:])
 
         token        = self.notice.split(' ')
-        self.time    = token[0]
+        self.pubtime = token[0]
         self.baseurl = token[1]
         self.relpath = token[2].replace(    '%20',' ')
         self.relpath = self.relpath.replace('%23','#')
@@ -597,38 +597,38 @@ class sr_message():
         return
 
     def set_msg_time(self):
-        parts       = self.time.split('.')
+        parts       = self.pubtime.split('.')
         ts          = time.strptime(parts[0]+" +0000", "%Y%m%d%H%M%S %z" )
         ep_msg      = calendar.timegm(ts)
         self.tbegin = ep_msg + float('0.'+parts[1])
 
     def set_notice_url(self,url,time=None):
         self.url    = url
-        self.time   = time
+        self.pubtime = time
         if time    == None : self.set_time()
         path        = url.path.strip('/')
         notice_path = path.replace(       ' ','%20')
         notice_path = notice_path.replace('#','%23')
 
         if url.scheme == 'file' :
-           self.notice = '%s %s %s' % (self.time,'file:','/'+notice_path)
+           self.notice = '%s %s %s' % (self.pubtime,'file:','/'+notice_path)
            return
 
         urlstr      = url.geturl()
         static_part = urlstr.replace(url.path,'') + '/'
 
         if url.scheme == 'http' :
-           self.notice = '%s %s %s' % (self.time,static_part,notice_path)
+           self.notice = '%s %s %s' % (self.pubtime,static_part,notice_path)
            return
 
         if url.scheme[-3:] == 'ftp'  :
            if url.path[:2] == '//'   : notice_path = '/' + notice_path
 
-        self.notice = '%s %s %s' % (self.time,static_part,notice_path)
+        self.notice = '%s %s %s' % (self.pubtime,static_part,notice_path)
 
     def set_notice(self,baseurl,relpath,time=None):
 
-        self.time    = time
+        self.pubtime    = time
         self.baseurl = baseurl
         self.relpath = relpath
         if not time  : self.set_time()
@@ -636,7 +636,7 @@ class sr_message():
         notice_relpath = relpath.replace(       ' ','%20')
         notice_relpath = notice_relpath.replace('#','%23')
 
-        self.notice = '%s %s %s' % (self.time,baseurl,notice_relpath)
+        self.notice = '%s %s %s' % (self.pubtime,baseurl,notice_relpath)
 
         #========================================
         # COMPATIBILITY TRICK  for the moment
@@ -747,7 +747,7 @@ class sr_message():
         now  = time.time()
         frac = '%f' % now
         nows = time.strftime("%Y%m%d%H%M%S",time.gmtime()) + '.' + frac.split('.')[1]
-        self.time = nows
+        self.pubtime = nows
         if not hasattr(self,'tbegin') : self.tbegin = now
 
     def set_to_clusters(self,to_clusters=None):

@@ -1046,7 +1046,7 @@ class sr_post(sr_instances):
         self.msg.topic    = 'v02.pulse'
 
         self.msg.set_time()
-        self.msg.notice  = '%s' % self.msg.time
+        self.msg.notice  = '%s' % self.msg.pubtime
 
         if self.pulse_message : 
            self.msg.topic  += '.message'

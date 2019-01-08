@@ -43,7 +43,7 @@ class PartCheck(object):
 
           import calendar
 
-          mt=msg.time
+          mt=msg.pubtime
           then=calendar.timegm(time.strptime(mt[:mt.find('.')],"%Y%m%d%H%M%S")) + float(mt[mt.find('.'):])
           now=time.time()
           lag= now-then

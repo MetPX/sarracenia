@@ -84,7 +84,7 @@ class Msg_Total(object):
         if (parent.msg_total_msgcount == 0): 
             logger.info("msg_total: 0 messages received: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"  )
 
-        mt=msg.time
+        mt=msg.pubtime
         msgtime=calendar.timegm(time.strptime(mt[:mt.find('.')],"%Y%m%d%H%M%S")) + float(mt[mt.find('.'):])
         now=time.time()
 

@@ -900,7 +900,7 @@ class sr_subscribe(sr_instances):
         # set working message  with relpath info
 
         w_msg.set_topic ('v02.post', relpath )
-        w_msg.set_notice(self.msg.baseurl,relpath,self.msg.time)
+        w_msg.set_notice(self.msg.baseurl,relpath,self.msg.pubtime)
 
         w_msg.parse_v02_post()
 
@@ -1134,7 +1134,7 @@ class sr_subscribe(sr_instances):
                           if self.reportback: self.msg.report_publish(201, 'moved')
 
                           self.msg.set_topic('v02.post',self.msg.new_relpath)
-                          self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.time)
+                          self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.pubtime)
                           self.msg.headers['oldname'] = oldname
                           if self.post_broker :
                              ok = self.__on_post__()
@@ -1179,7 +1179,7 @@ class sr_subscribe(sr_instances):
                if self.reportback: self.msg.report_publish(500, 'remove failed')
 
            self.msg.set_topic('v02.post',self.msg.new_relpath)
-           self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.time)
+           self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.pubtime)
            if 'newname' in self.msg.headers : self.msg.headers['newname'] = newname
            if self.post_broker :
               ok = self.__on_post__()
@@ -1229,7 +1229,7 @@ class sr_subscribe(sr_instances):
 
            if ok :
               self.msg.set_topic('v02.post',self.msg.new_relpath)
-              self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.time)
+              self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.pubtime)
               if self.post_broker :
                  ok = self.__on_post__()
                  if ok and self.reportback : self.msg.report_publish(201,'Published')
@@ -1435,7 +1435,7 @@ class sr_subscribe(sr_instances):
            else            : self.msg.change_partflg('p')
 
         self.msg.set_topic('v02.post',self.msg.new_relpath)
-        self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.time)
+        self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.pubtime)
         if 'oldname' in self.msg.headers : self.msg.headers['oldname'] = oldname
         if self.post_broker :
            ok = self.__on_post__()
