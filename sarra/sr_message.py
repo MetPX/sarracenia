@@ -36,6 +36,8 @@ import calendar,os,socket,sys,time,urllib,urllib.parse
 
 from sys import platform as _platform
 
+import json
+
 try:
     import xattr
     supports_extended_attributes=True
@@ -197,8 +199,13 @@ class sr_message():
            self.topic     = msg.delivery_info['routing_key']
            self.topic     = self.topic.replace('%20',' ')
            self.topic     = self.topic.replace('%23','#')
-           self.headers   = msg.properties['application_headers']
-           self.notice    = msg.body
+           if msg.body[0] == '[' :
+               ( self.pubtime, self.baseurl, self.relpath, self.headers ) = json.loads(msg.body)
+               self.notice = "%s %s %s" % ( self.pubtime, self.baseurl, self.relpath )
+           else:
+               self.headers   = msg.properties['application_headers']
+               self.notice    = msg.body
+
            self.isRetry   = msg.isRetry
 
            if type(self.notice) == bytes: self.notice = self.notice.decode("utf-8")
@@ -256,7 +263,7 @@ class sr_message():
         if self.version == 'v00' :
            self.parse_v00_post()
 
-        if self.version == 'v02' :
+        else:
            self.parse_v02_post()
 
     def get_elapse(self):
@@ -266,9 +273,12 @@ class sr_message():
         self.code               = code
         self.headers['message'] = message
         self.report_topic          = self.topic.replace('.post.','.report.')
+     
+        e = self.get_elapse()
+
         self.report_notice         = "%s %s %s %d %s %s %f" % \
-            (self.pubtime, self.baseurl, self.relpath, self.code,self.host, \
-             self.user,self.get_elapse())
+                (self.pubtime, self.baseurl, self.relpath, self.code, \
+                     self.host, self.user, e )
         self.set_hdrstr()
 
         # AMQP limits topic to 255 characters, so truncate and warn.
@@ -391,8 +401,9 @@ class sr_message():
 
         if self.pub_exchange != None : self.exchange = self.pub_exchange
 
-        for h in self.headers:
-           if len(self.headers[h].encode("utf8")) >= amqp_ss_maxlen:
+        if not self.topic.startswith('v03'):
+           for h in self.headers:
+             if len(self.headers[h].encode("utf8")) >= amqp_ss_maxlen:
 
                 # strings in utf, and if names have special characters, the length
                 # of the encoded string wll be longer than what is returned by len(. so actually need to look
@@ -430,7 +441,13 @@ class sr_message():
            suffix=""
 
         if self.publisher != None :
-           ok = self.publisher.publish(self.exchange+suffix,self.topic,self.notice,self.headers,self.message_ttl)
+
+           if self.topic.startswith('v03'):
+               body=json.dumps( (self.pubtime, self.baseurl, self.relpath, self.headers) )
+               self.logger.error( "v03 body: %s" % body )
+               ok = self.publisher.publish(self.exchange+suffix,self.topic,body,None,self.message_ttl)
+           else:
+               ok = self.publisher.publish(self.exchange+suffix,self.topic,self.notice,self.headers,self.message_ttl)
 
         self.set_hdrstr()
 
