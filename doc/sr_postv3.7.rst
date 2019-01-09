@@ -19,7 +19,7 @@ STATUS: EXPERIMENTAL
 --------------------
 
 Sarracenia version 2 messages are the current standard, used for terabytes
-and millions of files per day of transfers.  Version 3 is a proposal for a next
+and millions of files per day of transfers. Version 3 is a proposal for a next
 iteration of Sarracenia messages, but it is not fully implemented, and 
 not in use anywhere.
 
@@ -513,11 +513,11 @@ layered on top of AMQP is to be a minimum amount to achieve meaningful data exch
 AMQP: not 1.0, but 0.8 or 0.9
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-AMQP 1.0 standardizes the on-the-wire protocol, but leaves out many features of broker interaction.   
-As the use of brokers is key to sarracenia´s use of, was a fundamental element of earlier standards, 
+AMQP 1.0 standardizes the on-the-wire protocol, but removed all broker standardization.   
+As the use of brokers is key to Sarracenia´s use of, was a fundamental element of earlier standards, 
 and as the 1.0 standard is relatively controversial, this protocol assumes a pre 1.0 standard broker, 
-as is provided by many free brokers, such as rabbitmq, often referred to as 0.8, but 0.9 and post
-0.9 brokers are also likely to inter-operate well.
+as is provided by many free brokers, such as rabbitmq and Apache QPid, often referred to as 0.8, 
+but 0.9 and post 0.9 brokers could inter-operate well.
 
 Named Exchanges and Queues
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -604,7 +604,7 @@ Standards
    encodings (UTF-8, UTF-16, UTF-32), but also prohibits presence of 
    byte order markings (BOM.)
 
- * the same as v02, UTF-8 is mandatory. Sarracenia restricts JSON format 
+ * the same as Sarracenia v02, UTF-8 is mandatory. Sarracenia restricts JSON format 
    by requiring of UTF-8 encoding, (IETF RFC 3629) which does not need/use BOM.
    No other encoding is permitted.
 
@@ -612,7 +612,7 @@ Standards
    where appropriate.
 
  * MQTT refers to `MQTT v3.1.1 <http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html>`_,
-   the most widely implemented version at this time. Yes v5 has user properties
+   the most widely implemented version at this time. Yes, v5 has user properties
    with 64K long strings, and has been standardized in 2017, but implementations 
    are (at the beginning of 2019) not plentiful. 
 
