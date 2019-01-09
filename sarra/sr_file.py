@@ -559,7 +559,7 @@ def file_truncate(parent,msg):
                 fp.truncate(msg.filesize)
                 fp.close()
 
-                msg.set_topic('v02.post',msg.target_relpath)
+                msg.set_topic(parent.post_topic_prefix,msg.target_relpath)
                 msg.set_notice(msg.new_baseurl,msg.target_relpath,msg.pubtime)
                 msg.report_publish(205, 'Reset Content :truncated')
 

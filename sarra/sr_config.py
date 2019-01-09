@@ -289,8 +289,8 @@ class sr_config:
            ( self.mirror, self.flatten, self.realpath_post, self.strip, self.base_dir, self.reportback ) )
 
         if self.post_broker :
-            self.logger.info( "\tpost_base_dir=%s post_base_url=%s sum=%s blocksize=%s " % \
-               ( self.post_base_dir, self.post_base_url, self.sumflg, self.blocksize ) )
+            self.logger.info( "\tpost_base_dir=%s post_base_url=%s post_topic_prefix=% sum=%s blocksize=%s " % \
+               ( self.post_base_dir, self.post_base_url, self.post_topic_prefix, self.sumflg, self.blocksize ) )
 
         self.logger.info('\tPlugins configured:')
 
@@ -639,6 +639,7 @@ class sr_config:
         self.exchange_suffix      = None
         self.exchanges            = [ 'xlog', 'xpublic', 'xreport', 'xwinnow' ]
         self.topic_prefix         = 'v02.post'
+        self.post_topic_prefix    = 'v02.post'
         self.subtopic             = None
 
         self.queue_name           = None
@@ -2165,6 +2166,10 @@ class sr_config:
 
                 elif words0 in ['post_exchange_suffix']: # FIXME: sr_sarra,sender,shovel,winnow 
                      self.post_exchange_suffix = words1
+                     n = 2
+
+                elif words0 in ['post_topic_prefix', 'ptp' ]: # FIXME: sr_sarra,sender,shovel,winnow 
+                     self.post_topic_prefix = words1
                      n = 2
 
                 elif words0 in ['post_exchange_split','pes', 'pxs']: # sr_config.7, sr_shovel.1

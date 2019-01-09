@@ -408,8 +408,8 @@ class sr_poll(sr_post):
 
         self.msg.exchange = post_exchange
         
-        self.msg.set_topic(self.topic_prefix,post_relpath)
-        if self.subtopic != None : self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
+        self.msg.set_topic(self.post_topic_prefix,post_relpath)
+        if self.subtopic != None : self.msg.set_topic_usr(self.post_topic_prefix,self.subtopic)
 
         self.msg.set_notice(post_base_url,post_relpath)
 

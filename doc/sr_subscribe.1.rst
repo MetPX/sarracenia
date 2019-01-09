@@ -998,6 +998,7 @@ posting to a broker. The valid argument values are:
 
   **post_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
   **post_exchange     <name>         (MANDATORY)**
+  **post_topic_prefix <string>       (default: "v02.post")**
   **on_post           <script>       (default: None)**
 
   The **post_broker** defaults to the input broker if not provided.
@@ -1500,6 +1501,7 @@ the next hop broker, the user sets these options :
  - **[--blocksize <value>]            (default: 0 (auto))**
  - **[--outlet <post|json|url>]       (default: post)**
  - **[-pbd|--post_base_dir <path>]    (optional)**
+ - **[-ptp|--post_topic_prefix <pfx>] (default: 'v02.post')**
  - **post_exchange     <name>         (default: xpublic)**
  - **post_exchange_split   <number>   (default: 0)**
  - **post_base_url          <url>     (MANDATORY)**

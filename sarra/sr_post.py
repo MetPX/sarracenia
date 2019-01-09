@@ -237,7 +237,7 @@ class sr_post(sr_instances):
         print("-h|--help\n")
         print("-parts [0|1|sz]        0-computed blocksize (default), 1-whole files (no partitioning), sz-fixed blocksize")
         print("-to  <name1,name2,...> defines target clusters, default: ALL")
-        print("-tp  <topic_prefix>    default:v02.post")
+        print("-ptp <post_topic_prefix> default:v02.post")
         print("-sub <subtopic>        default:'path.of.file'")
         print("-rn  <rename>          default:None")
         print("-sum <sum>             default:d")
@@ -787,8 +787,8 @@ class sr_post(sr_instances):
         self.msg.exchange = self.post_exchange
 
         # topic
-        self.msg.set_topic(self.topic_prefix,self.post_relpath)
-        if self.subtopic: self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
+        self.msg.set_topic(self.post_topic_prefix,self.post_relpath)
+        if self.subtopic: self.msg.set_topic_usr(self.post_topic_prefix,self.subtopic)
 
         # notice
         self.msg.set_notice(self.post_base_url,self.post_relpath)
@@ -1353,9 +1353,9 @@ class sr_post(sr_instances):
         self.msg.exchange = post_exchange
         
         # set message topic
-        self.msg.set_topic(self.topic_prefix,post_relpath)
+        self.msg.set_topic(self.post_topic_prefix,post_relpath)
         if self.subtopic != None :
-           self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
+           self.msg.set_topic_usr(self.post_topic_prefix,self.subtopic)
 
         # set message notice
         self.msg.set_notice(post_base_url,post_relpath)
