@@ -27,7 +27,7 @@ class Bad_Plugin2(object):
     def on_message(self,parent):
         msg = parent.msg
         parent.logger.info("log_all message accepted: %s %s%s topic=%s lag=%g %s" % \
-           tuple( msg.notice.split()[0:3] + [ msg.topic, msg.get_elapse(), msg.hdrstr ] ) )
+           ( msg.pubtime, msg.basurl, msg.relpath, msg.topic, msg.get_elapse(), msg.hdrstr ) )
         return True
 
 #bad_plugin2 = Bad_Plugin2(self)  <-- need this line when declaring individual

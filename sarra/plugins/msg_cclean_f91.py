@@ -47,7 +47,7 @@ class Msg_Cclean_F91(object):
 
         else:
            logger.info("msg_log received: %s %s%s topic=%s lag=%g %s" % \
-           tuple( msg.notice.split()[0:3] + [ msg.topic, msg.get_elapse(), msg.hdrstr ] ) )
+           ( msg.pubtime, msg.baseurl, msg.relpath, msg.topic, msg.get_elapse(), msg.hdrstr ) )
            logger.error("The message received is incorrect not from shovel cclean_f90")
            return False
 

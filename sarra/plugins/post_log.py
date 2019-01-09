@@ -15,7 +15,7 @@ class Post_Log(object):
 
         msg = parent.msg
         parent.logger.info("post_log notice=%s %s %s headers=%s" % \
-            tuple( msg.notice.split()[0:3] + [ msg.headers ] ) )
+            ( msg.pubtime, msg.baseurl, msg.relpath, msg.headers ) )
 
         return True
 

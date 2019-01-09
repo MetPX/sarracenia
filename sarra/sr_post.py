@@ -301,11 +301,11 @@ class sr_post(sr_instances):
         ok = True
 
         if   self.outlet == 'json' :
-             json_line = json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ], sort_keys=True ) + '\n'
+             json_line = json.dumps( [ self.msg.topic, self.msg.headers, "%s %s %s" % ( self.msg.pubtime, self.msg.baseurl, self.msg.relpath ) ], sort_keys=True ) + '\n'
              print("%s" % json_line )
 
         elif self.outlet == 'url'  :
-             print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
+             print( "%s%s%s" % ( self.baseurl, os.sep, self.relpath ) )
 
         else:
              ok = self.msg.publish( )
@@ -720,7 +720,7 @@ class sr_post(sr_instances):
 
               ok = self.__on_post__()
               if not ok:
-                self.logger.error('Something went wrong while posting: %s' %self.msg.notice[2])
+                self.logger.error('Something went wrong while posting: %s' %self.msg.relpath)
 
 
         return True

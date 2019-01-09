@@ -266,8 +266,9 @@ class sr_message():
         self.code               = code
         self.headers['message'] = message
         self.report_topic          = self.topic.replace('.post.','.report.')
-        self.report_notice         = "%s %d %s %s %f" % \
-                                  (self.notice,self.code,self.host,self.user,self.get_elapse())
+        self.report_notice         = "%s %s %s %d %s %s %f" % \
+            (self.pubtime, self.baseurl, self.relpath, self.code,self.host, \
+             self.user,self.get_elapse())
         self.set_hdrstr()
 
         # AMQP limits topic to 255 characters, so truncate and warn.
@@ -435,13 +436,13 @@ class sr_message():
 
         if ok :
                 self.logger.debug("Published1: %s %s" % (self.exchange,self.topic))
-                self.logger.debug("Published2: '%s' %s" % (self.notice, self.hdrstr))
+                self.logger.debug("Published2: '%s %s %s' %s" % (self.pubtime, self.baseurl, self.relpath, self.hdrstr))
         else  :
                 self.printlog = self.logger.error
                 self.printlog("Could not publish message :")
 
-                self.printlog("exchange %s topic %s " % (self.exchange,self.topic))
-                self.printlog("notice   %s"           % self.notice )
+                self.printlog("exchange %s topic %s " % (self.exchange,self.topic) )
+                self.printlog("notice   %s %s %s"     % (self.pubtime, self.baseurl, self.relpath) )
                 self.printlog("headers  %s"           % self.hdrstr )
 
         return ok
@@ -612,6 +613,8 @@ class sr_message():
 
         if url.scheme == 'file' :
            self.notice = '%s %s %s' % (self.pubtime,'file:','/'+notice_path)
+           self.baseurl = 'file:'
+           self.relpath = '/'+notice_path
            return
 
         urlstr      = url.geturl()
@@ -619,12 +622,16 @@ class sr_message():
 
         if url.scheme == 'http' :
            self.notice = '%s %s %s' % (self.pubtime,static_part,notice_path)
+           self.baseurl = static_part
+           self.relpath = notice_path
            return
 
         if url.scheme[-3:] == 'ftp'  :
            if url.path[:2] == '//'   : notice_path = '/' + notice_path
 
         self.notice = '%s %s %s' % (self.pubtime,static_part,notice_path)
+        self.baseurl = static_part
+        self.relpath = notice_path
 
     def set_notice(self,baseurl,relpath,time=None):
 
@@ -637,6 +644,8 @@ class sr_message():
         notice_relpath = notice_relpath.replace('#','%23')
 
         self.notice = '%s %s %s' % (self.pubtime,baseurl,notice_relpath)
+        self.baseurl = baseurl
+        self.relpath = notice_relpath
 
         #========================================
         # COMPATIBILITY TRICK  for the moment

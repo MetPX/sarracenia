@@ -108,6 +108,7 @@ class sr_retry:
         self.message.delivery_info['routing_key']      = topic
         self.message.properties['application_headers'] = headers
         self.message.body                              = notice
+        ( self.message.pubtime, self.message.baseurl, self.message.relpath ) = notice.split()
 
         return self.message
 
@@ -209,8 +210,7 @@ class sr_retry:
 
         # compute message age
         notice   = message.body
-        parts    = notice.split()
-        msg_time = timestr2flt(parts[0])
+        msg_time = timestr2flt(message.pubtime)
         msg_age  = time.time() - msg_time
 
         # expired ?
