@@ -65,6 +65,8 @@ class sr_message():
         self.message_ttl   = 0
         self.exchange      = None
         self.report_exchange  = parent.report_exchange
+        self.topic_prefix  = parent.topic_prefix
+        self.post_topic_prefix  = parent.post_topic_prefix
         self.report_publisher = None
         self.publisher     = None
         self.pub_exchange  = None
@@ -420,6 +422,13 @@ class sr_message():
         # AMQP limits topic to 255 characters, space and # replaced, if greater than limit : truncate and warn.
         self.topic = self.topic.replace(' ','%20')
         self.topic = self.topic.replace('#','%23')
+
+
+        if self.post_topic_prefix != self.topic_prefix:
+            self.topic = self.topic.replace(self.topic_prefix,self.post_topic_prefix,1)
+
+        self.logger.warning('FIXME topic=%s ( topic_prefix=%s post_topic_prefix=%s ) ' % ( self.topic, self.topic_prefix, self.post_topic_prefix ) )
+
         if len(self.topic.encode("utf8")) >= amqp_ss_maxlen :
            mxlen=amqp_ss_maxlen 
            # see truncation explanation from above.
@@ -444,7 +453,7 @@ class sr_message():
 
            if self.topic.startswith('v03'):
                body=json.dumps( (self.pubtime, self.baseurl, self.relpath, self.headers) )
-               self.logger.error( "v03 body: %s" % body )
+               self.logger.debug( "FIXME v03 body: %s" % body )
                ok = self.publisher.publish(self.exchange+suffix,self.topic,body,None,self.message_ttl)
            else:
                ok = self.publisher.publish(self.exchange+suffix,self.topic,self.notice,self.headers,self.message_ttl)
