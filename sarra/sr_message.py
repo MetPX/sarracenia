@@ -190,8 +190,11 @@ class sr_message():
 
         self.local_checksum = self.sumalgo.get_value()
 
-
     def from_amqplib(self, msg=None ):
+        """
+            This routine does a minimal decode of raw messages from amqplib
+            raw messages are also decoded by sr_retry/msgToJSON, so must match the two. 
+        """
 
         self.start_timer()
 

@@ -113,11 +113,19 @@ class sr_retry:
         return self.message
 
     def msgToJSON(self, message, done=False ):
-        topic   = message.delivery_info['routing_key']
-        headers = message.properties['application_headers']
-        notice  = message.body
 
-        if type(notice) == bytes: notice = notice.decode("utf-8")
+        topic   = message.delivery_info['routing_key']
+
+        if message.body[0] == '[' : # v03 message to persist, 
+           ( message.pubtime, message.baseurl, message.relpath, headers ) = json.loads( message.body )
+           notice  = "%s %s %s" % ( message.pubtime, message.baseurl, message.relpath ) 
+        else:
+           headers = message.properties['application_headers']
+           if type(message.body) == bytes: 
+               notice = message.body.decode("utf-8")
+           else:
+               notice = message.body
+ 
 
         if done:
            headers['_retry_tag_'] = 'done'
