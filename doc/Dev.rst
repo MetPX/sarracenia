@@ -154,22 +154,12 @@ Checklist:
 
 
 
-Testing
--------
+Flow Test Description
+---------------------
 
-Before committing code to the master branch, as a Quality Assurance measure one should run all available self-tests.
-It is assumed that the specific changes in the code have already been unit
-tested.  Please add self-tests as appropriate to this process to reflect the new ones.
-
-The configuration one is trying to replicate:
-
-.. image:: Flow_test.svg
-
-Assumption: test environment is a Linux PC, either a laptop/desktop, or a server on which one
-can start a browser. If working with the c implementation as well, there are also the following
-flows defined:
-
-.. image:: cFlow_test.svg
+Before committing code to the master branch, as a Quality Assurance measure, one should run 
+all available self-tests. It is assumed that the specific changes in the code have already been unit
+tested. Please add self-tests as appropriate to this process to reflect the new ones.
 
 A typical development workflow will be::
 
@@ -187,11 +177,138 @@ A typical development workflow will be::
    ./flow_check.sh  ; *checks the flows*
    ./flow_cleanup.sh  ; *cleans up the flows*
    
-One can then study the results, and determine the next cycle of modifications to make.
-The rest of this section documents these steps in much more detail.  
-Before one can run the flow_test, some pre-requisites must be taken care of.
+As part of the flow_setup.sh, various unit_test are run (located in the test/unit_tests
+sub-directory.) The flow tests can then indicate if there is an issue
+with the modification.
+
+The configuration one is trying to replicate:
+
+.. image:: Flow_test.svg
+
+
+Python Flow Coverage
+~~~~~~~~~~~~~~~~~~~~
+
+Following table describes what each element of the flow test does, and the test coverage
+shows functionality covered.
+
++-------------------+--------------------------------------+-------------------------------------+
+|                   |                                      |                                     | 
+| Configuration     | Does                                 | Test Coverage                       | 
+|                   |                                      |                                     | 
++-------------------+--------------------------------------+-------------------------------------+
+| subscribe t_ddx   | copy from data mart to local broker  | read amqps public data mart (v02)   | 
+|                   | posting messages to local xwinnow00  | as ordinary user.                   | 
+|                   | and xwinnow01 exchanges.             |                                     | 
+|                   |                                      | shared queue and multiple processes | 
+|                   |                                      | 3 instances download from each q    | 
+|                   |                                      |                                     | 
+|                   |                                      | post amqp to a local exchange (v02) | 
+|                   |                                      | as feeder(admin) user               | 
+|                   |                                      |                                     | 
+|                   |                                      | post_exchange_split to xwinnow0x    | 
++-------------------+--------------------------------------+-------------------------------------+
+| winnow t0x_f10    | winnow processing publish for xsarra | read local amqp v02                 | 
+|                   | exchange for downloading.            | as feeder user.                     | 
+|                   |                                      |                                     | 
+|                   |                                      | complete caching (winnow) function  | 
+|                   | as two sources identical, only half  |                                     | 
+|                   | messages received are posted to next | post amqp v02 to local excchange.   | 
++-------------------+--------------------------------------+-------------------------------------+
+| sarra download    | download the winnowed data from the  | read local amqp v02 (xsarra)        | 
+| f20               | data mart to a local directory       |                                     | 
+|                   | (TESTDOCROOT= ~/sarra_devdocroot)    | download using built-in python      |
+|                   |                                      |                                     | 
+|                   | add a header at application layer    | shared queue and multiple processes | 
+|                   | longer than 255 characters.          | 5 instances download from each q    | 
+|                   |                                      |                                     | 
+|                   |                                      | download using accel_wget plugin    | 
+|                   |                                      |                                     | 
+|                   |                                      | AMQP header truncation on publish.  | 
+|                   |                                      |                                     | 
+|                   |                                      | post amqp v02 to xpublic            | 
+|                   |                                      | as feeder user                      | 
+|                   |                                      | as http downloads from localhost    | 
++-------------------+--------------------------------------+-------------------------------------+
+| subscribe t       | download as client from localhost    | read amqp from local broker         | 
+|                   | to downloaded_by_sub_t directory.    | as ordinary user/client.            | 
+|                   |                                      |                                     | 
+|                   |                                      | shared queue and multiple processes | 
+|                   |                                      | 5 instances download from each q    | 
+|                   |                                      |                                     | 
++-------------------+--------------------------------------+-------------------------------------+
+| watch f40         | watch downloaded_by_sub_t            | client v03 post of local file.      | 
+|                   | (post each file that appears there.) | (file: url)                         | 
+|                   |                                      |                                     | 
+|                   | memory ceiling set low               | auto restarting on memory ceiling.  | 
+|                   |                                      |                                     | 
++-------------------+--------------------------------------+-------------------------------------+
+| sender            | read local file, send via sftp       | client consume v03 post.            | 
+| tsource2send      | to sent_by_tsource2send directory    |                                     | 
+|                   |                                      | consumer read local file.           | 
+|                   | post to xs_tsource_output            |                                     | 
+|                   |                                      | send via sftp.                      | 
+|                   |                                      |                                     | 
+|                   |                                      | plugin replace_dir                  | 
+|                   |                                      |                                     | 
+|                   |                                      | posting sftp url.                   | 
+|                   |                                      | post v02 (converting v03 back.)     | 
+|                   |                                      |                                     | 
+|                   |                                      | test post_exchange_suffix option.   | 
++-------------------+--------------------------------------+-------------------------------------+
+| subscribe         | download via sftp from localhost     | client sftp download.               | 
+| u_sftp_f60        | putting files in downloaded_by_sub_u |                                     | 
+|                   | directory.                           | accel_sftp plugin.                  | 
+|                   |                                      |                                     | 
++-------------------+--------------------------------------+-------------------------------------+
+| post test2_f61    | post files in sent_by_tsource2send   | explicit file posting               | 
+|                   | with ftp URL's in the                |                                     | 
+|                   | xs_tsource_poll exchange             | ftp URL posting.                    | 
+|                   |                                      |                                     | 
+|                   | (wrapper script calls post)          | post_exchange_suffix option         | 
++-------------------+--------------------------------------+-------------------------------------+
+| poll f62          | poll sent_by_tsource2send directory  | polling                             | 
+|                   | posting sftp download URL's          |                                     | 
+|                   |                                      | post_exchange_suffix option         | 
+|                   |                                      |                                     | 
++-------------------+--------------------------------------+-------------------------------------+
+| subscribe ftp_f70 | subscribe to test2_f61 ftp' posts.   | ftp url downloading.                | 
+|                   | download files from localhost        |                                     | 
+|                   | to downloaded_by_sub_u directory.    |                                     | 
+|                   |                                      |                                     | 
++-------------------+--------------------------------------+-------------------------------------+
+| subscribe q_f71   | subscribe to poll, downloading       | confirming poll post quality.       | 
+|                   | to recd_by_srpoll_test1              |                                     | 
++-------------------+--------------------------------------+-------------------------------------+
+| shovel pclean f90 | clean up files so they don't         | shovel function.                    | 
+|                   | accumulate                           |                                     | 
+|                   | fakes failures to exercise retries   |                                     | 
+|                   |                                      | retry logic.                        | 
+|                   |                                      |                                     | 
++-------------------+--------------------------------------+-------------------------------------+
+| shovel pclean f91 | clean up files so they don't         | shovel with posting v03             | 
+|                   | accumulate                           |                                     | 
+|                   |                                      | retry logic.                        | 
++-------------------+--------------------------------------+-------------------------------------+
+| shovel pclean f92 | clean up files so they don't         | shovel with consuming v03           | 
+|                   | accumulate                           |                                     | 
+|                   |                                      | posting v02.                        | 
+|                   |                                      |                                     | 
+|                   |                                      | retry logic.                        | 
++-------------------+--------------------------------------+-------------------------------------+
+
+Assumption: test environment is a Linux PC, either a laptop/desktop, or a server on which one
+can start a browser. If working with the c implementation as well, there are also the following
+flows defined:
+
+.. image:: cFlow_test.svg
 
    
+Running Flow Test
+-----------------
+
+This section documents these steps in much more detail.  
+Before one can run the flow_test, some pre-requisites must be taken care of.
 
 Local Installation on Workstation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
