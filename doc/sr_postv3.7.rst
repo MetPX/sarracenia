@@ -29,6 +29,15 @@ in payload protocol is targetted at simplifying future implementations
 and enabling use by messaging protocols other than pre-1.0 AMQP.
 See `Changes from v02`_ for more details.
 
+To generate messages in v03 format, use following setting::
+
+  post_topic_prefix v03.post
+
+To select messages to consume in that format::
+
+  topic_prefix v03.post
+
+
 
 SYNOPSIS
 --------
@@ -160,6 +169,7 @@ For example, if a file is placed on http://www.example.com/a/b/c/d/foo.txt,
 then the complete topic of the message will be:  *v03.post.a.b.c.d*
 AMQP fields are limited to 255 characters, and the characters in the field are utf8 
 encoded, so actual length limit may be less than that. 
+
 
 note::
 

@@ -315,7 +315,6 @@ for the file mirroring use case, additional files will be present:
   the permission string is four characters intended to be interpreted as
   traditional octal linux/unix permissions.
 
-All other headers are reserved for future use.  
 Headers which are unknown to a given client should be forwarded without modification.
 
 
@@ -522,6 +521,8 @@ http://rabbitmq.net - home page of the AMQP broker used to develop Sarracenia.
 
 SEE ALSO
 --------
+
+`sr_postv3(7) <sr_postv3.7.rst>`_ - experimental next version of sr_post messages.
 
 `sr_report(7) <sr_report.7.rst>`_ - the format of report messages.
 

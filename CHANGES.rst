@@ -6,6 +6,7 @@ lists all changes between versions.
 
 **git repo**
 
+* new: produce and consume v03.post messages, in JSON without 255 character limit on HEADERS.
 * bugfix: change cleanup, setup, declare to connect once and fail, rather than hang.
 * bugfix: when sr_post is a one-shot configuration, status makes no sense.
 
