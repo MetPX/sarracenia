@@ -353,6 +353,7 @@ class sr_post(sr_instances):
 
         self.obs_watched   = []
         self.watch_handler = None
+        self.post_topic_prefix = "v02.post"
 
         self.inl           = []
         self.new_events    = OrderedDict()

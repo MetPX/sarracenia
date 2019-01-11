@@ -336,6 +336,7 @@ class sr_poll(sr_post):
         return False, {}, {}
 
     def overwrite_defaults(self):
+
         sr_post.overwrite_defaults(self)
 
         # Set minimum permissions to something that might work most of the time.

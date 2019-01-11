@@ -131,6 +131,10 @@ class sr_subscribe(sr_instances):
            self.help()
            sys.exit(1)
 
+        if self.post_topic_prefix == None:
+           self.post_topic_prefix = self.topic_prefix
+           
+
         # bindings (if no subtopic)
 
         if self.bindings == []  :

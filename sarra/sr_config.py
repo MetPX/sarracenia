@@ -639,7 +639,7 @@ class sr_config:
         self.exchange_suffix      = None
         self.exchanges            = [ 'xlog', 'xpublic', 'xreport', 'xwinnow' ]
         self.topic_prefix         = 'v02.post'
-        self.post_topic_prefix    = 'v02.post'
+        self.post_topic_prefix    = None
         self.subtopic             = None
 
         self.queue_name           = None
