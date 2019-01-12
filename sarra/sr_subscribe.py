@@ -601,6 +601,9 @@ class sr_subscribe(sr_instances):
 
     def __print_json( self, m ):
 
+        if not m.topic.split('.')[1] in [ 'post', 'report' ]:
+            return
+
         if m.post_topic_prefix.startswith("v03"):
             json_line = json.dumps( ( m.pubtime, m.baseurl, m.relpath, m.headers ), sort_keys=True )
         else:
@@ -745,6 +748,13 @@ class sr_subscribe(sr_instances):
            if self.post_base_dir : relpath = relpath.replace(self.post_base_dir,'',1)
            self.msg.new_relpath  = relpath
 
+        # 2020 plugin proposed old values
+
+        if self.msg.time != self.msg.pubtime:
+           self.logger.warning("plugin modified parent.msg.time works for now, but should replace with parent.msg.pubtime")
+           self.msg.time = self.msg.pubtime
+
+        
 
     # =============
     # __plugin_backward_compat_setup__
@@ -788,6 +798,9 @@ class sr_subscribe(sr_instances):
         self.new_baseurl     = self.pbc_new_baseurl
         self.new_relpath     = self.pbc_new_relpath
 
+        # 2020 plugin proposed old values
+
+        self.msg.time       = self.msg.pubtime
 
 
     # =============
@@ -1531,12 +1544,15 @@ class sr_subscribe(sr_instances):
                  count += 1
                  self.msg.exchange = 'save'
                  jt = json.loads( json_line )
-                 if len(jt) == 3: 
+                 if len(jt) == 3:  # v02 format...
                      ( self.msg.topic, self.msg.headers, self.msg.notice ) = jt
-                 else:
+                 elif len(jt) == 4: # v03 format.
                      ( self.msg.pubtime, self.msg.baseurl, self.msg.relpath, self.msg.headers ) = jt
                      self.msg.topic = self.msg.post_topic_prefix + '.'.join( self.msg.relpath.split('/')[0:-1] )
                      self.msg.notice= "%s %s %s" % ( self.msg.pubtime, self.msg.baseurl, self.msg.relpath )
+                 else:
+                     self.logger.warning("skipped corrupt line in save file %s, line %d: %s" % ( self.save_path, count, json_line ) )
+                     continue
 
                  self.msg.from_amqplib()
                  self.msg.isRetry  = False
@@ -1653,6 +1669,11 @@ class sr_subscribe(sr_instances):
                       if (going_badly < 5):  going_badly*=2 
 
     def save_message(self):
+
+        if not self.msg.topic.split('.')[1] in [ 'post', 'report' ]:
+            self.logger.warning("%s skipping unsupported message format for saving. topic: %s" % ( self.program_name,self.msg.topic))
+            return
+
         self.logger.info("%s saving %d message topic: %s" % ( self.program_name,self.save_count,self.msg.topic))
         self.save_count += 1
         self.save_fp.write(json.dumps( ( self.msg.pubtime, self.msg.baseurl, self.msg.relpath, self.msg.headers ), sort_keys=True ) + '\n' ) 

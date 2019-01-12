@@ -44,6 +44,7 @@ git origin/master branch
 
 *CHANGE*: in each message the attribute name for the time the message was inserted
           into the network is changed from msg.time, to msg.pubtime.
+          change of msg.time value will trigger a deprecation warning to be logged.
 
 2.18.09b2
 ---------
