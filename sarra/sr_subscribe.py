@@ -71,6 +71,7 @@ except :
          from sarra.sr_message   import *
          from sarra.sr_util      import *
 
+
 class sr_subscribe(sr_instances):
 
     def check(self):
@@ -598,6 +599,15 @@ class sr_subscribe(sr_instances):
         return True
 
 
+    def __print_json( self, m ):
+
+        if m.post_topic_prefix.startswith("v03"):
+            json_line = json.dumps( ( m.pubtime, m.baseurl, m.relpath, m.headers ), sort_keys=True )
+        else:
+            json_line = json.dumps( ( m.topic, m.headers, m.notice ), sort_keys=True )
+
+        print("%s" % json_line )
+
     # =============
     # __on_post__ posting of message
     # =============
@@ -618,8 +628,7 @@ class sr_subscribe(sr_instances):
         ok = True
 
         if   self.outlet == 'json' :
-             json_line = json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ], sort_keys=True ) + '\n'
-             print("%s" % json_line )
+              self.__print_json( self.msg )
 
         elif self.outlet == 'url'  :
              print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
@@ -779,6 +788,8 @@ class sr_subscribe(sr_instances):
         self.new_baseurl     = self.pbc_new_baseurl
         self.new_relpath     = self.pbc_new_relpath
 
+
+
     # =============
     # process message  
     # =============
@@ -864,8 +875,7 @@ class sr_subscribe(sr_instances):
               if ok and self.reportback : self.msg.report_publish(201,'Published')
            else:
               if   self.outlet == 'json' :
-                   json_line = json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ], sort_keys=True ) + '\n'
-                   print("%s" % json_line )
+                   self.__print_json( self.msg )
               elif self.outlet == 'url'  :
                    print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
 
@@ -1145,7 +1155,6 @@ class sr_subscribe(sr_instances):
                              if ok and self.reportback : self.msg.report_publish(201,'Published')
                           else:
                              if   self.outlet == 'json' :
-                                  json_line= json.dumps([self.msg.topic,self.msg.headers,self.msg.notice],sort_keys=True)+'\n'
                                   print("%s" % json_line )
                              elif self.outlet == 'url'  :
                                   print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
@@ -1190,8 +1199,7 @@ class sr_subscribe(sr_instances):
               if ok and self.reportback : self.msg.report_publish(201,'Published')
            else:
               if   self.outlet == 'json' :
-                   json_line= json.dumps([self.msg.topic,self.msg.headers,self.msg.notice],sort_keys=True)+'\n'
-                   print("%s" % json_line )
+                   self.__print_json( self.msg )
               elif self.outlet == 'url'  :
                    print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
 
@@ -1239,8 +1247,7 @@ class sr_subscribe(sr_instances):
                  if ok and self.reportback : self.msg.report_publish(201,'Published')
               else:
                  if   self.outlet == 'json' :
-                      json_line= json.dumps([self.msg.topic,self.msg.headers,self.msg.notice],sort_keys=True)+'\n'
-                      print("%s" % json_line )
+                      self.__print_json( self.msg )
                  elif self.outlet == 'url'  :
                       print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
 
@@ -1446,8 +1453,7 @@ class sr_subscribe(sr_instances):
            if ok and self.reportback: self.msg.report_publish(201,'Published')
         else:
            if   self.outlet == 'json' :
-                json_line= json.dumps([self.msg.topic,self.msg.headers,self.msg.notice],sort_keys=True)+'\n'
-                print("%s" % json_line )
+                self.__print_json( self.msg )
            elif self.outlet == 'url'  :
                 print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
 
@@ -1524,7 +1530,14 @@ class sr_subscribe(sr_instances):
 
                  count += 1
                  self.msg.exchange = 'save'
-                 self.msg.topic, self.msg.headers, self.msg.notice = json.loads(json_line)
+                 jt = json.loads( json_line )
+                 if len(jt) == 3: 
+                     ( self.msg.topic, self.msg.headers, self.msg.notice ) = jt
+                 else:
+                     ( self.msg.pubtime, self.msg.baseurl, self.msg.relpath, self.msg.headers ) = jt
+                     self.msg.topic = self.msg.post_topic_prefix + '.'.join( self.msg.relpath.split('/')[0:-1] )
+                     self.msg.notice= "%s %s %s" % ( self.msg.pubtime, self.msg.baseurl, self.msg.relpath )
+
                  self.msg.from_amqplib()
                  self.msg.isRetry  = False
                  self.logger.info("%s restoring message %d of %d: topic: %s" %
@@ -1642,7 +1655,7 @@ class sr_subscribe(sr_instances):
     def save_message(self):
         self.logger.info("%s saving %d message topic: %s" % ( self.program_name,self.save_count,self.msg.topic))
         self.save_count += 1
-        self.save_fp.write(json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ], sort_keys=True ) + '\n' ) 
+        self.save_fp.write(json.dumps( ( self.msg.pubtime, self.msg.baseurl, self.msg.relpath, self.msg.headers ), sort_keys=True ) + '\n' ) 
         self.save_fp.flush()
 
 
