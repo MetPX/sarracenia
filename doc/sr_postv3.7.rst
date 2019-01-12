@@ -479,6 +479,10 @@ pairs.
        so net change is +6 characters. per header. Most v02 messages have 6 headers,
        net: +36 bytes 
 
+   * In v03, the format of save files is the same as message payload.
+     In v02 it was a json tuple that included a topic field, the body, and the headers.
+
+       
 
 Optimization Possibilities
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

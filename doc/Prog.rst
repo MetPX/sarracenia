@@ -274,12 +274,20 @@ being processed. variables variables most used:
   *parent.new_dir*, which operates on the directory to which the file
   will be downloaded.
 
+*parent.msg.pubtime*
+  The time the message was originally inserted into the network (first field of a notice.)
+
+*parent.msg.baseurl*
+  The root URL of the publication tree from which relative paths are constructed.
+
+*parent.msg.relpath*
+  The relative path from the baseURL of the file.
+  concatenating the two gives the complete URL.
+
 *parent.msg.notice*
   The body of the message being processed. see `sr_post(7) <sr_post.7.rst>`_
+  a space-separated tuple of: pubtime,baseurl,and relpath, 
   If parts here are modified, one must modify extracted fields for full effect.
-
-*parent.msg.time*
-  The time the message was originally inserted into the network (first field of a notice.)
 
 *parent.msg.partstr*
   The partition string ( same as parent.msg.headers['parts'] )
