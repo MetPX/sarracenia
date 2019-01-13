@@ -6,9 +6,10 @@ lists all changes between versions.
 
 **git repo**
 
-* new:    added documentation of preserve_time option (was missing.)
-* new:    if *preserve_time* is off, posts will not have *atime* and *mtime* headers
-* new:    if *preserve_mode* is off, posts will not have *mode* 
+* bugfix: added documentation of preserve_time option (was missing.)
+* bugfix: if *preserve_time* is off, posts will not have *atime* and *mtime* headers
+* bugfix: if *preserve_mode* is off, posts will not have *mode* 
+* bugfix: print a useful message if invalids sum algorithm specified.
 * bugfix: change cleanup, setup, declare to connect once and fail, rather than hang.
 * bugfix: when sr_post is a one-shot configuration, status makes no sense.
 

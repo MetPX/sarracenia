@@ -2392,7 +2392,9 @@ class sr_config:
                 elif words0 == 'sum': # See: sr_config.7 
                      self.sumflg = words[1]
                      ok = self.validate_sum()
-                     if not ok : needexit = True
+                     if not ok : 
+                        self.logger.error("unknown checksum specified: %s, should be one of: %s or z" % ( self.sumflg, ', '.join(self.sumalgos.keys()) ) )
+                        needexit = True
                      n = 2
 
                 elif words0 == 'timeout': # See: sr_sarra.8
