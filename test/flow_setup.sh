@@ -177,13 +177,15 @@ rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list exchanges | 
 x_cnt="`wc -l <$exnow`"
 expected_cnt="`wc -l <$exex`"
 
-if [ "$x_cnt" = $expected_cnt ]; then
+if [ "$x_cnt" -ge $expected_cnt ]; then
     echo "OK, as expected $expected_cnt $1" 
     passed_checks=$((${passed_checks}+1))
 else
     echo "FAILED, expected $expected_cnt, but there are $x_cnt $1"
     printf "Missing exchanges: %s\n" "`comm -23 $exex $exnow`"
-    printf "Extra exchanges: %s\n" "`comm -13 $exex $exnow`"
+fi
+if [ "$x_cnt" -gt $expected_cnt ]; then
+    printf "NOTE: Extra exchanges: %s\n" "`comm -13 $exex $exnow`"
 fi
 
 count_of_checks=$((${count_of_checks}+1))
