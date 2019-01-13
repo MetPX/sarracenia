@@ -10,7 +10,6 @@
 #
 # sr_config.py : python3 utility tool to configure sarracenia programs
 #
-#
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
 #  Last Changed   : Sep 22 10:41:32 EDT 2015

@@ -810,9 +810,12 @@ class sr_post(sr_instances):
 
         if lstat == None : return
 
-        self.msg.headers['mtime'] = timeflt2str(lstat.st_mtime)
-        self.msg.headers['atime'] = timeflt2str(lstat.st_atime)
-        self.msg.headers['mode']  = "%o" % ( lstat[stat.ST_MODE] & 0o7777 )
+        if self.preserve_time:
+            self.msg.headers['mtime'] = timeflt2str(lstat.st_mtime)
+            self.msg.headers['atime'] = timeflt2str(lstat.st_atime)
+
+        if self.preserve_mode:
+            self.msg.headers['mode']  = "%o" % ( lstat[stat.ST_MODE] & 0o7777 )
 
     # =============
     # post_link
@@ -1368,9 +1371,14 @@ class sr_post(sr_instances):
         if partstr  != None : self.msg.headers['parts']        = partstr
         if sumstr   != None : self.msg.headers['sum']          = sumstr
         if rename   != None : self.msg.headers['rename']       = rename
-        if mtime    != None : self.msg.headers['mtime']        = mtime
-        if atime    != None : self.msg.headers['atime']        = atime
-        if mode     != None : self.msg.headers['mode']         = "%o" % ( mode & 0o7777 )
+
+        if self.preserve_time:
+            if mtime    != None : self.msg.headers['mtime']        = mtime
+            if atime    != None : self.msg.headers['atime']        = atime
+
+        if self.preserve_mode:
+            if mode     != None : self.msg.headers['mode']         = "%o" % ( mode & 0o7777 )
+
         if link     != None : self.msg.headers['link']         = link
 
         if self.cluster != None : self.msg.headers['from_cluster']    = self.cluster

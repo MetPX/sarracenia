@@ -421,9 +421,14 @@ class sr_poll(sr_post):
         if partstr  != None : self.msg.headers['parts']        = partstr
         if sumstr   != None : self.msg.headers['sum']          = sumstr
         if rename   != None : self.msg.headers['rename']       = rename
-        if mtime    != None : self.msg.headers['mtime']        = mtime
-        if atime    != None : self.msg.headers['atime']        = atime
-        if mode     != None : self.msg.headers['mode']         = "%o" % ( mode & 0o7777 )
+
+        if self.preserve_time:
+            if mtime    != None : self.msg.headers['mtime']        = mtime
+            if atime    != None : self.msg.headers['atime']        = atime
+
+        if self.preserve_mode:
+            if mode     != None : self.msg.headers['mode']         = "%o" % ( mode & 0o7777 )
+
         if link     != None : self.msg.headers['link']         = link
 
         if self.cluster != None : self.msg.headers['from_cluster'] = self.cluster
