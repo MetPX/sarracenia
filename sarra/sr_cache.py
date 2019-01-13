@@ -60,16 +60,26 @@ class sr_cache():
         self.cache_file    = None
         self.fp            = None
 
+        self.cache_basis =  parent.cache_basis
+
         self.last_expire   = time.time()
         self.count         = 0
 
     def check(self, key, path, part):
-        self.logger.debug("sr_cache check")
+        self.logger.debug("sr_cache check basis=%s" % self.cache_basis )
 
-        qpath = urllib.parse.quote(path)
         # set time and value
         now   = time.time()
-        value = '%s*%s' % (path,part)
+
+        if self.cache_basis == 'name':
+            relpath = path.split('/')[-1]
+        elif self.cache_basis == 'path':
+            relpath = path
+        elif self.cache_basis == 'data':
+            relpath = "data"
+
+        qpath = urllib.parse.quote(relpath)
+        value = '%s*%s' % (relpath,part)
 
         # new... add
         if not key in self.cache_dict :
@@ -101,7 +111,13 @@ class sr_cache():
     def check_msg(self, msg):
         self.logger.debug("sr_cache check_msg")
 
-        relpath = msg.relpath
+        if self.cache_basis == 'name':
+            relpath = msg.relpath.split('/')[-1]
+        elif self.cache_basis == 'path':
+            relpath = msg.relpath
+        elif self.cache_basis == 'data':
+            relpath = "data"
+
         sumstr  = msg.headers['sum']
         partstr = relpath
 

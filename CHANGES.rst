@@ -10,6 +10,11 @@ lists all changes between versions.
 *      headers now in body in JSON removing 255 character limit.
 * new: save/restore format is now the same as the v03 payload.
 * new: add post_topic_prefix setting (matches existing consumer topic_prefix)
+* new:    added suppress_duplicates_basis path|name|data to tune cache for use cases.
+* bugfix: added documentation of preserve_time option (was missing.)
+* bugfix: if *preserve_time* is off, posts will not have *atime* and *mtime* headers
+* bugfix: if *preserve_mode* is off, posts will not have *mode* 
+* bugfix: print a useful message if invalids sum algorithm specified.
 * bugfix: change cleanup, setup, declare to connect once and fail, rather than hang.
 * bugfix: when sr_post is a one-shot configuration, status makes no sense.
 

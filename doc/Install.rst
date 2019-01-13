@@ -90,17 +90,25 @@ NOTE::
 Windows
 ~~~~~~~
 
-Any native python installation will do, but the dependencies in the standard python.org
-installation require the installation of a C-Compiler as well, so it gets a bit complicated.
-If you have an existing python installation that works with c-modules within it, then the
-complete package should install with all features.
+Because of details of startup/shutdown, the only fully functional python environment
+for Sarracenia on Windows is `Anaconda <www.anaconda.com>`_.  ( We are working
+through the issues with the variety of python environments` different installation
+methods in `Issue 122 <https://github.com/MetPX/sarracenia/issues/122>`_
 
-If you do not have a python environment handy, then one choice to get going with
-is winpython, which includes many scientifically relevant modules, and will easily install
-all dependencies for Sarracenia. You can obtain winpython from `<http://winpython.github.io/>`_ 
-(note: select python version >3 ) Then one can install with pip (as above.)
+Note::
 
-Another python environment choice is Anaconda.
+  Once Issue 122 is resolved, the following should apply:
+
+  Any native python installation should do, but the dependencies in the standard python.org
+  installation require the installation of a C-Compiler as well, so it gets a bit complicated.
+  If you have an existing python installation that works with c-modules within it, then the
+  complete package should install with all features.
+
+  If you do not have a python environment handy, then one choice to get going with
+  is winpython, which includes many scientifically relevant modules, and will easily install
+  all dependencies for Sarracenia. You can obtain winpython from `<http://winpython.github.io/>`_ 
+  (note: select python version >3 ) Then one can install with pip (as above.)
+
 
 
 Packages
