@@ -568,6 +568,8 @@ pairs.
    * In v03, the format of save files is the same as message payload.
      In v02 it was a json tuple that included a topic field, the body, and the headers.
 
+   * In v03, the report format is a post message with a header, rather than
+     being parsed differently. So this single spec applies to both.
        
 
 Optimization Possibilities
