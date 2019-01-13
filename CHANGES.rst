@@ -6,6 +6,7 @@ lists all changes between versions.
 
 **git repo**
 
+* new:    added suppress_duplicates_basis path|name|data to tune cache for use cases.
 * bugfix: added documentation of preserve_time option (was missing.)
 * bugfix: if *preserve_time* is off, posts will not have *atime* and *mtime* headers
 * bugfix: if *preserve_mode* is off, posts will not have *mode* 
