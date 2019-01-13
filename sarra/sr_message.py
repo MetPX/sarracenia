@@ -289,6 +289,10 @@ class sr_message():
      
         e = self.get_elapse()
 
+        if self.topic_prefix.startswith('v03'):
+           self.headers['report'] = "%s %s %s %s" % ( e, self.code, self.host, self.user )
+
+        # v02 filler... remove 2020.
         self.report_notice         = "%s %s %s %d %s %s %f" % \
                 (self.pubtime, self.baseurl, self.relpath, self.code, \
                      self.host, self.user, e )
@@ -307,7 +311,6 @@ class sr_message():
 
 
         # if  there is a publisher
-
         if self.report_publisher != None :
 
            # run on_report plugins
@@ -380,10 +383,14 @@ class sr_message():
         self.url     = urllib.parse.urlparse(self.urlstr)
 
         if self.mtype == 'report' or self.mtype == 'log': # log included for compatibility... prior to rename..
-           self.report_code   = int(token[3])
-           self.report_host   = token[4]
-           self.report_user   = token[5]
-           self.report_elapse = float(token[6])
+
+           if self.topic_prefix.startswith('v02'):
+               self.report_code   = int(token[3])
+               self.report_host   = token[4]
+               self.report_user   = token[5]
+               self.report_elapse = float(token[6])
+           else:
+               ( self.report_elapse, self.report_code, self.report_host, self.report_user ) = self.headers['report'].split()
 
         self.partstr = None
         if 'parts'   in self.headers :
