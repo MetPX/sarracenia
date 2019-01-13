@@ -21,7 +21,8 @@ STATUS: EXPERIMENTAL
 Sarracenia version 2 messages are the current standard, used for terabytes
 and millions of files per day of transfers. Version 3 is a proposal for a next
 iteration of Sarracenia messages, but it is not fully implemented, and 
-not in use anywhere.
+not in use anywhere, and may never be used. It is also not frozen yet
+and subject to change.
 
 Note that Version 3 does not change any semantics of Version 2. The fields
 and their meaning is the same in version 3 as it was in version 2. The change
