@@ -1399,8 +1399,8 @@ class sr_post(sr_instances):
     # =============
       
     def run(self):
-        self.logger.info("%s run partflg=%s, sum=%s, caching=%s " % \
-              ( self.program_name, self.partflg, self.sumflg, self.caching ))
+        self.logger.info("%s run partflg=%s, sum=%s, caching=%s basis=%s" % \
+              ( self.program_name, self.partflg, self.sumflg, self.caching, self.cache_basis ))
         self.logger.info("%s realpath_post=%s follow_links=%s force_polling=%s"  % \
               ( self.program_name, self.realpath_post, self.follow_symlinks, self.force_polling ) )
 

@@ -780,6 +780,7 @@ and under which name.
 - **source_from_exchange  <boolean> (default: off)**
 - **strip     <count|regexp>   (default: 0)**
 - **suppress_duplicates   <off|on|999[smhdw]>     (default: off)**
+- **suppress_duplicates_basis   <data|name|path>     (default: path)**
 - **timeout     <float>         (default: 0)**
 
 
@@ -1087,7 +1088,7 @@ A value of 1d (day) or 1w (week) can be appropriate.
 alternate strategy.  One must use either a fixed blocksize, or always never partition files. 
 One must avoid the dynamic algorithm that will change the partition size used as a file grows.
 
-**Note that the duplicate suppresion cache is local to each instance**. When N 
+**Note that the duplicate suppresion store is local to each instance**. When N 
 instances share a queue, the first time a posting is received, it could be 
 picked by one instance, and if a duplicate one is received it would likely 
 be picked up by another instance. **For effective duplicate suppression with instances**, 
@@ -1096,6 +1097,19 @@ a **first layer of subscribers (sr_shovels)** with duplicate suppression turned
 off and output with *post_exchange_split*, which route posts by checksum to 
 a **second layer of subscibers (sr_winnow) whose duplicate suppression caches are active.**
   
+suppress_duplicates_basis <data|name|path> (default: path)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A keyword option (alternative: *cache_basis* ) to identify which files are compared for 
+duplicate suppression purposes. Normally, the duplicate suppression uses the entire path
+to identify files which have not changed. This allows for files with identical 
+content to be posted in different directories and not be suppressed. In some
+cases, suppression of identical files should be done regardless of where in 
+the tree the file resides.  Set 'name' for files of identical name, but in
+different directories to be considered duplicates. Set to 'data' for any file, 
+regardless of name, to be considered a duplicate if the checksum matches.
+
+
 kbytes_ps <count> (default: 0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1269,6 +1283,12 @@ The **sanity_log_dead** option sets how long to consider too long before restart
 a component.
 
 suppress_duplicates <off|on|999> (default: off)
+-----------------------------------------------
+
+The cleanup of expired elements in the duplicate suppression store happens at
+each heartbeat.
+
+
 ERROR RECOVERY
 ==============
 
