@@ -6,10 +6,10 @@ lists all changes between versions.
 
 **git repo**
 
-* new: optionally produce and consume experimental v03.post messages, 
-*      headers now in body in JSON removing 255 character limit.
-* new: save/restore format is now the same as the v03 payload.
-* new: add post_topic_prefix setting (matches existing consumer topic_prefix)
+* new:    optionally produce and consume experimental v03.post messages, 
+*         headers now in body in JSON, removing 255 character limit.
+* new:    save/restore format is now the same as the v03 payload.
+* new:    add post_topic_prefix setting (matches existing consumer topic_prefix)
 * new:    added suppress_duplicates_basis path|name|data to tune cache for use cases.
 * bugfix: added documentation of preserve_time option (was missing.)
 * bugfix: if *preserve_time* is off, posts will not have *atime* and *mtime* headers
