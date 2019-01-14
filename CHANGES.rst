@@ -6,6 +6,8 @@ lists all changes between versions.
 
 **git repo**
 
+* new:    added windows_run exe|pyw|py option to allow choosing of how components run.
+*         one can invoke .exe files, or the script files with pythonw or python exes.
 * new:    added suppress_duplicates_basis path|name|data to tune cache for use cases.
 * bugfix: added documentation of preserve_time option (was missing.)
 * bugfix: if *preserve_time* is off, posts will not have *atime* and *mtime* headers
