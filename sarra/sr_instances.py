@@ -679,27 +679,37 @@ class sr_instances(sr_config):
                        self.logger.error("%s could not stop... not started " % self.instance_str)
                        return
 
-        if _platform == 'win32' :
+        cmd = [ sys.argv[0] ]
+        if _platform == 'win32': 
             #! does not work on windows, and subcomponents are actual scripts, not entry points.
             #  need to invoke interpreter manually.
             #  FIXME: pythonw preferred because it continues living after cmd window is closed.
             #
+            self.logger.debug("sys.argv[0]=%s windows_run=%s" % (sys.argv[0], self.windows_run) )
             cmd = []
             for p in os.getenv("PATH").split(";") :
-                q= p + '\pythonw.exe' 
-                if os.path.exists( q ):
-                    cmd = [ q ]
-                    break
-                q= p + '\python.exe' 
-                if os.path.exists( q ):
-                    cmd = [ q ]
-                    break
-            if os.path.exists( sys.argv[0] ):
-                 cmd.append( sys.argv[0] )
-            else:
-                 cmd.append(  sys.argv[0] + '-script.py' )
-        else:
-            cmd = [ sys.argv[0] ]
+
+                if self.windows_run == 'exe':
+                    q= p + '\\'+ os.path.basename(sys.argv[0]).replace('.py','') + '.exe' 
+                    if os.path.exists( q ):
+                        cmd = [ q ]
+                        break
+                elif self.windows_run == 'pyw':
+                    q= p + '\pythonw.exe' 
+                    if os.path.exists( q ):
+                        cmd = [ q ]
+                        break
+                elif self.windows_run == 'py':
+                    q= p + '\python.exe' 
+                    if os.path.exists( q ):
+                        cmd = [ q ]
+                        break
+
+            if self.windows_run != 'exe':
+                if os.path.exists( sys.argv[0] ):
+                     cmd.append( sys.argv[0] )
+                else:
+                     cmd.append(  sys.argv[0] + '-script.py' )
 
         if not self.user_args or not "--no" in self.user_args :
            cmd.append("--no")

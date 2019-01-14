@@ -1258,6 +1258,27 @@ Frequent Configuration Errors
    When used inappropriately, there will occasionally be incomplete files delivered.
 
 
+On Windows
+==========
+
+The python tools are ubiquitously installed with the operating system on Linux,
+and installation methods are somewhat more consistent there.  On windows, 
+there is a wide variety of methods of installation, stemming from the
+variety of python distributions available. The various methods conflict, to the
+extent that using the .exe files, as one would expect using winpython, does not
+work at all when installed using Anaconda. 
+
+A setting is provided *windows_run* to allow selection. the choices are:
+
+* exe - run sr_subscribe.exe as installed by pip (what one would expect to start)
+
+* pyw - run the pythonw.exe executable with sr_subscribe.py (or sr_subscribe-script.py) 
+  as the argument. (sometimes needed to have the component continue to run
+  after calling process is terminated.
+
+* py - run the python.exe executable with sr_subscribe.py (or sr_subscribe-script.py) 
+  as the argument. (sometimes also works.)
+
 
 
 PERIODIC PROCESSING
