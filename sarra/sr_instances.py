@@ -686,7 +686,6 @@ class sr_instances(sr_config):
             #  FIXME: pythonw preferred because it continues living after cmd window is closed.
             #
             self.logger.debug("sys.argv[0]=%s windows_run=%s" % (sys.argv[0], self.windows_run) )
-            cmd = []
             for p in os.getenv("PATH").split(";") :
 
                 if self.windows_run == 'exe':
@@ -704,6 +703,9 @@ class sr_instances(sr_config):
                     if os.path.exists( q ):
                         cmd = [ q ]
                         break
+
+            if not os.path.exists( cmd[0] ):
+                self.logger.warning( "check windows_run setting (%s), perhaps try another (pyw, py, exe)?" % self.windows_run )
 
             if self.windows_run != 'exe':
                 if os.path.exists( sys.argv[0] ):
