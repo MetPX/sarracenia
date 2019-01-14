@@ -794,6 +794,8 @@ class sr_config:
 
         self.notify_only          = False
 
+        self.windows_run         = 'exe'
+
         # 2 object not to reset in child
         if not hasattr(self,'logpath') :
            self.logpath           = None
@@ -2450,6 +2452,16 @@ class sr_config:
                 elif words0 == 'vip': # See: sr_poll.1, sr_winnow.1
                      self.vip = words[1]
                      n = 2
+
+                elif words0 in [ 'windows_run', 'wr'  ] : # See: sr_post.1 sr_watch.1
+                        known_runs = [ 'exe', 'pyw', 'py' ]
+                        if words1 in known_runs:
+                            self.windows_run = words1
+                        else:
+                            self.logger.error("unknown choice of what to run on Windows: %s, should be one of: %s (default: %s)" % \
+                                ( words1, known_runs, self.windows_run ) )
+
+                        n = 2
 
                 else :
                      # if unknown option is supplied, create a list for the values 
