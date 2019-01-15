@@ -17,7 +17,7 @@ class Report_Log(object):
 
         msg = parent.msg
 
-        parent.logger.info("report_log : (%d) '%s' - notice = %s" % (msg.code,msg.headers['message'],msg.report_notice))
+        parent.logger.info("report_log : (%d) '%s' - notice = %s %s %s" % (msg.code,msg.headers['message'], msg.pubtime, msg.baseurl, msg.relpath))
 
         # other report info :  msg.report_topic   and msg.headers  or  msg.hdrstr 
 

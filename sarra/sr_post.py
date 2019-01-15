@@ -237,7 +237,7 @@ class sr_post(sr_instances):
         print("-h|--help\n")
         print("-parts [0|1|sz]        0-computed blocksize (default), 1-whole files (no partitioning), sz-fixed blocksize")
         print("-to  <name1,name2,...> defines target clusters, default: ALL")
-        print("-tp  <topic_prefix>    default:v02.post")
+        print("-ptp <post_topic_prefix> default:v02.post")
         print("-sub <subtopic>        default:'path.of.file'")
         print("-rn  <rename>          default:None")
         print("-sum <sum>             default:d")
@@ -301,11 +301,11 @@ class sr_post(sr_instances):
         ok = True
 
         if   self.outlet == 'json' :
-             json_line = json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ], sort_keys=True ) + '\n'
+             json_line = json.dumps( [ self.msg.topic, self.msg.headers, "%s %s %s" % ( self.msg.pubtime, self.msg.baseurl, self.msg.relpath ) ], sort_keys=True ) + '\n'
              print("%s" % json_line )
 
         elif self.outlet == 'url'  :
-             print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
+             print( "%s%s%s" % ( self.baseurl, os.sep, self.relpath ) )
 
         else:
              ok = self.msg.publish( )
@@ -353,6 +353,7 @@ class sr_post(sr_instances):
 
         self.obs_watched   = []
         self.watch_handler = None
+        self.post_topic_prefix = "v02.post"
 
         self.inl           = []
         self.new_events    = OrderedDict()
@@ -720,7 +721,7 @@ class sr_post(sr_instances):
 
               ok = self.__on_post__()
               if not ok:
-                self.logger.error('Something went wrong while posting: %s' %self.msg.notice[2])
+                self.logger.error('Something went wrong while posting: %s' %self.msg.relpath)
 
 
         return True
@@ -787,8 +788,8 @@ class sr_post(sr_instances):
         self.msg.exchange = self.post_exchange
 
         # topic
-        self.msg.set_topic(self.topic_prefix,self.post_relpath)
-        if self.subtopic: self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
+        self.msg.set_topic(self.post_topic_prefix,self.post_relpath)
+        if self.subtopic: self.msg.set_topic_usr(self.post_topic_prefix,self.subtopic)
 
         # notice
         self.msg.set_notice(self.post_base_url,self.post_relpath)
@@ -1049,7 +1050,7 @@ class sr_post(sr_instances):
         self.msg.topic    = 'v02.pulse'
 
         self.msg.set_time()
-        self.msg.notice  = '%s' % self.msg.time
+        self.msg.notice  = '%s' % self.msg.pubtime
 
         if self.pulse_message : 
            self.msg.topic  += '.message'
@@ -1356,9 +1357,9 @@ class sr_post(sr_instances):
         self.msg.exchange = post_exchange
         
         # set message topic
-        self.msg.set_topic(self.topic_prefix,post_relpath)
+        self.msg.set_topic(self.post_topic_prefix,post_relpath)
         if self.subtopic != None :
-           self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
+           self.msg.set_topic_usr(self.post_topic_prefix,self.subtopic)
 
         # set message notice
         self.msg.set_notice(post_base_url,post_relpath)

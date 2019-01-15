@@ -19,6 +19,9 @@ testhost=localhost
 sftpuser=`whoami`
 
 
+#FIXME: puts the path at the end? so if you have multiple, guaranteed to take the wrong one?
+#       psilva worry 2019/01
+#
 if [[ ":$SARRA_LIB/../:" != *":$PYTHONPATH:"* ]]; then
     if [ "${PYTHONPATH:${#PYTHONPATH}-1}" == ":" ]; then
         export PYTHONPATH="$PYTHONPATH$SARRA_LIB/../"

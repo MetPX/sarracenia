@@ -71,6 +71,7 @@ except :
          from sarra.sr_message   import *
          from sarra.sr_util      import *
 
+
 class sr_subscribe(sr_instances):
 
     def check(self):
@@ -130,6 +131,10 @@ class sr_subscribe(sr_instances):
            self.logger.error("no topic_prefix given")
            self.help()
            sys.exit(1)
+
+        if self.post_topic_prefix == None:
+           self.post_topic_prefix = self.topic_prefix
+           
 
         # bindings (if no subtopic)
 
@@ -594,6 +599,18 @@ class sr_subscribe(sr_instances):
         return True
 
 
+    def __print_json( self, m ):
+
+        if not m.topic.split('.')[1] in [ 'post', 'report' ]:
+            return
+
+        if m.post_topic_prefix.startswith("v03"):
+            json_line = json.dumps( ( m.pubtime, m.baseurl, m.relpath, m.headers ), sort_keys=True )
+        else:
+            json_line = json.dumps( ( m.topic, m.headers, m.notice ), sort_keys=True )
+
+        print("%s" % json_line )
+
     # =============
     # __on_post__ posting of message
     # =============
@@ -614,8 +631,7 @@ class sr_subscribe(sr_instances):
         ok = True
 
         if   self.outlet == 'json' :
-             json_line = json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ], sort_keys=True ) + '\n'
-             print("%s" % json_line )
+              self.__print_json( self.msg )
 
         elif self.outlet == 'url'  :
              print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
@@ -732,6 +748,13 @@ class sr_subscribe(sr_instances):
            if self.post_base_dir : relpath = relpath.replace(self.post_base_dir,'',1)
            self.msg.new_relpath  = relpath
 
+        # 2020 plugin proposed old values
+
+        if self.msg.time != self.msg.pubtime:
+           self.logger.warning("plugin modified parent.msg.time works for now, but should replace with parent.msg.pubtime")
+           self.msg.time = self.msg.pubtime
+
+        
 
     # =============
     # __plugin_backward_compat_setup__
@@ -774,6 +797,11 @@ class sr_subscribe(sr_instances):
         self.new_file        = self.pbc_new_file
         self.new_baseurl     = self.pbc_new_baseurl
         self.new_relpath     = self.pbc_new_relpath
+
+        # 2020 plugin proposed old values
+
+        self.msg.time       = self.msg.pubtime
+
 
     # =============
     # process message  
@@ -860,8 +888,7 @@ class sr_subscribe(sr_instances):
               if ok and self.reportback : self.msg.report_publish(201,'Published')
            else:
               if   self.outlet == 'json' :
-                   json_line = json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ], sort_keys=True ) + '\n'
-                   print("%s" % json_line )
+                   self.__print_json( self.msg )
               elif self.outlet == 'url'  :
                    print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
 
@@ -899,8 +926,8 @@ class sr_subscribe(sr_instances):
 
         # set working message  with relpath info
 
-        w_msg.set_topic ('v02.post', relpath )
-        w_msg.set_notice(self.msg.baseurl,relpath,self.msg.time)
+        w_msg.set_topic (self.post_topic_prefix, relpath )
+        w_msg.set_notice(self.msg.baseurl,relpath,self.msg.pubtime)
 
         w_msg.parse_v02_post()
 
@@ -1133,15 +1160,14 @@ class sr_subscribe(sr_instances):
                           need_download = False
                           if self.reportback: self.msg.report_publish(201, 'moved')
 
-                          self.msg.set_topic('v02.post',self.msg.new_relpath)
-                          self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.time)
+                          self.msg.set_topic(self.post_topic_prefix,self.msg.new_relpath)
+                          self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.pubtime)
                           self.msg.headers['oldname'] = oldname
                           if self.post_broker :
                              ok = self.__on_post__()
                              if ok and self.reportback : self.msg.report_publish(201,'Published')
                           else:
                              if   self.outlet == 'json' :
-                                  json_line= json.dumps([self.msg.topic,self.msg.headers,self.msg.notice],sort_keys=True)+'\n'
                                   print("%s" % json_line )
                              elif self.outlet == 'url'  :
                                   print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
@@ -1178,16 +1204,15 @@ class sr_subscribe(sr_instances):
                self.logger.error("Could not remove %s. Type: %s, Value: %s,  ..." % (path, stype, svalue))
                if self.reportback: self.msg.report_publish(500, 'remove failed')
 
-           self.msg.set_topic('v02.post',self.msg.new_relpath)
-           self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.time)
+           self.msg.set_topic(self.post_topic_prefix,self.msg.new_relpath)
+           self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.pubtime)
            if 'newname' in self.msg.headers : self.msg.headers['newname'] = newname
            if self.post_broker :
               ok = self.__on_post__()
               if ok and self.reportback : self.msg.report_publish(201,'Published')
            else:
               if   self.outlet == 'json' :
-                   json_line= json.dumps([self.msg.topic,self.msg.headers,self.msg.notice],sort_keys=True)+'\n'
-                   print("%s" % json_line )
+                   self.__print_json( self.msg )
               elif self.outlet == 'url'  :
                    print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
 
@@ -1228,15 +1253,14 @@ class sr_subscribe(sr_instances):
                if self.reportback: self.msg.report_publish(500, 'symlink failed')
 
            if ok :
-              self.msg.set_topic('v02.post',self.msg.new_relpath)
-              self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.time)
+              self.msg.set_topic(self.post_topic_prefix,self.msg.new_relpath)
+              self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.pubtime)
               if self.post_broker :
                  ok = self.__on_post__()
                  if ok and self.reportback : self.msg.report_publish(201,'Published')
               else:
                  if   self.outlet == 'json' :
-                      json_line= json.dumps([self.msg.topic,self.msg.headers,self.msg.notice],sort_keys=True)+'\n'
-                      print("%s" % json_line )
+                      self.__print_json( self.msg )
                  elif self.outlet == 'url'  :
                       print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
 
@@ -1434,16 +1458,15 @@ class sr_subscribe(sr_instances):
            if self.inplace : self.msg.change_partflg('i')
            else            : self.msg.change_partflg('p')
 
-        self.msg.set_topic('v02.post',self.msg.new_relpath)
-        self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.time)
+        self.msg.set_topic(self.post_topic_prefix,self.msg.new_relpath)
+        self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.pubtime)
         if 'oldname' in self.msg.headers : self.msg.headers['oldname'] = oldname
         if self.post_broker :
            ok = self.__on_post__()
            if ok and self.reportback: self.msg.report_publish(201,'Published')
         else:
            if   self.outlet == 'json' :
-                json_line= json.dumps([self.msg.topic,self.msg.headers,self.msg.notice],sort_keys=True)+'\n'
-                print("%s" % json_line )
+                self.__print_json( self.msg )
            elif self.outlet == 'url'  :
                 print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
 
@@ -1520,7 +1543,17 @@ class sr_subscribe(sr_instances):
 
                  count += 1
                  self.msg.exchange = 'save'
-                 self.msg.topic, self.msg.headers, self.msg.notice = json.loads(json_line)
+                 jt = json.loads( json_line )
+                 if len(jt) == 3:  # v02 format...
+                     ( self.msg.topic, self.msg.headers, self.msg.notice ) = jt
+                 elif len(jt) == 4: # v03 format.
+                     ( self.msg.pubtime, self.msg.baseurl, self.msg.relpath, self.msg.headers ) = jt
+                     self.msg.topic = self.msg.post_topic_prefix + '.'.join( self.msg.relpath.split('/')[0:-1] )
+                     self.msg.notice= "%s %s %s" % ( self.msg.pubtime, self.msg.baseurl, self.msg.relpath )
+                 else:
+                     self.logger.warning("skipped corrupt line in save file %s, line %d: %s" % ( self.save_path, count, json_line ) )
+                     continue
+
                  self.msg.from_amqplib()
                  self.msg.isRetry  = False
                  self.logger.info("%s restoring message %d of %d: topic: %s" %
@@ -1636,9 +1669,14 @@ class sr_subscribe(sr_instances):
                       if (going_badly < 5):  going_badly*=2 
 
     def save_message(self):
+
+        if not self.msg.topic.split('.')[1] in [ 'post', 'report' ]:
+            self.logger.warning("%s skipping unsupported message format for saving. topic: %s" % ( self.program_name,self.msg.topic))
+            return
+
         self.logger.info("%s saving %d message topic: %s" % ( self.program_name,self.save_count,self.msg.topic))
         self.save_count += 1
-        self.save_fp.write(json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ], sort_keys=True ) + '\n' ) 
+        self.save_fp.write(json.dumps( ( self.msg.pubtime, self.msg.baseurl, self.msg.relpath, self.msg.headers ), sort_keys=True ) + '\n' ) 
         self.save_fp.flush()
 
 

@@ -4,7 +4,7 @@
 =========
 
 -------------------------------------------
-Sarracenia v02 Post Message Format/Protocol
+Sarracenia v03 Post Message Format/Protocol
 -------------------------------------------
 
 :Manual section: 7
@@ -14,40 +14,77 @@ Sarracenia v02 Post Message Format/Protocol
 
 .. contents::
 
+
+STATUS: EXPERIMENTAL
+--------------------
+
+Sarracenia version 2 messages are the current standard, used for terabytes
+and millions of files per day of transfers. Version 3 is a proposal for a next
+iteration of Sarracenia messages, but it is not fully implemented, and 
+not in use anywhere, and may never be used. It is also not frozen yet
+and subject to change.
+
+Note that Version 3 does not change any semantics of Version 2. The fields
+and their meaning is the same in version 3 as it was in version 2. The change
+in payload protocol is targetted at simplifying future implementations
+and enabling use by messaging protocols other than pre-1.0 AMQP.
+See `Changes from v02`_ for more details.
+
+To generate messages in v03 format, use following setting::
+
+  post_topic_prefix v03.post
+
+To select messages to consume in that format::
+
+  topic_prefix v03.post
+
+
+
 SYNOPSIS
 --------
 
-The format of file change announcements for sr_post.  
 
-An sr_post message consists of four parts: **AMQP TOPIC, First Line, Rest of Message, AMQP HEADERS.**
+Version 03 format of file change announcements for sr_post.  
 
-**AMQP Topic:** *<version>.post.{<dir>.}*
+An sr_post message consists of a topic, and the *BODY* 
+
+**AMQP Topic:** *<version>.[post|report].{<dir>.}*
 
 ::
 
-           <version> = "v02" the version of the protocol or format.
+           <version> = "v03" the version of the protocol or format.
            "post" = the type of message within the protocol.
            <dir> = a sub-directory leading to the file (perhaps many directories deep)
-           <filename> = the name of the file on the server.
 
-**AMQP Headers:** *<series of key-value pairs>*
-
-::
-           "parts" = size and partitioning information.
-           "sum" = checksum algorithm and value.
-
-**Body:** *<first line> = <date stamp> <base_url> <relpath> [ <rename> ] <newline>*
-
+**BODY:** *[ "<pubtime>", "<baseurl>", "<relpath>", <headers> ]* (JSON encoding.)
 
 ::
+          tuple fields:
+          "pubtime"       - YYYYMMDDHHMMSS.ss - UTC date/timestamp.
+          "baseurl"       - root of the url to download.
+          "relpath"       - relative path can be catenated to <base_url>
 
-          <date stamp> - YYYYMMDDHHMMSS.ss - UTC date/timestamp.
-          <base_url>   - root of the url to download.
-          <relpath>    - relative path can be catenated to <base_url>
-          <rename>     - name to write file locally.
+          Followed by the headers array of name:value pairs:
 
-<*rest of body is reserved for future use*>
+          "parts" = size and partitioning information.
+          "sum" = checksum algorithm and value.
+          "rename"        - name to write file locally.
+          "topic"         - copy of topic from AMQP header (usually omitted)
+          "source"        - the originating entity of the message. 
+          "from_cluster"  - the originating cluster of a message.
+          "to_clusters"   - a destination specification.
+          "link"          - value of a symbolic link. (if sum starts with L)
+          "atime"         - last access time of a file (optional)
+          "mtime"         - last modification time of a file (optional)
+          "mode"          - permission bits (optional)
 
+          For "v03.report" topic messages the following addtional
+          headers will be present:
+  
+          "report"   - status report field documented in `Report Messages`_
+          "message"  - status report message documented in `Report Messages`_
+
+          additional user defined name:value pairs are permitted.
 
 DESCRIPTION
 -----------
@@ -73,10 +110,10 @@ The minimal layer over raw AMQP provides more complete file transfer functionali
 
 Source Filtering (use of `AMQP TOPIC`_ exchanges)
    The messages make use of *topic exchanges* from AMQP, where topics are hierarchies
-   meant to represent subjects of interest to a consumer.  A consumer may upload the 
+   meant to represent subjects of interest to a consumer. A consumer may upload the 
    selection criteria to the broker so that only a small subset of postings
-   are forwarded to the client.  When there are many users interested in only small subsets
-   of data, the savings in traffic are large.
+   are forwarded to the client.  When there are many users interested in only 
+   small subsets of data, the savings in traffic are large.
 
 Fingerprint Winnowing (use of the sum_ header)
    Each product has a checksum and size intended to identify it uniquely, referred to as
@@ -121,69 +158,71 @@ Partitioning (use of the parts_ Header)
 AMQP TOPIC
 ----------
 
-In topic based AMQP exchanges, every message has a topic header.  AMQP defines the '.' character 
+In topic based AMQP exchanges, every message has a topic header. AMQP defines the '.' character 
 as a hierarchical separator (like '\' in a windows path name, or '/' on linux) there is also a 
 pair of wildcards defined by the standard:  '*' matches a single topic, '#' matches the rest of 
 the topic string. To allow for changes in the message body in the future, topic trees begin with 
 the version number of the protocol.   
 
-AMQP allows server side topic filtering using wildcards.  Subscribers specify topics of 
+AMQP allows server side topic filtering using wildcards. Subscribers specify topics of 
 interest (which correspond to directories on the server), allowing them to pare down the 
 number of notifications sent from server to client.  
 
-The root of the topic tree is the version specifier: "v02".  Next comes the message type specifier.  
+The root of the topic tree is the version specifier: "v03".  Next comes the message type specifier.  
 These two fields define the protocol that is in use for the rest of the message.
 The message type for post messages is "post".  After the fixed topic prefix, 
 the remaining sub-topics are the path elements of the file on the web server.  
 For example, if a file is placed on http://www.example.com/a/b/c/d/foo.txt, 
-then the complete topic of the message will be:  *v02.post.a.b.c.d*
+then the complete topic of the message will be:  *v03.post.a.b.c.d*
 AMQP fields are limited to 255 characters, and the characters in the field are utf8 
 encoded, so actual length limit may be less than that. 
 
 
+note::
 
-THE FIRST LINE 
---------------
+  Sarracenia relies on brokers to interpret the topic header. Brokers interpret protocol
+  specific headers *AMQP), and will not efficiently decode the payload to extract headers. 
+  Therefore the topic header is stored in an AMQP header, rather than the payload to permit
+  server-side filtering.  To avoid sending the same information twice, this header is
+  omitted from the JSON payload.
 
-The first line of a message contains all mandatory elements of an announcement.
-There are a series of white space separated fields:
+  Many client-side implementation will, once the message is loaded, set the *topic* header 
+  in the in-memory structure, so it would be very unwise to to set the *topic* header
+  in an application even though it isn't visible in the on-wire payload.
 
-*<date stamp>*: the date the posting was emitted.  Format: YYYYMMDDHHMMSS. *<decimalseconds>*
+
+THE FIXED FIELDS
+----------------
+
+The message is a single JSON encoded array, with a mandatory set of fields, while allowing
+for use of arbitrary other fields.  Mandatory fields must be present in every message, and
+
+ *"<date stamp>"* : the publication date the posting was emitted.  Format: YYYYMMDDHHMMSS. *<decimalseconds>*
 
  Note: The datestamp is always in the UTC timezone.
 
-*<base_url>* -- the base URL used to retrieve the data.
+ *"<base_url>"* -- the base URL used to retrieve the data.
+
+ *"<relativepath>"* --  the variable part of the URL, usually appended to *base_url*.
 
 The URL consumers will use to download the data.  Example of a complete URL::
 
  sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRPDS_HiRes_000.gif
 
-*<relativepath>*  the variable part of the URL, usually appended to *base_url*.
 
-
-*<newline>* signals the end of the first line of the message and is denoted by a single line feed character.
-
-
-THE REST OF MESSAGE
--------------------
-
-Use of only the first line of the AMQP payload is currently defined.  
-The rest of the payload body is reserved for future use.
-
-
-AMQP HEADERS 
-------------
-
-In addition to the first line of the message containing all mandatory fields, optional 
-elements are stored in AMQP headers (utf8 encoded key-value pairs limited to 255 bytes in length), included 
-in messages when appropriate. 
+In addition to the first three fixed fields of the message containing all 
+mandatory fields, optional elements are stored in the last element of the JSON
+tuple, which is, itself a JSON array (series of name:value pairs), 
+called *headers*.
 
 **from_cluster=<cluster_name>**
-   The from_cluster defines the name of the source cluster where the data was introduced into the network.
-   It is used to return the logs back to the cluster whenever its products are used.
+   The from_cluster header defines the name of the source cluster where the 
+   data was introduced into the network. It is used to return the logs back 
+   to the cluster whenever its products are used.
 
 **link=<value of symbolic link>**
-   When file to transfer is a symbolic link, the 'link' header is created to contain its value.
+   When file to transfer is a symbolic link, the 'link' header is created to 
+   contain its value.
 
 .. _parts:
 
@@ -303,9 +342,96 @@ in messages when appropriate.
  Each name should be unique within all exchanging rabbitmq clusters. It is used to do the transit
  of the products and their notices through the exchanging clusters.
 
-*optional headers follow*
+**"topic": v03.post.<relpath without filename>** ( RESERVED )
+ The topic header is not present in the JSON payload of the message. It is instead stored
+ in a protocol specific header (AMQP HEADER.) when an application reads the AMQP header
+ into memory, it will typically add this to the in-memory structure.
 
-for the file mirroring use case, additional files will be present:
+Report Messages
+---------------
+
+Some clients may return telemetry to the origin of downloaded data for troubleshooting
+and statistical purposes. Such messages, have the *v03.report* topic, and have a *report*
+header which is a space separated string with four fields:
+
+ *<report_time> <report_code> <report_host> <report_user>*
+
+ * *<report_code>*  result codes describe in the next session
+
+ * *<report_time>*  time the report was generated.
+
+ * *<report_host>*  hostname from which the retrieval was initiated.
+
+ * *<report_user>*  broker username from which the retrieval was initiated.
+
+
+Report_Code
+~~~~~~~~~~~
+
+The report code is a three digit status code, adopted from the HTTP protocol (w3.org/IETF RFC 2616)
+encoded as text.  As per the RFC, any code returned should be interpreted as follows:
+
+	* 2xx indicates successful completion,
+	* 3xx indicates further action is required to complete the operation.
+	* 4xx indicates a permanent error on the client prevented a successful operation.
+	* 5xx indicates a problem on the server prevented successful operation.
+
+.. NOTE::
+   FIXME: need to validate whether our use of error codes co-incides with the general intent
+   expressed above... does a 3xx mean we expect the client to do something? does 5xx mean
+   that the failure was on the broker/server side?
+
+The specific error codes returned, and their meanings are implementation-dependent.
+For the sarracenia implementation, the following codes are defined:
+
++----------+--------------------------------------------------------------------------------------------+
+|   Code   | Corresponding text and meaning for sarracenia implementation                               |
++==========+============================================================================================+
+|   201    | Download successful. (variations: Downloaded, Inserted, Published, Copied, or Linked)      |
++----------+--------------------------------------------------------------------------------------------+
+|   205    | Reset Content: truncated. File is shorter than originally expected (changed length         |
+|          | during transfer) This only arises during multi-part transfers.                             |
++----------+--------------------------------------------------------------------------------------------+
+|   205    | Reset Content: checksum recalculated on receipt.                                           |
++----------+--------------------------------------------------------------------------------------------+
+|   304    | Not modified (Checksum validated, unchanged, so no download resulted.)                     |
++----------+--------------------------------------------------------------------------------------------+
+|   307    | Insertion deferred (writing to temporary part file for the moment.)                        |
++----------+--------------------------------------------------------------------------------------------+
+|   417    | Expectation Failed: invalid message (corrupt headers)                                      |
++----------+--------------------------------------------------------------------------------------------+
+|   496    | failure: During send, other protocol failure.                                              |
++----------+--------------------------------------------------------------------------------------------+
+|   497    | failure: During send, other protocol failure.                                              |
++----------+--------------------------------------------------------------------------------------------+
+|   499    | Failure: Not Copied. SFTP/FTP/HTTP download problem                                        |
++----------+--------------------------------------------------------------------------------------------+
+|   499    | Failure: Not Copied. SFTP/FTP/HTTP download problem                                        |
++----------+--------------------------------------------------------------------------------------------+
+|   503    | Service unavailable. delete (File removal not currently supported.)                        |
++----------+--------------------------------------------------------------------------------------------+
+|   503    | Unable to process: Service unavailable                                                     |
++----------+--------------------------------------------------------------------------------------------+
+|   503    | Unsupported transport protocol specified in posting.                                       |
++----------+--------------------------------------------------------------------------------------------+
+|   xxx    | Message and file validation status codes are script dependent                              |
++----------+--------------------------------------------------------------------------------------------+
+
+
+Other Report Fields
+~~~~~~~~~~~~~~~~~~~
+
+
+*<report_message>* a string.
+
+
+
+
+
+Optional Headers
+----------------
+
+for the file mirroring use case, additional headers will be present:
 
 **atime,mtime,mode**
 
@@ -315,6 +441,8 @@ for the file mirroring use case, additional files will be present:
   the permission string is four characters intended to be interpreted as
   traditional octal linux/unix permissions.
 
+
+All other headers are reserved for future use.  
 Headers which are unknown to a given client should be forwarded without modification.
 
 
@@ -323,11 +451,11 @@ EXAMPLE
 
 :: 
 
- Topic: v02.post.NRDPS.GIF.NRDPS_HiRes_000.gif
- first line: 201506011357.345 sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif NRDPS/GIF/  
- Headers: parts=p,457,1,0,0 sum=d,<md5sum> source=ec_cmc
+ Topic: v03.post.NRDPS.GIF.NRDPS_HiRes_000.gif
+ Body: [ "201506011357.345", "sftp://afsiext@cmcdataserver", "/data/NRPDS/outputs/NRDPS_HiRes_000.gif",
+   { "rename": "NRDPS/GIF/", "parts":"p,457,1,0,0", "sum" : "d,<md5sum>", "source": "ec_cmc" } ]
 
-        - v02 - version of protocol
+        - v03 - version of protocol
         - post - indicates the type of message
         - version and type together determine format of following topics and the message body.
 
@@ -354,7 +482,7 @@ Another example
 
 The post resulting from the following sr_watch command, noticing creation of the file 'foo'::
 
- sr_watch -s sftp://stanley@mysftpserver.com//data/shared/products/foo -pb amqp://broker.com
+ sr_watch -pbu sftp://stanley@mysftpserver.com/ -path /data/shared/products/foo -pb amqp://broker.com
 
 Here, *sr_watch* checks if the file /data/shared/products/foo is modified.
 When it happens, *sr_watch*  reads the file /data/shared/products/foo and calculates its checksum.
@@ -366,13 +494,14 @@ on mysftpserver.com using the sftp protocol to  broker.com assuming he has prope
 
 The output of the command is as follows ::
 
-  Topic: v02.post.20150813.data.shared.products.foo
-  1st line of body: 20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo
-  Headers: parts=1,256,1,0,0 sum=d,25d231ec0ae3c569ba27ab7a74dd72ce source=guest
+  Topic: v03.post.20150813.data.shared.products.foo
+  Body: [ "20150813161959.854", "sftp://stanley@mysftpserver.com/", 
+          "/data/shared/products/foo", { "parts":"1,256,1,0,0", 
+          "sum": "d,25d231ec0ae3c569ba27ab7a74dd72ce", "source":"guest" } ]
 
 Posts are published on AMQP topic exchanges, meaning every message has a topic header.
-The body consists of a time *20150813161959.854*, followed by the two parts of the retrieval URL.
-The headers follow with first the *parts*, a size in bytes *256*,
+The body consists of a time *20150813161959.854*, followed by the two parts of the 
+retrieval URL. The headers follow with first the *parts*, a size in bytes *256*,
 the number of block of that size *1*, the remaining bytes *0*, the
 current block *0*, a flag *d* meaning the md5 checksum is
 performed on the data, and the checksum *25d231ec0ae3c569ba27ab7a74dd72ce*.
@@ -390,6 +519,72 @@ to implement any features not described by this documentation.
 
 This Manual page is intended to completely specify the format of messages and their 
 intended meaning so that other producers and consumers of messages can be implemented.
+
+
+v02
+~~~
+
+`sr_post version 2 reference man page <sr_post.7.rst>`_
+
+Changes from v02
+~~~~~~~~~~~~~~~~
+
+Version 03 is a change in encoding, but the semantics of the fields
+are unchanged from version 02. Changes are limited to how the fields
+are placed in the messages. In v02, AMQP headers were used to store name-value 
+pairs.  
+
+   * v03 headers have practically unlimited length. In v02, individual 
+     name-value pairs are limited to 255 characters. This has proven 
+     limiting in practice.  In v03, the limit is not defined by the JSON 
+     standard, but by specific parser implementations. The limits in common
+     parsers are high enough not to cause practical concerns.
+
+   * use of message payload to store headers makes it possible to consider
+     other messaging protocols, such as MQTT 3.1.1, in future. 
+
+   * In v03, pure JSON payload simplifies implementations, reduces documentation
+     required, and amount of parsing to implement.  Using a commonly implemented
+     format permits use of existing optimized parsers.
+
+   * In v03, JSON encoding of the entire payload reduces the features required for
+     a protocol to forward Sarracenia posts. For example, one might
+     consider using Sarracenia with MQTT v3.11 brokers which are more
+     standardized and therefore more easily interoperable than AMQP.
+
+   * Change in overhead... approximately +45 bytes per message (varies.)
+     
+     * JSON tuple marking square brackets '[' ']', commas and quotes for 
+       three fixed fields. net: +10
+
+     * AMQP section *Application Properties* no longer included in payload, saving
+       a 3 byte header (replaced by 2 bytes of open and close braces payload.) 
+       net: -1 byte
+       
+     * each field has a one byte header to indicate the table entry in an AMQP
+       packet, versus 4 quote characters, a colon, a space, and likely a comma: 7 total.
+       so net change is +6 characters. per header. Most v02 messages have 6 headers,
+       net: +36 bytes 
+
+   * In v03, the format of save files is the same as message payload.
+     In v02 it was a json tuple that included a topic field, the body, and the headers.
+
+   * In v03, the report format is a post message with a header, rather than
+     being parsed differently. So this single spec applies to both.
+       
+
+Optimization Possibilities
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+optimization goal is for readabilty and ease of implementation, much more
+than efficiency or performance. There are many optimizations to reduce
+overheads of various sorts, all of which will increase implementation
+complexity. examples: gzip the payload would save perhaps 50% size,
+also grouping fixed headers together, ('body' header could contain
+all fixed fields: "pubtime, baseurl, relpath, sum, parts", and another
+field 'meta' could contain: atime, mtime, mode so there would be fewer
+named fields and save perhaps 40 bytes of overhead per notice. But
+all the changes increase complexity, make messages more involved to parse.
 
 
 AMQP Feature Selection
@@ -421,11 +616,11 @@ layered on top of AMQP is to be a minimum amount to achieve meaningful data exch
 AMQP: not 1.0, but 0.8 or 0.9
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-AMQP 1.0 standardizes the on-the-wire protocol, but leaves out many features of broker interaction.   
-As the use of brokers is key to sarracenia´s use of, was a fundamental element of earlier standards, 
+AMQP 1.0 standardizes the on-the-wire protocol, but removed all broker standardization.   
+As the use of brokers is key to Sarracenia´s use of, was a fundamental element of earlier standards, 
 and as the 1.0 standard is relatively controversial, this protocol assumes a pre 1.0 standard broker, 
-as is provided by many free brokers, such as rabbitmq, often referred to as 0.8, but 0.9 and post
-0.9 brokers are also likely to inter-operate well.
+as is provided by many free brokers, such as rabbitmq and Apache QPid, often referred to as 0.8, 
+but 0.9 and post 0.9 brokers could inter-operate well.
 
 Named Exchanges and Queues
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -491,24 +686,38 @@ Other Parameters
 There are other parameters, such as persistence (have queues survive broker restarts, default to true),
 expiry (how long a queue should exist when no-one is consuming from it.  Default: a few 
 minutes for development, but can set much longer for production) message-ttl (the life-span of queued
-messages. messages that are too old, will not be delivered. default is forever.)
+messages. Messages that are too old will not be delivered: default is forever.)
 Pre-fetch is an AMQP tunable to determine how many messages a client will retrieve from
 a broker at once, optimizing streaming.
 
 
 
 
-Applicable Standards
---------------------
+Standards
+---------
 
-* Sarracenia relies on `AMQP pre 1.0 <https://www.rabbitmq.com/resources/specs/amqp0-9-1.pdf>`_  as the
-  1.0 standard eliminated concepts: broker, exchange, queue, and binding.  The 1.0 feature set is below the 
-  minimum needed to support Sarracenia's pub-sub architecture.
+ * Sarracenia relies on `AMQP pre 1.0 <https://www.rabbitmq.com/resources/specs/amqp0-9-1.pdf>`_  
+   as the 1.0 standard eliminated concepts: broker, exchange, queue, and 
+   binding.  The 1.0 feature set is below the minimum needed to support 
+   Sarracenia's pub-sub architecture.
 
-* All messages are expected to use the UNICODE character set (ISO 10646), 
-  represented by UTF-8 encoding (IETF RFC 3629).
+ * JSON is defined by `IETF RFC 7159 <https://www.rfc-editor.org/info/rfc7159>`_.
+   JSON standard includes mandatory use of UNICODE character set (ISO 10646)
+   JSON default character set is UTF-8, but allows multiple character 
+   encodings (UTF-8, UTF-16, UTF-32), but also prohibits presence of 
+   byte order markings (BOM.)
 
-* URL encoding, as per IETF RFC 1738, is used to escape unsafe characters where appropriate.
+ * the same as Sarracenia v02, UTF-8 is mandatory. Sarracenia restricts JSON format 
+   by requiring of UTF-8 encoding, (IETF RFC 3629) which does not need/use BOM.
+   No other encoding is permitted.
+
+ * URL encoding, as per IETF RFC 1738, is used to escape unsafe characters 
+   where appropriate.
+
+ * MQTT refers to `MQTT v3.1.1 <http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html>`_,
+   the most widely implemented version at this time. Yes, v5 has user properties
+   with 64K long strings, and has been standardized in 2017, but implementations 
+   are (at the beginning of 2019) not plentiful. 
 
 
 FURTHER READING
@@ -521,8 +730,6 @@ http://rabbitmq.net - home page of the AMQP broker used to develop Sarracenia.
 
 SEE ALSO
 --------
-
-`sr_postv3(7) <sr_postv3.7.rst>`_ - experimental next version of sr_post messages.
 
 `sr_report(7) <sr_report.7.rst>`_ - the format of report messages.
 

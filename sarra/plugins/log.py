@@ -42,7 +42,7 @@ class Log(object):
         """
         msg = parent.msg
         parent.logger.info("log message accepted: %s %s%s topic=%s lag=%g %s" % \
-           tuple( msg.notice.split()[0:3] + [ msg.topic, msg.get_elapse(), msg.hdrstr ] ) )
+           ( msg.pubtime, msg.baseurl, msg.relpath, msg.topic, msg.get_elapse(), msg.hdrstr ) )
         return True
           
     def on_part(self,parent):
@@ -73,7 +73,7 @@ class Log(object):
         """
         msg = parent.msg
         parent.logger.info("log post notice=%s %s %s headers=%s" % \
-            tuple( msg.notice.split()[0:3] + [ msg.headers ] ) )
+            ( msg.pubtime, msg.baseurl, msg.relpath, msg.headers ) )
         return True
 
     def on_heartbeat(self,parent):

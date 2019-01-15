@@ -138,6 +138,7 @@ def self_test():
     msg.start_timer()
     msg.topic   = "v02.post.test"
     msg.notice  = "notice"
+    msg.pubtime = "20190109084420.788106"
     msg.baseurl = sftp_url
     msg.relpath = "tztz/ccc"
     msg.partflg = '1'

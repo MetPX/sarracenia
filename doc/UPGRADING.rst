@@ -38,6 +38,14 @@ Installation Instructions
 git origin/master branch
 ------------------------
 
+*NOTICE*: the format when using -save & -restore has changed to match the `v03 <sr_postv3.7.rst>`_
+          payload. Save files created with the new version will not be readable with earlier versions.
+          this version can still the old files. (iow: upper compatibility is there, but not downward.)
+
+*CHANGE*: in each message the attribute name for the time the message was inserted
+          into the network is changed from msg.time, to msg.pubtime.
+          change of msg.time value will trigger a deprecation warning to be logged.
+
 2.18.09b2
 ---------
 

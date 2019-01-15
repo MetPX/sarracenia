@@ -40,7 +40,7 @@ class Fetcher(object):
                 logger = parent.logger                
                 deleteflg = parent.delete
 
-                ok, details = parent.credentials.get(parent.msg.notice.split()[1])
+                ok, details = parent.credentials.get(parent.msg.baseurl)
                 if ok: 
                         setting         = details.url
                         user            = setting.username
@@ -49,7 +49,7 @@ class Fetcher(object):
                         protocol        = setting.scheme.lower() 
                         port            = setting.port
                 else:
-                        logger.error("download_email_ingest: destination has invalid credentials: %s" % parent.msg.notice.split()[1])
+                        logger.error("download_email_ingest: destination has invalid credentials: %s" % parent.msg.baseurl)
                         return False
 
                 if not port:

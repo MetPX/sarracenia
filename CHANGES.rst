@@ -6,6 +6,10 @@ lists all changes between versions.
 
 **git repo**
 
+* new:    optionally produce and consume experimental v03.post messages, 
+*         headers now in body in JSON, removing 255 character limit.
+* new:    save/restore format is now the same as the v03 payload.
+* new:    add post_topic_prefix setting (matches existing consumer topic_prefix)
 * new:    added windows_run exe|pyw|py option to allow choosing of how components run.
 *         one can invoke .exe files, or the script files with pythonw or python exes.
 * new:    added suppress_duplicates_basis path|name|data to tune cache for use cases.

@@ -265,7 +265,9 @@ class sr_sender(sr_subscribe):
     # =============
 
     def doit_send(self,parent=None):
-        self.logger.debug("doit_send with %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
+        self.logger.debug("doit_send with %s '%s %s %s' %s" % \
+            (self.msg.topic, self.msg.pubtime, self.msg.baseurl, \
+             self.msg.relpath, self.msg.hdrstr))
 
         self.logger.debug("doit_send to: %s / %s " % ( self.msg.new_dir, self.msg.new_file)  )
         # the code of msg_2localfile could be put here...
@@ -329,8 +331,8 @@ class sr_sender(sr_subscribe):
         #=================================
 
         if self.post_broker :
-           self.msg.set_topic('v02.post',self.msg.new_relpath)
-           self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.time)
+           self.msg.set_topic(self.post_topic_prefix,self.msg.new_relpath)
+           self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.pubtime)
            self.__on_post__()
            if self.reportback:
                self.msg.report_publish(201,'Published')

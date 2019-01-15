@@ -99,7 +99,7 @@ class sr_retry:
 
     def msgFromJSON(self, line ):
         try:
-            topic, headers, notice = json.loads(line)
+            topic, headers, notice  = json.loads(line)
         except:
             self.logger.error("corrupted line in retry file: %s " % line)
             return None
@@ -108,15 +108,24 @@ class sr_retry:
         self.message.delivery_info['routing_key']      = topic
         self.message.properties['application_headers'] = headers
         self.message.body                              = notice
+        ( self.message.pubtime, self.message.baseurl, self.message.relpath ) = notice.split()
 
         return self.message
 
     def msgToJSON(self, message, done=False ):
-        topic   = message.delivery_info['routing_key']
-        headers = message.properties['application_headers']
-        notice  = message.body
 
-        if type(notice) == bytes: notice = notice.decode("utf-8")
+        topic   = message.delivery_info['routing_key']
+
+        if message.body[0] == '[' : # v03 message to persist, 
+           ( message.pubtime, message.baseurl, message.relpath, headers ) = json.loads( message.body )
+           notice  = "%s %s %s" % ( message.pubtime, message.baseurl, message.relpath ) 
+        else:
+           headers = message.properties['application_headers']
+           if type(message.body) == bytes: 
+               notice = message.body.decode("utf-8")
+           else:
+               notice = message.body
+ 
 
         if done:
            headers['_retry_tag_'] = 'done'
@@ -209,8 +218,7 @@ class sr_retry:
 
         # compute message age
         notice   = message.body
-        parts    = notice.split()
-        msg_time = timestr2flt(parts[0])
+        msg_time = timestr2flt(message.pubtime)
         msg_age  = time.time() - msg_time
 
         # expired ?

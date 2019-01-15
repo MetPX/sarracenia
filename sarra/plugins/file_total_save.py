@@ -72,7 +72,7 @@ class File_Total(object):
         if ( parent.file_total_bytecount==0 ) :
             logger.info("file_total: 0 files received: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"  )
 
-        mt=msg.time
+        mt=msg.pubtime
         msgtime=calendar.timegm(time.strptime(mt[:mt.find('.')],"%Y%m%d%H%M%S")) + float(mt[mt.find('.'):])
         now=time.time()
 

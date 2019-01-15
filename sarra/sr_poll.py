@@ -336,6 +336,7 @@ class sr_poll(sr_post):
         return False, {}, {}
 
     def overwrite_defaults(self):
+
         sr_post.overwrite_defaults(self)
 
         # Set minimum permissions to something that might work most of the time.
@@ -408,8 +409,8 @@ class sr_poll(sr_post):
 
         self.msg.exchange = post_exchange
         
-        self.msg.set_topic(self.topic_prefix,post_relpath)
-        if self.subtopic != None : self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
+        self.msg.set_topic(self.post_topic_prefix,post_relpath)
+        if self.subtopic != None : self.msg.set_topic_usr(self.post_topic_prefix,self.subtopic)
 
         self.msg.set_notice(post_base_url,post_relpath)
 

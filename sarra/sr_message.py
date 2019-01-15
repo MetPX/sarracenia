@@ -36,6 +36,8 @@ import calendar,os,socket,sys,time,urllib,urllib.parse
 
 from sys import platform as _platform
 
+import json
+
 try:
     import xattr
     supports_extended_attributes=True
@@ -63,6 +65,8 @@ class sr_message():
         self.message_ttl   = 0
         self.exchange      = None
         self.report_exchange  = parent.report_exchange
+        self.topic_prefix  = parent.topic_prefix
+        self.post_topic_prefix  = parent.post_topic_prefix
         self.report_publisher = None
         self.publisher     = None
         self.pub_exchange  = None
@@ -186,8 +190,11 @@ class sr_message():
 
         self.local_checksum = self.sumalgo.get_value()
 
-
     def from_amqplib(self, msg=None ):
+        """
+            This routine does a minimal decode of raw messages from amqplib
+            raw messages are also decoded by sr_retry/msgToJSON, so must match the two. 
+        """
 
         self.start_timer()
 
@@ -197,11 +204,24 @@ class sr_message():
            self.topic     = msg.delivery_info['routing_key']
            self.topic     = self.topic.replace('%20',' ')
            self.topic     = self.topic.replace('%23','#')
-           self.headers   = msg.properties['application_headers']
-           self.notice    = msg.body
+           if msg.body[0] == '[' :
+               self.pubtime, self.baseurl, self.relpath, self.headers = json.loads(msg.body)
+               self.notice = "%s %s %s" % ( self.pubtime, self.baseurl, self.relpath )
+           else:
+               self.headers   = msg.properties['application_headers']
+
+               if type(msg.body) == bytes: 
+                    self.notice = msg.body.decode("utf-8")
+               else:
+                    self.notice = msg.body
+
+               if 'pulse' in self.topic:
+                   self.pubtime = self.notice.split(' ')[0]
+               else:
+                   self.pubtime, self.baseurl, self.relpath = self.notice.split(' ')[0:3]
+
            self.isRetry   = msg.isRetry
 
-           if type(self.notice) == bytes: self.notice = self.notice.decode("utf-8")
 
         # pulse message... parse it
         # exchange='v02.pulse'
@@ -213,8 +233,8 @@ class sr_message():
            self.isPulse = True
 
            # parse pulse notice
-           token     = self.notice.split(' ')
-           self.time = token[0]
+           token        = self.notice.split(' ')
+           self.pubtime = token[0]
            self.set_msg_time()
 
            # pulse message
@@ -240,7 +260,7 @@ class sr_message():
 
            path  = token[2].strip('/')
            words = path.split('/')
-           self.topic    = 'v02.post.' + '.'.join(words[:-1])
+           self.topic    = self.post_topic_prefix + '.'.join(words[:-1])
            self.logger.debug(" modified for topic = %s" % self.topic)
 
         # adjust headers from -headers option
@@ -256,7 +276,7 @@ class sr_message():
         if self.version == 'v00' :
            self.parse_v00_post()
 
-        if self.version == 'v02' :
+        else:
            self.parse_v02_post()
 
     def get_elapse(self):
@@ -266,8 +286,16 @@ class sr_message():
         self.code               = code
         self.headers['message'] = message
         self.report_topic          = self.topic.replace('.post.','.report.')
-        self.report_notice         = "%s %d %s %s %f" % \
-                                  (self.notice,self.code,self.host,self.user,self.get_elapse())
+     
+        e = self.get_elapse()
+
+        if self.topic_prefix.startswith('v03'):
+           self.headers['report'] = "%s %s %s %s" % ( e, self.code, self.host, self.user )
+
+        # v02 filler... remove 2020.
+        self.report_notice         = "%s %s %s %d %s %s %f" % \
+                (self.pubtime, self.baseurl, self.relpath, self.code, \
+                     self.host, self.user, e )
         self.set_hdrstr()
 
         # AMQP limits topic to 255 characters, so truncate and warn.
@@ -283,7 +311,6 @@ class sr_message():
 
 
         # if  there is a publisher
-
         if self.report_publisher != None :
 
            # run on_report plugins
@@ -348,7 +375,7 @@ class sr_message():
         self.subtopic     = '.'.join(token[3:])
 
         token        = self.notice.split(' ')
-        self.time    = token[0]
+        self.pubtime = token[0]
         self.baseurl = token[1]
         self.relpath = token[2].replace(    '%20',' ')
         self.relpath = self.relpath.replace('%23','#')
@@ -356,10 +383,14 @@ class sr_message():
         self.url     = urllib.parse.urlparse(self.urlstr)
 
         if self.mtype == 'report' or self.mtype == 'log': # log included for compatibility... prior to rename..
-           self.report_code   = int(token[3])
-           self.report_host   = token[4]
-           self.report_user   = token[5]
-           self.report_elapse = float(token[6])
+
+           if self.topic_prefix.startswith('v02'):
+               self.report_code   = int(token[3])
+               self.report_host   = token[4]
+               self.report_user   = token[5]
+               self.report_elapse = float(token[6])
+           else:
+               ( self.report_elapse, self.report_code, self.report_host, self.report_user ) = self.headers['report'].split()
 
         self.partstr = None
         if 'parts'   in self.headers :
@@ -390,8 +421,9 @@ class sr_message():
 
         if self.pub_exchange != None : self.exchange = self.pub_exchange
 
-        for h in self.headers:
-           if len(self.headers[h].encode("utf8")) >= amqp_ss_maxlen:
+        if not self.topic.startswith('v03'):
+           for h in self.headers:
+             if len(self.headers[h].encode("utf8")) >= amqp_ss_maxlen:
 
                 # strings in utf, and if names have special characters, the length
                 # of the encoded string wll be longer than what is returned by len(. so actually need to look
@@ -408,6 +440,11 @@ class sr_message():
         # AMQP limits topic to 255 characters, space and # replaced, if greater than limit : truncate and warn.
         self.topic = self.topic.replace(' ','%20')
         self.topic = self.topic.replace('#','%23')
+
+
+        if self.post_topic_prefix != self.topic_prefix:
+            self.topic = self.topic.replace(self.topic_prefix,self.post_topic_prefix,1)
+
         if len(self.topic.encode("utf8")) >= amqp_ss_maxlen :
            mxlen=amqp_ss_maxlen 
            # see truncation explanation from above.
@@ -429,19 +466,25 @@ class sr_message():
            suffix=""
 
         if self.publisher != None :
-           ok = self.publisher.publish(self.exchange+suffix,self.topic,self.notice,self.headers,self.message_ttl)
+
+           if self.topic.startswith('v03'):
+               body=json.dumps( (self.pubtime, self.baseurl, self.relpath, self.headers) )
+               self.logger.debug( "FIXME v03 body: %s" % body )
+               ok = self.publisher.publish(self.exchange+suffix,self.topic,body,None,self.message_ttl)
+           else:
+               ok = self.publisher.publish(self.exchange+suffix,self.topic,self.notice,self.headers,self.message_ttl)
 
         self.set_hdrstr()
 
         if ok :
                 self.logger.debug("Published1: %s %s" % (self.exchange,self.topic))
-                self.logger.debug("Published2: '%s' %s" % (self.notice, self.hdrstr))
+                self.logger.debug("Published2: '%s %s %s' %s" % (self.pubtime, self.baseurl, self.relpath, self.hdrstr))
         else  :
                 self.printlog = self.logger.error
                 self.printlog("Could not publish message :")
 
-                self.printlog("exchange %s topic %s " % (self.exchange,self.topic))
-                self.printlog("notice   %s"           % self.notice )
+                self.printlog("exchange %s topic %s " % (self.exchange,self.topic) )
+                self.printlog("notice   %s %s %s"     % (self.pubtime, self.baseurl, self.relpath) )
                 self.printlog("headers  %s"           % self.hdrstr )
 
         return ok
@@ -469,7 +512,7 @@ class sr_message():
 
         path  = new_file.strip('/')
         words = path.split('/')
-        self.topic = 'v02.post.' + '.'.join(words[:-1])
+        self.topic = self.post_topic_prefix + '.'.join(words[:-1])
 
         self.headers[ 'sum' ] = sumstr
         self.headers[ 'parts' ] = '1,%d,0,0' % fstat.st_size
@@ -597,38 +640,44 @@ class sr_message():
         return
 
     def set_msg_time(self):
-        parts       = self.time.split('.')
+        parts       = self.pubtime.split('.')
         ts          = time.strptime(parts[0]+" +0000", "%Y%m%d%H%M%S %z" )
         ep_msg      = calendar.timegm(ts)
         self.tbegin = ep_msg + float('0.'+parts[1])
 
     def set_notice_url(self,url,time=None):
         self.url    = url
-        self.time   = time
+        self.pubtime = time
         if time    == None : self.set_time()
         path        = url.path.strip('/')
         notice_path = path.replace(       ' ','%20')
         notice_path = notice_path.replace('#','%23')
 
         if url.scheme == 'file' :
-           self.notice = '%s %s %s' % (self.time,'file:','/'+notice_path)
+           self.notice = '%s %s %s' % (self.pubtime,'file:','/'+notice_path)
+           self.baseurl = 'file:'
+           self.relpath = '/'+notice_path
            return
 
         urlstr      = url.geturl()
         static_part = urlstr.replace(url.path,'') + '/'
 
         if url.scheme == 'http' :
-           self.notice = '%s %s %s' % (self.time,static_part,notice_path)
+           self.notice = '%s %s %s' % (self.pubtime,static_part,notice_path)
+           self.baseurl = static_part
+           self.relpath = notice_path
            return
 
         if url.scheme[-3:] == 'ftp'  :
            if url.path[:2] == '//'   : notice_path = '/' + notice_path
 
-        self.notice = '%s %s %s' % (self.time,static_part,notice_path)
+        self.notice = '%s %s %s' % (self.pubtime,static_part,notice_path)
+        self.baseurl = static_part
+        self.relpath = notice_path
 
     def set_notice(self,baseurl,relpath,time=None):
 
-        self.time    = time
+        self.pubtime    = time
         self.baseurl = baseurl
         self.relpath = relpath
         if not time  : self.set_time()
@@ -636,7 +685,9 @@ class sr_message():
         notice_relpath = relpath.replace(       ' ','%20')
         notice_relpath = notice_relpath.replace('#','%23')
 
-        self.notice = '%s %s %s' % (self.time,baseurl,notice_relpath)
+        self.notice = '%s %s %s' % (self.pubtime,baseurl,notice_relpath)
+        self.baseurl = baseurl
+        self.relpath = notice_relpath
 
         #========================================
         # COMPATIBILITY TRICK  for the moment
@@ -747,7 +798,7 @@ class sr_message():
         now  = time.time()
         frac = '%f' % now
         nows = time.strftime("%Y%m%d%H%M%S",time.gmtime()) + '.' + frac.split('.')[1]
-        self.time = nows
+        self.pubtime = nows
         if not hasattr(self,'tbegin') : self.tbegin = now
 
     def set_to_clusters(self,to_clusters=None):

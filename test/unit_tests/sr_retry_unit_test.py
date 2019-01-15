@@ -385,13 +385,17 @@ def self_test():
     cfg.debug          = True
     cfg.retry_path     = retry_path
 
-    notice = '%s xyz://user@host /my/terrible/path%.10d' % (timeflt2str(time.time()),0)
+    message = raw_message(logger)
+
+    message.pubtime= timeflt2str(time.time())
+    message.baseurl= "xyz://user@host"
+    message.relpath= '/my/terrible/path%.10d' % 0 
+    notice = '%s %s %s' % ( message.pubtime, message.baseurl, message.relpath ) 
 
     headers = {}
     headers['sum'] = notice
     headers['my_header_attr'] = 'my_header_attr_value'
 
-    message = raw_message(logger)
 
     message.delivery_info['exchange']         = cfg.exchange
     message.delivery_info['routing_key']      = 'my_topic'
@@ -450,6 +454,8 @@ def self_test():
     retry.message.delivery_info['routing_key']      = topic
     retry.message.properties['application_headers'] = headers
     retry.message.body                              = notice
+
+    ( retry.message.pubtime, retry.message.baseurl, retry.message.relpath ) = notice.split()
 
     i   = 0
     now = time.time()

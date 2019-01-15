@@ -33,7 +33,9 @@ else:  # unit testing code goes here.
         def __init__(self):
             self.urlstr = "download://" 
             self.headers = {}
-            self.notice = "20171230232323.111 http://localhost:8000 lolo/lala"
+            self.pubtime = "20171230232323.111"
+            self.baseurl = "http://localhost:8000"
+            self.relpath = "lolo/lala"
             self.topic = "v02.post.lolo"
             self.get_elapse= lambda: 1.2
             self.hdrstr= " sum=0,234 parts=1,1,0,0"
