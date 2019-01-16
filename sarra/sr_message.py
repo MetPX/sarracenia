@@ -469,7 +469,6 @@ class sr_message():
 
            if self.topic.startswith('v03'):
                body=json.dumps( (self.pubtime, self.baseurl, self.relpath, self.headers) )
-               self.logger.debug( "FIXME v03 body: %s" % body )
                ok = self.publisher.publish(self.exchange+suffix,self.topic,body,None,self.message_ttl)
            else:
                ok = self.publisher.publish(self.exchange+suffix,self.topic,self.notice,self.headers,self.message_ttl)
