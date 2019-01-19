@@ -1,14 +1,14 @@
+#  mqtt_mesh - subscribe to a peer and publish locally
+#
 #  This is just for demonstration purposes
 #     - many limitations, but demonstrates basic algorithm.
-#     - major limitation: downloads everything from everyone, no discrimination or bandwidth concerns.
-#     - reliability of MQTT for this sort of application is unknown, but demo is easier.
-#     - AMQP v0.9 is known reliable for this sort of thing (Sarracenia), but it's much bigger code base.
 #
 #  in this scenario:
-#     - WMO members who care to operate brokers publish and subscribe to each other.
+#     - any subset of WMO members may operate brokers to publish and subscribe to each other.
 #     - each one downloads data it does not already have from peer brokers, 
 #       and announces those downloads locally for other peers.
-#     - as long as there is at least transitive path between all peers, everyone will get all data.
+#     - as long as there is at least one transitive path between all peers, everyone will 
+#       get all data.
 #     - peers who feel data is too *late* just add peer subscriptionss.
 #
 #  accept two arguments:  
@@ -34,7 +34,6 @@
 # python3 mqtt_mesh.py wis2.jma.co.jp CWAO
 # ... 
 # 
-# note, because of in
 
 
 import paho.mqtt.client as mqtt
@@ -42,6 +41,10 @@ import os,os.path
 import urllib.request
 import json
 import sys
+import xattr
+
+# name of the extended attribute to store checksums in 
+sxa = 'user.sr_sum'
 
 # for checksums.
 from hashlib import md5
@@ -101,15 +104,24 @@ def sum_file( filename, algo ):
 
       why support multiple checksums? because security people deprecate them, and they will need
       to evolve over time. should not be baked into WMO standard, just referenced and used.
-      also some data may be *equal* but not *binary identical* 
+      also some data may be *equal* without being *binary identical* , may need to add 
+      datatype appropriate checksum algorithms over time.
     """
+    global sxa
 
+
+    a = xattr.xattr( filename )
+    if sxa in a.keys():
+        print( "retrieving sum" )
+        return a[sxa].decode('utf-8')
+ 
+    print( "calculating sum" )
     if algo in [ 'd', 's' ]:
-       f = open(filename,'rb')
-       d = f.read()
-       f.close()
+        f = open(filename,'rb')
+        d = f.read()
+        f.close()
     elif algo in [ 'n' ]:
-       d=filename
+        d=filename
  
     if algo in [ 'd', 'n']:
         hash = md5()
@@ -117,7 +129,9 @@ def sum_file( filename, algo ):
         hash = sha512()
 
     hash.update(d) 
-    return algo + ',' + hash.hexdigest()
+    sf = algo + ',' + hash.hexdigest()
+    xattr.setxattr(filename, sxa, bytes(sf,'utf-8') )
+    return sf
     
 
 
@@ -142,7 +156,9 @@ def mesh_download( m, doit=False ):
     
     p =  d + '/' + fname 
 
+    FirstTime=True
     if os.path.exists( p ):
+        FirstTime=False
         print( "file exists: %s. Should we download? " % p )
 
         # date criterion
@@ -175,6 +191,12 @@ def mesh_download( m, doit=False ):
     if doit:
        urllib.request.urlretrieve( url, p )    
      
+    if FirstTime:
+       if 'sum' in m[3].keys():
+           xattr.setxattr(p, sxa, bytes(m[3]['sum'],'utf-8') )
+       else:
+           sum_file(p, m[3]['sum'][0] )
+
     # after download, publish for others.
     t=exchange + topic_prefix + os.path.dirname(m[2])
     body = json.dumps( ( m[0], post_base_url, m[2], m[3]) )
