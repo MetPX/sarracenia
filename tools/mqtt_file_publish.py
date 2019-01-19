@@ -4,13 +4,13 @@
 # assuming there is a web server running on *broker_host*
 # post messages 
 #
+import os
 
 broker_host = 'localhost'
 post_base_url = 'http://localhost/wmo_mesh'
 post_base_dir = os.getcwd() + '/wmo_mesh'
 import paho.mqtt.client as mqtt
 
-import os
 import json
 import sys
 
