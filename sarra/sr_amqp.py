@@ -32,7 +32,7 @@
 #
 #
 
-try   : import amqp
+try   : import amqplib.client_0_8 as amqp
 except: pass
 
 try   : import pika
@@ -74,7 +74,7 @@ class HostConnect:
        self.sleeping   = None
 
        self.pika_available    = 'pika'    in sys.modules
-       self.amqplib_available = 'amqp' in sys.modules
+       self.amqplib_available = 'amqplib' in sys.modules
 
        self.use_pika          = self.pika_available
 
