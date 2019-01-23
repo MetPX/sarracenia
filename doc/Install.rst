@@ -92,11 +92,15 @@ Windows
 
 On Windows, there are 2 (other) possible options:
 
-#. **Without Python**: Download Sarracenia installer file, execute it and follow the instruction. Don't forget to add **Sarracenia's Python directory** to your **PATH**. See here for more detailed instructions.
-#. **With Anaconda**: Create your environment with the file provided by this repository. There is also more detailed information here, but executing that command will install everything::
+**Without Python**
+ Download Sarracenia installer file, execute it and follow the instruction. Don't forget to add *Sarracenia's Python directory* 
+ to your *PATH*. See here for more detailed instructions.
 
-      conda env create -f sarracenia_env.yml
+**With Anaconda**
+ Create your environment with the file provided by this repository. There is also more detailed information here, but executing
+ that command will install everything::
 
+  conda env create -f sarracenia_env.yml
 
 
 Packages
