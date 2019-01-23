@@ -122,7 +122,7 @@ AMQP TOPIC
 ----------
 
 In topic based AMQP exchanges, every message has a topic header.  AMQP defines the '.' character 
-as a hierarchical separator (like '\' in a windows path name, or '/' on linux) there is also a 
+as a hierarchical separator (like '\' in a Windows path name, or '/' on linux) there is also a
 pair of wildcards defined by the standard:  '*' matches a single topic, '#' matches the rest of 
 the topic string. To allow for changes in the message body in the future, topic trees begin with 
 the version number of the protocol.   

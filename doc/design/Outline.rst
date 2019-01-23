@@ -139,7 +139,7 @@ and seem helpful.  We should get rid of any that are not helpful.
 
   9. It needs to run anywhere.
      ubuntu,centos -- primary.
-     but windows also.
+     but Windows also.
 
      We are trying to make a pump that others can easily adopt.
      That means they can install and go.
