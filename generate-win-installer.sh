@@ -6,7 +6,7 @@ rm -rf pynsist_pkgs
 mkdir pynsist_pkgs
 cd pynsist_pkgs/
 
-# Ensure that pip3 is always used to download-only windows whls
+# Ensure to download only windows binaries
 pip3 download appdirs --only-binary=:all: --platform win_amd64
 pip3 download netifaces --only-binary=:all: --platform win_amd64
 pip3 download pika --only-binary=:all: --platform win_amd64
