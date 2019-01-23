@@ -40,7 +40,7 @@ import shutil
 import subprocess
 import sarra
 
-try   : import amqplib.client_0_8 as amqp
+try   : import amqp
 except: pass
 
 try   : import pika

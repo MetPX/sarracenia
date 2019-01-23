@@ -36,7 +36,6 @@
 #
 
 import urllib, logging, logging.handlers, os, random, re, signal, string, sys, time, getopt
-import amqplib.client_0_8 as amqp
 import stat, os.path
 import calendar,socket,urllib.parse
 from hashlib import md5
@@ -48,7 +47,7 @@ from hashlib import md5
 #
 #============================================================
 
-try   : import amqplib.client_0_8 as amqp
+try   : import amqp
 except: pass
 
 try   : import pika
@@ -112,7 +111,7 @@ class HostConnect:
        self.sleeping   = None
 
        self.pika_available    = 'pika'    in sys.modules
-       self.amqplib_available = 'amqplib' in sys.modules
+       self.amqplib_available = 'amqp' in sys.modules
 
        self.use_pika          = self.pika_available
 
@@ -160,6 +159,7 @@ class HostConnect:
                       self.logger.debug("AMQPLIB is used")
                       self.connection = amqp.Connection(host, userid=self.user, password=self.password, \
                                                         virtual_host=self.vhost,ssl=self.ssl)
+                      self.connection.connect()
                self.channel    = self.new_channel()
                self.logger.debug("Connected ")
                for func in self.rebuilds:
