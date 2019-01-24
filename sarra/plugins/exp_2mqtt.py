@@ -71,7 +71,8 @@ class EXP_2MQTT(object):
       else:
             port = u.port
 
-      parent.mqtt_client = mqtt.Client()
+      # https://www.iso.org/standard/69466.html - ISO standard v3.1.1 is most common.
+      parent.mqtt_client = mqtt.Client( protocol=mqtt.MQTTv311 )
 
       if u.username != None:
           logger.error("exp_2mqtt: authenticating as %s " % (u.username) )
