@@ -4,7 +4,8 @@ Windows detailed instructions
 
 .. section-numbering::
 
-This document teaches a novice user with Python on Windows how to run/install Sarracenia in various way
+This document teaches a novice user with Python on Windows how to run/install Sarracenia in various way.
+The screenshots comes from Windows Server 2012
 
 Run instructions
 ----------------
@@ -12,15 +13,24 @@ Run instructions
 Run Sarracenia
 ~~~~~~~~~~~~~~
 
-#. Install MetPX-Sarracenia
+#. Install Sarracenia
 #. Launch Sarracenia
 
-    From Powershell (run as Administrator)::
+   From the Start Menu:
+     Clicking the shortcut will start (or restart) Sarracenia:
+
+      .. image:: start-menu-1.png
+
+     This will pop Sarracenia Command Prompt with logging informations.
+
+      .. image:: sarra-prompt.png
+
+     Closing this window or ctrl-c then kills all Sarracenia processes
+     when you are done with Sarracenia.
+
+   From Powershell (run as Administrator)::
 
      sr <start|restart> [myconf]
-
-    From the Start Menu:
-     blabla
 
     From the Task Scheduler:
      blabla
