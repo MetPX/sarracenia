@@ -4,8 +4,8 @@ Windows user manual
 
 .. no section-numbering::
 
-This document teaches a novice user with Python on Windows how to run/install Sarracenia in various way. 
-The screenshots were taken from Windows Server 2012. Feel free to create issues if you believe that this
+This document teaches novice user with Python on Windows how they could easily run Sarracenia in various way. 
+The screenshots were taken from *Windows Server 2012 R2 Standard* edition. Feel free to create issues if you believe that this
 document could be enhanced with one (or more) important case(s).
 
 Running Sarracenia with a Command Prompt
@@ -93,38 +93,3 @@ The task should now appear in your *Task Scheduler Library* with the status *Rea
 Then, you may run it immediately with the |run_action| button.
 
 .. |run_action| image:: run_action.png
-
-Installation Instructions:
---------------------------
-
-Install MetPX-Sarracenia
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-#. Download **Windows installer** and execute it (click next all the way)
-#. Add Sarracenia's Python directory to your **PATH**
-
-
-Install MetPX-Sarracenia with Python.org
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-#. Download and install python.org (latest):
-
-    Take care of including python in PATH variable (checkbox)
-
-#. Install paramiko and MetPX-Sarracenia:
-
-    In Powershell (run as Administrator)::
-
-     pip install paramiko
-     pip install metpx-sarracenia
-
-Install MetPX-Sarracenia with Anaconda prompt
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-#. Install MetPX-Sarracenia and its dependencies all in once with this command:
-
-    In Anaconda Prompt (run as Administrator)::
-
-     conda env create -f environment.yml
-
-
