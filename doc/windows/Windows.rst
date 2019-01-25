@@ -2,42 +2,37 @@
 Windows detailed instructions
 =============================
 
-.. section-numbering::
+.. no section-numbering::
 
-This document teaches a novice user with Python on Windows how to run/install Sarracenia in various way.
-The screenshots comes from Windows Server 2012
+This document teaches a novice user with Python on Windows how to run/install Sarracenia in various way. 
+The screenshots were taken from Windows Server 2012
 
-Run instructions
-----------------
+Run Sarracenia with a Command Prompt
+------------------------------------
+From the Start Menu:
+~~~~~~~~~~~~~~~~~~~~
+Click on Sarracenia (it will execute *sr.exe restart*):
 
-Run Sarracenia
-~~~~~~~~~~~~~~
+ .. image:: start-menu-1.png
 
-#. Install Sarracenia
-#. Launch Sarracenia
+Sarracenia's Command Prompt will pop and show logging information.
 
-   From the Start Menu:
-     Clicking the shortcut will start (or restart) Sarracenia:
+ .. image:: sarra-prompt.png
 
-      .. image:: start-menu-1.png
+Keep this window alive until you are done with Sarracenia. Closing this window or ctrl-c will kill all 
+Sarracenia processes.
 
-     This will pop Sarracenia Command Prompt with logging informations.
+From Powershell::
+~~~~~~~~~~~~~~~~~
+ sr <start|restart> [myconf]
 
-      .. image:: sarra-prompt.png
+From the Task Scheduler::
+~~~~~~~~~~~~~~~~~~~~~~~~~
+ blabla
 
-     Closing this window or ctrl-c then kills all Sarracenia processes
-     when you are done with Sarracenia.
-
-   From Powershell (run as Administrator)::
-
-     sr <start|restart> [myconf]
-
-    From the Task Scheduler:
-     blabla
-
-    From Anaconda:
-     activate sarracenia && sr <start|restart> [myconf]
-
+From Anaconda::
+~~~~~~~~~~~~~~~
+ activate sarracenia && sr <start|restart> [myconf]
 
 Installation Instructions:
 --------------------------
