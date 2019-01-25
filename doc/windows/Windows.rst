@@ -1,11 +1,12 @@
-=============================
-Windows detailed instructions
-=============================
+===================
+Windows user manual
+===================
 
 .. no section-numbering::
 
 This document teaches a novice user with Python on Windows how to run/install Sarracenia in various way. 
-The screenshots were taken from Windows Server 2012
+The screenshots were taken from Windows Server 2012. Feel free to create issues if you believe that this
+document could be enhanced with one (or more) important case(s).
 
 Running Sarracenia with a Command Prompt
 ----------------------------------------
@@ -41,14 +42,55 @@ This will stop all Sarracenia processes cleanly as would do a restart. Closing t
 
 From Anaconda:
 ~~~~~~~~~~~~~~
- activate sarracenia && sr <start|restart> [myconf]
+Run this command::
+
+ activate sarracenia && sr restart
 
 Running Sarracenia without a Command Prompt
 -------------------------------------------
+Here is a case where someone (like a sysadmin) needs to run Sarracenia without a Command Prompt and ensure that the system starts at Windows startup. The obvious way of doing it would be from the Task Scheduler.
 
 From the Task Scheduler:
 ~~~~~~~~~~~~~~~~~~~~~~~~
- blabla
+Open Server Manager > Tools > Task scheduler:
+
+.. image:: task-scheduler_start.png
+
+Select *Create Basic Task* from the action panel:
+
+.. image:: create-basic-task.png
+
+This will launch the *Create Basic Task Wizard* where you first 
+
+ Fill the name:
+
+ .. image:: cbt-wizard_name.png
+
+ Choose the trigger:
+
+ .. image:: cbt-wizard_trigger.png
+
+ Choose the action:
+ 
+ .. image:: cbt-wizard_action.png
+ 
+ Define the action:
+ 
+ .. image:: cbtwa_program.png
+ 
+ Review the task and open the *Properties dialog*:
+ 
+ .. image:: cbtw_finish.png
+ 
+ Choose *Run whether user is logged on or not* and *Run with highest privileges*:
+ 
+ .. image:: ssp_general.png
+
+The task should now appear in your *Task Scheduler Library* with the status *Ready*. You may run it immediately with the |run_action| button.
+
+.. |run_action| image:: run_action.png
+
+.. image:: ts_results.png
 
 Installation Instructions:
 --------------------------
@@ -83,40 +125,4 @@ Install MetPX-Sarracenia with Anaconda prompt
 
      conda env create -f environment.yml
 
-Other Instructions
-------------------
-
-Create a task in Task Scheduler (both cases)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-#. Open Server Manager > Tools > Task scheduler
-#. From Actions panel, select::
-
-    Create task...
-
-   #. In the General tab::
-
-       Name: MetPX-Sarracenia
-       *: Run whether user is logged on or not
-       x: Run with highest privileges
-
-   #. In the Triggers tab, setup your schedule
-   #. In the Actions tab add:
-
-      * (usual case)::
-
-         Action: Start a program
-         Program/script: %PYTHON_PATH%\Scripts\sr.exe
-         Add arguments (optional): restart myconf
-
-      * (Anaconda case)::
-
-         Action: Start a program
-         Program/script: %SARRA_PATH%\sr_run.bat
-
-       * sr_run.bat contains::
-
-          activate sarracenia && sr restart myconf
-
-   #. Save this config and enable it
 
