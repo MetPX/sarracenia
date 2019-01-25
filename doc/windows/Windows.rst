@@ -40,8 +40,8 @@ Keep this Powershell session alive until you are done with Sarracenia. To stop S
 
 This will stop all Sarracenia processes cleanly as would do a restart. Closing this window will also kill all processes.
 
-From Anaconda:
-~~~~~~~~~~~~~~
+From Anaconda Prompt:
+~~~~~~~~~~~~~~~~~~~~~
 Run this command::
 
  activate sarracenia && sr restart
