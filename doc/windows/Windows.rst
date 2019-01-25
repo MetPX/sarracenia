@@ -64,19 +64,19 @@ This will launch the *Create Basic Task Wizard* where you first
 
  Fill the name:
 
- .. image:: cbt-wizard_name.png
+ .. image:: cbtw_name.png
 
  Choose the trigger:
 
- .. image:: cbt-wizard_trigger.png
+ .. image:: cbtw_trigger.png
 
  Choose the action:
  
- .. image:: cbt-wizard_action.png
+ .. image:: cbtw_action.png
  
  Define the action:
  
- .. image:: cbtwa_program.png
+ .. image:: cbtw_action_program.png
  
  Review the task and open the *Properties dialog*:
  
