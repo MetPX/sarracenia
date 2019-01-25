@@ -7,32 +7,48 @@ Windows detailed instructions
 This document teaches a novice user with Python on Windows how to run/install Sarracenia in various way. 
 The screenshots were taken from Windows Server 2012
 
-Run Sarracenia with a Command Prompt
-------------------------------------
+Running Sarracenia with a Command Prompt
+----------------------------------------
 From the Start Menu:
 ~~~~~~~~~~~~~~~~~~~~
 Click on Sarracenia (it will execute *sr.exe restart*):
 
- .. image:: start-menu-1.png
+.. image:: start-menu-1.png
 
-Sarracenia's Command Prompt will pop and show logging information.
+This will pop Sarracenia's Command Prompt, start Sarracenia processes as instructed by your configurations and show logging information.
 
- .. image:: sarra-prompt.png
+.. image:: sarra-prompt.png
 
-Keep this window alive until you are done with Sarracenia. Closing this window or ctrl-c will kill all 
-Sarracenia processes.
+Keep this window alive until you are done with Sarracenia. Closing it or typing ctrl-c will kill all Sarracenia processes. You may also want to restart Sarracenia which will stop those processes cleanly.
 
-From Powershell::
-~~~~~~~~~~~~~~~~~
- sr <start|restart> [myconf]
+From a Windows Powershell session:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Launch a Powershell |powershell| session and type this command at the prompt::
 
-From the Task Scheduler::
-~~~~~~~~~~~~~~~~~~~~~~~~~
- blabla
+ sr restart
 
-From Anaconda::
-~~~~~~~~~~~~~~~
+.. |powershell| image:: powershell.png
+
+This will start Sarracenia processes as instructed by your configurations and show logging information
+
+.. image:: sarra-psprompt.png 
+
+Keep this Powershell session alive until you are done with Sarracenia. To stop Sarracenia you may type::
+
+ sr stop
+
+This will stop all Sarracenia processes cleanly as would do a restart. Closing this window will also kill all processes.
+
+From Anaconda:
+~~~~~~~~~~~~~~
  activate sarracenia && sr <start|restart> [myconf]
+
+Running Sarracenia without a Command Prompt
+-------------------------------------------
+
+From the Task Scheduler:
+~~~~~~~~~~~~~~~~~~~~~~~~
+ blabla
 
 Installation Instructions:
 --------------------------
