@@ -28,7 +28,7 @@ dependencies:
     - appdirs==1.4.3
     - argh==0.26.2
     - humanize==0.5.1
-    - -e .
+    - metpx-sarracenia==2.19.1b1
     - netifaces==0.10.9
     - pathtools==0.1.2
     - psutil==5.4.8
