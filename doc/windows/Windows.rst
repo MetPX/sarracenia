@@ -60,7 +60,7 @@ Select *Create Basic Task* from the action panel:
 
 .. image:: create-basic-task.png
 
-This will launch the *Create Basic Task Wizard* where you first 
+This will launch the *Create Basic Task Wizard* where you ...
 
  Fill the name:
 
@@ -78,19 +78,21 @@ This will launch the *Create Basic Task Wizard* where you first
  
  .. image:: cbtw_action_program.png
  
- Review the task and open the *Properties dialog*:
+ Review the task and choose *Finish*:
  
  .. image:: cbtw_finish.png
  
- Choose *Run whether user is logged on or not* and *Run with highest privileges*:
+Open the *Properties dialog* and choose *Run whether user is logged on or not* and *Run with highest privileges*:
  
- .. image:: ssp_general.png
+.. image:: ssp_general.png
 
-The task should now appear in your *Task Scheduler Library* with the status *Ready*. You may run it immediately with the |run_action| button.
-
-.. |run_action| image:: run_action.png
+The task should now appear in your *Task Scheduler Library* with the status *Ready*.
 
 .. image:: ts_results.png
+
+Then, you may run it immediately with the |run_action| button.
+
+.. |run_action| image:: run_action.png
 
 Installation Instructions:
 --------------------------
