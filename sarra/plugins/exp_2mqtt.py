@@ -50,17 +50,20 @@ class EXP_2MQTT(object):
    def on_start(self,parent):
 
       import paho.mqtt.client as mqtt
+      import time
 
       if not hasattr(parent,'exp_2mqtt_post_broker'):
          parent.exp_2mqtt_post_broker= [ 'mqtt://localhost' ]
  
       logger=parent.logger
 
-      logger.info( "parent.no=%d exp_2mqtt_broker=%s" % (parent.no, parent.exp_2mqtt_post_broker) )
-      if parent.no < 1:
-         i=0
+      if parent.no < 1: # randomize broker used in foreground testing.
+         i = int( time.time() % len(parent.exp_2mqtt_post_broker) )
       else:
          i = (parent.no-1) % len(parent.exp_2mqtt_post_broker)
+
+      logger.info( "using: %s parent.no=%d exp_2mqtt_broker=%s" % \
+           (parent.exp_2mqtt_post_broker[i], parent.no, parent.exp_2mqtt_post_broker) )
 
       ok, details = parent.credentials.get(parent.exp_2mqtt_post_broker[i])
       if ok:
