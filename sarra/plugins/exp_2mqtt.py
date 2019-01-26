@@ -30,8 +30,9 @@ plugin exp_2mqtt
 
 Options:
     exp_2mqtt_post_broker - URL to look up in credentials.conf for broker connection.
-
-
+                            can be specified more than once, and instances will use
+                            one from the resulting list.  
+    
 """
 
 import paho.mqtt.client as mqtt
@@ -55,11 +56,18 @@ class EXP_2MQTT(object):
  
       logger=parent.logger
 
-      ok, details = parent.credentials.get(parent.exp_2mqtt_post_broker[0])
+      logger.info( "parent.no=%d exp_2mqtt_broker=%s" % (parent.no, parent.exp_2mqtt_post_broker) )
+      if parent.no < 1:
+         i=0
+      else:
+         i = (parent.no-1) % len(parent.exp_2mqtt_post_broker)
+
+      ok, details = parent.credentials.get(parent.exp_2mqtt_post_broker[i])
       if ok:
            parent.mqtt_bs = details
       else:
            logger.error( "exp_2mqtt: post_broker credential lookup failed for %s" % parent.exp_2mqtt_post_broker )
+           return
 
       if not hasattr(parent, 'post_exchange'):
          logger.error("exp_2mqtt: defaulting post_exchange to xpublic")
@@ -79,6 +87,7 @@ class EXP_2MQTT(object):
           parent.mqtt_client.username_pw_set( u.username, u.password )
 
       parent.mqtt_client.connect( u.hostname, port )
+      parent.mqtt_client.loop_start()
       return True
 
    def on_message(self,parent):
