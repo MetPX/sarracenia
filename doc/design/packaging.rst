@@ -21,9 +21,9 @@ so it is easy for others to adopt.   Recipe for a standlone single node config.
 	- a docker container?
 
 Make it easy for mortals to install the client.
-need self-contained windows install (an .exe) folks can download.
-because many clients in various departments use windows as clients,
-and many data sources may use windows also.
+need self-contained Windows install (an .exe) folks can download.
+because many clients in various departments use Windows as clients,
+and many data sources may use Windows also.
 
 client package, if separate, would be just sr_post, sr_subscribe, sr_log...
 sr_watch... hmm... server package would have a dep on rabbit? but client no.
@@ -108,14 +108,20 @@ there might be a meta-client... one that invokes the others appropriately...
 Dunno. We probably need to try a bunch out and see what sticks?
 
 
-windows
+Windows
 ~~~~~~~
 
-Packaging for windows has particular issues because of a clash between the source 
-distribution norm on open source, vs. the binary distribution norm on windows.   In 
-python packages this bites because, PyCrypto has portions of it implemented in C, so standard installation means compiling that portion of the module, which creates a depdency on a C-compiler for every installation.  Given the lack of consistency in build environments on windows, one needs to obtain the build environment that matches what was used to build the python interpreter.  google search ´install pycrypto windows´ for more ample discussion.  
+Packaging for Windows has particular issues because of a clash between the source
+distribution norm on open source, vs. the binary distribution norm on Windows.   In
+python packages this bites because, PyCrypto has portions of it implemented in C, so
+standard installation means compiling that portion of the module, which creates a
+dependency on a C-compiler for every installation.  Given the lack of consistency
+in build environments on windows, one needs to obtain the build environment that
+matches what was used to build the python interpreter.  google search ´install pycrypto Windows´
+for more ample discussion.
 
-Lack of dependency management also bites, too much assembly required (install amqplib, paramiko, etc...)  this is all easily taken care of on linux, but beyond the ability of non-technical users on windows.
+Lack of dependency management also bites, too much assembly required (install amqplib, paramiko, etc...)
+this is all easily taken care of on linux, but beyond the ability of non-technical users on Windows.
 
 
 One way around it, use nuitka, to compile all depedendencies into a single binary package, put that in an MSI.

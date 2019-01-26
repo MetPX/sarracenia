@@ -66,11 +66,11 @@ No man pages or other documentation are installed either.
 PIP
 ~~~
 
-On windows, or other linux distributions where system packages are not available, the
-above procedures are not applicable.  There are also special cases, such as if using
-python in virtual env, where it is more practical to install the package using
-pip (python install package) from `<http://pypi.python.org/>`_.  It is straightforward
-to do that::
+On other linux distributions where system packages are not available, the above procedures are not applicable.
+You may also want to use this procedures on Windows, depending if Python is already installed.
+There are also special cases, such as if using python in virtual env, where it is more practical to install
+the package using pip (python install package) from `<http://pypi.python.org/>`_.
+It is straightforward to do that::
 
   sudo pip install paramiko
   sudo pip install metpx-sarracenia
@@ -90,26 +90,19 @@ NOTE::
 Windows
 ~~~~~~~
 
-Because of details of startup/shutdown, the only fully functional python environment
-for Sarracenia on Windows is `Anaconda <www.anaconda.com>`_.  ( We are working
-through the issues with the variety of python environments` different installation
-methods in `Issue 122 <https://github.com/MetPX/sarracenia/issues/122>`_
+On Windows, there are 2 (other) possible options:
 
-Note::
+**Without Python**
+ Download Sarracenia installer file from `here <https://hpfx.collab.science.gc.ca/~pas037/Sarracenia_Releases>`_, execute it and 
+ follow the instructions. Don't forget to add *Sarracenia's Python directory* to your *PATH*.
 
-  Once Issue 122 is resolved, the following should apply:
+**With Anaconda**
+ Create your environment with the `file <../windows/sarracenia_env.yml>`_ suggested by this repository. Executing that command 
+ from the Anaconda Prompt should install everything::
 
-  Any native python installation should do, but the dependencies in the standard python.org
-  installation require the installation of a C-Compiler as well, so it gets a bit complicated.
-  If you have an existing python installation that works with c-modules within it, then the
-  complete package should install with all features.
+  conda env create -f sarracenia_env.yml
 
-  If you do not have a python environment handy, then one choice to get going with
-  is winpython, which includes many scientifically relevant modules, and will easily install
-  all dependencies for Sarracenia. You can obtain winpython from `<http://winpython.github.io/>`_ 
-  (note: select python version >3 ) Then one can install with pip (as above.)
-
-
+See `Windows user manual <windows/Windows.rst>`_ for more information on how to run Sarracenia on Windows.
 
 Packages
 ~~~~~~~~

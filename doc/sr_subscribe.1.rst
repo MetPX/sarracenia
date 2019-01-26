@@ -1262,7 +1262,7 @@ On Windows
 ==========
 
 The python tools are ubiquitously installed with the operating system on Linux,
-and installation methods are somewhat more consistent there.  On windows, 
+and installation methods are somewhat more consistent there.  On Windows,
 there is a wide variety of methods of installation, stemming from the
 variety of python distributions available. The various methods conflict, to the
 extent that using the .exe files, as one would expect using winpython, does not
@@ -1500,7 +1500,7 @@ The logs can be written in another directory than the default one with option :
 **log            <directory logpath>  (default:~/.cache/sarra/var/log)**
 
 .. note::  
-  FIXME: indicate windows location also... dot files on windows?
+  FIXME: indicate Windows location also... dot files on Windows?
 
 
 .. Note::

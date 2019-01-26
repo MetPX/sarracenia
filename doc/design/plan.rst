@@ -169,11 +169,11 @@ various hurdles, such as acceptable security, coverage of use cases, etc...
      install documentation and examples also in standard locations.
  
   
- 10. ( *Waiting* ) **Manual sr_subscribe windows package**
+ 10. ( *Waiting* ) **Manual sr_subscribe Windows package**
 
      Assigned to: Stéphane Charlebois
 
-     A build environment with several windows vm's to build and test sr_subscribe packages.
+     A build environment with several Windows vm's to build and test sr_subscribe packages.
      require an .msi package containing a nuitka compiled binary.
      a documented in a guide for building a sr_subscribe package manually.
 	
@@ -325,7 +325,7 @@ beta, if in beta, then to release:
 Known Bugs
 ----------
 
--- Multi-processing on windows... 
+-- Multi-processing on Windows...
    only works as long as instance=1
 
 -- remove is not propagated among switches.
@@ -341,7 +341,7 @@ Known Bugs
         date/time encoding will be interesting, perhaps same as log message?
      -- if the file exists, and the v02 announcement is older than the file, then squawk 
         info ´posting older than file already received´)
-     -- when we download, run os.utime (both windows and linux!) to set the modification time
+     -- when we download, run os.utime (both Windows and linux!) to set the modification time
         of the file, using the LastModificationTime HTTP header, + equivalent with SFTP.
      -- when a file is downloaded, compare the mtime of the file to that in the header
         with the one stored in the v02 announcement.
@@ -368,11 +368,11 @@ specific time line.
      for initial release, not clear that this is critical.
 
  51. ( *Waiting* ) **Automated Windows client builds & packaging**
-     It is very much expected that a number of uses will want to obtain data from windows
+     It is very much expected that a number of uses will want to obtain data from Windows
      laptops or servers.  the sr_subscribe command is the minimum tool needed to
      do that effectively.
 
-     Configuring python as a dependency is rather complicated on windows.
+     Configuring python as a dependency is rather complicated on Windows.
      Simplified sr_subscribe client (http-only) can be compiled using nuitka and then rolled
      into an MSI.  Need to put in place an automated process to build those.
     
@@ -438,7 +438,7 @@ These items will graduate to features at some point.
      hard links or symbolic... concerns:
     
      - reduces to a single file system. 
-     - windows portability
+     - Windows portability
      - makes it easier for clients to transition (multiple posts of products)
      - perhaps an option setting True/False?
           
@@ -670,11 +670,11 @@ minor: Windows doesn´t work (ie. fully.) perhaps not an issue for initial relea
 - tasks... fork/exec, createProcess, multiprocessing issue.
 
 - hard links ?   
-  createhardlink call exists on windows now.
+  createhardlink call exists on Windows now.
 
 - cron ?   	   
-  modern windows has schtasks and can be done from Scheduled Tasks control panel.
-  Just need setup for the windows tool.
+  modern Windows has schtasks and can be done from Scheduled Tasks control panel.
+  Just need setup for the Windows tool.
 
 - file permissions  
   how to make sure credentials.conf is private on multi-user systems.
@@ -743,9 +743,9 @@ done above.  For now, just stop reading here...
 
   - at least a .dpkg produced per iteration.
 
-  - run stuff once per iteration on windows to see it vaguely works.
+  - run stuff once per iteration on Windows to see it vaguely works.
     (don't package it, just try it out.)
-    if it doesn't work on windows, note the problem, that's all.
+    if it doesn't work on Windows, note the problem, that's all.
     until we get to packaging...
 
   - Design work needs to run one iteration ahead.
@@ -821,7 +821,7 @@ watch a directory, and post what is there (flat)
   - only needs to work for a flat directory at first.
     *done on time for flat tree, but configs were hard-coded*
 
-  deferred: windows version of sr_watch (no inotify available.)
+  deferred: Windows version of sr_watch (no inotify available.)
 	question, if this is built as inotifywait calling sr_post (or something like that.)
 	then there is an inotify-win.  just introduces a dependency... but makes it easy.
         *nope, not done.*
@@ -872,7 +872,7 @@ Iteration 3:  Security/Authentication, Transition Strategy:  August
  need to pick a strategy that minimizes future work.
  determine how Sundew and Sarracenia work together.
 
- somebody add windows directory polling.
+ somebody add Windows directory polling.
 
 HW:  initial config... in ec.gc.ca  or science.gc.ca ?
 
@@ -952,10 +952,10 @@ Figure out packaging?
 	
 start making other packages?
 	redhat/centos?
-	windows?
+	Windows?
 
 	do we make it 'pip' compatible?
-		so on windows they install python, then pip pulls in deps?
+		so on Windows they install python, then pip pulls in deps?
 
 
 End of Phase 1
