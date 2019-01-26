@@ -85,6 +85,10 @@ class StreamToLogger(object):
          self.logger.log(self.log_level, line.rstrip())
 
    def flush(self):
+      """
+        when stdout/stderr are assigned to a stream, builtin routine call flush.
+        if the logger doesn't have flush method, things bomb.
+      """
       pass
 
 class sr_config:
