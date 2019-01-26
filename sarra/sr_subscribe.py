@@ -178,9 +178,9 @@ class sr_subscribe(sr_instances):
     def close(self):
 
         for plugin in self.on_stop_list:
-           if not plugin(self): break
+            if not plugin(self): break
 
-        self.consumer.close()
+        if hasattr(self, 'consumer'): self.consumer.close()
 
         if self.post_broker :
            if self.post_broker != self.broker : self.post_hc.close()

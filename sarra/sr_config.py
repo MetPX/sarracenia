@@ -84,7 +84,8 @@ class StreamToLogger(object):
       for line in buf.rstrip().splitlines():
          self.logger.log(self.log_level, line.rstrip())
 
-
+   def flush(self):
+      pass
 
 class sr_config:
 
