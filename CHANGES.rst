@@ -6,6 +6,9 @@ lists all changes between versions.
 
 **git repo**
 
+* new:    windows installer!
+* new:    exp_2mqtt.py -> bridge to export to MQTT brokers.
+* new:    sample configuration: WMO_Sketch_2mqtt.conf 
 
 **2.19.01b1**
 
