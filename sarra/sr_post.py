@@ -180,7 +180,7 @@ class sr_post(sr_instances):
         if self.sleep <= 0 : loop = False
 
         self.post_hc = HostConnect( logger = self.logger )
-        self.post_hc.set_pika( self.use_pika )
+        self.post_hc.choose_amqp_client(self.use_pika, self.use_amqp)
         self.post_hc.set_url( self.post_broker )
         self.post_hc.loop = loop
 
@@ -1466,7 +1466,7 @@ class sr_post(sr_instances):
 
         if self.post_broker :
            self.post_hc = HostConnect( logger = self.logger )
-           self.post_hc.set_pika( self.use_pika )
+           self.post_hc.choose_amqp_client(self.use_pika, self.use_amqp)
            self.post_hc.set_url( self.post_broker )
            self.post_hc.loop=False
            if self.post_hc.connect():
@@ -1486,7 +1486,7 @@ class sr_post(sr_instances):
         # on posting host
         if self.post_broker :
            self.post_hc = HostConnect( logger = self.logger )
-           self.post_hc.set_pika( self.use_pika )
+           self.post_hc.choose_amqp_client(self.use_pika, self.use_amqp)
            self.post_hc.set_url( self.post_broker )
            self.post_hc.loop=False;
            if self.post_hc.connect():

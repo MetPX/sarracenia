@@ -65,11 +65,11 @@ setup(
         'Topic :: System :: Logging',
     ],
     install_requires=[ 
-    "amqplib", 
+    "amqplib",
     "appdirs",
     "watchdog", 
     "netifaces", 
     "humanize",
-    "psutil" ] 
-    
+    "psutil" ]
+
 )

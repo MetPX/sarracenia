@@ -32,10 +32,13 @@
 #
 #
 
-try   : import amqplib.client_0_8 as amqp
+try   : import pika
 except: pass
 
-try   : import pika
+try   : import amqplib.client_0_8 as amqplib_0_8
+except: pass
+
+try   : import amqp
 except: pass
 
 import logging, os, random, sys, time
@@ -74,9 +77,11 @@ class HostConnect:
        self.sleeping   = None
 
        self.pika_available    = 'pika'    in sys.modules
+       self.amqp_available    = 'amqp'    in sys.modules
        self.amqplib_available = 'amqplib' in sys.modules
 
-       self.use_pika          = self.pika_available
+       self.use_pika          = self.pika_available and not self.amqp_available
+       self.use_amqp          = self.amqp_available
 
    def add_build(self,func):
        self.rebuilds.append(func)
@@ -120,13 +125,15 @@ class HostConnect:
                       credentials = pika.PlainCredentials(self.user, self.password)
                       parameters  = pika.connection.ConnectionParameters(self.host,self.port,self.vhost,credentials,ssl=self.ssl)
                       self.connection = pika.BlockingConnection(parameters)
+               elif self.use_amqp:
+                      self.logger.debug("AMQP is used")
+                      self.connection = amqp.Connection(host, userid=self.user, password=self.password,
+                                                        virtual_host=self.vhost, ssl=self.ssl)
+                      self.connection.connect()
                else:
                       self.logger.debug("AMQPLIB is used")
-                      # dont know why... need to raise an exception when problem
-                      try   :
-                              self.connection = amqp.Connection(host, userid=self.user, password=self.password, \
-                                                                virtual_host=self.vhost,ssl=self.ssl)
-                      except: raise Exception("amqp.Connection failed")
+                      self.connection = amqplib_0_8.Connection(host, userid=self.user, password=self.password,
+                                                               virtual_host=self.vhost,ssl=self.ssl)
 
                self.channel    = self.new_channel()
                self.logger.debug("Connected ")
@@ -224,33 +231,47 @@ class HostConnect:
        if self.vhost    == None    : self.vhost = '/'
        if self.vhost    == ''      : self.vhost = '/'
 
-   def set_pika(self,pika=True):
-
+   def choose_amqp_client(self, pika=True, amqp=False):
        self.use_pika = pika
+       self.use_amqp = amqp
 
        # good choices
 
-       if self.pika_available    and     pika: return
-       if self.amqplib_available and not pika: return
+       if self.pika_available and pika and not amqp: return
+       if self.amqp_available and not pika and amqp: return
+       if self.amqplib_available and not pika and not amqp: return
 
        # failback choices
 
-       if self.pika_available    and not pika:
-          self.logger.warning("amqplib unavailable : using pika")
-          self.use_pika = True
-          return
+       if self.pika_available and not pika:
+           self.logger.warning("amqp unavailable : using pika")
+           self.use_pika = True
+           self.use_amqp = False
+           return
 
-       if self.amqplib_available and     pika:
-          self.logger.warning("pika unavailable : using amqplib")
-          self.use_pika = False
-          return
+       if self.amqp_available and not amqp:
+           self.logger.warning("pika unavailable : using amqp")
+           self.use_pika = False
+           self.use_amqp = True
+           return
+
+       if self.amqplib_available and amqp:
+           self.logger.warning("amqp unavailable : using amqplib")
+           self.use_pika = False
+           self.use_amqp = False
+           return
+
+       if self.amqplib_available and pika:
+           self.logger.warning("pika unavailable : using amqplib")
+           self.use_pika = False
+           self.use_amqp = False
+           return
 
        # nothing available
 
-       if not self.pika_available and not self.amqplib_available :
-          self.logger.error("pika unavailable, amqplib unavailable")
-          os._exit(1)
-
+       if not self.pika_available and not self.amqplib_available and not self.amqp_available:
+           self.logger.error("pika unavailable, amqp unavailable, amqplib unavailable")
+           os._exit(1)
 
 # ==========
 # Consumer
@@ -364,14 +385,25 @@ class Publisher:
                      else:
                         properties = pika.BasicProperties(content_type='text/plain', delivery_mode=1, headers=mheaders)
                      self.channel.basic_publish(exchange_name, exchange_key, message, properties, True )
+              elif self.hc.use_amqp:
+                     # self.logger.debug("publish AMQP is used")
+                     if mexp:
+                        expms = '%s' % mexp
+                        msg = amqp.Message(message, content_type='text/plain', application_headers=mheaders,
+                                           expiration=expms)
+                     else:
+                        msg = amqp.Message(message, content_type='text/plain', application_headers=mheaders)
+                     self.channel.basic_publish(msg, exchange_name, exchange_key)
+                     self.channel.tx_commit()
               else:
                      #self.logger.debug("publish AMQPLIB is used")
                      if mexp :
                         expms = '%s' % mexp
-                        msg = amqp.Message(message, content_type= 'text/plain',application_headers=mheaders,expiration=expms)
+                        msg = amqplib_0_8.Message(message, content_type='text/plain', application_headers=mheaders,
+                                                  expiration=expms)
                      else:
-                        msg = amqp.Message(message, content_type= 'text/plain',application_headers=mheaders)
-                     self.channel.basic_publish(msg, exchange_name, exchange_key )
+                        msg = amqplib_0_8.Message(message, content_type='text/plain', application_headers=mheaders)
+                     self.channel.basic_publish(msg, exchange_name, exchange_key)
                      self.channel.tx_commit()
               return True
        except :

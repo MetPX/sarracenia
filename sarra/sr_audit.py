@@ -59,7 +59,7 @@ class sr_audit(sr_instances):
         try:
                 self.hc = HostConnect(logger = self.logger)
                 self.hc.loop = False
-                self.hc.set_pika(self.use_pika)
+                self.hc.choose_amqp_client(self.use_pika, self.use_amqp)
                 self.hc.set_url(self.admin)
                 self.hc.connect()
         except: pass

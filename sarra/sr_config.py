@@ -40,10 +40,13 @@ import shutil
 import subprocess
 import sarra
 
-try   : import amqplib.client_0_8 as amqp
+try   : import pika
 except: pass
 
-try   : import pika
+try   : import amqplib.client_0_8 as amqplib_0_8
+except: pass
+
+try   : import amqp
 except: pass
 
 import paramiko
@@ -669,13 +672,8 @@ class sr_config:
         self.report_exchange      = None
           
         # amqp
-
-        # some fix requiered with pika so not the default for now
-        #self.use_pika             = 'pika' in sys.modules
-
-        # use pika only if amqplib is not available
-        self.use_pika              = not 'amqplib' in sys.modules
-
+        self.use_pika              = 'amqplib' not in sys.modules and 'amqp' not in sys.modules
+        self.use_amqp              = 'amqplib' not in sys.modules and 'amqp' in sys.modules
 
         # cache
         self.cache                = None

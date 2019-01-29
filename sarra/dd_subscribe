@@ -36,7 +36,6 @@
 #
 
 import urllib, logging, logging.handlers, os, random, re, signal, string, sys, time, getopt
-import amqplib.client_0_8 as amqp
 import stat, os.path
 import calendar,socket,urllib.parse
 from hashlib import md5
@@ -48,13 +47,14 @@ from hashlib import md5
 #
 #============================================================
 
-try   : import amqplib.client_0_8 as amqp
+try   : import amqplib.client_0_8 as amqplib_0_8
 except: pass
 
 try   : import pika
 except: pass
 
-import logging, sys, time
+try   : import amqp
+except: pass
 
 
 # ==========
@@ -113,8 +113,10 @@ class HostConnect:
 
        self.pika_available    = 'pika'    in sys.modules
        self.amqplib_available = 'amqplib' in sys.modules
+       self.amqp_available    = 'amqp' in sys.modules
 
        self.use_pika          = self.pika_available
+       self.use_amqp          = not self.use_pika and self.amqp_available
 
    def add_build(self,func):
        self.rebuilds.append(func)
@@ -154,12 +156,20 @@ class HostConnect:
                       parameters  = pika.connection.ConnectionParameters(self.host,self.port,self.vhost,credentials,ssl=self.ssl)
                       self.connection = pika.BlockingConnection(parameters)
                       logger = logging.getLogger('pika')
-                      if self.logger.level != logging.DEBUG : logger.setLevel(logging.CRITICAL)
-                      else:                                   logger.setLevel(logging.WARNING)
+                      if self.logger.level != logging.DEBUG :
+                          logger.setLevel(logging.CRITICAL)
+                      else:
+                          logger.setLevel(logging.WARNING)
+               elif self.use_amqp:
+                      self.logger.debug("AMQP_0.9.1 is used")
+                      self.connection = amqp.Connection(host, userid=self.user, password=self.password,
+                                                        virtual_host=self.vhost, ssl=self.ssl)
+                      self.connection.connect()
                else:
-                      self.logger.debug("AMQPLIB is used")
-                      self.connection = amqp.Connection(host, userid=self.user, password=self.password, \
-                                                        virtual_host=self.vhost,ssl=self.ssl)
+                      self.logger.debug("AMQPLIB_0.8 is used")
+                      self.connection = amqplib_0_8.Connection(host, userid=self.user, password=self.password,
+                                                            virtual_host=self.vhost, ssl=self.ssl)
+
                self.channel    = self.new_channel()
                self.logger.debug("Connected ")
                for func in self.rebuilds:
@@ -252,31 +262,47 @@ class HostConnect:
        if self.vhost    == None    : self.vhost = '/'
        if self.vhost    == ''      : self.vhost = '/'
 
-   def set_pika(self,pika=True):
+   def set_amqplib(self, pika, amqp):
 
        self.use_pika = pika
+       self.use_amqp = amqp
 
        # good choices
 
-       if self.pika_available    and     pika: return
-       if self.amqplib_available and not pika: return
+       if self.pika_available    and     pika and not amqp: return
+       if self.amqp_available    and not pika and     amqp: return
+       if self.amqplib_available and not pika and not amqp: return
 
        # failback choices
 
+       if self.amqp_available and not amqp:
+          self.logger.warning("pika unavailable : using amqp")
+          self.use_pika = False
+          self.use_amqp = True
+          return
+
        if self.pika_available    and not pika:
-          self.logger.warning("amqplib unavailable : using pika")
+          self.logger.warning("amqp unavailable : using pika")
           self.use_pika = True
+          self.use_amqp = False
+          return
+
+       if self.amqplib_available and     amqp:
+          self.logger.warning("amqp unavailable : using amqplib")
+          self.use_pika = False
+          self.use_amqp = False
           return
 
        if self.amqplib_available and     pika:
           self.logger.warning("pika unavailable : using amqplib")
           self.use_pika = False
+          self.use_amqp = False
           return
 
        # nothing available
 
-       if not self.pika_available and not self.amqplib_available :
-          self.logger.error("pika unavailable, amqplib unavailable")
+       if not self.pika_available and not self.amqplib_available and not self.amqp_available:
+          self.logger.error("pika unavailable, amqp unavailable, amqplib unavailable")
           os._exit(1)
 
 
@@ -387,9 +413,14 @@ class Publisher:
                      self.logger.debug("publish PIKA is used")
                      properties = pika.BasicProperties(content_type='text/plain', delivery_mode=1, headers=mheaders)
                      self.channel.basic_publish(exchange_name, exchange_key, message, properties, True )
+              elif self.hc.use_amqp:
+                     self.logger.debug("publish AMQP is used")
+                     msg = amqp.Message(message, content_type='text/plain', application_headers=mheaders)
+                     self.channel.basic_publish(msg, exchange_name, exchange_key)
+                     self.channel.tx_commit()
               else:
                      self.logger.debug("publish AMQPLIB is used")
-                     msg = amqp.Message(message, content_type= 'text/plain',application_headers=mheaders)
+                     msg = amqplib_0_8.Message(message, content_type='text/plain', application_headers=mheaders)
                      self.channel.basic_publish(msg, exchange_name, exchange_key )
                      self.channel.tx_commit()
               return True
@@ -471,15 +502,22 @@ class Queue:
 
                   self.qname, msg_count, consumer_count = method.queue, method.message_count, method.consumer_count
 
+           elif self.hc.use_amqp:
+                  self.logger.debug("queue_declare AMQP is used")
+                  self.qname, msg_count, consumer_count = self.channel.queue_declare(self.name, passive=False,
+                                                                                     durable=self.durable,
+                                                                                     exclusive=False,
+                                                                                     auto_delete=self.auto_delete,
+                                                                                     nowait=False, arguments= args)
            else:
                   self.logger.debug("queue_declare AMQPLIB is used")
                   self.qname, msg_count, consumer_count = \
-                      self.channel.queue_declare( self.name,
-                                          passive=False, durable=self.durable, exclusive=False,
-                                          auto_delete=self.auto_delete,
-                                          nowait=False,
-                                          arguments= args )
-       except : 
+                      self.channel.queue_declare(self.name,
+                                                 passive=False, durable=self.durable, exclusive=False,
+                                                 auto_delete=self.auto_delete,
+                                                 nowait=False,
+                                                 arguments=args)
+       except :
               self.logger.error( "queue declare: %s failed...(%s@%s) permission issue ?" % (self.name,self.hc.user,self.hc.host))
               (stype, svalue, tb) = sys.exc_info()
               self.logger.error("build Type: %s, Value: %s" %  (stype, svalue))
@@ -525,7 +563,7 @@ class sr_consumer:
                         (self.broker.hostname,self.broker.username,self.broker.path) )
 
         self.hc = HostConnect( logger = self.logger )
-        self.hc.set_pika(self.parent.use_pika)
+        self.hc.set_amqplib(self.parent.use_pika, self.parent.use_amqp)
         self.hc.set_url(self.broker)
         self.hc.connect()
 
@@ -816,7 +854,7 @@ def file_insert( parent,msg ) :
     fp = open(msg.relpath,'r+b')
     if msg.partflg == 'i' : fp.seek(msg.offset,0)
 
-    ok = file_write_length(fp, msg, parent.bufsize, msg.filesize )
+    ok = file_write_length(fp, msg, parent.bufsize, parent)
 
     fp.close()
 
@@ -1075,11 +1113,10 @@ def file_reassemble(parent):
     file_truncate(parent,msg)
 
 
-
 # file_write_length
 # called by file_process->file_insert (general file:// processing)
 
-def file_write_length(req,msg,bufsize,filesize):
+def file_write_length(req, msg, bufsize, parent):
     msg.logger.debug("file_write_length")
 
     msg.onfly_checksum = None
@@ -1119,13 +1156,13 @@ def file_write_length(req,msg,bufsize,filesize):
 
     fp.close()
   
-    h = self.parent.msg.headers
-    if self.parent.preserve_mode and 'mode' in h :
+    h = parent.msg.headers
+    if parent.preserve_mode and 'mode' in h :
        try   : mod = int( h['mode'], base=8)
        except: mod = 0
        if mod > 0 : os.chmod(msg.new_file, mod )
 
-    if self.parent.preserve_time and 'mtime' in h and h['mtime'] :
+    if parent.preserve_time and 'mtime' in h and h['mtime'] :
         os.utime(msg.new_file, times=( timestr2flt( h['atime']), timestr2flt( h[ 'mtime' ] )))
 
     if chk : msg.onfly_checksum = chk.get_value()
@@ -2258,19 +2295,20 @@ class ConsumerX(object):
         nodir = odir
 
         start = 3
+        parts = url.split("/")
+
         if self.strip > 0 :
-           start = start + self.strip
-           if start > len(parts)-1 : return nodir
-        
+            start = start + self.strip
+            if start > len(parts)-1 : return nodir
+
         try :
-              parts = url.split("/")
-              for d in parts[start:-1] :
-                  nodir = nodir + os.sep + d
-                  if os.path.isdir(nodir) : continue
-                  os.mkdir(nodir)
+            for d in parts[start:-1] :
+                nodir = nodir + os.sep + d
+                if os.path.isdir(nodir) : continue
+                os.mkdir(nodir)
         except :
-              self.logger.error("could not create or use directory %s" % nodir)
-              return None
+            self.logger.error("could not create or use directory %s" % nodir)
+            return None
 
         return nodir
 
@@ -2480,7 +2518,7 @@ class ConsumerX(object):
         # download/write
         if not os.path.isfile(local_file) :
            fp = open(local_file,'w')
-           fp.close
+           fp.close()
 
         fp = open(local_file,'r+b')
         if msg.local_offset != 0 : fp.seek(msg.local_offset,0)
@@ -2745,12 +2783,18 @@ def verify_version():
     if sys.version_info < python_version :
         sys.stderr.write("Python version higher than 2.6.0 required.\n")
         exit(1)
-        
-    amqplib_version = '1.0.0'   
-    if amqp.connection.LIBRARY_PROPERTIES['library_version'] < amqplib_version:
-        sys.stderr.write("Amqplib version %s or higher required.\n" % amqplib_version)        
+
+    amqp_version = '2.0.0'
+    if amqp.connection.LIBRARY_PROPERTIES['library_version'] < amqp_version:
+        sys.stderr.write("Amqplib version %s or higher required.\n" % amqp_version)
         exit(1)
-    
+
+
+    amqplib_version = '1.0.0'
+    if amqplib_0_8.connection.LIBRARY_PROPERTIES['library_version'] < amqplib_version:
+        sys.stderr.write("Amqplib version %s or higher required.\n" % amqplib_version)
+        exit(1)
+
 def main():
 
     ldir = None

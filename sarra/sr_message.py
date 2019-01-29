@@ -458,7 +458,7 @@ class sr_message():
 
         # in order to split winnowing into multiple instances, directs items with same checksum
         # to same shard. do that by keying on the last character of the checksum.
-        # 
+        # TODO investigate as this would throw a TypeError if post_exchange_split is None
         if self.post_exchange_split > 0 :
            suffix= "%02d" % ( ord(self.headers['sum'][-1]) % self.post_exchange_split )
            self.logger.debug( "post_exchange_split set, keying on %s , suffix is %s" % ( self.headers['sum'][-1], suffix) )

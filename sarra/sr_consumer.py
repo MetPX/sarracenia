@@ -88,7 +88,7 @@ class sr_consumer:
                         (self.broker.hostname,self.broker.username,self.broker.path) )
 
         self.hc = HostConnect( logger = self.logger )
-        self.hc.set_pika(self.parent.use_pika)
+        self.hc.choose_amqp_client(self.parent.use_pika, self.parent.use_amqp)
         self.hc.set_url(self.broker)
         self.hc.loop=loop
         return self.hc.connect()
