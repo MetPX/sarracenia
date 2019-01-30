@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 
 # trivial Sarracenia/MQTT client.
 #    just a demo.
@@ -21,9 +22,19 @@ import os,os.path
 import urllib.request
 import json
 
+
+rcs = [ "Connection successful", "Connection refused – incorrect protocol version", 
+        "Connection refused – invalid client identifier", "Connection refused – server unavailable",
+        "Connection refused – bad username or passwor", "Connection refused – not authorised", 
+        "unknown error" 
+      ]
+
 def on_connect(client, userdata, flags, rc):
-    print("Connected with result code "+str(rc))
-    client.subscribe("#" )
+
+    if (rc >= 6): rc=6
+    print( "Connection result code: "+rcs[rc] )
+
+    client.subscribe( "xpublic/#" )
 
 id=0
 
@@ -49,12 +60,13 @@ def on_message(client, userdata, msg):
     urllib.request.urlretrieve( url, p )    
 
 
-client = mqtt.Client(clean_session=False,client_id='my_queue_name')
+client = mqtt.Client(clean_session=False,client_id='my_queue_name',protocol=mqtt.MQTTv311 )
 
 client.on_connect = on_connect
 client.on_message = on_message
 
 print('about to connect')
+#client.username_pw_set( 'guest', 'guestpw' )
 client.connect( 'localhost' )
 print('done connect')
 

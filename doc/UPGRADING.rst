@@ -161,7 +161,7 @@ Only bug-fixes and improvements, no regressions or changes.
 *CHANGE*: *inflight* for sender now defaults to '.tmp' when no post_broker is set, and NONE when it is. If this behaviour is undesired,
           one must add *inflight NONE* to the obtain the previous behaviour.
   
-*CHANGE*: Default changed from False to True. Existing queues will fail to bind. As transition. 
+*CHANGE*: *durable* default changed from False to True. Existing queues will fail to bind. As transition. 
           All queues should be declared durable.
           For all existing flows, add *durable false* to declaration, and plan migration to durable queue later.
 
