@@ -153,7 +153,10 @@ class HostConnect:
                if self.use_pika:
                       self.logger.debug("PIKA is used")
                       credentials = pika.PlainCredentials(self.user, self.password)
-                      parameters  = pika.connection.ConnectionParameters(self.host,self.port,self.vhost,credentials,ssl=self.ssl)
+                      parameters  = pika.connection.ConnectionParameters(self.host,
+                                                                         virtual_host=self.vhost,
+                                                                         credentials=credentials,
+                                                                         ssl=self.ssl)
                       self.connection = pika.BlockingConnection(parameters)
                       logger = logging.getLogger('pika')
                       if self.logger.level != logging.DEBUG :

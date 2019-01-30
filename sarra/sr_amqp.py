@@ -123,7 +123,10 @@ class HostConnect:
                       logger = logging.getLogger('pika')
                       logger.setLevel(logging.CRITICAL)
                       credentials = pika.PlainCredentials(self.user, self.password)
-                      parameters  = pika.connection.ConnectionParameters(self.host,self.port,self.vhost,credentials,ssl=self.ssl)
+                      parameters  = pika.connection.ConnectionParameters(self.host,
+                                                                         virtual_host=self.vhost,
+                                                                         credentials=credentials,
+                                                                         ssl=self.ssl)
                       self.connection = pika.BlockingConnection(parameters)
                elif self.use_amqp:
                       self.logger.debug("AMQP is used")
