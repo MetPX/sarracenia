@@ -65,7 +65,7 @@ setup(
         'Topic :: System :: Logging',
     ],
     install_requires=[ 
-    "amqplib",
+    "amqp",
     "appdirs",
     "watchdog", 
     "netifaces", 
