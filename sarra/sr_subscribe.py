@@ -260,7 +260,7 @@ class sr_subscribe(sr_instances):
            self.post_hc = self.consumer.hc
            if self.post_broker != self.broker :
               self.post_hc = HostConnect( logger = self.logger )
-              self.post_hc.choose_amqp_client(self.use_pika, self.use_amqp)
+              self.post_hc.choose_amqp_alternative(self.use_amqplib, self.use_pika)
               self.post_hc.set_url( self.post_broker )
               self.post_hc.connect()
 
@@ -1853,7 +1853,7 @@ class sr_subscribe(sr_instances):
         if self.post_broker :
            if self.post_broker != self.broker :
               self.post_hc = HostConnect( logger = self.logger )
-              self.post_hc.choose_amqp_client(self.use_pika, self.use_amqp)
+              self.post_hc.choose_amqp_alternative(self.use_amqplib, self.use_pika)
               self.post_hc.set_url( self.post_broker )
               self.post_hc.loop=False
               self.post_hc.connect()
@@ -1890,7 +1890,7 @@ class sr_subscribe(sr_instances):
            self.post_hc = self.consumer.hc
            if self.post_broker != self.broker :
               self.post_hc = HostConnect( logger = self.logger )
-              self.post_hc.choose_amqp_client(self.use_pika, self.use_amqp)
+              self.post_hc.choose_amqp_alternative(self.use_amqplib, self.use_pika)
               self.post_hc.set_url( self.post_broker )
               self.post_hc.connect()
            self.declare_exchanges()
@@ -1940,7 +1940,7 @@ class sr_subscribe(sr_instances):
            self.post_hc = self.consumer.hc
            if self.post_broker != self.broker :
               self.post_hc = HostConnect( logger = self.logger )
-              self.post_hc.choose_amqp_client(self.use_pika, self.use_amqp)
+              self.post_hc.choose_amqp_alternative(self.use_amqplib, self.use_pika)
               self.post_hc.set_url( self.post_broker )
               self.post_hc.connect()
            self.declare_exchanges()

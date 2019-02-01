@@ -58,8 +58,8 @@ class sr_audit(sr_instances):
     def amqp_connect(self):
         try:
                 self.hc = HostConnect(logger = self.logger)
+                self.hc.choose_amqp_alternative(self.use_amqplib, self.use_pika)
                 self.hc.loop = False
-                self.hc.choose_amqp_client(self.use_pika, self.use_amqp)
                 self.hc.set_url(self.admin)
                 self.hc.connect()
         except: pass

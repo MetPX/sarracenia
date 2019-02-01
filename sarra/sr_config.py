@@ -33,40 +33,37 @@
 import logging
 import inspect
 import netifaces
-import os,re,socket,sys,random,glob,time
-import urllib,urllib.parse, urllib.request, urllib.error
-from   appdirs import *
+import socket
+import glob
+import urllib.parse
+import urllib.request
+import urllib.error
 import shutil
-import subprocess
 import sarra
 
-try   : import pika
-except: pass
+from appdirs import *
+from sarra.sr_checksum import *
+from sarra.sr_credentials import *
+from sarra.sr_util import *
 
-try   : import amqplib.client_0_8 as amqplib_0_8
-except: pass
-
-try   : import amqp
-except: pass
-
-import paramiko
-from   paramiko import *
+# ======= amqp alternative libraries =======
+try:
+    import amqplib.client_0_8 as amqplib_0_8
+    amqplib_available = True
+except ImportError:
+    amqplib_available = False
+try:
+    import pika
+    pika_available = True
+except ImportError:
+    pika_available = False
+# ==========================================
 
 try:
     import xattr
     supports_extended_attributes=True
-
-except:
+except ImportError:
     supports_extended_attributes=False
-
-try :
-         from sr_checksum          import *
-         from sr_credentials       import *
-         from sr_util              import *
-except : 
-         from sarra.sr_checksum    import *
-         from sarra.sr_credentials import *
-         from sarra.sr_util        import *
 
 if sys.hexversion > 0x03030000 :
    from shutil import copyfile,get_terminal_size
@@ -287,6 +284,8 @@ class sr_config:
            (self.program_name, sarra.__version__) )
         self.logger.info( "\tinflight=%s events=%s use_pika=%s topic_prefix=%s" % \
            ( self.inflight, self.events, self.use_pika, self.topic_prefix) )
+        self.logger.info( "\tinflight=%s events=%s use_amqplib=%s topic_prefix=%s" % \
+           ( self.inflight, self.events, self.use_amqplib, self.topic_prefix) )
         self.logger.info( "\tsuppress_duplicates=%s basis=%s retry_mode=%s retry_ttl=%sms" % \
            ( self.caching, self.cache_basis, self.retry_mode, self.retry_ttl ) )
         self.logger.info( "\texpire=%sms reset=%s message_ttl=%s prefetch=%s accept_unmatch=%s delete=%s" % \
@@ -671,9 +670,9 @@ class sr_config:
 
         self.report_exchange      = None
           
-        # amqp
-        self.use_pika              = 'amqplib' not in sys.modules and 'amqp' not in sys.modules
-        self.use_amqp              = 'amqplib' not in sys.modules and 'amqp' in sys.modules
+        # amqp alternatives
+        self.use_pika              = False
+        self.use_amqplib           = False
 
         # cache
         self.cache                = None
@@ -2443,13 +2442,35 @@ class sr_config:
                            self.post_base_url = words1
                      n = 2
 
-                elif words0 == 'use_pika': # See: FIX ME
-                     if (words1 is None) or words[0][0:1] == '-' :
+                elif words0 == 'use_amqplib':
+                     if ((words1 is None) or words[0][0:1] == '-') and not self.use_pika and amqplib_available:
+                        self.use_amqplib = True
+                        n = 1
+                     elif not self.use_pika and amqplib_available:
+                        self.use_amqplib = self.isTrue(words[1])
+                        n = 2
+                     elif self.use_pika:
+                        self.logger.warning("cannot set amqplib since pika is already set: use_amqplib and use_pika "
+                                            "are mutually exclusive")
+                     elif not amqplib_available:
+                        self.logger.warning("Amqplib module is not available, will use amqp module instead. To install "
+                                            "Amqplib, try: ")
+                        self.logger.warning("pip install amqplib")
+
+                elif words0 == 'use_pika':
+                     if ((words1 is None) or words[0][0:1] == '-') and not self.use_amqplib and pika_available:
                         self.use_pika = True
                         n = 1
-                     else :
+                     elif not self.use_amqplib and pika_available:
                         self.use_pika = self.isTrue(words[1])
                         n = 2
+                     elif self.use_amqplib:
+                        logging.warning("cannot set pika since amqplib is already set: use_amqplib and use_pika are "
+                                        "mutually exclusive")
+                     elif not pika_available:
+                        self.logger.warning("Pika module is not available, will use amqp module instead. To install "
+                                            "Pika, try: ")
+                        self.logger.warning("pip install pika")
 
                 elif words0 == 'users':  # See: sr_audit.1
                      if (words1 is None) or words[0][0:1] == '-' : 

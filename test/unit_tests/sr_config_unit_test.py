@@ -393,7 +393,7 @@ def self_test():
 
     opt4='use_pika True'
     cfg.option(opt4.split())
-    if not cfg.use_pika :
+    if pika_available and not cfg.use_pika :
        cfg.logger.error("test 33: option use_pika boolean set to true failed")
        failed = True
 
@@ -405,7 +405,7 @@ def self_test():
 
     opt4='use_pika'
     cfg.option(opt4.split())
-    if not cfg.use_pika :
+    if pika_available and not cfg.use_pika :
        cfg.logger.error("test 35: option use_pika boolean set to true without value failed")
        failed = True
 
