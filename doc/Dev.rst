@@ -347,7 +347,7 @@ With credentials stored for localhost::
      echo "amqp://tsource:TestSOUrCs@localhost/" >>~/.config/sarra/credentials.conf
      echo "amqp://tsub:TestSUBSCibe@localhost/" >>~/.config/sarra/credentials.conf
      echo "amqp://tfeed:TestFeeding@localhost/" >>~/.config/sarra/credentials.conf
-     echo "amqp://anoymous:anonymous@dd.weather.gc.ca" >>~/.config/sarra/credentials.conf
+     echo "amqp://anonymous:anonymous@dd.weather.gc.ca" >>~/.config/sarra/credentials.conf
      echo "ftp://anonymous:anonymous@localhost:2121/" >>~/.config/sarra/credentials.conf
 
      cat >~/.config/sarra/admin.conf <<EOT
