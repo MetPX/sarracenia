@@ -343,6 +343,8 @@ With credentials stored for localhost::
 
      sudo apt-get install rabbitmq-server
      sudo rabbitmq-plugins enable rabbitmq_management
+     
+     mkdir ~/.config/sarra
      echo "amqp://bunnymaster:MaestroDelConejito@localhost/" >>~/.config/sarra/credentials.conf
      echo "amqp://tsource:TestSOUrCs@localhost/" >>~/.config/sarra/credentials.conf
      echo "amqp://tsub:TestSUBSCibe@localhost/" >>~/.config/sarra/credentials.conf
@@ -351,7 +353,6 @@ With credentials stored for localhost::
      echo "ftp://anonymous:anonymous@localhost:2121/" >>~/.config/sarra/credentials.conf
 
      cat >~/.config/sarra/admin.conf <<EOT
-
      broker amqp://tfeed@localhost/
      cluster localhost
      admin amqp://bunnymaster@localhost/
@@ -368,8 +369,9 @@ With credentials stored for localhost::
      
      systemctl restart rabbitmq-server
      cd /usr/local/bin
+     sudo mv rabbitmqadmin rabbitmqadmin.1
      sudo wget http://localhost:15672/cli/rabbitmqadmin
-     chmod 755 rabbbitmqadmin
+     sudo chmod 755 rabbitmqadmin
      sr_audit --users foreground
 
 .. Note::
