@@ -40,6 +40,12 @@ import os,random,signal,stat,sys,time
 import urllib
 import urllib.parse
 
+try:
+    import xattr
+
+except:
+    pass
+
 #============================================================
 # sigalarm
 #============================================================
@@ -717,6 +723,19 @@ class sr_transport():
         #self.logger.debug("sr_transport set_local_file_attributes %s" % local_file)
 
         hdr  = msg.headers
+
+        # if the file is not partitioned, the the onfly_checksum is for the whole file.
+        # cache it here, along with the mtime.
+        if ( msg.partstr[0:2] == '1,' ) and self.parent.supports_extended_attributes:
+           sumstr = msg.sumstr[0:2] + msg.onfly_checksum
+           xattr.setxattr(local_file, 'user.sr_sum', bytes(sumstr,"utf-8"))
+
+           if self.parent.preserve_time and 'mtime' in hdr and hdr['mtime'] :
+               xattr.setxattr(local_file, 'user.sr_mtime', bytes(hdr['mtime'],"utf-8"))
+           else:
+               st = os.stat(local_file)
+               mtime = timeflt2str( st.st_mtime )
+               xattr.setxattr(local_file, 'user.sr_mtime', bytes(mtime,"utf-8"))
 
         mode = 0
         if self.parent.preserve_mode and 'mode' in hdr :

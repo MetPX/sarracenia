@@ -271,6 +271,9 @@ class sr_config:
         self.user_cache_dir += os.sep + "%s" % self.config_name
         # user_cache_dir will be created later in configure()
 
+        # host attributes
+        self.supports_extended_attributes = supports_extended_attributes
+
 
     def xcl( self, x ):
         if sys.hexversion > 0x03030000 :
