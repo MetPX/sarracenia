@@ -33,7 +33,6 @@
 #
 
 import amqp
-import logging
 
 from sarra.sr_util      import *
 
@@ -72,6 +71,7 @@ class HostConnect:
 
        self.sleeping   = None
 
+       # Default behavior is to use amqp and not the alternatives
        self.use_amqp = True
        self.use_amqplib = False
        self.use_pika = False
@@ -229,8 +229,11 @@ class HostConnect:
        if self.vhost    == ''      : self.vhost = '/'
 
    def choose_amqp_alternative(self, use_amqplib=False, use_pika=False):
+       # 1 alternative could be chosen there (By default 0 alternative is chosen)
        self.use_amqplib = use_amqplib
        self.use_pika = use_pika
+
+       # Ensure that if 1 alternative is chosen we will not use the default amqp library
        self.use_amqp = not (self.use_amqplib or self.use_pika)
 
 # ==========
