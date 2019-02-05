@@ -1845,8 +1845,11 @@ class sr_subscribe(sr_instances):
 
         # consumer declare
 
-        self.consumer = sr_consumer(self,admin=True,loop=False)
-        self.consumer.cleanup()
+        try:
+            self.consumer = sr_consumer(self,admin=True)
+            self.consumer.cleanup()
+        except:
+            pass
 
         # if posting
 
@@ -1857,8 +1860,10 @@ class sr_subscribe(sr_instances):
               self.post_hc.set_url( self.post_broker )
               self.post_hc.loop=False
               self.post_hc.connect()
-           else:
+           elif hasattr(self,'consumer'):
               self.post_hc = self.consumer.hc
+           else:
+              self.post_hc = None
 
            self.declare_exchanges(cleanup=True)
 
