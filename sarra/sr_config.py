@@ -2442,7 +2442,7 @@ class sr_config:
                            self.post_base_url = words1
                      n = 2
 
-                elif words0 == 'use_amqplib': # See: TODO decide where to document option
+                elif words0 == 'use_amqplib': # See: TODO decide where to document this option
                      if ((words1 is None) or words[0][0:1] == '-') and not self.use_pika and amqplib_available:
                         self.use_amqplib = True
                         n = 1
@@ -2450,16 +2450,15 @@ class sr_config:
                         self.use_amqplib = self.isTrue(words[1])
                         n = 2
                      elif self.use_pika:
-                        self.logger.warning("cannot set amqplib since pika is already set: use_amqplib and use_pika "
-                                            "are mutually exclusive")
+                        self.logger.warning("use_pika is already set: cannot set use_amqplib")
                         n = 2
                      elif not amqplib_available:
-                        self.logger.warning("Amqplib module is not available, will use amqp module instead. To install "
-                                            "Amqplib, try: ")
+                        self.logger.warning("amqplib module is not available, will use amqp module instead. To install "
+                                            "amqplib, try: ")
                         self.logger.warning("pip install amqplib")
                         n = 2
 
-                elif words0 == 'use_pika': # See: TODO decide where to document option
+                elif words0 == 'use_pika': # See: TODO decide where to document this option
                      if ((words1 is None) or words[0][0:1] == '-') and not self.use_amqplib and pika_available:
                         self.use_pika = True
                         n = 1
@@ -2467,12 +2466,11 @@ class sr_config:
                         self.use_pika = self.isTrue(words[1])
                         n = 2
                      elif self.use_amqplib:
-                        logging.warning("cannot set pika since amqplib is already set: use_amqplib and use_pika are "
-                                        "mutually exclusive")
+                        logging.warning("use_amqplib is already set: cannot set use_pika")
                         n = 2
                      elif not pika_available:
-                        self.logger.warning("Pika module is not available, will use amqp module instead. To install "
-                                            "Pika, try: ")
+                        self.logger.warning("pika module is not available, will use amqp module instead. To install "
+                                            "pika, try: ")
                         self.logger.warning("pip install pika")
                         n = 2
 
