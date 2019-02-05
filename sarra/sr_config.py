@@ -2442,36 +2442,24 @@ class sr_config:
                            self.post_base_url = words1
                      n = 2
 
-                elif words0 == 'use_amqplib': # See: TODO decide where to document this option
+                elif words0 == 'use_amqplib': # See: sr_subscribe.1
                      if ((words1 is None) or words[0][0:1] == '-') and not self.use_pika and amqplib_available:
                         self.use_amqplib = True
                         n = 1
                      elif not self.use_pika and amqplib_available:
                         self.use_amqplib = self.isTrue(words[1])
                         n = 2
-                     elif self.use_pika:
-                        self.logger.warning("use_pika is already set: cannot set use_amqplib")
-                        n = 2
-                     elif not amqplib_available:
-                        self.logger.warning("amqplib module is not available, will use amqp module instead. To install "
-                                            "amqplib, try: ")
-                        self.logger.warning("pip install amqplib")
+                     else:
                         n = 2
 
-                elif words0 == 'use_pika': # See: TODO decide where to document this option
+                elif words0 == 'use_pika': # See: sr_subscribe.1
                      if ((words1 is None) or words[0][0:1] == '-') and not self.use_amqplib and pika_available:
                         self.use_pika = True
                         n = 1
                      elif not self.use_amqplib and pika_available:
                         self.use_pika = self.isTrue(words[1])
                         n = 2
-                     elif self.use_amqplib:
-                        logging.warning("use_amqplib is already set: cannot set use_pika")
-                        n = 2
-                     elif not pika_available:
-                        self.logger.warning("pika module is not available, will use amqp module instead. To install "
-                                            "pika, try: ")
-                        self.logger.warning("pip install pika")
+                     else:
                         n = 2
 
                 elif words0 == 'users':  # See: sr_audit.1
