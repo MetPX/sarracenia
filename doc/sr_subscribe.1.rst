@@ -329,6 +329,22 @@ of an environment variable, then they can be set in configuration files::
 
   declare env HTTP_PROXY=localhost
 
+
+Choosing an alternate client library 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sarracenia now uses amqp_ module as its default AMQP client library which is provided by the installation.
+This library uses AMQP 0-9-1 standard and it replaces amqplib which uses AMQP 0-8. However, if the user
+need to use another client library, there is 2 options which are mutually exclusive (they cannot be used together):
+
+.. _amqp: https://pypi.org/project/amqp/
+
+- **use_amqplib [<boolean>]**
+- **use_pika [<boolean>]**
+
+In the cases where the user want to enable one option, he will first need to install the module in 
+his python environment, whether it's amqplib or pika.
+
     
 LOG FILES
 ---------
