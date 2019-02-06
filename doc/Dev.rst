@@ -1031,6 +1031,17 @@ manually. So it will help if you must use .rpm's for compliance reasons, but
 it isn't really properly done.  `Help Wanted  <https://github.com/MetPX/sarracenia/issues57>`_
 
 
+Building a Windows Installer
+++++++++++++++++++++++++++++
+
+One can also build a Windows installer with that 
+`script <https://github.com/MetPX/sarracenia/blob/master/generate-win-installer.sh>`_.
+It needs to be run from a Linux OS (preferably Ubuntu 18) in the root directory of Sarracenia's git. 
+Then, from the shell, run::
+
+ sudo apt install nsis
+ pip3 install pynsist wheel
+ ./generate-win-installer.sh 2>&1 > log.txt
 
 Updating The Project Website
 ----------------------------
