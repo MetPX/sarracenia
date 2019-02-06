@@ -33,22 +33,15 @@
 import inspect
 import logging
 import netifaces
-import os,re,socket,subprocess,sys,random,glob,time
-import urllib,urllib.parse, urllib.request, urllib.error
+import os, re, socket, subprocess, sys, random, glob, time
+import urllib, urllib.parse, urllib.request, urllib.error
 import shutil
 import sarra
 
 from appdirs import *
-
-try :
-         from sr_checksum          import *
-         from sr_credentials       import *
-         from sr_util              import *
-except :
-         from sarra.sr_checksum    import *
-         from sarra.sr_credentials import *
-         from sarra.sr_util        import *
-
+from sarra.sr_checksum import *
+from sarra.sr_credentials import *
+from sarra.sr_util import *
 
 # ======= amqp alternative libraries =======
 try:
@@ -70,7 +63,7 @@ except ImportError:
     supports_extended_attributes=False
 
 if sys.hexversion > 0x03030000 :
-   from shutil import copyfile,get_terminal_size
+   from shutil import get_terminal_size
    py2old=False
 else: 
    py2old=True 
@@ -173,7 +166,7 @@ class sr_config:
         try: 
             os.makedirs(self.http_dir, 0o775,True)
         except Exception as ex:
-            self.logger.warning( "making %s: %s" % ( self.user_http_dir, ex ) )
+            self.logger.warning( "making %s: %s" % ( self.http_dir, ex ) )
 
 
         # default config files
