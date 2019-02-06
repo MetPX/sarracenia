@@ -30,21 +30,25 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 
-import logging
 import inspect
+import logging
 import netifaces
-import socket
-import glob
-import urllib.parse
-import urllib.request
-import urllib.error
+import os,re,socket,subprocess,sys,random,glob,time
+import urllib,urllib.parse, urllib.request, urllib.error
 import shutil
 import sarra
 
 from appdirs import *
-from sarra.sr_checksum import *
-from sarra.sr_credentials import *
-from sarra.sr_util import *
+
+try :
+         from sr_checksum          import *
+         from sr_credentials       import *
+         from sr_util              import *
+except :
+         from sarra.sr_checksum    import *
+         from sarra.sr_credentials import *
+         from sarra.sr_util        import *
+
 
 # ======= amqp alternative libraries =======
 try:
