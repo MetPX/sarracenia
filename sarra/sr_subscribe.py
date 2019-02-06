@@ -1807,7 +1807,7 @@ class sr_subscribe(sr_instances):
         if sys.platform == 'win32':
             self.msg.new_dir = self.msg.new_dir.replace('\\', '/')
             self.msg.new_relpath = self.msg.new_relpath.replace('\\', '/')
-            if re.match('[A-Z]:', self.currentDir):
+            if re.match('[A-Z]:', self.currentDir, flags=re.IGNORECASE):
                 self.msg.new_dir = self.msg.new_dir.lstrip('/')
                 self.msg.new_relpath = self.msg.new_relpath.lstrip('/')
 
