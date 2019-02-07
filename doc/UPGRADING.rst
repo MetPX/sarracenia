@@ -36,6 +36,13 @@ Installation Instructions
 git
 ---
 
+*CHANGE*: switch AMQP library: python3-amqp replaced python3-amqplib (abandonware library) 
+          package dependency means it won´t install automatically over previous version 
+          need to apt install, or install the new dependency before you upgrade.
+
+*CHANGE*: debian package name changed from *python3-metpx-sarracenia* to *metpx-sarracenia*
+          to better match python packaging team guidelines.
+
 *NOTICE*: bug with *remove* introduced in 2.19.01b1 fixed.
 
 
