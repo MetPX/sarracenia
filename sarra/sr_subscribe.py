@@ -1801,22 +1801,20 @@ class sr_subscribe(sr_instances):
         #        Everywhere else // or /../ are corrected.
         #        but if the number of / starting the path > 2  ... it will result into 1 /
 
-        self.msg.new_dir     = os.path.normpath(new_dir)
-        if sys.platform == 'win32':
-            self.msg.new_dir = self.msg.new_dir.replace('\\','/')
-   
-        self.msg.new_file    = filename
+        self.msg.new_dir = os.path.normpath(new_dir)
         self.msg.new_relpath = os.path.normpath(relpath)
+
         if sys.platform == 'win32':
-            self.msg.new_relpath = self.msg.new_relpath.replace('\\','/')
+            self.msg.new_dir = self.msg.new_dir.replace('\\', '/')
+            self.msg.new_relpath = self.msg.new_relpath.replace('\\', '/')
+            if re.match('[A-Z]:', self.currentDir, flags=re.IGNORECASE):
+                self.msg.new_dir = self.msg.new_dir.lstrip('/')
+                self.msg.new_relpath = self.msg.new_relpath.lstrip('/')
 
-        if self.post_broker and self.post_base_url :
-           self.msg.new_baseurl = self.post_base_url
+        self.msg.new_file = filename
 
-        #self.logger.debug("new_dir     = %s" % self.msg.new_dir)
-        #self.logger.debug("new_file    = %s" % self.msg.new_file)
-        #self.logger.debug("new_baseurl = %s" % self.msg.new_baseurl)
-        #self.logger.debug("new_relpath = %s" % self.msg.new_relpath)
+        if self.post_broker and self.post_base_url:
+            self.msg.new_baseurl = self.post_base_url
 
     def reload(self):
         self.logger.info("%s reload" % self.program_name )
