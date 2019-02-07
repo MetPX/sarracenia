@@ -905,6 +905,7 @@ A convenient script has been created to automate the release process. Simply run
 
 
 * Edit ``sarra/__init__.py`` manually and set the version number.
+* Edit *generate-win-installer.sh* manually and set the version number.
 * git commit -a
 * Run ```release.sh``` example::
 
@@ -1048,7 +1049,7 @@ web pages is no longer needed.
 On the current web site, updating is done by committing changes to .rst files
 directly on github. There is no post-processing required. As the links are all
 relative and other services such as gitlab also support such rendering, the
-*website* is portable any gitlab instance, etc...  And the entry point is from
+*website* is portable any gitlab instance, etc... And the entry point is from
 the README.rst file at the root directory of each repository.
 
 
