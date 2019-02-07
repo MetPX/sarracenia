@@ -1,3 +1,17 @@
+metpx-sarracenia (2.19.02b1) unstable; urgency=medium
+
+  * new:    Added checksum caching in an extended file attribute (from Issue #54) 
+  * new:    Issue #130 - moved to new amqp library protocol changed from 0.8 to 0.9.1
+  * new:    exp_2mqtt.py -> bridge to export to MQTT brokers.
+  * new:    sample configuration: WMO_Sketch_2mqtt.conf 
+  * new:    windows installer available. Issue #122
+  * bugfix: windows Issue #111 - now works with drive specfications (C:)
+  * bugfix: debian package name, removed python3- prefix matches pypi, 
+  *         and better compliance with debian standards.
+  * bugfix: *remove* wouldn't in some circumstances. (bug from in v2.19.01b1)
+
+ -- Peter Silva <peter@blacklab>  Wed, 06 Feb 2019 22:15:10 -0500
+
 metpx-sarracenia (2.19.01b1) unstable; urgency=medium
 
   * new:    optionally produce and consume experimental v03.post messages, 
