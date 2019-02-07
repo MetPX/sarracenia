@@ -30,43 +30,40 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 
-import logging
 import inspect
+import logging
 import netifaces
-import os,re,socket,sys,random,glob,time
-import urllib,urllib.parse, urllib.request, urllib.error
-from   appdirs import *
+import os, re, socket, subprocess, sys, random, glob, time
+import urllib, urllib.parse, urllib.request, urllib.error
 import shutil
-import subprocess
 import sarra
 
-try   : import amqplib.client_0_8 as amqp
-except: pass
+from appdirs import *
+from sarra.sr_checksum import *
+from sarra.sr_credentials import *
+from sarra.sr_util import *
 
-try   : import pika
-except: pass
-
-import paramiko
-from   paramiko import *
+# ======= amqp alternative libraries =======
+try:
+    import amqplib.client_0_8 as amqplib_0_8
+    amqplib_available = True
+except ImportError:
+    amqplib_available = False
+try:
+    import pika
+    pika_available = True
+except ImportError:
+    pika_available = False
+# ==========================================
 
 try:
     import xattr
     supports_extended_attributes=True
-
-except:
+except ImportError:
     supports_extended_attributes=False
 
-try :
-         from sr_checksum          import *
-         from sr_credentials       import *
-         from sr_util              import *
-except : 
-         from sarra.sr_checksum    import *
-         from sarra.sr_credentials import *
-         from sarra.sr_util        import *
-
 if sys.hexversion > 0x03030000 :
-   from shutil import copyfile,get_terminal_size
+   from shutil import get_terminal_size
    py2old=False
 else: 
    py2old=True 
@@ -169,7 +166,7 @@ class sr_config:
         try: 
             os.makedirs(self.http_dir, 0o775,True)
         except Exception as ex:
-            self.logger.warning( "making %s: %s" % ( self.user_http_dir, ex ) )
+            self.logger.warning( "making %s: %s" % ( self.http_dir, ex ) )
 
 
         # default config files
@@ -287,6 +284,8 @@ class sr_config:
            (self.program_name, sarra.__version__) )
         self.logger.info( "\tinflight=%s events=%s use_pika=%s topic_prefix=%s" % \
            ( self.inflight, self.events, self.use_pika, self.topic_prefix) )
+        self.logger.info( "\tinflight=%s events=%s use_amqplib=%s topic_prefix=%s" % \
+           ( self.inflight, self.events, self.use_amqplib, self.topic_prefix) )
         self.logger.info( "\tsuppress_duplicates=%s basis=%s retry_mode=%s retry_ttl=%sms" % \
            ( self.caching, self.cache_basis, self.retry_mode, self.retry_ttl ) )
         self.logger.info( "\texpire=%sms reset=%s message_ttl=%s prefetch=%s accept_unmatch=%s delete=%s" % \
@@ -671,14 +670,9 @@ class sr_config:
 
         self.report_exchange      = None
           
-        # amqp
-
-        # some fix requiered with pika so not the default for now
-        #self.use_pika             = 'pika' in sys.modules
-
-        # use pika only if amqplib is not available
-        self.use_pika              = not 'amqplib' in sys.modules
-
+        # amqp alternatives
+        self.use_pika              = False
+        self.use_amqplib           = False
 
         # cache
         self.cache                = None
@@ -2448,12 +2442,24 @@ class sr_config:
                            self.post_base_url = words1
                      n = 2
 
-                elif words0 == 'use_pika': # See: FIX ME
-                     if (words1 is None) or words[0][0:1] == '-' :
+                elif words0 == 'use_amqplib': # See: sr_subscribe.1
+                     if ((words1 is None) or words[0][0:1] == '-') and not self.use_pika and amqplib_available:
+                        self.use_amqplib = True
+                        n = 1
+                     elif not self.use_pika and amqplib_available:
+                        self.use_amqplib = self.isTrue(words[1])
+                        n = 2
+                     else:
+                        n = 2
+
+                elif words0 == 'use_pika': # See: sr_subscribe.1
+                     if ((words1 is None) or words[0][0:1] == '-') and not self.use_amqplib and pika_available:
                         self.use_pika = True
                         n = 1
-                     else :
+                     elif not self.use_amqplib and pika_available:
                         self.use_pika = self.isTrue(words[1])
+                        n = 2
+                     else:
                         n = 2
 
                 elif words0 == 'users':  # See: sr_audit.1

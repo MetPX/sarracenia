@@ -545,15 +545,6 @@ changes to thy python code into the master branch. It is more qualitative sampli
 common use cases rather than a thorough examination of all functionality. While not
 thorough, it is good to know the flows are working.
 
-(As of Nov. 2017) NOTE:  the packages (deb+pip) are created with a dependency for python3-amqplib for the AMQP support.
-We want to migrate to python3-pika. Therefore, the programs now supports both AMQP api. Should you have python3-pika
-installed, it will be used as default. If you have both amqplib and pika installed, you can use the option::
-
-*use_pika [true/false]*
-
-To use pika or not. Should you set use_pika to True and python3-pika not installed, the programs will fall back to
-amqplib.  The developers should test both API until we are totally migrated to PIKA.
-
 Note that the *fclean* subscriber looks at files in and keeps files around long enough for them to go through all the other
 tests.  It does this by waiting a reasonable amount of time (45 seconds, the last time checked.) then it compares the file
 that have been posted by sr_watch to the files created by downloading from it.  As the *sample now* count proceeds,
