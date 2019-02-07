@@ -6,10 +6,17 @@ lists all changes between versions.
 
 **git repo**
 
-* new:    windows installer!
+**2.19.02b1**
+
+* new:    Added checksum caching in an extended file attribute (from Issue #54) 
+* new:    Issue #130 - moved to new amqp library protocol changed from 0.8 to 0.9.1
 * new:    exp_2mqtt.py -> bridge to export to MQTT brokers.
 * new:    sample configuration: WMO_Sketch_2mqtt.conf 
-* bugfix: *remove* wouldn't in some circumstances. (bug from in 19.01b1)
+* new:    windows installer available. Issue #122
+* bugfix: windows Issue #111 - now works with drive specfications (C:)
+* bugfix: debian package name, removed python3- prefix matches pypi, 
+*         and better compliance with debian standards.
+* bugfix: *remove* wouldn't in some circumstances. (bug from in v2.19.01b1)
 
 **2.19.01b1**
 

@@ -36,12 +36,20 @@ Installation Instructions
 git
 ---
 
+2.19.02.b1
+----------
+
+*CHANGE*: debian package name changed from *python3-metpx-sarracenia* to *metpx-sarracenia*
+          to better match python packaging team guidelines. upgrades will fail, as the
+          new package will conflict with the one previously installed.
+          one must apt remove python3-metpx-sarracenia prior to installing this version.
+
 *CHANGE*: switch AMQP library: python3-amqp replaced python3-amqplib (abandonware library) 
           package dependency means it won´t install automatically over previous version 
           need to apt install, or install the new dependency before you upgrade.
 
-*CHANGE*: debian package name changed from *python3-metpx-sarracenia* to *metpx-sarracenia*
-          to better match python packaging team guidelines.
+*NOTICE*: Windows binary installer option available now, much simpler than having to install a
+          whole python environment for it.  Can still use any existing python using pip.
 
 *NOTICE*: bug with *remove* introduced in 2.19.01b1 fixed.
 
