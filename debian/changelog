@@ -10,7 +10,7 @@ metpx-sarracenia (2.19.02b1) unstable; urgency=medium
   *         and better compliance with debian standards.
   * bugfix: *remove* wouldn't in some circumstances. (bug from in v2.19.01b1)
 
- -- Peter Silva <peter@blacklab>  Wed, 06 Feb 2019 22:15:10 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Wed, 06 Feb 2019 22:15:10 -0500
 
 metpx-sarracenia (2.19.01b1) unstable; urgency=medium
 
@@ -29,7 +29,7 @@ metpx-sarracenia (2.19.01b1) unstable; urgency=medium
   * bugfix: change cleanup, setup, declare to connect once and fail, rather than hang.
   * bugfix: when sr_post is a one-shot configuration, status makes no sense.
 
- -- Peter Silva <peter@idefix>  Thu, 17 Jan 2019 17:15:21 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Thu, 17 Jan 2019 17:15:21 -0500
 
 metpx-sarracenia (2.18.12b4) unstable; urgency=medium
 
@@ -43,39 +43,39 @@ metpx-sarracenia (2.18.12b4) unstable; urgency=medium
   * bugfix: copyright is GPLv2 only.  Notices incorrectly listed GPLv2 OR LATER.
   * bugfix: more progress on issue #54 (application-defined checksums with extended attributes.)
 
- -- Peter Silva <peter@blacklab>  Sat, 15 Dec 2018 13:04:13 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Sat, 15 Dec 2018 13:04:13 -0500
 
 metpx-sarracenia (2.18.11b6) unstable; urgency=medium
 
   * missed a commit... just completing b5 changes... 
 
- -- Peter Silva <peter@idefix>  Tue, 27 Nov 2018 15:20:18 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Tue, 27 Nov 2018 15:20:18 -0500
 
 metpx-sarracenia (2.18.11b5) unstable; urgency=medium
 
   * revert xattr dependency, causing issues on windows and older linux. 
 
- -- Peter Silva <peter@idefix>  Tue, 27 Nov 2018 13:41:03 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Tue, 27 Nov 2018 13:41:03 -0500
 
 metpx-sarracenia (2.18.11b4) unstable; urgency=medium
 
   * revert depedency on paramiko which breaks build on ubuntu 14.04.
   * adding a warning about backslashes in paths on windows
 
- -- Peter Silva <peter@blacklab>  Sat, 24 Nov 2018 23:16:14 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Sat, 24 Nov 2018 23:16:14 -0500
 
 metpx-sarracenia (2.18.11b3) unstable; urgency=medium
 
   *bugfix: windows dependencies corrected. 
 
- -- Peter Silva <peter@blacklab>  Fri, 23 Nov 2018 01:21:41 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Fri, 23 Nov 2018 01:21:41 -0500
 
 metpx-sarracenia (2.18.11b2) unstable; urgency=medium
 
   * bugfix:  windows: Issue #54 support is broken on windows, disabled there.
   *          print slashes the right way round on windows in more cases.
 
- -- Peter Silva <peter@blacklab>  Wed, 21 Nov 2018 23:04:49 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Wed, 21 Nov 2018 23:04:49 -0500
 
 metpx-sarracenia (2.18.11b1) unstable; urgency=medium
 
@@ -86,7 +86,7 @@ metpx-sarracenia (2.18.11b1) unstable; urgency=medium
   *          Issue #112 windows log rollover 
   *          Issue #101 windows git checkout corruption 
 
- -- Peter Silva <peter@idefix>  Wed, 21 Nov 2018 13:35:06 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Wed, 21 Nov 2018 13:35:06 -0500
 
 metpx-sarracenia (2.18.10b2) unstable; urgency=medium
 
@@ -96,7 +96,7 @@ metpx-sarracenia (2.18.10b2) unstable; urgency=medium
   *          unit tests referred to non SSL datamart, were broken
   *          when it was de-commissioned.
 
- -- Peter Silva <peter@idefix>  Wed, 31 Oct 2018 16:33:41 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Wed, 31 Oct 2018 16:33:41 -0400
 
 metpx-sarracenia (2.18.10b1) unstable; urgency=medium
 
@@ -104,7 +104,7 @@ metpx-sarracenia (2.18.10b1) unstable; urgency=medium
   * new      email ingest support added ( Issue #59 )
 
 
- -- Peter Silva <peter@idefix>  Fri, 05 Oct 2018 18:02:47 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Fri, 05 Oct 2018 18:02:47 -0400
 
 metpx-sarracenia (2.18.09b2) unstable; urgency=medium
 
@@ -120,7 +120,7 @@ metpx-sarracenia (2.18.09b2) unstable; urgency=medium
   * bugfix   *list* no longer list dot files or those ending in ~ (tmp/work/hidden files)
 
 
- -- Peter Silva <peter@blacklab>  Wed, 19 Sep 2018 21:02:22 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Wed, 19 Sep 2018 21:02:22 -0400
 
 metpx-sarracenia (2.18.09b1) unstable; urgency=medium
 
@@ -133,7 +133,7 @@ metpx-sarracenia (2.18.09b1) unstable; urgency=medium
   * bugfix issues #85 #86 
  
 
- -- Peter Silva <peter@blacklab>  Thu, 13 Sep 2018 23:34:52 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Thu, 13 Sep 2018 23:34:52 -0400
 
 metpx-sarracenia (2.18.08b1) unstable; urgency=medium
 
@@ -148,13 +148,13 @@ metpx-sarracenia (2.18.08b1) unstable; urgency=medium
   *           issue #80: mirror/strip/flatten affect each accept, rather than global.
 
 
- -- Peter Silva <peter@blacklab>  Thu, 09 Aug 2018 22:53:54 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Thu, 09 Aug 2018 22:53:54 -0400
 
 metpx-sarracenia (2.18.07b3) unstable; urgency=medium
 
   * bugfix     regression for subprocess api change @ V3.5
 
- -- Peter Silva <peter@idefix>  Tue, 17 Jul 2018 11:51:15 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Tue, 17 Jul 2018 11:51:15 -0400
 
 metpx-sarracenia (2.18.07b2) unstable; urgency=medium
 
@@ -164,7 +164,7 @@ metpx-sarracenia (2.18.07b2) unstable; urgency=medium
   * new         poll_email_fetch - query and download from mailboxes. From Marie!
   *
 
- -- Peter Silva <peter@blacklab>  Mon, 16 Jul 2018 00:17:00 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Mon, 16 Jul 2018 00:17:00 -0400
 
 metpx-sarracenia (2.18.07b1) unstable; urgency=medium
 
@@ -176,13 +176,13 @@ metpx-sarracenia (2.18.07b1) unstable; urgency=medium
   *             now have program settings audit.conf  (issue #64 )
   *             more output of plugin programs present in logs (issue #63)
 
- -- Peter Silva <peter@blacklab>  Thu, 12 Jul 2018 20:26:59 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Thu, 12 Jul 2018 20:26:59 -0400
 
 metpx-sarracenia (2.18.06b2) unstable; urgency=medium
 
   *bugfix	Jun's do_poll fix. 
 
- -- Peter Silva <peter@bsqt.homeip.net>  Tue, 12 Jun 2018 18:42:37 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Tue, 12 Jun 2018 18:42:37 -0400
 
 metpx-sarracenia (2.18.06b1) unstable; urgency=medium
 
@@ -193,7 +193,7 @@ metpx-sarracenia (2.18.06b1) unstable; urgency=medium
   *             *sci-fi* (future planned features) removed from docs.
   *             website migrated from sf.net to git repo ones (github, gitlab)
 
- -- Peter Silva <peter@bsqt.homeip.net>  Tue, 12 Jun 2018 18:31:24 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Tue, 12 Jun 2018 18:31:24 -0400
 
 metpx-sarracenia (2.18.05b4) unstable; urgency=medium
 
@@ -250,7 +250,7 @@ metpx-sarracenia (2.18.04b5) unstable; urgency=medium
   *         Adding hint about use of *expire* option, how it is necessary for operations.
   *         default setting is to avoid broker overload, too low for operational use.
 
- -- Peter Silva <peter@bsqt.homeip.net>  Fri, 27 Apr 2018 12:40:16 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Fri, 27 Apr 2018 12:40:16 -0400
 
 metpx-sarracenia (2.18.04b4) unstable; urgency=medium
 
@@ -260,7 +260,7 @@ metpx-sarracenia (2.18.04b4) unstable; urgency=medium
   * new     inflight tmp/
 
 
- -- Peter Silva <peter@bsqt.homeip.net>  Wed, 25 Apr 2018 10:51:00 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Wed, 25 Apr 2018 10:51:00 -0400
 
 metpx-sarracenia (2.18.04b3) unstable; urgency=medium
 
@@ -279,7 +279,7 @@ metpx-sarracenia (2.18.04b3) unstable; urgency=medium
   *         sr_audit log a message when --users all is done
   *                   make sure heartbeat is in try/except 
 
- -- Peter Silva <peter@bsqt.homeip.net>  Fri, 20 Apr 2018 16:14:24 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Fri, 20 Apr 2018 16:14:24 -0400
 
 metpx-sarracenia (2.18.04b2) unstable; urgency=medium
 
@@ -297,7 +297,7 @@ metpx-sarracenia (2.18.04b2) unstable; urgency=medium
   *         sr_rabbit rabbit dependant commands placed in this file
   * new     plugin do_send_log
 
- -- Peter Silva <peter@bsqt.homeip.net>  Tue, 10 Apr 2018 11:17:31 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Tue, 10 Apr 2018 11:17:31 -0400
 
 metpx-sarracenia (2.18.04b1) unstable; urgency=medium
 
@@ -329,7 +329,7 @@ metpx-sarracenia (2.18.03b1) unstable; urgency=medium
   * bugfix Rotation of retry messages ajusted under certain conditions
   * update msg_filter_wmo2msc.py requiered operationally now
 
- -- Peter Silva <peter@bsqt.homeip.net>  Fri, 23 Mar 2018 11:57:09 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Fri, 23 Mar 2018 11:57:09 -0400
 
 metpx-sarracenia (2.18.03a4) unstable; urgency=medium
 
@@ -465,7 +465,7 @@ metpx-sarracenia (2.18.01a1) unstable; urgency=medium
   * C: fix: segfault if credentials.conf is missing.
 
 
- -- Peter Silva <peter@bsqt.homeip.net>  Wed, 03 Jan 2018 14:27:18 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Wed, 03 Jan 2018 14:27:18 -0500
 
 metpx-sarracenia (2.17.12a8) unstable; urgency=medium
 
@@ -523,13 +523,13 @@ metpx-sarracenia (2.17.12a5) unstable; urgency=medium
 
   * added exponential backoff to downloads 
 
- -- Peter Silva <peter@bsqt.homeip.net>  Fri, 08 Dec 2017 09:54:37 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Fri, 08 Dec 2017 09:54:37 -0500
 
 metpx-sarracenia (2.17.12a4) unstable; urgency=medium
 
   * added exponential backoff on retry, so it doesn't SPAM/hammer server when retrying.
 
- -- Peter Silva <peter@bsqt.homeip.net>  Wed, 06 Dec 2017 17:28:56 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Wed, 06 Dec 2017 17:28:56 -0500
 
 metpx-sarracenia (2.17.12a3) unstable; urgency=medium
 
@@ -537,7 +537,7 @@ metpx-sarracenia (2.17.12a3) unstable; urgency=medium
   * changed behaviour to try *attempts* times before putting in the retry queue
   * buffering changed from 8K to 1M (awful performance regression due to timeouts on small bufs.)
 
- -- Peter Silva <peter@bsqt.homeip.net>  Wed, 06 Dec 2017 15:38:01 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Wed, 06 Dec 2017 15:38:01 -0500
 
 metpx-sarracenia (2.17.12a2) unstable; urgency=medium
 
@@ -546,7 +546,7 @@ metpx-sarracenia (2.17.12a2) unstable; urgency=medium
   * heartbeat_memory plugin added by default to control runaway memory leaks.
   * support added to python for N checksum (already in C version.)
 
- -- Peter Silva <peter@bsqt.homeip.net>  Tue, 05 Dec 2017 18:01:18 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Tue, 05 Dec 2017 18:01:18 -0500
 
 metpx-sarracenia (2.17.12a1) unstable; urgency=medium
 
@@ -570,7 +570,7 @@ metpx-sarracenia (2.17.12a1) unstable; urgency=medium
   * C: bugfix: pbu synonym for post_base_url, was not accepted, corrected.
   * C: fixed when renaming across file systems, it would fail, rather than copying the file.
 
- -- Peter Silva <peter@bsqt.homeip.net>  Mon, 04 Dec 2017 17:45:52 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Mon, 04 Dec 2017 17:45:52 -0500
 
 metpx-sarracenia (2.17.11a3) unstable; urgency=medium
 
@@ -586,7 +586,7 @@ metpx-sarracenia (2.17.11a3) unstable; urgency=medium
   * sr_subscribe  revert onfly_checksum set to message checksum in case unset
 
 
- -- Peter Silva <peter@bsqt.homeip.net>  Fri, 17 Nov 2017 13:45:48 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Fri, 17 Nov 2017 13:45:48 -0500
 
 metpx-sarracenia (2.17.11a2) unstable; urgency=medium
 
@@ -599,7 +599,7 @@ metpx-sarracenia (2.17.11a2) unstable; urgency=medium
   * fixed: list,get,remove,edit,log not working for other than subscribe.
   * excessive debug messaging removed.
 
- -- Peter Silva <peter@bsqt.homeip.net>  Thu, 09 Nov 2017 17:04:06 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Thu, 09 Nov 2017 17:04:06 -0500
 
 metpx-sarracenia (2.17.11a1) unstable; urgency=medium
 
@@ -626,7 +626,7 @@ metpx-sarracenia (2.17.11a1) unstable; urgency=medium
   * sr_*        withdraw msg.headers['filename'],  msg.headers['flow']
   * sr_*        reenforcement of base_dir, post_broker, post_exchange, post_base_dir, post_base_url
 
- -- Peter Silva <peter@bsqt.homeip.net>  Mon, 06 Nov 2017 15:03:50 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Mon, 06 Nov 2017 15:03:50 -0500
 
 metpx-sarracenia (2.17.10a4) unstable; urgency=medium
 
@@ -637,7 +637,7 @@ metpx-sarracenia (2.17.10a4) unstable; urgency=medium
   * fix for no_download switch which wasn´t impeding downloads.
 
 
- -- Peter Silva <peter@bsqt.homeip.net>  Mon, 30 Oct 2017 17:43:28 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Mon, 30 Oct 2017 17:43:28 -0400
 
 metpx-sarracenia (2.17.10a3) unstable; urgency=medium
 
@@ -655,7 +655,7 @@ metpx-sarracenia (2.17.10a3) unstable; urgency=medium
   * sr_subscribe : changing determination of source (source_from_exchange or missing)
   * rmdir support (python only.)
 
- -- Peter Silva <peter@bsqt.homeip.net>  Fri, 27 Oct 2017 17:26:21 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Fri, 27 Oct 2017 17:26:21 -0400
 
 metpx-sarracenia (2.17.10a2) unstable; urgency=medium
 
@@ -672,7 +672,7 @@ metpx-sarracenia (2.17.10a2) unstable; urgency=medium
   * C: added tx.select & tx.confirm (publish acknowledgements)
   * C: integrated into flow_tests.
 
- -- Peter Silva <peter@bsqt.homeip.net>  Fri, 20 Oct 2017 13:21:57 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Fri, 20 Oct 2017 13:21:57 -0400
 
 metpx-sarracenia (2.17.10a1) unstable; urgency=medium
 
@@ -708,7 +708,7 @@ metpx-sarracenia (2.17.10a1) unstable; urgency=medium
 
 
 
- -- Peter Silva <peter@bsqt.homeip.net>  Thu, 12 Oct 2017 17:58:52 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Thu, 12 Oct 2017 17:58:52 -0400
 
 metpx-sarracenia (2.17.09a1) unstable; urgency=medium
 
@@ -753,7 +753,7 @@ metpx-sarracenia (2.17.08a1) unstable; urgency=medium
   * C libc shim that calls C posting library complete.
   * getting rid of random checksums (L & R -> SHA512 digest.)
 
- -- Peter Silva <peter@bsqt.homeip.net>  Mon, 14 Aug 2017 17:54:33 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Mon, 14 Aug 2017 17:54:33 -0400
 
 metpx-sarracenia (2.17.07a4) unstable; urgency=medium
 
@@ -766,7 +766,7 @@ metpx-sarracenia (2.17.07a3) unstable; urgency=medium
 
   * on_heartbeat support added to sr_watch. 
 
- -- Peter Silva <peter@bsqt.homeip.net>  Thu, 27 Jul 2017 12:34:47 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Thu, 27 Jul 2017 12:34:47 -0400
 
 metpx-sarracenia (2.17.07a2) unstable; urgency=medium
 
@@ -774,7 +774,7 @@ metpx-sarracenia (2.17.07a2) unstable; urgency=medium
   * on_heartbeat now defaults to heartbeat_log as one would expect, and documented both.
 
 
- -- Peter Silva <peter@bsqt.homeip.net>  Wed, 26 Jul 2017 11:02:30 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Wed, 26 Jul 2017 11:02:30 -0400
 
 metpx-sarracenia (2.17.07a1) unstable; urgency=medium
 
@@ -807,7 +807,7 @@ metpx-sarracenia (2.17.06a3) unstable; urgency=medium
   * flatten fixed in sr_config.
   * crasher bug when sr_sender doesn´t have a post_broker.
 
- -- Peter Silva <peter@bsqt.homeip.net>  Thu, 22 Jun 2017 17:20:03 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Thu, 22 Jun 2017 17:20:03 -0400
 
 metpx-sarracenia (2.17.06a2) unstable; urgency=medium
 
@@ -847,14 +847,14 @@ metpx-sarracenia (2.17.06a1) unstable; urgency=medium
   * some plugin improvements from Dominic Racette.
 
 
- -- Peter Silva <peter@bsqt.homeip.net>  Wed, 07 Jun 2017 13:47:55 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Wed, 07 Jun 2017 13:47:55 -0400
 
 metpx-sarracenia (2.17.03a5) unstable; urgency=medium
 
   * added sr_watchb... the old implementation as a backup in case the new sr_watch is busted.
   * attempted fix for sr_walk permission denied issue.  recursion is now manual, and it queues issues for later.
 
- -- Peter Silva <peter@bsqt.homeip.net>  Mon, 27 Mar 2017 16:27:22 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Mon, 27 Mar 2017 16:27:22 -0400
 
 metpx-sarracenia (2.17.03a4) unstable; urgency=medium
 
@@ -869,7 +869,7 @@ metpx-sarracenia (2.17.03a4) unstable; urgency=medium
   * report_daemons False option setting now stops report routing shovels from starting.
   * added file_age.py to plugins examples.
 
- -- Peter Silva <peter@bsqt.homeip.net>  Sat, 25 Mar 2017 23:08:40 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Sat, 25 Mar 2017 23:08:40 -0400
 
 metpx-sarracenia (2.17.03a2) unstable; urgency=medium
 
