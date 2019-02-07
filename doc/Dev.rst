@@ -345,29 +345,35 @@ With credentials stored for localhost::
      sudo rabbitmq-plugins enable rabbitmq_management
      
      mkdir ~/.config/sarra
-     echo "amqp://bunnymaster:MaestroDelConejito@localhost/" >>~/.config/sarra/credentials.conf
-     echo "amqp://tsource:TestSOUrCs@localhost/" >>~/.config/sarra/credentials.conf
-     echo "amqp://tsub:TestSUBSCibe@localhost/" >>~/.config/sarra/credentials.conf
-     echo "amqp://tfeed:TestFeeding@localhost/" >>~/.config/sarra/credentials.conf
-     echo "amqp://anonymous:anonymous@dd.weather.gc.ca" >>~/.config/sarra/credentials.conf
-     echo "ftp://anonymous:anonymous@localhost:2121/" >>~/.config/sarra/credentials.conf
-
-     cat >~/.config/sarra/admin.conf <<EOT
-     broker amqp://tfeed@localhost/
+     cat > ~/.config/sarra/default.conf << EOF
+     declare env FLOWBROKER=localhost
+     declare env SFTPUSER=`whoami`
+     declare env TESTDOCROOT=${HOME}/sarra_devdocroot
+     declare env SR_CONFIG_EXAMPLES=${HOME}/git/sarracenia
+     EOF
+     cat > ~/.config/sarra/credentials.conf << EOF
+     amqp://bunnymaster:MaestroDelConejito@localhost/ 
+     amqp://tsource:TestSOUrCs@localhost/
+     amqp://tsub:TestSUBSCibe@localhost/
+     amqp://tfeed:TestFeeding@localhost/
+     amqps://anonymous:anonymous@dd.weather.gc.ca
+     ftp://anonymous:anonymous@localhost:2121/
+     EOF
+     cat > ~/.config/sarra/admin.conf << EOF
      cluster localhost
      admin amqp://bunnymaster@localhost/
      feeder amqp://tfeed@localhost/
      declare source tsource
      declare subscriber tsub
      declare subscriber anonymous
-     EOT
+     EOF
 
      sudo rabbitmqctl delete_user guest
      sudo rabbitmqctl add_user bunnymaster MaestroDelConejito
      sudo rabbitmqctl set_permissions bunnymaster ".*" ".*" ".*"
      sudo rabbitmqctl set_user_tags bunnymaster administrator
      
-     systemctl restart rabbitmq-server
+     sudo systemctl restart rabbitmq-server
      cd /usr/local/bin
      sudo mv rabbitmqadmin rabbitmqadmin.1
      sudo wget http://localhost:15672/cli/rabbitmqadmin
