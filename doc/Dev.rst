@@ -400,6 +400,9 @@ Need the following package for that::
 
     sudo apt-get install python3-pyftpdlib python3-paramiko
 
+With those packages installed, also need to ensure `SSH login without password <http://www.linuxproblem.org/art_9.html>`_ on 
+localhost for the sftp functions to work properly.
+
 The setup script starts a trivial web server, and ftp server, and a daemon that invokes sr_post.
 It also tests the C components, which need to have been already installed as well 
 and defines some fixed test clients that will be used during self-tests::
