@@ -42,6 +42,7 @@ from appdirs import *
 from sarra.sr_checksum import *
 from sarra.sr_credentials import *
 from sarra.sr_util import *
+from logging import handlers
 
 # ======= amqp alternative libraries =======
 try:
@@ -2579,48 +2580,35 @@ class sr_config:
         self.logger.setLevel(self.loglevel)
 
     def setlog(self):
-
-        import logging.handlers
-
         self.set_loglevel()
 
-        # no log
+        if self.loglevel:
+            if self.user_log_dir:
+                # to file
+                self.logger.debug("switching to log file %s" % self.user_log_dir)
+                LOG_FORMAT = ('%(asctime)s [%(levelname)s] %(message)s')
+                self.handler = handlers.TimedRotatingFileHandler(self.user_log_dir, when='midnight', interval=1,
+                                                                 backupCount=self.logrotate)
+            else:
+                # interactive
+                self.logger.debug('on screen logging')
+                LOG_FORMAT = ('%(asctime)s [%(levelname)s] %(pathname) %(lineno) %(message)s')
 
-        if self.loglevel == None : return
+            fmt = logging.Formatter(LOG_FORMAT)
+            self.handler.setFormatter(fmt)
+            self.logger = logging.RootLogger(logging.WARNING)
+            self.logger.setLevel(self.loglevel)
+            self.logger.addHandler(self.handler)
+            os.chmod(self.user_log_dir, self.chmod_log)
 
-        # interactive
-
-        if self.logpath  == None :
-           self.logger.debug("on screen logging")
-           LOG_FORMAT   = ('%(asctime)s [%(levelname)s] %(pathname) %(lineno) %(message)s')
-           return
-
-        # to file
-
-        self.logger.debug("switching to log file %s" % self.logpath )
-
-        del self.logger
-
-        LOG_FORMAT   = ('%(asctime)s [%(levelname)s] %(message)s')
-          
-        self.handler = logging.handlers.TimedRotatingFileHandler(self.logpath, when='midnight', \
-                       interval=1, backupCount=self.logrotate)
-        fmt          = logging.Formatter( LOG_FORMAT )
-        self.handler.setFormatter(fmt)
-
-        self.logger = logging.RootLogger(logging.WARNING)
-        self.logger.setLevel(self.loglevel)
-        self.logger.addHandler(self.handler)
-        os.chmod( self.logpath, self.chmod_log )
-
-        stdout_logger = logging.getLogger('STDOUT')
-        slo = StreamToLogger(stdout_logger, logging.INFO)
-        sys.stdout = slo
-        
-        stderr_logger = logging.getLogger('STDERR')
-        sle = StreamToLogger(stderr_logger, logging.ERROR)
-        sys.stderr = sle
-
+            if self.user_log_dir:
+                # Handling separate file descriptors in two stream (fixed issue
+                stdout_logger = logging.getLogger('STDOUT')
+                stderr_logger = logging.getLogger('STDERR')
+                slo = StreamToLogger(stdout_logger, logging.INFO)
+                sle = StreamToLogger(stderr_logger, logging.ERROR)
+                sys.stdout = slo
+                sys.stderr = sle
 
     # check url and add credentials if needed from credential file
 
