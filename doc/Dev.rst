@@ -349,7 +349,7 @@ With credentials stored for localhost::
      declare env FLOWBROKER=localhost
      declare env SFTPUSER=`whoami`
      declare env TESTDOCROOT=${HOME}/sarra_devdocroot
-     declare env SR_CONFIG_EXAMPLES=${HOME}/git/sarracenia
+     declare env SR_CONFIG_EXAMPLES=${HOME}/git/sarracenia/sarra/examples
      EOF
      cat > ~/.config/sarra/credentials.conf << EOF
      amqp://bunnymaster:MaestroDelConejito@localhost/ 
