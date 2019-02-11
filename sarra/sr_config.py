@@ -2568,47 +2568,47 @@ class sr_config:
         self.sumalgo = self.sumalgos['d']
 
     def set_loglevel(self):
-
-        if self.loglevel == None :
-           if hasattr(self,'logger') : del self.logger
-           self.logpath = None
-           self.logger  = logging.RootLogger(logging.CRITICAL)
-           noop         = logging.NullHandler()
-           self.logger.addHandler(noop)
-           return
-
-        self.logger.setLevel(self.loglevel)
+        if not self.loglevel:
+            if hasattr(self, 'logger'):
+                del self.logger
+            self.logpath = None
+            self.logger = logging.RootLogger(logging.CRITICAL)
+            self.logger.addHandler(logging.NullHandler())
+        else:
+            self.logger.setLevel(self.loglevel)
 
     def setlog(self):
-        self.set_loglevel()
+        if self.loglevel and self.logrotate and self.logpath:
+            self.logger.debug("Switching to rotating log file: %s" % self.logpath)
+            handler = handlers.TimedRotatingFileHandler(self.logpath, when='midnight', interval=1,
+                                                        backupCount=self.logrotate)
+            self.create_new_logger('%(asctime)s [%(levelname)s] %(message)s', handler)
+            if self.chmod_log:
+                os.chmod(self.logpath, self.chmod_log)
+            # Handling separate file descriptors in two stream (fixed issue
+            self.handle_output('STDOUT', logging.info)
+            self.handle_output('STDERR', logging.error)
+        elif self.loglevel and self.logpath:
+            self.logger.debug("Switching to log file: %s" % self.logpath)
+            handler = logging.FileHandler(self.logpath)
+            self.create_new_logger('%(asctime)s [%(levelname)s] %(message)s', handler)
+            if self.chmod_log:
+                os.chmod(self.logpath, self.chmod_log)
+        elif self.loglevel:
+            self.logger.debug('Keeping on screen logging')
+            handler = logging.StreamHandler()
+            self.create_new_logger('%(asctime)s [%(levelname)s] %(pathname) %(lineno) %(message)s', handler)
 
-        if self.loglevel:
-            if self.user_log_dir:
-                # to file
-                self.logger.debug("switching to log file %s" % self.user_log_dir)
-                LOG_FORMAT = ('%(asctime)s [%(levelname)s] %(message)s')
-                self.handler = handlers.TimedRotatingFileHandler(self.user_log_dir, when='midnight', interval=1,
-                                                                 backupCount=self.logrotate)
-            else:
-                # interactive
-                self.logger.debug('on screen logging')
-                LOG_FORMAT = ('%(asctime)s [%(levelname)s] %(pathname) %(lineno) %(message)s')
+    def handle_output(self, std_name, loglevel):
+        stdout_logger = logging.getLogger(std_name)
+        slo = StreamToLogger(stdout_logger, loglevel)
+        sys.stdout = slo
 
-            fmt = logging.Formatter(LOG_FORMAT)
-            self.handler.setFormatter(fmt)
-            self.logger = logging.RootLogger(logging.WARNING)
-            self.logger.setLevel(self.loglevel)
-            self.logger.addHandler(self.handler)
-            os.chmod(self.user_log_dir, self.chmod_log)
-
-            if self.user_log_dir:
-                # Handling separate file descriptors in two stream (fixed issue
-                stdout_logger = logging.getLogger('STDOUT')
-                stderr_logger = logging.getLogger('STDERR')
-                slo = StreamToLogger(stdout_logger, logging.INFO)
-                sle = StreamToLogger(stderr_logger, logging.ERROR)
-                sys.stdout = slo
-                sys.stderr = sle
+    def create_new_logger(self, log_format, handler):
+        self.logger = logging.RootLogger(self.loglevel)
+        fmt = logging.Formatter(log_format)
+        handler.setFormatter(fmt)
+        self.logger.addHandler(handler)
 
     # check url and add credentials if needed from credential file
 

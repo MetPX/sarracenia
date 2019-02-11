@@ -57,12 +57,12 @@ except :
          from sarra.sr_watch     import *
          from sarra.sr_winnow    import *
 
-cfg    = sr_config()
-action = sys.argv[-1]
 
-#cfg.configure()
-#cfg.loglevel = logging.DEBUG
-#cfg.setlog()
+# Uses sr_instances to get a good logger
+cfg = sr_instances()
+cfg.build_instance(1)
+cfg.setlog()
+
 
 # instantiate each program  with its configuration file
 # and invoke action if one of cleanup,declare,setup
