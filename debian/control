@@ -23,7 +23,7 @@ Description: Directory mirroring in real-time for users, file servers and web si
  Both products and directories are user configurable.
  Developed at the Shared Services Canada
 
-Package: python-metpx-sarracenia
+Package: python3-metpx-sarracenia
 Depends: metpx-sarracenia
 Architecture: all
 Priority: optional
