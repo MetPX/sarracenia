@@ -6,6 +6,9 @@
 # Script not meant to be run on local machines (may break some configs)
 # Intended use case is a fresh sys (dev on ubuntu16.04server)
 # Which can easily be run in a virtualbox VM
+#
+# XXX DO NOT RUN ON A MACHINE EXPOSED TO ANY NETWORK XXX
+#
 
 # Install and configure dependencies
 sudo apt -y install rabbitmq-server python3-pyftpdlib python3-paramiko
