@@ -103,10 +103,7 @@ class EXP_2MQTT(object):
       msg    = parent.msg
 
       mqtt_topic = parent.post_exchange + '/v03/post' + os.path.dirname(parent.msg.relpath)
-      msg.headers[ "pubtime" ] = msg.pubtime
-      msg.headers[ "baseurl" ] = msg.baseurl
-      msg.headers[ "relpath" ] = msg.relpath
-      body = json.dumps( msg.headers )
+      body = json.dumps( (msg.pubtime, msg.baseurl, msg.relpath, msg.headers) )
       logger.info("exp_2mqtt publishing topic=%s, body=%s" % ( mqtt_topic, body ))
       info = parent.mqtt_client.publish(mqtt_topic,body,qos=1)
       info.wait_for_publish()

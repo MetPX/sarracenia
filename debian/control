@@ -11,6 +11,7 @@ Package: metpx-sarracenia
 Architecture: all 
 Depends: ${misc:Depends}, ${python3:Depends}, python3-pkg-resources
 Recommends: python3-paramiko
+Replaces: python3-metpx-sarracenia
 Suggests: rabbitmq-server
 Homepage: https://github.com/MetPX/sarracenia
 Description: Directory mirroring in real-time for users, file servers and web sites.
@@ -22,3 +23,10 @@ Description: Directory mirroring in real-time for users, file servers and web si
  Both products and directories are user configurable.
  Developed at the Shared Services Canada
 
+Package: python3-metpx-sarracenia
+Depends: metpx-sarracenia
+Architecture: all
+Priority: optional
+Description: transitional package.
+  This is a transitional package and can safely be removed.
+  This is supporting the renaming of the package to metpx-sarracenia
