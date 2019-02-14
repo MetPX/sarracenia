@@ -21,14 +21,4 @@ Description: Directory mirroring in real-time for users, file servers and web si
  Several other non-public instances deployed.
  Both products and directories are user configurable.
  Developed at the Shared Services Canada
-<<<<<<< HEAD
 
-Package: python3-metpx-sarracenia
-Depends: metpx-sarracenia
-Architecture: all
-Priority: optional
-Description: transitional package.
-  This is a transitional package and can safely be removed.
-  This is supporting the renaming of the package to metpx-sarracenia
-=======
->>>>>>> parent of e43b3328... Adding package transitional information. (Replaces, transition package etc...)
