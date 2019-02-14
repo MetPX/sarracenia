@@ -9,7 +9,7 @@
 #
 
 # Install and configure dependencies
-sudo apt -y install rabbitmq-server python3-pyftpdlib python3-paramiko
+sudo apt -y install rabbitmq-server python3-pyftpdlib python3-paramiko net-tools
 echo
 
 # Setup autossh login
@@ -60,9 +60,9 @@ sudo rabbitmqctl delete_user guest
 for USER_NAME in "bunnymaster" "tsource" "tsub" "tfeed" "anonymous"; do
 sudo rabbitmqctl delete_user ${USER_NAME}
 sudo rabbitmqctl add_user ${USER_NAME} ${PASSWORD}
+sudo rabbitmqctl set_permissions ${USER_NAME} ".*" ".*" ".*"
 done
 
-sudo rabbitmqctl set_permissions bunnymaster ".*" ".*" ".*"
 sudo rabbitmqctl set_user_tags bunnymaster administrator
 
 echo
