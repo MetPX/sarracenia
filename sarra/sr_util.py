@@ -887,10 +887,27 @@ def timeflt2str( f ):
     nsec = ('%.9g' % (f%1))[1:]
     s  = time.strftime("%Y%m%d%H%M%S",time.gmtime(f)) + nsec
     return(s) 
-    
+
+def v3timeflt2str( f ):
+
+    nsec = ('%.9g' % (f%1))[1:]
+    s  = time.strftime("%Y%m%dT%H%M%S",time.gmtime(f)) + nsec
+    return(s) 
+ 
 
 def timestr2flt( s ):
-    t=datetime.datetime(  int(s[0:4]), int(s[4:6]), int(s[6:8]), int(s[8:10]), int(s[10:12]), int(s[12:14]), 0, datetime.timezone.utc )
-    f=calendar.timegm(  t.timetuple())+float('0'+s[14:])
+
+    if s[8] == "T":
+        t=datetime.datetime(  int(s[0:4]), int(s[4:6]), int(s[6:8]), int(s[9:11]), int(s[11:13]), int(s[13:15]), 0, datetime.timezone.utc )
+        f=calendar.timegm(  t.timetuple())+float('0'+s[15:])
+    else:
+        t=datetime.datetime(  int(s[0:4]), int(s[4:6]), int(s[6:8]), int(s[8:10]), int(s[10:12]), int(s[12:14]), 0, datetime.timezone.utc )
+        f=calendar.timegm(  t.timetuple())+float('0'+s[14:])
     return(f)
 
+def timev2tov3str( s ):
+
+    if s[8] == 'T':
+        return(s)
+    else:
+        return s[0:8] + 'T' + s[8:] 

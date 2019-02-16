@@ -468,7 +468,12 @@ class sr_message():
         if self.publisher != None :
 
            if self.topic.startswith('v03'):
-               body=json.dumps( (self.pubtime, self.baseurl, self.relpath, self.headers) )
+               self.headers[ "pubTime" ] = timev2tov3str( self.pubtime )
+               self.headers[ "mtime" ] = timev2tov3str( self.headers[ "mtime" ] )
+               self.headers[ "atime" ] = timev2tov3str( self.headers[ "atime" ] )
+               self.headers[ "baseUrl" ] = self.baseurl
+               self.headers[ "relPath" ] = self.relpath
+               body=json.dumps( self.headers )
                ok = self.publisher.publish(self.exchange+suffix,self.topic,body,None,self.message_ttl)
            else:
                ok = self.publisher.publish(self.exchange+suffix,self.topic,self.notice,self.headers,self.message_ttl)
