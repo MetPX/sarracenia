@@ -26,10 +26,10 @@ class Msg_Delay(object):
           
     def on_message(self,parent):
         import calendar
+        from sarra.sr_util import timestr2flt
 
         msg = parent.msg
-        mt=msg.pubtime
-        msgtime=calendar.timegm(time.strptime(mt[:mt.find('.')],"%Y%m%d%H%M%S")) + float(mt[mt.find('.'):])
+        msgtime=timestr2flt(msg.pubtime)
         now=time.time()
 
         lag=now-msgtime

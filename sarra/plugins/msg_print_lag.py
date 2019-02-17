@@ -29,9 +29,9 @@ class Transformer(object):
         msg    = parent.msg
 
         import calendar
+        from sarra.sr_util import timestr2flt
 
-        mt=msg.pubtime
-        then=calendar.timegm(time.strptime(mt[:mt.find('.')],"%Y%m%d%H%M%S")) + float(mt[mt.find('.'):])
+        then=timestr2flt(msg.pubtime)
         now=time.time()
 
         logger.info("print_lag, posted: %s, lag: %g sec. to deliver: %s, " % (msg.pubtime, (now-then), msg.new_file))
