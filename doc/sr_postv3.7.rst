@@ -24,9 +24,13 @@ iteration of Sarracenia messages, but it is not fully implemented, and
 not in use anywhere, and may never be used. It is also not frozen yet
 and subject to change.
 
-Note that Version 3 does not change any semantics of Version 2. The fields
-and their meaning is the same in version 3 as it was in version 2. The change
-in payload protocol is targetted at simplifying future implementations
+Most fields and their meaning is the same in version 3 as it was in version 2. 
+Some fields are changing as the protocol is exposed to wider review than previously.
+It is implementing changes the `World Meteorological Organization <www.wmo.int>`_
+for use in a renewed `WIS/Global Telecommunications System <http://www.wmo.int/pages/prog/www/WIS/>`_
+This format will track work done in the `WMO mesh <https://www.github.com/MetPX/wmo_mesh>`_
+
+The change in payload protocol is targetted at simplifying future implementations
 and enabling use by messaging protocols other than pre-1.0 AMQP.
 See `Changes from v02`_ for more details.
 
@@ -59,15 +63,14 @@ An sr_post message consists of a topic, and the *BODY*
 **BODY:** *[ "<pubtime>", "<baseurl>", "<relpath>", <headers> ]* (JSON encoding.)
 
 ::
-          tuple fields:
+          Followed by the headers array of name:value pairs:
+
           "pubtime"       - YYYYMMDDHHMMSS.ss - UTC date/timestamp.
           "baseurl"       - root of the url to download.
           "relpath"       - relative path can be catenated to <base_url>
-
-          Followed by the headers array of name:value pairs:
-
           "parts" = size and partitioning information.
           "sum" = checksum algorithm and value.
+          "integrity"     - WMO version of sum field, under development.
           "rename"        - name to write file locally.
           "topic"         - copy of topic from AMQP header (usually omitted)
           "source"        - the originating entity of the message. 
@@ -336,6 +339,14 @@ called *headers*.
   for algorithms for which no value makes sense, a random integer is generated to support
   checksum based load balancing.
 
+**integrity**
+
+ Is a version of the sum field made more explicit. For example::
+
+   "sum" : "d,hexsumvalue"    ---> "integrity" : { "method":"md5", "value":"base64sumvalue"  }
+
+ This is partially supported for now (produce but do not consume.) The change in name
+ is also motivated by the intent to use add digital signatures to list of known algorithms.
 
 **to_clusters=<cluster_name1,cluster_name2,...>**
  The to_clusters defines a list of destination clusters where the data should go into the network.
@@ -352,9 +363,9 @@ Report Messages
 
 Some clients may return telemetry to the origin of downloaded data for troubleshooting
 and statistical purposes. Such messages, have the *v03.report* topic, and have a *report*
-header which is a space separated string with four fields:
+header which is a JSON *object* with four fields:
 
- *<report_time> <report_code> <report_host> <report_user>*
+ { "elapsedTime": <report_time>, "resultCode": <report_code>, "host": <report_host>, "user": <report_user>* }
 
  * *<report_code>*  result codes describe in the next session
 
@@ -452,8 +463,8 @@ EXAMPLE
 :: 
 
  Topic: v03.post.NRDPS.GIF.NRDPS_HiRes_000.gif
- Body: [ "201506011357.345", "sftp://afsiext@cmcdataserver", "/data/NRPDS/outputs/NRDPS_HiRes_000.gif",
-   { "rename": "NRDPS/GIF/", "parts":"p,457,1,0,0", "sum" : "d,<md5sum>", "source": "ec_cmc" } ]
+ Body: { "pubTime": "201506011357.345", "baseUrl": "sftp://afsiext@cmcdataserver", "relPath": "/data/NRPDS/outputs/NRDPS_HiRes_000.gif",
+    "rename": "NRDPS/GIF/", "parts":"p,457,1,0,0", "integrity" : { "method":"md5", "value":"<md5sum-base64>" }, "source": "ec_cmc" }
 
         - v03 - version of protocol
         - post - indicates the type of message
@@ -495,9 +506,9 @@ on mysftpserver.com using the sftp protocol to  broker.com assuming he has prope
 The output of the command is as follows ::
 
   Topic: v03.post.20150813.data.shared.products.foo
-  Body: [ "20150813161959.854", "sftp://stanley@mysftpserver.com/", 
-          "/data/shared/products/foo", { "parts":"1,256,1,0,0", 
-          "sum": "d,25d231ec0ae3c569ba27ab7a74dd72ce", "source":"guest" } ]
+  Body: { "pubTime":"20150813161959.854", "baseUrl":"sftp://stanley@mysftpserver.com/", 
+          "relPath": "/data/shared/products/foo", "parts":"1,256,1,0,0", 
+          "sum": "d,25d231ec0ae3c569ba27ab7a74dd72ce", "source":"guest" } 
 
 Posts are published on AMQP topic exchanges, meaning every message has a topic header.
 The body consists of a time *20150813161959.854*, followed by the two parts of the 
