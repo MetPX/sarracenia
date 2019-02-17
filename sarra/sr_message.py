@@ -209,8 +209,15 @@ class sr_message():
            if msg.body[0] == '[' :
                self.pubtime, self.baseurl, self.relpath, self.headers = json.loads(msg.body)
                self.notice = "%s %s %s" % ( self.pubtime, self.baseurl, self.relpath )
+           elif msg.body[0] == '{' :
+               self.headers = json.loads(msg.body)
+               self.pubtime = self.headers[ "pubTime" ]
+               self.baseurl = self.headers[ "baseUrl" ]
+               self.relpath = self.headers[ "relPath" ]
+               self.notice = "%s %s %s" % ( self.pubtime, self.baseurl, self.relpath )
            else:
-               self.headers   = msg.properties['application_headers']
+               if 'application_headers' in msg.properties.keys():
+                   self.headers   = msg.properties['application_headers']
 
                if type(msg.body) == bytes: 
                     self.notice = msg.body.decode("utf-8")
@@ -292,7 +299,8 @@ class sr_message():
         e = self.get_elapse()
 
         if self.topic_prefix.startswith('v03'):
-           self.headers['report'] = "%s %s %s %s" % ( e, self.code, self.host, self.user )
+           self.headers['report'] = { "elapsedTime": e, "resultCode":self.code, \
+               "host":self.host, "user":self.user }
 
         # v02 filler... remove 2020.
         self.report_notice         = "%s %s %s %d %s %s %f" % \
@@ -425,6 +433,8 @@ class sr_message():
 
         if not self.topic.startswith('v03'):
            for h in self.headers:
+             if type(self.headers[h]) is dict:
+                self.headers[h] = json.dumps( self.headers[h] )
              if len(self.headers[h].encode("utf8")) >= amqp_ss_maxlen:
 
                 # strings in utf, and if names have special characters, the length
@@ -653,7 +663,10 @@ class sr_message():
 
     def set_msg_time(self):
         parts       = self.pubtime.split('.')
-        ts          = time.strptime(parts[0]+" +0000", "%Y%m%d%H%M%S %z" )
+        if parts[0][8] == 'T':
+            ts          = time.strptime(parts[0]+" +0000", "%Y%m%dT%H%M%S %z" )
+        else:
+            ts          = time.strptime(parts[0]+" +0000", "%Y%m%d%H%M%S %z" )
         ep_msg      = calendar.timegm(ts)
         self.tbegin = ep_msg + float('0.'+parts[1])
 

@@ -1546,7 +1546,14 @@ class sr_subscribe(sr_instances):
                  jt = json.loads( json_line )
                  if len(jt) == 3:  # v02 format...
                      ( self.msg.topic, self.msg.headers, self.msg.notice ) = jt
-                 elif len(jt) == 4: # v03 format.
+                 elif len(jt) == 1: # v03 format. post ETCTS201902
+                     self.headers = jt
+                     self.msg.pubtime = self.headers[ "pubTime" ]
+                     self.msg.baseurl = self.headers[ "baseUrl" ]
+                     self.msg.relpath = self.headers[ "relPath" ]
+                     self.msg.notice= "%s %s %s" % ( self.msg.pubtime, self.msg.baseurl, self.msg.relpath )
+
+                 elif len(jt) == 4: # early v03 format.
                      ( self.msg.pubtime, self.msg.baseurl, self.msg.relpath, self.msg.headers ) = jt
                      self.msg.topic = self.msg.post_topic_prefix + '.'.join( self.msg.relpath.split('/')[0:-1] )
                      self.msg.notice= "%s %s %s" % ( self.msg.pubtime, self.msg.baseurl, self.msg.relpath )
