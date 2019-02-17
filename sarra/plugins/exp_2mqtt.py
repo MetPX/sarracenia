@@ -7,6 +7,8 @@ STATUS: Experimental (may change at any upgrade, do not use if stability is desi
         This is just for exploration of interop with MQTT brokers. NOT FOR PRODUCTION!
         NO TESTING so far.
 
+        posts received and processed must be v02 format.
+
         messages are posted in v03 format, because v02 format is incompatible with
         MQTT 3.11  (requires at least v5, which isn't common yet.)
 
@@ -96,14 +98,25 @@ class EXP_2MQTT(object):
    def on_message(self,parent):
 
       import os.path,json
-
+      from sarra.sr_util import timev2tov3str
       import paho.mqtt.client as mqtt
+      from codecs import decode,encode
 
       logger = parent.logger
       msg    = parent.msg
 
       mqtt_topic = parent.post_exchange + '/v03/post' + os.path.dirname(parent.msg.relpath)
-      body = json.dumps( (msg.pubtime, msg.baseurl, msg.relpath, msg.headers) )
+      msg.headers[ "pubTime" ] = timev2tov3str( msg.pubtime )
+      msg.headers[ "atime" ] = timev2tov3str( msg.headers[ "atime" ] )
+      msg.headers[ "mtime" ] = timev2tov3str( msg.headers[ "mtime" ] )
+      msg.headers[ "baseUrl" ] = msg.baseurl
+      msg.headers[ "relPath" ] = msg.relpath
+      
+      sum_algo_map = { "d":"md5", "s":"sha512", "n":"md5name", "0":"zero" }
+      sm = sum_algo_map[ msg.headers["sum"][0] ]
+      sv = encode( decode( msg.headers["sum"][2:], 'hex'), 'base64' ).decode('utf-8')
+      msg.headers[ "integrity" ] = { "method": sm, "value": sv }
+      body = json.dumps( msg.headers )
       logger.info("exp_2mqtt publishing topic=%s, body=%s" % ( mqtt_topic, body ))
       info = parent.mqtt_client.publish(mqtt_topic,body,qos=1)
       info.wait_for_publish()
