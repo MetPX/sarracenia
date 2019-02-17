@@ -36,6 +36,8 @@ import calendar,os,socket,sys,time,urllib,urllib.parse
 
 from sys import platform as _platform
 
+from codecs import decode,encode
+
 import json
 
 try:
@@ -473,6 +475,12 @@ class sr_message():
                self.headers[ "atime" ] = timev2tov3str( self.headers[ "atime" ] )
                self.headers[ "baseUrl" ] = self.baseurl
                self.headers[ "relPath" ] = self.relpath
+               
+               sum_algo_map = { "d":"md5", "s":"sha512", "n":"md5name", "0":"zero" }
+               sm = sum_algo_map[ self.headers["sum"][0] ]
+               sv = encode( decode( self.headers["sum"][2:], 'hex'), 'base64' ).decode('utf-8').strip()
+               self.headers[ "integrity" ] = { "method": sm, "value": sv }
+  
                body=json.dumps( self.headers )
                ok = self.publisher.publish(self.exchange+suffix,self.topic,body,None,self.message_ttl)
            else:
