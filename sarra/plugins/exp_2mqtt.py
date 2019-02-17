@@ -114,7 +114,7 @@ class EXP_2MQTT(object):
       
       sum_algo_map = { "d":"md5", "s":"sha512", "n":"md5name", "0":"zero" }
       sm = sum_algo_map[ msg.headers["sum"][0] ]
-      sv = encode( decode( msg.headers["sum"][2:], 'hex'), 'base64' ).decode('utf-8')
+      sv = encode( decode( msg.headers["sum"][2:], 'hex'), 'base64' ).decode('utf-8').strip()
       msg.headers[ "integrity" ] = { "method": sm, "value": sv }
       body = json.dumps( msg.headers )
       logger.info("exp_2mqtt publishing topic=%s, body=%s" % ( mqtt_topic, body ))
