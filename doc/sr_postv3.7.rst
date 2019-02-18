@@ -307,32 +307,33 @@ called *headers*.
  The sum is a signature computed to allow receivers to determine 
  if they have already downloaded the partition from elsewhere.
 
- *<method>* - character field indicating the checksum algorithm used.
+   *<method>* - character field indicating the checksum algorithm used.
 
- +-----------+---------------------------------------------------------------------+
- |   Method  | Description                                                         |
- +-----------+---------------------------------------------------------------------+
- |     0     | No checksums (unconditional copy.) Skips reading file (faster)      |
- +-----------+---------------------------------------------------------------------+
- |     d     | Checksum the entire data (MD-5 as per IETF RFC 1321)                |
- +-----------+---------------------------------------------------------------------+
- |     L     | Linked: SHA512 sum of link value                                    |
- +-----------+---------------------------------------------------------------------+
- |     n     | Checksum the file name (MD-5 as per IETF RFC 1321)                  |
- +-----------+---------------------------------------------------------------------+
- |     R     | Removed: SHA512 of file name.                                       |
- +-----------+---------------------------------------------------------------------+
- |     s     | Checksum the entire data (SHA512 as per IETF RFC 6234)              |
- +-----------+---------------------------------------------------------------------+
- |     z     | Checksum on download, with algorithm as argument                    |
- |           | Example:  z,d means download, applying d checksum, and advertise    |
- |           | with that calculated checksum when propagating further.             |
- +-----------+---------------------------------------------------------------------+
- |  *<name>* | Checksum with some other algorithm, named *<name>*                  |
- |           | *<name>* should be *registered* in the data pumping network.        |
- |           | Registered means that all downstream subscribers can obtain the     |
- |           | algorithm to validate the checksum.                                 |
- +-----------+---------------------------------------------------------------------+
+ +--------------+---------------------------------------------------------------------+
+ |  Method      | Description                                                         |
+ |  v02 - v03   |                                                                     |
+ +--------------+---------------------------------------------------------------------+
+ |  0 - zero    | No checksums (unconditional copy.) Skips reading file (faster)      |
+ +--------------+---------------------------------------------------------------------+
+ |  d - md5     | Checksum the entire data (MD-5 as per IETF RFC 1321)                |
+ +--------------+---------------------------------------------------------------------+
+ |  L - link    | Linked: SHA512 sum of link value                                    |
+ +--------------+---------------------------------------------------------------------+
+ |  n - md5name | Checksum the file name (MD-5 as per IETF RFC 1321)                  |
+ +--------------+---------------------------------------------------------------------+
+ |  R - remove  | Removed: SHA512 of file name.                                       |
+ +--------------+---------------------------------------------------------------------+
+ |  s - sha512  | Checksum the entire data (SHA512 as per IETF RFC 6234)              |
+ +--------------+---------------------------------------------------------------------+
+ |  z - cod     | Checksum on download, with algorithm as argument                    |
+ |              | Example:  z,d means download, applying d checksum, and advertise    |
+ |              | with that calculated checksum when propagating further.             |
+ +--------------+---------------------------------------------------------------------+
+ |  *<name>*    | Checksum with some other algorithm, named *<name>*                  |
+ |              | *<name>* should be *registered* in the data pumping network.        |
+ |              | Registered means that all downstream subscribers can obtain the     |
+ |              | algorithm to validate the checksum.                                 |
+ +--------------+---------------------------------------------------------------------+
 
 
 *<value>* The value is computed by applying the given method to the partition being transferred.
