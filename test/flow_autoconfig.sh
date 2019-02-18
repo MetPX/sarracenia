@@ -24,13 +24,14 @@ declare env TESTDOCROOT=${HOME}/sarra_devdocroot
 declare env SR_CONFIG_EXAMPLES=${HOME}/sarracenia/sarra/examples
 EOF
 
-PASSWORD=$(openssl rand -hex 6)
+ADMIN_PASSWORD=$(openssl rand -hex 6)
+OTHER_PASSWORD=$(openssl rand -hex 6)
 cat > ~/.config/sarra/credentials.conf << EOF
-amqp://bunnymaster:${PASSWORD}@localhost/
-amqp://tsource:${PASSWORD}@localhost/
-amqp://tsub:${PASSWORD}@localhost/
-amqp://tfeed:${PASSWORD}@localhost/
-amqp://anonymous:${PASSWORD}@localhost/
+amqp://bunnymaster:${ADMIN_PASSWORD}@localhost/
+amqp://tsource:${OTHER_PASSWORD}@localhost/
+amqp://tsub:${OTHER_PASSWORD}@localhost/
+amqp://tfeed:${OTHER_PASSWORD}@localhost/
+amqp://anonymous:${OTHER_PASSWORD}@localhost/
 amqps://anonymous:anonymous@dd.weather.gc.ca
 amqps://anonymous:anonymous@dd1.weather.gc.ca
 amqps://anonymous:anonymous@dd2.weather.gc.ca
@@ -55,10 +56,10 @@ sudo rabbitmqctl delete_user guest
 
 for USER_NAME in "bunnymaster" "tsource" "tsub" "tfeed" "anonymous"; do
 sudo rabbitmqctl delete_user ${USER_NAME}
-sudo rabbitmqctl add_user ${USER_NAME} ${PASSWORD}
-sudo rabbitmqctl set_permissions ${USER_NAME} ".*" ".*" ".*"
 done
 
+sudo rabbitmqctl add_user bunnymaster ${ADMIN_PASSWORD}
+sudo rabbitmqctl set_permissions bunnymaster ".*" ".*" ".*"
 sudo rabbitmqctl set_user_tags bunnymaster administrator
 
 echo
