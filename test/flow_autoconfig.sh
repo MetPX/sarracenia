@@ -1,15 +1,11 @@
-# SSC Dorval: Data Interchange Group
-# Written by Michael Saraga - 13/02/2019
-# 	     mic.saraga@gmail.com
+# Flow Test Autoconfig
 #
-# N.B.
-# Script not meant to be run on local machines (may break some configs)
-# Intended use case is a fresh sys (dev on ubuntu16.04server)
-# Which can easily be run in a virtualbox VM
-#
+# Script not meant to be run on personal machines (may break some configs)
+# Intended use case is a fresh sys (tested on ubuntu18.04desktop)
+# which can easily be run in a virtualbox VM.
 
 # Install and configure dependencies
-sudo apt -y install rabbitmq-server python3-pyftpdlib python3-paramiko net-tools
+sudo apt -y install rabbitmq-server python3-pyftpdlib python3-paramiko net-tools python
 echo
 
 # Setup autossh login
@@ -75,6 +71,5 @@ sudo chmod 755 rabbitmqadmin
 
 echo
 
-# Perform sr_audit user check?
-# XXX WTF XXX
+# Perform sr_audit check
 sr_audit --users foreground
