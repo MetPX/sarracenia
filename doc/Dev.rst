@@ -181,6 +181,12 @@ As part of the flow_setup.sh, various unit_test are run (located in the test/uni
 sub-directory.) The flow tests can then indicate if there is an issue
 with the modification.
 
+Note that the development system must be configured for the flow test to run successfully. See the next
+section for configuration instructions. For development inside of a virtual environment with a fresh OS
+installation, the configuration steps have been automated and can be applied with the flow_autoconfig.sh
+script in sarracenia/test/. Blind execution of this script on a working system may lead to undesirable
+side effects, you have been warned!
+
 The configuration one is trying to replicate:
 
 .. image:: Flow_test.svg
@@ -338,8 +344,7 @@ which accomplishes the same thing using debian packaging.
 Install Servers on Workstation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Install a minimal localhost broker, configure test users.
-With credentials stored for localhost::
+Install a minimal localhost broker and configure rabbitmq test users:
 
      sudo apt-get install rabbitmq-server
      sudo rabbitmq-plugins enable rabbitmq_management
@@ -351,14 +356,20 @@ With credentials stored for localhost::
      declare env TESTDOCROOT=${HOME}/sarra_devdocroot
      declare env SR_CONFIG_EXAMPLES=${HOME}/git/sarracenia/sarra/examples
      EOF
+
+     RABBITMQ_PASS = S0M3R4nD0MP4sS
      cat > ~/.config/sarra/credentials.conf << EOF
-     amqp://bunnymaster:MaestroDelConejito@localhost/ 
-     amqp://tsource:TestSOUrCs@localhost/
-     amqp://tsub:TestSUBSCibe@localhost/
-     amqp://tfeed:TestFeeding@localhost/
+     amqp://bunnymaster:${RABBITMQ_PASS}@localhost/
+     amqp://tsource:${RABBITMQ_PASS}@localhost/
+     amqp://tsub:${RABBITMQ_PASS}@localhost/
+     amqp://tfeed:${RABBITMQ_PASS}@localhost/
+     amqp://anonymous:${RABBITMQ_PASS}@localhost/
      amqps://anonymous:anonymous@dd.weather.gc.ca
+     amqps://anonymous:anonymous@dd1.weather.gc.ca
+     amqps://anonymous:anonymous@dd2.weather.gc.ca
      ftp://anonymous:anonymous@localhost:2121/
      EOF
+
      cat > ~/.config/sarra/admin.conf << EOF
      cluster localhost
      admin amqp://bunnymaster@localhost/
@@ -369,22 +380,25 @@ With credentials stored for localhost::
      EOF
 
      sudo rabbitmqctl delete_user guest
-     sudo rabbitmqctl add_user bunnymaster MaestroDelConejito
-     sudo rabbitmqctl set_permissions bunnymaster ".*" ".*" ".*"
+     for RABBITMQ_USER in "bunnymaster" "tsource" "tsub" "tfeed" "anonymous"; do
+             sudo rabbitmqctl add_user ${RABBITMQ_USER} ${RABBITMQ_PASS}
+             sudo rabbitmqctl set_permissions ${RABBITMQ_USER} ".*" ".*" ".*"
+     done
      sudo rabbitmqctl set_user_tags bunnymaster administrator
-     
+
      sudo systemctl restart rabbitmq-server
      cd /usr/local/bin
      sudo mv rabbitmqadmin rabbitmqadmin.1
      sudo wget http://localhost:15672/cli/rabbitmqadmin
      sudo chmod 755 rabbitmqadmin
+
      sr_audit --users foreground
 
 .. Note::
 
     Please use other passwords in credentials for your configuration, just in case.
     Passwords are not to be hard coded in self test suite.
-    The users bunnymaster, tsource, tsub, and tfeed are to be used for running tests
+    The users bunnymaster, tsource, tsub, and tfeed are to be used for running tests.
 
     The idea here is to use tsource, tsub, and tfeed as broker accounts for all
     self-test operations, and store the credentials in the normal credentials.conf file.
@@ -400,8 +414,11 @@ Need the following package for that::
 
     sudo apt-get install python3-pyftpdlib python3-paramiko
 
-With those packages installed, also need to ensure `SSH login without password <http://www.linuxproblem.org/art_9.html>`_ on 
-localhost for the sftp functions to work properly.
+It is also required that passwordless ssh access is configured on the test host
+for the system user that will run the flow test. This can be done by creating
+a private/public ssh key pair for the user (if there isn't one already) and copying
+the public key to the authorized_keys file in the same directory as the keys (~/.ssh).
+For associated commands, see http://www.linuxproblem.org/art_9.html
 
 The setup script starts a trivial web server, and ftp server, and a daemon that invokes sr_post.
 It also tests the C components, which need to have been already installed as well 
