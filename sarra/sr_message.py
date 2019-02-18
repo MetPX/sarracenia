@@ -481,12 +481,14 @@ class sr_message():
 
            if self.topic.startswith('v03'):
                self.headers[ "pubTime" ] = timev2tov3str( self.pubtime )
-               self.headers[ "mtime" ] = timev2tov3str( self.headers[ "mtime" ] )
-               self.headers[ "atime" ] = timev2tov3str( self.headers[ "atime" ] )
+               if "mtime" in self.headers.keys():
+                   self.headers[ "mtime" ] = timev2tov3str( self.headers[ "mtime" ] )
+               if "atime" in self.headers.keys():
+                   self.headers[ "atime" ] = timev2tov3str( self.headers[ "atime" ] )
                self.headers[ "baseUrl" ] = self.baseurl
                self.headers[ "relPath" ] = self.relpath
                
-               sum_algo_map = { "d":"md5", "s":"sha512", "n":"md5name", "0":"zero" }
+               sum_algo_map = { "d":"md5", "s":"sha512", "n":"md5name", "0":"zero", "L":"link", "R":"remove" }
                sm = sum_algo_map[ self.headers["sum"][0] ]
                sv = encode( decode( self.headers["sum"][2:], 'hex'), 'base64' ).decode('utf-8').strip()
                self.headers[ "integrity" ] = { "method": sm, "value": sv }
