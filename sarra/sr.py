@@ -60,9 +60,6 @@ except :
 
 # Uses sr_instances to get a good logger
 cfg = sr_instances()
-cfg.build_instance(1)
-cfg.setlog()
-
 
 # instantiate each program  with its configuration file
 # and invoke action if one of cleanup,declare,setup
@@ -99,7 +96,7 @@ def instantiate(dirconf,pgm,confname,action):
             elif  pgm == 'report':    inst = sr_report   (config,[action])
             elif  pgm == 'audit':     inst = sr_audit    (config,[action])
             else: 
-                  print("code not configured for process type sr_%s" % pgm)
+                  cfg.logger.error("code not configured for process type sr_%s" % pgm)
                   sys.exit(1)
 
             if    action == 'cleanup': inst.exec_action('cleanup',False)
@@ -111,7 +108,7 @@ def instantiate(dirconf,pgm,confname,action):
             sys.argv[0] = orig
 
     except:
-            print("could not instantiate and run sr_%s %s %s" % (pgm,action,confname))
+            cfg.logger.error("could not instantiate and run sr_%s %s %s" % (pgm,action,confname))
             sys.exit(1)
 
       
@@ -161,7 +158,7 @@ def invoke(dirconf,pgm,confname,action):
 
     except :
              (stype, svalue, tb) = sys.exc_info()
-             print("sr/invoke Type: %s, Value: %s" % (stype, svalue) )
+             cfg.logger.info("sr/invoke Type: %s, Value: %s" % (stype, svalue) )
 
 
 # check number of config files
@@ -245,8 +242,11 @@ def main():
              cfg.print_configdir("general",                    cfg.user_config_dir )
              for d in sorted(cfg.programs):
                  cfg.print_configdir("user configurations",    cfg.user_config_dir + os.sep + d)
-
        sys.exit(0)
+
+    # Init logger here
+    cfg.build_instance(1)
+    cfg.setlog()
 
     # loop on all possible programs ... add audit
     programs = ['audit']

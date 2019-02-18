@@ -164,7 +164,7 @@ echo $flow_confs |  sed 's/ / ;\n rm -f sr_/g' | sed '1 s|^| rm -f sr_|' | sed '
 #echo "Removing flow cache/state files ..."
 #echo $flow_confs |  sed 's/ / ; rm /g' | sed 's/^/rm /' | sed 's+\.conf+/*+g' | (cd $CACHEDIR; sh )
 
-rm -f $LOGDIR/sr_audit* $LOGDIR/sr_poll_pulse* $LOGDIR/*f[0-9][0-9].log 
+rm -f $LOGDIR/sr_audit* $LOGDIR/sr_poll_pulse* $LOGDIR/*f[0-9][0-9].log $LOGDIR/sr_[0-9][0-9].log*
 
 httpdr=""
 if [ -f .httpdocroot ]; then

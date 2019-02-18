@@ -1959,11 +1959,11 @@ class sr_config:
                 elif words0 in ['loglevel','ll']:  # See: sr_config.7
                      level = words1.lower()
                      if level in 'critical' : self.loglevel = logging.CRITICAL
-                     if level in 'error'    : self.loglevel = logging.ERROR
-                     if level in 'info'     : self.loglevel = logging.INFO
-                     if level in 'warning'  : self.loglevel = logging.WARNING
-                     if level in 'debug'    : self.loglevel = logging.DEBUG
-                     if level in 'none'     : self.loglevel = None
+                     elif level in 'error'    : self.loglevel = logging.ERROR
+                     elif level in 'info'     : self.loglevel = logging.INFO
+                     elif level in 'warning'  : self.loglevel = logging.WARNING
+                     elif level in 'debug'    : self.loglevel = logging.DEBUG
+                     elif level in 'none'     : self.loglevel = None
                      self.set_loglevel()
                      n = 2
 
@@ -2585,9 +2585,8 @@ class sr_config:
             self.create_new_logger('%(asctime)s [%(levelname)s] %(message)s', handler)
             if self.chmod_log:
                 os.chmod(self.logpath, self.chmod_log)
-            # Handling separate file descriptors in two stream (fixed issue
-            self.handle_output('STDOUT', logging.info)
-            self.handle_output('STDERR', logging.error)
+            sys.stdout = StreamToLogger(self.logger, logging.INFO)
+            sys.stderr = StreamToLogger(self.logger, logging.ERROR)
         elif self.loglevel and self.logpath:
             self.logger.debug("Switching to log file: %s" % self.logpath)
             handler = logging.FileHandler(self.logpath)
@@ -2598,11 +2597,8 @@ class sr_config:
             self.logger.debug('Keeping on screen logging')
             handler = logging.StreamHandler()
             self.create_new_logger('%(asctime)s [%(levelname)s] %(pathname) %(lineno) %(message)s', handler)
-
-    def handle_output(self, std_name, loglevel):
-        stdout_logger = logging.getLogger(std_name)
-        slo = StreamToLogger(stdout_logger, loglevel)
-        sys.stdout = slo
+        else:
+            self.set_loglevel()
 
     def create_new_logger(self, log_format, handler):
         self.logger = logging.RootLogger(self.loglevel)
