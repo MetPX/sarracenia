@@ -182,10 +182,10 @@ sub-directory.) The flow tests can then indicate if there is an issue
 with the modification.
 
 Note that the development system must be configured for the flow test to run successfully. See the next
-section for configuration instructions. For development inside of a virtual environment with a fresh OS
-installation, the configuration steps have been automated and can be applied with the flow_autoconfig.sh
+section for configuration instructions. For development with a fresh OS installation,
+the configuration steps have been automated and can be applied with the flow_autoconfig.sh
 script in sarracenia/test/. Blind execution of this script on a working system may lead to undesirable
-side effects, you have been warned!
+side effects; you have been warned!
 
 The configuration one is trying to replicate:
 
@@ -304,7 +304,7 @@ shows functionality covered.
 +-------------------+--------------------------------------+-------------------------------------+
 
 Assumption: test environment is a Linux PC, either a laptop/desktop, or a server on which one
-can start a browser. If working with the c implementation as well, there are also the following
+can start a browser. If working with the C implementation as well, there are also the following
 flows defined:
 
 .. image:: cFlow_test.svg
@@ -352,7 +352,7 @@ Install a minimal localhost broker and configure rabbitmq test users:
      mkdir ~/.config/sarra
      cat > ~/.config/sarra/default.conf << EOF
      declare env FLOWBROKER=localhost
-     declare env SFTPUSER=`whoami`
+     declare env SFTPUSER=${USER}
      declare env TESTDOCROOT=${HOME}/sarra_devdocroot
      declare env SR_CONFIG_EXAMPLES=${HOME}/git/sarracenia/sarra/examples
      EOF
@@ -380,10 +380,9 @@ Install a minimal localhost broker and configure rabbitmq test users:
      EOF
 
      sudo rabbitmqctl delete_user guest
-     for RABBITMQ_USER in "bunnymaster" "tsource" "tsub" "tfeed" "anonymous"; do
-             sudo rabbitmqctl add_user ${RABBITMQ_USER} ${RABBITMQ_PASS}
-             sudo rabbitmqctl set_permissions ${RABBITMQ_USER} ".*" ".*" ".*"
-     done
+
+     sudo rabbitmqctl add_user bunnymaster ${RABBITMQ_PASS}
+     sudo rabbitmqctl set_permissions bunnymaster ".*" ".*" ".*"
      sudo rabbitmqctl set_user_tags bunnymaster administrator
 
      sudo systemctl restart rabbitmq-server

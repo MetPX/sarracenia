@@ -72,5 +72,5 @@ sudo chmod 755 rabbitmqadmin
 
 echo
 
-# Perform sr_audit check
+# Configure users
 sr_audit --users foreground
