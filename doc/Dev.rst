@@ -328,8 +328,8 @@ One can either create a wheel by running either::
 
        python3 setup.py bdist_wheel
 
-whitch creates a wheel package under  dist/metpx*.whl
-then as root  install that new package::
+which creates a wheel package under dist/metpx*.whl,
+then as root install that new package::
 
        pip3 install --upgrade ...<path>/dist/metpx*.whl
 
@@ -344,54 +344,55 @@ which accomplishes the same thing using debian packaging.
 Install Servers on Workstation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Install a minimal localhost broker and configure rabbitmq test users:
-
-     sudo apt-get install rabbitmq-server
-     sudo rabbitmq-plugins enable rabbitmq_management
+Install a minimal localhost broker and configure rabbitmq test users
+```bash
+       sudo apt-get install rabbitmq-server
+       sudo rabbitmq-plugins enable rabbitmq_management
      
-     mkdir ~/.config/sarra
-     cat > ~/.config/sarra/default.conf << EOF
-     declare env FLOWBROKER=localhost
-     declare env SFTPUSER=${USER}
-     declare env TESTDOCROOT=${HOME}/sarra_devdocroot
-     declare env SR_CONFIG_EXAMPLES=${HOME}/git/sarracenia/sarra/examples
-     EOF
+       mkdir ~/.config/sarra
+       cat > ~/.config/sarra/default.conf << EOF
+       declare env FLOWBROKER=localhost
+       declare env SFTPUSER=${USER}
+       declare env TESTDOCROOT=${HOME}/sarra_devdocroot
+       declare env SR_CONFIG_EXAMPLES=${HOME}/git/sarracenia/sarra/examples
+       EOF
 
-     RABBITMQ_PASS = S0M3R4nD0MP4sS
-     cat > ~/.config/sarra/credentials.conf << EOF
-     amqp://bunnymaster:${RABBITMQ_PASS}@localhost/
-     amqp://tsource:${RABBITMQ_PASS}@localhost/
-     amqp://tsub:${RABBITMQ_PASS}@localhost/
-     amqp://tfeed:${RABBITMQ_PASS}@localhost/
-     amqp://anonymous:${RABBITMQ_PASS}@localhost/
-     amqps://anonymous:anonymous@dd.weather.gc.ca
-     amqps://anonymous:anonymous@dd1.weather.gc.ca
-     amqps://anonymous:anonymous@dd2.weather.gc.ca
-     ftp://anonymous:anonymous@localhost:2121/
-     EOF
+       RABBITMQ_PASS = S0M3R4nD0MP4sS
+       cat > ~/.config/sarra/credentials.conf << EOF
+       amqp://bunnymaster:${RABBITMQ_PASS}@localhost/
+       amqp://tsource:${RABBITMQ_PASS}@localhost/
+       amqp://tsub:${RABBITMQ_PASS}@localhost/
+       amqp://tfeed:${RABBITMQ_PASS}@localhost/
+       amqp://anonymous:${RABBITMQ_PASS}@localhost/
+       amqps://anonymous:anonymous@dd.weather.gc.ca
+       amqps://anonymous:anonymous@dd1.weather.gc.ca
+       amqps://anonymous:anonymous@dd2.weather.gc.ca
+       ftp://anonymous:anonymous@localhost:2121/
+       EOF
 
-     cat > ~/.config/sarra/admin.conf << EOF
-     cluster localhost
-     admin amqp://bunnymaster@localhost/
-     feeder amqp://tfeed@localhost/
-     declare source tsource
-     declare subscriber tsub
-     declare subscriber anonymous
-     EOF
+       cat > ~/.config/sarra/admin.conf << EOF
+       cluster localhost
+       admin amqp://bunnymaster@localhost/
+       feeder amqp://tfeed@localhost/
+       declare source tsource
+       declare subscriber tsub
+       declare subscriber anonymous
+       EOF
 
-     sudo rabbitmqctl delete_user guest
+       sudo rabbitmqctl delete_user guest
 
-     sudo rabbitmqctl add_user bunnymaster ${RABBITMQ_PASS}
-     sudo rabbitmqctl set_permissions bunnymaster ".*" ".*" ".*"
-     sudo rabbitmqctl set_user_tags bunnymaster administrator
+       sudo rabbitmqctl add_user bunnymaster ${RABBITMQ_PASS}
+       sudo rabbitmqctl set_permissions bunnymaster ".*" ".*" ".*"
+       sudo rabbitmqctl set_user_tags bunnymaster administrator
 
-     sudo systemctl restart rabbitmq-server
-     cd /usr/local/bin
-     sudo mv rabbitmqadmin rabbitmqadmin.1
-     sudo wget http://localhost:15672/cli/rabbitmqadmin
-     sudo chmod 755 rabbitmqadmin
+       sudo systemctl restart rabbitmq-server
+       cd /usr/local/bin
+       sudo mv rabbitmqadmin rabbitmqadmin.1
+       sudo wget http://localhost:15672/cli/rabbitmqadmin
+       sudo chmod 755 rabbitmqadmin
 
-     sr_audit --users foreground
+       sr_audit --users foreground
+```
 
 .. Note::
 
