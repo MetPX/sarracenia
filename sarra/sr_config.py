@@ -793,6 +793,10 @@ class sr_config:
         self.do_send              = None
         self.do_sends             = {}
 
+        self.inline               = False
+        self.inline_encoding      = "guess"
+        self.inline_max           = 1024
+
         self.inplace              = False
 
         self.inflight             = 'unspecified'
@@ -1864,6 +1868,28 @@ class sr_config:
 
                 elif words0 in ['hostname']: # See: dd_subscribe (obsolete option...ok)
                      self.hostname = words[1] 
+                     n = 2
+
+                elif words0 in ['inline','inl','content' ]: # See: sr_config.7
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.inline = True
+                        n = 1
+                     else :
+                        self.inline = self.isTrue(words[1])
+                        n = 2
+
+                elif words0 in ['inline_encoding','inlenc','content_encoding' ]: # See: sr_config.7
+
+                     encoding_choices =  [ 'guess', 'text', 'binary' ]
+                     if words1.lower() in encoding_choices:
+                        self.inline_encoding = words1.lower()
+                     else:
+                        self.logger.error("inline_encoding must be one of: %s" % encoding_choices )
+
+                     n = 2
+
+                elif words0 in ['inline_max','imx', 'content_max' ]: # See: sr_config.7
+                     self.inline_max = int(words[1])
                      n = 2
 
                 elif words0 in ['inplace','in','assemble']: # See: sr_sarra.8, sr_post.1, sr_watch.1
