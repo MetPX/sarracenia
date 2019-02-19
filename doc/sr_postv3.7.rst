@@ -313,7 +313,7 @@ called *headers*.
  |  Method      | Description                                                         |
  |  v02 - v03   |                                                                     |
  +--------------+---------------------------------------------------------------------+
- |  0 - zero    | No checksums (unconditional copy.) Skips reading file (faster)      |
+ |  0 - random  | No checksums (unconditional copy.) Skips reading file (faster)      |
  +--------------+---------------------------------------------------------------------+
  |  d - md5     | Checksum the entire data (MD-5 as per IETF RFC 1321)                |
  +--------------+---------------------------------------------------------------------+
@@ -348,6 +348,8 @@ called *headers*.
 
  This is partially supported for now (produce but do not consume.) The change in name
  is also motivated by the intent to use add digital signatures to list of known algorithms.
+ there is a change in encoding from hex to base64 for compactness' sake.
+ As the values for cod and zero sums are not encoded, they are the same in both v02 and v03.
 
 **to_clusters=<cluster_name1,cluster_name2,...>**
  The to_clusters defines a list of destination clusters where the data should go into the network.

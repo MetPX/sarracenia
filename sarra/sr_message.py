@@ -215,6 +215,19 @@ class sr_message():
                self.baseurl = self.headers[ "baseUrl" ]
                self.relpath = self.headers[ "relPath" ]
                self.notice = "%s %s %s" % ( self.pubtime, self.baseurl, self.relpath )
+               if "integrity" in self.headers.keys():
+                   sum_algo_v3tov2 = { "md5":"d", "sha512":"s", "md5name":"n", "random":"0", "link":"L", "remove":"R", 'cod':'z' }
+                   if type( self.headers[ "integrity" ] ) is str:
+                       self.headers[ "integrity" ] = json.loads( self.headers[ "integrity" ] )
+                   sa = sum_algo_v3tov2[ self.headers[ "integrity" ][ "method" ] ]
+                   if sa in [ 'random' ]:
+                       sv = self.headers[ "integrity" ][ "value" ]
+                   elif sa in [ 'cod' ]:
+                       sv = sum_algo_v3tov2[ self.headers[ "integrity" ][ "value" ] ]
+                   else:
+                       sv = encode( decode( self.headers[ "integrity" ][ "value" ].encode('utf-8'), "base64" ), 'hex' ).decode('utf-8')
+                   self.headers[ "sum" ] = sa + ',' + sv
+
            else:
                if 'application_headers' in msg.properties.keys():
                    self.headers   = msg.properties['application_headers']
@@ -453,7 +466,6 @@ class sr_message():
         self.topic = self.topic.replace(' ','%20')
         self.topic = self.topic.replace('#','%23')
 
-
         if self.post_topic_prefix != self.topic_prefix:
             self.topic = self.topic.replace(self.topic_prefix,self.post_topic_prefix,1)
 
@@ -469,11 +481,22 @@ class sr_message():
         
 
         # in order to split winnowing into multiple instances, directs items with same checksum
-        # to same shard. do that by keying on the last character of the checksum.
+        # to same shard. do that by keying on a specific character in the checksum.
         # TODO investigate as this would throw a TypeError if post_exchange_split is None
         if self.post_exchange_split > 0 :
-           suffix= "%02d" % ( ord(self.headers['sum'][-1]) % self.post_exchange_split )
-           self.logger.debug( "post_exchange_split set, keying on %s , suffix is %s" % ( self.headers['sum'][-1], suffix) )
+           if 'integrity' in self.headers : 
+               if self.headers['integrity']['method'] in ['cod','random']:
+                   suffix= "%02d" % ( ord(self.headers['integrity']['value'][-1]) % self.post_exchange_split )
+                   self.logger.debug( "post_exchange_split set, keying on %s , suffix is %s" % \
+                        ( self.headers['sum']['value'][-1], suffix) )
+               else: 
+                   # base64 encoding always ends with = or ==, so last char bad...
+                   suffix= "%02d" % ( ord(self.headers['integrity']['value'][-4]) % self.post_exchange_split )
+                   self.logger.debug( "post_exchange_split set, keying on %s , suffix is %s" % \
+                        ( self.headers['sum']['value'][-4], suffix) )
+           else:
+               suffix= "%02d" % ( ord(self.headers['sum'][-1]) % self.post_exchange_split )
+               self.logger.debug( "post_exchange_split set, keying on %s , suffix is %s" % ( self.headers['sum'][-1], suffix) )
         else:
            suffix=""
 
@@ -488,14 +511,25 @@ class sr_message():
                self.headers[ "baseUrl" ] = self.baseurl
                self.headers[ "relPath" ] = self.relpath
                
-               sum_algo_map = { "d":"md5", "s":"sha512", "n":"md5name", "0":"zero", "L":"link", "R":"remove" }
+               sum_algo_map = { "d":"md5", "s":"sha512", "n":"md5name", "0":"random", "L":"link", "R":"remove", 'z':'cod' }
                sm = sum_algo_map[ self.headers["sum"][0] ]
-               sv = encode( decode( self.headers["sum"][2:], 'hex'), 'base64' ).decode('utf-8').strip()
+               if sm in [ 'random' ] :
+                   sv = self.headers["sum"][2:]
+               elif sm in [ 'cod' ] :
+                   sv = sum_algo_map[ self.headers["sum"][2:] ]
+               else:
+                   sv = encode( decode( self.headers["sum"][2:], 'hex'), 'base64' ).decode('utf-8').strip()
+
                self.headers[ "integrity" ] = { "method": sm, "value": sv }
-  
+
+               # FIXME: round-tripping not quite right yet.
+               #del self.headers[ "sum" ] 
                body=json.dumps( self.headers )
                ok = self.publisher.publish(self.exchange+suffix,self.topic,body,None,self.message_ttl)
            else:
+               #in v02, sum is the correct header. FIXME: roundtripping not quite right yet.
+               #if 'integrity' in self.headers.keys(): 
+               #   del self.headers[ 'integrity' ]
                ok = self.publisher.publish(self.exchange+suffix,self.topic,self.notice,self.headers,self.message_ttl)
 
         self.set_hdrstr()

@@ -618,6 +618,11 @@ class sr_subscribe(sr_instances):
     def __on_post__(self):
         #self.logger.debug("%s __on_post__" % self.program_name)
 
+        # in v02, a *sum* header is used.
+        # FIXME: round-tripping not right yet.
+        #if post_topic_prefix.startswith('v02') and 'integrity' in self.headers.keys():
+        #   del self.headers[ 'integrity' ]
+
         # invoke on_post when provided
 
         for plugin in self.on_post_list:
