@@ -345,7 +345,8 @@ Install Servers on Workstation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Install a minimal localhost broker and configure rabbitmq test users
-```bash
+
+```shell
        sudo apt-get install rabbitmq-server
        sudo rabbitmq-plugins enable rabbitmq_management
      
