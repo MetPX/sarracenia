@@ -39,28 +39,34 @@ import shutil
 import sarra
 
 from appdirs import *
-from sarra.sr_checksum import *
-from sarra.sr_credentials import *
-from sarra.sr_util import *
+
+try :
+   from sr_checksum          import *
+   from sr_credentials       import *
+   from sr_util              import *
+except :
+   from sarra.sr_checksum    import *
+   from sarra.sr_credentials import *
+   from sarra.sr_util        import *
 
 # ======= amqp alternative libraries =======
 try:
-    import amqplib.client_0_8 as amqplib_0_8
-    amqplib_available = True
+   import amqplib.client_0_8 as amqplib_0_8
+   amqplib_available = True
 except ImportError:
-    amqplib_available = False
+   amqplib_available = False
 try:
-    import pika
-    pika_available = True
+   import pika
+   pika_available = True
 except ImportError:
-    pika_available = False
+   pika_available = False
 # ==========================================
 
 try:
-    import xattr
-    supports_extended_attributes=True
+   import xattr
+   supports_extended_attributes=True
 except ImportError:
-    supports_extended_attributes=False
+   supports_extended_attributes=False
 
 if sys.hexversion > 0x03030000 :
    from shutil import get_terminal_size
