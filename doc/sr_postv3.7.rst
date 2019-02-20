@@ -24,9 +24,13 @@ iteration of Sarracenia messages, but it is not fully implemented, and
 not in use anywhere, and may never be used. It is also not frozen yet
 and subject to change.
 
-Note that Version 3 does not change any semantics of Version 2. The fields
-and their meaning is the same in version 3 as it was in version 2. The change
-in payload protocol is targetted at simplifying future implementations
+Most fields and their meaning is the same in version 3 as it was in version 2. 
+Some fields are changing as the protocol is exposed to wider review than previously.
+It is implementing changes the `World Meteorological Organization <www.wmo.int>`_
+for use in a renewed `WIS/Global Telecommunications System <http://www.wmo.int/pages/prog/www/WIS/>`_
+This format will track work done in the `WMO mesh <https://www.github.com/MetPX/wmo_mesh>`_
+
+The change in payload protocol is targetted at simplifying future implementations
 and enabling use by messaging protocols other than pre-1.0 AMQP.
 See `Changes from v02`_ for more details.
 
@@ -59,15 +63,14 @@ An sr_post message consists of a topic, and the *BODY*
 **BODY:** *[ "<pubtime>", "<baseurl>", "<relpath>", <headers> ]* (JSON encoding.)
 
 ::
-          tuple fields:
+          Followed by the headers array of name:value pairs:
+
           "pubtime"       - YYYYMMDDHHMMSS.ss - UTC date/timestamp.
           "baseurl"       - root of the url to download.
           "relpath"       - relative path can be catenated to <base_url>
-
-          Followed by the headers array of name:value pairs:
-
           "parts" = size and partitioning information.
           "sum" = checksum algorithm and value.
+          "integrity"     - WMO version of sum field, under development.
           "rename"        - name to write file locally.
           "topic"         - copy of topic from AMQP header (usually omitted)
           "source"        - the originating entity of the message. 
@@ -304,38 +307,49 @@ called *headers*.
  The sum is a signature computed to allow receivers to determine 
  if they have already downloaded the partition from elsewhere.
 
- *<method>* - character field indicating the checksum algorithm used.
+   *<method>* - character field indicating the checksum algorithm used.
 
- +-----------+---------------------------------------------------------------------+
- |   Method  | Description                                                         |
- +-----------+---------------------------------------------------------------------+
- |     0     | No checksums (unconditional copy.) Skips reading file (faster)      |
- +-----------+---------------------------------------------------------------------+
- |     d     | Checksum the entire data (MD-5 as per IETF RFC 1321)                |
- +-----------+---------------------------------------------------------------------+
- |     L     | Linked: SHA512 sum of link value                                    |
- +-----------+---------------------------------------------------------------------+
- |     n     | Checksum the file name (MD-5 as per IETF RFC 1321)                  |
- +-----------+---------------------------------------------------------------------+
- |     R     | Removed: SHA512 of file name.                                       |
- +-----------+---------------------------------------------------------------------+
- |     s     | Checksum the entire data (SHA512 as per IETF RFC 6234)              |
- +-----------+---------------------------------------------------------------------+
- |     z     | Checksum on download, with algorithm as argument                    |
- |           | Example:  z,d means download, applying d checksum, and advertise    |
- |           | with that calculated checksum when propagating further.             |
- +-----------+---------------------------------------------------------------------+
- |  *<name>* | Checksum with some other algorithm, named *<name>*                  |
- |           | *<name>* should be *registered* in the data pumping network.        |
- |           | Registered means that all downstream subscribers can obtain the     |
- |           | algorithm to validate the checksum.                                 |
- +-----------+---------------------------------------------------------------------+
+ +--------------+---------------------------------------------------------------------+
+ |  Method      | Description                                                         |
+ |  v02 - v03   |                                                                     |
+ +--------------+---------------------------------------------------------------------+
+ |  0 - random  | No checksums (unconditional copy.) Skips reading file (faster)      |
+ +--------------+---------------------------------------------------------------------+
+ |  d - md5     | Checksum the entire data (MD-5 as per IETF RFC 1321)                |
+ +--------------+---------------------------------------------------------------------+
+ |  L - link    | Linked: SHA512 sum of link value                                    |
+ +--------------+---------------------------------------------------------------------+
+ |  n - md5name | Checksum the file name (MD-5 as per IETF RFC 1321)                  |
+ +--------------+---------------------------------------------------------------------+
+ |  R - remove  | Removed: SHA512 of file name.                                       |
+ +--------------+---------------------------------------------------------------------+
+ |  s - sha512  | Checksum the entire data (SHA512 as per IETF RFC 6234)              |
+ +--------------+---------------------------------------------------------------------+
+ |  z - cod     | Checksum on download, with algorithm as argument                    |
+ |              | Example:  z,d means download, applying d checksum, and advertise    |
+ |              | with that calculated checksum when propagating further.             |
+ +--------------+---------------------------------------------------------------------+
+ |  *<name>*    | Checksum with some other algorithm, named *<name>*                  |
+ |              | *<name>* should be *registered* in the data pumping network.        |
+ |              | Registered means that all downstream subscribers can obtain the     |
+ |              | algorithm to validate the checksum.                                 |
+ +--------------+---------------------------------------------------------------------+
 
 
 *<value>* The value is computed by applying the given method to the partition being transferred.
   for algorithms for which no value makes sense, a random integer is generated to support
   checksum based load balancing.
 
+**integrity**
+
+ Is a version of the sum field made more explicit. For example::
+
+   "sum" : "d,hexsumvalue"    ---> "integrity" : { "method":"md5", "value":"base64sumvalue"  }
+
+ This is partially supported for now (produce but do not consume.) The change in name
+ is also motivated by the intent to use add digital signatures to list of known algorithms.
+ there is a change in encoding from hex to base64 for compactness' sake.
+ As the values for cod and zero sums are not encoded, they are the same in both v02 and v03.
 
 **to_clusters=<cluster_name1,cluster_name2,...>**
  The to_clusters defines a list of destination clusters where the data should go into the network.
@@ -352,9 +366,9 @@ Report Messages
 
 Some clients may return telemetry to the origin of downloaded data for troubleshooting
 and statistical purposes. Such messages, have the *v03.report* topic, and have a *report*
-header which is a space separated string with four fields:
+header which is a JSON *object* with four fields:
 
- *<report_time> <report_code> <report_host> <report_user>*
+ { "elapsedTime": <report_time>, "resultCode": <report_code>, "host": <report_host>, "user": <report_user>* }
 
  * *<report_code>*  result codes describe in the next session
 
@@ -452,8 +466,8 @@ EXAMPLE
 :: 
 
  Topic: v03.post.NRDPS.GIF.NRDPS_HiRes_000.gif
- Body: [ "201506011357.345", "sftp://afsiext@cmcdataserver", "/data/NRPDS/outputs/NRDPS_HiRes_000.gif",
-   { "rename": "NRDPS/GIF/", "parts":"p,457,1,0,0", "sum" : "d,<md5sum>", "source": "ec_cmc" } ]
+ Body: { "pubTime": "201506011357.345", "baseUrl": "sftp://afsiext@cmcdataserver", "relPath": "/data/NRPDS/outputs/NRDPS_HiRes_000.gif",
+    "rename": "NRDPS/GIF/", "parts":"p,457,1,0,0", "integrity" : { "method":"md5", "value":"<md5sum-base64>" }, "source": "ec_cmc" }
 
         - v03 - version of protocol
         - post - indicates the type of message
@@ -495,9 +509,9 @@ on mysftpserver.com using the sftp protocol to  broker.com assuming he has prope
 The output of the command is as follows ::
 
   Topic: v03.post.20150813.data.shared.products.foo
-  Body: [ "20150813161959.854", "sftp://stanley@mysftpserver.com/", 
-          "/data/shared/products/foo", { "parts":"1,256,1,0,0", 
-          "sum": "d,25d231ec0ae3c569ba27ab7a74dd72ce", "source":"guest" } ]
+  Body: { "pubTime":"20150813161959.854", "baseUrl":"sftp://stanley@mysftpserver.com/", 
+          "relPath": "/data/shared/products/foo", "parts":"1,256,1,0,0", 
+          "sum": "d,25d231ec0ae3c569ba27ab7a74dd72ce", "source":"guest" } 
 
 Posts are published on AMQP topic exchanges, meaning every message has a topic header.
 The body consists of a time *20150813161959.854*, followed by the two parts of the 

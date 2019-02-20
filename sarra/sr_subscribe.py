@@ -45,6 +45,10 @@ import json,os,sys,time
 
 from sys import platform as _platform
 
+from base64 import b64decode, b64encode
+from mimetypes import guess_type
+
+
 try:
     import xattr
     supports_extended_attributes=True
@@ -288,6 +292,25 @@ class sr_subscribe(sr_instances):
 
         self.logger.debug("downloading/copying %s (scheme: %s) into %s " % \
                          (self.msg.urlstr, self.msg.url.scheme, self.msg.new_file))
+
+         
+        if 'content' in self.msg.headers.keys():
+            # make sure directory exists, create it if not
+            if not os.path.isdir(self.msg.new_dir):
+                try:
+                    os.makedirs(self.msg.new_dir,0o775,True)
+                except Exception as ex:
+                    self.logger.warning( "making %s: %s" % ( newdir, ex ) )
+
+            self.logger.debug( "data inlined with message, no need to download" )
+            f = os.fdopen(os.open( self.msg.new_dir + os.path.sep + self.msg.new_file, os.O_RDWR | os.O_CREAT), 'rb+')
+            if self.msg.headers[ 'content' ][ 'encoding' ] == 'base64':
+                f.write( b64decode( self.msg.headers[ 'content' ]['value'] ) )
+            else:
+                f.write( self.msg.headers[ 'content' ]['value'].encode('utf-8') )
+            f.truncate()
+            f.close()
+            return True
 
         # try registered do_download first... might overload defaults
 
@@ -617,6 +640,11 @@ class sr_subscribe(sr_instances):
 
     def __on_post__(self):
         #self.logger.debug("%s __on_post__" % self.program_name)
+
+        # in v02, a *sum* header is used.
+        # FIXME: round-tripping not right yet.
+        #if post_topic_prefix.startswith('v02') and 'integrity' in self.headers.keys():
+        #   del self.headers[ 'integrity' ]
 
         # invoke on_post when provided
 
@@ -1310,11 +1338,13 @@ class sr_subscribe(sr_instances):
 
            need_download = False
 
+
         #=================================
         # attempt downloads
         #=================================
 
         if need_download :
+
 
            self.msg.onfly_checksum = None
 
@@ -1323,7 +1353,6 @@ class sr_subscribe(sr_instances):
            if self.msg.sumflg[0] == '0' : self.msg.sumalgo = None
 
            # N attempts to download
-
            i  = 1
            while i <= self.attempts :
                  # it is confusing to see in log for the same product
@@ -1430,15 +1459,37 @@ class sr_subscribe(sr_instances):
                     if self.msg.isRetry: self.consumer.msg_worked()
                     return False
 
-                 #for plugin in self.on_file_list:
-                 #    if not plugin(self): return False
+           # inline option
+           if  (not ( self.msg.sumflg.startswith('L') or self.msg.sumflg.startswith('R'))) and \
+               (self.msg.partflg == '1' ) and self.post_topic_prefix.startswith('v03') \
+               and self.inline :
 
-                 #    if ( self.msg.local_file != self.msg.new_file ): # FIXME remove in 2018
-                 #       self.logger.warning("on_file plugins should replace parent.msg.local_file, by parent.msg.new_file" )
-                 #       self.msg.new_file = self.msg.local_file
+               fname = self.msg.new_dir + os.path.sep + self.msg.new_file
+               fs = os.stat( fname )
+               if fs.st_size < self.inline_max :
+
+                   if self.inline_encoding == 'guess':
+                      e = guess_type(fname)[0]
+                      binary = not e or not ('text' in e )
+                   else:
+                      binary = (self.inline_encoding != 'text' )
+
+                   try: 
+                       f = open(fname , 'rb')
+                       d = f.read()
+                       f.close()
+
+                       if binary:
+                           self.msg.headers[ "content" ] = { "encoding": "base64", "value": b64encode(d).decode('utf-8') }
+                       else:
+                           self.msg.headers[ "content" ] = { "encoding": "utf-8", "value": d.decode('utf-8') }
+
+                       self.logger.debug( "inlined data for %s" % self.msg.new_file )
+
+                   except:
+                       self.logger.error("failled trying to inline %s" % self.msg.new_file)
 
            # discard option
-
            if self.discard :
               try    :
                         os.unlink(self.msg.new_file)
@@ -1546,7 +1597,14 @@ class sr_subscribe(sr_instances):
                  jt = json.loads( json_line )
                  if len(jt) == 3:  # v02 format...
                      ( self.msg.topic, self.msg.headers, self.msg.notice ) = jt
-                 elif len(jt) == 4: # v03 format.
+                 elif len(jt) == 1: # v03 format. post ETCTS201902
+                     self.headers = jt
+                     self.msg.pubtime = self.headers[ "pubTime" ]
+                     self.msg.baseurl = self.headers[ "baseUrl" ]
+                     self.msg.relpath = self.headers[ "relPath" ]
+                     self.msg.notice= "%s %s %s" % ( self.msg.pubtime, self.msg.baseurl, self.msg.relpath )
+
+                 elif len(jt) == 4: # early v03 format.
                      ( self.msg.pubtime, self.msg.baseurl, self.msg.relpath, self.msg.headers ) = jt
                      self.msg.topic = self.msg.post_topic_prefix + '.'.join( self.msg.relpath.split('/')[0:-1] )
                      self.msg.notice= "%s %s %s" % ( self.msg.pubtime, self.msg.baseurl, self.msg.relpath )

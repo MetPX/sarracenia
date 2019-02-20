@@ -141,12 +141,12 @@ And then modify it for the purpose::
 
   blacklab% sr_subscribe edit msg_log.py
 
-The msg_log.py plugin above is a single entry one. For single entry point plugins, consult bad_plugins 1, 2, and 3 
+The msg_log.py plugin above is a single entry one. For single entry point plugins, consult bad_plugins `1 <../sarra/plugins/bad_plugin1.py>`_, `2 <../sarra/plugins/bad_plugin2.py>`_, and `3 <../sarra/plugins/bad_plugin3.py>`_ 
 to identify the mandatory elements. As one would imagine, all the plugins that begin with msg\_ are for *on_msg* events.
 Similarly, file\_ ones provide examples of *on_file*, etc... for the other types of single entry plugins.
 
 If a plugin doesn't have such a prefix, there is a second form of plugins called simply a *plugin*, where a group
-of routines implement an overall function.  Examine the *log.py* and *wget.py* routines for examples of this format.
+of routines implement an overall function.  Examine the `log.py <../sarra/plugins/log.py>`_ and `wget.py <../sarra/plugins/wget.py>`_ routines for examples of this format.
 
 One can also see which plugins are active in a configuration by looking at the messages on startup::
 

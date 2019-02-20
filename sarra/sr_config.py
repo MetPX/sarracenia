@@ -39,29 +39,35 @@ import shutil
 import sarra
 
 from appdirs import *
-from sarra.sr_checksum import *
-from sarra.sr_credentials import *
-from sarra.sr_util import *
 from logging import handlers
+
+try :
+   from sr_checksum          import *
+   from sr_credentials       import *
+   from sr_util              import *
+except :
+   from sarra.sr_checksum    import *
+   from sarra.sr_credentials import *
+   from sarra.sr_util        import *
 
 # ======= amqp alternative libraries =======
 try:
-    import amqplib.client_0_8 as amqplib_0_8
-    amqplib_available = True
+   import amqplib.client_0_8 as amqplib_0_8
+   amqplib_available = True
 except ImportError:
-    amqplib_available = False
+   amqplib_available = False
 try:
-    import pika
-    pika_available = True
+   import pika
+   pika_available = True
 except ImportError:
-    pika_available = False
+   pika_available = False
 # ==========================================
 
 try:
-    import xattr
-    supports_extended_attributes=True
+   import xattr
+   supports_extended_attributes=True
 except ImportError:
-    supports_extended_attributes=False
+   supports_extended_attributes=False
 
 if sys.hexversion > 0x03030000 :
    from shutil import get_terminal_size
@@ -299,7 +305,7 @@ class sr_config:
            ( self.mirror, self.flatten, self.realpath_post, self.strip, self.base_dir, self.reportback ) )
 
         if self.post_broker :
-            self.logger.info( "\tpost_base_dir=%s post_base_url=%s post_topic_prefix=% sum=%s blocksize=%s " % \
+            self.logger.info( "\tpost_base_dir=%s post_base_url=%s post_topic_prefix=%s sum=%s blocksize=%s " % \
                ( self.post_base_dir, self.post_base_url, self.post_topic_prefix, self.sumflg, self.blocksize ) )
 
         self.logger.info('\tPlugins configured:')
@@ -793,6 +799,10 @@ class sr_config:
 
         self.do_send              = None
         self.do_sends             = {}
+
+        self.inline               = False
+        self.inline_encoding      = "guess"
+        self.inline_max           = 1024
 
         self.inplace              = False
 
@@ -1865,6 +1875,28 @@ class sr_config:
 
                 elif words0 in ['hostname']: # See: dd_subscribe (obsolete option...ok)
                      self.hostname = words[1] 
+                     n = 2
+
+                elif words0 in ['inline','inl','content' ]: # See: sr_config.7
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.inline = True
+                        n = 1
+                     else :
+                        self.inline = self.isTrue(words[1])
+                        n = 2
+
+                elif words0 in ['inline_encoding','inlenc','content_encoding' ]: # See: sr_config.7
+
+                     encoding_choices =  [ 'guess', 'text', 'binary' ]
+                     if words1.lower() in encoding_choices:
+                        self.inline_encoding = words1.lower()
+                     else:
+                        self.logger.error("inline_encoding must be one of: %s" % encoding_choices )
+
+                     n = 2
+
+                elif words0 in ['inline_max','imx', 'content_max' ]: # See: sr_config.7
+                     self.inline_max = int(words[1])
                      n = 2
 
                 elif words0 in ['inplace','in','assemble']: # See: sr_sarra.8, sr_post.1, sr_watch.1
