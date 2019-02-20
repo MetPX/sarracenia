@@ -67,12 +67,12 @@ class File_Total(object):
         import calendar
         import humanize
         import datetime
+        from sarra.sr_util import timestr2flt
 
         if ( parent.file_total_bytecount==0 ) :
             logger.info("file_total: 0 files received: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"  )
 
-        mt=msg.pubtime
-        msgtime=calendar.timegm(time.strptime(mt[:mt.find('.')],"%Y%m%d%H%M%S")) + float(mt[mt.find('.'):])
+        msgtime=timestr2flt(msg.pubtime)
         now=time.time()
 
         parent.file_total_msgcount = parent.file_total_msgcount + 1

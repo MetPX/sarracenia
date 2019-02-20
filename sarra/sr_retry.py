@@ -116,8 +116,14 @@ class sr_retry:
 
         topic   = message.delivery_info['routing_key']
 
-        if message.body[0] == '[' : # v03 message to persist, 
+        if message.body[0] == '[' : # early v03 message to persist, 
            ( message.pubtime, message.baseurl, message.relpath, headers ) = json.loads( message.body )
+           notice  = "%s %s %s" % ( message.pubtime, message.baseurl, message.relpath ) 
+        elif message.body[0] == '{' : # late v03 message to persist, 
+           headers = json.loads( message.body )
+           message.pubtime = headers[ "pubTime" ]
+           message.baseurl = headers[ "baseUrl" ]
+           message.relpath = headers[ "relPath" ]
            notice  = "%s %s %s" % ( message.pubtime, message.baseurl, message.relpath ) 
         else:
            headers = message.properties['application_headers']

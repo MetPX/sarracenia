@@ -36,6 +36,8 @@ import calendar,os,socket,sys,time,urllib,urllib.parse
 
 from sys import platform as _platform
 
+from codecs import decode,encode
+
 import json
 
 try:
@@ -207,8 +209,28 @@ class sr_message():
            if msg.body[0] == '[' :
                self.pubtime, self.baseurl, self.relpath, self.headers = json.loads(msg.body)
                self.notice = "%s %s %s" % ( self.pubtime, self.baseurl, self.relpath )
+           elif msg.body[0] == '{' :
+               self.headers = json.loads(msg.body)
+               self.pubtime = self.headers[ "pubTime" ]
+               self.baseurl = self.headers[ "baseUrl" ]
+               self.relpath = self.headers[ "relPath" ]
+               self.notice = "%s %s %s" % ( self.pubtime, self.baseurl, self.relpath )
+               if "integrity" in self.headers.keys():
+                   sum_algo_v3tov2 = { "md5":"d", "sha512":"s", "md5name":"n", "random":"0", "link":"L", "remove":"R", 'cod':'z' }
+                   if type( self.headers[ "integrity" ] ) is str:
+                       self.headers[ "integrity" ] = json.loads( self.headers[ "integrity" ] )
+                   sa = sum_algo_v3tov2[ self.headers[ "integrity" ][ "method" ] ]
+                   if sa in [ 'random' ]:
+                       sv = self.headers[ "integrity" ][ "value" ]
+                   elif sa in [ 'cod' ]:
+                       sv = sum_algo_v3tov2[ self.headers[ "integrity" ][ "value" ] ]
+                   else:
+                       sv = encode( decode( self.headers[ "integrity" ][ "value" ].encode('utf-8'), "base64" ), 'hex' ).decode('utf-8')
+                   self.headers[ "sum" ] = sa + ',' + sv
+
            else:
-               self.headers   = msg.properties['application_headers']
+               if 'application_headers' in msg.properties.keys():
+                   self.headers   = msg.properties['application_headers']
 
                if type(msg.body) == bytes: 
                     self.notice = msg.body.decode("utf-8")
@@ -287,10 +309,15 @@ class sr_message():
         self.headers['message'] = message
         self.report_topic          = self.topic.replace('.post.','.report.')
      
+        # reports should not contain the inlined data.
+        if 'content' in self.headers:
+           del self.headers[ 'content' ]
+
         e = self.get_elapse()
 
         if self.topic_prefix.startswith('v03'):
-           self.headers['report'] = "%s %s %s %s" % ( e, self.code, self.host, self.user )
+           self.headers['report'] = { "elapsedTime": e, "resultCode":self.code, \
+               "host":self.host, "user":self.user }
 
         # v02 filler... remove 2020.
         self.report_notice         = "%s %s %s %d %s %s %f" % \
@@ -423,6 +450,8 @@ class sr_message():
 
         if not self.topic.startswith('v03'):
            for h in self.headers:
+             if type(self.headers[h]) is dict:
+                self.headers[h] = json.dumps( self.headers[h] )
              if len(self.headers[h].encode("utf8")) >= amqp_ss_maxlen:
 
                 # strings in utf, and if names have special characters, the length
@@ -441,7 +470,6 @@ class sr_message():
         self.topic = self.topic.replace(' ','%20')
         self.topic = self.topic.replace('#','%23')
 
-
         if self.post_topic_prefix != self.topic_prefix:
             self.topic = self.topic.replace(self.topic_prefix,self.post_topic_prefix,1)
 
@@ -457,20 +485,55 @@ class sr_message():
         
 
         # in order to split winnowing into multiple instances, directs items with same checksum
-        # to same shard. do that by keying on the last character of the checksum.
+        # to same shard. do that by keying on a specific character in the checksum.
         # TODO investigate as this would throw a TypeError if post_exchange_split is None
         if self.post_exchange_split > 0 :
-           suffix= "%02d" % ( ord(self.headers['sum'][-1]) % self.post_exchange_split )
-           self.logger.debug( "post_exchange_split set, keying on %s , suffix is %s" % ( self.headers['sum'][-1], suffix) )
+           if 'integrity' in self.headers : 
+               if self.headers['integrity']['method'] in ['cod','random']:
+                   suffix= "%02d" % ( ord(self.headers['integrity']['value'][-1]) % self.post_exchange_split )
+                   self.logger.debug( "post_exchange_split set, keying on %s , suffix is %s" % \
+                        ( self.headers['sum']['value'][-1], suffix) )
+               else: 
+                   # base64 encoding always ends with = or ==, so last char bad...
+                   suffix= "%02d" % ( ord(self.headers['integrity']['value'][-4]) % self.post_exchange_split )
+                   self.logger.debug( "post_exchange_split set, keying on %s , suffix is %s" % \
+                        ( self.headers['sum']['value'][-4], suffix) )
+           else:
+               suffix= "%02d" % ( ord(self.headers['sum'][-1]) % self.post_exchange_split )
+               self.logger.debug( "post_exchange_split set, keying on %s , suffix is %s" % ( self.headers['sum'][-1], suffix) )
         else:
            suffix=""
 
         if self.publisher != None :
 
            if self.topic.startswith('v03'):
-               body=json.dumps( (self.pubtime, self.baseurl, self.relpath, self.headers) )
+               self.headers[ "pubTime" ] = timev2tov3str( self.pubtime )
+               if "mtime" in self.headers.keys():
+                   self.headers[ "mtime" ] = timev2tov3str( self.headers[ "mtime" ] )
+               if "atime" in self.headers.keys():
+                   self.headers[ "atime" ] = timev2tov3str( self.headers[ "atime" ] )
+               self.headers[ "baseUrl" ] = self.baseurl
+               self.headers[ "relPath" ] = self.relpath
+               
+               sum_algo_map = { "d":"md5", "s":"sha512", "n":"md5name", "0":"random", "L":"link", "R":"remove", 'z':'cod' }
+               sm = sum_algo_map[ self.headers["sum"][0] ]
+               if sm in [ 'random' ] :
+                   sv = self.headers["sum"][2:]
+               elif sm in [ 'cod' ] :
+                   sv = sum_algo_map[ self.headers["sum"][2:] ]
+               else:
+                   sv = encode( decode( self.headers["sum"][2:], 'hex'), 'base64' ).decode('utf-8').strip()
+
+               self.headers[ "integrity" ] = { "method": sm, "value": sv }
+
+               # FIXME: round-tripping not quite right yet.
+               #del self.headers[ "sum" ] 
+               body=json.dumps( self.headers )
                ok = self.publisher.publish(self.exchange+suffix,self.topic,body,None,self.message_ttl)
            else:
+               #in v02, sum is the correct header. FIXME: roundtripping not quite right yet.
+               #if 'integrity' in self.headers.keys(): 
+               #   del self.headers[ 'integrity' ]
                ok = self.publisher.publish(self.exchange+suffix,self.topic,self.notice,self.headers,self.message_ttl)
 
         self.set_hdrstr()
@@ -640,7 +703,10 @@ class sr_message():
 
     def set_msg_time(self):
         parts       = self.pubtime.split('.')
-        ts          = time.strptime(parts[0]+" +0000", "%Y%m%d%H%M%S %z" )
+        if parts[0][8] == 'T':
+            ts          = time.strptime(parts[0]+" +0000", "%Y%m%dT%H%M%S %z" )
+        else:
+            ts          = time.strptime(parts[0]+" +0000", "%Y%m%d%H%M%S %z" )
         ep_msg      = calendar.timegm(ts)
         self.tbegin = ep_msg + float('0.'+parts[1])
 
