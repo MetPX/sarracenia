@@ -858,31 +858,37 @@ class sr_config:
     def duration_from_str(self,str_value,setting_units='s'):
         self.logger.debug("sr_config duration_from_str %s unit %s" % (str_value,setting_units))
 
-        factor    = 1.0
+        factor    = 1
 
         # most settings are in sec (or millisec)
         if setting_units[-1] == 's' :
            if setting_units == 'ms'   : factor = 1000
            if str_value[-1] in 'sS'   : factor *= 1
-           if str_value[-1] in 'mM'   : factor *= 60
-           if str_value[-1] in 'hH'   : factor *= 60 * 60
-           if str_value[-1] in 'dD'   : factor *= 60 * 60 * 24
-           if str_value[-1] in 'wW'   : factor *= 60 * 60 * 24 * 7
+           elif str_value[-1] in 'mM' : factor *= 60
+           elif str_value[-1] in 'hH' : factor *= 60 * 60
+           elif str_value[-1] in 'dD' : factor *= 60 * 60 * 24
+           elif str_value[-1] in 'wW' : factor *= 60 * 60 * 24 * 7
+           if str_value[-1].isalpha() : str_value = str_value[:-1]
+
+        elif setting_units == 'm'     :
+           if str_value[-1] in 'sS'   : factor /= 60
+           elif str_value[-1] in 'hH' : factor *= 60
+           elif str_value[-1] in 'dD' : factor *= 60 * 24
            if str_value[-1].isalpha() : str_value = str_value[:-1]
 
         elif setting_units == 'h'     :
            if str_value[-1] in 'sS'   : factor /= (60 * 60)
-           if str_value[-1] in 'mM'   : factor /= 60
-           if str_value[-1] in 'dD'   : factor *= 24
+           elif str_value[-1] in 'mM' : factor /= 60
+           elif str_value[-1] in 'dD' : factor *= 24
            if str_value[-1].isalpha() : str_value = str_value[:-1]
 
         elif setting_units == 'd'     :
            if str_value[-1] in 'hH'   : factor /= 24
-           if str_value[-1] in 'dD'   : factor *= 1
-           if str_value[-1] in 'wW'   : factor *= 7
+           elif str_value[-1] in 'dD' : factor *= 1
+           elif str_value[-1] in 'wW' : factor *= 7
            if str_value[-1].isalpha() : str_value = str_value[:-1]
 
-        duration = float(str_value) * int(factor)
+        duration = float(str_value) * factor
 
         return duration
 
@@ -1961,14 +1967,16 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['logrotate', 'lr']:  # See: sr_subscribe.1
-                     if words1:
-                        self.lr_interval = self.duration_from_str(words1, 'h')
-                        self.lr_when = 'h'
+                     if words1 and not words1.isdigit() and words1[-1] in 'mMhHdD' and words1[:-1].isdigit():
+                        self.lr_interval = self.duration_from_str(words1[:-1], words1[-1])
+                        self.lr_when = words1[-1]
                         n = 2
-                        if words2:
-                            if words2.isdigit():
-                                self.lr_backupCount = int(words2)
-                            n = 3
+                     elif words1 and words1.isdigit():
+                        self.lr_backupCount = int(words2)
+                        n = 2
+                     if words2 and words2.isdigit():
+                        self.lr_backupCount = int(words2)
+                        n = 3
 
                 elif words0 in ['loglevel','ll']:  # See: sr_config.7
                      level = words1.lower()

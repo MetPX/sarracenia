@@ -1474,16 +1474,20 @@ Set this option to **False**, to prevent generation of reports.
 LOGS
 ====
 
-Components write to log files, which by default are found in ~/.cache/sarra/var/log/<component>_<config>_<instance>.log.
-At the end of the day, these logs are rotated automatically by the components, and the old log gets a date suffix.
-The directory in which the logs are stored can be overridden by the **log** option, and the number of days' logs to keep
-is set by the 'logrotate' parameter.  Log files older than **logrotate** duration are deleted.  A duration takes a time unit suffix, such as 'd' for days, 'w' for weeks, or 'h' for hours.
+Components write to log files, which by default are found in ~/.cache/sarra/log/<component>_<config>_<instance>.log.
+At the end of the day (at midnight), these logs are rotated automatically by the components, and the old log gets a
+date suffix. The directory in which the logs are stored can be overridden by the **log** option, the frequency and
+the number of rotated logs to keep are set by the 'logrotate' parameter.  The oldest log file is deleted when the
+maximum number of rotation has been reach and this continue at each rotation.  A duration takes a time unit suffix,
+such as 'd\|D' for days, 'h\|H' for hours, or 'm\|M' for minutes.
 
 - **debug**  setting option debug is identical to use  **loglevel debug**
 
 - **log** the directory to store log files in.  Default value: ~/.cache/sarra/var/log (on Linux)
 
-- **logrotate** duration to keep logs online, usually expressed in days ( default: 5d )
+- **logrotate [<freq>] <nb_rotations>** (facultative) frequency and max number of rotations ( default: midnight 5 ).
+  Please note that it is impossible to specify 'midnight' in parameter to logrotate. It is only accessible when using
+  the default frequency.
 
 - **loglevel** the level of logging as expressed by python's logging.
                possible values are :  critical, error, info, warning, debug.
