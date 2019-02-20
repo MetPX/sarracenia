@@ -304,7 +304,7 @@ class sr_config:
            ( self.mirror, self.flatten, self.realpath_post, self.strip, self.base_dir, self.reportback ) )
 
         if self.post_broker :
-            self.logger.info( "\tpost_base_dir=%s post_base_url=%s post_topic_prefix=% sum=%s blocksize=%s " % \
+            self.logger.info( "\tpost_base_dir=%s post_base_url=%s post_topic_prefix=%s sum=%s blocksize=%s " % \
                ( self.post_base_dir, self.post_base_url, self.post_topic_prefix, self.sumflg, self.blocksize ) )
 
         self.logger.info('\tPlugins configured:')
