@@ -309,6 +309,10 @@ class sr_message():
         self.headers['message'] = message
         self.report_topic          = self.topic.replace('.post.','.report.')
      
+        # reports should not contain the inlined data.
+        if 'content' in self.headers:
+           del self.headers[ 'content' ]
+
         e = self.get_elapse()
 
         if self.topic_prefix.startswith('v03'):
