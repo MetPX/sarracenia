@@ -1477,8 +1477,8 @@ LOGS
 Components write to log files, which by default are found in ~/.cache/sarra/log/<component>_<config>_<instance>.log.
 At the end of the day (at midnight), these logs are rotated automatically by the components, and the old log gets a
 date suffix. The directory in which the logs are stored can be overridden by the **log** option, the frequency and
-the number of rotated logs to keep are set by the 'logrotate' parameter.  The oldest log file is deleted when the
-maximum number of rotation has been reach and this continue at each rotation.  A duration takes a time unit suffix,
+the number of rotated logs to keep are set by the **logrotate** parameter.  The oldest log file is deleted when the
+maximum number of rotations has been reach and this continue at each rotation.  A frequency takes a time unit suffix,
 such as 'd\|D' for days, 'h\|H' for hours, or 'm\|M' for minutes.
 
 - **debug**  setting option debug is identical to use  **loglevel debug**
