@@ -302,15 +302,20 @@ class sr_subscribe(sr_instances):
                 except Exception as ex:
                     self.logger.warning( "making %s: %s" % ( newdir, ex ) )
 
-            self.logger.debug( "data inlined with message, no need to download" )
-            f = os.fdopen(os.open( self.msg.new_dir + os.path.sep + self.msg.new_file, os.O_RDWR | os.O_CREAT), 'rb+')
-            if self.msg.headers[ 'content' ][ 'encoding' ] == 'base64':
-                f.write( b64decode( self.msg.headers[ 'content' ]['value'] ) )
-            else:
-                f.write( self.msg.headers[ 'content' ]['value'].encode('utf-8') )
-            f.truncate()
-            f.close()
-            return True
+            try:
+                self.logger.debug( "data inlined with message, no need to download" )
+                f = os.fdopen(os.open( self.msg.new_dir + os.path.sep + self.msg.new_file, os.O_RDWR | os.O_CREAT), 'rb+')
+                if self.msg.headers[ 'content' ][ 'encoding' ] == 'base64':
+                    f.write( b64decode( self.msg.headers[ 'content' ]['value'] ) )
+                else:
+                    f.write( self.msg.headers[ 'content' ]['value'].encode('utf-8') )
+                f.truncate()
+                f.close()
+                return True
+
+            except:
+                self.logger.info( "inlined data corrupt, try downloading." )
+                pass
 
         # try registered do_download first... might overload defaults
 
@@ -1482,7 +1487,10 @@ class sr_subscribe(sr_instances):
                        if binary:
                            self.msg.headers[ "content" ] = { "encoding": "base64", "value": b64encode(d).decode('utf-8') }
                        else:
-                           self.msg.headers[ "content" ] = { "encoding": "utf-8", "value": d.decode('utf-8') }
+                           try:
+                               self.msg.headers[ "content" ] = { "encoding": "utf-8", "value": d.decode('utf-8') }
+                           except:
+                               self.msg.headers[ "content" ] = { "encoding": "base64", "value": b64encode(d).decode('utf-8') }
 
                        self.logger.debug( "inlined data for %s" % self.msg.new_file )
 

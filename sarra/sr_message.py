@@ -451,7 +451,12 @@ class sr_message():
         if not self.topic.startswith('v03'):
            for h in self.headers:
              if type(self.headers[h]) is dict:
-                self.headers[h] = json.dumps( self.headers[h] )
+                 self.headers[h] = json.dumps( self.headers[h] )
+
+             # truncated content is useless, so drop it.
+             if (h == 'content') and ( len(self.headers[h]) >= amqp_ss_maxlen ):
+                 del self.headers['content']
+
              if len(self.headers[h].encode("utf8")) >= amqp_ss_maxlen:
 
                 # strings in utf, and if names have special characters, the length
@@ -526,14 +531,21 @@ class sr_message():
 
                self.headers[ "integrity" ] = { "method": sm, "value": sv }
 
-               # FIXME: round-tripping not quite right yet.
+               # FIXME: still need "sum" header for internal sarracenia stuff.
+               # but should not include it in v03 output, but if I kill, pclean_92 test fails... dunno why...
+               #save_sum = self.headers[ "sum" ]
                #del self.headers[ "sum" ] 
+
                body=json.dumps( self.headers )
+
+               #self.headers[ "sum" ] = save_sum
+
                ok = self.publisher.publish(self.exchange+suffix,self.topic,body,None,self.message_ttl)
+
            else:
                #in v02, sum is the correct header. FIXME: roundtripping not quite right yet.
-               #if 'integrity' in self.headers.keys(): 
-               #   del self.headers[ 'integrity' ]
+               if 'integrity' in self.headers.keys(): 
+                  del self.headers[ 'integrity' ]
                ok = self.publisher.publish(self.exchange+suffix,self.topic,self.notice,self.headers,self.message_ttl)
 
         self.set_hdrstr()
