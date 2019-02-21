@@ -451,7 +451,12 @@ class sr_message():
         if not self.topic.startswith('v03'):
            for h in self.headers:
              if type(self.headers[h]) is dict:
-                self.headers[h] = json.dumps( self.headers[h] )
+                 self.headers[h] = json.dumps( self.headers[h] )
+
+             # truncated content is useless, so drop it.
+             if (h == 'content') and ( len(self.headers[h]) >= amqp_ss_maxlen ):
+                 del self.headers['content']
+
              if len(self.headers[h].encode("utf8")) >= amqp_ss_maxlen:
 
                 # strings in utf, and if names have special characters, the length
