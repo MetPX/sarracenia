@@ -1964,11 +1964,11 @@ class sr_config:
                 elif words0 in ['loglevel','ll']:  # See: sr_config.7
                      level = words1.lower()
                      if level in 'critical' : self.loglevel = logging.CRITICAL
-                     if level in 'error'    : self.loglevel = logging.ERROR
-                     if level in 'info'     : self.loglevel = logging.INFO
-                     if level in 'warning'  : self.loglevel = logging.WARNING
-                     if level in 'debug'    : self.loglevel = logging.DEBUG
-                     if level in 'none'     : self.loglevel = None
+                     elif level in 'error'    : self.loglevel = logging.ERROR
+                     elif level in 'info'     : self.loglevel = logging.INFO
+                     elif level in 'warning'  : self.loglevel = logging.WARNING
+                     elif level in 'debug'    : self.loglevel = logging.DEBUG
+                     elif level in 'none'     : self.loglevel = None
                      self.set_loglevel()
                      n = 2
 
@@ -2573,60 +2573,43 @@ class sr_config:
         self.sumalgo = self.sumalgos['d']
 
     def set_loglevel(self):
-
-        if self.loglevel == None :
-           if hasattr(self,'logger') : del self.logger
-           self.logpath = None
-           self.logger  = logging.RootLogger(logging.CRITICAL)
-           noop         = logging.NullHandler()
-           self.logger.addHandler(noop)
-           return
-
-        self.logger.setLevel(self.loglevel)
+        if not self.loglevel:
+            if hasattr(self, 'logger'):
+                del self.logger
+            self.logpath = None
+            self.logger = logging.RootLogger(logging.CRITICAL)
+            self.logger.addHandler(logging.NullHandler())
+        else:
+            self.logger.setLevel(self.loglevel)
 
     def setlog(self):
+        if self.loglevel and self.logrotate and self.logpath:
+            self.logger.debug("Switching to rotating log file: %s" % self.logpath)
+            handler = handlers.TimedRotatingFileHandler(self.logpath, when='midnight', interval=1,
+                                                        backupCount=self.logrotate)
+            self.create_new_logger('%(asctime)s [%(levelname)s] %(message)s', handler)
+            if self.chmod_log:
+                os.chmod(self.logpath, self.chmod_log)
+            sys.stdout = StreamToLogger(self.logger, logging.INFO)
+            sys.stderr = StreamToLogger(self.logger, logging.ERROR)
+        elif self.loglevel and self.logpath:
+            self.logger.debug("Switching to log file: %s" % self.logpath)
+            handler = logging.FileHandler(self.logpath)
+            self.create_new_logger('%(asctime)s [%(levelname)s] %(message)s', handler)
+            if self.chmod_log:
+                os.chmod(self.logpath, self.chmod_log)
+        elif self.loglevel:
+            self.logger.debug('Keeping on screen logging')
+            handler = logging.StreamHandler()
+            self.create_new_logger('%(asctime)s [%(levelname)s] %(pathname) %(lineno) %(message)s', handler)
+        else:
+            self.set_loglevel()
 
-        import logging.handlers
-
-        self.set_loglevel()
-
-        # no log
-
-        if self.loglevel == None : return
-
-        # interactive
-
-        if self.logpath  == None :
-           self.logger.debug("on screen logging")
-           LOG_FORMAT   = ('%(asctime)s [%(levelname)s] %(pathname) %(lineno) %(message)s')
-           return
-
-        # to file
-
-        self.logger.debug("switching to log file %s" % self.logpath )
-
-        del self.logger
-
-        LOG_FORMAT   = ('%(asctime)s [%(levelname)s] %(message)s')
-          
-        self.handler = logging.handlers.TimedRotatingFileHandler(self.logpath, when='midnight', \
-                       interval=1, backupCount=self.logrotate)
-        fmt          = logging.Formatter( LOG_FORMAT )
-        self.handler.setFormatter(fmt)
-
-        self.logger = logging.RootLogger(logging.WARNING)
-        self.logger.setLevel(self.loglevel)
-        self.logger.addHandler(self.handler)
-        os.chmod( self.logpath, self.chmod_log )
-
-        stdout_logger = logging.getLogger('STDOUT')
-        slo = StreamToLogger(stdout_logger, logging.INFO)
-        sys.stdout = slo
-        
-        stderr_logger = logging.getLogger('STDERR')
-        sle = StreamToLogger(stderr_logger, logging.ERROR)
-        sys.stderr = sle
-
+    def create_new_logger(self, log_format, handler):
+        self.logger = logging.RootLogger(self.loglevel)
+        fmt = logging.Formatter(log_format)
+        handler.setFormatter(fmt)
+        self.logger.addHandler(handler)
 
     # check url and add credentials if needed from credential file
 

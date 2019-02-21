@@ -752,6 +752,7 @@ class sr_instances(sr_config):
              i=1
              while i <= self.nbr_instances :
                    self.build_instance(i)
+                   self.setlog()
                    self.start_instance()
                    i = i + 1
 
