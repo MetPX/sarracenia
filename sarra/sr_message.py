@@ -544,8 +544,8 @@ class sr_message():
 
            else:
                #in v02, sum is the correct header. FIXME: roundtripping not quite right yet.
-               #if 'integrity' in self.headers.keys(): 
-               #   del self.headers[ 'integrity' ]
+               if 'integrity' in self.headers.keys(): 
+                  del self.headers[ 'integrity' ]
                ok = self.publisher.publish(self.exchange+suffix,self.topic,self.notice,self.headers,self.message_ttl)
 
         self.set_hdrstr()
