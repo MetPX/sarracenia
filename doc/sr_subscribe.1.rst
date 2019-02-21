@@ -1485,9 +1485,7 @@ such as 'd\|D' for days, 'h\|H' for hours, or 'm\|M' for minutes.
 
 - **log** the directory to store log files in.  Default value: ~/.cache/sarra/var/log (on Linux)
 
-- **logrotate [<freq>] <nb_rotations>** (facultative) frequency and max number of rotations ( default: midnight 5 ).
-  Please note that it is impossible to specify 'midnight' in parameter to logrotate. It is only accessible when using
-  the default frequency.
+- **logrotate [<freq>] <nb_rotations>** (facultative) frequency and max number of rotations ( default: 1d 5 ).
 
 - **loglevel** the level of logging as expressed by python's logging.
                possible values are :  critical, error, info, warning, debug.
