@@ -975,9 +975,10 @@ où le +1 peut être remplacé par le nombre de jours à conserver. (...) (....)
 aurait préféré [0-9]{8}, mais il semblerait que la syntaxe de find 
 regex n'inclut pas les répétitions. )
 
-Notez que les bûches se nettoieront d'elles-mêmes, par défaut après 5 
-jours elles seront jetées.  Peut être raccourci à un seul jour en 
-ajoutant *logrotate 1d* à default.conf.
+Il est à noter que les logs se nettoieront par eux-mêmes, par défaut, après 5 rotations le log
+le plus ancien sera enlevé à minuit, seulement si la configuration par défaut a été utilisée
+depuis la première rotation. Il est possible de racourcir ce nombre en ajoutant *logrotate 1*
+à default.conf.
 
 Démarrage
 ~~~~~~~

@@ -1465,24 +1465,26 @@ de données afin de générer des informations statistiques. Régler cette optio
 pour empêcher la génération de rapports. 
 
 
-JOURNEAUX
-=========
+JOURNAUX
+========
 
 Les composants écrivent dans des fichiers journaux qui se trouvent par 
-défaut dans ~/.cache/sarra/var/log/<component>_<config>_<config>_<instance>.log.
-à la fin de la journée, ces journaux sont tournés automatiquement 
+défaut dans ~/.cache/sarra/log/<component>_<config>_<config>_<instance>.log.
+à la fin de la journée (minuit), ces journaux sont tournés automatiquement
 par les composants, et l'ancien journal obtient un suffixe de date.
 Le répertoire dans lequel les logs sont stockés peut être écrasé par 
-l'option **log**, et le nombre de logs de jours à conserver est défini par le paramètre *logrotate*.  
-Les fichiers journaux dont l´age est supérieure à **logrotate** sont 
-supprimés.  Une durée prend un suffixe d'unité de temps, tel que'd' pour 
-les jours,'w' pour les semaines ou'h' pour les heures.
+l'option **log**, la fréquence et le nombre de rotations de logs à conserver est défini par le
+paramètre *logrotate*. Lorsque le nombre maximum de rotations a été atteint, le plus vieux fichier journal
+est supprimé.  Pour le paramètre de fréquence, une durée prend un suffixe d'unité de temps, tel que 'd\|D' pour
+les jours, 'h\|H' pour les heures ou 'm\|M' pour les minutes.
 
 - L'option de débogage **debug** est identique à l'utilisation **loglevel debug**.
 
-- **Log** le répertoire ou les fichiers journaux seront placés.  Valeur par défaut : ~/.cache/sarra/var/log (sous Linux)
+- **Log** le répertoire ou les fichiers journaux seront placés.  Valeur par défaut : ~/.cache/sarra/log (sous Linux)
 
-- **logrotate** combien de temps garder les logs en ligne, généralement exprimée en jours (par défaut : 5d).
+- **logrotate [<freq>] <nb_rotations>** la fréquence (facultative) et le nombre de rotation maximum (par défaut : midnight 5).
+  Il est a noter qu'il est impossible de spécifier 'midnight' en paramètre, mais il s'agit tout de même de la
+  valeur par défaut.
 
 - **loglevel** le niveau de journalisation exprimé par la journalisation de python.
                les valeurs possibles sont : critical, error, info, warning, debug.

@@ -630,8 +630,11 @@ class sr_config:
         self.heartbeat            = 300
         self.last_heartbeat       = time.time()
 
+        # Logging attributes
         self.loglevel             = logging.INFO
-        self.logrotate            = 5
+        self.lr_backupCount = 5
+        self.lr_interval = 1
+        self.lr_when = 'midnight'
         self.report_daemons          = False
 
         self.bufsize              = self.chunksize_from_str('1M')
@@ -871,15 +874,28 @@ class sr_config:
         if setting_units[-1] == 's' :
            if setting_units == 'ms'   : factor = 1000
            if str_value[-1] in 'sS'   : factor *= 1
-           if str_value[-1] in 'mM'   : factor *= 60
-           if str_value[-1] in 'hH'   : factor *= 60 * 60
-           if str_value[-1] in 'dD'   : factor *= 60 * 60 * 24
-           if str_value[-1] in 'wW'   : factor *= 60 * 60 * 24 * 7
+           elif str_value[-1] in 'mM' : factor *= 60
+           elif str_value[-1] in 'hH' : factor *= 60 * 60
+           elif str_value[-1] in 'dD' : factor *= 60 * 60 * 24
+           elif str_value[-1] in 'wW' : factor *= 60 * 60 * 24 * 7
+           if str_value[-1].isalpha() : str_value = str_value[:-1]
+
+        elif setting_units == 'm'     :
+           if str_value[-1] in 'sS'   : factor /= 60
+           elif str_value[-1] in 'hH' : factor *= 60
+           elif str_value[-1] in 'dD' : factor *= 60 * 24
+           if str_value[-1].isalpha() : str_value = str_value[:-1]
+
+        elif setting_units == 'h'     :
+           if str_value[-1] in 'sS'   : factor /= (60 * 60)
+           elif str_value[-1] in 'mM' : factor /= 60
+           elif str_value[-1] in 'dD' : factor *= 24
            if str_value[-1].isalpha() : str_value = str_value[:-1]
 
         elif setting_units == 'd'     :
-           if str_value[-1] in 'dD'   : factor *= 1
-           if str_value[-1] in 'wW'   : factor *= 7
+           if str_value[-1] in 'hH'   : factor /= 24
+           elif str_value[-1] in 'dD' : factor *= 1
+           elif str_value[-1] in 'wW' : factor *= 7
            if str_value[-1].isalpha() : str_value = str_value[:-1]
 
         duration = float(str_value) * factor
@@ -1982,11 +1998,17 @@ class sr_config:
                      self.report_exchange = words1
                      n = 2
 
-                elif words0 in ['logdays', 'ld', 'logrotate','lr']:  # See: sr_config.7 
-                     # log setting is in days 
-                     self.logrotate = int(self.duration_from_str(words1,'d'))
-                     if self.logrotate < 1 : self.logrotate = 1
-                     n = 2
+                elif words0 in ['logrotate', 'lr']:  # See: sr_subscribe.1
+                     if words1 and not words1.isdigit() and words1[-1] in 'mMhHdD' and words1[:-1].isdigit():
+                        self.lr_interval = self.duration_from_str(words1[:-1], words1[-1])
+                        self.lr_when = words1[-1]
+                        n = 2
+                     elif words1 and words1.isdigit():
+                        self.lr_backupCount = int(words1)
+                        n = 2
+                     if words2 and words2.isdigit():
+                        self.lr_backupCount = int(words2)
+                        n = 3
 
                 elif words0 in ['loglevel','ll']:  # See: sr_config.7
                      level = words1.lower()
@@ -2610,10 +2632,10 @@ class sr_config:
             self.logger.setLevel(self.loglevel)
 
     def setlog(self):
-        if self.loglevel and self.logrotate and self.logpath:
+        if self.loglevel and self.logpath and self.lr_interval > 0 and self.lr_backupCount > 0:
             self.logger.debug("Switching to rotating log file: %s" % self.logpath)
-            handler = handlers.TimedRotatingFileHandler(self.logpath, when='midnight', interval=1,
-                                                        backupCount=self.logrotate)
+            handler = handlers.TimedRotatingFileHandler(self.logpath, when=self.lr_when, interval=self.lr_interval,
+                                                        backupCount=self.lr_backupCount)
             self.create_new_logger('%(asctime)s [%(levelname)s] %(message)s', handler)
             if self.chmod_log:
                 os.chmod(self.logpath, self.chmod_log)
