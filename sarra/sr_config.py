@@ -39,6 +39,7 @@ import shutil
 import sarra
 
 from appdirs import *
+from logging import handlers
 
 try :
    from sr_checksum          import *
