@@ -2004,7 +2004,7 @@ class sr_config:
                         self.lr_when = words1[-1]
                         n = 2
                      elif words1 and words1.isdigit():
-                        self.lr_backupCount = int(words2)
+                        self.lr_backupCount = int(words1)
                         n = 2
                      if words2 and words2.isdigit():
                         self.lr_backupCount = int(words2)
