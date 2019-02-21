@@ -1998,17 +1998,23 @@ class sr_config:
                      self.report_exchange = words1
                      n = 2
 
-                elif words0 in ['logrotate', 'lr']:  # See: sr_subscribe.1
-                     if words1 and not words1.isdigit() and words1[-1] in 'mMhHdD' and words1[:-1].isdigit():
-                        self.lr_interval = self.duration_from_str(words1[:-1], words1[-1])
+                elif words0 in ['logdays', 'ld', 'logrotate', 'lr']:  # See: sr_subscribe.1
+                    if words0 in ['logdays', 'ld']:
+                        self.logger.warning('Option %s is deprecated please use logrotate or lr instead' % words0)
+                    if words1 and len(words1) > 1 and re.match(r'^\d*\.?\d*[mMhHdD]$', words1):
+                        self.lr_backupCount = int(self.duration_from_str(words1[:-1], 'midnight'))
+                    n = 2
+
+                elif words0 in ['logrotate_interval', 'lri']:
+                    # regex r'^\d*\.?\d*[mMhHdD]$' will match 'positive decimal numeral with m,M,h,H,d,D at the end'
+                    # ie: '1.3d', '3M', '4353.8374h', ...
+                    if words1 and len(words1) > 1 and re.match(r'^\d*\.?\d*[mMhHdD]$', words1):
                         self.lr_when = words1[-1]
-                        n = 2
-                     elif words1 and words1.isdigit():
-                        self.lr_backupCount = int(words1)
-                        n = 2
-                     if words2 and words2.isdigit():
-                        self.lr_backupCount = int(words2)
-                        n = 3
+                        self.lr_interval = int(self.duration_from_str(words1[:-1], self.lr_when))
+                    elif words1 and re.match(r'^\d*\.?\d*$', words1):
+                        self.lr_when = 'midnight'
+                        self.lr_interval = int(self.duration_from_str(words1, self.lr_when))
+                    n = 2
 
                 elif words0 in ['loglevel','ll']:  # See: sr_config.7
                      level = words1.lower()

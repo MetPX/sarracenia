@@ -1476,25 +1476,26 @@ LOGS
 
 Components write to log files, which by default are found in ~/.cache/sarra/log/<component>_<config>_<instance>.log.
 At the end of the day (at midnight), these logs are rotated automatically by the components, and the old log gets a
-date suffix. The directory in which the logs are stored can be overridden by the **log** option, the frequency and
-the number of rotated logs to keep are set by the **logrotate** parameter.  The oldest log file is deleted when the
-maximum number of rotations has been reach and this continue at each rotation.  A frequency takes a time unit suffix,
-such as 'd\|D' for days, 'h\|H' for hours, or 'm\|M' for minutes.
+date suffix. The directory in which the logs are stored can be overridden by the **log** option, the number of rotated
+logs to keep are set by the **logrotate** parameter. The oldest log file is deleted when the
+maximum number of retention has been reach and this continues for each rotation. An interval takes a duration
+of the interval and it may takes a time unit suffix, such as 'd\|D' for days, 'h\|H' for hours, or 'm\|M' for minutes.
+If no unit is provided logs will rotate at midnight.
 
 - **debug**  setting option debug is identical to use  **loglevel debug**
 
 - **log** the directory to store log files in.  Default value: ~/.cache/sarra/var/log (on Linux)
 
-- **logrotate [<freq>] <nb_rotations>** (facultative) frequency and max number of rotations ( default: midnight 5 ).
-  Please note that it is impossible to specify 'midnight' in parameter to logrotate. It is only accessible when using
-  the default frequency.
+- **logrotate <max_retentions>** maximum number of logs retained ( default: 5 ).
+
+- **logrotate_interval** <duration>[<time_unit>] the duration of the interval with an optional time unit ( default: 1 )
 
 - **loglevel** the level of logging as expressed by python's logging.
                possible values are :  critical, error, info, warning, debug.
 
 - **chmod_log** the permission bits to set on log files (default 0600 )
 
-Placement is as per: `XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.rst>`_ ) setting the XDG_CACHE_HOME environment variable.
+Placement is as per: `XDG Open Directory Specification <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.rst>`_ ) setting the XDG_CACHE_HOME environment variable.
 
 
 INSTANCES
