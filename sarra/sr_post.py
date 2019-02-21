@@ -569,7 +569,10 @@ class sr_post(sr_instances):
            if binary:
                self.msg.headers[ "content" ] = { "encoding": "base64", "value": b64encode(d).decode('utf-8') }
            else:
-               self.msg.headers[ "content" ] = { "encoding": "utf-8", "value": d.decode('utf-8') }
+               try:
+                   self.msg.headers[ "content" ] = { "encoding": "utf-8", "value": d.decode('utf-8') }
+               except:
+                   self.msg.headers[ "content" ] = { "encoding": "base64", "value": b64encode(d).decode('utf-8') }
 
         self.msg.headers['parts'] = partstr
         self.msg.headers['sum']   = sumstr

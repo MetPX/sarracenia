@@ -526,10 +526,17 @@ class sr_message():
 
                self.headers[ "integrity" ] = { "method": sm, "value": sv }
 
-               # FIXME: round-tripping not quite right yet.
+               # FIXME: still need "sum" header for internal sarracenia stuff.
+               # but should not include it in v03 output, but if I kill, pclean_92 test fails... dunno why...
+               #save_sum = self.headers[ "sum" ]
                #del self.headers[ "sum" ] 
+
                body=json.dumps( self.headers )
+
+               #self.headers[ "sum" ] = save_sum
+
                ok = self.publisher.publish(self.exchange+suffix,self.topic,body,None,self.message_ttl)
+
            else:
                #in v02, sum is the correct header. FIXME: roundtripping not quite right yet.
                #if 'integrity' in self.headers.keys(): 
