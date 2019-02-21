@@ -41,6 +41,10 @@ import json,os,random,sys,time
 
 from sys import platform as _platform
 
+from base64 import b64decode, b64encode
+from mimetypes import guess_type
+
+
 try:
     import xattr
     supports_extended_attributes=True
@@ -544,7 +548,28 @@ class sr_post(sr_instances):
                          self.logger.debug("already posted %s"% path)
                          return False
 
-        # complete  message
+        # complete message
+
+        self.logger.error( 'inflight=%s ' % ( self.inflight ) )
+        self.logger.error( 'inline=%s, inline_encoding=%s, inline_max=%d' % \
+            ( self.inline, self.inline_encoding, self.inline_max ) )
+        
+        if self.post_topic_prefix.startswith('v03') and self.inline and fsiz < self.inline_max :        
+ 
+           if self.inline_encoding == 'guess':
+              e = guess_type(path)[0]
+              binary = not e or not ('text' in e )
+           else:
+              binary = (self.inline_encoding == 'text' )
+
+           f = open(path,'rb')
+           d = f.read()
+           f.close()
+
+           if binary:
+               self.msg.headers[ "content" ] = { "encoding": "base64", "value": b64encode(d).decode('utf-8') }
+           else:
+               self.msg.headers[ "content" ] = { "encoding": "utf-8", "value": d.decode('utf-8') }
 
         self.msg.headers['parts'] = partstr
         self.msg.headers['sum']   = sumstr
