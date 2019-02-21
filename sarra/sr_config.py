@@ -2650,7 +2650,8 @@ class sr_config:
         elif self.loglevel:
             self.logger.debug('Keeping on screen logging')
             handler = logging.StreamHandler()
-            self.create_new_logger('%(asctime)s [%(levelname)s] %(pathname)s %(lineno)d %(message)s', handler)
+            #self.create_new_logger('%(asctime)s [%(levelname)s] %(pathname)s %(lineno)d %(message)s', handler)
+            self.create_new_logger('%(asctime)s [%(levelname)s] %(message)s', handler)
         else:
             self.set_loglevel()
 
