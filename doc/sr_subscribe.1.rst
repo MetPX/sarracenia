@@ -1485,14 +1485,14 @@ If no unit is provided logs will rotate at midnight.
 - debug  
    Setting option debug is identical to use  **loglevel debug**
 
-- log <dir> ( default: log ~/.cache/sarra/log ) (on Linux)
+- log <dir> ( default: ~/.cache/sarra/log ) (on Linux)
    The directory to store log files in.
  
 - logrotate <max_logs> ( default: 5 )
    Maximum number of logs archived.
  
 - logrotate_interval <duration>[<time_unit>] ( default: 1 )
-   The duration of the interval with an optional time unit.
+   The duration of the interval with an optional time unit (ie 5m, 2h, 3d)
 
 - loglevel ( default: info )
    The level of logging as expressed by python's logging. Possible values are :  critical, error, info, warning, debug.
