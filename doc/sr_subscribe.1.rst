@@ -1500,7 +1500,7 @@ If no unit is provided logs will rotate at midnight.
 - chmod_log ( default: 0600 )
    The permission bits to set on log files.
 
-Placement is as per: `XDG Open Directory Specification <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.rst>`_ ) setting the XDG_CACHE_HOME environment variable.
+Placement is as per: `XDG Open Directory Specification <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ setting the XDG_CACHE_HOME environment variable.
 
 
 INSTANCES

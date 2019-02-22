@@ -2001,19 +2001,19 @@ class sr_config:
                 elif words0 in ['logdays', 'ld', 'logrotate', 'lr']:  # See: sr_subscribe.1
                     if words0 in ['logdays', 'ld']:
                         self.logger.warning('Option %s is deprecated please use logrotate or lr instead' % words0)
-                    if words1 and len(words1) > 1 and re.match(r'^\d*\.?\d*[mMhHdD]$', words1):
-                        self.lr_backupCount = int(self.duration_from_str(words1[:-1], 'midnight'))
+                    if words1 and len(words1) > 1 and words1[-1] in 'mMhHdD':
+                        # this case keeps retro compat with the old interface
+                        self.lr_backupCount = int(float(words1[:-1]))
+                    else:
+                        self.lr_backupCount = int(float(words1))
                     n = 2
 
                 elif words0 in ['logrotate_interval', 'lri']:
-                    # regex r'^\d*\.?\d*[mMhHdD]$' will match 'positive decimal numeral with m,M,h,H,d,D at the end'
-                    # ie: '1.3d', '3M', '4353.8374h', ...
-                    if words1 and len(words1) > 1 and re.match(r'^\d*\.?\d*[mMhHdD]$', words1):
+                    if words1 and len(words1) > 1 and words1[-1] in 'mMhHdD':
                         self.lr_when = words1[-1]
-                        self.lr_interval = int(self.duration_from_str(words1[:-1], self.lr_when))
-                    elif words1 and re.match(r'^\d*\.?\d*$', words1):
-                        self.lr_when = 'midnight'
-                        self.lr_interval = int(self.duration_from_str(words1, self.lr_when))
+                        self.lr_interval = int(float(words1[:-1]))
+                    else:
+                        self.lr_interval = int(float(words1))
                     n = 2
 
                 elif words0 in ['loglevel','ll']:  # See: sr_config.7
@@ -2026,7 +2026,6 @@ class sr_config:
                      elif level in 'none'     : self.loglevel = None
                      self.set_loglevel()
                      n = 2
-
 
                 elif words0 in ['manager','feeder'] : # See: sr_config.7, sr_sarra.8
                      urlstr       = words1
