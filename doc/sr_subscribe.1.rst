@@ -1478,7 +1478,7 @@ Components write to log files, which by default are found in ~/.cache/sarra/log/
 At the end of the day (at midnight), these logs are rotated automatically by the components, and the old log gets a
 date suffix. The directory in which the logs are stored can be overridden by the **log** option, the number of rotated
 logs to keep are set by the **logrotate** parameter. The oldest log file is deleted when the
-maximum number of retention has been reach and this continues for each rotation. An interval takes a duration
+maximum number of logs has been reach and this continues for each rotation. An interval takes a duration
 of the interval and it may takes a time unit suffix, such as 'd\|D' for days, 'h\|H' for hours, or 'm\|M' for minutes.
 If no unit is provided logs will rotate at midnight.
 
@@ -1488,16 +1488,16 @@ If no unit is provided logs will rotate at midnight.
 - log <dir> ( default: log ~/.cache/sarra/log ) (on Linux)
    The directory to store log files in.
  
-- logrotate <max_retentions> ( default: logrotate 5d )
-   Maximum number of logs retained.
+- logrotate <max_logs> ( default: 5 )
+   Maximum number of logs archived.
  
-- logrotate_interval <duration>[<time_unit>] ( default: logrotate_interval 1 )
+- logrotate_interval <duration>[<time_unit>] ( default: 1 )
    The duration of the interval with an optional time unit.
 
-- loglevel ( default: loglevel info )
+- loglevel ( default: info )
    The level of logging as expressed by python's logging. Possible values are :  critical, error, info, warning, debug.
 
-- chmod_log ( default: chmod_log 0600 )
+- chmod_log ( default: 0600 )
    The permission bits to set on log files.
 
 Placement is as per: `XDG Open Directory Specification <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.rst>`_ ) setting the XDG_CACHE_HOME environment variable.
