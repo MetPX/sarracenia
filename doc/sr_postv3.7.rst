@@ -60,17 +60,20 @@ An sr_post message consists of a topic, and the *BODY*
            "post" = the type of message within the protocol.
            <dir> = a sub-directory leading to the file (perhaps many directories deep)
 
-**BODY:** *[ "<pubtime>", "<baseurl>", "<relpath>", <headers> ]* (JSON encoding.)
+**BODY:** *{ <headers> }* (JSON encoding.)
 
-::
-          Followed by the headers array of name:value pairs:
+The headers are an array of name:value pairs::
+
+  MANDATORY:
 
           "pubtime"       - YYYYMMDDHHMMSS.ss - UTC date/timestamp.
           "baseurl"       - root of the url to download.
           "relpath"       - relative path can be catenated to <base_url>
+          "integrity"     - WMO version of v02 sum field, under development.
           "parts" = size and partitioning information.
-          "sum" = checksum algorithm and value.
-          "integrity"     - WMO version of sum field, under development.
+
+  OPTIONAL:
+
           "rename"        - name to write file locally.
           "topic"         - copy of topic from AMQP header (usually omitted)
           "source"        - the originating entity of the message. 
