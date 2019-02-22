@@ -1484,16 +1484,20 @@ If no unit is provided logs will rotate at midnight.
 
 - **debug**  setting option debug is identical to use  **loglevel debug**
 
-- **log** the directory to store log files in.  Default value: ~/.cache/sarra/var/log (on Linux)
+- **log** the directory to store log files in.
+ Default value: ~/.cache/sarra/var/log (on Linux)
 
-- **logrotate <max_retentions>** maximum number of logs retained ( default: 5 ).
+- **logrotate <max_retentions>** maximum number of logs retained.
+ ( default: 5 )
 
-- **logrotate_interval** <duration>[<time_unit>] the duration of the interval with an optional time unit ( default: 1 )
+- **logrotate_interval <duration>[<time_unit>]** the duration of the interval with an optional time unit.
+ ( default: 1 )
 
-- **loglevel** the level of logging as expressed by python's logging.
-               possible values are :  critical, error, info, warning, debug.
+- **loglevel** the level of logging as expressed by python's logging. 
+ Possible values are :  critical, error, info, warning, debug.
 
-- **chmod_log** the permission bits to set on log files (default 0600 )
+- **chmod_log** the permission bits to set on log files.
+ (default 0600 )
 
 Placement is as per: `XDG Open Directory Specification <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.rst>`_ ) setting the XDG_CACHE_HOME environment variable.
 
