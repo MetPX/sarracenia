@@ -780,6 +780,8 @@ and under which name.
 - **base_dir <path>       (default: /)**
 - **flatten   <string>         (default: '/')** 
 - **heartbeat <count>                 (default: 300 seconds)**
+- **inline   <boolean>         (default: False)**
+- **inline_max   <counts>         (default: 1024)**
 - **inplace       <boolean>        (default: On)**
 - **kbytes_ps <count>               (default: 0)**
 - **inflight  <string>         (default: .tmp or NONE if post_broker set)** 
@@ -990,6 +992,16 @@ The default is None which means that the path in the notification is the absolut
     cannot explain this... do not know what it is myself. This is taken from sender.
     in a subscriber, if it is set... will it download? or will it assume it is local?
     in a sender.
+
+inline <boolean> (default: False)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When posting messages, The **inline** option is used to have the file content
+included in the post. This can be efficient when sending small files over high
+latency links, a number of round trips can be saved by avoiding the retrieval
+of the data using the URL.  One should only inline relatively small files,
+so when **inline** is active, only files smaller than **in_line_max** bytes
+(default: 1024) will actually have their content included in the post messages.
 
 
 inplace <boolean> (default: On)
