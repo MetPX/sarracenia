@@ -6,6 +6,22 @@ lists all changes between versions.
 
 **git repo**
 
+**2.19.02b2**
+
+*
+* new:    implemented WMO expert team on computing and telecommunication systems
+*         (ETCTS, latest meeting: 2019/02) recommendations for changes to v03 format.
+* new:    ETCTS201902 v03 whole messages is a single JSON *object* (like a python *dictionary*)
+* new:    issue #146 ETCTS201902 v03 timestamps now have a "T" in them.
+* new:    issue #148 ETCTS201902 v03 *sum* header changed to *integrity*, encoding changed from hex 
+*         to base64.
+* new:    issue #147 ETCTS201902 v03 added **inline** support to include file data in the announcements.
+*         data is encoded in either utf-8 or base64.
+* new:    issue #153 log rotation interval can now be set. Minues if you like.
+* bugfix: issue #140 messages on console instead of log.
+*
+
+
 **2.19.02b1**
 
 * new:    Added checksum caching in an extended file attribute (from Issue #54) 

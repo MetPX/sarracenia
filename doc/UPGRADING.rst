@@ -36,6 +36,12 @@ Installation Instructions
 git
 ---
 
+*CHANGE*: *logrotate* parameter was a duration (how many days to keep daily logs).  It is now
+          a count of log files to retain.  *logrotate_interval* is a new option, which accepts a
+          duration, to control how often to rotate logs. To maintain compatibility, if a 'd' is 
+          after the argument to *logrotate*, it will be ignored, and will be interpreted as a
+          simple integer.
+
 2.19.02.b1
 ----------
 
