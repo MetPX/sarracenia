@@ -1,6 +1,6 @@
 [Application]
 name=Sarracenia
-version=v2.19.02b1
+version=__version__
 publisher=Shared Services Canada
 icon=windows/sarra.ico
 target=$INSTDIR\bin\sr.exe

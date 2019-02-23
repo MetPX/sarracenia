@@ -27,6 +27,8 @@ rm -rf dist
 rm -rf build
 python3 setup.py bdist_wheel
 
+VERSION=`grep __version__ sarra/__init__.py | cut -c15- | sed -e 's/"//g'`
+sed 's/__version__/'$VERSION'/' <win_installer.cfg.tem >win_installer.cfg
 # NSIS packaging
 pynsist win_installer.cfg
 

@@ -930,7 +930,7 @@ A convenient script has been created to automate the release process. Simply run
 
 
 * Edit ``sarra/__init__.py`` manually and set the version number.
-* Edit *generate-win-installer.sh* manually and set the version number.
+* Edit *win-installer.cfg* manually and set the version number.
 * git commit -a
 * Run ```release.sh``` example::
 
