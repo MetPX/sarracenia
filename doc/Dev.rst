@@ -930,7 +930,6 @@ A convenient script has been created to automate the release process. Simply run
 
 
 * Edit ``sarra/__init__.py`` manually and set the version number.
-* Edit *win-installer.cfg* manually and set the version number.
 * git commit -a
 * Run ```release.sh``` example::
 
@@ -1059,6 +1058,8 @@ Then, from the shell, run::
  sudo apt install nsis
  pip3 install pynsist wheel
  ./generate-win-installer.sh 2>&1 > log.txt
+
+The final package should be placed in build/nsis directory.
 
 Updating The Project Website
 ----------------------------
