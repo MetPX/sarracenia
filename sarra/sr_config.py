@@ -1998,17 +1998,23 @@ class sr_config:
                      self.report_exchange = words1
                      n = 2
 
-                elif words0 in ['logrotate', 'lr']:  # See: sr_subscribe.1
-                     if words1 and not words1.isdigit() and words1[-1] in 'mMhHdD' and words1[:-1].isdigit():
-                        self.lr_interval = self.duration_from_str(words1[:-1], words1[-1])
+                elif words0 in ['logdays', 'ld', 'logrotate', 'lr']:  # See: sr_subscribe.1
+                    if words0 in ['logdays', 'ld']:
+                        self.logger.warning('Option %s is deprecated please use logrotate or lr instead' % words0)
+                    if words1 and len(words1) > 1 and words1[-1] in 'mMhHdD':
+                        # this case keeps retro compat with the old interface
+                        self.lr_backupCount = int(float(words1[:-1]))
+                    else:
+                        self.lr_backupCount = int(float(words1))
+                    n = 2
+
+                elif words0 in ['logrotate_interval', 'lri']:
+                    if words1 and len(words1) > 1 and words1[-1] in 'mMhHdD':
                         self.lr_when = words1[-1]
-                        n = 2
-                     elif words1 and words1.isdigit():
-                        self.lr_backupCount = int(words1)
-                        n = 2
-                     if words2 and words2.isdigit():
-                        self.lr_backupCount = int(words2)
-                        n = 3
+                        self.lr_interval = int(float(words1[:-1]))
+                    else:
+                        self.lr_interval = int(float(words1))
+                    n = 2
 
                 elif words0 in ['loglevel','ll']:  # See: sr_config.7
                      level = words1.lower()
@@ -2020,7 +2026,6 @@ class sr_config:
                      elif level in 'none'     : self.loglevel = None
                      self.set_loglevel()
                      n = 2
-
 
                 elif words0 in ['manager','feeder'] : # See: sr_config.7, sr_sarra.8
                      urlstr       = words1

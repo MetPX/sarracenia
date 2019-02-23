@@ -780,6 +780,8 @@ and under which name.
 - **base_dir <path>       (default: /)**
 - **flatten   <string>         (default: '/')** 
 - **heartbeat <count>                 (default: 300 seconds)**
+- **inline   <boolean>         (default: False)**
+- **inline_max   <counts>         (default: 1024)**
 - **inplace       <boolean>        (default: On)**
 - **kbytes_ps <count>               (default: 0)**
 - **inflight  <string>         (default: .tmp or NONE if post_broker set)** 
@@ -990,6 +992,16 @@ The default is None which means that the path in the notification is the absolut
     cannot explain this... do not know what it is myself. This is taken from sender.
     in a subscriber, if it is set... will it download? or will it assume it is local?
     in a sender.
+
+inline <boolean> (default: False)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When posting messages, The **inline** option is used to have the file content
+included in the post. This can be efficient when sending small files over high
+latency links, a number of round trips can be saved by avoiding the retrieval
+of the data using the URL.  One should only inline relatively small files,
+so when **inline** is active, only files smaller than **in_line_max** bytes
+(default: 1024) will actually have their content included in the post messages.
 
 
 inplace <boolean> (default: On)
@@ -1476,23 +1488,31 @@ LOGS
 
 Components write to log files, which by default are found in ~/.cache/sarra/log/<component>_<config>_<instance>.log.
 At the end of the day (at midnight), these logs are rotated automatically by the components, and the old log gets a
-date suffix. The directory in which the logs are stored can be overridden by the **log** option, the frequency and
-the number of rotated logs to keep are set by the **logrotate** parameter.  The oldest log file is deleted when the
-maximum number of rotations has been reach and this continue at each rotation.  A frequency takes a time unit suffix,
-such as 'd\|D' for days, 'h\|H' for hours, or 'm\|M' for minutes.
+date suffix. The directory in which the logs are stored can be overridden by the **log** option, the number of rotated
+logs to keep are set by the **logrotate** parameter. The oldest log file is deleted when the
+maximum number of logs has been reach and this continues for each rotation. An interval takes a duration
+of the interval and it may takes a time unit suffix, such as 'd\|D' for days, 'h\|H' for hours, or 'm\|M' for minutes.
+If no unit is provided logs will rotate at midnight.
 
-- **debug**  setting option debug is identical to use  **loglevel debug**
+- debug  
+   Setting option debug is identical to use  **loglevel debug**
 
-- **log** the directory to store log files in.  Default value: ~/.cache/sarra/var/log (on Linux)
+- log <dir> ( default: ~/.cache/sarra/log ) (on Linux)
+   The directory to store log files in.
+ 
+- logrotate <max_logs> ( default: 5 )
+   Maximum number of logs archived.
+ 
+- logrotate_interval <duration>[<time_unit>] ( default: 1 )
+   The duration of the interval with an optional time unit (ie 5m, 2h, 3d)
 
-- **logrotate [<freq>] <nb_rotations>** (facultative) frequency and max number of rotations ( default: 1d 5 ).
+- loglevel ( default: info )
+   The level of logging as expressed by python's logging. Possible values are :  critical, error, info, warning, debug.
 
-- **loglevel** the level of logging as expressed by python's logging.
-               possible values are :  critical, error, info, warning, debug.
+- chmod_log ( default: 0600 )
+   The permission bits to set on log files.
 
-- **chmod_log** the permission bits to set on log files (default 0600 )
-
-Placement is as per: `XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.rst>`_ ) setting the XDG_CACHE_HOME environment variable.
+Placement is as per: `XDG Open Directory Specification <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ setting the XDG_CACHE_HOME environment variable.
 
 
 INSTANCES

@@ -206,20 +206,21 @@ def self_test():
     expire_value    = 1000*60*60*3
     message_value   = 1000*60*60*24*7*3
     cfg.message_ttl = 0
-    cfg.args(['-expire','3h','-message_ttl','3W','--randomize', '--assemble', 'True',  '-logrotate', '8h', '10'])
+    cfg.args(['-expire','3h','-message_ttl','3W','--randomize', '--assemble', 'True',  '-logrotate', '5m',
+              '-logrotate_interval', '1m'])
     if not cfg.randomize :
        cfg.logger.error("test 06: args problem randomize")
        failed = True
     if not cfg.inplace  :
        cfg.logger.error("test 07: args problem assemble")
        failed = True
-    if cfg.lr_interval != 8:
+    if cfg.lr_interval != 1:
        cfg.logger.error("test 08a: args problem logrotate %s" % cfg.lr_interval)
        failed = True
-    if cfg.lr_backupCount != 10:
+    if cfg.lr_backupCount != 5:
        cfg.logger.error("test 08b: args problem logrotate %s" % cfg.lr_backupCount)
        failed = True
-    if cfg.lr_when != 'h':
+    if cfg.lr_when != 'm':
        cfg.logger.error("test 08c: args problem logrotate %s" % cfg.lr_when)
        failed = True
     if cfg.expire != expire_value :
