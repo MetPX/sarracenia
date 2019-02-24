@@ -225,9 +225,10 @@ Second, with AMQP, one can establish separate topic hierarchies using *topic-bas
 MQTT has no similar concept, there is simply one hierarchy, so when mapping, place the exchange
 name at the root of the topic hierarchy to achieve the same effect::
 
-  AMQP:   a topic exchange named <echange name> is defined, where topics start with v03.post.<directory>...
+  AMQP:   a topic exchange named <echange name> is defined, where 
+          topics start with **v03.post.<directory>...**
 
-  MQTT:   <exchange name>/v03/post/<directory>...
+  MQTT:   **<exchange name>/v03/post/<directory>...**
 
 
 
