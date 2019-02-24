@@ -74,7 +74,7 @@ The headers are an array of name:value pairs::
              "method" : "md5" | "sha512" | "md5name" | "link" | "remove" | "cod" | "random" ,
              "value"  : "base64 encoded checksum value"
           }
-          "parts" = size and partitioning information.
+          "parts" = size and partitioning information. 
 
   OPTIONAL:
 
@@ -101,6 +101,11 @@ The headers are an array of name:value pairs::
           "message"  - status report message documented in `Report Messages`_
 
           additional user defined name:value pairs are permitted.
+
+NOTE:
+     The **parts** header has not yet been reviewed by others. We started on the discussion of *size*,
+     but there was no conclusion.
+
 
 DESCRIPTION
 -----------
@@ -232,23 +237,20 @@ THE FIXED HEADERS
 The message is a single JSON encoded array, with a mandatory set of fields, while allowing
 for use of arbitrary other fields.  Mandatory fields must be present in every message, and
 
- *"<date stamp>"* : the publication date the posting was emitted.  Format: YYYYMMDDTHHMMSS. *<decimalseconds>*
+ * "pubTime" : "*<date stamp>*" : the publication date the posting was emitted.  Format: YYYYMMDDTHHMMSS. *<decimalseconds>*
 
  Note: The datestamp is always in the UTC timezone.
 
- *"<base_url>"* -- the base URL used to retrieve the data.
+ * "baseUrl" : "<*base_url*>" -- the base URL used to retrieve the data.
 
- *"<relativepath>"* --  the variable part of the URL, usually appended to *base_url*.
+ * "relPath" : "<*relativepath*>" --  the variable part of the URL, usually appended to *baseUrl*.
 
-The URL consumers will use to download the data.  Example of a complete URL::
+The URL consumers will use to download the data. Example of a complete URL::
 
  sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRPDS_HiRes_000.gif
 
 
-In addition to the first three fixed fields of the message containing all 
-mandatory fields, optional elements are stored in the last element of the JSON
-tuple, which is, itself a JSON array (series of name:value pairs), 
-called *headers*.
+Additional fields:
 
 **from_cluster=<cluster_name>**
    The from_cluster header defines the name of the source cluster where the 
