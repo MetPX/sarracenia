@@ -66,10 +66,14 @@ The headers are an array of name:value pairs::
 
   MANDATORY:
 
-          "pubtime"       - YYYYMMDDHHMMSS.ss - UTC date/timestamp.
-          "baseurl"       - root of the url to download.
-          "relpath"       - relative path can be catenated to <base_url>
+          "pubTime"       - YYYYMMDDHHMMSS.ss - UTC date/timestamp.
+          "baseUrl"       - root of the url to download.
+          "relPath"       - relative path can be catenated to <base_url>
           "integrity"     - WMO version of v02 sum field, under development.
+          {
+             "method" : "md5" | "sha512" | "md5name" | "link" | "remove" | "cod" | "random" ,
+             "value"  : "base64 encoded checksum value"
+          }
           "parts" = size and partitioning information.
 
   OPTIONAL:
@@ -83,6 +87,12 @@ The headers are an array of name:value pairs::
           "atime"         - last access time of a file (optional)
           "mtime"         - last modification time of a file (optional)
           "mode"          - permission bits (optional)
+
+          "content"       - for smaller files, the content may be embedded.
+          {
+              "encoding" : "utf-8" | "base64"  , 
+              "value"    " "encoded file content"
+          }
 
           For "v03.report" topic messages the following addtional
           headers will be present:
@@ -121,37 +131,37 @@ Source Filtering (use of `AMQP TOPIC`_ exchanges)
    are forwarded to the client.  When there are many users interested in only 
    small subsets of data, the savings in traffic are large.
 
-Fingerprint Winnowing (use of the sum_ header)
-   Each product has a checksum and size intended to identify it uniquely, referred to as
-   a *fingerprint*.  If two files have the same fingerprint, they are considered
-   equivalent.  In cases where multiple sources of equivalent data are available but 
-   downstream consumers would prefer to receive single announcements
+Fingerprint Winnowing (use of the integrity_ header)
+   Each product has an integrity fingerprint and size intended to identify it uniquely, 
+   referred to as a *fingerprint*. If two files have the same fingerprint, they 
+   are considered equivalent. In cases where multiple sources of equivalent data are 
+   available but downstream consumers would prefer to receive single announcements
    of files, intermediate processes may elect to publish notifications of the first 
    product with a given fingerprint, and ignore subsequent ones. 
    Propagating only the first occurrence of a datum received downstream, based on
    its fingerprint, is termed: *Fingerprint Winnowing*.
 
-   *Fingerprint Winnowing* is the basis for a robust strategy for high availability:  setting up
+   *Fingerprint Winnowing* is the basis for a robust strategy for high availability: setting up
    multiple sources for the same data, consumers accept announcements from all of them, but only
-   forwarding the first one received downstream.  In normal operation, one source may be faster 
+   forwarding the first one received downstream. In normal operation, one source may be faster 
    than the others, and so the other sources' files are usually 'winnowed'. When one source
    disappears, the other sources' data is automatically selected, as the fingerprints
    are now *fresh* and used, until a faster source becomes available.
 
    The advantage of this method for high availability is that no A/B decision is required.
-   The time to *switchover* is zero.  Other strategies are subject to considerable delays
+   The time to *switchover* is zero. Other strategies are subject to considerable delays
    in making the decision to switchover, and pathologies one could summarize as flapping,
    and/or deadlocks.  
 
    *Fingerprint Winnowing* also permits *mesh-like*, or *any to any* networks, where one simply 
-   interconnects a node with others, and messages propagate.  Their specific path through the 
+   interconnects a node with others, and messages propagate. Their specific path through the 
    network is not defined, but each participant will download each new datum from the first
-   node that makes it available to them.  Keeping the messages small and separate from data 
+   node that makes it available to them. Keeping the messages small and separate from data 
    is optimal for this usage.
  
 Partitioning (use of the parts_ Header)
    In any store and forward data pumping network that transports entire files limits the maximum
-   file size to the minimum available on any intervening node.  To avoid defining a maximum 
+   file size to the minimum available on any intervening node. To avoid defining a maximum 
    file size, a segmentation standard is specified, allowing intervening nodes to hold
    only segments of the file, and forward them as they are received, rather than being
    forced to hold the entire file.
@@ -161,8 +171,8 @@ Partitioning (use of the parts_ Header)
 
    
 
-AMQP TOPIC
-----------
+TOPIC
+-----
 
 In topic based AMQP exchanges, every message has a topic header. AMQP defines the '.' character 
 as a hierarchical separator (like '\' in a windows path name, or '/' on linux) there is also a 
@@ -183,13 +193,12 @@ then the complete topic of the message will be:  *v03.post.a.b.c.d*
 AMQP fields are limited to 255 characters, and the characters in the field are utf8 
 encoded, so actual length limit may be less than that. 
 
-
 note::
 
   Sarracenia relies on brokers to interpret the topic header. Brokers interpret protocol
   specific headers *AMQP), and will not efficiently decode the payload to extract headers. 
   Therefore the topic header is stored in an AMQP header, rather than the payload to permit
-  server-side filtering.  To avoid sending the same information twice, this header is
+  server-side filtering. To avoid sending the same information twice, this header is
   omitted from the JSON payload.
 
   Many client-side implementation will, once the message is loaded, set the *topic* header 
@@ -197,13 +206,33 @@ note::
   in an application even though it isn't visible in the on-wire payload.
 
 
-THE FIXED FIELDS
-----------------
+Mapping to MQTT
+~~~~~~~~~~~~~~~
+
+One goal of v03 format is to have a payload format that works with more than just AMQP.
+Message Queing Telemetry Transport (MQTT v3.11) is an iso standard ( https://www.iso.org/standard/69466.html 
+protocol that can easily support the same pub/sub messaging pattern, but a few details
+differ, so a mapping is needed.
+
+Firstly, the topic separate in MQTT is a forward slash (/), instead of the period (.) used in AMQP.
+
+Second, with AMQP, one can establish separate topic hierarchies using *topic-based exchanges*. 
+MQTT has no similar concept, there is simply one hierarchy, so when mapping, place the exchange
+name at the root of the topic hierarchy to achieve the same effect::
+
+  AMQP:   a topic exchange named &lt;echange name&gt; is defined, where topics start with v03.post.<directory>...
+
+  MQTT:   &lt;exchange name&gt;/v03/post/<directory>...
+
+
+
+THE FIXED HEADERS
+-----------------
 
 The message is a single JSON encoded array, with a mandatory set of fields, while allowing
 for use of arbitrary other fields.  Mandatory fields must be present in every message, and
 
- *"<date stamp>"* : the publication date the posting was emitted.  Format: YYYYMMDDHHMMSS. *<decimalseconds>*
+ *"<date stamp>"* : the publication date the posting was emitted.  Format: YYYYMMDDTHHMMSS. *<decimalseconds>*
 
  Note: The datestamp is always in the UTC timezone.
 
@@ -307,7 +336,7 @@ called *headers*.
 
 **sum=<method>,<value>**
 
- The sum is a signature computed to allow receivers to determine 
+ The sum is a v02 signature computed to allow receivers to determine 
  if they have already downloaded the partition from elsewhere.
 
    *<method>* - character field indicating the checksum algorithm used.
@@ -345,7 +374,7 @@ called *headers*.
 
 **integrity**
 
- Is a version of the sum field made more explicit. For example::
+ Is a v03 version of the sum field made more explicit. For example::
 
    "sum" : "d,hexsumvalue"    ---> "integrity" : { "method":"md5", "value":"base64sumvalue"  }
 
@@ -460,7 +489,7 @@ for the file mirroring use case, additional headers will be present:
 
 
 All other headers are reserved for future use.  
-Headers which are unknown to a given client should be forwarded without modification.
+Headers which are unknown to a given client must be forwarded without modification.
 
 
 EXAMPLE
@@ -468,7 +497,8 @@ EXAMPLE
 
 :: 
 
- Topic: v03.post.NRDPS.GIF.NRDPS_HiRes_000.gif
+ AMQP TOPIC: v03.post.NRDPS.GIF
+ MQTT TOPIC: exchange/v03/post/NRDPS/GIF/
  Body: { "pubTime": "201506011357.345", "baseUrl": "sftp://afsiext@cmcdataserver", "relPath": "/data/NRPDS/outputs/NRDPS_HiRes_000.gif",
     "rename": "NRDPS/GIF/", "parts":"p,457,1,0,0", "integrity" : { "method":"md5", "value":"<md5sum-base64>" }, "source": "ec_cmc" }
 
@@ -511,13 +541,14 @@ on mysftpserver.com using the sftp protocol to  broker.com assuming he has prope
 
 The output of the command is as follows ::
 
-  Topic: v03.post.20150813.data.shared.products.foo
-  Body: { "pubTime":"20150813161959.854", "baseUrl":"sftp://stanley@mysftpserver.com/", 
+  AMQP Topic: v03.post.20150813.data.shared.products
+  MQTT Topic: &lt;echange&gt;/v03/post/20150813/data/shared/products
+  Body: { "pubTime":"20150813T161959.854", "baseUrl":"sftp://stanley@mysftpserver.com/", 
           "relPath": "/data/shared/products/foo", "parts":"1,256,1,0,0", 
           "sum": "d,25d231ec0ae3c569ba27ab7a74dd72ce", "source":"guest" } 
 
 Posts are published on AMQP topic exchanges, meaning every message has a topic header.
-The body consists of a time *20150813161959.854*, followed by the two parts of the 
+The body consists of a time *20150813T161959.854*, followed by the two parts of the 
 retrieval URL. The headers follow with first the *parts*, a size in bytes *256*,
 the number of block of that size *1*, the remaining bytes *0*, the
 current block *0*, a flag *d* meaning the md5 checksum is
@@ -528,11 +559,14 @@ MetPX-Sarracenia
 ----------------
 
 The MetPX project ( https://github.com/MetPX ) has a sub-project called Sarracenia which is intended
-as a testbed and reference implementation for this protocol.  This implementation is licensed
-using the General Public License (Gnu GPL v2), and is thus free to use, and can be used to
-confirm interoperability with any other implementations that may arise.   While Sarracenia
+as a testbed and reference implementation for this protocol using AMQP. This implementation is 
+licensed using the General Public License (Gnu GPL v2), and is thus free to use, and can be used to
+confirm interoperability with any other implementations that may arise. While Sarracenia
 itself is expected to be very usable in a variety of contexts, there is no intent for it
 to implement any features not described by this documentation.  
+
+The MetPX project also has the wmo_mesh sub-project, which implements a minimal subset of the
+same message format, but works with MQTT in place of AMQP.  
 
 This Manual page is intended to completely specify the format of messages and their 
 intended meaning so that other producers and consumers of messages can be implemented.
@@ -553,7 +587,7 @@ pairs.
 
    * v03 headers have practically unlimited length. In v02, individual 
      name-value pairs are limited to 255 characters. This has proven 
-     limiting in practice.  In v03, the limit is not defined by the JSON 
+     limiting in practice. In v03, the limit is not defined by the JSON 
      standard, but by specific parser implementations. The limits in common
      parsers are high enough not to cause practical concerns.
 
@@ -561,7 +595,7 @@ pairs.
      other messaging protocols, such as MQTT 3.1.1, in future. 
 
    * In v03, pure JSON payload simplifies implementations, reduces documentation
-     required, and amount of parsing to implement.  Using a commonly implemented
+     required, and amount of parsing to implement. Using a commonly implemented
      format permits use of existing optimized parsers.
 
    * In v03, JSON encoding of the entire payload reduces the features required for
@@ -569,9 +603,9 @@ pairs.
      consider using Sarracenia with MQTT v3.11 brokers which are more
      standardized and therefore more easily interoperable than AMQP.
 
-   * Change in overhead... approximately +45 bytes per message (varies.)
+   * Change in overhead... approximately +75 bytes per message (varies.)
      
-     * JSON tuple marking square brackets '[' ']', commas and quotes for 
+     * JSON object marking curly braces '{' '}', commas and quotes for 
        three fixed fields. net: +10
 
      * AMQP section *Application Properties* no longer included in payload, saving
@@ -582,6 +616,9 @@ pairs.
        packet, versus 4 quote characters, a colon, a space, and likely a comma: 7 total.
        so net change is +6 characters. per header. Most v02 messages have 6 headers,
        net: +36 bytes 
+
+     * the fixed fields are now named: pubTime, baseUrl, relPath, adding 10 characters
+       each. +30 bytes.
 
    * In v03, the format of save files is the same as message payload.
      In v02 it was a json tuple that included a topic field, the body, and the headers.
@@ -609,9 +646,9 @@ AMQP Feature Selection
 
 AMQP is a universal message passing protocol with many different 
 options to support many different messaging patterns.  MetPX-sarracenia specifies and uses a 
-small subset of AMQP patterns.  An important element of sarracenia development was to 
-select from the many possibilities a small subset of methods are general and easily understood, 
-in order to maximize potential for interoperability.
+small subset of AMQP patterns. An important element of Sarracenia development was to 
+select from the many possibilities a small subset of methods are general and 
+easily understood, in order to maximize potential for interoperability.
 
 Analogy FTP
 ~~~~~~~~~~~
@@ -627,7 +664,7 @@ need to be made above and beyond the protocol.
 
 Agreed conventions above and beyond simply FTP (IETF RFC 959) are needed.  Similar to the use 
 of FTP alone as a transfer protocol is insufficient to specify a complete data transfer 
-procedure, use of AMQP, without more information, is incomplete.   The intent of the conventions
+procedure, use of AMQP, without more information, is incomplete. The intent of the conventions
 layered on top of AMQP is to be a minimum amount to achieve meaningful data exchange.
 
 AMQP: not 1.0, but 0.8 or 0.9
@@ -652,6 +689,10 @@ in AMQP 0.9, one subscriber can declare a queue, and then multiple processes (gi
 permissions and the queue name) can consume from the same queue. That requires being able
 to name the queue. In another protocol, such as MQTT, one cannot name the queue, and so
 this processing pattern is not supported.
+
+The mapping convention describte in a Topic_ section, allows MQTT to establish separate 
+hierarchies which provides a fixed distribution among the workers, but not exactly the
+self-balancing shared queue that AMQP provides.
 
 
 .. NOTE::
@@ -681,8 +722,8 @@ created in 2015, is the third iteration of the protocol and existing servers rou
 versions simultaneously in this way.  The second sub-topic defines the type of message.
 At the time of writing:  v02.post is the topic prefix for current post messages.
 
-No data 
-~~~~~~~
+Little Data 
+~~~~~~~~~~~
 
 The AMQP messages contain announcements, no actual file data. AMQP is optimized for and assumes 
 small messages. Keeping the messages small allows for maximum message throughtput and permits
@@ -696,6 +737,32 @@ Blocks of large files are announced independently and blocks can follow differen
 between initial pump and final delivery. The protocol is unidirectional, in that there 
 is no dialogue between publisher and subscriber. Each post is a stand-alone item that 
 is one message in a stream, which on receipt may be spread over a number of nodes. 
+
+However, it is likely that, for small files over high latency links, it is 
+more efficient to include the body of the files in the messages themselve, 
+rather than forcing a separate retrieval phase.  The relative advantage depends on:
+
+* relative coarseness of server side filtering means some filtering is done on 
+  the client side.  Any data embedded for messages discarded on the client-side
+  are waste.
+
+* Sarracenia establishes long-lived connections for some protocols, such as SFTP,
+  so the relative overhead for a retrieval may not be long.
+
+* One will achieve a higher messaging rate without data being embedded, and if the
+  messages are distributed to a number of workers, it is possible that the resulting
+  message rate is higher without embedded data (because of faster distribution for
+  parallel download) than the savings from embedding.
+
+* the lower the latency of the connection, the lesser the performance advantage
+  of embedding, and the more it becomes a limiting factor on high performance 
+  transfers.
+
+Further work is needed to better clarify when it makes sense to embed content
+in messages. For now, the *content* header is included to allow such experiments
+to occur.
+
+
 
 Other Parameters
 ~~~~~~~~~~~~~~~~
