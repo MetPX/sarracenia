@@ -225,9 +225,9 @@ Second, with AMQP, one can establish separate topic hierarchies using *topic-bas
 MQTT has no similar concept, there is simply one hierarchy, so when mapping, place the exchange
 name at the root of the topic hierarchy to achieve the same effect::
 
-  AMQP:   a topic exchange named &lt;echange name&gt; is defined, where topics start with v03.post.<directory>...
+  AMQP:   a topic exchange named <echange name> is defined, where topics start with v03.post.<directory>...
 
-  MQTT:   &lt;exchange name&gt;/v03/post/<directory>...
+  MQTT:   <exchange name>/v03/post/<directory>...
 
 
 
@@ -544,7 +544,7 @@ on mysftpserver.com using the sftp protocol to  broker.com assuming he has prope
 The output of the command is as follows ::
 
   AMQP Topic: v03.post.20150813.data.shared.products
-  MQTT Topic: &lt;echange&gt;/v03/post/20150813/data/shared/products
+  MQTT Topic: <exchange>/v03/post/20150813/data/shared/products
   Body: { "pubTime":"20150813T161959.854", "baseUrl":"sftp://stanley@mysftpserver.com/", 
           "relPath": "/data/shared/products/foo", "parts":"1,256,1,0,0", 
           "sum": "d,25d231ec0ae3c569ba27ab7a74dd72ce", "source":"guest" } 
