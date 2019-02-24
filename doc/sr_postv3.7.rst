@@ -414,6 +414,9 @@ header which is a JSON *object* with four fields:
  * *<report_user>*  broker username from which the retrieval was initiated.
 
 
+Report messages should never include the *content* header (no file embedding in reports.)
+
+
 Report_Code
 ~~~~~~~~~~~
 
@@ -486,13 +489,28 @@ for the file mirroring use case, additional headers will be present:
 
   man 2 stat - the linux/unix standard file metadata:
   access time, modification time, and permission (mode bits)
-  the times are in the same decimal date format as the date stamp field.
+  the times are in the same date format as the pubTime field.
   the permission string is four characters intended to be interpreted as
   traditional octal linux/unix permissions.
 
 
-All other headers are reserved for future use.  
-Headers which are unknown to a given client must be forwarded without modification.
+**Headers which are unknown to a given broker MUST be forwarded without modification.**
+
+Sarracenia provides a mechanism for users to include arbitrary other headers in
+messages, to amplify metadata for more detailed decision making about downloading data.
+For example::
+
+  "PRINTER" : "name_of_corporate_printer",
+
+  "GeograpicBoundingBox" : 
+   { 
+           "top_left" : { "lat": 40.73, "lon": -74.1 } , 
+           "bottom_right": { "lat": -40.01, "lon": -71.12 } 
+   }
+
+would permit the client to apply more elaborate and precise client side filtering,
+and/or processing. Intervening implementation may know nothing about the header, 
+but they should not be stripped, as some consumers may understand and process them.
 
 
 EXAMPLE
@@ -606,6 +624,13 @@ pairs.
      consider using Sarracenia with MQTT v3.11 brokers which are more
      standardized and therefore more easily interoperable than AMQP.
 
+   * v02 fixed fields are now  "pubTime", "baseURL", and "relPath" keys
+     in the JSON object that is the messge body.
+
+   * v02 *sum* header with hex encoded value, is replaced by v03 *integrity* header with base64 encoding.
+
+   * v03 *content* header allows file content embedding.
+
    * Change in overhead... approximately +75 bytes per message (varies.)
      
      * JSON object marking curly braces '{' '}', commas and quotes for 
@@ -629,6 +654,9 @@ pairs.
    * In v03, the report format is a post message with a header, rather than
      being parsed differently. So this single spec applies to both.
        
+
+   
+
 
 Optimization Possibilities
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
