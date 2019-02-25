@@ -1481,29 +1481,35 @@ JOURNAUX
 
 Les composants écrivent dans des fichiers journaux qui se trouvent par 
 défaut dans ~/.cache/sarra/log/<component>_<config>_<config>_<instance>.log.
-à la fin de la journée (minuit), ces journaux sont tournés automatiquement
+À la fin de la journée (à minuit), ces fichiers journaux sont tournés automatiquement
 par les composants, et l'ancien journal obtient un suffixe de date.
-Le répertoire dans lequel les logs sont stockés peut être écrasé par 
+Le répertoire dans lequel les fichiers journaux sont stockés peut être changé par 
 l'option **log**, le nombre maximum de fichiers journaux retournés à conserver est défini par le
 paramètre *logrotate* et cela continue pour les prochaines rotations. Lorsque le nombre maximum de rotations
 a été atteint, le plus vieux fichier journal est supprimé.  Pour l'option d'intervalle, une durée est exprimée
 par un nombre et peu prendre un suffixe d'unité de temps, tel que 'd\|D' pour les jours, 'h\|H' pour les heures ou 'm\|M'
 pour les minutes. Sans unité, la rotation sera effectuée à minuit.
 
-- L'option de débogage **debug** est identique à l'utilisation **loglevel debug**.
+- debug
+   L'option de déverminage **debug** est identique à l'utilisation de **loglevel debug**.
 
-- **Log** le répertoire ou les fichiers journaux seront placés.  Valeur par défaut : ~/.cache/sarra/log (sous Linux)
+- log <dir> ( défaut: ~/.cache/sarra/log ) (sur Linux)
+   Le répertoire ou les fichiers journaux seront placés.
 
-- **logrotate <max_retentions>** nombre maximal de journaux conservés ( défaut: 5 ).
+- logrotate <max_logs> ( défaut: 5 )
+   Nombre maximal de fichiers journaux archivés.
 
-- **logrotate_interval** <durée>[<unité_de_temps>] la durée de l'intervalle spécifié et une unité de temps optionnelle ( default: 1 )
+- logrotate_interval <durée>[<unité_de_temps>] ( défaut: 1 )
+   La durée de l'intervalle spécifié et une unité de temps optionnelle (p.ex. 5m, 2h, 3d).
 
-- **loglevel** le niveau de journalisation exprimé par la journalisation de python.
-               les valeurs possibles sont : critical, error, info, warning, debug.
+- loglevel ( défaut: info ) 
+   Le niveau de journalisation exprimé par la journalisation de python. 
+   Les valeurs possibles sont : critical, error, info, warning, debug.
 
-- **Chmod_log** les bits de permission à mettre sur les fichiers journaux (par défaut 0600).
+- chmod_log (par défaut 0600).
+   Les bits de permission qui seront établi pour les fichiers journaux.
 
-le placement est conforme à : XDG Open Directory Specification <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.rst>`_ ) définissant la variable d'environnement XDG_CACHE_HOME.
+le placement est conforme à : XDG Open Directory Specification <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ ) définissant la variable d'environnement XDG_CACHE_HOME.
 
 
 INSTANCES
