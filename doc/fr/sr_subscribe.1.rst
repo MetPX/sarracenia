@@ -1509,7 +1509,7 @@ pour les minutes. Sans unité, la rotation sera effectuée à minuit.
 - chmod_log (par défaut 0600).
    Les bits de permission qui seront établi pour les fichiers journaux.
 
-le placement est conforme à : XDG Open Directory Specification <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ ) définissant la variable d'environnement XDG_CACHE_HOME.
+Le placement est conforme à : `XDG Open Directory Specification <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ définissant la variable d'environnement XDG_CACHE_HOME.
 
 
 INSTANCES
