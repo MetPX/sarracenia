@@ -1506,7 +1506,7 @@ pour les minutes. Sans unité, la rotation sera effectuée à minuit.
    Le niveau de journalisation exprimé par la journalisation de python. 
    Les valeurs possibles sont : critical, error, info, warning, debug.
 
-- chmod_log (par défaut 0600).
+- chmod_log ( défaut: 0600 )
    Les bits de permission qui seront établi pour les fichiers journaux.
 
 Le placement est conforme à : `XDG Open Directory Specification <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ définissant la variable d'environnement XDG_CACHE_HOME.
