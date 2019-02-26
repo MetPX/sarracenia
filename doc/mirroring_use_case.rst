@@ -6,7 +6,7 @@
  Continuously Mirror 27 Million File Tree Very Quickly
 -------------------------------------------------------
 
-.. **CAVEAT**::
+.. Note::
 
    This is a bit speculative at the time of this writing (2018/01). We expect to deploy over the winter
    and be completed in 2018/03. Given the volumes being copied the exact performance isn't easily measured.
