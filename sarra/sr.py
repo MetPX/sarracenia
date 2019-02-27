@@ -157,8 +157,8 @@ def invoke(dirconf,pgm,confname,action):
              return
 
     except :
-             (stype, svalue, tb) = sys.exc_info()
-             cfg.logger.info("sr/invoke Type: %s, Value: %s" % (stype, svalue) )
+             cfg.logger.error("Invoke failed")
+             cfg.logger.debug('General exception: ', exc_info=True)
 
 
 # check number of config files

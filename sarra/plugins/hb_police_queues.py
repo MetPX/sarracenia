@@ -38,8 +38,8 @@ class Hb_Police_Queues(object):
                 parent.amqp_close()
 
         except:
-                (stype, svalue, tb) = sys.exc_info()
-                parent.logger.error("hb_police_queues Type: %s, Value: %s,  ..." % (stype, svalue))
+                parent.logger.error("Hb_Police_Queues/perform: couldn't perform")
+                parent.logger.debug('General exception: ', exc_info=True)
 
         return True
 

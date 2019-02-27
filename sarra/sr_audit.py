@@ -647,19 +647,8 @@ class sr_audit(sr_instances):
                       time.sleep(sleep)
 
         except:
-                import io, traceback
-                (stype, svalue, tb) = sys.exc_info()
-
-                tb_output = io.StringIO()
-                traceback.print_tb(tb, None, tb_output)
-                self.logger.error("\n\n****************************************\n" + \
-                                      "******* ERROR PRINTING TRACEBACK *******\n" + \
-                                      "****************************************\n" + \
-                                    "\n" + tb_output.getvalue()             + "\n" + \
-                                    "\n****************************************\n")
-                tb_output.close()
-
-                self.logger.error("sr_audit Type: %s, Value: %s,  ..." % (stype, svalue))
+              self.logger.error("sr_audit/run failed")
+              self.logger.debug('General exception: ', exc_info=True)
 
 
     def reload(self):

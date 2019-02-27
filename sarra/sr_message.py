@@ -1002,8 +1002,8 @@ class sr_message():
                  self.sumstr  = '%s,%s' % (self.sumflg,self.checksum)
 
         except :
-                 (stype, svalue, tb) = sys.exc_info()
-                 self.logger.error("sr_message/verify_part_suffix Type: %s, Value: %s" % (stype, svalue))
+                 self.logger.error("sr_message/verify_part_suffix: incorrect extension")
+                 self.logger.debug('General exception: ', exc_info=True)
                  return False,'incorrect extension',None,None,None
 
         return True,'ok',self.suffix,self.partstr,self.sumstr

@@ -414,9 +414,8 @@ class sr_retry:
              except: pass
 
         except:
-                self.logger.error("on_heartbeat something went wrong")
-                (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+                self.logger.error("sr_retry/on_heartbeat: something went wrong")
+                self.logger.debug('General exception: ', exc_info=True)
 
         # no more retry
 

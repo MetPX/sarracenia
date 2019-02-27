@@ -212,9 +212,8 @@ def file_insert_part(parent,msg,part_file):
 
     # oops something went wrong
     except :
-             (stype, svalue, tb) = sys.exc_info()
-             msg.logger.info("sr_file/file_insert_part Type: %s, Value: %s,  ..." % (stype, svalue))
-             msg.logger.info("did not insert %s " % part_file)
+             msg.logger.info("sr_file/file_insert_part: did not insert %s " % part_file)
+             msg.logger.debug('General exception: ', exc_info=True)
              return False
 
     # success: log insertion
@@ -308,16 +307,16 @@ def file_process( parent ) :
                 if msg.partflg.startswith('i'):
                    msg.logger.info("delete unimplemented for in-place part files %s" %(msg.relpath))
                 else:
-                   try: 
+                   try:
                        os.unlink(msg.relpath)
-                   except: 
+                   except:
                        msg.logger.error("delete of %s after copy failed"%(msg.relpath))
 
              if ok : return ok
 
-    except : 
-             (stype, svalue, tb) = sys.exc_info()
-             msg.logger.debug("sr_file/file_process Type: %s, Value: %s,  ..." % (stype, svalue))
+    except :
+             msg.logger.error('sr_file/file_process error')
+             msg.logger.debug('General exception: ', exc_info=True)
 
     msg.report_publish(499,'Not Copied')
     msg.logger.error("could not copy %s in %s"%(msg.relpath,msg.new_file))

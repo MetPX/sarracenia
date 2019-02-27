@@ -366,11 +366,10 @@ class sr_subscribe(sr_instances):
                      return ok
 
         except :
-                (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("Download  Type: %s, Value: %s,  ..." % (stype, svalue))
-                if self.reportback: 
+                self.logger.error("%s/__do_download__: Could not download" % self.program_name)
+                self.logger.debug('General exception: ', exc_info=True)
+                if self.reportback:
                    self.msg.report_publish(503,"Unable to process")
-                self.logger.error("%s: Could not download" % self.program_name)
 
         if self.reportback: 
             self.msg.report_publish(503,"Service unavailable %s" % scheme)
@@ -1233,9 +1232,10 @@ class sr_subscribe(sr_instances):
                self.logger.info("removed %s" % path)
                if self.reportback: self.msg.report_publish(201, 'removed')
            except:
-               (stype, svalue, tb) = sys.exc_info()
-               self.logger.error("Could not remove %s. Type: %s, Value: %s,  ..." % (path, stype, svalue))
-               if self.reportback: self.msg.report_publish(500, 'remove failed')
+               self.logger.error("sr_subscribe/doit_download: could not remove %s." % path)
+               self.logger.debug('General exception: ', exc_info=True)
+               if self.reportback:
+                   self.msg.report_publish(500, 'remove failed')
 
            self.msg.set_topic(self.post_topic_prefix,self.msg.new_relpath)
            self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.pubtime)
@@ -1503,8 +1503,8 @@ class sr_subscribe(sr_instances):
                         os.unlink(self.msg.new_file)
                         self.logger.debug("Discarded  %s" % self.msg.new_file)
               except :
-                        (stype, svalue, tb) = sys.exc_info()
-                        self.logger.error("Could not discard  Type: %s, Value: %s,  ..." % (stype, svalue))
+                        self.logger.error("Could not discard")
+                        self.logger.debug('General exception: ', exc_info=True)
               if self.msg.isRetry: self.consumer.msg_worked()
               return False
 
@@ -1726,13 +1726,12 @@ class sr_subscribe(sr_instances):
                       going_badly=0.01
 
               except:
-                      if self.retry_mode : self.consumer.msg_to_retry()
-                      (stype, svalue, tb) = sys.exc_info()
-                      if self.debug : self.LOG_TRACE(tb)
-                      self.logger.error( "%s/run going badly, so sleeping for %g Type: %s, Value: %s,  ..." % \
-                          (self.program_name,going_badly, stype, svalue) )
+                      self.logger.error( "%s/run going badly, so sleeping for %g" % (self.program_name, going_badly))
+                      self.logger.debug('General exception: ', exc_info=True)
+                      if self.retry_mode:
+                          self.consumer.msg_to_retry()
                       time.sleep(going_badly)
-                      if (going_badly < 5):  going_badly*=2 
+                      if (going_badly < 5):  going_badly*=2
 
     def save_message(self):
 

@@ -113,9 +113,8 @@ class sr_http(sr_proto):
                 return True
 
         except:
-                (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("Unable to get credentials for %s" % self.destination)
-                self.logger.error("sr_http/credentials (Type: %s, Value: %s)" % (stype ,svalue))
+                self.logger.error("sr_http/credentials: unable to get credentials for %s" % self.destination)
+                self.logger.debug('General exception: ', exc_info=True)
 
         return False
 
@@ -190,9 +189,8 @@ class sr_http(sr_proto):
                         return self.entries
 
         except:
-                (stype, svalue, tb) = sys.exc_info()
-                self.logger.warning("Unable to open %s" % self.urlstr)
-                self.logger.warning("sr_http/ls (Type: %s, Value: %s)" % (stype ,svalue))
+                self.logger.warning("sr_http/ls: unable to open %s" % self.urlstr)
+                self.logger.debug('General exception: ', exc_info=True)
 
         return self.entries
 
@@ -268,9 +266,8 @@ class sr_http(sr_proto):
                alarm_cancel()
                raise
         except:
-               (stype, svalue, tb) = sys.exc_info()
-               self.logger.warning("sr_http/__open__ (Type: %s, Value: %s)" % (stype ,svalue))
-               self.logger.warning("Unable to open %s" % self.urlstr)
+               self.logger.warning("sr_http/__open__: unable to open %s" % self.urlstr)
+               self.logger.debug('General exception: ', exc_info=True)
                alarm_cancel()
                raise
 

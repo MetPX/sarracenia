@@ -139,9 +139,8 @@ class HostConnect:
                    func()
                return True
            except:
-               (stype, svalue, tb) = sys.exc_info()
                self.logger.error("AMQP Sender cannot connect to: %s" % self.host)
-               self.logger.error("Type=%s, Value=%s" % (stype, svalue))
+               self.logger.debug('General exception: ', exc_info=True)
 
                if not self.loop:
                    self.logger.error("Could not connect to broker")
@@ -155,9 +154,8 @@ class HostConnect:
                     self.channel.exchange_declare(exchange, 'topic', auto_delete=edelete,durable=edurable)
                     self.logger.info("declaring exchange %s (%s@%s)" % (exchange,self.user,self.host))
        except :
-                    (stype, svalue, tb) = sys.exc_info()
                     self.logger.error("could not declare exchange %s (%s@%s)" % (exchange,self.user,self.host))
-                    self.logger.error("Type=%s, Value=%s" % (stype, svalue))
+                    self.logger.debug('General exception: ', exc_info=True)
 
    def exchange_delete(self,exchange):
 
@@ -176,10 +174,8 @@ class HostConnect:
                     self.channel.exchange_delete(exchange)
                     self.logger.info("deleting exchange %s (%s@%s)" % (exchange,self.user,self.host))
        except :
-                    (stype, svalue, tb) = sys.exc_info()
                     self.logger.error("could not delete exchange %s (%s@%s)" % (exchange,self.user,self.host))
-                    self.logger.error("Type=%s, Value=%s" % (stype, svalue))
-
+                    self.logger.debug('General exception: ', exc_info=True)
 
    def new_channel(self):
        channel = self.connection.channel()
@@ -195,7 +191,7 @@ class HostConnect:
                     error_str = '%s' % svalue
                     if 'NOT_FOUND' in error_str : return
                     self.logger.error("could not delete queue %s (%s@%s)" % (queue_name,self.user,self.host))
-                    self.logger.error("Type=%s, Value=%s" % (stype, svalue))
+                    self.logger.debug('General exception: ', exc_info=True)
 
    def reconnect(self):
        self.close()
@@ -294,9 +290,8 @@ class Consumer:
                          self.logger.debug("consume AMQP or AMQPLIB is used")
                          msg = self.channel.basic_get(queuename)
               except :
-                     (stype, value, tb) = sys.exc_info()
-                     self.logger.error("sr_amqp/consume Type: %s, Value: %s" % (stype, value))
-                     self.logger.error("Could not consume in queue %s" % queuename )
+                     self.logger.error("sr_amqp/consume: could not consume in queue %s" % queuename )
+                     self.logger.debug('General exception: ', exc_info=True)
                      if self.hc.loop :
                         self.hc.reconnect()
                         self.logger.debug("consume resume ok")
@@ -377,17 +372,16 @@ class Publisher:
             return True
         except:
             if self.hc.loop:
-                (stype, value, tb) = sys.exc_info()
-                self.logger.error("sr_amqp/publish: %s, Value: %s" % (stype, value))
-                self.logger.error("Sleeping 5 seconds ... and reconnecting")
+                self.logger.error("sr_amqp/publish: Sleeping 5 seconds ... and reconnecting")
+                self.logger.debug('General exception: ', exc_info=True)
                 time.sleep(5)
                 self.hc.reconnect()
                 if self.hc.asleep: return False
                 return self.publish(exchange_name, exchange_key, message, mheaders,mexp)
             else:
-                (etype, evalue, tb) = sys.exc_info()
-                self.logger.error("sr_amqp/publish 2 Type: %s, Value: %s" % (etype, evalue))
-                self.logger.error("could not publish %s %s %s %s" % (exchange_name, exchange_key, message,mheaders))
+                self.logger.error("sr_amqp/publish: could not publish %s %s %s %s" % (exchange_name, exchange_key,
+                                                                                      message, mheaders))
+                self.logger.debug('General exception: ', exc_info=True)
                 return False
 
    def restore_clear(self):
@@ -410,9 +404,9 @@ class Publisher:
               self.channel.exchange_declare( self.restore_exchange, 'topic', auto_delete=True, durable=False)
               self.channel.queue_bind( self.restore_queue, self.restore_exchange, '#' )
        except:
-              (etype, evalue, tb) = sys.exc_info()
-              self.logger.error("sr_amqp/restore_set Type: %s, Value: %s" %  (etype, evalue))
-              self.logger.error("restore_set exchange %s queuename %s" % (self.restore_exchange,self.restore_queue))
+              self.logger.error("sr_amqp/restore_set: restore_set exchange %s queuename %s" % (self.restore_exchange,
+                                                                                               self.restore_queue))
+              self.logger.debug('General exception: ', exc_info=True)
               os._exit(1)
 
 # ==========
@@ -525,10 +519,8 @@ class Queue:
                                                                                   nowait=False, arguments=args)
            self.logger.debug("queue declare done")
            return msg_count
-
        except:
-           self.logger.error("queue declare: %s failed...(%s@%s) permission issue ?" % (self.name, self.hc.user,
-                                                                                        self.hc.host))
-           (stype, svalue, tb) = sys.exc_info()
-           self.logger.error("sr_amqp/build Type: %s, Value: %s" % (stype, svalue))
+           self.logger.error("sr_amqp/build, queue declare: %s failed...(%s@%s) permission issue ?"
+                             % (self.name, self.hc.user, self.hc.host))
+           self.logger.debug('General exception: ', exc_info=True)
            return -1
