@@ -117,7 +117,9 @@ class HostConnect:
                    self.logger.info("Using amqp module (AMQP 0-9-1)")
                    self.connection = amqp.Connection(host, userid=self.user, password=self.password,
                                                      virtual_host=self.vhost, ssl=self.ssl)
-                   self.connection.connect()
+                   if hasattr(self.connection, 'connect'):
+                       # check for amqp 1.3.3 and 1.4.9 because connect does exist in those old versions
+                       self.connection.connect()
                elif self.use_amqplib:
                    self.logger.info("Using amqplib module (mostly AMQP 0-8)")
                    self.connection = amqplib_0_8.Connection(host, userid=self.user, password=self.password,
