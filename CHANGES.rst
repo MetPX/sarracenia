@@ -6,6 +6,8 @@ lists all changes between versions.
 
 **git repo**
 
+* bugfix: use of python-amqp broken on ubuntu <= 16.04 because *connect* call missing.
+
 **2.19.02b2**
 
 *
