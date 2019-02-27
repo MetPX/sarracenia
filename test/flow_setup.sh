@@ -52,8 +52,11 @@ EOF
 eval `application_dirs`
 
 if [ -d $CACHEDIR/log ]; then
-   echo "Cleaning logs, just in case"
-   rm $(ls "$CACHEDIR"/log/)
+    logs2remove=$(find "$CACHEDIR"/log/ -iname "*.txt" -o -iname "*.log")
+    if [ ! -z "$logs2remove" ]; then
+       echo "Cleaning logs, just in case"
+       rm $(find "$CACHEDIR"/log/ -iname "*.txt" -o -iname "*.log")
+    fi
 fi
 
 if [ ! -f "$CONFDIR"/admin.conf -o ! -f "$CONFDIR"/credentials.conf ]; then
