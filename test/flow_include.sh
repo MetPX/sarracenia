@@ -212,13 +212,13 @@ function countall {
   countthem "`grep post_log "$LOGDIR"/sr_sender_tsource2send_f50_*.log* | wc -l`"
   totsent="${tot}"
 
-  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_u_sftp_f60_*.log* | wc -l`"
+  countthem "`grep 'INFO.*downloaded to:' "$LOGDIR"/sr_subscribe_u_sftp_f60_*.log* | wc -l`"
   totsubu="${tot}"
-  countthem "`grep 'hardlink' "$LOGDIR"/sr_subscribe_u_sftp_f60_*.log* | wc -l`"
+  countthem "`grep 'INFO.*hardlink' "$LOGDIR"/sr_subscribe_u_sftp_f60_*.log* | wc -l`"
   totsubu=$(( totsubu + tot ))
-  countthem "`grep 'symlinked to' "$LOGDIR"/sr_subscribe_u_sftp_f60_*.log* | wc -l`"
+  countthem "`grep 'INFO.*symlinked to' "$LOGDIR"/sr_subscribe_u_sftp_f60_*.log* | wc -l`"
   totsubu=$(( totsubu + tot ))
-  countthem "`grep 'removed' "$LOGDIR"/sr_subscribe_u_sftp_f60_*.log* | wc -l`"
+  countthem "`grep 'INFO.*removed' "$LOGDIR"/sr_subscribe_u_sftp_f60_*.log* | wc -l`"
   totsubu=$(( totsubu + tot ))
 
   countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_q_f71_*.log* | wc -l`"
@@ -238,13 +238,13 @@ function countall {
   countthem "`grep 'removed' "$LOGDIR"/sr_subscribe_ftp_f70_*.log* | wc -l`"
   totsubftp=$(( totsubftp + tot ))
 
-  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_cp_f61_*.log* | wc -l`"
+  countthem "`grep 'INFO.*downloaded to:' "$LOGDIR"/sr_subscribe_cp_f61_*.log* | wc -l`"
   totsubcp="${tot}"
-  countthem "`grep 'hardlink' "$LOGDIR"/sr_subscribe_cp_f61_*.log* | wc -l`"
+  countthem "`grep 'INFO.*hardlink' "$LOGDIR"/sr_subscribe_cp_f61_*.log* | wc -l`"
   totsubcp=$(( totsubcp + tot ))
-  countthem "`grep 'symlinked to' "$LOGDIR"/sr_subscribe_cp_f61_*.log* | wc -l`"
+  countthem "`grep 'INFO.*symlinked to' "$LOGDIR"/sr_subscribe_cp_f61_*.log* | wc -l`"
   totsubcp=$(( totsubcp + tot ))
-  countthem "`grep 'removed' "$LOGDIR"/sr_subscribe_cp_f61_*.log* | wc -l`"
+  countthem "`grep 'INFO.*removed' "$LOGDIR"/sr_subscribe_cp_f61_*.log* | wc -l`"
   totsubcp=$(( totsubcp + tot ))
 
   countthem "`grep 'post_log notice' $LOGDIR/srposter.log | grep -v shim | wc -l`"
