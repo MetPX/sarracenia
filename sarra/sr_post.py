@@ -548,12 +548,7 @@ class sr_post(sr_instances):
                          self.logger.debug("already posted %s"% path)
                          return False
 
-        # complete message
-
-        self.logger.error( 'inflight=%s ' % ( self.inflight ) )
-        self.logger.error( 'inline=%s, inline_encoding=%s, inline_max=%d' % \
-            ( self.inline, self.inline_encoding, self.inline_max ) )
-        
+        # complete message        
         if self.post_topic_prefix.startswith('v03') and self.inline and fsiz < self.inline_max :        
  
            if self.inline_encoding == 'guess':

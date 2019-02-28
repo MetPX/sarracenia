@@ -36,6 +36,9 @@ Installation Instructions
 git
 ---
 
+*NOTICE*: ubuntu 14.04 & 16.04 regression for python3-amqp fixed.
+
+
 2.19.02.b2
 ----------
 
@@ -44,6 +47,10 @@ git
           duration, to control how often to rotate logs. To maintain compatibility, if a 'd' is 
           after the argument to *logrotate*, it will be ignored, and will be interpreted as a
           simple integer.
+
+*NOTICE*: On ubuntu 14.04 and 16.04, the switch to python3-amqp causes a regression because
+          there is a missing API call (*connect*) on the old version of the library included
+          with those distributions.
 
 2.19.02.b1
 ----------
@@ -56,6 +63,10 @@ git
 *CHANGE*: switch AMQP library: python3-amqp replaced python3-amqplib (abandonware library) 
           package dependency means it won´t install automatically over previous version 
           need to apt install, or install the new dependency before you upgrade.
+
+*NOTICE*: On ubuntu 14.04 and 16.04, the switch to python3-amqp causes a regression because
+          there is a missing API call (*connect*) on the old version of the library included
+          with those distributions.
 
 *NOTICE*: Windows binary installer option available now, much simpler than having to install a
           whole python environment for it.  Can still use any existing python using pip.
