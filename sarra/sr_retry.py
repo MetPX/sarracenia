@@ -30,6 +30,7 @@
 #
 
 import os,json,sys,time
+from _codecs import decode, encode
 
 try :
          from sr_config          import *
@@ -104,6 +105,23 @@ class sr_retry:
             self.logger.error("corrupted line in retry file: %s " % line)
             return None
 
+        self.logger.debug('Decoding msg from json: topic={}, headers={}, notice={}'.format(topic, headers, notice))
+        if topic.startswith('v03'):
+            # v3 has no sum, must add it here
+            sum_algo_map = {"d": "md5", "s": "sha512", "n": "md5name", "0": "random", "L": "link", "R": "remove",
+                            'z': 'cod'}
+            sum_algo_map = {v: k for k, v in sum_algo_map.items()}
+            sumstr = sum_algo_map[headers['integrity']['method']]
+            if sumstr == '0':
+                sumstr = '{},{}'.format(sumstr, headers['integrity']['value'])
+            elif sumstr == 'z':
+                sumstr = '{},{}'.format(sumstr, sum_algo_map[headers['integrity']['value']])
+            else:
+                decoded_value = encode(decode(headers['integrity']['value'].encode('utf-8'), 'base64'), 'hex').decode('utf-8').strip()
+                sumstr = '{},{}'.format(sumstr, decoded_value)
+            headers['sum'] = sumstr
+        self.logger.debug('headers={}'.format(headers))
+
         self.message.delivery_info['exchange']         = self.parent.exchange
         self.message.delivery_info['routing_key']      = topic
         self.message.properties['application_headers'] = headers
@@ -113,7 +131,7 @@ class sr_retry:
         return self.message
 
     def msgToJSON(self, message, done=False ):
-
+        self.logger.debug('Encoding msg to json: message={}'.format(vars(message)))
         topic   = message.delivery_info['routing_key']
 
         if message.body[0] == '[' : # early v03 message to persist, 
