@@ -47,6 +47,10 @@ class sr_audit(sr_instances):
 
     def amqp_add_exchange(self,e):
         self.logger.info("adding exchange '%s'" % e)
+
+        if not hasattr( self, 'hc'):
+             self.amqp_connect()
+
         self.hc.exchange_declare(e)
 
     def amqp_close(self):
@@ -63,6 +67,10 @@ class sr_audit(sr_instances):
                 self.hc.set_url(self.admin)
                 self.hc.connect()
         except: pass
+        #
+        # FIXME: I worry that ignoring the failure to connect is a problem.
+        #        PS, but this is how it was, and I can't demonstrate a problem
+        #        so left as-is for now.        
 
     def amqp_del_exchange(self,e):
         self.logger.info("deleting exchange %s" % e)
