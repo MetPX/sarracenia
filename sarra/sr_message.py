@@ -153,6 +153,7 @@ class sr_message():
                 self.logger.debug("sr_message something went wrong when computing local checksum... considered different")
                 return False
 
+        self.logger.debug( "checksum in message: %s, local: %s" % ( self.local_checksum, self.checksum ) ) 
         return self.local_checksum == self.checksum
 
     def compute_local_checksum(self):
@@ -163,7 +164,7 @@ class sr_message():
                 attr = xattr.xattr(os.path.join(self.new_dir, self.new_file))
                 if 'user.sr_sum' in attr:
                     self.logger.debug("checksum extracted using xattr")
-                    self.local_checksum = attr['user.sr_sum'].decode("utf-8")
+                    self.local_checksum = attr['user.sr_sum'].decode("utf-8")[2:]
                     return
             except:
                 pass
