@@ -33,8 +33,12 @@ loop true
          return fp, msg
         sr -> sr: in_cache(msg)
          activate sr
-         return is_in_cache
-        sr -> sr: is_valid(msg)
+         sr -> sr: msgToJson(line)
+          activate sr
+          return heart_fp
+       end loop
+        alt N == 0
+         sr -> sr: os.unlink(heart_path)
          activate sr
          return is_valid
        end loop
