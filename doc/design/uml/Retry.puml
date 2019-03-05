@@ -24,20 +24,23 @@ loop true
       activate hbr
       hbr -> sr: on_heartbeat(parent)
        activate sr
-       loop msg_list
-        sr -> sr: msg_get_from_file(new_work)
+       loop msg_list X 3 (state, retry, new)
+        sr -> sr: msg_get_from_file(work)
          activate sr
          sr -> sr: msgFromJson(line)
           activate sr
           return msg
          return fp, msg
-        sr -> sr: in_cache(msg)
+        sr -> sr: msg_append_to_file(work)
          activate sr
-         return is_in_cache
-        sr -> sr: is_valid(msg)
-         activate sr
-         return is_valid
+         sr -> sr: msgToJson(line)
+         return heart_fp
        end loop
+        alt N == 0
+         sr -> sr: os.unlink(heart_path)
+         activate sr
+         return
+        end alt
       return
     return True
   end alt

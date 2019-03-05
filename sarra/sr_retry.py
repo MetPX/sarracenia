@@ -106,22 +106,6 @@ class sr_retry:
             return None
 
         self.logger.debug('Decoding msg from json: topic={}, headers={}, notice={}'.format(topic, headers, notice))
-        if topic.startswith('v03'):
-            # v3 has no sum, must add it here
-            sum_algo_map = {"d": "md5", "s": "sha512", "n": "md5name", "0": "random", "L": "link", "R": "remove",
-                            'z': 'cod'}
-            sum_algo_map = {v: k for k, v in sum_algo_map.items()}
-            sumstr = sum_algo_map[headers['integrity']['method']]
-            if sumstr == '0':
-                sumstr = '{},{}'.format(sumstr, headers['integrity']['value'])
-            elif sumstr == 'z':
-                sumstr = '{},{}'.format(sumstr, sum_algo_map[headers['integrity']['value']])
-            else:
-                decoded_value = encode(decode(headers['integrity']['value'].encode('utf-8'), 'base64'), 'hex').decode('utf-8').strip()
-                sumstr = '{},{}'.format(sumstr, decoded_value)
-            headers['sum'] = sumstr
-        self.logger.debug('headers={}'.format(headers))
-
         self.message.delivery_info['exchange']         = self.parent.exchange
         self.message.delivery_info['routing_key']      = topic
         self.message.properties['application_headers'] = headers
@@ -142,7 +126,21 @@ class sr_retry:
            message.pubtime = headers[ "pubTime" ]
            message.baseurl = headers[ "baseUrl" ]
            message.relpath = headers[ "relPath" ]
-           notice  = "%s %s %s" % ( message.pubtime, message.baseurl, message.relpath ) 
+           notice  = "%s %s %s" % ( message.pubtime, message.baseurl, message.relpath )
+           if "integrity" in headers.keys() and 'sum' not in headers.keys():
+               sum_algo_v3tov2 = {"md5": "d", "sha512": "s", "md5name": "n", "random": "0", "link": "L", "remove": "R",
+                                  'cod': 'z'}
+               if type(headers["integrity"]) is str:
+                   headers["integrity"] = json.loads(headers["integrity"])
+               sa = sum_algo_v3tov2[headers["integrity"]["method"]]
+               if sa in ['random']:
+                   sv = headers["integrity"]["value"]
+               elif sa in ['cod']:
+                   sv = sum_algo_v3tov2[headers["integrity"]["value"]]
+               else:
+                   sv = encode(decode(headers["integrity"]["value"].encode('utf-8'), "base64"), 'hex').decode('utf-8')
+               headers["sum"] = sa + ',' + sv
+
         else:
            headers = message.properties['application_headers']
            if type(message.body) == bytes: 
