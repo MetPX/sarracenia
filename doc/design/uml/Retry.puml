@@ -34,7 +34,8 @@ loop true
         sr -> sr: msg_append_to_file(work)
          activate sr
          sr -> sr: msgToJson(line)
-         return heart_fp
+          activate sr
+          return heart_fp
        end loop
         alt N == 0
          sr -> sr: os.unlink(heart_path)
