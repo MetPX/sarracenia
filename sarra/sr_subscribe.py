@@ -1108,6 +1108,7 @@ class sr_subscribe(sr_instances):
                            os.makedirs(newdir,0o775,True)
                        except Exception as ex:
                            self.logger.warning( "making %s: %s" % ( newdir, ex ) )
+                           self.logger.debug('Exception details:', exc_info=True)
 
                        #MG FIXME : except: return False  maybe ?
 
@@ -1125,6 +1126,7 @@ class sr_subscribe(sr_instances):
                             need_download = False
                     except Exception as ex:
                             self.logger.warning( "mv %s %s: %s" % ( oldpath, newdir, ex ) )
+                            self.logger.debug('Exception details:', exc_info=True)
                     #MG FIXME : except: return False  maybe ?
 
                  # if the newpath exists log a message in debug only
@@ -1171,6 +1173,7 @@ class sr_subscribe(sr_instances):
                         os.makedirs(self.msg.new_dir,0o775,True)
                     except Exception as ex:
                         self.logger.warning( "making %s: %s" % ( self.msg.new_dir, ex ) )
+                        self.logger.debug('Exception details:', exc_info=True)
 
                  # move
                  ok = True
@@ -1185,7 +1188,9 @@ class sr_subscribe(sr_instances):
                          else:
                             self.logger.error("did not move %s to %s (rename) dunno why?" % (oldpath,newpath))
                          need_download = False
-                 except: ok = False
+                 except:
+                     ok = False
+                     self.logger.debug('Exception details:', exc_info=True)
 
                  if ok  :
                           self.logger.info("file moved %s to %s" % (oldpath,newpath) )
@@ -1269,6 +1274,7 @@ class sr_subscribe(sr_instances):
                  os.makedirs(self.msg.new_dir,0o775,True)
               except Exception as ex:
                  self.logger.warning( "making %s: %s" % ( self.msg.new_dir, ex ) )
+                 self.logger.debug('Exception details:', exc_info=True)
 
            ok = True
            try : 
@@ -1283,6 +1289,7 @@ class sr_subscribe(sr_instances):
            except:
                ok = False
                self.logger.error("symlink of %s %s failed." % (self.msg.new_file, self.msg.headers[ 'link' ]) )
+               self.logger.debug('Exception details:', exc_info=True)
                if self.reportback: self.msg.report_publish(500, 'symlink failed')
 
            if ok :
@@ -1322,9 +1329,12 @@ class sr_subscribe(sr_instances):
            os.makedirs(self.msg.new_dir,0o775,True)
         except Exception as ex: 
            self.logger.warning( "making %s: %s" % ( self.msg.new_dir, ex ) )
-           
+           self.logger.debug('Exception details:', exc_info=True)
+
         try    : os.chdir(self.msg.new_dir)
-        except : self.logger.error("could not cd to directory %s" % self.msg.new_dir)
+        except :
+            self.logger.error("could not cd to directory %s" % self.msg.new_dir)
+            self.logger.debug('Exception details:', exc_info=True)
 
         #=================================
         # overwrite False, user asked that if the announced file already exists,
@@ -1491,11 +1501,13 @@ class sr_subscribe(sr_instances):
                                self.msg.headers[ "content" ] = { "encoding": "utf-8", "value": d.decode('utf-8') }
                            except:
                                self.msg.headers[ "content" ] = { "encoding": "base64", "value": b64encode(d).decode('utf-8') }
+                               self.logger.debug('Exception details:', exc_info=True)
 
                        self.logger.debug( "inlined data for %s" % self.msg.new_file )
 
                    except:
                        self.logger.error("failled trying to inline %s" % self.msg.new_file)
+                       self.logger.debug('Exception details:', exc_info=True)
 
            # discard option
            if self.discard :
