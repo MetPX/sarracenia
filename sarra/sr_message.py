@@ -80,6 +80,16 @@ class sr_message():
         self.sumstr        = None
         self.sumflg        = None
 
+        # Default value for parts attributes
+        self.chunksize = None
+        self.length = None
+        self.block_count = None
+        self.remainder = None
+        self.current_block = None
+        self.lastchunk = None
+        self.offset = None
+        self.filesize = None
+
         self.part_ext      = 'Part'
 
         self.sumalgo       = parent.sumalgo
@@ -105,7 +115,6 @@ class sr_message():
         self.new_baseurl   = None
         self.new_relpath   = None
         self.to_clusters = []
-
 
     def change_partflg(self, partflg ):
         self.partflg       =  partflg 
@@ -231,19 +240,14 @@ class sr_message():
                    self.headers[ "sum" ] = sa + ',' + sv
                    self.sumstr = self.headers['sum']
 
-               if  'size' in self.headers.keys():
+               if 'size' in self.headers.keys():
                    parts_map = {'inplace': 'i', 'partitioned': 'p'}
                    if 'blocks' not in self.headers.keys():
-                       partstr = "%s,%d,%d,%d,%d" % ('1', int(self.headers['size']), 1, 0, 1)
+                       self.set_parts('1', int(self.headers['size']), 1, int(self.headers['size']))
                    else:
-                       partstr = "%s,%d,%d,%d,%d" % (parts_map[self.headers['blocks']['method']],
-                                                     int(self.headers['blocks']['size']),
-                                                     int(self.headers['blocks']['count']),
-                                                     int(self.headers['blocks']['remainder']),
-                                                     int(self.headers['blocks']['number']))
-                   self.headers['parts'] = partstr
-                   self.partstr = partstr
-
+                       self.set_parts(parts_map[self.headers['blocks']['method']], int(self.headers['blocks']['size']),
+                                      int(self.headers['blocks']['count']), int(self.headers['blocks']['remainder']),
+                                      int(self.headers['blocks']['number']))
            else:
                if 'application_headers' in msg.properties.keys():
                    self.headers   = msg.properties['application_headers']
@@ -367,9 +371,6 @@ class sr_message():
 
     def parse_v00_post(self):
         token             = self.topic.split('.')
-        # v00             = token[0]
-        # dd              = token[1]
-        # notify          = token[2]
         self.version      = 'v02'
         self.mtype        = 'post'
         self.topic_prefix = 'v02.post'
@@ -396,12 +397,11 @@ class sr_message():
         self.sumstr  = 'd,%s' % self.checksum
         self.headers['sum'] = self.sumstr
 
-        self.to_clusters = []
         self.headers['to_clusters'] = None
 
         self.suffix  = ''
         
-        self.set_parts_str(self.partstr)
+        self.set_parts_from_str(self.partstr)
         self.set_sum_str(self.sumstr)
         self.set_suffix()
         self.set_hdrstr()
@@ -443,7 +443,7 @@ class sr_message():
 
         self.suffix = ''
 
-        self.set_parts_str(self.partstr)
+        self.set_parts_from_str(self.partstr)
         self.set_sum_str(self.sumstr)
         self.set_suffix()
         self.set_msg_time()
@@ -541,20 +541,9 @@ class sr_message():
                self.headers[ "integrity" ] = { "method": sm, "value": sv }
 
                if 'parts' in self.headers.keys():
-                   parts_map = {'i': 'inplace', 'p': 'partitioned'}
-                   parts_array = self.headers['parts'].split(',')
-                   if parts_array[0] == '1':
-                       self.headers['size'] = parts_array[1].strip()
-                   else:
-                       self.headers['size'] = parts_array[1].strip() if parts_array[4] < parts_array[2] else parts_array[3].strip()
-                       self.headers['blocks'] = {}
-                       self.headers['blocks']['method'] = parts_map[parts_array[0].strip()]
-                       self.headers['blocks']['size'] = parts_array[1].strip()
-                       self.headers['blocks']['count'] = parts_array[2].strip()
-                       self.headers['blocks']['remainder'] = parts_array[3].strip()
-                       self.headers['blocks']['number'] = parts_array[4].strip()
+                   self.set_parts_from_str(self.headers['parts'])
 
-               body = json.dumps({k: self.headers[k] for k in self.headers if k != 'sum'})
+               body = json.dumps({k: self.headers[k] for k in self.headers if k not in ['sum', 'parts']})
                ok = self.publisher.publish(self.exchange+suffix, self.topic, body, None, self.message_ttl)
 
            else:
@@ -565,8 +554,6 @@ class sr_message():
                   del self.headers['size']
                if 'blocks' in self.headers.keys():
                   del self.headers['blocks']
-               if 'parts' not in self.headers.keys():
-                   raise ValueError('parts is none %s' % self.headers)
                ok = self.publisher.publish(self.exchange+suffix,self.topic,self.notice,self.headers,self.message_ttl)
 
         self.set_hdrstr()
@@ -794,60 +781,43 @@ class sr_message():
         self.url     = urllib.parse.urlparse(self.urlstr)
         #========================================
 
+    def set_parts(self, partflg='1', chunksize=0, block_count=1, remainder=0, current_block=0):
 
-    def set_parts(self,partflg='1',chunksize=0, block_count=1, remainder=0, current_block=0):
-        self.partflg          = partflg 
-        self.chunksize        = chunksize
-        self.block_count      = block_count
-        self.remainder        = remainder
-        self.current_block    = current_block
-        self.partstr          = '%s,%d,%d,%d,%d' %\
-                                (partflg,chunksize,block_count,remainder,current_block)
-        self.lastchunk        = current_block == block_count-1
+        # Setting parts for v02
+        self.partstr = '%s,%d,%d,%d,%d' % (partflg, chunksize, block_count, remainder, current_block)
         self.headers['parts'] = self.partstr
 
-        self.offset        = self.current_block * self.chunksize
-        self.filesize      = self.block_count * self.chunksize
-        if self.remainder  > 0 :
-           self.filesize  += self.remainder   - self.chunksize
-           if self.lastchunk : self.length    = self.remainder
+        # Setting parts for new v03
+        self.partflg = partflg
+        if partflg not in ['0', '1']:
+            self.headers['blocks'] = {}
+            self.headers['blocks']['method'] = {'i': 'inplace', 'p': 'partitioned'}[partflg]
+            self.headers['blocks']['size'] = str(chunksize)
+            self.headers['blocks']['count'] = str(block_count)
+            self.headers['blocks']['remainder'] = str(remainder)
+            self.headers['blocks']['number'] = str(current_block)
+        self.headers['size'] = str(chunksize) if current_block != block_count - 1 else str(remainder)
 
-    def set_parts_str(self,partstr):
+        # TODO Investigate if the following attributes are really useful
+        # Setting other common attributes from parts
+        self.chunksize = chunksize
+        self.block_count = block_count
+        self.remainder = remainder
+        self.current_block = current_block
 
-        self.partflg = None
-        self.partstr = partstr
-        self.length  = 0
+        # Setting calculated attributes from parts
+        self.length = int(self.headers['size'])
+        self.lastchunk = current_block == block_count-1
+        self.offset = current_block * chunksize
+        self.filesize = block_count * chunksize + remainder
 
-        if self.partstr == None : return
-
-        token        = self.partstr.split(',')
-        self.partflg = token[0]
-
-        self.chunksize     = int(token[1])
-        self.block_count   = 1
-        self.remainder     = 0
-        self.current_block = 0
-        self.lastchunk     = True
-
-        self.offset        = 0
-        self.length        = self.chunksize
-
-        self.filesize      = self.chunksize
-
-        if self.partflg in [ '0', '1' ]: return
-
-        self.block_count   = int(token[2])
-        self.remainder     = int(token[3])
-        self.current_block = int(token[4])
-        self.lastchunk     = self.current_block == self.block_count-1
-
-        self.offset        = self.current_block * self.chunksize
-
-        self.filesize      = self.block_count * self.chunksize
-
-        if self.remainder  > 0 :
-           self.filesize  += self.remainder   - self.chunksize
-           if self.lastchunk : self.length    = self.remainder
+    def set_parts_from_str(self, partstr):
+        tokens = partstr.split(',')
+        if 0 < len(tokens) < 6:
+            parts_rest = [int(tok) for tok in tokens[1:]]
+            self.set_parts(tokens[0], *parts_rest)
+        else:
+            raise ValueError('Malformed parts string %s' % partstr)
 
     def set_rename(self,rename=None):
         if rename != None :

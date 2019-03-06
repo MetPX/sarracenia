@@ -155,21 +155,16 @@ class sr_retry:
         if 'size' in headers.keys():
             parts_map = {'inplace': 'i', 'partitioned': 'p'}
             if 'blocks' not in headers.keys():
-                partstr = "%s,%d,%d,%d,%d" % ('1', headers['size'], 1, 0, 1)
+                partstr = "%s,%s,%s,%s,%s" % ('1', headers['size'], '1', headers['size'], '0')
             else:
-                partstr = "%s,%d,%d,%d,%d" % (parts_map[headers['blocks']['method']],
-                                               headers['blocks']['size'],
-                                               headers['blocks']['count'],
-                                               headers['blocks']['remainder'],
-                                               headers['blocks']['number'])
+                partstr = "%s,%s,%s,%s,%s" % (parts_map[headers['blocks']['method']], headers['blocks']['size'],
+                                              headers['blocks']['count'], headers['blocks']['remainder'],
+                                              headers['blocks']['number'])
             headers['parts'] = partstr
 
         if done:
            headers['_retry_tag_'] = 'done'
-
-        json_line = json.dumps( [ topic, headers, notice ], sort_keys=True ) + '\n' 
-
-        return json_line
+        return json.dumps([topic, headers, notice], sort_keys=True) + '\n'
 
     def get(self):
         ok = False
@@ -298,9 +293,8 @@ class sr_retry:
            fp.write( line )
            fp.flush()
         except:
-           self.logger.error("failed to serialize message to JSON: %s" % message.body )
-           pass
-
+           self.logger.error("failed to serialize message to JSON: %s" % message.body)
+           self.logger.debug('Exception details:', exc_info=True)
         return fp
 
     def msg_get_from_file(self,fp,path):

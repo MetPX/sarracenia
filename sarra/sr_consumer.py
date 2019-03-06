@@ -138,6 +138,7 @@ class sr_consumer:
         if self.raw_msg != None and not self.raw_msg.isRetry : self.consumer.ack(self.raw_msg)
 
         # consume a new one
+        self.get_message()
         self.raw_msg = self.consumer.consume(self.queue_name)
 
         # if no message from queue, perhaps we have message to retry
@@ -165,7 +166,6 @@ class sr_consumer:
 
         # make use it as a sr_message
         # dont bother with retry... 
-        self.get_message()
         try :
                  self.msg.from_amqplib(self.raw_msg)
                  self.logger.debug("notice %s " % self.msg.notice)
