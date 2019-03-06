@@ -153,6 +153,7 @@ class sr_message():
                 self.logger.debug("sr_message something went wrong when computing local checksum... considered different")
                 return False
 
+        self.logger.debug( "checksum in message: %s, local: %s" % ( self.local_checksum, self.checksum ) ) 
         return self.local_checksum == self.checksum
 
     def compute_local_checksum(self):
@@ -163,7 +164,7 @@ class sr_message():
                 attr = xattr.xattr(os.path.join(self.new_dir, self.new_file))
                 if 'user.sr_sum' in attr:
                     self.logger.debug("checksum extracted using xattr")
-                    self.local_checksum = attr['user.sr_sum'].decode("utf-8")
+                    self.local_checksum = attr['user.sr_sum'].decode("utf-8")[2:]
                     return
             except:
                 pass
@@ -530,17 +531,8 @@ class sr_message():
                    sv = encode( decode( self.headers["sum"][2:], 'hex'), 'base64' ).decode('utf-8').strip()
 
                self.headers[ "integrity" ] = { "method": sm, "value": sv }
-
-               # FIXME: still need "sum" header for internal sarracenia stuff.
-               # but should not include it in v03 output, but if I kill, pclean_92 test fails... dunno why...
-               #save_sum = self.headers[ "sum" ]
-               #del self.headers[ "sum" ] 
-
-               body=json.dumps( self.headers )
-
-               #self.headers[ "sum" ] = save_sum
-
-               ok = self.publisher.publish(self.exchange+suffix,self.topic,body,None,self.message_ttl)
+               body = json.dumps({k: self.headers[k] for k in self.headers if k != 'sum'})
+               ok = self.publisher.publish(self.exchange+suffix, self.topic, body, None, self.message_ttl)
 
            else:
                #in v02, sum is the correct header. FIXME: roundtripping not quite right yet.
