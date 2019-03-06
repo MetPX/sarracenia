@@ -202,7 +202,7 @@ class sr_config:
         #self.debug    = True
         #self.loglevel = logging.DEBUG
 
-        self.LOG_FORMAT= ('%(asctime)s [%(levelname)s] %(message)s')
+        self.LOG_FORMAT= '%(asctime)s [%(levelname)s] %(message)s'
         logging.basicConfig(level=self.loglevel, format = self.LOG_FORMAT )
         self.logger = logging.getLogger()
         self.logger.debug("sr_config __init__")
@@ -2638,7 +2638,7 @@ class sr_config:
             self.logger.debug("Switching to rotating log file: %s" % self.logpath)
             handler = handlers.TimedRotatingFileHandler(self.logpath, when=self.lr_when, interval=self.lr_interval,
                                                         backupCount=self.lr_backupCount)
-            self.create_new_logger('%(asctime)s [%(levelname)s] %(message)s', handler)
+            self.create_new_logger(self.LOG_FORMAT, handler)
             if self.chmod_log:
                 os.chmod(self.logpath, self.chmod_log)
             sys.stdout = StreamToLogger(self.logger, logging.INFO)
@@ -2646,14 +2646,13 @@ class sr_config:
         elif self.loglevel and self.logpath:
             self.logger.debug("Switching to log file: %s" % self.logpath)
             handler = logging.FileHandler(self.logpath)
-            self.create_new_logger('%(asctime)s [%(levelname)s] %(message)s', handler)
+            self.create_new_logger(self.LOG_FORMAT, handler)
             if self.chmod_log:
                 os.chmod(self.logpath, self.chmod_log)
         elif self.loglevel:
             self.logger.debug('Keeping on screen logging')
             handler = logging.StreamHandler()
-            #self.create_new_logger('%(asctime)s [%(levelname)s] %(pathname)s %(lineno)d %(message)s', handler)
-            self.create_new_logger('%(asctime)s [%(levelname)s] %(message)s', handler)
+            self.create_new_logger(self.LOG_FORMAT, handler)
         else:
             self.set_loglevel()
 
