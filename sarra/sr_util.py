@@ -493,7 +493,6 @@ class sr_transport():
                 return False
         return True
 
-
     # generalized get...
     def get( self, remote_file, local_file, remote_offset, local_offset, length ):
         msg = self.parent.msg

@@ -150,8 +150,8 @@ calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed (sample size: $
 
 # PAS missed_dispositions means definite Sarra bug, very serious.
 
-if (("${missed_dispositions}">0)); then 
-   echo "Please review $LOGDIR/missed_dispositions.report" 
+if (("${missed_dispositions}">0)); then
+   echo "Please review $LOGDIR/missed_dispositions.report"
 fi
 
 echo
