@@ -30,6 +30,7 @@
 #
 
 import os,json,sys,time
+from json import JSONDecodeError
 
 try :
          from sr_config          import *
@@ -100,8 +101,9 @@ class sr_retry:
     def msgFromJSON(self, line ):
         try:
             topic, headers, notice  = json.loads(line)
-        except:
+        except JSONDecodeError:
             self.logger.error("corrupted line in retry file: %s " % line)
+            self.logger.debug("Error information: ", exc_info=True)
             return None
 
         self.message.delivery_info['exchange']         = self.parent.exchange
