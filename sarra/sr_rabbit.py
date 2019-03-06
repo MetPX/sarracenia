@@ -68,6 +68,7 @@ def exec_rabbitmqadmin(url,options,logger=None):
                 if logger : logger.error("trying run command %s %s" %  command )
            else :
                 if logger : logger.error("trying run command %s %s" %  ' '.join(cmdlst) )
+           if logger: logger.debug('Exception details:', exc_info=True)
 
     return 0,None
     

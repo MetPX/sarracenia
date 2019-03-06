@@ -328,9 +328,8 @@ class sr_poll(sr_post):
 
             return True, new_ls, new_dir
         except:
-            (stype, svalue, tb) = sys.exc_info()
             self.logger.warning("dest.lsdir: Could not ls directory")
-            self.logger.debug("Type: %s\nValue: %s\nTraceback: %s" % (stype, svalue, tb))
+            self.logger.debug("Exception details:", exc_info=True)
 
         return False, {}, {}
 
