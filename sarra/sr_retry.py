@@ -151,6 +151,19 @@ class sr_retry:
                notice = message.body
  
 
+
+        if  'size' in headers.keys():
+            parts_map = {'inplace': 'i', 'partitioned': 'p'}
+            if 'blocks' not in headers.keys():
+                partstr = "%s,%d,%d,%d,%d" % ('1', headers['size'], 1, 0, 1)
+            else:
+                partstr = "%s,%d,%d,%d,%d" % (parts_map[headers['blocks']['method']],
+                                                   headers['blocks']['size'],
+                                                   headers['blocks']['count'],
+                                                   headers['blocks']['remainder'],
+                                                   headers['blocks']['number'])
+            headers['parts'] = partstr
+
         if done:
            headers['_retry_tag_'] = 'done'
 

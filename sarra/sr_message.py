@@ -229,6 +229,18 @@ class sr_message():
                        sv = encode( decode( self.headers[ "integrity" ][ "value" ].encode('utf-8'), "base64" ), 'hex' ).decode('utf-8')
                    self.headers[ "sum" ] = sa + ',' + sv
 
+               if  'size' in self.headers.keys():
+                   parts_map = {'inplace': 'i', 'partitioned': 'p'}
+                   if 'blocks' not in self.headers.keys():
+                       partstr = "%s,%d,%d,%d,%d" % ('1', int(self.headers['size']), 1, 0, 1)
+                   else:
+                       partstr = "%s,%d,%d,%d,%d" % (parts_map[self.headers['blocks']['method']],
+                                                     int(self.headers['blocks']['size']),
+                                                     int(self.headers['blocks']['count']),
+                                                     int(self.headers['blocks']['remainder']),
+                                                     int(self.headers['blocks']['number']))
+                   self.headers['parts'] = partstr
+
            else:
                if 'application_headers' in msg.properties.keys():
                    self.headers   = msg.properties['application_headers']
@@ -529,8 +541,21 @@ class sr_message():
                    sv = sum_algo_map[ self.headers["sum"][2:] ]
                else:
                    sv = encode( decode( self.headers["sum"][2:], 'hex'), 'base64' ).decode('utf-8').strip()
-
                self.headers[ "integrity" ] = { "method": sm, "value": sv }
+
+               parts_map = {'i': 'inplace', 'p': 'partitioned'}
+               parts_array = self.headers['parts'].split(',')
+               if parts_array[0] == '1':
+                   self.headers['size'] = parts_array[1].strip()
+               else:
+                   self.headers['size'] = parts_array[1].strip() if parts_array[4] < parts_array[2] else parts_array[3].strip()
+                   self.headers['blocks'] = {}
+                   self.headers['blocks']['method'] = parts_map[parts_array[0].strip()]
+                   self.headers['blocks']['size'] = parts_array[1].strip()
+                   self.headers['blocks']['count'] = parts_array[2].strip()
+                   self.headers['blocks']['remainder'] = parts_array[3].strip()
+                   self.headers['blocks']['number'] = parts_array[4].strip()
+
                body = json.dumps({k: self.headers[k] for k in self.headers if k != 'sum'})
                ok = self.publisher.publish(self.exchange+suffix, self.topic, body, None, self.message_ttl)
 
@@ -538,6 +563,10 @@ class sr_message():
                #in v02, sum is the correct header. FIXME: roundtripping not quite right yet.
                if 'integrity' in self.headers.keys(): 
                   del self.headers[ 'integrity' ]
+               if 'size' in self.headers.keys():
+                  del self.headers['size']
+               if 'blocks' in self.headers.keys():
+                  del self.headers['blocks']
                ok = self.publisher.publish(self.exchange+suffix,self.topic,self.notice,self.headers,self.message_ttl)
 
         self.set_hdrstr()
