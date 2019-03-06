@@ -367,7 +367,7 @@ class sr_subscribe(sr_instances):
 
         except :
                 self.logger.error("%s/__do_download__: Could not download" % self.program_name)
-                self.logger.debug('General exception: ', exc_info=True)
+                self.logger.debug('Exception details: ', exc_info=True)
                 if self.reportback:
                    self.msg.report_publish(503,"Unable to process")
 
@@ -1233,7 +1233,7 @@ class sr_subscribe(sr_instances):
                if self.reportback: self.msg.report_publish(201, 'removed')
            except:
                self.logger.error("sr_subscribe/doit_download: could not remove %s." % path)
-               self.logger.debug('General exception: ', exc_info=True)
+               self.logger.debug('Exception details: ', exc_info=True)
                if self.reportback:
                    self.msg.report_publish(500, 'remove failed')
 
@@ -1504,7 +1504,7 @@ class sr_subscribe(sr_instances):
                         self.logger.debug("Discarded  %s" % self.msg.new_file)
               except :
                         self.logger.error("Could not discard")
-                        self.logger.debug('General exception: ', exc_info=True)
+                        self.logger.debug('Exception details: ', exc_info=True)
               if self.msg.isRetry: self.consumer.msg_worked()
               return False
 
@@ -1727,7 +1727,7 @@ class sr_subscribe(sr_instances):
 
               except:
                       self.logger.error( "%s/run going badly, so sleeping for %g" % (self.program_name, going_badly))
-                      self.logger.debug('General exception: ', exc_info=True)
+                      self.logger.debug('Exception details: ', exc_info=True)
                       if self.retry_mode:
                           self.consumer.msg_to_retry()
                       time.sleep(going_badly)

@@ -92,7 +92,7 @@ class sr_sftp(sr_proto):
                    fp.close()
         except:
                 self.logger.error("sr_sftp/__init__: unable to load ssh config %s" % ssh_config)
-                self.logger.debug('General exception: ', exc_info=True)
+                self.logger.debug('Exception details: ', exc_info=True)
 
     # cd
     def cd(self, path):
@@ -241,7 +241,7 @@ class sr_sftp(sr_proto):
 
         except:
             self.logger.error("sr_sftp/connect: unable to connect to %s (user:%s)" % (self.host, self.user))
-            self.logger.debug('General exception: ', exc_info=True)
+            self.logger.debug('Exception details: ', exc_info=True)
 
         alarm_cancel()
         return False
@@ -289,7 +289,7 @@ class sr_sftp(sr_proto):
 
         except:
                 self.logger.error("sr_sftp/credentials: unable to get credentials for %s" % self.destination)
-                self.logger.debug('General exception: ', exc_info=True)
+                self.logger.debug('Exception details: ', exc_info=True)
 
         return False
 

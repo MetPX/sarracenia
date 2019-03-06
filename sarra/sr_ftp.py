@@ -204,7 +204,7 @@ class sr_ftp(sr_proto):
                     self.originalDir = ftp.pwd()
                 except:
                     self.logger.warning("Unable to ftp.pwd")
-                    self.logger.debug('General exception: ', exc_info=True)
+                    self.logger.debug('Exception details: ', exc_info=True)
 
                 self.pwd = self.originalDir
 
@@ -221,7 +221,7 @@ class sr_ftp(sr_proto):
 
         except:
             self.logger.error("Unable to connect to %s (user:%s)" % self.host, self.user)
-            self.logger.debug('General exception: ', exc_info=True)
+            self.logger.debug('Exception details: ', exc_info=True)
 
         alarm_cancel()
         return False
@@ -248,7 +248,7 @@ class sr_ftp(sr_proto):
 
         except:
                 self.logger.error("sr_ftp/credentials: unable to get credentials for %s" % self.destination)
-                self.logger.debug('General exception: ', exc_info=True)
+                self.logger.debug('Exception details: ', exc_info=True)
 
         return False
 

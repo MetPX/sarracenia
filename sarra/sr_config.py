@@ -412,7 +412,7 @@ class sr_config:
 
         except:
             self.logger.error('sr_config/check_for_remote_config failed')
-            self.logger.debug('General exception: ', exc_info=True)
+            self.logger.debug('Exception details: ', exc_info=True)
 
     def chunksize_from_str(self,str_value):
         self.logger.debug("sr_config chunksize_from_str %s" % str_value)
@@ -444,7 +444,7 @@ class sr_config:
 
         except:
             self.logger.error('sr_config/config 1 failed')
-            self.logger.debug('General exception: ', exc_info=True)
+            self.logger.debug('Exception details: ', exc_info=True)
 
     def config_path(self,subdir,config, mandatory=True, ctype='conf'):
         self.logger.debug("config_path = %s %s" % (subdir,config))
@@ -925,7 +925,7 @@ class sr_config:
             exec(compile(open(script).read(), script, 'exec'))
         except : 
             self.logger.error("sr_config/execfile 2 failed for option '%s' and plugin '%s'" % (opname, path))
-            self.logger.debug('General exception: ', exc_info=True)
+            self.logger.debug('Exception details: ', exc_info=True)
             return False
 
         if getattr(self,opname) is None:
@@ -1021,7 +1021,7 @@ class sr_config:
                 plugin(self)
             except:
                 self.logger.error( "ssr_config/__on_heartbeat__  3: plugin %s, execution failed." % plugin )
-                self.logger.debug('General exception: ', exc_info=True)
+                self.logger.debug('Exception details: ', exc_info=True)
 
         return True
 
@@ -2562,7 +2562,7 @@ class sr_config:
 
         except:
                 self.logger.error("sr_config/option 4: problem evaluating option %s" % words[0])
-                self.logger.debug('General exception: ', exc_info=True)
+                self.logger.debug('Exception details: ', exc_info=True)
 
         if needexit :
            os._exit(1)
@@ -2618,7 +2618,7 @@ class sr_config:
                 self.lastflg = flgs
         except:
                 self.logger.error("sumflg %s not working... set to 'd'" % sumflg)
-                self.logger.debug('General exception: ', exc_info=True)
+                self.logger.debug('Exception details: ', exc_info=True)
                 self.lastflg = 'd'
                 self.sumalgo = self.sumalgos['d']
 
@@ -2716,7 +2716,7 @@ class sr_config:
                  self.set_sumalgo(sumflg)
         except :
                  self.logger.error("sr_config/validate_sum 5: sum invalid (%s)" % self.sumflg)
-                 self.logger.debug('General exception: ', exc_info=True)
+                 self.logger.debug('Exception details: ', exc_info=True)
                  return False
         return True
 
@@ -2737,7 +2737,7 @@ class sr_config:
                               return True
                    except: 
                            self.logger.error("could not compare modification dates... downloading")
-                           self.logger.debug('General exception: ', exc_info=True)
+                           self.logger.debug('Exception details: ', exc_info=True)
 
                 fp = open(path+'.downloading','wb')
 
@@ -2789,7 +2789,7 @@ class sr_config:
                else:
                      self.logger.error('Download failed: %s' % urlstr )
                      self.logger.error('Unexpected error')
-                     self.logger.debug('General exception: ', exc_info=True)
+                     self.logger.debug('Exception details: ', exc_info=True)
 
         try   : os.unlink(path+'.downloading')
         except: pass

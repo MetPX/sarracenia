@@ -656,7 +656,7 @@ class sr_audit(sr_instances):
 
         except:
               self.logger.error("sr_audit/run failed")
-              self.logger.debug('General exception: ', exc_info=True)
+              self.logger.debug('Exception details: ', exc_info=True)
 
 
     def reload(self):

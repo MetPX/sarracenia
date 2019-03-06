@@ -68,7 +68,7 @@ class Do_Send_Log(object):
 
        except:
               logger.error("Couldn't send log")
-              logger.debug('General exception: ', exc_info=True)
+              logger.debug('Exception details: ', exc_info=True)
 
        return True
                

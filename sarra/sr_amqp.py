@@ -140,7 +140,7 @@ class HostConnect:
                return True
            except:
                self.logger.error("AMQP Sender cannot connect to: %s" % self.host)
-               self.logger.debug('General exception: ', exc_info=True)
+               self.logger.debug('Exception details: ', exc_info=True)
 
                if not self.loop:
                    self.logger.error("Could not connect to broker")
@@ -155,7 +155,7 @@ class HostConnect:
                     self.logger.info("declaring exchange %s (%s@%s)" % (exchange,self.user,self.host))
        except :
                     self.logger.error("could not declare exchange %s (%s@%s)" % (exchange,self.user,self.host))
-                    self.logger.debug('General exception: ', exc_info=True)
+                    self.logger.debug('Exception details: ', exc_info=True)
 
    def exchange_delete(self,exchange):
 
@@ -175,7 +175,7 @@ class HostConnect:
                     self.logger.info("deleting exchange %s (%s@%s)" % (exchange,self.user,self.host))
        except :
                     self.logger.error("could not delete exchange %s (%s@%s)" % (exchange,self.user,self.host))
-                    self.logger.debug('General exception: ', exc_info=True)
+                    self.logger.debug('Exception details: ', exc_info=True)
 
    def new_channel(self):
        channel = self.connection.channel()
@@ -191,7 +191,7 @@ class HostConnect:
                     error_str = '%s' % svalue
                     if 'NOT_FOUND' in error_str : return
                     self.logger.error("could not delete queue %s (%s@%s)" % (queue_name,self.user,self.host))
-                    self.logger.debug('General exception: ', exc_info=True)
+                    self.logger.debug('Exception details: ', exc_info=True)
 
    def reconnect(self):
        self.close()
@@ -291,7 +291,7 @@ class Consumer:
                          msg = self.channel.basic_get(queuename)
               except :
                      self.logger.error("sr_amqp/consume: could not consume in queue %s" % queuename )
-                     self.logger.debug('General exception: ', exc_info=True)
+                     self.logger.debug('Exception details: ', exc_info=True)
                      if self.hc.loop :
                         self.hc.reconnect()
                         self.logger.debug("consume resume ok")
@@ -373,7 +373,7 @@ class Publisher:
         except:
             if self.hc.loop:
                 self.logger.error("sr_amqp/publish: Sleeping 5 seconds ... and reconnecting")
-                self.logger.debug('General exception: ', exc_info=True)
+                self.logger.debug('Exception details: ', exc_info=True)
                 time.sleep(5)
                 self.hc.reconnect()
                 if self.hc.asleep: return False
@@ -381,7 +381,7 @@ class Publisher:
             else:
                 self.logger.error("sr_amqp/publish: could not publish %s %s %s %s" % (exchange_name, exchange_key,
                                                                                       message, mheaders))
-                self.logger.debug('General exception: ', exc_info=True)
+                self.logger.debug('Exception details: ', exc_info=True)
                 return False
 
    def restore_clear(self):
@@ -406,7 +406,7 @@ class Publisher:
        except:
               self.logger.error("sr_amqp/restore_set: restore_set exchange %s queuename %s" % (self.restore_exchange,
                                                                                                self.restore_queue))
-              self.logger.debug('General exception: ', exc_info=True)
+              self.logger.debug('Exception details: ', exc_info=True)
               os._exit(1)
 
 # ==========
@@ -522,5 +522,5 @@ class Queue:
        except:
            self.logger.error("sr_amqp/build, queue declare: %s failed...(%s@%s) permission issue ?"
                              % (self.name, self.hc.user, self.hc.host))
-           self.logger.debug('General exception: ', exc_info=True)
+           self.logger.debug('Exception details: ', exc_info=True)
            return -1

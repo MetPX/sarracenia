@@ -180,7 +180,7 @@ class LESSender(object):
 				return False
 		except:
 			logger.error("file_send_egc_les/on_file: error sending over telnet")
-			logger.debug('General exception: ', exc_info=True)
+			logger.debug('Exception details: ', exc_info=True)
 			return False
 
 

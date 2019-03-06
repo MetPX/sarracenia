@@ -213,7 +213,7 @@ def file_insert_part(parent,msg,part_file):
     # oops something went wrong
     except :
              msg.logger.info("sr_file/file_insert_part: did not insert %s " % part_file)
-             msg.logger.debug('General exception: ', exc_info=True)
+             msg.logger.debug('Exception details: ', exc_info=True)
              return False
 
     # success: log insertion
@@ -316,7 +316,7 @@ def file_process( parent ) :
 
     except :
              msg.logger.error('sr_file/file_process error')
-             msg.logger.debug('General exception: ', exc_info=True)
+             msg.logger.debug('Exception details: ', exc_info=True)
 
     msg.report_publish(499,'Not Copied')
     msg.logger.error("could not copy %s in %s"%(msg.relpath,msg.new_file))

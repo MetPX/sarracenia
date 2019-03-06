@@ -39,7 +39,7 @@ class Hb_Police_Queues(object):
 
         except:
                 parent.logger.error("Hb_Police_Queues/perform: couldn't perform")
-                parent.logger.debug('General exception: ', exc_info=True)
+                parent.logger.debug('Exception details: ', exc_info=True)
 
         return True
 

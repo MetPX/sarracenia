@@ -286,5 +286,5 @@ def run_rabbitmqadmin(url,options,logger):
 
     except :
             logger.error("sr_rabbit/run_rabbitmqadmin failed with option '%s'" % options)
-            logger.debug('General exception: ', exc_info=True)
+            logger.debug('Exception details: ', exc_info=True)
     return []

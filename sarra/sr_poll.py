@@ -102,7 +102,7 @@ class sr_poll(sr_post):
                   return True
         except :
                   self.logger.warning("sr_poll/cd: could not cd to directory %s" % path )
-                  self.logger.debug('General exception: ', exc_info=True)
+                  self.logger.debug('Exception details: ', exc_info=True)
         return False
 
     def check(self):
@@ -534,7 +534,7 @@ class sr_poll(sr_post):
              self.dest.connect()
         except:
             self.logger.error("sr_poll/post_new_url: unable to connect to %s" % self.destination)
-            self.logger.debug('General exception: ', exc_info=True)
+            self.logger.debug('Exception details: ', exc_info=True)
             self.logger.error("Sleeping 30 secs and retry")
             time.sleep(30)
             return True
@@ -657,7 +657,7 @@ class sr_poll(sr_post):
 
               except:
                       self.logger.error("sr_poll/run failed")
-                      self.logger.debug('General exception: ', exc_info=True)
+                      self.logger.debug('Exception details: ', exc_info=True)
 
               self.logger.debug("poll is sleeping %d seconds " % self.sleep)
               time.sleep(self.sleep)

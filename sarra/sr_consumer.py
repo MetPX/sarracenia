@@ -173,7 +173,7 @@ class sr_consumer:
                     self.logger.debug("urlstr %s " % self.msg.urlstr)
         except :
                  self.logger.error("sr_consumer/consume malformed message %s" % vars(self.raw_msg))
-                 self.logger.debug('General exception: ', exc_info=True)
+                 self.logger.debug('Exception details: ', exc_info=True)
                  return None, None
 
         # special case : pulse

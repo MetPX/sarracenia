@@ -114,7 +114,7 @@ class sr_http(sr_proto):
 
         except:
                 self.logger.error("sr_http/credentials: unable to get credentials for %s" % self.destination)
-                self.logger.debug('General exception: ', exc_info=True)
+                self.logger.debug('Exception details: ', exc_info=True)
 
         return False
 
@@ -190,7 +190,7 @@ class sr_http(sr_proto):
 
         except:
                 self.logger.warning("sr_http/ls: unable to open %s" % self.urlstr)
-                self.logger.debug('General exception: ', exc_info=True)
+                self.logger.debug('Exception details: ', exc_info=True)
 
         return self.entries
 
@@ -267,7 +267,7 @@ class sr_http(sr_proto):
                raise
         except:
                self.logger.warning("sr_http/__open__: unable to open %s" % self.urlstr)
-               self.logger.debug('General exception: ', exc_info=True)
+               self.logger.debug('Exception details: ', exc_info=True)
                alarm_cancel()
                raise
 

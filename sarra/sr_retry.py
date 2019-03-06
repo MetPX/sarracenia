@@ -435,7 +435,7 @@ class sr_retry:
 
         except:
                 self.logger.error("sr_retry/on_heartbeat: something went wrong")
-                self.logger.debug('General exception: ', exc_info=True)
+                self.logger.debug('Exception details: ', exc_info=True)
 
         # no more retry
 

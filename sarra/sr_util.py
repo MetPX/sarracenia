@@ -93,7 +93,7 @@ class raw_message:
        except:
                self.logger.error("sr_amqp/pika_to_amqplib: in pika to amqplib %s %s" %(vars(method_frame),
                                                                                        vars(properties)))
-               self.logger.debug('General exception: ', exc_info=True)
+               self.logger.debug('Exception details: ', exc_info=True)
 
 
 # =========================================
@@ -478,7 +478,7 @@ class sr_transport():
                            msg.logger.debug ('file deleted on remote site %s' % remote_file)
                    except:
                            msg.logger.error('unable to delete remote file %s' % remote_file)
-                           msg.logger.debug('General exception: ', exc_info=True)
+                           msg.logger.debug('Exception details: ', exc_info=True)
 
         except:
                 #closing on problem
@@ -486,7 +486,7 @@ class sr_transport():
                 except : pass
     
                 msg.logger.error("Download failed %s" % urlstr)
-                msg.logger.debug('General exception: ', exc_info=True)
+                msg.logger.debug('Exception details: ', exc_info=True)
                 msg.report_publish(499,'%s download failed' % self.scheme)
                 if os.path.isfile(new_lock) :
                     os.remove(new_lock)
@@ -693,7 +693,7 @@ class sr_transport():
                 except : pass
 
                 msg.logger.error("Delivery failed %s" % msg.new_dir+'/'+msg.new_file)
-                msg.logger.debug('General exception: ', exc_info=True)
+                msg.logger.debug('Exception details: ', exc_info=True)
                 msg.report_publish(497,'%s delivery failed' % self.scheme)
 
                 return False

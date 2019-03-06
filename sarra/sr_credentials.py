@@ -221,7 +221,7 @@ class sr_credentials:
 
         except:
                 self.logger.error("sr_credentials/parse %s" % line)
-                self.logger.debug('General exception: ', exc_info=True)
+                self.logger.debug('Exception details: ', exc_info=True)
 
     def read(self,path):
         self.logger.debug("sr_credentials read")
@@ -239,7 +239,7 @@ class sr_credentials:
 
         except :
                  self.logger.error("sr_credentials/read path = %s" % path)
-                 self.logger.debug('General exception: ', exc_info=True)
+                 self.logger.debug('Exception details: ', exc_info=True)
 
         #self.logger.debug("credentials = %s\n" % self.credentials)
 

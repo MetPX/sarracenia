@@ -213,7 +213,7 @@ class sr_sender(sr_subscribe):
                 if self.reportback:
                     self.msg.report_publish(503, "Unable to process")
                 self.logger.error("sender/__do_send__: could not send")
-                self.logger.debug('General exception: ', exc_info=True)
+                self.logger.debug('Exception details: ', exc_info=True)
 
         # something went wrong
 

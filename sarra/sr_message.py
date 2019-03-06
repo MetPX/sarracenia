@@ -995,7 +995,7 @@ class sr_message():
 
         except :
                  self.logger.error("sr_message/verify_part_suffix: incorrect extension")
-                 self.logger.debug('General exception: ', exc_info=True)
+                 self.logger.debug('Exception details: ', exc_info=True)
                  return False,'incorrect extension',None,None,None
 
         return True,'ok',self.suffix,self.partstr,self.sumstr
