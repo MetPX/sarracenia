@@ -231,7 +231,7 @@ class sr_message():
 
            else:
                if 'application_headers' in msg.properties.keys():
-                   self.headers   = msg.properties['application_headers']
+                   self.headers = msg.properties['application_headers']
 
                if type(msg.body) == bytes: 
                     self.notice = msg.body.decode("utf-8")

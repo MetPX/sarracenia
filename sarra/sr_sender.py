@@ -181,7 +181,8 @@ class sr_sender(sr_subscribe):
                      # of the supported python one (sftp,ftp[s])
                      # and the plugin decided to go with the python defaults
                      if ok != None : return ok
-        except: pass
+        except:
+                self.logger.debug('Exception details:', exc_info=True)
 
 
         # try supported hardcoded send

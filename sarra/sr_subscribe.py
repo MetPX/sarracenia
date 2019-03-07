@@ -314,8 +314,8 @@ class sr_subscribe(sr_instances):
                 return True
 
             except:
-                self.logger.info( "inlined data corrupt, try downloading." )
-                pass
+                self.logger.info("inlined data corrupt, try downloading.")
+                self.logger.debug('Exception details:', exc_info=True)
 
         # try registered do_download first... might overload defaults
 
@@ -329,7 +329,8 @@ class sr_subscribe(sr_instances):
                      # of the supported python one (http[s],sftp,ftp[s])
                      # and the plugin decided to go with the python defaults
                      if ok != None : return ok
-        except: pass
+        except:
+                self.logger.debug('Exception details:', exc_info=True)
 
         # try supported hardcoded download
 
@@ -1186,10 +1187,11 @@ class sr_subscribe(sr_instances):
                             os.rename(oldpath,newpath)
                             self.logger.info("move %s to %s (rename)" % (oldpath,newpath))
                          else:
-                            self.logger.error("did not move %s to %s (rename) dunno why?" % (oldpath,newpath))
+                            self.logger.error("did not move %s to %s (rename)" % (oldpath,newpath))
                          need_download = False
                  except:
                      ok = False
+                     self.logger.error("did not move %s to %s (rename)" % (oldpath, newpath))
                      self.logger.debug('Exception details:', exc_info=True)
 
                  if ok  :

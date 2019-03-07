@@ -507,10 +507,10 @@ class sr_transport():
            msg.new_file = new_file
            if ok:
               return
-           if ok is False:
+           elif ok is False:
               raise Exception('Not ok')
-           self.logger.debug("ok == NONE")
-
+           else:
+              self.logger.debug("sr_util/get ok is None executing this do_get %s" % do_get)
         self.proto.get(remote_file, local_file, remote_offset, local_offset, length)
 
     # generalized put...
@@ -529,8 +529,8 @@ class sr_transport():
               return
            elif ok is False:
               raise Exception('Not ok')
-           self.logger.debug("ok == NONE")
-
+           else:
+              self.logger.debug("sr_util/put ok is None executing this do_put %s" % do_put)
         self.proto.put(local_file, remote_file, local_offset, remote_offset, length)
 
     # generalized send...
