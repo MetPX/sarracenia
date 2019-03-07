@@ -104,6 +104,7 @@ class sr_message():
         self.new_file      = None
         self.new_baseurl   = None
         self.new_relpath   = None
+        self.to_clusters = []
 
 
     def change_partflg(self, partflg ):
@@ -228,6 +229,7 @@ class sr_message():
                    else:
                        sv = encode( decode( self.headers[ "integrity" ][ "value" ].encode('utf-8'), "base64" ), 'hex' ).decode('utf-8')
                    self.headers[ "sum" ] = sa + ',' + sv
+                   self.sumstr = self.headers['sum']
 
                if  'size' in self.headers.keys():
                    parts_map = {'inplace': 'i', 'partitioned': 'p'}
@@ -240,6 +242,7 @@ class sr_message():
                                                      int(self.headers['blocks']['remainder']),
                                                      int(self.headers['blocks']['number']))
                    self.headers['parts'] = partstr
+                   self.partstr = partstr
 
            else:
                if 'application_headers' in msg.properties.keys():
@@ -301,9 +304,6 @@ class sr_message():
         # adjust headers from -headers option
 
         self.trim_headers()
-
-        self.partstr     = None
-        self.sumstr      = None
 
         token        = self.topic.split('.')
         self.version = token[0]
@@ -432,15 +432,12 @@ class sr_message():
            else:
                ( self.report_elapse, self.report_code, self.report_host, self.report_user ) = self.headers['report'].split()
 
-        self.partstr = None
         if 'parts'   in self.headers :
            self.partstr  = self.headers['parts']
 
-        self.sumstr  = None
         if 'sum'     in self.headers :
            self.sumstr   = self.headers['sum']
 
-        self.to_clusters = []
         if 'to_clusters' in self.headers :
            self.to_clusters  = self.headers['to_clusters'].split(',')
 
@@ -543,18 +540,19 @@ class sr_message():
                    sv = encode( decode( self.headers["sum"][2:], 'hex'), 'base64' ).decode('utf-8').strip()
                self.headers[ "integrity" ] = { "method": sm, "value": sv }
 
-               parts_map = {'i': 'inplace', 'p': 'partitioned'}
-               parts_array = self.headers['parts'].split(',')
-               if parts_array[0] == '1':
-                   self.headers['size'] = parts_array[1].strip()
-               else:
-                   self.headers['size'] = parts_array[1].strip() if parts_array[4] < parts_array[2] else parts_array[3].strip()
-                   self.headers['blocks'] = {}
-                   self.headers['blocks']['method'] = parts_map[parts_array[0].strip()]
-                   self.headers['blocks']['size'] = parts_array[1].strip()
-                   self.headers['blocks']['count'] = parts_array[2].strip()
-                   self.headers['blocks']['remainder'] = parts_array[3].strip()
-                   self.headers['blocks']['number'] = parts_array[4].strip()
+               if 'parts' in self.headers.keys():
+                   parts_map = {'i': 'inplace', 'p': 'partitioned'}
+                   parts_array = self.headers['parts'].split(',')
+                   if parts_array[0] == '1':
+                       self.headers['size'] = parts_array[1].strip()
+                   else:
+                       self.headers['size'] = parts_array[1].strip() if parts_array[4] < parts_array[2] else parts_array[3].strip()
+                       self.headers['blocks'] = {}
+                       self.headers['blocks']['method'] = parts_map[parts_array[0].strip()]
+                       self.headers['blocks']['size'] = parts_array[1].strip()
+                       self.headers['blocks']['count'] = parts_array[2].strip()
+                       self.headers['blocks']['remainder'] = parts_array[3].strip()
+                       self.headers['blocks']['number'] = parts_array[4].strip()
 
                body = json.dumps({k: self.headers[k] for k in self.headers if k != 'sum'})
                ok = self.publisher.publish(self.exchange+suffix, self.topic, body, None, self.message_ttl)
@@ -567,6 +565,8 @@ class sr_message():
                   del self.headers['size']
                if 'blocks' in self.headers.keys():
                   del self.headers['blocks']
+               if 'parts' not in self.headers.keys():
+                   raise ValueError('parts is none %s' % self.headers)
                ok = self.publisher.publish(self.exchange+suffix,self.topic,self.notice,self.headers,self.message_ttl)
 
         self.set_hdrstr()

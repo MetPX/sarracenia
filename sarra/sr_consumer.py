@@ -165,7 +165,7 @@ class sr_consumer:
 
         # make use it as a sr_message
         # dont bother with retry... 
-
+        self.get_message()
         try :
                  self.msg.from_amqplib(self.raw_msg)
                  self.logger.debug("notice %s " % self.msg.notice)
