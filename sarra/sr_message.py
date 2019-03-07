@@ -432,18 +432,19 @@ class sr_message():
            else:
                ( self.report_elapse, self.report_code, self.report_host, self.report_user ) = self.headers['report'].split()
 
-        if 'parts'   in self.headers :
-           self.partstr  = self.headers['parts']
+        if 'parts' in self.headers:
+           self.partstr = self.headers['parts']
 
-        if 'sum'     in self.headers :
-           self.sumstr   = self.headers['sum']
+        if 'sum' in self.headers:
+           self.sumstr = self.headers['sum']
 
-        if 'to_clusters' in self.headers :
-           self.to_clusters  = self.headers['to_clusters'].split(',')
+        if 'to_clusters' in self.headers:
+           self.to_clusters = self.headers['to_clusters'].split(',')
 
         self.suffix = ''
 
-        self.set_parts_from_str(self.partstr)
+        if self.partstr is not None:
+            self.set_parts_from_str(self.partstr)
         self.set_sum_str(self.sumstr)
         self.set_suffix()
         self.set_msg_time()
@@ -817,7 +818,7 @@ class sr_message():
             parts_rest = [int(tok) for tok in tokens[1:]]
             self.set_parts(tokens[0], *parts_rest)
         else:
-            raise ValueError('Malformed parts string %s' % partstr)
+            raise ValueError('malformed parts string %s' % partstr)
 
     def set_rename(self,rename=None):
         if rename != None :
