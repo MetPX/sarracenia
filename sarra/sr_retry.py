@@ -30,6 +30,7 @@
 #
 
 import os,json,sys,time
+from json import JSONDecodeError
 from _codecs import decode, encode
 
 try :
@@ -101,8 +102,9 @@ class sr_retry:
     def msgFromJSON(self, line ):
         try:
             topic, headers, notice  = json.loads(line)
-        except:
+        except JSONDecodeError:
             self.logger.error("corrupted line in retry file: %s " % line)
+            self.logger.debug("Error information: ", exc_info=True)
             return None
 
         self.logger.debug('Decoding msg from json: topic={}, headers={}, notice={}'.format(topic, headers, notice))
@@ -432,9 +434,8 @@ class sr_retry:
              except: pass
 
         except:
-                self.logger.error("on_heartbeat something went wrong")
-                (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+                self.logger.error("sr_retry/on_heartbeat: something went wrong")
+                self.logger.debug('Exception details: ', exc_info=True)
 
         # no more retry
 

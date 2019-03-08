@@ -17,28 +17,16 @@ except :
 # self_test
 # ===================================
 
-class test_logger:
-      def silence(self,str):
-          pass
-      def __init__(self):
-          self.debug   = print
-          self.error   = print
-          self.info    = print
-          self.warning = print
-          self.debug   = self.silence
-
 def self_test():
 
     failed = False
-    logger = test_logger()
-    logger.info("sr_sftp: BEGIN TEST\n")
 
     # configuration
 
     cfg = sr_config()
-    cfg.logger = logger
     cfg.configure()
     cfg.set_sumalgo('d')
+    print("sr_sftp: BEGIN TEST\n")
 
     msg = sr_message(cfg)
     msg.filesize = None
@@ -64,18 +52,18 @@ def self_test():
     try   :shutil.rmtree(testdir)
     except: pass
 
-    logger.info("TEST 01: instantiation and connection")
+    print("TEST 01: instantiation and connection")
 
     sftp = sr_sftp(cfg)
     sftp.connect()
 
     if sftp.check_is_connected():
-          logger.info("TEST 01: OK")
+          print("TEST 01: OK")
     else:
-          logger.info("TEST 01: failed ... not connected")
+          print("TEST 01: failed ... not connected")
           failed = True
 
-    logger.info("TEST 02: mkdir,rmdir,chmod,cd")
+    print("TEST 02: mkdir,rmdir,chmod,cd")
 
     sftp.mkdir("txtx")
     ls = sftp.ls()
@@ -85,22 +73,22 @@ def self_test():
 
     ls = sftp.ls()
     if "txtx" in ls :
-          logger.info("TEST 02: failed1")
+          print("TEST 02: failed1")
           failed = True
     else:
-          logger.info("TEST 02: OK1")
+          print("TEST 02: OK1")
 
     sftp.mkdir("tztz")
     ls = sftp.ls()
     if "tztz" in ls :
           sftp.chmod(0o775,"tztz")
           sftp.cd("tztz")
-          logger.info("TEST 02: OK2")
+          print("TEST 02: OK2")
     else:
-          logger.info("TEST 02: failed2")
+          print("TEST 02: failed2")
           failed = True
 
-    logger.info("TEST 03: put local aaa to remote bbb, chmod bbb, rename bbb ccc")
+    print("TEST 03: put local aaa to remote bbb, chmod bbb, rename bbb ccc")
 
     f = open("aaa","wb")
     f.write(b"1\n")
@@ -116,12 +104,12 @@ def self_test():
 
     ls = sftp.ls()
     if "ccc" in ls :
-          logger.info("TEST 03: OK")
+          print("TEST 03: OK")
     else:
-          logger.info("TEST 03: failed")
+          print("TEST 03: failed")
           failed = True
 
-    logger.info("TEST 04: get part of remote ccc into bbb")
+    print("TEST 04: get part of remote ccc into bbb")
 
     sftp.get("ccc", "bbb",1,0,4)
     f = open("bbb","rb")
@@ -129,9 +117,9 @@ def self_test():
     f.close()
 
     if data == b"\n2\n3" :
-          logger.info("TEST 04: OK")
+          print("TEST 04: OK")
     else:
-          logger.info("TEST 04: failed")
+          print("TEST 04: failed")
           failed = True
 
     # build a message
@@ -149,7 +137,6 @@ def self_test():
     msg.local_offset = 0
     cfg.set_sumalgo('d')
     msg.sumalgo      = cfg.sumalgo
-    msg.logger       = logger
 
     msg.new_file     = "bbb"
     msg.new_dir      = "."
@@ -158,7 +145,7 @@ def self_test():
     cfg.batch   = 5
     cfg.inflight    = None
 
-    logger.info("TEST 05: transport download with exact name and onfly_checksum")
+    print("TEST 05: transport download with exact name and onfly_checksum")
 
     try:   os.unlink("bbb")
     except:pass
@@ -170,30 +157,30 @@ def self_test():
 
     if os.path.exists("bbb") and cfg.msg.onfly_checksum :
           os.unlink("./bbb")
-          logger.info("TEST 05: OK")
+          print("TEST 05: OK")
     else:
-          logger.info("TEST 05: failed")
+          print("TEST 05: failed")
           failed = True
 
 
-    logger.info("TEST 06: download file lock is .filename")
+    print("TEST 06: download file lock is .filename")
     cfg.inflight = '.'
     tr.download(cfg)
     try :
             os.unlink("./bbb")
-            logger.info("TEST 06: OK")
+            print("TEST 06: OK")
     except:
-            logger.info("TEST 06: FAILED, file not found")
+            print("TEST 06: FAILED, file not found")
             failed = True
 
-    logger.info("TEST 07: download file lock is filename.tmp")
+    print("TEST 07: download file lock is filename.tmp")
     cfg.inflight = '.tmp'
     tr.download(cfg)
     try :
             os.unlink("./bbb")
-            logger.info("TEST 07: OK")
+            print("TEST 07: OK")
     except:
-            logger.info("TEST 07: FAILED, file not found")
+            print("TEST 07: FAILED, file not found")
             failed = True
 
     # download the file... it is sent below
@@ -216,64 +203,64 @@ def self_test():
     cfg.remote_dir    = "tztz"
     cfg.chmod         = 0o775
 
-    logger.info("TEST 08: send file with exact name")
+    print("TEST 08: send file with exact name")
     cfg.inflight      = None
     tr.send(cfg)
     if os.path.exists(os.path.expanduser("~/tztz/ddd")) :
-            logger.info("TEST 08: OK")
+            print("TEST 08: OK")
     else:
-            logger.info("TEST 08: FAILED, file not found")
+            print("TEST 08: FAILED, file not found")
             failed = True
 
-    logger.info("TEST 09: delete remote file")
+    print("TEST 09: delete remote file")
 
     sftp = tr.proto
     sftp.delete("ddd")
     if not os.path.exists("~/tztz/ddd") :
-            logger.info("TEST 09: OK")
+            print("TEST 09: OK")
     else:
-            logger.info("TEST 09: FAILED, file not found")
+            print("TEST 09: FAILED, file not found")
             failed = True
 
     # deleting a non existing file
-    logger.info("TEST 10: delete not existing file")
+    print("TEST 10: delete not existing file")
     try :
             sftp.delete("zzz_unexistant")
-            logger.info("TEST 10: OK")
+            print("TEST 10: OK")
     except:
-            logger.info("TEST 10: FAILED")
+            print("TEST 10: FAILED")
             failed = True
 
 
     # testing several sending options
 
-    logger.info("TEST 11: sending file lock = .filename")
+    print("TEST 11: sending file lock = .filename")
     cfg.inflight        = '.'
     tr.send(cfg)
     try :
             sftp.delete("ddd")
-            logger.info("TEST 11: OK")
+            print("TEST 11: OK")
     except:
-            logger.info("TEST 11: FAILED")
+            print("TEST 11: FAILED")
             failed = True
 
-    logger.info("TEST 12: sending file lock = filename.tmp")
+    print("TEST 12: sending file lock = filename.tmp")
     cfg.inflight        = '.tmp'
     tr.send(cfg)
     try :
             sftp.delete("ddd")
-            logger.info("TEST 12: OK")
+            print("TEST 12: OK")
     except:
-            logger.info("TEST 12: FAILED")
+            print("TEST 12: FAILED")
             failed = True
 
     # testing a number of sends
-    logger.info("TEST 13: numerous send for the same file")
+    print("TEST 13: numerous send for the same file")
     tr.send(cfg)
     tr.send(cfg)
     tr.send(cfg)
     tr.close()
-    logger.info("TEST 13: OK")
+    print("TEST 13: OK")
 
 
     # do cleanup from previous tests
@@ -283,16 +270,16 @@ def self_test():
     sftp.ls()
     sftp.delete("ccc")
     sftp.delete("ddd")
-    logger.info("%s" % sftp.originalDir)
+    print("%s" % sftp.originalDir)
     sftp.cd("")
-    logger.info("%s" % sftp.getcwd())
+    print("%s" % sftp.getcwd())
     sftp.rmdir("tztz")
     sftp.close()
 
     pwd = os.getcwd()
 
     # as sftp do part stuff back and fore
-    logger.info("TEST 14: testing parts get/put")
+    print("TEST 14: testing parts get/put")
     sftp = sr_sftp(cfg)
     sftp.connect()
     sftp.cd(pwd)
@@ -307,9 +294,9 @@ def self_test():
     f.close()
 
     if data == b"1\n2\n3\n" :
-            logger.info("TEST 14: OK")
+            print("TEST 14: OK")
     else:
-            logger.info("TEST 14: FAILED")
+            print("TEST 14: FAILED")
             failed = True
 
     sftp.delete("bbb")
@@ -317,12 +304,11 @@ def self_test():
 
     sftp.close()
 
-    logger.info("")
     if not failed :
-                    logger.info("sr_sftp: TEST PASSED")
+            print("sr_sftp: TEST PASSED")
     else :          
-                    logger.info("sr_sftp: TEST FAILED")
-                    sys.exit(1)
+            print("sr_sftp: TEST FAILED")
+            sys.exit(1)
 
 
 # ===================================
@@ -330,15 +316,11 @@ def self_test():
 # ===================================
 
 def main():
-
-    try:    self_test()
+    try:
+        self_test()
     except: 
-            (stype, svalue, tb) = sys.exc_info()
-            print("%s, Value: %s" % (stype, svalue))
-            print("sr_sftp: TEST FAILED")
-            sys.exit(1)
-
-    sys.exit(0)
+        print("sr_sftp: TEST FAILED")
+        raise
 
 # =========================================
 # direct invocation : self testing

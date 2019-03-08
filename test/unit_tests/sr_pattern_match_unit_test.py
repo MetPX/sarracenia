@@ -12,9 +12,8 @@ except :
 # ===================================
 
 def self_test():
-
-
     failed = False
+
     cfg = sr_config()
 
     # ===================================
@@ -77,16 +76,11 @@ def self_test():
 # ===================================
 
 def main():
-
     try:    
         self_test()
-    except: 
-        (stype, svalue, tb) = sys.exc_info()
-        print("%s, Value: %s" % (stype, svalue))
+    except:
         print("sr_pattern_test.py TEST FAILED")
-        sys.exit(1)
-
-    sys.exit(0)
+        raise
 
 # =========================================
 # direct invocation : self testing

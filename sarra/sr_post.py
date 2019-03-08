@@ -1235,6 +1235,7 @@ class sr_post(sr_instances):
                self.logger.info("sr_watch priming watch (instance=%d) scheduled for: %s " % (len(self.obs_watched), d))
            except:
                self.logger.warning("sr_watch priming watch: %s failed, deferred." % d)
+               self.logger.debug('Exception details:', exc_info=True)
 
                # add path created
                self.on_add( 'create', p, None )
@@ -1242,6 +1243,7 @@ class sr_post(sr_instances):
 
         else:
             self.logger.warning("sr_watch could not schedule priming watch of: %s (EPERM) deferred." % d)
+            self.logger.debug('Exception details:', exc_info=True)
 
             # add path created
             self.on_add( 'create', p, None )

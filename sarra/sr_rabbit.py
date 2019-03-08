@@ -68,6 +68,7 @@ def exec_rabbitmqadmin(url,options,logger=None):
                 if logger : logger.error("trying run command %s %s" %  command )
            else :
                 if logger : logger.error("trying run command %s %s" %  ' '.join(cmdlst) )
+           if logger: logger.debug('Exception details:', exc_info=True)
 
     return 0,None
     
@@ -285,7 +286,6 @@ def run_rabbitmqadmin(url,options,logger):
              return lst
 
     except :
-            (stype, svalue, tb) = sys.exc_info()
-            logger.error("sr_rabbit/run_rabbitmqadmin Type: %s, Value: %s,  ..." % (stype, svalue))
-            logger.error("run_rabbimtqadmin "+ options)
+            logger.error("sr_rabbit/run_rabbitmqadmin failed with option '%s'" % options)
+            logger.debug('Exception details: ', exc_info=True)
     return []

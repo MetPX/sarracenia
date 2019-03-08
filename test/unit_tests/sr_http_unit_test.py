@@ -17,30 +17,19 @@ except :
 # self_test
 # ===================================
 
-class test_logger:
-      def silence(self,str):
-          pass
-      def __init__(self):
-          self.debug   = self.silence
-          self.error   = print
-          self.info    = print
-          self.warning = print
-
 def self_test():
 
     failed = False
-    logger = test_logger()
 
-    logger.info("sr_http: BEGIN TEST\n")
+    print("sr_http: BEGIN TEST\n")
 
     opt1   = 'accept .*'
 
-    logger.info("SETUP 0: get 1 message from dd.weather")
+    print("SETUP 0: get 1 message from dd.weather")
 
     #setup consumer to catch first post
     cfg = sr_config()
     cfg.configure()
-    cfg.logger         = logger
     cfg.use_pika       = False
     cfg.broker         = urllib.parse.urlparse("amqps://anonymous:anonymous@dd.weather.gc.ca/")
     cfg.prefetch       = 10
@@ -54,16 +43,14 @@ def self_test():
     cfg.retry_path     = '/tmp/retry'
     cfg.option( opt1.split()  )
 
-    logger.info  = logger.silence
     consumer     = sr_consumer(cfg)
 
     i = 0
     while True :
           ok, msg = consumer.consume()
           if ok: break
-    logger.info  = print
 
-    logger.info("SETUP 0: OK message received\n")
+    print("SETUP 0: OK message received\n")
 
     cfg.set_sumalgo('d')
     cfg.msg = msg
@@ -75,38 +62,38 @@ def self_test():
 
     tr   = http_transport()
 
-    logger.info("TEST 01: download file with exact name")
+    print("TEST 01: download file with exact name")
     cfg.inflight = None
     tr.download(cfg)
     try :   
             os.unlink("./toto")
-            logger.info("TEST 01: OK")
+            print("TEST 01: OK")
     except:
-            logger.error("TEST 01: FAILED, file not found")
+            print("TEST 01: FAILED, file not found")
             failed = True
 
-    logger.info("TEST 02: download file lock is .filename")
+    print("TEST 02: download file lock is .filename")
     cfg.inflight = '.'
     tr.download(cfg)
     try :
             os.unlink("./toto")
-            logger.info("TEST 02: OK")
+            print("TEST 02: OK")
     except:
-            logger.error("TEST 02: FAILED, file not found")
+            print("TEST 02: FAILED, file not found")
             failed = True
 
-    logger.info("TEST 03: download file lock is filename.tmp")
+    print("TEST 03: download file lock is filename.tmp")
     cfg.inflight = '.tmp'
     tr.download(cfg)
     try :
             os.unlink("./toto")
-            logger.info("TEST 03: OK")
+            print("TEST 03: OK")
     except:
-            logger.error("TEST 03: FAILED, file not found")
+            print("TEST 03: FAILED, file not found")
             failed = True
 
 
-    logger.info("TEST 04: inserting a part in a local file")
+    print("TEST 04: inserting a part in a local file")
 
     tr.download(cfg)
 
@@ -136,9 +123,9 @@ def self_test():
     e2 = cfg.msg.local_offset+cfg.msg.length-1
              
     if   data[b:e] == data2[b2:e2] :
-         logger.info("TEST 04: OK")
+         print("TEST 04: OK")
     else:
-         logger.info("TEST 04: failed, inserted part incorrect")
+         print("TEST 04: failed, inserted part incorrect")
          failed = True
 
     try:    os.unlink("titi")
@@ -148,17 +135,13 @@ def self_test():
     try:    os.unlink(consumer.queuepath)
     except: pass
 
-    logger.info = logger.silence
     consumer.cleanup()
     consumer.close()
-    logger.info = print
 
-
-    logger.info("")
     if not failed :
-                    logger.info("sr_http: TEST PASSED")
+                    print("sr_http: TEST PASSED")
     else :          
-                    logger.info("sr_http: TEST FAILED")
+                    print("sr_http: TEST FAILED")
                     sys.exit(1)
 
 
@@ -167,15 +150,11 @@ def self_test():
 # ===================================
 
 def main():
-
-    try:    self_test()
+    try:
+        self_test()
     except: 
-            (stype, svalue, tb) = sys.exc_info()
-            print("%s, Value: %s" % (stype, svalue))
-            print("sr_http: TEST FAILED")
-            sys.exit(1)
-
-    sys.exit(0)
+        print("sr_http: TEST FAILED")
+        raise
 
 # =========================================
 # direct invocation : self testing

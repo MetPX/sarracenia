@@ -10,30 +10,18 @@ except :
 # self_test
 # ===================================
 
-class test_logger:
-      def silence(self,str):
-          pass
-      def __init__(self):
-          self.debug   = self.silence
-          self.error   = print
-          self.info    = self.silence
-          self.warning = self.silence
-
 def self_test():
 
     failed = False
-
-    logger = test_logger()
 
     opt1   = 'accept .*bulletins.*'
     opt2   = 'reject .*'
 
     #setup consumer to catch first post
     cfg = sr_config()
-    cfg.defaults()
+    cfg.configure()
+
     cfg.load_sums()
-    cfg.logger         = logger
-    cfg.debug          = True
     cfg.broker         = urllib.parse.urlparse("amqps://anonymous:anonymous@dd.weather.gc.ca/")
     cfg.prefetch       = 10
     cfg.bindings       = [ ( 'xpublic', 'v02.post.#') ]
@@ -86,15 +74,11 @@ def self_test():
 # ===================================
 
 def main():
-
-    try:    self_test()
-    except: 
-            (stype, svalue, tb) = sys.exc_info()
-            print("%s, Value: %s" % (stype, svalue))
-            print("sr_consumer.py TEST FAILED")
-            sys.exit(1)
-
-    sys.exit(0)
+    try:
+        self_test()
+    except:
+        print("sr_consumer.py TEST FAILED")
+        raise
 
 # =========================================
 # direct invocation : self testing
