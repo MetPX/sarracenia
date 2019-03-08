@@ -101,9 +101,8 @@ class sr_poll(sr_post):
                   self.dest.cd(path)
                   return True
         except :
-                  self.logger.warning("Could not cd to directory %s" % path )
-                  (stype, svalue, tb) = sys.exc_info()
-                  self.logger.warning("sr_poll/cd Type: %s, Value: %s" % (stype ,svalue))
+                  self.logger.warning("sr_poll/cd: could not cd to directory %s" % path )
+                  self.logger.debug('Exception details: ', exc_info=True)
         return False
 
     def check(self):
@@ -329,9 +328,8 @@ class sr_poll(sr_post):
 
             return True, new_ls, new_dir
         except:
-            (stype, svalue, tb) = sys.exc_info()
             self.logger.warning("dest.lsdir: Could not ls directory")
-            self.logger.warning("sr_poll/lsdir Type: %s, Value: %s" % (stype ,svalue))
+            self.logger.debug("Exception details:", exc_info=True)
 
         return False, {}, {}
 
@@ -534,9 +532,8 @@ class sr_poll(sr_post):
         try:
              self.dest.connect()
         except:
-            (stype, svalue, tb) = sys.exc_info()
-            self.logger.warning("sr_poll/post_new_url Type: %s, Value: %s" % (stype ,svalue))
-            self.logger.error("Unable to connect to %s. Type: %s, Value: %s" % (self.destination, stype ,svalue))
+            self.logger.error("sr_poll/post_new_url: unable to connect to %s" % self.destination)
+            self.logger.debug('Exception details: ', exc_info=True)
             self.logger.error("Sleeping 30 secs and retry")
             time.sleep(30)
             return True
@@ -658,14 +655,8 @@ class sr_poll(sr_post):
                          self.logger.warning("sr_poll sleep too low (%d) secs is less than 10%% of poll time (%f)" % (self.sleep, poll_time))
 
               except:
-                      import io, traceback
-                      (stype, svalue, tb) = sys.exc_info()
-                      tb_output = io.StringIO()
-                      traceback.print_tb(tb, None, tb_output)
-                      self.logger.error("%s\n" %  tb_output.getvalue())
-                      tb_output.close()
-                      self.logger.error("sr_poll/run Type: %s, Value: %s,  ..." % (stype, svalue))
-
+                      self.logger.error("sr_poll/run failed")
+                      self.logger.debug('Exception details: ', exc_info=True)
 
               self.logger.debug("poll is sleeping %d seconds " % self.sleep)
               time.sleep(self.sleep)

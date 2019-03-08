@@ -13,21 +13,9 @@ except :
 # self_test
 # ===================================
 
-class test_logger:
-      def silence(self,str):
-          pass
-      def __init__(self):
-          self.debug   = self.silence
-          self.error   = print
-          self.info    = self.silence
-          self.warning = print
-
 def self_test():
 
     failed = False
-
-    logger = test_logger()
-
     # creating a temporary cache directory/file
 
     tmpdirname = tempfile.TemporaryDirectory().name
@@ -37,15 +25,10 @@ def self_test():
     tmppath    = tmpdirname + os.sep + 'cache_test_file'
 
 
-    cfg        = sr_config(config=None,args=['test','--debug','False'])
-    cfg.logger = logger
+    cfg = sr_config()
     cfg.config_name = "test"
-
-    cfg.debug  = False
-    cfg.defaults()
-    cfg.debug  = False
-
-    cfg.general()
+    cfg.configure()
+    # cfg.general()
 
     optH = "caching 1"
     cfg.option( optH.split()  )
@@ -64,7 +47,7 @@ def self_test():
 
     # one collision when adding so 2 entries
     if len(cache.cache_dict) != 2 :
-       logger.error("test 01: expecting 2 entries...")
+       print("test 01: expecting 2 entries...")
        failed = True
 
     
@@ -75,11 +58,11 @@ def self_test():
     cache.check('key4','file4',None)
     cache.check('key5','file5','part5')
     if len(cache.cache_dict) != 3 :
-       logger.error("test 02: expecting 3 entries...")
+       print("test 02: expecting 3 entries...")
        failed = True
 
     #checking cache internals ...
-    #logger.error("%s" % cache.cache_dict)
+    #print("%s" % cache.cache_dict)
 
     cache.close()
 
@@ -88,7 +71,7 @@ def self_test():
     cache = sr_cache(cfg)
     cache.open(tmppath)
     if len(cache.cache_dict) != 0 :
-       logger.error("test 03: expecting 0 entry...")
+       print("test 03: expecting 0 entry...")
        failed = True
     cache.close()
 
@@ -103,14 +86,14 @@ def self_test():
           i = i + 1
 
     if len(cache.cache_dict) != 100 :
-       logger.error("test 04: expecting 100 entries...")
+       print("test 04: expecting 100 entries...")
        failed = True
 
     # free cache
     cache.free()
 
     if len(cache.cache_dict) != 0 :
-       logger.error("test 05: expecting 0 entry...")
+       print("test 05: expecting 0 entry...")
        failed = True
 
     cache.close()
@@ -130,14 +113,14 @@ def self_test():
     cache.delete_path('file8')
 
     if len(cache.cache_dict) != 9 :
-       logger.error("test 06: expecting 9 entries...got %d" % len(cache.cache_dict))
+       print("test 06: expecting 9 entries...got %d" % len(cache.cache_dict))
        failed = True
 
     # expire and clean
     time.sleep(1)
     cache.clean()
     if len(cache.cache_dict) != 0 :
-       logger.error("test 07: expecting 0 entry...")
+       print("test 07: expecting 0 entry...")
        failed = True
 
 
@@ -145,17 +128,17 @@ def self_test():
     cache.check('key%d'%i,'file%d'%i,'part2%d'%i)
     cache.save()
     if len(cache.cache_dict) != 1 :
-       logger.error("test 08: expecting 1 entry...")
+       print("test 08: expecting 1 entry...")
        failed = True
 
     if not os.path.exists(tmppath):
-       logger.error("test 09: cache file should exists")
+       print("test 09: cache file should exists")
        failed = True
 
     # close and unlink
     cache.close(unlink=True)
     if os.path.exists(tmppath):
-       logger.error("test 10: cache file should have been deleted")
+       print("test 10: cache file should have been deleted")
        failed = True
 
     if not failed :
@@ -170,15 +153,11 @@ def self_test():
 # ===================================
 
 def main():
-
-    try:    self_test()
-    except: 
-            (stype, svalue, tb) = sys.exc_info()
-            print("%s, Value: %s" % (stype, svalue))
-            print("sr_cache.py TEST FAILED")
-            sys.exit(1)
-
-    sys.exit(0)
+    try:
+        self_test()
+    except:
+        print("sr_cache.py TEST FAILED")
+        raise
 
 # =========================================
 # direct invocation : self testing

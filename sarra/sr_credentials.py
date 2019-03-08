@@ -218,12 +218,10 @@ class sr_credentials:
                 # seting options to protocol
         
                 self.add(urlstr,details)
-        
-        except: 
-                (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("sr_credentials/parse Type: %s, Value: %s" % (stype, svalue))
-                self.logger.error("sr_credentials parse %s" % line)
 
+        except:
+                self.logger.error("sr_credentials/parse %s" % line)
+                self.logger.debug('Exception details: ', exc_info=True)
 
     def read(self,path):
         self.logger.debug("sr_credentials read")
@@ -239,10 +237,9 @@ class sr_credentials:
                  for line in lines :
                      self.parse(line)
 
-        except : 
-                 (stype, svalue, tb) = sys.exc_info()
-                 self.logger.error("sr_credentials/read Type: %s, Value: %s" % (stype, svalue))
-                 self.logger.error("sr_credentials read path = %s" % path)
+        except :
+                 self.logger.error("sr_credentials/read path = %s" % path)
+                 self.logger.debug('Exception details: ', exc_info=True)
 
         #self.logger.debug("credentials = %s\n" % self.credentials)
 

@@ -67,9 +67,8 @@ class Do_Send_Log(object):
                   (parent.local_file,str_range,new_dir,new_file,offset,offset+msg.length-1))
 
        except:
-              (stype, svalue, tb) = sys.exc_info()
-              logger.error( "Type: %s, Value: %s,  ..." % (stype, svalue) )
-              parent.LOG_TRACE(tb)
+              logger.error("Couldn't send log")
+              logger.debug('Exception details: ', exc_info=True)
 
        return True
                

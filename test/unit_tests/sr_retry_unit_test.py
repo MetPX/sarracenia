@@ -11,18 +11,6 @@ except :
 
 failed = False
 
-class test_logger:
-      def silence(self,str):
-          pass
-      def terror(self,str):
-          print("ERROR %s" % str)
-
-      def __init__(self):
-          self.debug   = self.silence
-          self.error   = self.terror
-          self.info    = self.silence
-          self.warning = self.silence
-
 # test encode/decode
 def test_retry_encode_decode(retry,message,done=False):
 
@@ -31,40 +19,40 @@ def test_retry_encode_decode(retry,message,done=False):
     msg   = retry.msgFromJSON(line)
 
     if msg.body != message.body :
-       retry.logger.error("test 01: encode_decode body (done %s)" % done)
+       print("test 01: encode_decode body (done %s)" % done)
        failed = True
 
     if msg.delivery_info['exchange'] != message.delivery_info['exchange'] :
-       retry.logger.error("test 02: encode_decode exchange (done %s)" % done)
+       print("test 02: encode_decode exchange (done %s)" % done)
        failed = True
 
     if msg.delivery_info['routing_key'] != message.delivery_info['routing_key'] :
-       retry.logger.error("test 03: encode_decode routing_key (done %s)" % done)
+       print("test 03: encode_decode routing_key (done %s)" % done)
        failed = True
 
     if not done :
 
        if msg.properties['application_headers']['my_header_attr'] != \
           message.properties['application_headers']['my_header_attr']:
-          retry.logger.error("test 04: encode_decode headers (done %s)" % done)
+          print("test 04: encode_decode headers (done %s)" % done)
           failed = True
 
     if done :
 
 
        if not '_retry_tag_' in msg.properties['application_headers'] :
-          retry.logger.error("encode_decode retry_tag not present")
+          print("encode_decode retry_tag not present")
           failed = True
 
        if '_retry_tag_' in msg.properties['application_headers'] and \
           msg.properties['application_headers']['_retry_tag_'] != 'done':
-          retry.logger.error("encode_decode retry_tag != done")
+          print("encode_decode retry_tag != done")
           failed = True
 
        # test is_done
 
        if not retry.is_done(msg):
-          retry.logger.error("encode_decode is_done method")
+          print("encode_decode is_done method")
           failed = True
 
     return
@@ -75,14 +63,14 @@ def test_retry_is_expired(retry,message):
     retry.retry_ttl = 100000
 
     if retry.is_expired(message):
-       retry.logger.error("test 05: is_expired expires too soon ")
+       print("test 05: is_expired expires too soon ")
        failed = True
 
     time.sleep(1)
     retry.retry_ttl = 1
 
     if not retry.is_expired(message):
-       retry.logger.error("test 06: is_expired should have expired ")
+       print("test 06: is_expired should have expired ")
        failed = True
 
     retry.retry_ttl = 100000
@@ -128,21 +116,21 @@ def test_retry_msg_append_get_file(retry,message):
           t = t + 1
 
     if t != 100:
-       retry.logger.error("test 07: append_get file incomplete (%d/100)" % t)
+       print("test 07: append_get file incomplete (%d/100)" % t)
        failed = True
 
     if d != 50 :
-       retry.logger.error("test 08: append_get should have 50 done (%d/100)" % d) 
+       print("test 08: append_get should have 50 done (%d/100)" % d)
        failed = True
 
     if r != 50 :
-       retry.logger.error("test 09: append_get should have 50 todo (%d/100)" % r)
+       print("test 09: append_get should have 50 todo (%d/100)" % r)
        failed = True
 
     # at end file fp is none
 
     if fp != None :
-       retry.logger.error("test 10: append_get returned file pointer should have been None")
+       print("test 10: append_get returned file pointer should have been None")
        failed = True
 
     os.unlink(path)
@@ -153,7 +141,7 @@ def test_retry_get_simple(retry,message):
     # first case... retry.get with nothing
 
     if retry.get():
-       retry.logger.error("test 11: append_get retry.get message should be None")
+       print("test 11: append_get retry.get message should be None")
        failed = True
 
     # second case... retry.get with 3 retry messages
@@ -176,11 +164,11 @@ def test_retry_get_simple(retry,message):
           t = t + 1
 
     if t != 3 :
-       retry.logger.error("test 12: get simple problem reading 3 retry messages")
+       print("test 12: get simple problem reading 3 retry messages")
        failed = True
 
     if os.path.isfile(path):
-       retry.logger.error("test 13: get simple complete reading implies unlink")
+       print("test 13: get simple complete reading implies unlink")
        failed = True
 
 # overall case
@@ -243,12 +231,12 @@ def test_retry_overall(retry,message):
     # msg_count != done d_count ...
 
     if msg_count != d_count :
-       retry.logger.error("test 14: overall count failed msg_count %d  done_count %d ( failed %d, heartb %d)" % \
+       print("test 14: overall count failed msg_count %d  done_count %d ( failed %d, heartb %d)" % \
        (msg_count,d_count,f_count,h_count))
        failed = True
 
     if os.path.isfile(retry.retry_path) :
-       retry.logger.error("test 15: overall retry_path completely read, should have been deleted")
+       print("test 15: overall retry_path completely read, should have been deleted")
        failed = True
 
 
@@ -356,12 +344,12 @@ def test_retry_ctrl_c(retry,message):
     # msg_count != done d_count ...
 
     if msg_count != d_count :
-       retry.logger.error("test 16: ctrl_c count failed msg_count %d  done_count %d ( failed %d, heartb %d)" % \
+       print("test 16: ctrl_c count failed msg_count %d  done_count %d ( failed %d, heartb %d)" % \
        (msg_count,d_count,f_count,h_count))
        failed = True
 
     if os.path.isfile(retry.retry_path) :
-       retry.logger.error("test 17: ctrl_c retry_path completely read, should have been deleted")
+       print("test 17: ctrl_c retry_path completely read, should have been deleted")
        failed = True
 
 def self_test():
@@ -376,16 +364,13 @@ def self_test():
     try   : os.unlink(retry_path+'.heart')
     except: pass
 
-    logger = test_logger()
 
     #setup retry parent
     cfg = sr_config()
-    cfg.defaults()
-    cfg.logger         = logger
-    cfg.debug          = True
+    cfg.configure()
     cfg.retry_path     = retry_path
 
-    message = raw_message(logger)
+    message = raw_message(cfg.logger)
 
     message.pubtime= timeflt2str(time.time())
     message.baseurl= "xyz://user@host"
@@ -503,15 +488,11 @@ def self_test():
 # ===================================
 
 def main():
-
-    try:    self_test()
-    except: 
-            (stype, svalue, tb) = sys.exc_info()
-            print("%s, Value: %s" % (stype, svalue))
-            print("sr_retry.py TEST FAILED")
-            sys.exit(1)
-
-    sys.exit(0)
+    try:
+        self_test()
+    except:
+        print("sr_retry.py TEST FAILED")
+        raise
 
 # =========================================
 # direct invocation : self testing

@@ -202,7 +202,7 @@ class sr_config:
         #self.debug    = True
         #self.loglevel = logging.DEBUG
 
-        self.LOG_FORMAT= ('%(asctime)s [%(levelname)s] %(message)s')
+        self.LOG_FORMAT= '%(asctime)s [%(levelname)s] %(message)s'
         logging.basicConfig(level=self.loglevel, format = self.LOG_FORMAT )
         self.logger = logging.getLogger()
         self.logger.debug("sr_config __init__")
@@ -411,8 +411,8 @@ class sr_config:
             f.close()
 
         except:
-            (stype, svalue, tb) = sys.exc_info()
-            self.logger.error("check_remote_config Type: %s, Value: %s" % (stype, svalue))
+            self.logger.error('sr_config/check_for_remote_config failed')
+            self.logger.debug('Exception details: ', exc_info=True)
 
     def chunksize_from_str(self,str_value):
         self.logger.debug("sr_config chunksize_from_str %s" % str_value)
@@ -443,8 +443,8 @@ class sr_config:
             f.close()
 
         except:
-            (stype, svalue, tb) = sys.exc_info()
-            self.logger.error("sr_config/config 1 Type: %s, Value: %s" % (stype, svalue))
+            self.logger.error('sr_config/config 1 failed')
+            self.logger.debug('Exception details: ', exc_info=True)
 
     def config_path(self,subdir,config, mandatory=True, ctype='conf'):
         self.logger.debug("config_path = %s %s" % (subdir,config))
@@ -924,9 +924,8 @@ class sr_config:
         try    : 
             exec(compile(open(script).read(), script, 'exec'))
         except : 
-            (stype, svalue, tb) = sys.exc_info()
-            self.logger.error("sr_config/execfile 2 Type: %s, Value: %s" % (stype, svalue))
-            self.logger.error("for option %s plugin %s did not work" % (opname,path))
+            self.logger.error("sr_config/execfile 2 failed for option '%s' and plugin '%s'" % (opname, path))
+            self.logger.debug('Exception details: ', exc_info=True)
             return False
 
         if getattr(self,opname) is None:
@@ -1021,9 +1020,8 @@ class sr_config:
             try: 
                 plugin(self)
             except:
-                (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("sr_config/__on_heartbeat__ 3 Type: %s, Value: %s,  ..." % (stype, svalue))
-                self.logger.error( "plugin %s, execution failed." % plugin )
+                self.logger.error( "ssr_config/__on_heartbeat__  3: plugin %s, execution failed." % plugin )
+                self.logger.debug('Exception details: ', exc_info=True)
 
         return True
 
@@ -2563,9 +2561,8 @@ class sr_config:
                          self.logger.debug("extend add %s = '%s'" % (words[0],getattr(self,words[0])))
 
         except:
-                (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("sr_config/option 4 Type: %s, Value: %s,  ..." % (stype, svalue))
-                self.logger.error("problem evaluating option %s" % words[0])
+                self.logger.error("sr_config/option 4: problem evaluating option %s" % words[0])
+                self.logger.debug('Exception details: ', exc_info=True)
 
         if needexit :
            os._exit(1)
@@ -2619,12 +2616,12 @@ class sr_config:
         try   : 
                 self.sumalgo = self.sumalgos[flgs]
                 self.lastflg = flgs
-                return
-        except: pass
+        except:
+                self.logger.error("sumflg %s not working... set to 'd'" % sumflg)
+                self.logger.debug('Exception details: ', exc_info=True)
+                self.lastflg = 'd'
+                self.sumalgo = self.sumalgos['d']
 
-        self.logger.error("sumflg %s not working... set to 'd'" % sumflg)
-        self.lastflg = 'd'
-        self.sumalgo = self.sumalgos['d']
 
     def set_loglevel(self):
         if not self.loglevel:
@@ -2641,7 +2638,7 @@ class sr_config:
             self.logger.debug("Switching to rotating log file: %s" % self.logpath)
             handler = handlers.TimedRotatingFileHandler(self.logpath, when=self.lr_when, interval=self.lr_interval,
                                                         backupCount=self.lr_backupCount)
-            self.create_new_logger('%(asctime)s [%(levelname)s] %(message)s', handler)
+            self.create_new_logger(self.LOG_FORMAT, handler)
             if self.chmod_log:
                 os.chmod(self.logpath, self.chmod_log)
             sys.stdout = StreamToLogger(self.logger, logging.INFO)
@@ -2649,14 +2646,13 @@ class sr_config:
         elif self.loglevel and self.logpath:
             self.logger.debug("Switching to log file: %s" % self.logpath)
             handler = logging.FileHandler(self.logpath)
-            self.create_new_logger('%(asctime)s [%(levelname)s] %(message)s', handler)
+            self.create_new_logger(self.LOG_FORMAT, handler)
             if self.chmod_log:
                 os.chmod(self.logpath, self.chmod_log)
         elif self.loglevel:
             self.logger.debug('Keeping on screen logging')
             handler = logging.StreamHandler()
-            #self.create_new_logger('%(asctime)s [%(levelname)s] %(pathname)s %(lineno)d %(message)s', handler)
-            self.create_new_logger('%(asctime)s [%(levelname)s] %(message)s', handler)
+            self.create_new_logger(self.LOG_FORMAT, handler)
         else:
             self.set_loglevel()
 
@@ -2718,13 +2714,11 @@ class sr_config:
 
         try :
                  self.set_sumalgo(sumflg)
-                 return True
-        except : 
-                 (stype, svalue, tb) = sys.exc_info()
-                 self.logger.error("sr_config/validate_sum 5 Type: %s, Value: %s" % (stype, svalue))
-                 self.logger.error("sum invalid (%s)" % self.sumflg)
+        except :
+                 self.logger.error("sr_config/validate_sum 5: sum invalid (%s)" % self.sumflg)
+                 self.logger.debug('Exception details: ', exc_info=True)
                  return False
-        return False
+        return True
 
     def wget_config(self,urlstr,path,remote_config_url=False):
         self.logger.debug("wget_config %s %s" % (urlstr,path))
@@ -2742,9 +2736,8 @@ class sr_config:
                               self.logger.info("file %s is up to date (%s)" % (path,urlstr))
                               return True
                    except: 
-                           self.logger.warning("could not compare modification dates... downloading")
-                           (stype, svalue, tb) = sys.exc_info()
-                           self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+                           self.logger.error("could not compare modification dates... downloading")
+                           self.logger.debug('Exception details: ', exc_info=True)
 
                 fp = open(path+'.downloading','wb')
 
@@ -2795,9 +2788,8 @@ class sr_config:
                      self.logger.warning('resume with the one on the server')
                else:
                      self.logger.error('Download failed: %s' % urlstr )
-                     self.logger.error('Uexpected error')              
-                     (stype, svalue, tb) = sys.exc_info()
-                     self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+                     self.logger.error('Unexpected error')
+                     self.logger.debug('Exception details: ', exc_info=True)
 
         try   : os.unlink(path+'.downloading')
         except: pass

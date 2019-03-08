@@ -179,8 +179,8 @@ class LESSender(object):
 				logger.error("file_send_egc_les: error with return info from file: %s" % filepath)
 				return False
 		except:
-			(etype, value, tb) = sys.exc_info()
-			logger.error("file_send_egc_les: error sending over telnet: {}".format(value))
+			logger.error("file_send_egc_les/on_file: error sending over telnet")
+			logger.debug('Exception details: ', exc_info=True)
 			return False
 
 
