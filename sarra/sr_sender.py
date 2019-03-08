@@ -181,7 +181,8 @@ class sr_sender(sr_subscribe):
                      # of the supported python one (sftp,ftp[s])
                      # and the plugin decided to go with the python defaults
                      if ok != None : return ok
-        except: pass
+        except:
+                self.logger.debug('Exception details:', exc_info=True)
 
 
         # try supported hardcoded send
@@ -210,11 +211,10 @@ class sr_sender(sr_subscribe):
                      return ok
 
         except :
-                (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("sender/__do_send__  Type: %s, Value: %s,  ..." % (stype, svalue))
                 if self.reportback:
-                    self.msg.report_publish(503,"Unable to process")
-                self.logger.error("Could not send")
+                    self.msg.report_publish(503, "Unable to process")
+                self.logger.error("sender/__do_send__: could not send")
+                self.logger.debug('Exception details: ', exc_info=True)
 
         # something went wrong
 

@@ -91,9 +91,10 @@ class raw_message:
 
                self.properties['application_headers'] = properties.headers
        except:
-               (stype, value, tb) = sys.exc_info()
-               self.logger.error("sr_amqp/pika_to_amqplib Type: %s, Value: %s" % (stype, value))
-               self.logger.error("in pika to amqplib %s %s" %(vars(method_frame),vars(properties)))
+               self.logger.error("sr_amqp/pika_to_amqplib: in pika to amqplib %s %s" %(vars(method_frame),
+                                                                                       vars(properties)))
+               self.logger.debug('Exception details: ', exc_info=True)
+
 
 # =========================================
 # sr_proto : one place for throttle, onfly checksum, buffer io timeout
@@ -474,30 +475,23 @@ class sr_transport():
                 if parent.delete and hasattr(proto,'delete') :
                    try   :
                            proto.delete(remote_file)
-                           msg.logger.debug ('file  deleted on remote site %s' % remote_file)
-                   except: msg.logger.error('unable to delete remote file %s' % remote_file)
-    
-                return True
-                
+                           msg.logger.debug ('file deleted on remote site %s' % remote_file)
+                   except:
+                           msg.logger.error('unable to delete remote file %s' % remote_file)
+                           msg.logger.debug('Exception details: ', exc_info=True)
+
         except:
                 #closing on problem
                 try    : self.close()
                 except : pass
     
-                (stype, svalue, tb) = sys.exc_info()
-                msg.logger.error("Download failed %s. Type: %s, Value: %s" % (urlstr, stype ,svalue))
+                msg.logger.error("Download failed %s" % urlstr)
+                msg.logger.debug('Exception details: ', exc_info=True)
                 msg.report_publish(499,'%s download failed' % self.scheme)
-                if os.path.isfile(new_lock) : os.remove(new_lock)
- 
+                if os.path.isfile(new_lock) :
+                    os.remove(new_lock)
                 return False
-
-        #closing on problem
-        try    : self.close()
-        except : pass
-    
-        msg.report_publish(498,'%s download failed' % self.scheme)
-    
-        return False
+        return True
 
     # generalized get...
     def get( self, remote_file, local_file, remote_offset, local_offset, length ):
@@ -511,11 +505,12 @@ class sr_transport():
            msg.new_file = local_file
            ok = do_get(self.parent)
            msg.new_file = new_file
-           if ok : return
-           if ok == False: raise
-           self.logger.debug("ok == NONE")
-           # ok == none let python do it
-
+           if ok:
+              return
+           elif ok is False:
+              raise Exception('Not ok')
+           else:
+              self.logger.debug("sr_util/get ok is None executing this do_get %s" % do_get)
         self.proto.get(remote_file, local_file, remote_offset, local_offset, length)
 
     # generalized put...
@@ -530,11 +525,12 @@ class sr_transport():
            do_put = self.parent.do_puts[self.scheme]
            ok = do_put(self.parent)
            msg.new_file = new_file
-           if ok : return
-           if ok == False: raise
-           self.logger.debug("ok == NONE")
-           # ok == none let python do it
-
+           if ok:
+              return
+           elif ok is False:
+              raise Exception('Not ok')
+           else:
+              self.logger.debug("sr_util/put ok is None executing this do_put %s" % do_put)
         self.proto.put(local_file, remote_file, local_offset, remote_offset, length)
 
     # generalized send...
@@ -684,9 +680,7 @@ class sr_transport():
 
                 if parent.reportback :
                    msg.report_publish(201,'Delivered')
-    
-                return True
-                
+
         except:
 
                 #removing lock if left over
@@ -697,26 +691,13 @@ class sr_transport():
                 #closing on problem
                 try    : self.close()
                 except : pass
-    
-                (stype, svalue, tb) = sys.exc_info()
-                msg.logger.error("Delivery failed %s. Type: %s, Value: %s" % (msg.new_dir+'/'+msg.new_file, stype ,svalue))
+
+                msg.logger.error("Delivery failed %s" % msg.new_dir+'/'+msg.new_file)
+                msg.logger.debug('Exception details: ', exc_info=True)
                 msg.report_publish(497,'%s delivery failed' % self.scheme)
-    
+
                 return False
-
-        #removing lock if left over
-        if new_lock != None and hasattr(proto,'delete') :
-           try   : proto.delete(new_lock)
-           except: pass
-    
-        #closing on problem
-        try    : self.close()
-        except : pass
-
-        msg.report_publish(496,'%s delivery failed' % self.scheme)
-    
-        return False
-
+        return True
 
     # set_local_file_attributes
     def set_local_file_attributes(self,local_file, msg) :

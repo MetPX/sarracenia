@@ -11,17 +11,6 @@ except :
 # self_test
 # ===================================
 
-class test_logger:
-      def silence(self,str):
-          pass
-      def __init__(self):
-          self.debug   = print
-          self.error   = print
-          self.info    = print
-          self.warning = print
-          self.debug   = self.silence
-          self.info    = self.silence
-
 def self_test():
 
     failed = False
@@ -35,19 +24,17 @@ def self_test():
     f.close()
 
     # instantiation, test include and overwrite logs
-    logger = test_logger()
     cfg    = sr_config(config="aaa")
-    cfg.logger = logger
     cfg.configure()
 
     if not cfg.randomize :
-       cfg.logger.error("test 01 : problem with include")
+       print("test 01 : problem with include")
        failed = True
 
     # back to defaults + check isTrue
     cfg.defaults()
     if not cfg.isTrue('true') or cfg.isTrue('false') :
-       cfg.logger.error("test 02: problem with module isTrue")
+       print("test 02: problem with module isTrue")
        failed = True
 
     # ===================================
@@ -173,29 +160,29 @@ def self_test():
     # able to find the script
     ok, path = cfg.config_path("plugins","scrpt.py",mandatory=True,ctype='py')
     if not ok :
-       cfg.logger.error("test 03: problem with config_path script not found")
+       print("test 03: problem with config_path script not found")
        failed = True
  
     # able to load the script
     cfg.execfile("on_message",path)
     if cfg.on_message == None :
-       cfg.logger.error("test 04: problem with module execfile script not loaded")
+       print("test 04: problem with module execfile script not loaded")
        failed = True
 
     # able to run the script
     cfg.this_value = 0
     cfg.on_message(cfg)
     if cfg.this_value != 1 :
-       cfg.logger.error("test 05: problem to run the script ")
+       print("test 05: problem to run the script ")
        failed = True
     os.unlink("./scrpt.py")
 
     # general ... 
 
     cfg.general()
-    cfg.logger.info(cfg.user_cache_dir)
-    cfg.logger.info(cfg.user_log_dir)    
-    cfg.logger.info(cfg.user_config_dir)
+    print(cfg.user_cache_dir)
+    print(cfg.user_log_dir)
+    print(cfg.user_config_dir)
 
     # args ... 
 
@@ -209,32 +196,32 @@ def self_test():
     cfg.args(['-expire','3h','-message_ttl','3W','--randomize', '--assemble', 'True',  '-logrotate', '5m',
               '-logrotate_interval', '1m'])
     if not cfg.randomize :
-       cfg.logger.error("test 06: args problem randomize")
+       print("test 06: args problem randomize")
        failed = True
     if not cfg.inplace  :
-       cfg.logger.error("test 07: args problem assemble")
+       print("test 07: args problem assemble")
        failed = True
     if cfg.lr_interval != 1:
-       cfg.logger.error("test 08a: args problem logrotate %s" % cfg.lr_interval)
+       print("test 08a: args problem logrotate %s" % cfg.lr_interval)
        failed = True
     if cfg.lr_backupCount != 5:
-       cfg.logger.error("test 08b: args problem logrotate %s" % cfg.lr_backupCount)
+       print("test 08b: args problem logrotate %s" % cfg.lr_backupCount)
        failed = True
     if cfg.lr_when != 'm':
-       cfg.logger.error("test 08c: args problem logrotate %s" % cfg.lr_when)
+       print("test 08c: args problem logrotate %s" % cfg.lr_when)
        failed = True
     if cfg.expire != expire_value :
-       cfg.logger.error("test 09: args problem expire %s" % cfg.expire)
+       print("test 09: args problem expire %s" % cfg.expire)
        failed = True
     if cfg.message_ttl != message_value :
-       cfg.logger.error("test 10: args problem message_ttl %s" % cfg.message_ttl)
+       print("test 10: args problem message_ttl %s" % cfg.message_ttl)
        failed = True
 
 
     # has_vip... 
     cfg.args(['-vip', '127.0.0.1' ])
     if not cfg.has_vip():
-       cfg.logger.error("test 11: has_vip failed")
+       print("test 11: has_vip failed")
        failed = True
 
 
@@ -243,100 +230,100 @@ def self_test():
     cfg.option(opt1.split())
     cfg.option(opt2.split())
     if cfg.broker.geturl() != "amqp://a:b@toto" :
-       cfg.logger.error("test 12: varsub problem with replacing HOSTNAME")
+       print("test 12: varsub problem with replacing HOSTNAME")
        failed = True
 
     opt1 = "parts i,128"
     cfg.option(opt1.split())
     if cfg.partflg != 'i' or cfg.blocksize != 128:
-       cfg.logger.error("test 13: option parts or module validate_parts")
+       print("test 13: option parts or module validate_parts")
        failed = True
 
     opt1 = "sum z,d"
     cfg.option(opt1.split())
     if cfg.sumflg != 'z,d' :
-       cfg.logger.error("test 14: option sum or module validate_sum")
+       print("test 14: option sum or module validate_sum")
        failed = True
 
     opt1 = "sum R,0"
     cfg.option(opt1.split())
     if cfg.sumflg != 'R,0' :
-       cfg.logger.error("test 15: option sum or module validate_sum")
+       print("test 15: option sum or module validate_sum")
        failed = True
 
     opt1 = "sum d"
     cfg.option(opt1.split())
     if cfg.sumflg != 'd' or cfg.sumalgo.registered_as() != 'd' :
-       cfg.logger.error("test 16: option sum or module validate_sum")
+       print("test 16: option sum or module validate_sum")
        failed = True
 
     opt1 = "sum 0"
     cfg.option(opt1.split())
     if cfg.sumflg != '0' or cfg.sumalgo.registered_as() != '0' :
-       cfg.logger.error("test 17: option sum or module validate_sum")
+       print("test 17: option sum or module validate_sum")
        failed = True
 
     opt1 = "sum n"
     cfg.option(opt1.split())
     if cfg.sumflg != 'n' or cfg.sumalgo.registered_as() != 'n' :
-       cfg.logger.error("test 18: option sum or module validate_sum")
+       print("test 18: option sum or module validate_sum")
        failed = True
 
     opt1 = "sum s"
     cfg.option(opt1.split())
     if cfg.sumflg != 's' or cfg.sumalgo.registered_as() != 's':
-       cfg.logger.error("test 19: option sum or module validate_sum")
+       print("test 19: option sum or module validate_sum")
        failed = True
 
     #opt1 = "sum N"
     #cfg.option(opt1.split())
     #if cfg.sumflg != 'N' or cfg.sumalgo.registered_as() != 'N':
-    #   cfg.logger.error("test 19b: option sum or module validate_sum")
+    #   print("test 19b: option sum or module validate_sum")
     #   failed = True
 
     opt1 = "move toto titi"
     cfg.option(opt1.split())
     if cfg.movepath[0] != 'toto' or cfg.movepath[1] != 'titi' :
-       cfg.logger.error("test 20: option move for sr_post does not work")
+       print("test 20: option move for sr_post does not work")
        failed = True
 
     opt1 = "path .. ."
     cfg.option(opt1.split())
     if cfg.postpath[0] != os.path.abspath('..') or cfg.postpath[1] != os.path.abspath('.') :
-       cfg.logger.error("test 21: option path for sr_post does not work")
+       print("test 21: option path for sr_post does not work")
        failed = True
 
     opt1 = "inflight ."
     cfg.option(opt1.split())
     if cfg.inflight != '.' :
-       cfg.logger.error("test 22: option inflight . does not work")
+       print("test 22: option inflight . does not work")
        failed = True
 
     opt1 = "inflight .tmp"
     cfg.option(opt1.split())
     if cfg.inflight != '.tmp' :
-       cfg.logger.error("test 23: option inflight .tmp does not work")
+       print("test 23: option inflight .tmp does not work")
        failed = True
 
     opt1 = "inflight 1.5"
     cfg.option(opt1.split())
     if cfg.inflight != 1.5 :
-       cfg.logger.error("test 24: option inflight 1.5  does not work")
+       print("test 24: option inflight 1.5  does not work")
        failed = True
 
     opt1 = "prefetch 10"
     cfg.option(opt1.split())
     if cfg.prefetch != 10 :
-       cfg.logger.error("test 25: prefetch option did not work")
+       print("test 25: prefetch option did not work")
        failed = True
 
     # reexecuting the config aaa.conf
 
-    cfg.logger.debug("test 25b: reparsing aaa.conf that includes bbb.inc")
+    print("test 25b: reparsing aaa.conf that includes bbb.inc")
     cfg.config(cfg.user_config)
     os.unlink('aaa.conf')
     os.unlink('bbb.inc')
-    cfg.logger.debug("test 25b: worked")
+    print("test 25b: worked")
 
     opt1 = "header toto1=titi1"
     cfg.option(opt1.split())
@@ -352,27 +339,27 @@ def self_test():
        cfg.headers_to_add['toto1'] != 'titi1' or \
        cfg.headers_to_add['toto2'] != 'titi2' or \
        len(cfg.headers_to_add)     != 2 :
-       cfg.logger.error("test 26: option header adding entries did not work")
+       print("test 26: option header adding entries did not work")
        failed = True
 
     if not 'tutu1' in cfg.headers_to_del      or \
        not 'tutu2' in cfg.headers_to_del      or \
        len(cfg.headers_to_del)     != 2 :
-       cfg.logger.error("test 27: option header deleting entries did not work")
+       print("test 27: option header deleting entries did not work")
        failed = True
 
     # expire in ms
     opt4 = "expire 10m"
     cfg.option(opt4.split())
     if cfg.expire != 600000 :
-       cfg.logger.error("test 28: option expire or module duration_from_str did not work")
+       print("test 28: option expire or module duration_from_str did not work")
        failed = True
 
     # message_ttl in ms
     opt4 = "message_ttl 20m"
     cfg.option(opt4.split())
     if cfg.message_ttl != 1200000 :
-       cfg.logger.error("test 29: option message_ttl or module duration_from_str did not work")
+       print("test 29: option message_ttl or module duration_from_str did not work")
        failed = True
 
     os.environ["VAR1"] = "michel"
@@ -381,19 +368,19 @@ def self_test():
     opt4="directory ${VAR1}/${VAR2}/${VAR3}/blabla"
     cfg.option(opt4.split())
     if '$' in cfg.currentDir or cfg.currentDir != 'michel/peter/jun/blabla':
-       cfg.logger.error("test 30: env variable substitution failed %s" % cfg.currentDir)
+       print("test 30: env variable substitution failed %s" % cfg.currentDir)
        failed = True
 
     opt4='strip 4'
     cfg.option(opt4.split())
     if cfg.strip != 4 :
-       cfg.logger.error("test 31: option strip with integer failed")
+       print("test 31: option strip with integer failed")
        failed = True
 
     opt4='strip .*aaa'
     cfg.option(opt4.split())
     if cfg.pstrip != '.*aaa' :
-       cfg.logger.error("test 32: option strip with pattern failed")
+       print("test 32: option strip with pattern failed")
        failed = True
 
     pika = cfg.use_pika
@@ -401,49 +388,49 @@ def self_test():
     opt4='use_pika True'
     cfg.option(opt4.split())
     if pika_available and not cfg.use_pika and not cfg.use_amqplib:
-       cfg.logger.error("test 33: option use_pika boolean set to true failed")
+       print("test 33: option use_pika boolean set to true failed")
        failed = True
 
     opt4='use_pika False'
     cfg.option(opt4.split())
     if cfg.use_pika :
-       cfg.logger.error("test 34: option use_pika boolean set to false failed")
+       print("test 34: option use_pika boolean set to false failed")
        failed = True
 
     opt4='use_pika'
     cfg.option(opt4.split())
     if pika_available and not cfg.use_pika and not cfg.use_amqplib:
-       cfg.logger.error("test 35: option use_pika boolean set to true without value failed")
+       print("test 35: option use_pika boolean set to true without value failed")
        failed = True
 
     opt4='statehost False'
     cfg.option(opt4.split())
     if cfg.statehost :
-       cfg.logger.error("test 35: option statehost boolean set to false failed")
+       print("test 35: option statehost boolean set to false failed")
        failed = True
 
     opt4='statehost True'
     cfg.option(opt4.split())
     if not cfg.statehost or cfg.hostform != 'short' :
-       cfg.logger.error("test 36: option statehost boolean set to true, hostform short, failed")
+       print("test 36: option statehost boolean set to true, hostform short, failed")
        failed = True
 
     opt4='statehost SHORT'
     cfg.option(opt4.split())
     if not cfg.statehost or cfg.hostform != 'short' :
-       cfg.logger.error("test 37: option statehost set to SHORT, hostform short, failed")
+       print("test 37: option statehost set to SHORT, hostform short, failed")
        failed = True
 
     opt4='statehost fqdn'
     cfg.option(opt4.split())
     if not cfg.statehost or cfg.hostform != 'fqdn' :
-       cfg.logger.error("test 38: option statehost set to fqdn, hostform fqdn, failed")
+       print("test 38: option statehost set to fqdn, hostform fqdn, failed")
        failed = True
 
     opt4='statehost TOTO'
     cfg.option(opt4.split())
     if cfg.statehost and cfg.hostform != None:
-       cfg.logger.error("test 39: option statehost set badly ... did not react correctly, failed")
+       print("test 39: option statehost set badly ... did not react correctly, failed")
        failed = True
 
     # extended options 
@@ -453,7 +440,7 @@ def self_test():
 
     cfg.declare_option('extended')
     if not cfg.check_extended():
-       cfg.logger.error("test 40: extend with new option, option was declared, but check_extended complained(False)")
+       print("test 40: extend with new option, option was declared, but check_extended complained(False)")
        failed = True
 
     opt4='extended_bad TITI'
@@ -461,19 +448,19 @@ def self_test():
     # modify this test... causes error to be printed out ... which is ok... but annoying for conformity tests
     #if cfg.check_extended():
     if cfg.extended_bad[0] != 'TITI' :
-       cfg.logger.error("test 41:  extend with new option, option not declared, value should still be ok")
+       print("test 41:  extend with new option, option not declared, value should still be ok")
        failed = True
 
     opt1 = "surplus_opt surplus_value"
     cfg.option(opt1.split())
     if cfg.surplus_opt != [ "surplus_value" ] :
-       cfg.logger.error("test 42: extend option did not work")
+       print("test 42: extend option did not work")
        failed = True
 
     opt1 = "surplus_opt surplus_value2"
     cfg.option(opt1.split())
     if cfg.surplus_opt[0] != "surplus_value" or cfg.surplus_opt[1] != "surplus_value2":
-       cfg.logger.error("test 43: extend option list did not work")
+       print("test 43: extend option list did not work")
        failed = True
 
     # more options testing
@@ -481,41 +468,41 @@ def self_test():
     opt1 = "base_dir /home/aspymjg/dev/metpx-sarracenia/sarra"
     cfg.option(opt1.split())
     if cfg.base_dir != '/home/aspymjg/dev/metpx-sarracenia/sarra':
-       cfg.logger.error("test 44: string option base_dir did not work")
+       print("test 44: string option base_dir did not work")
        failed = True
 
     opt1 = "post_base_dir /totot/toto"
     cfg.option(opt1.split())
     if cfg.post_base_dir != '/totot/toto':
-       cfg.logger.error("test 45: string option post_base_dir did not work")
+       print("test 45: string option post_base_dir did not work")
        failed = True
 
     opt1 = "post_base_url file://toto"
     cfg.option(opt1.split())
     if cfg.post_base_url != 'file://toto':
-       cfg.logger.error("test 46: url option post_base_url did not work")
+       print("test 46: url option post_base_url did not work")
        failed = True
 
     if cfg.outlet != 'post' :
-       cfg.logger.error("test 47: default error outlet = %s" % self.outlet)
+       print("test 47: default error outlet = %s" % self.outlet)
        failed = True
 
     opt1 = "outlet json"
     cfg.option(opt1.split())
     if cfg.outlet != 'json' :
-       cfg.logger.error("test 48: option outlet value json did not work")
+       print("test 48: option outlet value json did not work")
        failed = True
 
     opt1 = "outlet url"
     cfg.option(opt1.split())
     if cfg.outlet != 'url' :
-       cfg.logger.error("test 49: option outlet value url did not work")
+       print("test 49: option outlet value url did not work")
        failed = True
 
     opt1 = "outlet post"
     cfg.option(opt1.split())
     if cfg.outlet != 'post' :
-       cfg.logger.error("test 50: option outlet value post did not work")
+       print("test 50: option outlet value post did not work")
        failed = True
 
     # bad option setting skipped ... its output confuses conformity...
@@ -523,24 +510,24 @@ def self_test():
     opt1 = "outlet toto"
     #cfg.option(opt1.split())
     #if cfg.outlet != 'post' :
-    #   cfg.logger.error("test 51: option outlet with bad value did not work")
+    #   print("test 51: option outlet with bad value did not work")
     #   failed = True
 
     if not cfg.retry_mode :
-       cfg.logger.error("test 52: retry_mode should be the default")
+       print("test 52: retry_mode should be the default")
        failed = True
 
     opt1 = "retry_mode false"
     cfg.option(opt1.split())
     if cfg.retry_mode :
-       cfg.logger.error("test 53: retry_mode should be false")
+       print("test 53: retry_mode should be false")
        failed = True
 
     # retry_ttl in mins 
     opt1 = "retry_ttl 1D"
     cfg.option(opt1.split())
     if cfg.retry_ttl != 86400 :
-       cfg.logger.error("test 54: option retry_ttl or module duration_from_str did not work")
+       print("test 54: option retry_ttl or module duration_from_str did not work")
        failed = True
 
     # exchange_suffix
@@ -549,7 +536,7 @@ def self_test():
     opt1 = "post_exchange_suffix suffix2"
     cfg.option(opt1.split())
     if cfg.exchange_suffix != 'suffix1' or cfg.post_exchange_suffix != 'suffix2' :
-       cfg.logger.error("test 55: option exchange_suffix or post_exchange_suffix did not work")
+       print("test 55: option exchange_suffix or post_exchange_suffix did not work")
        failed = True
 
     # internal variables substitution
@@ -559,21 +546,21 @@ def self_test():
     opt1 = "post_base_dir /${broker.hostname}/${broker.username}"
     cfg.option(opt1.split())
     if cfg.post_base_dir != '/testbroker.toto/michel':
-       cfg.logger.error("test 56: replacing internal ${broker.hostname} ${broker.username} did not work")
+       print("test 56: replacing internal ${broker.hostname} ${broker.username} did not work")
        failed = True
 
     cfg.toto = ['tutu1','tutu2']
     opt1 = "post_base_dir /${toto[1]}/${broker.username}/aaa"
     cfg.option(opt1.split())
     if cfg.post_base_dir != '/tutu2/michel/aaa':
-       cfg.logger.error("test 57: replacing internal ${toto[1]} did not work")
+       print("test 57: replacing internal ${toto[1]} did not work")
        failed = True
 
     cfg.toto = ['tutu1','tutu2']
     opt1 = "post_base_dir /${toto}/${broker.username}/aaa"
     cfg.option(opt1.split())
     if cfg.post_base_dir != '/tutu1/michel/aaa':
-       cfg.logger.error("test 58: replacing internal ${toto} did not work")
+       print("test 58: replacing internal ${toto} did not work")
        failed = True
 
     # more config test to perform for full coverage... 
@@ -589,21 +576,21 @@ def self_test():
     dDir    = '/${RYYYY}${RMM}${RDD}${RHH}${RMM}${RSS}/${T1}${T2}${A1}${A2}${ii}${CCCC}${YY}${GG}${Gg}${BBB}/'
     new_dir = cfg.sundew_dirPattern(urlstr='',basename='SACN04_CWAO_140251_RRA',destDir=dDir,destName='aaa')
     if not new_dir.endswith('/SACN04CWAO140251RRA') :
-       cfg.logger.error("test 59: sundew_dirPattern new_dir %s should end with /SACN04CWAO140251RRA" % new_dir)
+       print("test 59: sundew_dirPattern new_dir %s should end with /SACN04CWAO140251RRA" % new_dir)
        failed = True
 
     # retry_ttl in mins 
     opt1 = "sanity_log_dead 1D"
     cfg.option(opt1.split())
     if cfg.sanity_log_dead != 86400 :
-       cfg.logger.error("test 60: option sanity_log_dead or module duration_from_str did not work")
+       print("test 60: option sanity_log_dead or module duration_from_str did not work")
        failed = True
 
     # retry_ttl in mins 
     opt1 = "heartbeat ${sanity_log_dead}"
     cfg.option(opt1.split())
     if cfg.heartbeat != 86400 :
-       cfg.logger.error("test 61: option evaluated self.${} did not work")
+       print("test 61: option evaluated self.${} did not work")
        failed = True
 
     # retry_ttl in mins 
@@ -612,7 +599,7 @@ def self_test():
     w = cfg.backslash_space(w)
     cfg.option(w)
     if cfg.heartbeat != 86400 :
-       cfg.logger.error("test 61: option evaluated self.${} did not work")
+       print("test 61: option evaluated self.${} did not work")
        failed = True
 
 
@@ -628,25 +615,11 @@ def self_test():
 # ===================================
 
 def main():
-
-    try:    self_test()
-    except: 
-            import io, traceback
-            (stype, svalue, tb) = sys.exc_info()
-            tb_output = io.StringIO()
-            traceback.print_tb(tb, None, tb_output)
-            print("\n\n****************************************\n" + \
-                      "******* ERROR PRINTING TRACEBACK *******\n" + \
-                      "****************************************\n" + \
-                    "\n" + tb_output.getvalue()             + "\n" + \
-                    "\n****************************************\n")
-            tb_output.close()
-            print("%s, Value: %s" % (stype, svalue))
-            print("sr_config.py TEST FAILED")
-
-            sys.exit(1)
-
-    sys.exit(0)
+    try:
+        self_test()
+    except:
+        print("sr_config.py TEST FAILED")
+        raise
 
 # =========================================
 # direct invocation : self testing

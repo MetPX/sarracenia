@@ -12,8 +12,6 @@ except :
 # ===================================
 
 def self_test():
-
-
     failed = False
 
     # ===================================
@@ -131,10 +129,10 @@ def self_test():
 
 
     if not failed :
-                    print("sr_util.py TEST PASSED")
+            print("sr_util.py TEST PASSED")
     else :          
-                    print("sr_util.py TEST FAILED")
-                    sys.exit(1)
+            print("sr_util.py TEST FAILED")
+            sys.exit(1)
 
 
 # ===================================
@@ -142,15 +140,11 @@ def self_test():
 # ===================================
 
 def main():
-
-    try:    self_test()
-    except: 
-            (stype, svalue, tb) = sys.exc_info()
-            print("%s, Value: %s" % (stype, svalue))
-            print("sr_util.py TEST FAILED")
-            sys.exit(1)
-
-    sys.exit(0)
+    try:
+        self_test()
+    except:
+        print("sr_util.py TEST FAILED")
+        raise
 
 # =========================================
 # direct invocation : self testing

@@ -314,8 +314,8 @@ class sr_subscribe(sr_instances):
                 return True
 
             except:
-                self.logger.info( "inlined data corrupt, try downloading." )
-                pass
+                self.logger.info("inlined data corrupt, try downloading.")
+                self.logger.debug('Exception details:', exc_info=True)
 
         # try registered do_download first... might overload defaults
 
@@ -329,7 +329,8 @@ class sr_subscribe(sr_instances):
                      # of the supported python one (http[s],sftp,ftp[s])
                      # and the plugin decided to go with the python defaults
                      if ok != None : return ok
-        except: pass
+        except:
+                self.logger.debug('Exception details:', exc_info=True)
 
         # try supported hardcoded download
 
@@ -366,11 +367,10 @@ class sr_subscribe(sr_instances):
                      return ok
 
         except :
-                (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("Download  Type: %s, Value: %s,  ..." % (stype, svalue))
-                if self.reportback: 
+                self.logger.error("%s/__do_download__: Could not download" % self.program_name)
+                self.logger.debug('Exception details: ', exc_info=True)
+                if self.reportback:
                    self.msg.report_publish(503,"Unable to process")
-                self.logger.error("%s: Could not download" % self.program_name)
 
         if self.reportback: 
             self.msg.report_publish(503,"Service unavailable %s" % scheme)
@@ -1109,6 +1109,7 @@ class sr_subscribe(sr_instances):
                            os.makedirs(newdir,0o775,True)
                        except Exception as ex:
                            self.logger.warning( "making %s: %s" % ( newdir, ex ) )
+                           self.logger.debug('Exception details:', exc_info=True)
 
                        #MG FIXME : except: return False  maybe ?
 
@@ -1126,6 +1127,7 @@ class sr_subscribe(sr_instances):
                             need_download = False
                     except Exception as ex:
                             self.logger.warning( "mv %s %s: %s" % ( oldpath, newdir, ex ) )
+                            self.logger.debug('Exception details:', exc_info=True)
                     #MG FIXME : except: return False  maybe ?
 
                  # if the newpath exists log a message in debug only
@@ -1172,6 +1174,7 @@ class sr_subscribe(sr_instances):
                         os.makedirs(self.msg.new_dir,0o775,True)
                     except Exception as ex:
                         self.logger.warning( "making %s: %s" % ( self.msg.new_dir, ex ) )
+                        self.logger.debug('Exception details:', exc_info=True)
 
                  # move
                  ok = True
@@ -1184,9 +1187,12 @@ class sr_subscribe(sr_instances):
                             os.rename(oldpath,newpath)
                             self.logger.info("move %s to %s (rename)" % (oldpath,newpath))
                          else:
-                            self.logger.error("did not move %s to %s (rename) dunno why?" % (oldpath,newpath))
+                            self.logger.error("did not move %s to %s (rename)" % (oldpath,newpath))
                          need_download = False
-                 except: ok = False
+                 except:
+                     ok = False
+                     self.logger.error("did not move %s to %s (rename)" % (oldpath, newpath))
+                     self.logger.debug('Exception details:', exc_info=True)
 
                  if ok  :
                           self.logger.info("file moved %s to %s" % (oldpath,newpath) )
@@ -1233,9 +1239,10 @@ class sr_subscribe(sr_instances):
                self.logger.info("removed %s" % path)
                if self.reportback: self.msg.report_publish(201, 'removed')
            except:
-               (stype, svalue, tb) = sys.exc_info()
-               self.logger.error("Could not remove %s. Type: %s, Value: %s,  ..." % (path, stype, svalue))
-               if self.reportback: self.msg.report_publish(500, 'remove failed')
+               self.logger.error("sr_subscribe/doit_download: could not remove %s." % path)
+               self.logger.debug('Exception details: ', exc_info=True)
+               if self.reportback:
+                   self.msg.report_publish(500, 'remove failed')
 
            self.msg.set_topic(self.post_topic_prefix,self.msg.new_relpath)
            self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.pubtime)
@@ -1269,6 +1276,7 @@ class sr_subscribe(sr_instances):
                  os.makedirs(self.msg.new_dir,0o775,True)
               except Exception as ex:
                  self.logger.warning( "making %s: %s" % ( self.msg.new_dir, ex ) )
+                 self.logger.debug('Exception details:', exc_info=True)
 
            ok = True
            try : 
@@ -1283,6 +1291,7 @@ class sr_subscribe(sr_instances):
            except:
                ok = False
                self.logger.error("symlink of %s %s failed." % (self.msg.new_file, self.msg.headers[ 'link' ]) )
+               self.logger.debug('Exception details:', exc_info=True)
                if self.reportback: self.msg.report_publish(500, 'symlink failed')
 
            if ok :
@@ -1322,9 +1331,12 @@ class sr_subscribe(sr_instances):
            os.makedirs(self.msg.new_dir,0o775,True)
         except Exception as ex: 
            self.logger.warning( "making %s: %s" % ( self.msg.new_dir, ex ) )
-           
+           self.logger.debug('Exception details:', exc_info=True)
+
         try    : os.chdir(self.msg.new_dir)
-        except : self.logger.error("could not cd to directory %s" % self.msg.new_dir)
+        except :
+            self.logger.error("could not cd to directory %s" % self.msg.new_dir)
+            self.logger.debug('Exception details:', exc_info=True)
 
         #=================================
         # overwrite False, user asked that if the announced file already exists,
@@ -1491,11 +1503,13 @@ class sr_subscribe(sr_instances):
                                self.msg.headers[ "content" ] = { "encoding": "utf-8", "value": d.decode('utf-8') }
                            except:
                                self.msg.headers[ "content" ] = { "encoding": "base64", "value": b64encode(d).decode('utf-8') }
+                               self.logger.debug('Exception details:', exc_info=True)
 
                        self.logger.debug( "inlined data for %s" % self.msg.new_file )
 
                    except:
                        self.logger.error("failled trying to inline %s" % self.msg.new_file)
+                       self.logger.debug('Exception details:', exc_info=True)
 
            # discard option
            if self.discard :
@@ -1503,8 +1517,8 @@ class sr_subscribe(sr_instances):
                         os.unlink(self.msg.new_file)
                         self.logger.debug("Discarded  %s" % self.msg.new_file)
               except :
-                        (stype, svalue, tb) = sys.exc_info()
-                        self.logger.error("Could not discard  Type: %s, Value: %s,  ..." % (stype, svalue))
+                        self.logger.error("Could not discard")
+                        self.logger.debug('Exception details: ', exc_info=True)
               if self.msg.isRetry: self.consumer.msg_worked()
               return False
 
@@ -1726,13 +1740,12 @@ class sr_subscribe(sr_instances):
                       going_badly=0.01
 
               except:
-                      if self.retry_mode : self.consumer.msg_to_retry()
-                      (stype, svalue, tb) = sys.exc_info()
-                      if self.debug : self.LOG_TRACE(tb)
-                      self.logger.error( "%s/run going badly, so sleeping for %g Type: %s, Value: %s,  ..." % \
-                          (self.program_name,going_badly, stype, svalue) )
+                      self.logger.error( "%s/run going badly, so sleeping for %g" % (self.program_name, going_badly))
+                      self.logger.debug('Exception details: ', exc_info=True)
+                      if self.retry_mode:
+                          self.consumer.msg_to_retry()
                       time.sleep(going_badly)
-                      if (going_badly < 5):  going_badly*=2 
+                      if (going_badly < 5):  going_badly*=2
 
     def save_message(self):
 
