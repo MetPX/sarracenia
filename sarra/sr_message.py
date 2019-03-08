@@ -203,6 +203,16 @@ class sr_message():
 
         self.local_checksum = self.sumalgo.get_value()
 
+    def convert_partsv2tov3(self):
+        self.headers['size'] = self.length
+        if self.partflg not in ['0', '1']:
+            self.headers['blocks'] = {}
+            self.headers['blocks']['method'] = {'i': 'inplace', 'p': 'partitioned'}[self.partflg]
+            self.headers['blocks']['size'] = str(self.chunksize)
+            self.headers['blocks']['count'] = str(self.block_count)
+            self.headers['blocks']['remainder'] = str(self.remainder)
+            self.headers['blocks']['number'] = str(self.current_block)
+
     def from_amqplib(self, msg=None ):
         """
             This routine does a minimal decode of raw messages from amqplib
@@ -239,15 +249,17 @@ class sr_message():
                        sv = encode( decode( self.headers[ "integrity" ][ "value" ].encode('utf-8'), "base64" ), 'hex' ).decode('utf-8')
                    self.headers[ "sum" ] = sa + ',' + sv
                    self.sumstr = self.headers['sum']
-
+                   del self.headers['integrity']
                if 'size' in self.headers.keys():
                    parts_map = {'inplace': 'i', 'partitioned': 'p'}
                    if 'blocks' not in self.headers.keys():
-                       self.set_parts('1', int(self.headers['size']), 1, int(self.headers['size']))
+                       self.set_parts('1', int(self.headers['size']))
                    else:
                        self.set_parts(parts_map[self.headers['blocks']['method']], int(self.headers['blocks']['size']),
                                       int(self.headers['blocks']['count']), int(self.headers['blocks']['remainder']),
                                       int(self.headers['blocks']['number']))
+                       del self.headers['blocks']
+                   del self.headers['size']
            else:
                if 'application_headers' in msg.properties.keys():
                    self.headers = msg.properties['application_headers']
@@ -521,7 +533,6 @@ class sr_message():
            suffix=""
 
         if self.publisher != None :
-
            if self.topic.startswith('v03'):
                self.headers[ "pubTime" ] = timev2tov3str( self.pubtime )
                if "mtime" in self.headers.keys():
@@ -543,10 +554,10 @@ class sr_message():
 
                if 'parts' in self.headers.keys():
                    self.set_parts_from_str(self.headers['parts'])
+                   self.convert_partsv2tov3()
 
                body = json.dumps({k: self.headers[k] for k in self.headers if k not in ['sum', 'parts']})
                ok = self.publisher.publish(self.exchange+suffix, self.topic, body, None, self.message_ttl)
-
            else:
                #in v02, sum is the correct header. FIXME: roundtripping not quite right yet.
                if 'integrity' in self.headers.keys(): 
@@ -783,31 +794,20 @@ class sr_message():
         #========================================
 
     def set_parts(self, partflg='1', chunksize=0, block_count=1, remainder=0, current_block=0):
-
         # Setting parts for v02
         self.partstr = '%s,%d,%d,%d,%d' % (partflg, chunksize, block_count, remainder, current_block)
         self.headers['parts'] = self.partstr
 
-        # Setting parts for new v03
-        self.partflg = partflg
-        if partflg not in ['0', '1']:
-            self.headers['blocks'] = {}
-            self.headers['blocks']['method'] = {'i': 'inplace', 'p': 'partitioned'}[partflg]
-            self.headers['blocks']['size'] = str(chunksize)
-            self.headers['blocks']['count'] = str(block_count)
-            self.headers['blocks']['remainder'] = str(remainder)
-            self.headers['blocks']['number'] = str(current_block)
-        self.headers['size'] = str(chunksize) if current_block != block_count - 1 else str(remainder)
-
-        # TODO Investigate if the following attributes are really useful
         # Setting other common attributes from parts
+        self.partflg = partflg
         self.chunksize = chunksize
         self.block_count = block_count
         self.remainder = remainder
         self.current_block = current_block
 
         # Setting calculated attributes from parts
-        self.length = int(self.headers['size'])
+        is_chunk = current_block != block_count - 1 or block_count == 1
+        self.length = chunksize if is_chunk else remainder
         self.lastchunk = current_block == block_count-1
         self.offset = current_block * chunksize
         self.filesize = block_count * chunksize + remainder

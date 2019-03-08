@@ -1191,7 +1191,6 @@ class sr_subscribe(sr_instances):
                          need_download = False
                  except:
                      ok = False
-                     self.logger.error("did not move %s to %s (rename)" % (oldpath, newpath))
                      self.logger.debug('Exception details:', exc_info=True)
 
                  if ok  :

@@ -144,14 +144,17 @@ class sr_retry:
                                           'hex').decode('utf-8').strip()
                    sumstr = '{},{}'.format(sumstr, decoded_value)
                headers['sum'] = sumstr
+               del headers['integrity']
            if 'size' in headers.keys():
                parts_map = {'inplace': 'i', 'partitioned': 'p'}
                if 'blocks' not in headers.keys():
-                   partstr = "%s,%s,%s,%s,%s" % ('1', headers['size'], '1', headers['size'], '0')
+                   partstr = "%s,%s,%s,%s,%s" % ('1', headers['size'], '1', '0', '0')
                else:
                    partstr = "%s,%s,%s,%s,%s" % (parts_map[headers['blocks']['method']], headers['blocks']['size'],
                                                  headers['blocks']['count'], headers['blocks']['remainder'],
                                                  headers['blocks']['number'])
+                   del headers['blocks']
+               del headers['size']
                headers['parts'] = partstr
         else:
            headers = message.properties['application_headers']
