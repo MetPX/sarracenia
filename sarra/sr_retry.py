@@ -108,22 +108,6 @@ class sr_retry:
             return None
 
         self.logger.debug('Decoding msg from json: topic={}, headers={}, notice={}'.format(topic, headers, notice))
-        if topic.startswith('v03'):
-            # v3 has no sum, must add it here
-            sum_algo_map = {"d": "md5", "s": "sha512", "n": "md5name", "0": "random", "L": "link", "R": "remove",
-                            'z': 'cod'}
-            sum_algo_map = {v: k for k, v in sum_algo_map.items()}
-            sumstr = sum_algo_map[headers['integrity']['method']]
-            if sumstr == '0':
-                sumstr = '{},{}'.format(sumstr, headers['integrity']['value'])
-            elif sumstr == 'z':
-                sumstr = '{},{}'.format(sumstr, sum_algo_map[headers['integrity']['value']])
-            else:
-                decoded_value = encode(decode(headers['integrity']['value'].encode('utf-8'), 'base64'), 'hex').decode('utf-8').strip()
-                sumstr = '{},{}'.format(sumstr, decoded_value)
-            headers['sum'] = sumstr
-        self.logger.debug('headers={}'.format(headers))
-
         self.message.delivery_info['exchange']         = self.parent.exchange
         self.message.delivery_info['routing_key']      = topic
         self.message.properties['application_headers'] = headers
@@ -138,27 +122,50 @@ class sr_retry:
 
         if message.body[0] == '[' : # early v03 message to persist, 
            ( message.pubtime, message.baseurl, message.relpath, headers ) = json.loads( message.body )
-           notice  = "%s %s %s" % ( message.pubtime, message.baseurl, message.relpath ) 
+           notice  = "%s %s %s" % ( message.pubtime, message.baseurl, message.relpath )
         elif message.body[0] == '{' : # late v03 message to persist, 
            headers = json.loads( message.body )
            message.pubtime = headers[ "pubTime" ]
            message.baseurl = headers[ "baseUrl" ]
            message.relpath = headers[ "relPath" ]
-           notice  = "%s %s %s" % ( message.pubtime, message.baseurl, message.relpath ) 
+           notice  = "%s %s %s" % ( message.pubtime, message.baseurl, message.relpath )
+           if 'integrity' in headers.keys():
+               # v3 has no sum, must add it here
+               sum_algo_map = {"d": "md5", "s": "sha512", "n": "md5name", "0": "random", "L": "link", "R": "remove",
+                               'z': 'cod'}
+               sum_algo_map = {v: k for k, v in sum_algo_map.items()}
+               sumstr = sum_algo_map[headers['integrity']['method']]
+               if sumstr == '0':
+                   sumstr = '{},{}'.format(sumstr, headers['integrity']['value'])
+               elif sumstr == 'z':
+                   sumstr = '{},{}'.format(sumstr, sum_algo_map[headers['integrity']['value']])
+               else:
+                   decoded_value = encode(decode(headers['integrity']['value'].encode('utf-8'), 'base64'),
+                                          'hex').decode('utf-8').strip()
+                   sumstr = '{},{}'.format(sumstr, decoded_value)
+               headers['sum'] = sumstr
+               del headers['integrity']
+           if 'size' in headers.keys():
+               parts_map = {'inplace': 'i', 'partitioned': 'p'}
+               if 'blocks' not in headers.keys():
+                   partstr = "%s,%s,%s,%s,%s" % ('1', headers['size'], '1', '0', '0')
+               else:
+                   partstr = "%s,%s,%s,%s,%s" % (parts_map[headers['blocks']['method']], headers['blocks']['size'],
+                                                 headers['blocks']['count'], headers['blocks']['remainder'],
+                                                 headers['blocks']['number'])
+                   del headers['blocks']
+               del headers['size']
+               headers['parts'] = partstr
         else:
            headers = message.properties['application_headers']
-           if type(message.body) == bytes: 
+           if type(message.body) == bytes:
                notice = message.body.decode("utf-8")
            else:
                notice = message.body
- 
 
         if done:
-           headers['_retry_tag_'] = 'done'
-
-        json_line = json.dumps( [ topic, headers, notice ], sort_keys=True ) + '\n' 
-
-        return json_line
+            headers['_retry_tag_'] = 'done'
+        return json.dumps([topic, headers, notice], sort_keys=True) + '\n'
 
     def get(self):
         ok = False
@@ -287,9 +294,8 @@ class sr_retry:
            fp.write( line )
            fp.flush()
         except:
-           self.logger.error("failed to serialize message to JSON: %s" % message.body )
-           pass
-
+           self.logger.error("failed to serialize message to JSON: %s" % message.body)
+           self.logger.debug('Exception details:', exc_info=True)
         return fp
 
     def msg_get_from_file(self,fp,path):

@@ -80,6 +80,16 @@ class sr_message():
         self.sumstr        = None
         self.sumflg        = None
 
+        # Default value for parts attributes
+        self.chunksize = None
+        self.length = None
+        self.block_count = None
+        self.remainder = None
+        self.current_block = None
+        self.lastchunk = None
+        self.offset = None
+        self.filesize = None
+
         self.part_ext      = 'Part'
 
         self.sumalgo       = parent.sumalgo
@@ -104,7 +114,7 @@ class sr_message():
         self.new_file      = None
         self.new_baseurl   = None
         self.new_relpath   = None
-
+        self.to_clusters = []
 
     def change_partflg(self, partflg ):
         self.partflg       =  partflg 
@@ -193,6 +203,16 @@ class sr_message():
 
         self.local_checksum = self.sumalgo.get_value()
 
+    def convert_partsv2tov3(self):
+        self.headers['size'] = self.length
+        if self.partflg not in ['0', '1']:
+            self.headers['blocks'] = {}
+            self.headers['blocks']['method'] = {'i': 'inplace', 'p': 'partitioned'}[self.partflg]
+            self.headers['blocks']['size'] = str(self.chunksize)
+            self.headers['blocks']['count'] = str(self.block_count)
+            self.headers['blocks']['remainder'] = str(self.remainder)
+            self.headers['blocks']['number'] = str(self.current_block)
+
     def from_amqplib(self, msg=None ):
         """
             This routine does a minimal decode of raw messages from amqplib
@@ -228,7 +248,18 @@ class sr_message():
                    else:
                        sv = encode( decode( self.headers[ "integrity" ][ "value" ].encode('utf-8'), "base64" ), 'hex' ).decode('utf-8')
                    self.headers[ "sum" ] = sa + ',' + sv
-
+                   self.sumstr = self.headers['sum']
+                   del self.headers['integrity']
+               if 'size' in self.headers.keys():
+                   parts_map = {'inplace': 'i', 'partitioned': 'p'}
+                   if 'blocks' not in self.headers.keys():
+                       self.set_parts('1', int(self.headers['size']))
+                   else:
+                       self.set_parts(parts_map[self.headers['blocks']['method']], int(self.headers['blocks']['size']),
+                                      int(self.headers['blocks']['count']), int(self.headers['blocks']['remainder']),
+                                      int(self.headers['blocks']['number']))
+                       del self.headers['blocks']
+                   del self.headers['size']
            else:
                if 'application_headers' in msg.properties.keys():
                    self.headers = msg.properties['application_headers']
@@ -289,9 +320,6 @@ class sr_message():
         # adjust headers from -headers option
 
         self.trim_headers()
-
-        self.partstr     = None
-        self.sumstr      = None
 
         token        = self.topic.split('.')
         self.version = token[0]
@@ -355,9 +383,6 @@ class sr_message():
 
     def parse_v00_post(self):
         token             = self.topic.split('.')
-        # v00             = token[0]
-        # dd              = token[1]
-        # notify          = token[2]
         self.version      = 'v02'
         self.mtype        = 'post'
         self.topic_prefix = 'v02.post'
@@ -384,12 +409,11 @@ class sr_message():
         self.sumstr  = 'd,%s' % self.checksum
         self.headers['sum'] = self.sumstr
 
-        self.to_clusters = []
         self.headers['to_clusters'] = None
 
         self.suffix  = ''
         
-        self.set_parts_str(self.partstr)
+        self.set_parts_from_str(self.partstr)
         self.set_sum_str(self.sumstr)
         self.set_suffix()
         self.set_hdrstr()
@@ -420,21 +444,19 @@ class sr_message():
            else:
                ( self.report_elapse, self.report_code, self.report_host, self.report_user ) = self.headers['report'].split()
 
-        self.partstr = None
-        if 'parts'   in self.headers :
-           self.partstr  = self.headers['parts']
+        if 'parts' in self.headers:
+           self.partstr = self.headers['parts']
 
-        self.sumstr  = None
-        if 'sum'     in self.headers :
-           self.sumstr   = self.headers['sum']
+        if 'sum' in self.headers:
+           self.sumstr = self.headers['sum']
 
-        self.to_clusters = []
-        if 'to_clusters' in self.headers :
-           self.to_clusters  = self.headers['to_clusters'].split(',')
+        if 'to_clusters' in self.headers:
+           self.to_clusters = self.headers['to_clusters'].split(',')
 
         self.suffix = ''
 
-        self.set_parts_str(self.partstr)
+        if self.partstr is not None:
+            self.set_parts_from_str(self.partstr)
         self.set_sum_str(self.sumstr)
         self.set_suffix()
         self.set_msg_time()
@@ -511,7 +533,6 @@ class sr_message():
            suffix=""
 
         if self.publisher != None :
-
            if self.topic.startswith('v03'):
                self.headers[ "pubTime" ] = timev2tov3str( self.pubtime )
                if "mtime" in self.headers.keys():
@@ -529,15 +550,22 @@ class sr_message():
                    sv = sum_algo_map[ self.headers["sum"][2:] ]
                else:
                    sv = encode( decode( self.headers["sum"][2:], 'hex'), 'base64' ).decode('utf-8').strip()
-
                self.headers[ "integrity" ] = { "method": sm, "value": sv }
-               body = json.dumps({k: self.headers[k] for k in self.headers if k != 'sum'})
-               ok = self.publisher.publish(self.exchange+suffix, self.topic, body, None, self.message_ttl)
 
+               if 'parts' in self.headers.keys():
+                   self.set_parts_from_str(self.headers['parts'])
+                   self.convert_partsv2tov3()
+
+               body = json.dumps({k: self.headers[k] for k in self.headers if k not in ['sum', 'parts']})
+               ok = self.publisher.publish(self.exchange+suffix, self.topic, body, None, self.message_ttl)
            else:
                #in v02, sum is the correct header. FIXME: roundtripping not quite right yet.
                if 'integrity' in self.headers.keys(): 
                   del self.headers[ 'integrity' ]
+               if 'size' in self.headers.keys():
+                  del self.headers['size']
+               if 'blocks' in self.headers.keys():
+                  del self.headers['blocks']
                ok = self.publisher.publish(self.exchange+suffix,self.topic,self.notice,self.headers,self.message_ttl)
 
         self.set_hdrstr()
@@ -765,60 +793,32 @@ class sr_message():
         self.url     = urllib.parse.urlparse(self.urlstr)
         #========================================
 
-
-    def set_parts(self,partflg='1',chunksize=0, block_count=1, remainder=0, current_block=0):
-        self.partflg          = partflg 
-        self.chunksize        = chunksize
-        self.block_count      = block_count
-        self.remainder        = remainder
-        self.current_block    = current_block
-        self.partstr          = '%s,%d,%d,%d,%d' %\
-                                (partflg,chunksize,block_count,remainder,current_block)
-        self.lastchunk        = current_block == block_count-1
+    def set_parts(self, partflg='1', chunksize=0, block_count=1, remainder=0, current_block=0):
+        # Setting parts for v02
+        self.partstr = '%s,%d,%d,%d,%d' % (partflg, chunksize, block_count, remainder, current_block)
         self.headers['parts'] = self.partstr
 
-        self.offset        = self.current_block * self.chunksize
-        self.filesize      = self.block_count * self.chunksize
-        if self.remainder  > 0 :
-           self.filesize  += self.remainder   - self.chunksize
-           if self.lastchunk : self.length    = self.remainder
+        # Setting other common attributes from parts
+        self.partflg = partflg
+        self.chunksize = chunksize
+        self.block_count = block_count
+        self.remainder = remainder
+        self.current_block = current_block
 
-    def set_parts_str(self,partstr):
+        # Setting calculated attributes from parts
+        is_chunk = current_block != block_count - 1 or block_count == 1
+        self.length = chunksize if is_chunk else remainder
+        self.lastchunk = current_block == block_count-1
+        self.offset = current_block * chunksize
+        self.filesize = block_count * chunksize + remainder
 
-        self.partflg = None
-        self.partstr = partstr
-        self.length  = 0
-
-        if self.partstr == None : return
-
-        token        = self.partstr.split(',')
-        self.partflg = token[0]
-
-        self.chunksize     = int(token[1])
-        self.block_count   = 1
-        self.remainder     = 0
-        self.current_block = 0
-        self.lastchunk     = True
-
-        self.offset        = 0
-        self.length        = self.chunksize
-
-        self.filesize      = self.chunksize
-
-        if self.partflg in [ '0', '1' ]: return
-
-        self.block_count   = int(token[2])
-        self.remainder     = int(token[3])
-        self.current_block = int(token[4])
-        self.lastchunk     = self.current_block == self.block_count-1
-
-        self.offset        = self.current_block * self.chunksize
-
-        self.filesize      = self.block_count * self.chunksize
-
-        if self.remainder  > 0 :
-           self.filesize  += self.remainder   - self.chunksize
-           if self.lastchunk : self.length    = self.remainder
+    def set_parts_from_str(self, partstr):
+        tokens = partstr.split(',')
+        if 0 < len(tokens) < 6:
+            parts_rest = [int(tok) for tok in tokens[1:]]
+            self.set_parts(tokens[0], *parts_rest)
+        else:
+            raise ValueError('malformed parts string %s' % partstr)
 
     def set_rename(self,rename=None):
         if rename != None :

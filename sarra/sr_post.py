@@ -1285,14 +1285,15 @@ class sr_post(sr_instances):
 
         last_time = time.time()
         while True:
-             self.wakeup()
-             now = time.time()
-             elapse = now - last_time
-             if elapse < self.sleep : time.sleep(self.sleep-elapse)
-             last_time = now
+            self.wakeup()
+            now = time.time()
+            elapse = now - last_time
+            if elapse < self.sleep:
+                time.sleep(self.sleep-elapse)
+            last_time = now
 
-        self.observer.join()
-
+        # FIXME This is unreachable code, need to figure out what to do with that
+        # self.observer.join()
 
     # ==================================================
     # FIXME in 2018?  get rid of code from HERE TOP
