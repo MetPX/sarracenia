@@ -6,7 +6,10 @@ lists all changes between versions.
 
 **git repo**
 
-* bugfix: use of python-amqp broken on ubuntu <= 16.04 because *connect* call missing.
+* new:    issue #166: Added *size* and *blocks* added to v03.post format.
+* bugfix: removed some incorrect ERROR messages (originally inserted to aid debugging.)
+* bugfix: issue #162: use of python-amqp broken on ubuntu <= 16.04 because *connect* call missing.
+* bugfix: issue #160: cleaned up v03 so it has no *sum* header (which should only be present in v02)
 
 **2.19.02b2**
 
