@@ -36,6 +36,9 @@ Installation Instructions
 git
 ---
 
+2.19.03.b1
+----------
+
 *NOTICE*: ubuntu 14.04 & 16.04 regression for python3-amqp fixed.
 
 
