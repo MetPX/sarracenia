@@ -74,10 +74,18 @@ The headers are an array of name:value pairs::
              "method" : "md5" | "sha512" | "md5name" | "link" | "remove" | "cod" | "random" ,
              "value"  : "base64 encoded checksum value"
           }
-          "parts" = size and partitioning information. 
 
   OPTIONAL:
 
+          "size"          - the number of bytes being advertised.
+          "blocks"        - if the file being advertised is partitioned, then:
+          {
+              "method"    : "inplace" | "partitioned" , - is the file already in parts?
+              "size"      : "9999", - size of the blocks.
+              "count"     : "9999", - number of blocks in the file.
+              "remainder" : "9999", - the size of the last block.
+              "number"    : "9999", - which block is this.
+          }
           "rename"        - name to write file locally.
           "topic"         - copy of topic from AMQP header (usually omitted)
           "source"        - the originating entity of the message. 
@@ -264,7 +272,19 @@ Additional fields:
 
 .. _parts:
 
-**parts=<method>,<bsz>,<blktot>,<brem>,<bno>**
+v02: **parts=<method>,<bsz>,<blktot>,<brem>,<bno>**
+
+v03::
+     "size":<sz> , 
+
+     "blocks" : 
+     { 
+            "method": "inplace" or "partitioned", 
+            "size": <bsz>,
+            "count": <blktot>,
+            "remainder": <brem>,
+            "number": <bno>
+     }
 
  A header indicating the method and parameters for partitioning applied for the file.
  Partitioning is used to send a single file as a collection of segments, rather than as
@@ -278,16 +298,17 @@ Additional fields:
  
  Indicates what partitioning method, if any, was used in transmission. 
 
- +-----------+---------------------------------------------------------------------+
- |   Method  | Description                                                         |
- +-----------+---------------------------------------------------------------------+
- |    p      | File is partitioned, individual part files are created.             |
- +-----------+---------------------------------------------------------------------+
- |    i      | File is partitioned, but blocks are read from a single file,        |
- |           | rather than parts.                                                  |
- +-----------+---------------------------------------------------------------------+
- |    1      | File is in a single part (no partitioning).                         |
- +-----------+---------------------------------------------------------------------+
+ +-----------------+---------------------------------------------------------------------+
+ |   Method        | Description                                                         |
+ +-----------------+---------------------------------------------------------------------+
+ | p - partitioned | File is partitioned, individual part files are created.             |
+ +-----------------+---------------------------------------------------------------------+
+ | i - inplace     | File is partitioned, but blocks are read from a single file,        |
+ |                 | rather than parts.                                                  |
+ +-----------------+---------------------------------------------------------------------+
+ | 1 - <sizeonly>  | File is in a single part (no partitioning).                         |
+ |                 | in v03, only *size* header will be present. *blocks* is omitted     |
+ +-----------------+---------------------------------------------------------------------+
 
  - analogous to rsync options: --inplace, --partial,
 
