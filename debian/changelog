@@ -1,9 +1,18 @@
+metpx-sarracenia (2.19.03b1) unstable; urgency=medium
+
+  * new:    issue #166: Added *size* and *blocks* added to v03.post format.
+  * bugfix: removed some incorrect ERROR messages (originally inserted to aid debugging.)
+  * bugfix: issue #162: use of python-amqp broken on ubuntu <= 16.04 because *connect* call missing.
+  * bugfix: issue #160: cleaned up v03 so it has no *sum* header (which should only be present in v02)
+
+ -- Peter Silva <peter.silva@canada.ca>  Sat, 09 Mar 2019 01:11:35 -0500
+
 metpx-sarracenia (2.19.02b3) unstable; urgency=medium
 
   *bugfix: issue #163: use of python-amqp broken on ubuntu <= 16.04 because *connect* 
   *        call missing. 
 
- -- Peter Silva <peter@idefix>  Wed, 27 Feb 2019 14:38:43 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Wed, 27 Feb 2019 14:38:43 -0500
 
 metpx-sarracenia (2.19.02b2) unstable; urgency=medium
 
@@ -19,7 +28,7 @@ metpx-sarracenia (2.19.02b2) unstable; urgency=medium
   * bugfix: issue #140 messages on console instead of log.
   *
 
- -- Peter Silva <peter@blacklab>  Sat, 23 Feb 2019 08:33:36 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Sat, 23 Feb 2019 08:33:36 -0500
 
 metpx-sarracenia (2.19.02b1) unstable; urgency=medium
 
