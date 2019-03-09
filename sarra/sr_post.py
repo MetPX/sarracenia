@@ -1292,6 +1292,8 @@ class sr_post(sr_instances):
                 time.sleep(self.sleep-elapse)
             last_time = now
 
+        # FIXME This is unreachable code, need to figure out what to do with that
+        # self.observer.join()
 
     # ==================================================
     # FIXME in 2018?  get rid of code from HERE TOP
