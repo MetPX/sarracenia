@@ -5,13 +5,21 @@
 # which can easily be run in a virtualbox VM.
 
 # Install and configure dependencies
-sudo apt -y install rabbitmq-server python3-pyftpdlib python3-paramiko net-tools python
+sudo apt-key adv --keyserver "hkps.pool.sks-keyservers.net" --recv-keys "0x6B73A36E6026DFCA"
+sudo add-apt-repository -y ppa:ssc-hpc-chp-spc/metpx
+sudo apt-get update
+sudo apt -y install rabbitmq-server erlang-nox sarrac librabbitmq4 libsarrac libsarrac-dev
+
+pip3 install -U pip
+pip3 install -e ..
+pip3 install pyftpdlib paramiko 
 echo
 
 # Setup autossh login
-ssh-keygen -t rsa
+rm ~/.ssh/id_rsa
+ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
 cat ~/.ssh/id_rsa.pub > ~/.ssh/authorized_keys
-yes | ssh localhost "echo"
+ssh -oStrictHostKeyChecking=no localhost "echo"
 echo
 
 # Setup basic configs
@@ -21,7 +29,6 @@ cat > ~/.config/sarra/default.conf << EOF
 declare env FLOWBROKER=localhost
 declare env SFTPUSER=${USER}
 declare env TESTDOCROOT=${HOME}/sarra_devdocroot
-declare env SR_CONFIG_EXAMPLES=${HOME}/sarracenia/sarra/examples
 EOF
 
 ADMIN_PASSWORD=$(openssl rand -hex 6)
@@ -50,6 +57,7 @@ EOF
 echo
 
 # Manage RabbitMQ
+sudo systemctl restart rabbitmq-server
 sudo rabbitmq-plugins enable rabbitmq_management
 
 sudo rabbitmqctl delete_user guest

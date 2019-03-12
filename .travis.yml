@@ -1,0 +1,23 @@
+dist: xenial
+services: rabbitmq
+language: python
+
+python:
+- 3.5
+- 3.7
+
+branches:
+  only:
+  - master
+
+install:
+- cd test
+- ./flow_autoconfig.sh
+
+before_script:
+- ./flow_setup.sh
+- ./flow_limit.sh
+
+script:
+- ./flow_check.sh
+- ./flow_cleanup.sh
