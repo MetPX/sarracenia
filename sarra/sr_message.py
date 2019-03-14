@@ -90,6 +90,10 @@ class sr_message():
         self.offset = None
         self.filesize = None
 
+        self.inline = parent.inline
+        self.inline_max = parent.inline_max
+        self.inline_encoding = parent.inline_encoding
+
         self.part_ext      = 'Part'
 
         self.sumalgo       = parent.sumalgo
@@ -493,6 +497,40 @@ class sr_message():
                 self.headers[h] = self.headers[h].encode("utf8")[0:mxlen].decode("utf8")
                 self.logger.warning( "truncating %s header at %d characters (to fit 255 byte AMQP limit) to: %s " % \
                         ( h, len(self.headers[h]) , self.headers[h]) )
+
+        elif self.post_topic_prefix.startswith('v03') and self.inline \
+            and not ( 'content' in self.headers ) \
+            and ( int(self.headers[ 'size' ]) < self.inline_max ) :
+
+            fn = parent.post_base_dir
+
+            if fn[-1] != '/':
+                fn = fn + os.path.sep
+
+            if self.relpath[0] == '/':
+                fn = fn +  self.relpath[1:]
+            else:
+                fn = fn + self.relpath
+
+            if os.path.isfile(fn):
+                if self.inline_encoding == 'guess':
+                   e = guess_type(fn)[0]
+                   binary = not e or not ('text' in e )
+                else:
+                   binary = (self.inline_encoding == 'text' )
+
+                f = open(fn,'rb')
+                d = f.read()
+                f.close()
+    
+                if binary:
+                    self.headers[ "content" ] = { "encoding": "base64", "value": b64encode(d).decode('utf-8') }
+                else:
+                    try:
+                        self.headers[ "content" ] = { "encoding": "utf-8", "value": d.decode('utf-8') }
+                    except:
+                        self.headers[ "content" ] = { "encoding": "base64", "value": b64encode(d).decode('utf-8') }
+
 
         # AMQP limits topic to 255 characters, space and # replaced, if greater than limit : truncate and warn.
         self.topic = self.topic.replace(' ','%20')
