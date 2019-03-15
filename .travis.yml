@@ -8,7 +8,7 @@ python:
 
 branches:
   only:
-  - master
+  - issue159
 
 install:
 - cd test
