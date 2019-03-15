@@ -30,7 +30,6 @@
 #
 
 import os,json,sys,time
-from json import JSONDecodeError
 from _codecs import decode, encode
 
 try :
