@@ -475,7 +475,7 @@ class sr_message():
 
         if self.pub_exchange != None : self.exchange = self.pub_exchange
 
-        if not self.topic.startswith('v03'):
+        if not self.post_topic_prefix.startswith('v03'):
            for h in self.headers:
              if type(self.headers[h]) is dict:
                  self.headers[h] = json.dumps( self.headers[h] )
@@ -498,7 +498,7 @@ class sr_message():
                 self.logger.warning( "truncating %s header at %d characters (to fit 255 byte AMQP limit) to: %s " % \
                         ( h, len(self.headers[h]) , self.headers[h]) )
 
-        elif self.post_topic_prefix.startswith('v03') and self.inline \
+        elif self.post_topic_prefix.startswith('v03.post') and self.inline \
             and not ( 'content' in self.headers ) \
             and ( int(self.headers[ 'size' ]) < self.inline_max ) :
 
