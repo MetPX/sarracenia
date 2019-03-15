@@ -102,7 +102,7 @@ class sr_retry:
     def msgFromJSON(self, line ):
         try:
             topic, headers, notice  = json.loads(line)
-        except JSONDecodeError:
+        except ValueError:
             self.logger.error("corrupted line in retry file: %s " % line)
             self.logger.debug("Error information: ", exc_info=True)
             return None
