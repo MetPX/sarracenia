@@ -23,3 +23,7 @@ before_script:
 script:
 - ./flow_check.sh
 - ./flow_cleanup.sh
+
+cache:
+   directories:
+   - /home/travis/.cache/sarra/log
