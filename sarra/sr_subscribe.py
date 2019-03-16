@@ -1363,6 +1363,7 @@ class sr_subscribe(sr_instances):
 
 
            self.msg.onfly_checksum = None
+           self.msg.ondata_checksum = None
 
            # skip checksum computation for sumflg = '0'
 
@@ -1399,26 +1400,31 @@ class sr_subscribe(sr_instances):
                 # after download : setting of sum for 'z' flag ...
 
                 if len(self.msg.sumflg) > 2 and self.msg.sumflg[:2] == 'z,':
-                   self.msg.set_sum(self.msg.sumflg[2],self.msg.onfly_checksum)
-                   if self.reportback: self.msg.report_publish(205,'Reset Content : checksum')
+                    new_checksum=self.msg.onfly_checksum
+                else:
+                    new_checksum=None
 
                 # onfly checksum is different from the message ???
-                if not self.msg.onfly_checksum == self.msg.checksum :
+                
+                if self.on_data_list :
+                   self.logger.debug("setting checksum from on_data: %s" % self.msg.data_checksum )
+                   new_checksum=self.msg.data_checksum
+                elif self.msg.onfly_checksum != self.msg.checksum :
                    self.logger.warning("onfly_checksum %s differ from message %s" %
                                       (self.msg.onfly_checksum, self.msg.checksum))
-
-                   # force onfly checksum  in message
-
+                   new_checksum=self.msg.onfly_checksum
+ 
+                if new_checksum :
+                   # force checksum recalculation in message
                    if self.recompute_chksum and supports_extended_attributes:
-                      #self.msg.compute_local_checksum()
                       try:
                           attr = xattr.xattr(path)
-                          onfly_sumstr = self.msg.sumflg+','+self.msg.onfly_checksum
-                          if attr['user.sr_sum'] != onfly_sumstr:
-                              xattr.setxattr(path, 'user.sr_sum', bytes(onfly_sumstr, "utf-8"))
+                          new_sumstr = self.msg.sumflg+','+new_checksum
+                          if attr['user.sr_sum'] != new_sumstr:
+                              xattr.setxattr(path, 'user.sr_sum', bytes(new_sumstr, "utf-8"))
                       except Exception as ex:
                           self.logger.warning( "failed to set sattributes %s: %s" % ( path, ex ) )
-                      self.msg.set_sum(self.msg.sumflg,self.msg.onfly_checksum)
+                      self.msg.set_sum(self.msg.sumflg,new_checksum)
                       if self.reportback: self.msg.report_publish(205,'Reset Content : checksum')
 
 

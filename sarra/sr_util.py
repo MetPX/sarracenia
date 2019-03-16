@@ -116,6 +116,8 @@ class sr_proto():
 
         self.sumalgo   = None
         self.checksum  = None
+        self.data_sumalgo   = None
+        self.data_checksum = None
         self.fpos      = 0
 
         self.bufsize   = self.parent.bufsize
@@ -140,6 +142,7 @@ class sr_proto():
         # finalize checksum
 
         if self.sumalgo : self.checksum = self.sumalgo.get_value()
+        if self.data_sumalgo : self.data_checksum = self.data_sumalgo.get_value()
 
     # local_read_open
     def local_read_open(self, local_file, local_offset=0 ):
@@ -155,6 +158,7 @@ class sr_proto():
         # initialize sumalgo
 
         if self.sumalgo : self.sumalgo.set_path(local_file)
+        if self.data_sumalgo : self.data_sumalgo.set_path(local_file)
 
         return src
 
@@ -175,6 +179,7 @@ class sr_proto():
         # finalize checksum
 
         if self.sumalgo : self.checksum = self.sumalgo.get_value()
+        if self.data_sumalgo : self.data_checksum = self.data_sumalgo.get_value()
 
     # local_write_open
     def local_write_open(self, local_file, local_offset=0):
@@ -206,6 +211,8 @@ class sr_proto():
         new_chunk = chunk
         for plugin in self.parent.on_data_list :
            new_chunk = plugin(self,new_chunk)
+
+        if self.data_sumalgo  : self.data_sumalgo.update(new_chunk)
         return new_chunk
         
 
@@ -281,6 +288,7 @@ class sr_proto():
         # initialize sumalgo
 
         if self.sumalgo : self.sumalgo.set_path(src_path)
+        if self.data_sumalgo : self.data_sumalgo.set_path(src_path)
 
         # copy source to destination
 
@@ -328,6 +336,7 @@ class sr_proto():
     def set_sumalgo(self,sumalgo) :
         #self.logger.debug("sr_proto set_sumalgo %s" % sumalgo)
         self.sumalgo = sumalgo
+        self.data_sumalgo = sumalgo
 
     # throttle
     def throttle(self,buf) :
@@ -474,6 +483,7 @@ class sr_transport():
                    os.rename(new_lock, new_file)
 
                 msg.onfly_checksum = proto.checksum
+                msg.data_checksum = proto.data_checksum
 
                 # fix permission 
 

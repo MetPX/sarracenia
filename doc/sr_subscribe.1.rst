@@ -1776,7 +1776,11 @@ configuration file specify an on_<event> option. The event can be one of:
 - on_data -- when the reception of a block of data has occured, trigger a transformation
   action.  As this entry point is for content transformation, the api adds the content
   of the block as an additional argument, and rather than returning True or Fale,
-  it returns the transformed data.
+  it returns the transformed data. This isn't particularly efficient, so should only be used
+  to transform small files, but it provides a way of reducing overall i/o by transforming
+  during transfer. It is imcompatible with binary transfer plugins (do_download, do_send )
+  When active, the checksum of downloaded data will be set according to the transformed
+  content, rather than the original.
 
 - on_file -- When the reception of a file has been completed, trigger followup action.
   The **on_file** option defaults to file_log, which writes a downloading status message.

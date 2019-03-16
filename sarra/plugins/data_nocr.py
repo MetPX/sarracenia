@@ -9,7 +9,7 @@ class Data_Nocr(object):
         parent.logger.debug( "data_nocr initialized")
 
     def on_data(self,parent,chunk):
-        parent.logger.info( "data_nocr sz=%d, cr=%d" % ( len(chunk), chunk.count(b'\r') ) )
+        parent.logger.debug( "data_nocr sz=%d, cr=%d" % ( len(chunk), chunk.count(b'\r') ) )
         return chunk.replace( b'\r', b'')
 
 data_nocr = Data_Nocr(self)
