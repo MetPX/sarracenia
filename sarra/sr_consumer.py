@@ -214,7 +214,7 @@ class sr_consumer:
         return True,self.msg
 
     def get_message(self):
-        self.logger.debug("sr_consumer get_message")
+        //self.logger.debug("sr_consumer get_message")
 
         if not hasattr(self.parent,'msg'):
            self.parent.msg = sr_message(self.parent)
