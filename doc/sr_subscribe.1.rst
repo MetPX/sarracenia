@@ -1773,6 +1773,11 @@ configuration file specify an on_<event> option. The event can be one of:
 
 - plugin -- declare a set of plugins to achieve a collective function.
 
+- on_data -- when the reception of a block of data has occured, trigger a transformation
+  action.  As this entry point is for content transformation, the api adds the content
+  of the block as an additional argument, and rather than returning True or Fale,
+  it returns the transformed data.
+
 - on_file -- When the reception of a file has been completed, trigger followup action.
   The **on_file** option defaults to file_log, which writes a downloading status message.
 

@@ -328,6 +328,7 @@ class sr_config:
 
 
         self.logger.info( '\t\ton_message: %s'   % ''.join( map( self.xcl , self.on_message_list ) ) )
+        self.logger.info( '\t\ton_data: %s'      % ''.join( map( self.xcl , self.on_data_list ) ) )
         self.logger.info( '\t\ton_part: %s'      % ''.join( map( self.xcl , self.on_part_list ) ) )
         self.logger.info( '\t\ton_file: %s'      % ''.join( map( self.xcl , self.on_file_list ) ) )
         self.logger.info( '\t\ton_post: %s'      % ''.join( map( self.xcl , self.on_post_list ) ) )
@@ -834,12 +835,13 @@ class sr_config:
 
         # Plugin defaults
 
+        self.on_data              = None
         self.on_part              = None
         self.do_task              = None
         self.on_watch             = None
 
-        self.plugin_times = [ 'destfn_script', 'on_message', 'on_file', 'on_post', 'on_heartbeat', \
-            'on_html_page', 'on_part', 'on_line', 'on_watch', 'do_poll', \
+        self.plugin_times = [ 'destfn_script', 'on_data', 'on_message', 'on_file', 'on_post', \
+            'on_heartbeat', 'on_html_page', 'on_part', 'on_line', 'on_watch', 'do_poll', \
             'do_download', 'do_get', 'do_put', 'do_send', 'do_task', 'on_report', \
             'on_start', 'on_stop' ]
 
@@ -2075,6 +2077,12 @@ class sr_config:
                      self.logger.debug("option %s" % words[0])
                      self.notify_only = True
                      n = 1
+
+                elif words0 == 'on_data': # See: sr_config.7, sr_sarra,shovel,subscribe
+                     if not self.execfile("on_data",words1):
+                           ok = False
+                           needexit = True
+                     n = 2
 
                 elif words0 == 'on_file': # See: sr_config.7, sr_sarra,shovel,subscribe
                      if not self.execfile("on_file",words1):

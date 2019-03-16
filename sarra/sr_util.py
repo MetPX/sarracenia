@@ -198,6 +198,17 @@ class sr_proto():
 
         return dst
 
+    def __on_data__(self, chunk):
+
+        if not self.parent.on_data_list:
+           return chunk
+
+        new_chunk = chunk
+        for plugin in self.parent.on_data_list :
+           new_chunk = plugin(self,new_chunk)
+        return new_chunk
+        
+
     # read_write
     def read_write(self, src, dst, length=0):
         #self.logger.debug("sr_proto read_write")
@@ -215,7 +226,8 @@ class sr_proto():
                  if self.iotime: alarm_set(self.iotime)
                  chunk = src.read(self.bufsize)
                  if chunk :
-                    dst.write(chunk)
+                    new_chunk = self.__on_data__(chunk)
+                    dst.write(new_chunk)
                     rw_length += len(chunk)
                  alarm_cancel()
                  if not chunk : break
@@ -235,8 +247,9 @@ class sr_proto():
               if self.iotime : alarm_set(self.iotime)
               chunk = src.read(self.bufsize)
               if chunk :
-                 rw_length += len(chunk)
-                 dst.write(chunk)
+                 new_chunk = self.__on_data__(chunk)
+                 rw_length += len(new_chunk)
+                 dst.write(new_chunk)
               alarm_cancel()
               if not chunk : break
               if self.sumalgo  : self.sumalgo.update(chunk)
@@ -249,8 +262,9 @@ class sr_proto():
            if self.iotime : alarm_set(self.iotime)
            chunk = src.read(r)
            if chunk :
-              rw_length += len(chunk)
-              dst.write(chunk)
+              new_chunk = self.__on_data__(chunk)
+              rw_length += len(new_chunk)
+              dst.write(new_chunk)
            alarm_cancel()
            if self.sumalgo  : self.sumalgo.update(chunk)
            if self.kbytes_ps: self.throttle(chunk)
@@ -275,9 +289,9 @@ class sr_proto():
         # close
         self.local_write_close( dst )
 
-        # warn if length mismatch
+        # warn if length mismatch without transformation.
 
-        if length != 0 and rw_length != length :
+        if (not self.parent.on_data_list) and length != 0 and rw_length != length :
            self.logger.error("util/writelocal mismatched file length writing %s. Message said to expect %d bytes.  Got %d bytes." % (local_file,length,rw_length))
 
         return rw_length
@@ -297,9 +311,9 @@ class sr_proto():
 
         self.local_read_close(src)
 
-        # warn if length mismatch
+        # warn if length mismatch without transformation.
 
-        if length != 0 and rw_length != length :
+        if (not self.parent.on_data_list) and length != 0 and rw_length != length :
            self.logger.error("util/readlocal mismatched file length reading %s. Message announced it as %d bytes, but read %d bytes " % (local_file,length,rw_length))
 
         return rw_length
