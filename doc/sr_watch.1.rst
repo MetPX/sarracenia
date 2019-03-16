@@ -118,7 +118,7 @@ without authentication on dd.weather.gc.ca.
 
 An example checking a directory::
 
- sr_watch -dr /data/web/public_data -s http://dd.weather.gc.ca/ -p bulletins/alphanumeric -pb amqp://broker.com -action start
+ sr_watch -dr /data/web/public_data -pbu http://dd.weather.gc.ca/ -p bulletins/alphanumeric -pb amqp://broker.com -action start
 
 Here, sr_watch checks for file creation(modification) in /data/web/public_data/bulletins/alphanumeric
 (concatenating the base_dir and relative path of the source url to obtain the directory path).
@@ -231,6 +231,13 @@ NOTE::
   by sr_watch, which can be minimized with the use of cache.   One could even depend on the cache
   entirely and turn on the *delete* option, which will have sr_watch attempt to post the entire tree
   every time (ignoring mtime).
+
+[-pos|--post_on_start]
+----------------------
+
+When starting sr_watch, one can either have the program post all the files in the directories watched
+or not.
+
 
 [-fs|--follow_symlinks <boolean>]
 ---------------------------------

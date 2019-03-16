@@ -299,8 +299,8 @@ class sr_config:
            ( self.expire, self.reset, self.message_ttl, self.prefetch, self.accept_unmatch, self.delete ) )
         self.logger.info( "\theartbeat=%s sanity_log_dead=%s default_mode=%03o default_mode_dir=%03o default_mode_log=%03o discard=%s durable=%s" % \
            ( self.heartbeat, self.sanity_log_dead, self.chmod, self.chmod_dir, self.chmod_log, self.discard, self.durable ) )
-        self.logger.info( "\tpreserve_mode=%s preserve_time=%s realpath_post=%s base_dir=%s follow_symlinks=%s" % \
-           ( self.preserve_mode, self.preserve_time, self.realpath_post, self.base_dir, self.follow_symlinks ) )
+        self.logger.info( "\tpost_on_start=%s preserve_mode=%s preserve_time=%s realpath_post=%s base_dir=%s follow_symlinks=%s" % \
+           ( self.post_on_start, self.preserve_mode, self.preserve_time, self.realpath_post, self.base_dir, self.follow_symlinks ) )
         self.logger.info( "\tmirror=%s flatten=%s realpath_post=%s strip=%s base_dir=%s report_back=%s" % \
            ( self.mirror, self.flatten, self.realpath_post, self.strip, self.base_dir, self.reportback ) )
 
@@ -759,6 +759,7 @@ class sr_config:
         self.post_exchange        = None
         self.post_exchange_suffix = None
         self.post_exchange_split  = 0
+        self.post_on_start        = True
         self.preserve_mode        = True
         self.preserve_time        = True
         self.pump_flag            = False
@@ -2243,6 +2244,14 @@ class sr_config:
                 elif words0 in ['post_exchange_suffix']: # FIXME: sr_sarra,sender,shovel,winnow 
                      self.post_exchange_suffix = words1
                      n = 2
+
+                elif words0 in ['post_on_start','pos'] : # See: sr_config.7
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.post_on_start = True
+                        n = 1
+                     else :
+                        self.post_on_start = self.isTrue(words[1])
+                        n = 2
 
                 elif words0 in ['post_topic_prefix', 'ptp' ]: # FIXME: sr_sarra,sender,shovel,winnow 
                      self.post_topic_prefix = words1

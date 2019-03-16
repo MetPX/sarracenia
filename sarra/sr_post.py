@@ -1273,7 +1273,9 @@ class sr_post(sr_instances):
         self.logger.info("sr_watch priming walk done, but not yet active. Starting...")
         self.observer.start()
         self.logger.info("sr_watch now active on %s posting to exchange: %s"%(sld,self.post_exchange))
-        self.walk(sld)
+
+        if self.post_on_start:
+            self.walk(sld)
 
 
     # =============

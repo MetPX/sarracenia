@@ -477,6 +477,8 @@ class sr_message():
 
         if not self.post_topic_prefix.startswith('v03'):
            for h in self.headers:
+
+             # v02 wants simple strings, cannot have dicts like in v03.
              if type(self.headers[h]) is dict:
                  self.headers[h] = json.dumps( self.headers[h] )
 
