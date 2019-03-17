@@ -1410,8 +1410,8 @@ class sr_subscribe(sr_instances):
            # after download we dont propagate renaming... once used get rid of it
            if 'rename'  in self.msg.headers : del self.msg.headers['rename']
 
-           # if an onfly_checksum was computed
-
+           # if we can set the checksum for downloaded data correctly, we should do so
+           # to prevent loops.
            if self.msg.onfly_checksum :
 
                 # after download : setting of sum for 'z' flag ...
@@ -1421,18 +1421,22 @@ class sr_subscribe(sr_instances):
                 else:
                     new_checksum=None
 
-                
-                if self.on_data_list :
-                   # if there was transformation happening during the transfer, the checksum changed.
-                   self.logger.debug("setting checksum from on_data: %s" % self.msg.data_checksum )
-                   new_checksum=self.msg.data_checksum
-                elif self.msg.onfly_checksum != self.msg.checksum :
+                if self.msg.onfly_checksum != self.msg.checksum :
                    # onfly checksum is different from the message, avoid loops by overwriting. 
                    self.logger.warning("onfly_checksum %s differ from message %s" %
                                       (self.msg.onfly_checksum, self.msg.checksum))
                    new_checksum=self.msg.onfly_checksum
+                
+                if self.on_data_list :
+                   # if there was transformation happening during the transfer, 
+                   # we should used the checksum from the transformed data.
+                   self.logger.debug("setting checksum from on_data: %s" % self.msg.data_checksum )
+                   new_checksum=self.msg.data_checksum
  
                 if new_checksum :
+                   # set the value so that if it gets posted later, it is correct.
+                   self.msg.set_sum(self.msg.sumflg,new_checksum)
+
                    if supports_extended_attributes:
                       try:
                           path = self.msg.new_dir + '/' + self.msg.new_file
@@ -1442,8 +1446,13 @@ class sr_subscribe(sr_instances):
                               xattr.setxattr(path, 'user.sr_sum', bytes(new_sumstr, "utf-8"))
                       except Exception as ex:
                           self.logger.warning( "failed to set sattributes %s: %s" % ( path, ex ) )
-                   self.msg.set_sum(self.msg.sumflg,new_checksum)
-                   if self.reportback: self.msg.report_publish(205,'Reset Content : checksum')
+
+                   # tell upstream that we changed the checksum.
+                   if self.reportback:
+                       if new_checksum == self.msg.onfly_checksum :
+                            self.msg.report_publish(205,'Reset Content : checksum')
+                       else:
+                            self.msg.report_publish(203,'Non-Authoritative Information: transformed during download')
 
 
            # if the part should have been inplace... but could not

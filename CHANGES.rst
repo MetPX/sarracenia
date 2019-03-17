@@ -6,6 +6,16 @@ lists all changes between versions.
 
 **git repo**
 
+* new:    issue #134 added on_data plugin entry point, to allow data tranformation.
+* new:    removed recomputer_chksum setting. application now decides on its own.
+* new:    added post_on_start option so control whether sr_watch posts all files on startup.
+* bugfix: issue #172 add inlining of data when the header is missing.  
+* dev:    issue #159 Contiguous Integration with travis-ci added, improved testing.
+*         testing of four different python versions now automated.
+* new:    added msg_rawlog to allow clearer viewing of v02 and v03 messages.
+
+**2.19.03b1**
+
 * new:    issue #166: Added *size* and *blocks* added to v03.post format.
 * bugfix: removed some incorrect ERROR messages (originally inserted to aid debugging.)
 * bugfix: issue #162: use of python-amqp broken on ubuntu <= 16.04 because *connect* call missing.
