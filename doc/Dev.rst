@@ -315,6 +315,13 @@ Running Flow Test
 
 This section documents these steps in much more detail.  
 Before one can run the flow_test, some pre-requisites must be taken care of.
+note that there is travis-ci.com integration for at least the master branch
+to verify functionality on a variety of python version.  Consulte::
+
+   https://travis-ci.com/MetPX/sarracenia
+
+for the latest test results.
+
 
 Local Installation on Workstation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
