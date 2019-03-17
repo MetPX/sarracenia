@@ -828,7 +828,6 @@ class sr_config:
 
 
         self.overwrite            = False
-        self.recompute_chksum     = False
 
         self.interface            = None
         self.vip                  = None
@@ -2324,14 +2323,6 @@ class sr_config:
                         n = 1
                      else :
                         self.realpath_post = self.isTrue(words[1])
-                        n = 2
-
-                elif words0 in ['recompute_chksum','rc']: # See: sr_sarra.8
-                     if (words1 is None) or words[0][0:1] == '-' : 
-                        self.recompute_chksum = True
-                        n = 1
-                     else :
-                        self.recompute_chksum = self.isTrue(words[1])
                         n = 2
 
                 elif words0 in ['reconnect','rr']: # See: sr_post.1, sr_watch.1

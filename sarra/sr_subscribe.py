@@ -568,7 +568,6 @@ class sr_subscribe(sr_instances):
 
         print("\tpost_base_dir        <name>          (default None)")
         print("\tpost_base_url        <url>      post message: base_url         (MANDATORY)")
-        print("\trecompute_chksum     <boolean>  post message: reset checksum   (default False)")
         if self.program_name == 'sr_sarra' :
            print("\tsource_from_exchange <boolean>  post message: reset headers[source] (default False)")
         print("\ton_post              <script>        (default None)")
@@ -1404,28 +1403,29 @@ class sr_subscribe(sr_instances):
                 else:
                     new_checksum=None
 
-                # onfly checksum is different from the message ???
                 
                 if self.on_data_list :
+                   # if there was transformation happening during the transfer, the checksum changed.
                    self.logger.debug("setting checksum from on_data: %s" % self.msg.data_checksum )
                    new_checksum=self.msg.data_checksum
                 elif self.msg.onfly_checksum != self.msg.checksum :
+                   # onfly checksum is different from the message, avoid loops by overwriting. 
                    self.logger.warning("onfly_checksum %s differ from message %s" %
                                       (self.msg.onfly_checksum, self.msg.checksum))
                    new_checksum=self.msg.onfly_checksum
  
                 if new_checksum :
-                   # force checksum recalculation in message
-                   if self.recompute_chksum and supports_extended_attributes:
+                   if supports_extended_attributes:
                       try:
+                          path = self.msg.new_dir + '/' + self.msg.new_file
                           attr = xattr.xattr(path)
                           new_sumstr = self.msg.sumflg+','+new_checksum
                           if attr['user.sr_sum'] != new_sumstr:
                               xattr.setxattr(path, 'user.sr_sum', bytes(new_sumstr, "utf-8"))
                       except Exception as ex:
                           self.logger.warning( "failed to set sattributes %s: %s" % ( path, ex ) )
-                      self.msg.set_sum(self.msg.sumflg,new_checksum)
-                      if self.reportback: self.msg.report_publish(205,'Reset Content : checksum')
+                   self.msg.set_sum(self.msg.sumflg,new_checksum)
+                   if self.reportback: self.msg.report_publish(205,'Reset Content : checksum')
 
 
            # if the part should have been inplace... but could not

@@ -791,7 +791,6 @@ and under which name.
 - **overwrite <boolean>        (default: off)** 
 - **preserve_mode <boolead>  (default: on)**
 - **preserve_time <boolead>  (default: on)**
-- **recompute_chksum <boolean> (default: off)**
 - **reject    <regexp pattern> (optional)** 
 - **retry    <boolean>         (default: On)** 
 - **retry_ttl    <duration>         (default: same as expire)** 
@@ -1171,18 +1170,11 @@ then the operating system  defaults (on linux, controlled by umask settings)
 will determine file permissions. (Note that the *chmod* option is interpreted as a synonym
 for *default_mode*, and *chmod_dir* is a synonym for *default_dir_mode*).
 
-recompute_chksum <boolean> (default: off)
+recompute_chksum <boolean> (Always on now)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For each download, the checksum is computed during transfer. If **recompute_chksum**
-is set to True, and the recomputed checksum differs from the one in the message,
-the new value will overwrite the one from the incoming amqp message. This is used
-when a file is being pulled from a remote non-sarracenia source, in which case a place
-holder 0 checksum is specified. On receipt, a proper checksum should be placed in the
-message for downstream consumers. One can also use this method to override checksum choice.
-For example, older versions of sarracenia lack SHA-512 hash support, so one could re-write
-the checksums with MD5.   There are also cases, where, for various reasons, the upstream
-checksums are simply wrong, and should be overridden for downstream consumers.
+recompute_chksum option has been removed in 2.19.03b2. Recomputing will occur
+whenever appropriate without the need for a setting.
 
 
 Delivery Completion (inflight)
