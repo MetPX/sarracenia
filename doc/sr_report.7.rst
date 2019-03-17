@@ -100,6 +100,8 @@ For the sarracenia implementation, the following codes are defined:
 +==========+============================================================================================+
 |   201    | Download successful. (variations: Downloaded, Inserted, Published, Copied, or Linked)      |
 +----------+--------------------------------------------------------------------------------------------+
+|   203    | Non-Authoritative Information: transformed during download.                                |
++----------+--------------------------------------------------------------------------------------------+
 |   205    | Reset Content: truncated. File is shorter than originally expected (changed length         |
 |          | during transfer) This only arises during multi-part transfers.                             |
 +----------+--------------------------------------------------------------------------------------------+
