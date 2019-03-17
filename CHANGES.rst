@@ -7,7 +7,7 @@ lists all changes between versions.
 **git repo**
 
 * new:    issue #134 added on_data plugin entry point, to allow data tranformation.
-* new:    removed recomputer_chksum setting. application now decides on its own.
+* new:    removed recompute_chksum setting. application now decides on its own.
 * new:    added post_on_start option so control whether sr_watch posts all files on startup.
 * bugfix: issue #172 add inlining of data when the header is missing.  
 * dev:    issue #159 Contiguous Integration with travis-ci added, improved testing.
