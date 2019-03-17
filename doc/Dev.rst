@@ -990,6 +990,20 @@ Automated Build
 * for Sarrac, follow the procedure `here <https://github.com/MetPX/sarrac#release-process>`_
 * The built packages will be available in the `metpx ppa <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx>`_
 
+Building a Windows Installer
+++++++++++++++++++++++++++++
+
+One can also build a Windows installer with that 
+`script <https://github.com/MetPX/sarracenia/blob/master/generate-win-installer.sh>`_.
+It needs to be run from a Linux OS (preferably Ubuntu 18) in the root directory of Sarracenia's git. 
+Then, from the shell, run::
+
+ sudo apt install nsis
+ pip3 install pynsist wheel
+ ./generate-win-installer.sh 2>&1 > log.txt
+
+The final package should be placed in build/nsis directory.
+
 Daily Builds
 ++++++++++++
 
@@ -999,11 +1013,13 @@ and `this recipe for C <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metp
 are run once per day when changes to the repository occur. These packages are stored in the `metpx-daily ppa <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily>`_.
 One can also **Request build(s)** on demand if desired.
 
-
 Manual Process
 ++++++++++++++
 
-The process for manually publishing packages to Launchpad ( https://launchpad.net/~ssc-hpc-chp-spc ) involves a more complex set of steps, and so the convenient script ``publish-to-launchpad.sh`` will be the easiest way to do that. Currently the only supported releases are **trusty** and **xenial**. So the command used is::
+The process for manually publishing packages to Launchpad ( https://launchpad.net/~ssc-hpc-chp-spc ) 
+involves a more complex set of steps, and so the convenient script ``publish-to-launchpad.sh`` will 
+be the easiest way to do that. Currently the only supported releases are **trusty** and **xenial**. 
+So the command used is::
 
     publish-to-launchpad.sh sarra-v2.15.12a1 trusty xenial
 
@@ -1047,19 +1063,6 @@ manually. So it will help if you must use .rpm's for compliance reasons, but
 it isn't really properly done.  `Help Wanted  <https://github.com/MetPX/sarracenia/issues57>`_
 
 
-Building a Windows Installer
-++++++++++++++++++++++++++++
-
-One can also build a Windows installer with that 
-`script <https://github.com/MetPX/sarracenia/blob/master/generate-win-installer.sh>`_.
-It needs to be run from a Linux OS (preferably Ubuntu 18) in the root directory of Sarracenia's git. 
-Then, from the shell, run::
-
- sudo apt install nsis
- pip3 install pynsist wheel
- ./generate-win-installer.sh 2>&1 > log.txt
-
-The final package should be placed in build/nsis directory.
 
 Updating The Project Website
 ----------------------------
