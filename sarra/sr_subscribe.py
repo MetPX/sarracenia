@@ -304,11 +304,29 @@ class sr_subscribe(sr_instances):
 
             try:
                 self.logger.debug( "data inlined with message, no need to download" )
-                f = os.fdopen(os.open( self.msg.new_dir + os.path.sep + self.msg.new_file, os.O_RDWR | os.O_CREAT), 'rb+')
+                path = self.msg.new_dir + os.path.sep + self.msg.new_file
+                f = os.fdopen(os.open( path, os.O_RDWR | os.O_CREAT), 'rb+')
                 if self.msg.headers[ 'content' ][ 'encoding' ] == 'base64':
-                    f.write( b64decode( self.msg.headers[ 'content' ]['value'] ) )
+                    data = b64decode( self.msg.headers[ 'content' ]['value'] ) 
                 else:
-                    f.write( self.msg.headers[ 'content' ]['value'].encode('utf-8') )
+                    data = self.msg.headers[ 'content' ]['value'].encode('utf-8')
+
+                onfly_algo = self.msg.sumalgo
+                data_algo = self.msg.sumalgo
+                onfly_algo.set_path(path)
+                data_algo.set_path(path)
+                
+                onfly_algo.update(data)
+                self.msg.onfly_checksum = onfly_algo.get_value()
+
+                if self.on_data_list:
+                   new_chunk = data 
+                   for plugin in self.parent.on_data_list :
+                       data = plugin(self,data)
+                   data_sumalgo.update(data)
+                   self.msg.data_checksum = data_algo.get_value()
+
+                f.write( data )
                 f.truncate()
                 f.close()
                 return True

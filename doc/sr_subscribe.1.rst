@@ -1171,7 +1171,7 @@ will determine file permissions. (Note that the *chmod* option is interpreted as
 for *default_mode*, and *chmod_dir* is a synonym for *default_dir_mode*).
 
 recompute_chksum <boolean> (Always on now)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 recompute_chksum option has been removed in 2.19.03b2. Recomputing will occur
 whenever appropriate without the need for a setting.

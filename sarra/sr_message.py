@@ -501,38 +501,44 @@ class sr_message():
                         ( h, len(self.headers[h]) , self.headers[h]) )
 
         elif self.post_topic_prefix.startswith('v03.post') and self.inline \
-            and not ( 'content' in self.headers ) \
-            and ( int(self.headers[ 'size' ]) < self.inline_max ) :
+            and not ( 'content' in self.headers ) :
 
-            fn = parent.post_base_dir
-
-            if fn[-1] != '/':
-                fn = fn + os.path.sep
-
-            if self.relpath[0] == '/':
-                fn = fn +  self.relpath[1:]
+            if 'size' in self.headers :
+                sz = int(self.headers[ 'size' ])
             else:
-                fn = fn + self.relpath
+                sz = int( self.headers[ 'parts' ].split(',')[1] ) 
 
-            if os.path.isfile(fn):
-                if self.inline_encoding == 'guess':
-                   e = guess_type(fn)[0]
-                   binary = not e or not ('text' in e )
-                else:
-                   binary = (self.inline_encoding == 'text' )
-
-                f = open(fn,'rb')
-                d = f.read()
-                f.close()
+            if ( sz < self.inline_max ) :
     
-                if binary:
-                    self.headers[ "content" ] = { "encoding": "base64", "value": b64encode(d).decode('utf-8') }
+                fn = parent.post_base_dir
+    
+                if fn[-1] != '/':
+                    fn = fn + os.path.sep
+    
+                if self.relpath[0] == '/':
+                    fn = fn +  self.relpath[1:]
                 else:
-                    try:
-                        self.headers[ "content" ] = { "encoding": "utf-8", "value": d.decode('utf-8') }
-                    except:
+                    fn = fn + self.relpath
+    
+                if os.path.isfile(fn):
+                    if self.inline_encoding == 'guess':
+                       e = guess_type(fn)[0]
+                       binary = not e or not ('text' in e )
+                    else:
+                       binary = (self.inline_encoding == 'text' )
+    
+                    f = open(fn,'rb')
+                    d = f.read()
+                    f.close()
+        
+                    if binary:
                         self.headers[ "content" ] = { "encoding": "base64", "value": b64encode(d).decode('utf-8') }
-
+                    else:
+                        try:
+                            self.headers[ "content" ] = { "encoding": "utf-8", "value": d.decode('utf-8') }
+                        except:
+                            self.headers[ "content" ] = { "encoding": "base64", "value": b64encode(d).decode('utf-8') }
+    
 
         # AMQP limits topic to 255 characters, space and # replaced, if greater than limit : truncate and warn.
         self.topic = self.topic.replace(' ','%20')
