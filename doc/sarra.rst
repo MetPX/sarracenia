@@ -216,7 +216,7 @@ Other, somewhat similar software, no endorsements or judgements should be taken 
 
 - Manual on the Global Telecommunications´ System: WMO Manual 386. The standard reference for this domain. (a likely stale copy is  `here <WMO-386.pdf>`_.) Try http://www.wmo.int for the latest version.
 - `Local Data Manager <http://www.unidata.ucar.edu/software/ldm>`_ LDM includes a network protocol, and it fundamentally wishes to exchange with other LDM systems.  This package was instructive in interesting ways, in the early 2000's there was an effort called NLDM which layered meteorological messaging over a standard TCP/IP protocol.  That effort died, however, but the inspiration of keeping the domain (weather) separate from the transport layer (TCP/IP) was an important motivation for MetPX.
-- `Automatic File Distributor  <http://www.dwd.de/AFD>`_ - from the German Weather Service.  Routes files using the transport protocol of the user's choice.  Philosophically close to MetPX.
+- `Automatic File Distributor  <http://www.dwd.de/AFD>`_ - from the German Weather Service.  Routes files using the transport protocol of the user's choice.  Philosophically close to MetPX Sundew.
 - `Corobor <http://www.corobor.com>`_ - commercial WMO switch supplier. 
 - `Netsys  <http://www.netsys.co.za>`_ - commercial WMO switch supplier.
 - `IBLSoft <http://www.iblsoft.com>`_ - commercial WMO switch supplier.
