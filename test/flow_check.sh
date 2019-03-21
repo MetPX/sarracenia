@@ -40,7 +40,7 @@ else
 fi
 
 
-printf "ERROR Sumary:\n\n"
+printf "ERROR Summary:\n\n"
 
 NERROR=`grep ERROR "$LOGDIR"/*_f[0-9][0-9]_*.log* | grep -v ftps | grep -v retryhost | wc -l`
 if ((NERROR>0)); then
@@ -62,7 +62,7 @@ if ((NERROR==0)); then
    echo NO ERRORS IN LOGS
 fi
 
-printf "WARNING Sumary:\n\n"
+printf "WARNING Summary:\n\n"
 
 NWARNING=`grep WARNING "$LOGDIR"/*_f[0-9][0-9]_*.log* | grep -v ftps | grep -v retryhost | wc -l`
 if ((NWARNING>0)); then
