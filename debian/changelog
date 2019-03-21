@@ -1,3 +1,9 @@
+metpx-sarracenia (2.19.03b4) unstable; urgency=medium
+
+  * bugfix: conversion from v02 to v03 was broken somewhere else.
+
+ -- Peter Silva <peter.silva@canada.ca>  Thu, 21 Mar 2019 00:59:08 -0400
+
 metpx-sarracenia (2.19.03b3) unstable; urgency=medium
 
   * bugfix: v02 to v03 conversion was broken. 
