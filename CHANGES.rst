@@ -6,6 +6,10 @@ lists all changes between versions.
 
 **git repo**
 
+**2.19.03b4**
+
+* bugfix: conversion from v02 to v03 was broken somewhere else.
+
 **2.19.03b3**
 
 * bugfix: conversion from v02 to v03 was broken.
