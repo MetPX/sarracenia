@@ -50,6 +50,9 @@ except:
 # AMQP limits headers to 'short string', or 255 characters, so truncate and warn.
 amqp_ss_maxlen = 253
 
+from base64 import b64decode, b64encode
+from mimetypes import guess_type
+
 
 try :
          from sr_util         import *
