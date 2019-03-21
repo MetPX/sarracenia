@@ -1,3 +1,9 @@
+metpx-sarracenia (2.19.03b3) unstable; urgency=medium
+
+  * bugfix: v02 to v03 conversion was broken. 
+
+ -- Peter Silva <peter.silva@canada.ca>  Tue, 19 Mar 2019 20:35:46 -0400
+
 metpx-sarracenia (2.19.03b2) unstable; urgency=medium
 
   * new:    issue #134 added on_data plugin entry point, to allow data tranformation.

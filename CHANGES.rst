@@ -6,6 +6,12 @@ lists all changes between versions.
 
 **git repo**
 
+**2.19.03b3**
+
+* bugfix: conversion from v02 to v03 was broken.
+
+**2.19.03b2**
+
 * new:    issue #134 added on_data plugin entry point, to allow data tranformation.
 * new:    removed recompute_chksum setting. application now decides on its own.
 * new:    added post_on_start option so control whether sr_watch posts all files on startup.

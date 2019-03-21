@@ -92,6 +92,7 @@ class sr_message():
 
         self.inline = parent.inline
         self.inline_max = parent.inline_max
+        self.post_base_dir = parent.post_base_dir
         self.inline_encoding = parent.inline_encoding
 
         self.part_ext      = 'Part'
@@ -510,7 +511,7 @@ class sr_message():
 
             if ( sz < self.inline_max ) :
     
-                fn = parent.post_base_dir
+                fn = self.post_base_dir
     
                 if fn[-1] != '/':
                     fn = fn + os.path.sep
