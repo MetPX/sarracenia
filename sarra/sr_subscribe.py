@@ -329,6 +329,22 @@ class sr_subscribe(sr_instances):
                 f.write( data )
                 f.truncate()
                 f.close()
+
+                if self.preserve_mode and 'mode' in self.msg.headers :
+                     try   : mode = int( self.msg.headers['mode'], base=8)
+                     except: mode = 0
+                     if mode > 0 : os.chmod( path, mode )
+          
+                if mode == 0 and  self.chmod !=0 :
+                     os.chmod( path, self.chmod )
+          
+                if self.preserve_time and 'mtime' in self.msg.headers and self.msg.headers['mtime'] :
+                    mtime = timestr2flt( self.msg.headers[ 'mtime' ] )
+                    atime = mtime
+                    if 'atime' in self.msg.headers and self.msg.headers['atime'] :
+                         atime  =  timestr2flt( self.msg.headers[ 'atime' ] )
+                    os.utime( path, (atime, mtime))
+
                 return True
 
             except:
