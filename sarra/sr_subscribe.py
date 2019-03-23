@@ -1424,7 +1424,12 @@ class sr_subscribe(sr_instances):
               return False
 
            # after download we dont propagate renaming... once used get rid of it
-           if 'rename'  in self.msg.headers : del self.msg.headers['rename']
+           if 'rename'  in self.msg.headers : 
+               del self.msg.headers['rename']
+               # FIXME: worry about publishing after a rename.
+               # the relpath should be replaced by rename value for downstream
+               # because the file was written to rename.
+               # not sure if this happens or not.
 
            # if we can set the checksum for downloaded data correctly, we should do so
            # to prevent loops.

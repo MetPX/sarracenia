@@ -36,7 +36,7 @@ An sr_post message consists of four parts: **AMQP TOPIC, First Line, Rest of Mes
            "parts" = size and partitioning information.
            "sum" = checksum algorithm and value.
 
-**Body:** *<first line> = <date stamp> <base_url> <relpath> [ <rename> ] <newline>*
+**Body:** *<first line> = <date stamp> <base_url> <relpath> <newline>*
 
 
 ::
@@ -44,7 +44,6 @@ An sr_post message consists of four parts: **AMQP TOPIC, First Line, Rest of Mes
           <date stamp> - YYYYMMDDHHMMSS.ss - UTC date/timestamp.
           <base_url>   - root of the url to download.
           <relpath>    - relative path can be catenated to <base_url>
-          <rename>     - name to write file locally.
 
 <*rest of body is reserved for future use*>
 
@@ -236,7 +235,8 @@ in messages when appropriate.
 
 **rename=<relpath>** 
 
- The relative path from the current directory in which to place the file.
+If different from relpath, this value replaces relpath as the suggested location 
+to write the file to.
 
 **oldname=<path>**
 **newname=<path>**
