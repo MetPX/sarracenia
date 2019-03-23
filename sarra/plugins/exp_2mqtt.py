@@ -106,18 +106,25 @@ class EXP_2MQTT(object):
       msg    = parent.msg
 
       mqtt_topic = parent.post_exchange + '/v03/post' + os.path.dirname(parent.msg.relpath)
-      msg.headers[ "pubTime" ] = timev2tov3str( msg.pubtime )
-      msg.headers[ "atime" ] = timev2tov3str( msg.headers[ "atime" ] )
-      msg.headers[ "mtime" ] = timev2tov3str( msg.headers[ "mtime" ] )
-      msg.headers[ "baseUrl" ] = msg.baseurl
-      msg.headers[ "relPath" ] = msg.relpath
+
+      if parent.topic_prefix == 'v02' :
+          msg.headers[ "pubTime" ] = timev2tov3str( msg.pubtime )
+          msg.headers[ "atime" ] = timev2tov3str( msg.headers[ "atime" ] )
+          msg.headers[ "mtime" ] = timev2tov3str( msg.headers[ "mtime" ] )
+          msg.headers[ "baseUrl" ] = msg.baseurl
+          msg.headers[ "relPath" ] = msg.relpath
       
-      sum_algo_map = { "d":"md5", "s":"sha512", "n":"md5name", "0":"zero" }
-      sm = sum_algo_map[ msg.headers["sum"][0] ]
-      sv = encode( decode( msg.headers["sum"][2:], 'hex'), 'base64' ).decode('utf-8').strip()
-      msg.headers[ "integrity" ] = { "method": sm, "value": sv }
-      body = json.dumps( msg.headers )
-      logger.info("exp_2mqtt publishing topic=%s, body=%s" % ( mqtt_topic, body ))
+          sum_algo_map = { "d":"md5", "s":"sha512", "n":"md5name", "0":"zero" }
+          sm = sum_algo_map[ msg.headers["sum"][0] ]
+          sv = encode( decode( msg.headers["sum"][2:], 'hex'), 'base64' ).decode('utf-8').strip()
+          msg.headers[ "integrity" ] = { "method": sm, "value": sv }
+          del msg.headers[ "sum" ]
+          body = json.dumps( msg.headers )
+      else:
+          # in v03, no translation required.
+          body = parent.consumer.raw_msg.body
+
+      logger.info("exp_2mqtt publishing topic=%s, lag=%g body=%s" % ( mqtt_topic, msg.get_elapse(), body ))
       info = parent.mqtt_client.publish(mqtt_topic,body,qos=1)
       info.wait_for_publish()
       return True
