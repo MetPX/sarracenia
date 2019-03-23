@@ -480,15 +480,15 @@ class sr_message():
         if self.pub_exchange != None : self.exchange = self.pub_exchange
 
         if not self.post_topic_prefix.startswith('v03'):
+           # truncated content is useless, so drop it.
+           if 'content' in self.headers :
+               del self.headers['content']
+
            for h in self.headers:
 
              # v02 wants simple strings, cannot have dicts like in v03.
              if type(self.headers[h]) is dict:
                  self.headers[h] = json.dumps( self.headers[h] )
-
-             # truncated content is useless, so drop it.
-             if (h == 'content') and ( len(self.headers[h]) >= amqp_ss_maxlen ):
-                 del self.headers['content']
 
              if len(self.headers[h].encode("utf8")) >= amqp_ss_maxlen:
 
@@ -504,8 +504,13 @@ class sr_message():
                 self.logger.warning( "truncating %s header at %d characters (to fit 255 byte AMQP limit) to: %s " % \
                         ( h, len(self.headers[h]) , self.headers[h]) )
 
+        elif ( self.headers[ 'sum' ][0] in [ 'L', 'R' ] ) :
+            # avoid inlining if it is a link or a remove.
+            pass
         elif self.post_topic_prefix.startswith('v03.post') and self.inline \
             and not ( 'content' in self.headers ) :
+  
+            self.logger.error("headers: %s" % self.headers )
 
             if 'size' in self.headers :
                 sz = int(self.headers[ 'size' ])
