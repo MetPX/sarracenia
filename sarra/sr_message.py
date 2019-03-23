@@ -251,7 +251,7 @@ class sr_message():
                    sa = sum_algo_v3tov2[ self.headers[ "integrity" ][ "method" ] ]
                    if sa in [ 'random' ]:
                        sv = self.headers[ "integrity" ][ "value" ]
-                   elif sa in [ 'cod' ]:
+                   elif sa in [ 'z' ]:
                        sv = sum_algo_v3tov2[ self.headers[ "integrity" ][ "value" ] ]
                    else:
                        sv = encode( decode( self.headers[ "integrity" ][ "value" ].encode('utf-8'), "base64" ), 'hex' ).decode('utf-8')
