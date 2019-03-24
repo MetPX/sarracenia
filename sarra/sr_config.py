@@ -1868,10 +1868,15 @@ class sr_config:
                            glob_lst.extend(glob.glob(word) for word in words[2:] if word != [])
                            file_lst = [f for sub_lst in glob_lst for f in sub_lst]  
                            for xfile in file_lst:
-                              xattr.setxattr(xfile, 'user.sr_sum', bytes(value,"utf-8"))
-                              xmtime = timeflt2str(time.time())
-                              xattr.setxattr(xfile, 'user.sr_mtime', bytes(xmtime,"utf-8"))
-                              self.logger.debug("xattr sum set for file: {0} => {1}".format(xfile, value))
+                              try: 
+                                  xattr.setxattr(xfile, 'user.sr_sum', bytes(value,"utf-8"))
+                                  xmtime = timeflt2str(time.time())
+                                  xattr.setxattr(xfile, 'user.sr_mtime', bytes(xmtime,"utf-8"))
+                                  self.logger.debug("xattr sum set for file: {0} => {1}".format(xfile, value))
+                              except:
+                                  self.logger.error("could not setxattr (permission denied?)")
+                                  self.logger.debug('Exception details: ', exc_info=True)
+
                      n = 2
 
                 elif words0 in ['gateway_for','gf']: # See: sr_config.7, sr_sarra.8, sr_sender.1 

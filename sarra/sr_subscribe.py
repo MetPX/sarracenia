@@ -1463,6 +1463,10 @@ class sr_subscribe(sr_instances):
                       try:
                           path = self.msg.new_dir + '/' + self.msg.new_file
                           attr = xattr.xattr(path)
+
+                          if 'mtime' in self.msg.headers:
+                              xattr.setxattr(path, 'user.sr_mtime', bytes(self.msg.headers['mtime'], "utf-8"))
+
                           new_sumstr = self.msg.sumflg+','+new_checksum
                           if attr['user.sr_sum'] != new_sumstr:
                               xattr.setxattr(path, 'user.sr_sum', bytes(new_sumstr, "utf-8"))
