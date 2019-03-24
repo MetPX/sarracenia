@@ -135,14 +135,14 @@ class sr_message():
 
         """
         fname = "%s%s%s" %  (self.new_dir, '/', self.new_file )
-        self.logger.debug("sr_message content_match %s" % (fname ) )
+        self.logger.debug("sr_csnbd start %s" % (fname ) )
         
         self.local_checksum = None
 
-        self.logger.debug("sr_message content_match %s - %s 1" % (fname, self.sumstr ) )
-        if not os.path.isfile(fname) : return False
+        if not os.path.isfile(fname) : 
+           self.logger.debug("sr_csnbd content_match %s, file does not currently exist." % (fname ) )
+           return False
 
-        self.logger.debug("sr_message content_match %s 2" % (fname ) )
         # insert : file big enough to compute part checksum ?
 
         lstat = os.stat(fname)
@@ -152,31 +152,31 @@ class sr_message():
         # compare sizes... if (sr_subscribe is downloading partitions into taget file) and (target_file isn't fully done)
         # This check prevents random halting of subscriber (inplace on) if the messages come in non-sequential order
         if (self.target_file == self.new_file) and (fsiz != self.filesize):
+          self.logger.debug("sr_csnbd %s file size different, so cannot be the same" % (fname ) )
           return False
 
-        self.logger.debug("sr_message content_match %s 3" % (fname ) )
         # compare dates...
 
         if self.parent.preserve_time and 'mtime' in self.headers:
             new_mtime = timestr2flt(self.headers[ 'mtime' ])
             if new_mtime <= lstat[stat.ST_MTIME]:
-               self.logger.debug("sr_message content_match %s new version not newer" % (fname ) )
+               self.logger.debug("sr_csnbd %s new version not newer" % (fname ) )
                return True
 
         if self.sumflg in [ '0', 'n', 'z'] : 
-            self.logger.debug("sr_message content_match %s sum 0/n/z never matches" % (fname ) )
+            self.logger.debug("sr_csnbd content_match %s sum 0/n/z never matches" % (fname ) )
             return False
  
         if end > fsiz :
-           self.logger.debug("sr_message content_match file not big enough... considered different")
+           self.logger.debug("sr_csnbd content_match file not big enough... considered different")
            return False
 
         try   : self.compute_local_checksum()
         except: 
-                self.logger.debug("sr_message something went wrong when computing local checksum... considered different")
+                self.logger.debug("sr_csnbd something went wrong when computing local checksum... considered different")
                 return False
 
-        self.logger.debug( "checksum in message: %s, local: %s" % ( self.local_checksum, self.checksum ) ) 
+        self.logger.debug( "sr_csnbd checksum in message: %s vs. local: %s" % ( self.local_checksum, self.checksum ) ) 
         return self.local_checksum == self.checksum
 
     def compute_local_checksum(self):
