@@ -1442,8 +1442,9 @@ class sr_subscribe(sr_instances):
                 else:
                     new_checksum=None
 
-                if self.msg.onfly_checksum != self.msg.checksum :
+                if ( self.msg.sumflg[0] != 'a' ) and ( self.msg.onfly_checksum != self.msg.checksum ):
                    # onfly checksum is different from the message, avoid loops by overwriting. 
+                   # except if the algorithm is arbitrary, and therefore cannot be calculated.
                    self.logger.warning("onfly_checksum %s differ from message %s" %
                                       (self.msg.onfly_checksum, self.msg.checksum))
                    new_checksum=self.msg.onfly_checksum

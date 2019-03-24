@@ -272,6 +272,8 @@ to write the file to.
  +-----------+---------------------------------------------------------------------+
  |     0     | No checksums (unconditional copy.) Skips reading file (faster)      |
  +-----------+---------------------------------------------------------------------+
+ |     a     | Application defined sum (which cannot be calculated, must be stored)|
+ +-----------+---------------------------------------------------------------------+
  |     d     | Checksum the entire data (MD-5 as per IETF RFC 1321)                |
  +-----------+---------------------------------------------------------------------+
  |     L     | Linked: SHA512 sum of link value                                    |

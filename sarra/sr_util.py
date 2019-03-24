@@ -732,7 +732,11 @@ class sr_transport():
         # if the file is not partitioned, the the onfly_checksum is for the whole file.
         # cache it here, along with the mtime.
         if ( msg.partstr[0:2] == '1,' ) and self.parent.supports_extended_attributes:
-           sumstr = msg.sumstr[0:2] + msg.onfly_checksum
+           if msg.onfly_checksum:
+               sumstr = msg.sumstr[0:2] + msg.onfly_checksum
+           else:
+               sumstr = msg.sumstr
+
            xattr.setxattr(local_file, 'user.sr_sum', bytes(sumstr,"utf-8"))
 
            if self.parent.preserve_time and 'mtime' in hdr and hdr['mtime'] :
@@ -744,9 +748,12 @@ class sr_transport():
 
         mode = 0
         if self.parent.preserve_mode and 'mode' in hdr :
-           try   : mode = int( hdr['mode'], base=8)
-           except: mode = 0
-           if mode > 0 : os.chmod( local_file, mode )
+           try: 
+               mode = int( hdr['mode'], base=8)
+           except: 
+               mode = 0
+           if mode > 0 : 
+               os.chmod( local_file, mode )
 
         if mode == 0 and  self.parent.chmod !=0 : 
            os.chmod( local_file, self.parent.chmod )

@@ -130,8 +130,8 @@ class sr_retry:
            notice  = "%s %s %s" % ( message.pubtime, message.baseurl, message.relpath )
            if 'integrity' in headers.keys():
                # v3 has no sum, must add it here
-               sum_algo_map = {"d": "md5", "s": "sha512", "n": "md5name", "0": "random", "L": "link", "R": "remove",
-                               'z': 'cod'}
+               sum_algo_map = { "a":"arbitrary", "d": "md5", "s": "sha512", "n": "md5name", 
+                                "0": "random", "L": "link", "R": "remove", "z": "cod" }
                sum_algo_map = {v: k for k, v in sum_algo_map.items()}
                sumstr = sum_algo_map[headers['integrity']['method']]
                if sumstr == '0':

@@ -131,7 +131,7 @@ class sr_message():
 
     def content_should_not_be_downloaded(self):
         """
-        if the file advertised is newer than the local one, and it has a different checksum, return True.
+        if the file advertised is newer than the local one, and it has a different checksum, return False.
 
         """
         fname = "%s%s%s" %  (self.new_dir, '/', self.new_file )
@@ -139,8 +139,10 @@ class sr_message():
         
         self.local_checksum = None
 
+        self.logger.debug("sr_message content_match %s - %s 1" % (fname, self.sumstr ) )
         if not os.path.isfile(fname) : return False
 
+        self.logger.debug("sr_message content_match %s 2" % (fname ) )
         # insert : file big enough to compute part checksum ?
 
         lstat = os.stat(fname)
@@ -152,14 +154,17 @@ class sr_message():
         if (self.target_file == self.new_file) and (fsiz != self.filesize):
           return False
 
+        self.logger.debug("sr_message content_match %s 3" % (fname ) )
         # compare dates...
 
         if self.parent.preserve_time and 'mtime' in self.headers:
             new_mtime = timestr2flt(self.headers[ 'mtime' ])
             if new_mtime <= lstat[stat.ST_MTIME]:
+               self.logger.debug("sr_message content_match %s new version not newer" % (fname ) )
                return True
 
-        if self.sumflg in ['0','n','z'] : 
+        if self.sumflg in [ '0', 'n', 'z'] : 
+            self.logger.debug("sr_message content_match %s sum 0/n/z never matches" % (fname ) )
             return False
  
         if end > fsiz :
@@ -245,7 +250,7 @@ class sr_message():
                self.relpath = self.headers[ "relPath" ]
                self.notice = "%s %s %s" % ( self.pubtime, self.baseurl, self.relpath )
                if "integrity" in self.headers.keys():
-                   sum_algo_v3tov2 = { "md5":"d", "sha512":"s", "md5name":"n", "random":"0", "link":"L", "remove":"R", 'cod':'z' }
+                   sum_algo_v3tov2 = { "arbitrary":"a", "md5":"d", "sha512":"s", "md5name":"n", "random":"0", "link":"L", "remove":"R", "cod":"z" }
                    if type( self.headers[ "integrity" ] ) is str:
                        self.headers[ "integrity" ] = json.loads( self.headers[ "integrity" ] )
                    sa = sum_algo_v3tov2[ self.headers[ "integrity" ][ "method" ] ]
@@ -597,7 +602,7 @@ class sr_message():
                self.headers[ "baseUrl" ] = self.baseurl
                self.headers[ "relPath" ] = self.relpath
                
-               sum_algo_map = { "d":"md5", "s":"sha512", "n":"md5name", "0":"random", "L":"link", "R":"remove", 'z':'cod' }
+               sum_algo_map = { "a":"arbitrary", "d":"md5", "s":"sha512", "n":"md5name", "0":"random", "L":"link", "R":"remove", "z":"cod" }
                sm = sum_algo_map[ self.headers["sum"][0] ]
                if sm in [ 'random' ] :
                    sv = self.headers["sum"][2:]
