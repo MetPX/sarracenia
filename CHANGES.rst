@@ -6,6 +6,15 @@ lists all changes between versions.
 
 **git repo**
 
+**2.19.03b5**
+
+* bugfix: transparently accept setxattr failure for readonly files.
+* bugfix: several bugs with roundtripping v03->v02 checksums.
+* bugfix: changed documentation for rename (used what is changed by strip option) 
+* bugfix: found issues with arbitrary-application checksum
+* bugfix: mode/atime/mtim restoration was missing for inlined data.
+* new:    upgrade wmo_mesh mqtt publishing plugin to work with v03
+
 **2.19.03b4**
 
 * bugfix: conversion from v02 to v03 was broken somewhere else.
