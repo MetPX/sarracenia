@@ -1365,7 +1365,7 @@ EXEMPLES
 
 Voici un court exemple complet de fichier de configuration:: 
 
-  broker amqp://dd.weather.gc.gc.ca/
+  broker amqps://dd.weather.gc.ca/
 
   subtopic model_gem_global.25km.grib2.#.
   accept .*

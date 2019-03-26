@@ -348,7 +348,7 @@ file d'attente séparée. Les avertissements seront les plus rapides, les produi
 
 https://sourceforge.net/p/metpx/sarracenia/ci/master/tree/samples/config/ddc_hipri.conf::
 
-  broker amqp://dd.weather.gc.ca/
+  broker amqps://dd.weather.gc.ca/
   mirror
   directory /data/web
   subtopic alerts.cap.#
@@ -356,7 +356,7 @@ https://sourceforge.net/p/metpx/sarracenia/ci/master/tree/samples/config/ddc_hip
 
 https://sourceforge.net/p/metpx/sarracenia/ci/master/tree/samples/config/ddc_normal.conf::
 
-  broker amqp://dd.weather.gc.ca/
+  broker amqps://dd.weather.gc.ca/
   subtopic #
   reject .*alerts/cap.*
   mirror
@@ -563,7 +563,7 @@ Un autre exemple d'utilisation facile d'un plugin est de réaliser une analyse a
 En supposant que ClamAV est installé, ainsi que python3-pyclamd
 alors on peut ajouter les éléments suivants à un fichier de configuration de sr_subscribe:
 
-  broker amqp://dd.weather.gc.ca
+  broker amqps://dd.weather.gc.ca
   on_part part_clamav_scan.py
   subtopic observations.swob-ml.#
   accept .*

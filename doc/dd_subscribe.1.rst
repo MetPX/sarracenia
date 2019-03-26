@@ -249,7 +249,7 @@ EXAMPLES
 
 Here is a short complete example configuration file:: 
 
-  broker amqp://dd.weather.gc.ca/
+  broker amqps://dd.weather.gc.ca/
 
   subtopic model_gem_global.25km.grib2.#
   accept .*

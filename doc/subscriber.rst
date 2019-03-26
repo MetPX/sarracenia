@@ -395,7 +395,7 @@ delay in cases of backlog.
 
 https://github.com/MetPX/sarracenia/blob/master/sarra/examples/subscribe/ddc_hipri.conf::
 
-  broker amqp://dd.weather.gc.ca/
+  broker amqps://dd.weather.gc.ca/
   mirror
   directory /data/web
   subtopic alerts.cap.#
@@ -405,7 +405,7 @@ https://github.com/MetPX/sarracenia/blob/master/sarra/examples/subscribe/ddc_hip
 
 https://github.com/MetPX/sarracenia/blob/master/sarra/examples/subscribe/ddc_normal.conf::
 
-  broker amqp://dd.weather.gc.ca/
+  broker amqps://dd.weather.gc.ca/
   subtopic #
   reject .*alerts/cap.*
   mirror
@@ -656,7 +656,7 @@ Assuming that ClamAV is installed, as well as the python3-pyclamd
 package, then one can add the following to an sr_subscribe 
 configuration file::
 
-  broker amqp://dd.weather.gc.ca
+  broker amqps://dd.weather.gc.ca
   on_part part_clamav_scan.py
   subtopic observations.swob-ml.#
   accept .*
@@ -685,7 +685,7 @@ Activating the speedo plugin lets one understand how much bandwidth
 and how many messages per second a given set of selection criteria
 result in::
   
-  broker amqp://dd.weather.gc.ca
+  broker amqps://dd.weather.gc.ca
   on_message msg_speedo
   subtopic observations.swob-ml.#
   accept .*
