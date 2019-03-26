@@ -371,6 +371,9 @@ Install a minimal localhost broker and configure rabbitmq test users::
     amqp://tsub:${RABBITMQ_PASS}@localhost/
     amqp://tfeed:${RABBITMQ_PASS}@localhost/
     amqp://anonymous:${RABBITMQ_PASS}@localhost/
+    amqps://anonymous:anonymous@hpfx.collab.science.gc.ca
+    amqps://anonymous:anonymous@hpfx1.collab.science.gc.ca
+    amqps://anonymous:anonymous@hpfx2.collab.science.gc.ca
     amqps://anonymous:anonymous@dd.weather.gc.ca
     amqps://anonymous:anonymous@dd1.weather.gc.ca
     amqps://anonymous:anonymous@dd2.weather.gc.ca
