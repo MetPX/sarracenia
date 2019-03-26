@@ -42,6 +42,7 @@ amqp://anonymous:${OTHER_PASSWORD}@localhost/
 amqps://anonymous:anonymous@dd.weather.gc.ca
 amqps://anonymous:anonymous@dd1.weather.gc.ca
 amqps://anonymous:anonymous@dd2.weather.gc.ca
+amqps://anonymous:anonymous@hpfx.collab.science.gc.ca
 ftp://anonymous:anonymous@localhost:2121/
 EOF
 
