@@ -53,7 +53,7 @@ class ACCEL_WGET(object):
              parent.accel_wget_threshold = [ "1M" ]
 
       if not hasattr( parent, "accel_wget_protocol" ):
-             parent.accel_wget_protocol = [ "http" ]
+             parent.accel_wget_protocol = [ "https", "http" ]
           
       if type(parent.accel_wget_threshold) is list:
           parent.accel_wget_threshold = parent.chunksize_from_str( parent.accel_wget_threshold[0] )
