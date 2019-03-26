@@ -324,8 +324,9 @@ the following shim\_ options.
   All file posts include a checksum.  The *sum* option specifies how to calculate the it.
   It is a comma separated string.  Valid checksum flags are ::
 
-    [0|n|d|s|N|z]
+    [0|a|n|d|s|z]
     where 0 : no checksum... value in post is a random integer (only for testing/debugging.)
+          a : arbitrary application defined checksum (cannot calculate, must store)
           d : do md5sum on file content (default for now, compatibility)
           n : do md5sum checksum on filename
           p : do SHA512 checksum on filename and partition string [#]_
@@ -336,6 +337,15 @@ the following shim\_ options.
   of the postings have access to the algorithm.
 
 .. [#] The *p* algorithm is only implemented in C ( https://github.com/MetPX/sarracenia/issues/117 )
+
+.. Note::
+
+  On Unix derived systems (including linux and mac) the checksums are stored in extended
+  file attributes. This is necessary for the *a* attribute to work, since we have no means
+  of calculating that checksum. We have not found a method to do the equivalent on Windows 
+  yet, so products announced with *a* will always be downloaded there.
+  This is awful.
+
 
 [-tp|--topic_prefix <key>]
 --------------------------
