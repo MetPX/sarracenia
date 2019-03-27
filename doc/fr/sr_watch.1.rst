@@ -37,7 +37,7 @@ L'option broker définit toutes les informations d'identification pour se connec
 
 Courtier amqp{s}://<utilisateur>:<pw>@<brokerhost>[:port]/<vhost>****.
 
-      (par défaut : amqp://anonymous:anonymous@dd.weather.gc.ca/) 
+      (par défaut : amqps://anonymous:anonymous@dd.weather.gc.ca/)
 
 Tous les outils sr\_ tools stockent toutes les informations d'authentification sensibles dans le fichier credentials.conf.
 Les mots de passe pour les comptes SFTP, AMQP et HTTP sont stockés sur URL´s, ainsi que d'autres pointeurs.

@@ -613,7 +613,7 @@ try a subscription to an upstream pump::
   sarra@boule:~/.config/sarra$ mkdir subscribe
   sarra@boule:~/.config/sarra$ cd subscribe
   sarra@boule:~/.config/sarra/subscribe$ sr_subscribe edit dd.conf 
-  broker amqp://anonymous@dd.weather.gc.ca/
+  broker amqps://anonymous@dd.weather.gc.ca/
 
   mirror True
   directory /var/www/html
@@ -627,7 +627,7 @@ try a subscription to an upstream pump::
 
 add the password for the upstream pump to credentials.conf ::
 
-  sarra@boule:~/.config/sarra$ echo "amqp://anonymous:anonymous@dd.weather.gc.ca/" >>../credentials.conf
+  sarra@boule:~/.config/sarra$ echo "amqps://anonymous:anonymous@dd.weather.gc.ca/" >>../credentials.conf
 
 then do a short foreground run, to see if it is working. Hit Ctrl-C to stop it after a few messages::
 
@@ -635,7 +635,7 @@ then do a short foreground run, to see if it is working. Hit Ctrl-C to stop it a
   2016-03-28 09:21:27,708 [INFO] sr_subscribe start
   2016-03-28 09:21:27,708 [INFO] sr_subscribe run
   2016-03-28 09:21:27,708 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
-  2016-03-28 09:21:28,375 [INFO] Binding queue q_anonymous.sr_subscribe.dd.78321126.82151209 with key v02.post.# from exchange xpublic on broker amqp://anonymous@dd.weather.gc.ca/
+  2016-03-28 09:21:28,375 [INFO] Binding queue q_anonymous.sr_subscribe.dd.78321126.82151209 with key v02.post.# from exchange xpublic on broker amqps://anonymous@dd.weather.gc.ca/
   2016-03-28 09:21:28,933 [INFO] Received notice  20160328130240.645 http://dd2.weather.gc.ca/ observations/swob-ml/20160328/CWRM/2016-03-28-1300-CWRM-AUTO-swob.xml
   2016-03-28 09:21:29,297 [INFO] 201 Downloaded : v02.report.observations.swob-ml.20160328.CWRM 20160328130240.645 http://dd2.weather.gc.ca/ observations/swob-ml/20160328/CWRM/2016-03-28-1300-CWRM-AUTO-swob.xml 201 boule.example.com anonymous 1128.560235 parts=1,6451,1,0,0 sum=d,f17299b2afd78ae8d894fe85d3236488 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM rename=/var/www/html/observations/swob-ml/20160328/CWRM/2016-03-28-1300-CWRM-AUTO-swob.xml message=Downloaded
   2016-03-28 09:21:29,389 [INFO] Received notice  20160328130240.646 http://dd2.weather.gc.ca/ observations/swob-ml/20160328/CWSK/2016-03-28-1300-CWSK-AUTO-swob.xml
@@ -679,7 +679,7 @@ Then we create a configuration::
 
   sarra@boule:~$ cat >>dd.off <<EOT
 
-  broker amqp://anonymous@dd.weather.gc.ca/
+  broker amqps://anonymous@dd.weather.gc.ca/
   exchange xpublic
 
   msg_to_clusters DD
@@ -732,7 +732,7 @@ So then try it out::
   2016-03-28 10:38:16,999 [INFO] sr_sarra start
   2016-03-28 10:38:16,999 [INFO] sr_sarra run
   2016-03-28 10:38:17,000 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
-  2016-03-28 10:38:17,604 [INFO] Binding queue q_anonymous.sr_sarra.dd.off with key v02.post.# from exchange xpublic on broker amqp://anonymous@dd.weather.gc.ca/
+  2016-03-28 10:38:17,604 [INFO] Binding queue q_anonymous.sr_sarra.dd.off with key v02.post.# from exchange xpublic on broker amqps://anonymous@dd.weather.gc.ca/
   2016-03-28 10:38:19,172 [INFO] Received v02.post.bulletins.alphanumeric.20160328.UA.CWAO.14 '20160328143820.166 http://dd2.weather.gc.ca/ bulletins/alphanumeric/20160328/UA/CWAO/14/UANT01_CWAO_281438___22422' parts=1,124,1,0,0 sum=d,cfbcb85aac0460038babc0c5a8ec0513 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM
   2016-03-28 10:38:19,172 [INFO] downloading/copying into /var/www/html/bulletins/alphanumeric/20160328/UA/CWAO/14/UANT01_CWAO_281438___22422
   2016-03-28 10:38:19,515 [INFO] 201 Downloaded : v02.report.bulletins.alphanumeric.20160328.UA.CWAO.14 20160328143820.166 http://dd2.weather.gc.ca/ bulletins/alphanumeric/20160328/UA/CWAO/14/UANT01_CWAO_281438___22422 201 boule.bsqt.example.com anonymous -0.736602 parts=1,124,1,0,0 sum=d,cfbcb85aac0460038babc0c5a8ec0513 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM message=Downloaded
