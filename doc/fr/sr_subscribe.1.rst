@@ -217,7 +217,7 @@ définit l'option *debug* pour activer une journalisation plus verbeuse.  Si auc
 la valeur true est implicite. Les exemples ci-dessus sont donc équivalents.  Un deuxième exemple
 ligne de configuration::
 
-  broker amqp://anonymous@dd.weather.gc.ca
+  broker amqps://anonymous@dd.weather.gc.ca
 
 Dans l'exemple ci-dessus, *broker* est le mot clé de l'option, et le reste de la 
 ligne est la valeur qui lui est assignée. Les fichiers de configuration sont 
@@ -363,7 +363,7 @@ informations d'identification pour se connecter au serveur **RabbitMQ**.
 
 ::
 
-      (par défaut : amqp://anonymous:anonymous@dd.weather.gc.ca/) 
+      (par défaut : amqps://anonymous:anonymous@dd.weather.gc.ca/)
 
 Pour tous les programmes de **sarracenia**, les parties confidentielles 
 des justificatifs d'identité sont stockées uniquement dans 

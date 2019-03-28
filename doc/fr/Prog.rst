@@ -299,7 +299,7 @@ pourrait indiquer quand chaque fichier est prêt en écrivant à une pipe nommé
 
   blacklab% sr_subscribe edit dd_swob.conf 
 
-  broker amqp://anonymous@dd.weather.gc.ca
+  broker amqps://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
 
   file_rxpipe_name /local/home/peter/test/rxpipe
@@ -792,7 +792,7 @@ transformation::
 
   blacklab% sr_subscribe edit dd_swob.conf 
 
-  broker amqp://anonymous@dd.weather.gc.ca
+  broker amqps://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
   document_root /data/web/dd_root
   no_download

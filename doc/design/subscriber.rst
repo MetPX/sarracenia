@@ -109,7 +109,7 @@ A configuration to obtain these files will look like so::
 
   blacklab% cat >../dd_swob.conf <<EOT
 
-  broker amqp://anonymous@dd.weather.gc.ca
+  broker amqps://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
   accept .*
   # write all SWOBS into the current working directory.
@@ -170,7 +170,7 @@ immediately gives an indication of whether it succeeded in connecting to the bro
 
   blacklab% tail ~/.cache/sarra/sr_subscribe_dd_swob_0001.log
   
-  2015-12-03 06:53:35,635 [INFO] Binding queue q_anonymous.21096474.62787751 with key v02.post.observations.swob-ml.# to exchange xpublic on broker amqp://anonymous@dd.weather.gc.ca/
+  2015-12-03 06:53:35,635 [INFO] Binding queue q_anonymous.21096474.62787751 with key v02.post.observations.swob-ml.# to exchange xpublic on broker amqps://anonymous@dd.weather.gc.ca/
   2015-12-03 17:32:01,834 [INFO] user_config = 1 ../dd_swob.conf
   2015-12-03 17:32:01,835 [INFO] sr_subscribe start
   2015-12-03 17:32:01,835 [INFO] sr_subscribe run
@@ -178,7 +178,7 @@ immediately gives an indication of whether it succeeded in connecting to the bro
   2015-12-03 17:32:01,835 [INFO] AMQP  input :    exchange(xpublic) topic(v02.post.observations.swob-ml.#)
   2015-12-03 17:32:01,835 [INFO] AMQP  output:    exchange(xs_anonymous) topic(v02.log.#)
   
-  2015-12-03 17:32:08,191 [INFO] Binding queue q_anonymous.21096474.62787751 with key v02.post.observations.swob-ml.# to exchange xpublic on broker amqp://anonymous@dd.weather.gc.ca/
+  2015-12-03 17:32:08,191 [INFO] Binding queue q_anonymous.21096474.62787751 with key v02.post.observations.swob-ml.# to exchange xpublic on broker amqps://anonymous@dd.weather.gc.ca/
   blacklab% 
   
 The sr_subscribe will get the notification and download the file into the 
@@ -190,7 +190,7 @@ As the start up is normal, that means the authentication information was good.
 Passwords are stored in the ~/.config/sarra/credentials.conf file.
 The format is just a complete url on each line.  Example for above would be::
   
-  amqp://anonymous:anonymous@dd.weather.gc.ca/
+  amqps://anonymous:anonymous@dd.weather.gc.ca/
 
 The password is located after the :, and before the @ in the URL as is standard
 practice.  This credentials.conf file should be private (0600).  Also, if you place
@@ -285,7 +285,7 @@ Note the following::
 
   blacklab% cat >../dd_swob.conf <<EOT
 
-  broker amqp://anonymous@dd.weather.gc.ca
+  broker amqps://anonymous@dd.weather.gc.ca
   accept .*/observations/swob-ml/.*
 
   #write all SWOBS into the current working directory
@@ -322,7 +322,7 @@ then the option mirror should be set::
 
   blacklab% cat >../dd_swob.conf <<EOT
 
-  broker amqp://anonymous@dd.weather.gc.ca
+  broker amqps://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
   directory /tmp
   mirror True
@@ -471,7 +471,7 @@ Ideally, rather than using the file system, sr_subscribe indicates when each fil
 
   blacklab% cat >../dd_swob.conf <<EOT
 
-  broker amqp://anonymous@dd.weather.gc.ca
+  broker amqps://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
   on_file rxpipe
   directory /tmp
@@ -614,7 +614,7 @@ local file is sufficient::
 
   blacklab% cat >../dd_swob.conf <<EOT
 
-  broker amqp://anonymous@dd.weather.gc.ca
+  broker amqps://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
   no_download
   document_root /data/web/dd_root
