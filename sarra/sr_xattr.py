@@ -20,25 +20,25 @@ STREAM_NAME = 'sr_.json'
 
 class sr_xattr:
 
-   def __init__(path):
+   def __init__(self,path):
 
        self.path = path
        self.x = {}
        self.dirty = False
 
-       if supports_alternate_data_stream:
+       if supports_alternate_data_streams:
            self.ads = ADS(path)
            s = self.ads.list()
            if STREAM_NAME in s:
               self.x = json.loads( self.ads.get_stream_content(STREAM_NAME)  )
 
        if supports_extended_attributes:
-          d = xattr.xattr(path):
+          d = xattr.xattr(path)
           for i in d:
               if not i.startswith('user.sr_'):
                  continue
               k= i.replace('user.sr_','') 
-              v= d[i].encode('utf-8')
+              v= d[i].decode('utf-8')
               self.x[k] = v
 
    def __del__(self):
@@ -82,3 +82,4 @@ class sr_xattr:
               # permission would be a normal thing and just silently fail...
               pass
 
+       self.dirty = False

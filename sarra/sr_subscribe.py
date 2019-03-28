@@ -49,12 +49,6 @@ from base64 import b64decode, b64encode
 from mimetypes import guess_type
 
 
-try:
-    import xattr
-    supports_extended_attributes=True
-except:
-    supports_extended_attributes=False
-
 
 try :    
          from sr_cache           import *
@@ -65,6 +59,7 @@ try :
          from sr_instances       import *
          from sr_message         import *
          from sr_util            import *
+         from sr_xattr           import *
 except : 
          from sarra.sr_cache     import *
          from sarra.sr_consumer  import *
@@ -74,6 +69,7 @@ except :
          from sarra.sr_instances import *
          from sarra.sr_message   import *
          from sarra.sr_util      import *
+         from sarra.sr_xattr     import *
 
 
 class sr_subscribe(sr_instances):
@@ -1459,18 +1455,20 @@ class sr_subscribe(sr_instances):
                    # set the value so that if it gets posted later, it is correct.
                    self.msg.set_sum(self.msg.sumflg,new_checksum)
 
-                   if supports_extended_attributes:
-                      try:
+                   try:
                           path = self.msg.new_dir + '/' + self.msg.new_file
-                          attr = xattr.xattr(path)
+
+                          x = sr_xattr(path)
 
                           if 'mtime' in self.msg.headers:
-                              xattr.setxattr(path, 'user.sr_mtime', bytes(self.msg.headers['mtime'], "utf-8"))
+                              x.set( 'mtime', self.msg.headers['mtime'] )
 
                           new_sumstr = self.msg.sumflg+','+new_checksum
                           if attr['user.sr_sum'] != new_sumstr:
-                              xattr.setxattr(path, 'user.sr_sum', bytes(new_sumstr, "utf-8"))
-                      except Exception as ex:
+                              x.set( 'sum', new_sumstr )
+                          x.persist()
+
+                   except Exception as ex:
                           self.logger.warning( "failed to set sattributes %s: %s" % ( path, ex ) )
 
                    # tell upstream that we changed the checksum.

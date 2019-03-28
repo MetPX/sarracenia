@@ -41,10 +41,11 @@ import urllib
 import urllib.parse
 
 try:
-    import xattr
+   from sr_xattr import *
 
 except:
-    pass
+   from sarra.sr_xattr import *
+
 
 #============================================================
 # sigalarm
@@ -731,20 +732,22 @@ class sr_transport():
 
         # if the file is not partitioned, the the onfly_checksum is for the whole file.
         # cache it here, along with the mtime.
-        if ( msg.partstr[0:2] == '1,' ) and self.parent.supports_extended_attributes:
+        if ( msg.partstr[0:2] == '1,' ) : 
            if msg.onfly_checksum:
                sumstr = msg.sumstr[0:2] + msg.onfly_checksum
            else:
                sumstr = msg.sumstr
 
-           xattr.setxattr(local_file, 'user.sr_sum', bytes(sumstr,"utf-8"))
+           x = sr_xattr( local_file )
+           x.set( 'sum' , sumstr )
 
            if self.parent.preserve_time and 'mtime' in hdr and hdr['mtime'] :
-               xattr.setxattr(local_file, 'user.sr_mtime', bytes(hdr['mtime'],"utf-8"))
+               x.set( 'mtime' , hdr['mtime'] )
            else:
                st = os.stat(local_file)
                mtime = timeflt2str( st.st_mtime )
-               xattr.setxattr(local_file, 'user.sr_mtime', bytes(mtime,"utf-8"))
+               x.set( 'mtime' , mtime )
+           x.persist()
 
         mode = 0
         if self.parent.preserve_mode and 'mode' in hdr :

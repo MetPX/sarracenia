@@ -40,13 +40,6 @@ from codecs import decode,encode
 
 import json
 
-try:
-    import xattr
-    supports_extended_attributes=True
-
-except:
-    supports_extended_attributes=False
-
 # AMQP limits headers to 'short string', or 255 characters, so truncate and warn.
 amqp_ss_maxlen = 253
 
@@ -56,8 +49,10 @@ from mimetypes import guess_type
 
 try :
          from sr_util         import *
+         from sr_xattr        import *
 except :
          from sarra.sr_util    import *
+         from sarra.sr_xattr   import *
 
 class sr_message():
 
@@ -184,11 +179,13 @@ class sr_message():
 
         if supports_extended_attributes:
             try:
-                attr = xattr.xattr(os.path.join(self.new_dir, self.new_file))
-                if 'user.sr_sum' in attr:
-                    self.logger.debug("checksum extracted using xattr")
-                    self.local_checksum = attr['user.sr_sum'].decode("utf-8")[2:]
-                    return
+                x = sr_xattr( os.path.join(self.new_dir, self.new_file) )
+                s = x.get( 'sum' )
+
+                if s:
+                   self.local_checksum = s
+                   return
+
             except:
                 pass
 
