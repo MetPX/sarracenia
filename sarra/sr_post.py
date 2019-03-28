@@ -592,9 +592,9 @@ class sr_post(sr_instances):
             if t and ( t >= self.msg.headers['mtime']):
                 self.logger.debug("sum remembered by xattr")
                 return s
-            else:
-                x.set('mtime', self.msg.headers['mtime'] )
-                self.logger.debug("xattr sum too old")
+
+        x.set('mtime', self.msg.headers['mtime'] )
+        self.logger.debug("xattr sum too old")
 
         self.logger.debug("sum set by compute_sumstr")
 
@@ -629,6 +629,8 @@ class sr_post(sr_instances):
             checksum = sumalgo.get_value()
             sumstr   = '%s,%s' % (sumflg,checksum)
 
+        x.set( 'sum', sumstr )
+        x.persist()
         return sumstr
 
     # =============
