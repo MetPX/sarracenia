@@ -1,3 +1,49 @@
+# This file is part of sarracenia.
+# The sarracenia suite is Free and is proudly provided by the Government of Canada
+# Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
+#
+# Questions or bugs report: dps-client@ec.gc.ca
+# Sarracenia repository: https://github.com/MetPX/sarracenia
+# Documentation: https://github.com/MetPX/sarracenia
+#
+# sr_post.py : python3 program allowing users to post an available product
+#
+# Code contributed by:
+#  Michel Grenier - Shared Services Canada
+#  Last Changed   : Nov  8 22:10:16 UTC 2017
+#
+########################################################################
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; version 2 of the License.
+#
+#  This program is distributed in the hope that it will be useful, 
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+#
+#
+
+"""
+  This class implements storing metadata *with* a file.
+
+  on unlix/linux systems, we use extended attributes,
+  where we apply a *user.sr_* prefix to the attribute names to avoid clashes.
+
+  on Windows NT, create an "sr_.json" Alternate Data Stream  to store them.
+
+  API:
+
+  x = sr_attr( path )  <- read metadata from file.
+  x.get('sum') <- look at one value.
+  x.get('sum', 'hoho') <- set one value.
+  x.persist() <- write metadata back to file, if necessary.
+
+"""
 
 
 try:
@@ -67,10 +113,11 @@ class sr_xattr:
 
        if supports_alternate_data_streams:
           #replace STREAM_NAME with json.dumps(self.x)
-          if STREAM_NAME in self.ads.streams:
+          s = self.ads.list()
+          if STREAM_NAME in s: 
                self.delete_stream(STREAM_NAME)
 
-          self.add_stream_from_string(STREAM_NAME,json.dumps(self.x))
+          self.ads.add_stream_from_string(STREAM_NAME,json.dumps(self.x))
 
        if supports_extended_attributes:
           #set the attributes in the list. encoding utf8...
