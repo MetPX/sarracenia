@@ -48,7 +48,19 @@ def self_test():
     i = 0
     while True :
           ok, msg = consumer.consume()
-          if ok: break
+
+          if not ok: 
+              continue
+
+          print( 'message: %s' % consumer.raw_msg.body )
+          if 'size' in msg.headers and int(msg.headers['size']) > 2048 :
+              continue
+
+          if 'parts' in msg.headers and int(msg.headers['parts'].split(',')[1]) > 2048 :
+              continue
+                  
+          if ok: 
+              break
 
     print("SETUP 0: OK message received\n")
 
