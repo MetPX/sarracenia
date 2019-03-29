@@ -14,15 +14,6 @@ dealings in the Software.
 Except as contained in this notice, the name of the Robin David shall not be used in advertising or otherwise
 to promote the sale, use or other dealings in this Software without prior written authorization from the Robin David.
 '''
-
-'''
-
-   2019/03 PAS:
-   original from: https://github.com/RobinDavid/pyADS
-   As it isn't in pypy or distributed as a package, it is just copied verbatim aside from this notice, here.
-   For this one file, the license above applies.
-
-''' 
 from ctypes import *
 
 import sys, os
@@ -66,6 +57,10 @@ class ADS():
     def init_streams(self):
         file_infos = WIN32_FIND_STREAM_DATA()
         streamlist = list()
+
+        findFirstStreamW = kernel32.FindFirstStreamW
+        findFirstStreamW.restype = c_void_p
+
         myhandler = kernel32.FindFirstStreamW (LPSTR(self.filename), 0, byref(file_infos), 0)
         '''
         HANDLE WINAPI FindFirstStreamW(
@@ -76,15 +71,16 @@ class ADS():
         );
         https://msdn.microsoft.com/en-us/library/aa364424(v=vs.85).aspx
         '''
+        p = c_void_p(myhandler)
 
         if file_infos.cStreamName:
             streamname = file_infos.cStreamName.split(":")[1]
             if streamname: streamlist.append(streamname)
 
-            while kernel32.FindNextStreamW(myhandler, byref(file_infos)):
+            while kernel32.FindNextStreamW(p, byref(file_infos)):
                 streamlist.append(file_infos.cStreamName.split(":")[1])
 
-        kernel32.FindClose(myhandler) #Close the handle
+        kernel32.FindClose(p)  # Close the handle
 
         return streamlist
 
