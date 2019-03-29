@@ -81,9 +81,9 @@ class sr_xattr:
 
        if supports_alternate_data_streams:
            self.ads = ADS(path)
-           s = self.ads.list()
+           s = list(self.ads)
            if STREAM_NAME in s:
-              self.x = json.loads( self.ads.get_stream_content(STREAM_NAME)  )
+              self.x = json.loads( self.ads.get_stream_content(STREAM_NAME).decode('utf-8')  )
 
        if supports_extended_attributes:
           d = xattr.xattr(path)
@@ -120,11 +120,11 @@ class sr_xattr:
 
        if supports_alternate_data_streams:
           #replace STREAM_NAME with json.dumps(self.x)
-          s = self.ads.list()
+          s = list(self.ads)
           if STREAM_NAME in s: 
-               self.delete_stream(STREAM_NAME)
+               self.ads.delete_stream(STREAM_NAME)
 
-          self.ads.add_stream_from_string(STREAM_NAME,json.dumps(self.x))
+          self.ads.add_stream_from_string(STREAM_NAME,bytes(json.dumps(self.x,indent=4),'utf-8'))
 
        if supports_extended_attributes:
           #set the attributes in the list. encoding utf8...
