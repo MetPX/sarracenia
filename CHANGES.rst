@@ -6,6 +6,9 @@ lists all changes between versions.
 
 **git repo**
 
+* new:    Issue #54 added version of extended attributes for NTFS.
+* new:    Issue #54 added xattr_disable to turn off extended attributes feature.
+
 **2.19.03b5**
 
 * bugfix: transparently accept setxattr failure for readonly files.
