@@ -12,7 +12,7 @@ class Post_Log(object):
     def __init__(self,parent):
         parent.declare_option('post_log_format')
         parent.logger.debug( "post_log initialized" )
-        self.post_log_format=[ 'old' ]
+        parent.post_log_format=[ 'old' ]
           
     def perform(self,parent):
 
