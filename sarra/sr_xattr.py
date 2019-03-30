@@ -140,22 +140,25 @@ class sr_xattr:
        if not self.dirty:
           return
 
-       if supports_alternate_data_streams:
-          #replace STREAM_NAME with json.dumps(self.x)
-          s = list(self.ads)
-          if STREAM_NAME in s: 
-               self.ads.delete_stream(STREAM_NAME)
+       try: 
+           if supports_alternate_data_streams:
 
-          self.ads.add_stream_from_string(STREAM_NAME,bytes(json.dumps(self.x,indent=4),'utf-8'))
+              #replace STREAM_NAME with json.dumps(self.x)
+              s = list(self.ads)
+              if STREAM_NAME in s: 
+                   self.ads.delete_stream(STREAM_NAME)
 
-       if supports_extended_attributes:
-          #set the attributes in the list. encoding utf8...
-          try: 
+              self.ads.add_stream_from_string(STREAM_NAME,bytes(json.dumps(self.x,indent=4),'utf-8'))
+
+           if supports_extended_attributes:
+              #set the attributes in the list. encoding utf8...
               for i in self.x:
                   xattr.setxattr( self.path, 'user.sr_' + i, bytes( self.x[i], 'utf-8' ) )
-          except:
-              # not really sure what to do in the exception case...
-              # permission would be a normal thing and just silently fail...
-              pass
+       except:
+          # not really sure what to do in the exception case...
+          # permission would be a normal thing and just silently fail...
+          # could also be on windows, but not on an NTFS file system.
+          # silent failure means it falls back to using other means.
+          pass
 
        self.dirty = False
