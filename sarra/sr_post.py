@@ -45,13 +45,6 @@ from base64 import b64decode, b64encode
 from mimetypes import guess_type
 
 
-try:
-    import xattr
-    supports_extended_attributes=True
-
-except:
-    supports_extended_attributes=False
-    
 from collections import *
 
 from watchdog.observers         import Observer
@@ -65,7 +58,9 @@ try :
          from sr_message         import *
          from sr_rabbit          import *
          from sr_util            import *
+         from sr_xattr import *
 except : 
+         from sarra.sr_xattr import *
          from sarra.sr_amqp      import *
          from sarra.sr_cache     import *
          from sarra.sr_instances import *
@@ -589,23 +584,17 @@ class sr_post(sr_instances):
 
         sumstr = '' 
 
-        if supports_extended_attributes:
-           try:
-               attr = xattr.xattr(path)
-               if 'user.sr_sum' in attr:
-                  if 'user.sr_mtime' in attr:
-                     if attr['user.sr_mtime'].decode("utf-8") >= self.msg.headers['mtime']:
-                        self.logger.debug("sum set by xattr")
-                        sumstr = attr['user.sr_sum'].decode("utf-8")
-                        return sumstr
-                  else:
-                     xattr.setxattr(path, 'user.sr_mtime', bytes(self.msg.headers['mtime'], "utf-8"))
-                     self.logger.debug("sum set by xattr")
-                     sumstr = attr['user.sr_sum'].decode("utf-8")
-                     return sumstr
+        x = sr_xattr(path)
+        
+        s = x.get( 'sum' )
+        if s: 
+            t= x.get( 'mtime' ) 
+            if t and ( t >= self.msg.headers['mtime']):
+                self.logger.debug("sum remembered by xattr")
+                return s
 
-           except:
-               pass
+        x.set('mtime', self.msg.headers['mtime'] )
+        self.logger.debug("xattr sum too old")
 
         self.logger.debug("sum set by compute_sumstr")
 
@@ -640,6 +629,8 @@ class sr_post(sr_instances):
             checksum = sumalgo.get_value()
             sumstr   = '%s,%s' % (sumflg,checksum)
 
+        x.set( 'sum', sumstr )
+        x.persist()
         return sumstr
 
     # =============
