@@ -60,24 +60,43 @@ try:
 except:
     supports_extended_attributes=False
     
-try:
-    from sarra.pyads import ADS
-    supports_alternate_data_streams=True
+import sys
 
-except:
-    supports_alternate_data_streams=False
+supports_alternate_data_streams=False
+
+if sys.platform == 'win32':
+    try:
+        from sarra.pyads import ADS
+        supports_alternate_data_streams=True
+
+    except:
+        pass
 
 import json
 
 STREAM_NAME = 'sr_.json'
 
+xattr_disabled=False
+
+def disable_xattr():
+     global xattr_disabled
+     xattr_disabled=True
+
 class sr_xattr:
 
    def __init__(self,path):
 
+       global supports_alternate_data_streams
+       global supports_extended_attributes
+
        self.path = path
        self.x = {}
        self.dirty = False
+
+       if xattr_disabled:
+           supports_alternate_data_streams=False
+           supports_extended_attributes=False
+           return
 
        if supports_alternate_data_streams:
            self.ads = ADS(path)
@@ -114,6 +133,9 @@ class sr_xattr:
        self.x[ name ] = value      
 
    def persist(self):
+
+       global supports_alternate_data_streams
+       global supports_extended_attributes
 
        if not self.dirty:
           return

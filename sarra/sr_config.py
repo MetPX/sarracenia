@@ -1626,7 +1626,6 @@ class sr_config:
                         self.cache_stat = self.isTrue(words[1])
                         n = 2
 
-
                 elif words0 in [ 'chmod', 'default_mode', 'dm']:    # See: sr_config.7.rst
                      self.chmod = int(words[1],8)
                      n = 2
@@ -2552,6 +2551,17 @@ class sr_config:
                                 ( words1, known_runs, self.windows_run ) )
 
                         n = 2
+
+                elif words0 in [ 'xattr_disable', 'xattr_disabled', 'xd' ]   : # FIXME! what is this?
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        xattr_disabled = True
+                        n = 1
+                     else :
+                        xattr_disabled = self.isTrue(words[1])
+                        n = 2
+                     if xattr_disabled:
+                        self.logger.error("hoho! disabling xattr!")
+                        disable_xattr()
 
                 else :
                      # if unknown option is supplied, create a list for the values 
