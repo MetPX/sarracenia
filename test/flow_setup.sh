@@ -107,11 +107,11 @@ if [ ! -d "$testdocroot" ]; then
   mkdir $testdocroot/cfile
 fi
 
-lo="`netstat -an | grep '127.0.0.1:8000'|wc -l`"
+lo="`netstat -an | grep '127.0.0.1:8001'|wc -l`"
 while [ ${lo} -gt 0 ]; do
    echo "Waiting for $lo leftover sockets to clean themselves up from last run."
    sleep 10 
-   lo="`netstat -an | grep '127.0.0.1:8000'|wc -l`"
+   lo="`netstat -an | grep '127.0.0.1:8001'|wc -l`"
    sleep 5 
 done
 

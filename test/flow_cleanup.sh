@@ -64,9 +64,9 @@ if [ -f .httpserverpid ]; then
    echo "If other web servers with lost pid kill them"
    pgrep -al python3 | grep trivialserver.py | grep -v grep  | xargs -n1 kill 2> /dev/null
 
-   if [ "`netstat -an | grep LISTEN | grep 8000`" ]; then
+   if [ "`netstat -an | grep LISTEN | grep 8001`" ]; then
        pid="`ps ax | grep trivialserver.py | grep -v grep| awk '{print $1;};'`" 
-       echo "Killing rogue web server found on port 8000 at pid=$pid"
+       echo "Killing rogue web server found on port 8001 at pid=$pid"
        if [ "$pid" ]; then
           kill -9 $pid
        else
