@@ -380,16 +380,22 @@ class sr_message():
         if self.report_publisher != None :
 
            # run on_report plugins
+           ok=True
            for plugin in self.parent.on_report_list :
-               if not plugin(self.parent): return False
+               if not plugin(self.parent): 
+                   ok=False
+                   break
 
            # publish
-           self.report_publisher.publish(self.report_exchange,self.report_topic,self.report_notice,self.headers)
+           if ok:
+               self.report_publisher.publish(self.report_exchange,self.report_topic,self.report_notice,self.headers)
 
         self.logger.debug("%d %s : %s %s %s" % (code,message,self.report_topic,self.report_notice,self.hdrstr))
 
         # make sure not published again
-        del self.headers['message']
+        for i in [ 'message', 'report' ]:
+            if i in self.headers:
+                del self.headers[i]
 
     def parse_v00_post(self):
         token             = self.topic.split('.')
@@ -550,7 +556,6 @@ class sr_message():
                         except:
                             self.headers[ "content" ] = { "encoding": "base64", "value": b64encode(d).decode('utf-8') }
     
-
         # AMQP limits topic to 255 characters, space and # replaced, if greater than limit : truncate and warn.
         self.topic = self.topic.replace(' ','%20')
         self.topic = self.topic.replace('#','%23')
