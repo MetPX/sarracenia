@@ -556,7 +556,7 @@ by writing to a named pipe::
 
   blacklab% sr_subscribe edit dd_swob.conf 
 
-  broker amqp://anonymous@dd.weather.gc.ca
+  broker amqps://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
 
   file_rxpipe_name /local/home/peter/test/rxpipe
@@ -1051,7 +1051,7 @@ local file is sufficient::
 
   blacklab% sr_subscribe edit dd_swob.conf 
 
-  broker amqp://anonymous@dd.weather.gc.ca
+  broker amqps://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
   document_root /data/web/dd_root
   no_download

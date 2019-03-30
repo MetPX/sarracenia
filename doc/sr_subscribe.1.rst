@@ -196,7 +196,7 @@ sets the *debug* option to enable more verbose logging.  If no value is specifie
 the value true is implicit, so the above are equivalent.  A second example 
 configuration line::
 
-  broker amqp://anonymous@dd.weather.gc.ca
+  broker amqps://anonymous@dd.weather.gc.ca
 
 In the above example, *broker* is the option keyword, and the rest of the line is the 
 value assigned to the setting. Configuration files are a sequence of settings, one per line. 
@@ -381,7 +381,7 @@ The broker option sets all the credential information to connect to the  **Rabbi
 
 ::
 
-      (default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) 
+      (default: amqps://anonymous:anonymous@dd.weather.gc.ca/ )
 
 For all **sarracenia** programs, the confidential parts of credentials are stored
 only in ~/.config/sarra/credentials.conf.  This includes the destination and the broker

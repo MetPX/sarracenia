@@ -194,7 +194,7 @@ First initialize the credentials storage file::
 
   blacklab% sr_subscribe edit credentials.conf
 
-  amqp://anonymous:anonymous@dd.weather.gc.ca
+  amqps://anonymous:anonymous@dd.weather.gc.ca
 
 The *edit* command just calls up the user's configured editor
 on the file to be created in the right place.  To create
@@ -202,7 +202,7 @@ a configuration to obtain the swob files::
 
   blacklab% sr_subscribe edit swob.conf
 
-  broker amqp://anonymous@dd.weather.gc.ca
+  broker amqps://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
   accept .*
 
@@ -236,7 +236,7 @@ One can monitor activity with the *log* command::
 
   blacklab% sr_subscribe log dd_swob
   
-  2015-12-03 06:53:35,635 [INFO] Binding queue q_anonymous.21096474.62787751 with key v02.post.observations.swob-ml.# to exchange xpublic on broker amqp://anonymous@dd.weather.gc.ca/
+  2015-12-03 06:53:35,635 [INFO] Binding queue q_anonymous.21096474.62787751 with key v02.post.observations.swob-ml.# to exchange xpublic on broker amqps://anonymous@dd.weather.gc.ca/
   2015-12-03 17:32:01,834 [INFO] user_config = 1 ../dd_swob.conf
   2015-12-03 17:32:01,835 [INFO] sr_subscribe start
   2015-12-03 17:32:01,835 [INFO] sr_subscribe run
@@ -244,7 +244,7 @@ One can monitor activity with the *log* command::
   2015-12-03 17:32:01,835 [INFO] AMQP  input :    exchange(xpublic) topic(v02.post.observations.swob-ml.#)
   2015-12-03 17:32:01,835 [INFO] AMQP  output:    exchange(xs_anonymous) topic(v02.report.#)
   
-  2015-12-03 17:32:08,191 [INFO] Binding queue q_anonymous.21096474.62787751 with key v02.post.observations.swob-ml.# to exchange xpublic on broker amqp://anonymous@dd.weather.gc.ca/
+  2015-12-03 17:32:08,191 [INFO] Binding queue q_anonymous.21096474.62787751 with key v02.post.observations.swob-ml.# to exchange xpublic on broker amqps://anonymous@dd.weather.gc.ca/
   blacklab% 
   
 The sr_subscribe will get the notification and download the file into the 
@@ -253,7 +253,7 @@ authentication information was good. Passwords are stored in
 the ~/.config/sarra/credentials.conf file. The format is just a complete 
 url on each line. An example of that would be::
   
-  amqp://anonymous:anonymous@dd.weather.gc.ca/
+  amqps://anonymous:anonymous@dd.weather.gc.ca/
 
 The password is located after the :, and before the @ in the URL as is standard
 practice. This credentials.conf file should be private (linux octal permissions: 0600).  
@@ -467,7 +467,7 @@ Note the following::
 
   blacklab% sr_subscribe edit swob
 
-  broker amqp://anonymous@dd.weather.gc.ca
+  broker amqps://anonymous@dd.weather.gc.ca
   accept .*/observations/swob-ml/.*
 
   #write all SWOBS into the current working directory
@@ -493,7 +493,7 @@ then the option mirror should be set::
 
   blacklab% sr_subscribe edit swob
 
-  broker amqp://anonymous@dd.weather.gc.ca
+  broker amqps://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
   directory /tmp
   mirror True
@@ -510,7 +510,7 @@ it will cause files to be placed relative to that directory::
 
   blacklab% sr_subscribe edit ddi_ninjo_part1.conf 
 
-  broker amqp://ddi.cmc.ec.gc.ca/
+  broker amqps://ddi.cmc.ec.gc.ca/
   subtopic ec.ops.*.*.ninjo-a.#
 
   directory /tmp/apps/ninjo/import/point/reports/in
@@ -622,7 +622,7 @@ an sr_subscribe configuration file::
 
   blacklab% sr_subscribe edit swob 
 
-  broker amqp://anonymous@dd.weather.gc.ca
+  broker amqps://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
 
   file_rxpipe_name /home/peter/test/.rxpipe
@@ -670,7 +670,7 @@ is to be AV scanned. Sample run::
   2016-05-07 18:01:15,007 [INFO] sr_subscribe start
   2016-05-07 18:01:15,007 [INFO] sr_subscribe run
   2016-05-07 18:01:15,007 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
-  2016-05-07 18:01:15,137 [INFO] Binding queue q_anonymous.sr_subscribe.dd_swob.13118484.63321617 with key v02.post.observations.swob-ml.# from exchange xpublic on broker amqp://anonymous@dd.weather.gc.ca/
+  2016-05-07 18:01:15,137 [INFO] Binding queue q_anonymous.sr_subscribe.dd_swob.13118484.63321617 with key v02.post.observations.swob-ml.# from exchange xpublic on broker amqps://anonymous@dd.weather.gc.ca/
   2016-05-07 18:01:15,846 [INFO] Received notice  20160507220115.632 http://dd3.weather.gc.ca/ observations/swob-ml/20160507/CYYR/2016-05-07-2200-CYYR-MAN-swob.xml
   2016-05-07 18:01:15,911 [INFO] 201 Downloaded : v02.report.observations.swob-ml.20160507.CYYR 20160507220115.632 http://dd3.weather.gc.ca/ observations/swob-ml/20160507/CYYR/2016-05-07-2200-CYYR-MAN-swob.xml 201 blacklab anonymous 0.258438 parts=1,4349,1,0,0 sum=d,399e3d9119821a30d480eeee41fe7749 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM rename=./2016-05-07-2200-CYYR-MAN-swob.xml message=Downloaded 
   2016-05-07 18:01:15,913 [INFO] part_clamav_scan took 0.00153089 seconds, no viruses in ./2016-05-07-2200-CYYR-MAN-swob.xml
@@ -697,7 +697,7 @@ Gives lines in the log like so::
   2016-05-07 18:05:52,097 [INFO] sr_subscribe start
   2016-05-07 18:05:52,097 [INFO] sr_subscribe run
   2016-05-07 18:05:52,097 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
-  2016-05-07 18:05:52,231 [INFO] Binding queue q_anonymous.sr_subscribe.dd_swob.13118484.63321617 with key v02.post.observations.swob-ml.# from exchange xpublic on broker amqp://anonymous@dd.weather.gc.ca/
+  2016-05-07 18:05:52,231 [INFO] Binding queue q_anonymous.sr_subscribe.dd_swob.13118484.63321617 with key v02.post.observations.swob-ml.# from exchange xpublic on broker amqps://anonymous@dd.weather.gc.ca/
   2016-05-07 18:05:57,228 [INFO] speedo:   2 messages received:  0.39 msg/s, 2.6K bytes/s, lag: 0.26 s
   
   

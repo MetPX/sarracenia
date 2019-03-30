@@ -66,7 +66,7 @@ The headers are an array of name:value pairs::
 
   MANDATORY:
 
-          "pubTime"       - YYYYMMDDHHMMSS.ss - UTC date/timestamp.
+          "pubTime"       - YYYYMMDDTHHMMSS.ss - UTC date/timestamp.
           "baseUrl"       - root of the url to download.
           "relPath"       - relative path can be catenated to <base_url>
           "integrity"     - WMO version of v02 sum field, under development.
@@ -137,7 +137,7 @@ files through a network.
 
 The minimal layer over raw AMQP provides more complete file transfer functionality:
 
-Source Filtering (use of `AMQP TOPIC`_ exchanges)
+Source Filtering (use of TOPIC_ exchanges)
    The messages make use of *topic exchanges* from AMQP, where topics are hierarchies
    meant to represent subjects of interest to a consumer. A consumer may upload the 
    selection criteria to the broker so that only a small subset of postings
