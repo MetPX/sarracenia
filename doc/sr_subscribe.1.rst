@@ -1181,8 +1181,9 @@ xattr_disable (default: off)
 
 By default, on receipt of files, the mtime and checksum are written to a file's
 extended attributes (on unix/linux/mac) or to an alternate data stream (on windows
-on NTFS.) This can save re-reading the file to re-calculate the checksum.  This
-caching of checksums can be disabled with this flag. 
+on NTFS.) This can save re-reading the file to re-calculate the checksum.  Some
+use cases may not want files to have Alternate Data Streams or extended attributes
+to be used.
 
 Delivery Completion (inflight)
 ------------------------------
