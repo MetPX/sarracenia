@@ -66,7 +66,9 @@ class sr_message():
         self.exchange      = None
         self.report_exchange  = parent.report_exchange
         self.topic_prefix  = parent.topic_prefix
+        self.version  = parent.version
         self.post_topic_prefix  = parent.post_topic_prefix
+        self.post_version  = parent.post_version
         self.report_publisher = None
         self.publisher     = None
         self.pub_exchange  = None
@@ -251,12 +253,22 @@ class sr_message():
                    if type( self.headers[ "integrity" ] ) is str:
                        self.headers[ "integrity" ] = json.loads( self.headers[ "integrity" ] )
                    sa = sum_algo_v3tov2[ self.headers[ "integrity" ][ "method" ] ]
-                   if sa in [ 'random' ]:
+
+                   # transform sum value
+                   if sa in [ '0' ]:
                        sv = self.headers[ "integrity" ][ "value" ]
                    elif sa in [ 'z' ]:
                        sv = sum_algo_v3tov2[ self.headers[ "integrity" ][ "value" ] ]
                    else:
                        sv = encode( decode( self.headers[ "integrity" ][ "value" ].encode('utf-8'), "base64" ), 'hex' ).decode('utf-8')
+                   # set event.
+                   if sa == 'L' :
+                       self.event = 'link'
+                   elif sa == 'R':
+                       self.event = 'delete'
+                   else:
+                       self.event = 'modify'
+
                    self.headers[ "sum" ] = sa + ',' + sv
                    self.sumstr = self.headers['sum']
                    del self.headers['integrity']
@@ -452,7 +464,7 @@ class sr_message():
 
         if self.mtype == 'report' or self.mtype == 'log': # log included for compatibility... prior to rename..
 
-           if self.topic_prefix.startswith('v02'):
+           if self.version == 'v02':
                self.report_code   = int(token[3])
                self.report_host   = token[4]
                self.report_user   = token[5]
@@ -465,6 +477,12 @@ class sr_message():
 
         if 'sum' in self.headers:
            self.sumstr = self.headers['sum']
+           if self.sumstr[0] == 'R':
+              self.event = 'delete'
+           elif self.sumstr[0] == 'L':
+              self.event = 'link'
+           else:
+              self.event = 'modify'
 
         if 'to_clusters' in self.headers:
            self.to_clusters = self.headers['to_clusters'].split(',')
@@ -487,7 +505,7 @@ class sr_message():
 
         if self.pub_exchange != None : self.exchange = self.pub_exchange
 
-        if not self.post_topic_prefix.startswith('v03'):
+        if not ( self.post_version == 'v03' ): 
            # truncated content is useless, so drop it.
            if 'content' in self.headers :
                del self.headers['content']
@@ -515,8 +533,8 @@ class sr_message():
         elif ( self.headers[ 'sum' ][0] in [ 'L', 'R' ] ) :
             # avoid inlining if it is a link or a remove.
             pass
-        elif self.post_topic_prefix.startswith('v03.post') and self.inline \
-            and not ( 'content' in self.headers ) :
+        elif ( self.post_version == 'v03' ) and ( 'post' in self.post_topic_prefix ) \
+            and self.inline and not ( 'content' in self.headers ) :
   
             self.logger.error("headers: %s" % self.headers )
 
@@ -595,7 +613,7 @@ class sr_message():
            suffix=""
 
         if self.publisher != None :
-           if self.topic.startswith('v03'):
+           if self.version == 'v03':
                self.headers[ "pubTime" ] = timev2tov3str( self.pubtime )
                if "mtime" in self.headers.keys():
                    self.headers[ "mtime" ] = timev2tov3str( self.headers[ "mtime" ] )
@@ -605,14 +623,15 @@ class sr_message():
                self.headers[ "relPath" ] = self.relpath
                
                sum_algo_map = { "a":"arbitrary", "d":"md5", "s":"sha512", "n":"md5name", "0":"random", "L":"link", "R":"remove", "z":"cod" }
-               sm = sum_algo_map[ self.headers["sum"][0] ]
-               if sm in [ 'random' ] :
-                   sv = self.headers["sum"][2:]
-               elif sm in [ 'cod' ] :
-                   sv = sum_algo_map[ self.headers["sum"][2:] ]
-               else:
-                   sv = encode( decode( self.headers["sum"][2:], 'hex'), 'base64' ).decode('utf-8').strip()
-               self.headers[ "integrity" ] = { "method": sm, "value": sv }
+               if 'sum' in self.headers:
+                   sm = sum_algo_map[ self.headers["sum"][0] ]
+                   if sm in [ 'random' ] :
+                       sv = self.headers["sum"][2:]
+                   elif sm in [ 'cod' ] :
+                       sv = sum_algo_map[ self.headers["sum"][2:] ]
+                   else:
+                       sv = encode( decode( self.headers["sum"][2:], 'hex'), 'base64' ).decode('utf-8').strip()
+                   self.headers[ "integrity" ] = { "method": sm, "value": sv }
 
                if 'parts' in self.headers.keys():
                    self.set_parts_from_str(self.headers['parts'])

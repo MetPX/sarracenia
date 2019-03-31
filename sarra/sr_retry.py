@@ -124,6 +124,7 @@ class sr_retry:
            notice  = "%s %s %s" % ( message.pubtime, message.baseurl, message.relpath )
         elif message.body[0] == '{' : # late v03 message to persist, 
            headers = json.loads( message.body )
+           message.version = 'v03'
            message.pubtime = headers[ "pubTime" ]
            message.baseurl = headers[ "baseUrl" ]
            message.relpath = headers[ "relPath" ]
@@ -143,7 +144,15 @@ class sr_retry:
                                           'hex').decode('utf-8').strip()
                    sumstr = '{},{}'.format(sumstr, decoded_value)
                headers['sum'] = sumstr
+               if sumstr == 'R':
+                  message.event = 'delete'
+               elif sumstr == 'L':
+                  message.event = 'remove'
+               else:
+                  message.event = 'modify'
+
                del headers['integrity']
+
            if 'size' in headers.keys():
                parts_map = {'inplace': 'i', 'partitioned': 'p'}
                if 'blocks' not in headers.keys():
@@ -161,6 +170,16 @@ class sr_retry:
                notice = message.body.decode("utf-8")
            else:
                notice = message.body
+           message.version = 'v02'
+           if 'sum' in headers:
+               sumstr = headers['sum'][0]
+               if sumstr == 'R':
+                  message.event = 'delete'
+               elif sumstr == 'L':
+                  message.event = 'remove'
+               else:
+                  message.event = 'modify'
+
 
         if done:
             headers['_retry_tag_'] = 'done'

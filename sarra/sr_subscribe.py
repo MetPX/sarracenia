@@ -661,7 +661,7 @@ class sr_subscribe(sr_instances):
         if not m.topic.split('.')[1] in [ 'post', 'report' ]:
             return
 
-        if m.post_topic_prefix.startswith("v03"):
+        if m.post_version == 'v03':
             json_line = json.dumps( ( m.pubtime, m.baseurl, m.relpath, m.headers ), sort_keys=True )
         else:
             json_line = json.dumps( ( m.topic, m.headers, m.notice ), sort_keys=True )
@@ -1249,7 +1249,7 @@ class sr_subscribe(sr_instances):
         # delete event, try to delete the local product given by message
         #=================================
 
-        if self.msg.sumflg.startswith('R') : 
+        if self.msg.event == 'delete' : 
 
            self.logger.debug("message is to remove %s" % self.msg.new_file)
 
@@ -1291,7 +1291,7 @@ class sr_subscribe(sr_instances):
         # link event, try to link the local product given by message
         #=================================
 
-        if self.msg.sumflg.startswith('L') :
+        if self.msg.event == 'link' :
            self.logger.debug("message is to link %s to %s" % ( self.msg.new_file, self.msg.headers[ 'link' ] ) )
            if not 'link' in self.events: 
               self.logger.info("message to link %s to %s ignored (events setting)" %  \
@@ -1533,8 +1533,8 @@ class sr_subscribe(sr_instances):
                     return False
 
            # inline option
-           if  (not ( self.msg.sumflg.startswith('L') or self.msg.sumflg.startswith('R'))) and \
-               (self.msg.partflg == '1' ) and self.post_topic_prefix.startswith('v03') \
+           if  (not ( self.msg.event in [ 'link',  'delete' ] )  ) and \
+               (self.msg.partflg == '1' ) and ( self.post_version == 'v03' ) \
                and self.inline :
 
                fname = self.msg.new_dir + os.path.sep + self.msg.new_file
