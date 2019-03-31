@@ -6,8 +6,22 @@ lists all changes between versions.
 
 **git repo**
 
-* new:    Issue #54 added version of extended attributes for NTFS.
+* new:    made code use instance variables instead of repeatedly parsing
+*         elements of the message: topic_prefix->version, sum-> event.
+*         more robust/easier to maintain.
+* bugfix: updated WMO_mesh examples to use v03 and /var/www/html (as per feedback.)
+* new:    add post_override_del option to post_override plugin.
+*         allows deletion of headers on post.
+* bugfix: Issue #175 documentation needs to use amqps for dd.weather, not amqp anymore.
+* new:    wmo_mesh example now deletes a bunch of headers to shorten & simplify messages.
+* new:    switching http port in flow test to 8001.  8000 is too popular.
+* new:    switching flow_test to use hpfx.collab.science.gc.ca instead of dd.weather.gc.ca
+* bugfix: Issue #168 have httpd unit test retrieve pick a file <= 2kb.  Big files 
+*         were causing hangs in the flow test... this is one fix, but not enough to close
+*         the bug.
+* new:    Issue #54 is finally closed.
 * new:    Issue #54 added xattr_disable to turn off extended attributes feature.
+* new:    Issue #54 added version of extended attributes for NTFS.
 
 **2.19.03b5**
 
