@@ -376,6 +376,39 @@ the following shim\_ options.
   commandline utilities like xattr. 
 
 
+SHIM LIBRARY USAGE
+==================
+
+Rather than invoking a sr_post to post each file to publish, one can have processes automatically
+post the files they right by having them use a shim library intercepting certain file i/o calls to libc 
+and the kernel. To activate the shim library, in the shell environment add::
+
+  export SR_POST_CONFIG=shimpost.conf
+  export LD_PRELOAD="libsrshim.so.1"
+
+where *shimpost.conf* is an sr_cpost configuration file in
+the ~/.config/sarra/post/ directory. An sr_cpost configuration file is the same
+as an sr_post one, except that plugins are not supported.  With the shim
+library in place, whenever a file is written, the *accept/reject* clauses of
+the shimpost.conf file are consulted, and if accepted, the file is posted just
+as it would be by sr_post. If using with ssh, where one wants files which are
+scp'd to be posted, one needs to include the activation in the
+.bashrc and pass it the configuration to use::
+
+  expoert LC_SRSHIM=shimpost.conf
+
+Then in the ~/.bashrc on the server running the remote command::
+
+  if [ "$LC_SRSHIM" ]; then
+      export SR_POST_CONFIG=$LC_SRSHIM
+      export LD_PRELOAD="libsrshim.so.1"
+  fi
+       
+SSH will only pass environment variables that start with LC_ (locale) so to get it 
+passed with minimal effort, we use that prefix.
+
+
+
 ADMINISTRATOR SPECIFIC
 ======================
 
