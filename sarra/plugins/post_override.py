@@ -30,7 +30,6 @@ class Post_Override(object):
           parent.declare_option( 'post_override_del' )
           if hasattr( self, 'post_override' ):
               parent.logger.info('post_override settings: %s' % parent.post_override )
-          pass
           
     def perform(self,parent):
         logger = parent.logger

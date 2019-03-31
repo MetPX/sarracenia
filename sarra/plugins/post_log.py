@@ -12,7 +12,8 @@ class Post_Log(object):
     def __init__(self,parent):
         parent.declare_option('post_log_format')
         parent.logger.debug( "post_log initialized" )
-        parent.post_log_format=[ 'old' ]
+        if not hasattr(parent, 'post_log_format' ):
+            parent.post_log_format=[ 'old' ]
           
     def perform(self,parent):
 
@@ -20,8 +21,11 @@ class Post_Log(object):
         f = parent.post_log_format
 
         if 'compact' in f :
-            parent.logger.info("post_log %s %s lag=%s baseurl=%s relpath=%s " % \
-                ( 'compact', msg.pubtime, msg.get_elapse(), msg.baseurl, msg.relpath ) )
+            parent.logger.info("post_log %s %s lag=%s version=%s baseurl=%s relpath=%s " % \
+                ( 'compact', msg.pubtime, msg.get_elapse(), msg.version, msg.baseurl, msg.relpath ) )
+        elif 'v03' in f:
+            parent.logger.info("post_log %s %s lag=%s headers=%s " % \
+                ( 'v03', msg.pubtime, msg.get_elapse(), msg.headers ) )
         elif 'v03' in f:
             parent.logger.info("post_log %s %s lag=%s headers=%s " % \
                 ( 'v03', msg.pubtime, msg.get_elapse(), msg.headers ) )
