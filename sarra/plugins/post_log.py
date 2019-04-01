@@ -22,7 +22,7 @@ class Post_Log(object):
 
         if 'compact' in f :
             parent.logger.info("post_log %s %s lag=%s version=%s baseurl=%s relpath=%s " % \
-                ( 'compact', msg.pubtime, msg.get_elapse(), msg.version, msg.baseurl, msg.relpath ) )
+                ( 'compact', msg.pubtime, msg.get_elapse(), msg.post_version, msg.baseurl, msg.relpath ) )
         elif 'v03' in f:
             parent.logger.info("post_log %s %s lag=%s headers=%s " % \
                 ( 'v03', msg.pubtime, msg.get_elapse(), msg.headers ) )
