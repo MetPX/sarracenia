@@ -1464,12 +1464,13 @@ class sr_subscribe(sr_instances):
                               x.set( 'mtime', self.msg.headers['mtime'] )
 
                           new_sumstr = self.msg.sumflg+','+new_checksum
-                          if attr['user.sr_sum'] != new_sumstr:
+                          if x.get('sum') != new_sumstr:
                               x.set( 'sum', new_sumstr )
                           x.persist()
 
                    except Exception as ex:
-                          self.logger.warning( "failed to set sattributes %s: %s" % ( path, ex ) )
+                          self.logger.warning( "failed to set sattributes %s" % path )
+                          self.logger.debug('Exception details:', exc_info=True)
 
                    # tell upstream that we changed the checksum.
                    if self.reportback:
