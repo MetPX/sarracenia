@@ -536,7 +536,7 @@ class sr_message():
         elif ( self.post_version == 'v03' ) and ( 'post' in self.post_topic_prefix ) \
             and self.inline and not ( 'content' in self.headers ) :
   
-            self.logger.error("headers: %s" % self.headers )
+            self.logger.debug("FIXME inlining possible headers: %s" % self.headers )
 
             if 'size' in self.headers :
                 sz = int(self.headers[ 'size' ])
@@ -613,7 +613,7 @@ class sr_message():
            suffix=""
 
         if self.publisher != None :
-           if self.version == 'v03':
+           if self.post_version == 'v03':
                self.headers[ "pubTime" ] = timev2tov3str( self.pubtime )
                if "mtime" in self.headers.keys():
                    self.headers[ "mtime" ] = timev2tov3str( self.headers[ "mtime" ] )

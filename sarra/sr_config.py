@@ -2267,6 +2267,10 @@ class sr_config:
 
                 elif words0 in ['post_topic_prefix', 'ptp' ]: # FIXME: sr_sarra,sender,shovel,winnow 
                      self.post_topic_prefix = words1
+                     if 'v03.' in words1:
+                         self.post_version = 'v03'
+                     else:
+                         self.post_version = 'v02'
                      n = 2
 
                 elif words0 in ['post_exchange_split','pes', 'pxs']: # sr_config.7, sr_shovel.1
@@ -2504,6 +2508,10 @@ class sr_config:
 
                 elif words0 in ['topic_prefix','tp'] : # See: sr_config.7 
                      self.topic_prefix = words1
+                     if 'v03.' in words1:
+                         self.version = 'v03'
+                     else:
+                         self.version = 'v02'
 
                 elif words0 in ['post_base_url','pbu','url','u','post_url']: # See: sr_config.7 
                      if words0 in ['url','u'] : self.logger.warning("option url deprecated please use post_base_url")
