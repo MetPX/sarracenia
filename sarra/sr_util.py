@@ -339,6 +339,11 @@ class sr_proto():
         self.sumalgo = sumalgo
         self.data_sumalgo = sumalgo
 
+    def get_sumalgo(self):
+        if hasattr(self, 'sumalgo'):
+            return self.sumalgo.registered_as()
+        return ''
+
     # throttle
     def throttle(self,buf) :
         self.logger.debug("sr_proto throttle")
@@ -483,7 +488,8 @@ class sr_transport():
                    if os.path.isfile(new_file) : os.remove(new_file)
                    os.rename(new_lock, new_file)
 
-                msg.onfly_checksum = proto.checksum
+                self.logger.info('proto.checksum={}, msg.sumstr={}'.format(proto.checksum, msg.sumstr))
+                msg.onfly_checksum = "{},{}".format(proto.get_sumalgo(), proto.checksum)
                 msg.data_checksum = proto.data_checksum
 
                 # fix permission 
@@ -734,7 +740,7 @@ class sr_transport():
         # cache it here, along with the mtime.
         if ( msg.partstr[0:2] == '1,' ) : 
            if msg.onfly_checksum:
-               sumstr = msg.sumstr[0:2] + msg.onfly_checksum
+               sumstr = msg.onfly_checksum
            else:
                sumstr = msg.sumstr
 

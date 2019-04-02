@@ -313,7 +313,7 @@ class sr_subscribe(sr_instances):
                 data_algo.set_path(path)
                 
                 onfly_algo.update(data)
-                self.msg.onfly_checksum = onfly_algo.get_value()
+                self.msg.onfly_checksum = "{},{}".format(onfly_algo.registered_as(), onfly_algo.get_value())
 
                 if self.on_data_list:
                    new_chunk = data 
@@ -1431,17 +1431,17 @@ class sr_subscribe(sr_instances):
 
                 # after download : setting of sum for 'z' flag ...
 
-                if len(self.msg.sumflg) > 2 and self.msg.sumflg[:2] == 'z,':
-                    new_checksum=self.msg.onfly_checksum
+                if self.msg.sumflg.startswith('z'):
+                    new_checksum=self.msg.onfly_checksum.split(',')[-1]
                 else:
                     new_checksum=None
 
-                if ( self.msg.sumflg[0] != 'a' ) and ( self.msg.onfly_checksum != self.msg.checksum ):
+                if ( self.msg.sumflg[0] not in ['a', 'z'] ) and ( self.msg.onfly_checksum != self.msg.sumstr ):
                    # onfly checksum is different from the message, avoid loops by overwriting. 
                    # except if the algorithm is arbitrary, and therefore cannot be calculated.
                    self.logger.warning("onfly_checksum %s differ from message %s" %
-                                      (self.msg.onfly_checksum, self.msg.checksum))
-                   new_checksum=self.msg.onfly_checksum
+                                      (self.msg.onfly_checksum, self.msg.sumstr))
+                   new_checksum=self.msg.onfly_checksum.split(',')[-1]
                 
                 if self.on_data_list :
                    # if there was transformation happening during the transfer, 
@@ -1451,7 +1451,7 @@ class sr_subscribe(sr_instances):
  
                 if new_checksum :
                    # set the value so that if it gets posted later, it is correct.
-                   self.msg.set_sum(self.msg.sumflg,new_checksum)
+                   self.msg.set_sum(self.msg.sumflg.split(',')[-1], new_checksum)
 
                    try:
                           path = self.msg.new_dir + '/' + self.msg.new_file
