@@ -6,6 +6,16 @@ lists all changes between versions.
 
 **git repo**
 
+**2.19.04b1**
+
+* new:    adding WMO_mesh_post example.
+* bugfix: regression all posts in b6 were v02 (v03 inadvertantly disabled.)
+* bugfix: print improvements.
+* bugfix: there was an issue with extended attribute in checksums.
+* 
+
+**2.19.03b6**
+
 * new:    made code use instance variables instead of repeatedly parsing
 *         elements of the message: topic_prefix->version, sum-> event.
 *         more robust/easier to maintain.
