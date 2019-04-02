@@ -1,3 +1,12 @@
+metpx-sarracenia (2.19.04b1) unstable; urgency=medium
+
+  * new:    adding WMO_mesh_post example.
+  * bugfix: regression all posts in b6 were v02 (v03 inadvertantly disabled.)
+  * bugfix: print improvements.
+  * bugfix: there was an issue with extended attribute in checksums.
+
+ -- Peter Silva <peter.silva@canada.ca>  Mon, 01 Apr 2019 23:16:37 -0400
+
 metpx-sarracenia (2.19.03b6) unstable; urgency=medium
 
   * new:    made code use instance variables instead of repeatedly parsing
