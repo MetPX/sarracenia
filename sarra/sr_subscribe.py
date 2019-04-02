@@ -894,19 +894,17 @@ class sr_subscribe(sr_instances):
            self.logger.debug("message missing header, set default headers['source'] = %s" % self.msg.headers['source'])
 
         # apply default to a message without an origin cluster
-        if not 'from_cluster' in self.msg.headers :
-           if self.cluster : self.msg.headers['from_cluster'] = self.cluster
-           else            : self.msg.headers['from_cluster'] = self.broker.netloc.split('@')[-1] 
-           self.logger.debug("message missing header, set default headers['from_cluster'] = %s" % self.msg.headers['from_cluster'])
+        #if not 'from_cluster' in self.msg.headers :
+        #   if self.cluster : self.msg.headers['from_cluster'] = self.cluster
+        #   else            : self.msg.headers['from_cluster'] = self.broker.netloc.split('@')[-1] 
+        #   self.logger.debug("message missing header, set default headers['from_cluster'] = %s" % self.msg.headers['from_cluster'])
 
         # apply default to a message without routing clusters
-        if not 'to_clusters' in self.msg.headers :
-           if self.to_clusters  : self.msg.headers['to_clusters'] = self.to_clusters
-           elif self.post_broker: self.msg.headers['to_clusters'] = self.post_broker.netloc.split('@')[-1] 
-           if 'to_clusters' in self.msg.headers :
-              self.logger.debug("message missing header, set default headers['to_clusters'] = %s" % self.msg.headers['to_clusters'])
-           else:
-              self.logger.warning("message without headers['to_clusters']")
+        #if not 'to_clusters' in self.msg.headers :
+        #   if self.to_clusters  : self.msg.headers['to_clusters'] = self.to_clusters
+        #   elif self.post_broker: self.msg.headers['to_clusters'] = self.post_broker.netloc.split('@')[-1] 
+        #   if 'to_clusters' in self.msg.headers :
+        #      self.logger.debug("message missing header, set default headers['to_clusters'] = %s" % self.msg.headers['to_clusters'])
 
         #=================================
         # setting up message with sr_subscribe config options
