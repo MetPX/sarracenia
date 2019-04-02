@@ -1401,7 +1401,7 @@ class sr_post(sr_instances):
 
         if link     != None : self.msg.headers['link']         = link
 
-        if self.cluster != None : self.msg.headers['from_cluster']    = self.cluster
+        #if self.cluster != None : self.msg.headers['from_cluster']    = self.cluster
         if self.source  != None : self.msg.headers['source']          = self.source
 
         self.msg.trim_headers()

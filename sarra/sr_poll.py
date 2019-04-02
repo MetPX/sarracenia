@@ -430,7 +430,7 @@ class sr_poll(sr_post):
 
         if link     != None : self.msg.headers['link']         = link
 
-        if self.cluster != None : self.msg.headers['from_cluster'] = self.cluster
+        #if self.cluster != None : self.msg.headers['from_cluster'] = self.cluster
         if self.source  != None : self.msg.headers['source']       = self.source
 
         # ========================================
