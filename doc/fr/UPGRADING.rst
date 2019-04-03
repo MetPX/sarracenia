@@ -43,7 +43,7 @@ git origin/master
 2.19.03.b6
 ----------
 
-**BUG**:  sr_post avec *post_topic_prefix v03.post* ne march plus dans cette version.
+**BUG**:  sr_post avec *post_topic_prefix v03.post* ne marche plus dans cette version.
 
 
 
