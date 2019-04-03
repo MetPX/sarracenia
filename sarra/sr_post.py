@@ -44,6 +44,7 @@ from sys import platform as _platform
 from base64 import b64decode, b64encode
 from mimetypes import guess_type
 
+from random import choice
 
 from collections import *
 
@@ -246,7 +247,7 @@ class sr_post(sr_instances):
         print("-on_post <script>      default:None")
         print("DEBUG:")
         print("-debug")
-        print("-r  : randomize chunk posting")
+        print("-r  : randomize chunk posting and checksum algorithm choice")
         print("-rr : reconnect between chunks\n")
 
     # =============
@@ -586,19 +587,24 @@ class sr_post(sr_instances):
 
         x = sr_xattr(path)
         
-        s = x.get( 'sum' )
-        if s: 
-            t= x.get( 'mtime' ) 
-            if t and ( t >= self.msg.headers['mtime']):
-                self.logger.debug("sum remembered by xattr")
-                return s
+        if not self.randomize :
+            s = x.get( 'sum' )
+            if s: 
+                t= x.get( 'mtime' ) 
+                if t and ( t >= self.msg.headers['mtime']):
+                    self.logger.debug("mtime remembered by xattr")
+                    return s
 
         x.set('mtime', self.msg.headers['mtime'] )
         self.logger.debug("xattr sum too old")
 
         self.logger.debug("sum set by compute_sumstr")
 
-        sumflg = self.sumflg
+        algos = ['0','d','n','s','z,d', 'z,s' ]
+        if self.randomize:
+            sumflg=choice( algos  )
+        else:
+            sumflg = self.sumflg
 
         if sumflg[:2] == 'z,' and len(sumflg) > 2 :
             sumstr = sumflg
