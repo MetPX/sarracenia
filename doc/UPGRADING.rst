@@ -36,8 +36,13 @@ Installation Instructions
 git
 ---
 
-2.19.03.b6
-----------
+2.19.04b1
+---------
+
+*NOTICE*: regression of v03 posting fixed.
+
+2.19.03b6
+---------
 
 **BUG**:  regression ... v03 posting stopped working entirely.
 
