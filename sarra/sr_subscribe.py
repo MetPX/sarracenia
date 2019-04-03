@@ -1430,7 +1430,6 @@ class sr_subscribe(sr_instances):
            if self.msg.onfly_checksum :
 
                 # after download : setting of sum for 'z' flag ...
-
                 if self.msg.sumflg.startswith('z'):
                     new_checksum=self.msg.onfly_checksum.split(',')[-1]
                 else:
@@ -1463,7 +1462,7 @@ class sr_subscribe(sr_instances):
 
                           new_sumstr = self.msg.sumflg+','+new_checksum
                           if x.get('sum') != new_sumstr:
-                              x.set( 'sum', new_sumstr )
+                              x.set('sum', new_sumstr)
                           x.persist()
 
                    except Exception as ex:

@@ -247,7 +247,7 @@ def file_link( msg ) :
     except : return False
 
     msg.compute_local_checksum()
-    msg.onfly_checksum = msg.local_checksum
+    msg.onfly_checksum = "{},{}".format(msg.sumflg, msg.local_checksum)
 
     msg.report_publish( 201, 'Linked')
 
