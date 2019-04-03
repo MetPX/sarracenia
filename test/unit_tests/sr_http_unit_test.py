@@ -24,6 +24,7 @@ def self_test():
     print("sr_http: BEGIN TEST\n")
 
     opt1   = 'accept .*'
+    opt2   = 'll None'
 
     print("SETUP 0: get 1 message from dd.weather")
 
@@ -31,7 +32,7 @@ def self_test():
     cfg = sr_config()
     cfg.configure()
     cfg.use_pika       = False
-    cfg.broker         = urllib.parse.urlparse("amqps://anonymous:anonymous@dd.weather.gc.ca/")
+    cfg.broker         = urllib.parse.urlparse("amqps://anonymous:anonymous@hpfx.collab.science.gc.ca")
     cfg.prefetch       = 10
     cfg.bindings       = [ ( 'xpublic', 'v02.post.#') ]
     cfg.durable        = False
@@ -42,6 +43,7 @@ def self_test():
     cfg.queue_name     = None
     cfg.retry_path     = '/tmp/retry'
     cfg.option( opt1.split()  )
+    cfg.option( opt2.split()  )
 
     consumer     = sr_consumer(cfg)
 

@@ -582,36 +582,29 @@ class sr_post(sr_instances):
         return ok
 
     def compute_sumstr(self, path, fsiz):
-
-        sumstr = '' 
-
-        x = sr_xattr(path)
+        xattr = sr_xattr(path)
         
-        if not self.randomize :
-            s = x.get( 'sum' )
-            if s: 
-                t= x.get( 'mtime' ) 
-                if t and ( t >= self.msg.headers['mtime']):
-                    self.logger.debug("mtime remembered by xattr")
-                    return s
-
-        x.set('mtime', self.msg.headers['mtime'] )
-        self.logger.debug("xattr sum too old")
-
-        self.logger.debug("sum set by compute_sumstr")
-
-        algos = ['0','d','n','s','z,d', 'z,s' ]
         if self.randomize:
-            sumflg=choice( algos  )
+            algos = ['0', 'd', 'n', 's', 'z,d', 'z,s']
+            sumflg = choice(algos)
+        elif 'sum' in xattr.x and 'mtime' in xattr.x:
+            if xattr.get('mtime') >= self.msg.headers['mtime']:
+                self.logger.debug("mtime remembered by xattr")
+                return xattr.get('sum')
+            else:
+                self.logger.debug("xattr sum too old")
+                sumflg = self.sumflg
         else:
             sumflg = self.sumflg
 
-        if sumflg[:2] == 'z,' and len(sumflg) > 2 :
+        xattr.set('mtime', self.msg.headers['mtime'])
+
+        self.logger.debug("sum set by compute_sumstr")
+
+        if sumflg[:2] == 'z,' and len(sumflg) > 2:
             sumstr = sumflg
-
         else:
-
-            if not sumflg[0] in ['0','d','n','s','z' ]: sumflg = 'd'
+            if not sumflg[0] in ['0', 'd', 'n', 's', 'z']: sumflg = 'd'
 
             self.set_sumalgo(sumflg)
             sumalgo = self.sumalgo
@@ -631,12 +624,11 @@ class sr_post(sr_instances):
                 fp.close()
 
             # setting sumstr
-
             checksum = sumalgo.get_value()
-            sumstr   = '%s,%s' % (sumflg,checksum)
+            sumstr = '%s,%s' % (sumflg, checksum)
 
-        x.set( 'sum', sumstr )
-        x.persist()
+        xattr.set('sum', sumstr)
+        xattr.persist()
         return sumstr
 
     # =============

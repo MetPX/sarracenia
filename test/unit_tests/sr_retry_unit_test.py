@@ -368,7 +368,8 @@ def self_test():
     #setup retry parent
     cfg = sr_config()
     cfg.configure()
-    cfg.retry_path     = retry_path
+    cfg.retry_path = retry_path
+    cfg.option(['ll', 'None'])
 
     message = raw_message(cfg.logger)
 

@@ -16,13 +16,14 @@ def self_test():
 
     opt1   = 'accept .*bulletins.*'
     opt2   = 'reject .*'
+    opt3   = 'll None'
 
     #setup consumer to catch first post
     cfg = sr_config()
     cfg.configure()
 
     cfg.load_sums()
-    cfg.broker         = urllib.parse.urlparse("amqps://anonymous:anonymous@dd.weather.gc.ca/")
+    cfg.broker         = urllib.parse.urlparse("amqps://anonymous:anonymous@hpfx.collab.science.gc.ca")
     cfg.prefetch       = 10
     cfg.bindings       = [ ( 'xpublic', 'v02.post.#') ]
     cfg.durable        = False
@@ -34,6 +35,7 @@ def self_test():
     cfg.retry_path     = '/tmp/retry'
     cfg.option( opt1.split()  )
     cfg.option( opt2.split()  )
+    cfg.option(opt3.split())
 
     consumer = sr_consumer(cfg)
 

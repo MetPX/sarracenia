@@ -1394,7 +1394,8 @@ class sr_subscribe(sr_instances):
 
            # skip checksum computation for sumflg = '0'
 
-           if self.msg.sumflg[0] == '0' : self.msg.sumalgo = None
+           if self.msg.sumflg[0] == '0':
+               self.msg.sumalgo = None
 
            # N attempts to download
            i  = 1
@@ -1430,7 +1431,7 @@ class sr_subscribe(sr_instances):
            if self.msg.onfly_checksum :
 
                 # after download : setting of sum for 'z' flag ...
-                if self.msg.sumflg.startswith('z'):
+                if len(self.msg.sumflg) > 2 and self.msg.sumflg[:2] == 'z,':
                     new_checksum=self.msg.onfly_checksum.split(',')[-1]
                 else:
                     new_checksum=None
@@ -1622,19 +1623,6 @@ class sr_subscribe(sr_instances):
         """
         if self.msg.isRetry: self.consumer.msg_worked()
         return True
-
-    def LOG_TRACE(self,tb):
-        import io, traceback
-
-        tb_output = io.StringIO()
-        traceback.print_tb(tb, None, tb_output)
-        self.logger.error("\n\n****************************************\n" + \
-                              "******* ERROR PRINTING TRACEBACK *******\n" + \
-                              "****************************************\n" + \
-                            "\n" + tb_output.getvalue()             + "\n" + \
-                            "\n****************************************\n")
-        tb_output.close()
-
 
     def restore_messages(self):
         self.logger.info("%s restore_messages" % self.program_name)
