@@ -43,8 +43,7 @@ git origin/master
 2.19.03.b6
 ----------
 
-**BUG**:  sr_post avec *post_topic_prefix v03.post* ne march plus dans cette version.
-
+**BUG**:  sr_post avec *post_topic_prefix v03.post* ne marche plus dans cette version.
 
 
 2.19.03.b1
@@ -64,12 +63,13 @@ git origin/master
 2.19.02.b1
 ----------
 
-*CHANGE*: nom de paquet ubuntu à changé de *python3-metpx-sarracenia* à *metpx-sarracenia*
+*ACTION*: nom de paquet ubuntu à changé de *python3-metpx-sarracenia* à *metpx-sarracenia*
           pour mieux conformé au normes debian. les mises-à-jour automatisé ne vont
           pas marcher. Il faut enlever l´ancien pacquet et installer le nouveau.
 
 
-*CHANGE*: remplacemet de librarie AMQP utilisé par Sarracenia: de python3-amqplib à
+
+*ACTION*: remplacement de librarie AMQP utilisé par Sarracenia: de python3-amqplib à
           python3-amqp.  Il faut s´assurer que la nouvelle librarie soit installer
           avant la nouvelle version.
 
@@ -105,7 +105,7 @@ git origin/master
 2.18.09b2
 ---------
 
-*CHANGE*: L´encodage des noms de fichiers stockés dans le fichier qui indique
+*ACTION*: L´encodage des noms de fichiers stockés dans le fichier qui indique
           le fichiers récemment reçus passe par la routine python urrlib.parse.quote().
           Ceci corrige une problème que les anciennes version avait avec les fichiers
           qui comprennent des espaces.  Vaut mieux effectuer un --reset lors d´une
