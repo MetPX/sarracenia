@@ -44,6 +44,7 @@ from sys import platform as _platform
 from base64 import b64decode, b64encode
 from mimetypes import guess_type
 
+from random import choice
 
 from collections import *
 
@@ -246,7 +247,7 @@ class sr_post(sr_instances):
         print("-on_post <script>      default:None")
         print("DEBUG:")
         print("-debug")
-        print("-r  : randomize chunk posting")
+        print("-r  : randomize chunk posting and checksum algorithm choice")
         print("-rr : reconnect between chunks\n")
 
     # =============
@@ -581,31 +582,29 @@ class sr_post(sr_instances):
         return ok
 
     def compute_sumstr(self, path, fsiz):
-
-        sumstr = '' 
-
-        x = sr_xattr(path)
+        xattr = sr_xattr(path)
         
-        s = x.get( 'sum' )
-        if s: 
-            t= x.get( 'mtime' ) 
-            if t and ( t >= self.msg.headers['mtime']):
-                self.logger.debug("sum remembered by xattr")
-                return s
+        if self.randomize:
+            algos = ['0', 'd', 'n', 's', 'z,d', 'z,s']
+            sumflg = choice(algos)
+        elif 'sum' in xattr.x and 'mtime' in xattr.x:
+            if xattr.get('mtime') >= self.msg.headers['mtime']:
+                self.logger.debug("mtime remembered by xattr")
+                return xattr.get('sum')
+            else:
+                self.logger.debug("xattr sum too old")
+                sumflg = self.sumflg
+        else:
+            sumflg = self.sumflg
 
-        x.set('mtime', self.msg.headers['mtime'] )
-        self.logger.debug("xattr sum too old")
+        xattr.set('mtime', self.msg.headers['mtime'])
 
         self.logger.debug("sum set by compute_sumstr")
 
-        sumflg = self.sumflg
-
-        if sumflg[:2] == 'z,' and len(sumflg) > 2 :
+        if sumflg[:2] == 'z,' and len(sumflg) > 2:
             sumstr = sumflg
-
         else:
-
-            if not sumflg[0] in ['0','d','n','s','z' ]: sumflg = 'd'
+            if not sumflg[0] in ['0', 'd', 'n', 's', 'z']: sumflg = 'd'
 
             self.set_sumalgo(sumflg)
             sumalgo = self.sumalgo
@@ -625,12 +624,11 @@ class sr_post(sr_instances):
                 fp.close()
 
             # setting sumstr
-
             checksum = sumalgo.get_value()
-            sumstr   = '%s,%s' % (sumflg,checksum)
+            sumstr = '%s,%s' % (sumflg, checksum)
 
-        x.set( 'sum', sumstr )
-        x.persist()
+        xattr.set('sum', sumstr)
+        xattr.persist()
         return sumstr
 
     # =============

@@ -208,7 +208,8 @@ def file_insert_part(parent,msg,part_file):
                 msg.logger.error("part filesize  %d " % (fsiz) )
 
              # set checksum in msg
-             if chk : msg.onfly_checksum = chk.get_value()
+             if chk :
+                 msg.onfly_checksum = "{},{}".format(chk.registered_as(), chk.get_value())
 
     # oops something went wrong
     except :
@@ -246,7 +247,7 @@ def file_link( msg ) :
     except : return False
 
     msg.compute_local_checksum()
-    msg.onfly_checksum = msg.local_checksum
+    msg.onfly_checksum = "{},{}".format(msg.sumflg, msg.local_checksum)
 
     msg.report_publish( 201, 'Linked')
 
@@ -398,7 +399,7 @@ def file_reassemble(parent):
           if not ok : return False
 
           # verify the inserted portion
-          if (msg.sumstr.split(',')[1] != msg.onfly_checksum):
+          if (msg.sumstr != msg.onfly_checksum):
             # Retry once
             msg.logger.warning('Insertion did not complete properly, retrying...')
             #msg.logger.warning('Partition\'s checksum: '+ msg.sumstr.split(',')[1]+ ' Inserted sum: '+msg.onfly_checksum)              
@@ -533,7 +534,8 @@ def file_write_length(req,msg,bufsize,filesize,parent):
     if parent.preserve_time and 'mtime' in h and h['mtime'] :
         os.utime(msg.new_file, times=( timestr2flt( h['atime']), timestr2flt( h[ 'mtime' ] )))
 
-    if chk : msg.onfly_checksum = chk.get_value()
+    if chk:
+        msg.onfly_checksum = "{},{}".format(chk.registered_as(), chk.get_value())
 
     msg.report_publish(201,'Copied')
 

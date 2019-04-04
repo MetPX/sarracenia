@@ -26,6 +26,7 @@ def self_test():
     cfg = sr_config()
     cfg.configure()
     cfg.set_sumalgo('d')
+    cfg.option(['ll', 'None'])
     print("sr_sftp: BEGIN TEST\n")
 
     msg = sr_message(cfg)

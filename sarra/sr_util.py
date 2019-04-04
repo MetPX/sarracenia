@@ -334,10 +334,16 @@ class sr_proto():
         self.iotime = iotime
 
     # set_sumalgo
-    def set_sumalgo(self,sumalgo) :
-        #self.logger.debug("sr_proto set_sumalgo %s" % sumalgo)
+    def set_sumalgo(self, sumalgo):
+        self.logger.debug("sr_proto set_sumalgo %s" % sumalgo)
         self.sumalgo = sumalgo
         self.data_sumalgo = sumalgo
+
+    def get_sumstr(self):
+        if self.sumalgo:
+            return "{},{}".format(self.sumalgo.registered_as(), self.sumalgo.get_value())
+        else:
+            return None
 
     # throttle
     def throttle(self,buf) :
@@ -419,7 +425,7 @@ class sr_transport():
                 parent.destination = msg.baseurl
 
                 proto = self.proto
-                if proto== None or not proto.check_is_connected() :
+                if not proto or not proto.check_is_connected() :
                    self.logger.debug("%s_transport download connects" % self.scheme)
                    proto = self.pclass(parent)
                    ok = proto.connect()
@@ -483,7 +489,8 @@ class sr_transport():
                    if os.path.isfile(new_file) : os.remove(new_file)
                    os.rename(new_lock, new_file)
 
-                msg.onfly_checksum = proto.checksum
+                self.logger.debug('proto.checksum={}, msg.sumstr={}'.format(proto.checksum, msg.sumstr))
+                msg.onfly_checksum = proto.get_sumstr()
                 msg.data_checksum = proto.data_checksum
 
                 # fix permission 
@@ -734,7 +741,7 @@ class sr_transport():
         # cache it here, along with the mtime.
         if ( msg.partstr[0:2] == '1,' ) : 
            if msg.onfly_checksum:
-               sumstr = msg.sumstr[0:2] + msg.onfly_checksum
+               sumstr = msg.onfly_checksum
            else:
                sumstr = msg.sumstr
 

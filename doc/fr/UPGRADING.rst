@@ -46,7 +46,6 @@ git origin/master
 **BUG**:  sr_post avec *post_topic_prefix v03.post* ne marche plus dans cette version.
 
 
-
 2.19.03.b1
 ----------
 
@@ -69,7 +68,8 @@ git origin/master
           pas marcher. Il faut enlever l´ancien pacquet et installer le nouveau.
 
 
-*ACTION*: remplacemet de librarie AMQP utilisé par Sarracenia: de python3-amqplib à
+
+*ACTION*: remplacement de librarie AMQP utilisé par Sarracenia: de python3-amqplib à
           python3-amqp.  Il faut s´assurer que la nouvelle librarie soit installer
           avant la nouvelle version.
 

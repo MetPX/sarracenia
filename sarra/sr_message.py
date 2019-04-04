@@ -185,7 +185,7 @@ class sr_message():
                 s = x.get( 'sum' )
 
                 if s:
-                   self.local_checksum = s
+                   self.local_checksum = s.split(',')[-1]
                    return
 
             except:

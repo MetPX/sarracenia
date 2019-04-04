@@ -313,7 +313,7 @@ class sr_subscribe(sr_instances):
                 data_algo.set_path(path)
                 
                 onfly_algo.update(data)
-                self.msg.onfly_checksum = onfly_algo.get_value()
+                self.msg.onfly_checksum = "{},{}".format(onfly_algo.registered_as(), onfly_algo.get_value())
 
                 if self.on_data_list:
                    new_chunk = data 
@@ -1394,7 +1394,8 @@ class sr_subscribe(sr_instances):
 
            # skip checksum computation for sumflg = '0'
 
-           if self.msg.sumflg[0] == '0' : self.msg.sumalgo = None
+           if self.msg.sumflg[0] == '0':
+               self.msg.sumalgo = None
 
            # N attempts to download
            i  = 1
@@ -1430,18 +1431,17 @@ class sr_subscribe(sr_instances):
            if self.msg.onfly_checksum :
 
                 # after download : setting of sum for 'z' flag ...
-
                 if len(self.msg.sumflg) > 2 and self.msg.sumflg[:2] == 'z,':
-                    new_checksum=self.msg.onfly_checksum
+                    new_checksum=self.msg.onfly_checksum.split(',')[-1]
                 else:
                     new_checksum=None
 
-                if ( self.msg.sumflg[0] != 'a' ) and ( self.msg.onfly_checksum != self.msg.checksum ):
+                if ( self.msg.sumflg[0] not in ['a', 'z'] ) and ( self.msg.onfly_checksum != self.msg.sumstr ):
                    # onfly checksum is different from the message, avoid loops by overwriting. 
                    # except if the algorithm is arbitrary, and therefore cannot be calculated.
                    self.logger.warning("onfly_checksum %s differ from message %s" %
-                                      (self.msg.onfly_checksum, self.msg.checksum))
-                   new_checksum=self.msg.onfly_checksum
+                                      (self.msg.onfly_checksum, self.msg.sumstr))
+                   new_checksum=self.msg.onfly_checksum.split(',')[-1]
                 
                 if self.on_data_list :
                    # if there was transformation happening during the transfer, 
@@ -1451,7 +1451,7 @@ class sr_subscribe(sr_instances):
  
                 if new_checksum :
                    # set the value so that if it gets posted later, it is correct.
-                   self.msg.set_sum(self.msg.sumflg,new_checksum)
+                   self.msg.set_sum(self.msg.sumflg.split(',')[-1], new_checksum)
 
                    try:
                           path = self.msg.new_dir + '/' + self.msg.new_file
@@ -1463,7 +1463,7 @@ class sr_subscribe(sr_instances):
 
                           new_sumstr = self.msg.sumflg+','+new_checksum
                           if x.get('sum') != new_sumstr:
-                              x.set( 'sum', new_sumstr )
+                              x.set('sum', new_sumstr)
                           x.persist()
 
                    except Exception as ex:
@@ -1623,19 +1623,6 @@ class sr_subscribe(sr_instances):
         """
         if self.msg.isRetry: self.consumer.msg_worked()
         return True
-
-    def LOG_TRACE(self,tb):
-        import io, traceback
-
-        tb_output = io.StringIO()
-        traceback.print_tb(tb, None, tb_output)
-        self.logger.error("\n\n****************************************\n" + \
-                              "******* ERROR PRINTING TRACEBACK *******\n" + \
-                              "****************************************\n" + \
-                            "\n" + tb_output.getvalue()             + "\n" + \
-                            "\n****************************************\n")
-        tb_output.close()
-
 
     def restore_messages(self):
         self.logger.info("%s restore_messages" % self.program_name)

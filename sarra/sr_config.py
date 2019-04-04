@@ -195,10 +195,8 @@ class sr_config:
         self.hostform  = 'short'
         self.loglevel  = logging.INFO
 
-        #self.debug    = True
-        #self.loglevel = logging.DEBUG
-
         self.LOG_FORMAT= '%(asctime)s [%(levelname)s] %(message)s'
+        # self.LOG_FORMAT= '%(asctime)s [%(levelname)s] %(message)s %(module)s/%(funcName)s #%(lineno)d'
         logging.basicConfig(level=self.loglevel, format = self.LOG_FORMAT )
         self.logger = logging.getLogger()
         self.logger.debug("sr_config __init__")
