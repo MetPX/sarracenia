@@ -69,12 +69,12 @@ git
 2.19.02.b1
 ----------
 
-*CHANGE*: debian package name changed from *python3-metpx-sarracenia* to *metpx-sarracenia*
+*ACTION*: debian package name changed from *python3-metpx-sarracenia* to *metpx-sarracenia*
           to better match python packaging team guidelines. upgrades will fail, as the
           new package will conflict with the one previously installed.
           one must apt remove python3-metpx-sarracenia prior to installing this version.
 
-*CHANGE*: switch AMQP library: python3-amqp replaced python3-amqplib (abandonware library) 
+*ACTION*: switch AMQP library: python3-amqp replaced python3-amqplib (abandonware library) 
           package dependency means it won´t install automatically over previous version 
           need to apt install, or install the new dependency before you upgrade.
 
@@ -105,7 +105,7 @@ git
 2.18.09b2
 ---------
 
-*CHANGE*: The recent_files cache file stored in the state directory has change
+*ACTION*: The recent_files cache file stored in the state directory has change
           encoding for filenames. file names are now encoded as per 
           urllib.parse.quote() routine (for example: space becomes %20)
           it would be advised to --reset (erase the cache file) when upgrading.
