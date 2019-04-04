@@ -367,6 +367,8 @@ OPTIONS SPÉCIFIQUES AUX DÉVELOPPEURS
 
   Si un fichier est comptabilisé dans plusieurs blocs, l'ordre de publication
   est randomisé de façon à ce que l'abonné ne les reçoive pas en ordre.
+  L'option rend aussi le choix d'algorithm de calcul de somme de contrôle 
+  aléatoire, prennant priorité sur l´option *sum*
   
 [-rc|--reconnect]
 -----------------

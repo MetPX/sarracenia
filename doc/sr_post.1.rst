@@ -444,6 +444,7 @@ DEVELOPER SPECIFIC OPTIONS
 
   If a file is posted in several blocks, the posting order
   is randomized so that the subcriber receives them out of order.
+  It also randomizes the checksum algorithm used for posting.
 
 [-rc|--reconnect]
 -----------------
