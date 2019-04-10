@@ -915,9 +915,9 @@ mirror settings can be changed between directory options.
 strip <count|regexp> (default: 0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can modify the mirrored directories with the **strip** option. 
-If set to N  (an integer) the first 'N' directories are removed.
-For example ::
+You can modify the relative mirrored directories with the **strip** option. 
+If set to N  (an integer) the first 'N' directories from the relative path 
+are removed. For example::
 
  http://dd.weather.gc.ca/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
 
