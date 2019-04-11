@@ -2,6 +2,7 @@ xcpublic	topic
 xcsarra	topic
 xcvan00	topic
 xcvan01	topic
+xflow_public    topic
 xl_anonymous	topic
 xlog	topic
 xl_tsource	topic
