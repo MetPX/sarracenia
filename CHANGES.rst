@@ -6,6 +6,15 @@ lists all changes between versions.
 
 **git repo**
 
+* bugfix: #158 there was a bug with extended attributes in checksums (yes, another one.)
+* new:    moved flow_test away from xpublic to allow continuous use
+*         on an active pump without interfering with normal flows.
+* info:   mostly refactoring for future work by Benoit.
+*         Noureddine wants to run flow_test continuously somewhere
+*         in addition to the travis-ci.com stuff.
+*         there are some issues that crept in over the summer:
+*         #182, #179, are opened to track progress on that.
+
 **2.19.04b1**
 
 * new:    adding WMO_mesh_post example.

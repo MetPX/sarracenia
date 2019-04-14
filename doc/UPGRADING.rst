@@ -36,9 +36,21 @@ Installation Instructions
 git
 ---
 
+2.19.04b2
+---------
+
+*NOTICE*: bug from 4b1 fixed. workaround unnecessary.
+
+
 2.19.04b1
 ---------
 
+**BUG**: checksum storage not always correct can cause excessive downloads in some cases.
+         workaround add the following to affected configurations::
+
+            xattr_disable
+
+         
 *NOTICE*: regression of v03 posting fixed.
 
 2.19.03b6
