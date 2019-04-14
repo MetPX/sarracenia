@@ -1,3 +1,16 @@
+metpx-sarracenia (2.19.04b2) unstable; urgency=medium
+
+  * bugfix: #158 there was a bug with extended attributes in checksums (yes, another one.)
+  * new:    moved flow_test away from xpublic to allow continuous use
+  *         on an active pump without interfering with normal flows.
+  * info:   mostly refactoring for future work by Benoit.
+  *         Noureddine wants to run flow_test continuously somewhere
+  *         in addition to the travis-ci.com stuff.
+  *         there are some issues that crept in over the summer:
+  *         #182, #179, are opened to track progress on that.
+
+ -- Peter Silva <peter.silva@canada.ca>  Sun, 14 Apr 2019 11:21:24 -0400
+
 metpx-sarracenia (2.19.04b1) unstable; urgency=medium
 
   * new:    adding WMO_mesh_post example.
