@@ -8,7 +8,6 @@ countall
 
 printf "\n\n\t\tDownload Performance Summaries:\n\n\tLOGDIR=$LOGDIR"
 
-
 for i in t_dd1 t_dd2 ;
 do
    printf "\n\t$i\n\n"
@@ -27,10 +26,9 @@ do
 done
 
 echo
-
 # MG shows retries
-
 echo
+
 if [ ! "$SARRA_LIB" ]; then
    echo NB retries for sr_subscribe t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f30*.log* | wc -l`
    echo NB retries for sr_sender    `grep Retrying "$LOGDIR"/sr_sender*.log* | wc -l`
@@ -38,7 +36,6 @@ else
    echo NB retries for "$SARRA_LIB"/sr_subscribe.py t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f30*.log* | wc -l`
    echo NB retries for "$SARRA_LIB"/sr_sender.py    `grep Retrying "$LOGDIR"/sr_sender*.log* | wc -l`
 fi
-
 
 printf "ERROR Summary:\n\n"
 
@@ -82,7 +79,6 @@ fi
 if ((NWARNING==0)); then
    echo NO WARNINGS IN LOGS
 fi
-
 
 passedno=0
 tno=0
@@ -144,7 +140,6 @@ echo "                 | C          routing |"
   calcres  ${t5} ${totcfile} "veille_f34 should post twice as many files ($totcveille) as subscribe cfile_f44 downloaded ($totcfile)"
 
 fi
-
 
 calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed (sample size: $totsarra) !"
 results=$?

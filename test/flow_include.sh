@@ -1,44 +1,11 @@
 #!/bin/bash
 
-if [[ ":$SARRA_LIB/../:" != *":$PYTHONPATH:"* ]]; then
-    if [ "${PYTHONPATH:${#PYTHONPATH}-1}" == ":" ]; then
-        export PYTHONPATH="$PYTHONPATH$SARRA_LIB/../"
-    else 
-        export PYTHONPATH="$PYTHONPATH:$SARRA_LIB/../"
-    fi
-fi
+. ./flow_utils.sh
 
-function application_dirs {
-python3 << EOF
-import appdirs
-
-cachedir  = appdirs.user_cache_dir('sarra','science.gc.ca')
-cachedir  = cachedir.replace(' ','\ ')
-print('export CACHEDIR=%s'% cachedir)
-
-confdir = appdirs.user_config_dir('sarra','science.gc.ca')
-confdir = confdir.replace(' ','\ ')
-print('export CONFDIR=%s'% confdir)
-
-logdir  = appdirs.user_log_dir('sarra','science.gc.ca')
-logdir  = logdir.replace(' ','\ ')
-print('export LOGDIR=%s'% logdir)
-
-EOF
-}
-
-eval `application_dirs`
-
-C_ALSO="`which sr_cpost`" 
-
-adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; exit }; ' "$CONFDIR"/credentials.conf`"
-
+C_ALSO="`which sr_cpost`"
 # The directory we run the flow test scripts in...
 tstdir="`pwd`"
-
 httpdocroot=`cat $tstdir/.httpdocroot`
-
-
 
 function countthem {
    if [ ! "${1}" ]; then
