@@ -103,7 +103,7 @@ echo "Removing flow config logs..."
 echo $flow_configs |  sed 's/ / ;\n rm -f sr_/g' | sed '1 s|^| rm -f sr_|' | sed '/^ rm -f sr_post/d' | sed 's+/+_+g' | sed '/conf[ ;]*$/!d' | sed 's/\.conf/_[0-9][0-9].log\*/g' | (cd $LOGDIR; sh )
 
 echo "Removing flow cache/state files ..."
-echo $flow_configs 'audit/None/*' |  sed 's/ / ; rm $CACHEDIR\//g' | sed 's/^/rm $CACHEDIR\//' | sed 's+\.conf+/*+g' | sh - 2>/dev/null
+echo $flow_configs | sed 's/ / ; rm $CACHEDIR\//g' | sed 's/^/rm $CACHEDIR\//' | sed 's+\.conf+/*+g' | sh - 2>/dev/null
 echo "$CACHEDIR/*_unit_test" |  sed 's/ / ; rm -rf /g' | sed 's/^/rm -rf /' | sh
 
 httpdr=""
