@@ -214,10 +214,10 @@ function countall {
   countthem "`grep 'removed' "$LOGDIR"/sr_subscribe_cp_f61_*.log* | grep -v DEBUG | wc -l`"
   totsubcp=$(( totsubcp + tot ))
 
-  countthem "`grep 'post_log notice' $LOGDIR/srposter.log | grep -v DEBUG | grep -v shim | grep -v DEBUG | wc -l`"
+  countthem "`grep 'post_log notice' $srposterlog | grep -v DEBUG | grep -v shim | grep -v DEBUG | wc -l`"
   totpost1="${tot}"
 
-  countthem "`grep 'published:' $LOGDIR/srposter.log | grep -v DEBUG | grep shim | grep -v DEBUG | wc -l`"
+  countthem "`grep 'published:' $srposterlog | grep -v DEBUG | grep shim | grep -v DEBUG | wc -l`"
   totshimpost1="${tot}"
 
   countthem "`grep post_log "$LOGDIR"/sr_sarra_download_f20_*.log* | grep -v DEBUG | wc -l`"
@@ -263,8 +263,8 @@ function countall {
   # flags when two lines include *msg_log received* (with no other message between them) indicating no user will know what happenned.
 
   # flags when two lines include *msg_log received* (with no other message between them) indicating no user will know what happenned.
-  awk 'BEGIN { lr=0; }; /msg_log received/ { lr++; print lr, FILENAME, $0 ; next; }; { lr=0; } '  $LOGDIR/sr_subscribe_*_f??_??.log*  | grep -v '^1 ' >$LOGDIR/missed_dispositions.report
-  missed_dispositions="`wc -l <$LOGDIR/missed_dispositions.report`"
+  awk 'BEGIN { lr=0; }; /msg_log received/ { lr++; print lr, FILENAME, $0 ; next; }; { lr=0; } '  $LOGDIR/sr_subscribe_*_f??_??.log*  | grep -v '^1 ' >$missedreport
+  missed_dispositions="`wc -l <$missedreport`"
 
 }
 

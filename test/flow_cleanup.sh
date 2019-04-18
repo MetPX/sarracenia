@@ -79,8 +79,8 @@ if [ -f .flowpostpid ]; then
 
 fi
 
-remove_if_present=".ftpserverpid .httpserverpid aaa.conf bbb.inc checksum_AHAH.py sr_http.test.anonymous ${LOGDIR}/flow_setup.exchanges.txt ${LOGDIR}/missed_dispositions.report ${LOGDIR}/srposter.log"
-
+# This where we start cleaning the cache
+remove_if_present=".ftpserverpid .httpserverpid aaa.conf bbb.inc checksum_AHAH.py sr_http.test.anonymous $exnow $missedreport $srposterlog $trivialftplog $trivialhttplog"
 rm -f ${remove_if_present}
 
 queues_to_delete="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues | awk ' ( NR > 1 )  && /\.sr_.*_f[0-9][0-9].*/ { print $1; }; '`"

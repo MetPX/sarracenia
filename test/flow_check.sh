@@ -147,7 +147,7 @@ results=$?
 # PAS missed_dispositions means definite Sarra bug, very serious.
 
 if (("${missed_dispositions}">0)); then
-   echo "Please review $LOGDIR/missed_dispositions.report"
+   echo "Please review $missedreport"
    results=1
 fi
 echo

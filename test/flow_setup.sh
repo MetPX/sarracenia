@@ -67,9 +67,9 @@ count_of_checks=0
 
 echo "Initializing with sr_audit... takes a minute or two"
 if [ ! "$SARRA_LIB" ]; then
-    sr_audit --users foreground >$LOGDIR/sr_audit_f00.log 2>&1
+    sr_audit --users foreground >>$flowsetuplog 2>&1
 else
-    "$SARRA_LIB"/sr_audit.py --users foreground >$LOGDIR/sr_audit_f00.log 2>&1
+    "$SARRA_LIB"/sr_audit.py --users foreground >>$flowsetuplog 2>&1
 fi
 
 # Check queues and exchanges
@@ -84,7 +84,7 @@ testrundir="`pwd`"
 
 echo "Starting trivial http server on: $testdocroot, saving pid in .httpserverpid"
 cd $testdocroot
-$testrundir/trivialserver.py >trivialhttpserver.log 2>&1 &
+$testrundir/trivialserver.py >>$trivialhttplog 2>&1 &
 httpserverpid=$!
 
 
@@ -95,15 +95,15 @@ echo "Starting trivial ftp server on: $testdocroot, saving pid in .ftpserverpid"
 # note, defaults to port 2121 so devs can start it.
 
 if [ "`lsb_release -rs`" = "14.04"  ]; then
-   python -m pyftpdlib >trivialftpserver.log 2>&1 &
+   python -m pyftpdlib >>$trivialftplog 2>&1 &
 else
-   python3 -m pyftpdlib >trivialftpserver.log 2>&1 &
+   python3 -m pyftpdlib >>$trivialftplog 2>&1 &
 fi
 ftpserverpid=$!
 
 sleep 3
 
-if [ ! "`head trivialftpserver.log | grep 'starting'`" ]; then
+if [ ! "`head $trivialftplog | grep 'starting'`" ]; then
    echo "FAILED to start FTP server, is pyftpdlib installed?"
 else
    echo "FTP server started." 
@@ -114,7 +114,7 @@ count_of_checks=$((${count_of_checks}+1))
 echo "running self test ... takes a minute or two"
 
 cd ${TESTDIR}
-echo "Unit tests ("`date`")" > ${testdocroot}/unit_tests.log
+echo "Unit tests ("`date`")" > $unittestlog
 
 nbr_test=0
 nbr_fail=0
@@ -122,9 +122,9 @@ nbr_fail=0
 count_of_checks=$((${count_of_checks}+1))
 
 for t in sr_util sr_credentials sr_config sr_cache sr_retry sr_consumer sr_http sr_sftp sr_instances sr_pattern_match; do
-    echo "======= Testing :"${t}  >>  ${testdocroot}/unit_tests.log
+    echo "======= Testing :"${t}  >>  $unittestlog
     nbr_test=$(( ${nbr_test}+1 ))
-      ${TESTDIR}/unit_tests/${t}_unit_test.py >> ${testdocroot}/unit_tests.log 2>&1
+      ${TESTDIR}/unit_tests/${t}_unit_test.py >> $unittestlog 2>&1
       status=${?}
             if [ $status -ne 0 ]; then
                echo "======= Testing "${t}": Failed"
@@ -137,7 +137,7 @@ done
 
 if [ $nbr_fail -ne 0 ]; then
    echo "FAILED: "${nbr_fail}" self test did not work"
-   echo "        Have a look in file "${testdocroot}/unit_tests.log
+   echo "        Have a look in file "$unittestlog
 else
    echo "OK, as expected "${nbr_test}" tests passed"
    passed_checks=$((${passed_checks}+1))
@@ -146,7 +146,7 @@ fi
 cd $testrundir
 
 echo "Starting flow_post on: $testdocroot, saving pid in .flowpostpid"
-./flow_post.sh >${LOGDIR}/srposter.log 2>&1 &
+./flow_post.sh >$srposterlog 2>&1 &
 flowpostpid=$!
 
 echo $ftpserverpid >.ftpserverpid

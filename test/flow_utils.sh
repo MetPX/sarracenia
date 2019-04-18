@@ -69,7 +69,6 @@ function xchk {
     # 1 - number of exchanges to expect.
     # 2 - Description string.
     #
-    exnow=${LOGDIR}/flow_setup.exchanges.txt
     exex=flow_lists/exchanges_expected.txt
     rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list exchanges | grep -v '^name' | grep -v amq\. | grep -v direct| sort >$exnow
 
