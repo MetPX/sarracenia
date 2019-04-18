@@ -1,6 +1,6 @@
 #!/bin/bash
 
-.  ./flow_include.sh
+. ./flow_include.sh
 
 countall
 
