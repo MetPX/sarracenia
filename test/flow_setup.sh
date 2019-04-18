@@ -164,10 +164,6 @@ flow_configs="audit/ poll/pulse.conf `cd ../sarra/examples; ls */*f[0-9][0-9].co
 sr_action "Starting up all components..." start " " ">> $flowsetuplog 2>\\&1" "$flow_configs"
 echo "Done."
 
-#sr_subscribe stop fclean
-#sr_subscribe cleanup fclean
-#sr_subscribe remove fclean
-
 ret=$?
 
 count_of_checks=$((${count_of_checks}+1))
