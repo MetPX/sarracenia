@@ -25,7 +25,7 @@ unittestlog="$LOGDIR/unit_tests_f00.log"
 if [ -d $LOGDIR ]; then
     logs2remove=$(find "$LOGDIR" -iname "*.txt" -o -iname "*f[0-9][0-9]*.log")
     if [ ! -z "$logs2remove" ]; then
-       echo "Cleaning previous logs remaining"
+       echo "Cleaning previous flow test logs..."
        rm $logs2remove
     fi
 fi
