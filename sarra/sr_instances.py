@@ -221,10 +221,10 @@ class sr_instances(sr_config):
         for x in os.listdir(dpath):
             fpath = dpath + os.sep + x
             try   : os.unlink(fpath)
-            except: self.logger.debug("could not delete %f on cleanup" % fpath)
+            except: self.logger.debug("could not delete %s on cleanup" % fpath)
 
         try   : os.rmdir(dpath)
-        except: self.logger.debug("could not delete %d on cleanup" % dpath)
+        except: self.logger.debug("could not delete %s on cleanup" % dpath)
 
         # log_cleanup 
 
