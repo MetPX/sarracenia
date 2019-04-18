@@ -101,13 +101,10 @@ sr_action "Removing flow configs..." remove " " ">> $flowlogcleanup 2>\\&1" "$fl
 
 echo "Removing flow config logs..."
 echo $flow_configs |  sed 's/ / ;\n rm -f sr_/g' | sed '1 s|^| rm -f sr_|' | sed '/^ rm -f sr_post/d' | sed 's+/+_+g' | sed '/conf[ ;]*$/!d' | sed 's/\.conf/_[0-9][0-9].log\*/g' | (cd $LOGDIR; sh )
-rm -f $LOGDIR/sr_audit* $LOGDIR/*f[0-9][0-9].log $LOGDIR/sr_[0-9][0-9].log*
 
 echo "Removing flow cache/state files ..."
 echo $flow_configs 'audit/None/*' |  sed 's/ / ; rm $CACHEDIR\//g' | sed 's/^/rm $CACHEDIR\//' | sed 's+\.conf+/*+g' | sh - 2>/dev/null
-
-tests_cache=$CACHEDIR/*_unit_test
-echo $tests_cache|  sed 's/ / ; rm -rf /g' | sed 's/^/rm -rf /' | sh
+echo "$CACHEDIR/*_unit_test" |  sed 's/ / ; rm -rf /g' | sed 's/^/rm -rf /' | sh
 
 httpdr=""
 if [ -f .httpdocroot ]; then

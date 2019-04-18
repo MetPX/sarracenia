@@ -22,10 +22,10 @@ unittestlog="$LOGDIR/unit_tests_f00.log"
 
 . ./flow_utils.sh
 
-if [ -d $CACHEDIR/log ]; then
-    logs2remove=$(find "$CACHEDIR"/log/ -iname "*.txt")
+if [ -d $LOGDIR ]; then
+    logs2remove=$(find "$LOGDIR" -iname "*.txt" -o -iname "*f[0-9][0-9]*.log")
     if [ ! -z "$logs2remove" ]; then
-       echo "Cleaning logs, just in case"
+       echo "Cleaning previous logs remaining"
        rm $logs2remove
     fi
 fi
