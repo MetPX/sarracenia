@@ -3,7 +3,7 @@
 . ./flow_utils.sh
 
 export TESTDIR="`pwd`"
-flowlogcleanup="$LOGDIR/sr_cleanup_f99.log"
+flowlogcleanup="$LOGDIR/flowcleanup_f99.log"
 
 touch $flowlogcleanup
 # Stopping sr components

@@ -17,7 +17,7 @@ export PYTHONPATH="`pwd`/../"
 testdocroot="$HOME/sarra_devdocroot"
 testhost=localhost
 sftpuser=`whoami`
-flowsetuplog="$LOGDIR/sr_setup_f00.log"
+flowsetuplog="$LOGDIR/flowsetup_f00.log"
 unittestlog="$LOGDIR/unit_tests_f00.log"
 
 . ./flow_utils.sh
