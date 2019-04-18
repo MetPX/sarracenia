@@ -3,27 +3,15 @@
 . ./flow_utils.sh
 
 export TESTDIR="`pwd`"
+flowlogcleanup="$LOGDIR/sr_cleanup_f99.log"
 
-echo "Stopping sr..."
-if [ ! "$SARRA_LIB" ]; then
-    sr stop >$LOGDIR/sr_stop_f99.log 2>&1
-else
-    "$SARRA_LIB"/sr.py stop >$LOGDIR/sr_stop_f99.log 2>&1
-fi
-#flow_configs="poll/pulse.conf `cd ../sarra/examples; ls */*f[0-9][0-9].conf` audit/"
-#sr_action "Stopping sr..." stop "-l $FLOWLOGFILE"  "$flow_configs"
-
-echo "Cleanup sr..."
-if [ ! "$SARRA_LIB" ]; then
-    sr cleanup >$LOGDIR/sr_cleanup_f99.log 2>&1
-else
-    "$SARRA_LIB"/sr.py cleanup >$LOGDIR/sr_cleanup_f99.log 2>&1
-fi 
-
-#echo extra lines for the sr_cpump cleanup hanging
-#sleep 10
-#killall sr_cpump
-#echo remove these 2 when corrected
+touch $flowlogcleanup
+# Stopping sr components
+flow_configs="audit/ poll/pulse.conf `cd ../sarra/examples; ls */*f[0-9][0-9].conf`"
+sr_action "Stopping sr..." stop " " ">> $flowlogcleanup 2>\\&1" "$flow_configs"
+# Cleanup sr components
+flow_configs="audit/ poll/pulse.conf `cd ../sarra/examples; ls */*f[0-9][0-9].conf`"
+sr_action "Cleanup sr..." cleanup " " ">> $flowlogcleanup 2>\\&1" "$flow_configs"
 
 echo "Cleanup trivial http server... "
 if [ -f .httpserverpid ]; then
@@ -97,20 +85,19 @@ rm -f ${remove_if_present}
 
 queues_to_delete="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues | awk ' ( NR > 1 )  && /\.sr_.*_f[0-9][0-9].*/ { print $1; }; '`"
 
-touch $LOGDIR/sr_cleanup_f99.log
 echo "Deleting queues: $queues_to_delete"
 for q in $queues_to_delete; do
-    rabbitmqadmin -H localhost -u bunnymaster -p "${adminpw}" delete queue name=$q >>$LOGDIR/sr_cleanup_f99.log 2>&1
+    rabbitmqadmin -H localhost -u bunnymaster -p "${adminpw}" delete queue name=$q >>$flowlogcleanup 2>&1
 done
 
 exchanges_to_delete="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list exchanges | awk ' ( $1 ~ /x.*/ ) { print $1; }; '`"
 echo "Deleting exchanges..."
 for exchange in $exchanges_to_delete ; do 
-   rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv delete exchange name=${exchange} >>$LOGDIR/sr_cleanup_f99.log 2>&1
+   rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv delete exchange name=${exchange} >>$flowlogcleanup 2>&1
 done
 
 flow_configs="poll/pulse.conf `cd ../sarra/examples; ls */*f[0-9][0-9].conf; ls */*f[0-9][0-9].inc`"
-sr_action "Removing flow configs..." remove " " "$flow_configs"
+sr_action "Removing flow configs..." remove " " ">> $flowlogcleanup 2>\\&1" "$flow_configs"
 
 echo "Removing flow config logs..."
 echo $flow_configs |  sed 's/ / ;\n rm -f sr_/g' | sed '1 s|^| rm -f sr_|' | sed '/^ rm -f sr_post/d' | sed 's+/+_+g' | sed '/conf[ ;]*$/!d' | sed 's/\.conf/_[0-9][0-9].log\*/g' | (cd $LOGDIR; sh )

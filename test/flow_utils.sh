@@ -24,18 +24,20 @@ function sr_action {
     msg=$1
     action=$2
     options=$3
-    files=$4
+    logpipe=$4
+    files=$5
 
     echo $msg
     if [ "$SARRAC_LIB" ]; then
       echo $files | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed "s+/+ $action +g" | grep -Po "sr_c[\w]* $action [\w\_\. ]* ;" | sed 's~^~"$SARRAC_LIB"/~' | sh
     else
-      echo $files | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed "s+/+ $action +g" | grep -Po "sr_c[\w]* $action [\w\_\. ]* ;" | sed 's/ \{2,\}/ /g' | sh
+      echo $files | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed "s+/+ $action +g" |
+      sed "s+ ;+ $logpipe ;+g" | grep -Po "sr_c[\w]* $action [\w\_\. ]* $logpipe ;" | sed 's/ \{2,\}/ /g' | sh
     fi
     if [ "$SARRA_LIB" ]; then
       echo $files | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed "s+/+ $action +g" | grep -Po "sr_[^c][\w]* $action [\w\_\. ]* ;" | sed 's/ /.py /' | sed 's~^~"$SARRA_LIB"/~' | sh
     else
-      echo $files | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed "s+/+ $options $action +g" | grep -Po "sr_[^c][\w]* $options $action [\w\_\. ]* ;" | sed 's/ \{2,\}/ /g' | sh
+      echo $files | sed 's/ / ; sr_/g' | sed 's/$/ ;/' | sed 's/^/ sr_/' | sed "s+/+ $options $action +g" | sed "s+ ;+ $logpipe ;+g" | grep -Po "sr_[^c][\w]* $options $action [\w\_\. ]* $logpipe ;" | sed 's/ \{2,\}/ /g' | sh
     fi
 }
 
@@ -90,6 +92,8 @@ function xchk {
 }
 
 
+# Code execution shared by more than 1 flow test script
+
 #FIXME: puts the path at the end? so if you have multiple, guaranteed to take the wrong one?
 #       psilva worry 2019/01
 #
@@ -135,11 +139,11 @@ amqps://anonymous:anonymous@dd2.weather.gc.ca
 EOT
  exit 1
 fi
+
+# Shared variables by more than 1 flow test script
 adminpw="`awk ' /bunnymaster:.*\@localhost/ { sub(/^.*:/,""); sub(/\@.*$/,""); print $1; exit }; ' "$CONFDIR"/credentials.conf`"
-FLOWLOGFILE="$LOGDIR/sr_f00.log"
-
-
-
-
-
-
+srposterlog="$LOGDIR/srposter_f00.log"
+exnow=$LOGDIR/flow_setup.exchanges.txt
+missedreport="$LOGDIR/missed_dispositions.report"
+trivialhttplog="$LOGDIR/trivialhttpserver_f00.log"
+trivialftplog="$LOGDIR/trivialftpserver_f00.log"

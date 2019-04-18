@@ -17,6 +17,8 @@ export PYTHONPATH="`pwd`/../"
 testdocroot="$HOME/sarra_devdocroot"
 testhost=localhost
 sftpuser=`whoami`
+flowsetuplog="$LOGDIR/sr_setup_f00.log"
+unittestlog="$LOGDIR/unit_tests_f00.log"
 
 . ./flow_utils.sh
 
@@ -54,7 +56,7 @@ mkdir -p "$CONFDIR" 2> /dev/null
 export SR_CONFIG_EXAMPLES=`pwd`/../sarra/examples
 
 flow_configs="`cd ../sarra/examples; ls */*f[0-9][0-9].conf; ls */*f[0-9][0-9].inc`"
-sr_action "Adding flow test configurations..." add "-l $FLOWLOGFILE" "$flow_configs"
+sr_action "Adding flow test configurations..." add " " ">> $flowsetuplog 2>\\&1" "$flow_configs"
 
 passed_checks=0
 count_of_checks=0
@@ -157,12 +159,9 @@ export MAX_MESSAGES=${1}
 echo $MAX_MESSAGES
 fi
 
-echo "Starting up all components (sr start)..."
-if [ ! "$SARRA_LIB" ]; then
-    sr start >$LOGDIR/sr_start_f00.log 2>&1
-else
-    "$SARRA_LIB"/sr.py start >$LOGDIR/sr_start_f00.log 2>&1
-fi
+# Start everything but sr_post
+flow_configs="audit/ poll/pulse.conf `cd ../sarra/examples; ls */*f[0-9][0-9].conf | grep -v '^post'`"
+sr_action "Starting up all components..." start " " ">> $flowsetuplog 2>\\&1" "$flow_configs"
 echo "Done."
 
 #sr_subscribe stop fclean
