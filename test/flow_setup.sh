@@ -14,13 +14,14 @@
 
 export TESTDIR="`pwd`"
 export PYTHONPATH="`pwd`/../"
+. ./flow_utils.sh
+
 testdocroot="$HOME/sarra_devdocroot"
 testhost=localhost
 sftpuser=`whoami`
 flowsetuplog="$LOGDIR/flowsetup_f00.log"
 unittestlog="$LOGDIR/unit_tests_f00.log"
 
-. ./flow_utils.sh
 
 if [ -d $LOGDIR ]; then
     logs2remove=$(find "$LOGDIR" -iname "*.txt" -o -iname "*f[0-9][0-9]*.log")
