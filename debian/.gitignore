@@ -1,7 +1,7 @@
 files
 debhelper-build-stamp
-python3-metpx-sarracenia.substvars
-python3-metpx-sarracenia
-python3-metpx-sarracenia/.*
-python3-metpx-sarracenia-server.substvars
+metpx-sarracenia.substvars
+metpx-sarracenia
+metpx-sarracenia/.*
+metpx-sarracenia-server.substvars
 	

@@ -500,7 +500,7 @@ class sr_message():
         return '.%d.%d.%d.%d.%s.%s' %\
                (self.chunksize,self.block_count,self.remainder,self.current_block,self.sumflg,self.part_ext)
 
-    def publish(self):
+    def post(self,parent):
         ok = False
 
         if self.pub_exchange != None : self.exchange = self.pub_exchange
@@ -509,26 +509,6 @@ class sr_message():
            # truncated content is useless, so drop it.
            if 'content' in self.headers :
                del self.headers['content']
-
-           for h in self.headers:
-
-             # v02 wants simple strings, cannot have dicts like in v03.
-             if type(self.headers[h]) is dict:
-                 self.headers[h] = json.dumps( self.headers[h] )
-
-             if len(self.headers[h].encode("utf8")) >= amqp_ss_maxlen:
-
-                # strings in utf, and if names have special characters, the length
-                # of the encoded string wll be longer than what is returned by len(. so actually need to look
-                # at the encoded length ...  len ( self.headers[h].encode("utf-8") ) < 255
-                # but then how to truncate properly. need to avoid invalid encodings.
-                mxlen=amqp_ss_maxlen
-                while( self.headers[h].encode("utf8")[mxlen-1] & 0xc0 == 0xc0 ):
-                      mxlen -= 1
-
-                self.headers[h] = self.headers[h].encode("utf8")[0:mxlen].decode("utf8")
-                self.logger.warning( "truncating %s header at %d characters (to fit 255 byte AMQP limit) to: %s " % \
-                        ( h, len(self.headers[h]) , self.headers[h]) )
 
         elif ( self.headers[ 'sum' ][0] in [ 'L', 'R' ] ) :
             # avoid inlining if it is a link or a remove.
@@ -638,7 +618,17 @@ class sr_message():
                    self.convert_partsv2tov3()
 
                body = json.dumps({k: self.headers[k] for k in self.headers if k not in ['sum', 'parts']})
-               ok = self.publisher.publish(self.exchange+suffix, self.topic, body, None, self.message_ttl)
+
+               for plugin in parent.on_post_list:
+                    if not plugin(parent):
+                       return False
+             
+               if parent.outlet == 'json':
+                    parent.__print_json( self )
+               elif parent.outlet == 'url' :
+                    print( "%s/%s" % ( self.base_url, self.relpath ) )
+               else:
+                    ok = self.publisher.publish(self.exchange+suffix, self.topic, body, None, self.message_ttl)
            else:
                #in v02, sum is the correct header. FIXME: roundtripping not quite right yet.
                if 'integrity' in self.headers.keys(): 
@@ -647,7 +637,36 @@ class sr_message():
                   del self.headers['size']
                if 'blocks' in self.headers.keys():
                   del self.headers['blocks']
-               ok = self.publisher.publish(self.exchange+suffix,self.topic,self.notice,self.headers,self.message_ttl)
+
+               for plugin in parent.on_post_list:
+                    if not plugin(parent):
+                       return False
+
+               for h in self.headers:
+                   # v02 wants simple strings, cannot have dicts like in v03.
+                   if type(self.headers[h]) is dict:
+                       self.headers[h] = json.dumps( self.headers[h] )
+
+                   if len(self.headers[h].encode("utf8")) >= amqp_ss_maxlen:
+
+                       # strings in utf, and if names have special characters, the length
+                       # of the encoded string wll be longer than what is returned by len(. so actually need to look
+                       # at the encoded length ...  len ( self.headers[h].encode("utf-8") ) < 255
+                       # but then how to truncate properly. need to avoid invalid encodings.
+                       mxlen=amqp_ss_maxlen
+                       while( self.headers[h].encode("utf8")[mxlen-1] & 0xc0 == 0xc0 ):
+                             mxlen -= 1
+
+                       self.headers[h] = self.headers[h].encode("utf8")[0:mxlen].decode("utf8")
+                       self.logger.warning( "truncating %s header at %d characters (to fit 255 byte AMQP limit) to: %s " % \
+                               ( h, len(self.headers[h]) , self.headers[h]) )
+
+               if parent.outlet == 'json':
+                    parent.__print_json( self.msg )
+               elif parent.outlet == 'url' :
+                    print( "%s/%s" % ( self.base_url, self.relpath ) )
+               else:
+                    ok = self.publisher.publish(self.exchange+suffix,self.topic,self.notice,self.headers,self.message_ttl)
 
         self.set_hdrstr()
 

@@ -675,31 +675,8 @@ class sr_subscribe(sr_instances):
     def __on_post__(self):
         #self.logger.debug("%s __on_post__" % self.program_name)
 
-        # in v02, a *sum* header is used.
-        # FIXME: round-tripping not right yet.
-        #if post_topic_prefix.startswith('v02') and 'integrity' in self.headers.keys():
-        #   del self.headers[ 'integrity' ]
-
-        # invoke on_post when provided
-
-        for plugin in self.on_post_list:
-
-           self.__plugin_backward_compat_setup__()
-
-           if not plugin(self): return False
-
-           self.__plugin_backward_compat_repare__()
-
-        ok = True
-
-        if   self.outlet == 'json' :
-              self.__print_json( self.msg )
-
-        elif self.outlet == 'url'  :
-             print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
-
-        else :
-             ok = self.msg.publish( )
+        # on_post logic moved inside post.
+        ok = self.msg.post(self)
 
         # publish counter
 

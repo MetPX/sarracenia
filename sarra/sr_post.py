@@ -293,22 +293,7 @@ class sr_post(sr_instances):
     def __on_post__(self):
         #self.logger.debug("%s __on_post__" % self.program_name)
 
-        # invoke on_post when provided
-
-        for plugin in self.on_post_list:
-           if not plugin(self): return False
-
-        ok = True
-
-        if   self.outlet == 'json' :
-             json_line = json.dumps( [ self.msg.topic, self.msg.headers, "%s %s %s" % ( self.msg.pubtime, self.msg.baseurl, self.msg.relpath ) ], sort_keys=True ) + '\n'
-             print("%s" % json_line )
-
-        elif self.outlet == 'url'  :
-             print( "%s%s%s" % ( self.baseurl, os.sep, self.relpath ) )
-
-        else:
-             ok = self.msg.publish( )
+        ok = self.msg.post(self)
 
         # publish counter
 
