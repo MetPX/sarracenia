@@ -325,8 +325,8 @@ on peut l´indiquer dans un fichier de configuration::
 
 
 
-LOG FILES
----------
+Fichiers journal
+----------------
 
 Comme sr_subscribe fonctionne généralement comme un démon (à moins d'être 
 invoqué en mode *foreground*), on examine normalement son fichier journal pour
@@ -345,6 +345,8 @@ sr_subscribe exécutant la configuration *myconfig*::
 
 On peut outrepasser le placement sur linux en définissant la variable 
 d'environnement XDG_CACHE_HOME.
+
+Pour plus d'information veuillez consulter `JOURNAUX`_
 
 
 IDENTIFICATION
