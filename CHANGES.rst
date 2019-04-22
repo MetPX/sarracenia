@@ -6,6 +6,15 @@ lists all changes between versions.
 
 **git repo**
 
+*    new: #191 adding log_reject to debug checksums and reject/accept configurations
+* bugfix: #190 when printing v03 messages, post_log was misleading (not updated)
+*         also allowed removing some duplicate code. 
+*         lost backward compatibility warnings around in on_post calls.
+* 
+* bugfix: #184 some flow test refactoring
+
+**2.19.04b2**
+
 * bugfix: #158 there was a bug with extended attributes in checksums (yes, another one.)
 * new:    moved flow_test away from xpublic to allow continuous use
 *         on an active pump without interfering with normal flows.
