@@ -363,6 +363,7 @@ for each *instance* (download process) of an sr_subscribe process running the my
    in linux: ~/.cache/sarra/log/sr_subscribe_myflow_01.log
 
 One can override placement on linux by setting the XDG_CACHE_HOME environment variable.
+For more info See `LOGS`_
 
 
 CREDENTIALS
