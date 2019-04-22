@@ -472,14 +472,14 @@ Une fois connecté à un courtier AMQP, l'utilisateur doit créer une file d'att
 Mise en file d'attente sur broker :
 
 - **queue <nom> (par défaut : q_<brokerUser>.<programName>.<configName>.<configName>)**
-- **durable <boolean> (par défaut : False)**
+- **durable <booléen> (par défaut : False)**
 - **expire <durée> (par défaut : 5m == cinq minutes. À OUTREPASSER)**
 - **message-ttl <durée> (par défaut : Aucun)**
 - **prefetch <N> (par défaut : 1)****
-- **reset <boolean> (par défaut : False)**
-- **restore <boolean> (par défaut : False)**
+- **reset <booléen> (par défaut : False)**
+- **restore <booléen> (par défaut : False)**
 - **restore_to_queue <queuename> (par défaut : Aucun)**
-- **save <boolean> (par défaut : False)**
+- **save <booléen> (par défaut : False)**
 
 Habituellement, les composants devinent des valeurs par défaut raisonnables pour
 toutes ces valeurs et les utilisateurs n'ont pas besoin de les définir.  Pour 
@@ -504,7 +504,7 @@ dans les cas ou on veut que le même queue soit partagé en dépit de ne pas
 avoir de *home* partagé.
 
 
-durable <boolean> (par défaut : False)
+durable <booléen> (par défaut : False)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 L'option **durable**, si elle est définie sur True, signifie que la file d'attente est écrite.
@@ -548,7 +548,7 @@ Cependant, dans les cas de connexion longue distance, il est nécessaire d'augme
 ce nombre, afin de cacher la latence de l'aller-retour, donc un paramètre
 de 10 ou plus peut être nécessaire.
 
-reset <boolean> (par défaut : False)
+reset <booléen> (par défaut : False)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Lorsque **reset** est réglé et qu'un composant est (re)démarré, sa file d'attente 
@@ -563,7 +563,7 @@ effacé.
 Le protocole AMQP définit d'autres options de file d'attente qui ne sont pas exposées.
 via Sarracenia, car l´application choisit les valeurs appropriées.
 
-save <boolean> (par défaut : False)
+save <booléen> (par défaut : False)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 L'option **save** est utilisée pour lire les messages de la file d'attente, les écrire
@@ -720,7 +720,7 @@ accept, reject, accept_unmatch
 
 - **accept <expression régulière (regexp)>  (facultatif)**.
 - **reject <expression régulière (regexp)> (facultatif)**.
-- **accept_unmatch <boolean> (par défaut : False (faux))**.
+- **accept_unmatch <booléen> (par défaut : False (faux))**.
 
 Les options **accept** et **reject** traitent des expressions régulières (regexp).
 La regexp est appliquée à l'URL du message pour détecter une correspondance.
@@ -1465,8 +1465,8 @@ RAPPORTS
 Pour chaque téléchargement, par défaut, un message de rapport amqp est renvoyé au courtier.
 Ceci est fait avec l'option :
 
-report_back <boolean> (par défaut : True)**. 
-rapport_exchange <report_exchangename> (par défaut : xreport|xs_username* )****.
+- **report_back <booléen> (par défaut : True)**. 
+- **rapport_exchange <report_exchangename> (par défaut : xreport|xs_username* )**
 
 Lorsqu'un rapport est généré, il est envoyé au *report_exchange* configuré. 
 les composants administratifs publient directement sur *xreport*, tandis que les 

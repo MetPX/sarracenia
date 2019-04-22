@@ -174,7 +174,7 @@ pour les Bytes, Kilobytes, Megabytes, Gigabytes, Gigabytes, Terabytes respective
 
        Un fichier rempli d'options.
 
-[--delete <boolean>]
+[--delete <booléen>]
 --------------------
 
 En mode force_polling, supposons que les répertoires se vident, de sorte que chaque fichier dans chaque *path*.
@@ -214,7 +214,7 @@ S'il n'est pas défini, aucun événement de lien symbolique ne sera jamais post
 sr_watch publie à une échange nommée *xs_*"broker_username" par défaut.
 Utilisez l'option *exchange* pour remplacer cette valeur par défaut.
 
-[-fp|--force_polling <boolean>]
+[-fp|--force_polling <booléen>]
 -------------------------------
 
 Par défaut, sr_watch sélectionne une méthode optimale (en fonction du système d'exploitation) pour 
@@ -239,7 +239,7 @@ NOTE::
   l'arbre entier chaque fois (en ignorant mtime)
 
 
-[-fs|--follow_symlinks <boolean>]
+[-fs|--follow_symlinks <booléen>]
 ---------------------------------
 
 L'option *follow_symlinks* provoque la traversée de liens symboliques. si *follow_symlinks* est activé.
@@ -287,7 +287,7 @@ Les avis AMQP sont faites des champs arborescents, l'heure de l'avis,
 la valeur de l'option **url** et les chemins résolus vers lesquels ont été retirés.
 le *post_base_dir* présent et nécessaire.
 
-[-real|--realpath <boolean>]
+[-real|--realpath <booléen>]
 ----------------------------
 
 L'option realpath résout les chemins donnés à leurs chemins canoniques, éliminant 

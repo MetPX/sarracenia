@@ -70,15 +70,15 @@ les paramètres de l'option.
 Il y a très peu d'options que **sr_audit** utilise :
 
 
-**admin          <user>    (OBLIGATOIRE: broker admin user, detailed in credentials.conf)**
+- **admin          <user>    (OBLIGATOIRE: broker admin user, detailed in credentials.conf)**
 
-**debug          <boolean> (default: False)**
+- **debug          <booléen> (default: False)**
 
-**reset          <boolean> (default: False)**
+- **reset          <booléen> (default: False)**
 
-**set_passwords  <boolean> (default: True)**
+- **set_passwords  <booléen> (default: True)**
 
-**max_queue_size <int>     (default: 25000 nbr messages in queue)**
+- **max_queue_size <int>     (default: 25000 nbr messages in queue)**
 
 L'option **admin** doit être définie, elle est normalement définie dans le fichier **default.conf**.
 et les détails de l'accréditation se trouveraient dans le fichier **credentials.conf****.

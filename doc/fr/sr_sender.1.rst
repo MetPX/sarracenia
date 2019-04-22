@@ -82,7 +82,7 @@ et le sr_sender fonctionnera normalement par la suite.
 EXEMPLE 1 : REPLICATION POMPE À POMPE
 -------------------------------------
 
- - **mirror             <boolean>   (default: True)**
+ - **mirror             <booléen>   (default: True)**
  - **base_dir      <directory> (None)**
 
  - **destination        <url>       (MANDATORY)**
@@ -149,7 +149,7 @@ le produit sera annoncé (avec éventuellement un nouvel emplacement et un nouve
 Réintroduire les options dans un ordre différent.
 avec de nouvelles pour faciliter l'explication.
 
- - **mirror             <boolean>   (défaut: True)**
+ - **mirror             <booléen>   (défaut: True)**
  - **base_dir      <directory>      (défaut: None)**
 
  - **destination        <url>       (OBLIGATOIRE)**

@@ -219,7 +219,7 @@ de spécification.
   La concaténation des deux derniers champs de l'annonce définit ce que les abonnés utiliseront 
   pour télécharger le produit.
 
-[-pipe <boolean>>]
+[-pipe <booléen>]
 ------------------
 
   L'option pipe est pour sr_post pour lire les noms des fichiers à poster à partir de l'entrée 
