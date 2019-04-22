@@ -295,8 +295,8 @@ class sr_config:
            ( self.heartbeat, self.sanity_log_dead, self.chmod, self.chmod_dir, self.chmod_log, self.discard, self.durable ) )
         self.logger.info( "\tpost_on_start=%s preserve_mode=%s preserve_time=%s realpath_post=%s base_dir=%s follow_symlinks=%s" % \
            ( self.post_on_start, self.preserve_mode, self.preserve_time, self.realpath_post, self.base_dir, self.follow_symlinks ) )
-        self.logger.info( "\tmirror=%s flatten=%s realpath_post=%s strip=%s base_dir=%s report_back=%s" % \
-           ( self.mirror, self.flatten, self.realpath_post, self.strip, self.base_dir, self.reportback ) )
+        self.logger.info( "\tmirror=%s flatten=%s realpath_post=%s strip=%s base_dir=%s report_back=%s log_reject=%s" % \
+           ( self.mirror, self.flatten, self.realpath_post, self.strip, self.base_dir, self.reportback, self.log_reject ) )
 
         if self.post_broker :
             self.logger.info( "\tpost_base_dir=%s post_base_url=%s post_topic_prefix=%s post_version=%s sum=%s blocksize=%s " % \
@@ -675,6 +675,7 @@ class sr_config:
         self.currentDir           = os.getcwd()   # mask directory (if needed)
         self.currentFileOption    = None     # should implement metpx like stuff
         self.delete               = False
+        self.log_reject           = False
 
         self.report_exchange      = None
           
@@ -1102,9 +1103,15 @@ class sr_config:
             self.pstrip = pstrip
             self.flatten = flatten
             if mask_regexp.match(chaine) :
-               if not accepting : return False
+               if not accepting : 
+                  if self.log_reject:
+                      self.logger.info( "reject: mask=%s strip=%s pattern=%s" % (str(mask), strip, chaine) )
+                  return False
                self.logger.debug( "isMatchingPattern: mask=%s strip=%s" % (str(mask), strip) )
                return True
+
+        if self.log_reject and not accept_unmatch:
+             self.logger.info( "reject: unmatched pattern=%s" % (chaine) )
 
         return accept_unmatch
 
@@ -1959,6 +1966,14 @@ class sr_config:
                      else :
                         self.user_log_dir = os.path.dirname(words1)
                      n = 2
+
+                elif words0 in [ 'log_reject', 'lr' ]: # See: sr_sarra.8
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.log_reject = True
+                        n = 1
+                     else :
+                        self.log_reject = self.isTrue(words[1])
+                        n = 2
 
                 elif words0 == 'ls_file_index': # FIX ME to document... position of file in ls
                                                 #        use when space in filename is expected

@@ -1500,6 +1500,10 @@ If no unit is provided logs will rotate at midnight.
 - log <dir> ( default: ~/.cache/sarra/log ) (on Linux)
    The directory to store log files in.
  
+- log_reject <True|False> ( default: False )
+   print a log message when rejecting messages. This can result in many messages, so usually
+   only used for testing.
+ 
 - logrotate <max_logs> ( default: 5 )
    Maximum number of logs archived.
  
@@ -1513,6 +1517,25 @@ If no unit is provided logs will rotate at midnight.
    The permission bits to set on log files.
 
 Placement is as per: `XDG Open Directory Specification <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ setting the XDG_CACHE_HOME environment variable.
+
+One can also get finer grained control over logging by using plugins::
+
+   on_message msg_rawlog
+
+will have a component log receipt of each message accepted (and not rejected).  There
+are similar plugins available for different parts of processing::
+
+   on_part part_log
+
+   on_file file_log
+
+   on_post post_log
+   
+or even, log everything::
+
+   plugin log
+
+etc...
 
 
 INSTANCES

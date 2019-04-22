@@ -1496,6 +1496,10 @@ pour les minutes. Sans unité, la rotation sera effectuée à minuit.
 - log <dir> ( défaut: ~/.cache/sarra/log ) (sur Linux)
    Le répertoire ou les fichiers journaux seront placés.
 
+- log_reject <True|False> ( défaut: False ) 
+   afficher un ligne de journal pour chaque message rejeté.  Ceci peut produire des journeaux énorme.
+   D´habitude utilisé uniquement lors du debogage.
+
 - logrotate <max_logs> ( défaut: 5 )
    Nombre maximal de fichiers journaux archivés.
 
@@ -1510,6 +1514,24 @@ pour les minutes. Sans unité, la rotation sera effectuée à minuit.
    Les bits de permission qui seront établi pour les fichiers journaux.
 
 Le placement est conforme à : `XDG Open Directory Specification <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ définissant la variable d'environnement XDG_CACHE_HOME.
+
+On peut également contrôler plus précisement l´écriture de journeaux en se servant de plugins::
+
+  on_message msg_rawlog
+
+fera afficher un ligne dans le journal pour chaque message accepté.  Il y a d´autres plugins
+similaires, tel que::
+
+  on_part part_log
+
+  on_file file_log
+
+  on_post post_log
+
+ou, pour logger quasiment tout::
+
+  plugin log
+
 
 
 INSTANCES

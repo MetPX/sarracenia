@@ -67,6 +67,7 @@ class sr_message():
         self.report_exchange  = parent.report_exchange
         self.topic_prefix  = parent.topic_prefix
         self.version  = parent.version
+        self.log_reject  = parent.log_reject
         self.post_topic_prefix  = parent.post_topic_prefix
         self.post_version  = parent.post_version
         self.report_publisher = None
@@ -158,6 +159,8 @@ class sr_message():
             new_mtime = timestr2flt(self.headers[ 'mtime' ])
             if new_mtime <= lstat[stat.ST_MTIME]:
                self.logger.debug("sr_csnbd %s new version not newer" % (fname ) )
+               if self.log_reject:
+                   self.logger.info("rejected: mtime not newer %s " % (fname ) )
                return True
 
         if self.sumflg in [ '0', 'n', 'z'] : 
@@ -174,7 +177,14 @@ class sr_message():
                 return False
 
         self.logger.debug( "sr_csnbd checksum in message: %s vs. local: %s" % ( self.local_checksum, self.checksum ) ) 
-        return self.local_checksum == self.checksum
+
+        if self.local_checksum == self.checksum:
+            if self.log_reject:
+                 self.logger.info( "rejected: same checksum %s " % (fname ) )
+            return True
+        else:
+            return False
+        #return self.local_checksum == self.checksum
 
     def compute_local_checksum(self):
         self.logger.debug("sr_message compute_local_checksum new_dir=%s, new_file=%s" % ( self.new_dir, self.new_file ) )
