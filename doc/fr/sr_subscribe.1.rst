@@ -325,28 +325,86 @@ on peut l´indiquer dans un fichier de configuration::
 
 
 
-Fichiers journal
-----------------
+Fichiers journal et Suivi
+-------------------------
+
+Les composants écrivent dans des fichiers journaux qui se trouvent par
+défaut dans ~/.cache/sarra/log/<component>_<config>_<config>_<instance>.log.
 
 Comme sr_subscribe fonctionne généralement comme un démon (à moins d'être 
 invoqué en mode *foreground*), on examine normalement son fichier journal pour
-savoir comment se déroule le traitement.  Quand seulement une seule instance 
+savoir comment se déroule le traitement. Quand seulement une seule instance 
 est en cours d'exécution, on peut normalement visualiser le journal du
 processus en cours d'exécution de cette façon::
 
    sr_subscribe log *myconfig*
 
 Où *myconfig* est le nom de la configuration en cours d'exécution. Les fichiers
-journaux sont placés conformément à la spécification XDG Open Directory. Il y 
-a un fichier journal pour chaque *instance* (processus de téléchargement) 
+journaux sont placés conformément à la spécification `XDG Open Directory <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_. Il y a un fichier journal pour chaque *instance* (processus de téléchargement) 
 sr_subscribe exécutant la configuration *myconfig*::
 
    sur linux : ~/.cache/sarra/log/sr_subscribe_subscribe_myconfig_01.log
 
 On peut outrepasser le placement sur linux en définissant la variable 
-d'environnement XDG_CACHE_HOME.
+d'environnement XDG_CACHE_HOME. 
 
-Pour plus d'information veuillez consulter `JOURNAUX`_
+Les fichiers journaux peuvent grossir énormement dans les cas de grand débit, alors
+on permet beaucoup d´ajustement de qu´est-ce qui provoque un entrée dans le journal.
+
+En partant, on peut sélectionner le niveau des entrées:
+
+- debug
+   L'option de déverminage **debug** est identique à l'utilisation de **loglevel debug**.
+
+- loglevel ( défaut: info )
+   Le niveau de journalisation exprimé par la journalisation de python.
+   Les valeurs possibles sont : critical, error, info, warning, debug.
+
+
+- log_reject <True|False> ( défaut: False )
+   afficher un ligne de journal pour chaque message rejeté.  Ceci peut produire des journeaux énorme.
+   D´habitude utilisé uniquement lors du debogage.
+
+
+On peut également contrôler plus précisement l´écriture de journeaux en se servant de plugins::
+
+  on_message msg_rawlog
+
+fera afficher un ligne dans le journal pour chaque message accepté.  Il y a d´autres plugins
+similaires, tel que::
+
+  on_part part_log
+
+  on_file file_log  (là par défaut)
+
+  on_post post_log
+
+ou, pour logger quasiment tout::
+
+  plugin log
+
+À la fin de la journée (à minuit), ces fichiers journaux sont tournés automatiquement
+par les composants, et l'ancien journal obtient un suffixe de date.
+Le répertoire dans lequel les fichiers journaux sont stockés peut être changé par
+l'option **log**, le nombre maximum de fichiers journaux retournés à conserver est défini par le
+paramètre *logrotate* et cela continue pour les prochaines rotations. Lorsque le nombre maximum de rotations
+a été atteint, le plus vieux fichier journal est supprimé.  Pour l'option d'intervalle, une durée est exprimée
+par un nombre et peu prendre un suffixe d'unité de temps, tel que 'd\|D' pour les jours, 'h\|H' pour les heures ou 'm\|M'
+pour les minutes. Sans unité, la rotation sera effectuée à minuit. On peut ajuster:
+
+- log <dir> ( défaut: ~/.cache/sarra/log ) (sur Linux)
+   Le répertoire ou les fichiers journaux seront placés.
+
+- logrotate <max_logs> ( défaut: 5 )
+   Nombre maximal de fichiers journaux archivés.
+
+- logrotate_interval <durée>[<unité_de_temps>] ( défaut: 1 )
+   La durée de l'intervalle spécifié et une unité de temps optionnelle (p.ex. 5m, 2h, 3d).
+
+- chmod_log ( défaut: 0600 )
+   Les bits de permission qui seront établi pour les fichiers journaux.
+
+
 
 
 IDENTIFICATION
@@ -1476,64 +1534,6 @@ copient ensuite les messages dans *xreport* après validation.
 Ces rapports sont utilisés pour le réglage de la livraison et pour les sources 
 de données afin de générer des informations statistiques. Régler cette option à **Faux**, 
 pour empêcher la génération de rapports. 
-
-
-JOURNAUX
-========
-
-Les composants écrivent dans des fichiers journaux qui se trouvent par 
-défaut dans ~/.cache/sarra/log/<component>_<config>_<config>_<instance>.log.
-À la fin de la journée (à minuit), ces fichiers journaux sont tournés automatiquement
-par les composants, et l'ancien journal obtient un suffixe de date.
-Le répertoire dans lequel les fichiers journaux sont stockés peut être changé par 
-l'option **log**, le nombre maximum de fichiers journaux retournés à conserver est défini par le
-paramètre *logrotate* et cela continue pour les prochaines rotations. Lorsque le nombre maximum de rotations
-a été atteint, le plus vieux fichier journal est supprimé.  Pour l'option d'intervalle, une durée est exprimée
-par un nombre et peu prendre un suffixe d'unité de temps, tel que 'd\|D' pour les jours, 'h\|H' pour les heures ou 'm\|M'
-pour les minutes. Sans unité, la rotation sera effectuée à minuit.
-
-- debug
-   L'option de déverminage **debug** est identique à l'utilisation de **loglevel debug**.
-
-- log <dir> ( défaut: ~/.cache/sarra/log ) (sur Linux)
-   Le répertoire ou les fichiers journaux seront placés.
-
-- log_reject <True|False> ( défaut: False ) 
-   afficher un ligne de journal pour chaque message rejeté.  Ceci peut produire des journeaux énorme.
-   D´habitude utilisé uniquement lors du debogage.
-
-- logrotate <max_logs> ( défaut: 5 )
-   Nombre maximal de fichiers journaux archivés.
-
-- logrotate_interval <durée>[<unité_de_temps>] ( défaut: 1 )
-   La durée de l'intervalle spécifié et une unité de temps optionnelle (p.ex. 5m, 2h, 3d).
-
-- loglevel ( défaut: info ) 
-   Le niveau de journalisation exprimé par la journalisation de python. 
-   Les valeurs possibles sont : critical, error, info, warning, debug.
-
-- chmod_log ( défaut: 0600 )
-   Les bits de permission qui seront établi pour les fichiers journaux.
-
-Le placement est conforme à : `XDG Open Directory Specification <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ définissant la variable d'environnement XDG_CACHE_HOME.
-
-On peut également contrôler plus précisement l´écriture de journeaux en se servant de plugins::
-
-  on_message msg_rawlog
-
-fera afficher un ligne dans le journal pour chaque message accepté.  Il y a d´autres plugins
-similaires, tel que::
-
-  on_part part_log
-
-  on_file file_log
-
-  on_post post_log
-
-ou, pour logger quasiment tout::
-
-  plugin log
-
 
 
 INSTANCES

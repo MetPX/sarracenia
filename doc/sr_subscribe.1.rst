@@ -40,7 +40,7 @@ supplying to an external program) specifying the -n (*notify_only*, or *no_downl
 suppress the download behaviour and only post the URL on standard output.  The standard
 output can be piped to other processes in classic UNIX text filter style.  
 
-Sr_subscribe is very configurable and is the basis for other components of sarracenia:
+Sr_subscribe is very configurable and is the basis for other components of Sarracenia:
 
  - `sr_report(1) <sr_report.1.rst>`_ - process report messages.
  - `sr_sender(1) <sr_sender.1.rst>`_ - copy messages, only, not files.
@@ -346,13 +346,12 @@ In the cases where the user want to enable one option, he will first need to ins
 his python environment, whether it's amqplib or pika.
 
     
-LOG FILES
----------
+LOGS and MONITORING
+-------------------
 
 As sr_subscribe usually runs as a daemon (unless invoked in *foreground* mode) 
 one normally examines its log file to find out how processing is going.  When only
-a single instance is running, one can normally view the log of the running process
-like so::
+a single instance is running, one can view the log of the running process like so::
 
    sr_subscribe log *myconfig*
 
@@ -362,8 +361,61 @@ for each *instance* (download process) of an sr_subscribe process running the my
 
    in linux: ~/.cache/sarra/log/sr_subscribe_myflow_01.log
 
-One can override placement on linux by setting the XDG_CACHE_HOME environment variable.
-For more info See `LOGS`_
+One can override placement on linux by setting the XDG_CACHE_HOME environment variable, as
+per: `XDG Open Directory Specification <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ 
+Log files can be very large for high volume configurations, so the logging is very configurable.
+
+To begin with, one can select the logging level:
+
+- debug
+   Setting option debug is identical to use  **loglevel debug**
+
+- loglevel ( default: info )
+   The level of logging as expressed by python's logging. Possible values are :  critical, error, info, warning, debug.
+
+- log_reject <True|False> ( default: False )
+   print a log message when *rejecting* messages (choosing not to download the corresponding files)
+
+One can also get finer grained control over logging by using plugins. For example, the default settings
+typically include *on_file file_log* which logs each file after it has been downloaded, but not
+when the message is received. To have a line in the log for each message received set::
+
+   on_message msg_rawlog
+
+There are similar plugins available for different parts of processing::
+
+   on_part part_log
+
+   on_file file_log (default)
+
+   on_post post_log
+   
+or even, log everything::
+
+   plugin log
+
+etc... One can also modify the provided plugins, or write new ones to completely change the logging.
+
+At the end of the day (at midnight), these logs are rotated automatically by the components, and the old log gets a
+date suffix. The directory in which the logs are stored can be overridden by the **log** option, the number of rotated
+logs to keep are set by the **logrotate** parameter. The oldest log file is deleted when the
+maximum number of logs has been reach and this continues for each rotation. An interval takes a duration
+of the interval and it may takes a time unit suffix, such as 'd\|D' for days, 'h\|H' for hours, or 'm\|M' for minutes.
+If no unit is provided logs will rotate at midnight.  Here are some settings for log file management:
+
+- log <dir> ( default: ~/.cache/sarra/log ) (on Linux)
+   The directory to store log files in.
+
+- logrotate <max_logs> ( default: 5 )
+   Maximum number of logs archived.
+
+- logrotate_interval <duration>[<time_unit>] ( default: 1 )
+   The duration of the interval with an optional time unit (ie 5m, 2h, 3d)
+
+- chmod_log ( default: 0600 )
+   The permission bits to set on log files.
+
+
 
 
 CREDENTIALS
@@ -1481,62 +1533,6 @@ exchanges (xs_*username*). The report daemons then copy the messages to *xreport
 
 These reports are used for delivery tuning and for data sources to generate statistical information.
 Set this option to **False**, to prevent generation of reports.
-
-
-
-LOGS
-====
-
-Components write to log files, which by default are found in ~/.cache/sarra/log/<component>_<config>_<instance>.log.
-At the end of the day (at midnight), these logs are rotated automatically by the components, and the old log gets a
-date suffix. The directory in which the logs are stored can be overridden by the **log** option, the number of rotated
-logs to keep are set by the **logrotate** parameter. The oldest log file is deleted when the
-maximum number of logs has been reach and this continues for each rotation. An interval takes a duration
-of the interval and it may takes a time unit suffix, such as 'd\|D' for days, 'h\|H' for hours, or 'm\|M' for minutes.
-If no unit is provided logs will rotate at midnight.
-
-- debug  
-   Setting option debug is identical to use  **loglevel debug**
-
-- log <dir> ( default: ~/.cache/sarra/log ) (on Linux)
-   The directory to store log files in.
- 
-- log_reject <True|False> ( default: False )
-   print a log message when rejecting messages. This can result in many messages, so usually
-   only used for testing.
- 
-- logrotate <max_logs> ( default: 5 )
-   Maximum number of logs archived.
- 
-- logrotate_interval <duration>[<time_unit>] ( default: 1 )
-   The duration of the interval with an optional time unit (ie 5m, 2h, 3d)
-
-- loglevel ( default: info )
-   The level of logging as expressed by python's logging. Possible values are :  critical, error, info, warning, debug.
-
-- chmod_log ( default: 0600 )
-   The permission bits to set on log files.
-
-Placement is as per: `XDG Open Directory Specification <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ setting the XDG_CACHE_HOME environment variable.
-
-One can also get finer grained control over logging by using plugins::
-
-   on_message msg_rawlog
-
-will have a component log receipt of each message accepted (and not rejected).  There
-are similar plugins available for different parts of processing::
-
-   on_part part_log
-
-   on_file file_log
-
-   on_post post_log
-   
-or even, log everything::
-
-   plugin log
-
-etc...
 
 
 INSTANCES
