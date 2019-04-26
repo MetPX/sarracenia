@@ -5,7 +5,7 @@
 export TESTDIR="`pwd`"
 flowlogcleanup="$LOGDIR/flowcleanup_f99.log"
 touch $flowlogcleanup
-flow_configs="audit/ `cd $CONFDIR; ls */*f[0-9][0-9].conf; ls poll/pulse.conf`"
+flow_configs="audit/ `cd $CONFDIR; ls */*f[0-9][0-9].conf 2>/dev/null; ls poll/pulse.conf 2>/dev/null`"
 
 # Stopping sr components
 sr_action "Stopping sr..." stop " " ">> $flowlogcleanup 2>\\&1" "$flow_configs"
@@ -95,7 +95,7 @@ for exchange in $exchanges_to_delete ; do
    rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv delete exchange name=${exchange} >>$flowlogcleanup 2>&1
 done
 
-flow_configs="`cd ../sarra/examples; ls */*f[0-9][0-9].conf; ls */*f[0-9][0-9].inc; ls poll/pulse.conf`"
+flow_configs="`cd ../sarra/examples; ls */*f[0-9][0-9].conf 2>/dev/null; ls */*f[0-9][0-9].inc 2>/dev/null; ls poll/pulse.conf 2>/dev/null`"
 sr_action "Removing flow configs..." remove " " ">> $flowlogcleanup 2>\\&1" "$flow_configs"
 
 echo "Removing flow config logs..."
