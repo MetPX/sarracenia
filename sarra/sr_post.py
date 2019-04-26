@@ -340,7 +340,7 @@ class sr_post(sr_instances):
         self.watch_handler = None
         self.post_topic_prefix = "v02.post"
 
-        self.inl           = []
+        self.inl           = OrderedDict()
         self.new_events    = OrderedDict()
         self.left_events   = OrderedDict()
 
@@ -1209,6 +1209,7 @@ class sr_post(sr_instances):
                self.logger.info("sr_watch priming watch (instance=%d) scheduled for: %s " % (len(self.obs_watched), d))
            except:
                self.logger.warning("sr_watch priming watch: %s failed, deferred." % d)
+               self.logger.debug("dir_dev_id={}".format(dir_dev_id))
                self.logger.debug('Exception details:', exc_info=True)
 
                # add path created
