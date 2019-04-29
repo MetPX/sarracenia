@@ -161,7 +161,7 @@ echo $MAX_MESSAGES
 fi
 
 # Start everything but sr_post
-flow_configs="audit/ poll/pulse.conf `cd ../sarra/examples; ls */*f[0-9][0-9].conf | grep -v '^post'`"
+flow_configs="audit/ `cd ../sarra/examples; ls */*f[0-9][0-9].conf | grep -v '^post'; ls poll/pulse.conf`"
 sr_action "Starting up all components..." start " " ">> $flowsetuplog 2>\\&1" "$flow_configs"
 echo "Done."
 
