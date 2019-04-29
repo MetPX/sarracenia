@@ -53,6 +53,7 @@ Version 03 format of file change announcements for sr_post.
 An sr_post message consists of a topic, and the *BODY* 
 
 **AMQP Topic:** *<version>.[post|report].{<dir>.}*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
@@ -61,6 +62,7 @@ An sr_post message consists of a topic, and the *BODY*
            <dir> = a sub-directory leading to the file (perhaps many directories deep)
 
 **BODY:** *{ <headers> }* (JSON encoding.)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The headers are an array of name:value pairs::
 
@@ -262,14 +264,20 @@ The URL consumers will use to download the data. Example of a complete URL::
 Additional fields:
 
 **from_cluster=<cluster_name>**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
    The from_cluster header defines the name of the source cluster where the 
    data was introduced into the network. It is used to return the logs back 
    to the cluster whenever its products are used.
 
 **link=<value of symbolic link>**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
    When file to transfer is a symbolic link, the 'link' header is created to 
    contain its value.
 
+**Parts**
+~~~~~~~~~
 .. _parts:
 
 v02: **parts=<method>,<bsz>,<blktot>,<brem>,<bno>**
@@ -334,11 +342,12 @@ v03::
 
 
 **rename=<relpath>** 
+~~~~~~~~~~~~~~~~~~~~
 
  The relative path from the current directory in which to place the file.
 
-**oldname=<path>**
-**newname=<path>**
+**oldname=<path>** / **newname=<path>**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
  when a file is renamed at the source, to send it to subscribers, two posts 
  result: one message is announced with the new name as the base_url, 
@@ -353,6 +362,8 @@ v03::
  header set.
 
 **source=<sourceid>**
+~~~~~~~~~~~~~~~~~~~~~
+
  a character field indicating the source of the data injected into the network.
  should be unique within a data pumping network.  It's usually the same as the
  account used to authenticate to the broker.
@@ -360,6 +371,8 @@ v03::
 .. _sum:
 
 **sum=<method>,<value>**
+~~~~~~~~~~~~~~~~~~~~~~~~
+
 
  The sum is a v02 signature computed to allow receivers to determine 
  if they have already downloaded the partition from elsewhere.
@@ -400,6 +413,7 @@ v03::
   checksum based load balancing.
 
 **integrity**
+~~~~~~~~~~~~~
 
  Is a v03 version of the sum field made more explicit. For example::
 
@@ -411,6 +425,8 @@ v03::
  As the values for cod and zero sums are not encoded, they are the same in both v02 and v03.
 
 **to_clusters=<cluster_name1,cluster_name2,...>**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
  The to_clusters defines a list of destination clusters where the data should go into the network.
  Each name should be unique within all exchanging rabbitmq clusters. It is used to do the transit
  of the products and their notices through the exchanging clusters.
@@ -512,6 +528,7 @@ Optional Headers
 for the file mirroring use case, additional headers will be present:
 
 **atime,mtime,mode**
+~~~~~~~~~~~~~~~~~~~~
 
   man 2 stat - the linux/unix standard file metadata:
   access time, modification time, and permission (mode bits)
