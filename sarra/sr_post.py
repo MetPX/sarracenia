@@ -1077,7 +1077,7 @@ class sr_post(sr_instances):
             ex.append(exchange)
             self.msg.pub_exchange = exchange
             self.msg.message_ttl  = self.message_ttl
-            self.msg.publish()
+            self.msg.post(self)
 
         self.close()
 
