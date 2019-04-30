@@ -2,11 +2,21 @@ dist: xenial
 services: rabbitmq
 language: python
 
-python:
-- 3.4
-- 3.5
-- 3.6
-- 3.7
+matrix:
+  include:
+  - name: "3.4-700limit"
+    python: "3.4"
+    env: LIMIT=700
+  - name: "3.5-1000limit"
+    python: "3.5"
+    env: LIMIT=1000
+  - name: "3.6-3000limit"
+    python: "3.6"
+    env: LIMIT=3000
+  - name: "3.7-10000limit"
+    python: "3.7"
+    env: LIMIT=10000
+
 
 branches:
   only:
@@ -18,7 +28,7 @@ install:
 
 before_script:
 - ./flow_setup.sh
-- ./flow_limit.sh
+- ./flow_limit.sh $LIMIT
 
 script:
 - ./flow_check.sh
