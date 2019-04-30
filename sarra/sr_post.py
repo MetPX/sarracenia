@@ -340,7 +340,7 @@ class sr_post(sr_instances):
         self.watch_handler = None
         self.post_topic_prefix = "v02.post"
 
-        self.inl           = []
+        self.inl           = OrderedDict()
         self.new_events    = OrderedDict()
         self.left_events   = OrderedDict()
 
@@ -1077,7 +1077,7 @@ class sr_post(sr_instances):
             ex.append(exchange)
             self.msg.pub_exchange = exchange
             self.msg.message_ttl  = self.message_ttl
-            self.msg.publish()
+            self.msg.post(self)
 
         self.close()
 
