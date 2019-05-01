@@ -1026,8 +1026,13 @@ class sr_post(sr_instances):
         if not os.path.exists(src) : return done
 
         # file : must be old enough
+        try:
+            lstat = os.stat(src)
+        except FileNotFoundError as err:
+            self.logger.error("could not stat file ({}): {}".format(src, err))
+            self.logger.debug("Exception details:", exc_info=True)
+            return done
 
-        lstat = os.stat(src)
         if self.path_inflight(src,lstat): return later
 
         # post it
@@ -1163,7 +1168,14 @@ class sr_post(sr_instances):
         # walk src directory, this walk is depth first... there could be a lot of time
         # between *listdir* run, and when a file is visited, if there are subdirectories before you get there.
         # hence the existence check after listdir (crashed in flow_tests of > 20,000)
-        for x in os.listdir(src):
+        try:
+            dir_content = os.listdir(src)
+        except FileNotFoundError as err:
+            self.logger.error("could not list dir({}): {}".format(src, err))
+            self.logger.debug("Exception details:", exc_info=True)
+            dir_content = []
+
+        for x in dir_content:
             path = src + '/' + x
             if os.path.isdir(path):
                self.walk(path)
