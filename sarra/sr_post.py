@@ -1165,25 +1165,9 @@ class sr_post(sr_instances):
            if sys.platform == 'win32':
                src = src.replace('\\','/')
 
-        # walk src directory, this walk is depth first... there could be a lot of time
-        # between *listdir* run, and when a file is visited, if there are subdirectories before you get there.
-        # hence the existence check after listdir (crashed in flow_tests of > 20,000)
-        try:
-            dir_content = os.listdir(src)
-        except FileNotFoundError as err:
-            self.logger.error("could not list dir({}): {}".format(src, err))
-            self.logger.debug("Exception details:", exc_info=True)
-            dir_content = []
-
-        for x in dir_content:
-            path = src + '/' + x
-            if os.path.isdir(path):
-               self.walk(path)
-               continue
-
-            # add path created
-            if os.path.exists(path):
-                self.post1file(path,os.stat(path))
+        for path in glob.glob(os.path.join(src, '**', '*'), recursive=True):
+            if os.path.isfile(path):
+                self.post1file(path, os.stat(path))
 
     # =============
     # original walk_priming
