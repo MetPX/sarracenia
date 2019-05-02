@@ -65,22 +65,22 @@ printf  "\nSufficient!\n"
 if [ ! "$SARRA_LIB" ]; then
    if [ "`sr_shovel t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" != 'stopped' ]; then 
        echo "Stopping shovels and waiting..."
-       sr_shovel stop t_dd2_f00 &
+       sr_shovel stop t_dd2_f00
        sr_shovel stop t_dd1_f00 
    fi
 else 
    if [ "`$SARRA_LIB/sr_shovel.py t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" != 'stopped' ]; then
        echo "Stopping shovels and waiting..."
-       "$SARRA_LIB"/sr_shovel.py stop t_dd2_f00 &
+       "$SARRA_LIB"/sr_shovel.py stop t_dd2_f00
        "$SARRA_LIB"/sr_shovel.py stop t_dd1_f00
    fi
 fi
 
 if [ "$SARRAC_LIB" ]; then
-   "$SARRAC_LIB"/sr_cpump stop pelle_dd1_f04 &
+   "$SARRAC_LIB"/sr_cpump stop pelle_dd1_f04
    "$SARRAC_LIB"/sr_cpump stop pelle_dd2_f05
 elif [ "${C_ALSO}" ]; then
-   sr_cpump stop pelle_dd1_f04 &
+   sr_cpump stop pelle_dd1_f04
    sr_cpump stop pelle_dd2_f05
 fi
 
