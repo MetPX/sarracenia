@@ -1158,14 +1158,11 @@ class sr_post(sr_instances):
     def walk(self, src ):
         self.logger.debug("walk %s" % src )
 
-        # how to proceed with symlink
-
-        if os.path.islink(src) and self.realpath_post :
-           src = os.path.realpath(src)
-           if sys.platform == 'win32':
-               src = src.replace('\\','/')
-
-        for path in glob.glob(os.path.join(src, '**', '*'), recursive=True):
+        for path in glob.iglob(os.path.join(src, '**', '*'), recursive=True):
+            if self.realpath_post and os.path.isfile(path):
+                path = os.path.realpath(path)
+                if sys.platform == 'win32':
+                    path = path.replace('\\', '/')
             if os.path.isfile(path):
                 self.post1file(path, os.stat(path))
 
