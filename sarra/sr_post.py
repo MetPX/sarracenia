@@ -538,7 +538,12 @@ class sr_post(sr_instances):
            else:
               binary = (self.inline_encoding == 'text' )
 
-           f = open(path,'rb')
+           try:
+               f = open(path,'rb')
+           except FileNotFoundError as err:
+               self.logger.error("could not open ({}): {}".format(path, err))
+               self.logger.debut("Exception details:", exc_info=True)
+               return False
            d = f.read()
            f.close()
 
@@ -1189,10 +1194,13 @@ class sr_post(sr_instances):
             d=p
 
         try :
-                 fs = os.stat(d)
-                 dir_dev_id = '%s,%s' % ( fs.st_dev, fs.st_ino )
-                 if dir_dev_id in self.inl: return True
-        except:  self.logger.warning("could not stat %s" % d)
+            fs = os.stat(d)
+            dir_dev_id = '%s,%s' % ( fs.st_dev, fs.st_ino )
+            if dir_dev_id in self.inl:
+                return True
+        except FileNotFoundError as err:
+            self.logger.warning("could not stat file ({}): {}".format(d, err))
+            self.logger.debug("Exception details:", exc_info=True)
 
         if os.access( d , os.R_OK|os.X_OK ): 
            try:
