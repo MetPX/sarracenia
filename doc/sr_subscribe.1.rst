@@ -1549,13 +1549,9 @@ In the ~/.cache/sarra/sender/configName directory::
   A .sr_sender_configname.state         is created, containing the number instances.
   A .sr_sender_configname_$instance.pid is created, containing the PID  of $instance process.
 
-In directory ~/.cache/sarra/var/log::
+In directory ~/.cache/sarra/log::
 
   A .sr_sender_configname_$instance.log  is created as a log of $instance process.
-
-The logs can be written in another directory than the default one with option :
-
-**log            <directory logpath>  (default:~/.cache/sarra/var/log)**
 
 .. note::  
   FIXME: indicate Windows location also... dot files on Windows?
