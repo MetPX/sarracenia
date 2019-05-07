@@ -74,7 +74,7 @@ An example of an execution of  *sr_watch*  checking a file::
  sr_watch -s sftp://stanley@mysftpserver.com/ -p /data/shared/products/foo -pb amqp://broker.com -action start
 
 Here,  *sr_watch*  checks events on the file /data/shared/products/foo.
-Default events settings reports if the file the file is modified or deleted.
+Default events settings reports if the file is modified or deleted.
 When the file gets modified,  *sr_watch*  reads the file /data/shared/products/foo
 and calculates its checksum.  It then builds a post message, logs into broker.com as user 'guest' (default credentials)
 and sends the post to defaults vhost '/' and post_exchange 'xs_stanley' (default exchange)
