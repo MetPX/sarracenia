@@ -261,12 +261,6 @@ impacts.
 
 Display program options.
 
-[-l <logpath>]
---------------
-
-Set a file where all the logs will be written.
-Logfile will rotate at 'midnight' and kept with a history of 5 files.
-
 [-p|--path path]
 ----------------
 
