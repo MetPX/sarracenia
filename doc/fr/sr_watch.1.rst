@@ -262,12 +262,6 @@ des impacts sur la performance importantes.
 
 Afficher les options du programme.
 
-[-l <logpath>]
---------------
-
-Définissez un fichier dans lequel tous les journaux seront écrits.
-Le fichier journal tournera à minuit et sera conservé pour un historique de 5 fichiers.
-
 [-p|--path path]
 ----------------
 

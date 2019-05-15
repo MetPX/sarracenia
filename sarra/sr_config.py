@@ -1959,14 +1959,6 @@ class sr_config:
                          self.inflight = words[1] 
                      n = 2
 
-                elif words0 in ['log','l']: # See: sr_config.7 
-                     self.logpath         = words1
-                     if os.path.isdir(words1) :
-                        self.user_log_dir = words1
-                     else :
-                        self.user_log_dir = os.path.dirname(words1)
-                     n = 2
-
                 elif words0 in [ 'log_reject', 'lr' ]: # See: sr_sarra.8
                      if (words1 is None) or words[0][0:1] == '-' : 
                         self.log_reject = True
