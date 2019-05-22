@@ -1200,7 +1200,7 @@ class sr_post(sr_instances):
             dir_dev_id = '%s,%s' % (fs.st_dev, fs.st_ino)
             if dir_dev_id in self.inl:
                 return True
-        except FileNotFoundError as err:
+        except OSError as err:
             self.logger.warning("could not stat file ({}): {}".format(d, err))
             self.logger.debug("Exception details:", exc_info=True)
 
