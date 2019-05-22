@@ -161,66 +161,45 @@ function countall {
   sumlogs msg_total $LOGDIR/sr_shovel_t_dd2_f00_*.log*
   totshovel2="${tot}"
 
-  countthem "`grep post_log "$LOGDIR"/sr_winnow*.log* | grep -v DEBUG | wc -l`"
+  countthem "`grep 'post_log notice' "$LOGDIR"/sr_winnow*.log* | wc -l`"
   totwinpost="${tot}"
 
   countthem "`grep truncating "$LOGDIR"/sr_sarra_download_f20_*.log* | grep -v DEBUG | wc -l`"
   totshortened="${tot}"
 
-  sumlogs post_total $LOGDIR/sr_watch_f40_*.log*
+  countthem "`grep '\[INFO\] post_log' "$LOGDIR"/sr_watch_f40_*.log* | grep -v DEBUG | wc -l`"
   totwatch="${tot}"
 
   sumlogs msg_total $LOGDIR/sr_subscribe_t_f30_*.log*
   totmsgt="${tot}"
 
-  sumlogs file_total $LOGDIR/sr_subscribe_t_f30_*.log*
+  countthem "`grep 'file_log downloaded to:' "$LOGDIR"/sr_subscribe_t_f30_*.log* | grep -v DEBUG | wc -l`"
   totfilet="${tot}"
 
-  countthem "`grep post_log "$LOGDIR"/sr_sender_tsource2send_f50_*.log* | grep -v DEBUG | wc -l`"
+  countthem "`grep 'post_log notice' "$LOGDIR"/sr_sender_tsource2send_f50_*.log* | grep -v DEBUG | wc -l`"
   totsent="${tot}"
 
-  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_u_sftp_f60_*.log* | grep -v DEBUG | wc -l`"
+  no_hardlink_events='downloaded to:|symlinked to|removed'
+  all_events="hardlink|$no_hardlink_events"
+  countthem "`grep -E "$all_events" "$LOGDIR"/sr_subscribe_u_sftp_f60_*.log* | grep -v DEBUG | wc -l`"
   totsubu="${tot}"
-  countthem "`grep 'hardlink' "$LOGDIR"/sr_subscribe_u_sftp_f60_*.log* | grep -v DEBUG | wc -l`"
-  totsubu=$(( totsubu + tot ))
-  countthem "`grep 'symlinked to' "$LOGDIR"/sr_subscribe_u_sftp_f60_*.log* | grep -v DEBUG | wc -l`"
-  totsubu=$(( totsubu + tot ))
-  countthem "`grep 'removed' "$LOGDIR"/sr_subscribe_u_sftp_f60_*.log* | grep -v DEBUG | wc -l`"
-  totsubu=$(( totsubu + tot ))
-
-  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_q_f71_*.log* | grep -v DEBUG | wc -l`"
+  countthem "`grep -E "$all_events" "$LOGDIR"/sr_subscribe_cp_f61_*.log* | grep -v DEBUG | wc -l`"
+  totsubcp="${tot}"
+  countthem "`grep -E "$no_hardlink_events" "$LOGDIR"/sr_subscribe_ftp_f70_*.log* | grep -v DEBUG | wc -l`"
+  totsubftp="${tot}"
+  countthem "`grep -E "$all_events" "$LOGDIR"/sr_subscribe_q_f71_*.log* | grep -v DEBUG | wc -l`"
   totsubq="${tot}"
-  countthem "`grep 'symlinked to' "$LOGDIR"/sr_subscribe_q_f71_*.log* | grep -v DEBUG | wc -l`"
-  totsubq=$(( totsubq + tot ))
-  countthem "`grep 'removed' "$LOGDIR"/sr_subscribe_q_f71_*.log* | grep -v DEBUG | wc -l`"
-  totsubq=$(( totsubq + tot ))
 
-  countthem  "`grep 'post_log notice' "$LOGDIR"/sr_poll_f62_*.log* | grep -v DEBUG | wc -l`"
+  countthem "`grep 'post_log notice' "$LOGDIR"/sr_poll_f62_*.log* | grep -v DEBUG | wc -l`"
   totpoll1="${tot}"
 
-  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_ftp_f70_*.log* | grep -v DEBUG | wc -l`"
-  totsubftp="${tot}"
-  countthem "`grep 'symlinked to' "$LOGDIR"/sr_subscribe_ftp_f70_*.log* | grep -v DEBUG | wc -l`"
-  totsubftp=$(( totsubftp + tot ))
-  countthem "`grep 'removed' "$LOGDIR"/sr_subscribe_ftp_f70_*.log* | grep -v DEBUG | wc -l`"
-  totsubftp=$(( totsubftp + tot ))
-
-  countthem "`grep 'downloaded to:' "$LOGDIR"/sr_subscribe_cp_f61_*.log* | grep -v DEBUG | wc -l`"
-  totsubcp="${tot}"
-  countthem "`grep 'hardlink' "$LOGDIR"/sr_subscribe_cp_f61_*.log* | grep -v DEBUG | wc -l`"
-  totsubcp=$(( totsubcp + tot ))
-  countthem "`grep 'symlinked to' "$LOGDIR"/sr_subscribe_cp_f61_*.log* | grep -v DEBUG | wc -l`"
-  totsubcp=$(( totsubcp + tot ))
-  countthem "`grep 'removed' "$LOGDIR"/sr_subscribe_cp_f61_*.log* | grep -v DEBUG | wc -l`"
-  totsubcp=$(( totsubcp + tot ))
-
-  countthem "`grep 'post_log notice' $srposterlog | grep -v DEBUG | grep -v shim | grep -v DEBUG | wc -l`"
+  countthem "`grep 'post_log notice' $srposterlog | grep -v DEBUG | grep -v shim | wc -l`"
   totpost1="${tot}"
 
-  countthem "`grep 'published:' $srposterlog | grep -v DEBUG | grep shim | grep -v DEBUG | wc -l`"
+  countthem "`grep 'published:' $srposterlog | grep -v DEBUG | grep shim | wc -l`"
   totshimpost1="${tot}"
 
-  countthem "`grep post_log "$LOGDIR"/sr_sarra_download_f20_*.log* | grep -v DEBUG | wc -l`"
+  countthem "`grep 'post_log notice' "$LOGDIR"/sr_sarra_download_f20_*.log* | grep -v DEBUG | wc -l`"
   totsarp="${tot}"
 
   if [[ ! "$C_ALSO" && ! -d "$SARRAC_LIB" ]]; then
@@ -254,10 +233,10 @@ function countall {
   countthem "`grep 'file_log downloaded ' $LOGDIR/sr_subscribe_cfile_f44_*.log* | grep -v DEBUG | wc -l`"
   totcfile="${tot}"
 
-  sumlogs post_total $LOGDIR/sr_shovel_pclean_f90*.log
+  countthem "`grep 'post_log notice' "$LOGDIR"/sr_shovel_pclean_f90*.log* | grep -v DEBUG | wc -l`"
   totpropagated="${tot}"
 
-  sumlogs post_total $LOGDIR/sr_shovel_pclean_f92*.log
+  countthem "`grep 'post_log notice' "$LOGDIR"/sr_shovel_pclean_f92*.log* | grep -v DEBUG | wc -l`"
   totremoved="${tot}"
 
   # flags when two lines include *msg_log received* (with no other message between them) indicating no user will know what happenned.
