@@ -161,22 +161,22 @@ function countall {
   sumlogs msg_total $LOGDIR/sr_shovel_t_dd2_f00_*.log*
   totshovel2="${tot}"
 
-  countthem "`grep 'post_log notice' "$LOGDIR"/sr_winnow*.log* | wc -l`"
+  countthem "`grep '\[INFO\] post_log notice' "$LOGDIR"/sr_winnow*.log* | wc -l`"
   totwinpost="${tot}"
 
   countthem "`grep truncating "$LOGDIR"/sr_sarra_download_f20_*.log* | grep -v DEBUG | wc -l`"
   totshortened="${tot}"
 
-  countthem "`grep '\[INFO\] post_log' "$LOGDIR"/sr_watch_f40_*.log* | grep -v DEBUG | wc -l`"
+  countthem "`grep '\[INFO\] post_log' "$LOGDIR"/sr_watch_f40_*.log* | wc -l`"
   totwatch="${tot}"
 
   sumlogs msg_total $LOGDIR/sr_subscribe_t_f30_*.log*
   totmsgt="${tot}"
 
-  countthem "`grep 'file_log downloaded to:' "$LOGDIR"/sr_subscribe_t_f30_*.log* | grep -v DEBUG | wc -l`"
+  countthem "`grep '\[INFO\] file_log downloaded to:' "$LOGDIR"/sr_subscribe_t_f30_*.log* | wc -l`"
   totfilet="${tot}"
 
-  countthem "`grep 'post_log notice' "$LOGDIR"/sr_sender_tsource2send_f50_*.log* | grep -v DEBUG | wc -l`"
+  countthem "`grep '\[INFO\] post_log notice' "$LOGDIR"/sr_sender_tsource2send_f50_*.log* | wc -l`"
   totsent="${tot}"
 
   no_hardlink_events='downloaded to:|symlinked to|removed'
@@ -190,53 +190,53 @@ function countall {
   countthem "`grep -E "$all_events" "$LOGDIR"/sr_subscribe_q_f71_*.log* | grep -v DEBUG | wc -l`"
   totsubq="${tot}"
 
-  countthem "`grep 'post_log notice' "$LOGDIR"/sr_poll_f62_*.log* | grep -v DEBUG | wc -l`"
+  countthem "`grep '\[INFO\] post_log notice' "$LOGDIR"/sr_poll_f62_*.log* | wc -l`"
   totpoll1="${tot}"
 
-  countthem "`grep 'post_log notice' $srposterlog | grep -v DEBUG | grep -v shim | wc -l`"
+  countthem "`grep '\[INFO\] post_log notice' $srposterlog | grep -v shim | wc -l`"
   totpost1="${tot}"
 
-  countthem "`grep 'published:' $srposterlog | grep -v DEBUG | grep shim | wc -l`"
+  countthem "`grep '\[INFO\] published:' $srposterlog | grep shim | wc -l`"
   totshimpost1="${tot}"
 
-  countthem "`grep 'post_log notice' "$LOGDIR"/sr_sarra_download_f20_*.log* | grep -v DEBUG | wc -l`"
+  countthem "`grep '\[INFO\] post_log notice' "$LOGDIR"/sr_sarra_download_f20_*.log* | wc -l`"
   totsarp="${tot}"
 
   if [[ ! "$C_ALSO" && ! -d "$SARRAC_LIB" ]]; then
      return
   fi
 
-  countthem "`grep 'received:' $LOGDIR/sr_cpump_pelle_dd1_f04_*.log* | grep -v DEBUG | wc -l`"
+  countthem "`grep '\[INFO\] received:' $LOGDIR/sr_cpump_pelle_dd1_f04_*.log* | wc -l`"
   totcpelle04r="${tot}"
 
-  countthem "`grep 'published:' $LOGDIR/sr_cpump_pelle_dd1_f04_*.log* | grep -v DEBUG | wc -l`"
+  countthem "`grep '\[INFO\] published:' $LOGDIR/sr_cpump_pelle_dd1_f04_*.log* | wc -l`"
   totcpelle04p="${tot}"
 
-  countthem "`grep 'received:' $LOGDIR/sr_cpump_pelle_dd2_f05_*.log* | grep -v DEBUG | wc -l`"
+  countthem "`grep '\[INFO\] received:' $LOGDIR/sr_cpump_pelle_dd2_f05_*.log* | wc -l`"
   totcpelle05r="${tot}"
 
-  countthem "`grep 'published:' $LOGDIR/sr_cpump_pelle_dd2_f05_*.log* | grep -v DEBUG | wc -l`"
+  countthem "`grep '\[INFO\] published:' $LOGDIR/sr_cpump_pelle_dd2_f05_*.log* | wc -l`"
   totcpelle05p="${tot}"
 
-  countthem "`grep 'published:' $LOGDIR/sr_cpump_xvan_f14_*.log* | grep -v DEBUG | wc -l`"
+  countthem "`grep '\[INFO\] published:' $LOGDIR/sr_cpump_xvan_f14_*.log* | wc -l`"
   totcvan14p="${tot}"
 
-  countthem "`grep 'published:' $LOGDIR/sr_cpump_xvan_f15_*.log* | grep -v DEBUG | wc -l`"
+  countthem "`grep '\[INFO\] published:' $LOGDIR/sr_cpump_xvan_f15_*.log* | wc -l`"
   totcvan15p="${tot}"
 
-  countthem "`grep 'published:' $LOGDIR/sr_cpost_veille_f34_*.log* | grep -v DEBUG | wc -l`"
+  countthem "`grep '\[INFO\] published:' $LOGDIR/sr_cpost_veille_f34_*.log* | wc -l`"
   totcveille="${tot}"
 
-  countthem "`grep 'file_log downloaded ' $LOGDIR/sr_subscribe_cdnld_f21_*.log* | grep -v DEBUG | wc -l`"
+  countthem "`grep '\[INFO\] file_log downloaded ' $LOGDIR/sr_subscribe_cdnld_f21_*.log* | wc -l`"
   totcdnld="${tot}"
 
-  countthem "`grep 'file_log downloaded ' $LOGDIR/sr_subscribe_cfile_f44_*.log* | grep -v DEBUG | wc -l`"
+  countthem "`grep '\[INFO\] file_log downloaded ' $LOGDIR/sr_subscribe_cfile_f44_*.log* | wc -l`"
   totcfile="${tot}"
 
-  countthem "`grep 'post_log notice' "$LOGDIR"/sr_shovel_pclean_f90*.log* | grep -v DEBUG | wc -l`"
+  countthem "`grep '\[INFO\] post_log notice' "$LOGDIR"/sr_shovel_pclean_f90*.log* | wc -l`"
   totpropagated="${tot}"
 
-  countthem "`grep 'post_log notice' "$LOGDIR"/sr_shovel_pclean_f92*.log* | grep -v DEBUG | wc -l`"
+  countthem "`grep '\[INFO\] post_log notice' "$LOGDIR"/sr_shovel_pclean_f92*.log* | wc -l`"
   totremoved="${tot}"
 
   # flags when two lines include *msg_log received* (with no other message between them) indicating no user will know what happenned.
