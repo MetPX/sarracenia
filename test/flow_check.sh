@@ -38,7 +38,7 @@ else
 fi
 
 function summarizelogs {
-    printf "\n$1 Summary:\n\n"
+    printf "\n$1 Summary:\n"
     fcc="$LOGDIR"/flowcheck_$1_count.txt
     grep -E -h -o "\[$1\] *[^ ^/][^ ]+ [^/]|\[$1\] *[^ ^/][^ ]+ /|\[$1\] /" "$LOGDIR"/*.log* | sort | uniq -c | sort -n -r  > ${fcc}
     NERROR=`grep $1 ${fcc} | wc -l`
