@@ -82,7 +82,7 @@ function tallyres {
    # 
    # logic:
    # increment test number (tno)
-   # compare first and second totals, and report agreement if within 10% of one another.
+   # compare first and second totals, and report agreement of one another.
    # emit description based on agreement.  Arguments:
    # 1 - value obtained 
    # 2 - value expected
@@ -99,6 +99,7 @@ function tallyres {
    else
       printf "test %2d success: ${1} of ${2}: ${3}\n" ${tno}
       passedno=$((${passedno}+1))
+      return 0
    fi
 
 }

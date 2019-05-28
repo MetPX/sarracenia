@@ -135,7 +135,7 @@ echo "                 | C          routing |"
 
 fi
 
-calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed (sample size: $totsarra) !"
+tallyres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed (sample size: $totsarra) !"
 results=$?
 
 # PAS missed_dispositions means definite Sarra bug, very serious.
