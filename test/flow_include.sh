@@ -136,7 +136,7 @@ function sumlogs {
   shift
   tot=0
   for l in $*; do
-     to_add="`grep $pat $l | grep -v DEBUG | tail -1 | awk ' { print $5; }; '`"
+     to_add="`grep "\[INFO\] $pat" $l | tail -1 | awk ' { print $5; }; '`"
      if [ "$to_add" ]; then
           tot=$((${tot}+${to_add}))
      fi
