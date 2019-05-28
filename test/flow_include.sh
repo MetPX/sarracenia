@@ -145,7 +145,7 @@ function sumlogs {
 
 function countall {
 
-  sumlogs msg_total $LOGDIR/sr_report_tsarra_f20_*.log
+  sumlogs msg_total $LOGDIR/sr_report_tsarra_f20_*.log*
   totsarra="${tot}"
 
   sumlogs msg_total $LOGDIR/sr_report_twinnow00_f10_*.log*
