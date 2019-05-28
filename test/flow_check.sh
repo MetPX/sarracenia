@@ -48,7 +48,7 @@ function summarizelogs {
             msg_prefix=`echo ${p} | cut -d' ' -f3-`
             filelist=($(grep -l "\[$1\] *$msg_prefix" "$LOGDIR"/*.log*))
             if [[ -z "$filelist" ]]; then
-                # Fail proof against an empty string (although the odds are against it) the loop wont stop there
+                # Fail proof against an empty string (although the odds are against it) so the loop wont crash there
                 continue
             fi
             first_filename=`basename ${filelist[0]} | sed 's/ /\n/g' | sed 's|.*\/||g' | sed 's/_[0-9][0-9]\.log\|.log//g' | uniq`
@@ -138,9 +138,8 @@ fi
 tallyres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed (sample size: $totsarra) !"
 results=$?
 
-# PAS missed_dispositions means definite Sarra bug, very serious.
-
 if (("${missed_dispositions}">0)); then
+   # PAS missed_dispositions means definite Sarra bug, very serious.
    echo "Please review $missedreport"
    results=1
 fi
