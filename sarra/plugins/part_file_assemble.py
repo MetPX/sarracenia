@@ -21,10 +21,8 @@ class Part_File_Assemble(object):
 
 	def perform(self, parent):
 		try: 
-			import sr_assemble as sr_assemble
 			import sr_file as sr_file
 		except: 
-			import sarra.sr_assemble as sr_assemble
 			import sarra.sr_file as sr_file
 
 		# Check if part file arrived
