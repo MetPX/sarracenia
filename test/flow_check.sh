@@ -38,12 +38,13 @@ else
 fi
 
 function summarizelogs {
-    printf "\n$1 Summary:\n"
-    grep -E -h -o "\[$1\] *[^ ^/][^ ]+ [^/]|\[$1\] *[^ ^/][^ ]+ /|\[$1\] /" "$LOGDIR"/*.log* | sort | uniq -c | sort -r  > "$LOGDIR"/flowcheck_$1count.txt
-    NERROR=`grep $1 "$LOGDIR"/flowcheck_$1count.txt | wc -l`
+    printf "\n$1 Summary:\n\n"
+    fcc="$LOGDIR"/flowcheck_$1_count.txt
+    grep -E -h -o "\[$1\] *[^ ^/][^ ]+ [^/]|\[$1\] *[^ ^/][^ ]+ /|\[$1\] /" "$LOGDIR"/*.log* | sort | uniq -c | sort -n -r  > ${fcc}
+    NERROR=`grep $1 ${fcc} | wc -l`
 
     if (($NERROR>0)); then
-       fcel="$LOGDIR"/flowcheck_$1slogged.txt
+       fcl="$LOGDIR"/flowcheck_$1_logged.txt
        while read p; do
             msg_prefix=`echo ${p} | cut -d' ' -f3-`
             filelist=($(grep -l "\[$1\] *${msg_prefix}" "$LOGDIR"/*.log*))
@@ -57,15 +58,15 @@ function summarizelogs {
             echo "  `echo ${p} | awk '{print $1;}'`%${first_filename}%(${files_nb} file)%$msg"
             echo ${filelist[@]} | sed 's/^//g' | sed 's/ \//\n\//g'
             echo -e
-       done < "$LOGDIR"/flowcheck_$1count.txt > ${fcel}
+       done < ${fcc} > ${fcl}
 
-       result=`grep -c $1 ${fcel}`
+       result=`grep -c $1 ${fcl}`
        if [[ ${result} -gt 10 ]]; then
-           grep $1 ${fcel} | head | column -t -s % | cut -c -135
+           grep $1 ${fcl} | head | column -t -s % | cut -c -130
            echo
-           echo "More than 10 TYPES OF $1S found... for the rest, have a look at $fcel for details"
+           echo "More than 10 TYPES OF $1S found... for the rest, have a look at $fcl for details"
        else
-           grep $1 ${fcel} | column -t -s % | cut -c -135
+           grep $1 ${fcl} | column -t -s % | cut -c -130
        fi
     else
        echo NO $1S IN LOGS
