@@ -91,13 +91,13 @@ function tallyres {
    tno=$((${tno}+1))
 
    if [ ${1} -ne ${2} -o ${2} -eq 0 ]; then
-      printf "test %2d FAILURE: ${1} of ${2}: ${3}\n" ${tno}
+      printf "test %2d FAILURE: ${3}\n" ${tno}
       if [ "$4" ]; then
          tno=$((${tno}-1))
       fi    
       return 1
    else
-      printf "test %2d success: ${1} of ${2}: ${3}\n" ${tno}
+      printf "test %2d success: ${3}\n" ${tno}
       passedno=$((${passedno}+1))
       return 0
    fi
