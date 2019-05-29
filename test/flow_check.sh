@@ -43,29 +43,29 @@ function summarizelogs {
     NERROR=`grep $1 "$LOGDIR"/flowcheck_$1count.txt | wc -l`
 
     if (($NERROR>0)); then
-       fcel="$LOGDIR"/flow_check_$1s_logged.txt
+       fcel="$LOGDIR"/flowcheck_$1slogged.txt
        while read p; do
             msg_prefix=`echo ${p} | cut -d' ' -f3-`
-            filelist=($(grep -l "\[$1\] *$msg_prefix" "$LOGDIR"/*.log*))
+            filelist=($(grep -l "\[$1\] *${msg_prefix}" "$LOGDIR"/*.log*))
             if [[ -z "$filelist" ]]; then
                 # Fail proof against an empty string (although the odds are against it) so the loop wont crash there
                 continue
             fi
             first_filename=`basename ${filelist[0]} | sed 's/ /\n/g' | sed 's|.*\/||g' | sed 's/_[0-9][0-9]\.log\|.log//g' | uniq`
-            msg=`grep -o -m 1 "\[$1\] *$msg_prefix.*" ${filelist[0]}`
+            msg=`grep -o -m 1 "\[$1\] *${msg_prefix}.*" ${filelist[0]}`
             files_nb=${#filelist[@]}
-            echo "    " "`echo ${p} | awk '{print $1;}'`" "${first_filename}" "(${files_nb} file)" "$msg"
+            echo "    %`echo ${p} | awk '{print $1;}'`%${first_filename}%(${files_nb} file)%$msg"
             echo ${filelist[@]} | sed 's/^//g' | sed 's/ \//\n\//g'
             echo -e
        done < "$LOGDIR"/flowcheck_$1count.txt > ${fcel}
 
        result=`grep -c $1 ${fcel}`
        if [[ ${result} -gt 10 ]]; then
-           grep $1 ${fcel} | head | cut -c -130
+           grep $1 ${fcel} | head | column -t -s % | cut -c -130
            echo
            echo "More than 10 TYPES OF $1S found... for the rest, have a look at $fcel for details"
        else
-           grep $1 ${fcel} | cut -c -130
+           grep $1 ${fcel} | column -t -s % | cut -c -130
        fi
     else
        echo NO $1S IN LOGS
