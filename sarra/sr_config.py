@@ -1959,7 +1959,7 @@ class sr_config:
                          self.inflight = words[1] 
                      n = 2
 
-                elif words0 in [ 'log_reject', 'lr' ]: # See: sr_sarra.8
+                elif words0 in [ 'log_reject' ]: # See: sr_sarra.8
                      if (words1 is None) or words[0][0:1] == '-' : 
                         self.log_reject = True
                         n = 1
