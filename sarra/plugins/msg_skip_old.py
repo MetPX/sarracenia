@@ -45,9 +45,9 @@ class Transformer(object):
         msg    = parent.msg
 
         import calendar
+        from sarra.sr_util import timestr2flt
 
-        mt=msg.time
-        then=calendar.timegm(time.strptime(mt[:mt.find('.')],"%Y%m%d%H%M%S")) + float(mt[mt.find('.'):])
+        then=timestr2flt(msg.pubtime)
         now=time.time()
 
         # Set the maximum age, in seconds, of a message to retrieve.

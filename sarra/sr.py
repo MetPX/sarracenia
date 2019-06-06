@@ -5,8 +5,8 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
 #
 # Questions or bugs report: dps-client@ec.gc.ca
-# sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
+# Sarracenia repository: https://github.com/MetPX/sarracenia
+# Documentation: https://github.com/MetPX/sarracenia
 #
 # sr.py : python3 program starting an environment of sarra processes
 #         found under ~/.config/sarra/*
@@ -20,8 +20,7 @@
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+#  the Free Software Foundation; version 2 of the License.
 #
 #  This program is distributed in the hope that it will be useful, 
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of 
@@ -58,12 +57,9 @@ except :
          from sarra.sr_watch     import *
          from sarra.sr_winnow    import *
 
-cfg    = sr_config()
-action = sys.argv[-1]
 
-#cfg.configure()
-#cfg.loglevel = logging.DEBUG
-#cfg.setlog()
+# Uses sr_instances to get a good logger
+cfg = sr_instances()
 
 # instantiate each program  with its configuration file
 # and invoke action if one of cleanup,declare,setup
@@ -100,7 +96,7 @@ def instantiate(dirconf,pgm,confname,action):
             elif  pgm == 'report':    inst = sr_report   (config,[action])
             elif  pgm == 'audit':     inst = sr_audit    (config,[action])
             else: 
-                  print("code not configured for process type sr_%s" % pgm)
+                  cfg.logger.error("code not configured for process type sr_%s" % pgm)
                   sys.exit(1)
 
             if    action == 'cleanup': inst.exec_action('cleanup',False)
@@ -112,7 +108,7 @@ def instantiate(dirconf,pgm,confname,action):
             sys.argv[0] = orig
 
     except:
-            print("could not instantiate and run sr_%s %s %s" % (pgm,action,confname))
+            cfg.logger.error("could not instantiate and run sr_%s %s %s" % (pgm,action,confname))
             sys.exit(1)
 
       
@@ -137,6 +133,23 @@ def invoke(dirconf,pgm,confname,action):
              # sr_post needs -c with absolute confpath
 
              confpath = dirconf + os.sep + pgm + os.sep + confname
+             sleeps=False
+
+             if ( action == 'status' ) :
+                 f=open(confpath,'r')
+                 for li in f.readlines():
+                     l = li.split()
+                     if len(l) < 2 :
+                        continue
+
+                     if l[0] == 'sleep' :
+                        if  float(l[1]) > 0:
+                           sleeps=True
+                 f.close()
+
+             if not sleeps:
+                 return
+
              post = sr_post(confpath)
 
              cfg.logger.debug("INVOKE %s %s %s %s" % (program,'-c',confpath,action))
@@ -144,8 +157,8 @@ def invoke(dirconf,pgm,confname,action):
              return
 
     except :
-             (stype, svalue, tb) = sys.exc_info()
-             print("sr/invoke Type: %s, Value: %s" % (stype, svalue) )
+             cfg.logger.error("Invoke failed")
+             cfg.logger.debug('Exception details: ', exc_info=True)
 
 
 # check number of config files
@@ -213,21 +226,27 @@ def main():
 
     if action == 'list' :
        if config :
-             result = cfg.find_conf_file(config)
-             if  not result :
-                 print("no file named %s found in all sarra configs" % config )
-                 sys.exit(1)
-             cfg.list_file(result)
+           if config == 'plugins' :
+               cfg.print_configdir("packaged plugins",           cfg.package_dir     +os.sep+ 'plugins')
+               cfg.print_configdir("user plugins",               cfg.user_config_dir +os.sep+ 'plugins')
+
+           else:
+               result = cfg.find_conf_file(config)
+               if  not result :
+                   print("no file named %s found in all sarra configs" % config )
+                   sys.exit(1)
+               cfg.list_file(result)
        else:
-             cfg.print_configdir("packaged plugins",           cfg.package_dir     +os.sep+ 'plugins')
              for d in sorted(cfg.programs):
                  cfg.print_configdir("configuration examples", cfg.package_dir     +os.sep+ 'examples' +os.sep+ d)
-             cfg.print_configdir("user plugins",               cfg.user_config_dir +os.sep+ 'plugins')
              cfg.print_configdir("general",                    cfg.user_config_dir )
              for d in sorted(cfg.programs):
                  cfg.print_configdir("user configurations",    cfg.user_config_dir + os.sep + d)
-
        sys.exit(0)
+
+    # Init logger here
+    cfg.build_instance(1)
+    cfg.setlog()
 
     # loop on all possible programs ... add audit
     programs = ['audit']

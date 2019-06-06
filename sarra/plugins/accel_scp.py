@@ -111,7 +111,8 @@ class ACCEL_SCP(object):
        result = p.returncode
 
        if result != 0:  # Failed!
-          logger.error("%s" % outstr)
+          for line in outstr.splitlines():
+              logger.error("%s" % line.decode('utf-8') )
           return False 
 
        return True
@@ -144,7 +145,8 @@ class ACCEL_SCP(object):
        result = p.returncode
 
        if result != 0:  # Failed!
-          logger.error("%s" % outstr)
+          for line in outstr.splitlines():
+              logger.error("%s" % outstr.decode('utf-8') )
           return False 
 
        return True

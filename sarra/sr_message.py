@@ -5,8 +5,8 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
 #
 # Questions or bugs report: dps-client@ec.gc.ca
-# sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
+# Sarracenia repository: https://github.com/MetPX/sarracenia
+# Documentation: https://github.com/MetPX/sarracenia
 #
 # sr_message.py : python3 utility tools for sarracenia amqp message processing
 #
@@ -19,8 +19,7 @@
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+#  the Free Software Foundation; version 2 of the License.
 #
 #  This program is distributed in the hope that it will be useful, 
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of 
@@ -35,14 +34,25 @@
 
 import calendar,os,socket,sys,time,urllib,urllib.parse
 
+from sys import platform as _platform
+
+from codecs import decode,encode
+
+import json
+
 # AMQP limits headers to 'short string', or 255 characters, so truncate and warn.
 amqp_ss_maxlen = 253
+
+from base64 import b64decode, b64encode
+from mimetypes import guess_type
 
 
 try :
          from sr_util         import *
+         from sr_xattr        import *
 except :
          from sarra.sr_util    import *
+         from sarra.sr_xattr   import *
 
 class sr_message():
 
@@ -55,6 +65,11 @@ class sr_message():
         self.message_ttl   = 0
         self.exchange      = None
         self.report_exchange  = parent.report_exchange
+        self.topic_prefix  = parent.topic_prefix
+        self.version  = parent.version
+        self.log_reject  = parent.log_reject
+        self.post_topic_prefix  = parent.post_topic_prefix
+        self.post_version  = parent.post_version
         self.report_publisher = None
         self.publisher     = None
         self.pub_exchange  = None
@@ -65,6 +80,21 @@ class sr_message():
         self.partstr       = None
         self.sumstr        = None
         self.sumflg        = None
+
+        # Default value for parts attributes
+        self.chunksize = None
+        self.length = None
+        self.block_count = None
+        self.remainder = None
+        self.current_block = None
+        self.lastchunk = None
+        self.offset = None
+        self.filesize = None
+
+        self.inline = parent.inline
+        self.inline_max = parent.inline_max
+        self.post_base_dir = parent.post_base_dir
+        self.inline_encoding = parent.inline_encoding
 
         self.part_ext      = 'Part'
 
@@ -90,7 +120,7 @@ class sr_message():
         self.new_file      = None
         self.new_baseurl   = None
         self.new_relpath   = None
-
+        self.to_clusters = []
 
     def change_partflg(self, partflg ):
         self.partflg       =  partflg 
@@ -99,15 +129,17 @@ class sr_message():
 
     def content_should_not_be_downloaded(self):
         """
-        if the file advertised is newer than the local one, and it has a different checksum, return True.
+        if the file advertised is newer than the local one, and it has a different checksum, return False.
 
         """
-        fname = "%s%s%s" %  (self.new_dir, os.sep, self.new_file )
-        self.logger.debug("sr_message content_match %s" % (fname ) )
+        fname = "%s%s%s" %  (self.new_dir, '/', self.new_file )
+        self.logger.debug("sr_csnbd start %s" % (fname ) )
         
         self.local_checksum = None
 
-        if not os.path.isfile(fname) : return False
+        if not os.path.isfile(fname) : 
+           self.logger.debug("sr_csnbd content_match %s, file does not currently exist." % (fname ) )
+           return False
 
         # insert : file big enough to compute part checksum ?
 
@@ -118,6 +150,7 @@ class sr_message():
         # compare sizes... if (sr_subscribe is downloading partitions into taget file) and (target_file isn't fully done)
         # This check prevents random halting of subscriber (inplace on) if the messages come in non-sequential order
         if (self.target_file == self.new_file) and (fsiz != self.filesize):
+          self.logger.debug("sr_csnbd %s file size different, so cannot be the same" % (fname ) )
           return False
 
         # compare dates...
@@ -125,24 +158,50 @@ class sr_message():
         if self.parent.preserve_time and 'mtime' in self.headers:
             new_mtime = timestr2flt(self.headers[ 'mtime' ])
             if new_mtime <= lstat[stat.ST_MTIME]:
+               self.logger.debug("sr_csnbd %s new version not newer" % (fname ) )
+               if self.log_reject:
+                   self.logger.info("rejected: mtime not newer %s " % (fname ) )
                return True
 
-        if self.sumflg in ['0','n','z'] : 
+        if self.sumflg in [ '0', 'n', 'z'] : 
+            self.logger.debug("sr_csnbd content_match %s sum 0/n/z never matches" % (fname ) )
             return False
  
         if end > fsiz :
-           self.logger.debug("sr_message content_match file not big enough... considered different")
+           self.logger.debug("sr_csnbd content_match file not big enough... considered different")
            return False
 
         try   : self.compute_local_checksum()
         except: 
-                self.logger.debug("sr_message something went wrong when computing local checksum... considered different")
+                self.logger.debug("sr_csnbd something went wrong when computing local checksum... considered different")
                 return False
 
-        return self.local_checksum == self.checksum
+        self.logger.debug( "sr_csnbd checksum in message: %s vs. local: %s" % ( self.local_checksum, self.checksum ) ) 
+
+        if self.local_checksum == self.checksum:
+            if self.log_reject:
+                 self.logger.info( "rejected: same checksum %s " % (fname ) )
+            return True
+        else:
+            return False
+        #return self.local_checksum == self.checksum
 
     def compute_local_checksum(self):
         self.logger.debug("sr_message compute_local_checksum new_dir=%s, new_file=%s" % ( self.new_dir, self.new_file ) )
+
+        if supports_extended_attributes:
+            try:
+                x = sr_xattr( os.path.join(self.new_dir, self.new_file) )
+                s = x.get( 'sum' )
+
+                if s:
+                   self.local_checksum = s.split(',')[-1]
+                   return
+
+            except:
+                pass
+
+        self.logger.debug("checksum extracted by reading file/calculating")
 
         bufsize = self.bufsize
         if self.length < bufsize : bufsize = self.length
@@ -166,8 +225,21 @@ class sr_message():
 
         self.local_checksum = self.sumalgo.get_value()
 
+    def convert_partsv2tov3(self):
+        self.headers['size'] = self.length
+        if self.partflg not in ['0', '1']:
+            self.headers['blocks'] = {}
+            self.headers['blocks']['method'] = {'i': 'inplace', 'p': 'partitioned'}[self.partflg]
+            self.headers['blocks']['size'] = str(self.chunksize)
+            self.headers['blocks']['count'] = str(self.block_count)
+            self.headers['blocks']['remainder'] = str(self.remainder)
+            self.headers['blocks']['number'] = str(self.current_block)
 
     def from_amqplib(self, msg=None ):
+        """
+            This routine does a minimal decode of raw messages from amqplib
+            raw messages are also decoded by sr_retry/msgToJSON, so must match the two. 
+        """
 
         self.start_timer()
 
@@ -177,11 +249,65 @@ class sr_message():
            self.topic     = msg.delivery_info['routing_key']
            self.topic     = self.topic.replace('%20',' ')
            self.topic     = self.topic.replace('%23','#')
-           self.headers   = msg.properties['application_headers']
-           self.notice    = msg.body
+           if msg.body[0] == '[' :
+               self.pubtime, self.baseurl, self.relpath, self.headers = json.loads(msg.body)
+               self.notice = "%s %s %s" % ( self.pubtime, self.baseurl, self.relpath )
+           elif msg.body[0] == '{' :
+               self.headers = json.loads(msg.body)
+               self.pubtime = self.headers[ "pubTime" ]
+               self.baseurl = self.headers[ "baseUrl" ]
+               self.relpath = self.headers[ "relPath" ]
+               self.notice = "%s %s %s" % ( self.pubtime, self.baseurl, self.relpath )
+               if "integrity" in self.headers.keys():
+                   sum_algo_v3tov2 = { "arbitrary":"a", "md5":"d", "sha512":"s", "md5name":"n", "random":"0", "link":"L", "remove":"R", "cod":"z" }
+                   if type( self.headers[ "integrity" ] ) is str:
+                       self.headers[ "integrity" ] = json.loads( self.headers[ "integrity" ] )
+                   sa = sum_algo_v3tov2[ self.headers[ "integrity" ][ "method" ] ]
+
+                   # transform sum value
+                   if sa in [ '0' ]:
+                       sv = self.headers[ "integrity" ][ "value" ]
+                   elif sa in [ 'z' ]:
+                       sv = sum_algo_v3tov2[ self.headers[ "integrity" ][ "value" ] ]
+                   else:
+                       sv = encode( decode( self.headers[ "integrity" ][ "value" ].encode('utf-8'), "base64" ), 'hex' ).decode('utf-8')
+                   # set event.
+                   if sa == 'L' :
+                       self.event = 'link'
+                   elif sa == 'R':
+                       self.event = 'delete'
+                   else:
+                       self.event = 'modify'
+
+                   self.headers[ "sum" ] = sa + ',' + sv
+                   self.sumstr = self.headers['sum']
+                   del self.headers['integrity']
+               if 'size' in self.headers.keys():
+                   parts_map = {'inplace': 'i', 'partitioned': 'p'}
+                   if 'blocks' not in self.headers.keys():
+                       self.set_parts('1', int(self.headers['size']))
+                   else:
+                       self.set_parts(parts_map[self.headers['blocks']['method']], int(self.headers['blocks']['size']),
+                                      int(self.headers['blocks']['count']), int(self.headers['blocks']['remainder']),
+                                      int(self.headers['blocks']['number']))
+                       del self.headers['blocks']
+                   del self.headers['size']
+           else:
+               if 'application_headers' in msg.properties.keys():
+                   self.headers = msg.properties['application_headers']
+
+               if type(msg.body) == bytes: 
+                    self.notice = msg.body.decode("utf-8")
+               else:
+                    self.notice = msg.body
+
+               if 'pulse' in self.topic:
+                   self.pubtime = self.notice.split(' ')[0]
+               else:
+                   self.pubtime, self.baseurl, self.relpath = self.notice.split(' ')[0:3]
+
            self.isRetry   = msg.isRetry
 
-           if type(self.notice) == bytes: self.notice = self.notice.decode("utf-8")
 
         # pulse message... parse it
         # exchange='v02.pulse'
@@ -193,8 +319,8 @@ class sr_message():
            self.isPulse = True
 
            # parse pulse notice
-           token     = self.notice.split(' ')
-           self.time = token[0]
+           token        = self.notice.split(' ')
+           self.pubtime = token[0]
            self.set_msg_time()
 
            # pulse message
@@ -220,15 +346,12 @@ class sr_message():
 
            path  = token[2].strip('/')
            words = path.split('/')
-           self.topic    = 'v02.post.' + '.'.join(words[:-1])
+           self.topic    = self.post_topic_prefix + '.'.join(words[:-1])
            self.logger.debug(" modified for topic = %s" % self.topic)
 
         # adjust headers from -headers option
 
         self.trim_headers()
-
-        self.partstr     = None
-        self.sumstr      = None
 
         token        = self.topic.split('.')
         self.version = token[0]
@@ -236,7 +359,7 @@ class sr_message():
         if self.version == 'v00' :
            self.parse_v00_post()
 
-        if self.version == 'v02' :
+        else:
            self.parse_v02_post()
 
     def get_elapse(self):
@@ -246,8 +369,21 @@ class sr_message():
         self.code               = code
         self.headers['message'] = message
         self.report_topic          = self.topic.replace('.post.','.report.')
-        self.report_notice         = "%s %d %s %s %f" % \
-                                  (self.notice,self.code,self.host,self.user,self.get_elapse())
+     
+        # reports should not contain the inlined data.
+        if 'content' in self.headers:
+           del self.headers[ 'content' ]
+
+        e = self.get_elapse()
+
+        if self.topic_prefix.startswith('v03'):
+           self.headers['report'] = { "elapsedTime": e, "resultCode":self.code, \
+               "host":self.host, "user":self.user }
+
+        # v02 filler... remove 2020.
+        self.report_notice         = "%s %s %s %d %s %s %f" % \
+                (self.pubtime, self.baseurl, self.relpath, self.code, \
+                     self.host, self.user, e )
         self.set_hdrstr()
 
         # AMQP limits topic to 255 characters, so truncate and warn.
@@ -263,26 +399,28 @@ class sr_message():
 
 
         # if  there is a publisher
-
         if self.report_publisher != None :
 
            # run on_report plugins
+           ok=True
            for plugin in self.parent.on_report_list :
-               if not plugin(self.parent): return False
+               if not plugin(self.parent): 
+                   ok=False
+                   break
 
            # publish
-           self.report_publisher.publish(self.report_exchange,self.report_topic,self.report_notice,self.headers)
+           if ok:
+               self.report_publisher.publish(self.report_exchange,self.report_topic,self.report_notice,self.headers)
 
         self.logger.debug("%d %s : %s %s %s" % (code,message,self.report_topic,self.report_notice,self.hdrstr))
 
         # make sure not published again
-        del self.headers['message']
+        for i in [ 'message', 'report' ]:
+            if i in self.headers:
+                del self.headers[i]
 
     def parse_v00_post(self):
         token             = self.topic.split('.')
-        # v00             = token[0]
-        # dd              = token[1]
-        # notify          = token[2]
         self.version      = 'v02'
         self.mtype        = 'post'
         self.topic_prefix = 'v02.post'
@@ -309,12 +447,11 @@ class sr_message():
         self.sumstr  = 'd,%s' % self.checksum
         self.headers['sum'] = self.sumstr
 
-        self.to_clusters = []
         self.headers['to_clusters'] = None
 
         self.suffix  = ''
         
-        self.set_parts_str(self.partstr)
+        self.set_parts_from_str(self.partstr)
         self.set_sum_str(self.sumstr)
         self.set_suffix()
         self.set_hdrstr()
@@ -328,7 +465,7 @@ class sr_message():
         self.subtopic     = '.'.join(token[3:])
 
         token        = self.notice.split(' ')
-        self.time    = token[0]
+        self.pubtime = token[0]
         self.baseurl = token[1]
         self.relpath = token[2].replace(    '%20',' ')
         self.relpath = self.relpath.replace('%23','#')
@@ -336,26 +473,34 @@ class sr_message():
         self.url     = urllib.parse.urlparse(self.urlstr)
 
         if self.mtype == 'report' or self.mtype == 'log': # log included for compatibility... prior to rename..
-           self.report_code   = int(token[3])
-           self.report_host   = token[4]
-           self.report_user   = token[5]
-           self.report_elapse = float(token[6])
 
-        self.partstr = None
-        if 'parts'   in self.headers :
-           self.partstr  = self.headers['parts']
+           if self.version == 'v02':
+               self.report_code   = int(token[3])
+               self.report_host   = token[4]
+               self.report_user   = token[5]
+               self.report_elapse = float(token[6])
+           else:
+               ( self.report_elapse, self.report_code, self.report_host, self.report_user ) = self.headers['report'].split()
 
-        self.sumstr  = None
-        if 'sum'     in self.headers :
-           self.sumstr   = self.headers['sum']
+        if 'parts' in self.headers:
+           self.partstr = self.headers['parts']
 
-        self.to_clusters = []
-        if 'to_clusters' in self.headers :
-           self.to_clusters  = self.headers['to_clusters'].split(',')
+        if 'sum' in self.headers:
+           self.sumstr = self.headers['sum']
+           if self.sumstr[0] == 'R':
+              self.event = 'delete'
+           elif self.sumstr[0] == 'L':
+              self.event = 'link'
+           else:
+              self.event = 'modify'
+
+        if 'to_clusters' in self.headers:
+           self.to_clusters = self.headers['to_clusters'].split(',')
 
         self.suffix = ''
 
-        self.set_parts_str(self.partstr)
+        if self.partstr is not None:
+            self.set_parts_from_str(self.partstr)
         self.set_sum_str(self.sumstr)
         self.set_suffix()
         self.set_msg_time()
@@ -365,29 +510,67 @@ class sr_message():
         return '.%d.%d.%d.%d.%s.%s' %\
                (self.chunksize,self.block_count,self.remainder,self.current_block,self.sumflg,self.part_ext)
 
-    def publish(self):
+    def post(self,parent):
         ok = False
 
         if self.pub_exchange != None : self.exchange = self.pub_exchange
 
-        for h in self.headers:
-           if len(self.headers[h].encode("utf8")) >= amqp_ss_maxlen:
+        if not ( self.post_version == 'v03' ): 
+           # truncated content is useless, so drop it.
+           if 'content' in self.headers :
+               del self.headers['content']
 
-                # strings in utf, and if names have special characters, the length
-                # of the encoded string wll be longer than what is returned by len(. so actually need to look
-                # at the encoded length ...  len ( self.headers[h].encode("utf-8") ) < 255
-                # but then how to truncate properly. need to avoid invalid encodings.
-                mxlen=amqp_ss_maxlen
-                while( self.headers[h].encode("utf8")[mxlen-1] & 0xc0 == 0xc0 ):
-                      mxlen -= 1
+        elif ( self.headers[ 'sum' ][0] in [ 'L', 'R' ] ) :
+            # avoid inlining if it is a link or a remove.
+            pass
+        elif ( self.post_version == 'v03' ) and ( 'post' in self.post_topic_prefix ) \
+            and self.inline and not ( 'content' in self.headers ) :
+  
+            self.logger.debug("FIXME inlining possible headers: %s" % self.headers )
 
-                self.headers[h] = self.headers[h].encode("utf8")[0:mxlen].decode("utf8")
-                self.logger.warning( "truncating %s header at %d characters (to fit 255 byte AMQP limit) to: %s " % \
-                        ( h, len(self.headers[h]) , self.headers[h]) )
+            if 'size' in self.headers :
+                sz = int(self.headers[ 'size' ])
+            else:
+                sz = int( self.headers[ 'parts' ].split(',')[1] ) 
 
+            if ( sz < self.inline_max ) :
+    
+                fn = self.post_base_dir
+    
+                if fn[-1] != '/':
+                    fn = fn + os.path.sep
+    
+                if self.relpath[0] == '/':
+                    fn = fn +  self.relpath[1:]
+                else:
+                    fn = fn + self.relpath
+    
+                if os.path.isfile(fn):
+                    if self.inline_encoding == 'guess':
+                       e = guess_type(fn)[0]
+                       binary = not e or not ('text' in e )
+                    else:
+                       binary = (self.inline_encoding == 'text' )
+    
+                    f = open(fn,'rb')
+                    d = f.read()
+                    f.close()
+        
+                    if binary:
+                        self.headers[ "content" ] = { "encoding": "base64", "value": b64encode(d).decode('utf-8') }
+                    else:
+                        try:
+                            self.headers[ "content" ] = { "encoding": "utf-8", "value": d.decode('utf-8') }
+                        except:
+                            self.headers[ "content" ] = { "encoding": "base64", "value": b64encode(d).decode('utf-8') }
+    
         # AMQP limits topic to 255 characters, space and # replaced, if greater than limit : truncate and warn.
         self.topic = self.topic.replace(' ','%20')
         self.topic = self.topic.replace('#','%23')
+
+        if self.post_topic_prefix != self.topic_prefix:
+            self.topic = self.topic.replace(self.topic_prefix,self.post_topic_prefix,1)
+
         if len(self.topic.encode("utf8")) >= amqp_ss_maxlen :
            mxlen=amqp_ss_maxlen 
            # see truncation explanation from above.
@@ -400,28 +583,112 @@ class sr_message():
         
 
         # in order to split winnowing into multiple instances, directs items with same checksum
-        # to same shard. do that by keying on the last character of the checksum.
-        # 
+        # to same shard. do that by keying on a specific character in the checksum.
+        # TODO investigate as this would throw a TypeError if post_exchange_split is None
         if self.post_exchange_split > 0 :
-           suffix= "%02d" % ( ord(self.sumstr[-1]) % self.post_exchange_split )
-           self.logger.debug( "post_exchange_split set, keying on %s , suffix is %s" % ( self.sumstr[-1], suffix) )
+           if 'integrity' in self.headers : 
+               if self.headers['integrity']['method'] in ['cod','random']:
+                   suffix= "%02d" % ( ord(self.headers['integrity']['value'][-1]) % self.post_exchange_split )
+                   self.logger.debug( "post_exchange_split set, keying on %s , suffix is %s" % \
+                        ( self.headers['sum']['value'][-1], suffix) )
+               else: 
+                   # base64 encoding always ends with = or ==, so last char bad...
+                   suffix= "%02d" % ( ord(self.headers['integrity']['value'][-4]) % self.post_exchange_split )
+                   self.logger.debug( "post_exchange_split set, keying on %s , suffix is %s" % \
+                        ( self.headers['sum']['value'][-4], suffix) )
+           else:
+               suffix= "%02d" % ( ord(self.headers['sum'][-1]) % self.post_exchange_split )
+               self.logger.debug( "post_exchange_split set, keying on %s , suffix is %s" % ( self.headers['sum'][-1], suffix) )
         else:
            suffix=""
 
         if self.publisher != None :
-           ok = self.publisher.publish(self.exchange+suffix,self.topic,self.notice,self.headers,self.message_ttl)
+           if self.post_version == 'v03':
+               self.headers[ "pubTime" ] = timev2tov3str( self.pubtime )
+               if "mtime" in self.headers.keys():
+                   self.headers[ "mtime" ] = timev2tov3str( self.headers[ "mtime" ] )
+               if "atime" in self.headers.keys():
+                   self.headers[ "atime" ] = timev2tov3str( self.headers[ "atime" ] )
+               self.headers[ "baseUrl" ] = self.baseurl
+               self.headers[ "relPath" ] = self.relpath
+               
+               sum_algo_map = { "a":"arbitrary", "d":"md5", "s":"sha512", "n":"md5name", "0":"random", "L":"link", "R":"remove", "z":"cod" }
+               if 'sum' in self.headers:
+                   sm = sum_algo_map[ self.headers["sum"][0] ]
+                   if sm in [ 'random' ] :
+                       sv = self.headers["sum"][2:]
+                   elif sm in [ 'cod' ] :
+                       sv = sum_algo_map[ self.headers["sum"][2:] ]
+                   else:
+                       sv = encode( decode( self.headers["sum"][2:], 'hex'), 'base64' ).decode('utf-8').strip()
+                   self.headers[ "integrity" ] = { "method": sm, "value": sv }
+
+               if 'parts' in self.headers.keys():
+                   self.set_parts_from_str(self.headers['parts'])
+                   self.convert_partsv2tov3()
+
+               body = json.dumps({k: self.headers[k] for k in self.headers if k not in ['sum', 'parts']})
+
+               for plugin in parent.on_post_list:
+                    if not plugin(parent):
+                       return False
+             
+               if parent.outlet == 'json':
+                    parent.__print_json( self )
+               elif parent.outlet == 'url' :
+                    print( "%s/%s" % ( self.base_url, self.relpath ) )
+               else:
+                    ok = self.publisher.publish(self.exchange+suffix, self.topic, body, None, self.message_ttl)
+           else:
+               #in v02, sum is the correct header. FIXME: roundtripping not quite right yet.
+               if 'integrity' in self.headers.keys(): 
+                  del self.headers[ 'integrity' ]
+               if 'size' in self.headers.keys():
+                  del self.headers['size']
+               if 'blocks' in self.headers.keys():
+                  del self.headers['blocks']
+
+               for plugin in parent.on_post_list:
+                    if not plugin(parent):
+                       return False
+
+               for h in self.headers:
+                   # v02 wants simple strings, cannot have dicts like in v03.
+                   if type(self.headers[h]) is dict:
+                       self.headers[h] = json.dumps( self.headers[h] )
+
+                   if len(self.headers[h].encode("utf8")) >= amqp_ss_maxlen:
+
+                       # strings in utf, and if names have special characters, the length
+                       # of the encoded string wll be longer than what is returned by len(. so actually need to look
+                       # at the encoded length ...  len ( self.headers[h].encode("utf-8") ) < 255
+                       # but then how to truncate properly. need to avoid invalid encodings.
+                       mxlen=amqp_ss_maxlen
+                       while( self.headers[h].encode("utf8")[mxlen-1] & 0xc0 == 0xc0 ):
+                             mxlen -= 1
+
+                       self.headers[h] = self.headers[h].encode("utf8")[0:mxlen].decode("utf8")
+                       self.logger.warning( "truncating %s header at %d characters (to fit 255 byte AMQP limit) to: %s " % \
+                               ( h, len(self.headers[h]) , self.headers[h]) )
+
+               if parent.outlet == 'json':
+                    parent.__print_json( self.msg )
+               elif parent.outlet == 'url' :
+                    print( "%s/%s" % ( self.base_url, self.relpath ) )
+               else:
+                    ok = self.publisher.publish(self.exchange+suffix,self.topic,self.notice,self.headers,self.message_ttl)
 
         self.set_hdrstr()
 
         if ok :
                 self.logger.debug("Published1: %s %s" % (self.exchange,self.topic))
-                self.logger.debug("Published2: '%s' %s" % (self.notice, self.hdrstr))
+                self.logger.debug("Published2: '%s %s %s' %s" % (self.pubtime, self.baseurl, self.relpath, self.hdrstr))
         else  :
                 self.printlog = self.logger.error
                 self.printlog("Could not publish message :")
 
-                self.printlog("exchange %s topic %s " % (self.exchange,self.topic))
-                self.printlog("notice   %s"           % self.notice )
+                self.printlog("exchange %s topic %s " % (self.exchange,self.topic) )
+                self.printlog("notice   %s %s %s"     % (self.pubtime, self.baseurl, self.relpath) )
                 self.printlog("headers  %s"           % self.hdrstr )
 
         return ok
@@ -449,7 +716,7 @@ class sr_message():
 
         path  = new_file.strip('/')
         words = path.split('/')
-        self.topic = 'v02.post.' + '.'.join(words[:-1])
+        self.topic = self.post_topic_prefix + '.'.join(words[:-1])
 
         self.headers[ 'sum' ] = sumstr
         self.headers[ 'parts' ] = '1,%d,0,0' % fstat.st_size
@@ -536,7 +803,7 @@ class sr_message():
            # try to make this message a file insert
 
            # file exists
-           self.target_path = self.new_dir + os.sep + self.target_file
+           self.target_path = self.new_dir + '/' + self.target_file
            if os.path.isfile(self.target_path) :
               self.logger.debug("new_file exists")
               lstat   = os.stat(self.target_path)
@@ -577,38 +844,47 @@ class sr_message():
         return
 
     def set_msg_time(self):
-        parts       = self.time.split('.')
-        ts          = time.strptime(parts[0]+" +0000", "%Y%m%d%H%M%S %z" )
+        parts       = self.pubtime.split('.')
+        if parts[0][8] == 'T':
+            ts          = time.strptime(parts[0]+" +0000", "%Y%m%dT%H%M%S %z" )
+        else:
+            ts          = time.strptime(parts[0]+" +0000", "%Y%m%d%H%M%S %z" )
         ep_msg      = calendar.timegm(ts)
         self.tbegin = ep_msg + float('0.'+parts[1])
 
     def set_notice_url(self,url,time=None):
         self.url    = url
-        self.time   = time
+        self.pubtime = time
         if time    == None : self.set_time()
         path        = url.path.strip('/')
         notice_path = path.replace(       ' ','%20')
         notice_path = notice_path.replace('#','%23')
 
         if url.scheme == 'file' :
-           self.notice = '%s %s %s' % (self.time,'file:','/'+notice_path)
+           self.notice = '%s %s %s' % (self.pubtime,'file:','/'+notice_path)
+           self.baseurl = 'file:'
+           self.relpath = '/'+notice_path
            return
 
         urlstr      = url.geturl()
         static_part = urlstr.replace(url.path,'') + '/'
 
         if url.scheme == 'http' :
-           self.notice = '%s %s %s' % (self.time,static_part,notice_path)
+           self.notice = '%s %s %s' % (self.pubtime,static_part,notice_path)
+           self.baseurl = static_part
+           self.relpath = notice_path
            return
 
         if url.scheme[-3:] == 'ftp'  :
            if url.path[:2] == '//'   : notice_path = '/' + notice_path
 
-        self.notice = '%s %s %s' % (self.time,static_part,notice_path)
+        self.notice = '%s %s %s' % (self.pubtime,static_part,notice_path)
+        self.baseurl = static_part
+        self.relpath = notice_path
 
     def set_notice(self,baseurl,relpath,time=None):
 
-        self.time    = time
+        self.pubtime    = time
         self.baseurl = baseurl
         self.relpath = relpath
         if not time  : self.set_time()
@@ -616,7 +892,9 @@ class sr_message():
         notice_relpath = relpath.replace(       ' ','%20')
         notice_relpath = notice_relpath.replace('#','%23')
 
-        self.notice = '%s %s %s' % (self.time,baseurl,notice_relpath)
+        self.notice = '%s %s %s' % (self.pubtime,baseurl,notice_relpath)
+        self.baseurl = baseurl
+        self.relpath = notice_relpath
 
         #========================================
         # COMPATIBILITY TRICK  for the moment
@@ -625,60 +903,32 @@ class sr_message():
         self.url     = urllib.parse.urlparse(self.urlstr)
         #========================================
 
-
-    def set_parts(self,partflg='1',chunksize=0, block_count=1, remainder=0, current_block=0):
-        self.partflg          = partflg 
-        self.chunksize        = chunksize
-        self.block_count      = block_count
-        self.remainder        = remainder
-        self.current_block    = current_block
-        self.partstr          = '%s,%d,%d,%d,%d' %\
-                                (partflg,chunksize,block_count,remainder,current_block)
-        self.lastchunk        = current_block == block_count-1
+    def set_parts(self, partflg='1', chunksize=0, block_count=1, remainder=0, current_block=0):
+        # Setting parts for v02
+        self.partstr = '%s,%d,%d,%d,%d' % (partflg, chunksize, block_count, remainder, current_block)
         self.headers['parts'] = self.partstr
 
-        self.offset        = self.current_block * self.chunksize
-        self.filesize      = self.block_count * self.chunksize
-        if self.remainder  > 0 :
-           self.filesize  += self.remainder   - self.chunksize
-           if self.lastchunk : self.length    = self.remainder
+        # Setting other common attributes from parts
+        self.partflg = partflg
+        self.chunksize = chunksize
+        self.block_count = block_count
+        self.remainder = remainder
+        self.current_block = current_block
 
-    def set_parts_str(self,partstr):
+        # Setting calculated attributes from parts
+        is_chunk = current_block != block_count - 1 or block_count == 1
+        self.length = chunksize if is_chunk else remainder
+        self.lastchunk = current_block == block_count-1
+        self.offset = current_block * chunksize
+        self.filesize = block_count * chunksize + remainder
 
-        self.partflg = None
-        self.partstr = partstr
-        self.length  = 0
-
-        if self.partstr == None : return
-
-        token        = self.partstr.split(',')
-        self.partflg = token[0]
-
-        self.chunksize     = int(token[1])
-        self.block_count   = 1
-        self.remainder     = 0
-        self.current_block = 0
-        self.lastchunk     = True
-
-        self.offset        = 0
-        self.length        = self.chunksize
-
-        self.filesize      = self.chunksize
-
-        if self.partflg in [ '0', '1' ]: return
-
-        self.block_count   = int(token[2])
-        self.remainder     = int(token[3])
-        self.current_block = int(token[4])
-        self.lastchunk     = self.current_block == self.block_count-1
-
-        self.offset        = self.current_block * self.chunksize
-
-        self.filesize      = self.block_count * self.chunksize
-
-        if self.remainder  > 0 :
-           self.filesize  += self.remainder   - self.chunksize
-           if self.lastchunk : self.length    = self.remainder
+    def set_parts_from_str(self, partstr):
+        tokens = partstr.split(',')
+        if 0 < len(tokens) < 6:
+            parts_rest = [int(tok) for tok in tokens[1:]]
+            self.set_parts(tokens[0], *parts_rest)
+        else:
+            raise ValueError('malformed parts string %s' % partstr)
 
     def set_rename(self,rename=None):
         if rename != None :
@@ -727,7 +977,7 @@ class sr_message():
         now  = time.time()
         frac = '%f' % now
         nows = time.strftime("%Y%m%d%H%M%S",time.gmtime()) + '.' + frac.split('.')[1]
-        self.time = nows
+        self.pubtime = nows
         if not hasattr(self,'tbegin') : self.tbegin = now
 
     def set_to_clusters(self,to_clusters=None):
@@ -854,8 +1104,8 @@ class sr_message():
                  self.sumstr  = '%s,%s' % (self.sumflg,self.checksum)
 
         except :
-                 (stype, svalue, tb) = sys.exc_info()
-                 self.logger.error("sr_message/verify_part_suffix Type: %s, Value: %s" % (stype, svalue))
+                 self.logger.error("sr_message/verify_part_suffix: incorrect extension")
+                 self.logger.debug('Exception details: ', exc_info=True)
                  return False,'incorrect extension',None,None,None
 
         return True,'ok',self.suffix,self.partstr,self.sumstr

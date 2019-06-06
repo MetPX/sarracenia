@@ -27,8 +27,8 @@ On Ubuntu 14.04/16.04/17.10/18.04 and derivatives of same::
 
   sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx
   sudo apt-get update
-  sudo apt-get install python3-metpx-sarracenia  # only supports HTTP/HTTPS
-  sudo apt-get install python3-paramiko   # adds SFTP support.
+  sudo apt-get install python3-paramiko   # required SFTP support.
+  sudo apt-get install metpx-sarracenia  # only supports HTTP/HTTPS
   sudo apt-get install sarrac # optional C client.
 
 Currently, only the debian packages include man pages.  The guides are only available in the source repository.
@@ -36,6 +36,8 @@ Currently, only the debian packages include man pages.  The guides are only avai
 Redhat/Suse distros (rpm based)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Python distutils on redhat package manager based distributions does not handle dependencies
+with the current packaging, so one needs to manually install them.  For example:
 On fedora 28::
  
   sudo dnf install python3-amqplib
@@ -46,23 +48,31 @@ On fedora 28::
   sudo dnf install python3-psutil
   sudo dnf install python3-paramiko   # adds SFTP support.
 
+  sudo dnf install python3-setuptools # needed to build rpm package.
+
+
+Once the dependencies are in place, one can build an RPM file using setuptools::
+
+  git clone https://github.com/MetPX/sarracenia
+  cd sarracenia
+
   python3 setup.py bdist_rpm
   sudo rpm -i dist/*.noarch.rpm
 
-The RPM´s built do not include dependency information, so these must be manually installed
-with dnf. This procedured installs only the python application (not the C one.)
-no man pages or other documentation are installed.
+This procedured installs only the python application (not the C one.)
+No man pages or other documentation are installed either.
 
 
 PIP
 ~~~
 
-On windows, or other linux distributions where system packages are not available, the
-above procedures are not applicable.  There are also special cases, such as if using
-python in virtual env, where it is more practical to install the package using
-pip (python install package) from `<http://pypi.python.org/>`_.  It is straightforward
-to do that::
+On other linux distributions where system packages are not available, the above procedures are not applicable.
+You may also want to use this procedures on Windows, depending if Python is already installed.
+There are also special cases, such as if using python in virtual env, where it is more practical to install
+the package using pip (python install package) from `<http://pypi.python.org/>`_.
+It is straightforward to do that::
 
+  sudo pip install paramiko
   sudo pip install metpx-sarracenia
 
 and to upgrade after the initial installation::
@@ -80,15 +90,19 @@ NOTE::
 Windows
 ~~~~~~~
 
-Any native python installation will do, but the dependencies in the standard python.org
-installation require the installation of a C-Compiler as well, so it gets a bit complicated.
-If you have an existing python installation that works with c-modules within it, then the
-complete package should install with all features.
+On Windows, there are 2 (other) possible options:
 
-If you do not have a python environment handy, then the easiest one to get going with
-is winpython, which includes many scientifically relevant modules, and will easily install
-all dependencies for Sarracenia. You can obtain winpython from `<http://winpython.github.io/>`_ 
-(note: select python version >3 ) Then one can install with pip (as above.)
+**Without Python**
+ Download Sarracenia installer file from `here <https://hpfx.collab.science.gc.ca/~pas037/Sarracenia_Releases>`_, execute it and 
+ follow the instructions. Don't forget to add *Sarracenia's Python directory* to your *PATH*.
+
+**With Anaconda**
+ Create your environment with the `file <../windows/sarracenia_env.yml>`_ suggested by this repository. Executing that command 
+ from the Anaconda Prompt should install everything::
+
+  conda env create -f sarracenia_env.yml
+
+See `Windows user manual <windows/Windows.rst>`_ for more information on how to run Sarracenia on Windows.
 
 Packages
 ~~~~~~~~

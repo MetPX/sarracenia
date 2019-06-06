@@ -405,7 +405,7 @@ In contrast to FTPS, SFTP:
 - supports byte ranges, which are useful.
 - is simpler, with fewer options, therefore more reliable.
 - is simpler to monitor and firewall, and permits more constrained firewall configurations.
-- is much more common (e.g. Microsoft announcing built-in support in an upcoming windows version [*]_ ).
+- is much more common (e.g. Microsoft announcing built-in support in an upcoming Windows version [*]_ ).
 - normally uses public/private key pairs, which are usually considered *stronger* than passwords. 
 - does not require any shared secrets (or a mechanism to send them.), and usually the credentials need to be replaced less
   often.

@@ -5,8 +5,8 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
 #
 # Questions or bugs report: dps-client@ec.gc.ca
-# sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
+# Sarracenia repository: https://github.com/MetPX/sarracenia
+# Documentation: https://github.com/MetPX/sarracenia
 #
 # sr_file.py : python3 utility tools for file processing
 #
@@ -19,8 +19,7 @@
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+#  the Free Software Foundation; version 2 of the License.
 #
 #  This program is distributed in the hope that it will be useful, 
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of 
@@ -116,7 +115,7 @@ class sr_file():
 
     def ls_python(self,dpath):
         for x in os.listdir(dpath):
-            dst = dpath + os.sep + x
+            dst = dpath + '/' + x
             if os.path.isdir(dst):
                if self.recursive : self.ls_python(dst)
                continue
@@ -209,13 +208,13 @@ def file_insert_part(parent,msg,part_file):
                 msg.logger.error("part filesize  %d " % (fsiz) )
 
              # set checksum in msg
-             if chk : msg.onfly_checksum = chk.get_value()
+             if chk :
+                 msg.onfly_checksum = "{},{}".format(chk.registered_as(), chk.get_value())
 
     # oops something went wrong
     except :
-             (stype, svalue, tb) = sys.exc_info()
-             msg.logger.info("sr_file/file_insert_part Type: %s, Value: %s,  ..." % (stype, svalue))
-             msg.logger.info("did not insert %s " % part_file)
+             msg.logger.info("sr_file/file_insert_part: did not insert %s " % part_file)
+             msg.logger.debug('Exception details: ', exc_info=True)
              return False
 
     # success: log insertion
@@ -226,7 +225,7 @@ def file_insert_part(parent,msg,part_file):
     # FIXME: Need to figure out when/how to further post messages about the partitions 
     #if msg.publisher : 
     #   msg.set_topic('v02.post',msg.target_relpath)
-    #   msg.set_notice(msg.new_baseurl,msg.target_relpath,msg.time)
+    #   msg.set_notice(msg.new_baseurl,msg.target_relpath,msg.pubtime)
     #   if chk :
     #      if    msg.sumflg == 'z' :
     #            msg.set_sum(msg.checksum,msg.onfly_checksum)
@@ -248,7 +247,7 @@ def file_link( msg ) :
     except : return False
 
     msg.compute_local_checksum()
-    msg.onfly_checksum = msg.local_checksum
+    msg.onfly_checksum = "{},{}".format(msg.sumflg, msg.local_checksum)
 
     msg.report_publish( 201, 'Linked')
 
@@ -309,16 +308,16 @@ def file_process( parent ) :
                 if msg.partflg.startswith('i'):
                    msg.logger.info("delete unimplemented for in-place part files %s" %(msg.relpath))
                 else:
-                   try: 
+                   try:
                        os.unlink(msg.relpath)
-                   except: 
+                   except:
                        msg.logger.error("delete of %s after copy failed"%(msg.relpath))
 
              if ok : return ok
 
-    except : 
-             (stype, svalue, tb) = sys.exc_info()
-             msg.logger.debug("sr_file/file_process Type: %s, Value: %s,  ..." % (stype, svalue))
+    except :
+             msg.logger.error('sr_file/file_process error')
+             msg.logger.debug('Exception details: ', exc_info=True)
 
     msg.report_publish(499,'Not Copied')
     msg.logger.error("could not copy %s in %s"%(msg.relpath,msg.new_file))
@@ -400,7 +399,7 @@ def file_reassemble(parent):
           if not ok : return False
 
           # verify the inserted portion
-          if (msg.sumstr.split(',')[1] != msg.onfly_checksum):
+          if (msg.sumstr != msg.onfly_checksum):
             # Retry once
             msg.logger.warning('Insertion did not complete properly, retrying...')
             #msg.logger.warning('Partition\'s checksum: '+ msg.sumstr.split(',')[1]+ ' Inserted sum: '+msg.onfly_checksum)              
@@ -535,7 +534,8 @@ def file_write_length(req,msg,bufsize,filesize,parent):
     if parent.preserve_time and 'mtime' in h and h['mtime'] :
         os.utime(msg.new_file, times=( timestr2flt( h['atime']), timestr2flt( h[ 'mtime' ] )))
 
-    if chk : msg.onfly_checksum = chk.get_value()
+    if chk:
+        msg.onfly_checksum = "{},{}".format(chk.registered_as(), chk.get_value())
 
     msg.report_publish(201,'Copied')
 
@@ -560,8 +560,8 @@ def file_truncate(parent,msg):
                 fp.truncate(msg.filesize)
                 fp.close()
 
-                msg.set_topic('v02.post',msg.target_relpath)
-                msg.set_notice(msg.new_baseurl,msg.target_relpath,msg.time)
+                msg.set_topic(parent.post_topic_prefix,msg.target_relpath)
+                msg.set_notice(msg.new_baseurl,msg.target_relpath,msg.pubtime)
                 msg.report_publish(205, 'Reset Content :truncated')
 
     except : pass

@@ -59,6 +59,8 @@ class Msg_Total(object):
         parent.msg_total_cache_file += 'msg_total_plugin_%.4d.vars' % parent.instance
 
     def on_message(self,parent):
+
+
         logger = parent.logger
         msg    = parent.msg
 
@@ -67,12 +69,12 @@ class Msg_Total(object):
         import calendar
         import humanize
         import datetime
+        from sarra.sr_util import timestr2flt
 
         if (parent.msg_total_msgcount == 0): 
             logger.info("msg_total: 0 messages received: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"  )
 
-        mt=msg.time
-        msgtime=calendar.timegm(time.strptime(mt[:mt.find('.')],"%Y%m%d%H%M%S")) + float(mt[mt.find('.'):])
+        msgtime=timestr2flt(msg.pubtime)
         now=time.time()
 
         parent.msg_total_msgcount = parent.msg_total_msgcount + 1

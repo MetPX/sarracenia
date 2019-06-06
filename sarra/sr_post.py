@@ -5,8 +5,8 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
 #
 # Questions or bugs report: dps-client@ec.gc.ca
-# sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
+# Sarracenia repository: https://github.com/MetPX/sarracenia
+# Documentation: https://github.com/MetPX/sarracenia
 #
 # sr_post.py : python3 program allowing users to post an available product
 #
@@ -17,8 +17,7 @@
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+#  the Free Software Foundation; version 2 of the License.
 #
 #  This program is distributed in the hope that it will be useful, 
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of 
@@ -34,12 +33,18 @@
 #============================================================
 # usage example
 #
-# sr_post [options] [config] [foreground|start|stop|restart|reload|status|cleanup|setup]
+# sr_post [options] [config] [foreground|add|remove|edit|cleanup|setup]
 #
 #============================================================
 
 import json,os,random,sys,time
-#import xattr
+
+from sys import platform as _platform
+
+from base64 import b64decode, b64encode
+from mimetypes import guess_type
+
+from random import choice
 
 from collections import *
 
@@ -54,7 +59,9 @@ try :
          from sr_message         import *
          from sr_rabbit          import *
          from sr_util            import *
+         from sr_xattr import *
 except : 
+         from sarra.sr_xattr import *
          from sarra.sr_amqp      import *
          from sarra.sr_cache     import *
          from sarra.sr_instances import *
@@ -173,10 +180,12 @@ class sr_post(sr_instances):
         if self.sleep <= 0 : loop = False
 
         self.post_hc = HostConnect( logger = self.logger )
-        self.post_hc.set_pika( self.use_pika )
+        self.post_hc.choose_amqp_alternative(self.use_amqplib, self.use_pika)
         self.post_hc.set_url( self.post_broker )
         self.post_hc.loop = loop
-        self.post_hc.connect()
+
+        if not self.post_hc.connect():
+           return
 
         self.publisher = Publisher(self.post_hc)
         self.publisher.build()
@@ -218,6 +227,8 @@ class sr_post(sr_instances):
         print("\nUsage: %s -u <url> -pb <post_broker> ... [OPTIONS]\n" % self.program_name )
         print("version: %s \n" % sarra.__version__ )
         print("OPTIONS:")
+        print("-a|action   <action>    default:foreground")
+        print("                        keyword: add|cleanup|declare|disable|edit|enable|foreground|list|remove|setup")
         print("-pb|post_broker   <broker>          default:amqp://guest:guest@localhost/")
         print("-c|config   <config_file>")
         print("-pbd <post_base_dir>   default:None")
@@ -226,7 +237,7 @@ class sr_post(sr_instances):
         print("-h|--help\n")
         print("-parts [0|1|sz]        0-computed blocksize (default), 1-whole files (no partitioning), sz-fixed blocksize")
         print("-to  <name1,name2,...> defines target clusters, default: ALL")
-        print("-tp  <topic_prefix>    default:v02.post")
+        print("-ptp <post_topic_prefix> default:v02.post")
         print("-sub <subtopic>        default:'path.of.file'")
         print("-rn  <rename>          default:None")
         print("-sum <sum>             default:d")
@@ -236,7 +247,7 @@ class sr_post(sr_instances):
         print("-on_post <script>      default:None")
         print("DEBUG:")
         print("-debug")
-        print("-r  : randomize chunk posting")
+        print("-r  : randomize chunk posting and checksum algorithm choice")
         print("-rr : reconnect between chunks\n")
 
     # =============
@@ -282,22 +293,7 @@ class sr_post(sr_instances):
     def __on_post__(self):
         #self.logger.debug("%s __on_post__" % self.program_name)
 
-        # invoke on_post when provided
-
-        for plugin in self.on_post_list:
-           if not plugin(self): return False
-
-        ok = True
-
-        if   self.outlet == 'json' :
-             json_line = json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ], sort_keys=True ) + '\n'
-             print("%s" % json_line )
-
-        elif self.outlet == 'url'  :
-             print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
-
-        else:
-             ok = self.msg.publish( )
+        ok = self.msg.post(self)
 
         # publish counter
 
@@ -342,8 +338,9 @@ class sr_post(sr_instances):
 
         self.obs_watched   = []
         self.watch_handler = None
+        self.post_topic_prefix = "v02.post"
 
-        self.inl           = []
+        self.inl           = OrderedDict()
         self.new_events    = OrderedDict()
         self.left_events   = OrderedDict()
 
@@ -383,7 +380,7 @@ class sr_post(sr_instances):
 
         if self.rename :
            newname = self.rename
-           if self.rename[-1] == os.sep :
+           if self.rename[-1] == '/' :
               newname += os.path.basename(path)
 
         # strip 'N' heading directories
@@ -395,7 +392,7 @@ class sr_post(sr_instances):
            token = path.split('/')
            try :   token   = token[strip:]
            except: token   = [os.path.basename(path)]
-           newname = os.sep+os.sep.join(token)
+           newname = '/'+'/'.join(token)
 
         if newname == path : return None
 
@@ -419,8 +416,11 @@ class sr_post(sr_instances):
         urlstr = self.post_base_url + '/' + self.post_relpath
 
         if self.realpath_filter and not self.realpath_post :
-           if os.path.exist(path) :
+           if os.path.exists(path) :
               fltr_post_relpath = os.path.realpath(path)
+              if sys.platform == 'win32':
+                  fltr_post_relpath = fltr_post_relpath.replace('\\','/')
+
               if self.post_base_dir : fltr_post_relpath = fltr_post_relpath.replace(self.post_base_dir, '')
               urlstr = self.post_base_url + '/' + fltr_post_relpath
         
@@ -428,6 +428,7 @@ class sr_post(sr_instances):
            self.logger.debug("%s Rejected by accept/reject options" % urlstr )
            return True
 
+        self.logger.debug( "%s not rejected" % urlstr )
         return False
 
     # =============
@@ -517,19 +518,8 @@ class sr_post(sr_instances):
 
         partstr = '1,%d,1,0,0' % fsiz
 
-        # xattr turned off  PS 20180423
-        # xattr ... check if sum is set in extended fileattributes
-
-        sumstr = ''
-
-        #try :
-        #       attr = xattr.xattr(path)
-        #       if 'user.sr_sum' in attr :
-        #          self.logger.debug("sum set by xattr")
-        #          sumstr = (attr['user.sr_sum'].decode("utf-8")).split()[1]
-        #except: pass
-        sumstr = self.compute_sumstr(path, fsiz, sumstr)
-        
+        sumstr = self.compute_sumstr(path, fsiz)
+ 
         # caching
 
         if self.caching :
@@ -539,7 +529,31 @@ class sr_post(sr_instances):
                          self.logger.debug("already posted %s"% path)
                          return False
 
-        # complete  message
+        # complete message        
+        if self.post_topic_prefix.startswith('v03') and self.inline and fsiz < self.inline_max :        
+ 
+           if self.inline_encoding == 'guess':
+              e = guess_type(path)[0]
+              binary = not e or not ('text' in e )
+           else:
+              binary = (self.inline_encoding == 'text' )
+
+           try:
+               f = open(path,'rb')
+           except FileNotFoundError as err:
+               self.logger.error("could not open ({}): {}".format(path, err))
+               self.logger.debut("Exception details:", exc_info=True)
+               return False
+           d = f.read()
+           f.close()
+
+           if binary:
+               self.msg.headers[ "content" ] = { "encoding": "base64", "value": b64encode(d).decode('utf-8') }
+           else:
+               try:
+                   self.msg.headers[ "content" ] = { "encoding": "utf-8", "value": d.decode('utf-8') }
+               except:
+                   self.msg.headers[ "content" ] = { "encoding": "base64", "value": b64encode(d).decode('utf-8') }
 
         self.msg.headers['parts'] = partstr
         self.msg.headers['sum']   = sumstr
@@ -557,16 +571,30 @@ class sr_post(sr_instances):
 
         return ok
 
-    def compute_sumstr(self, path, fsiz, sumstr = ''):
-
-        sumflg = self.sumflg
-
-        if sumflg[:2] == 'z,' and len(sumflg) > 2 :
-            sumstr = sumflg
-
+    def compute_sumstr(self, path, fsiz):
+        xattr = sr_xattr(path)
+        
+        if self.randomize:
+            algos = ['0', 'd', 'n', 's', 'z,d', 'z,s']
+            sumflg = choice(algos)
+        elif 'sum' in xattr.x and 'mtime' in xattr.x:
+            if xattr.get('mtime') >= self.msg.headers['mtime']:
+                self.logger.debug("mtime remembered by xattr")
+                return xattr.get('sum')
+            else:
+                self.logger.debug("xattr sum too old")
+                sumflg = self.sumflg
         else:
+            sumflg = self.sumflg
 
-            if not sumflg[0] in ['0','d','n','s','z' ]: sumflg = 'd'
+        xattr.set('mtime', self.msg.headers['mtime'])
+
+        self.logger.debug("sum set by compute_sumstr")
+
+        if sumflg[:2] == 'z,' and len(sumflg) > 2:
+            sumstr = sumflg
+        else:
+            if not sumflg[0] in ['0', 'd', 'n', 's', 'z']: sumflg = 'd'
 
             self.set_sumalgo(sumflg)
             sumalgo = self.sumalgo
@@ -586,18 +614,12 @@ class sr_post(sr_instances):
                 fp.close()
 
             # setting sumstr
-
             checksum = sumalgo.get_value()
-            sumstr   = '%s,%s' % (sumflg,checksum)
+            sumstr = '%s,%s' % (sumflg, checksum)
 
+        xattr.set('sum', sumstr)
+        xattr.persist()
         return sumstr
-
-            # xattr turned off PS 20180424
-            # setting extended attributes
-            #self.logger.debug("xattr set for time and sum")
-            #sr_attr = self.msg.time + ' ' + sumstr
-            #attr['user.sr_sum' ] = bytes( sr_attr, encoding='utf-8')
-    
 
     # =============
     # post_file_in_parts
@@ -701,7 +723,7 @@ class sr_post(sr_instances):
 
               ok = self.__on_post__()
               if not ok:
-                self.logger.error('Something went wrong while posting: %s' %self.msg.notice[2])
+                self.logger.error('Something went wrong while posting: %s' %self.msg.relpath)
 
 
         return True
@@ -768,8 +790,8 @@ class sr_post(sr_instances):
         self.msg.exchange = self.post_exchange
 
         # topic
-        self.msg.set_topic(self.topic_prefix,self.post_relpath)
-        if self.subtopic: self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
+        self.msg.set_topic(self.post_topic_prefix,self.post_relpath)
+        if self.subtopic: self.msg.set_topic_usr(self.post_topic_prefix,self.subtopic)
 
         # notice
         self.msg.set_notice(self.post_base_url,self.post_relpath)
@@ -791,9 +813,12 @@ class sr_post(sr_instances):
 
         if lstat == None : return
 
-        self.msg.headers['mtime'] = timeflt2str(lstat.st_mtime)
-        self.msg.headers['atime'] = timeflt2str(lstat.st_atime)
-        self.msg.headers['mode']  = "%o" % ( lstat[stat.ST_MODE] & 0o7777 )
+        if self.preserve_time:
+            self.msg.headers['mtime'] = timeflt2str(lstat.st_mtime)
+            self.msg.headers['atime'] = timeflt2str(lstat.st_atime)
+
+        if self.preserve_mode:
+            self.msg.headers['mode']  = "%o" % ( lstat[stat.ST_MODE] & 0o7777 )
 
     # =============
     # post_link
@@ -856,11 +881,13 @@ class sr_post(sr_instances):
 
         # watchdog funny ./ added at end of directory path ... removed
 
-        src = src.replace(os.sep + '.' + os.sep, os.sep )
-        dst = dst.replace(os.sep + '.' + os.sep, os.sep )
+        src = src.replace('/./', '/' )
+        dst = dst.replace('/./', '/' )
 
         if os.path.islink(dst) and self.realpath_post:
            dst = os.path.realpath(dst)
+           if sys.platform == 'win32':
+                  dst = dst.replace('\\','/')
 
         # file
 
@@ -880,8 +907,8 @@ class sr_post(sr_instances):
         if os.path.isdir(dst) :
             for x in os.listdir(dst):
 
-                dst_x = dst + os.sep + x
-                src_x = src + os.sep + x
+                dst_x = dst + '/' + x
+                src_x = src + '/' + x
 
                 ok = self.post_move(src_x,dst_x)
 
@@ -900,7 +927,11 @@ class sr_post(sr_instances):
 
         # watchdog funny ./ added at end of directory path ... removed
 
-        path = path.replace(os.sep + '.' + os.sep, os.sep )
+        path = path.replace( '/./', '/' )
+
+        # always use / as separator for paths being posted.
+        if os.sep != '/' :  # windows
+            path = path.replace( os.sep, '/' )
 
         # path is a link
 
@@ -909,7 +940,11 @@ class sr_post(sr_instances):
 
            if self.follow_symlinks :
               link  = os.readlink(path)
-              try   : rpath = os.path.realpath(link)
+              try   : 
+                   rpath = os.path.realpath(link)
+                   if sys.platform == 'win32':
+                       rpath = rpath.replace('\\','/')
+
               except: return done
 
               lstat = None
@@ -996,8 +1031,13 @@ class sr_post(sr_instances):
         if not os.path.exists(src) : return done
 
         # file : must be old enough
+        try:
+            lstat = os.stat(src)
+        except FileNotFoundError as err:
+            self.logger.error("could not stat file ({}): {}".format(src, err))
+            self.logger.debug("Exception details:", exc_info=True)
+            return done
 
-        lstat = os.stat(src)
         if self.path_inflight(src,lstat): return later
 
         # post it
@@ -1017,7 +1057,7 @@ class sr_post(sr_instances):
         self.msg.topic    = 'v02.pulse'
 
         self.msg.set_time()
-        self.msg.notice  = '%s' % self.msg.time
+        self.msg.notice  = '%s' % self.msg.pubtime
 
         if self.pulse_message : 
            self.msg.topic  += '.message'
@@ -1047,7 +1087,7 @@ class sr_post(sr_instances):
             ex.append(exchange)
             self.msg.pub_exchange = exchange
             self.msg.message_ttl  = self.message_ttl
-            self.msg.publish()
+            self.msg.post(self)
 
         self.close()
 
@@ -1123,23 +1163,13 @@ class sr_post(sr_instances):
     def walk(self, src ):
         self.logger.debug("walk %s" % src )
 
-        # how to proceed with symlink
-
-        if os.path.islink(src) and self.realpath_post :
-           src = os.path.realpath(src)
-
-        # walk src directory, this walk is depth first... there could be a lot of time
-        # between *listdir* run, and when a file is visited, if there are subdirectories before you get there.
-        # hence the existence check after listdir (crashed in flow_tests of > 20,000)
-        for x in os.listdir(src):
-            path = src + os.sep + x
-            if os.path.isdir(path):
-               self.walk(path)
-               continue
-
-            # add path created
-            if os.path.exists(path):
-                self.post1file(path,os.stat(path))
+        for path in glob.iglob(os.path.join(src, '**', '*'), recursive=True):
+            if self.realpath_post and os.path.isfile(path):
+                path = os.path.realpath(path)
+                if sys.platform == 'win32':
+                    path = path.replace('\\', '/')
+            if os.path.isfile(path):
+                self.post1file(path, os.stat(path))
 
     # =============
     # original walk_priming
@@ -1152,19 +1182,25 @@ class sr_post(sr_instances):
         """
         if os.path.islink(p):
             realp = os.path.realpath(p)
+            if sys.platform == 'win32':
+               realp = realp.replace('\\','/')
+
             self.logger.info("sr_watch %s is a link to directory %s" % ( p, realp) )
             if self.realpath_post:
                 d=realp
             else:
-                d=p + os.sep + '.'
+                d=p + '/' + '.'
         else:
             d=p
 
         try :
-                 fs = os.stat(d)
-                 dir_dev_id = '%s,%s' % ( fs.st_dev, fs.st_ino )
-                 if dir_dev_id in self.inl: return True
-        except:  self.logger.warning("could not stat %s" % d)
+            fs = os.stat(d)
+            dir_dev_id = '%s,%s' % ( fs.st_dev, fs.st_ino )
+            if dir_dev_id in self.inl:
+                return True
+        except FileNotFoundError as err:
+            self.logger.warning("could not stat file ({}): {}".format(d, err))
+            self.logger.debug("Exception details:", exc_info=True)
 
         if os.access( d , os.R_OK|os.X_OK ): 
            try:
@@ -1174,6 +1210,7 @@ class sr_post(sr_instances):
                self.logger.info("sr_watch priming watch (instance=%d) scheduled for: %s " % (len(self.obs_watched), d))
            except:
                self.logger.warning("sr_watch priming watch: %s failed, deferred." % d)
+               self.logger.debug('Exception details:', exc_info=True)
 
                # add path created
                self.on_add( 'create', p, None )
@@ -1181,6 +1218,7 @@ class sr_post(sr_instances):
 
         else:
             self.logger.warning("sr_watch could not schedule priming watch of: %s (EPERM) deferred." % d)
+            self.logger.debug('Exception details:', exc_info=True)
 
             # add path created
             self.on_add( 'create', p, None )
@@ -1210,7 +1248,9 @@ class sr_post(sr_instances):
         self.logger.info("sr_watch priming walk done, but not yet active. Starting...")
         self.observer.start()
         self.logger.info("sr_watch now active on %s posting to exchange: %s"%(sld,self.post_exchange))
-        self.walk(sld)
+
+        if self.post_on_start:
+            self.walk(sld)
 
 
     # =============
@@ -1222,14 +1262,15 @@ class sr_post(sr_instances):
 
         last_time = time.time()
         while True:
-             self.wakeup()
-             now = time.time()
-             elapse = now - last_time
-             if elapse < self.sleep : time.sleep(self.sleep-elapse)
-             last_time = now
+            self.wakeup()
+            now = time.time()
+            elapse = now - last_time
+            if elapse < self.sleep:
+                time.sleep(self.sleep-elapse)
+            last_time = now
 
-        self.observer.join()
-
+        # FIXME This is unreachable code, need to figure out what to do with that
+        # self.observer.join()
 
     # ==================================================
     # FIXME in 2018?  get rid of code from HERE TOP
@@ -1265,9 +1306,6 @@ class sr_post(sr_instances):
         addmodule = namedtuple('AddModule', ['post'])
         self.poster = addmodule(self.post_url)
 
-        if self.poster.post == self.post_url :
-           self.logger.debug("MY POSTER TRICK DID WORK !!!")
-
     def post_url(self,post_exchange,url,to_clusters,\
                       partstr=None,sumstr=None,rename=None,filename=None, \
                       mtime=None,atime=None,mode=None,link=None):
@@ -1286,6 +1324,9 @@ class sr_post(sr_instances):
            if self.post_base_dir : path = self.post_base_dir + '/' + path
            if os.path.exist(path) :
               fltr_post_relpath = os.path.realpath(path)
+              if sys.platform == 'win32':
+                  fltr_post_relpath = fltr_post_relpath.replace('\\','/')
+
               if self.post_base_dir : fltr_post_relpath = fltr_post_relpath.replace(self.post_base_dir, '')
               urlstr = self.post_base_url + '/' + fltr_post_relpath
 
@@ -1319,9 +1360,9 @@ class sr_post(sr_instances):
         self.msg.exchange = post_exchange
         
         # set message topic
-        self.msg.set_topic(self.topic_prefix,post_relpath)
+        self.msg.set_topic(self.post_topic_prefix,post_relpath)
         if self.subtopic != None :
-           self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
+           self.msg.set_topic_usr(self.post_topic_prefix,self.subtopic)
 
         # set message notice
         self.msg.set_notice(post_base_url,post_relpath)
@@ -1334,12 +1375,17 @@ class sr_post(sr_instances):
         if partstr  != None : self.msg.headers['parts']        = partstr
         if sumstr   != None : self.msg.headers['sum']          = sumstr
         if rename   != None : self.msg.headers['rename']       = rename
-        if mtime    != None : self.msg.headers['mtime']        = mtime
-        if atime    != None : self.msg.headers['atime']        = atime
-        if mode     != None : self.msg.headers['mode']         = "%o" % ( mode & 0o7777 )
+
+        if self.preserve_time:
+            if mtime    != None : self.msg.headers['mtime']        = mtime
+            if atime    != None : self.msg.headers['atime']        = atime
+
+        if self.preserve_mode:
+            if mode     != None : self.msg.headers['mode']         = "%o" % ( mode & 0o7777 )
+
         if link     != None : self.msg.headers['link']         = link
 
-        if self.cluster != None : self.msg.headers['from_cluster']    = self.cluster
+        #if self.cluster != None : self.msg.headers['from_cluster']    = self.cluster
         if self.source  != None : self.msg.headers['source']          = self.source
 
         self.msg.trim_headers()
@@ -1357,8 +1403,8 @@ class sr_post(sr_instances):
     # =============
       
     def run(self):
-        self.logger.info("%s run partflg=%s, sum=%s, caching=%s " % \
-              ( self.program_name, self.partflg, self.sumflg, self.caching ))
+        self.logger.info("%s run partflg=%s, sum=%s, caching=%s basis=%s" % \
+              ( self.program_name, self.partflg, self.sumflg, self.caching, self.cache_basis ))
         self.logger.info("%s realpath_post=%s follow_links=%s force_polling=%s"  % \
               ( self.program_name, self.realpath_post, self.follow_symlinks, self.force_polling ) )
 
@@ -1383,7 +1429,7 @@ class sr_post(sr_instances):
 
         for d in self.postpath :
             self.logger.debug("postpath = %s" % d)
-            if pbd and not d.startswith(pbd) : d = pbd + os.sep + d
+            if pbd and not d.startswith(pbd) : d = pbd + '/' + d
 
             if self.sleep > 0 : 
                self.watch_dir(d)
@@ -1423,10 +1469,11 @@ class sr_post(sr_instances):
 
         if self.post_broker :
            self.post_hc = HostConnect( logger = self.logger )
-           self.post_hc.set_pika( self.use_pika )
+           self.post_hc.choose_amqp_alternative(self.use_amqplib, self.use_pika)
            self.post_hc.set_url( self.post_broker )
-           self.post_hc.connect()
-           self.declare_exchanges(cleanup=True)
+           self.post_hc.loop=False
+           if self.post_hc.connect():
+               self.declare_exchanges(cleanup=True)
 
         # caching
 
@@ -1442,10 +1489,11 @@ class sr_post(sr_instances):
         # on posting host
         if self.post_broker :
            self.post_hc = HostConnect( logger = self.logger )
-           self.post_hc.set_pika( self.use_pika )
+           self.post_hc.choose_amqp_alternative(self.use_amqplib, self.use_pika)
            self.post_hc.set_url( self.post_broker )
-           self.post_hc.connect()
-           self.declare_exchanges()
+           self.post_hc.loop=False;
+           if self.post_hc.connect():
+               self.declare_exchanges()
 
         self.close()
 
@@ -1475,15 +1523,8 @@ class sr_post(sr_instances):
     def setup(self):
         self.logger.info("%s %s setup" % (self.program_name,self.config_name))
 
-        # on posting host
-        if self.post_broker :
-           self.post_hc = HostConnect( logger = self.logger )
-           self.post_hc.set_pika( self.use_pika )
-           self.post_hc.set_url( self.post_broker )
-           self.post_hc.connect()
-           self.declare_exchanges()
+        self.declare()
 
-        self.close()
                  
 # ===================================
 # MAIN
@@ -1509,7 +1550,8 @@ def main():
 
     post        = sr_post(None,None,action)
     logger      = post.logger
-    post.logger = Silent_Logger()
+
+    #post.logger = Silent_Logger()
 
     config_ok, user_config = post.config_path(post.program_dir,config)
     #print("config_ok,user_config = %s %s" % (config_ok, user_config))
@@ -1587,7 +1629,7 @@ def main():
         arg   = sys.argv[i]
         value = '%s' % arg
         i     = i - 1
-        if pbd and not pbd in value : value = pbd + os.sep + value
+        if pbd and not pbd in value : value = pbd + '/' + value
         if os.path.exists(value) or os.path.islink(value):
            postpath.append(value)
            try:    args.remove(arg)

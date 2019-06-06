@@ -6,11 +6,215 @@ lists all changes between versions.
 
 **git repo**
 
+*    new: #191 adding log_reject to debug checksums and reject/accept configurations
+* bugfix: #190 when printing v03 messages, post_log was misleading (not updated)
+*         also allowed removing some duplicate code. 
+*         lost backward compatibility warnings around in on_post calls.
+* 
+* bugfix: #184 some flow test refactoring
+
+**2.19.04b2**
+
+* bugfix: #158 there was a bug with extended attributes in checksums (yes, another one.)
+* new:    moved flow_test away from xpublic to allow continuous use
+*         on an active pump without interfering with normal flows.
+* info:   mostly refactoring for future work by Benoit.
+*         Noureddine wants to run flow_test continuously somewhere
+*         in addition to the travis-ci.com stuff.
+*         there are some issues that crept in over the summer:
+*         #182, #179, are opened to track progress on that.
+
+**2.19.04b1**
+
+* new:    adding WMO_mesh_post example.
+* bugfix: regression all posts in b6 were v02 (v03 inadvertantly disabled.)
+* bugfix: print improvements.
+* bugfix: there was an issue with extended attribute in checksums.
+* 
+
+**2.19.03b6**
+
+* new:    made code use instance variables instead of repeatedly parsing
+*         elements of the message: topic_prefix->version, sum-> event.
+*         more robust/easier to maintain.
+* bugfix: updated WMO_mesh examples to use v03 and /var/www/html (as per feedback.)
+* new:    add post_override_del option to post_override plugin.
+*         allows deletion of headers on post.
+* bugfix: Issue #175 documentation needs to use amqps for dd.weather, not amqp anymore.
+* new:    wmo_mesh example now deletes a bunch of headers to shorten & simplify messages.
+* new:    switching http port in flow test to 8001.  8000 is too popular.
+* new:    switching flow_test to use hpfx.collab.science.gc.ca instead of dd.weather.gc.ca
+* bugfix: Issue #168 have httpd unit test retrieve pick a file <= 2kb.  Big files 
+*         were causing hangs in the flow test... this is one fix, but not enough to close
+*         the bug.
+* new:    Issue #54 is finally closed.
+* new:    Issue #54 added xattr_disable to turn off extended attributes feature.
+* new:    Issue #54 added version of extended attributes for NTFS.
+
+**2.19.03b5**
+
+* bugfix: transparently accept setxattr failure for readonly files.
+* bugfix: several bugs with roundtripping v03->v02 checksums.
+* bugfix: changed documentation for rename (used what is changed by strip option) 
+* bugfix: found issues with arbitrary-application checksum
+* bugfix: mode/atime/mtim restoration was missing for inlined data.
+* new:    upgrade wmo_mesh mqtt publishing plugin to work with v03
+
+**2.19.03b4**
+
+* bugfix: conversion from v02 to v03 was broken somewhere else.
+
+**2.19.03b3**
+
+* bugfix: conversion from v02 to v03 was broken.
+
+**2.19.03b2**
+
+* new:    issue #134 added on_data plugin entry point, to allow data tranformation.
+* new:    removed recompute_chksum setting. application now decides on its own.
+* new:    added post_on_start option so control whether sr_watch posts all files on startup.
+* bugfix: issue #172 add inlining of data when the header is missing.  
+* dev:    issue #159 Contiguous Integration with travis-ci added, improved testing.
+*         testing of four different python versions now automated.
+* new:    added msg_rawlog to allow clearer viewing of v02 and v03 messages.
+
+**2.19.03b1**
+
+* new:    issue #166: Added *size* and *blocks* added to v03.post format.
+* bugfix: removed some incorrect ERROR messages (originally inserted to aid debugging.)
+* bugfix: issue #162: use of python-amqp broken on ubuntu <= 16.04 because *connect* call missing.
+* bugfix: issue #160: cleaned up v03 so it has no *sum* header (which should only be present in v02)
+
+**2.19.02b2**
+
+*
+* new:    implemented WMO expert team on computing and telecommunication systems
+*         (ETCTS, latest meeting: 2019/02) recommendations for changes to v03 format.
+* new:    ETCTS201902 v03 whole messages is a single JSON *object* (like a python *dictionary*)
+* new:    issue #146 ETCTS201902 v03 timestamps now have a "T" in them.
+* new:    issue #148 ETCTS201902 v03 *sum* header changed to *integrity*, encoding changed from hex 
+*         to base64.
+* new:    issue #147 ETCTS201902 v03 added **inline** support to include file data in the announcements.
+*         data is encoded in either utf-8 or base64.
+* new:    issue #153 log rotation interval can now be set. Minues if you like.
+* bugfix: issue #140 messages on console instead of log.
+*
+
+
+**2.19.02b1**
+
+* new:    Added checksum caching in an extended file attribute (from Issue #54) 
+* new:    Issue #130 - moved to new amqp library protocol changed from 0.8 to 0.9.1
+* new:    exp_2mqtt.py -> bridge to export to MQTT brokers.
+* new:    sample configuration: WMO_Sketch_2mqtt.conf 
+* new:    windows installer available. Issue #122
+* bugfix: windows Issue #111 - now works with drive specfications (C:)
+* bugfix: debian package name, removed python3- prefix matches pypi, 
+*         and better compliance with debian standards.
+* bugfix: *remove* wouldn't in some circumstances. (bug from in v2.19.01b1)
+
+**2.19.01b1**
+
+* new:    optionally produce and consume experimental v03.post messages, 
+*         headers now in body in JSON, removing 255 character limit.
+* new:    save/restore format is now the same as the v03 payload.
+*         (still reads old ones)
+* new:    add post_topic_prefix setting (matches existing consumer topic_prefix)
+* new:    added windows_run exe|pyw|py option to allow choosing of how components run.
+*         one can invoke .exe files, or the script files with pythonw or python exes.
+* new:    added suppress_duplicates_basis path|name|data to tune cache for use cases.
+* bugfix: added documentation of preserve_time option (was missing.)
+* bugfix: if *preserve_time* is off, posts will not have *atime* and *mtime* headers
+* bugfix: if *preserve_mode* is off, posts will not have *mode* 
+* bugfix: print a useful message if invalids sum algorithm specified.
+* bugfix: change cleanup, setup, declare to connect once and fail, rather than hang.
+* bugfix: when sr_post is a one-shot configuration, status makes no sense.
+
+**2.18.12.b4**
+
+* new: print exceptions on failure of makedirs, so "permission denied" is obvious
+* documentation: shim\_ options for sarrac
+* documentation: made importance of ordering between exchange and subtopic options clearer 
+* documentation: change installation instructions so that paramiko is always installed.
+* documentation: removed deprecation of *rename* header, there are valid use cases for it.
+* documentation: extensive revision of mesh_gts briefing.
+* bugfix: in pitcher_client.conf sample config, order of echange_suffix and subtopic option corrected.
+* bugfix: copyright is GPLv2 only.  Notices incorrectly listed GPLv2 OR LATER.
+* bugfix: more progress on issue #54 (application-defined checksums with extended attributes.)
+
+**2.18.11.b5**
+
+* bugfix:  reverting xattr dependency.
+
+**2.18.11.b4**
+
+* bugfix:  reverting paramiko dependency.
+*          changing backslash warning text.
+
+**2.18.11.b3**
+
+* bugfix:  dependencies now correct for windows.
+*
+
+**2.18.11.b2**
+* bugfix:  windows: Issue #54 support is broken on windows, disabled there.
+*          print slashes the right way round on windows in more cases.
+*
+
+**2.18.11.b1**
+
+* New:     Issue #54 initial support for *fake* (application defined) checksums.
+*
+* bugfix:  Issue #118 windows commands started from cmd.exe exit when window closed.
+*          Issue #113 crash on sr_post/watch with post_exchange_split
+*          Issue #112 windows log rollover 
+*          Issue #101 windows git checkout corruption 
+*          Issue #100 sr_subscribe add on windows gives files all on one line...
+*
+
+**2.18.10b2**
+
+* new      Issue #106 plugins for hydrometric forecast data acquisition.
+*          now have many more examples of polls.
+* bugfix:  Issue #110 has_vip does not find vips.
+*          unit tests referred to non SSL datamart, were broken
+*          when it was de-commissioned.
+*
+
+**2.18.10b1**
+
+* bugfix   corruption in cache cleaning introduced by pathname encoding.
+* new      email ingest support added ( Issue #59 )
+
+**2.18.09b2**
+
+* bugfix   fixed duplicate suppression corruption when files have spaces in their names.
+* bugfix   on windows: many issues with on \ vs. / addressed.
+* bugfix   on windows, *edit* directive now works using notepad.exe by default.
+* bugfix   on windows, *add* adds carriage returns to example files added, so notepad is happy.
+* bugfix   on windows, *log* now works.
+* bugfix   on windows, *list* now works for individual files.
+* new      list now prints out log directory (which is hard to guess on windows)
+* bugfix   examples for sr_Pitcher use case where inaccurate.
+* bugfix   issue #99 *list* missed some items it should have listed.
+* bugfix   *list* no longer list dot files or those ending in ~ (tmp/work/hidden files)
+
+**2.18.09b1**
+
 * bugfix    flow_setup was failing tests on rabbitmq server 3.7.7 (though it still worked.)
 *           flow_setup fixed so it works with 14.04 (use python2 for pyftpdlib )
 *
 *    new    added dd_ping.conf to do easy test of broker function to examples.
 *           flow_check.sh now does a spot check, flow_limit.sh limits the length of the test.
+* change: flatten, mirror and strip options now affect only succeeding accept clauses. (Issue #80)
+* disabling timeouts on windows, as they were not working anyways.
+* added ${DD} to substitutions in directives
+* added --version option. ( issue #25 )
+* added rename option. ( Issue #92 )
+* added globbing to include directive ( Issue #31 )
+* many corrections to French documentation.
+* bugfix issues #85 #86 
+
 
 **2.18.08b1**
 

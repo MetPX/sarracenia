@@ -1,6 +1,6 @@
 #!/bin/bash
 
-.  ./flow_include.sh
+. ./flow_include.sh
 
 countall
 
@@ -16,7 +16,7 @@ printf "Initial sample building sample size $totsarra need at least $smin \n"
 
 while [ "${totsarra}" == 0 ]; do
    sleep 10
-   countthem "`grep msg_total "$LOGDIR"/sr_report_tsarra_f20_01.log | tail -1 | awk ' { print $5; }; '`" 
+   countthem "`grep msg_total "$LOGDIR"/sr_report_tsarra_f20_01.log | grep -v DEBUG | tail -1 | awk ' { print $5; }; '`"
    totsarra="${tot}"
    printf "Waiting to start...\n"
 done
@@ -65,22 +65,22 @@ printf  "\nSufficient!\n"
 if [ ! "$SARRA_LIB" ]; then
    if [ "`sr_shovel t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" != 'stopped' ]; then 
        echo "Stopping shovels and waiting..."
-       sr_shovel stop t_dd2_f00 &
+       sr_shovel stop t_dd2_f00
        sr_shovel stop t_dd1_f00 
    fi
 else 
    if [ "`$SARRA_LIB/sr_shovel.py t_dd1_f00 status |& tail -1 | awk ' { print $8 } '`" != 'stopped' ]; then
        echo "Stopping shovels and waiting..."
-       "$SARRA_LIB"/sr_shovel.py stop t_dd2_f00 &
+       "$SARRA_LIB"/sr_shovel.py stop t_dd2_f00
        "$SARRA_LIB"/sr_shovel.py stop t_dd1_f00
    fi
 fi
 
 if [ "$SARRAC_LIB" ]; then
-   "$SARRAC_LIB"/sr_cpump stop pelle_dd1_f04 &
+   "$SARRAC_LIB"/sr_cpump stop pelle_dd1_f04
    "$SARRAC_LIB"/sr_cpump stop pelle_dd2_f05
 elif [ "${C_ALSO}" ]; then
-   sr_cpump stop pelle_dd1_f04 &
+   sr_cpump stop pelle_dd1_f04
    sr_cpump stop pelle_dd2_f05
 fi
 
@@ -127,26 +127,10 @@ if [ $cmd == 'stopped' ]; then
    done
    echo "No messages left in queues..."
 
-echo "FIXME: skipping rabbitmqadmin rate stuff that doesn´t work at all... need some plugin, but no idea which"
-# 2018 - following stuff does not work on m
-#   ack="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.ack_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
-#   inc="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.incoming_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
-#   del="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.deliver_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
-# 
-#   if [ "$ack" -a "$inc" -a "$del" ]; then
-#       message_rates=$((ack+inc+del))
-#       while [ $message_rates -gt 0 ]; do
-#            echo "Still $message_rates live message rates, waiting..."
-#            sleep 10
-#            ack="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.ack_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
-#            inc="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.incoming_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
-#            del="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.deliver_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
-#            message_rates=$((ack+inc+del))
-#            ack="`rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list queues message_stats.ack_details.rate | grep '^[0-9]' | grep -v '^0.0$' | wc -l`"
-#       done
-#   fi
 fi
 
 #sleep 60
 
-printf "\n\nflow test stopped at $smin\n\n"
+
+printf "\n\nflow test stopped at $totsarra (limit: $smin)\n\n"
+

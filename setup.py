@@ -45,11 +45,13 @@ setup(
               "sr_shovel=sarra.sr_shovel:main",
               "sr_sender=sarra.sr_sender:main",
               "sr_subscribe=sarra.sr_subscribe:main",
-              "sr_log2save=sarra.sr_log2save:main"
+              "sr_log2save=sarra.sr_log2save:main",
+              "sr_tailf=sarra.sr_tailf:main"
               ]
     },
     classifiers=[
         'Development Status :: 5 - Production/Stable',
+        'Environment :: Console',
         'Intended Audience :: Developers',
         'Intended Audience :: Science/Research',
         'Intended Audience :: System Administrators',
@@ -57,18 +59,19 @@ setup(
         'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Topic :: Communications :: File Sharing',
-        'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: System :: Logging',
     ],
     install_requires=[ 
-    "amqplib", 
+    "amqp",
     "appdirs",
     "watchdog", 
     "netifaces", 
     "humanize",
-    "psutil" ],
-    
+    "psutil" ]
+
 )

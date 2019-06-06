@@ -5,8 +5,8 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
 #
 # Questions or bugs report: dps-client@ec.gc.ca
-# sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
+# sarracenia repository: https://github.com/MetPX/sarracenia
+# Documentation: https://github.com/MetPX/sarracenia
 #
 # sr_retry.py : python3 standalone retry logic/testing
 #
@@ -17,8 +17,7 @@
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+#  the Free Software Foundation; version 2 of the License.
 #
 #  This program is distributed in the hope that it will be useful, 
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of 
@@ -31,6 +30,7 @@
 #
 
 import os,json,sys,time
+from _codecs import decode, encode
 
 try :
          from sr_config          import *
@@ -100,31 +100,90 @@ class sr_retry:
 
     def msgFromJSON(self, line ):
         try:
-            topic, headers, notice = json.loads(line)
-        except:
+            topic, headers, notice  = json.loads(line)
+        except ValueError:
             self.logger.error("corrupted line in retry file: %s " % line)
+            self.logger.debug("Error information: ", exc_info=True)
             return None
 
+        self.logger.debug('Decoding msg from json: topic={}, headers={}, notice={}'.format(topic, headers, notice))
         self.message.delivery_info['exchange']         = self.parent.exchange
         self.message.delivery_info['routing_key']      = topic
         self.message.properties['application_headers'] = headers
         self.message.body                              = notice
+        ( self.message.pubtime, self.message.baseurl, self.message.relpath ) = notice.split()
 
         return self.message
 
     def msgToJSON(self, message, done=False ):
+        self.logger.debug('Encoding msg to json: message={}'.format(vars(message)))
         topic   = message.delivery_info['routing_key']
-        headers = message.properties['application_headers']
-        notice  = message.body
 
-        if type(notice) == bytes: notice = notice.decode("utf-8")
+        if message.body[0] == '[' : # early v03 message to persist, 
+           ( message.pubtime, message.baseurl, message.relpath, headers ) = json.loads( message.body )
+           notice  = "%s %s %s" % ( message.pubtime, message.baseurl, message.relpath )
+        elif message.body[0] == '{' : # late v03 message to persist, 
+           headers = json.loads( message.body )
+           message.version = 'v03'
+           message.pubtime = headers[ "pubTime" ]
+           message.baseurl = headers[ "baseUrl" ]
+           message.relpath = headers[ "relPath" ]
+           notice  = "%s %s %s" % ( message.pubtime, message.baseurl, message.relpath )
+           if 'integrity' in headers.keys():
+               # v3 has no sum, must add it here
+               sum_algo_map = { "a":"arbitrary", "d": "md5", "s": "sha512", "n": "md5name", 
+                                "0": "random", "L": "link", "R": "remove", "z": "cod" }
+               sum_algo_map = {v: k for k, v in sum_algo_map.items()}
+               sumstr = sum_algo_map[headers['integrity']['method']]
+               if sumstr == '0':
+                   sumstr = '{},{}'.format(sumstr, headers['integrity']['value'])
+               elif sumstr == 'z':
+                   sumstr = '{},{}'.format(sumstr, sum_algo_map[headers['integrity']['value']])
+               else:
+                   decoded_value = encode(decode(headers['integrity']['value'].encode('utf-8'), 'base64'),
+                                          'hex').decode('utf-8').strip()
+                   sumstr = '{},{}'.format(sumstr, decoded_value)
+               headers['sum'] = sumstr
+               if sumstr == 'R':
+                  message.event = 'delete'
+               elif sumstr == 'L':
+                  message.event = 'remove'
+               else:
+                  message.event = 'modify'
+
+               del headers['integrity']
+
+           if 'size' in headers.keys():
+               parts_map = {'inplace': 'i', 'partitioned': 'p'}
+               if 'blocks' not in headers.keys():
+                   partstr = "%s,%s,%s,%s,%s" % ('1', headers['size'], '1', '0', '0')
+               else:
+                   partstr = "%s,%s,%s,%s,%s" % (parts_map[headers['blocks']['method']], headers['blocks']['size'],
+                                                 headers['blocks']['count'], headers['blocks']['remainder'],
+                                                 headers['blocks']['number'])
+                   del headers['blocks']
+               del headers['size']
+               headers['parts'] = partstr
+        else:
+           headers = message.properties['application_headers']
+           if type(message.body) == bytes:
+               notice = message.body.decode("utf-8")
+           else:
+               notice = message.body
+           message.version = 'v02'
+           if 'sum' in headers:
+               sumstr = headers['sum'][0]
+               if sumstr == 'R':
+                  message.event = 'delete'
+               elif sumstr == 'L':
+                  message.event = 'remove'
+               else:
+                  message.event = 'modify'
+
 
         if done:
-           headers['_retry_tag_'] = 'done'
-
-        json_line = json.dumps( [ topic, headers, notice ], sort_keys=True ) + '\n' 
-
-        return json_line
+            headers['_retry_tag_'] = 'done'
+        return json.dumps([topic, headers, notice], sort_keys=True) + '\n'
 
     def get(self):
         ok = False
@@ -210,8 +269,7 @@ class sr_retry:
 
         # compute message age
         notice   = message.body
-        parts    = notice.split()
-        msg_time = timestr2flt(parts[0])
+        msg_time = timestr2flt(message.pubtime)
         msg_age  = time.time() - msg_time
 
         # expired ?
@@ -245,17 +303,17 @@ class sr_retry:
                             #self.logger.debug("DEBUG %s is created" % path)
            else           :
                             #self.logger.debug("DEBUG %s is appended" % path)
-                            fp = open(path,'r+')
-                            fp.seek(0,2)
+                            #fp = open(path,'r+')
+                            #fp.seek(0,2)
+                            fp = open(path,'a')
 
         try:
            line = self.msgToJSON(message,done)
            fp.write( line )
            fp.flush()
         except:
-           self.logger.error("failed to serialize message to JSON: %s" % message.body )
-           pass
-
+           self.logger.error("failed to serialize message to JSON: %s" % message.body)
+           self.logger.debug('Exception details:', exc_info=True)
         return fp
 
     def msg_get_from_file(self,fp,path):
@@ -301,19 +359,25 @@ class sr_retry:
              # rename to working file to avoid corruption
 
              if not os.path.isfile(self.retry_work) :
-                fp = open(self.retry_work,'w')
-                fp.close()
-                if os.path.isfile(self.retry_path) : os.rename(self.retry_path,self.retry_work)
+                if os.path.isfile(self.retry_path) : 
+                    os.rename(self.retry_path,self.retry_work)
+                else:
+                    fp = open(self.retry_work,'w')
+                    fp.close()
 
              if not os.path.isfile(self.state_work):
-                fp = open(self.state_work,'w')
-                fp.close()
-                if os.path.isfile(self.state_path) : os.rename(self.state_path,self.state_work)
+                if os.path.isfile(self.state_path) : 
+                    os.rename(self.state_path,self.state_work)
+                else:
+                    fp = open(self.state_work,'w')
+                    fp.close()
 
              if not os.path.isfile(self.new_work):
-                fp = open(self.new_work,'w')
-                fp.close()
-                if os.path.isfile(self.new_path) : os.rename(self.new_path,self.new_work)
+                if os.path.isfile(self.new_path) : 
+                    os.rename(self.new_path,self.new_work)
+                else:
+                    fp = open(self.new_work,'w')
+                    fp.close()
 
              # state to heart
 
@@ -394,9 +458,8 @@ class sr_retry:
              except: pass
 
         except:
-                self.logger.error("on_heartbeat something went wrong")
-                (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+                self.logger.error("sr_retry/on_heartbeat: something went wrong")
+                self.logger.debug('Exception details: ', exc_info=True)
 
         # no more retry
 

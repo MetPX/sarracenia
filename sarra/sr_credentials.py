@@ -5,8 +5,8 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
 #
 # Questions or bugs report: dps-client@ec.gc.ca
-# sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
+# Sarracenia repository: https://github.com/MetPX/sarracenia
+# Documentation: https://github.com/MetPX/sarracenia
 #
 # sr_credentials.py : python3 utility tool to configure all protocol credentials
 #
@@ -18,8 +18,7 @@
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+#  the Free Software Foundation; version 2 of the License.
 #
 #  This program is distributed in the hope that it will be useful, 
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of 
@@ -219,12 +218,10 @@ class sr_credentials:
                 # seting options to protocol
         
                 self.add(urlstr,details)
-        
-        except: 
-                (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("sr_credentials/parse Type: %s, Value: %s" % (stype, svalue))
-                self.logger.error("sr_credentials parse %s" % line)
 
+        except:
+                self.logger.error("sr_credentials/parse %s" % line)
+                self.logger.debug('Exception details: ', exc_info=True)
 
     def read(self,path):
         self.logger.debug("sr_credentials read")
@@ -240,10 +237,9 @@ class sr_credentials:
                  for line in lines :
                      self.parse(line)
 
-        except : 
-                 (stype, svalue, tb) = sys.exc_info()
-                 self.logger.error("sr_credentials/read Type: %s, Value: %s" % (stype, svalue))
-                 self.logger.error("sr_credentials read path = %s" % path)
+        except :
+                 self.logger.error("sr_credentials/read path = %s" % path)
+                 self.logger.debug('Exception details: ', exc_info=True)
 
         #self.logger.debug("credentials = %s\n" % self.credentials)
 

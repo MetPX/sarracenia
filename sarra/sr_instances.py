@@ -5,8 +5,8 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
 #
 # Questions or bugs report: dps-client@ec.gc.ca
-# sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
+# Sarracenia repository: https://github.com/MetPX/sarracenia
+# Documentation: https://github.com/MetPX/sarracenia
 #
 # sr_instances.py : python3 utility tools to manage N instances of a program
 #
@@ -19,8 +19,7 @@
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+#  the Free Software Foundation; version 2 of the License.
 #
 #  This program is distributed in the hope that it will be useful, 
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of 
@@ -222,10 +221,10 @@ class sr_instances(sr_config):
         for x in os.listdir(dpath):
             fpath = dpath + os.sep + x
             try   : os.unlink(fpath)
-            except: self.logger.debug("could not delete %f on cleanup" % fpath)
+            except: self.logger.debug("could not delete %s on cleanup" % fpath)
 
         try   : os.rmdir(dpath)
-        except: self.logger.debug("could not delete %d on cleanup" % dpath)
+        except: self.logger.debug("could not delete %s on cleanup" % dpath)
 
         # log_cleanup 
 
@@ -244,12 +243,18 @@ class sr_instances(sr_config):
 
         self.action = action
 
+        if action == 'help':
+           self.help()
+           return
+
         if old :
            self.logger.warning("Should invoke 3: %s [args] action config" % sys.argv[0])
 
         # sr_post special case : may not have config_name
 
         if self.program_name == 'sr_post' :
+           if action == 'status' :
+               return
            if action == 'foreground' :
                self.foreground_parent()
                return
@@ -283,6 +288,7 @@ class sr_instances(sr_config):
            elif action == 'enable'   : self.exec_action_on_config(action)
            elif action == 'list'     : self.exec_action_on_config(action)
            elif action == 'remove'   : self.exec_action_on_config(action)
+           elif action == 'rename'   : self.exec_action_on_config(action)
            else :
                 self.logger.warning("Should invoke 5: %s [args] action config" % sys.argv[0])
            os._exit(0)
@@ -311,6 +317,7 @@ class sr_instances(sr_config):
         elif action == 'list'       : self.exec_action_on_config(action)
         elif action == 'log'        : self.exec_action_on_config(action)
         elif action == 'remove'     : self.exec_action_on_config(action)
+        elif action == 'rename'     : self.exec_action_on_config(action)
 
         else :
            self.logger.error("action unknown %s" % action)
@@ -322,11 +329,10 @@ class sr_instances(sr_config):
         configdir = self.user_config_dir + os.sep + self.program_dir
 
         if action == 'list':
-            self.print_configdir("packaged plugins",       self.package_dir     +os.sep+ 'plugins')
-            self.print_configdir("configuration examples", self.package_dir     +os.sep+ 'examples' +os.sep+ self.program_dir)
-            self.print_configdir("user plugins",           self.user_config_dir +os.sep+ 'plugins')
-            self.print_configdir("general",                self.user_config_dir )
-            self.print_configdir("user configurations",    configdir)
+            self.print_configdir("configuration examples", os.path.normpath( self.package_dir +os.sep+ 'examples' +os.sep+ self.program_dir) )
+            self.print_configdir("general",                os.path.normpath( self.user_config_dir ))
+            self.print_configdir("user configurations",    os.path.normpath(configdir))
+            print( "logs are in: %s\n" % os.path.normpath( self.user_log_dir ))
             return
 
         for confname in sorted( os.listdir(configdir) ):
@@ -385,7 +391,17 @@ class sr_instances(sr_config):
                 self.logger.info("copying %s to %s" % (usr_fil,def_fil))
                 try   : os.unlink(def_fil)
                 except: pass
-                copyfile(usr_fil,def_fil)
+                if _platform != 'win32' :
+                    copyfile(usr_fil,def_fil)
+                else: # on windows convert text files...
+                    excf = open(usr_fil,'r')
+                    exfl = excf.readlines()
+                    excf.close()
+                    dsfl = list(map( lambda x: x.replace( '\n', '\r\n' ), exfl ))
+                    dscf = open( def_fil, 'w' )
+                    dscf.write(''.join(dsfl))
+                    dscf.close() 
+                    
 
         # disable
 
@@ -415,10 +431,14 @@ class sr_instances(sr_config):
 
              editor=os.environ.get('EDITOR')
              
-             if editor:
-                 self.run_command([ editor, edit_fil] )
-             else:
-                 self.logger.error('Please set EDITOR variable to use edit command')
+             if not editor:
+                 if _platform == 'win32' :
+                    editor='notepad'
+                 else:
+                    editor='vi'
+                 self.logger.info('using %s. Set EDITOR variable pick another one.' % editor )
+
+             self.run_command([ editor, edit_fil] )
 
         # enable
 
@@ -434,9 +454,14 @@ class sr_instances(sr_config):
         # list
 
         elif action == 'list'    :
-             if not usr_fil:
-                usr_fil  = self.find_conf_file(usr_cfg)
-             self.list_file(usr_fil)
+             if usr_cfg ==  'plugins':
+                 self.print_configdir("packaged plugins", os.path.normpath( self.package_dir     +os.sep+ 'plugins'))
+                 self.print_configdir("user plugins",     os.path.normpath( self.user_config_dir +os.sep+ 'plugins'))
+
+             else:
+                if not usr_fil:
+                   usr_fil  = self.find_conf_file(usr_cfg)
+                self.list_file(usr_fil)
 
         # log
 
@@ -445,14 +470,20 @@ class sr_instances(sr_config):
 
              if self.nbr_instances == 1 :
                 self.build_instance(1)
-                print("\ntail -f %s\n" % self.logpath)
-                self.run_command([ 'tail', '-f', self.logpath])
+                if _platform == 'win32' :
+                    self.run_command([ 'sr_tailf', self.logpath])
+                else:
+                    print("\ntail -f %s\n" % self.logpath)
+                    self.run_command([ 'tail', '-f', self.logpath])
                 return
 
              if self.no > 0 :
                 self.build_instance(self.no)
-                print("\ntail -f %s\n" % self.logpath)
-                self.run_command([ 'tail', '-f', self.logpath] )
+                if _platform == 'win32' :
+                    self.run_command([ 'sr_tailf', self.logpath])
+                else:
+                    print("\ntail -f %s\n" % self.logpath)
+                    self.run_command([ 'tail', '-f', self.logpath] )
                 return
 
              no=1
@@ -474,7 +505,18 @@ class sr_instances(sr_config):
              try   : os.unlink(def_fil)
              except: self.logger.error("could not remove %s" % self.def_fil)
 
-    
+        # rename
+
+        elif action == 'rename' :
+            old_fil = self.user_config_dir + os.sep + sub_dir + os.sep + self.user_args[-1]
+            if not os.path.isfile(old_fil) : return
+            if not def_fil                 : return
+
+            copyfile(old_fil,def_fil)
+            self.logger.info("renaming %s to %s" % (old_fil,def_fil))
+            try    : os.unlink(old_fil)
+            except : pass
+
     def file_get_int(self,path):
         i = None
         try :
@@ -634,8 +676,40 @@ class sr_instances(sr_config):
                        self.logger.error("%s could not stop... not started " % self.instance_str)
                        return
 
-        cmd = []
-        cmd.append(sys.argv[0])
+        cmd = [ sys.argv[0] ]
+        if _platform == 'win32': 
+            #! does not work on windows, and subcomponents are actual scripts, not entry points.
+            #  need to invoke interpreter manually.
+            #  FIXME: pythonw preferred because it continues living after cmd window is closed.
+            #
+            self.logger.debug("sys.argv[0]=%s windows_run=%s" % (sys.argv[0], self.windows_run) )
+            for p in os.getenv("PATH").split(";") :
+
+                if self.windows_run == 'exe':
+                    q= p + '\\'+ os.path.basename(sys.argv[0]).replace('.py','') + '.exe' 
+                    if os.path.exists( q ):
+                        cmd = [ q ]
+                        break
+                elif self.windows_run == 'pyw':
+                    q= p + '\pythonw.exe' 
+                    if os.path.exists( q ):
+                        cmd = [ q ]
+                        break
+                elif self.windows_run == 'py':
+                    q= p + '\python.exe' 
+                    if os.path.exists( q ):
+                        cmd = [ q ]
+                        break
+
+            if not os.path.exists( cmd[0] ):
+                self.logger.warning( "check windows_run setting (%s), perhaps try another (pyw, py, exe)?" % self.windows_run )
+
+            if self.windows_run != 'exe':
+                if os.path.exists( sys.argv[0] ):
+                     cmd.append( sys.argv[0] )
+                else:
+                     cmd.append(  sys.argv[0] + '-script.py' )
+
         if not self.user_args or not "--no" in self.user_args :
            cmd.append("--no")
            cmd.append("%d" % self.instance)
@@ -678,6 +752,7 @@ class sr_instances(sr_config):
              i=1
              while i <= self.nbr_instances :
                    self.build_instance(i)
+                   self.setlog()
                    self.start_instance()
                    i = i + 1
 
@@ -696,9 +771,9 @@ class sr_instances(sr_config):
              self.setlog()
              if self.no > 0:
                 os.close(0)
-                lfd=os.open( self.logpath, os.O_CREAT|os.O_WRONLY|os.O_APPEND )
-                os.dup2(lfd,1)
-                os.dup2(lfd,2)
+                #lfd=os.open( self.logpath, os.O_CREAT|os.O_WRONLY|os.O_APPEND )
+                #os.dup2(lfd,1)
+                #os.dup2(lfd,2)
   
              self.logger.debug("start instance %d (pid=%d)\n" % (self.no, self.pid) )
 

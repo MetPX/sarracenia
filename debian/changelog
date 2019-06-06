@@ -1,3 +1,250 @@
+metpx-sarracenia (2.19.04b2) unstable; urgency=medium
+
+  * bugfix: #158 there was a bug with extended attributes in checksums (yes, another one.)
+  * new:    moved flow_test away from xpublic to allow continuous use
+  *         on an active pump without interfering with normal flows.
+  * info:   mostly refactoring for future work by Benoit.
+  *         Noureddine wants to run flow_test continuously somewhere
+  *         in addition to the travis-ci.com stuff.
+  *         there are some issues that crept in over the summer:
+  *         #182, #179, are opened to track progress on that.
+
+ -- Peter Silva <peter.silva@canada.ca>  Sun, 14 Apr 2019 11:21:24 -0400
+
+metpx-sarracenia (2.19.04b1) unstable; urgency=medium
+
+  * new:    adding WMO_mesh_post example.
+  * bugfix: regression all posts in b6 were v02 (v03 inadvertantly disabled.)
+  * bugfix: print improvements.
+  * bugfix: there was an issue with extended attribute in checksums.
+
+ -- Peter Silva <peter.silva@canada.ca>  Mon, 01 Apr 2019 23:16:37 -0400
+
+metpx-sarracenia (2.19.03b6) unstable; urgency=medium
+
+  * new:    made code use instance variables instead of repeatedly parsing
+  *         elements of the message: topic_prefix->version, sum-> event.
+  *         more robust/easier to maintain.
+  * bugfix: updated WMO_mesh examples to use v03 and /var/www/html (as per feedback.)
+  * new:    add post_override_del option to post_override plugin.
+  *         allows deletion of headers on post.
+  * bugfix: Issue #175 documentation needs to use amqps for dd.weather, not amqp anymore.
+  * new:    wmo_mesh example now deletes a bunch of headers to shorten & simplify messages.
+  * new:    switching http port in flow test to 8001.  8000 is too popular.
+  * new:    switching flow_test to use hpfx.collab.science.gc.ca instead of dd.weather.gc.ca
+  * bugfix: Issue #168 have httpd unit test retrieve pick a file <= 2kb.  Big files 
+  *         were causing hangs in the flow test... this is one fix, but not enough to close
+  *         the bug.
+  * new:    Issue #54 is finally closed.
+  * new:    Issue #54 added xattr_disable to turn off extended attributes feature.
+  * new:    Issue #54 added version of extended attributes for NTFS.
+ 
+ -- Peter Silva <peter.silva@canada.ca>  Sun, 31 Mar 2019 16:13:54 -0400
+
+metpx-sarracenia (2.19.03b5) unstable; urgency=medium
+
+  * bugfix: transparently accept setxattr failure for readonly files.
+  * bugfix: several bugs with roundtripping v03->v02 checksums.
+  * bugfix: changed documentation for rename (used what is changed by strip option) 
+  * bugfix: found issues with arbitrary-application checksum
+  * bugfix: mode/atime/mtim restoration was missing for inlined data.
+  * new:    upgrade wmo_mesh mqtt publishing plugin to work with v03
+
+ -- Peter Silva <peter.silva@canada.ca>  Sun, 24 Mar 2019 23:26:56 -0400
+
+metpx-sarracenia (2.19.03b4) unstable; urgency=medium
+
+  * bugfix: conversion from v02 to v03 was broken somewhere else.
+
+ -- Peter Silva <peter.silva@canada.ca>  Thu, 21 Mar 2019 00:59:08 -0400
+
+metpx-sarracenia (2.19.03b3) unstable; urgency=medium
+
+  * bugfix: v02 to v03 conversion was broken. 
+
+ -- Peter Silva <peter.silva@canada.ca>  Tue, 19 Mar 2019 20:35:46 -0400
+
+metpx-sarracenia (2.19.03b2) unstable; urgency=medium
+
+  * new:    issue #134 added on_data plugin entry point, to allow data tranformation.
+  * new:    removed recomputer_chksum setting. application now decides on its own.
+  * new:    added post_on_start option so control whether sr_watch posts all files on startup.
+  * bugfix: issue #172 add inlining of data when the header is missing.  
+  * dev:    issue #159 Contiguous Integration with travis-ci added, improved testing.
+  *         testing of four different python versions now automated.
+  * new:    added msg_rawlog to allow clearer viewing of v02 and v03 messages.
+
+ -- Peter Silva <peter.silva@canada.ca>  Sun, 17 Mar 2019 14:03:21 -0400
+
+metpx-sarracenia (2.19.03b1) unstable; urgency=medium
+
+  * new:    issue #166: Added *size* and *blocks* added to v03.post format.
+  * bugfix: removed some incorrect ERROR messages (originally inserted to aid debugging.)
+  * bugfix: issue #162: use of python-amqp broken on ubuntu <= 16.04 because *connect* call missing.
+  * bugfix: issue #160: cleaned up v03 so it has no *sum* header (which should only be present in v02)
+
+ -- Peter Silva <peter.silva@canada.ca>  Sat, 09 Mar 2019 01:11:35 -0500
+
+metpx-sarracenia (2.19.02b3) unstable; urgency=medium
+
+  *bugfix: issue #163: use of python-amqp broken on ubuntu <= 16.04 because *connect* 
+  *        call missing. 
+
+ -- Peter Silva <peter.silva@canada.ca>  Wed, 27 Feb 2019 14:38:43 -0500
+
+metpx-sarracenia (2.19.02b2) unstable; urgency=medium
+
+  * new:    implemented WMO expert team on computing and telecommunication systems
+  *         (ETCTS, latest meeting: 2019/02) recommendations for changes to v03 format.
+  * new:    ETCTS201902 v03 message body is a single JSON *object* (like a python *dictionary*)
+  * new:    issue #146 ETCTS201902 v03 timestamps now have a "T" in them.
+  * new:    issue #148 ETCTS201902 v03 *sum* header changed to *integrity*, encoding changed from hex 
+  *         to base64.
+  * new:    issue #147 ETCTS201902 v03 added **inline** support to include file data in the announcements.
+  *         data is encoded in either utf-8 or base64.
+  * new:    issue #153 log rotation interval can now be set. Minues if you like.
+  * bugfix: issue #140 messages on console instead of log.
+  *
+
+ -- Peter Silva <peter.silva@canada.ca>  Sat, 23 Feb 2019 08:33:36 -0500
+
+metpx-sarracenia (2.19.02b1) unstable; urgency=medium
+
+  * new:    Added checksum caching in an extended file attribute (from Issue #54) 
+  * new:    Issue #130 - moved to new amqp library protocol changed from 0.8 to 0.9.1
+  * new:    exp_2mqtt.py -> bridge to export to MQTT brokers.
+  * new:    sample configuration: WMO_Sketch_2mqtt.conf 
+  * new:    windows installer available. Issue #122
+  * bugfix: windows Issue #111 - now works with drive specfications (C:)
+  * bugfix: debian package name, removed python3- prefix matches pypi, 
+  *         and better compliance with debian standards.
+  * bugfix: *remove* wouldn't in some circumstances. (bug from in v2.19.01b1)
+
+ -- Peter Silva <peter.silva@canada.ca>  Wed, 06 Feb 2019 22:15:10 -0500
+
+metpx-sarracenia (2.19.01b1) unstable; urgency=medium
+
+  * new:    optionally produce and consume experimental v03.post messages, 
+  *         headers now in body in JSON, removing 255 character limit.
+  * new:    save/restore format is now the same as the v03 payload.
+  *         (still reads old ones)
+  * new:    add post_topic_prefix setting (matches existing consumer topic_prefix)
+  * new:    added windows_run exe|pyw|py option to allow choosing of how components run.
+  *         one can invoke .exe files, or the script files with pythonw or python exes.
+  * new:    added suppress_duplicates_basis path|name|data to tune cache for use cases.
+  * bugfix: added documentation of preserve_time option (was missing.)
+  * bugfix: if *preserve_time* is off, posts will not have *atime* and *mtime* headers
+  * bugfix: if *preserve_mode* is off, posts will not have *mode* 
+  * bugfix: print a useful message if invalids sum algorithm specified.
+  * bugfix: change cleanup, setup, declare to connect once and fail, rather than hang.
+  * bugfix: when sr_post is a one-shot configuration, status makes no sense.
+
+ -- Peter Silva <peter.silva@canada.ca>  Thu, 17 Jan 2019 17:15:21 -0500
+
+metpx-sarracenia (2.18.12b4) unstable; urgency=medium
+
+  * new: print exceptions on failure of makedirs, so "permission denied" is obvious
+  * documentation: shim\_ options for sarrac
+  * documentation: made importance of ordering between exchange and subtopic options clearer 
+  * documentation: change installation instructions so that paramiko is always installed.
+  * documentation: removed deprecation of *rename* header, there are valid use cases for it.
+  * documentation: extensive revision of mesh_gts briefing.
+  * bugfix: in pitcher_client.conf sample config, order of echange_suffix and subtopic option corrected.
+  * bugfix: copyright is GPLv2 only.  Notices incorrectly listed GPLv2 OR LATER.
+  * bugfix: more progress on issue #54 (application-defined checksums with extended attributes.)
+
+ -- Peter Silva <peter.silva@canada.ca>  Sat, 15 Dec 2018 13:04:13 -0500
+
+metpx-sarracenia (2.18.11b6) unstable; urgency=medium
+
+  * missed a commit... just completing b5 changes... 
+
+ -- Peter Silva <peter.silva@canada.ca>  Tue, 27 Nov 2018 15:20:18 -0500
+
+metpx-sarracenia (2.18.11b5) unstable; urgency=medium
+
+  * revert xattr dependency, causing issues on windows and older linux. 
+
+ -- Peter Silva <peter.silva@canada.ca>  Tue, 27 Nov 2018 13:41:03 -0500
+
+metpx-sarracenia (2.18.11b4) unstable; urgency=medium
+
+  * revert depedency on paramiko which breaks build on ubuntu 14.04.
+  * adding a warning about backslashes in paths on windows
+
+ -- Peter Silva <peter.silva@canada.ca>  Sat, 24 Nov 2018 23:16:14 -0500
+
+metpx-sarracenia (2.18.11b3) unstable; urgency=medium
+
+  *bugfix: windows dependencies corrected. 
+
+ -- Peter Silva <peter.silva@canada.ca>  Fri, 23 Nov 2018 01:21:41 -0500
+
+metpx-sarracenia (2.18.11b2) unstable; urgency=medium
+
+  * bugfix:  windows: Issue #54 support is broken on windows, disabled there.
+  *          print slashes the right way round on windows in more cases.
+
+ -- Peter Silva <peter.silva@canada.ca>  Wed, 21 Nov 2018 23:04:49 -0500
+
+metpx-sarracenia (2.18.11b1) unstable; urgency=medium
+
+  * New:     Issue #54 initial support for *fake* (application defined) checksums.
+  *
+  * bugfix:  Issue #118 windows commands started from cmd.exe exit when window closed.
+  *          Issue #113 crash on sr_post/watch with post_exchange_split
+  *          Issue #112 windows log rollover 
+  *          Issue #101 windows git checkout corruption 
+
+ -- Peter Silva <peter.silva@canada.ca>  Wed, 21 Nov 2018 13:35:06 -0500
+
+metpx-sarracenia (2.18.10b2) unstable; urgency=medium
+
+  * new      Issue #106 plugins for hydrometric forecast data acquisition.
+  *          now have many more examples of polls.
+  * bugfix:  Issue #110 has_vip does not find vips.
+  *          unit tests referred to non SSL datamart, were broken
+  *          when it was de-commissioned.
+
+ -- Peter Silva <peter.silva@canada.ca>  Wed, 31 Oct 2018 16:33:41 -0400
+
+metpx-sarracenia (2.18.10b1) unstable; urgency=medium
+
+  * bugfix   corruption in cache cleaning introduced by pathname encoding.
+  * new      email ingest support added ( Issue #59 )
+
+
+ -- Peter Silva <peter.silva@canada.ca>  Fri, 05 Oct 2018 18:02:47 -0400
+
+metpx-sarracenia (2.18.09b2) unstable; urgency=medium
+
+  * bugfix   fixed duplicate suppression corruption when files have spaces in their names.
+  * bugfix   on windows: many issues with on \ vs. / addressed.
+  * bugfix   on windows, *edit* directive now works using notepad.exe by default.
+  * bugfix   #100 on windows, *add* adds carriage returns to example files added, so notepad is happy.
+  * bugfix   on windows, *log* now works.
+  * bugfix   on windows, *list* now works for individual files.
+  * new      list now prints out log directory (which is hard to guess on windows)
+  * bugfix   examples for sr_Pitcher use case where inaccurate.
+  * bugfix   issue #99 *list* missed some items it should have listed.
+  * bugfix   *list* no longer list dot files or those ending in ~ (tmp/work/hidden files)
+
+
+ -- Peter Silva <peter.silva@canada.ca>  Wed, 19 Sep 2018 21:02:22 -0400
+
+metpx-sarracenia (2.18.09b1) unstable; urgency=medium
+
+  * disabling timeouts on windows, as they were not working anyways.
+  * added ${DD} to substitutions in directives
+  * added --version option. ( issue #25 )
+  * added rename option. ( Issue #92 )
+  * added globbing to include directive ( Issue #31 )
+  * many corrections to French documentation.
+  * bugfix issues #85 #86 
+ 
+
+ -- Peter Silva <peter.silva@canada.ca>  Thu, 13 Sep 2018 23:34:52 -0400
+
 metpx-sarracenia (2.18.08b1) unstable; urgency=medium
 
   * bugfix    issue #76 sftp login passwords broken when any keys present. (from Marie!)
@@ -11,13 +258,13 @@ metpx-sarracenia (2.18.08b1) unstable; urgency=medium
   *           issue #80: mirror/strip/flatten affect each accept, rather than global.
 
 
- -- Peter Silva <peter@blacklab>  Thu, 09 Aug 2018 22:53:54 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Thu, 09 Aug 2018 22:53:54 -0400
 
 metpx-sarracenia (2.18.07b3) unstable; urgency=medium
 
   * bugfix     regression for subprocess api change @ V3.5
 
- -- Peter Silva <peter@idefix>  Tue, 17 Jul 2018 11:51:15 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Tue, 17 Jul 2018 11:51:15 -0400
 
 metpx-sarracenia (2.18.07b2) unstable; urgency=medium
 
@@ -27,7 +274,7 @@ metpx-sarracenia (2.18.07b2) unstable; urgency=medium
   * new         poll_email_fetch - query and download from mailboxes. From Marie!
   *
 
- -- Peter Silva <peter@blacklab>  Mon, 16 Jul 2018 00:17:00 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Mon, 16 Jul 2018 00:17:00 -0400
 
 metpx-sarracenia (2.18.07b1) unstable; urgency=medium
 
@@ -39,13 +286,13 @@ metpx-sarracenia (2.18.07b1) unstable; urgency=medium
   *             now have program settings audit.conf  (issue #64 )
   *             more output of plugin programs present in logs (issue #63)
 
- -- Peter Silva <peter@blacklab>  Thu, 12 Jul 2018 20:26:59 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Thu, 12 Jul 2018 20:26:59 -0400
 
 metpx-sarracenia (2.18.06b2) unstable; urgency=medium
 
   *bugfix	Jun's do_poll fix. 
 
- -- Peter Silva <peter@bsqt.homeip.net>  Tue, 12 Jun 2018 18:42:37 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Tue, 12 Jun 2018 18:42:37 -0400
 
 metpx-sarracenia (2.18.06b1) unstable; urgency=medium
 
@@ -56,7 +303,7 @@ metpx-sarracenia (2.18.06b1) unstable; urgency=medium
   *             *sci-fi* (future planned features) removed from docs.
   *             website migrated from sf.net to git repo ones (github, gitlab)
 
- -- Peter Silva <peter@bsqt.homeip.net>  Tue, 12 Jun 2018 18:31:24 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Tue, 12 Jun 2018 18:31:24 -0400
 
 metpx-sarracenia (2.18.05b4) unstable; urgency=medium
 
@@ -113,7 +360,7 @@ metpx-sarracenia (2.18.04b5) unstable; urgency=medium
   *         Adding hint about use of *expire* option, how it is necessary for operations.
   *         default setting is to avoid broker overload, too low for operational use.
 
- -- Peter Silva <peter@bsqt.homeip.net>  Fri, 27 Apr 2018 12:40:16 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Fri, 27 Apr 2018 12:40:16 -0400
 
 metpx-sarracenia (2.18.04b4) unstable; urgency=medium
 
@@ -123,7 +370,7 @@ metpx-sarracenia (2.18.04b4) unstable; urgency=medium
   * new     inflight tmp/
 
 
- -- Peter Silva <peter@bsqt.homeip.net>  Wed, 25 Apr 2018 10:51:00 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Wed, 25 Apr 2018 10:51:00 -0400
 
 metpx-sarracenia (2.18.04b3) unstable; urgency=medium
 
@@ -142,7 +389,7 @@ metpx-sarracenia (2.18.04b3) unstable; urgency=medium
   *         sr_audit log a message when --users all is done
   *                   make sure heartbeat is in try/except 
 
- -- Peter Silva <peter@bsqt.homeip.net>  Fri, 20 Apr 2018 16:14:24 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Fri, 20 Apr 2018 16:14:24 -0400
 
 metpx-sarracenia (2.18.04b2) unstable; urgency=medium
 
@@ -160,7 +407,7 @@ metpx-sarracenia (2.18.04b2) unstable; urgency=medium
   *         sr_rabbit rabbit dependant commands placed in this file
   * new     plugin do_send_log
 
- -- Peter Silva <peter@bsqt.homeip.net>  Tue, 10 Apr 2018 11:17:31 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Tue, 10 Apr 2018 11:17:31 -0400
 
 metpx-sarracenia (2.18.04b1) unstable; urgency=medium
 
@@ -192,7 +439,7 @@ metpx-sarracenia (2.18.03b1) unstable; urgency=medium
   * bugfix Rotation of retry messages ajusted under certain conditions
   * update msg_filter_wmo2msc.py requiered operationally now
 
- -- Peter Silva <peter@bsqt.homeip.net>  Fri, 23 Mar 2018 11:57:09 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Fri, 23 Mar 2018 11:57:09 -0400
 
 metpx-sarracenia (2.18.03a4) unstable; urgency=medium
 
@@ -328,7 +575,7 @@ metpx-sarracenia (2.18.01a1) unstable; urgency=medium
   * C: fix: segfault if credentials.conf is missing.
 
 
- -- Peter Silva <peter@bsqt.homeip.net>  Wed, 03 Jan 2018 14:27:18 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Wed, 03 Jan 2018 14:27:18 -0500
 
 metpx-sarracenia (2.17.12a8) unstable; urgency=medium
 
@@ -386,13 +633,13 @@ metpx-sarracenia (2.17.12a5) unstable; urgency=medium
 
   * added exponential backoff to downloads 
 
- -- Peter Silva <peter@bsqt.homeip.net>  Fri, 08 Dec 2017 09:54:37 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Fri, 08 Dec 2017 09:54:37 -0500
 
 metpx-sarracenia (2.17.12a4) unstable; urgency=medium
 
   * added exponential backoff on retry, so it doesn't SPAM/hammer server when retrying.
 
- -- Peter Silva <peter@bsqt.homeip.net>  Wed, 06 Dec 2017 17:28:56 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Wed, 06 Dec 2017 17:28:56 -0500
 
 metpx-sarracenia (2.17.12a3) unstable; urgency=medium
 
@@ -400,7 +647,7 @@ metpx-sarracenia (2.17.12a3) unstable; urgency=medium
   * changed behaviour to try *attempts* times before putting in the retry queue
   * buffering changed from 8K to 1M (awful performance regression due to timeouts on small bufs.)
 
- -- Peter Silva <peter@bsqt.homeip.net>  Wed, 06 Dec 2017 15:38:01 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Wed, 06 Dec 2017 15:38:01 -0500
 
 metpx-sarracenia (2.17.12a2) unstable; urgency=medium
 
@@ -409,7 +656,7 @@ metpx-sarracenia (2.17.12a2) unstable; urgency=medium
   * heartbeat_memory plugin added by default to control runaway memory leaks.
   * support added to python for N checksum (already in C version.)
 
- -- Peter Silva <peter@bsqt.homeip.net>  Tue, 05 Dec 2017 18:01:18 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Tue, 05 Dec 2017 18:01:18 -0500
 
 metpx-sarracenia (2.17.12a1) unstable; urgency=medium
 
@@ -433,7 +680,7 @@ metpx-sarracenia (2.17.12a1) unstable; urgency=medium
   * C: bugfix: pbu synonym for post_base_url, was not accepted, corrected.
   * C: fixed when renaming across file systems, it would fail, rather than copying the file.
 
- -- Peter Silva <peter@bsqt.homeip.net>  Mon, 04 Dec 2017 17:45:52 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Mon, 04 Dec 2017 17:45:52 -0500
 
 metpx-sarracenia (2.17.11a3) unstable; urgency=medium
 
@@ -449,7 +696,7 @@ metpx-sarracenia (2.17.11a3) unstable; urgency=medium
   * sr_subscribe  revert onfly_checksum set to message checksum in case unset
 
 
- -- Peter Silva <peter@bsqt.homeip.net>  Fri, 17 Nov 2017 13:45:48 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Fri, 17 Nov 2017 13:45:48 -0500
 
 metpx-sarracenia (2.17.11a2) unstable; urgency=medium
 
@@ -462,7 +709,7 @@ metpx-sarracenia (2.17.11a2) unstable; urgency=medium
   * fixed: list,get,remove,edit,log not working for other than subscribe.
   * excessive debug messaging removed.
 
- -- Peter Silva <peter@bsqt.homeip.net>  Thu, 09 Nov 2017 17:04:06 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Thu, 09 Nov 2017 17:04:06 -0500
 
 metpx-sarracenia (2.17.11a1) unstable; urgency=medium
 
@@ -489,7 +736,7 @@ metpx-sarracenia (2.17.11a1) unstable; urgency=medium
   * sr_*        withdraw msg.headers['filename'],  msg.headers['flow']
   * sr_*        reenforcement of base_dir, post_broker, post_exchange, post_base_dir, post_base_url
 
- -- Peter Silva <peter@bsqt.homeip.net>  Mon, 06 Nov 2017 15:03:50 -0500
+ -- Peter Silva <peter.silva@canada.ca>  Mon, 06 Nov 2017 15:03:50 -0500
 
 metpx-sarracenia (2.17.10a4) unstable; urgency=medium
 
@@ -500,7 +747,7 @@ metpx-sarracenia (2.17.10a4) unstable; urgency=medium
   * fix for no_download switch which wasn´t impeding downloads.
 
 
- -- Peter Silva <peter@bsqt.homeip.net>  Mon, 30 Oct 2017 17:43:28 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Mon, 30 Oct 2017 17:43:28 -0400
 
 metpx-sarracenia (2.17.10a3) unstable; urgency=medium
 
@@ -518,7 +765,7 @@ metpx-sarracenia (2.17.10a3) unstable; urgency=medium
   * sr_subscribe : changing determination of source (source_from_exchange or missing)
   * rmdir support (python only.)
 
- -- Peter Silva <peter@bsqt.homeip.net>  Fri, 27 Oct 2017 17:26:21 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Fri, 27 Oct 2017 17:26:21 -0400
 
 metpx-sarracenia (2.17.10a2) unstable; urgency=medium
 
@@ -535,7 +782,7 @@ metpx-sarracenia (2.17.10a2) unstable; urgency=medium
   * C: added tx.select & tx.confirm (publish acknowledgements)
   * C: integrated into flow_tests.
 
- -- Peter Silva <peter@bsqt.homeip.net>  Fri, 20 Oct 2017 13:21:57 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Fri, 20 Oct 2017 13:21:57 -0400
 
 metpx-sarracenia (2.17.10a1) unstable; urgency=medium
 
@@ -571,7 +818,7 @@ metpx-sarracenia (2.17.10a1) unstable; urgency=medium
 
 
 
- -- Peter Silva <peter@bsqt.homeip.net>  Thu, 12 Oct 2017 17:58:52 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Thu, 12 Oct 2017 17:58:52 -0400
 
 metpx-sarracenia (2.17.09a1) unstable; urgency=medium
 
@@ -616,7 +863,7 @@ metpx-sarracenia (2.17.08a1) unstable; urgency=medium
   * C libc shim that calls C posting library complete.
   * getting rid of random checksums (L & R -> SHA512 digest.)
 
- -- Peter Silva <peter@bsqt.homeip.net>  Mon, 14 Aug 2017 17:54:33 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Mon, 14 Aug 2017 17:54:33 -0400
 
 metpx-sarracenia (2.17.07a4) unstable; urgency=medium
 
@@ -629,7 +876,7 @@ metpx-sarracenia (2.17.07a3) unstable; urgency=medium
 
   * on_heartbeat support added to sr_watch. 
 
- -- Peter Silva <peter@bsqt.homeip.net>  Thu, 27 Jul 2017 12:34:47 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Thu, 27 Jul 2017 12:34:47 -0400
 
 metpx-sarracenia (2.17.07a2) unstable; urgency=medium
 
@@ -637,7 +884,7 @@ metpx-sarracenia (2.17.07a2) unstable; urgency=medium
   * on_heartbeat now defaults to heartbeat_log as one would expect, and documented both.
 
 
- -- Peter Silva <peter@bsqt.homeip.net>  Wed, 26 Jul 2017 11:02:30 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Wed, 26 Jul 2017 11:02:30 -0400
 
 metpx-sarracenia (2.17.07a1) unstable; urgency=medium
 
@@ -670,7 +917,7 @@ metpx-sarracenia (2.17.06a3) unstable; urgency=medium
   * flatten fixed in sr_config.
   * crasher bug when sr_sender doesn´t have a post_broker.
 
- -- Peter Silva <peter@bsqt.homeip.net>  Thu, 22 Jun 2017 17:20:03 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Thu, 22 Jun 2017 17:20:03 -0400
 
 metpx-sarracenia (2.17.06a2) unstable; urgency=medium
 
@@ -710,14 +957,14 @@ metpx-sarracenia (2.17.06a1) unstable; urgency=medium
   * some plugin improvements from Dominic Racette.
 
 
- -- Peter Silva <peter@bsqt.homeip.net>  Wed, 07 Jun 2017 13:47:55 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Wed, 07 Jun 2017 13:47:55 -0400
 
 metpx-sarracenia (2.17.03a5) unstable; urgency=medium
 
   * added sr_watchb... the old implementation as a backup in case the new sr_watch is busted.
   * attempted fix for sr_walk permission denied issue.  recursion is now manual, and it queues issues for later.
 
- -- Peter Silva <peter@bsqt.homeip.net>  Mon, 27 Mar 2017 16:27:22 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Mon, 27 Mar 2017 16:27:22 -0400
 
 metpx-sarracenia (2.17.03a4) unstable; urgency=medium
 
@@ -732,7 +979,7 @@ metpx-sarracenia (2.17.03a4) unstable; urgency=medium
   * report_daemons False option setting now stops report routing shovels from starting.
   * added file_age.py to plugins examples.
 
- -- Peter Silva <peter@bsqt.homeip.net>  Sat, 25 Mar 2017 23:08:40 -0400
+ -- Peter Silva <peter.silva@canada.ca>  Sat, 25 Mar 2017 23:08:40 -0400
 
 metpx-sarracenia (2.17.03a2) unstable; urgency=medium
 

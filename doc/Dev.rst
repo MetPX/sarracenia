@@ -27,7 +27,7 @@ To hack on the sarracenia source, you need:
 after you have cloned the source code::
 
     git clone https://github.com/MetPX/sarracenia sarracenia
-    git clone https://github.com/MetPX/sarracenia sarrac
+    git clone https://github.com/MetPX/sarrac sarrac
     cd sarracenia
 
 The rest of the Guide assumes you are there.
@@ -154,22 +154,12 @@ Checklist:
 
 
 
-Testing
--------
+Flow Test Description
+---------------------
 
-Before committing code to the master branch, as a Quality Assurance measure one should run all available self-tests.
-It is assumed that the specific changes in the code have already been unit
-tested.  Please add self-tests as appropriate to this process to reflect the new ones.
-
-The configuration one is trying to replicate:
-
-.. image:: Flow_test.svg
-
-Assumption: test environment is a Linux PC, either a laptop/desktop, or a server on which one
-can start a browser. If working with the c implementation as well, there are also the following
-flows defined:
-
-.. image:: cFlow_test.svg
+Before committing code to the master branch, as a Quality Assurance measure, one should run 
+all available self-tests. It is assumed that the specific changes in the code have already been unit
+tested. Please add self-tests as appropriate to this process to reflect the new ones.
 
 A typical development workflow will be::
 
@@ -187,11 +177,151 @@ A typical development workflow will be::
    ./flow_check.sh  ; *checks the flows*
    ./flow_cleanup.sh  ; *cleans up the flows*
    
-One can then study the results, and determine the next cycle of modifications to make.
-The rest of this section documents these steps in much more detail.  
-Before one can run the flow_test, some pre-requisites must be taken care of.
+As part of the flow_setup.sh, various unit_test are run (located in the test/unit_tests
+sub-directory.) The flow tests can then indicate if there is an issue
+with the modification.
+
+Note that the development system must be configured for the flow test to run successfully. See the next
+section for configuration instructions. For development with a fresh OS installation,
+the configuration steps have been automated and can be applied with the flow_autoconfig.sh
+script in sarracenia/test/. Blind execution of this script on a working system may lead to undesirable
+side effects; you have been warned!
+
+The configuration one is trying to replicate:
+
+.. image:: Flow_test.svg
+
+
+Python Flow Coverage
+~~~~~~~~~~~~~~~~~~~~
+
+Following table describes what each element of the flow test does, and the test coverage
+shows functionality covered.
+
++-------------------+--------------------------------------+-------------------------------------+
+|                   |                                      |                                     | 
+| Configuration     | Does                                 | Test Coverage                       | 
+|                   |                                      |                                     | 
++-------------------+--------------------------------------+-------------------------------------+
+| subscribe t_ddx   | copy from data mart to local broker  | read amqps public data mart (v02)   | 
+|                   | posting messages to local xwinnow00  | as ordinary user.                   | 
+|                   | and xwinnow01 exchanges.             |                                     | 
+|                   |                                      | shared queue and multiple processes | 
+|                   |                                      | 3 instances download from each q    | 
+|                   |                                      |                                     | 
+|                   |                                      | post amqp to a local exchange (v02) | 
+|                   |                                      | as feeder(admin) user               | 
+|                   |                                      |                                     | 
+|                   |                                      | post_exchange_split to xwinnow0x    | 
++-------------------+--------------------------------------+-------------------------------------+
+| winnow t0x_f10    | winnow processing publish for xsarra | read local amqp v02                 | 
+|                   | exchange for downloading.            | as feeder user.                     | 
+|                   |                                      |                                     | 
+|                   |                                      | complete caching (winnow) function  | 
+|                   | as two sources identical, only half  |                                     | 
+|                   | messages received are posted to next | post amqp v02 to local excchange.   | 
++-------------------+--------------------------------------+-------------------------------------+
+| sarra download    | download the winnowed data from the  | read local amqp v02 (xsarra)        | 
+| f20               | data mart to a local directory       |                                     | 
+|                   | (TESTDOCROOT= ~/sarra_devdocroot)    | download using built-in python      |
+|                   |                                      |                                     | 
+|                   | add a header at application layer    | shared queue and multiple processes | 
+|                   | longer than 255 characters.          | 5 instances download from each q    | 
+|                   |                                      |                                     | 
+|                   |                                      | download using accel_wget plugin    | 
+|                   |                                      |                                     | 
+|                   |                                      | AMQP header truncation on publish.  | 
+|                   |                                      |                                     | 
+|                   |                                      | post amqp v02 to xpublic            | 
+|                   |                                      | as feeder user                      | 
+|                   |                                      | as http downloads from localhost    | 
++-------------------+--------------------------------------+-------------------------------------+
+| subscribe t       | download as client from localhost    | read amqp from local broker         | 
+|                   | to downloaded_by_sub_t directory.    | as ordinary user/client.            | 
+|                   |                                      |                                     | 
+|                   |                                      | shared queue and multiple processes | 
+|                   |                                      | 5 instances download from each q    | 
+|                   |                                      |                                     | 
++-------------------+--------------------------------------+-------------------------------------+
+| watch f40         | watch downloaded_by_sub_t            | client v03 post of local file.      | 
+|                   | (post each file that appears there.) | (file: url)                         | 
+|                   |                                      |                                     | 
+|                   | memory ceiling set low               | auto restarting on memory ceiling.  | 
+|                   |                                      |                                     | 
++-------------------+--------------------------------------+-------------------------------------+
+| sender            | read local file, send via sftp       | client consume v03 post.            | 
+| tsource2send      | to sent_by_tsource2send directory    |                                     | 
+|                   |                                      | consumer read local file.           | 
+|                   | post to xs_tsource_output            |                                     | 
+|                   |                                      | send via sftp.                      | 
+|                   |                                      |                                     | 
+|                   |                                      | plugin replace_dir                  | 
+|                   |                                      |                                     | 
+|                   |                                      | posting sftp url.                   | 
+|                   |                                      | post v02 (converting v03 back.)     | 
+|                   |                                      |                                     | 
+|                   |                                      | test post_exchange_suffix option.   | 
++-------------------+--------------------------------------+-------------------------------------+
+| subscribe         | download via sftp from localhost     | client sftp download.               | 
+| u_sftp_f60        | putting files in downloaded_by_sub_u |                                     | 
+|                   | directory.                           | accel_sftp plugin.                  | 
+|                   |                                      |                                     | 
++-------------------+--------------------------------------+-------------------------------------+
+| post test2_f61    | post files in sent_by_tsource2send   | explicit file posting               | 
+|                   | with ftp URL's in the                |                                     | 
+|                   | xs_tsource_poll exchange             | ftp URL posting.                    | 
+|                   |                                      |                                     | 
+|                   | (wrapper script calls post)          | post_exchange_suffix option         | 
++-------------------+--------------------------------------+-------------------------------------+
+| poll f62          | poll sent_by_tsource2send directory  | polling                             | 
+|                   | posting sftp download URL's          |                                     | 
+|                   |                                      | post_exchange_suffix option         | 
+|                   |                                      |                                     | 
++-------------------+--------------------------------------+-------------------------------------+
+| subscribe ftp_f70 | subscribe to test2_f61 ftp' posts.   | ftp url downloading.                | 
+|                   | download files from localhost        |                                     | 
+|                   | to downloaded_by_sub_u directory.    |                                     | 
+|                   |                                      |                                     | 
++-------------------+--------------------------------------+-------------------------------------+
+| subscribe q_f71   | subscribe to poll, downloading       | confirming poll post quality.       | 
+|                   | to recd_by_srpoll_test1              |                                     | 
++-------------------+--------------------------------------+-------------------------------------+
+| shovel pclean f90 | clean up files so they don't         | shovel function.                    | 
+|                   | accumulate                           |                                     | 
+|                   | fakes failures to exercise retries   |                                     | 
+|                   |                                      | retry logic.                        | 
+|                   |                                      |                                     | 
++-------------------+--------------------------------------+-------------------------------------+
+| shovel pclean f91 | clean up files so they don't         | shovel with posting v03             | 
+|                   | accumulate                           |                                     | 
+|                   |                                      | retry logic.                        | 
++-------------------+--------------------------------------+-------------------------------------+
+| shovel pclean f92 | clean up files so they don't         | shovel with consuming v03           | 
+|                   | accumulate                           |                                     | 
+|                   |                                      | posting v02.                        | 
+|                   |                                      |                                     | 
+|                   |                                      | retry logic.                        | 
++-------------------+--------------------------------------+-------------------------------------+
+
+Assumption: test environment is a Linux PC, either a laptop/desktop, or a server on which one
+can start a browser. If working with the C implementation as well, there are also the following
+flows defined:
+
+.. image:: cFlow_test.svg
 
    
+Running Flow Test
+-----------------
+
+This section documents these steps in much more detail.  
+Before one can run the flow_test, some pre-requisites must be taken care of.
+note that there is travis-ci.com integration for at least the master branch
+to verify functionality on a variety of python version.  Consulte::
+
+   https://travis-ci.com/MetPX/sarracenia
+
+for the latest test results.
+
 
 Local Installation on Workstation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -205,8 +335,8 @@ One can either create a wheel by running either::
 
        python3 setup.py bdist_wheel
 
-whitch creates a wheel package under  dist/metpx*.whl
-then as root  install that new package::
+which creates a wheel package under dist/metpx*.whl,
+then as root install that new package::
 
        pip3 install --upgrade ...<path>/dist/metpx*.whl
 
@@ -221,45 +351,63 @@ which accomplishes the same thing using debian packaging.
 Install Servers on Workstation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Install a minimal localhost broker, configure test users.
-With credentials stored for localhost::
+Install a minimal localhost broker and configure rabbitmq test users::
 
-     sudo apt-get install rabbitmq-server
-     sudo rabbitmq-plugins enable rabbitmq_management
-     echo "amqp://bunnymaster:MaestroDelConejito@localhost/" >>~/.config/sarra/credentials.conf
-     echo "amqp://tsource:TestSOUrCs@localhost/" >>~/.config/sarra/credentials.conf
-     echo "amqp://tsub:TestSUBSCibe@localhost/" >>~/.config/sarra/credentials.conf
-     echo "amqp://tfeed:TestFeeding@localhost/" >>~/.config/sarra/credentials.conf
-     echo "amqp://anoymous:anonymous@dd.weather.gc.ca" >>~/.config/sarra/credentials.conf
-     echo "ftp://anonymous:anonymous@localhost:2121/" >>~/.config/sarra/credentials.conf
+    sudo apt-get install rabbitmq-server
+    sudo rabbitmq-plugins enable rabbitmq_management
 
-     cat >~/.config/sarra/admin.conf <<EOT
+    mkdir ~/.config/sarra
+    cat > ~/.config/sarra/default.conf << EOF
+    declare env FLOWBROKER=localhost
+    declare env SFTPUSER=${USER}
+    declare env TESTDOCROOT=${HOME}/sarra_devdocroot
+    declare env SR_CONFIG_EXAMPLES=${HOME}/git/sarracenia/sarra/examples
+    EOF
 
-     broker amqp://tfeed@localhost/
-     cluster localhost
-     admin amqp://bunnymaster@localhost/
-     feeder amqp://tfeed@localhost/
-     declare source tsource
-     declare subscriber tsub
-     declare subscriber anonymous
-     EOT
+    RABBITMQ_PASS = S0M3R4nD0MP4sS
+    cat > ~/.config/sarra/credentials.conf << EOF
+    amqp://bunnymaster:${RABBITMQ_PASS}@localhost/
+    amqp://tsource:${RABBITMQ_PASS}@localhost/
+    amqp://tsub:${RABBITMQ_PASS}@localhost/
+    amqp://tfeed:${RABBITMQ_PASS}@localhost/
+    amqp://anonymous:${RABBITMQ_PASS}@localhost/
+    amqps://anonymous:anonymous@hpfx.collab.science.gc.ca
+    amqps://anonymous:anonymous@hpfx1.collab.science.gc.ca
+    amqps://anonymous:anonymous@hpfx2.collab.science.gc.ca
+    amqps://anonymous:anonymous@dd.weather.gc.ca
+    amqps://anonymous:anonymous@dd1.weather.gc.ca
+    amqps://anonymous:anonymous@dd2.weather.gc.ca
+    ftp://anonymous:anonymous@localhost:2121/
+    EOF
 
-     sudo rabbitmqctl delete_user guest
-     sudo rabbitmqctl add_user bunnymaster MaestroDelConejito
-     sudo rabbitmqctl set_permissions bunnymaster ".*" ".*" ".*"
-     sudo rabbitmqctl set_user_tags bunnymaster administrator
-     
-     systemctl restart rabbitmq-server
-     cd /usr/local/bin
-     sudo wget http://localhost:15672/cli/rabbitmqadmin
-     chmod 755 rabbbitmqadmin
-     sr_audit --users foreground
+    cat > ~/.config/sarra/admin.conf << EOF
+    cluster localhost
+    admin amqp://bunnymaster@localhost/
+    feeder amqp://tfeed@localhost/
+    declare source tsource
+    declare subscriber tsub
+    declare subscriber anonymous
+    EOF
+
+    sudo rabbitmqctl delete_user guest
+
+    sudo rabbitmqctl add_user bunnymaster ${RABBITMQ_PASS}
+    sudo rabbitmqctl set_permissions bunnymaster ".*" ".*" ".*"
+    sudo rabbitmqctl set_user_tags bunnymaster administrator
+
+    sudo systemctl restart rabbitmq-server
+    cd /usr/local/bin
+    sudo mv rabbitmqadmin rabbitmqadmin.1
+    sudo wget http://localhost:15672/cli/rabbitmqadmin
+    sudo chmod 755 rabbitmqadmin
+
+    sr_audit --users foreground
 
 .. Note::
 
     Please use other passwords in credentials for your configuration, just in case.
     Passwords are not to be hard coded in self test suite.
-    The users bunnymaster, tsource, tsub, and tfeed are to be used for running tests
+    The users bunnymaster, tsource, tsub, and tfeed are to be used for running tests.
 
     The idea here is to use tsource, tsub, and tfeed as broker accounts for all
     self-test operations, and store the credentials in the normal credentials.conf file.
@@ -274,6 +422,12 @@ One part of the flow test runs an sftp server, and uses sftp client functions.
 Need the following package for that::
 
     sudo apt-get install python3-pyftpdlib python3-paramiko
+
+It is also required that passwordless ssh access is configured on the test host
+for the system user that will run the flow test. This can be done by creating
+a private/public ssh key pair for the user (if there isn't one already) and copying
+the public key to the authorized_keys file in the same directory as the keys (~/.ssh).
+For associated commands, see http://www.linuxproblem.org/art_9.html
 
 The setup script starts a trivial web server, and ftp server, and a daemon that invokes sr_post.
 It also tests the C components, which need to have been already installed as well 
@@ -425,15 +579,6 @@ python application, but the test coverage is not exhaustive. This is the lowest 
 changes to thy python code into the master branch. It is more qualitative sampling of the most
 common use cases rather than a thorough examination of all functionality. While not
 thorough, it is good to know the flows are working.
-
-(As of Nov. 2017) NOTE:  the packages (deb+pip) are created with a dependency for python3-amqplib for the AMQP support.
-We want to migrate to python3-pika. Therefore, the programs now supports both AMQP api. Should you have python3-pika
-installed, it will be used as default. If you have both amqplib and pika installed, you can use the option::
-
-*use_pika [true/false]*
-
-To use pika or not. Should you set use_pika to True and python3-pika not installed, the programs will fall back to
-amqplib.  The developers should test both API until we are totally migrated to PIKA.
 
 Note that the *fclean* subscriber looks at files in and keeps files around long enough for them to go through all the other
 tests.  It does this by waiting a reasonable amount of time (45 seconds, the last time checked.) then it compares the file
@@ -849,14 +994,25 @@ Automated Build
 
 * Ensure the code mirror is updated by checking the **Import details** by checking `this page for sarracenia <https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/+git/trunk>`_
 * if the code is out of date, do **Import Now** , and wait a few minutes while it is updated.
-* Ensure the code mirror is updated by checking the **Import details** by checking `this page for sarrac <https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarrac/+git/master>`_
-* if the code is out of date, do **Import Now** , and wait a few minutes while it is updated.
 * once the repository is upto date, proceed with the build request.
 * Go to the `sarracenia release <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/sarracenia-release>`_ recipe
 * Click on the **Request build(s)** button to create a new release
-* Go to the `Sarrac release <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sarrac>`_ recipe
-* Click on the **Request build(s)** button to create a new release
+* for Sarrac, follow the procedure `here <https://github.com/MetPX/sarrac#release-process>`_
 * The built packages will be available in the `metpx ppa <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx>`_
+
+Building a Windows Installer
+++++++++++++++++++++++++++++
+
+One can also build a Windows installer with that 
+`script <https://github.com/MetPX/sarracenia/blob/master/generate-win-installer.sh>`_.
+It needs to be run from a Linux OS (preferably Ubuntu 18) in the root directory of Sarracenia's git. 
+Then, from the shell, run::
+
+ sudo apt install nsis
+ pip3 install pynsist wheel
+ ./generate-win-installer.sh 2>&1 > log.txt
+
+The final package should be placed in build/nsis directory.
 
 Daily Builds
 ++++++++++++
@@ -867,11 +1023,13 @@ and `this recipe for C <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metp
 are run once per day when changes to the repository occur. These packages are stored in the `metpx-daily ppa <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily>`_.
 One can also **Request build(s)** on demand if desired.
 
-
 Manual Process
 ++++++++++++++
 
-The process for manually publishing packages to Launchpad ( https://launchpad.net/~ssc-hpc-chp-spc ) involves a more complex set of steps, and so the convenient script ``publish-to-launchpad.sh`` will be the easiest way to do that. Currently the only supported releases are **trusty** and **xenial**. So the command used is::
+The process for manually publishing packages to Launchpad ( https://launchpad.net/~ssc-hpc-chp-spc ) 
+involves a more complex set of steps, and so the convenient script ``publish-to-launchpad.sh`` will 
+be the easiest way to do that. Currently the only supported releases are **trusty** and **xenial**. 
+So the command used is::
 
     publish-to-launchpad.sh sarra-v2.15.12a1 trusty xenial
 
@@ -930,7 +1088,7 @@ web pages is no longer needed.
 On the current web site, updating is done by committing changes to .rst files
 directly on github. There is no post-processing required. As the links are all
 relative and other services such as gitlab also support such rendering, the
-*website* is portable any gitlab instance, etc...  And the entry point is from
+*website* is portable any gitlab instance, etc... And the entry point is from
 the README.rst file at the root directory of each repository.
 
 

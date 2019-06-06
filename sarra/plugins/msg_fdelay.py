@@ -32,11 +32,11 @@ class Msg_FDelay(object):
         # dont need to wait or clean 'R' message
         if msg.sumflg == 'R' : return False
 
-        parent.logger.info("%s" % msg.notice)
+        parent.logger.info( "%s %s %s" % (msg.pubtime, msg.baseurl, msg.relpath) )
         lag = msg.get_elapse()
 
         parent.logger.info("msg_fdelay received: %s %s%s topic=%s lag=%g %s" % \
-           tuple( msg.notice.split()[0:3] + [ msg.topic, lag, msg.hdrstr ] ) )
+           ( msg.pubtime, msg.baseurl, msg.relpath, msg.topic, lag, msg.hdrstr ) )
 
         if lag < parent.msg_fdelay :
             parent.logger.info("msg_fdelay message not old enough, sleeping for %d seconds" %  (parent.msg_fdelay - lag) )

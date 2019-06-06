@@ -7,7 +7,7 @@ Here on Earth, there are bad guys and a heck of a lot of NAT.
 
 Security is Hard!
 
-Security is hard because there is so much stuff to hook up, and it could be windows 7 with the latest
+Security is hard because there is so much stuff to hook up, and it could be Windows 7 with the latest
 patches, or it could be Windows 95 attached to hydraulics to shake real trains.  It all has
 to get connected, but there is a lot of stuff that just isn´t upto it, like sending a four year old 
 on her own to daycare across town by subway... it doesn´t feel right.

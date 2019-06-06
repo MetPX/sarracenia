@@ -7,7 +7,7 @@ Standards-Version: 3.9.5
 X-Python3-Version: >= 3.2
 Vcs-Git: https://github.com/MetPX/sarracenia
 
-Package: python3-metpx-sarracenia
+Package: metpx-sarracenia
 Architecture: all 
 Depends: ${misc:Depends}, ${python3:Depends}, python3-pkg-resources
 Recommends: python3-paramiko
@@ -21,3 +21,4 @@ Description: Directory mirroring in real-time for users, file servers and web si
  Several other non-public instances deployed.
  Both products and directories are user configurable.
  Developed at the Shared Services Canada
+

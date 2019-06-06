@@ -182,8 +182,8 @@ zsyncmake(1) builds the signatures, with a programmable block size.
 It looks ike zsync is usable as is?
 
 downside:  portability.
-    need zsync on windows and mac for downloads, dependency a pain.
-	there is a windows binary, made once in 2011... hmm...
+    need zsync on Windows and mac for downloads, dependency a pain.
+	there is a Windows binary, made once in 2011... hmm...
 	have not seein it on Mac OS either... sigh...
 
 we send the signatures in the announcements, rather than posting on the site.

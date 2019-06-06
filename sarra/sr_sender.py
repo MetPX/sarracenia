@@ -5,8 +5,8 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
 #
 # Questions or bugs report: dps-client@ec.gc.ca
-# sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
+# Sarracenia repository: https://github.com/MetPX/sarracenia
+# Documentation: https://github.com/MetPX/sarracenia
 #
 # sr_sender.py : python3 program consumes product messages and send them to another pump
 #                and announce the newly arrived product on that pump. If the post_broker
@@ -21,8 +21,7 @@
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+#  the Free Software Foundation; version 2 of the License.
 #
 #  This program is distributed in the hope that it will be useful, 
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of 
@@ -182,7 +181,8 @@ class sr_sender(sr_subscribe):
                      # of the supported python one (sftp,ftp[s])
                      # and the plugin decided to go with the python defaults
                      if ok != None : return ok
-        except: pass
+        except:
+                self.logger.debug('Exception details:', exc_info=True)
 
 
         # try supported hardcoded send
@@ -211,11 +211,10 @@ class sr_sender(sr_subscribe):
                      return ok
 
         except :
-                (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("sender/__do_send__  Type: %s, Value: %s,  ..." % (stype, svalue))
                 if self.reportback:
-                    self.msg.report_publish(503,"Unable to process")
-                self.logger.error("Could not send")
+                    self.msg.report_publish(503, "Unable to process")
+                self.logger.error("sender/__do_send__: could not send")
+                self.logger.debug('Exception details: ', exc_info=True)
 
         # something went wrong
 
@@ -266,8 +265,11 @@ class sr_sender(sr_subscribe):
     # =============
 
     def doit_send(self,parent=None):
-        self.logger.debug("doit_send with %s '%s' %s" % (self.msg.topic,self.msg.notice,self.msg.hdrstr))
+        self.logger.debug("doit_send with %s '%s %s %s' %s" % \
+            (self.msg.topic, self.msg.pubtime, self.msg.baseurl, \
+             self.msg.relpath, self.msg.hdrstr))
 
+        self.logger.debug("doit_send to: %s / %s " % ( self.msg.new_dir, self.msg.new_file)  )
         # the code of msg_2localfile could be put here...
 
         #=================================
@@ -329,8 +331,8 @@ class sr_sender(sr_subscribe):
         #=================================
 
         if self.post_broker :
-           self.msg.set_topic('v02.post',self.msg.new_relpath)
-           self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.time)
+           self.msg.set_topic(self.post_topic_prefix,self.msg.new_relpath)
+           self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.pubtime)
            self.__on_post__()
            if self.reportback:
                self.msg.report_publish(201,'Published')

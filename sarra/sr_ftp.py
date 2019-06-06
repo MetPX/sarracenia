@@ -5,8 +5,8 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
 #
 # Questions or bugs report: dps-client@ec.gc.ca
-# sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
+# Sarracenia repository: https://github.com/MetPX/sarracenia
+# Documentation: https://github.com/MetPX/sarracenia
 #
 # sr_ftp.py : python3 utility tools for ftp usage in sarracenia
 #             Since python3.2 supports ftps (RFC 4217)
@@ -19,8 +19,7 @@
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+#  the Free Software Foundation; version 2 of the License.
 #
 #  This program is distributed in the hope that it will be useful, 
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of 
@@ -64,6 +63,7 @@ class sr_ftp(sr_proto):
     def __init__(self, parent) :
         parent.logger.debug("sr_ftp __init__")
         sr_proto.__init__(self,parent)
+        self.user_cache_dir = parent.user_cache_dir
         # ftp command times out after 20 secs
         # this setting is different from the computed iotime (sr_proto)
         self.init()
@@ -200,10 +200,11 @@ class sr_ftp(sr_proto):
 
                 self.originalDir = '.'
 
-                try   : self.originalDir = ftp.pwd()
+                try:
+                    self.originalDir = ftp.pwd()
                 except:
-                        (stype, svalue, tb) = sys.exc_info()
-                        self.logger.warning("Unable to ftp.pwd (Type: %s, Value: %s)" % (stype ,svalue))
+                    self.logger.warning("Unable to ftp.pwd")
+                    self.logger.debug('Exception details: ', exc_info=True)
 
                 self.pwd = self.originalDir
 
@@ -211,14 +212,16 @@ class sr_ftp(sr_proto):
 
                 self.ftp = ftp
 
-                self.init_ls()
+                self.file_index_cache = self.user_cache_dir + os.sep + '.dest_file_index'
+                if os.path.isfile(self.file_index_cache): self.load_file_index()
+                else: self.init_file_index()
 
-                alarm_cancel()
+                #alarm_cancel()
                 return True
 
         except:
-            (stype, svalue, tb) = sys.exc_info()
-            self.logger.error("Unable to connect to %s (user:%s). Type: %s, Value: %s" % (self.host,self.user, stype,svalue))
+            self.logger.error("Unable to connect to %s (user:%s)" % self.host, self.user)
+            self.logger.debug('Exception details: ', exc_info=True)
 
         alarm_cancel()
         return False
@@ -244,9 +247,8 @@ class sr_ftp(sr_proto):
                 return True
 
         except:
-                (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("Unable to get credentials for %s" % self.destination)
-                self.logger.error("sr_ftp/credentials (Type: %s, Value: %s)" % (stype ,svalue))
+                self.logger.error("sr_ftp/credentials: unable to get credentials for %s" % self.destination)
+                self.logger.debug('Exception details: ', exc_info=True)
 
         return False
 
@@ -297,14 +299,28 @@ class sr_ftp(sr_proto):
 
         self.batch       = 0
 
-    # init_ls
-    def init_ls(self):
-        self.logger.debug("sr_ftp init_ls")
+    # init_file_index
+    def init_file_index(self):
+        self.logger.debug("sr_ftp init_file_index")
         self.init_nlst = sorted(self.ftp.nlst())
         self.logger.debug("sr_ftp nlst: %s" % self.init_nlst)
         self.init_nlst_index = 0
         if self.init_nlst:
             self.ftp.retrlines('LIST', self.ls_file_index )
+        else:
+            alarm_cancel()
+        if hasattr(self,'file_index'): self.write_file_index()
+
+    # load_file_index
+    def load_file_index(self):
+        self.logger.debug("sr_ftp load_file_index")
+        alarm_cancel()
+        try:
+            with open(self.file_index_cache,'r') as fp:
+                index = int(fp.read())
+                self.file_index = index
+        except:
+            self.logger.error("load_file_index: Unable to determine file index from %s" % self.file_index_cache)
 
     # ls
     def ls(self):
@@ -345,7 +361,7 @@ class sr_ftp(sr_proto):
 
     # ls_file_index
     def ls_file_index(self,iline):
-        self.logger.debug("sr_ftp ls_file_index %s" % iline)
+        self.logger.debug("sr_ftp ls_file_index")
 
         alarm_cancel()
 
@@ -367,8 +383,6 @@ class sr_ftp(sr_proto):
             pass
         finally:
             self.init_nlst_index += 1
-
-        alarm_set(self.iotime)
 
     # mkdir
     def mkdir(self, remote_dir):
@@ -417,6 +431,14 @@ class sr_ftp(sr_proto):
         self.ftp.voidcmd('SITE UMASK 777')
         alarm_cancel()
 
+    # write_file_index
+    def write_file_index(self):
+        self.logger.debug("sr_ftp write_file_index")
+        try:
+            with open(self.file_index_cache,'w') as fp:
+                fp.write(str(self.file_index))
+        except:
+            self.logger.warning("Unable to write file_index to cache file %s" % self.file_index_cache)
 
 #============================================================
 #

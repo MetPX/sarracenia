@@ -75,15 +75,16 @@ sr_audit. Les action restantes gèrent les ressources
 (échanges, files d'attente) utilisées par les composants sur le serveur 
 rabbitmq, ou gèrent les configurations.
 
- - cleanup:  supprime les ressources du composant sur le serveur
- - declare:  crée les ressources du composant sur le serveur.
- - setup:    comme declare, fait en plus des liaisons de file d'attente.
- - add:      copie une configuration à la liste des configurations disponibles.
- - list:     Énumérer toutes les configurations disponibles.
- - edit:     modifier une configuration existante.
- - remove:   Supprimer une configuration
- - disable:  marquer une configuration comme non éligible à l'exécution.
- - enable:   marquer une configuration comme éligible à l'exécution.
+ - cleanup:      supprime les ressources du composant sur le serveur
+ - declare:      crée les ressources du composant sur le serveur.
+ - setup:        comme declare, fait en plus des liaisons de file d'attente.
+ - add:          copie une configuration à la liste des configurations disponibles.
+ - list:         Énumérer toutes les configurations disponibles.
+ - list plugins: Énumérer toutes les *plugins* disponibles.
+ - edit:         modifier une configuration existante.
+ - remove:       Supprimer une configuration
+ - disable:      marquer une configuration comme non éligible à l'exécution.
+ - enable:       marquer une configuration comme éligible à l'exécution.
 
 
 Par exemple: *sr_subscribe foreground dd* exécute une instance du composant sr_subscribe en avant plan
@@ -102,7 +103,8 @@ soit des échanges. **declare** crée les ressources. **setup** crée les files
 d'attente et les liaisons.
 
 Les actions **add, remove, list, edit, enable & disable** sont utilisées pour gérer la liste
-de configurations. On peut voir toutes les configurations disponibles en utilisant l´action **list**.
+de configurations et *plugins*. On peut voir toutes les configurations disponibles en utilisant l´action **list**.
+et les *plugins* disponibles avec **list plugins**.
 En utilisant l'option **edit**, on peut travailler sur une configuration particulière.
 Une configuration **disabled** ne sera pas démarrée ou redémarrée par les actions **start**
 ou **restart**. Cela peut être utilisé pour mettre une configuration temporairement de côté.
@@ -215,7 +217,7 @@ définit l'option *debug* pour activer une journalisation plus verbeuse.  Si auc
 la valeur true est implicite. Les exemples ci-dessus sont donc équivalents.  Un deuxième exemple
 ligne de configuration::
 
-  broker amqp://anonymous@dd.weather.gc.ca
+  broker amqps://anonymous@dd.weather.gc.ca
 
 Dans l'exemple ci-dessus, *broker* est le mot clé de l'option, et le reste de la 
 ligne est la valeur qui lui est assignée. Les fichiers de configuration sont 
@@ -323,26 +325,86 @@ on peut l´indiquer dans un fichier de configuration::
 
 
 
-LOG FILES
----------
+Fichiers journal et Suivi
+-------------------------
+
+Les composants écrivent dans des fichiers journaux qui se trouvent par
+défaut dans ~/.cache/sarra/log/<component>_<config>_<config>_<instance>.log.
 
 Comme sr_subscribe fonctionne généralement comme un démon (à moins d'être 
 invoqué en mode *foreground*), on examine normalement son fichier journal pour
-savoir comment se déroule le traitement.  Quand seulement une seule instance 
+savoir comment se déroule le traitement. Quand seulement une seule instance 
 est en cours d'exécution, on peut normalement visualiser le journal du
 processus en cours d'exécution de cette façon::
 
    sr_subscribe log *myconfig*
 
 Où *myconfig* est le nom de la configuration en cours d'exécution. Les fichiers
-journaux sont placés conformément à la spécification XDG Open Directory. Il y 
-a un fichier journal pour chaque *instance* (processus de téléchargement) 
+journaux sont placés conformément à la spécification `XDG Open Directory <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_. Il y a un fichier journal pour chaque *instance* (processus de téléchargement) 
 sr_subscribe exécutant la configuration *myconfig*::
 
    sur linux : ~/.cache/sarra/log/sr_subscribe_subscribe_myconfig_01.log
 
 On peut outrepasser le placement sur linux en définissant la variable 
-d'environnement XDG_CACHE_HOME.
+d'environnement XDG_CACHE_HOME. 
+
+Les fichiers journaux peuvent grossir énormement dans les cas de grand débit, alors
+on permet beaucoup d´ajustement de qu´est-ce qui provoque un entrée dans le journal.
+
+En partant, on peut sélectionner le niveau des entrées:
+
+- debug
+   L'option de déverminage **debug** est identique à l'utilisation de **loglevel debug**.
+
+- loglevel ( défaut: info )
+   Le niveau de journalisation exprimé par la journalisation de python.
+   Les valeurs possibles sont : critical, error, info, warning, debug.
+
+
+- log_reject <True|False> ( défaut: False )
+   afficher un ligne de journal pour chaque message rejeté.  Ceci peut produire des journeaux énorme.
+   D´habitude utilisé uniquement lors du debogage.
+
+
+On peut également contrôler plus précisement l´écriture de journeaux en se servant de plugins::
+
+  on_message msg_rawlog
+
+fera afficher un ligne dans le journal pour chaque message accepté.  Il y a d´autres plugins
+similaires, tel que::
+
+  on_part part_log
+
+  on_file file_log  (là par défaut)
+
+  on_post post_log
+
+ou, pour logger quasiment tout::
+
+  plugin log
+
+À la fin de la journée (à minuit), ces fichiers journaux sont tournés automatiquement
+par les composants, et l'ancien journal obtient un suffixe de date.
+Le répertoire dans lequel les fichiers journaux sont stockés peut être changé par
+l'option **log**, le nombre maximum de fichiers journaux retournés à conserver est défini par le
+paramètre *logrotate* et cela continue pour les prochaines rotations. Lorsque le nombre maximum de rotations
+a été atteint, le plus vieux fichier journal est supprimé.  Pour l'option d'intervalle, une durée est exprimée
+par un nombre et peu prendre un suffixe d'unité de temps, tel que 'd\|D' pour les jours, 'h\|H' pour les heures ou 'm\|M'
+pour les minutes. Sans unité, la rotation sera effectuée à minuit. On peut ajuster:
+
+- log <dir> ( défaut: ~/.cache/sarra/log ) (sur Linux)
+   Le répertoire ou les fichiers journaux seront placés.
+
+- logrotate <max_logs> ( défaut: 5 )
+   Nombre maximal de fichiers journaux archivés.
+
+- logrotate_interval <durée>[<unité_de_temps>] ( défaut: 1 )
+   La durée de l'intervalle spécifié et une unité de temps optionnelle (p.ex. 5m, 2h, 3d).
+
+- chmod_log ( défaut: 0600 )
+   Les bits de permission qui seront établi pour les fichiers journaux.
+
+
 
 
 IDENTIFICATION
@@ -361,7 +423,7 @@ informations d'identification pour se connecter au serveur **RabbitMQ**.
 
 ::
 
-      (par défaut : amqp://anonymous:anonymous@dd.weather.gc.ca/) 
+      (par défaut : amqps://anonymous:anonymous@dd.weather.gc.ca/)
 
 Pour tous les programmes de **sarracenia**, les parties confidentielles 
 des justificatifs d'identité sont stockées uniquement dans 
@@ -467,15 +529,15 @@ Une fois connecté à un courtier AMQP, l'utilisateur doit créer une file d'att
 
 Mise en file d'attente sur broker :
 
-- **queue_name <nom> (par défaut : q_<brokerUser>.<programName>.<configName>.<configName>)**
-- **durable <boolean> (par défaut : False)**
+- **queue <nom> (par défaut : q_<brokerUser>.<programName>.<configName>.<configName>)**
+- **durable <booléen> (par défaut : False)**
 - **expire <durée> (par défaut : 5m == cinq minutes. À OUTREPASSER)**
 - **message-ttl <durée> (par défaut : Aucun)**
 - **prefetch <N> (par défaut : 1)****
-- **reset <boolean> (par défaut : False)**
-- **restore <boolean> (par défaut : False)**
+- **reset <booléen> (par défaut : False)**
+- **restore <booléen> (par défaut : False)**
 - **restore_to_queue <queuename> (par défaut : Aucun)**
-- **save <boolean> (par défaut : False)**
+- **save <booléen> (par défaut : False)**
 
 Habituellement, les composants devinent des valeurs par défaut raisonnables pour
 toutes ces valeurs et les utilisateurs n'ont pas besoin de les définir.  Pour 
@@ -483,8 +545,8 @@ les cas moins habituels, l'utilisateur peut avoir besoin a remplacer les valeurs
 par défaut. La file d'attente est l'endroit où les avis sont conservés
 sur le serveur pour chaque abonné.
 
-queue_name <nom> (par défaut : q_<brokerUser>.<programName>.<configName>.<configName>)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[ queue|queue_name <nom> (par défaut : q_<brokerUser>.<programName>.<configName>.<configName>) ]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Par défaut, les composants créent un nom de file d'attente qui doit être unique.
 Le nom_de_la_files_d'attente par défaut composants créent suit.. :  
@@ -493,7 +555,14 @@ peuvent remplacer la valeur par défaut à condition qu'elle commence par
 **q_<brokerUser>****. Certaines variables peuvent aussi être utilisées dans 
 le nom_de_la_file d'attente comme **${BROKER_USER},${PROGRAMME},${CONFIG},${HOSTNAME}******
 
-durable <boolean> (par défaut : False)
+Quand plusieurs processus (*instances*) roulent sur un même serveurs, ils 
+partagent le même *home* alors ils vont tous partager le même fil.  On peut
+explicitement spécifier le nom du fil d´attente pour être plus claire ou 
+dans les cas ou on veut que le même queue soit partagé en dépit de ne pas
+avoir de *home* partagé.
+
+
+durable <booléen> (par défaut : False)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 L'option **durable**, si elle est définie sur True, signifie que la file d'attente est écrite.
@@ -537,7 +606,7 @@ Cependant, dans les cas de connexion longue distance, il est nécessaire d'augme
 ce nombre, afin de cacher la latence de l'aller-retour, donc un paramètre
 de 10 ou plus peut être nécessaire.
 
-reset <boolean> (par défaut : False)
+reset <booléen> (par défaut : False)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Lorsque **reset** est réglé et qu'un composant est (re)démarré, sa file d'attente 
@@ -552,7 +621,7 @@ effacé.
 Le protocole AMQP définit d'autres options de file d'attente qui ne sont pas exposées.
 via Sarracenia, car l´application choisit les valeurs appropriées.
 
-save <boolean> (par défaut : False)
+save <booléen> (par défaut : False)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 L'option **save** est utilisée pour lire les messages de la file d'attente, les écrire
@@ -589,16 +658,25 @@ Ces options définissent les messages (notifications URL) que le programme reço
  - **topic_prefix  <amqp pattern> (default: v02.post -- developer option)** 
  - **subtopic      <amqp pattern> (sousthème au choix de l´utilisateur)** 
 
+exchange <nom> (defaut: xpublic) et exchange_suffix
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 La convention sur les pompes de données est d'utiliser l'échange *xpublic*. 
 Les utilisateurs peuvent établir les flux de données privées pour leur propre 
 traitement. Les utilisateurs peuvent déclarer leurs propres échanges,
 qui commencent toujours par *xs_<nom_utilisateur>*. Pour éviter d'avoir à 
 spécifier que chaque temps, on peut déclarer *exchange_suffix kk* qui se 
 traduira résultera dans la déclaration de l´échange: *xs_<username>_kkk* (remplaçant 
-la valeur par défaut *xpublic*).
+la valeur par défaut *xpublic*).  Il faut établir la valeur de l´*exchange* auquel
+on s´abonne avant de passer à *subtopic* pour les filtrer.
 
-Plusieurs options de thème peuvent être déclarées. Donner une valeur correcte au sous-thème,
-On a le choix de filtrer en utilisant **subtopic** avec seulement les *wildcard* (caractères 
+subtopic <patron amqp> (doit être spécifié)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+On se sert de subtopic afin de raffiner la selection de produits parmi la gamme publié
+sur un *exchange* donné. Plusieurs options de thème (*subtopic*) peuvent être déclarées. 
+Donner une valeur correcte au sous-thème, On a le choix de filtrer en utilisant
+**subtopic** avec seulement les *wildcard* (caractères 
 de substitution) limité de l'AMQP et longueur limitée à 255 octets codés, ou bien les
 expressions régulières plus puissantes, avec les options **accept/reject** décrits 
 ci-dessous. Tandis que Le filtrage AMQP est appliqué par le courtier lui-même, 
@@ -646,6 +724,17 @@ FIXME :
       Vérifiez si les astérisques dans les noms de répertoires des thèmes doivent être codés par URL.
       Vérifiez si les périodes dans les noms de répertoires dans les rubriques doivent être codées par URL.
 
+On peut plusiers liaisons au plusieurs *exchange* :: 
+
+  exchange A
+  subtopic directory1.*.directory2.#
+
+  exchange B
+  subtopic *.directory4.#
+
+ce qui déclare deux abonnements à deux arborescences publiés par deux *exchange*  distincts.
+
+
 
 Filtrage Côté Client
 --------------------
@@ -689,7 +778,7 @@ accept, reject, accept_unmatch
 
 - **accept <expression régulière (regexp)>  (facultatif)**.
 - **reject <expression régulière (regexp)> (facultatif)**.
-- **accept_unmatch <boolean> (par défaut : False (faux))**.
+- **accept_unmatch <booléen> (par défaut : False (faux))**.
 
 Les options **accept** et **reject** traitent des expressions régulières (regexp).
 La regexp est appliquée à l'URL du message pour détecter une correspondance.
@@ -753,6 +842,8 @@ est un option qui a une valeur logique: vrai/faux)
 - **discard   <booléan>        (défaut: false)**
 - **flatten   <string>         (défaut: '/')** 
 - **heartbeat <durée>          (défaut: 300 secondes)**
+- **inline       <booléan>     (défaut: false)**
+- **inline_max <compte>        (défaut: 1024)**
 - **inplace       <booléan>    (défaut: true)**
 - **kbytes_ps <count>          (défaut: 0)**
 - **inflight  <chaine>         (défaut: .tmp où NONE si post_broker est setté)** 
@@ -987,6 +1078,15 @@ notification est le chemin absolu.
     pris de l'expéditeur.  Dans un sr_subscriber, si elle est définie.... est-ce 
     qu'elle se téléchargera ? ou supposera-t-elle qu'elle est locale ?
     dans un expéditeur.
+
+inline
+~~~~~~
+
+Sur des liens qui ont une grande latence, il se peut que ca soit efficace d'inclure les
+fichiers plus petit que *inline_max* octets (defaut: 1024) pour éviter 
+
+
+
 
 inplace <booléan>  (défaut: true)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1325,7 +1425,7 @@ EXEMPLES
 
 Voici un court exemple complet de fichier de configuration:: 
 
-  broker amqp://dd.weather.gc.gc.ca/
+  broker amqps://dd.weather.gc.ca/
 
   subtopic model_gem_global.25km.grib2.#.
   accept .*
@@ -1423,8 +1523,8 @@ RAPPORTS
 Pour chaque téléchargement, par défaut, un message de rapport amqp est renvoyé au courtier.
 Ceci est fait avec l'option :
 
-report_back <boolean> (par défaut : True)**. 
-rapport_exchange <report_exchangename> (par défaut : xreport|xs_username* )****.
+- **report_back <booléen> (par défaut : True)**. 
+- **rapport_exchange <report_exchangename> (par défaut : xreport|xs_username* )**
 
 Lorsqu'un rapport est généré, il est envoyé au *report_exchange* configuré. 
 les composants administratifs publient directement sur *xreport*, tandis que les 
@@ -1434,33 +1534,6 @@ copient ensuite les messages dans *xreport* après validation.
 Ces rapports sont utilisés pour le réglage de la livraison et pour les sources 
 de données afin de générer des informations statistiques. Régler cette option à **Faux**, 
 pour empêcher la génération de rapports. 
-
-
-JOURNEAUX
-=========
-
-Les composants écrivent dans des fichiers journaux qui se trouvent par 
-défaut dans ~/.cache/sarra/var/log/<component>_<config>_<config>_<instance>.log.
-à la fin de la journée, ces journaux sont tournés automatiquement 
-par les composants, et l'ancien journal obtient un suffixe de date.
-Le répertoire dans lequel les logs sont stockés peut être écrasé par 
-l'option **log**, et le nombre de logs de jours à conserver est défini par le paramètre *logrotate*.  
-Les fichiers journaux dont l´age est supérieure à **logrotate** sont 
-supprimés.  Une durée prend un suffixe d'unité de temps, tel que'd' pour 
-les jours,'w' pour les semaines ou'h' pour les heures.
-
-- L'option de débogage **debug** est identique à l'utilisation **loglevel debug**.
-
-- **Log** le répertoire ou les fichiers journaux seront placés.  Valeur par défaut : ~/.cache/sarra/var/log (sous Linux)
-
-- **logrotate** combien de temps garder les logs en ligne, généralement exprimée en jours (par défaut : 5d).
-
-- **loglevel** le niveau de journalisation exprimé par la journalisation de python.
-               les valeurs possibles sont : critical, error, info, warning, debug.
-
-- **Chmod_log** les bits de permission à mettre sur les fichiers journaux (par défaut 0600).
-
-le placement est conforme à : XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.rst>`_ ) définissant la variable d'environnement XDG_CACHE_HOME.
 
 
 INSTANCES

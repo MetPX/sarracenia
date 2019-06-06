@@ -219,7 +219,7 @@ de spécification.
   La concaténation des deux derniers champs de l'annonce définit ce que les abonnés utiliseront 
   pour télécharger le produit.
 
-[-pipe <boolean>>]
+[-pipe <booléen>]
 ------------------
 
   L'option pipe est pour sr_post pour lire les noms des fichiers à poster à partir de l'entrée 
@@ -367,6 +367,8 @@ OPTIONS SPÉCIFIQUES AUX DÉVELOPPEURS
 
   Si un fichier est comptabilisé dans plusieurs blocs, l'ordre de publication
   est randomisé de façon à ce que l'abonné ne les reçoive pas en ordre.
+  L'option rend aussi le choix d'algorithm de calcul de somme de contrôle 
+  aléatoire, prennant priorité sur l´option *sum*
   
 [-rc|--reconnect]
 -----------------

@@ -8,13 +8,12 @@ countall
 
 printf "\n\n\t\tDownload Performance Summaries:\n\n\tLOGDIR=$LOGDIR"
 
-
 for i in t_dd1 t_dd2 ;
 do
    printf "\n\t$i\n\n"
    #grep 'msg_total' "$LOGDIR"/sr_shovel_${i}_*.log* | sed 's/:/ /' | sort  -k 2,3 | tail -10
    for j in "$LOGDIR"/sr_shovel_${i}_*.log* ; do
-       echo "`basename $j` `grep 'msg_total' $j | tail -1`"
+       echo "`basename $j` `grep 'msg_total' ${j} | tail -1`"
    done
 done
 
@@ -22,16 +21,15 @@ for i in cdnld_f21 t_f30 cfile_f44 u_sftp_f60 ftp_f70 q_f71 ;
 do
    printf "\n\t$i\n\n"
    for j in "$LOGDIR"/sr_subscribe_${i}_*.log* ; do
-       echo "`basename $j` `grep 'file_total' $j | tail -1`"
+       echo "`basename $j` `grep 'file_total' ${j} | tail -1`"
    done
 done
 
 echo
-
 # MG shows retries
-
 echo
-if [ ! "$SARRA_LIB" ]; then
+
+if [[ ! "$SARRA_LIB" ]]; then
    echo NB retries for sr_subscribe t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f30*.log* | wc -l`
    echo NB retries for sr_sender    `grep Retrying "$LOGDIR"/sr_sender*.log* | wc -l`
 else
@@ -39,55 +37,48 @@ else
    echo NB retries for "$SARRA_LIB"/sr_sender.py    `grep Retrying "$LOGDIR"/sr_sender*.log* | wc -l`
 fi
 
+function summarizelogs {
+    printf "\n$1 Summary:\n\n"
+    fcc="$LOGDIR"/flowcheck_$1_count.txt
+    grep -E -h -o "\[$1\] *[^ ^/][^ ]+ [^/]|\[$1\] *[^ ^/][^ ]+ /|\[$1\] /" "$LOGDIR"/*.log* | sort | uniq -c | sort -n -r  > ${fcc}
+    NERROR=`grep $1 ${fcc} | wc -l`
 
-printf "ERROR Sumary:\n\n"
+    if (($NERROR>0)); then
+       fcl="$LOGDIR"/flowcheck_$1_logged.txt
+       while read p; do
+            msg_prefix=`echo ${p} | cut -d' ' -f3-`
+            filelist=($(grep -l "\[$1\] *${msg_prefix}" "$LOGDIR"/*.log*))
+            if [[ -z "$filelist" ]]; then
+                # Fail proof against an empty string (although the odds are against it) so the loop wont crash there
+                continue
+            fi
+            first_filename=`basename ${filelist[0]} | sed 's/ /\n/g' | sed 's|.*\/||g' | sed 's/_[0-9][0-9]\.log\|.log//g' | uniq`
+            msg=`grep -o -m 1 "\[$1\] *${msg_prefix}.*" ${filelist[0]}`
+            files_nb=${#filelist[@]}
+            echo "  `echo ${p} | awk '{print $1;}'`%${first_filename}%(${files_nb} file)%$msg"
+            echo ${filelist[@]} | sed 's/^//g' | sed 's/ \//\n\//g'
+            echo -e
+       done < ${fcc} > ${fcl}
 
-NERROR=`grep ERROR "$LOGDIR"/*_f[0-9][0-9]_*.log* | grep -v ftps | grep -v retryhost | wc -l`
-if ((NERROR>0)); then
-   fcel=$LOGDIR/flow_check_errors_logged.txt
-   grep ERROR "$LOGDIR"/*_f[0-9][0-9]_*.log* | sed "s+${LOGDIR}/++" | grep -v ftps | grep -v retryhost | sed 's/:.*ERROR/ \[ERROR/' | uniq -c >$fcel
-   result="`wc -l $fcel|cut -d' ' -f1`"
-   if [ $result -gt 10 ]; then
-       head $fcel
-       echo
-       echo "More than 10 TYPES OF ERRORS found... for the rest, have a look at $fcel for details"
-   else
-       echo TYPE OF ERRORS IN LOG :
-       echo
-       cat $fcel
-   fi
-fi
-
-if ((NERROR==0)); then
-   echo NO ERRORS IN LOGS
-fi
-
-printf "WARNING Sumary:\n\n"
-
-NWARNING=`grep WARNING "$LOGDIR"/*_f[0-9][0-9]_*.log* | grep -v ftps | grep -v retryhost | wc -l`
-if ((NWARNING>0)); then
-   fcwl=$LOGDIR/flow_check_warnings_logged.txt
-   grep WARNING "$LOGDIR"/*_f[0-9][0-9]_*.log* | sed "s+${LOGDIR}/++" | grep -v ftps | grep -v retryhost | grep -v truncating | sed 's/:.*WARNING/ \[WARNING/' | uniq -c >$fcwl
-   result="`wc -l $fcwl|cut -d' ' -f1`"
-   if [ $result -gt 10 ]; then
-       head $fcwl
-       echo
-       echo "More than 10 TYPES OF WARNINGS found... for the rest, have a look at $fcwl for details"
-   else
-       echo TYPE OF WARNINGS IN LOG :
-       echo
-       cat $fcwl
-   fi
-fi
-if ((NWARNING==0)); then
-   echo NO WARNINGS IN LOGS
-fi
-
+       result=`grep -c $1 ${fcl}`
+       if [[ ${result} -gt 10 ]]; then
+           grep $1 ${fcl} | head | column -t -s % | cut -c -130
+           echo
+           echo "More than 10 TYPES OF $1S found... for the rest, have a look at $fcl for details"
+       else
+           grep $1 ${fcl} | column -t -s % | cut -c -130
+       fi
+    else
+       echo NO $1S IN LOGS
+    fi
+}
+summarizelogs ERROR
+summarizelogs WARNING
 
 passedno=0
 tno=0
 
-if [ "${totshovel2}" -gt "${totshovel1}" ]; then
+if [[ "${totshovel2}" -gt "${totshovel1}" ]]; then
    maxshovel=${totshovel2}
 else 
    maxshovel=${totshovel1}
@@ -145,13 +136,14 @@ echo "                 | C          routing |"
 
 fi
 
+tallyres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed (sample size: $totsarra) !"
+results=$?
 
-calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed (sample size: $totsarra) !"
-
-# PAS missed_dispositions means definite Sarra bug, very serious.
-
-if (("${missed_dispositions}">0)); then 
-   echo "Please review $LOGDIR/missed_dispositions.report" 
+if (("${missed_dispositions}">0)); then
+   # PAS missed_dispositions means definite Sarra bug, very serious.
+   echo "Please review $missedreport"
+   results=1
 fi
-
 echo
+
+exit ${results}

@@ -5,8 +5,8 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
 #
 # Questions or bugs report: dps-client@ec.gc.ca
-# sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
+# Sarracenia repository: https://github.com/MetPX/sarracenia
+# Documentation: https://github.com/MetPX/sarracenia
 #
 # sr_util.py : python3 utility mostly for checksum and file part
 #
@@ -18,8 +18,7 @@
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+#  the Free Software Foundation; version 2 of the License.
 #
 #  This program is distributed in the hope that it will be useful, 
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of 
@@ -35,10 +34,18 @@
 from hashlib import md5
 from hashlib import sha512
 
+import sys
 import calendar,datetime
 import os,random,signal,stat,sys,time
 import urllib
 import urllib.parse
+
+try:
+   from sr_xattr import *
+
+except:
+   from sarra.sr_xattr import *
+
 
 #============================================================
 # sigalarm
@@ -50,7 +57,8 @@ class TimeoutException(Exception):
 
 # alarm_cancel
 def alarm_cancel():
-    signal.alarm(0)
+    if sys.platform != 'win32' :
+        signal.alarm(0)
 
 # alarm_raise
 def alarm_raise(n, f):
@@ -58,8 +66,9 @@ def alarm_raise(n, f):
 
 # alarm_set
 def alarm_set(time):
-    signal.signal(signal.SIGALRM, alarm_raise)
-    signal.alarm(time)
+    if sys.platform != 'win32' :
+        signal.signal(signal.SIGALRM, alarm_raise)
+        signal.alarm(time)
 
 # =========================================
 # raw_message to mimic raw amqplib
@@ -83,9 +92,10 @@ class raw_message:
 
                self.properties['application_headers'] = properties.headers
        except:
-               (stype, value, tb) = sys.exc_info()
-               self.logger.error("sr_amqp/pika_to_amqplib Type: %s, Value: %s" % (stype, value))
-               self.logger.error("in pika to amqplib %s %s" %(vars(method_frame),vars(properties)))
+               self.logger.error("sr_amqp/pika_to_amqplib: in pika to amqplib %s %s" %(vars(method_frame),
+                                                                                       vars(properties)))
+               self.logger.debug('Exception details: ', exc_info=True)
+
 
 # =========================================
 # sr_proto : one place for throttle, onfly checksum, buffer io timeout
@@ -107,6 +117,8 @@ class sr_proto():
 
         self.sumalgo   = None
         self.checksum  = None
+        self.data_sumalgo   = None
+        self.data_checksum = None
         self.fpos      = 0
 
         self.bufsize   = self.parent.bufsize
@@ -131,6 +143,7 @@ class sr_proto():
         # finalize checksum
 
         if self.sumalgo : self.checksum = self.sumalgo.get_value()
+        if self.data_sumalgo : self.data_checksum = self.data_sumalgo.get_value()
 
     # local_read_open
     def local_read_open(self, local_file, local_offset=0 ):
@@ -146,6 +159,7 @@ class sr_proto():
         # initialize sumalgo
 
         if self.sumalgo : self.sumalgo.set_path(local_file)
+        if self.data_sumalgo : self.data_sumalgo.set_path(local_file)
 
         return src
 
@@ -166,6 +180,7 @@ class sr_proto():
         # finalize checksum
 
         if self.sumalgo : self.checksum = self.sumalgo.get_value()
+        if self.data_sumalgo : self.data_checksum = self.data_sumalgo.get_value()
 
     # local_write_open
     def local_write_open(self, local_file, local_offset=0):
@@ -189,6 +204,19 @@ class sr_proto():
 
         return dst
 
+    def __on_data__(self, chunk):
+
+        if not self.parent.on_data_list:
+           return chunk
+
+        new_chunk = chunk
+        for plugin in self.parent.on_data_list :
+           new_chunk = plugin(self,new_chunk)
+
+        if self.data_sumalgo  : self.data_sumalgo.update(new_chunk)
+        return new_chunk
+        
+
     # read_write
     def read_write(self, src, dst, length=0):
         #self.logger.debug("sr_proto read_write")
@@ -206,7 +234,8 @@ class sr_proto():
                  if self.iotime: alarm_set(self.iotime)
                  chunk = src.read(self.bufsize)
                  if chunk :
-                    dst.write(chunk)
+                    new_chunk = self.__on_data__(chunk)
+                    dst.write(new_chunk)
                     rw_length += len(chunk)
                  alarm_cancel()
                  if not chunk : break
@@ -226,8 +255,9 @@ class sr_proto():
               if self.iotime : alarm_set(self.iotime)
               chunk = src.read(self.bufsize)
               if chunk :
-                 rw_length += len(chunk)
-                 dst.write(chunk)
+                 new_chunk = self.__on_data__(chunk)
+                 rw_length += len(new_chunk)
+                 dst.write(new_chunk)
               alarm_cancel()
               if not chunk : break
               if self.sumalgo  : self.sumalgo.update(chunk)
@@ -240,8 +270,9 @@ class sr_proto():
            if self.iotime : alarm_set(self.iotime)
            chunk = src.read(r)
            if chunk :
-              rw_length += len(chunk)
-              dst.write(chunk)
+              new_chunk = self.__on_data__(chunk)
+              rw_length += len(new_chunk)
+              dst.write(new_chunk)
            alarm_cancel()
            if self.sumalgo  : self.sumalgo.update(chunk)
            if self.kbytes_ps: self.throttle(chunk)
@@ -258,6 +289,7 @@ class sr_proto():
         # initialize sumalgo
 
         if self.sumalgo : self.sumalgo.set_path(src_path)
+        if self.data_sumalgo : self.data_sumalgo.set_path(src_path)
 
         # copy source to destination
 
@@ -266,9 +298,9 @@ class sr_proto():
         # close
         self.local_write_close( dst )
 
-        # warn if length mismatch
+        # warn if length mismatch without transformation.
 
-        if length != 0 and rw_length != length :
+        if (not self.parent.on_data_list) and length != 0 and rw_length != length :
            self.logger.error("util/writelocal mismatched file length writing %s. Message said to expect %d bytes.  Got %d bytes." % (local_file,length,rw_length))
 
         return rw_length
@@ -288,9 +320,9 @@ class sr_proto():
 
         self.local_read_close(src)
 
-        # warn if length mismatch
+        # warn if length mismatch without transformation.
 
-        if length != 0 and rw_length != length :
+        if (not self.parent.on_data_list) and length != 0 and rw_length != length :
            self.logger.error("util/readlocal mismatched file length reading %s. Message announced it as %d bytes, but read %d bytes " % (local_file,length,rw_length))
 
         return rw_length
@@ -302,9 +334,16 @@ class sr_proto():
         self.iotime = iotime
 
     # set_sumalgo
-    def set_sumalgo(self,sumalgo) :
-        #self.logger.debug("sr_proto set_sumalgo %s" % sumalgo)
+    def set_sumalgo(self, sumalgo):
+        self.logger.debug("sr_proto set_sumalgo %s" % sumalgo)
         self.sumalgo = sumalgo
+        self.data_sumalgo = sumalgo
+
+    def get_sumstr(self):
+        if self.sumalgo:
+            return "{},{}".format(self.sumalgo.registered_as(), self.sumalgo.get_value())
+        else:
+            return None
 
     # throttle
     def throttle(self,buf) :
@@ -386,7 +425,7 @@ class sr_transport():
                 parent.destination = msg.baseurl
 
                 proto = self.proto
-                if proto== None or not proto.check_is_connected() :
+                if not proto or not proto.check_is_connected() :
                    self.logger.debug("%s_transport download connects" % self.scheme)
                    proto = self.pclass(parent)
                    ok = proto.connect()
@@ -450,7 +489,9 @@ class sr_transport():
                    if os.path.isfile(new_file) : os.remove(new_file)
                    os.rename(new_lock, new_file)
 
-                msg.onfly_checksum = proto.checksum
+                self.logger.debug('proto.checksum={}, msg.sumstr={}'.format(proto.checksum, msg.sumstr))
+                msg.onfly_checksum = proto.get_sumstr()
+                msg.data_checksum = proto.data_checksum
 
                 # fix permission 
 
@@ -466,30 +507,23 @@ class sr_transport():
                 if parent.delete and hasattr(proto,'delete') :
                    try   :
                            proto.delete(remote_file)
-                           msg.logger.debug ('file  deleted on remote site %s' % remote_file)
-                   except: msg.logger.error('unable to delete remote file %s' % remote_file)
-    
-                return True
-                
+                           msg.logger.debug ('file deleted on remote site %s' % remote_file)
+                   except:
+                           msg.logger.error('unable to delete remote file %s' % remote_file)
+                           msg.logger.debug('Exception details: ', exc_info=True)
+
         except:
                 #closing on problem
                 try    : self.close()
                 except : pass
     
-                (stype, svalue, tb) = sys.exc_info()
-                msg.logger.error("Download failed %s. Type: %s, Value: %s" % (urlstr, stype ,svalue))
+                msg.logger.error("Download failed %s" % urlstr)
+                msg.logger.debug('Exception details: ', exc_info=True)
                 msg.report_publish(499,'%s download failed' % self.scheme)
-                if os.path.isfile(new_lock) : os.remove(new_lock)
- 
+                if os.path.isfile(new_lock) :
+                    os.remove(new_lock)
                 return False
-
-        #closing on problem
-        try    : self.close()
-        except : pass
-    
-        msg.report_publish(498,'%s download failed' % self.scheme)
-    
-        return False
+        return True
 
     # generalized get...
     def get( self, remote_file, local_file, remote_offset, local_offset, length ):
@@ -503,11 +537,12 @@ class sr_transport():
            msg.new_file = local_file
            ok = do_get(self.parent)
            msg.new_file = new_file
-           if ok : return
-           if ok == False: raise
-           self.logger.debug("ok == NONE")
-           # ok == none let python do it
-
+           if ok:
+              return
+           elif ok is False:
+              raise Exception('Not ok')
+           else:
+              self.logger.debug("sr_util/get ok is None executing this do_get %s" % do_get)
         self.proto.get(remote_file, local_file, remote_offset, local_offset, length)
 
     # generalized put...
@@ -522,11 +557,12 @@ class sr_transport():
            do_put = self.parent.do_puts[self.scheme]
            ok = do_put(self.parent)
            msg.new_file = new_file
-           if ok : return
-           if ok == False: raise
-           self.logger.debug("ok == NONE")
-           # ok == none let python do it
-
+           if ok:
+              return
+           elif ok is False:
+              raise Exception('Not ok')
+           else:
+              self.logger.debug("sr_util/put ok is None executing this do_put %s" % do_put)
         self.proto.put(local_file, remote_file, local_offset, remote_offset, length)
 
     # generalized send...
@@ -534,13 +570,13 @@ class sr_transport():
         self.logger = parent.logger
         self.parent = parent
         msg         = parent.msg
-        self.logger.debug("%s_transport send" % self.scheme)
+        self.logger.debug("%s_transport send %s %s" % (self.scheme,msg.new_dir, msg.new_file) )
 
         local_path = msg.relpath
-        local_dir  = os.path.dirname( local_path)
-        local_file = os.path.basename(local_path)
-        new_dir    = msg.new_dir
-        new_file   = msg.new_file
+        local_dir  = os.path.dirname( local_path).replace('\\','/')
+        local_file = os.path.basename(local_path).replace('\\','/')
+        new_dir    = msg.new_dir.replace('\\','/')
+        new_file   = msg.new_file.replace('\\','/')
         new_lock   = None
 
         try:    curdir = os.getcwd()
@@ -676,9 +712,7 @@ class sr_transport():
 
                 if parent.reportback :
                    msg.report_publish(201,'Delivered')
-    
-                return True
-                
+
         except:
 
                 #removing lock if left over
@@ -689,26 +723,13 @@ class sr_transport():
                 #closing on problem
                 try    : self.close()
                 except : pass
-    
-                (stype, svalue, tb) = sys.exc_info()
-                msg.logger.error("Delivery failed %s. Type: %s, Value: %s" % (msg.new_dir+'/'+msg.new_file, stype ,svalue))
+
+                msg.logger.error("Delivery failed %s" % msg.new_dir+'/'+msg.new_file)
+                msg.logger.debug('Exception details: ', exc_info=True)
                 msg.report_publish(497,'%s delivery failed' % self.scheme)
-    
+
                 return False
-
-        #removing lock if left over
-        if new_lock != None and hasattr(proto,'delete') :
-           try   : proto.delete(new_lock)
-           except: pass
-    
-        #closing on problem
-        try    : self.close()
-        except : pass
-
-        msg.report_publish(496,'%s delivery failed' % self.scheme)
-    
-        return False
-
+        return True
 
     # set_local_file_attributes
     def set_local_file_attributes(self,local_file, msg) :
@@ -716,11 +737,33 @@ class sr_transport():
 
         hdr  = msg.headers
 
+        # if the file is not partitioned, the the onfly_checksum is for the whole file.
+        # cache it here, along with the mtime.
+        if ( msg.partstr[0:2] == '1,' ) : 
+           if msg.onfly_checksum:
+               sumstr = msg.onfly_checksum
+           else:
+               sumstr = msg.sumstr
+
+           x = sr_xattr( local_file )
+           x.set( 'sum' , sumstr )
+
+           if self.parent.preserve_time and 'mtime' in hdr and hdr['mtime'] :
+               x.set( 'mtime' , hdr['mtime'] )
+           else:
+               st = os.stat(local_file)
+               mtime = timeflt2str( st.st_mtime )
+               x.set( 'mtime' , mtime )
+           x.persist()
+
         mode = 0
         if self.parent.preserve_mode and 'mode' in hdr :
-           try   : mode = int( hdr['mode'], base=8)
-           except: mode = 0
-           if mode > 0 : os.chmod( local_file, mode )
+           try: 
+               mode = int( hdr['mode'], base=8)
+           except: 
+               mode = 0
+           if mode > 0 : 
+               os.chmod( local_file, mode )
 
         if mode == 0 and  self.parent.chmod !=0 : 
            os.chmod( local_file, self.parent.chmod )
@@ -767,7 +810,7 @@ class sr_transport():
 def startup_args(sys_argv):
 
     actions = ['foreground', 'start', 'stop', 'status', 'sanity', 'restart', 'reload', 'cleanup', 'declare', 'setup' ]
-    actions.extend( ['add','disable', 'edit', 'enable', 'list',    'log',    'remove' ] )
+    actions.extend( ['add','disable', 'edit', 'enable', 'help', 'list',    'log',    'remove', 'rename'] )
 
     args    = None
     action  = None
@@ -866,10 +909,27 @@ def timeflt2str( f ):
     nsec = ('%.9g' % (f%1))[1:]
     s  = time.strftime("%Y%m%d%H%M%S",time.gmtime(f)) + nsec
     return(s) 
-    
+
+def v3timeflt2str( f ):
+
+    nsec = ('%.9g' % (f%1))[1:]
+    s  = time.strftime("%Y%m%dT%H%M%S",time.gmtime(f)) + nsec
+    return(s) 
+ 
 
 def timestr2flt( s ):
-    t=datetime.datetime(  int(s[0:4]), int(s[4:6]), int(s[6:8]), int(s[8:10]), int(s[10:12]), int(s[12:14]), 0, datetime.timezone.utc )
-    f=calendar.timegm(  t.timetuple())+float('0'+s[14:])
+
+    if s[8] == "T":
+        t=datetime.datetime(  int(s[0:4]), int(s[4:6]), int(s[6:8]), int(s[9:11]), int(s[11:13]), int(s[13:15]), 0, datetime.timezone.utc )
+        f=calendar.timegm(  t.timetuple())+float('0'+s[15:])
+    else:
+        t=datetime.datetime(  int(s[0:4]), int(s[4:6]), int(s[6:8]), int(s[8:10]), int(s[10:12]), int(s[12:14]), 0, datetime.timezone.utc )
+        f=calendar.timegm(  t.timetuple())+float('0'+s[14:])
     return(f)
 
+def timev2tov3str( s ):
+
+    if s[8] == 'T':
+        return(s)
+    else:
+        return s[0:8] + 'T' + s[8:] 

@@ -1,29 +1,22 @@
 #!/usr/bin/env python3
 
 try :
-         from sr_credentials       import *
+    from sr_credentials import *
+    from sr_config import *
 except : 
-         from sarra.sr_credentials import *
+    from sarra.sr_credentials import *
+    from sarra.sr_config import *
 
 # ===================================
 # self_test
 # ===================================
 
-class test_logger:
-      def silence(self,str):
-          pass
-
-      def __init__(self):
-          self.debug   = self.silence
-          self.error   = print
-          self.info    = self.silence
-          self.warning = print
-
 def self_test():
 
     failed      = False
-    logger      = test_logger()
-    credentials = sr_credentials(logger)
+    cfg    = sr_config()
+    cfg.configure()
+    credentials = sr_credentials(cfg.logger)
 
     # covers : parse, credential_details obj, isTrue, add
     line = "ftp://guest:toto@localhost active , binary"
@@ -39,7 +32,7 @@ def self_test():
     # check details
     if not details.passive == False or \
        not details.binary  == True   :
-       print("test 02: parsed %s and passive = %s, binary = " % (line,details.passive,details.binary))
+       print("test 02: parsed %s and passive = %s, binary = %s" % (line, details.passive, details.binary))
        failed = True
 
     # covers get with resolve 1
@@ -105,15 +98,11 @@ def self_test():
 # ===================================
 
 def main():
-
-    try:    self_test()
-    except: 
-            (stype, svalue, tb) = sys.exc_info()
-            print("%s, Value: %s" % (stype, svalue))
-            print("sr_credentials.py TEST FAILED")
-            sys.exit(1)
-
-    sys.exit(0)
+    try:
+        self_test()
+    except:
+        print("sr_credentials.py TEST FAILED")
+        raise
 
 # =========================================
 # direct invocation : self testing

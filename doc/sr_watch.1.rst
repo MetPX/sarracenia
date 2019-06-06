@@ -38,7 +38,7 @@ The broker option sets all the credential information to connect to the  **Rabbi
 
 ::
 
-      (default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) 
+      (default: amqps://anonymous:anonymous@dd.weather.gc.ca/ )
 
 All sr\_ tools store all sensitive authentication info in the credentials.conf file.
 Passwords for SFTP, AMQP, and HTTP accounts are stored in URLs there, as well as other pointers
@@ -49,7 +49,7 @@ For more details, see: `sr_subscribe(1) credentials <sr_subscribe.1.html#credent
 Mandatory Settings
 ------------------
 
-The [*-u|--url url*] option specifies the protocol, credentials, host and port to which subscribers 
+The [*-post_base_url|--pbu|--url url*] option specifies the protocol, credentials, host and port to which subscribers 
 will connect to get the file. 
 
 Format of argument to the *url* option::
@@ -74,7 +74,7 @@ An example of an execution of  *sr_watch*  checking a file::
  sr_watch -s sftp://stanley@mysftpserver.com/ -p /data/shared/products/foo -pb amqp://broker.com -action start
 
 Here,  *sr_watch*  checks events on the file /data/shared/products/foo.
-Default events settings reports if the file the file is modified or deleted.
+Default events settings reports if the file is modified or deleted.
 When the file gets modified,  *sr_watch*  reads the file /data/shared/products/foo
 and calculates its checksum.  It then builds a post message, logs into broker.com as user 'guest' (default credentials)
 and sends the post to defaults vhost '/' and post_exchange 'xs_stanley' (default exchange)
@@ -118,7 +118,7 @@ without authentication on dd.weather.gc.ca.
 
 An example checking a directory::
 
- sr_watch -dr /data/web/public_data -s http://dd.weather.gc.ca/ -p bulletins/alphanumeric -pb amqp://broker.com -action start
+ sr_watch -dr /data/web/public_data -pbu http://dd.weather.gc.ca/ -p bulletins/alphanumeric -pb amqp://broker.com -action start
 
 Here, sr_watch checks for file creation(modification) in /data/web/public_data/bulletins/alphanumeric
 (concatenating the base_dir and relative path of the source url to obtain the directory path).
@@ -141,7 +141,7 @@ The value should be one of::
 
    0 - autocompute an appropriate partitioning strategy (default)
    1 - always send files in a single part.
-   p,<sz> - used a fixed partition size (example size: 1M )
+   <sz> - used a fixed partition size (example size: 1M )
 
 Files can be announced as multiple blocks (or parts). Each part has a separate checksum.
 The parts and their checksums are stored in the cache. Partitions can traverse
@@ -191,8 +191,7 @@ gives the local absolute path to the data file to be posted.
 -------------------------------
 
 A list of event types to monitor separated by a 'pipe symbol'.
-Available events:  create, delete, follow, link, modify, poll
-Default: default is all of them, except poll
+Available events:  create, delete, link, modify
 
 The *create*, *modify*, and *delete* events reflect what is expected: a file being created, modified, or deleted.
 If *link* is set, symbolic links will be posted as links so that consumers can choose 
@@ -207,7 +206,7 @@ how to process them. If it is not set, then no symbolic link events will ever be
 --------------------------------
 
   sr_watch publishes to an exchange named *xs_*"broker_username" by default.
-  Use the *exchange* option to override that default.
+  Use the *post_exchange* option to override that default.
 
 [-fp|--force_polling <boolean>]
 -------------------------------
@@ -233,6 +232,13 @@ NOTE::
   entirely and turn on the *delete* option, which will have sr_watch attempt to post the entire tree
   every time (ignoring mtime).
 
+[-pos|--post_on_start]
+----------------------
+
+When starting sr_watch, one can either have the program post all the files in the directories watched
+or not.
+
+
 [-fs|--follow_symlinks <boolean>]
 ---------------------------------
 
@@ -254,12 +260,6 @@ impacts.
 -----------------
 
 Display program options.
-
-[-l <logpath>]
---------------
-
-Set a file where all the logs will be written.
-Logfile will rotate at 'midnight' and kept with a history of 5 files.
 
 [-p|--path path]
 ----------------
@@ -286,9 +286,7 @@ the *post_base_dir* present and needed.
 The realpath option resolves paths given to their canonical ones, eliminating 
 any indirection via symlinks. The behaviour improves the ability of sr_watch to 
 monitor trees, but the trees may have completely different paths than the arguments 
-given. This option also enforces traversing of symbolic links. This is implemented 
-to preserve the behaviour of an earlier iteration of sr_watch, but it is not 
-clear if it is required or useful. Feedback welcome.
+given. This option also enforces traversing of symbolic links. 
 
 [-rn|--rename <path>]
 ---------------------
@@ -354,13 +352,13 @@ It is a comma separated string.  Valid checksum flags are ::
     where 0 : no checksum... value in post is a random integer (only for testing/debugging.)
           d : do md5sum on file content (default for now, compatibility)
           n : do md5sum checksum on filename
-          N : do SHA512 checksum on filename
+          p : do SHA512 checksum on filename and partstr [#]_
           s : do SHA512 on file content (default in future)
           z,a : calculate checksum value using algorithm a and assign after download.
 
 Other checksum algorithms can be added. See Programming Guide.
 
-
+.. [#] only implemented in C. ( see https://github.com/MetPX/sarracenia/issues/117 )
 
 File Detection Strategies
 -------------------------

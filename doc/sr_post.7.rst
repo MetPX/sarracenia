@@ -43,8 +43,7 @@ An sr_post message consists of four parts: **AMQP TOPIC, First Line, Rest of Mes
 
           <date stamp> - YYYYMMDDHHMMSS.ss - UTC date/timestamp.
           <base_url>   - root of the url to download.
-          <relpath>    - relative path perhaps catenated to <base_url>
-                         may instead be a rename.
+          <relpath>    - relative path can be catenated to <base_url>
 
 <*rest of body is reserved for future use*>
 
@@ -122,7 +121,7 @@ AMQP TOPIC
 ----------
 
 In topic based AMQP exchanges, every message has a topic header.  AMQP defines the '.' character 
-as a hierarchical separator (like '\' in a windows path name, or '/' on linux) there is also a 
+as a hierarchical separator (like '\' in a Windows path name, or '/' on linux) there is also a
 pair of wildcards defined by the standard:  '*' matches a single topic, '#' matches the rest of 
 the topic string. To allow for changes in the message body in the future, topic trees begin with 
 the version number of the protocol.   
@@ -236,9 +235,8 @@ in messages when appropriate.
 
 **rename=<relpath>** 
 
- *DEPRECATED* Do Not use.
- The relative path from the current directory in which to
- place the file.
+If different from relpath, this value replaces relpath as the suggested location 
+to write the file to.
 
 **oldname=<path>**
 **newname=<path>**
@@ -274,6 +272,8 @@ in messages when appropriate.
  +-----------+---------------------------------------------------------------------+
  |     0     | No checksums (unconditional copy.) Skips reading file (faster)      |
  +-----------+---------------------------------------------------------------------+
+ |     a     | Application defined sum (which cannot be calculated, must be stored)|
+ +-----------+---------------------------------------------------------------------+
  |     d     | Checksum the entire data (MD-5 as per IETF RFC 1321)                |
  +-----------+---------------------------------------------------------------------+
  |     L     | Linked: SHA512 sum of link value                                    |
@@ -305,8 +305,18 @@ in messages when appropriate.
  Each name should be unique within all exchanging rabbitmq clusters. It is used to do the transit
  of the products and their notices through the exchanging clusters.
 
+*optional headers follow*
 
-All other headers are reserved for future use.  
+for the file mirroring use case, additional files will be present:
+
+**atime,mtime,mode**
+
+  man 2 stat - the linux/unix standard file metadata:
+  access time, modification time, and permission (mode bits)
+  the times are in the same decimal date format as the date stamp field.
+  the permission string is four characters intended to be interpreted as
+  traditional octal linux/unix permissions.
+
 Headers which are unknown to a given client should be forwarded without modification.
 
 
@@ -393,6 +403,9 @@ small subset of AMQP patterns.  An important element of sarracenia development w
 select from the many possibilities a small subset of methods are general and easily understood, 
 in order to maximize potential for interoperability.
 
+Analogy FTP
+~~~~~~~~~~~
+
 Specifying the use of a protocol alone may be insufficient to provide enough information for
 data exchange and interoperability.  For example when exchanging data via FTP, a number of choices
 need to be made above and beyond the protocol.
@@ -407,25 +420,48 @@ of FTP alone as a transfer protocol is insufficient to specify a complete data t
 procedure, use of AMQP, without more information, is incomplete.   The intent of the conventions
 layered on top of AMQP is to be a minimum amount to achieve meaningful data exchange.
 
+AMQP: not 1.0, but 0.8 or 0.9
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 AMQP 1.0 standardizes the on-the-wire protocol, but leaves out many features of broker interaction.   
 As the use of brokers is key to sarracenia´s use of, was a fundamental element of earlier standards, 
 and as the 1.0 standard is relatively controversial, this protocol assumes a pre 1.0 standard broker, 
 as is provided by many free brokers, such as rabbitmq, often referred to as 0.8, but 0.9 and post
 0.9 brokers are also likely to inter-operate well.
 
-In AMQP, many different actors can define communication parameters.  In RabbitMQ
-(the initial broker used), permissions are assigned using regular expressions. So
-a permission model where AMQP users can define and use *their* exchanges and queues
-is enforced by a naming convention easily mapped to regular expressions (all such
-resources include the username near the beginning). Exchanges begin with: xs_<user>_.
-Queue names begin with: q_<user>_.
+Named Exchanges and Queues
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In AMQP prior to 1.0, many different actors can define communication parameters, such as exchanges
+to publish to, queues where messages accumulate, and bindings between the two. Applications
+and users declare and user their exchanges, queues, and bindings. All of this was dropped 
+in the move to 1.0 making topic based exchanges, an important underpinning of pub/sub patterns
+much more difficult.
+
+in AMQP 0.9, one subscriber can declare a queue, and then multiple processes (given the right
+permissions and the queue name) can consume from the same queue. That requires being able
+to name the queue. In another protocol, such as MQTT, one cannot name the queue, and so
+this processing pattern is not supported.
+
 
 .. NOTE::
-   FIXME: other connection parameters: persistence, etc..
 
-Topic-based exchanges are used exclusively.  AMQP supports many other types of exchanges, 
+  In RabbitMQ (the initial broker used), permissions are assigned using regular expressions. So
+  a permission model where AMQP users can define and use *their* exchanges and queues
+  is enforced by a naming convention easily mapped to regular expressions (all such
+  resources include the username near the beginning). Exchanges begin with: xs_<user>_.
+  Queue names begin with: q_<user>_.  
+
+Topic-based Exchanges
+~~~~~~~~~~~~~~~~~~~~~
+
+Topic-based exchanges are used exclusively. AMQP supports many other types of exchanges, 
 but sr_post have the topic sent in order to support server side filtering by using topic 
-based filtering.  The topics mirror the path of the files being announced, allowing 
+based filtering. At AMQP 1.0, topic-based exchanges (indeed all exchanges, are no
+longer defined.) Server-side filtering allows for much fewer topic hierarchies to be used,
+and for much more efficient subsciptions.
+
+In Sarracenia, topics are chosen to mirror the path of the files being announced, allowing 
 straight-forward server-side filtering, to be augmented by client-side filtering on 
 message reception.
 
@@ -435,26 +471,46 @@ created in 2015, is the third iteration of the protocol and existing servers rou
 versions simultaneously in this way.  The second sub-topic defines the type of message.
 At the time of writing:  v02.post is the topic prefix for current post messages.
 
-The AMQP messages contain announcements, no actual file data.  AMQP is optimized for and assumes 
-small messages.  Keeping the messages small allows for maximum message throughtput and permits
+No data 
+~~~~~~~
+
+The AMQP messages contain announcements, no actual file data. AMQP is optimized for and assumes 
+small messages. Keeping the messages small allows for maximum message throughtput and permits
 clients to use priority mechanisms based on transfer of data, rather than the announcements.
 Accomodating large messages would create many practical complications, and inevitably require 
 the definition of a maximum file size to be included in the message itself, resulting in
 complexity to cover multiple cases. 
 
-sr_post is intended for use with arbitrarily large files, via segmentation and multi-streaming.
+Sr_post is intended for use with arbitrarily large files, via segmentation and multi-streaming.
 Blocks of large files are announced independently and blocks can follow different paths
-between initial pump and final delivery.  The protocol is unidirectional, in that there 
-is no dialogue between publisher and subscriber.  Each post is a stand-alone item that 
+between initial pump and final delivery. The protocol is unidirectional, in that there 
+is no dialogue between publisher and subscriber. Each post is a stand-alone item that 
 is one message in a stream, which on receipt may be spread over a number of nodes. 
 
+Other Parameters
+~~~~~~~~~~~~~~~~
 
-CHARACTER SET & ENCODING
-------------------------
+There are other parameters, such as persistence (have queues survive broker restarts, default to true),
+expiry (how long a queue should exist when no-one is consuming from it.  Default: a few 
+minutes for development, but can set much longer for production) message-ttl (the life-span of queued
+messages. messages that are too old, will not be delivered. default is forever.)
+Pre-fetch is an AMQP tunable to determine how many messages a client will retrieve from
+a broker at once, optimizing streaming.
 
-All messages are expected to use the UNICODE character set (ISO 10646), 
-represented by UTF-8 encoding (IETF RFC 3629).
-URL encoding, as per IETF RFC 1738, is used to escape unsafe characters where appropriate.
+
+
+
+Applicable Standards
+--------------------
+
+* Sarracenia relies on `AMQP pre 1.0 <https://www.rabbitmq.com/resources/specs/amqp0-9-1.pdf>`_  as the
+  1.0 standard eliminated concepts: broker, exchange, queue, and binding.  The 1.0 feature set is below the 
+  minimum needed to support Sarracenia's pub-sub architecture.
+
+* All messages are expected to use the UNICODE character set (ISO 10646), 
+  represented by UTF-8 encoding (IETF RFC 3629).
+
+* URL encoding, as per IETF RFC 1738, is used to escape unsafe characters where appropriate.
 
 
 FURTHER READING
@@ -466,7 +522,9 @@ http://rabbitmq.net - home page of the AMQP broker used to develop Sarracenia.
 
 
 SEE ALSO
-========
+--------
+
+`sr_postv3(7) <sr_postv3.7.rst>`_ - experimental next version of sr_post messages.
 
 `sr_report(7) <sr_report.7.rst>`_ - the format of report messages.
 

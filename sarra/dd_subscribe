@@ -96,7 +96,7 @@ class HostConnect:
 
        self.connection = None
        self.channel    = None
-       self.ssl        = False
+       self.ssl        = True
 
        self.logger     = logger
 
@@ -2063,7 +2063,7 @@ class ConsumerX(object):
         self.ssl        = False
 
         self.queue      = None
-        self.durable    = False
+        self.durable    = True
         self.expire     = None
 
         self.notify_only = False
@@ -2185,7 +2185,7 @@ class ConsumerX(object):
 
         self.protocol      = 'amqp'
         self.host          = 'dd.weather.gc.ca'
-        self.port          = 5672
+        self.port          = 5671
         self.amqp_user     = 'anonymous'
         self.amqp_passwd   = 'anonymous'
         self.vhost         = '/'
@@ -2719,7 +2719,7 @@ def help():
           "\t\t  <amqp pattern> = <directory>.<directory>.<directory>...\n" +
           "\t\t\t* single directory wildcard (matches one directory)\n" +
           "\t\t\t# wildcard (matches rest)\n" +
-          "\ttopic_prefix  <amqp pattern> (invariant prefix, currently v00.dd.notify)\n" +
+          "\ttopic_prefix  <amqp pattern> (invariant prefix, currently v02.post)\n" +
           "\nHTTP Settings:\n" +
           "\thttp-password <pw> (default: None)\n" +
           "\thttp-user   <user> (default: None)\n" +

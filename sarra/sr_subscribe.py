@@ -5,8 +5,8 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
 #
 # Questions or bugs report: dps-client@ec.gc.ca
-# sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
+# Sarracenia repository: https://github.com/MetPX/sarracenia
+# Documentation: https://github.com/MetPX/sarracenia
 #
 # sr_subscribe.py : python3 program allowing users to download products
 #                   as soon as they are made available (through amqp notifications)
@@ -21,8 +21,7 @@
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+#  the Free Software Foundation; version 2 of the License.
 #
 #  This program is distributed in the hope that it will be useful, 
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of 
@@ -44,6 +43,13 @@
 
 import json,os,sys,time
 
+from sys import platform as _platform
+
+from base64 import b64decode, b64encode
+from mimetypes import guess_type
+
+
+
 try :    
          from sr_cache           import *
          from sr_consumer        import *
@@ -53,6 +59,7 @@ try :
          from sr_instances       import *
          from sr_message         import *
          from sr_util            import *
+         from sr_xattr           import *
 except : 
          from sarra.sr_cache     import *
          from sarra.sr_consumer  import *
@@ -62,6 +69,8 @@ except :
          from sarra.sr_instances import *
          from sarra.sr_message   import *
          from sarra.sr_util      import *
+         from sarra.sr_xattr     import *
+
 
 class sr_subscribe(sr_instances):
 
@@ -123,6 +132,10 @@ class sr_subscribe(sr_instances):
            self.help()
            sys.exit(1)
 
+        if self.post_topic_prefix == None:
+           self.post_topic_prefix = self.topic_prefix
+           
+
         # bindings (if no subtopic)
 
         if self.bindings == []  :
@@ -165,9 +178,9 @@ class sr_subscribe(sr_instances):
     def close(self):
 
         for plugin in self.on_stop_list:
-           if not plugin(self): break
+            if not plugin(self): break
 
-        self.consumer.close()
+        if hasattr(self, 'consumer'): self.consumer.close()
 
         if self.post_broker :
            if self.post_broker != self.broker : self.post_hc.close()
@@ -247,7 +260,7 @@ class sr_subscribe(sr_instances):
            self.post_hc = self.consumer.hc
            if self.post_broker != self.broker :
               self.post_hc = HostConnect( logger = self.logger )
-              self.post_hc.set_pika( self.use_pika )
+              self.post_hc.choose_amqp_alternative(self.use_amqplib, self.use_pika)
               self.post_hc.set_url( self.post_broker )
               self.post_hc.connect()
 
@@ -276,6 +289,64 @@ class sr_subscribe(sr_instances):
         self.logger.debug("downloading/copying %s (scheme: %s) into %s " % \
                          (self.msg.urlstr, self.msg.url.scheme, self.msg.new_file))
 
+         
+        if 'content' in self.msg.headers.keys():
+            # make sure directory exists, create it if not
+            if not os.path.isdir(self.msg.new_dir):
+                try:
+                    os.makedirs(self.msg.new_dir,0o775,True)
+                except Exception as ex:
+                    self.logger.warning( "making %s: %s" % ( newdir, ex ) )
+
+            try:
+                self.logger.debug( "data inlined with message, no need to download" )
+                path = self.msg.new_dir + os.path.sep + self.msg.new_file
+                f = os.fdopen(os.open( path, os.O_RDWR | os.O_CREAT), 'rb+')
+                if self.msg.headers[ 'content' ][ 'encoding' ] == 'base64':
+                    data = b64decode( self.msg.headers[ 'content' ]['value'] ) 
+                else:
+                    data = self.msg.headers[ 'content' ]['value'].encode('utf-8')
+
+                onfly_algo = self.msg.sumalgo
+                data_algo = self.msg.sumalgo
+                onfly_algo.set_path(path)
+                data_algo.set_path(path)
+                
+                onfly_algo.update(data)
+                self.msg.onfly_checksum = "{},{}".format(onfly_algo.registered_as(), onfly_algo.get_value())
+
+                if self.on_data_list:
+                   new_chunk = data 
+                   for plugin in self.parent.on_data_list :
+                       data = plugin(self,data)
+                   data_sumalgo.update(data)
+                   self.msg.data_checksum = data_algo.get_value()
+
+                f.write( data )
+                f.truncate()
+                f.close()
+
+                if self.preserve_mode and 'mode' in self.msg.headers :
+                     try   : mode = int( self.msg.headers['mode'], base=8)
+                     except: mode = 0
+                     if mode > 0 : os.chmod( path, mode )
+          
+                if mode == 0 and  self.chmod !=0 :
+                     os.chmod( path, self.chmod )
+          
+                if self.preserve_time and 'mtime' in self.msg.headers and self.msg.headers['mtime'] :
+                    mtime = timestr2flt( self.msg.headers[ 'mtime' ] )
+                    atime = mtime
+                    if 'atime' in self.msg.headers and self.msg.headers['atime'] :
+                         atime  =  timestr2flt( self.msg.headers[ 'atime' ] )
+                    os.utime( path, (atime, mtime))
+
+                return True
+
+            except:
+                self.logger.info("inlined data corrupt, try downloading.")
+                self.logger.debug('Exception details:', exc_info=True)
+
         # try registered do_download first... might overload defaults
 
         scheme = self.msg.url.scheme 
@@ -288,7 +359,8 @@ class sr_subscribe(sr_instances):
                      # of the supported python one (http[s],sftp,ftp[s])
                      # and the plugin decided to go with the python defaults
                      if ok != None : return ok
-        except: pass
+        except:
+                self.logger.debug('Exception details:', exc_info=True)
 
         # try supported hardcoded download
 
@@ -325,11 +397,10 @@ class sr_subscribe(sr_instances):
                      return ok
 
         except :
-                (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("Download  Type: %s, Value: %s,  ..." % (stype, svalue))
-                if self.reportback: 
+                self.logger.error("%s/__do_download__: Could not download" % self.program_name)
+                self.logger.debug('Exception details: ', exc_info=True)
+                if self.reportback:
                    self.msg.report_publish(503,"Unable to process")
-                self.logger.error("%s: Could not download" % self.program_name)
 
         if self.reportback: 
             self.msg.report_publish(503,"Service unavailable %s" % scheme)
@@ -381,7 +452,7 @@ class sr_subscribe(sr_instances):
         # general startup and version
         # ---------------------------
 
-        print("\nUsage: %s [OPTIONS] [foreground|start|stop|restart|reload|status|cleanup|setup] configfile\n" % self.program_name )
+        print("\nUsage: %s [OPTIONS] [add|cleanup|declare|disable|edit|enable|foreground|list|start|stop|restart|reload|remove|setup|status] configfile\n" % self.program_name )
         print("version: %s \n" % sarra.__version__ )
 
         # ---------------------------
@@ -414,11 +485,11 @@ class sr_subscribe(sr_instances):
 
            print("\nExamples:\n")    
 
-           print("%s subscribe.conf start # download files and display log in stdout" % self.program_name)
-           print("%s -d subscribe.conf start # discard files after downloaded and display log in stout" % self.program_name)
-           print("%s -l /tmp subscribe.conf start # download files,write log file in directory /tmp" % self.program_name)
-           print("%s -n subscribe.conf start # get notice only, no file downloaded and display log in stout" % self.program_name)
-           print("subscribe.conf file settings, MANDATORY ones must be set for a valid configuration:")
+           print("\n%s subscribe.conf start # download files and display log in stdout" % self.program_name)
+           print("\n%s -d subscribe.conf start # discard files after downloaded and display log in stout" % self.program_name)
+           print("\n%s -l /tmp subscribe.conf start # download files,write log file in directory /tmp" % self.program_name)
+           print("\n%s -n subscribe.conf start # get notice only, no file downloaded and display log in stout" % self.program_name)
+           print("\nsubscribe.conf file settings, MANDATORY ones must be set for a valid configuration:")
            print("\t\t(broker amqp://anonymous:anonymous@dd.weather.gc.ca/ )")
 
         # ---------------------------
@@ -527,7 +598,6 @@ class sr_subscribe(sr_instances):
 
         print("\tpost_base_dir        <name>          (default None)")
         print("\tpost_base_url        <url>      post message: base_url         (MANDATORY)")
-        print("\trecompute_chksum     <boolean>  post message: reset checksum   (default False)")
         if self.program_name == 'sr_sarra' :
            print("\tsource_from_exchange <boolean>  post message: reset headers[source] (default False)")
         print("\ton_post              <script>        (default None)")
@@ -550,6 +620,7 @@ class sr_subscribe(sr_instances):
 
         print("\nDEBUG:")
         print("\t-debug")
+        print("\n for more information: https://github.com/MetPX/sarracenia/blob/master/doc/sr_subscribe.1.rst#documentation\n" )
 
     # =============
     # __on_file__
@@ -585,6 +656,18 @@ class sr_subscribe(sr_instances):
         return True
 
 
+    def __print_json( self, m ):
+
+        if not m.topic.split('.')[1] in [ 'post', 'report' ]:
+            return
+
+        if m.post_version == 'v03':
+            json_line = json.dumps( ( m.pubtime, m.baseurl, m.relpath, m.headers ), sort_keys=True )
+        else:
+            json_line = json.dumps( ( m.topic, m.headers, m.notice ), sort_keys=True )
+
+        print("%s" % json_line )
+
     # =============
     # __on_post__ posting of message
     # =============
@@ -592,27 +675,8 @@ class sr_subscribe(sr_instances):
     def __on_post__(self):
         #self.logger.debug("%s __on_post__" % self.program_name)
 
-        # invoke on_post when provided
-
-        for plugin in self.on_post_list:
-
-           self.__plugin_backward_compat_setup__()
-
-           if not plugin(self): return False
-
-           self.__plugin_backward_compat_repare__()
-
-        ok = True
-
-        if   self.outlet == 'json' :
-             json_line = json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ], sort_keys=True ) + '\n'
-             print("%s" % json_line )
-
-        elif self.outlet == 'url'  :
-             print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
-
-        else :
-             ok = self.msg.publish( )
+        # on_post logic moved inside post.
+        ok = self.msg.post(self)
 
         # publish counter
 
@@ -723,6 +787,13 @@ class sr_subscribe(sr_instances):
            if self.post_base_dir : relpath = relpath.replace(self.post_base_dir,'',1)
            self.msg.new_relpath  = relpath
 
+        # 2020 plugin proposed old values
+
+        if self.msg.time != self.msg.pubtime:
+           self.logger.warning("plugin modified parent.msg.time works for now, but should replace with parent.msg.pubtime")
+           self.msg.time = self.msg.pubtime
+
+        
 
     # =============
     # __plugin_backward_compat_setup__
@@ -744,7 +815,7 @@ class sr_subscribe(sr_instances):
         self.pbc_new_baseurl = self.msg.new_baseurl
         self.pbc_new_relpath = self.msg.new_relpath
         self.pbc_local_dir   = self.msg.new_dir
-        self.pbc_local_file  = self.msg.new_dir + os.sep + self.msg.new_file
+        self.pbc_local_file  = self.msg.new_dir + '/' + self.msg.new_file
         self.pbc_remote_file = self.msg.new_file
 
         self.pbc_new_url     = urllib.parse.urlparse(self.msg.new_baseurl + '/' + self.msg.new_relpath)
@@ -765,6 +836,11 @@ class sr_subscribe(sr_instances):
         self.new_file        = self.pbc_new_file
         self.new_baseurl     = self.pbc_new_baseurl
         self.new_relpath     = self.pbc_new_relpath
+
+        # 2020 plugin proposed old values
+
+        self.msg.time       = self.msg.pubtime
+
 
     # =============
     # process message  
@@ -795,19 +871,17 @@ class sr_subscribe(sr_instances):
            self.logger.debug("message missing header, set default headers['source'] = %s" % self.msg.headers['source'])
 
         # apply default to a message without an origin cluster
-        if not 'from_cluster' in self.msg.headers :
-           if self.cluster : self.msg.headers['from_cluster'] = self.cluster
-           else            : self.msg.headers['from_cluster'] = self.broker.netloc.split('@')[-1] 
-           self.logger.debug("message missing header, set default headers['from_cluster'] = %s" % self.msg.headers['from_cluster'])
+        #if not 'from_cluster' in self.msg.headers :
+        #   if self.cluster : self.msg.headers['from_cluster'] = self.cluster
+        #   else            : self.msg.headers['from_cluster'] = self.broker.netloc.split('@')[-1] 
+        #   self.logger.debug("message missing header, set default headers['from_cluster'] = %s" % self.msg.headers['from_cluster'])
 
         # apply default to a message without routing clusters
-        if not 'to_clusters' in self.msg.headers :
-           if self.to_clusters  : self.msg.headers['to_clusters'] = self.to_clusters
-           elif self.post_broker: self.msg.headers['to_clusters'] = self.post_broker.netloc.split('@')[-1] 
-           if 'to_clusters' in self.msg.headers :
-              self.logger.debug("message missing header, set default headers['to_clusters'] = %s" % self.msg.headers['to_clusters'])
-           else:
-              self.logger.warning("message without headers['to_clusters']")
+        #if not 'to_clusters' in self.msg.headers :
+        #   if self.to_clusters  : self.msg.headers['to_clusters'] = self.to_clusters
+        #   elif self.post_broker: self.msg.headers['to_clusters'] = self.post_broker.netloc.split('@')[-1] 
+        #   if 'to_clusters' in self.msg.headers :
+        #      self.logger.debug("message missing header, set default headers['to_clusters'] = %s" % self.msg.headers['to_clusters'])
 
         #=================================
         # setting up message with sr_subscribe config options
@@ -851,8 +925,7 @@ class sr_subscribe(sr_instances):
               if ok and self.reportback : self.msg.report_publish(201,'Published')
            else:
               if   self.outlet == 'json' :
-                   json_line = json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ], sort_keys=True ) + '\n'
-                   print("%s" % json_line )
+                   self.__print_json( self.msg )
               elif self.outlet == 'url'  :
                    print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
 
@@ -890,8 +963,8 @@ class sr_subscribe(sr_instances):
 
         # set working message  with relpath info
 
-        w_msg.set_topic ('v02.post', relpath )
-        w_msg.set_notice(self.msg.baseurl,relpath,self.msg.time)
+        w_msg.set_topic (self.post_topic_prefix, relpath )
+        w_msg.set_notice(self.msg.baseurl,relpath,self.msg.pubtime)
 
         w_msg.parse_v02_post()
 
@@ -1036,8 +1109,12 @@ class sr_subscribe(sr_instances):
 
                     # make sure directory exists, create it if not
                     if not os.path.isdir(newdir):
-                       try   : os.makedirs(newdir,0o775,True)
-                       except: pass
+                       try: 
+                           os.makedirs(newdir,0o775,True)
+                       except Exception as ex:
+                           self.logger.warning( "making %s: %s" % ( newdir, ex ) )
+                           self.logger.debug('Exception details:', exc_info=True)
+
                        #MG FIXME : except: return False  maybe ?
 
                     # move
@@ -1052,7 +1129,9 @@ class sr_subscribe(sr_instances):
                                self.logger.info("move %s to %s (rename)" % (oldpath,newpath))
                             if self.reportback: self.msg.report_publish(201, 'moved')
                             need_download = False
-                    except: pass
+                    except Exception as ex:
+                            self.logger.warning( "mv %s %s: %s" % ( oldpath, newdir, ex ) )
+                            self.logger.debug('Exception details:', exc_info=True)
                     #MG FIXME : except: return False  maybe ?
 
                  # if the newpath exists log a message in debug only
@@ -1095,9 +1174,11 @@ class sr_subscribe(sr_instances):
               if os.path.exists(oldpath) : 
 
                  if not os.path.isdir(self.msg.new_dir):
-                    try   : os.makedirs(self.msg.new_dir,0o775,True)
-                    except: pass
-                    #MG FIXME : except: return False  maybe ?
+                    try: 
+                        os.makedirs(self.msg.new_dir,0o775,True)
+                    except Exception as ex:
+                        self.logger.warning( "making %s: %s" % ( self.msg.new_dir, ex ) )
+                        self.logger.debug('Exception details:', exc_info=True)
 
                  # move
                  ok = True
@@ -1110,24 +1191,25 @@ class sr_subscribe(sr_instances):
                             os.rename(oldpath,newpath)
                             self.logger.info("move %s to %s (rename)" % (oldpath,newpath))
                          else:
-                            self.logger.error("did not move %s to %s (rename) dunno why?" % (oldpath,newpath))
+                            self.logger.error("did not move %s to %s (rename)" % (oldpath,newpath))
                          need_download = False
-                 except: ok = False
+                 except:
+                     ok = False
+                     self.logger.debug('Exception details:', exc_info=True)
 
                  if ok  :
                           self.logger.info("file moved %s to %s" % (oldpath,newpath) )
                           need_download = False
                           if self.reportback: self.msg.report_publish(201, 'moved')
 
-                          self.msg.set_topic('v02.post',self.msg.new_relpath)
-                          self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.time)
+                          self.msg.set_topic(self.post_topic_prefix,self.msg.new_relpath)
+                          self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.pubtime)
                           self.msg.headers['oldname'] = oldname
                           if self.post_broker :
                              ok = self.__on_post__()
                              if ok and self.reportback : self.msg.report_publish(201,'Published')
                           else:
                              if   self.outlet == 'json' :
-                                  json_line= json.dumps([self.msg.topic,self.msg.headers,self.msg.notice],sort_keys=True)+'\n'
                                   print("%s" % json_line )
                              elif self.outlet == 'url'  :
                                   print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
@@ -1142,7 +1224,7 @@ class sr_subscribe(sr_instances):
         # delete event, try to delete the local product given by message
         #=================================
 
-        if self.msg.sumflg.startswith('R') : 
+        if self.msg.event == 'delete' : 
 
            self.logger.debug("message is to remove %s" % self.msg.new_file)
 
@@ -1151,7 +1233,7 @@ class sr_subscribe(sr_instances):
               if self.msg.isRetry: self.consumer.msg_worked()
               return True
 
-           path = self.msg.new_dir + os.sep + self.msg.new_file
+           path = self.msg.new_dir + '/' + self.msg.new_file
 
            try : 
                if os.path.isfile(path) : os.unlink(path)
@@ -1160,20 +1242,20 @@ class sr_subscribe(sr_instances):
                self.logger.info("removed %s" % path)
                if self.reportback: self.msg.report_publish(201, 'removed')
            except:
-               (stype, svalue, tb) = sys.exc_info()
-               self.logger.error("Could not remove %s. Type: %s, Value: %s,  ..." % (path, stype, svalue))
-               if self.reportback: self.msg.report_publish(500, 'remove failed')
+               self.logger.error("sr_subscribe/doit_download: could not remove %s." % path)
+               self.logger.debug('Exception details: ', exc_info=True)
+               if self.reportback:
+                   self.msg.report_publish(500, 'remove failed')
 
-           self.msg.set_topic('v02.post',self.msg.new_relpath)
-           self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.time)
+           self.msg.set_topic(self.post_topic_prefix,self.msg.new_relpath)
+           self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.pubtime)
            if 'newname' in self.msg.headers : self.msg.headers['newname'] = newname
            if self.post_broker :
               ok = self.__on_post__()
               if ok and self.reportback : self.msg.report_publish(201,'Published')
            else:
               if   self.outlet == 'json' :
-                   json_line= json.dumps([self.msg.topic,self.msg.headers,self.msg.notice],sort_keys=True)+'\n'
-                   print("%s" % json_line )
+                   self.__print_json( self.msg )
               elif self.outlet == 'url'  :
                    print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
 
@@ -1184,7 +1266,7 @@ class sr_subscribe(sr_instances):
         # link event, try to link the local product given by message
         #=================================
 
-        if self.msg.sumflg.startswith('L') :
+        if self.msg.event == 'link' :
            self.logger.debug("message is to link %s to %s" % ( self.msg.new_file, self.msg.headers[ 'link' ] ) )
            if not 'link' in self.events: 
               self.logger.info("message to link %s to %s ignored (events setting)" %  \
@@ -1193,12 +1275,15 @@ class sr_subscribe(sr_instances):
               return True
 
            if not os.path.isdir(self.msg.new_dir):
-              try   : os.makedirs(self.msg.new_dir,0o775,True)
-              except: pass
+              try: 
+                 os.makedirs(self.msg.new_dir,0o775,True)
+              except Exception as ex:
+                 self.logger.warning( "making %s: %s" % ( self.msg.new_dir, ex ) )
+                 self.logger.debug('Exception details:', exc_info=True)
 
            ok = True
            try : 
-               path = self.msg.new_dir + os.sep + self.msg.new_file
+               path = self.msg.new_dir + '/' + self.msg.new_file
 
                if os.path.isfile(path) : os.unlink(path)
                if os.path.islink(path) : os.unlink(path)
@@ -1209,18 +1294,18 @@ class sr_subscribe(sr_instances):
            except:
                ok = False
                self.logger.error("symlink of %s %s failed." % (self.msg.new_file, self.msg.headers[ 'link' ]) )
+               self.logger.debug('Exception details:', exc_info=True)
                if self.reportback: self.msg.report_publish(500, 'symlink failed')
 
            if ok :
-              self.msg.set_topic('v02.post',self.msg.new_relpath)
-              self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.time)
+              self.msg.set_topic(self.post_topic_prefix,self.msg.new_relpath)
+              self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.pubtime)
               if self.post_broker :
                  ok = self.__on_post__()
                  if ok and self.reportback : self.msg.report_publish(201,'Published')
               else:
                  if   self.outlet == 'json' :
-                      json_line= json.dumps([self.msg.topic,self.msg.headers,self.msg.notice],sort_keys=True)+'\n'
-                      print("%s" % json_line )
+                      self.__print_json( self.msg )
                  elif self.outlet == 'url'  :
                       print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
 
@@ -1245,10 +1330,16 @@ class sr_subscribe(sr_instances):
               return False
 
         # pass no warning it may already exists
-        try    : os.makedirs(self.msg.new_dir,0o775,True)
-        except : pass
+        try: 
+           os.makedirs(self.msg.new_dir,0o775,True)
+        except Exception as ex: 
+           self.logger.warning( "making %s: %s" % ( self.msg.new_dir, ex ) )
+           self.logger.debug('Exception details:', exc_info=True)
+
         try    : os.chdir(self.msg.new_dir)
-        except : self.logger.error("could not cd to directory %s" % self.msg.new_dir)
+        except :
+            self.logger.error("could not cd to directory %s" % self.msg.new_dir)
+            self.logger.debug('Exception details:', exc_info=True)
 
         #=================================
         # overwrite False, user asked that if the announced file already exists,
@@ -1267,20 +1358,23 @@ class sr_subscribe(sr_instances):
 
            need_download = False
 
+
         #=================================
         # attempt downloads
         #=================================
 
         if need_download :
 
+
            self.msg.onfly_checksum = None
+           self.msg.ondata_checksum = None
 
            # skip checksum computation for sumflg = '0'
 
-           if self.msg.sumflg[0] == '0' : self.msg.sumalgo = None
+           if self.msg.sumflg[0] == '0':
+               self.msg.sumalgo = None
 
            # N attempts to download
-
            i  = 1
            while i <= self.attempts :
                  # it is confusing to see in log for the same product
@@ -1302,29 +1396,63 @@ class sr_subscribe(sr_instances):
               return False
 
            # after download we dont propagate renaming... once used get rid of it
-           if 'rename'  in self.msg.headers : del self.msg.headers['rename']
+           if 'rename'  in self.msg.headers : 
+               del self.msg.headers['rename']
+               # FIXME: worry about publishing after a rename.
+               # the relpath should be replaced by rename value for downstream
+               # because the file was written to rename.
+               # not sure if this happens or not.
 
-           # if an onfly_checksum was computed
-
+           # if we can set the checksum for downloaded data correctly, we should do so
+           # to prevent loops.
            if self.msg.onfly_checksum :
 
                 # after download : setting of sum for 'z' flag ...
-
                 if len(self.msg.sumflg) > 2 and self.msg.sumflg[:2] == 'z,':
-                   self.msg.set_sum(self.msg.sumflg[2],self.msg.onfly_checksum)
-                   if self.reportback: self.msg.report_publish(205,'Reset Content : checksum')
+                    new_checksum=self.msg.onfly_checksum.split(',')[-1]
+                else:
+                    new_checksum=None
 
-                # onfly checksum is different from the message ???
-                if not self.msg.onfly_checksum == self.msg.checksum :
+                if ( self.msg.sumflg[0] not in ['a', 'z'] ) and ( self.msg.onfly_checksum != self.msg.sumstr ):
+                   # onfly checksum is different from the message, avoid loops by overwriting. 
+                   # except if the algorithm is arbitrary, and therefore cannot be calculated.
                    self.logger.warning("onfly_checksum %s differ from message %s" %
-                                      (self.msg.onfly_checksum, self.msg.checksum))
+                                      (self.msg.onfly_checksum, self.msg.sumstr))
+                   new_checksum=self.msg.onfly_checksum.split(',')[-1]
+                
+                if self.on_data_list :
+                   # if there was transformation happening during the transfer, 
+                   # we should used the checksum from the transformed data.
+                   self.logger.debug("setting checksum from on_data: %s" % self.msg.data_checksum )
+                   new_checksum=self.msg.data_checksum
+ 
+                if new_checksum :
+                   # set the value so that if it gets posted later, it is correct.
+                   self.msg.set_sum(self.msg.sumflg.split(',')[-1], new_checksum)
 
-                   # force onfly checksum  in message
+                   try:
+                          path = self.msg.new_dir + '/' + self.msg.new_file
 
-                   if self.recompute_chksum :
-                      #self.msg.compute_local_checksum()
-                      self.msg.set_sum(self.msg.sumflg,self.msg.onfly_checksum)
-                      if self.reportback: self.msg.report_publish(205,'Reset Content : checksum')
+                          x = sr_xattr(path)
+
+                          if 'mtime' in self.msg.headers:
+                              x.set( 'mtime', self.msg.headers['mtime'] )
+
+                          new_sumstr = self.msg.sumflg+','+new_checksum
+                          if x.get('sum') != new_sumstr:
+                              x.set('sum', new_sumstr)
+                          x.persist()
+
+                   except Exception as ex:
+                          self.logger.warning( "failed to set sattributes %s" % path )
+                          self.logger.debug('Exception details:', exc_info=True)
+
+                   # tell upstream that we changed the checksum.
+                   if self.reportback:
+                       if new_checksum == self.msg.onfly_checksum :
+                            self.msg.report_publish(205,'Reset Content : checksum')
+                       else:
+                            self.msg.report_publish(203,'Non-Authoritative Information: transformed during download')
 
 
            # if the part should have been inplace... but could not
@@ -1380,22 +1508,49 @@ class sr_subscribe(sr_instances):
                     if self.msg.isRetry: self.consumer.msg_worked()
                     return False
 
-                 #for plugin in self.on_file_list:
-                 #    if not plugin(self): return False
+           # inline option
+           if  (not ( self.msg.event in [ 'link',  'delete' ] )  ) and \
+               (self.msg.partflg == '1' ) and ( self.post_version == 'v03' ) \
+               and self.inline :
 
-                 #    if ( self.msg.local_file != self.msg.new_file ): # FIXME remove in 2018
-                 #       self.logger.warning("on_file plugins should replace parent.msg.local_file, by parent.msg.new_file" )
-                 #       self.msg.new_file = self.msg.local_file
+               fname = self.msg.new_dir + os.path.sep + self.msg.new_file
+               fs = os.stat( fname )
+               if fs.st_size < self.inline_max :
+
+                   if self.inline_encoding == 'guess':
+                      e = guess_type(fname)[0]
+                      binary = not e or not ('text' in e )
+                   else:
+                      binary = (self.inline_encoding != 'text' )
+
+                   try: 
+                       f = open(fname , 'rb')
+                       d = f.read()
+                       f.close()
+
+                       if binary:
+                           self.msg.headers[ "content" ] = { "encoding": "base64", "value": b64encode(d).decode('utf-8') }
+                       else:
+                           try:
+                               self.msg.headers[ "content" ] = { "encoding": "utf-8", "value": d.decode('utf-8') }
+                           except:
+                               self.msg.headers[ "content" ] = { "encoding": "base64", "value": b64encode(d).decode('utf-8') }
+                               self.logger.debug('Exception details:', exc_info=True)
+
+                       self.logger.debug( "inlined data for %s" % self.msg.new_file )
+
+                   except:
+                       self.logger.error("failled trying to inline %s" % self.msg.new_file)
+                       self.logger.debug('Exception details:', exc_info=True)
 
            # discard option
-
            if self.discard :
               try    :
                         os.unlink(self.msg.new_file)
                         self.logger.debug("Discarded  %s" % self.msg.new_file)
               except :
-                        (stype, svalue, tb) = sys.exc_info()
-                        self.logger.error("Could not discard  Type: %s, Value: %s,  ..." % (stype, svalue))
+                        self.logger.error("Could not discard")
+                        self.logger.debug('Exception details: ', exc_info=True)
               if self.msg.isRetry: self.consumer.msg_worked()
               return False
 
@@ -1408,16 +1563,15 @@ class sr_subscribe(sr_instances):
            if self.inplace : self.msg.change_partflg('i')
            else            : self.msg.change_partflg('p')
 
-        self.msg.set_topic('v02.post',self.msg.new_relpath)
-        self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.time)
+        self.msg.set_topic(self.post_topic_prefix,self.msg.new_relpath)
+        self.msg.set_notice(self.msg.new_baseurl,self.msg.new_relpath,self.msg.pubtime)
         if 'oldname' in self.msg.headers : self.msg.headers['oldname'] = oldname
         if self.post_broker :
            ok = self.__on_post__()
            if ok and self.reportback: self.msg.report_publish(201,'Published')
         else:
            if   self.outlet == 'json' :
-                json_line= json.dumps([self.msg.topic,self.msg.headers,self.msg.notice],sort_keys=True)+'\n'
-                print("%s" % json_line )
+                self.__print_json( self.msg )
            elif self.outlet == 'url'  :
                 print("%s" % '/'.join(self.msg.notice.split()[1:3]) )
 
@@ -1446,19 +1600,6 @@ class sr_subscribe(sr_instances):
         """
         if self.msg.isRetry: self.consumer.msg_worked()
         return True
-
-    def LOG_TRACE(self,tb):
-        import io, traceback
-
-        tb_output = io.StringIO()
-        traceback.print_tb(tb, None, tb_output)
-        self.logger.error("\n\n****************************************\n" + \
-                              "******* ERROR PRINTING TRACEBACK *******\n" + \
-                              "****************************************\n" + \
-                            "\n" + tb_output.getvalue()             + "\n" + \
-                            "\n****************************************\n")
-        tb_output.close()
-
 
     def restore_messages(self):
         self.logger.info("%s restore_messages" % self.program_name)
@@ -1494,7 +1635,24 @@ class sr_subscribe(sr_instances):
 
                  count += 1
                  self.msg.exchange = 'save'
-                 self.msg.topic, self.msg.headers, self.msg.notice = json.loads(json_line)
+                 jt = json.loads( json_line )
+                 if len(jt) == 3:  # v02 format...
+                     ( self.msg.topic, self.msg.headers, self.msg.notice ) = jt
+                 elif len(jt) == 1: # v03 format. post ETCTS201902
+                     self.headers = jt
+                     self.msg.pubtime = self.headers[ "pubTime" ]
+                     self.msg.baseurl = self.headers[ "baseUrl" ]
+                     self.msg.relpath = self.headers[ "relPath" ]
+                     self.msg.notice= "%s %s %s" % ( self.msg.pubtime, self.msg.baseurl, self.msg.relpath )
+
+                 elif len(jt) == 4: # early v03 format.
+                     ( self.msg.pubtime, self.msg.baseurl, self.msg.relpath, self.msg.headers ) = jt
+                     self.msg.topic = self.msg.post_topic_prefix + '.'.join( self.msg.relpath.split('/')[0:-1] )
+                     self.msg.notice= "%s %s %s" % ( self.msg.pubtime, self.msg.baseurl, self.msg.relpath )
+                 else:
+                     self.logger.warning("skipped corrupt line in save file %s, line %d: %s" % ( self.save_path, count, json_line ) )
+                     continue
+
                  self.msg.from_amqplib()
                  self.msg.isRetry  = False
                  self.logger.info("%s restoring message %d of %d: topic: %s" %
@@ -1601,18 +1759,22 @@ class sr_subscribe(sr_instances):
                       going_badly=0.01
 
               except:
-                      if self.retry_mode : self.consumer.msg_to_retry()
-                      (stype, svalue, tb) = sys.exc_info()
-                      if self.debug : self.LOG_TRACE(tb)
-                      self.logger.error( "%s/run going badly, so sleeping for %g Type: %s, Value: %s,  ..." % \
-                          (self.program_name,going_badly, stype, svalue) )
+                      self.logger.error( "%s/run going badly, so sleeping for %g" % (self.program_name, going_badly))
+                      self.logger.debug('Exception details: ', exc_info=True)
+                      if self.retry_mode:
+                          self.consumer.msg_to_retry()
                       time.sleep(going_badly)
-                      if (going_badly < 5):  going_badly*=2 
+                      if (going_badly < 5):  going_badly*=2
 
     def save_message(self):
+
+        if not self.msg.topic.split('.')[1] in [ 'post', 'report' ]:
+            self.logger.warning("%s skipping unsupported message format for saving. topic: %s" % ( self.program_name,self.msg.topic))
+            return
+
         self.logger.info("%s saving %d message topic: %s" % ( self.program_name,self.save_count,self.msg.topic))
         self.save_count += 1
-        self.save_fp.write(json.dumps( [ self.msg.topic, self.msg.headers, self.msg.notice ], sort_keys=True ) + '\n' ) 
+        self.save_fp.write(json.dumps( ( self.msg.pubtime, self.msg.baseurl, self.msg.relpath, self.msg.headers ), sort_keys=True ) + '\n' ) 
         self.save_fp.flush()
 
 
@@ -1659,6 +1821,8 @@ class sr_subscribe(sr_instances):
         # strip using a pattern
 
         elif self.pstrip != None :
+           self.logger.debug( 'set_new, pattern stripping active: %s' % self.pstrip )
+
            #MG FIXME Peter's wish to have replacement in pstrip (ex.:${SOURCE}...)
            try:    relstrip = re.sub(self.pstrip,'',relpath,1)
            except: relstrip = relpath
@@ -1718,6 +1882,8 @@ class sr_subscribe(sr_instances):
         # when sr_sender did not derived from sr_subscribe it was always called
         new_dir = self.sundew_dirPattern(self.msg.urlstr,tfname,new_dir,filename)
 
+        self.logger.debug( "set_new new_dir = %s" % new_dir )
+
         # reset relpath from new_dir
 
         relpath = new_dir + '/' + filename
@@ -1733,17 +1899,20 @@ class sr_subscribe(sr_instances):
         #        Everywhere else // or /../ are corrected.
         #        but if the number of / starting the path > 2  ... it will result into 1 /
 
-        self.msg.new_dir     = os.path.normpath(new_dir)
-        self.msg.new_file    = filename
+        self.msg.new_dir = os.path.normpath(new_dir)
         self.msg.new_relpath = os.path.normpath(relpath)
 
-        if self.post_broker and self.post_base_url :
-           self.msg.new_baseurl = self.post_base_url
+        if sys.platform == 'win32':
+            self.msg.new_dir = self.msg.new_dir.replace('\\', '/')
+            self.msg.new_relpath = self.msg.new_relpath.replace('\\', '/')
+            if re.match('[A-Z]:', self.currentDir, flags=re.IGNORECASE):
+                self.msg.new_dir = self.msg.new_dir.lstrip('/')
+                self.msg.new_relpath = self.msg.new_relpath.lstrip('/')
 
-        #self.logger.debug("new_dir     = %s" % self.msg.new_dir)
-        #self.logger.debug("new_file    = %s" % self.msg.new_file)
-        #self.logger.debug("new_baseurl = %s" % self.msg.new_baseurl)
-        #self.logger.debug("new_relpath = %s" % self.msg.new_relpath)
+        self.msg.new_file = filename
+
+        if self.post_broker and self.post_base_url:
+            self.msg.new_baseurl = self.post_base_url
 
     def reload(self):
         self.logger.info("%s reload" % self.program_name )
@@ -1772,18 +1941,26 @@ class sr_subscribe(sr_instances):
 
         # consumer declare
 
-        self.consumer = sr_consumer(self,admin=True)
-        self.consumer.cleanup()
+        try:
+            self.consumer = sr_consumer(self,admin=True)
+            self.consumer.cleanup()
+        except:
+            pass
 
         # if posting
 
         if self.post_broker :
-           self.post_hc = self.consumer.hc
            if self.post_broker != self.broker :
               self.post_hc = HostConnect( logger = self.logger )
-              self.post_hc.set_pika( self.use_pika )
+              self.post_hc.choose_amqp_alternative(self.use_amqplib, self.use_pika)
               self.post_hc.set_url( self.post_broker )
+              self.post_hc.loop=False
               self.post_hc.connect()
+           elif hasattr(self,'consumer'):
+              self.post_hc = self.consumer.hc
+           else:
+              self.post_hc = None
+
            self.declare_exchanges(cleanup=True)
 
         # caching
@@ -1801,7 +1978,7 @@ class sr_subscribe(sr_instances):
 
         if self.config_name and self.config_name[0:3] == 'rr_'  and not self.report_daemons :
            self.logger.info("skipping declare for %s" % self.config_name)
-           self.close
+           self.close()
            return
 
         # consumer declare
@@ -1814,7 +1991,7 @@ class sr_subscribe(sr_instances):
            self.post_hc = self.consumer.hc
            if self.post_broker != self.broker :
               self.post_hc = HostConnect( logger = self.logger )
-              self.post_hc.set_pika( self.use_pika )
+              self.post_hc.choose_amqp_alternative(self.use_amqplib, self.use_pika)
               self.post_hc.set_url( self.post_broker )
               self.post_hc.connect()
            self.declare_exchanges()
@@ -1864,7 +2041,7 @@ class sr_subscribe(sr_instances):
            self.post_hc = self.consumer.hc
            if self.post_broker != self.broker :
               self.post_hc = HostConnect( logger = self.logger )
-              self.post_hc.set_pika( self.use_pika )
+              self.post_hc.choose_amqp_alternative(self.use_amqplib, self.use_pika)
               self.post_hc.set_url( self.post_broker )
               self.post_hc.connect()
            self.declare_exchanges()
@@ -2010,8 +2187,12 @@ def test_sr_subscribe():
 def main():
 
     args,action,config,old = startup_args(sys.argv)
-
+ 
     subscribe = sr_subscribe(config,args,action)
+    if action == 'help':
+       subscribe.help()
+       os._exit(0)
+
     subscribe.exec_action(action,old)
 
     os._exit(0)

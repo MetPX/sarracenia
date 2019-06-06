@@ -5,8 +5,8 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
 #
 # Questions or bugs report: dps-client@ec.gc.ca
-# sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
+# Sarracenia repository: https://github.com/MetPX/sarracenia
+# Documentation: https://github.com/MetPX/sarracenia
 #
 # sr_http.py : python3 utility tools for http usage in sarracenia
 #
@@ -19,8 +19,7 @@
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+#  the Free Software Foundation; version 2 of the License.
 #
 #  This program is distributed in the hope that it will be useful, 
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of 
@@ -114,9 +113,8 @@ class sr_http(sr_proto):
                 return True
 
         except:
-                (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("Unable to get credentials for %s" % self.destination)
-                self.logger.error("sr_http/credentials (Type: %s, Value: %s)" % (stype ,svalue))
+                self.logger.error("sr_http/credentials: unable to get credentials for %s" % self.destination)
+                self.logger.debug('Exception details: ', exc_info=True)
 
         return False
 
@@ -191,9 +189,8 @@ class sr_http(sr_proto):
                         return self.entries
 
         except:
-                (stype, svalue, tb) = sys.exc_info()
-                self.logger.warning("Unable to open %s" % self.urlstr)
-                self.logger.warning("sr_http/ls (Type: %s, Value: %s)" % (stype ,svalue))
+                self.logger.warning("sr_http/ls: unable to open %s" % self.urlstr)
+                self.logger.debug('Exception details: ', exc_info=True)
 
         return self.entries
 
@@ -269,9 +266,8 @@ class sr_http(sr_proto):
                alarm_cancel()
                raise
         except:
-               (stype, svalue, tb) = sys.exc_info()
-               self.logger.warning("sr_http/__open__ (Type: %s, Value: %s)" % (stype ,svalue))
-               self.logger.warning("Unable to open %s" % self.urlstr)
+               self.logger.warning("sr_http/__open__: unable to open %s" % self.urlstr)
+               self.logger.debug('Exception details: ', exc_info=True)
                alarm_cancel()
                raise
 

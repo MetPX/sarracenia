@@ -30,7 +30,7 @@
 
   base_dir /var/www/html
 
-  message notice  20171003131233.494 http://localhost /20171003/CMOE/productx.gif
+  message pubtime=20171003131233.494 baseurl=http://localhost relpath=/20171003/CMOE/productx.gif
 
   on_message msg_2localfile  
   -------------------------

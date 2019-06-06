@@ -34,7 +34,7 @@ class Msg_test_retry():
         if m.isRetry :
            parent.destination = self.destination
            ok, parent.details = parent.credentials.get(self.destination)
-           m.set_notice(self.msg_baseurl_good,m.relpath,m.time)
+           m.set_notice(self.msg_baseurl_good,m.relpath,m.pubtime)
 
         # original message :  50% chance of breakage
         elif random.randint(0,2) :
@@ -43,7 +43,7 @@ class Msg_test_retry():
            if parent.program_name != 'sr_sender' :
               l.debug("making it bad 1")
               ok, parent.details = parent.credentials.get(self.destination)
-              m.set_notice(self.msg_baseurl_bad, m.relpath,m.time)
+              m.set_notice(self.msg_baseurl_bad, m.relpath,m.pubtime)
 
            # if sender break destination
            else: 

@@ -5,8 +5,8 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
 #
 # Questions or bugs report: dps-client@ec.gc.ca
-# sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
+# Sarracenia repository: https://github.com/MetPX/sarracenia
+# Documentation: https://github.com/MetPX/sarracenia
 #
 # sr_poll.py : python3 program allowing users to poll a remote server (destination)
 #              browse directories and get a list of products of interest. Each product
@@ -20,8 +20,7 @@
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+#  the Free Software Foundation; version 2 of the License.
 #
 #  This program is distributed in the hope that it will be useful, 
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of 
@@ -102,9 +101,8 @@ class sr_poll(sr_post):
                   self.dest.cd(path)
                   return True
         except :
-                  self.logger.warning("Could not cd to directory %s" % path )
-                  (stype, svalue, tb) = sys.exc_info()
-                  self.logger.warning("sr_poll/cd Type: %s, Value: %s" % (stype ,svalue))
+                  self.logger.warning("sr_poll/cd: could not cd to directory %s" % path )
+                  self.logger.debug('Exception details: ', exc_info=True)
         return False
 
     def check(self):
@@ -241,7 +239,7 @@ class sr_poll(sr_post):
         return False
 
     def help(self):
-        print("Usage: %s [OPTIONS] configfile [foreground|start|stop|restart|reload|status|cleanup|setup]\n" % self.program_name )
+        print("Usage: %s [OPTIONS] configfile [add|cleanup|declare|disable|edit|enable|foreground|remove|start|stop|restart|reload|setup|status]\n" % self.program_name )
         print("version: %s \n" % sarra.__version__ )
         print("\n\tPoll a remote server to produce announcements of new files appearing there\n" +
           "\npoll.conf file settings, MANDATORY ones must be set for a valid configuration:\n" +
@@ -282,8 +280,11 @@ class sr_poll(sr_post):
                 for line in lines :
                     line  = line.strip('\n')
                     parts = line.split()
-                    fil   = parts[-1]
-                    if not self.ls_file_index in [-1,len(parts)-1] : fil = ' '.join(parts[self.ls_file_index:])
+                    if hasattr(self,'dest_file_index'):
+                        fil = ' '.join(parts[self.dest_file_index:])
+                    else:
+                        fil   = parts[-1]
+                        if not self.ls_file_index in [-1,len(parts)-1] : fil = ' '.join(parts[self.ls_file_index:])
                     lsold[fil] = line
 
                 return lsold
@@ -327,13 +328,13 @@ class sr_poll(sr_post):
 
             return True, new_ls, new_dir
         except:
-            (stype, svalue, tb) = sys.exc_info()
             self.logger.warning("dest.lsdir: Could not ls directory")
-            self.logger.warning("sr_poll/lsdir Type: %s, Value: %s" % (stype ,svalue))
+            self.logger.debug("Exception details:", exc_info=True)
 
         return False, {}, {}
 
     def overwrite_defaults(self):
+
         sr_post.overwrite_defaults(self)
 
         # Set minimum permissions to something that might work most of the time.
@@ -406,8 +407,8 @@ class sr_poll(sr_post):
 
         self.msg.exchange = post_exchange
         
-        self.msg.set_topic(self.topic_prefix,post_relpath)
-        if self.subtopic != None : self.msg.set_topic_usr(self.topic_prefix,self.subtopic)
+        self.msg.set_topic(self.post_topic_prefix,post_relpath)
+        if self.subtopic != None : self.msg.set_topic_usr(self.post_topic_prefix,self.subtopic)
 
         self.msg.set_notice(post_base_url,post_relpath)
 
@@ -419,12 +420,17 @@ class sr_poll(sr_post):
         if partstr  != None : self.msg.headers['parts']        = partstr
         if sumstr   != None : self.msg.headers['sum']          = sumstr
         if rename   != None : self.msg.headers['rename']       = rename
-        if mtime    != None : self.msg.headers['mtime']        = mtime
-        if atime    != None : self.msg.headers['atime']        = atime
-        if mode     != None : self.msg.headers['mode']         = "%o" % ( mode & 0o7777 )
+
+        if self.preserve_time:
+            if mtime    != None : self.msg.headers['mtime']        = mtime
+            if atime    != None : self.msg.headers['atime']        = atime
+
+        if self.preserve_mode:
+            if mode     != None : self.msg.headers['mode']         = "%o" % ( mode & 0o7777 )
+
         if link     != None : self.msg.headers['link']         = link
 
-        if self.cluster != None : self.msg.headers['from_cluster'] = self.cluster
+        #if self.cluster != None : self.msg.headers['from_cluster'] = self.cluster
         if self.source  != None : self.msg.headers['source']       = self.source
 
         # ========================================
@@ -526,13 +532,13 @@ class sr_poll(sr_post):
         try:
              self.dest.connect()
         except:
-            (stype, svalue, tb) = sys.exc_info()
-            self.logger.warning("sr_poll/post_new_url Type: %s, Value: %s" % (stype ,svalue))
-            self.logger.error("Unable to connect to %s. Type: %s, Value: %s" % (self.destination, stype ,svalue))
+            self.logger.error("sr_poll/post_new_url: unable to connect to %s" % self.destination)
+            self.logger.debug('Exception details: ', exc_info=True)
             self.logger.error("Sleeping 30 secs and retry")
             time.sleep(30)
             return True
 
+        if hasattr(self.dest,'file_index'): self.dest_file_index = self.dest.file_index
         # loop on all directories where there are pulls to do
 
         for destDir in self.pulls :
@@ -649,14 +655,8 @@ class sr_poll(sr_post):
                          self.logger.warning("sr_poll sleep too low (%d) secs is less than 10%% of poll time (%f)" % (self.sleep, poll_time))
 
               except:
-                      import io, traceback
-                      (stype, svalue, tb) = sys.exc_info()
-                      tb_output = io.StringIO()
-                      traceback.print_tb(tb, None, tb_output)
-                      self.logger.error("%s\n" %  tb_output.getvalue())
-                      tb_output.close()
-                      self.logger.error("sr_poll/run Type: %s, Value: %s,  ..." % (stype, svalue))
-
+                      self.logger.error("sr_poll/run failed")
+                      self.logger.debug('Exception details: ', exc_info=True)
 
               self.logger.debug("poll is sleeping %d seconds " % self.sleep)
               time.sleep(self.sleep)

@@ -1,0 +1,37 @@
+name: sarracenia
+channels:
+  - defaults
+dependencies:
+  - asn1crypto=0.24.0=py37_0
+  - bcrypt=3.1.5=py37he774522_0
+  - ca-certificates=2018.03.07=0
+  - certifi=2018.11.29=py37_0
+  - cffi=1.11.5=py37h74b6da3_1
+  - cryptography=2.4.2=py37h7a1dbc1_0
+  - idna=2.8=py37_0
+  - openssl=1.1.1a=he774522_0
+  - paramiko=2.4.2=py37_0
+  - pip=18.1=py37_0
+  - pyasn1=0.4.4=py37h28b3542_0
+  - pycparser=2.19=py37_0
+  - pynacl=1.3.0=py37h62dcd97_0
+  - python=3.7.2=h8c8aaf0_0
+  - setuptools=40.6.3=py37_0
+  - six=1.12.0=py37_0
+  - sqlite=3.26.0=he774522_0
+  - vc=14.1=h0510ff6_4
+  - vs2015_runtime=14.15.26706=h3a45250_0
+  - wheel=0.32.3=py37_0
+  - wincertstore=0.2=py37_0
+  - pip:
+    - amqplib==1.0.2
+    - appdirs==1.4.3
+    - argh==0.26.2
+    - humanize==0.5.1
+    - metpx-sarracenia==2.19.1b1
+    - netifaces==0.10.9
+    - pathtools==0.1.2
+    - psutil==5.4.8
+    - pyyaml==3.13
+    - watchdog==0.9.0
+prefix: C:\ProgramData\Anaconda3\envs\sarracenia

@@ -6,12 +6,13 @@
  Continuously Mirror 27 Million File Tree Very Quickly
 -------------------------------------------------------
 
-.. warning::
+.. Note::
 
-   **CAVEAT:** 
    This is a bit speculative at the time of this writing (2018/01). We expect to deploy over the winter
    and be completed in 2018/03. Given the volumes being copied the exact performance isn't easily measured.
    This article will be amended to reflect the advancing solution, until complete, then this note will be removed.
+   Update 2019/02: Solution is deployed to all parallel weather prediction runs, continued progress to
+   operational deployment.
 
 .. contents::
 
@@ -19,14 +20,14 @@
 Summary
 -------
 
-This project has taken longer than expected, over a year, as the problem space was explored with the 
+This project has taken longer than expected, over two years, as the problem space was explored with the 
 help of a very patient client while the tool to design and implement the efficient solution was eventually 
 settled on. The client is actually more of a partner, who had very large test cases available and 
 ended up shouldering the responsibility for all of us to understand whether the solution was working or not. 
 While there are many specificities of this implementation, the resulting tool relies on no specific features 
 beyond a normal Linux file system to achieve a 72:1 speedup compared to rsync on real-time continuous 
 mirroring of 16 terabytes in 1.9 million files per day between two trees of 27 million files each. While
-this averages to 185 Mbytes/second sustained over a 24 hour period, it should be noted that the transfers
+this averages to 185 Mbytes/second sustained over a 24 hour period. It should be noted that the transfers
 are very peaky. On the same equipment at the same time, another
 4 terabytes per day is being written to clusters on another network, so the aggregate read rate on
 the operational cluster is 20 Terabytes per day (231 mbytes/second) for this application, while
@@ -76,7 +77,7 @@ subset of data between site store 1 and site store 2. For monitoring purposes, a
 subset to must be mirrored to data hall 0.
 
 
-Continuous Mirrorring
+Continuous Mirroring
 ---------------------
 
 There is a pair of clusters running these simulations, one normally mostly working on operations,
@@ -230,24 +231,24 @@ many files missing in practice, it wasn't usable for its intended purpose. The o
 HPCR solution as a whole (with mirroring deferred) occurred in September of 2017, and work on mirroring essentially 
 stopped until October (because of activities related to the commissioning work).
 
-We continued work on two approaches, the libcshim, and the GPFS-policy. The queries run by the GPFS-policy had to to be tuned, eventually 
+We continued work on two approaches, the libsrshim, and the GPFS-policy. The queries run by the GPFS-policy had to to be tuned, eventually 
 an overlap of 75 seconds (where a succeeding query would ask for file modifications up to a point 75 seconds before the last one 
 ended) because there were issues with files being missing in the copies. Even with this level of overlap, there were still missing 
-files. At this point, in late November, early December, the libcshim was working well enough to be so encouraging that folks lost 
+files. At this point, in late November, early December, the libsrshim was working well enough to be so encouraging that folks lost 
 interest in the GPFS policy. In contrast to an average of about a 10-minute delay starting a file copy with GPFS-policy queries, 
-the libcshim approach has the copy queued as soon as the file is closed on the source file system.
+the libsrshim approach has the copy queued as soon as the file is closed on the source file system.
 
 It should be noted that when the work began, the python implementation of Sarracenia was a data distribution tool, with no support for mirroring.
 As the year progressed features (symbolic link support, file attribute transportation, file removal support) were added to the initial package.
 The idea of periodic processing (called heartbeats) was added, first to detect failures of clients (by seeing idle logs) but later to initiate
 garbage collection for the duplicates cache, memory use policing, and complex error recovery. The use case precipitated many improvements in
 the application, including a second implementation in C for environments where a Python3 environment was difficult to establish, or
-where efficiency was paramount (the libcshim case).
+where efficiency was paramount (the libsrshim case).
 
 Does it Work?
 -------------
 
-In December 2017, the software for the libcshim approach looks ready, it is deployed in some small parallel (non-operational runs). It is
+In December 2017, the software for the libsrshim approach looks ready, it is deployed in some small parallel (non-operational runs). It is
 expected that in January 2018, more parallel runs will be tried, and it should proceed to operations this winter. It is expected that the
 delay in files appearing on the second file system will be on the order of five minutes after they are written on the source tree, 
 or 72 times faster than rsync (see next section for performance info).
@@ -271,7 +272,7 @@ The GPFS-policy runs are the still the method in use operationally as this is wr
 the summary are taken from the logs of one day of GPFS-policy runs. 
 
  * Hall1 to Hall2: bytes/days: 18615163646615 = 16T, nb file/day:  1901463
- * Hall2 yo CMC: bytes/days: 4421909953006 = 4T, nb file/day: 475085
+ * Hall2 to CMC: bytes/days: 4421909953006 = 4T, nb file/day: 475085
 
 All indications are that the shim library copies more data more quickly than the policy based runs, 
 but so far (2018/01) only subsets of the main tree have been tested.  On one tree of 142000 files, the GPFS-policy run had a mean 
@@ -398,6 +399,28 @@ The above is based on the following client report:
     Files over 600s: 0
  
 
+Overheads
+---------
+
+What is the effect on user jobs of putting the shim library in service?
+When used in large models with good i/o patterns necessary for high 
+performance, the overhead added by the shim library can be negligeable.
+However there is additional overhead introduced whenever a process is spawned,
+closes a file, and when it terminates.  Shell scripts, which 
+function by spawning and reaping processes continuously, see maximum
+impact from the shim library.  This is explored in Issue https://github.com/MetPX/sarrac/issues/15 :
+
+Issue 15 describes the worst case shell script that re-writes a file, one line
+at a time, spawning and reaping a process every time. In that case, we see as
+much as an 18 fold penalty in shell script performance. However re-writing
+the shell script in python can yield a 20 fold improvement in performance, 
+with almost no overhead from the shim library (360 times faster than the
+equivalent shell script with the shim library active.)
+
+So shell scripts that were slow before, may be much slower with the shim
+library, but the accelleration available by re-formulating to more efficient
+methods can have much larger benefits as well.
+
 
 Contributions
 -------------
@@ -405,9 +428,16 @@ Contributions
 
 **Dominic Racette** - ECCC CMC Operations Implementation 
 
-   Client lead on the mirroring project.  A lot of auditing and running of tests.
+   Client lead on the mirroring project. A lot of auditing and running of tests.
    Integration/deployment of copying plugins. A great deal of testing and extraction of log reports.
+   This was a project relied extensive client participation to provide a hugely varied test suite, 
+   and Dominic was responsible for the lion´s share of that work.
 
+**Anthony Chartier** - ECCC CMC Development
+
+   Client lead on the *Acquisition de Données Environnementales* the data acquisition system used by
+   Canadian numerical weather prediction suites. 
+   
 **Doug Bender** - ECCC CMC Operations Implementation
 
    Another client analyst participating in the project.  Awareness, engagement, etc...
@@ -419,7 +449,7 @@ Contributions
 
 **Alain St-Denis** - Manager, SSC DCSB Supercomputing HPC Optimization
 
-   Inspiration, consultation, wise man. Initially proposed shim library.
+   Inspiration, consultation, wise man. Initially proposed shim library. Helped with debugging.
    
 **Daniel Pelissier** - SSC DCSB Supercomputing HPC Integration / then replacing Alain.
 

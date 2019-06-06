@@ -5,11 +5,10 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
 #
 # Questions or bugs report: dps-client@ec.gc.ca
-# sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
+# Sarracenia repository: https://github.com/MetPX/sarracenia
+# Documentation: https://github.com/MetPX/sarracenia
 #
 # sr_config.py : python3 utility tool to configure sarracenia programs
-#
 #
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
@@ -19,8 +18,7 @@
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+#  the Free Software Foundation; version 2 of the License.
 #
 #  This program is distributed in the hope that it will be useful, 
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of 
@@ -32,45 +30,71 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 
-import logging
 import inspect
+import logging
 import netifaces
-import os,re,socket,sys,random
-import urllib,urllib.parse, urllib.request, urllib.error
-from   appdirs import *
+import os, re, socket, subprocess, sys, random, glob, time
+import urllib, urllib.parse, urllib.request, urllib.error
 import shutil
-import subprocess
 import sarra
 
-try   : import amqplib.client_0_8 as amqp
-except: pass
-
-try   : import pika
-except: pass
-
-import paramiko
-from   paramiko import *
+from appdirs import *
+from logging import handlers
 
 try :
-         from sr_checksum          import *
-         from sr_credentials       import *
-         from sr_util              import *
-except : 
-         from sarra.sr_checksum    import *
-         from sarra.sr_credentials import *
-         from sarra.sr_util        import *
+   from sr_checksum          import *
+   from sr_credentials       import *
+   from sr_util              import *
+   from sr_xattr             import *
+except :
+   from sarra.sr_checksum    import *
+   from sarra.sr_credentials import *
+   from sarra.sr_util        import *
+   from sarra.sr_xattr       import *
+
+# ======= amqp alternative libraries =======
+try:
+   import amqplib.client_0_8 as amqplib_0_8
+   amqplib_available = True
+except ImportError:
+   amqplib_available = False
+try:
+   import pika
+   pika_available = True
+except ImportError:
+   pika_available = False
+# ==========================================
 
 if sys.hexversion > 0x03030000 :
-   from shutil import copyfile,get_terminal_size
+   from shutil import get_terminal_size
    py2old=False
 else: 
    py2old=True 
 
+class StreamToLogger(object):
+   """
+   Fake file-like stream object that redirects writes to a logger instance.
+   """
+   def __init__(self, logger, log_level=logging.INFO):
+      self.logger = logger
+      self.log_level = log_level
+      self.linebuf = ''
+
+   def write(self, buf):
+      for line in buf.rstrip().splitlines():
+         self.logger.log(self.log_level, line.rstrip())
+
+   def flush(self):
+      """
+        when stdout/stderr are assigned to a stream, builtin routine call flush.
+        if the logger doesn't have flush method, things bomb.
+      """
+      pass
 
 class sr_config:
 
     def __init__(self,config=None,args=None,action=None):
-        if '-V' in sys.argv :
+        if '-V' in sys.argv or '--version' in sys.argv:
            print("Version %s" % sarra.__version__ )
            os._exit(0)
 
@@ -132,12 +156,32 @@ class sr_config:
                  os.symlink( "." , var )
 
 
-        try    : os.makedirs(self.user_config_dir, 0o775,True)
-        except : pass
-        try    : os.makedirs(self.user_plugins_dir,0o775,True)
-        except : pass
-        try    : os.makedirs(self.http_dir,        0o775,True)
-        except : pass
+        try: 
+            os.makedirs(self.user_config_dir, 0o775,True)
+        except Exception as ex:
+            self.logger.warning( "making %s: %s" % ( self.user_config_dir, ex ) )
+
+        try: 
+            os.makedirs(self.user_plugins_dir,0o775,True)
+        except Exception as ex:
+            self.logger.warning( "making %s: %s" % ( self.user_plugins_dir, ex ) )
+
+        try: 
+            os.makedirs(self.http_dir, 0o775,True)
+        except Exception as ex:
+            self.logger.warning( "making %s: %s" % ( self.http_dir, ex ) )
+
+
+        # default config files
+        defn = self.user_config_dir + os.sep + "default.conf"
+        if not os.path.exists( defn ):
+            with open( defn, 'w' ) as f: 
+                f.writelines( [ "# set environment variables for all components to use." ] )
+
+        defn = self.user_config_dir + os.sep + "credentials.conf"
+        if not os.path.exists( defn ):
+            with open( defn, 'w' ) as f: 
+                f.writelines( [ "amqps://anonymous:anonymous@dd.weather.gc.ca" ] )
 
         # hostname
 
@@ -151,17 +195,15 @@ class sr_config:
         self.hostform  = 'short'
         self.loglevel  = logging.INFO
 
-        #self.debug    = True
-        #self.loglevel = logging.DEBUG
-
-        self.LOG_FORMAT= ('%(asctime)s [%(levelname)s] %(message)s')
+        self.LOG_FORMAT= '%(asctime)s [%(levelname)s] %(message)s'
+        # self.LOG_FORMAT= '%(asctime)s [%(levelname)s] %(message)s %(module)s/%(funcName)s #%(lineno)d'
         logging.basicConfig(level=self.loglevel, format = self.LOG_FORMAT )
         self.logger = logging.getLogger()
         self.logger.debug("sr_config __init__")
 
         # program_name
 
-        self.program_name = re.sub(r'(-script\.pyw|\.exe|\.py)?$', '', os.path.basename(sys.argv[0]) )
+        self.program_name = re.sub(r'(-script\.(pyw|py)|\.exe|\.py)?$', '', os.path.basename(sys.argv[0]) )
         self.program_dir  = self.program_name[3:]
         self.logger.debug("sr_config program_name %s " % self.program_name)
 
@@ -199,7 +241,7 @@ class sr_config:
 
         if config != None :
            mandatory = True
-           if action in ['add','edit','enable','remove']: mandatory = False
+           if action in ['add','edit','enable','remove','rename']: mandatory = False
            usr_cfg = config
            if not config.endswith('.conf') : usr_cfg += '.conf'
            cdir = os.path.dirname(usr_cfg)
@@ -227,6 +269,9 @@ class sr_config:
         self.user_cache_dir += os.sep + "%s" % self.config_name
         # user_cache_dir will be created later in configure()
 
+        # host attributes
+        #self.supports_extended_attributes = supports_extended_attributes
+
 
     def xcl( self, x ):
         if sys.hexversion > 0x03030000 :
@@ -236,21 +281,27 @@ class sr_config:
 
     def log_settings(self):
 
-        self.logger.info( "log settings start for %s (version: %s):" % (self.program_name, sarra.__version__) )
-        self.logger.info( "\tinflight=%s events=%s use_pika=%s" % ( self.inflight, self.events, self.use_pika, ) )
-        self.logger.info( "\tsuppress_duplicates=%s retry_mode=%s retry_ttl=%sms" % ( self.caching, self.retry_mode, self.retry_ttl ) )
+        self.logger.info( "log settings start for %s (version: %s):" % \
+           (self.program_name, sarra.__version__) )
+        self.logger.info( "\tinflight=%s events=%s use_pika=%s topic_prefix=%s" % \
+           ( self.inflight, self.events, self.use_pika, self.topic_prefix) )
+        self.logger.info( "\tinflight=%s events=%s use_amqplib=%s topic_prefix=%s" % \
+           ( self.inflight, self.events, self.use_amqplib, self.topic_prefix) )
+        self.logger.info( "\tsuppress_duplicates=%s basis=%s retry_mode=%s retry_ttl=%sms" % \
+           ( self.caching, self.cache_basis, self.retry_mode, self.retry_ttl ) )
         self.logger.info( "\texpire=%sms reset=%s message_ttl=%s prefetch=%s accept_unmatch=%s delete=%s" % \
            ( self.expire, self.reset, self.message_ttl, self.prefetch, self.accept_unmatch, self.delete ) )
         self.logger.info( "\theartbeat=%s sanity_log_dead=%s default_mode=%03o default_mode_dir=%03o default_mode_log=%03o discard=%s durable=%s" % \
            ( self.heartbeat, self.sanity_log_dead, self.chmod, self.chmod_dir, self.chmod_log, self.discard, self.durable ) )
-        self.logger.info( "\tpreserve_mode=%s preserve_time=%s realpath_post=%s base_dir=%s follow_symlinks=%s" % \
-           ( self.preserve_mode, self.preserve_time, self.realpath_post, self.base_dir, self.follow_symlinks ) )
-        self.logger.info( "\tmirror=%s flatten=%s realpath_post=%s strip=%s base_dir=%s report_back=%s" % \
-           ( self.mirror, self.flatten, self.realpath_post, self.strip, self.base_dir, self.reportback ) )
+        self.logger.info( "\tpost_on_start=%s preserve_mode=%s preserve_time=%s realpath_post=%s base_dir=%s follow_symlinks=%s" % \
+           ( self.post_on_start, self.preserve_mode, self.preserve_time, self.realpath_post, self.base_dir, self.follow_symlinks ) )
+        self.logger.info( "\tmirror=%s flatten=%s realpath_post=%s strip=%s base_dir=%s report_back=%s log_reject=%s" % \
+           ( self.mirror, self.flatten, self.realpath_post, self.strip, self.base_dir, self.reportback, self.log_reject ) )
 
         if self.post_broker :
-            self.logger.info( "\tpost_base_dir=%s post_base_url=%s sum=%s blocksize=%s " % \
-               ( self.post_base_dir, self.post_base_url, self.sumflg, self.blocksize ) )
+            self.logger.info( "\tpost_base_dir=%s post_base_url=%s post_topic_prefix=%s post_version=%s sum=%s blocksize=%s " % \
+               ( self.post_base_dir, self.post_base_url, self.post_topic_prefix, 
+                 self.post_version, self.sumflg, self.blocksize ) )
 
         self.logger.info('\tPlugins configured:')
 
@@ -272,6 +323,7 @@ class sr_config:
 
 
         self.logger.info( '\t\ton_message: %s'   % ''.join( map( self.xcl , self.on_message_list ) ) )
+        self.logger.info( '\t\ton_data: %s'      % ''.join( map( self.xcl , self.on_data_list ) ) )
         self.logger.info( '\t\ton_part: %s'      % ''.join( map( self.xcl , self.on_part_list ) ) )
         self.logger.info( '\t\ton_file: %s'      % ''.join( map( self.xcl , self.on_file_list ) ) )
         self.logger.info( '\t\ton_post: %s'      % ''.join( map( self.xcl , self.on_post_list ) ) )
@@ -355,8 +407,8 @@ class sr_config:
             f.close()
 
         except:
-            (stype, svalue, tb) = sys.exc_info()
-            self.logger.error("check_remote_config Type: %s, Value: %s" % (stype, svalue))
+            self.logger.error('sr_config/check_for_remote_config failed')
+            self.logger.debug('Exception details: ', exc_info=True)
 
     def chunksize_from_str(self,str_value):
         self.logger.debug("sr_config chunksize_from_str %s" % str_value)
@@ -387,8 +439,8 @@ class sr_config:
             f.close()
 
         except:
-            (stype, svalue, tb) = sys.exc_info()
-            self.logger.error("sr_config/config 1 Type: %s, Value: %s" % (stype, svalue))
+            self.logger.error('sr_config/config 1 failed')
+            self.logger.debug('Exception details: ', exc_info=True)
 
     def config_path(self,subdir,config, mandatory=True, ctype='conf'):
         self.logger.debug("config_path = %s %s" % (subdir,config))
@@ -457,7 +509,7 @@ class sr_config:
         # return bad file ... 
         if mandatory :
           if subdir == 'plugins' : self.logger.error("script not found %s" % config)
-          else                   : self.logger.error("file not found %s" % config)
+          elif config_name != 'plugins' : self.logger.error("file not found %s" % config)
 
         return False,config
 
@@ -488,7 +540,7 @@ class sr_config:
         # dont need to configure if it is not a config file or for theses actions
 
         if self.config_found and \
-           not self.action   in  [ 'add','edit','enable', 'list' ]:
+           not self.action   in  [ 'add','edit','enable', 'list', 'rename', 'remove' ]:
            self.config (self.user_config)
 
         # configure some directories if statehost was set
@@ -498,7 +550,7 @@ class sr_config:
         # verify / complete settings
 
         if self.config_found and \
-           not self.action   in  [ 'add','edit','enable', 'list' ]:
+           not self.action   in  [ 'add','edit','enable', 'list', 'rename', 'remove' ]:
            self.check()
 
         # sr_audit is the only program working without config
@@ -533,8 +585,10 @@ class sr_config:
         # create user_log_dir 
 
         self.logger.debug("sr_config user_log_dir  %s " % self.user_log_dir ) 
-        try    : os.makedirs(self.user_log_dir, 0o775,True)
-        except : pass
+        try: 
+            os.makedirs(self.user_log_dir, 0o775,True)
+        except Exception as ex:
+            self.logger.warning( "making %s: %s" % ( self.user_log_dir, ex ) )
 
         # finalize user_cache_dir
 
@@ -548,8 +602,10 @@ class sr_config:
 
         if not self.program_name in [ 'sr', 'sr_config' ]:
            self.logger.debug("sr_config user_cache_dir  %s " % self.user_cache_dir ) 
-           try    : os.makedirs(self.user_cache_dir,  0o775,True)
-           except : pass
+           try: 
+                os.makedirs(self.user_cache_dir,  0o775,True)
+           except Exception as ex:
+                self.logger.warning( "making %s: %s" % ( self.user_cache_dir, ex ) )
 
     def declare_option(self,option):
         self.logger.debug("sr_config declare_option")
@@ -570,8 +626,11 @@ class sr_config:
         self.heartbeat            = 300
         self.last_heartbeat       = time.time()
 
+        # Logging attributes
         self.loglevel             = logging.INFO
-        self.logrotate            = 5
+        self.lr_backupCount = 5
+        self.lr_interval = 1
+        self.lr_when = 'midnight'
         self.report_daemons          = False
 
         self.bufsize              = self.chunksize_from_str('1M')
@@ -595,6 +654,9 @@ class sr_config:
         self.exchange_suffix      = None
         self.exchanges            = [ 'xlog', 'xpublic', 'xreport', 'xwinnow' ]
         self.topic_prefix         = 'v02.post'
+        self.version              = 'v02'
+        self.post_topic_prefix    = None
+        self.post_version         = 'v02'
         self.subtopic             = None
 
         self.queue_name           = None
@@ -613,21 +675,18 @@ class sr_config:
         self.currentDir           = os.getcwd()   # mask directory (if needed)
         self.currentFileOption    = None     # should implement metpx like stuff
         self.delete               = False
+        self.log_reject           = False
 
         self.report_exchange      = None
           
-        # amqp
-
-        # some fix requiered with pika so not the default for now
-        #self.use_pika             = 'pika' in sys.modules
-
-        # use pika only if amqplib is not available
-        self.use_pika              = not 'amqplib' in sys.modules
-
+        # amqp alternatives
+        self.use_pika              = False
+        self.use_amqplib           = False
 
         # cache
         self.cache                = None
         self.caching              = False
+        self.cache_basis         = 'path'
         self.cache_stat           = False
 
         # save/restore
@@ -699,6 +758,7 @@ class sr_config:
         self.post_exchange        = None
         self.post_exchange_suffix = None
         self.post_exchange_split  = 0
+        self.post_on_start        = True
         self.preserve_mode        = True
         self.preserve_time        = True
         self.pump_flag            = False
@@ -718,6 +778,7 @@ class sr_config:
         self.pstrip               = None
         self.source               = None
         self.source_from_exchange = False
+
 
         self.users                = {}
         self.users_flag           = False
@@ -742,11 +803,17 @@ class sr_config:
         self.do_send              = None
         self.do_sends             = {}
 
+        self.inline               = False
+        self.inline_encoding      = "guess"
+        self.inline_max           = 1024
+
         self.inplace              = False
 
         self.inflight             = 'unspecified'
 
         self.notify_only          = False
+
+        self.windows_run         = 'exe'
 
         # 2 object not to reset in child
         if not hasattr(self,'logpath') :
@@ -759,19 +826,19 @@ class sr_config:
 
 
         self.overwrite            = False
-        self.recompute_chksum     = False
 
         self.interface            = None
         self.vip                  = None
 
         # Plugin defaults
 
+        self.on_data              = None
         self.on_part              = None
         self.do_task              = None
         self.on_watch             = None
 
-        self.plugin_times = [ 'destfn_script', 'on_message', 'on_file', 'on_post', 'on_heartbeat', \
-            'on_html_page', 'on_part', 'on_line', 'on_watch', 'do_poll', \
+        self.plugin_times = [ 'destfn_script', 'on_data', 'on_message', 'on_file', 'on_post', \
+            'on_heartbeat', 'on_html_page', 'on_part', 'on_line', 'on_watch', 'do_poll', \
             'do_download', 'do_get', 'do_put', 'do_send', 'do_task', 'on_report', \
             'on_start', 'on_stop' ]
 
@@ -807,15 +874,28 @@ class sr_config:
         if setting_units[-1] == 's' :
            if setting_units == 'ms'   : factor = 1000
            if str_value[-1] in 'sS'   : factor *= 1
-           if str_value[-1] in 'mM'   : factor *= 60
-           if str_value[-1] in 'hH'   : factor *= 60 * 60
-           if str_value[-1] in 'dD'   : factor *= 60 * 60 * 24
-           if str_value[-1] in 'wW'   : factor *= 60 * 60 * 24 * 7
+           elif str_value[-1] in 'mM' : factor *= 60
+           elif str_value[-1] in 'hH' : factor *= 60 * 60
+           elif str_value[-1] in 'dD' : factor *= 60 * 60 * 24
+           elif str_value[-1] in 'wW' : factor *= 60 * 60 * 24 * 7
+           if str_value[-1].isalpha() : str_value = str_value[:-1]
+
+        elif setting_units == 'm'     :
+           if str_value[-1] in 'sS'   : factor /= 60
+           elif str_value[-1] in 'hH' : factor *= 60
+           elif str_value[-1] in 'dD' : factor *= 60 * 24
+           if str_value[-1].isalpha() : str_value = str_value[:-1]
+
+        elif setting_units == 'h'     :
+           if str_value[-1] in 'sS'   : factor /= (60 * 60)
+           elif str_value[-1] in 'mM' : factor /= 60
+           elif str_value[-1] in 'dD' : factor *= 24
            if str_value[-1].isalpha() : str_value = str_value[:-1]
 
         elif setting_units == 'd'     :
-           if str_value[-1] in 'dD'   : factor *= 1
-           if str_value[-1] in 'wW'   : factor *= 7
+           if str_value[-1] in 'hH'   : factor /= 24
+           elif str_value[-1] in 'dD' : factor *= 1
+           elif str_value[-1] in 'wW' : factor *= 7
            if str_value[-1].isalpha() : str_value = str_value[:-1]
 
         duration = float(str_value) * factor
@@ -844,9 +924,8 @@ class sr_config:
         try    : 
             exec(compile(open(script).read(), script, 'exec'))
         except : 
-            (stype, svalue, tb) = sys.exc_info()
-            self.logger.error("sr_config/execfile 2 Type: %s, Value: %s" % (stype, svalue))
-            self.logger.error("for option %s plugin %s did not work" % (opname,path))
+            self.logger.error("sr_config/execfile 2 failed for option '%s' and plugin '%s'" % (opname, path))
+            self.logger.debug('Exception details: ', exc_info=True)
             return False
 
         if getattr(self,opname) is None:
@@ -941,9 +1020,8 @@ class sr_config:
             try: 
                 plugin(self)
             except:
-                (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("sr_config/__on_heartbeat__ 3 Type: %s, Value: %s,  ..." % (stype, svalue))
-                self.logger.error( "plugin %s, execution failed." % plugin )
+                self.logger.error( "ssr_config/__on_heartbeat__  3: plugin %s, execution failed." % plugin )
+                self.logger.debug('Exception details: ', exc_info=True)
 
         return True
 
@@ -1004,14 +1082,17 @@ class sr_config:
 
         for i in netifaces.interfaces():
             for a in netifaces.ifaddresses(i):
-                if self.vip in netifaces.ifaddresses(i)[a][0].get('addr'):
-                   return True
+                j=0
+                while( j < len(netifaces.ifaddresses(i)[a]) ) :
+                    if self.vip in netifaces.ifaddresses(i)[a][j].get('addr'):
+                       return True
+                    j+=1
         return False
  
     def isMatchingPattern(self, chaine, accept_unmatch = False): 
 
         for mask in self.masks:
-            self.logger.debug(mask)
+            self.logger.debug( "isMatchingPattern: mask: %s" % str(mask) )
             pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
             self.currentPattern    = pattern
             self.currentDir        = maskDir
@@ -1022,8 +1103,15 @@ class sr_config:
             self.pstrip = pstrip
             self.flatten = flatten
             if mask_regexp.match(chaine) :
-               if not accepting : return False
+               if not accepting : 
+                  if self.log_reject:
+                      self.logger.info( "reject: mask=%s strip=%s pattern=%s" % (str(mask), strip, chaine) )
+                  return False
+               self.logger.debug( "isMatchingPattern: mask=%s strip=%s" % (str(mask), strip) )
                return True
+
+        if self.log_reject and not accept_unmatch:
+             self.logger.info( "reject: unmatched pattern=%s" % (chaine) )
 
         return accept_unmatch
 
@@ -1087,7 +1175,11 @@ class sr_config:
          
     def list_file(self,path):
         cmd = os.environ.get('PAGER')
-        if cmd == None: cmd="/bin/more"
+        if cmd == None: 
+            if sys.platform != 'win32':
+                cmd="more"
+            else:
+                cmd="more.com"
 
         self.run_command([ cmd, path ] )
 
@@ -1107,7 +1199,7 @@ class sr_config:
                           subprocess.run([sr_path+'/'+cmd_list[0]+'.py']+cmd_list[1:],check=True)
                         else:
                           subprocess.run(cmd_list,check=True)
-        except: self.logger.error("trying run command %s %s" %  ' '.join(cmd_list) )
+        except: self.logger.error("trying run command %s " %  ' '.join(cmd_list) )
 
     def register_plugins(self):
         self.logger.debug("register_plugins")
@@ -1380,14 +1472,17 @@ class sr_config:
                           continue
                   except: pass
 
-                  try:    result = result.replace('${'+e+'}',os.environ.get(e))
+                  try:    
+                      result = result.replace('${'+e+'}',os.environ.get(e))
+                      if sys.platform == 'win32':
+                               result = result.replace('\\','/')
                   except: pass
 
         return(result)
 
 
     def option(self,words):
-        self.logger.debug("sr_config option %s" % words[0])
+        self.logger.debug("sr_config option %s" % words)
 
         # option strip out '-' 
 
@@ -1400,6 +1495,7 @@ class sr_config:
         if len(words) > 1 :
            config = ''
            words1 = self.varsub(words[1])
+           
            if len(words) > 2:
               words2 = self.varsub(words[2])
 
@@ -1411,6 +1507,11 @@ class sr_config:
                 if words0 in ['accept','get','reject']: # See: sr_config.7
                      accepting   = words0 in [ 'accept', 'get' ]
                      pattern     = words1
+
+                     if sys.platform == 'win32' and (words1.find( '\\' ) >= 0):
+                         self.logger.warning( "%s %s" % ( words0, words1 ) )
+                         self.logger.warning( "use of backslash \\ is an escape character. For a path separator, use forward slash." )
+
                      mask_regexp = re.compile(pattern)
                      n = 2
 
@@ -1459,6 +1560,10 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['base_dir','bd']: # See: sr_config.7  for sr_post.1,sarra,sender,watch
+                     if sys.platform == 'win32' and words1.find( '\\' ) :
+                         self.logger.warning( "%s %s" % ( words0, words1 ) )
+                         self.logger.warning( "use of backslash \\ is an escape character. For a path separator, use forward slash." )
+
                      if words1.lower() == 'none' : self.base_dir = None
                      else:
                            path = os.path.abspath(words1)
@@ -1511,6 +1616,16 @@ class sr_config:
                      #if self.caching: ####@
                      #   self.cache = sr_cache(self) ####@
 
+                elif words0 in [ 'suppress_duplicates_basis', 'sdb', 'cache_basis', 'cb' ] : # See: sr_post.1 sr_watch.1
+                        known_bases = [ 'data', 'name', 'path' ]
+                        if words1 in known_bases:
+                            self.cache_basis = words1
+                        else:
+                            self.logger.error("unknown basis for duplicate suppression: %s, should be one of: %s (default: %s)" % \
+                                ( words1, known_bases, self.cache_basis ) )
+
+                        n = 2
+
                 elif words0 == 'cache_stat'   : # FIXME! what is this?
                      if (words1 is None) or words[0][0:1] == '-' : 
                         self.cache_stat = True
@@ -1518,7 +1633,6 @@ class sr_config:
                      else :
                         self.cache_stat = self.isTrue(words[1])
                         n = 2
-
 
                 elif words0 in [ 'chmod', 'default_mode', 'dm']:    # See: sr_config.7.rst
                      self.chmod = int(words[1],8)
@@ -1542,8 +1656,18 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['config','c','include']: # See: sr_config.7
-                     ok, include = self.config_path(self.config_dir,words1,mandatory=True,ctype='inc')
-                     self.config(include)
+                     current_dir_confs = glob.glob(words1)
+                     for conf in current_dir_confs:
+                         ok, include = self.config_path(self.config_dir,conf,mandatory=True,ctype='inc')
+                         self.config(include)
+                     if not current_dir_confs:
+                         config_dir_confs = glob.glob(self.user_config_dir + os.sep + self.program_dir + os.sep + words1)
+                         for conf in config_dir_confs:
+                             ok, include = self.config_path(self.config_dir,conf,mandatory=True,ctype='inc')
+                             self.config(include)
+                         if not config_dir_confs:
+                             ok, include = self.config_path(self.config_dir,words1,mandatory=True,ctype='inc')
+                             self.config(include)
                      n = 2
 
                 elif words0 == 'debug': # See: sr_config.7
@@ -1587,6 +1711,10 @@ class sr_config:
 
                 elif words0 == 'directory': # See: sr_config.7 
                      self.currentDir = words1.replace('//','/')
+                     if sys.platform == 'win32' and self.currentDir.find( '\\' ) :
+                         self.logger.warning( "directory %s" % self.currentDir )
+                         self.logger.warning( "use of backslash ( \\ ) is an escape character. For a path separator, use forward slash ( / )." )
+
                      n = 2
 
                 elif words0 in ['discard','d','download-and-discard']:  # sr_subscribe.1
@@ -1601,6 +1729,11 @@ class sr_config:
                      path = os.path.abspath(words1)
                      if self.realpath_post:
                          path = os.path.realpath(path)
+
+                     if sys.platform == 'win32' and words0.find( '\\' ) :
+                         self.logger.warning( "%s %s" % (words0, words1) )
+                         self.logger.warning( "use of backslash ( \\ ) is an escape character. For a path separator use forward slash ( / )." )
+
                      if sys.platform == 'win32':
                          self.document_root = path.replace('\\','/')
                      else:
@@ -1731,6 +1864,24 @@ class sr_config:
                         self.headers_to_del.append(key)
                      else :
                         self.headers_to_add [key] = value
+
+                     if key.lower() == "sum":
+                           glob_lst = []
+                           glob_lst.extend(glob.glob(word) for word in words[2:] if word != [])
+                           file_lst = [f for sub_lst in glob_lst for f in sub_lst]  
+                           for xfile in file_lst:
+                              try: 
+                                  x = sr_xattr(xfile)
+                                  x.set( 'sum', value )
+
+                                  xmtime = timeflt2str(time.time())
+                                  x.set( 'mtime', xmtime )
+                                  self.logger.debug("xattr sum set for file: {0} => {1}".format(xfile, value))
+                                  x.persist()
+                              except:
+                                  self.logger.error("could not setxattr (permission denied?)")
+                                  self.logger.debug('Exception details: ', exc_info=True)
+
                      n = 2
 
                 elif words0 in ['gateway_for','gf']: # See: sr_config.7, sr_sarra.8, sr_sender.1 
@@ -1750,6 +1901,28 @@ class sr_config:
 
                 elif words0 in ['hostname']: # See: dd_subscribe (obsolete option...ok)
                      self.hostname = words[1] 
+                     n = 2
+
+                elif words0 in ['inline','inl','content' ]: # See: sr_config.7
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.inline = True
+                        n = 1
+                     else :
+                        self.inline = self.isTrue(words[1])
+                        n = 2
+
+                elif words0 in ['inline_encoding','inlenc','content_encoding' ]: # See: sr_config.7
+
+                     encoding_choices =  [ 'guess', 'text', 'binary' ]
+                     if words1.lower() in encoding_choices:
+                        self.inline_encoding = words1.lower()
+                     else:
+                        self.logger.error("inline_encoding must be one of: %s" % encoding_choices )
+
+                     n = 2
+
+                elif words0 in ['inline_max','imx', 'content_max' ]: # See: sr_config.7
+                     self.inline_max = int(words[1])
                      n = 2
 
                 elif words0 in ['inplace','in','assemble']: # See: sr_sarra.8, sr_post.1, sr_watch.1
@@ -1786,13 +1959,13 @@ class sr_config:
                          self.inflight = words[1] 
                      n = 2
 
-                elif words0 in ['log','l']: # See: sr_config.7 
-                     self.logpath         = words1
-                     if os.path.isdir(words1) :
-                        self.user_log_dir = words1
+                elif words0 in [ 'log_reject' ]: # See: sr_sarra.8
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.log_reject = True
+                        n = 1
                      else :
-                        self.user_log_dir = os.path.dirname(words1)
-                     n = 2
+                        self.log_reject = self.isTrue(words[1])
+                        n = 2
 
                 elif words0 == 'ls_file_index': # FIX ME to document... position of file in ls
                                                 #        use when space in filename is expected
@@ -1835,23 +2008,34 @@ class sr_config:
                      self.report_exchange = words1
                      n = 2
 
-                elif words0 in ['logdays', 'ld', 'logrotate','lr']:  # See: sr_config.7 
-                     # log setting is in days 
-                     self.logrotate = int(self.duration_from_str(words1,'d'))
-                     if self.logrotate < 1 : self.logrotate = 1
-                     n = 2
+                elif words0 in ['logdays', 'ld', 'logrotate', 'lr']:  # See: sr_subscribe.1
+                    if words0 in ['logdays', 'ld']:
+                        self.logger.warning('Option %s is deprecated please use logrotate or lr instead' % words0)
+                    if words1 and len(words1) > 1 and words1[-1] in 'mMhHdD':
+                        # this case keeps retro compat with the old interface
+                        self.lr_backupCount = int(float(words1[:-1]))
+                    else:
+                        self.lr_backupCount = int(float(words1))
+                    n = 2
+
+                elif words0 in ['logrotate_interval', 'lri']:
+                    if words1 and len(words1) > 1 and words1[-1] in 'mMhHdD':
+                        self.lr_when = words1[-1]
+                        self.lr_interval = int(float(words1[:-1]))
+                    else:
+                        self.lr_interval = int(float(words1))
+                    n = 2
 
                 elif words0 in ['loglevel','ll']:  # See: sr_config.7
                      level = words1.lower()
                      if level in 'critical' : self.loglevel = logging.CRITICAL
-                     if level in 'error'    : self.loglevel = logging.ERROR
-                     if level in 'info'     : self.loglevel = logging.INFO
-                     if level in 'warning'  : self.loglevel = logging.WARNING
-                     if level in 'debug'    : self.loglevel = logging.DEBUG
-                     if level in 'none'     : self.loglevel = None
+                     elif level in 'error'    : self.loglevel = logging.ERROR
+                     elif level in 'info'     : self.loglevel = logging.INFO
+                     elif level in 'warning'  : self.loglevel = logging.WARNING
+                     elif level in 'debug'    : self.loglevel = logging.DEBUG
+                     elif level in 'none'     : self.loglevel = None
                      self.set_loglevel()
                      n = 2
-
 
                 elif words0 in ['manager','feeder'] : # See: sr_config.7, sr_sarra.8
                      urlstr       = words1
@@ -1902,6 +2086,12 @@ class sr_config:
                      self.logger.debug("option %s" % words[0])
                      self.notify_only = True
                      n = 1
+
+                elif words0 == 'on_data': # See: sr_config.7, sr_sarra,shovel,subscribe
+                     if not self.execfile("on_data",words1):
+                           ok = False
+                           needexit = True
+                     n = 2
 
                 elif words0 == 'on_file': # See: sr_config.7, sr_sarra,shovel,subscribe
                      if not self.execfile("on_file",words1):
@@ -2010,6 +2200,10 @@ class sr_config:
                                  path = os.path.abspath(path)
                                  if self.realpath_post:
                                      path = os.path.realpath(path)
+                                
+                                 if sys.platform == 'win32':
+                                     path = path.replace('\\','/')
+
                                  self.postpath.append(path)
                                  n = n + 1
                          except: break
@@ -2031,6 +2225,11 @@ class sr_config:
                                self.post_base_dir = words1.replace('\\','/')
                            else:
                                self.post_base_dir = words1
+
+                     if sys.platform == 'win32' and words1.find( '\\' ) :
+                         self.logger.warning( "%s %s" % (words0, words1) )
+                         self.logger.warning( "use of backslash ( \\ ) is an escape character, for a path separator use forward slash ( / )." )
+
                      n = 2
 
 
@@ -2044,6 +2243,11 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['post_document_root','pdr']: # See: sr_sarra,sender,shovel,winnow
+
+                     if sys.platform == 'win32' and words1.find( '\\' ) :
+                         self.logger.warning( "%s %s" % (words0, words1) )
+                         self.logger.warning( "use of backslash ( \\ ) is an escape character, for a path separator use forward slash ( / )." )
+
                      if sys.platform == 'win32':
                          self.post_document_root = words1.replace('\\','/')
                      else:
@@ -2056,6 +2260,22 @@ class sr_config:
 
                 elif words0 in ['post_exchange_suffix']: # FIXME: sr_sarra,sender,shovel,winnow 
                      self.post_exchange_suffix = words1
+                     n = 2
+
+                elif words0 in ['post_on_start','pos'] : # See: sr_config.7
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.post_on_start = True
+                        n = 1
+                     else :
+                        self.post_on_start = self.isTrue(words[1])
+                        n = 2
+
+                elif words0 in ['post_topic_prefix', 'ptp' ]: # FIXME: sr_sarra,sender,shovel,winnow 
+                     self.post_topic_prefix = words1
+                     if 'v03.' in words1:
+                         self.post_version = 'v03'
+                     else:
+                         self.post_version = 'v02'
                      n = 2
 
                 elif words0 in ['post_exchange_split','pes', 'pxs']: # sr_config.7, sr_shovel.1
@@ -2119,14 +2339,6 @@ class sr_config:
                         self.realpath_post = self.isTrue(words[1])
                         n = 2
 
-                elif words0 in ['recompute_chksum','rc']: # See: sr_sarra.8
-                     if (words1 is None) or words[0][0:1] == '-' : 
-                        self.recompute_chksum = True
-                        n = 1
-                     else :
-                        self.recompute_chksum = self.isTrue(words[1])
-                        n = 2
-
                 elif words0 in ['reconnect','rr']: # See: sr_post.1, sr_watch.1
                      if (words1 is None) or words[0][0:1] == '-' : 
                         self.reconnect = True
@@ -2143,7 +2355,7 @@ class sr_config:
                      self.rename = words1
                      n = 2
 
-                elif words0 in ['report_back','rb']:  # See: sr_subscribe.1
+                elif words0 in ['report_back','reportback','rb']:  # See: sr_subscribe.1
                      if (words1 is None) or words[0][0:1] == '-' : 
                         self.reportback = True
                         n = 1
@@ -2258,7 +2470,11 @@ class sr_config:
                         self.pstrip = None
                      else:                   
                         self.strip  = 0
-                        self.pstrip = words1
+                        self.logger.debug("FIXME: pstrip=%s" % words1 )
+                        if sys.platform == 'win32': # why windows does this? no clue...
+                             self.pstrip = words1.replace('\\\\','/')
+                        else:
+                             self.pstrip = words1
                      n = 2
 
                 elif words0 in ['subtopic','sub'] : # See: sr_config.7 
@@ -2280,7 +2496,9 @@ class sr_config:
                 elif words0 == 'sum': # See: sr_config.7 
                      self.sumflg = words[1]
                      ok = self.validate_sum()
-                     if not ok : needexit = True
+                     if not ok : 
+                        self.logger.error("unknown checksum specified: %s, should be one of: %s or z" % ( self.sumflg, ', '.join(self.sumalgos.keys()) ) )
+                        needexit = True
                      n = 2
 
                 elif words0 == 'timeout': # See: sr_sarra.8
@@ -2295,6 +2513,10 @@ class sr_config:
 
                 elif words0 in ['topic_prefix','tp'] : # See: sr_config.7 
                      self.topic_prefix = words1
+                     if 'v03.' in words1:
+                         self.version = 'v03'
+                     else:
+                         self.version = 'v02'
 
                 elif words0 in ['post_base_url','pbu','url','u','post_url']: # See: sr_config.7 
                      if words0 in ['url','u'] : self.logger.warning("option url deprecated please use post_base_url")
@@ -2304,12 +2526,24 @@ class sr_config:
                            self.post_base_url = words1
                      n = 2
 
-                elif words0 == 'use_pika': # See: FIX ME
-                     if (words1 is None) or words[0][0:1] == '-' :
+                elif words0 == 'use_amqplib': # See: sr_subscribe.1
+                     if ((words1 is None) or words[0][0:1] == '-') and not self.use_pika and amqplib_available:
+                        self.use_amqplib = True
+                        n = 1
+                     elif not self.use_pika and amqplib_available:
+                        self.use_amqplib = self.isTrue(words[1])
+                        n = 2
+                     else:
+                        n = 2
+
+                elif words0 == 'use_pika': # See: sr_subscribe.1
+                     if ((words1 is None) or words[0][0:1] == '-') and not self.use_amqplib and pika_available:
                         self.use_pika = True
                         n = 1
-                     else :
+                     elif not self.use_amqplib and pika_available:
                         self.use_pika = self.isTrue(words[1])
+                        n = 2
+                     else:
                         n = 2
 
                 elif words0 == 'users':  # See: sr_audit.1
@@ -2323,6 +2557,27 @@ class sr_config:
                 elif words0 == 'vip': # See: sr_poll.1, sr_winnow.1
                      self.vip = words[1]
                      n = 2
+
+                elif words0 in [ 'windows_run', 'wr'  ] : # See: sr_post.1 sr_watch.1
+                        known_runs = [ 'exe', 'pyw', 'py' ]
+                        if words1 in known_runs:
+                            self.windows_run = words1
+                        else:
+                            self.logger.error("unknown choice of what to run on Windows: %s, should be one of: %s (default: %s)" % \
+                                ( words1, known_runs, self.windows_run ) )
+
+                        n = 2
+
+                elif words0 in [ 'xattr_disable', 'xattr_disabled', 'xd' ]   : # FIXME! what is this?
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        xattr_disabled = True
+                        n = 1
+                     else :
+                        xattr_disabled = self.isTrue(words[1])
+                        n = 2
+                     if xattr_disabled:
+                        self.logger.error("hoho! disabling xattr!")
+                        disable_xattr()
 
                 else :
                      # if unknown option is supplied, create a list for the values 
@@ -2343,9 +2598,8 @@ class sr_config:
                          self.logger.debug("extend add %s = '%s'" % (words[0],getattr(self,words[0])))
 
         except:
-                (stype, svalue, tb) = sys.exc_info()
-                self.logger.error("sr_config/option 4 Type: %s, Value: %s,  ..." % (stype, svalue))
-                self.logger.error("problem evaluating option %s" % words[0])
+                self.logger.error("sr_config/option 4: problem evaluating option %s" % words[0])
+                self.logger.debug('Exception details: ', exc_info=True)
 
         if needexit :
            os._exit(1)
@@ -2369,15 +2623,15 @@ class sr_config:
            return
 
         for confname in sorted( os.listdir(configdir) ):
+            if confname[0] == '.' or confname[-1] == '~' : continue
             if os.path.isdir(configdir+os.sep+confname) : continue
             if ( ((i+1)*21) >= columns ): 
                  print('')
-                 i=1
-            else:
-                 i+=1
-                 print( "%20s " % confname, end='' )
+                 i=0
+            i+=1
+            print( "%20s " % confname, end='' )
 
-        print("")
+        print("\n")
 
     def set_sumalgo(self,sumflg):
         self.logger.debug("sr_config set_sumalgo %s" % sumflg)
@@ -2399,59 +2653,51 @@ class sr_config:
         try   : 
                 self.sumalgo = self.sumalgos[flgs]
                 self.lastflg = flgs
-                return
-        except: pass
+        except:
+                self.logger.error("sumflg %s not working... set to 'd'" % sumflg)
+                self.logger.debug('Exception details: ', exc_info=True)
+                self.lastflg = 'd'
+                self.sumalgo = self.sumalgos['d']
 
-        self.logger.error("sumflg %s not working... set to 'd'" % sumflg)
-        self.lastflg = 'd'
-        self.sumalgo = self.sumalgos['d']
 
     def set_loglevel(self):
-
-        if self.loglevel == None :
-           if hasattr(self,'logger') : del self.logger
-           self.logpath = None
-           self.logger  = logging.RootLogger(logging.CRITICAL)
-           noop         = logging.NullHandler()
-           self.logger.addHandler(noop)
-           return
-
-        self.logger.setLevel(self.loglevel)
+        if not self.loglevel:
+            if hasattr(self, 'logger'):
+                del self.logger
+            self.logpath = None
+            self.logger = logging.RootLogger(logging.CRITICAL)
+            self.logger.addHandler(logging.NullHandler())
+        else:
+            self.logger.setLevel(self.loglevel)
 
     def setlog(self):
+        if self.loglevel and self.logpath and self.lr_interval > 0 and self.lr_backupCount > 0:
+            self.logger.debug("Switching to rotating log file: %s" % self.logpath)
+            handler = handlers.TimedRotatingFileHandler(self.logpath, when=self.lr_when, interval=self.lr_interval,
+                                                        backupCount=self.lr_backupCount)
+            self.create_new_logger(self.LOG_FORMAT, handler)
+            if self.chmod_log:
+                os.chmod(self.logpath, self.chmod_log)
+            sys.stdout = StreamToLogger(self.logger, logging.INFO)
+            sys.stderr = StreamToLogger(self.logger, logging.ERROR)
+        elif self.loglevel and self.logpath:
+            self.logger.debug("Switching to log file: %s" % self.logpath)
+            handler = logging.FileHandler(self.logpath)
+            self.create_new_logger(self.LOG_FORMAT, handler)
+            if self.chmod_log:
+                os.chmod(self.logpath, self.chmod_log)
+        elif self.loglevel:
+            self.logger.debug('Keeping on screen logging')
+            handler = logging.StreamHandler()
+            self.create_new_logger(self.LOG_FORMAT, handler)
+        else:
+            self.set_loglevel()
 
-        import logging.handlers
-
-        self.set_loglevel()
-
-        # no log
-
-        if self.loglevel == None : return
-
-        # interactive
-
-        if self.logpath  == None :
-           self.logger.debug("on screen logging")
-           return
-
-        # to file
-
-        self.logger.debug("switching to log file %s" % self.logpath )
-
-        del self.logger
-
-        LOG_FORMAT   = ('%(asctime)s [%(levelname)s] %(message)s')
-          
-        self.handler = logging.handlers.TimedRotatingFileHandler(self.logpath, when='midnight', \
-                       interval=1, backupCount=self.logrotate)
-        fmt          = logging.Formatter( LOG_FORMAT )
-        self.handler.setFormatter(fmt)
-
-        self.logger = logging.RootLogger(logging.WARNING)
-        self.logger.setLevel(self.loglevel)
-        self.logger.addHandler(self.handler)
-        os.chmod( self.logpath, self.chmod_log )
-
+    def create_new_logger(self, log_format, handler):
+        self.logger = logging.RootLogger(self.loglevel)
+        fmt = logging.Formatter(log_format)
+        handler.setFormatter(fmt)
+        self.logger.addHandler(handler)
 
     # check url and add credentials if needed from credential file
 
@@ -2505,13 +2751,11 @@ class sr_config:
 
         try :
                  self.set_sumalgo(sumflg)
-                 return True
-        except : 
-                 (stype, svalue, tb) = sys.exc_info()
-                 self.logger.error("sr_config/validate_sum 5 Type: %s, Value: %s" % (stype, svalue))
-                 self.logger.error("sum invalid (%s)" % self.sumflg)
+        except :
+                 self.logger.error("sr_config/validate_sum 5: sum invalid (%s)" % self.sumflg)
+                 self.logger.debug('Exception details: ', exc_info=True)
                  return False
-        return False
+        return True
 
     def wget_config(self,urlstr,path,remote_config_url=False):
         self.logger.debug("wget_config %s %s" % (urlstr,path))
@@ -2529,9 +2773,8 @@ class sr_config:
                               self.logger.info("file %s is up to date (%s)" % (path,urlstr))
                               return True
                    except: 
-                           self.logger.warning("could not compare modification dates... downloading")
-                           (stype, svalue, tb) = sys.exc_info()
-                           self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+                           self.logger.error("could not compare modification dates... downloading")
+                           self.logger.debug('Exception details: ', exc_info=True)
 
                 fp = open(path+'.downloading','wb')
 
@@ -2582,9 +2825,8 @@ class sr_config:
                      self.logger.warning('resume with the one on the server')
                else:
                      self.logger.error('Download failed: %s' % urlstr )
-                     self.logger.error('Uexpected error')              
-                     (stype, svalue, tb) = sys.exc_info()
-                     self.logger.error("Type: %s, Value: %s,  ..." % (stype, svalue))
+                     self.logger.error('Unexpected error')
+                     self.logger.debug('Exception details: ', exc_info=True)
 
         try   : os.unlink(path+'.downloading')
         except: pass
@@ -2619,6 +2861,10 @@ class sr_config:
 
         if '${SOURCE}' in cdir :
            new_dir = new_dir.replace('${SOURCE}',self.msg.headers['source'])
+
+        if '${DD}' in cdir :
+           DD = time.strftime("%d", time.gmtime()) 
+           new_dir = new_dir.replace('${DD}',DD)
 
         if '${HH}' in cdir :
            HH = time.strftime("%H", time.gmtime()) 

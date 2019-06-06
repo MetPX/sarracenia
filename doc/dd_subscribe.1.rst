@@ -60,7 +60,7 @@ The broker option sets all the credential information to connect to the  **Rabbi
 
 ::
 
-      (default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) 
+      (default: amqps://anonymous:anonymous@dd.weather.gc.ca/ )
 
 One can use a single *broker* option as above, or it can be 
 broken out: protocol,amqp-user,amqp-password,host,port,vhost
@@ -91,7 +91,7 @@ Once connected to an AMQP broker, the user needs to create a queue and bind it
 to an exchange.  These options define which messages (URL notifications) the program receives:
 
  - **exchange      <name>         (default: xpublic)** 
- - **topic_prefix  <amqp pattern> (default: v00.dd.notify -- developer option)** 
+ - **topic_prefix  <amqp pattern> (default: v02.post -- developer option)** 
  - **subtopic      <amqp pattern> (subtopic need to be set)** 
 
 Several topic options may be declared. To give a correct value to the subtopic,
@@ -249,7 +249,7 @@ EXAMPLES
 
 Here is a short complete example configuration file:: 
 
-  broker amqp://dd.weather.gc.ca/
+  broker amqps://dd.weather.gc.ca/
 
   subtopic model_gem_global.25km.grib2.#
   accept .*

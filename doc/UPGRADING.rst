@@ -33,10 +33,95 @@ Installation Instructions
 
 `Installation Guide <Install.rst>`_
 
+git
+---
+
+2.19.04b2
+---------
+
+*NOTICE*: bug from 4b1 fixed. workaround unnecessary.
 
 
-git origin/master branch
-------------------------
+2.19.04b1
+---------
+
+**BUG**: checksum storage not always correct can cause excessive downloads in some cases.
+         workaround add the following to affected configurations::
+
+            xattr_disable
+
+         
+*NOTICE*: regression of v03 posting fixed.
+
+2.19.03b6
+---------
+
+**BUG**:  regression ... v03 posting stopped working entirely.
+
+
+2.19.03.b1
+----------
+
+*NOTICE*: ubuntu 14.04 & 16.04 regression for python3-amqp fixed.
+
+
+2.19.02.b2
+----------
+
+*CHANGE*: *logrotate* parameter was a duration (how many days to keep daily logs).  It is now
+          a count of log files to retain.  *logrotate_interval* is a new option, which accepts a
+          duration, to control how often to rotate logs. To maintain compatibility, if a 'd' is 
+          after the argument to *logrotate*, it will be ignored, and will be interpreted as a
+          simple integer.
+
+*NOTICE*: On ubuntu 14.04 and 16.04, the switch to python3-amqp causes a regression because
+          there is a missing API call (*connect*) on the old version of the library included
+          with those distributions.
+
+2.19.02.b1
+----------
+
+*ACTION*: debian package name changed from *python3-metpx-sarracenia* to *metpx-sarracenia*
+          to better match python packaging team guidelines. upgrades will fail, as the
+          new package will conflict with the one previously installed.
+          one must apt remove python3-metpx-sarracenia prior to installing this version.
+
+*ACTION*: switch AMQP library: python3-amqp replaced python3-amqplib (abandonware library) 
+          package dependency means it won´t install automatically over previous version 
+          need to apt install, or install the new dependency before you upgrade.
+
+*NOTICE*: On ubuntu 14.04 and 16.04, the switch to python3-amqp causes a regression because
+          there is a missing API call (*connect*) on the old version of the library included
+          with those distributions.
+
+*NOTICE*: Windows binary installer option available now, much simpler than having to install a
+          whole python environment for it.  Can still use any existing python using pip.
+
+*NOTICE*: bug with *remove* introduced in 2.19.01b1 fixed.
+
+
+2.19.01b1
+---------
+
+ **BUG**: the *remove* action sometimes does not work.
+
+*NOTICE*: the format when using -save & -restore has changed to match the `v03 <sr_postv3.7.rst>`_
+          payload. Save files created with the new version will not be readable with earlier versions.
+          this version can still the old files. (iow: upper compatibility is there, but not downward.)
+
+*CHANGE*: in each message, the attribute name for the time the message was inserted
+          into the network is changed from msg.time, to msg.pubtime.
+          change of msg.time value will trigger a deprecation warning to be logged.
+
+
+2.18.09b2
+---------
+
+*ACTION*: The recent_files cache file stored in the state directory has change
+          encoding for filenames. file names are now encoded as per 
+          urllib.parse.quote() routine (for example: space becomes %20)
+          it would be advised to --reset (erase the cache file) when upgrading.
+        
 
 2.18.08b1
 ---------
@@ -144,7 +229,7 @@ Only bug-fixes and improvements, no regressions or changes.
 *CHANGE*: *inflight* for sender now defaults to '.tmp' when no post_broker is set, and NONE when it is. If this behaviour is undesired,
           one must add *inflight NONE* to the obtain the previous behaviour.
   
-*CHANGE*: Default changed from False to True. Existing queues will fail to bind. As transition. 
+*CHANGE*: *durable* default changed from False to True. Existing queues will fail to bind. As transition. 
           All queues should be declared durable.
           For all existing flows, add *durable false* to declaration, and plan migration to durable queue later.
 

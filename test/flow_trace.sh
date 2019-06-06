@@ -1,14 +1,12 @@
 #!/bin/bash
 
+. ./flow_utils.sh
+
 if [ ! "$1" ]; then
   printf "\n\nflow_trace.sh <filename>\n"
   printf "\n\ttrace the progress of a file through the flow test components in order\n\n"
   exit 1
 fi
-#
-# Trace path of $1 through all the components to see where it got lost.
-#
-LOGDIR=$HOME/.cache/sarra/log
 
 printf "FLOW f0x messages from data mart\n\n"
 grep $1  $LOGDIR/sr_shovel_t_dd1_f00_01.log*
@@ -32,7 +30,7 @@ grep $1  $LOGDIR/sr_subscribe_u_sftp_f60_01.log*
 grep $1  $LOGDIR/sr_subscribe_u_sftp_f60_0?.log*
 
 printf "\n\nFLOW f61 post\n\n"
-grep $1 $LOGDIR/srposter.log*
+grep $1 $srposterlog
 
 printf "\n\nFLOW f62 poll \n\n"
 grep $1 $LOGDIR/sr_poll_f62_01.log*

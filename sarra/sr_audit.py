@@ -5,21 +5,19 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
 #
 # Questions or bugs report: dps-client@ec.gc.ca
-# sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
+# Sarracenia repository: https://github.com/MetPX/sarracenia
+# Documentation: https://github.com/MetPX/sarracenia
 #
 # sr_audit.py : python3 program checking for bad exchange, queues... etc
 #
 #
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
-#  Last Changed   : Feb  2 09:33:02 EST 2016
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+#  the Free Software Foundation; version 2 of the License.
 #
 #  This program is distributed in the hope that it will be useful, 
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of 
@@ -49,6 +47,10 @@ class sr_audit(sr_instances):
 
     def amqp_add_exchange(self,e):
         self.logger.info("adding exchange '%s'" % e)
+
+        if not hasattr( self, 'hc'):
+             self.amqp_connect()
+
         self.hc.exchange_declare(e)
 
     def amqp_close(self):
@@ -60,11 +62,15 @@ class sr_audit(sr_instances):
     def amqp_connect(self):
         try:
                 self.hc = HostConnect(logger = self.logger)
+                self.hc.choose_amqp_alternative(self.use_amqplib, self.use_pika)
                 self.hc.loop = False
-                self.hc.set_pika(self.use_pika)
                 self.hc.set_url(self.admin)
                 self.hc.connect()
         except: pass
+        #
+        # FIXME: I worry that ignoring the failure to connect is a problem.
+        #        PS, but this is how it was, and I can't demonstrate a problem
+        #        so left as-is for now.        
 
     def amqp_del_exchange(self,e):
         self.logger.info("deleting exchange %s" % e)
@@ -649,19 +655,8 @@ class sr_audit(sr_instances):
                       time.sleep(sleep)
 
         except:
-                import io, traceback
-                (stype, svalue, tb) = sys.exc_info()
-
-                tb_output = io.StringIO()
-                traceback.print_tb(tb, None, tb_output)
-                self.logger.error("\n\n****************************************\n" + \
-                                      "******* ERROR PRINTING TRACEBACK *******\n" + \
-                                      "****************************************\n" + \
-                                    "\n" + tb_output.getvalue()             + "\n" + \
-                                    "\n****************************************\n")
-                tb_output.close()
-
-                self.logger.error("sr_audit Type: %s, Value: %s,  ..." % (stype, svalue))
+              self.logger.error("sr_audit/run failed")
+              self.logger.debug('Exception details: ', exc_info=True)
 
 
     def reload(self):

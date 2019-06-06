@@ -5,8 +5,8 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
 #
 # Questions or bugs report: dps-client@ec.gc.ca
-# sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
+# Sarracenia repository: https://github.com/MetPX/sarracenia
+# Documentation: https://github.com/MetPX/sarracenia
 #
 # sr_consumer.py : python3 wraps consumer queue binding accept/reject
 #
@@ -17,8 +17,7 @@
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+#  the Free Software Foundation; version 2 of the License.
 #
 #  This program is distributed in the hope that it will be useful, 
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of 
@@ -49,7 +48,7 @@ except :
 
 class sr_consumer:
 
-    def __init__(self, parent, admin=False ):
+    def __init__(self, parent, admin=False, loop=True ):
         self.logger         = parent.logger
         self.logger.debug("sr_consumer __init__")
         self.parent         = parent
@@ -77,21 +76,22 @@ class sr_consumer:
         self.sleep_min = 0.01
         self.sleep_now = self.sleep_min
 
-        self.build_connection()
+        self.build_connection(loop=loop)
         self.build_consumer()
         self.build_queue()
         self.get_message()
 
-    def build_connection(self):
+    def build_connection(self,loop=True):
         self.logger.debug("sr_consumer build_broker")
 
         self.logger.info("AMQP  broker(%s) user(%s) vhost(%s)" % \
                         (self.broker.hostname,self.broker.username,self.broker.path) )
 
         self.hc = HostConnect( logger = self.logger )
-        self.hc.set_pika(self.parent.use_pika)
+        self.hc.choose_amqp_alternative(self.parent.use_amqplib, self.parent.use_pika)
         self.hc.set_url(self.broker)
-        self.hc.connect()
+        self.hc.loop=loop
+        return self.hc.connect()
 
     def build_consumer(self):
         self.logger.debug("sr_consumer build_consumer")
@@ -138,6 +138,7 @@ class sr_consumer:
         if self.raw_msg != None and not self.raw_msg.isRetry : self.consumer.ack(self.raw_msg)
 
         # consume a new one
+        self.get_message()
         self.raw_msg = self.consumer.consume(self.queue_name)
 
         # if no message from queue, perhaps we have message to retry
@@ -165,16 +166,14 @@ class sr_consumer:
 
         # make use it as a sr_message
         # dont bother with retry... 
-
         try :
                  self.msg.from_amqplib(self.raw_msg)
                  self.logger.debug("notice %s " % self.msg.notice)
                  if self.msg.urlstr:
                     self.logger.debug("urlstr %s " % self.msg.urlstr)
         except :
-                 (stype, svalue, tb) = sys.exc_info()
-                 self.logger.error("sr_consumer/consume Type: %s, Value: %s,  ..." % (stype, svalue))
-                 self.logger.error("malformed message %s"% vars(self.raw_msg))
+                 self.logger.error("sr_consumer/consume malformed message %s" % vars(self.raw_msg))
+                 self.logger.debug('Exception details: ', exc_info=True)
                  return None, None
 
         # special case : pulse
@@ -215,7 +214,7 @@ class sr_consumer:
         return True,self.msg
 
     def get_message(self):
-        self.logger.debug("sr_consumer get_message")
+        #self.logger.debug("sr_consumer get_message")
 
         if not hasattr(self.parent,'msg'):
            self.parent.msg = sr_message(self.parent)
@@ -271,7 +270,7 @@ class sr_consumer:
         if self.raw_msg.isRetry : self.retry.add_msg_to_state_file(self.raw_msg)
         else                    : self.retry.add_msg_to_new_file  (self.raw_msg)
 
-        self.logger.info("confirmed added to the retry process %s" % self.raw_msg.body)
+        self.logger.info("appended to retry list file %s" % self.raw_msg.body)
 
     def msg_worked(self):
         self.last_msg_failed = False
@@ -374,30 +373,33 @@ class sr_consumer:
 
     def cleanup(self):
         self.logger.debug("sr_consume cleanup")
-        self.build_connection()
         self.set_queue_name()
-        self.hc.queue_delete(self.queue_name)
+
+        if self.build_connection(loop=False):
+            self.hc.queue_delete(self.queue_name)
+            if self.report_manage :
+                self.hc.exchange_delete(self.report_exchange)
+
         try    :
                  if hasattr(self,'queuepath') :
                     os.unlink(self.queuepath)
         except : pass
-        if self.report_manage :
-           self.hc.exchange_delete(self.report_exchange)
 
         self.retry.cleanup()
 
 
     def declare(self):
         self.logger.debug("sr_consume declare")
-        self.build_connection()
-        self.queue_declare(build=True)
-        if self.report_manage :
-           self.hc.exchange_declare(self.report_exchange)
+
+        if self.build_connection(loop=False):
+            self.queue_declare(build=True)
+            if self.report_manage :
+               self.hc.exchange_declare(self.report_exchange)
                   
     def setup(self):
         self.logger.debug("sr_consume setup")
-        self.build_connection()
-        self.build_queue()
-        if self.report_manage :
-           self.hc.exchange_declare(self.report_exchange)
+        if self.build_connection(loop=False):
+            self.build_queue()
+            if self.report_manage :
+               self.hc.exchange_declare(self.report_exchange)
 

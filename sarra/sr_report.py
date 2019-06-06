@@ -5,8 +5,8 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
 #
 # Questions or bugs report: dps-client@ec.gc.ca
-# sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
+# Sarracenia repository: https://github.com/MetPX/sarracenia
+# Documentation: https://github.com/MetPX/sarracenia
 #
 # sr_report.py : python3 program allowing users to receive all report messages
 #             generated from his products
@@ -19,8 +19,7 @@
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+#  the Free Software Foundation; version 2 of the License.
 #
 #  This program is distributed in the hope that it will be useful, 
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of 
@@ -75,9 +74,9 @@ class sr_report(sr_subscribe):
         self.accept_unmatch       = True
 
     def help(self):
-        print("Usage: %s [OPTIONS] configfile [foreground|start|stop|restart|reload|status|cleanup|setup]\n" % self.program_name )
+        print("Usage: %s [OPTIONS] configfile [add|cleanup|edit|foreground|start|stop|restart|reload|remove|setup|status]\n" % self.program_name )
         print("version: %s \n" % sarra.__version__ )
-        print("Or   : %s [OPTIONS] -b <broker> [foreground|start|stop|restart|reload|status|cleanup|setup]\n" % self.program_name )
+        print("Or   : %s [OPTIONS] -b <broker> [add|cleanup|edit|foreground|start|stop|restart|reload|remove|setup|status]\n" % self.program_name )
         self.logger.info("OPTIONS:")
         self.logger.info("-b   <broker>   default:amqp://guest:guest@localhost/")
 

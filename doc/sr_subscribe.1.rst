@@ -16,7 +16,7 @@ SYNOPSIS
 
  **sr_subscribe** foreground|start|stop|restart|reload|sanity|status configfile
 
- **sr_subscribe** cleanup|declare|setup|disable|enable|list|add|remove configfile
+ **sr_subscribe** cleanup|declare|edit|setup|disable|enable|list|add|remove configfile
 
 
 DESCRIPTION
@@ -40,7 +40,7 @@ supplying to an external program) specifying the -n (*notify_only*, or *no_downl
 suppress the download behaviour and only post the URL on standard output.  The standard
 output can be piped to other processes in classic UNIX text filter style.  
 
-Sr_subscribe is very configurable and is the basis for other components of sarracenia:
+Sr_subscribe is very configurable and is the basis for other components of Sarracenia:
 
  - `sr_report(1) <sr_report.1.rst>`_ - process report messages.
  - `sr_sender(1) <sr_sender.1.rst>`_ - copy messages, only, not files.
@@ -68,15 +68,16 @@ Note that the *sanity* check is invoked by heartbeat processing in sr_audit on a
 The remaining operations manage the resources (exchanges, queues) used by the component on
 the rabbitmq server, or manage the configurations.
 
- - cleanup:  deletes the component's resources on the server.
- - declare:  creates the component's resources on the server.
- - setup:    like declare, additionally does queue bindings.
- - add:      copy to the list of available configurations.
- - list:     list all the configurations available.
- - edit:     modify an existing configuration.
- - remove:   remove a configuration.
- - disable:  mark a configuration as ineligible to run. 
- - enable:   mark a configuration as eligible to run. 
+ - cleanup:       deletes the component's resources on the server.
+ - declare:       creates the component's resources on the server.
+ - setup:         like declare, additionally does queue bindings.
+ - add:           copy to the list of available configurations.
+ - list:          list all the configurations available. 
+ - list plugins:  list all the plugins available. 
+ - edit:          modify an existing configuration.
+ - remove:        remove a configuration.
+ - disable:       mark a configuration as ineligible to run. 
+ - enable:        mark a configuration as eligible to run. 
 
 
 For example:  *sr_subscribe foreground dd* runs the sr_subscribe component with
@@ -94,10 +95,11 @@ the resources. **setup** creates and additionally binds the queues.
 
 The **add, remove, list, edit, enable & disable** actions are used to manage the list 
 of configurations.  One can see all of the configurations available using the **list**
-action.  Using the **edit** option, one can work on a particular configuration.
-A *disabled* configuration will not be started or restarted by the **start**,  
+action.   to view available plugins use **list plugins**.  Using the **edit** option, 
+one can work on a particular configuration.  A *disabled* configuration will not be 
+started or restarted by the **start**,  
 **foreground**, or **restart** actions. It can be used to set aside a configuration
-temporarily.
+temporarily. 
 
 Documentation
 -------------
@@ -149,19 +151,6 @@ the broker. To view the available configurations, use::
 
   blacklab% sr_subscribe list
 
-  packaged plugins: ( /usr/lib/python3/dist-packages/sarra/plugins ) 
-         __pycache__       bad_plugin1.py       bad_plugin2.py       bad_plugin3.py     destfn_sample.py       download_cp.py 
-      download_dd.py      download_scp.py     download_wget.py          file_age.py        file_check.py          file_log.py 
-      file_rxpipe.py        file_total.py           harness.py          hb_cache.py            hb_log.py         hb_memory.py 
-         hb_pulse.py         html_page.py          line_log.py         line_mode.py               log.py         msg_2http.py 
-       msg_2local.py    msg_2localfile.py     msg_auditflow.py     msg_by_source.py       msg_by_user.py         msg_delay.py 
-       msg_delete.py      msg_download.py          msg_dump.py        msg_fdelay.py msg_filter_wmo2msc.py  msg_from_cluster.py 
-    msg_hour_tree.py           msg_log.py     msg_print_lag.py   msg_rename4jicc.py    msg_rename_dmf.py msg_rename_whatfn.py 
-      msg_renamer.py msg_replace_new_dir.py          msg_save.py      msg_skip_old.py        msg_speedo.py msg_sundew_pxroute.py 
-   msg_test_retry.py   msg_to_clusters.py         msg_total.py        part_check.py  part_clamav_scan.py        poll_pulse.py 
-      poll_script.py    post_hour_tree.py          post_log.py    post_long_flow.py     post_override.py   post_rate_limit.py 
-       post_total.py         watch_log.py 
-
   configuration examples: ( /usr/lib/python3/dist-packages/sarra/examples/subscribe ) 
             all.conf     all_but_cap.conf            amis.conf            aqhi.conf             cap.conf      cclean_f91.conf 
       cdnld_f21.conf       cfile_f44.conf        citypage.conf       clean_f90.conf            cmml.conf cscn22_bulletins.conf 
@@ -207,11 +196,22 @@ sets the *debug* option to enable more verbose logging.  If no value is specifie
 the value true is implicit, so the above are equivalent.  A second example 
 configuration line::
 
-  broker amqp://anonymous@dd.weather.gc.ca
+  broker amqps://anonymous@dd.weather.gc.ca
 
 In the above example, *broker* is the option keyword, and the rest of the line is the 
 value assigned to the setting. Configuration files are a sequence of settings, one per line. 
-Note that the files are read in order, most importantly for *directory* and *accept* clauses.  
+Note:
+
+* the files are read from top to bottom, most importantly for *directory*, *strip*, *mirror*,
+  and *flatten* options apply to *accept* clauses that occur after them in the file.
+
+* The forward slash (/) as the path separator in Sarracenia configuration files on all 
+  operating systems. Use of the backslash character as a path separator (as used in the 
+  cmd shell on Windows) may not work properly. When files are read on Windows, the path
+  separator is immediately converted to the forward slash, so all pattern matching,
+  in accept, reject, strip etc... directives should use forward slashes when a path
+  separator is needed.
+  
 Example::
 
     directory A
@@ -264,19 +264,19 @@ sequence #2::
 
 In sequence #1, all files ending in 'gif' are rejected. In sequence #2, the 
 accept .* (which accepts everything) is encountered before the reject statement, 
-so the reject has no effect.
+so the reject has no effect.  Some options have global scope, rather than being
+interpreted in order.  for thoses cases, a second declaration overrides the first.
 
-Several options that need to be reused in different config files can be grouped in a file.
-In each config where the options subset should appear, the user would then use :
+Options to be reused in different config files can be grouped in an *include* file:
 
   - **--include <includeConfigPath>**
 
 The includeConfigPath would normally reside under the same config dir of its
-master configs. There is no restriction, any option can be placed in a config file
-included. The user must be aware that, for many options, several declarations
-means overwriting their values.
+master configs. If a URL is supplied as an includeConfigPATH, then a remote 
+configuraiton will be downloaded and cached (used until an update on the server 
+is detected.) See `Remote Configurations`_ for details.
 
-Any environment variable, or some built-in variables can also be put on the
+Environment variables, and some built-in variables can also be put on the
 right hand side to be evaluated, surrounded by ${..} The built-in variables are:
  
  - ${BROKER_USER} - the user name for authenticating to the broker (e.g. anonymous)
@@ -329,14 +329,29 @@ of an environment variable, then they can be set in configuration files::
 
   declare env HTTP_PROXY=localhost
 
+
+Choosing an alternate client library 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sarracenia now uses amqp_ module as its default AMQP client library which is provided by the installation.
+This library uses AMQP 0-9-1 standard and it replaces amqplib which uses AMQP 0-8. However, if the user
+need to use another client library, there is 2 options which are mutually exclusive (they cannot be used together):
+
+.. _amqp: https://pypi.org/project/amqp/
+
+- **use_amqplib [<boolean>]**
+- **use_pika [<boolean>]**
+
+In the cases where the user want to enable one option, he will first need to install the module in 
+his python environment, whether it's amqplib or pika.
+
     
-LOG FILES
----------
+LOGS and MONITORING
+-------------------
 
 As sr_subscribe usually runs as a daemon (unless invoked in *foreground* mode) 
 one normally examines its log file to find out how processing is going.  When only
-a single instance is running, one can normally view the log of the running process
-like so::
+a single instance is running, one can view the log of the running process like so::
 
    sr_subscribe log *myconfig*
 
@@ -346,7 +361,61 @@ for each *instance* (download process) of an sr_subscribe process running the my
 
    in linux: ~/.cache/sarra/log/sr_subscribe_myflow_01.log
 
-One can override placement on linux by setting the XDG_CACHE_HOME environment variable.
+One can override placement on linux by setting the XDG_CACHE_HOME environment variable, as
+per: `XDG Open Directory Specification <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ 
+Log files can be very large for high volume configurations, so the logging is very configurable.
+
+To begin with, one can select the logging level:
+
+- debug
+   Setting option debug is identical to use  **loglevel debug**
+
+- loglevel ( default: info )
+   The level of logging as expressed by python's logging. Possible values are :  critical, error, info, warning, debug.
+
+- log_reject <True|False> ( default: False )
+   print a log message when *rejecting* messages (choosing not to download the corresponding files)
+
+One can also get finer grained control over logging by using plugins. For example, the default settings
+typically include *on_file file_log* which logs each file after it has been downloaded, but not
+when the message is received. To have a line in the log for each message received set::
+
+   on_message msg_rawlog
+
+There are similar plugins available for different parts of processing::
+
+   on_part part_log
+
+   on_file file_log (default)
+
+   on_post post_log
+   
+or even, log everything::
+
+   plugin log
+
+etc... One can also modify the provided plugins, or write new ones to completely change the logging.
+
+At the end of the day (at midnight), these logs are rotated automatically by the components, and the old log gets a
+date suffix. The directory in which the logs are stored can be overridden by the **log** option, the number of rotated
+logs to keep are set by the **logrotate** parameter. The oldest log file is deleted when the
+maximum number of logs has been reach and this continues for each rotation. An interval takes a duration
+of the interval and it may takes a time unit suffix, such as 'd\|D' for days, 'h\|H' for hours, or 'm\|M' for minutes.
+If no unit is provided logs will rotate at midnight.  Here are some settings for log file management:
+
+- log <dir> ( default: ~/.cache/sarra/log ) (on Linux)
+   The directory to store log files in.
+
+- logrotate <max_logs> ( default: 5 )
+   Maximum number of logs archived.
+
+- logrotate_interval <duration>[<time_unit>] ( default: 1 )
+   The duration of the interval with an optional time unit (ie 5m, 2h, 3d)
+
+- chmod_log ( default: 0600 )
+   The permission bits to set on log files.
+
+
 
 
 CREDENTIALS
@@ -365,7 +434,7 @@ The broker option sets all the credential information to connect to the  **Rabbi
 
 ::
 
-      (default: amqp://anonymous:anonymous@dd.weather.gc.ca/ ) 
+      (default: amqps://anonymous:anonymous@dd.weather.gc.ca/ )
 
 For all **sarracenia** programs, the confidential parts of credentials are stored
 only in ~/.config/sarra/credentials.conf.  This includes the destination and the broker
@@ -459,7 +528,7 @@ Once connected to an AMQP broker, the user needs to create a queue.
 
 Setting the queue on broker :
 
-- **queue_name    <name>         (default: q_<brokerUser>.<programName>.<configName>)**
+- **queue         <name>         (default: q_<brokerUser>.<programName>.<configName>)**
 - **durable       <boolean>      (default: False)**
 - **expire        <duration>      (default: 5m  == five minutes. RECOMMEND OVERRIDING)**
 - **message-ttl   <duration>      (default: None)**
@@ -475,16 +544,41 @@ and users do not need to set them.  For less usual cases, the user
 may need to override the defaults.  The queue is where the notifications
 are held on the server for each subscriber.
 
-[ queue_name|qn <name>]
-~~~~~~~~~~~~~~~~~~~~~~~
+[ queue|queue_name|qn <name>]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-By default, components create a queue name that should be unique. The default queue_name
-components create follows :  **q_<brokerUser>.<programName>.<configName>** .
+By default, components create a queue name that should be unique. The 
+default queue_name components create follows the following convention: 
+
+   **q_<brokerUser>.<programName>.<configName>.<random>.<random>** 
+
+Where:
+
+* *brokerUser* is the username used to connect to the broker (often: *anonymous* )
+
+* *programName* is the component using the queue (e.g. *sr_subscribe* ),
+
+* *configName* is the configuration file used to tune component behaviour.
+
+* *random* is just a series of characters chosen to avoid clashes from multiple
+  people using the same configurations
 
 Users can override the default provided that it starts with **q_<brokerUser>**.
 
+When multiple instances are used, they will all use the same queue, for trivial
+multi-tasking. If multiple computers have a shared home file system, then the
+queue_name is written to: 
+
+ ~/.cache/sarra/<programName>/<configName>/<programName>_<configName>_<brokerUser>.qname
+
+Instances started on any node with access to the same shared file will use the
+same queue. Some may want use the *queue_name* option as a more explicit method
+of sharing work across multiple nodes.
+
+
+
 durable <boolean> (default: False)
--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The  **durable** option, if set to True, means writes the queue
 on disk if the broker is restarted.
@@ -567,7 +661,7 @@ These options define which messages (URL notifications) the program receives:
  - **exchange      <name>         (default: xpublic)** 
  - **exchange_suffix      <name>  (default: None)** 
  - **topic_prefix  <amqp pattern> (default: v02.post -- developer option)** 
- - **subtopic      <amqp pattern> (subtopic need to be set)** 
+ - **subtopic      <amqp pattern> (no default, must appear after exchange)** 
 
 exchange <name> (default: xpublic) and exchange_suffix
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -577,11 +671,14 @@ private data flow for their own processing. Users can declare their own exchange
 that always begin with *xs_<username>*, so to save having to specify that each
 time, one can just set *exchange_suffix kk* which will result in the exchange
 being set to *xs_<username>_kk* (overriding the *xpublic* default). 
+These settings must appear in the configuration file before the corresponding 
+*topic_prefix* and *subtopic* settings.
 
 subtopic <amqp pattern> (subtopic need to be set)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Several topic options may be declared. To give a correct value to the subtopic,
+Within an exchange's postings, the subtopic setting narrows the product selection.
+To give a correct value to the subtopic,
 one has the choice of filtering using **subtopic** with only AMQP's limited wildcarding and
 length limited to 255 encoded bytes, or the more powerful regular expression 
 based  **accept/reject**  mechanisms described below. The difference being that the 
@@ -627,6 +724,17 @@ note:
       Review whether asterisks in directory names in topics should be URL-encoded.
       Review whether periods in directory names in topics should be URL-encoded.
  
+One can use multiple bindings to multiple exchanges as follows::
+
+  exchange A
+  subtopic directory1.*.directory2.#
+
+  exchange B
+  subtopic *.directory4.#
+
+Will declare two separate bindings to two different exchanges, and two different file trees.
+
+
 
 Client-side Filtering
 ---------------------
@@ -725,6 +833,8 @@ and under which name.
 - **base_dir <path>       (default: /)**
 - **flatten   <string>         (default: '/')** 
 - **heartbeat <count>                 (default: 300 seconds)**
+- **inline   <boolean>         (default: False)**
+- **inline_max   <counts>         (default: 1024)**
 - **inplace       <boolean>        (default: On)**
 - **kbytes_ps <count>               (default: 0)**
 - **inflight  <string>         (default: .tmp or NONE if post_broker set)** 
@@ -732,13 +842,15 @@ and under which name.
 - **no_download|notify_only    <boolean>        (default: off)** 
 - **outlet    post|json|url    (default: post)** 
 - **overwrite <boolean>        (default: off)** 
-- **recompute_chksum <boolean> (default: off)**
+- **preserve_mode <boolead>  (default: on)**
+- **preserve_time <boolead>  (default: on)**
 - **reject    <regexp pattern> (optional)** 
 - **retry    <boolean>         (default: On)** 
 - **retry_ttl    <duration>         (default: same as expire)** 
 - **source_from_exchange  <boolean> (default: off)**
 - **strip     <count|regexp>   (default: 0)**
-- **suppress_duplicates   <off|on|999>     (default: off)**
+- **suppress_duplicates   <off|on|999[smhdw]>     (default: off)**
+- **suppress_duplicates_basis   <data|name|path>     (default: path)**
 - **timeout     <float>         (default: 0)**
 
 
@@ -856,9 +968,9 @@ mirror settings can be changed between directory options.
 strip <count|regexp> (default: 0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can modify the mirrored directories with the **strip** option. 
-If set to N  (an integer) the first 'N' directories are removed.
-For example ::
+You can modify the relative mirrored directories with the **strip** option. 
+If set to N  (an integer) the first 'N' directories from the relative path 
+are removed. For example::
 
  http://dd.weather.gc.ca/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
 
@@ -933,6 +1045,16 @@ The default is None which means that the path in the notification is the absolut
     in a subscriber, if it is set... will it download? or will it assume it is local?
     in a sender.
 
+inline <boolean> (default: False)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When posting messages, The **inline** option is used to have the file content
+included in the post. This can be efficient when sending small files over high
+latency links, a number of round trips can be saved by avoiding the retrieval
+of the data using the URL.  One should only inline relatively small files,
+so when **inline** is active, only files smaller than **in_line_max** bytes
+(default: 1024) will actually have their content included in the post messages.
+
 
 inplace <boolean> (default: On)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -959,6 +1081,7 @@ posting to a broker. The valid argument values are:
 
   **post_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
   **post_exchange     <name>         (MANDATORY)**
+  **post_topic_prefix <string>       (default: "v02.post")**
   **on_post           <script>       (default: None)**
 
   The **post_broker** defaults to the input broker if not provided.
@@ -1027,26 +1150,26 @@ heartbeat <count> (default: 300 seconds)
 The **heartbeat** option sets how often to execute periodic processing as determined by 
 the list of on_heartbeat plugins. By default, it prints a log message every heartbeat.
 
-suppress_duplicates <off|on|999> (default: off)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+suppress_duplicates <off|on|999[smhdw]> (default: off)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When **suppress_duplicates** (also **cache** ) is set to a non-zero time interval, each new message
 is compared against ones received within that interval, to see if it is a duplicate. 
-Duplicate are not processed further. What is a duplicate? A file with the same name (including 
+Duplicates are not processed further. What is a duplicate? A file with the same name (including 
 parts header) and checksum. Every *hearbeat* interval, a cleanup process looks for files in the 
 cache that have not been referenced in **cache** seconds, and deletes them, in order to keep 
 the cache size limited. Different settings are appropriate for different use cases.
 
-A raw integer interval is in seconds, if the suffix m,h,d,w
-are used, then the interval is in minutes, hours, days, or weeks. After the interval expires
-the contents are dropped, so duplicates separate by a large enough interval will get through.
+A raw integer interval is in seconds, if the suffix m,h,d, or w are used, then the interval 
+is in minutes, hours, days, or weeks. After the interval expires the contents are 
+dropped, so duplicates separated by a large enough interval will get through.
 A value of 1d (day) or 1w (week) can be appropriate. 
 
 **Use of the cache is incompatible with the default *parts 0* strategy**, one must specify an 
 alternate strategy.  One must use either a fixed blocksize, or always never partition files. 
 One must avoid the dynamic algorithm that will change the partition size used as a file grows.
 
-**Note that the duplicate suppresion cache is local to each instance**. When N 
+**Note that the duplicate suppresion store is local to each instance**. When N 
 instances share a queue, the first time a posting is received, it could be 
 picked by one instance, and if a duplicate one is received it would likely 
 be picked up by another instance. **For effective duplicate suppression with instances**, 
@@ -1055,6 +1178,19 @@ a **first layer of subscribers (sr_shovels)** with duplicate suppression turned
 off and output with *post_exchange_split*, which route posts by checksum to 
 a **second layer of subscibers (sr_winnow) whose duplicate suppression caches are active.**
   
+suppress_duplicates_basis <data|name|path> (default: path)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A keyword option (alternative: *cache_basis* ) to identify which files are compared for 
+duplicate suppression purposes. Normally, the duplicate suppression uses the entire path
+to identify files which have not changed. This allows for files with identical 
+content to be posted in different directories and not be suppressed. In some
+cases, suppression of identical files should be done regardless of where in 
+the tree the file resides.  Set 'name' for files of identical name, but in
+different directories to be considered duplicates. Set to 'data' for any file, 
+regardless of name, to be considered a duplicate if the checksum matches.
+
+
 kbytes_ps <count> (default: 0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1063,8 +1199,21 @@ speed in kilobytes per second... ftp,ftps,or sftp)
 
 **FIXME**: kbytes_ps... only implemented by sender? or subscriber as well, data only, or messages also?
 
-default_mode, default_dir_mode, preserve_modes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+preserve_time (default: on)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+On unix-like systems, when the *ls* commend or a file browser shows modification or 
+access times, it is a display of the posix *st_atime*, and *st_ctime* elements of a 
+struct struct returned by stat(2) call.  When *preserve_time* is on, headers
+reflecting these values in the messages are used to restore the access and modification 
+times respectively on the subscriber system. To document delay in file reception,
+this option can be turned off, and then file times on source and destination compared.
+
+When set in a posting component, it has the effect of eliding the *atime* and *mtime* 
+headers from the messages.
+
+default_mode, default_dir_mode, preserve_mode
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Permission bits on the destination files written are controlled by the *preserve_mode* directives.
 *preserve_modes* will apply the mode permissions posted by the source of the file.
@@ -1074,19 +1223,20 @@ then the operating system  defaults (on linux, controlled by umask settings)
 will determine file permissions. (Note that the *chmod* option is interpreted as a synonym
 for *default_mode*, and *chmod_dir* is a synonym for *default_dir_mode*).
 
-recompute_chksum <boolean> (default: off)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+recompute_chksum <boolean> (Always on now)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For each download, the checksum is computed during transfer. If **recompute_chksum**
-is set to True, and the recomputed checksum differs from the one in the message,
-the new value will overwrite the one from the incoming amqp message. This is used
-when a file is being pulled from a remote non-sarracenia source, in which case a place
-holder 0 checksum is specified. On receipt, a proper checksum should be placed in the
-message for downstream consumers. One can also use this method to override checksum choice.
-For example, older versions of sarracenia lack SHA-512 hash support, so one could re-write
-the checksums with MD5.   There are also cases, where, for various reasons, the upstream
-checksums are simply wrong, and should be overridden for downstream consumers.
+recompute_chksum option has been removed in 2.19.03b2. Recomputing will occur
+whenever appropriate without the need for a setting.
 
+xattr_disable (default: off)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+By default, on receipt of files, the mtime and checksum are written to a file's
+extended attributes (on unix/linux/mac) or to alternate data stream called *sr_.json*
+(on windows on NTFS.) This can save re-reading the file to re-calculate the checksum.
+Some use cases may not want files to have Alternate Data Streams or extended 
+attributes to be used.
 
 Delivery Completion (inflight)
 ------------------------------
@@ -1176,6 +1326,8 @@ Frequent Configuration Errors
    mtime is vulnerable to slow transfers, where incomplete files can be picked up because of a 
    networking issue interrupting or delaying transfers. 
 
+   Sources may not to include mtime data in their posts ( *preserve_time* option on post.)
+
 
 **Setting NONE when delivering to non-Sarracenia destination.**
 
@@ -1186,6 +1338,27 @@ Frequent Configuration Errors
 
    When used inappropriately, there will occasionally be incomplete files delivered.
 
+
+On Windows
+==========
+
+The python tools are ubiquitously installed with the operating system on Linux,
+and installation methods are somewhat more consistent there.  On Windows,
+there is a wide variety of methods of installation, stemming from the
+variety of python distributions available. The various methods conflict, to the
+extent that using the .exe files, as one would expect using winpython, does not
+work at all when installed using Anaconda. 
+
+A setting is provided *windows_run* to allow selection. the choices are:
+
+* exe - run sr_subscribe.exe as installed by pip (what one would expect to start)
+
+* pyw - run the pythonw.exe executable with sr_subscribe.py (or sr_subscribe-script.py) 
+  as the argument. (sometimes needed to have the component continue to run
+  after calling process is terminated.
+
+* py - run the python.exe executable with sr_subscribe.py (or sr_subscribe-script.py) 
+  as the argument. (sometimes also works.)
 
 
 
@@ -1213,6 +1386,12 @@ The **sanity_log_dead** option sets how long to consider too long before restart
 a component.
 
 suppress_duplicates <off|on|999> (default: off)
+-----------------------------------------------
+
+The cleanup of expired elements in the duplicate suppression store happens at
+each heartbeat.
+
+
 ERROR RECOVERY
 ==============
 
@@ -1252,7 +1431,7 @@ EXAMPLES
 
 Here is a short complete example configuration file:: 
 
-  broker amqp://dd.weather.gc.ca/
+  broker amqps://dd.weather.gc.ca/
 
   subtopic model_gem_global.25km.grib2.#
   accept .*
@@ -1276,7 +1455,7 @@ While in most common cases, a good value is generated by the application, in som
 there may be a need to override those choices with an explicit user specification.
 To do that, one needs to be aware of the rules for naming queues:
 
-1. queue names start with q_
+1. queue names start with q\_
 2. this is followed by <amqpUserName> (the owner/user of the queue's broker username)
 3. followed by a second underscore ( _ )
 4. followed by a string of the user's choice.
@@ -1291,7 +1470,7 @@ The same applies for exchanges.  The rules for those are:
 4. The system (sr_audit or administrators) create the xr_<amqpUserName> exchange as a place to send reports for a given user. It is only readable by that user.
 5. Administrative users (admin or feeder roles) can post or subscribe anywhere.
 
-For example, xpublic does not have xs_ and a username pattern, so it can only be posted to by admin or feeder users.
+For example, xpublic does not have xs\_ and a username pattern, so it can only be posted to by admin or feeder users.
 Since it ends in public, any user can bind to it to subscribe to messages posted.
 Users can create exchanges such as xs_<amqpUserName>_public which can be written to by that user (by rule 3), 
 and read by others (by rule 2.) A description of the conventional flow of messages through exchanges on a pump.  
@@ -1356,29 +1535,6 @@ These reports are used for delivery tuning and for data sources to generate stat
 Set this option to **False**, to prevent generation of reports.
 
 
-
-LOGS
-====
-
-Components write to log files, which by default are found in ~/.cache/sarra/var/log/<component>_<config>_<instance>.log.
-At the end of the day, these logs are rotated automatically by the components, and the old log gets a date suffix.
-The directory in which the logs are stored can be overridden by the **log** option, and the number of days' logs to keep
-is set by the 'logrotate' parameter.  Log files older than **logrotate** duration are deleted.  A duration takes a time unit suffix, such as 'd' for days, 'w' for weeks, or 'h' for hours.
-
-- **debug**  setting option debug is identical to use  **loglevel debug**
-
-- **log** the directory to store log files in.  Default value: ~/.cache/sarra/var/log (on Linux)
-
-- **logrotate** duration to keep logs online, usually expressed in days ( default: 5d )
-
-- **loglevel** the level of logging as expressed by python's logging.
-               possible values are :  critical, error, info, warning, debug.
-
-- **chmod_log** the permission bits to set on log files (default 0600 )
-
-Placement is as per: `XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.rst>`_ ) setting the XDG_CACHE_HOME environment variable.
-
-
 INSTANCES
 =========
 
@@ -1393,16 +1549,12 @@ In the ~/.cache/sarra/sender/configName directory::
   A .sr_sender_configname.state         is created, containing the number instances.
   A .sr_sender_configname_$instance.pid is created, containing the PID  of $instance process.
 
-In directory ~/.cache/sarra/var/log::
+In directory ~/.cache/sarra/log::
 
   A .sr_sender_configname_$instance.log  is created as a log of $instance process.
 
-The logs can be written in another directory than the default one with option :
-
-**log            <directory logpath>  (default:~/.cache/sarra/var/log)**
-
 .. note::  
-  FIXME: indicate windows location also... dot files on windows?
+  FIXME: indicate Windows location also... dot files on Windows?
 
 
 .. Note::
@@ -1461,6 +1613,7 @@ the next hop broker, the user sets these options :
  - **[--blocksize <value>]            (default: 0 (auto))**
  - **[--outlet <post|json|url>]       (default: post)**
  - **[-pbd|--post_base_dir <path>]    (optional)**
+ - **[-ptp|--post_topic_prefix <pfx>] (default: 'v02.post')**
  - **post_exchange     <name>         (default: xpublic)**
  - **post_exchange_split   <number>   (default: 0)**
  - **post_base_url          <url>     (MANDATORY)**
@@ -1535,7 +1688,7 @@ One can specify URI's as configuration files, rather than local files. Example:
 
   - **--config http://dd.weather.gc.ca/alerts/doc/cap.conf**
 
-On startup, sr_subscribe check if the local file cap.conf exists in the 
+On startup, sr_subscribe checks if the local file cap.conf exists in the 
 local configuration directory.  If it does, then the file will be read to find
 a line like so:
 
@@ -1635,6 +1788,15 @@ processing for various specialized use cases. The scripts are invoked by having 
 configuration file specify an on_<event> option. The event can be one of:
 
 - plugin -- declare a set of plugins to achieve a collective function.
+
+- on_data -- when the reception of a block of data has occured, trigger a transformation
+  action.  As this entry point is for content transformation, the api adds the content
+  of the block as an additional argument, and rather than returning True or Fale,
+  it returns the transformed data. This isn't particularly efficient, so should only be used
+  to transform small files, but it provides a way of reducing overall i/o by transforming
+  during transfer. It is imcompatible with binary transfer plugins (do_download, do_send )
+  When active, the checksum of downloaded data will be set according to the transformed
+  content, rather than the original.
 
 - on_file -- When the reception of a file has been completed, trigger followup action.
   The **on_file** option defaults to file_log, which writes a downloading status message.
@@ -1826,7 +1988,7 @@ around::
   post_broker amqp://tfeed@localhost/
 
 The configuration relies on the use of an administrator or feeder account.
-Note the queue which has messages in it, in this case q_tsub.sr_subscribe.t.99524171.43129428.  Invoke the shovel in save mode to consume messages from the queue
+Note the queue which has messages in it, in this case q_tsub.sr_subscribe.t.99524171.43129428. Invoke the shovel in save mode to consume messages from the queue
 and save them to disk::
 
   % cd ~/tools
@@ -1856,9 +2018,9 @@ and save them to disk::
   % 
 
 The messages are written to a file in the caching directory for future use, with
-the name of the file being based on the configuration name used.   The file is in
+the name of the file being based on the configuration name used. The file is in
 json format, one message per line (lines are very long) and so filtering with other tools
-is possible to modify the list of saved messages.  Note that a single save file per
+is possible to modify the list of saved messages. Note that a single save file per
 configuration is automatically set, so to save multiple queues, one would need one configurations
 file per queue to be saved.  Once the subscriber is back in service, one can return the messages
 saved to a file into the same queue::
@@ -1987,8 +2149,6 @@ by the program from there.  There is a similar process for all *plugins* that ca
 be interpreted and executed within sarracenia components.  Components will first
 look in the *plugins* directory in the users config tree, then in the site
 directory, then in the sarracenia package itself, and finally it will look remotely.
-
-
 
 
 SEE ALSO

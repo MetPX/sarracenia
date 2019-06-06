@@ -5,8 +5,8 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
 #
 # Questions or bugs report: dps-client@ec.gc.ca
-# sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
+# Sarracenia repository: https://github.com/MetPX/sarracenia
+# Documentation: https://github.com/MetPX/sarracenia
 #
 # sr_cache.py : python3 program generalise caching for sr programs
 #
@@ -17,8 +17,7 @@
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+#  the Free Software Foundation; version 2 of the License.
 #
 #  This program is distributed in the hope that it will be useful, 
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of 
@@ -32,6 +31,8 @@
 #
 
 import os,sys,time
+
+import urllib.parse
 
 
 #============================================================
@@ -59,15 +60,26 @@ class sr_cache():
         self.cache_file    = None
         self.fp            = None
 
+        self.cache_basis =  parent.cache_basis
+
         self.last_expire   = time.time()
         self.count         = 0
 
     def check(self, key, path, part):
-        self.logger.debug("sr_cache check")
+        self.logger.debug("sr_cache check basis=%s" % self.cache_basis )
 
         # set time and value
         now   = time.time()
-        value = '%s*%s' % (path,part)
+
+        if self.cache_basis == 'name':
+            relpath = path.split('/')[-1]
+        elif self.cache_basis == 'path':
+            relpath = path
+        elif self.cache_basis == 'data':
+            relpath = "data"
+
+        qpath = urllib.parse.quote(relpath)
+        value = '%s*%s' % (relpath,part)
 
         # new... add
         if not key in self.cache_dict :
@@ -75,7 +87,7 @@ class sr_cache():
            kdict = {}
            kdict[value] = now
            self.cache_dict[key] = kdict
-           self.fp.write("%s %f %s %s\n"%(key,now,path,part))
+           self.fp.write("%s %f %s %s\n"%(key,now,qpath,part))
            self.count += 1
            return True
 
@@ -92,14 +104,20 @@ class sr_cache():
 
         # differ or newer, write to file
 
-        self.fp.write("%s %f %s %s\n"%(key,now,path,part))
+        self.fp.write("%s %f %s %s\n"%(key,now,qpath,part))
         self.count += 1
         return not present
 
     def check_msg(self, msg):
         self.logger.debug("sr_cache check_msg")
 
-        relpath = msg.relpath
+        if self.cache_basis == 'name':
+            relpath = msg.relpath.split('/')[-1]
+        elif self.cache_basis == 'path':
+            relpath = msg.relpath
+        elif self.cache_basis == 'data':
+            relpath = "data"
+
         sumstr  = msg.headers['sum']
         partstr = relpath
 
@@ -117,6 +135,11 @@ class sr_cache():
         new_dict   = {}
         self.count = 0
 
+        if delpath != None:
+            qdelpath = urllib.parse.quote(delpath)
+        else:
+            qdelpath = None
+
         # from  cache[sum] = [(time,[path,part]), ... ]
         for key in self.cache_dict.keys() :
             ndict = {}
@@ -130,14 +153,15 @@ class sr_cache():
 
                 parts = value.split('*')
                 path  = parts[0]
+                qpath = urllib.parse.quote(path)
                 part  = parts[1]
 
-                if path == delpath  : continue
+                if qpath == qdelpath  : continue
 
                 ndict[value] = t
                 self.count  += 1
 
-                if fp : fp.write("%s %f %s %s\n"%(key,t,path,part))
+                if fp : fp.write("%s %f %s %s\n"%(key,t,qpath,part))
 
             if len(ndict) > 0 : new_dict[key] = ndict
 
@@ -210,7 +234,8 @@ class sr_cache():
                   words    = line.split()
                   key      = words[0]
                   ctime    = float(words[1])
-                  path     = words[2]
+                  qpath     = words[2]
+                  path     = urllib.parse.unquote(qpath)
                   part     = words[3]
                   value    = '%s*%s' % (path,part)
 

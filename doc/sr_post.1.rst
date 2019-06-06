@@ -3,9 +3,9 @@
  SR_Post
 =========
 
-------------------------------------------------
-Publish the Availability of a File to Subcribers
-------------------------------------------------
+-------------------------------------------------
+Publish the Availability of a File to Subscribers
+-------------------------------------------------
 
 :Manual section: 1 
 :Date: @Date@
@@ -121,6 +121,8 @@ common settings, and methods of specifying them.
 
   A list of settings in a configuration file 
 
+
+
 [-p|--path path1 path2 ... pathN]
 ---------------------------------
 
@@ -232,20 +234,56 @@ common settings, and methods of specifying them.
   With the *rename*  option, the user can suggest a destination path to its files. If the given
   path ends with '/' it suggests a directory path...  If it doesn't, the option specifies a file renaming.
 
-[--sleep <time> ]
+*sr_post*, and *sr_watch* use a file based model based on a process and a disk cache,
+whose design is single threaded. The shim library is typically used by many processes
+at once, and would have resource contention and/or corruption issues with the cache.
+The shim library therefore has a purely memory-based cache, tunable with 
+the following shim\_ options. 
+
+
+[--shim_defer_posting_to_exit] EXPERIMENTAL
+------------------------------------------- 
+
+  Postpones file posting until the process exits.
+  In cases where the same file is repeatedly opened and appended to, this
+  setting can avoid redundant posts.  (default: False)
+
+[--shim_post_minterval *interval* ] EXPERIMENTAL
+------------------------------------------------
+
+  If a file is opened for writing and closed multiple times within the interval,
+  it will only be posted once. When a file is written to many times, particularly 
+  in a shell script, it makes for many posts, and shell script affects performance.  
+  subscribers will not be able to make copies quickly enough in any event, so
+  there is little benefit, in say, 100 posts of the same file in the same second.
+  It is wise set an upper limit on the frequency of posting a given file. (default: 5s)
+  Note: if a file is still open, or has been closed after its previous post, then
+  during process exit processing it will be posted again, even if the interval
+  is not respected, in order to provide the most accurate final post.
+
+
+[--shim_skip_parent_open_files] EXPERIMENTAL
+--------------------------------------------
+ 
+  The shim_skip_ppid_open_files option means that a process checks
+  whether the parent process has the same file open, and does not
+  post if that is the case. (default: True)
+
+
+[--sleep *time* ]
 -----------------
 
-   **This option is only available in the c implementation (sr_cpost)**
+  **This option is only available in the c implementation (sr_cpost)**
 
-   When the option is set, it transforms cpost into a sr_watch, with *sleep* being the time to wait between 
-   generating events.  When files are written frequently, it is counter productive to produce a post for 
-   every change, as it can produce a continuous stream of changes where the transfers cannot be done quickly 
-   enough to keep up.  In such circumstances, one can group all changes made to a file
-   in *sleep* time, and produce a single post.
+  When the option is set, it transforms cpost into a sr_watch, with *sleep* being the time to wait between 
+  generating events.  When files are written frequently, it is counter productive to produce a post for 
+  every change, as it can produce a continuous stream of changes where the transfers cannot be done quickly 
+  enough to keep up.  In such circumstances, one can group all changes made to a file
+  in *sleep* time, and produce a single post.
 
-   NOTE::
-       in sr_cpost, when combined with force_polling (see `sr_watch(1) <sr_watch.1.rst>`_ ) the sleep 
-       interval should not be less than about five seconds, as it may miss posting some files.
+  NOTE::
+      in sr_cpost, when combined with force_polling (see `sr_watch(1) <sr_watch.1.rst>`_ ) the sleep 
+      interval should not be less than about five seconds, as it may miss posting some files.
 
    
 
@@ -286,16 +324,27 @@ common settings, and methods of specifying them.
   All file posts include a checksum.  The *sum* option specifies how to calculate the it.
   It is a comma separated string.  Valid checksum flags are ::
 
-    [0|n|d|s|N|z]
+    [0|a|n|d|s|z]
     where 0 : no checksum... value in post is a random integer (only for testing/debugging.)
+          a : arbitrary application defined checksum (cannot calculate, must store)
           d : do md5sum on file content (default for now, compatibility)
           n : do md5sum checksum on filename
-          N : do SHA512 checksum on filename
+          p : do SHA512 checksum on filename and partition string [#]_
           s : do SHA512 on file content (default in future)
           z,a : calculate checksum value using algorithm a and assign after download.
 
   Then using a checksum script, it must be registered with the pumping network, so that consumers
   of the postings have access to the algorithm.
+
+.. [#] The *p* algorithm is only implemented in C ( https://github.com/MetPX/sarracenia/issues/117 )
+
+.. Note::
+
+  On Unix derived systems (including linux and mac) the checksums are stored in extended
+  file attributes. This is necessary for the *a* attribute to work, since we have no means
+  of calculating that checksum. We have not found a method to do the equivalent on Windows 
+  yet, so products announced with *a* will always be downloaded there.
+  This is awful.
 
 
 [-tp|--topic_prefix <key>]
@@ -313,6 +362,50 @@ common settings, and methods of specifying them.
 
   Add a <name> header with the given value to advertisements. Used to pass strings as metadata.
 
+[-header sum=<flag,sum>]
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Checksums can be attached to a file by specifying the sum string value in the header on startup with the 
+  'a' (application) scheme indicated::
+
+      sr_post -header sum=a,65537 <fileName(s)> <configName> start|foreground
+
+  where **fileName(s)** can be a list of space separated files or a value containing regex syntax (path must
+  be specified if not located in the current directory). The **user.sr_sum** and **user.sr_mtime** extended 
+  attributes of the files will be updated before being posted. These attributes can also be set using 
+  commandline utilities like xattr. 
+
+
+SHIM LIBRARY USAGE
+==================
+
+Rather than invoking a sr_post to post each file to publish, one can have processes automatically
+post the files they right by having them use a shim library intercepting certain file i/o calls to libc 
+and the kernel. To activate the shim library, in the shell environment add::
+
+  export SR_POST_CONFIG=shimpost.conf
+  export LD_PRELOAD="libsrshim.so.1"
+
+where *shimpost.conf* is an sr_cpost configuration file in
+the ~/.config/sarra/post/ directory. An sr_cpost configuration file is the same
+as an sr_post one, except that plugins are not supported.  With the shim
+library in place, whenever a file is written, the *accept/reject* clauses of
+the shimpost.conf file are consulted, and if accepted, the file is posted just
+as it would be by sr_post. If using with ssh, where one wants files which are
+scp'd to be posted, one needs to include the activation in the
+.bashrc and pass it the configuration to use::
+
+  expoert LC_SRSHIM=shimpost.conf
+
+Then in the ~/.bashrc on the server running the remote command::
+
+  if [ "$LC_SRSHIM" ]; then
+      export SR_POST_CONFIG=$LC_SRSHIM
+      export LD_PRELOAD="libsrshim.so.1"
+  fi
+       
+SSH will only pass environment variables that start with LC_ (locale) so to get it 
+passed with minimal effort, we use that prefix.
 
 
 
@@ -351,6 +444,7 @@ DEVELOPER SPECIFIC OPTIONS
 
   If a file is posted in several blocks, the posting order
   is randomized so that the subcriber receives them out of order.
+  It also randomizes the checksum algorithm used for posting.
 
 [-rc|--reconnect]
 -----------------

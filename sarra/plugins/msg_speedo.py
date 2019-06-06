@@ -57,9 +57,9 @@ class Msg_Speedo(object):
         import calendar
         import humanize
         import datetime
+        from sarra.sr_util import timestr2flt
 
-        mt=msg.time
-        msgtime=calendar.timegm(time.strptime(mt[:mt.find('.')],"%Y%m%d%H%M%S")) + float(mt[mt.find('.'):])
+        msgtime=timestr2flt(msg.pubtime)
         now=time.time()
 
         parent.msg_speedo_msgcount = parent.msg_speedo_msgcount + 1

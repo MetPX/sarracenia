@@ -5,8 +5,8 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
 #
 # Questions or bugs report: dps-client@ec.gc.ca
-# sarracenia repository: git://git.code.sf.net/p/metpx/git
-# Documentation: http://metpx.sourceforge.net/#SarraDocumentation
+# sarracenia repository: https://github.com/MetPX/sarracenia
+# Documentation: https://github.com/MetPX/sarracenia
 #
 # sr_amqp.py : python3 utility tools from python's amqplib
 #
@@ -19,8 +19,7 @@
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+#  the Free Software Foundation; version 2 of the License.
 #
 #  This program is distributed in the hope that it will be useful, 
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of 
@@ -33,26 +32,24 @@
 #
 #
 
-try   : import amqplib.client_0_8 as amqp
-except: pass
+import amqp
 
-try   : import pika
-except: pass
+from sarra.sr_util      import *
 
-import logging, os, random, sys, time
+# ======= amqp alternative libraries ========
+try: import amqplib.client_0_8 as amqplib_0_8
+except ImportError: pass
+try: import pika
+except ImportError: pass
+# ===========================================
 
-try :    
-         from sr_util            import *
-except : 
-         from sarra.sr_util      import *
 
-# ==========
+# ===========
 # HostConnect
-# ==========
+# ===========
 
 class HostConnect:
-
-   def __init__(self, logger = None):
+   def __init__(self, logger=None):
 
        self.asleep     = False
        self.loop       = True
@@ -74,17 +71,18 @@ class HostConnect:
 
        self.sleeping   = None
 
-       self.pika_available    = 'pika'    in sys.modules
-       self.amqplib_available = 'amqplib' in sys.modules
+       # Default behavior is to use amqp and not the alternatives
+       self.use_amqp = True
+       self.use_amqplib = False
+       self.use_pika = False
 
-       self.use_pika          = self.pika_available
 
    def add_build(self,func):
        self.rebuilds.append(func)
 
    def add_sleeping(self,func):
        self.sleeping = func
-       
+
    def close(self):
        for channel in self.toclose:
            if self.use_pika : cid = channel.channel_number
@@ -98,44 +96,56 @@ class HostConnect:
        self.connection = None
 
    def connect(self):
+       """Connect to amqp broker with the amqp client library that has been chosen.
 
-       if self.sleeping != None :
-          self.asleep = self.sleeping()
+       :returns True if successful, False otherwise.
+       """
+       if self.sleeping is not None:
+           self.asleep = self.sleeping()
 
-       if self.asleep : return
+       if self.asleep:
+           return
 
        while True:
-          try:
-               # connect
+           try:
                self.logger.debug("Connecting %s %s (ssl %s)" % (self.host,self.user,self.ssl) )
                host = self.host
-               if self.port   != None : host = host + ':%s' % self.port
+               if self.port is not None:
+                   host = host + ':%s' % self.port
                self.logger.debug("%s://%s:<pw>@%s%s ssl=%s" % (self.protocol,self.user,host,self.vhost,self.ssl))
-               if self.use_pika:
-                      self.logger.debug("PIKA is used")
-                      logger = logging.getLogger('pika')
-                      logger.setLevel(logging.CRITICAL)
-                      credentials = pika.PlainCredentials(self.user, self.password)
-                      parameters  = pika.connection.ConnectionParameters(self.host,self.port,self.vhost,credentials,ssl=self.ssl)
-                      self.connection = pika.BlockingConnection(parameters)
+               if self.use_amqp:
+                   self.logger.info("Using amqp module (AMQP 0-9-1)")
+                   self.connection = amqp.Connection(host, userid=self.user, password=self.password,
+                                                     virtual_host=self.vhost, ssl=self.ssl)
+                   if hasattr(self.connection, 'connect'):
+                       # check for amqp 1.3.3 and 1.4.9 because connect doesn't exist in those older versions
+                       self.connection.connect()
+               elif self.use_amqplib:
+                   self.logger.info("Using amqplib module (mostly AMQP 0-8)")
+                   self.connection = amqplib_0_8.Connection(host, userid=self.user, password=self.password,
+                                                            virtual_host=self.vhost, ssl=self.ssl)
+               elif self.use_pika:
+                   self.logger.info("Using pika module (AMQP 0-9-1)")
+                   credentials = pika.PlainCredentials(self.user, self.password)
+                   parameters  = pika.connection.ConnectionParameters(self.host, virtual_host=self.vhost,
+                                                                      credentials=credentials, ssl=self.ssl)
+                   self.connection = pika.BlockingConnection(parameters)
                else:
-                      self.logger.debug("AMQPLIB is used")
-                      # dont know why... need to raise an exception when problem
-                      try   :
-                              self.connection = amqp.Connection(host, userid=self.user, password=self.password, \
-                                                                virtual_host=self.vhost,ssl=self.ssl)
-                      except: raise Exception("amqp.Connection failed")
-
-               self.channel    = self.new_channel()
+                   self.use_amqp = True
+                   raise ConnectionError("Not using any amqp client library, setting it back to default: AMQP")
+               self.channel = self.new_channel()
                self.logger.debug("Connected ")
                for func in self.rebuilds:
                    func()
-               break
-          except:
-               (stype, svalue, tb) = sys.exc_info()
+               return True
+           except:
                self.logger.error("AMQP Sender cannot connect to: %s" % self.host)
-               self.logger.error("Type=%s, Value=%s" % (stype, svalue))
-               if not self.loop : sys.exit(1)
+               self.logger.debug('Exception details: ', exc_info=True)
+
+               if not self.loop:
+                   self.logger.error("Could not connect to broker")
+                   return False
+
                self.logger.error("Sleeping 5 seconds ...")
                time.sleep(5)
 
@@ -144,9 +154,8 @@ class HostConnect:
                     self.channel.exchange_declare(exchange, 'topic', auto_delete=edelete,durable=edurable)
                     self.logger.info("declaring exchange %s (%s@%s)" % (exchange,self.user,self.host))
        except :
-                    (stype, svalue, tb) = sys.exc_info()
                     self.logger.error("could not declare exchange %s (%s@%s)" % (exchange,self.user,self.host))
-                    self.logger.error("Type=%s, Value=%s" % (stype, svalue))
+                    self.logger.debug('Exception details: ', exc_info=True)
 
    def exchange_delete(self,exchange):
 
@@ -165,10 +174,8 @@ class HostConnect:
                     self.channel.exchange_delete(exchange)
                     self.logger.info("deleting exchange %s (%s@%s)" % (exchange,self.user,self.host))
        except :
-                    (stype, svalue, tb) = sys.exc_info()
                     self.logger.error("could not delete exchange %s (%s@%s)" % (exchange,self.user,self.host))
-                    self.logger.error("Type=%s, Value=%s" % (stype, svalue))
-
+                    self.logger.debug('Exception details: ', exc_info=True)
 
    def new_channel(self):
        channel = self.connection.channel()
@@ -184,7 +191,7 @@ class HostConnect:
                     error_str = '%s' % svalue
                     if 'NOT_FOUND' in error_str : return
                     self.logger.error("could not delete queue %s (%s@%s)" % (queue_name,self.user,self.host))
-                    self.logger.error("Type=%s, Value=%s" % (stype, svalue))
+                    self.logger.debug('Exception details: ', exc_info=True)
 
    def reconnect(self):
        self.close()
@@ -210,7 +217,7 @@ class HostConnect:
        self.port     = url.port
        self.vhost    = url.path
 
-       if self.protocol == 'amqps' : 
+       if self.protocol == 'amqps' :
           self.ssl = True
           if self.port == None :
                self.port=5671
@@ -218,33 +225,13 @@ class HostConnect:
        if self.vhost    == None    : self.vhost = '/'
        if self.vhost    == ''      : self.vhost = '/'
 
-   def set_pika(self,pika=True):
+   def choose_amqp_alternative(self, use_amqplib=False, use_pika=False):
+       # 1 alternative could be chosen there (By default 0 alternative is chosen)
+       self.use_amqplib = use_amqplib
+       self.use_pika = use_pika
 
-       self.use_pika = pika
-
-       # good choices
-
-       if self.pika_available    and     pika: return
-       if self.amqplib_available and not pika: return
-
-       # failback choices
-
-       if self.pika_available    and not pika:
-          self.logger.warning("amqplib unavailable : using pika")
-          self.use_pika = True
-          return
-
-       if self.amqplib_available and     pika:
-          self.logger.warning("pika unavailable : using amqplib")
-          self.use_pika = False
-          return
-
-       # nothing available
-
-       if not self.pika_available and not self.amqplib_available :
-          self.logger.error("pika unavailable, amqplib unavailable")
-          os._exit(1)
-
+       # Ensure that if 1 alternative is chosen we will not use the default amqp library
+       self.use_amqp = not (self.use_amqplib or self.use_pika)
 
 # ==========
 # Consumer
@@ -281,7 +268,7 @@ class Consumer:
           prefetch_size = 0      # dont care
           a_global      = False  # only apply here
           self.channel.basic_qos(prefetch_size,self.prefetch,a_global)
-       
+
    def ack(self,msg):
        self.logger.debug("--------------> ACK")
        self.logger.debug("--------------> %s" % msg.delivery_tag )
@@ -293,19 +280,18 @@ class Consumer:
 
        if not self.hc.asleep :
               try :
-                      if self.hc.use_pika :
-                           #self.logger.debug("consume PIKA is used")
-                           method_frame, properties, body = self.channel.basic_get(queuename)
-                           if method_frame and properties and body :
-                              self.for_pika_msg.pika_to_amqplib(method_frame, properties, body )
-                              msg = self.for_pika_msg
-                      else:
-                              #self.logger.debug("consume AMQPLIB is used")
-                              msg = self.channel.basic_get(queuename)
+                     if self.hc.use_pika :
+                         #self.logger.debug("consume PIKA is used")
+                         method_frame, properties, body = self.channel.basic_get(queuename)
+                         if method_frame and properties and body:
+                             self.for_pika_msg.pika_to_amqplib(method_frame, properties, body)
+                             msg = self.for_pika_msg
+                     else:
+                         #self.logger.debug("consume AMQP or AMQPLIB is used")
+                         msg = self.channel.basic_get(queuename)
               except :
-                     (stype, value, tb) = sys.exc_info()
-                     self.logger.error("sr_amqp/consume Type: %s, Value: %s" % (stype, value))
-                     self.logger.error("Could not consume in queue %s" % queuename )
+                     self.logger.error("sr_amqp/consume: could not consume in queue %s" % queuename )
+                     self.logger.debug('Exception details: ', exc_info=True)
                      if self.hc.loop :
                         self.hc.reconnect()
                         self.logger.debug("consume resume ok")
@@ -348,40 +334,55 @@ class Publisher:
        alarm_cancel()
        return True
 
-   def publish(self,exchange_name,exchange_key,message,mheaders,mexp=0):
-       try :
-              if self.hc.use_pika :
-                     #self.logger.debug("publish PIKA is used")
-                     if mexp :
-                        expms = '%s' % mexp
-                        properties = pika.BasicProperties(content_type='text/plain', delivery_mode=1, headers=mheaders,expiration=expms)
-                     else:
-                        properties = pika.BasicProperties(content_type='text/plain', delivery_mode=1, headers=mheaders)
-                     self.channel.basic_publish(exchange_name, exchange_key, message, properties, True )
-              else:
-                     #self.logger.debug("publish AMQPLIB is used")
-                     if mexp :
-                        expms = '%s' % mexp
-                        msg = amqp.Message(message, content_type= 'text/plain',application_headers=mheaders,expiration=expms)
-                     else:
-                        msg = amqp.Message(message, content_type= 'text/plain',application_headers=mheaders)
-                     self.channel.basic_publish(msg, exchange_name, exchange_key )
-                     self.channel.tx_commit()
-              return True
-       except :
-              if self.hc.loop :
-                 (stype, value, tb) = sys.exc_info()
-                 self.logger.error("sr_amqp/publish: %s, Value: %s" % (stype, value))
-                 self.logger.error("Sleeping 5 seconds ... and reconnecting")
-                 time.sleep(5)
-                 self.hc.reconnect()
-                 if self.hc.asleep : return False
-                 return self.publish(exchange_name,exchange_key,message,mheaders,mexp)
-              else:
-                 (etype, evalue, tb) = sys.exc_info()
-                 self.logger.error("sr_amqp/publish 2 Type: %s, Value: %s" %  (etype, evalue))
-                 self.logger.error("could not publish %s %s %s %s" % (exchange_name,exchange_key,message,mheaders))
-                 return False
+   def publish(self, exchange_name, exchange_key, message, mheaders, mexp=0):
+        try:
+            if self.hc.use_amqp:
+                self.logger.debug("publish AMQP is used")
+                if mexp:
+                    expms = '%s' % mexp
+                    msg = amqp.Message(message, content_type='text/plain', application_headers=mheaders,
+                                       expiration=expms)
+                else:
+                    msg = amqp.Message(message, content_type='text/plain', application_headers=mheaders)
+                self.channel.basic_publish(msg, exchange_name, exchange_key)
+                self.channel.tx_commit()
+            elif self.hc.use_amqplib:
+                self.logger.debug("publish AMQPLIB is used")
+                if mexp:
+                    expms = '%s' % mexp
+                    msg = amqplib_0_8.Message(message, content_type='text/plain', application_headers=mheaders,
+                                              expiration=expms)
+                else:
+                    msg = amqplib_0_8.Message(message, content_type='text/plain', application_headers=mheaders)
+                self.channel.basic_publish(msg, exchange_name, exchange_key)
+                self.channel.tx_commit()
+            elif self.hc.use_pika:
+                self.logger.debug("publish PIKA is used")
+                if mexp:
+                    expms = '%s' % mexp
+                    properties = pika.BasicProperties(content_type='text/plain', delivery_mode=1, headers=mheaders,
+                                                      expiration=expms)
+                else:
+                    properties = pika.BasicProperties(content_type='text/plain', delivery_mode=1, headers=mheaders)
+                self.channel.basic_publish(exchange_name, exchange_key, message, properties, True)
+            else:
+                self.logger.debug("Couldn't choose an AMQP client library, setting it back to default amqp")
+                self.hc.use_amqp = True
+                raise ConnectionError("No AMQP client library is set")
+            return True
+        except:
+            if self.hc.loop:
+                self.logger.error("sr_amqp/publish: Sleeping 5 seconds ... and reconnecting")
+                self.logger.debug('Exception details: ', exc_info=True)
+                time.sleep(5)
+                self.hc.reconnect()
+                if self.hc.asleep: return False
+                return self.publish(exchange_name, exchange_key, message, mheaders,mexp)
+            else:
+                self.logger.error("sr_amqp/publish: could not publish %s %s %s %s" % (exchange_name, exchange_key,
+                                                                                      message, mheaders))
+                self.logger.debug('Exception details: ', exc_info=True)
+                return False
 
    def restore_clear(self):
        if self.restore_queue and self.restore_exchange :
@@ -397,15 +398,15 @@ class Publisher:
    def restore_set(self,parent):
        try   :
               self.restore_queue      = parent.restore_queue
-              self.restore_exchange   = parent.post_exchange 
+              self.restore_exchange   = parent.post_exchange
               self.restore_exchange  += '.%s.%s.restore.' % (parent.program_name,parent.config_name)
               self.restore_exchange  += str(random.randint(0,100000000)).zfill(8)
               self.channel.exchange_declare( self.restore_exchange, 'topic', auto_delete=True, durable=False)
               self.channel.queue_bind( self.restore_queue, self.restore_exchange, '#' )
        except:
-              (etype, evalue, tb) = sys.exc_info()
-              self.logger.error("sr_amqp/restore_set Type: %s, Value: %s" %  (etype, evalue))
-              self.logger.error("restore_set exchange %s queuename %s" % (self.restore_exchange,self.restore_queue))
+              self.logger.error("sr_amqp/restore_set: restore_set exchange %s queuename %s" % (self.restore_exchange,
+                                                                                               self.restore_queue))
+              self.logger.debug('Exception details: ', exc_info=True)
               os._exit(1)
 
 # ==========
@@ -447,11 +448,11 @@ class Queue:
        self.logger.debug("building queue %s" % self.name)
        self.channel = self.hc.new_channel()
 
-       # reset 
+       # reset
        if self.reset :
           try    : self.channel.queue_delete( self.name )
           except : self.logger.debug("could not delete queue %s (%s@%s)" % (self.name,self.hc.user,self.hc.host))
-                  
+
        # declare queue
 
        msg_count = self.declare()
@@ -472,7 +473,7 @@ class Queue:
            try:
               self.bind(exchange_name, exchange_key )
               exchange_ok = exchange_name
-           except : 
+           except :
               self.logger.error( "bind queue: %s to exchange: %s with key: %s failed.." % \
                                  (self.name,exchange_name, exchange_key ) )
               self.logger.error( "Permission issue with %s@%s or exchange %s not found." % \
@@ -484,7 +485,7 @@ class Queue:
            self.logger.debug("binding queue to exchange=%s with key=%s (pulse)" % (exchange_name,exchange_key))
            try:
               self.bind(exchange_name, exchange_key )
-           except : 
+           except :
               self.logger.error( "bind queue: %s to exchange: %s with key: %s failed.." % \
                                  (self.name,exchange_name, exchange_key ) )
               self.logger.error( "Permission issue with %s@%s or exchange %s not found." % \
@@ -505,30 +506,21 @@ class Queue:
        # create queue
        try:
            if self.hc.use_pika:
-                  #self.logger.debug("queue_declare PIKA is used")
-                  q_dclr_ok = self.channel.queue_declare( self.name,
-                                       passive=False, durable=self.durable, exclusive=False,
-                                       auto_delete=self.auto_delete,
-                                       arguments= args )
-
-                  method = q_dclr_ok.method
-
-                  self.qname, msg_count, consumer_count = method.queue, method.message_count, method.consumer_count
-
+               self.logger.debug("queue_declare PIKA is used")
+               q_dclr_ok = self.channel.queue_declare(self.name, passive=False, durable=self.durable,
+                                                      exclusive=False, auto_delete=self.auto_delete, arguments= args)
+               method = q_dclr_ok.method
+               self.qname, msg_count, consumer_count = method.queue, method.message_count, method.consumer_count
            else:
-                  #self.logger.debug("queue_declare AMQPLIB is used")
-                  self.qname, msg_count, consumer_count = \
-                      self.channel.queue_declare( self.name,
-                                          passive=False, durable=self.durable, exclusive=False,
-                                          auto_delete=self.auto_delete,
-                                          nowait=False,
-                                          arguments= args )
-
+               self.logger.debug("queue_declare AMQP or AMQPLIB is used")
+               self.qname, msg_count, consumer_count = self.channel.queue_declare(self.name, passive=False,
+                                                                                  durable=self.durable, exclusive=False,
+                                                                                  auto_delete=self.auto_delete,
+                                                                                  nowait=False, arguments=args)
            self.logger.debug("queue declare done")
            return msg_count
-
-       except : 
-              self.logger.error( "queue declare: %s failed...(%s@%s) permission issue ?" % (self.name,self.hc.user,self.hc.host))
-              (stype, svalue, tb) = sys.exc_info()
-              self.logger.error("sr_amqp/build Type: %s, Value: %s" %  (stype, svalue))
-              return -1
+       except:
+           self.logger.error("sr_amqp/build, queue declare: %s failed...(%s@%s) permission issue ?"
+                             % (self.name, self.hc.user, self.hc.host))
+           self.logger.debug('Exception details: ', exc_info=True)
+           return -1

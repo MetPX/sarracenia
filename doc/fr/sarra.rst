@@ -23,59 +23,40 @@ Aperçu
 
 
 Sarracenia expose une arborescence de dossiers accessibles sur le Web (WAF), en utilisant n'importe quel
-serveur HTTP standard (testé avec apache) ou serveur SFTP, avec d'autres types de serveurs possible via des modules. Les applications météorologiques sont en temps réel douce (anglais: soft real-time), où les données 
+serveur HTTP standard (testé avec apache) ou serveur SFTP, avec d'autres types de serveurs possible via des modules. Les applications météorologiques sont en temps réel souple (anglais: soft real-time), où les données 
 doivent être transmises le plus rapidement possible jusqu'au prochain saut, et les minutes, peut-être 
 les secondes, comptent. Les technologies web push standard, ATOM, RSS, etc.... sont en fait des 
 technologies de sondage qui, lorsqu'elles sont utilisées dans des applications à faible latence, 
 consomment beaucoup de bande passante et surcharge les serveurs et réseaux inutilement.  Pour ces raisons 
-précises, ces normes stipulent un intervalle minimal de sondage de cinq minutes. La messagerie AMQP (Advanced 
-Message Queueing Protocol) apporte une véritable *push* aux notifications et rend l'envoi en 
-temps réel beaucoup plus efficace.
+précises, ces normes stipulent un intervalle minimal de sondage de cinq minutes. La messagerie AMQP (Advanced Message Queueing Protocol) pousse réellement les notifications et rend l'envoi en temps réel beaucoup plus efficace.
 
 .. image:: f-ddsr-components.gif
 
-Les sources de données publient leurs produits, les pompes tirent les données en utilisant HTTP
-ou SFTP sur leurs arbres WAF, puis annoncent à leur tour, leurs arbres pour les clients en aval.
-Lorsque les clients téléchargent des données, ils peuvent écrire un message de rapport sur le 
-serveur. Les serveurs sont configurés pour renvoyer ces messages de rapport du
-client par l'intermédiaire de la fonction à la source. La Source peut voir le 
-chemin entier que les données ont pris pour atteindre chaque client. Dans le
-cas des applications de commutation traditionnelles, les sources ne voient que
-qu'ils ont livré au premier maillon d'une chaîne. Au-delà de ce premier maillon, le 
-routage est opaque, et le traçage du cheminement des données nécessitaient l'aide des 
-administrateurs de chacque système entre eux. Avec le report forwarding de Sarracenia, 
-le réseau de commutation est le suivant relativement transparent pour les sources. 
-Le diagnostic est grandement simplifié.
+Les sources de données publient leurs produits, les pompes extraient les données en utilisant HTTP ou SFTP via arborescence de dossiers (WAF), puis annoncent cette arborescence aux clients en aval.
+Lorsque les clients téléchargent des données, ils peuvent écrire un rapport au serveur. Les serveurs sont configurés pour renvoyer ces messages de rapport du
+client par l'intermédiaire de la fonction à la source. : La source peut voir le chemin au complet pris par les données pour arriver jusqu'à chaque client. Dans le
+cas des applications de commutation traditionnelles, les sources ne voient que ce qu'elles ont livré au premier maillon d'une chaîne. Au-delà de ce premier maillon,  le 
+routage est opaque, et le traçage du cheminement des données nécessitent l'aide des administrateurs de chacun des systèmes. Avec la transmission de rapport de Sarracenia, le réseau de commutaiton est relativement transparent pour les sources. 
+Le diagnostic est alors grandement simplifié.
 
 Pour les gros fichiers / haute performance, les fichiers sont segmentés à l'
-ingestion s'ils sont suffisamment performants pour que cela en vaille la peine.
-Chaque fichier peut traverser le réseau de pompage de données indépendamment,
-et le remise en entier n'est nécessaire qu'a la fin du voyage. Un fichier de taille suffisante annoncera
-la disponibilité de plusieurs segments pour le transfert, des fils multiples ou des nœuds de transfert
-prendra des segments et les transférera. Plus il y a de segments disponibles, le plus de parallélisme du 
-transfert est possible. Dans de nombreux cas, Sarracenia gère le parallélisme et l'utilisation du 
-réseau sans intervention explicite de l'utilisateur. En tant que pompes d'intervention ne pas 
-stocker et transférer des fichiers entiers, la taille maximale de fichier qui peut traverser
-le réseau est maximisé.
+ingestion s'ils sont suffisamment gros pour que cela en vaille la peine.
+Chaque fichier peut traverser le réseau de pompage de données indépendamment, et le réassemblage du fichier initial ne se fait qu'à la fin du processus de transfert. Un fichier de taille suffisante annoncera
+la disponibilité de plusieurs segments pour le transfert, des fils multiples ou des nœuds de transfert prendront ces segments et les transféreront. Plus il y a de segments disponibles, plus le niveau de parallèlisme du transfert est élevé. Dans de nombreux cas, Sarracenia gère le parallélisme et l'utilisation du 
+réseau sans intervention explicite de l'utilisateur.Les pompes de données ne doivent ni stocker ni transférer des fichiers entiers, la taille maximale de fichier qui peut voyager à travers le réseau est maximisée.
 
 Sundew prend en charge une grande variété de formats de fichiers, de 
-protocoles et de conventions spécifique à la météorologie en temps réel. 
-Sarracenia s´enligne plus loin d´applications spécifiques et est plus un 
-moteur de réplication d'arbre impitoyablement générique, qui
-devrait permettre son utilisation dans d'autres domaines. Le client prototype 
-initial, dd_subscribe, en service depuis 2013, a été remplacé en 2016 par 
-l'ensemble Sarracenia entièrement refaite, avec tous les composants nécessaires
-à la production ainsi qu'à la consommation d'arbres de fichiers.
+protocoles et de conventions spécifiques à la météorologie en temps réel. Sarracenia a un spectre d'utilisation plus vaste et est davantage un générateur de répliques d'arborescence, ce qui permet son utilisation pour divers domaines d'application. Le client prototype 
+initial, dd_subscribe, en service depuis 2013, a été remplacé en 2016 par le système Sarracenia comprenant toutes les composantes nécessaires à la production ainsi qu'à la conception d'arborescence de fichiers. 
 
-On s'attend à ce que la Sarracenia soit une application beaucoup plus simple 
-de n´importe lequel point de vue : Opérateur, Développeur, Analyste,
-Sources de données, Consommateurs de données. Sarracenia impose un mécanisme
+Sarracenia est considérée comme une application beaucoup plus simple que Sundew à tous les niveaux: opérateur, développeur, analyste,
+sources de données, utilisateurs de données. Sarracenia impose un mécanisme
 d'interface unique, mais ce mécanisme est complètement portable et générique.
-Il devrait fonctionner sans problème sur tout ce qui est moderne plate-forme (Linux, Windows, Mac)
+Il devrait fonctionner sans problème sur toute plate-forme moderne (Linux, Windows, Mac).
 
 Pour plus d'informations sur Sarra, consultez le site vidéo (en anglais seulement)
 `Sarracenia in 10 Minutes <https://www.youtube.com/watch ?v=G47DRwzwckk>`_`
-ou passer à la documentation détaillée `documentation <sr_subscribe.1.rst#documentation>`_
+ou passez à la documentation détaillée `documentation <sr_subscribe.1.rst#documentation>`_
 
 
 Implémentations

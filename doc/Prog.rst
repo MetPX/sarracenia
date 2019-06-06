@@ -141,12 +141,12 @@ And then modify it for the purpose::
 
   blacklab% sr_subscribe edit msg_log.py
 
-The msg_log.py plugin above is a single entry one. For single entry point plugins, consult bad_plugins 1, 2, and 3 
+The msg_log.py plugin above is a single entry one. For single entry point plugins, consult bad_plugins `1 <../sarra/plugins/bad_plugin1.py>`_, `2 <../sarra/plugins/bad_plugin2.py>`_, and `3 <../sarra/plugins/bad_plugin3.py>`_ 
 to identify the mandatory elements. As one would imagine, all the plugins that begin with msg\_ are for *on_msg* events.
 Similarly, file\_ ones provide examples of *on_file*, etc... for the other types of single entry plugins.
 
 If a plugin doesn't have such a prefix, there is a second form of plugins called simply a *plugin*, where a group
-of routines implement an overall function.  Examine the *log.py* and *wget.py* routines for examples of this format.
+of routines implement an overall function.  Examine the `log.py <../sarra/plugins/log.py>`_ and `wget.py <../sarra/plugins/wget.py>`_ routines for examples of this format.
 
 One can also see which plugins are active in a configuration by looking at the messages on startup::
 
@@ -274,12 +274,20 @@ being processed. variables variables most used:
   *parent.new_dir*, which operates on the directory to which the file
   will be downloaded.
 
+*parent.msg.pubtime*
+  The time the message was originally inserted into the network (first field of a notice.)
+
+*parent.msg.baseurl*
+  The root URL of the publication tree from which relative paths are constructed.
+
+*parent.msg.relpath*
+  The relative path from the baseURL of the file.
+  concatenating the two gives the complete URL.
+
 *parent.msg.notice*
   The body of the message being processed. see `sr_post(7) <sr_post.7.rst>`_
+  a space-separated tuple of: pubtime,baseurl,and relpath, 
   If parts here are modified, one must modify extracted fields for full effect.
-
-*parent.msg.time*
-  The time the message was originally inserted into the network (first field of a notice.)
 
 *parent.msg.partstr*
   The partition string ( same as parent.msg.headers['parts'] )
@@ -548,7 +556,7 @@ by writing to a named pipe::
 
   blacklab% sr_subscribe edit dd_swob.conf 
 
-  broker amqp://anonymous@dd.weather.gc.ca
+  broker amqps://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
 
   file_rxpipe_name /local/home/peter/test/rxpipe
@@ -1043,7 +1051,7 @@ local file is sufficient::
 
   blacklab% sr_subscribe edit dd_swob.conf 
 
-  broker amqp://anonymous@dd.weather.gc.ca
+  broker amqps://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
   document_root /data/web/dd_root
   no_download

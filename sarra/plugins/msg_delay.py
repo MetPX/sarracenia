@@ -26,16 +26,16 @@ class Msg_Delay(object):
           
     def on_message(self,parent):
         import calendar
+        from sarra.sr_util import timestr2flt
 
         msg = parent.msg
-        mt=msg.time
-        msgtime=calendar.timegm(time.strptime(mt[:mt.find('.')],"%Y%m%d%H%M%S")) + float(mt[mt.find('.'):])
+        msgtime=timestr2flt(msg.pubtime)
         now=time.time()
 
         lag=now-msgtime
 
         parent.logger.info("msg_delay received: %s %s%s topic=%s lag=%g %s" % \
-           tuple( msg.notice.split()[0:3] + [ msg.topic, msg.get_elapse(), msg.hdrstr ] ) )
+           ( msg.pubtime, msg.baseurl, msg.relpath, msg.topic, msg.get_elapse(), msg.hdrstr ) )
 
         if lag < parent.msg_delay :
             parent.logger.info("msg_delay message not old enough, sleeping for %d seconds" %  (parent.msg_delay - lag) )
