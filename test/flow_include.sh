@@ -143,23 +143,41 @@ function sumlogs {
   done
 }
 
+function sumlogshistory {
+  p="$1"
+  shift
+  reverse_date_logs=`ls $* | sort -n -r`
+
+  for l in $reverse_date_logs; do
+     if [[ ${tot} = 0 ]]; then
+         sumlogs $p $l
+     fi
+  done
+
+}
+
 function countall {
 
-  sumlogs msg_total $LOGDIR/sr_report_tsarra_f20_*.log*
+  sumlogs msg_total $LOGDIR/sr_report_tsarra_f20_*.log
+  sumlogshistory msg_total $LOGDIR/sr_report_tsarra_f20_*.log.*
   totsarra="${tot}"
 
-  sumlogs msg_total $LOGDIR/sr_report_twinnow00_f10_*.log*
+  sumlogs msg_total $LOGDIR/sr_report_twinnow00_f10_*.log
+  sumlogshistory msg_total $LOGDIR/sr_report_twinnow00_f10_*.log.*
   totwinnow00="${tot}"
 
-  sumlogs msg_total $LOGDIR/sr_report_twinnow01_f10_*.log*
+  sumlogs msg_total $LOGDIR/sr_report_twinnow01_f10_*.log
+  sumlogshistory msg_total $LOGDIR/sr_report_twinnow01_f10_*.log.*
   totwinnow01="${tot}"
 
   totwinnow=$(( ${totwinnow00} + ${totwinnow01} ))
 
-  sumlogs msg_total $LOGDIR/sr_shovel_t_dd1_f00_*.log*
+  sumlogs msg_total $LOGDIR/sr_shovel_t_dd1_f00_*.log
+  sumlogshistory msg_total $LOGDIR/sr_shovel_t_dd1_f00_*.log.*
   totshovel1="${tot}"
 
-  sumlogs msg_total $LOGDIR/sr_shovel_t_dd2_f00_*.log*
+  sumlogs msg_total $LOGDIR/sr_shovel_t_dd2_f00_*.log
+  sumlogshistory msg_total $LOGDIR/sr_shovel_t_dd2_f00_*.log.*
   totshovel2="${tot}"
 
   countthem "`grep '\[INFO\] post_log notice' "$LOGDIR"/sr_winnow*.log* | wc -l`"
@@ -171,7 +189,8 @@ function countall {
   countthem "`grep '\[INFO\] post_log' "$LOGDIR"/sr_watch_f40_*.log* | wc -l`"
   totwatch="${tot}"
 
-  sumlogs msg_total $LOGDIR/sr_subscribe_t_f30_*.log*
+  sumlogs msg_total $LOGDIR/sr_subscribe_t_f30_*.log
+  sumlogshistory msg_total $LOGDIR/sr_subscribe_t_f30_*.log.*
   totmsgt="${tot}"
 
   countthem "`grep '\[INFO\] file_log downloaded to:' "$LOGDIR"/sr_subscribe_t_f30_*.log* | wc -l`"

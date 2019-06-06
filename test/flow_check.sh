@@ -1,65 +1,76 @@
 #!/bin/bash
 
-. ./flow_include.sh
+# parse arguments
+POSITIONAL=()
+while [[ $# -gt 0 ]]
+do
+key="$1"
 
+case $key in
+    -s|--skip_summaries)
+    skip_summaries=true
+    shift # past argument
+    ;;
+esac
+done
+set -- "${POSITIONAL[@]}"
+
+. ./flow_include.sh
 countall
 
-# PAS performance summaries
+function summarize_performance {
+    # PAS performance summaries
+    printf "\nDownload Performance Summaries:\tLOGDIR=$LOGDIR"
 
-printf "\n\n\t\tDownload Performance Summaries:\n\n\tLOGDIR=$LOGDIR"
+    path="$LOGDIR"/$1
+    shift
+    pattern=$1
+    shift
+    for i in $* ; do
+       best_fn=''
+       printf "\n\t$i\n\n"
+       for j in ${path}_${i}_*.log*; do
+           msg="`grep ${pattern} ${j} | tail -1`"
+           if [[ -z "$msg" ]]; then
+               continue
+           fi
+           fn=`echo $(basename ${j}) | awk -F'.' '{print $3}'`
+           if [[ -z "$fn" ]]; then
+               best_fn=`echo $(basename ${j})`
+               echo "`basename $j` ${msg}"
+           elif [[ -z "$best_fn" ]]; then
+               echo "`basename $j` ${msg}"
+           fi
+       done
+    done
+}
 
-for i in t_dd1 t_dd2 ;
-do
-   printf "\n\t$i\n\n"
-   #grep 'msg_total' "$LOGDIR"/sr_shovel_${i}_*.log* | sed 's/:/ /' | sort  -k 2,3 | tail -10
-   for j in "$LOGDIR"/sr_shovel_${i}_*.log* ; do
-       echo "`basename $j` `grep 'msg_total' ${j} | tail -1`"
-   done
-done
-
-for i in cdnld_f21 t_f30 cfile_f44 u_sftp_f60 ftp_f70 q_f71 ;
-do
-   printf "\n\t$i\n\n"
-   for j in "$LOGDIR"/sr_subscribe_${i}_*.log* ; do
-       echo "`basename $j` `grep 'file_total' ${j} | tail -1`"
-   done
-done
-
-echo
-# MG shows retries
-echo
-
-if [[ ! "$SARRA_LIB" ]]; then
-   echo NB retries for sr_subscribe t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f30*.log* | wc -l`
-   echo NB retries for sr_sender    `grep Retrying "$LOGDIR"/sr_sender*.log* | wc -l`
-else
-   echo NB retries for "$SARRA_LIB"/sr_subscribe.py t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f30*.log* | wc -l`
-   echo NB retries for "$SARRA_LIB"/sr_sender.py    `grep Retrying "$LOGDIR"/sr_sender*.log* | wc -l`
-fi
-
-function summarizelogs {
+function summarize_logs {
     printf "\n$1 Summary:\n"
-    fcc="$LOGDIR"/flowcheck_$1_count.txt
-    grep -E -h -o "\[$1\] *[^ ^/][^ ]+ [^/]|\[$1\] *[^ ^/][^ ]+ /|\[$1\] /" "$LOGDIR"/*.log* | sort | uniq -c | sort -n -r  > ${fcc}
-    NERROR=`grep $1 ${fcc} | wc -l`
+    input_size=${#1}
+    fcl="$LOGDIR"/flowcheck_$1_logged.txt
+    msg_counts=`grep -h -o "\[$1\] *.*" "$LOGDIR"/*.log* | sort | uniq -c -w"$((input_size+20))" | sort -n -r`
+    echo '' > ${fcl}
 
-    if (($NERROR>0)); then
-       fcl="$LOGDIR"/flowcheck_$1_logged.txt
-       while read p; do
-            msg_prefix=`echo ${p} | cut -d' ' -f3-`
-            filelist=($(grep -l "\[$1\] *${msg_prefix}" "$LOGDIR"/*.log*))
-            if [[ -z "$filelist" ]]; then
-                # Fail proof against an empty string (although the odds are against it) so the loop wont crash there
-                continue
+    if [[ -z $msg_counts ]]; then
+       echo NO $1S IN LOGS
+    else
+       backup_ifs=$IFS
+       IFS=$'\n'
+       for msg_line in $msg_counts; do
+            count=`echo ${msg_line} | awk '{print $1}'`
+            msg=`echo ${msg_line} | sed "s/^ *[0-9]* \[$1\] *//g"`
+            pattern="\[$1\] *${msg}"
+            filelist=($(grep -l ${pattern::$((input_size + 22))} "$LOGDIR"/*.log*))
+            if [[ ${filelist[@]} ]]; then
+                first_filename=`basename ${filelist[0]} | sed 's/ /\n/g' | sed 's|.*\/||g' | sed 's/_[0-9][0-9]\.log.*\|.log.*//g' | uniq`
+                files_nb=${#filelist[@]}
+                echo "  $count%${first_filename}%(${files_nb} file)%`echo ${msg_line} | sed "s/^ *[0-9]* //g"`" >> ${fcl}
+                echo ${filelist[@]} | sed 's/^//g' | sed 's/ \//\n\//g' >> ${fcl}
+                echo -e >> ${fcl}
             fi
-            first_filename=`basename ${filelist[0]} | sed 's/ /\n/g' | sed 's|.*\/||g' | sed 's/_[0-9][0-9]\.log\|.log//g' | uniq`
-            msg=`grep -o -m 1 "\[$1\] *${msg_prefix}.*" ${filelist[0]}`
-            files_nb=${#filelist[@]}
-            echo "  `echo ${p} | awk '{print $1;}'`%${first_filename}%(${files_nb} file)%$msg"
-            echo ${filelist[@]} | sed 's/^//g' | sed 's/ \//\n\//g'
-            echo -e
-       done < ${fcc} > ${fcl}
-
+       done
+       IFS=${backup_ifs}
        result=`grep -c $1 ${fcl}`
        if [[ ${result} -gt 10 ]]; then
            grep $1 ${fcl} | head | column -t -s % | cut -c -130
@@ -68,12 +79,28 @@ function summarizelogs {
        else
            grep $1 ${fcl} | column -t -s % | cut -c -130
        fi
-    else
-       echo NO $1S IN LOGS
     fi
 }
-summarizelogs ERROR
-summarizelogs WARNING
+
+if [[ -z "$skip_summaries" ]]; then
+    summarize_performance sr_shovel msg_total: t_dd1 t_dd2
+    summarize_performance sr_subscribe file_total: cdnld_f21 t_f30 cfile_f44 u_sftp_f60 ftp_f70 q_f71
+
+    echo
+    # MG shows retries
+    echo
+
+    if [[ ! "$SARRA_LIB" ]]; then
+       echo NB retries for sr_subscribe t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f30*.log* | wc -l`
+       echo NB retries for sr_sender    `grep Retrying "$LOGDIR"/sr_sender*.log* | wc -l`
+    else
+       echo NB retries for "$SARRA_LIB"/sr_subscribe.py t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f30*.log* | wc -l`
+       echo NB retries for "$SARRA_LIB"/sr_sender.py    `grep Retrying "$LOGDIR"/sr_sender*.log* | wc -l`
+    fi
+
+    summarize_logs ERROR
+    summarize_logs WARNING
+fi
 
 passedno=0
 tno=0
