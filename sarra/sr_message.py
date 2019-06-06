@@ -126,6 +126,7 @@ class sr_message():
         self.partflg       =  partflg 
         self.partstr       = '%s,%d,%d,%d,%d' %\
                              (partflg,self.chunksize,self.block_count,self.remainder,self.current_block)
+        self.headers['parts'] = self.partstr
 
     def content_should_not_be_downloaded(self):
         """
@@ -793,6 +794,17 @@ class sr_message():
               self.target_relpath = self.new_relpath
               part_file           = self.new_file + self.suffix
               part_relpath        = self.new_relpath + self.suffix
+
+
+           # sparse file is tolerated in sr_sender
+           # so part inplace whatever the condition of the target_file
+
+           if self.parent.program_name == 'sr_sender' :  
+              self.new_file     = self.target_file
+              self.new_relpath  = self.target_relpath
+              self.local_offset = self.offset
+              self.in_partfile  = False
+              return
 
            # default setting : redirect to temporary part file
 

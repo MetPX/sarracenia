@@ -672,6 +672,8 @@ class sr_transport():
 
                 offset = 0
                 if  msg.partflg == 'i': offset = msg.offset
+
+                new_offset = msg.local_offset
     
                 str_range = ''
                 if msg.partflg == 'i' :
@@ -680,9 +682,7 @@ class sr_transport():
                 #upload file
     
                 if inflight == None or msg.partflg == 'i' :
-                   #self.put(local_file, new_file, offset, offset, msg.length)
-                   # If remote offset is not 0 then partitions are prepender with all 0s...
-                   self.put(local_file, new_file, offset, 0, msg.length)
+                   self.put(local_file, new_file, offset, new_offset, msg.length)
                 elif inflight == '.' :
                    new_lock = '.'  + new_file
                    self.put(local_file, new_lock )
