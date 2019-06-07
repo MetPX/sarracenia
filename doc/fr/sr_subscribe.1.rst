@@ -365,6 +365,14 @@ En partant, on peut sélectionner le niveau des entrées:
    afficher un ligne de journal pour chaque message rejeté.  Ceci peut produire des journeaux énorme.
    D´habitude utilisé uniquement lors du debogage.
 
+les raisons pour rejeter un message:
+
+* rejecting pattern --- le rejet est du à une clause d´accept où reject.
+
+* rejecting duplicate -- le rejet est parce que le fichier est perçu comme un duplicat d´un fichier qu´on a déjà vu.
+
+* rejecting loop -- détection d´une boucle du à un lien qui fera en sorte qu´un crois commencer a
+                    retraverser un répertoire qui a déjà été traverser.
 
 On peut également contrôler plus précisement l´écriture de journeaux en se servant de plugins::
 

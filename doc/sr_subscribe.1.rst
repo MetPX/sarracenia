@@ -376,6 +376,16 @@ To begin with, one can select the logging level:
 - log_reject <True|False> ( default: False )
    print a log message when *rejecting* messages (choosing not to download the corresponding files)
 
+rejecting messages:
+
+* rejecting pattern -- based on accept/reject clause, excluding a file from processing.
+
+* rejecting duplicate -- based on suppress_duplicates settings (recent file cache) 
+
+* rejecting loop -- directories in a tree refer to each other causing the same directory to be scanned redundantly, perhaps in an infinite loop.
+
+
+
 One can also get finer grained control over logging by using plugins. For example, the default settings
 typically include *on_file file_log* which logs each file after it has been downloaded, but not
 when the message is received. To have a line in the log for each message received set::
