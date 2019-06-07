@@ -95,24 +95,8 @@ staff, and the names are chosen to represent the origin of the data.
 
 You should be able to list the available configurations with *sr_subscribe list* ::
 
-  blacklab% sr_subscribe list plugins
+  blacklab% sr_subscribe list 
   
-  packaged plugins: ( /usr/lib/python3/dist-packages/sarra/plugins ) 
-           __pycache__     destfn_sample.py       download_cp.py       download_dd.py 
-       download_scp.py     download_wget.py          file_age.py        file_check.py 
-           file_log.py       file_rxpipe.py        file_total.py          hb_cache.py 
-             hb_log.py         hb_memory.py          hb_pulse.py         html_page.py 
-           line_log.py         line_mode.py         msg_2http.py        msg_2local.py 
-     msg_2localfile.py     msg_auditflow.py     msg_by_source.py       msg_by_user.py 
-          msg_delay.py        msg_delete.py      msg_download.py          msg_dump.py 
-         msg_fdelay.py msg_filter_wmo2msc.py  msg_from_cluster.py     msg_hour_tree.py 
-            msg_log.py     msg_print_lag.py   msg_rename4jicc.py    msg_rename_dmf.py 
-  msg_rename_whatfn.py       msg_renamer.py msg_replace_new_dir.py          msg_save.py 
-       msg_skip_old.py        msg_speedo.py msg_sundew_pxroute.py    msg_test_retry.py 
-    msg_to_clusters.py         msg_total.py        part_check.py  part_clamav_scan.py 
-         poll_pulse.py       poll_script.py    post_hour_tree.py          post_log.py 
-     post_long_flow.py     post_override.py   post_rate_limit.py        post_total.py 
-          watch_log.py 
   configuration examples: ( /usr/lib/python3/dist-packages/sarra/examples/subscribe ) 
               all.conf     all_but_cap.conf            amis.conf            aqhi.conf 
               cap.conf      cclean_f91.conf       cdnld_f21.conf       cfile_f44.conf 
@@ -121,11 +105,6 @@ You should be able to list the available configurations with *sr_subscribe list*
             q_f71.conf           radar.conf            rdps.conf            swob.conf 
             t_f30.conf      u_sftp_f60.conf 
   
-  user plugins: ( /home/peter/.config/sarra/plugins ) 
-          destfn_am.py         destfn_nz.py       msg_tarpush.py 
-  
-  blacklab% sr_subscribe list
-
   general: ( /home/peter/.config/sarra ) 
             admin.conf     credentials.conf         default.conf
   
@@ -147,36 +126,22 @@ only for convenience.  There are four sections:
 
 To view a particular configuration, give sr_subscribe list the file as an argument:: 
 
-    blacklab% sr_subscribe list msg_log.py
+    blacklab% sr_subscribe list dd_amis.conf
+    # this is a feed of wmo bulletin (a set called AMIS in the old times)
+    
+    broker amqps://dd.weather.gc.ca/
+    
+    # instances: number of downloading processes to run at once.  defaults to 1. Not enough for this case
+    instances 5
+    
+    # expire, in operational use, should be longer than longest expected interruption
+    expire 10m
+    
+    subtopic bulletins.alphanumeric.#
+    
+    accept .*
 
-.. code:: python
-
-    #!/usr/bin/python3
-    
-    """
-      the default on_msg handler for sr_log.
-      prints a simple notice.
-    
-    """
-    
-    class Msg_Log(object): 
-    
-        def __init__(self,parent):
-            parent.logger.debug("msg_log initialized")
-              
-        def on_message(self,parent):
-            msg = parent.msg
-            parent.logger.info("msg_log received: %s %s%s topic=%s lag=%g %s" % \
-               tuple( msg.notice.split()[0:3] + [ msg.topic, msg.get_elapse(), msg.hdrstr ] ) )
-            return True
-    
-   
-    msg_log = Msg_Log(self) # required: Make instance of class whose name is lower case version of class.
-    
-    self.on_message = msg_log.on_message  # assign self.on_message to corresponding function.
-    
     blacklab% 
-
 
 
 A First Example
