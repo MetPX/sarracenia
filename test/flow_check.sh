@@ -19,9 +19,6 @@ set -- "${POSITIONAL[@]}"
 countall
 
 function summarize_performance {
-    # PAS performance summaries
-    printf "\nDownload Performance Summaries:\tLOGDIR=$LOGDIR"
-
     path="$LOGDIR"/$1
     shift
     pattern=$1
@@ -83,6 +80,8 @@ function summarize_logs {
 }
 
 if [[ -z "$skip_summaries" ]]; then
+    # PAS performance summaries
+    printf "\nDownload Performance Summaries:\tLOGDIR=$LOGDIR\n"
     summarize_performance sr_shovel msg_total: t_dd1 t_dd2
     summarize_performance sr_subscribe file_total: cdnld_f21 t_f30 cfile_f44 u_sftp_f60 ftp_f70 q_f71
 
