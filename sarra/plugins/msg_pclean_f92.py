@@ -82,11 +82,7 @@ class Msg_Clean_F92(object):
         # retry message screened out of on_message is taken out of retry
         # here we enforce keeping it... to verify propagation again
         if removed != 13:
-            logger.warning("not fully cleaned up paths: %s" % relp)
-            # if testing
-            # self.log_state(parent,propagated,ext)
-            parent.consumer.sleep_now = parent.consumer.sleep_min
-            parent.consumer.msg_to_retry()
+            logger.error("not fully cleaned up paths: %s" % relp)
             parent.msg.isRetry = False
             return False
 

@@ -124,11 +124,9 @@ class Msg_Pclean_F90(object):
         # retry message screened out of on_message is taken out of retry
         # here we enforce keeping it... to verify propagation again
         if propagated != 7:
-            logger.warning("propagation not completed for file: %s" % relp)
+            logger.error("propagation not completed for file: %s" % relp)
             # if testing
             self.log_state(parent, propagated)
-            parent.consumer.sleep_now = parent.consumer.sleep_min
-            parent.consumer.msg_to_retry()
             parent.msg.isRetry = False
             return False
 
