@@ -138,7 +138,7 @@ function sumlogs {
   for l in $*; do
      to_add="`grep "\[INFO\] $pat" $l | tail -1 | awk ' { print $5; }; '`"
      if [ "$to_add" ]; then
-          tot=$((${tot}+${to_add}))
+        tot=$((${tot}+${to_add}))
      fi
   done
 }
@@ -146,14 +146,15 @@ function sumlogs {
 function sumlogshistory {
   p="$1"
   shift
-  reverse_date_logs=`ls $* | sort -n -r`
+  if [[ $(ls $* 2>/dev/null) ]]; then
+      reverse_date_logs=`ls $* | sort -n -r`
 
-  for l in $reverse_date_logs; do
-     if [[ ${tot} = 0 ]]; then
-         sumlogs $p $l
-     fi
-  done
-
+      for l in $reverse_date_logs; do
+         if [[ ${tot} = 0 ]]; then
+             sumlogs $p $l
+         fi
+      done
+  fi
 }
 
 function countall {
@@ -253,13 +254,15 @@ function countall {
   countthem "`grep '\[INFO\] file_log downloaded ' $LOGDIR/sr_subscribe_cfile_f44_*.log* | wc -l`"
   totcfile="${tot}"
 
-  countthem "`grep '\[INFO\] post_log notice' "$LOGDIR"/sr_shovel_pclean_f90*.log* | wc -l`"
-  totpropagated="${tot}"
+  if [[ $(ls "$LOGDIR"/sr_shovel_pclean_f90*.log* 2>/dev/null) ]]; then
+      countthem "`grep '\[INFO\] post_log notice' "$LOGDIR"/sr_shovel_pclean_f90*.log* | wc -l`"
+      totpropagated="${tot}"
+  fi
 
-  countthem "`grep '\[INFO\] post_log notice' "$LOGDIR"/sr_shovel_pclean_f92*.log* | wc -l`"
-  totremoved="${tot}"
-
-  # flags when two lines include *msg_log received* (with no other message between them) indicating no user will know what happenned.
+  if [[ $(ls "$LOGDIR"/sr_shovel_pclean_f92*.log* 2>/dev/null) ]]; then
+      countthem "`grep '\[INFO\] post_log notice' "$LOGDIR"/sr_shovel_pclean_f92*.log* | wc -l`"
+      totremoved="${tot}"
+  fi
 
   # flags when two lines include *msg_log received* (with no other message between them) indicating no user will know what happenned.
   awk 'BEGIN { lr=0; }; /msg_log received/ { lr++; print lr, FILENAME, $0 ; next; }; { lr=0; } '  $LOGDIR/sr_subscribe_*_f??_??.log*  | grep -v '^1 ' >$missedreport
