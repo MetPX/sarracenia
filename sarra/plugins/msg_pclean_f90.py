@@ -127,7 +127,6 @@ class Msg_Pclean_F90(object):
             logger.error("propagation not completed for file: %s" % relp)
             # if testing
             self.log_state(parent, propagated)
-            parent.msg.isRetry = False
             return False
 
         # ok it is everywhere ... compare files

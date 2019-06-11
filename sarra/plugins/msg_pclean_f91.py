@@ -94,7 +94,6 @@ class Msg_Clean_F91(object):
             logger.error("propagation not completed for file: %s" % relp)
             # if testing
             self.log_state(parent, propagated, ext)
-            parent.msg.isRetry = False
             return False
 
         # ok it is everywhere ...  delete original

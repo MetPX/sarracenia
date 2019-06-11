@@ -83,7 +83,6 @@ class Msg_Clean_F92(object):
         # here we enforce keeping it... to verify propagation again
         if removed != 13:
             logger.error("not fully cleaned up paths: %s" % relp)
-            parent.msg.isRetry = False
             return False
 
         msg.headers['pclean_f92'] = ext
