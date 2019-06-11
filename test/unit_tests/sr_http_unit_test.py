@@ -33,6 +33,7 @@ def self_test():
     cfg.configure()
     cfg.use_pika       = False
     cfg.broker         = urllib.parse.urlparse("amqps://anonymous:anonymous@hpfx.collab.science.gc.ca")
+    #cfg.broker         = urllib.parse.urlparse("amqps://anonymous:anonymous@dd.weather.gc.ca")
     cfg.prefetch       = 10
     cfg.bindings       = [ ( 'xpublic', 'v02.post.#') ]
     cfg.durable        = False
