@@ -138,28 +138,47 @@ function sumlogs {
   for l in $*; do
      to_add="`grep "\[INFO\] $pat" $l | tail -1 | awk ' { print $5; }; '`"
      if [ "$to_add" ]; then
-          tot=$((${tot}+${to_add}))
+        tot=$((${tot}+${to_add}))
      fi
   done
 }
 
+function sumlogshistory {
+  p="$1"
+  shift
+  if [[ $(ls $* 2>/dev/null) ]]; then
+      reverse_date_logs=`ls $* | sort -n -r`
+
+      for l in $reverse_date_logs; do
+         if [[ ${tot} = 0 ]]; then
+             sumlogs $p $l
+         fi
+      done
+  fi
+}
+
 function countall {
 
-  sumlogs msg_total $LOGDIR/sr_report_tsarra_f20_*.log*
+  sumlogs msg_total $LOGDIR/sr_report_tsarra_f20_*.log
+  sumlogshistory msg_total $LOGDIR/sr_report_tsarra_f20_*.log.*
   totsarra="${tot}"
 
-  sumlogs msg_total $LOGDIR/sr_report_twinnow00_f10_*.log*
+  sumlogs msg_total $LOGDIR/sr_report_twinnow00_f10_*.log
+  sumlogshistory msg_total $LOGDIR/sr_report_twinnow00_f10_*.log.*
   totwinnow00="${tot}"
 
-  sumlogs msg_total $LOGDIR/sr_report_twinnow01_f10_*.log*
+  sumlogs msg_total $LOGDIR/sr_report_twinnow01_f10_*.log
+  sumlogshistory msg_total $LOGDIR/sr_report_twinnow01_f10_*.log.*
   totwinnow01="${tot}"
 
   totwinnow=$(( ${totwinnow00} + ${totwinnow01} ))
 
-  sumlogs msg_total $LOGDIR/sr_shovel_t_dd1_f00_*.log*
+  sumlogs msg_total $LOGDIR/sr_shovel_t_dd1_f00_*.log
+  sumlogshistory msg_total $LOGDIR/sr_shovel_t_dd1_f00_*.log.*
   totshovel1="${tot}"
 
-  sumlogs msg_total $LOGDIR/sr_shovel_t_dd2_f00_*.log*
+  sumlogs msg_total $LOGDIR/sr_shovel_t_dd2_f00_*.log
+  sumlogshistory msg_total $LOGDIR/sr_shovel_t_dd2_f00_*.log.*
   totshovel2="${tot}"
 
   countthem "`grep '\[INFO\] post_log notice' "$LOGDIR"/sr_winnow*.log* | wc -l`"
@@ -171,7 +190,8 @@ function countall {
   countthem "`grep '\[INFO\] post_log' "$LOGDIR"/sr_watch_f40_*.log* | wc -l`"
   totwatch="${tot}"
 
-  sumlogs msg_total $LOGDIR/sr_subscribe_t_f30_*.log*
+  sumlogs msg_total $LOGDIR/sr_subscribe_t_f30_*.log
+  sumlogshistory msg_total $LOGDIR/sr_subscribe_t_f30_*.log.*
   totmsgt="${tot}"
 
   countthem "`grep '\[INFO\] file_log downloaded to:' "$LOGDIR"/sr_subscribe_t_f30_*.log* | wc -l`"
@@ -234,13 +254,15 @@ function countall {
   countthem "`grep '\[INFO\] file_log downloaded ' $LOGDIR/sr_subscribe_cfile_f44_*.log* | wc -l`"
   totcfile="${tot}"
 
-  countthem "`grep '\[INFO\] post_log notice' "$LOGDIR"/sr_shovel_pclean_f90*.log* | wc -l`"
-  totpropagated="${tot}"
+  if [[ $(ls "$LOGDIR"/sr_shovel_pclean_f90*.log* 2>/dev/null) ]]; then
+      countthem "`grep '\[INFO\] post_log notice' "$LOGDIR"/sr_shovel_pclean_f90*.log* | wc -l`"
+      totpropagated="${tot}"
+  fi
 
-  countthem "`grep '\[INFO\] post_log notice' "$LOGDIR"/sr_shovel_pclean_f92*.log* | wc -l`"
-  totremoved="${tot}"
-
-  # flags when two lines include *msg_log received* (with no other message between them) indicating no user will know what happenned.
+  if [[ $(ls "$LOGDIR"/sr_shovel_pclean_f92*.log* 2>/dev/null) ]]; then
+      countthem "`grep '\[INFO\] post_log notice' "$LOGDIR"/sr_shovel_pclean_f92*.log* | wc -l`"
+      totremoved="${tot}"
+  fi
 
   # flags when two lines include *msg_log received* (with no other message between them) indicating no user will know what happenned.
   awk 'BEGIN { lr=0; }; /msg_log received/ { lr++; print lr, FILENAME, $0 ; next; }; { lr=0; } '  $LOGDIR/sr_subscribe_*_f??_??.log*  | grep -v '^1 ' >$missedreport
