@@ -64,7 +64,7 @@ class File_Email(object):
                     s.send_message(emsg)
                     s.quit()
 
-                    parent.logger.into('sent bulletin %s to %s' % (ipath, recipient))
+                    parent.logger.info('sent bulletin %s to %s' % (ipath, recipient))
 
 
         return True
