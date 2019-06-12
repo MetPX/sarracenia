@@ -1315,6 +1315,13 @@ class sr_config:
 
              ndestDir += "/" + nddword 
 
+        # This code might add an unwanted '/' in front of ndestDir
+        # if destDir does not start with a substitution $ and
+        # if destDir does not start with a / ... it does not need one
+
+        if destDir[0] != '$' and destDir[0] != '/' :
+            if ndestDir[0] == '/' : ndestDir = ndestDir[1:]
+
         return ndestDir
 
     def sundew_getDestInfos(self, filename):
@@ -1397,10 +1404,17 @@ class sr_config:
                  self.msg.new_file  = saved_new_file
                  if destFileName == None : destFileName = old_destFileName
             elif spec == 'TIME':
-                if destFileName != filename :
-                   timeSuffix = ':' + time.strftime("%Y%m%d%H%M%S", time.gmtime())
-                   # check for PX or PDS behavior ... if file already had a time extension keep his...
-                   if parts[-1][0] == '2' : timeSuffix = ':' + parts[-1]
+                 timeSuffix = ':' + time.strftime("%Y%m%d%H%M%S",time.gmtime())
+                 if hasattr(self.msg,'time') :
+                    timeSuffix = ":" + self.msg.time.split('.')[0]
+                 if hasattr(self.msg,'pubtime') :
+                    timeSuffix = ":" + self.msg.pubtime.split('.')[0]
+                    timeSuffix = timeSuffix.replace('T','')
+                 # check for PX or PDS behavior ...
+                 # if file already had a time extension keep his...
+                 if len(parts[-1]) == 14 and parts[-1][0] == '2' :
+                    timeSuffix = ':' + parts[-1]
+
             else:
                 self.logger.error("Don't understand this DESTFN parameter: %s" % spec)
                 return (None, None) 
