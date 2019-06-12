@@ -11,7 +11,8 @@
       2. sr_subscribe emails.conf foreground
 
     Todo:
-      * Change plugin to be an sr_sender plugin using do_send/so_put?
+      * Change plugin to be an sr_sender plugin using do_send/do_put? to prevent
+        wasteful download downloads
 
     Last modified: Wahaj Taseer - June, 2019
 """
@@ -35,7 +36,7 @@ class File_Email(object):
         # have a list of email destinations...
         parent.logger.debug("email: %s" % parent.file_email_to)
         ipath = os.path.normpath(parent.msg.new_dir + '/' + parent.msg.new_file)
-        parent.logger.info("file_email downloaded to: %s" % ipath)
+        parent.logger.info("%s" % ipath)
 
         # loop over all the variables from config file, if files match, send via email
         for header in parent.file_email_to:
@@ -44,18 +45,27 @@ class File_Email(object):
 
             # check if the file arrived matches any email rules
             if re.search('^' + topic + '.*', parent.new_file):
-                for recipient in emails:
-                    parent.logger.debug('sending file %s to %s' % (ipath, recipient))
-                    cmd = 'mail -s ' + parent.new_file + ' ' + recipient
-                    file_to_send = open(ipath)
-                    try:
-                        subprocess.run(cmd.split(), stdin=file_to_send, stdout=subprocess.PIPE)
-                    except subprocess.CalledProcessError as e:
-                        parent.logger.error('Could not mail %s to %s' % (parent.new_file, recipient))
-                        parent.logger.error(e.stderr)
 
-                    file_to_send.close()
-                    parent.logger.info('email %s sent to %s' % (topic, recipient))
+                import smtplib
+                from email.message import EmailMessage
+
+                for recipient in emails:
+                    parent.logger.debug('sending bulletin %s to %s' % (ipath, recipient))
+
+                    with open(ipath) as fp:
+                        emsg = EmailMessage()
+                        emsg.set_content(fp.read())
+
+                    emsg['Subject'] = parent.new_file
+                    emsg['From'] = 'sarra-emailer@canada.ca'
+                    emsg['To'] = recipient
+
+                    s = smtplib.SMTP('smtp.cmc.ec.gc.ca')
+                    s.send_message(emsg)
+                    s.quit()
+
+                    parent.logger.into('sent bulletin %s to %s' % (ipath, recipient))
+
 
         return True
 
