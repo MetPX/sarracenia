@@ -1118,7 +1118,8 @@ class sr_post(sr_instances):
         # on_watch 
 
         ok = self.__on_watch__()
-        if not ok : return
+        if not ok:
+            return
 
         # pile up left events to process
 
@@ -1127,7 +1128,6 @@ class sr_post(sr_instances):
 
         # work with a copy events and keep done events (to delete them)
 
-        self.done_events = []
         self.cur_events  = OrderedDict()
         self.cur_events.update(self.left_events)
 
@@ -1139,8 +1139,15 @@ class sr_post(sr_instances):
 
         for key in self.cur_events:
             event, src, dst = self.cur_events[key]
-            done = self.process_event( event, src, dst )
-            if done : self.left_events.pop(key) 
+            done = False
+            try:
+                done = self.process_event(event, src, dst)
+            except FileNotFoundError as err:
+                self.logger.error("could not process event({}): {}".format(event, err))
+                self.logger.debug("Exception details:", exc_info=True)
+                self.left_events.pop(key)
+            if done:
+                self.left_events.pop(key)
 
         # heartbeat
         self.heartbeat_check()
