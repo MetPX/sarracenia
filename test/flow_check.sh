@@ -1,89 +1,110 @@
 #!/bin/bash
 
-. ./flow_include.sh
+# parse arguments
+POSITIONAL=()
+while [[ $# -gt 0 ]]
+do
+key="$1"
 
+case $key in
+    -s|--skip_summaries)
+    skip_summaries=true
+    shift # past argument
+    ;;
+esac
+done
+set -- "${POSITIONAL[@]}"
+
+. ./flow_include.sh
 countall
 
-# PAS performance summaries
+function summarize_performance {
+    path="$LOGDIR"/$1
+    shift
+    pattern=$1
+    shift
+    for i in $* ; do
+       best_fn=''
+       printf "\n\t$i\n\n"
+       for j in ${path}_${i}_*.log*; do
+           msg="`grep ${pattern} ${j} | tail -1`"
+           if [[ -z "$msg" ]]; then
+               continue
+           fi
+           fn=`echo $(basename ${j}) | awk -F'.' '{print $3}'`
+           if [[ -z "$fn" ]]; then
+               best_fn=`echo $(basename ${j})`
+               echo "`basename $j` ${msg}"
+           elif [[ -z "$best_fn" ]]; then
+               echo "`basename $j` ${msg}"
+           fi
+       done
+    done
+}
 
-printf "\n\n\t\tDownload Performance Summaries:\n\n\tLOGDIR=$LOGDIR"
+function summarize_logs {
+    printf "\n$1 Summary:\n"
+    input_size=${#1}
+    fcl="$LOGDIR"/flowcheck_$1_logged.txt
+    msg_counts=`grep -h -o "\[$1\] *.*" "$LOGDIR"/*.log* | sort | uniq -c -w"$((input_size+20))" | sort -n -r`
+    echo '' > ${fcl}
 
-for i in t_dd1 t_dd2 ;
-do
-   printf "\n\t$i\n\n"
-   #grep 'msg_total' "$LOGDIR"/sr_shovel_${i}_*.log* | sed 's/:/ /' | sort  -k 2,3 | tail -10
-   for j in "$LOGDIR"/sr_shovel_${i}_*.log* ; do
-       echo "`basename $j` `grep 'msg_total' $j | tail -1`"
-   done
-done
+    if [[ -z $msg_counts ]]; then
+       echo NO $1S IN LOGS
+    else
+       backup_ifs=$IFS
+       IFS=$'\n'
+       for msg_line in $msg_counts; do
+            count=`echo ${msg_line} | awk '{print $1}'`
+            msg=`echo ${msg_line} | sed "s/^ *[0-9]* \[$1\] *//g"`
+            pattern="\[$1\] *${msg}"
+            filelist=($(grep -l ${pattern::$((input_size + 22))} "$LOGDIR"/*.log*))
+            if [[ ${filelist[@]} ]]; then
+                first_filename=`basename ${filelist[0]} | sed 's/ /\n/g' | sed 's|.*\/||g' | sed 's/_[0-9][0-9]\.log.*\|.log.*//g' | uniq`
+                files_nb=${#filelist[@]}
+                echo "  $count%${first_filename}%(${files_nb} file)%`echo ${msg_line} | sed "s/^ *[0-9]* //g"`" >> ${fcl}
+                echo ${filelist[@]} | sed 's/^//g' | sed 's/ \//\n\//g' >> ${fcl}
+                echo -e >> ${fcl}
+            fi
+       done
+       IFS=${backup_ifs}
+       result=`grep -c $1 ${fcl}`
+       if [[ ${result} -gt 10 ]]; then
+           grep $1 ${fcl} | head | column -t -s % | cut -c -130
+           echo
+           echo "More than 10 TYPES OF $1S found... for the rest, have a look at $fcl for details"
+       else
+           grep $1 ${fcl} | column -t -s % | cut -c -130
+       fi
+    fi
+}
 
-for i in cdnld_f21 t_f30 cfile_f44 u_sftp_f60 ftp_f70 q_f71 ;
-do
-   printf "\n\t$i\n\n"
-   for j in "$LOGDIR"/sr_subscribe_${i}_*.log* ; do
-       echo "`basename $j` `grep 'file_total' $j | tail -1`"
-   done
-done
+if [[ -z "$skip_summaries" ]]; then
+    # PAS performance summaries
+    printf "\nDownload Performance Summaries:\tLOGDIR=$LOGDIR\n"
+    summarize_performance sr_shovel msg_total: t_dd1 t_dd2
+    summarize_performance sr_subscribe file_total: cdnld_f21 t_f30 cfile_f44 u_sftp_f60 ftp_f70 q_f71
 
-echo
-# MG shows retries
-echo
+    echo
+    # MG shows retries
+    echo
 
-if [ ! "$SARRA_LIB" ]; then
-   echo NB retries for sr_subscribe t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f30*.log* | wc -l`
-   echo NB retries for sr_sender    `grep Retrying "$LOGDIR"/sr_sender*.log* | wc -l`
-else
-   echo NB retries for "$SARRA_LIB"/sr_subscribe.py t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f30*.log* | wc -l`
-   echo NB retries for "$SARRA_LIB"/sr_sender.py    `grep Retrying "$LOGDIR"/sr_sender*.log* | wc -l`
-fi
+    if [[ ! "$SARRA_LIB" ]]; then
+       echo NB retries for sr_subscribe t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f30*.log* | wc -l`
+       echo NB retries for sr_sender    `grep Retrying "$LOGDIR"/sr_sender*.log* | wc -l`
+    else
+       echo NB retries for "$SARRA_LIB"/sr_subscribe.py t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f30*.log* | wc -l`
+       echo NB retries for "$SARRA_LIB"/sr_sender.py    `grep Retrying "$LOGDIR"/sr_sender*.log* | wc -l`
+    fi
 
-printf "ERROR Summary:\n\n"
-
-NERROR=`grep ERROR "$LOGDIR"/*_f[0-9][0-9]_*.log* | grep -v ftps | grep -v retryhost | wc -l`
-if ((NERROR>0)); then
-   fcel=$LOGDIR/flow_check_errors_logged.txt
-   grep ERROR "$LOGDIR"/*_f[0-9][0-9]_*.log* | sed "s+${LOGDIR}/++" | grep -v ftps | grep -v retryhost | sed 's/:.*ERROR/ \[ERROR/' | uniq -c >$fcel
-   result="`wc -l $fcel|cut -d' ' -f1`"
-   if [ $result -gt 10 ]; then
-       head $fcel
-       echo
-       echo "More than 10 TYPES OF ERRORS found... for the rest, have a look at $fcel for details"
-   else
-       echo TYPE OF ERRORS IN LOG :
-       echo
-       cat $fcel
-   fi
-fi
-
-if ((NERROR==0)); then
-   echo NO ERRORS IN LOGS
-fi
-
-printf "WARNING Summary:\n\n"
-
-NWARNING=`grep WARNING "$LOGDIR"/*_f[0-9][0-9]_*.log* | grep -v ftps | grep -v retryhost | wc -l`
-if ((NWARNING>0)); then
-   fcwl=$LOGDIR/flow_check_warnings_logged.txt
-   grep WARNING "$LOGDIR"/*_f[0-9][0-9]_*.log* | sed "s+${LOGDIR}/++" | grep -v ftps | grep -v retryhost | grep -v truncating | sed 's/:.*WARNING/ \[WARNING/' | uniq -c >$fcwl
-   result="`wc -l $fcwl|cut -d' ' -f1`"
-   if [ $result -gt 10 ]; then
-       head $fcwl
-       echo
-       echo "More than 10 TYPES OF WARNINGS found... for the rest, have a look at $fcwl for details"
-   else
-       echo TYPE OF WARNINGS IN LOG :
-       echo
-       cat $fcwl
-   fi
-fi
-if ((NWARNING==0)); then
-   echo NO WARNINGS IN LOGS
+    summarize_logs ERROR
+    summarize_logs WARNING
 fi
 
 passedno=0
 tno=0
 
-if [ "${totshovel2}" -gt "${totshovel1}" ]; then
+if [[ "${totshovel2}" -gt "${totshovel1}" ]]; then
    maxshovel=${totshovel2}
 else 
    maxshovel=${totshovel1}
@@ -141,15 +162,14 @@ echo "                 | C          routing |"
 
 fi
 
-calcres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed (sample size: $totsarra) !"
+tallyres ${tno} ${passedno} "Overall ${passedno} of ${tno} passed (sample size: $totsarra) !"
 results=$?
 
-# PAS missed_dispositions means definite Sarra bug, very serious.
-
 if (("${missed_dispositions}">0)); then
+   # PAS missed_dispositions means definite Sarra bug, very serious.
    echo "Please review $missedreport"
    results=1
 fi
 echo
 
-exit $results
+exit ${results}
