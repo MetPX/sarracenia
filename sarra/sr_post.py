@@ -39,6 +39,7 @@
 
 import json,os,random,sys,time
 
+from pathlib import Path
 from sys import platform as _platform
 
 from base64 import b64decode, b64encode
@@ -1152,26 +1153,15 @@ class sr_post(sr_instances):
 
     def walk(self, src ):
         self.logger.debug("walk %s" % src )
+ 
+        for path in Path(src).rglob('*'):
+            if self.realpath_post and path.is_file():
+                path = os.path.realpath(path)
+                if sys.platform == 'win32':
+                    path = path.replace('\\', '/')
+            if os.path.isfile(path):
+                self.post1file(str(path), os.stat(str(path)))
 
-        # how to proceed with symlink
-
-        if os.path.islink(src) and self.realpath_post :
-           src = os.path.realpath(src)
-           if sys.platform == 'win32':
-               src = src.replace('\\','/')
-
-        # walk src directory, this walk is depth first... there could be a lot of time
-        # between *listdir* run, and when a file is visited, if there are subdirectories before you get there.
-        # hence the existence check after listdir (crashed in flow_tests of > 20,000)
-        for x in os.listdir(src):
-            path = src + '/' + x
-            if os.path.isdir(path):
-               self.walk(path)
-               continue
-
-            # add path created
-            if os.path.exists(path):
-                self.post1file(path,os.stat(path))
 
     # =============
     # original walk_priming
