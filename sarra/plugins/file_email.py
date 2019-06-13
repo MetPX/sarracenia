@@ -10,6 +10,11 @@
         ex. file_email_to SR muhammad.taseer@canada.ca,test@test.com
       2. sr_sender foreground emails.conf
 
+      Rules for TOPIC:
+        - Treated as a regular expression, so avoid using symbols.
+        - TOPIC will be matched from the beginning of the file name and the rest is ignored
+        - For reference: https://docs.python.org/3/library/re.html
+
     Last modified: Wahaj Taseer - June, 2019
 """
 
@@ -35,7 +40,7 @@ class File_Email(object):
 
         # have a list of email destinations...
         parent.logger.debug("email: %s" % parent.file_email_to)
-        ipath = os.path.normpath(parent.msg.new_dir + '/' + parent.msg.new_file)
+        ipath = os.path.normpath(parent.msg.relpath)
 
         # loop over all the variables from config file, if files match, send via email
         for header in parent.file_email_to:
