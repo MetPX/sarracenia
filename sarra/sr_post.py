@@ -153,7 +153,11 @@ class sr_post(sr_instances):
 
         if self.sleep > 0 and len(self.obs_watched):
            for ow in self.obs_watched:
-               self.observer.unschedule(ow)
+               try:
+                   self.observer.unschedule(ow)
+               except KeyError as err:
+                   self.logger.error("Unable to unschedule event({}): {}".format(ow, err))
+                   self.logger.debug("Exception details", exc_info=True)
            self.observer.stop()
 
         if self.restore_queue != None :
