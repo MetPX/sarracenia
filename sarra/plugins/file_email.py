@@ -1,18 +1,14 @@
 #!/usr/bin/python3
 
 """
-    File_Email: sr_subscribe plugin. Once a file is downloaded, the plugin matches the
+    File_Email: sr_sender plugin. Once a file is posted, the plugin matches the
     topic(what the filename begins with) to the file name and sends the appropriate emails.
 
     Usage:
-      1. Need the following in a subscriber plugin: file_email_to TOPIC email1,email2,...
+      1. Need the following in an sr_sender config: file_email_to TOPIC email1,email2,...
         ex. file_email_to AACN27 muhammad.taseer@canada.ca
         ex. file_email_to SR muhammad.taseer@canada.ca,test@test.com
-      2. sr_subscribe emails.conf foreground
-
-    Todo:
-      * Change plugin to be an sr_sender plugin using do_send/do_put? to prevent
-        wasteful download downloads
+      2. sr_sender foreground emails.conf
 
     Last modified: Wahaj Taseer - June, 2019
 """
@@ -23,20 +19,23 @@ class File_Email(object):
     def __init__(self, parent):
         parent.declare_option('file_email_command')
         parent.declare_option('file_email_to')
+        self.registered_list = ['ftp', 'ftps', 'sftp']
+
+    def registered_as(self):
+        return self.registered_list
 
     def on_start(self, parent):
         if not hasattr(parent, 'file_email_command'):
                  parent.file_mail_command = ['/usr/bin/mail']
 
-
-    def on_file(self, parent):
+    def do_send(self, parent):
       
-        import os.path, re, subprocess
+        import os.path
+        import re
 
         # have a list of email destinations...
         parent.logger.debug("email: %s" % parent.file_email_to)
         ipath = os.path.normpath(parent.msg.new_dir + '/' + parent.msg.new_file)
-        parent.logger.info("%s" % ipath)
 
         # loop over all the variables from config file, if files match, send via email
         for header in parent.file_email_to:
@@ -66,11 +65,11 @@ class File_Email(object):
 
                     parent.logger.info('sent bulletin %s to %s' % (ipath, recipient))
 
-
         return True
 
+
 file_email = File_Email(self)
-self.on_file = file_email.on_file
+self.do_send = file_email.do_send
 
 
 
