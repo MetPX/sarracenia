@@ -28,7 +28,7 @@ install:
 
 script:
 - ./flow_setup.sh
-- ./flow_limit.sh $LIMIT
+- timeout 45m ./flow_limit.sh $LIMIT
 - ./flow_check.sh
 - ./flow_cleanup.sh
 
