@@ -804,7 +804,7 @@ Trying the flow test with higher volume of messages (ie. 100 000) is one step cl
 
 Limitation
 ++++++++++
-Ubuntu have a limitation that tops inotify watches and that we encountered in #204 . We can overcome this by setting the related sysctl variable, first check what is the limit of your system::
+Ubuntu have a limitation that tops inotify watches and that we encountered in `#204 <https://github.com/MetPX/sarracenia/issues/204>`_ . We can overcome this by setting the related sysctl variable. First, check what is the limit of your system::
 
   $ sysctl fs.inotify.max_user_watches
   fs.inotify.max_user_watches = 8196
