@@ -51,7 +51,6 @@ except ImportError: pass
 class HostConnect:
    def __init__(self, logger=None):
 
-       self.asleep     = False
        self.loop       = True
 
        self.connection = None
@@ -69,8 +68,6 @@ class HostConnect:
        self.rebuilds   = []
        self.toclose    = []
 
-       self.sleeping   = None
-
        # Default behavior is to use amqp and not the alternatives
        self.use_amqp = True
        self.use_amqplib = False
@@ -79,9 +76,6 @@ class HostConnect:
 
    def add_build(self,func):
        self.rebuilds.append(func)
-
-   def add_sleeping(self,func):
-       self.sleeping = func
 
    def close(self):
        for channel in self.toclose:
@@ -100,12 +94,6 @@ class HostConnect:
 
        :returns True if successful, False otherwise.
        """
-       if self.sleeping is not None:
-           self.asleep = self.sleeping()
-
-       if self.asleep:
-           return
-
        while True:
            try:
                self.logger.debug("Connecting %s %s (ssl %s)" % (self.host,self.user,self.ssl) )
@@ -197,18 +185,6 @@ class HostConnect:
        self.close()
        self.connect()
 
-   def set_credentials(self,protocol,user,password,host,port,vhost):
-       self.protocol = protocol
-       self.user     = user
-       self.password = password
-       self.host     = host
-       self.port     = port
-       self.vhost    = vhost
-
-       if self.protocol == 'amqps' : self.ssl = True
-       if self.vhost    == None    : self.vhost = '/'
-       if self.vhost    == ''      : self.vhost = '/'
-
    def set_url(self,url):
        self.protocol = url.scheme
        self.user     = url.username
@@ -278,26 +254,23 @@ class Consumer:
 
        msg = None
 
-       if not self.hc.asleep :
-              try :
-                     if self.hc.use_pika :
-                         #self.logger.debug("consume PIKA is used")
-                         method_frame, properties, body = self.channel.basic_get(queuename)
-                         if method_frame and properties and body:
-                             self.for_pika_msg.pika_to_amqplib(method_frame, properties, body)
-                             msg = self.for_pika_msg
-                     else:
-                         #self.logger.debug("consume AMQP or AMQPLIB is used")
-                         msg = self.channel.basic_get(queuename)
-              except :
-                     self.logger.error("sr_amqp/consume: could not consume in queue %s" % queuename )
-                     self.logger.debug('Exception details: ', exc_info=True)
-                     if self.hc.loop :
-                        self.hc.reconnect()
-                        self.logger.debug("consume resume ok")
-                        if not self.hc.asleep : msg = self.consume(queuename)
-       else:
-              time.sleep(5)
+       try :
+             if self.hc.use_pika :
+                 #self.logger.debug("consume PIKA is used")
+                 method_frame, properties, body = self.channel.basic_get(queuename)
+                 if method_frame and properties and body:
+                     self.for_pika_msg.pika_to_amqplib(method_frame, properties, body)
+                     msg = self.for_pika_msg
+             else:
+                 #self.logger.debug("consume AMQP or AMQPLIB is used")
+                 msg = self.channel.basic_get(queuename)
+       except :
+             self.logger.error("sr_amqp/consume: could not consume in queue %s" % queuename )
+             self.logger.debug('Exception details: ', exc_info=True)
+             if self.hc.loop :
+                self.hc.reconnect()
+                self.logger.debug("consume resume ok")
+                msg = self.consume(queuename)
 
        if msg != None : msg.isRetry = False
 
@@ -376,7 +349,6 @@ class Publisher:
                 self.logger.debug('Exception details: ', exc_info=True)
                 time.sleep(5)
                 self.hc.reconnect()
-                if self.hc.asleep: return False
                 return self.publish(exchange_name, exchange_key, message, mheaders,mexp)
             else:
                 self.logger.error("sr_amqp/publish: could not publish %s %s %s %s" % (exchange_name, exchange_key,
