@@ -154,6 +154,12 @@ if [[ "$C_ALSO" || -d "$SARRAC_LIB" ]]; then
 echo "                 | C          routing |"
   calcres  ${totcpelle04r} ${totcpelle05r} "cpump both pelles (c shovel) should receive about the same number of messages (${totcpelle05r}) (${totcpelle04r})"
 
+  totc04recnrej=$(( ${totcpelle04r} - ${totcpelle04rej} )) 
+  calcres  ${totc04recnrej} ${totcpelle04p} "cpump pelle 04 (received - rejected) = published (${totcpelle04r} - ${totcpelle04rej}) = ${totc04recnrej} vs. ${totcpelle04p} "
+
+  totc05recnrej=$(( ${totcpelle05r} - ${totcpelle05rej} )) 
+  calcres  ${totc05recnrej} ${totcpelle05p} "cpump pelle 05 (received - rejected) = published (${totcpelle05r} - ${totcpelle05rej}) = ${totc05recnrej} vs. ${totcpelle05p} "
+
   totcvan=$(( ${totcvan14p} + ${totcvan15p} ))
   calcres  ${totcvan} ${totcdnld} "cdnld_f21 subscribe downloaded ($totcdnld) the same number of files that was published by both van_14 and van_15 ($totcvan)"
   t5=$(( $totcveille / 2 ))

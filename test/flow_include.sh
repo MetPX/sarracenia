@@ -230,11 +230,17 @@ function countall {
   countthem "`grep '\[INFO\] received:' $LOGDIR/sr_cpump_pelle_dd1_f04_*.log* | wc -l`"
   totcpelle04r="${tot}"
 
+  countthem "`grep '\[INFO\] rejecting ' $LOGDIR/sr_cpump_pelle_dd1_f04_*.log* | wc -l`"
+  totcpelle04rej="${tot}"
+
   countthem "`grep '\[INFO\] published:' $LOGDIR/sr_cpump_pelle_dd1_f04_*.log* | wc -l`"
   totcpelle04p="${tot}"
 
   countthem "`grep '\[INFO\] received:' $LOGDIR/sr_cpump_pelle_dd2_f05_*.log* | wc -l`"
   totcpelle05r="${tot}"
+
+  countthem "`grep '\[INFO\] rejecting ' $LOGDIR/sr_cpump_pelle_dd2_f05_*.log* | wc -l`"
+  totcpelle05rej="${tot}"
 
   countthem "`grep '\[INFO\] published:' $LOGDIR/sr_cpump_pelle_dd2_f05_*.log* | wc -l`"
   totcpelle05p="${tot}"
