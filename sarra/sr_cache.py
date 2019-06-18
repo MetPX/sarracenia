@@ -118,7 +118,7 @@ class sr_cache():
 
         # if not present and not a part : it is a new entry
 
-        if not part[0] in "pi" :
+        if part == None or not part[0] in "pi" :
            self.logger.debug("differ")
            return True
 
