@@ -26,14 +26,10 @@ install:
 - cd test
 - ./flow_autoconfig.sh
 
-before_script:
-- ./flow_setup.sh
-- ./flow_limit.sh $LIMIT
-
 script:
+- ./flow_setup.sh
+- timeout 45m ./flow_limit.sh $LIMIT
 - ./flow_check.sh
 - ./flow_cleanup.sh
 
-cache:
-   directories:
-   - /home/travis/.cache/sarra/log
+cache: pip

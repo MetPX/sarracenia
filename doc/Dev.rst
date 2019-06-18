@@ -797,9 +797,30 @@ While it is runnig one can run flow_check.sh at any time::
 
 This test was fired up at the end of the day, as it takes several hours, and results examined the next morning.
 
-Flow Test Stuck
-~~~~~~~~~~~~~~~
+High volume sample
+~~~~~~~~~~~~~~~~~~
 
+Trying the flow test with higher volume of messages (ie. 100 000) is one step closer to the goal of having a flow test running continously. This is motivated by our testing purposes. 
+
+Limitation
+++++++++++
+Ubuntu have a limitation that tops inotify watches and that we encountered in `#204 <https://github.com/MetPX/sarracenia/issues/204>`_ . We can overcome this by setting the related sysctl variable. First, check what is the limit of your system::
+
+  $ sysctl fs.inotify.max_user_watches
+  fs.inotify.max_user_watches = 8196
+
+If the limit is too low (ie. 8196), change it to a more appropriate level for the flow test::
+
+  $ sudo sysctl fs.inotify.max_user_watches=524288
+
+To make this change permanent add this line to ``/etc/sysctl.conf``::
+
+  fs.inotify.max_user_watches=524288
+
+Then excute ``sysctl -p`` and the system should now support high volume of inotify events.
+
+Flow Test Stuck
++++++++++++++++
 Sometimes flow tests (especially for large numbers) get stuck because of problems with the data stream (where multiple files get the same name) and so earlier versions remove later versions and then retries will always fail. Eventually, we will succeed in cleaning up the dd.weather.gc.ca stream, but for now sometimes a flow_check gets stuck 'Retrying.' The test has run all the messages required, and is at a phase of emptying out retries, but just keeps retrying forever with a variable number of items that never drops to zero.
 
 To recover from this state without discarding the results of a long test, do::

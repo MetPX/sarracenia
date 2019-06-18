@@ -58,6 +58,7 @@ class sr_cache():
 
         self.cache_dict    = {}
         self.cache_file    = None
+        self.cache_hit     = None
         self.fp            = None
 
         self.cache_basis =  parent.cache_basis
@@ -67,6 +68,9 @@ class sr_cache():
 
     def check(self, key, path, part):
         self.logger.debug("sr_cache check basis=%s" % self.cache_basis )
+
+        # not found 
+        self.cache_hit = None
 
         # set time and value
         now   = time.time()
@@ -89,6 +93,7 @@ class sr_cache():
            self.cache_dict[key] = kdict
            self.fp.write("%s %f %s %s\n"%(key,now,qpath,part))
            self.count += 1
+           # new entry
            return True
 
         # key (sum) in cache ... 
@@ -100,13 +105,57 @@ class sr_cache():
         present = value in kdict
         kdict[value] = now
 
-        if not present : self.logger.debug("differ")
-
         # differ or newer, write to file
 
         self.fp.write("%s %f %s %s\n"%(key,now,qpath,part))
         self.count += 1
-        return not present
+
+        # present = old entry
+
+        if present :
+           self.cache_hit = value
+           return False
+
+        # if not present and not a part : it is a new entry
+
+        if part == None or not part[0] in "pi" :
+           self.logger.debug("differ")
+           return True
+
+        # if weird part ... its a new entry
+
+        ptoken = part.split(',')
+        if len(ptoken) < 4 :
+           self.logger.debug("differ")
+           return True
+
+        # build a wiser dict value without
+        # block_count and remainder (ptoken 2 and 3)
+
+        pvalue = value
+        pvalue = pvalue.replace(','+ptoken[2],'',10)
+        pvalue = pvalue.replace(','+ptoken[3],'',10)
+
+        # check every key in kdict
+        # build a similar value to compare with pvalue
+
+        for value in kdict :
+
+            kvalue = value
+            kvalue = kvalue.replace(','+ptoken[2],'',10)
+            kvalue = kvalue.replace(','+ptoken[3],'',10)
+
+            # if we find the value... its in cache... its old
+
+            if pvalue == kvalue :
+               self.cache_hit = value
+               return False
+
+        # did not find it... its new
+
+        self.logger.debug("differ")
+
+        return True
 
     def check_msg(self, msg):
         self.logger.debug("sr_cache check_msg")

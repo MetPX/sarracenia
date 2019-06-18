@@ -215,6 +215,15 @@ class sr_http(sr_proto):
         try:
                 # when credentials are needed.
                 if self.user != None :                          
+
+                   # takeaway credentials info from urlstr
+                   cred        = self.user + '@'
+                   self.urlstr = self.urlstr.replace(cred,'')
+                   if self.password != None :                          
+                      cred        = self.user + ':' + self.password +'@'
+                      self.urlstr = self.urlstr.replace(cred,'')
+
+                   # continue with authentication
                    password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
                    password_mgr.add_password(None, self.urlstr,self.user,self.password)
                    handler = urllib.request.HTTPBasicAuthHandler(password_mgr)

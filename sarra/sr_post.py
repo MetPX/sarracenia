@@ -153,7 +153,11 @@ class sr_post(sr_instances):
 
         if self.sleep > 0 and len(self.obs_watched):
            for ow in self.obs_watched:
-               self.observer.unschedule(ow)
+               try:
+                   self.observer.unschedule(ow)
+               except KeyError as err:
+                   self.logger.error("Unable to unschedule event({}): {}".format(ow, err))
+                   self.logger.debug("Exception details", exc_info=True)
            self.observer.stop()
 
         if self.restore_queue != None :
@@ -538,12 +542,7 @@ class sr_post(sr_instances):
            else:
               binary = (self.inline_encoding == 'text' )
 
-           try:
-               f = open(path,'rb')
-           except FileNotFoundError as err:
-               self.logger.error("could not open ({}): {}".format(path, err))
-               self.logger.debut("Exception details:", exc_info=True)
-               return False
+           f = open(path,'rb')
            d = f.read()
            f.close()
 
@@ -1031,13 +1030,8 @@ class sr_post(sr_instances):
         if not os.path.exists(src) : return done
 
         # file : must be old enough
-        try:
-            lstat = os.stat(src)
-        except FileNotFoundError as err:
-            self.logger.error("could not stat file ({}): {}".format(src, err))
-            self.logger.debug("Exception details:", exc_info=True)
-            return done
 
+        lstat = os.stat(src)
         if self.path_inflight(src,lstat): return later
 
         # post it
@@ -1127,7 +1121,8 @@ class sr_post(sr_instances):
         # on_watch 
 
         ok = self.__on_watch__()
-        if not ok : return
+        if not ok:
+            return
 
         # pile up left events to process
 
@@ -1136,7 +1131,6 @@ class sr_post(sr_instances):
 
         # work with a copy events and keep done events (to delete them)
 
-        self.done_events = []
         self.cur_events  = OrderedDict()
         self.cur_events.update(self.left_events)
 
@@ -1148,8 +1142,15 @@ class sr_post(sr_instances):
 
         for key in self.cur_events:
             event, src, dst = self.cur_events[key]
-            done = self.process_event( event, src, dst )
-            if done : self.left_events.pop(key) 
+            done = False
+            try:
+                done = self.process_event(event, src, dst)
+            except FileNotFoundError as err:
+                self.logger.error("could not process event({}): {}".format(event, err))
+                self.logger.debug("Exception details:", exc_info=True)
+                self.left_events.pop(key)
+            if done:
+                self.left_events.pop(key)
 
         # heartbeat
         self.heartbeat_check()
@@ -1163,13 +1164,25 @@ class sr_post(sr_instances):
     def walk(self, src ):
         self.logger.debug("walk %s" % src )
 
-        for path in glob.iglob(os.path.join(src, '**', '*'), recursive=True):
-            if self.realpath_post and os.path.isfile(path):
-                path = os.path.realpath(path)
-                if sys.platform == 'win32':
-                    path = path.replace('\\', '/')
-            if os.path.isfile(path):
-                self.post1file(path, os.stat(path))
+        # how to proceed with symlink
+
+        if os.path.islink(src) and self.realpath_post :
+           src = os.path.realpath(src)
+           if sys.platform == 'win32':
+               src = src.replace('\\','/')
+
+        # walk src directory, this walk is depth first... there could be a lot of time
+        # between *listdir* run, and when a file is visited, if there are subdirectories before you get there.
+        # hence the existence check after listdir (crashed in flow_tests of > 20,000)
+        for x in os.listdir(src):
+            path = src + '/' + x
+            if os.path.isdir(path):
+               self.walk(path)
+               continue
+
+            # add path created
+            if os.path.exists(path):
+                self.post1file(path,os.stat(path))
 
     # =============
     # original walk_priming
@@ -1193,16 +1206,16 @@ class sr_post(sr_instances):
         else:
             d=p
 
-        try :
+        try:
             fs = os.stat(d)
-            dir_dev_id = '%s,%s' % ( fs.st_dev, fs.st_ino )
+            dir_dev_id = '%s,%s' % (fs.st_dev, fs.st_ino)
             if dir_dev_id in self.inl:
                 return True
-        except FileNotFoundError as err:
+        except OSError as err:
             self.logger.warning("could not stat file ({}): {}".format(d, err))
             self.logger.debug("Exception details:", exc_info=True)
 
-        if os.access( d , os.R_OK|os.X_OK ): 
+        if os.access( d , os.R_OK|os.X_OK ):
            try:
                ow = self.observer.schedule(self.watch_handler, d, recursive=True )
                self.obs_watched.append(ow)
