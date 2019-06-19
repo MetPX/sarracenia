@@ -94,11 +94,17 @@ class HostConnect:
             except AMQPError as err:
                 self.logger.error("unable to close channel {} with {}".format(channel, err))
                 self.logger.debug('Exception details:', exc_info=True)
+            except Exception as err:
+                self.logger.error("Unexpected error: {}".format(err))
+                self.logger.debug("Exception details:", exc_info=True)
         try:
             self.connection.close()
         except AMQPError as err:
             self.logger.error("unable to close connection {} with {}".format(self.connection, err))
             self.logger.debug('Exception details:', exc_info=True)
+        except Exception as err:
+            self.logger.error("Unexpected error: {}".format(err))
+            self.logger.debug("Exception details:", exc_info=True)
         self.toclose = []
         self.connection = None
 
@@ -149,6 +155,10 @@ class HostConnect:
 
                 self.logger.error("Sleeping 5 seconds ...")
                 time.sleep(5)
+            except Exception as err:
+                self.logger.error("Unexpected error: {}".format(err))
+                self.logger.debug("Exception details:", exc_info=True)
+                return False
 
     def exchange_declare(self, exchange, edelete=False, edurable=True):
         try:
@@ -157,6 +167,9 @@ class HostConnect:
         except AMQPError as err:
             self.logger.error("could not declare exchange %s (%s@%s): %s" % (exchange, self.user, self.host, err))
             self.logger.debug('Exception details: ', exc_info=True)
+        except Exception as err:
+            self.logger.error("Unexpected error: {}".format(err))
+            self.logger.debug("Exception details:", exc_info=True)
 
     def exchange_delete(self, exchange):
 
@@ -177,6 +190,9 @@ class HostConnect:
         except AMQPError as err:
             self.logger.error("could not delete exchange %s (%s@%s): %s" % (exchange, self.user, self.host, err))
             self.logger.debug('Exception details: ', exc_info=True)
+        except Exception as err:
+            self.logger.error("Unexpected error: {}".format(err))
+            self.logger.debug("Exception details:", exc_info=True)
 
     def new_channel(self):
         channel = self.connection.channel()
@@ -194,6 +210,9 @@ class HostConnect:
                 return
             self.logger.error("could not delete queue %s (%s@%s): %s" % (queue_name, self.user, self.host, err))
             self.logger.debug('Exception details: ', exc_info=True)
+        except Exception as err:
+            self.logger.error("Unexpected error: {}".format(err))
+            self.logger.debug("Exception details:", exc_info=True)
 
     def reconnect(self):
         self.close()
@@ -288,6 +307,9 @@ class Consumer:
                 self.hc.reconnect()
                 self.logger.debug("consume resume ok")
                 msg = self.consume(queuename)
+        except Exception as err:
+            self.logger.error("Unexpected error: {}".format(err))
+            self.logger.debug("Exception details:", exc_info=True)
 
         if msg is not None:
             msg.isRetry = False
@@ -329,6 +351,9 @@ class Publisher:
         except AMQPError:
             alarm_cancel()
             return False
+        except Exception as err:
+            self.logger.error("unexpected error: {}".format(err))
+            self.logger.debug("Exception details:", exc_info=True)
         alarm_cancel()
         return True
 
@@ -380,6 +405,11 @@ class Publisher:
                                   % (exchange_name, exchange_key, message, mheaders, err))
                 self.logger.debug('Exception details: ', exc_info=True)
                 return False
+        except Exception as err:
+            self.logger.error("unexpected error: {}".format(err))
+            self.logger.debug("Exception details:", exc_info=True)
+            return False
+
 
     def restore_clear(self):
         if self.restore_queue and self.restore_exchange:
@@ -387,6 +417,9 @@ class Publisher:
                 self.channel.queue_unbind(self.restore_queue, self.restore_exchange, '#')
             except AMQPError:
                 pass
+            except Exception as err:
+                self.logger.error("Unexpected error: {}".format(err))
+                self.logger.debug("Exception details:", exc_info=True)
             self.restore_queue = None
 
         if self.restore_exchange:
@@ -394,6 +427,9 @@ class Publisher:
                 self.channel.exchange_delete(self.restore_exchange)
             except AMQPError:
                 pass
+            except Exception as err:
+                self.logger.error("Unexpected error: {}".format(err))
+                self.logger.debug("Exception details:", exc_info=True)
             self.restore_exchange = None
 
     def restore_set(self, parent):
@@ -409,6 +445,9 @@ class Publisher:
                               % (self.restore_exchange, self.restore_queue, err))
             self.logger.debug('Exception details: ', exc_info=True)
             os._exit(1)
+        except Exception as err:
+            self.logger.error("Unexpected error: {}".format(err))
+            self.logger.debug("Exception details:", exc_info=True)
 
 
 # ==========
@@ -459,6 +498,9 @@ class Queue:
                 self.logger.error("could not delete queue %s (%s@%s) with %s"
                                   % (self.name, self.hc.user, self.hc.host, err))
                 self.logger.debug('Exception details:', exc_info=True)
+            except Exception as err:
+                self.logger.error("Unexpected error: {}".format(err))
+                self.logger.debug("Exception details:", exc_info=True)
 
         # declare queue
 
@@ -487,6 +529,9 @@ class Queue:
                 self.logger.error("Permission issue with %s@%s or exchange %s not found."
                                   % (self.hc.user, self.hc.host, exchange_name))
                 self.logger.debug('Exception details:', exc_info=True)
+            except Exception as err:
+                self.logger.error("Unexpected error: {}".format(err))
+                self.logger.debug("Exception details:", exc_info=True)
 
         # always allow pulse binding... use last exchange_name
         if last_exchange_name:
@@ -500,6 +545,9 @@ class Queue:
                 self.logger.error("Permission issue with %s@%s or exchange %s not found with %s"
                                   % (self.hc.user, self.hc.host, last_exchange_name, err))
                 self.logger.debug('Exception details:', exc_info=True)
+            except Exception as err:
+                self.logger.error("Unexpected error: {}".format(err))
+                self.logger.debug("Exception details:", exc_info=True)
         else:
             self.logger.warning("this process will not receive pulse message")
 
@@ -537,3 +585,6 @@ class Queue:
                               % (self.name, self.hc.user, self.hc.host, err))
             self.logger.debug('Exception details: ', exc_info=True)
             return -1
+        except Exception as err:
+            self.logger.error("Unexpected error: {}".format(err))
+            self.logger.debug("Exception details:", exc_info=True)
