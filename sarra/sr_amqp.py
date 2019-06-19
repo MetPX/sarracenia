@@ -46,8 +46,6 @@ try:
     import pika
 except ImportError:
     pass
-
-
 # ===========================================
 
 
@@ -68,6 +66,7 @@ class HostConnect:
 
         self.protocol = 'amqp'
         self.host = 'localhost'
+        self.vhost = None
         self.port = None
         self.user = 'guest'
         self.password = 'guest'
@@ -92,12 +91,14 @@ class HostConnect:
             self.logger.debug("closing channel_id: %s" % cid)
             try:
                 channel.close()
-            except Exception as err:
-                pass
+            except AMQPError as err:
+                self.logger.error("unable to close channel {} with {}".format(channel, err))
+                self.logger.debug('Exception details:', exc_info=True)
         try:
             self.connection.close()
-        except Exception as err:
-            pass
+        except AMQPError as err:
+            self.logger.error("unable to close connection {} with {}".format(self.connection, err))
+            self.logger.debug('Exception details:', exc_info=True)
         self.toclose = []
         self.connection = None
 
@@ -208,10 +209,10 @@ class HostConnect:
 
         if self.protocol == 'amqps':
             self.ssl = True
-            if self.port == None:
+            if self.port is None:
                 self.port = 5671
 
-        if self.vhost == None:
+        if self.vhost is None:
             self.vhost = '/'
         if self.vhost == '':
             self.vhost = '/'
@@ -288,7 +289,7 @@ class Consumer:
                 self.logger.debug("consume resume ok")
                 msg = self.consume(queuename)
 
-        if msg != None:
+        if msg is not None:
             msg.isRetry = False
 
         return msg
@@ -307,6 +308,7 @@ class Publisher:
         self.iotime = 30
         self.restore_exchange = None
         self.restore_queue = None
+        self.channel = None
 
     def build(self):
         self.channel = self.hc.new_channel()
@@ -315,7 +317,7 @@ class Publisher:
         else:
             self.channel.tx_select()
 
-    def isAlive(self):
+    def is_alive(self):
         if not hasattr(self, 'channel'):
             return False
         alarm_set(self.iotime)
@@ -324,7 +326,7 @@ class Publisher:
                 self.channel.confirm_delivery()
             else:
                 self.channel.tx_select()
-        except AMQPError as err:
+        except AMQPError:
             alarm_cancel()
             return False
         alarm_cancel()
@@ -374,8 +376,8 @@ class Publisher:
                 self.hc.reconnect()
                 return self.publish(exchange_name, exchange_key, message, mheaders, mexp)
             else:
-                self.logger.error("sr_amqp/publish: could not publish %s %s %s %s with "
-                                  "%s" % (exchange_name, exchange_key, message, mheaders, err))
+                self.logger.error("sr_amqp/publish: could not publish %s %s %s %s with %s"
+                                  % (exchange_name, exchange_key, message, mheaders, err))
                 self.logger.debug('Exception details: ', exc_info=True)
                 return False
 
@@ -383,14 +385,14 @@ class Publisher:
         if self.restore_queue and self.restore_exchange:
             try:
                 self.channel.queue_unbind(self.restore_queue, self.restore_exchange, '#')
-            except AMQPError as err:
+            except AMQPError:
                 pass
             self.restore_queue = None
 
         if self.restore_exchange:
             try:
                 self.channel.exchange_delete(self.restore_exchange)
-            except AMQPError as err:
+            except AMQPError:
                 pass
             self.restore_exchange = None
 
@@ -403,8 +405,8 @@ class Publisher:
             self.channel.exchange_declare(self.restore_exchange, 'topic', auto_delete=True, durable=False)
             self.channel.queue_bind(self.restore_queue, self.restore_exchange, '#')
         except AMQPError as err:
-            self.logger.error("sr_amqp/restore_set: restore_set exchange %s queuename %s" % (self.restore_exchange,
-                                                                                             self.restore_queue))
+            self.logger.error("sr_amqp/restore_set: restore_set exchange %s queuename %s with %s"
+                              % (self.restore_exchange, self.restore_queue, err))
             self.logger.debug('Exception details: ', exc_info=True)
             os._exit(1)
 
@@ -421,7 +423,8 @@ class Queue:
         self.logger = self.hc.logger
         self.name = qname
         self.qname = qname
-        self.auto_delete = False
+        self.channel = None
+        self.auto_delete = auto_delete
         self.durable = durable
         self.reset = reset
 
@@ -453,7 +456,9 @@ class Queue:
             try:
                 self.channel.queue_delete(self.name)
             except AMQPError as err:
-                self.logger.debug("could not delete queue %s (%s@%s)" % (self.name, self.hc.user, self.hc.host))
+                self.logger.error("could not delete queue %s (%s@%s) with %s"
+                                  % (self.name, self.hc.user, self.hc.host, err))
+                self.logger.debug('Exception details:', exc_info=True)
 
         # declare queue
 
@@ -470,29 +475,31 @@ class Queue:
             return
 
         # queue bindings
-        exchange_ok = None
+        last_exchange_name = ''
         for exchange_name, exchange_key in self.bindings:
             self.logger.debug("binding queue to exchange=%s with key=%s" % (exchange_name, exchange_key))
             try:
                 self.bind(exchange_name, exchange_key)
-                exchange_ok = exchange_name
+                last_exchange_name = exchange_name
             except AMQPError as err:
-                self.logger.error("bind queue: %s to exchange: %s with key: %s failed with %s" % \
-                                  (self.name, exchange_name, exchange_key, err))
-                self.logger.error("Permission issue with %s@%s or exchange %s not found." % \
-                                  (self.hc.user, self.hc.host, exchange_name))
+                self.logger.error("bind queue: %s to exchange: %s with key: %s failed with %s"
+                                  % (self.name, exchange_name, exchange_key, err))
+                self.logger.error("Permission issue with %s@%s or exchange %s not found."
+                                  % (self.hc.user, self.hc.host, exchange_name))
+                self.logger.debug('Exception details:', exc_info=True)
 
         # always allow pulse binding... use last exchange_name
-        if exchange_ok:
+        if last_exchange_name:
             exchange_key = 'v02.pulse.#'
-            self.logger.debug("binding queue to exchange=%s with key=%s (pulse)" % (exchange_name, exchange_key))
+            self.logger.debug("binding queue to exchange=%s with key=%s (pulse)" % (last_exchange_name, exchange_key))
             try:
-                self.bind(exchange_name, exchange_key)
+                self.bind(last_exchange_name, exchange_key)
             except AMQPError as err:
-                self.logger.error("bind queue: %s to exchange: %s with key: %s failed.." % \
-                                  (self.name, exchange_name, exchange_key))
-                self.logger.error("Permission issue with %s@%s or exchange %s not found." % \
-                                  (self.hc.user, self.hc.host, exchange_name))
+                self.logger.error("bind queue: %s to exchange: %s with key: %s failed.."
+                                  % (self.name, last_exchange_name, exchange_key))
+                self.logger.error("Permission issue with %s@%s or exchange %s not found with %s"
+                                  % (self.hc.user, self.hc.host, last_exchange_name, err))
+                self.logger.debug('Exception details:', exc_info=True)
         else:
             self.logger.warning("this process will not receive pulse message")
 
@@ -526,7 +533,7 @@ class Queue:
             self.logger.debug("queue declare done")
             return msg_count
         except AMQPError as err:
-            self.logger.error("sr_amqp/build, queue declare: %s failed...(%s@%s) permission issue ?"
-                              % (self.name, self.hc.user, self.hc.host))
+            self.logger.error("sr_amqp/build, queue declare: %s failed...(%s@%s) with %s"
+                              % (self.name, self.hc.user, self.hc.host, err))
             self.logger.debug('Exception details: ', exc_info=True)
             return -1

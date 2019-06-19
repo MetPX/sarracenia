@@ -7,7 +7,7 @@
 
   caveat 1 : once pulsing has started... it must continue
              if poll_pulse stops the process will verify the connection,
-                  (isAlive) and if that fails, trigger a reconnection
+                  (is_alive) and if that fails, trigger a reconnection
              every heartbeat
 
   caveat 2 : receiving pulse messages will not behave as expected for
@@ -27,6 +27,8 @@ class Hb_Pulse(object):
         self.skip_first         = True
 
     def init(self,parent):
+        import time
+
         self.last_time          = time.time()
         self.last_message_count = parent.message_count
         self.last_publish_count = parent.publish_count
@@ -47,7 +49,7 @@ class Hb_Pulse(object):
         if hasattr(parent,'consumer') :
            if parent.message_count <= self.last_message_count:
               if parent.pulse_count <=  self.last_pulse_count:
-                 if parent.consumer.isAlive() :
+                 if parent.consumer.is_alive() :
                     self.logger.info("hb_pulse received neither message nor pulse, but confirmed broker connection remains alive")
                  else:
                     self.logger.warning("hb_pulse no pulse, and no connection... reconnecting")
@@ -62,7 +64,7 @@ class Hb_Pulse(object):
 
         if hasattr(parent,'publisher') :
            if parent.publish_count <= self.last_publish_count:
-              if parent.publisher.isAlive() :
+              if parent.publisher.is_alive() :
                  self.logger.debug("hb_pulse no messages receive but still connected.")
               else:
                  self.logger.warning("hb_pulse connection problem...reconnecting")
