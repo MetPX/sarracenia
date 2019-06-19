@@ -6,8 +6,10 @@
 
     Usage:
       1. Need the following variables in an sr_sender config defined: file_email_to, file_email_relay
+        Optionally, you can also provide a sender name/email as file_email_form
         ex. file_email_to AACN27 muhammad.taseer@canada.ca, test@test.com
         ex. file_email_relay email.relay.server.ca
+        ex. file_email_from santa@canada.ca
           if file_email_relay is not defined it will resort to using smtp.cmc.ec.gc.ca
       2. sr_sender foreground emails.conf
 
@@ -20,6 +22,7 @@ class File_Email(object):
     def __init__(self, parent):
         parent.declare_option('file_email_command')
         parent.declare_option('file_email_to')
+        parent.declare_option('file_email_from')
         parent.declare_option('file_email_relay')
         self.registered_list = ['ftp', 'ftps', 'sftp']
 
@@ -51,24 +54,32 @@ class File_Email(object):
                 from email.message import EmailMessage
 
                 for recipient in emails:
-                    parent.logger.debug('sending bulletin %s to %s' % (ipath, recipient))
+                    parent.logger.debug('sending file %s to %s' % (ipath, recipient))
 
                     with open(ipath) as fp:
                         emsg = EmailMessage()
                         emsg.set_content(fp.read())
 
+                    try:
+                        sender = parent.file_email_from[0]
+                        if not sender:
+                            sender = 'sarracenia-emailer'
+                    except AttributeError:
+                        sender = 'sarracenia-emailer'
+
+                    parent.logger.debug("Using sender email: " + sender)
+
                     emsg['Subject'] = parent.new_file
-                    emsg['From'] = 'sarra-emailer@canada.ca'
+                    emsg['From'] = sender
                     emsg['To'] = recipient
 
                     try:
                         email_relay = parent.file_email_relay[0]
-                        if not email_relay:
-                            raise AttributeError('sr_sender object has no or incorrect file_email_relay')
-                    except:
-                        email_relay = 'smtp.cmc.ec.gc.ca'
+                        raise AttributeError()
+                    except AttributeError:
+                        parent.logger.error('file_email_relay config NOT defined, please define an SMTP (relay) server')
 
-                    parent.logger.info("Using email relay server: " + email_relay)
+                    parent.logger.debug("Using email relay server: " + email_relay)
                     s = smtplib.SMTP(email_relay)
                     s.send_message(emsg)
                     s.quit()
