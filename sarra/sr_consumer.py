@@ -223,7 +223,7 @@ class sr_consumer:
         self.msg      = self.parent.msg
         self.msg.user = self.broker.username
 
-    def isAlive(self):
+    def is_alive(self):
         if not hasattr(self,'consumer') : return False
         if self.consumer.channel == None: return False
         alarm_set(self.iotime)

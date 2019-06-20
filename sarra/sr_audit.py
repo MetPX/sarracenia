@@ -81,7 +81,7 @@ class sr_audit(sr_instances):
         self.hc.queue_delete(q)
 
     def amqp_isconnected(self):
-        return not ( self.hc == None or self.hc.asleep or self.hc.connection == None)
+        return not ( self.hc == None or self.hc.connection == None)
 
 
     def audit_add_user(self,u,role):
