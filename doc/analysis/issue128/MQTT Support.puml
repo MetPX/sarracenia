@@ -1,0 +1,31 @@
+@startuml
+
+:Analyst: as spc
+:End User: as wmo
+
+note top of s227: Issue 227
+Node "Sarracenia" as s227 {
+ component "rabbitmqtt" as 227
+}
+
+note top of s128: Issue 128
+Node "Sarracenia" as s128 {
+ component "mqtt" as 128
+}
+Node "RabbitMQ" as rmq {
+ component "MQTT Plugin" {
+  component "rabbitmqtt exchange" as rex
+ }
+}
+Node "MQTT Broker" as mbrk
+Node "MQTT Client" as mcl
+
+spc --> s227
+spc --> s128
+s227 -- rmq: amqp(s)://
+s128 -- mbrk: mqtt(s)://
+rmq -- mcl: mqtt(s)://
+mbrk -- mcl: mqtt(s)://
+
+mcl <-- wmo
+@enduml
