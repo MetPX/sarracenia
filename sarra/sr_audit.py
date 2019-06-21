@@ -315,8 +315,11 @@ class sr_audit(sr_instances):
         self.logger.info("sr_audit pumps using account: %s for pulse" % admin )
 
         # poll directory must exists
-        try    : os.makedirs(self.user_config_dir + "/poll", 0o775,True)
-        except : pass
+        try:
+            os.makedirs(self.user_config_dir + "/poll", 0o775,True)
+        except OSError as err:
+            self.logger.error("could not create directory ({}) with {}".format(self.user_config_dir, err))
+            self.logger.debug("Exception details", exc_info=True)
 
         cfn = self.user_config_dir + "/poll/pulse.conf"
         self.logger.info("sr_audit pulse configuration %s" % cfn )
@@ -353,8 +356,11 @@ class sr_audit(sr_instances):
         self.logger.info("sr_audit pumps using account: %s for report routing" % feeder )
 
         # shovel directory must exists
-        try    : os.makedirs(self.user_config_dir + "/shovel", 0o775,True)
-        except : pass
+        try:
+            os.makedirs(self.user_config_dir + "/shovel", 0o775,True)
+        except OSError as err:
+            self.logger.error("could not create directory ({}) with {}".format(self.user_config_dir, err))
+            self.logger.debug("Exception details", exc_info=True)
 
         if self.report_daemons: 
            for u in self.sources :
@@ -648,8 +654,8 @@ class sr_audit(sr_instances):
 
                       time.sleep(sleep)
 
-        except:
-              self.logger.error("sr_audit/run failed")
+        except Exception as err:
+              self.logger.error("sr_audit/run failed with {}".format(err))
               self.logger.debug('Exception details: ', exc_info=True)
 
 
