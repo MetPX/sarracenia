@@ -60,17 +60,11 @@ class sr_audit(sr_instances):
            self.hc = None
 
     def amqp_connect(self):
-        try:
-                self.hc = HostConnect(logger = self.logger)
-                self.hc.choose_amqp_alternative(self.use_amqplib, self.use_pika)
-                self.hc.loop = False
-                self.hc.set_url(self.admin)
-                self.hc.connect()
-        except: pass
-        #
-        # FIXME: I worry that ignoring the failure to connect is a problem.
-        #        PS, but this is how it was, and I can't demonstrate a problem
-        #        so left as-is for now.        
+        self.hc = HostConnect(logger = self.logger)
+        self.hc.choose_amqp_alternative(self.use_amqplib, self.use_pika)
+        self.hc.loop = False
+        self.hc.set_url(self.admin)
+        self.hc.connect()
 
     def amqp_del_exchange(self,e):
         self.logger.info("deleting exchange %s" % e)
