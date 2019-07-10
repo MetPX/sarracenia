@@ -201,8 +201,9 @@ class sr_audit(sr_instances):
         # loop build list of exchanges of interest
         # empty or rabbitmq-server defaults 'amq.' are taken off
 
-        exchange_rab = ['amq.direct','amq.fanout','amq.headers','amq.match', \
-                        'amq.rabbitmq.log','amq.rabbitmq.trace','amq.topic'  ]
+        exchange_rab = ['amq.direct','amq.fanout','amq.headers','amq.match',
+                        'amq.rabbitmq.log','amq.rabbitmq.trace','amq.topic',
+                        'rabbitmqtt']
 
         exchange_lst = []
         for edict in lst_dict :
