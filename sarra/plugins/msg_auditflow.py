@@ -35,7 +35,7 @@ class Msg_AuditFlow(object):
       
         middir = msg.new_dir.replace(parent.currentDir+os.sep,'')
 
-        a= "%s/%s/%s/%s" % ( parent.msg_auditflow_topdir, "downloaded_by_sub_t", middir, msg.new_file )
+        a= "%s/%s/%s/%s" % ( parent.msg_auditflow_topdir, "downloaded_by_sub_amqp", middir, msg.new_file )
         parent.auditflow_Atotal+=1
         i=0
 
@@ -52,7 +52,7 @@ class Msg_AuditFlow(object):
                 parent.logger.error("msg_auditflow: compare-%d failed: %s vs. %s " % ( i, a, b ) ) 
 
 
-        for d in [ "downloaded_by_sub_t", "posted_by_srpost_test2", "recd_by_srpoll_test1", "posted_by_shim", "downloaded_by_sub_cp" ]:
+        for d in [ "downloaded_by_sub_amqp", "posted_by_srpost_test2", "recd_by_srpoll_test1", "posted_by_shim", "downloaded_by_sub_cp" ]:
             f= "%s/%s/%s/%s" % ( parent.msg_auditflow_topdir, d, middir, msg.new_file )
             parent.logger.info("msg_auditflow delete: %s" % f )
             if os.path.exists(f):

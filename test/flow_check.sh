@@ -83,17 +83,17 @@ if [[ -z "$skip_summaries" ]]; then
     # PAS performance summaries
     printf "\nDownload Performance Summaries:\tLOGDIR=$LOGDIR\n"
     summarize_performance sr_shovel msg_total: t_dd1 t_dd2
-    summarize_performance sr_subscribe file_total: cdnld_f21 t_f30 cfile_f44 u_sftp_f60 ftp_f70 q_f71
+    summarize_performance sr_subscribe file_total: cdnld_f21 amqp_f30 cfile_f44 u_sftp_f60 ftp_f70 q_f71
 
     echo
     # MG shows retries
     echo
 
     if [[ ! "$SARRA_LIB" ]]; then
-       echo NB retries for sr_subscribe t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f30*.log* | wc -l`
+       echo NB retries for sr_subscribe amqp_f30 `grep Retrying "$LOGDIR"/sr_subscribe_amqp_f30*.log* | wc -l`
        echo NB retries for sr_sender    `grep Retrying "$LOGDIR"/sr_sender*.log* | wc -l`
     else
-       echo NB retries for "$SARRA_LIB"/sr_subscribe.py t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f30*.log* | wc -l`
+       echo NB retries for "$SARRA_LIB"/sr_subscribe.py amqp_f30 `grep Retrying "$LOGDIR"/sr_subscribe_amqp_f30*.log* | wc -l`
        echo NB retries for "$SARRA_LIB"/sr_sender.py    `grep Retrying "$LOGDIR"/sr_sender*.log* | wc -l`
     fi
 
@@ -114,16 +114,17 @@ printf "\n\tMaximum of the shovels is: ${maxshovel}\n\n"
 printf "\t\tTEST RESULTS\n\n"
 
 tot2shov=$(( ${totshovel1} + ${totshovel2} ))
-t4=$(( ${totfilet}*4 ))
+t4=$(( ${totfileamqp}*4 ))
 t5=$(( ${totsent}/2 ))
 
 echo "                 | dd.weather routing |"
 calcres ${totshovel1} ${totshovel2} "sr_shovel\t (${totshovel1}) t_dd1 should have the same number of items as t_dd2\t (${totshovel2})"
 calcres ${totwinnow}  ${tot2shov}   "sr_winnow\t (${totwinnow}) should have the same of the number of items of shovels\t (${tot2shov})"
 calcres ${totsarp}    ${totwinpost} "sr_sarra\t (${totsarp}) should have the same number of items as winnows'post\t (${totwinpost})"
-calcres ${totfilet}   ${totsarp}    "sr_subscribe\t (${totfilet}) should have the same number of items as sarra\t\t (${totsarp})"
+calcres ${totfileamqp}   ${totsarp}    "sr_subscribe\t (${totfileamqp}) should have the same number of items as sarra\t\t (${totsarp})"
+calcres ${totfilermqtt}   ${totsarp}    "rabbitmqtt\t (${totfilermqtt}) should have the same number of items as sarra\t\t (${totsarp})"
 echo "                 | watch      routing |"
-calcres ${totwatch}   ${t4}         "sr_watch\t\t (${totwatch}) should be 4 times subscribe t_f30\t\t  (${totfilet})"
+calcres ${totwatch}   ${t4}         "sr_watch\t\t (${totwatch}) should be 4 times subscribe amqp_f30\t\t  (${totfileamqp})"
 calcres ${totsent}    ${totwatch}   "sr_sender\t\t (${totsent}) should have the same number of items as sr_watch  (${totwatch})"
 calcres ${totsubu}    ${totsent}    "sr_subscribe u_sftp_f60 (${totsubu}) should have the same number of items as sr_sender (${totsent})"
 calcres ${totsubcp}   ${totsent}    "sr_subscribe cp_f61\t (${totsubcp}) should have the same number of items as sr_sender (${totsent})"
@@ -139,8 +140,8 @@ echo "                 | py infos   routing |"
 calcres ${totpropagated} ${totwinpost} "sr_shovel pclean_f90 (${totpropagated}) should have the same number of watched items winnows' post\t (${totwinpost})"
 calcres ${totremoved}    ${totwinpost} "sr_shovel pclean_f92 (${totremoved}) should have the same number of removed items winnows' post\t (${totwinpost})"
 zerowanted "${missed_dispositions}" "${maxshovel}" "messages received that we don't know what happened."
-calcres ${totshortened} ${totfilet} \
-   "count of truncated headers (${totshortened}) and subscribed messages (${totmsgt}) should have about the same number of items"
+calcres ${totshortened} ${totfileamqp} \
+   "count of truncated headers (${totshortened}) and subscribed messages (${totmsgamqp}) should have about the same number of items"
 
 # these almost never are the same, and it's a problem with the post test. so failures here almost always false negative.
 #calcres ${totpost1} ${totsubu} "post test2_f61 ${totpost1} and subscribe u_sftp_f60 ${totsubu} run together. Should be about the same."

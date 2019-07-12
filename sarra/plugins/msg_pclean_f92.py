@@ -40,7 +40,7 @@ class Msg_Clean_F92(object):
         if relp[0] != '/':
             relp = '/' + relp
         self.sarr_f20_path = root + relp  # sarra
-        self.subs_f30_path = root + '/downloaded_by_sub_t' + relp  # subscribe t_sub
+        self.subs_f30_path = root + '/downloaded_by_sub_amqp' + relp  # subscribe t_sub
         # f40 is watch... no file
         self.send_f50_path = root + '/sent_by_tsource2send' + relp  # sender
         self.subs_f60_path = root + '/downloaded_by_sub_u' + relp  # subscribe u_sftp_f60

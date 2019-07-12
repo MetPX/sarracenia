@@ -18,8 +18,8 @@ grep $1  $LOGDIR/sr_winnow*
 printf "\n\nFLOW f2x download to local mirror\n\n"
 grep $1  $LOGDIR/sr_sarra_* 
 
-printf "\n\nFLOW f3x downloading from http://localhost to downloaded_by_sub_t f3x\n\n"
-grep $1  $LOGDIR/sr_subscribe_t_f30_*.log*
+printf "\n\nFLOW f3x downloading from http://localhost to downloaded_by_sub_amqp f3x\n\n"
+grep $1  $LOGDIR/sr_subscribe_amqp_f30_*.log*
 
 
 printf "\n\nFLOW f4x watch\n\n"
