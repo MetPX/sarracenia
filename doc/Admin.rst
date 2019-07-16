@@ -1133,11 +1133,11 @@ It is now possible to enable MQTT in Sarracenia through the RabbitMQ MQTT plugin
   
    # Here is a minimal shovel/myshovel.conf
    # Subscribe from a source amqp exchange
-   broker amqp://${myfeeder}@${mybroker}
+   broker amqp://${afeeder}@${abroker}
    exchange ${from_exchange}
 
    # posting to rabbitmqtt exchange
-   post_broker amqp://${myfeeder}@${mybroker}
+   post_broker amqp://${afeeder}@${abroker}
    post_exchange xmqtt_public
    post_topic_prefix  v03.post.${from_exchange}
    report_back False
@@ -1145,16 +1145,25 @@ It is now possible to enable MQTT in Sarracenia through the RabbitMQ MQTT plugin
   or consume from rabbitmqtt exchange::
    
    # Here is a minimal subscribe/mysub.conf
-   broker amqp://${mysub}@${mybroker}/
+   broker amqp://${asub}@${abroker}/
    exchange xmqtt_public
    topic_prefix v03.post.${from_exchange}
-  Note that we use *xmqtt_public* as the (post_)exchange which is defined as the *rabbitmq_mqtt.exchange* in the rabbitmq.config file. We also append the source exchange to the (post_)topic_prefix, which will map the source exchange and could be useful if we map multiple exchanges to mqtt.
+   
+   # Print out all msg received
+   accept .*
+   on_message msg_rawlog
+   no_download
+  Note that we use *xmqtt_public* as the (post\_)exchange which is defined as the *rabbitmq_mqtt.exchange* in the rabbitmq.config file. We also append the source exchange to the (post\_)topic_prefix, which will map the source exchange and could be useful if we map multiple exchanges to mqtt.
 
 * Start and test your configuration::
 
    sr_shovel start myshovel.conf
    sr_subscribe foreground mysub.conf
-   mosquitto_sub -h ${mybroker} -t '#' -d
+  
+  On another machine you may now run::
+  
+   mosquitto_sub -h ${abroker} -t '#' -d
+  Messages received from both sr_subscribe and mosquitto_sub should be the same.
 
 
 Hooks from Sundew
