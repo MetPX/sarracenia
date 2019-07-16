@@ -202,8 +202,7 @@ class sr_audit(sr_instances):
         # empty or rabbitmq-server defaults 'amq.' are taken off
 
         exchange_rab = ['amq.direct','amq.fanout','amq.headers','amq.match',
-                        'amq.rabbitmq.log','amq.rabbitmq.trace','amq.topic',
-                        'rabbitmqtt']
+                        'amq.rabbitmq.log','amq.rabbitmq.trace','amq.topic']
 
         exchange_lst = []
         for edict in lst_dict :
