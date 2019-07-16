@@ -406,20 +406,20 @@ The most secure method of transport is the use of SFTP with keys rather than pas
 storage of sftp keys is covered in documentation of various SSH or SFTP clients. The credentials
 file just points to those key files.
 
-For sarracenia itself, password authentication is used to communicate with the AMQP broker,
+For Sarracenia itself, password authentication is used to communicate with the AMQP broker,
 so implementation of encrypted socket transport (SSL/TLS) on all broker traffic is strongly
 recommended.
 
 Sarracenia users are actually users defined on rabbitmq brokers.
 Each user Alice, on a broker to which she has access:
 
- - has an exchange xs_Alice, where she writes her postings, and reads her logs from.
+ - can create and publish to any exchange that starts with xs_Alice\_
  - has an exchange xr_Alice, where she reads her report messages.
  - can configure (read from and acknowledge) queues named qs_Alice\_.* to bind to exchanges
- - Alice can create and destroy her own queues, but no-one else's.
- - Alice can only write to her exchange (xs_Alice),
- - Exchanges are managed by the administrator, and not any user.
+ - Alice can create and destroy her own queues and exchanges, but no-one else's.
  - Alice can only post data that she is publishing (it will refer back to her)
+ - Alice can also read (or subscribe to) any exchange whose name ends in *public*.
+ - Alice can thus create an exchange others can subscribe to with the following name:  xs_Alice_public
 
 Alice cannot create any exchanges or other queues not shown above.
 
