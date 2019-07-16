@@ -1103,6 +1103,58 @@ The answer I got from the Rabbitmq gurus ::
   Cheers, Simon
 
 
+MQTT Support
+~~~~~~~~~~~~
+
+It is now possible to enable MQTT in Sarracenia through the RabbitMQ MQTT plugin. Here is a minimal howto guide for our RabbitMQTT support:
+
+* Enable RabbitMQ MQTT plugin::
+
+   rabbitmq-plugins enable rabbitmq_mqtt
+   cat > /etc/rabbitmq/rabbitmq.config << EOF
+   [{rabbitmq_mqtt, [{default_user,     <<"anonymous">>},
+                     {default_pass,     <<"anonymous">>},
+                     {allow_anonymous,  true},
+                     {vhost,            <<"/">>},
+                     {exchange,         <<"xmqtt_public">>},
+                     {ssl_listeners,    []},
+                     {tcp_listeners,    [1883]},
+                     {tcp_listen_options, [{backlog, 4096},
+                                           {nodelay, true}]}]}
+   ].
+   EOF
+   systemctl restart rabbitmq-server
+
+* Change anonymous user (rabbit_mqtt.default_user) permissions to allow partner user to subscribe to your mqtt feed (ie. using mosquitto_sub):: 
+
+   rabbitmqctl set_permissions -p / anonymous "^q_anonymous.*|^mqtt-subscription" "^q_anonymous.*|^xs_anonymous$|^mqtt-subscription" "^q_anonymous.*|^x[lrs]_anonymous.*|^x.*public$"
+
+* Write your configurations that will publish to rabbitmqtt exchange::
+  
+   # Here is a minimal shovel/myshovel.conf
+   # Subscribe from a source amqp exchange
+   broker amqp://${myfeeder}@${mybroker}
+   exchange ${from_exchange}
+
+   # posting to rabbitmqtt exchange
+   post_broker amqp://${myfeeder}@${mybroker}
+   post_exchange xmqtt_public
+   post_topic_prefix  v03.post.${from_exchange}
+   report_back False
+   
+  or consume from rabbitmqtt exchange::
+   
+   # Here is a minimal subscribe/mysub.conf
+   broker amqp://${mysub}@${mybroker}/
+   exchange xmqtt_public
+   topic_prefix v03.post.${from_exchange}
+  Note that we use *xmqtt_public* as the (post_)exchange which is defined as the *rabbitmq_mqtt.exchange* in the rabbitmq.config file. We also append the source exchange to the (post_)topic_prefix, which will map the source exchange and could be useful if we map multiple exchanges to mqtt.
+
+* Start and test your configuration::
+
+   sr_shovel start myshovel.conf
+   sr_subscribe foreground mysub.conf
+   mosquitto_sub -h ${mybroker} -t '#' -d
 
 
 Hooks from Sundew
