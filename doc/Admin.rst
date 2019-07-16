@@ -1108,7 +1108,7 @@ MQTT Support
 
 It is now possible to enable MQTT in Sarracenia through the RabbitMQ MQTT plugin. Here is a minimal howto guide for our RabbitMQTT support:
 
-* Enable RabbitMQ MQTT plugin::
+* After any other MQTT service listening to port 1883 got disabled, enable RabbitMQ MQTT plugin.::
 
    rabbitmq-plugins enable rabbitmq_mqtt
    cat > /etc/rabbitmq/rabbitmq.config << EOF
