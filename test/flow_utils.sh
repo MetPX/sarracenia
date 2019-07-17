@@ -70,7 +70,7 @@ function xchk {
     # 2 - Description string.
     #
     exex=flow_lists/exchanges_expected.txt
-    rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list exchanges | grep -v '^name' | grep -v amq\. | grep -v rabbitmqtt | grep -v direct| sort >$exnow
+    rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv list exchanges | grep -v '^name' | grep -v amq\. | grep -v direct| sort >$exnow
 
     x_cnt="`wc -l <$exnow`"
     expected_cnt="`wc -l <$exex`"

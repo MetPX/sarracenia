@@ -175,7 +175,7 @@ class HostConnect:
 
         # never delete basic and permanent exchanges...
 
-        if exchange in ['xpublic', 'xmqtt_public', 'xreport']:
+        if exchange in ['xpublic', 'xreport']:
             self.logger.info("exchange %s remains" % exchange)
             return
 
