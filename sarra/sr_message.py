@@ -244,17 +244,20 @@ class sr_message():
 
         self.start_timer()
 
-        #self.logger.debug("attributes= %s" % vars(msg))
+        self.logger.debug("from_amqplib " )
         if msg :
            self.exchange  = msg.delivery_info['exchange']
            self.topic     = msg.delivery_info['routing_key']
            self.topic     = self.topic.replace('%20',' ')
            self.topic     = self.topic.replace('%23','#')
            if msg.body[0] == '[' :
+               self.logger.debug("from_amqplib transitional v03" )
                self.pubtime, self.baseurl, self.relpath, self.headers = json.loads(msg.body)
                self.notice = "%s %s %s" % ( self.pubtime, self.baseurl, self.relpath )
            elif msg.body[0] == '{' :
+               self.logger.debug("from_amqplib v03 body: %s" % msg.body)
                self.headers = json.loads(msg.body)
+               self.logger.debug("from_amqplib v03 headers: %s" % self.headers )
                self.pubtime = self.headers[ "pubTime" ]
                self.baseurl = self.headers[ "baseUrl" ]
                self.relpath = self.headers[ "relPath" ]
@@ -294,6 +297,7 @@ class sr_message():
                        del self.headers['blocks']
                    del self.headers['size']
            else:
+               self.logger.debug("from_amqplib v02" )
                if 'application_headers' in msg.properties.keys():
                    self.headers = msg.properties['application_headers']
 
