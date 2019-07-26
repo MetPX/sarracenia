@@ -416,6 +416,11 @@ If no unit is provided logs will rotate at midnight.  Here are some settings for
 - log <dir> ( default: ~/.cache/sarra/log ) (on Linux)
    The directory to store log files in.
 
+- statehost <False|True> ( default: False )
+   in large data centres, the home directory can be shared among thousands of nodes.  statehost adds the node name
+   after the cache directory to make it unique to each node.  so each node has it's own statefiles and logs.
+   example, on a node named goofy,  ~/.cache/sarra/log/ becomes ~/.cache/sarra/goofy/log.
+
 - logrotate <max_logs> ( default: 5 )
    Maximum number of logs archived.
 
