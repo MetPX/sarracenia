@@ -10,7 +10,6 @@
         ex. file_email_to AACN27 muhammad.taseer@canada.ca, test@test.com
         ex. file_email_relay email.relay.server.ca
         ex. file_email_from santa@canada.ca
-          if file_email_relay is not defined it will resort to using smtp.cmc.ec.gc.ca
       2. sr_sender foreground emails.conf
 
     Last modified: Wahaj Taseer - June, 2019
@@ -75,7 +74,8 @@ class File_Email(object):
 
                     try:
                         email_relay = parent.file_email_relay[0]
-                        raise AttributeError()
+                        if not email_relay:
+                            raise AttributeError()
                     except AttributeError:
                         parent.logger.error('file_email_relay config NOT defined, please define an SMTP (relay) server')
 
