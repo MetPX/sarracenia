@@ -74,7 +74,8 @@ class File_Email(object):
 
                     try:
                         email_relay = parent.file_email_relay[0]
-                        raise AttributeError()
+                        if not email_relay:
+                            raise AttributeError()
                     except AttributeError:
                         parent.logger.error('file_email_relay config NOT defined, please define an SMTP (relay) server')
 
