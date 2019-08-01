@@ -135,7 +135,8 @@ class sr_consumer:
     def consume(self):
 
         # acknowledge last message... we are done with it since asking for a new one
-        if self.raw_msg != None and not self.raw_msg.isRetry : self.consumer.ack(self.raw_msg)
+        if self.raw_msg is not None and not self.raw_msg.isRetry:
+            self.consumer.ack(self.raw_msg)
 
         # consume a new one
         self.get_message()
@@ -143,7 +144,8 @@ class sr_consumer:
 
         # if no message from queue, perhaps we have message to retry
 
-        if self.raw_msg == None : self.raw_msg = self.retry.get()
+        if self.raw_msg is None:
+            self.raw_msg = self.retry.get()
 
         # when no message sleep for 1 sec. (value taken from old metpx)
         # *** value 0.01 was tested and would simply raise cpu usage of broker
@@ -152,29 +154,31 @@ class sr_consumer:
 
         should_sleep = False
 
-        if   self.raw_msg == None                          : should_sleep = True
-        elif self.raw_msg.isRetry and self.last_msg_failed : should_sleep = True
+        if self.raw_msg is None:
+            should_sleep = True
+        elif self.raw_msg.isRetry and self.last_msg_failed:
+            should_sleep = True
 
-        if should_sleep :
-           #self.logger.debug("sleeping %f" % self.sleep_now)
-           time.sleep(self.sleep_now)
-           self.sleep_now = self.sleep_now * 2
-           if self.sleep_now > self.sleep_max : 
-                  self.sleep_now = self.sleep_max
+        if should_sleep:
+            time.sleep(self.sleep_now)
+            self.sleep_now = self.sleep_now * 2
+            if self.sleep_now > self.sleep_max:
+                self.sleep_now = self.sleep_max
 
-        if self.raw_msg == None: return False, self.msg
+        if self.raw_msg is None:
+            return False, self.msg
 
         # make use it as a sr_message
         # dont bother with retry... 
-        try :
-                 self.msg.from_amqplib(self.raw_msg)
-                 self.logger.debug("notice %s " % self.msg.notice)
-                 if self.msg.urlstr:
-                    self.logger.debug("urlstr %s " % self.msg.urlstr)
-        except :
-                 self.logger.error("sr_consumer/consume malformed message %s" % vars(self.raw_msg))
-                 self.logger.debug('Exception details: ', exc_info=True)
-                 return None, None
+        try:
+            self.msg.from_amqplib(self.raw_msg)
+            self.logger.debug("notice %s " % self.msg.notice)
+            if self.msg.urlstr:
+                self.logger.debug("urlstr %s " % self.msg.urlstr)
+        except:
+            self.logger.error("sr_consumer/consume malformed message %s" % vars(self.raw_msg))
+            self.logger.debug('Exception details: ', exc_info=True)
+            return None, None
 
         # special case : pulse
 
@@ -214,13 +218,11 @@ class sr_consumer:
         return True,self.msg
 
     def get_message(self):
-        #self.logger.debug("sr_consumer get_message")
-
-        if not hasattr(self.parent,'msg'):
+        if not hasattr(self.parent, 'msg'):
            self.parent.msg = sr_message(self.parent)
 
-        self.raw_msg  = None
-        self.msg      = self.parent.msg
+        self.raw_msg = None
+        self.msg = self.parent.msg
         self.msg.user = self.broker.username
 
     def is_alive(self):
