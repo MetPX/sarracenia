@@ -667,7 +667,7 @@ class sr_transport():
 
                 # the file does not exist... warn, sleep and return false for the next attempt
                 if not os.path.exists(local_file):
-                   self.logger.warning("file %s does not exist (product collision or base_dir not set)" % local_file)
+                   self.logger.warning("product collision or base_dir not set, file %s does not exist" % local_file)
                    time.sleep(0.01)
                    return False
 
@@ -714,7 +714,7 @@ class sr_transport():
                 if parent.reportback :
                    msg.report_publish(201,'Delivered')
 
-        except:
+        except Exception as err:
 
                 #removing lock if left over
                 if new_lock != None and hasattr(proto,'delete') :

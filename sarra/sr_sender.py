@@ -304,12 +304,9 @@ class sr_sender(sr_subscribe):
         # N attempts to send
 
         i  = 1
-        while i <= self.attempts :
-              # it is confusing to see in log for the same product
-              # Delivery failed on one line than... 
-              # Sent on next line
-              # so insert a warning about subsequent  attempts
-              if i != 1  : self.logger.warning("attempt %d" % i )
+        while i <= self.attempts:
+              if i != 1:
+                  self.logger.warning("sending again, attempt %d" % i)
 
               ok = self.__do_send__()
               if ok : break
