@@ -16,7 +16,10 @@
 
 import time
 
-class Post_Rate_Limit(object): 
+from sarra.sr_util import nowflt
+
+
+class Post_Rate_Limit(object):
 
     def __init__(self,parent):
 
@@ -27,7 +30,7 @@ class Post_Rate_Limit(object):
             parent.post_rate_limit = 1
 
         parent.post_rate_limit_msgcount=0
-        parent.post_rate_limit_since=time.time()
+        parent.post_rate_limit_since=nowflt()
 
         parent.logger.info( "post_rate_limit set to %d messages/second" % parent.post_rate_limit )
           
@@ -35,7 +38,7 @@ class Post_Rate_Limit(object):
 
         import time
 
-        now=time.time()
+        now=nowflt()
         time_elapsed=now-parent.post_rate_limit_since
 
         parent.post_rate_limit_msgcount += 1
@@ -45,7 +48,7 @@ class Post_Rate_Limit(object):
 
         if time_elapsed >= 1 :
             parent.post_rate_limit_msgcount=0
-            parent.post_rate_limit_since=time.time()
+            parent.post_rate_limit_since=nowflt()
 
         return True
 

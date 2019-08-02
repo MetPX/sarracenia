@@ -624,7 +624,7 @@ class sr_config:
         self.remote_config_url    = None
 
         self.heartbeat            = 300
-        self.last_heartbeat       = time.time()
+        self.last_heartbeat       = nowflt()
 
         # Logging attributes
         self.loglevel             = logging.INFO
@@ -997,13 +997,13 @@ class sr_config:
 
 
     def heartbeat_check(self):
-        now    = time.time()
+        now    = nowflt()
         elapse = now - self.last_heartbeat
         if elapse > self.heartbeat :
            self.__on_heartbeat__()
            self.last_heartbeat = now
            # check how on_heartbeat lasted
-           hb_last = time.time() - now
+           hb_last = nowflt() - now
            ratio   = hb_last/self.heartbeat
            # heartbeat needs to be adjusted (to the nearest higher rounded minute)
            if ratio > 0.1 :
@@ -1888,7 +1888,7 @@ class sr_config:
                                   x = sr_xattr(xfile)
                                   x.set( 'sum', value )
 
-                                  xmtime = timeflt2str(time.time())
+                                  xmtime = nowstr()
                                   x.set( 'mtime', xmtime )
                                   self.logger.debug("xattr sum set for file: {0} => {1}".format(xfile, value))
                                   x.persist()

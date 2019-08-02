@@ -270,7 +270,7 @@ class sr_retry:
         # compute message age
         notice   = message.body
         msg_time = timestr2flt(message.pubtime)
-        msg_age  = time.time() - msg_time
+        msg_age  = nowflt() - msg_time
 
         # expired ?
 
@@ -343,7 +343,7 @@ class sr_retry:
            self.logger.info("sr_retry resuming with retry file")
            return
 
-        now               = time.time()
+        now               = nowflt()
         self.retry_cache  = {}
         N    = 0
 
@@ -486,7 +486,7 @@ class sr_retry:
         except: pass
 
         self.last_body = None
-        elapse         = time.time()-now
+        elapse         = nowflt()-now
         self.logger.info("sr_retry on_heartbeat elapse %f" % elapse)
 
     def on_start(self,parent):

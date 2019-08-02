@@ -647,7 +647,7 @@ class sr_audit(sr_instances):
                       else:
                          self.logger.debug("sr_audit is active on vip=%s" % self.vip)
 
-                      sleep = self.heartbeat - ( time.time() - self.last_heartbeat ) + 0.01
+                      sleep = self.heartbeat - ( nowflt() - self.last_heartbeat ) + 0.01
                       if sleep < 0 : sleep = 1
 
                       self.logger.info("audit is sleeping %d seconds (for next heartbeat) " % sleep)

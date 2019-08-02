@@ -121,6 +121,8 @@ class sr_message():
         self.new_baseurl   = None
         self.new_relpath   = None
         self.to_clusters = []
+        self.tbegin = nowflt()
+        self.pubtime = None
 
     def change_partflg(self, partflg ):
         self.partflg       =  partflg 
@@ -367,7 +369,7 @@ class sr_message():
            self.parse_v02_post()
 
     def get_elapse(self):
-        return time.time()-self.tbegin
+        return nowflt() - self.tbegin
 
     def report_publish(self,code,message):
         self.code               = code
@@ -994,11 +996,7 @@ class sr_message():
         self.suffix = self.part_suffix()
 
     def set_time(self):
-        now  = time.time()
-        frac = '%f' % now
-        nows = time.strftime("%Y%m%d%H%M%S",time.gmtime()) + '.' + frac.split('.')[1]
-        self.pubtime = nows
-        if not hasattr(self,'tbegin') : self.tbegin = now
+        self.pubtime = nowstr()
 
     def set_to_clusters(self,to_clusters=None):
         if to_clusters != None :
@@ -1046,7 +1044,7 @@ class sr_message():
         self.topic        = self.topic.replace('..','.')
 
     def start_timer(self):
-        self.tbegin = time.time()
+        self.tbegin = timestr2flt(self.pubtime)
 
 
     # adjust headers from -headers option

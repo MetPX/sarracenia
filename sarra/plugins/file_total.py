@@ -20,7 +20,10 @@
 
 import os,stat,time
 
-class File_Total(object): 
+from sarra.sr_util import timestr2flt, timeflt2str, nowflt
+
+
+class File_Total(object):
 
 
     def __init__(self,parent):
@@ -48,7 +51,7 @@ class File_Total(object):
         else:
             parent.file_total_interval=5
 
-        now=time.time()
+        now=nowflt()
 
         parent.file_total_last = now
         parent.file_total_start = now
@@ -73,7 +76,7 @@ class File_Total(object):
             logger.info("file_total: 0 files received: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"  )
 
         msgtime=timestr2flt(msg.pubtime)
-        now=time.time()
+        now=nowflt()
 
         parent.file_total_msgcount = parent.file_total_msgcount + 1
 

@@ -5,11 +5,13 @@
   by invoking parent.cache.save() it will only write out the values that are still relevant.
 
 """
+from sarra.sr_util import nowflt
 
-class Hb_Cache(object): 
+
+class Hb_Cache(object):
 
     def __init__(self,parent):
-        self.last_time  = time.time()
+        self.last_time  = nowflt()
         self.last_count = 0
           
     def perform(self,parent):
@@ -23,7 +25,7 @@ class Hb_Cache(object):
            count = parent.cache.count
            parent.cache.save()
 
-           now       = time.time()
+           now       = nowflt()
            new_count = parent.cache.count
 
            self.logger.info("hb_cache was %d, but since %5.2f sec, increased up to %d, now saved %d entries" % 

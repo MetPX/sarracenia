@@ -23,7 +23,10 @@
 
 import os,stat,time
 
-class PartClamAvScan(object): 
+from sarra.sr_util import nowflt
+
+
+class PartClamAvScan(object):
 
     def __init__(self,parent):
         import pyclamd
@@ -47,9 +50,9 @@ class PartClamAvScan(object):
              scanfn= msg.new_file 
 
         # worried about how long the scan will take.
-        start=time.time()
+        start=nowflt()
         virus_found = self.av.scan_file(scanfn)
-        end=time.time()
+        end=nowflt()
 
         if virus_found:
            logger.error("part_clamav_scan took %g not forwarding, virus detected in %s" % (end-start,msg.new_file) )

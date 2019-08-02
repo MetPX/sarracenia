@@ -20,7 +20,10 @@
 
 import os,stat,time
 
-class Post_Total(object): 
+from sarra.sr_util import nowflt
+
+
+class Post_Total(object):
 
 
     def __init__(self,parent):
@@ -49,7 +52,7 @@ class Post_Total(object):
         else:
             parent.post_total_interval=5
 
-        now=time.time()
+        now=nowflt()
 
         parent.post_total_last = now
         parent.post_total_start = now
@@ -74,7 +77,7 @@ class Post_Total(object):
             logger.info("post_total: 0 messages posted: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"  )
 
         msgtime=timestr2flt(msg.pubtime)
-        now=time.time()
+        now=nowflt()
 
         parent.post_total_msgcount = parent.post_total_msgcount + 1
 

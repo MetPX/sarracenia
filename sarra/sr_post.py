@@ -365,7 +365,7 @@ class sr_post(sr_instances):
            #self.logger.debug("ok lstat None")
            return False
 
-        age = time.time() - lstat[stat.ST_MTIME]
+        age = nowflt() - lstat[stat.ST_MTIME]
         if age < self.inflight :
            self.logger.debug("%d vs (inflight setting) %d seconds. Too New!" % (age,self.inflight) )
            return True
@@ -1273,10 +1273,10 @@ class sr_post(sr_instances):
     def watch_loop(self ):
         self.logger.debug("watch_loop")
 
-        last_time = time.time()
+        last_time = nowflt()
         while True:
             self.wakeup()
-            now = time.time()
+            now = nowflt()
             elapse = now - last_time
             if elapse < self.sleep:
                 time.sleep(self.sleep-elapse)

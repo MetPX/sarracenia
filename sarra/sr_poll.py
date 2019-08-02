@@ -643,13 +643,13 @@ class sr_poll(sr_post):
                       # if we don't delete files, we will keep the directory state
 
                       ok  = False
-                      now = time.time()
+                      start = nowflt()
 
                       #  do poll stuff
                       ok = self.__do_poll__()
 
                       #  check if sleep is to short
-                      poll_time = time.time() - now
+                      poll_time = nowflt() - start
                       ratio     = self.sleep/poll_time
                       if ratio < 0.1 :
                          self.logger.warning("sr_poll sleep too low (%d) secs is less than 10%% of poll time (%f)" % (self.sleep, poll_time))

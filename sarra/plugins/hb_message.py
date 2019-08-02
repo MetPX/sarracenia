@@ -4,8 +4,10 @@
 default on_heartbeat handler that gives messages info
 
 """
+from sarra.sr_util import nowflt
 
-class Hb_Message(object): 
+
+class Hb_Message(object):
 
     def __init__(self,parent):
 
@@ -27,7 +29,7 @@ class Hb_Message(object):
     def on_message(self,parent):
 
         if hasattr(parent,'msg') :
-           now = time.time()
+           now = nowflt()
            lag = now - parent.msg.tbegin
            if lag > self.msg_maxlag: self.msg_maxlag = lag
 

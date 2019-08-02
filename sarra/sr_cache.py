@@ -45,6 +45,8 @@ import urllib.parse
 # cache_dict : {}  
 #              cache_dict[sum] = [ (time1,[path1,part1]),(time2,[path2,part2])...]
 #
+from sarra.sr_util import timestr2flt, timeflt2str, nowflt
+
 
 class sr_cache():
 
@@ -63,7 +65,7 @@ class sr_cache():
 
         self.cache_basis =  parent.cache_basis
 
-        self.last_expire   = time.time()
+        self.last_expire   = nowflt()
         self.count         = 0
 
     def check(self, key, path, part):
@@ -73,7 +75,7 @@ class sr_cache():
         self.cache_hit = None
 
         # set time and value
-        now   = time.time()
+        now   = nowflt()
 
         if self.cache_basis == 'name':
             relpath = path.split('/')[-1]
@@ -180,7 +182,7 @@ class sr_cache():
 
         # create refreshed dict
 
-        now        = time.time()
+        now        = nowflt()
         new_dict   = {}
         self.count = 0
 
@@ -264,7 +266,7 @@ class sr_cache():
            self.fp.close()
 
         # set time 
-        now = time.time()
+        now = nowflt()
 
         # open file (read/append)... 
         # read through
@@ -336,7 +338,8 @@ class sr_cache():
 
     def check_expire(self):
         self.logger.debug("sr_cache check_expire")
-        now    = time.time()
+        now = nowflt()
+
         elapse = now - self.last_expire
         if elapse > self.expire :
            self.last_expire = now
