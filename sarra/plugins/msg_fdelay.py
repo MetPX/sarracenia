@@ -1,62 +1,72 @@
 #!/usr/bin/python3
-
 """
   This plugin delays processing of messages by *message_delay* seconds
 
 
   msg_fdelay 30
-  on_message msg_fdelay
+  plugin msg_fdelay
 
   every message will be at least 30 seconds old before it is forwarded by this plugin.
 
 """
-import os,time
+from sarra.sr_util import timestr2flt, nowstr, nowflt
 
-class Msg_FDelay(object): 
 
-    def __init__(self,parent):
-        parent.logger.debug("msg_log initialized")
+class Msg_FDelay(object):
+    def __init__(self, parent):
         parent.declare_option('msg_fdelay')
-        if hasattr(parent, 'msg_fdelay'):
-            if type(parent.msg_fdelay) is list:
-               parent.msg_fdelay=int(parent.msg_fdelay[0])
+        if hasattr(parent, 'msg_fdelay') and type(parent.msg_fdelay) is list:
+            parent.msg_fdelay = int(parent.msg_fdelay[0])
+        elif not hasattr(parent, 'msg_fdelay'):
+            parent.msg_fdelay = 300
+
+    def on_message(self, parent):
+        import os
+        import stat
+
+        # Prepare msg delay test
+        if parent.msg.sumflg == 'R':
+            # 'R' msg will be removed by itself
+            return False
+        if not 'fdelay' in parent.msg.headers:
+            parent.msg.headers['fdelay'] = nowstr()
+
+        # Test msg delay
+        elapsedtime = nowflt() - timestr2flt(parent.msg.headers['fdelay'])
+        if 0 < elapsedtime < 1:
+            parent.logger.debug("msg_fdelay received msg")
         else:
-            parent.msg_fdelay=300
+            parent.logger.info("trying msg with {:.3f}s elapsed".format(elapsedtime))
+        if elapsedtime < parent.msg_fdelay:
+            dbg_msg = "message not old enough, sleeping for {:.3f} seconds"
+            parent.logger.debug(dbg_msg.format(elapsedtime, parent.msg_fdelay - elapsedtime))
+            parent.consumer.sleep_now = parent.consumer.sleep_min
+            parent.consumer.msg_to_retry()
+            parent.msg.isRetry = False
+            return False
 
-          
-    def on_message(self,parent):
-        import calendar,os,stat
-
-        msg = parent.msg
-
-        # dont need to wait or clean 'R' message
-        if msg.sumflg == 'R' : return False
-
-        parent.logger.info( "%s %s %s" % (msg.pubtime, msg.baseurl, msg.relpath) )
-        lag = msg.get_elapse()
-
-        parent.logger.info("msg_fdelay received: %s %s%s topic=%s lag=%g %s" % \
-           ( msg.pubtime, msg.baseurl, msg.relpath, msg.topic, lag, msg.hdrstr ) )
-
-        if lag < parent.msg_fdelay :
-            parent.logger.info("msg_fdelay message not old enough, sleeping for %d seconds" %  (parent.msg_fdelay - lag) )
-            time.sleep( parent.msg_fdelay - lag )
-
-        
-        f= "%s/%s" % ( msg.new_dir, msg.new_file )
+        # Prepare file delay test
+        if '/cfr/' in parent.msg.new_dir:
+            f = os.path.join(parent.msg.new_dir, parent.msg.new_file)
+        else:
+            f = os.path.join(parent.msg.new_dir, parent.msg.relpath.strip('/'))
         if not os.path.exists(f):
-           return True
+            parent.logger.error("did not find file {}".format(f))
+            return False
 
-        filetime=os.stat( f )[stat.ST_MTIME]
-        now=time.time()
-        lag=now-filetime
-        if lag < parent.msg_fdelay :
-            parent.logger.info("msg_fdelay file not old enough, sleeping for %d seconds" %  (parent.msg_fdelay - lag) )
-            time.sleep( parent.msg_fdelay - lag )
+        # Test file delay
+        filetime = os.stat(f)[stat.ST_MTIME]
+        now = nowflt()
+        elapsedtime = now - filetime
+        if elapsedtime < parent.msg_fdelay:
+            dbg_msg = "file not old enough, sleeping for {:.3f} seconds"
+            parent.logger.debug(dbg_msg.format(elapsedtime, parent.msg_fdelay - elapsedtime))
+            parent.consumer.sleep_now = parent.consumer.sleep_min
+            parent.consumer.msg_to_retry()
+            parent.msg.isRetry = False
+            return False
 
         return True
 
-msg_fdelay = Msg_FDelay(self)
 
-self.on_message = msg_fdelay.on_message
-
+self.plugin = 'Msg_FDelay'

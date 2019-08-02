@@ -17,10 +17,7 @@
      requires python3-humanize module.
 
 """
-
-import os,stat,time
-
-from sarra.sr_util import timestr2flt, timeflt2str, nowflt
+from sarra.sr_util import nowflt
 
 
 class File_Total(object):
@@ -67,7 +64,6 @@ class File_Total(object):
         logger = parent.logger
         msg    = parent.msg
 
-        import calendar
         import humanize
         import datetime
         from sarra.sr_util import timestr2flt

@@ -328,7 +328,6 @@ class sr_message():
            # parse pulse notice
            token = self.notice.split(' ')
            self.pubtime = token[0]
-           self.set_msg_time()
 
            # pulse message
            if self.topic == 'v02.pulse.message':
@@ -368,7 +367,18 @@ class sr_message():
         else:
            self.parse_v02_post()
 
+    def get_elapse_pubtime(self):
+        """ Time calculated between now and the time of the first publication in seconds
+
+        :return: the result of now - pubtime
+        """
+        return nowflt() - timestr2flt(self.pubtime)
+
     def get_elapse(self):
+        """ Time calculated between now and the time of the msg decoded
+
+        :return: the result of now - tbegin
+        """
         return nowflt() - self.tbegin
 
     def report_publish(self,code,message):
@@ -509,7 +519,6 @@ class sr_message():
             self.set_parts_from_str(self.partstr)
         self.set_sum_str(self.sumstr)
         self.set_suffix()
-        self.set_msg_time()
         self.set_hdrstr()
 
     def part_suffix(self):
@@ -860,21 +869,9 @@ class sr_message():
         self.logger.error("bad unknown conditions")
         return
 
-    def set_msg_time(self):
-        parts       = self.pubtime.split('.')
-        if parts[0][8] == 'T':
-            ts          = time.strptime(parts[0]+" +0000", "%Y%m%dT%H%M%S %z" )
-        else:
-            ts          = time.strptime(parts[0]+" +0000", "%Y%m%d%H%M%S %z" )
-        ep_msg      = calendar.timegm(ts)
-        self.tbegin = ep_msg + float('0.'+parts[1])
-
-    def set_notice_url(self,url,time=None):
-        self.url    = url
-        if not time:
-            self.set_time()
-        else:
-            self.pubtime = time
+    def set_notice_url(self, url, time=None):
+        self.url = url
+        self.set_pubtime(time)
 
         path = url.path.strip('/')
         notice_path = path.replace(' ', '%20')
@@ -906,10 +903,7 @@ class sr_message():
     def set_notice(self, baseurl, relpath, time=None):
         self.baseurl = baseurl
         self.relpath = relpath
-        if not time:
-            self.set_time()
-        else:
-            self.pubtime = time
+        self.set_pubtime(time)
 
         notice_relpath = relpath.replace(' ', '%20')
         notice_relpath = notice_relpath.replace('#', '%23')
@@ -995,8 +989,11 @@ class sr_message():
         if self.sumstr  == None or self.sumflg == 'R' : return
         self.suffix = self.part_suffix()
 
-    def set_time(self):
-        self.pubtime = nowstr()
+    def set_pubtime(self, time=None):
+        if not time:
+            self.pubtime = nowstr()
+        else:
+            self.pubtime = time
 
     def set_to_clusters(self,to_clusters=None):
         if to_clusters != None :
@@ -1044,8 +1041,11 @@ class sr_message():
         self.topic        = self.topic.replace('..','.')
 
     def start_timer(self):
-        self.tbegin = timestr2flt(self.pubtime)
+        """ Set a timestamp at the creation of a new msg and/or at the decoding of a new raw_msg
 
+        :return:
+        """
+        self.tbegin = nowflt()
 
     # adjust headers from -headers option
 

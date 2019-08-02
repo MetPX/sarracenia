@@ -10,40 +10,37 @@
   every message will be at least 30 seconds old before it is forwarded by this plugin.
 
 """
-import os,time
+from sarra.sr_util import timestr2flt, nowflt, nowstr
 
-class Msg_Delay(object): 
 
-    def __init__(self,parent):
+class Msg_Delay(object):
+    def __init__(self, parent):
         parent.logger.debug("msg_log initialized")
         parent.declare_option('msg_delay')
-        if hasattr(parent, 'msg_delay'):
-            if type(parent.msg_delay) is list:
-               parent.msg_delay=int(parent.msg_delay[0])
-        else:
-            parent.msg_delay=300
-
+        if hasattr(parent, 'msg_delay') and type(parent.msg_delay) is list:
+            parent.msg_delay = int(parent.msg_delay[0])
+        elif not hasattr(parent, 'msg_delay'):
+            parent.msg_delay = 300
           
     def on_message(self,parent):
-        import calendar
-        from sarra.sr_util import timestr2flt
+        if not 'delay' in parent.msg.headers:
+            parent.msg.headers['delay'] = nowstr()
 
-        msg = parent.msg
-        msgtime=timestr2flt(msg.pubtime)
-        now=time.time()
-
-        lag=now-msgtime
-
-        parent.logger.info("msg_delay received: %s %s%s topic=%s lag=%g %s" % \
-           ( msg.pubtime, msg.baseurl, msg.relpath, msg.topic, msg.get_elapse(), msg.hdrstr ) )
-
-        if lag < parent.msg_delay :
-            parent.logger.info("msg_delay message not old enough, sleeping for %d seconds" %  (parent.msg_delay - lag) )
-            time.sleep( parent.msg_delay - lag )
+        # Test msg delay
+        elapsedtime = nowflt() - timestr2flt(parent.msg.headers['delay'])
+        if 0 < elapsedtime < 1:
+            parent.logger.debug("msg_delay received msg")
+        else:
+            parent.logger.info("trying msg with {:.3f}s elapsed".format(elapsedtime))
+        if elapsedtime < parent.msg_delay:
+            dbg_msg = "message not old enough, sleeping for {:.3f} seconds"
+            parent.logger.debug(dbg_msg.format(elapsedtime, parent.msg_fdelay - elapsedtime))
+            parent.consumer.sleep_now = parent.consumer.sleep_min
+            parent.consumer.msg_to_retry()
+            parent.msg.isRetry = False
+            return False
 
         return True
 
-msg_delay = Msg_Delay(self)
 
-self.on_message = msg_delay.on_message
-
+self.plugin = 'Msg_Delay'

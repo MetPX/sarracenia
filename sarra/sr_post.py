@@ -295,8 +295,6 @@ class sr_post(sr_instances):
     # =============
 
     def __on_post__(self):
-        #self.logger.debug("%s __on_post__" % self.program_name)
-
         ok = self.msg.post(self)
 
         # publish counter
@@ -1050,7 +1048,7 @@ class sr_post(sr_instances):
 
         self.msg.topic    = 'v02.pulse'
 
-        self.msg.set_time()
+        self.msg.set_pubtime()
         self.msg.notice  = '%s' % self.msg.pubtime
 
         if self.pulse_message : 

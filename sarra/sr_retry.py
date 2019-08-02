@@ -180,7 +180,6 @@ class sr_retry:
                else:
                   message.event = 'modify'
 
-
         if done:
             headers['_retry_tag_'] = 'done'
         return json.dumps([topic, headers, notice], sort_keys=True) + '\n'
