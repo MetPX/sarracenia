@@ -286,16 +286,17 @@ class sr_message():
                    self.headers[ "sum" ] = sa + ',' + sv
                    self.sumstr = self.headers['sum']
                    del self.headers['integrity']
-               if 'size' in self.headers.keys():
+               if 'blocks' in self.headers.keys():
                    parts_map = {'inplace': 'i', 'partitioned': 'p'}
-                   if 'blocks' not in self.headers.keys():
-                       self.set_parts('1', int(self.headers['size']))
-                   else:
-                       self.set_parts(parts_map[self.headers['blocks']['method']], int(self.headers['blocks']['size']),
+                   self.set_parts(parts_map[self.headers['blocks']['method']], int(self.headers['blocks']['size']),
                                       int(self.headers['blocks']['count']), int(self.headers['blocks']['remainder']),
                                       int(self.headers['blocks']['number']))
-                       del self.headers['blocks']
+                   del self.headers['blocks']
+               elif 'size' in self.headers.keys():
+                   self.set_parts('1', int(self.headers['size']))
                    del self.headers['size']
+
+
            else:
                self.logger.debug("from_amqplib v02" )
                if 'application_headers' in msg.properties.keys():

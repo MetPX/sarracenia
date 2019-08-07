@@ -301,6 +301,8 @@ class Consumer:
                 # self.logger.debug("consume AMQP or AMQPLIB is used")
                 msg = self.channel.basic_get(queuename)
         except AMQPError as err:
+            # FIXME: PAS-2019. recursion here may be dangerous when things go badly... 
+            #        will stack grow without bound?
             self.logger.error("sr_amqp/consume: could not consume in queue %s: %s" % (queuename, err))
             self.logger.debug('Exception details: ', exc_info=True)
             if self.hc.loop:
