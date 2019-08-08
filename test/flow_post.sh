@@ -73,12 +73,8 @@ function do_sr_post {
    else 
     LD_PRELOAD="libsrshim.so.1.0.0" cp -p --parents `cat /tmp/diffs.txt`  ${httpdocroot}/posted_by_shim
    fi
-
    
    cp -p $srpostlstfile_new $srpostlstfile_old
-
-   do_sr_post
-
 }
 
 # sr_post initial end

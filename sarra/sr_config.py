@@ -484,7 +484,7 @@ class sr_config:
 
         # priority 2 : config given is a user one
 
-        config_path = self.user_config_dir + os.sep + subdir + os.sep + config_name + ext
+        config_path = os.path.join(self.user_config_dir, subdir, config_name + ext)
         self.logger.debug("config_path %s " % config_path )
 
         if os.path.isfile(config_path) :
@@ -492,7 +492,7 @@ class sr_config:
 
         # priority 3 : config given to site config
 
-        config_path = self.site_config_dir + os.sep + subdir + os.sep + config_name + ext
+        config_path = os.path.join(self.site_config_dir, subdir, config_name + ext)
         self.logger.debug("config_path %s " % config_path )
 
         if os.path.isfile(config_path) :

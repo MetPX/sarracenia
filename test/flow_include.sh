@@ -17,16 +17,16 @@ function countthem {
 
 function chkargs {
 
-   if [ ! "${1}" -o ! "${2}" ]; then
+   if [[ ! "${1}" || ! "${2}" ]]; then
       printf "test %2d FAILURE: blank results! ${3}\n" ${tno}
       return 2
    fi
-   if [ "${1}" -eq 0 ]; then
+   if [[ "${1}" -eq 0 ]]; then
       printf "test %2d FAILURE: no successful results! ${3}\n" ${tno}
       return 2
    fi
 
-   if [ "${2}" -eq 0 ]; then
+   if [[ "${2}" -eq 0 ]]; then
       printf "test %2d FAILURE: no successful results, 2nd item! ${3}\n" ${tno}
       return 2
    fi
@@ -257,11 +257,15 @@ function countall {
   if [[ $(ls "$LOGDIR"/sr_shovel_pclean_f90*.log 2>/dev/null) ]]; then
       countthem "`grep '\[INFO\] post_log notice' "$LOGDIR"/sr_shovel_pclean_f90*.log | wc -l`"
       totpropagated="${tot}"
+  else
+      totpropagated="0"
   fi
 
   if [[ $(ls "$LOGDIR"/sr_shovel_pclean_f92*.log 2>/dev/null) ]]; then
       countthem "`grep '\[INFO\] post_log notice' "$LOGDIR"/sr_shovel_pclean_f92*.log | wc -l`"
       totremoved="${tot}"
+  else
+      totremoved="0"
   fi
 
   # flags when two lines include *msg_log received* (with no other message between them) indicating no user will know what happenned.
