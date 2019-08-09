@@ -1,0 +1,51 @@
+@startuml
+skinparam componentStyle uml2
+
+|xpublic|
+start
+:xpublic;
+-> t_dd1,
+t_dd2;
+
+fork
+ :winnow00;
+ -> t00;
+fork again
+ :winnow01;
+ -> t01;
+end fork
+
+:xsarra;
+-> download_f20;
+split
+ :xflow_public;
+ -> t_f30;
+ stop
+ start
+ -> f40;
+ :xs_tsource;
+ -> tsource2send;
+ :xs_tsource_output;
+ stop
+split again
+ stop
+ start
+ split
+  -> test2;
+  :xs_tsource_post;
+  -> f62;
+  split
+   :xs_tsource_poll;
+   -> f71;
+   stop
+  split again
+   -> f70;
+   stop
+  end split
+ split again
+  -> shim;
+  :xs_tsource_shim;
+  stop
+ end split
+end split
+@enduml
