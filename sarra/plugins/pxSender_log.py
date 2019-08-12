@@ -1,23 +1,30 @@
 #!/usr/bin/python3
 
 """
-This plugin should be used in a sr_sender 
-It registeres for ftp/sftp 
-and does nothing but logging the sending message
-as if it was a sundew pxSender process
+This plugin IS ONLY LOGGING  NO DOWNLOAD, NO SEND
 
-No files are actually being sent
+It provides a do_download to use in sr_subscribe
+It provides a do_send     to use in sr_sender
+
+And the announcement is restricted to http,ftp,sftp
+it will only LOG
+
+This interest of this plugin is that the log format is
+similar to sundew's pxSender
+
+The main purpose of this plugin is to have a tool to 
+compare the routing of products between sundew and sarra
+
+No files are actually being sent or downloaded
 
 Sample usage:
 
   plugin pxSender_log.py
 
-The purpose is to prepare sr_sender configurations
-and just log as a pxSender process to verify that
-the conversion was correct
-
-Bash scripds can be run on logs to make sure all products
-and renaming were addressed properly
+This is restricted to a mean to verify between logs of sundew
+and logs on sarra... when the download or delivery of the products
+are exactly the same on both side, taking out the plugin should
+simply do the job... and let go of the sundew config
 
 """
 
@@ -47,7 +54,7 @@ class PXSENDER_LOG(object):
    def do_send(self,parent):
        msg    = parent.msg
 
-       src  = parent.document_root + msg.relpath
+       src  = parent.base_dir + msg.relpath
        src  = src.replace(' ','\ ')
 
        dest = parent.destination + msg.new_dir + os.sep + msg.new_file
