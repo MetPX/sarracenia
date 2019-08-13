@@ -728,6 +728,10 @@ class sr_instances(sr_config):
         # ===
 
         self.logger.debug("cmd = %s" % cmd)
+        # FIXME: at around 3.4, https://docs.python.org/3/library/os.html#fd-inheritance
+        #   inheritance of file descriptors changed.  I think earlier versions require PIPE
+        #   later versions None is better.
+        #   use of Pipe causes issue: https://github.com/MetPX/sarracenia/issues/63
         subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
