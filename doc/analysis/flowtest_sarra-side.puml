@@ -1,8 +1,6 @@
 @startuml
-|xpublic|
 start
--> xpublic;
-(o)
+:xpublic}
 fork
  partition "sr_shovel " {
   :t_dd1_f00;
@@ -14,133 +12,152 @@ fork again
 end fork
 
 fork
- -> xwinnow00;
- (o)
+ ->dd1,dd2;
+ :xwinnow00}
  partition "sr_winnow " {
   :t00_f10;
  }
 fork again
- -> xwinnow01;
- (o)
+ ->dd1,dd2;
+ :xwinnow01}
  partition "sr_winnow " {
   :t01_f10;
  }
 end fork
 
-->xsarra;
-(o)
+:xsarra}
 partition "sr_sarra " {
  :download_f20;
  package "sarra_devdocroot   " {
-  :WXO-DD Files|
+  :hpfx Files|
  }
 }
-split
- ->xflow_public;
- (o)
- partition "sr_subscribe  " {
-  :t_f30;
-  package "sarra_devdocroot   " {
-   package "downloaded_by_sub_t   " {
-    :WXO-DD Files|
+fork
+ :xflow_public}
+ split
+ split again
+  partition "sr_subscribe  " {
+   :t_f30;
+   package "sarra_devdocroot   " {
+    package "downloaded_by_sub_t   " {
+     :hpfx Files|
+    }
    }
   }
- }
- split
   partition "sr_watch  " {
    :f40;
   }
-  ->xs_tsource;
-  (o)
+  :xs_tsource}
   partition "sr_sender  " {
    :tsource2send_f50;
    package "sarra_devdocroot   " {
     package "sent_by_tsource2send   " {
-     :WXO-DD Files|
+     :hpfx Files|
     }
    }
   }
-  split
-   ->xs_tsource_output;
-   (o)
-   split
-    partition "sr_subscribe  " {
-     :u_sftp_f60;
-    }
+  :xs_tsource_output}
+  fork
+   partition "sr_subscribe  " {
+    :u_sftp_f60;
     package "sarra_devdocroot   " {
      package "downloaded_by_sub_u   " {
-      :WXO-DD Files|
+      :hpfx Files|
      }
     }
-   split again
-    partition "sr_subscribe  " {
-     :cp_f61;
-    }
+   }
+  detach
+  fork again
+   partition "sr_subscribe  " {
+    :cp_f61;
     package "sarra_devdocroot   " {
-     package "downloaded_by_sub_cp   "
-      :WXO-DD Files|
+     package "downloaded_by_sub_cp   " {
+      :hpfx Files|
      }
     }
-   end split
-  split again
-  end split
- split again
+   }
+  detach
+  end fork
  end split
-split again
- split
+fork again
+ fork
   partition "sr_post  " {
    :shim_f63;
    package "sarra_devdocroot   " {
      package "posted_by_shim    "{
-      :hpfx files;
+      :hpfx files|
      }
    }
   }
-  ->xs_tsource_shim;
-  (o)
-
- split again
+  :xs_tsource_shim}
+  detach
+ fork again
   partition "sr_post  " {
    :test2_f61;
   }
-  ->xs_tsource_post;
-  (o)
+  :xs_tsource_post}
 
-  split
+  fork
    partition "sr_poll  " {
     :f62;
    }
-   ->xs_tsource_poll;
-   (o)
+   :xs_tsource_poll}
   partition "sr_subscribe  " {
     :f71;
     package "sarra_devdocroot   " {
-     :recd_by_srpoll  |
+     package "recd_by_srpoll   " {
+      :hpfx files|
+     }
     }
    }
-
-  split again
+   detach
+  fork again
    partition "sr_subscribe  " {
     :f70;
     package "sarra_devdocroot   " {
-     :/posted_by_srpost  |
+     package "posted_by_srpost   " {
+      :hpfx files|
+     }
     }
    }
-  end split
- end split
-split again
-end split
+   detach
+  end fork
+ end fork
+end fork
 
 partition "sr_shovel   " {
  :pclean_f90;
+ package "sarra_devdocroot   " {
+  package "all subfolders   " {
+   :hpfx Files|
+  }
+ }
 }
 
 partition "sr_shovel   " {
  :pclean_f91;
+ package "sarra_devdocroot   " {
+  package "all subfolders   " {
+   :test files (.hlink, .slink, .moved)         |
+  }
+ }
 }
 
 partition "sr_shovel   " {
  :pclean_f92;
+ package "sarra_devdocroot   " {
+   :all files|
+ }
 }
+
+legend right
+Legend
+|= |= Type |
+|      ->              | messages flow            |
+| labeled rectangle    | sarracenia component     |
+| rounded rectangle    | flow test component      |
+| margin rectangle     | file set                 |
+| bracketed test       | exchange                 |
+endlegend
 
 @enduml

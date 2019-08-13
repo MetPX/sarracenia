@@ -120,6 +120,9 @@ legend right
 Legend
 |= |= Type |
 | yellow dot| Sarracenia component     |
+|      -(     | exchange interface|
+|      -O     | post exchange interface|
+|      ---    | filesystem interface   |
 | rectangle| RabbitMQ queue |
 | 3D rectangle   | RabbitMQ exchange |
 endlegend
