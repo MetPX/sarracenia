@@ -1145,7 +1145,7 @@ class sr_post(sr_instances):
             done = False
             try:
                 done = self.process_event(event, src, dst)
-            except FileNotFoundError as err:
+            except OSError as err:
                 self.logger.error("could not process event({}): {}".format(event, err))
                 self.logger.debug("Exception details:", exc_info=True)
                 self.left_events.pop(key)
