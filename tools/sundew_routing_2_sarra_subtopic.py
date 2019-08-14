@@ -54,6 +54,7 @@ for table in sys.argv[1:-2]:
             elif words[0] == 'key' :
                print("key %s" % words[1])
                pattern = '.*' + words[1].replace('_','.*') + '.*'
+               pattern = pattern.replace('+','.*')
                table_entry = (pattern, re.compile(pattern) )
                table_pattern_list.append( table_entry )
 
