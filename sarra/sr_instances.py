@@ -597,7 +597,7 @@ class sr_instances(sr_config):
         else:
            log_age = 0
 
-        now      = time.time()
+        now      = nowflt()
         elapse   = now - log_age
 
         if elapse <= self.sanity_log_dead : return

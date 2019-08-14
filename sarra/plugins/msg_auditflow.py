@@ -25,12 +25,9 @@ class Msg_AuditFlow(object):
   
           
     def on_message(self,parent):
- 
         import os,filecmp
         import os.path
         msg = parent.msg
-        #parent.logger.info("msg_delete received: %s %s%s topic=%s lag=%g %s" % \
-        #   ( msg.pubtime, msg.baseurl, msg.relpath, msg.topic, msg.get_elapse(), msg.hdrstr ) )
 
       
         middir = msg.new_dir.replace(parent.currentDir+os.sep,'')

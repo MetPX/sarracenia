@@ -32,6 +32,9 @@ The EGC code (i.e: egc ocean,c1,c2,c3,c4,c5) in the subject field to represent t
 """
 
 import logging, telnetlib, sys, os, stat, time
+
+from sarra.sr_util import nowflt
+
 try: from sr_credentials import *
 except: from sarra.sr_credentials import *
 
@@ -144,7 +147,7 @@ class LESSender(object):
 
 		# Transmit the file over telnet
 		try:
-			start = time.time()
+			start = nowflt()
 
 			tn = telnetlib.Telnet(server, port, timeout)
 
@@ -166,7 +169,7 @@ class LESSender(object):
 			tn.close()
 
 			nbBytes = os.stat(filepath)[stat.ST_SIZE]
-			end = time.time()
+			end = nowflt()
 			logger.info("file_send_egc_les: ({0} bytes) file {1} delivered to: {2}, took {3}s".
 					format(nbBytes, os.path.basename(filepath), setting, end-start))
 			logger.info("file_send_egc_les: egc used: %s" % egc)

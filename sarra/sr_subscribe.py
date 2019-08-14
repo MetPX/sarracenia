@@ -1377,11 +1377,8 @@ class sr_subscribe(sr_instances):
            # N attempts to download
            i  = 1
            while i <= self.attempts :
-                 # it is confusing to see in log for the same product
-                 # Download failed on one line than... 
-                 # downloaded on next line
-                 # so insert a warning about subsequent  attempts
-                 if i != 1 : self.logger.warning("attempt %d" % i)
+                 if i != 1:
+                     self.logger.warning("downloading again, attempt %d" % i)
 
                  ok = self.__do_download__()
                  if ok : break
@@ -1758,13 +1755,15 @@ class sr_subscribe(sr_instances):
                       ok = self.process_message()
                       going_badly=0.01
 
-              except:
-                      self.logger.error( "%s/run going badly, so sleeping for %g" % (self.program_name, going_badly))
+              except Exception as err:
+                      err_msg = "{}/run going badly with {}, sleeping for {:.3f}."
+                      self.logger.error(err_msg.format(self.program_name, err, going_badly))
                       self.logger.debug('Exception details: ', exc_info=True)
                       if self.retry_mode:
                           self.consumer.msg_to_retry()
                       time.sleep(going_badly)
-                      if (going_badly < 5):  going_badly*=2
+                      if going_badly < 5:
+                          going_badly *= 2
 
     def save_message(self):
 

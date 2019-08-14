@@ -121,6 +121,8 @@ class sr_message():
         self.new_baseurl   = None
         self.new_relpath   = None
         self.to_clusters = []
+        self.tbegin = nowflt()
+        self.pubtime = None
 
     def change_partflg(self, partflg ):
         self.partflg       =  partflg 
@@ -311,8 +313,8 @@ class sr_message():
                    self.pubtime = self.notice.split(' ')[0]
                else:
                    self.pubtime, self.baseurl, self.relpath = self.notice.split(' ')[0:3]
-
            self.isRetry   = msg.isRetry
+
 
 
         # pulse message... parse it
@@ -325,9 +327,8 @@ class sr_message():
            self.isPulse = True
 
            # parse pulse notice
-           token        = self.notice.split(' ')
+           token = self.notice.split(' ')
            self.pubtime = token[0]
-           self.set_msg_time()
 
            # pulse message
            if self.topic == 'v02.pulse.message':
@@ -350,26 +351,36 @@ class sr_message():
               self.exchange = self.headers['exchange']
               del self.headers['exchange']
 
-           path  = token[2].strip('/')
+           path = token[2].strip('/')
            words = path.split('/')
-           self.topic    = self.post_topic_prefix + '.'.join(words[:-1])
+           self.topic = self.post_topic_prefix + '.'.join(words[:-1])
            self.logger.debug(" modified for topic = %s" % self.topic)
 
         # adjust headers from -headers option
 
         self.trim_headers()
 
-        token        = self.topic.split('.')
+        token = self.topic.split('.')
         self.version = token[0]
 
-        if self.version == 'v00' :
+        if self.version == 'v00':
            self.parse_v00_post()
-
         else:
            self.parse_v02_post()
 
+    def get_elapse_pubtime(self):
+        """ Time calculated between now and the time of the first publication in seconds
+
+        :return: the result of now - pubtime
+        """
+        return nowflt() - timestr2flt(self.pubtime)
+
     def get_elapse(self):
-        return time.time()-self.tbegin
+        """ Time calculated between now and the time of the msg decoded
+
+        :return: the result of now - tbegin
+        """
+        return nowflt() - self.tbegin
 
     def report_publish(self,code,message):
         self.code               = code
@@ -509,7 +520,6 @@ class sr_message():
             self.set_parts_from_str(self.partstr)
         self.set_sum_str(self.sumstr)
         self.set_suffix()
-        self.set_msg_time()
         self.set_hdrstr()
 
     def part_suffix(self):
@@ -860,64 +870,54 @@ class sr_message():
         self.logger.error("bad unknown conditions")
         return
 
-    def set_msg_time(self):
-        parts       = self.pubtime.split('.')
-        if parts[0][8] == 'T':
-            ts          = time.strptime(parts[0]+" +0000", "%Y%m%dT%H%M%S %z" )
-        else:
-            ts          = time.strptime(parts[0]+" +0000", "%Y%m%d%H%M%S %z" )
-        ep_msg      = calendar.timegm(ts)
-        self.tbegin = ep_msg + float('0.'+parts[1])
+    def set_notice_url(self, url, time=None):
+        self.url = url
+        self.set_pubtime(time)
 
-    def set_notice_url(self,url,time=None):
-        self.url    = url
-        self.pubtime = time
-        if time    == None : self.set_time()
-        path        = url.path.strip('/')
-        notice_path = path.replace(       ' ','%20')
-        notice_path = notice_path.replace('#','%23')
+        path = url.path.strip('/')
+        notice_path = path.replace(' ', '%20')
+        notice_path = notice_path.replace('#', '%23')
 
-        if url.scheme == 'file' :
-           self.notice = '%s %s %s' % (self.pubtime,'file:','/'+notice_path)
+        if url.scheme == 'file':
+           self.notice = '%s %s %s' % (self.pubtime, 'file:', '/'+notice_path)
            self.baseurl = 'file:'
            self.relpath = '/'+notice_path
            return
 
-        urlstr      = url.geturl()
-        static_part = urlstr.replace(url.path,'') + '/'
+        urlstr = url.geturl()
+        static_part = urlstr.replace(url.path, '') + '/'
 
-        if url.scheme == 'http' :
-           self.notice = '%s %s %s' % (self.pubtime,static_part,notice_path)
+        if url.scheme == 'http':
+           self.notice = '%s %s %s' % (self.pubtime, static_part, notice_path)
            self.baseurl = static_part
            self.relpath = notice_path
            return
 
-        if url.scheme[-3:] == 'ftp'  :
-           if url.path[:2] == '//'   : notice_path = '/' + notice_path
+        if url.scheme[-3:] == 'ftp':
+           if url.path[:2] == '//':
+               notice_path = '/' + notice_path
 
-        self.notice = '%s %s %s' % (self.pubtime,static_part,notice_path)
+        self.notice = '%s %s %s' % (self.pubtime, static_part, notice_path)
         self.baseurl = static_part
         self.relpath = notice_path
 
-    def set_notice(self,baseurl,relpath,time=None):
-
-        self.pubtime    = time
+    def set_notice(self, baseurl, relpath, time=None):
         self.baseurl = baseurl
         self.relpath = relpath
-        if not time  : self.set_time()
+        self.set_pubtime(time)
 
-        notice_relpath = relpath.replace(       ' ','%20')
-        notice_relpath = notice_relpath.replace('#','%23')
+        notice_relpath = relpath.replace(' ', '%20')
+        notice_relpath = notice_relpath.replace('#', '%23')
 
-        self.notice = '%s %s %s' % (self.pubtime,baseurl,notice_relpath)
+        self.notice = '%s %s %s' % (self.pubtime, baseurl, notice_relpath)
         self.baseurl = baseurl
         self.relpath = notice_relpath
 
         #========================================
         # COMPATIBILITY TRICK  for the moment
 
-        self.urlstr  = baseurl+notice_relpath
-        self.url     = urllib.parse.urlparse(self.urlstr)
+        self.urlstr = baseurl+notice_relpath
+        self.url = urllib.parse.urlparse(self.urlstr)
         #========================================
 
     def set_parts(self, partflg='1', chunksize=0, block_count=1, remainder=0, current_block=0):
@@ -990,12 +990,11 @@ class sr_message():
         if self.sumstr  == None or self.sumflg == 'R' : return
         self.suffix = self.part_suffix()
 
-    def set_time(self):
-        now  = time.time()
-        frac = '%f' % now
-        nows = time.strftime("%Y%m%d%H%M%S",time.gmtime()) + '.' + frac.split('.')[1]
-        self.pubtime = nows
-        if not hasattr(self,'tbegin') : self.tbegin = now
+    def set_pubtime(self, time=None):
+        if not time:
+            self.pubtime = nowstr()
+        else:
+            self.pubtime = time
 
     def set_to_clusters(self,to_clusters=None):
         if to_clusters != None :
@@ -1043,8 +1042,11 @@ class sr_message():
         self.topic        = self.topic.replace('..','.')
 
     def start_timer(self):
-        self.tbegin = time.time()
+        """ Set a timestamp at the creation of a new msg and/or at the decoding of a new raw_msg
 
+        :return:
+        """
+        self.tbegin = nowflt()
 
     # adjust headers from -headers option
 

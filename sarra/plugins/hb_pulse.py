@@ -19,17 +19,17 @@
   so maybe this is never a problem?  would be a problem if flows are extremely uneven (high for short periods.)
 
 """
+from sarra.sr_util import nowflt
 
-class Hb_Pulse(object): 
+
+class Hb_Pulse(object):
 
     def __init__(self,parent):
         self.init(parent)
         self.skip_first         = True
 
     def init(self,parent):
-        import time
-
-        self.last_time          = time.time()
+        self.last_time          = nowflt()
         self.last_message_count = parent.message_count
         self.last_publish_count = parent.publish_count
         self.last_pulse_count   = parent.pulse_count

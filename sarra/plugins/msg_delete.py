@@ -12,17 +12,22 @@ class Msg_Delete(object):
         parent.logger.debug("msg_delete initialized")
           
     def on_message(self,parent):
- 
         import os
+
         msg = parent.msg
 
-        f="%s/%s" % (msg.new_dir, msg.new_file) 
+        f = "%s/%s" % (msg.new_dir, msg.new_file)
         parent.logger.info("msg_delete: %s" % f)
         try:
-            if os.path.exists(f):
-                os.unlink( f );
-        except:
-            pass
+            os.unlink(f)
+            os.unlink(f.replace('/cfr/', '/cfile/'))
+        except OSError as err:
+            parent.logger.error("could not unlink {}: {}".format(f, err))
+            parent.logger.debug("Exception details:", exc_info=True)
+            parent.consumer.sleep_now = parent.consumer.sleep_min
+            parent.consumer.msg_to_retry()
+            parent.msg.isRetry = False
+            return False
 
         return True
 

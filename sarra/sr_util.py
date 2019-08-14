@@ -125,7 +125,7 @@ class sr_proto():
         self.kbytes_ps = self.parent.kbytes_ps
         self.bytes_ps  = self.kbytes_ps * 1024
         self.tbytes    = 0
-        self.tbegin    = time.time()
+        self.tbegin    = nowflt()
         self.timeout   = self.parent.timeout
 
         self.iotime    = 30
@@ -225,7 +225,8 @@ class sr_proto():
 
         rw_length     = 0
         self.tbytes   = 0.0
-        self.tbegin   = time.time()
+        self.tbegin   = nowflt()
+
 
         # length = 0, transfer entire remote file to local file
 
@@ -350,7 +351,7 @@ class sr_proto():
         self.logger.debug("sr_proto throttle")
         self.tbytes = self.tbytes + len(buf)
         span  = self.tbytes / self.bytes_ps
-        rspan = time.time() - self.tbegin
+        rspan = nowflt() - self.tbegin
         if span > rspan :
            stime = span-rspan
            time.sleep(span-rspan)
@@ -374,7 +375,7 @@ class sr_proto():
     def write_chunk_init(self,proto):
         self.chunk_iow = proto
         self.tbytes    = 0.0
-        self.tbegin    = time.time()
+        self.tbegin    = nowflt()
         self.rw_length = 0
         if self.iotime : alarm_set(self.iotime)
 
@@ -666,7 +667,7 @@ class sr_transport():
 
                 # the file does not exist... warn, sleep and return false for the next attempt
                 if not os.path.exists(local_file):
-                   self.logger.warning("file %s does not exist (product collision or base_dir not set)" % local_file)
+                   self.logger.warning("product collision or base_dir not set, file %s does not exist" % local_file)
                    time.sleep(0.01)
                    return False
 
@@ -713,7 +714,7 @@ class sr_transport():
                 if parent.reportback :
                    msg.report_publish(201,'Delivered')
 
-        except:
+        except Exception as err:
 
                 #removing lock if left over
                 if new_lock != None and hasattr(proto,'delete') :
@@ -905,31 +906,30 @@ def startup_args(sys_argv):
     
 """
 
+def nowflt():
+    return timestr2flt(nowstr())
+
+def nowstr():
+    return timeflt2str(time.time())
+
 def timeflt2str( f ):
-    nsec = ('%.9g' % (f%1))[1:]
-    s  = time.strftime("%Y%m%d%H%M%S",time.gmtime(f)) + nsec
-    return(s) 
+    utcdt = datetime.datetime.utcfromtimestamp(f)
+    return utcdt.strftime("%Y%m%d%H%M%S.%f")[:18]
 
 def v3timeflt2str( f ):
-
-    nsec = ('%.9g' % (f%1))[1:]
-    s  = time.strftime("%Y%m%dT%H%M%S",time.gmtime(f)) + nsec
-    return(s) 
+    utcdt = datetime.datetime.utcfromtimestamp(f)
+    return utcdt.strftime("%Y%m%dT%H%M%S.%f")[:18]
  
 
 def timestr2flt( s ):
-
     if s[8] == "T":
-        t=datetime.datetime(  int(s[0:4]), int(s[4:6]), int(s[6:8]), int(s[9:11]), int(s[11:13]), int(s[13:15]), 0, datetime.timezone.utc )
-        f=calendar.timegm(  t.timetuple())+float('0'+s[15:])
-    else:
-        t=datetime.datetime(  int(s[0:4]), int(s[4:6]), int(s[6:8]), int(s[8:10]), int(s[10:12]), int(s[12:14]), 0, datetime.timezone.utc )
-        f=calendar.timegm(  t.timetuple())+float('0'+s[14:])
-    return(f)
+        s = s.replace('T', '')
+    dt = datetime.datetime.strptime(s[:18], '%Y%m%d%H%M%S.%f')
+    utcdt = dt.replace(tzinfo=datetime.timezone.utc)
+    return utcdt.timestamp()
 
 def timev2tov3str( s ):
-
     if s[8] == 'T':
-        return(s)
+        return s
     else:
-        return s[0:8] + 'T' + s[8:] 
+        return "{}T{}".format(s[0:8], s[8:])

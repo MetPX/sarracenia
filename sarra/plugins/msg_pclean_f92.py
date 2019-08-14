@@ -1,93 +1,48 @@
 #!/usr/bin/python3
-
+""" msg_pclean_f90 module: second file propagation test for Sarracenia components (in flow test)
 """
-  Msg_Clean_F92
-  
-  plugin that check for finality of each products... should be removed everywhere
-
-  The post_log count should be the same as the original flow test count
-
-"""
-import os
+from sarra.plugins.msg_pclean import Msg_Pclean
 
 
-class Msg_Clean_F92(object):
-    def __init__(self, parent):
-        self.sarr_f20_path = None
-        self.subs_f30_path = None
-        self.send_f50_path = None
-        self.subs_f60_path = None
-        self.subs_f70_path = None
-        self.subs_f71_path = None
-        self.flow_post_cp = None
+class Msg_Clean_F92(Msg_Pclean):
+    """ This plugin that manage the removal of every file
 
+     - it fails if one removal failed
+    """
     def on_message(self, parent):
-        logger = parent.logger
-        msg = parent.msg
-        root = parent.currentDir
-        relp = msg.relpath
+        import os
 
-        logger.info("msg_pclean_f92.py on_message")
+        parent.logger.info("msg_pclean_f92.py on_message")
 
-        if 'pclean_f91' in msg.headers:
-            ext = msg.headers['pclean_f91']
+        result = True
+        msg_relpath = parent.msg.relpath.strip('/')
+        ext = self.get_extension(parent.msg)
+        if ext is None:
+            self.log_msg_details(parent)
+            return False
+
+        if ext == '.moved':
+            # f30 watched file moved then does not need to delete it and it has propagated the move to f50, f60, f61
+            fxx_dirs = [self.all_fxx_dirs[0]] + self.all_fxx_dirs[5:]
+            path_dict = self.build_path_dict(parent.currentDir, fxx_dirs, msg_relpath)
         else:
-            logger.info("msg_log received: %s %s%s topic=%s lag=%g %s" % (msg.pubtime, msg.baseurl, msg.relpath, msg.topic, msg.get_elapse(), msg.hdrstr))
-            logger.error("The message received is incorrect not from shovel clean_f91")
-            return False
+            # f30 watched file hasnt moved now deleting it
+            fxx_dirs = self.all_fxx_dirs[0:2] + self.all_fxx_dirs[5:]
+            path_dict = self.build_path_dict(parent.currentDir, fxx_dirs, msg_relpath)
 
-        # build all 3 paths of a successful propagated path
-        if relp[0] != '/':
-            relp = '/' + relp
-        self.sarr_f20_path = root + relp  # sarra
-        self.subs_f30_path = root + '/downloaded_by_sub_t' + relp  # subscribe t_sub
-        # f40 is watch... no file
-        self.send_f50_path = root + '/sent_by_tsource2send' + relp  # sender
-        self.subs_f60_path = root + '/downloaded_by_sub_u' + relp  # subscribe u_sftp_f60
-        # at f60 there is a post and a poll... no file
-        self.subs_f70_path = root + '/posted_by_srpost_test2' + relp  # subscribe ftp_f70
-        self.subs_f71_path = root + '/recd_by_srpoll_test1' + relp  # subscribe q_f71
-        self.flow_post_cp = root + '/posted_by_shim' + relp  # flow_post cp
+        # we did the extension test (f91), then we need to remove the result files with the same propagation pattern
+        fxx_dirs = [self.all_fxx_dirs[1]] + self.all_fxx_dirs[5:]
+        path_dict.update(self.build_path_dict(parent.currentDir, fxx_dirs, msg_relpath, ext))
 
-        # removed count
-        removed = 0
-        if not os.path.exists(self.sarr_f20_path):
-            removed += 1
-        if not os.path.exists(self.subs_f30_path):
-            removed += 1
-        if not os.path.exists(self.send_f50_path):
-            removed += 1
-        if not os.path.exists(self.subs_f60_path):
-            removed += 1
-        if not os.path.exists(self.subs_f70_path):
-            removed += 1
-        if not os.path.exists(self.subs_f71_path):
-            removed += 1
-        if not os.path.exists(self.flow_post_cp):
-            removed += 1
-        if not os.path.exists(self.subs_f30_path + ext):
-            removed += 1
-        if not os.path.exists(self.send_f50_path + ext):
-            removed += 1
-        if not os.path.exists(self.subs_f60_path + ext):
-            removed += 1
-        if not os.path.exists(self.subs_f70_path + ext):
-            removed += 1
-        if not os.path.exists(self.subs_f71_path + ext):
-            removed += 1
-        if not os.path.exists(self.flow_post_cp + ext):
-            removed += 1
+        for fxx_dir, path in path_dict.items():
+            try:
+                os.unlink(path)
+            except OSError as err:
+                parent.logger.error("could not unlink in {}: {}".format(fxx_dir, err))
+                parent.logger.debug("Exception details:", exc_info=True)
+                result = False
 
-        # propagation unfinished ... (or test error ?)
-        # retry message screened out of on_message is taken out of retry
-        # here we enforce keeping it... to verify propagation again
-        if removed != 13:
-            logger.error("not fully cleaned up paths: %s" % relp)
-            return False
-
-        msg.headers['pclean_f92'] = ext
-        del msg.headers['pclean_f91']
-        return True
+        return result
 
 
 self.plugin = 'Msg_Clean_F92'

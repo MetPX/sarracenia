@@ -26,7 +26,10 @@
 
 import os,stat,time
 
-class Transformer(object): 
+from sarra.sr_util import timestr2flt, nowflt
+
+
+class Transformer(object):
 
 
     def __init__(self,parent):
@@ -45,10 +48,9 @@ class Transformer(object):
         msg    = parent.msg
 
         import calendar
-        from sarra.sr_util import timestr2flt
 
         then=timestr2flt(msg.pubtime)
-        now=time.time()
+        now=nowflt()
 
         # Set the maximum age, in seconds, of a message to retrieve.
         lag=now-then

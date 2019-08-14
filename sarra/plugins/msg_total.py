@@ -24,7 +24,10 @@
 
 import os,stat,time
 
-class Msg_Total(object): 
+from sarra.sr_util import timeflt2str, timestr2flt, nowflt
+
+
+class Msg_Total(object):
 
 
     def __init__(self,parent):
@@ -57,7 +60,7 @@ class Msg_Total(object):
         else:
             parent.msg_total_interval=5
 
-        now=time.time()
+        now=nowflt()
 
         parent.msg_total_last = now
         parent.msg_total_start = now
@@ -80,13 +83,12 @@ class Msg_Total(object):
         import humanize
         import datetime
         import sys
-        from sarra.sr_util import timestr2flt
 
         if (parent.msg_total_msgcount == 0): 
             logger.info("msg_total: 0 messages received: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"  )
 
         msgtime = timestr2flt( msg.pubtime )
-        now=time.time()
+        now=nowflt()
 
         parent.msg_total_msgcount = parent.msg_total_msgcount + 1
 

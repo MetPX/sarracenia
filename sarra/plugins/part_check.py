@@ -3,6 +3,8 @@
 import os,stat,time
 from hashlib import md5
 
+from sarra.sr_util import timeflt2str, timestr2flt, nowflt
+
 """
    Confirm that files downloaded are the ones announced, by comparing the 
    checksums of computed as parts are downloaded with the corresponding 
@@ -42,11 +44,10 @@ class PartCheck(object):
           msg    = parent.msg
 
           import calendar
-          from sarra.sr_util import timestr2flt
 
 
           then=timestr2flt(msg.pubtime)
-          now=time.time()
+          now=nowflt()
           lag= now-then
 
           if msg.onfly_checksum != msg.checksum :

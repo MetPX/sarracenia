@@ -20,7 +20,10 @@
 
 import os,stat,time
 
-class Msg_Speedo(object): 
+from sarra.sr_util import timestr2flt, nowflt
+
+
+class Msg_Speedo(object):
 
 
     def __init__(self,parent):
@@ -43,7 +46,7 @@ class Msg_Speedo(object):
         else:
             parent.msg_speedo_interval=5
 
-        now=time.time()
+        now=nowflt()
 
         parent.msg_speedo_last = now
         parent.msg_speedo_msgcount=0
@@ -57,10 +60,9 @@ class Msg_Speedo(object):
         import calendar
         import humanize
         import datetime
-        from sarra.sr_util import timestr2flt
 
         msgtime=timestr2flt(msg.pubtime)
-        now=time.time()
+        now=nowflt()
 
         parent.msg_speedo_msgcount = parent.msg_speedo_msgcount + 1
 

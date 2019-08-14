@@ -17,7 +17,10 @@
 
 import os,stat,time
 
-class Transformer(object): 
+from sarra.sr_util import timestr2flt, nowflt
+
+
+class Transformer(object):
 
     import calendar
 
@@ -29,10 +32,9 @@ class Transformer(object):
         msg    = parent.msg
 
         import calendar
-        from sarra.sr_util import timestr2flt
 
         then=timestr2flt(msg.pubtime)
-        now=time.time()
+        now=nowflt()
 
         logger.info("print_lag, posted: %s, lag: %g sec. to deliver: %s, " % (msg.pubtime, (now-then), msg.new_file))
 

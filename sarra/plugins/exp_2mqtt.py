@@ -39,6 +39,8 @@ Options:
 
 import paho.mqtt.client as mqtt
 
+from sarra.sr_util import nowflt
+
 
 class EXP_2MQTT(object): 
 
@@ -60,7 +62,7 @@ class EXP_2MQTT(object):
       logger=parent.logger
 
       if parent.no < 1: # randomize broker used in foreground testing.
-         i = int( time.time() % len(parent.exp_2mqtt_post_broker) )
+         i = int( nowflt() % len(parent.exp_2mqtt_post_broker) )
       else:
          i = (parent.no-1) % len(parent.exp_2mqtt_post_broker)
 

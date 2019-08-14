@@ -89,13 +89,16 @@ def self_test():
     dflt = 1500897051.125
     dstr = '20170724115051.125'
 
-    tstr = timeflt2str(dflt)
     tflt = timestr2flt(dstr)
+    tstr = timeflt2str(dflt)
 
-    if dflt != tflt or dstr != tstr :
-       print("test 12: timeflt2str timestr2flt : Failed")
-       print("expected: %g, got: %g" % ( tflt, dflt ) )
-       print("expected: %s, got: %s" % ( tstr, dstr ) )
+    if dflt != tflt:
+       print("test 12.1: timestr2flt : Failed")
+       print("expected: %g, got: %g" % ( dflt, tflt ) )
+       failed = True
+    if dstr != tstr:
+       print("test 12.2: timeflt2str : Failed")
+       print("expected: %s, got: %s" % ( dstr, tstr ) )
        failed = True
 
     # ===================================

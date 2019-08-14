@@ -12,7 +12,10 @@
 
 import os,stat,time
 
-class File_Age(object): 
+from sarra.sr_util import nowflt, timestr2flt
+
+
+class File_Age(object):
 
     def __init__(self,parent):
         parent.logger.debug("file_age initialized")
@@ -23,12 +26,7 @@ class File_Age(object):
         if not 'mtime' in parent.msg.headers.keys():
            return True
 
-        try: 
-           from sr_util import timestr2flt
-        except:
-           from sarra.sr_util import timestr2flt
-
-        now = time.time()
+        now = nowflt()
         mtime = timestr2flt(parent.msg.headers['mtime'])
         age = now-mtime
         parent.logger.info("file_age %g seconds for %s" % ( age, parent.msg.new_file) )

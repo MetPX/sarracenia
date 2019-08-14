@@ -26,7 +26,7 @@ function summarize_performance {
     for i in $* ; do
        best_fn=''
        printf "\n\t$i\n\n"
-       for j in ${path}_${i}_*.log*; do
+       for j in ${path}_${i}_*.log; do
            msg="`grep ${pattern} ${j} | tail -1`"
            if [[ -z "$msg" ]]; then
                continue
@@ -46,7 +46,7 @@ function summarize_logs {
     printf "\n$1 Summary:\n"
     input_size=${#1}
     fcl="$LOGDIR"/flowcheck_$1_logged.txt
-    msg_counts=`grep -h -o "\[$1\] *.*" "$LOGDIR"/*.log* | sort | uniq -c -w"$((input_size+20))" | sort -n -r`
+    msg_counts=`grep -h -o "\[$1\] *.*" "$LOGDIR"/*.log | sort | uniq -c -w"$((input_size+20))" | sort -n -r`
     echo '' > ${fcl}
 
     if [[ -z $msg_counts ]]; then
@@ -58,11 +58,11 @@ function summarize_logs {
             count=`echo ${msg_line} | awk '{print $1}'`
             msg=`echo ${msg_line} | sed "s/^ *[0-9]* \[$1\] *//g"`
             pattern="\[$1\] *${msg}"
-            filelist=($(grep -l ${pattern::$((input_size + 22))} "$LOGDIR"/*.log*))
+            filelist=($(grep -l ${pattern::$((input_size + 22))} "$LOGDIR"/*.log))
             if [[ ${filelist[@]} ]]; then
-                first_filename=`basename ${filelist[0]} | sed 's/ /\n/g' | sed 's|.*\/||g' | sed 's/_[0-9][0-9]\.log.*\|.log.*//g' | uniq`
+                first_filename=`basename ${filelist[0]} | sed 's/ /\n/g' | sed 's|.*\/||g' | sed 's/_[0-9][0-9]\.log\|.log//g' | uniq`
                 files_nb=${#filelist[@]}
-                echo "  $count%${first_filename}%(${files_nb} file)%`echo ${msg_line} | sed "s/^ *[0-9]* //g"`" >> ${fcl}
+                echo "  ${count}"$'\u2620'"${first_filename}"$'\u2620'"(${files_nb} file)"$'\u2620'"`echo ${msg_line} | sed "s/^ *[0-9]* //g"`" >> ${fcl}
                 echo ${filelist[@]} | sed 's/^//g' | sed 's/ \//\n\//g' >> ${fcl}
                 echo -e >> ${fcl}
             fi
@@ -70,11 +70,11 @@ function summarize_logs {
        IFS=${backup_ifs}
        result=`grep -c $1 ${fcl}`
        if [[ ${result} -gt 10 ]]; then
-           grep $1 ${fcl} | head | column -t -s % | cut -c -130
+           grep $1 ${fcl} | head | column -t -s $'\u2620' | cut -c -130
            echo
            echo "More than 10 TYPES OF $1S found... for the rest, have a look at $fcl for details"
        else
-           grep $1 ${fcl} | column -t -s % | cut -c -130
+           grep $1 ${fcl} | column -t -s $'\u2620' | cut -c -130
        fi
     fi
 }
@@ -90,11 +90,11 @@ if [[ -z "$skip_summaries" ]]; then
     echo
 
     if [[ ! "$SARRA_LIB" ]]; then
-       echo NB retries for sr_subscribe t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f30*.log* | wc -l`
-       echo NB retries for sr_sender    `grep Retrying "$LOGDIR"/sr_sender*.log* | wc -l`
+       echo NB retries for sr_subscribe t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f30*.log | wc -l`
+       echo NB retries for sr_sender    `grep Retrying "$LOGDIR"/sr_sender*.log | wc -l`
     else
-       echo NB retries for "$SARRA_LIB"/sr_subscribe.py t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f30*.log* | wc -l`
-       echo NB retries for "$SARRA_LIB"/sr_sender.py    `grep Retrying "$LOGDIR"/sr_sender*.log* | wc -l`
+       echo NB retries for "$SARRA_LIB"/sr_subscribe.py t_f30 `grep Retrying "$LOGDIR"/sr_subscribe_t_f30*.log | wc -l`
+       echo NB retries for "$SARRA_LIB"/sr_sender.py    `grep Retrying "$LOGDIR"/sr_sender*.log | wc -l`
     fi
 
     summarize_logs ERROR

@@ -96,6 +96,7 @@ def self_test():
           failed = True
 
     # build a message
+    msg.pubtime = "20190109084420.788106"
     msg.start_timer()
     msg.topic   = "v02.post.test"
     msg.notice  = "notice"
