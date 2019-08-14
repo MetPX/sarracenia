@@ -728,18 +728,11 @@ class sr_instances(sr_config):
         # ===
 
         self.logger.debug("cmd = %s" % cmd)
-
-        # FIXME: at around 3.4, https://docs.python.org/3/library/os.html#fd-inheritance 
+        # FIXME: at around 3.4, https://docs.python.org/3/library/os.html#fd-inheritance
         #   inheritance of file descriptors changed.  I think earlier versions require PIPE
         #   later versions None is better.
         #   use of Pipe causes issue: https://github.com/MetPX/sarracenia/issues/63
-
-        if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 4) :
-            pid = subprocess.Popen(cmd,shell=False,\
-                stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        else:  
-            pid = subprocess.Popen(cmd,shell=False,close_fds=False)
-
+        subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     def start_parent(self):
         self.logger.debug(" pid %d instances %d no %d \n" % (os.getpid(),self.nbr_instances,self.no))

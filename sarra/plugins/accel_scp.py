@@ -106,7 +106,7 @@ class ACCEL_SCP(object):
        cmd  = parent.download_accel_scp_command[0].split() + [ arg1, arg2 ]
        logger.info("accel_scp :  %s" % ' '.join(cmd))
 
-       p = subprocess.Popen( cmd, stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+       p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
        outstr, dummy = p.communicate()
        result = p.returncode
 
@@ -140,7 +140,7 @@ class ACCEL_SCP(object):
        cmd  = parent.download_accel_scp_command[0].split() + [ arg1, arg2 ]
        logger.info("accel_scp :  %s" % ' '.join(cmd))
 
-       p = subprocess.Popen( cmd, stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+       p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
        outstr, dummy = p.communicate()
        result = p.returncode
 
