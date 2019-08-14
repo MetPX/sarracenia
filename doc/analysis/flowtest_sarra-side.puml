@@ -66,7 +66,6 @@ fork
      }
     }
    }
-  detach
   fork again
    partition "sr_subscribe  " {
     :cp_f61;
@@ -76,8 +75,8 @@ fork
      }
     }
    }
-  detach
   end fork
+  stop
  end split
 fork again
  fork
@@ -90,7 +89,6 @@ fork again
    }
   }
   :xs_tsource_shim}
-  detach
  fork again
   partition "sr_post  " {
    :test2_f61;
@@ -110,7 +108,6 @@ fork again
      }
     }
    }
-   detach
   fork again
    partition "sr_subscribe  " {
     :f70;
@@ -120,9 +117,9 @@ fork again
      }
     }
    }
-   detach
   end fork
  end fork
+ stop
 end fork
 
 partition "sr_shovel   " {
@@ -132,23 +129,37 @@ partition "sr_shovel   " {
    :hpfx Files|
   }
  }
-}
-
-partition "sr_shovel   " {
- :pclean_f91;
  package "sarra_devdocroot   " {
   package "all subfolders   " {
    :test files (.hlink, .slink, .moved)         |
   }
  }
+ if (results) then (false)
+  stop
+ endif
 }
+:xs_tsource_clean_f90}
+
+partition "sr_shovel   " {
+ :pclean_f91;
+ if (results) then (false)
+  stop
+ endif
+}
+:xs_tsource_clean_f91}
+
 
 partition "sr_shovel   " {
  :pclean_f92;
  package "sarra_devdocroot   " {
    :all files|
  }
+ if (results) then (false)
+  stop
+ endif
 }
+:xs_tsource_clean_f92}
+stop
 
 legend right
 Legend
@@ -157,7 +168,7 @@ Legend
 | labeled rectangle    | sarracenia component     |
 | rounded rectangle    | flow test component      |
 | margin rectangle     | file set                 |
-| bracketed test       | exchange                 |
+| bracketed text       | exchange                 |
 endlegend
 
 @enduml
