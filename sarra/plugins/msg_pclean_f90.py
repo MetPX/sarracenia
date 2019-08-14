@@ -39,6 +39,7 @@ class Msg_Pclean_F90(Msg_Pclean):
                 parent.logger.error(err_msg.format(fxx_dir, lag))
                 parent.logger.debug("file missing={}".format(path))
                 result = False
+                break
             elif not filecmp.cmp(f20_path, path):
                 # file differ check: f20 against others
                 parent.logger.warning("skipping, file differs from f20 file: {}".format(path))

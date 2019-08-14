@@ -19,9 +19,10 @@ class Msg_Pclean(object):
         self.test_extension_list = ['.slink', '.hlink', '.moved']
         self.ext_key = 'pclean_ext'
         self.all_fxx_dirs = ['',  # sarra f20
-                             'downloaded_by_sub_t',  # subscribe amqp f30
+                             'downloaded_by_sub_amqp',  # subscribe amqp f30
+                             'downloaded_by_sub_rabbitmqtt',  # subscribe mqtt f30
                              # f40 is watch... no file
-                             'sent_by_tsource2send',  # subscribe rabbitmqtt f50
+                             'sent_by_tsource2send',  # sender f50
                              'downloaded_by_sub_u',  # subscribe sub_u f60
                              'downloaded_by_sub_cp',  # subscribe sub_cp f61
                              'posted_by_shim',  # shim f63

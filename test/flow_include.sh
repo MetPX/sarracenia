@@ -185,11 +185,15 @@ function countall {
   countthem "`grep '\[INFO\] post_log' "$LOGDIR"/sr_watch_f40_*.log | wc -l`"
   totwatch="${tot}"
 
-  sumlogs msg_total $LOGDIR/sr_subscribe_t_f30_*.log
-  totmsgt="${tot}"
+  sumlogs msg_total $LOGDIR/sr_subscribe_amqp_f30_*.log
+  totmsgamqp="${tot}"
+  countthem "`grep '\[INFO\] file_log downloaded to:' "$LOGDIR"/sr_subscribe_amqp_f30_*.log | wc -l`"
+  totfileamqp="${tot}"
 
-  countthem "`grep '\[INFO\] file_log downloaded to:' "$LOGDIR"/sr_subscribe_t_f30_*.log | wc -l`"
-  totfilet="${tot}"
+  sumlogs msg_total $LOGDIR/sr_subscribe_rabbitmqtt_f31_*.log
+  totmsgrmqtt="${tot}"
+  countthem "`grep '\[INFO\] file_log downloaded to:' "$LOGDIR"/sr_subscribe_rabbitmqtt_f31_*.log | wc -l`"
+  totfilermqtt="${tot}"
 
   countthem "`grep '\[INFO\] post_log notice' "$LOGDIR"/sr_sender_tsource2send_f50_*.log | wc -l`"
   totsent="${tot}"

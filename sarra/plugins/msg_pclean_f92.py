@@ -23,15 +23,15 @@ class Msg_Clean_F92(Msg_Pclean):
 
         if ext == '.moved':
             # f30 watched file moved then does not need to delete it and it has propagated the move to f50, f60, f61
-            fxx_dirs = [self.all_fxx_dirs[0]] + self.all_fxx_dirs[5:]
+            fxx_dirs = [self.all_fxx_dirs[0]] + self.all_fxx_dirs[6:]
             path_dict = self.build_path_dict(parent.currentDir, fxx_dirs, msg_relpath)
         else:
             # f30 watched file hasnt moved now deleting it
-            fxx_dirs = self.all_fxx_dirs[0:2] + self.all_fxx_dirs[5:]
+            fxx_dirs = self.all_fxx_dirs[0:3] + self.all_fxx_dirs[6:]
             path_dict = self.build_path_dict(parent.currentDir, fxx_dirs, msg_relpath)
 
         # we did the extension test (f91), then we need to remove the result files with the same propagation pattern
-        fxx_dirs = [self.all_fxx_dirs[1]] + self.all_fxx_dirs[5:]
+        fxx_dirs = [self.all_fxx_dirs[1]] + self.all_fxx_dirs[6:]
         path_dict.update(self.build_path_dict(parent.currentDir, fxx_dirs, msg_relpath, ext))
 
         for fxx_dir, path in path_dict.items():

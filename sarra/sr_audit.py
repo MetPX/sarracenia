@@ -60,17 +60,11 @@ class sr_audit(sr_instances):
            self.hc = None
 
     def amqp_connect(self):
-        try:
-                self.hc = HostConnect(logger = self.logger)
-                self.hc.choose_amqp_alternative(self.use_amqplib, self.use_pika)
-                self.hc.loop = False
-                self.hc.set_url(self.admin)
-                self.hc.connect()
-        except: pass
-        #
-        # FIXME: I worry that ignoring the failure to connect is a problem.
-        #        PS, but this is how it was, and I can't demonstrate a problem
-        #        so left as-is for now.        
+        self.hc = HostConnect(logger = self.logger)
+        self.hc.choose_amqp_alternative(self.use_amqplib, self.use_pika)
+        self.hc.loop = False
+        self.hc.set_url(self.admin)
+        self.hc.connect()
 
     def amqp_del_exchange(self,e):
         self.logger.info("deleting exchange %s" % e)
@@ -207,8 +201,8 @@ class sr_audit(sr_instances):
         # loop build list of exchanges of interest
         # empty or rabbitmq-server defaults 'amq.' are taken off
 
-        exchange_rab = ['amq.direct','amq.fanout','amq.headers','amq.match', \
-                        'amq.rabbitmq.log','amq.rabbitmq.trace','amq.topic'  ]
+        exchange_rab = ['amq.direct','amq.fanout','amq.headers','amq.match',
+                        'amq.rabbitmq.log','amq.rabbitmq.trace','amq.topic']
 
         exchange_lst = []
         for edict in lst_dict :
@@ -321,8 +315,11 @@ class sr_audit(sr_instances):
         self.logger.info("sr_audit pumps using account: %s for pulse" % admin )
 
         # poll directory must exists
-        try    : os.makedirs(self.user_config_dir + "/poll", 0o775,True)
-        except : pass
+        try:
+            os.makedirs(self.user_config_dir + "/poll", 0o775,True)
+        except OSError as err:
+            self.logger.error("could not create directory ({}) with {}".format(self.user_config_dir, err))
+            self.logger.debug("Exception details", exc_info=True)
 
         cfn = self.user_config_dir + "/poll/pulse.conf"
         self.logger.info("sr_audit pulse configuration %s" % cfn )
@@ -359,8 +356,11 @@ class sr_audit(sr_instances):
         self.logger.info("sr_audit pumps using account: %s for report routing" % feeder )
 
         # shovel directory must exists
-        try    : os.makedirs(self.user_config_dir + "/shovel", 0o775,True)
-        except : pass
+        try:
+            os.makedirs(self.user_config_dir + "/shovel", 0o775,True)
+        except OSError as err:
+            self.logger.error("could not create directory ({}) with {}".format(self.user_config_dir, err))
+            self.logger.debug("Exception details", exc_info=True)
 
         if self.report_daemons: 
            for u in self.sources :
@@ -654,8 +654,8 @@ class sr_audit(sr_instances):
 
                       time.sleep(sleep)
 
-        except:
-              self.logger.error("sr_audit/run failed")
+        except Exception as err:
+              self.logger.error("sr_audit/run failed with {}".format(err))
               self.logger.debug('Exception details: ', exc_info=True)
 
 
