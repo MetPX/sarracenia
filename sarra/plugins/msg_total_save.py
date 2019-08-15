@@ -123,13 +123,15 @@ class Msg_Total(object):
 
         line  = line.strip('\n')
         words = line.split()
-
-        parent.msg_total_last      = float(words[0])
-        parent.msg_total_start     = float(words[1])
-        parent.msg_total_msgcount  = int  (words[2])
-        parent.msg_total_bytecount = int  (words[3])
-        parent.msg_total_lag       = float(words[4])
-
+        if len(words) > 4:
+            parent.msg_total_last = float(words[0])
+            parent.msg_total_start = float(words[1])
+            parent.msg_total_msgcount = int  (words[2])
+            parent.msg_total_bytecount = int  (words[3])
+            parent.msg_total_lag = float(words[4])
+        else:
+            parent.logger.error("missing cached variables in file: {}".format(parent.post_total_cache_file))
+            return False
         return True
 
     # saving accounting variables

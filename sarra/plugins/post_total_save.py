@@ -121,12 +121,12 @@ class Post_Total(object):
         line  = line.strip('\n')
         words = line.split()
 
-        if len(words) == 5:
-            parent.post_total_last      = float(words[0])
-            parent.post_total_start     = float(words[1])
-            parent.post_total_msgcount  = int  (words[2])
-            parent.post_total_bytecount = int  (words[3])
-            parent.post_total_lag       = float(words[4])
+        if len(words) > 4:
+            parent.post_total_last = float(words[0])
+            parent.post_total_start = float(words[1])
+            parent.post_total_msgcount = int(words[2])
+            parent.post_total_bytecount = int(words[3])
+            parent.post_total_lag = float(words[4])
         else:
             parent.logger.error("missing cached variables in file: {}".format(parent.post_total_cache_file))
             return False
