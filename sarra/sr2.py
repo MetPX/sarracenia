@@ -13,6 +13,7 @@ import appdirs
 import pathlib
 import getpass
 import time
+import signal
 
 def ageoffile(lf):
     """ return number of seconds since a file was modified as a floating point number of seconds.
@@ -86,13 +87,14 @@ class sr_GlobalState:
                        self.states[c][cfg]['queue_name']=None
                        self.states[c][cfg]['instances_expected']=0
                        for f in os.listdir():
+                            #print('f is %s' % f )
                             if f[-4:] == '.pid':
                                 i = int(f[-6:-4])
                                 #print('from f:%s, instance extraced as: %s' % (f,i) )
                                 self.states[c][cfg]['instance_pids'][i]= int( pathlib.Path(f).read_text() )
                             elif f[-6:] == '.qname' :
                                self.states[c][cfg]['queue_name'] = pathlib.Path(f).read_text()
-                            elif f[-6:] == '.state' :
+                            elif f[-6:] == '.state' and ( f[-12:-6] != '.retry' ):
                                self.states[c][cfg]['instances_expected'] = int ( pathlib.Path(f).read_text() )
                        os.chdir('..')
                 os.chdir('..')
@@ -168,7 +170,7 @@ class sr_GlobalState:
         self.appauthor = 'science.gc.ca'
         self.user_config_dir = appdirs.user_config_dir( self.appname, self.appauthor )
         self.user_cache_dir  = appdirs.user_cache_dir (self.appname,self.appauthor)
-        self.components = [ 'cpost', 'cpump', 'poll', 'post', 'report', 'sarra', 'sender', 'shovel', 'subscribe', 'watch', 'winnow' ]
+        self.components = [ 'audit', 'cpost', 'cpump', 'poll', 'post', 'report', 'sarra', 'sender', 'shovel', 'subscribe', 'watch', 'winnow' ]
 
         self._read_procs()
         self._read_configs() 
@@ -185,13 +187,13 @@ class sr_GlobalState:
             for cfg in self.configs[c]:
                if self.configs[c][cfg]['state'] in [ 'running', 'partial' ]:
                    for i in self.states[c][cfg]['instance_pids']:
-                       print( "os.kill( %s, SIGTERM )" % self.states[c][cfg]['instance_pids'][i] )
-                       #os.kill( self.states[c][cfg]['instance_pids'][i], signal.SIGTERM )
+                       #print( "would os.kill( %s, SIGTERM )" % self.states[c][cfg]['instance_pids'][i] )
+                       os.kill( self.states[c][cfg]['instance_pids'][i], signal.SIGTERM )
 
         for pid in self.procs:
             if not self.procs[pid]['claimed']:
-                print( "pid: %s-%s does not match any configured instance, killing" %  (pid, self.procs[pid]['cmdline']) )
-                #os.kill( pid, signal.SIGTERM )
+                #print( "pid: %s-%s does not match any configured instance, would kill" %  (pid, self.procs[pid]['cmdline']) )
+                os.kill( pid, signal.SIGTERM )
 
         time.sleep(5)
         self._read_procs()
@@ -204,13 +206,13 @@ class sr_GlobalState:
             for cfg in self.configs[c]:
                if self.configs[c][cfg]['state'] in [ 'running', 'partial' ]:
                    for i in self.states[c][cfg]['instance_pids']:
-                       print( "os.kill( %s, SIGKILL )" % self.states[c][cfg]['instance_pids'][i] )
-                       #os.kill( self.states[c][cfg]['instance_pids'][i], signal.SIGKILL )
+                       #print( "would os.kill( %s, SIGKILL )" % self.states[c][cfg]['instance_pids'][i] )
+                       os.kill( self.states[c][cfg]['instance_pids'][i], signal.SIGKILL )
 
         for pid in self.procs:
             if not self.procs[pid]['claimed']:
-                print( "pid: %s-%s does not match any configured instance, killing" %  (pid, self.procs[pid]['cmdline']) )
-                #os.kill( pid, signal.SIGKILL )
+                #print( "pid: %s-%s does not match any configured instance, would kill" %  (pid, self.procs[pid]['cmdline']) )
+                os.kill( pid, signal.SIGKILL )
 
         time.sleep(2)
         self._read_procs()
@@ -266,6 +268,9 @@ class sr_GlobalState:
                     if len(status[sv]) > 0:
                        print( '%10s: %s ' % ( sv, ', '.join(status[ sv ]) ) )
 
+        for pid in self.procs:
+            if not self.procs[pid]['claimed']:
+                print( "pid: %s-%s is not a configured instance" %  (pid, self.procs[pid]['cmdline']) )
             
 
 
@@ -274,12 +279,16 @@ def main():
    actions_supported = [ 'status' ]
 
    gs = sr_GlobalState()   
-   gs.dump()
-   print('stopping...')
-   gs.stop()
 
    print('status...')
    gs.status()
+
+   #gs.dump()
+   #print('stopping...')
+   #gs.stop()
+
+   #print('status...')
+   #gs.status()
 
 
 
