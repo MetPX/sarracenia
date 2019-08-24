@@ -10,6 +10,13 @@
    parallel version of sr. Generates a global state, then performs an action.
    previous version would, recursion style, launch individual components.
 
+   TODO:
+       - when number of instances changes, currently have to stop/start individual component.
+         would be nice if srp, would notice and fix in sr sanity.
+
+       - perhaps accept subsets of configuration as globs?
+         just reduces the set of configs already read that are operated on.
+
 """
 import os
 import os.path
@@ -117,7 +124,7 @@ class sr_GlobalState:
                self.configs[c] = {}
                for cfg in os.listdir() :
                    
-                   if cfg[-4:] == '.stopped'  :
+                   if cfg[-4:] == '.off'  :
                        cbase = cfg[0:-4]
                        state = 'disabled'
                    elif cfg[-5:] == '.conf':
@@ -316,7 +323,7 @@ class sr_GlobalState:
         self.user_config_dir = appdirs.user_config_dir( self.appname, self.appauthor )
         self.user_cache_dir  = appdirs.user_cache_dir (self.appname,self.appauthor)
         self.components = [ 'audit', 'cpost', 'cpump', 'poll', 'post', 'report', 'sarra', 'sender', 'shovel', 'subscribe', 'watch', 'winnow' ]
-        self.status_values = [ 'stopped', 'partial', 'running' ]
+        self.status_values = [ 'disabled', 'stopped', 'partial', 'running' ]
   
         self.bin_dir = os.path.dirname( os.path.realpath(__file__) )
 
@@ -499,6 +506,8 @@ class sr_GlobalState:
                    print( 'sr_%s: all %d stopped' % (c, len(status['stopped'] )) ) 
             elif ( len(status['running']) == len(self.configs[c]) ):
                 print( 'sr_%s: running %d (OK)' % (c, len(self.configs[c]) ) )
+            elif ( len(status['running']) == (len(self.configs[c])-len(status['disabled'])) ):
+                print( 'sr_%s: running %d (OKd)' % (c, (len(self.configs[c])-len(status['disabled'])) ) )
             else:
                 print( 'sr_%s: mixed status' % c )
                 bad=1
