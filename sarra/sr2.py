@@ -187,10 +187,11 @@ class sr_GlobalState:
                        os.chdir('..')
                 os.chdir('..')
 
-    def _clean_missing_proc_state(self): 
-        """ remove state pid files for process which are no longer running
+    def _find_missing_instances(self): 
+        """ find processes which are no longer running, based on pidfiles in state, and procs.
         """
         os.chdir(self.user_cache_dir)
+        missing=[]
         for c in self.components:
             if os.path.isdir(c):
                 os.chdir(c)
@@ -199,7 +200,37 @@ class sr_GlobalState:
                        os.chdir(cfg)
                        for f in os.listdir():
                             if f[-4:] == '.pid':
-                               t = pathlib.Path(f).read_text()
+                               i = int(f[-6:-4])
+                               t = pathlib.Path(f).read_text().strip()
+                               if t.isdigit():
+                                   pid = int( t )
+                                   if pid not in self.procs:
+                                       missing.append( [ c, cfg, i ] )
+                               else:
+                                   missing.append( [ c, cfg, i ] )
+
+                       os.chdir('..')
+                os.chdir('..')
+
+        self.missing = missing
+
+    
+
+    def _clean_missing_proc_state(self): 
+        """ remove state pid files for process which are not running
+        """
+
+        os.chdir(self.user_cache_dir)
+        for instance in self.missing:
+            ( c, cfg, i ) = instance
+            if os.path.isdir(c):
+                os.chdir(c)
+                for cfg in os.listdir():
+                   if os.path.isdir(cfg):
+                       os.chdir(cfg)
+                       for f in os.listdir():
+                            if f[-4:] == '.pid':
+                               t = pathlib.Path(f).read_text().strip()
                                if t.isdigit():
                                    pid = int( t )
                                    if pid not in self.procs:
@@ -293,7 +324,22 @@ class sr_GlobalState:
         self._read_states() 
         self._read_logs() 
         self._resolve()
+        self._find_missing_instances()
 
+    def _start_missing(self):
+        for instance in self.missing:
+            ( c, cfg, i ) = instance
+            component_path = self._find_component_path(c)
+            if component_path == '':
+               continue
+            self._launch_instance( component_path, c, cfg, i )
+ 
+    def sanity(self):
+        self._find_missing_instances()
+        print( 'missing: %s' % self.missing )
+        print( 'starting them up...')
+        self._start_missing()
+        
 
     def start(self):
 
@@ -308,11 +354,13 @@ class sr_GlobalState:
             if component_path == '':
                continue
             for cfg in self.configs[c]:
-               print('in start: component/cfg: %s/%s' % (c,cfg))
+               #print('in start: component/cfg: %s/%s' % (c,cfg))
                if self.configs[c][cfg]['status'] in [ 'stopped' ]:
                   numi = self.configs[c][cfg]['instances']
                   for i in range(1,numi+1):
+                      print( '.', end='' )
                       self._launch_instance( component_path, c, cfg, i )
+        print('Done')
         #FIXME: sr_audit
 
 
@@ -338,6 +386,9 @@ class sr_GlobalState:
                       #    ( c, cfg, i, self.states[c][cfg]['instance_pids'][i] ) )
                       if self.states[c][cfg]['instance_pids'][i] in self.procs:
                           os.kill( self.states[c][cfg]['instance_pids'][i], signal.SIGTERM )
+                          print( '.', end='' )
+
+        print('Done')
 
         for pid in self.procs:
             if not self.procs[pid]['claimed']:
@@ -348,6 +399,7 @@ class sr_GlobalState:
         time.sleep(5)
         # update to reflect killed processes.
         self._read_procs()
+        self._find_missing_instances()
         self._clean_missing_proc_state()
         self._read_states()
         self._resolve()
@@ -366,6 +418,9 @@ class sr_GlobalState:
                        if self.states[c][cfg]['instance_pids'][i] in self.procs:
                            print( "os.kill( %s, SIGKILL )" % self.states[c][cfg]['instance_pids'][i] )
                            os.kill( self.states[c][cfg]['instance_pids'][i], signal.SIGKILL )
+                           print( '.', end='' )
+
+        print('Done')
 
         for pid in self.procs:
             if not self.procs[pid]['claimed']:
@@ -375,6 +430,7 @@ class sr_GlobalState:
         print( 'Waiting again...' )
         time.sleep(2)
         self._read_procs()
+        self._find_missing_instances()
         self._clean_missing_proc_state()
         self._read_states()
         self._resolve()
@@ -461,6 +517,10 @@ def main():
       print('restarting...')
       gs.stop()
       gs.start()
+
+   elif action == 'sanity' :
+      print('sanity...')
+      gs.sanity()
 
    elif action == 'start' :
       print('starting...')
