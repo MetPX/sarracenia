@@ -318,13 +318,18 @@ class sr_GlobalState:
   
         self.bin_dir = os.path.dirname( os.path.realpath(__file__) )
 
-        print('gathering global state...')
+        print('gathering global state: ', end='')
         self._read_procs()
+        print('procs, ', end='')
         self._read_configs() 
+        print('configs, ', end='')
         self._read_states() 
+        print('state files, ', end='')
         self._read_logs() 
+        print('logs, ', end='')
         self._resolve()
         self._find_missing_instances()
+        print('analysis - Done. ' )
 
     def _start_missing(self):
         for instance in self.missing:
@@ -523,7 +528,7 @@ def main():
       gs.sanity()
 
    elif action == 'start' :
-      print('starting...')
+      print('starting', end='')
       gs.start()
 
    elif action == 'status' :
@@ -531,7 +536,7 @@ def main():
        gs.status()
 
    elif action == 'stop' :
-      print('stopping...')
+      print('stopping', end='')
       gs.stop()
 
 
