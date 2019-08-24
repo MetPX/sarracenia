@@ -478,6 +478,7 @@ class sr_GlobalState:
 
     def status(self):
 
+        bad=0
         for c in self.configs:
             status={}
             for sv in self.status_values:
@@ -487,19 +488,22 @@ class sr_GlobalState:
                 status[ self.configs[c][cfg]['status'] ].append( cfg )
                    
             if (len(status['partial'])+len(status['running'])) < 1:
+                if c not in [ 'post' ]:
                    print( 'sr_%s: all stopped' % c ) 
             elif ( len(status['running']) == len(self.configs[c]) ):
-                   print( 'sr_%s: all running' % c ) 
+                print( 'sr_%s: all %d configuations are running' % (c, len(self.configs[c]) ) )
             else:
                 print( 'sr_%s: mixed status' % c )
+                bad=1
                 for sv in self.status_values:
                     if len(status[sv]) > 0:
                        print( '%10s: %s ' % ( sv, ', '.join(status[ sv ]) ) )
 
         for pid in self.procs:
             if not self.procs[pid]['claimed']:
+                bad=1
                 print( "pid: %s-%s is not a configured instance" %  (pid, self.procs[pid]['cmdline']) )
-            
+        return bad
 
 
 def main():
@@ -533,7 +537,7 @@ def main():
 
    elif action == 'status' :
        print('status...')
-       gs.status()
+       sys.exit( gs.status() )
 
    elif action == 'stop' :
       print('stopping', end='')
