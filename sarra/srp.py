@@ -96,6 +96,8 @@ class sr_GlobalState:
         for proc in psutil.process_iter():
             p = proc.as_dict()
             if 'python' in p['name'] :
+              if len(p['cmdline']) < 2:
+                 continue
               n=os.path.basename(p['cmdline'][1]) 
             else:
               n=p['name']
@@ -295,8 +297,8 @@ class sr_GlobalState:
                          self.procs[ self.states[c][cfg]['instance_pids'][i] ]['claimed'] = True
 
                   if observed_instances < self.states[c][cfg]['instances_expected']:
-                      print( "%s/%s observed_instances: %s expected: %s" % \
-                         ( c, cfg, observed_instances, self.states[c][cfg]['instances_expected'] ) )
+                      #print( "%s/%s observed_instances: %s expected: %s" % \
+                      #   ( c, cfg, observed_instances, self.states[c][cfg]['instances_expected'] ) )
                       self.configs[c][cfg]['status'] = 'partial'
                   else:
                       self.configs[c][cfg]['status'] = 'running'
@@ -349,7 +351,7 @@ class sr_GlobalState:
     def start(self):
 
         if len(self.procs) > 0:
-           print('already started')
+           print('...already started')
            return
 
         for c in self.components:
@@ -378,7 +380,7 @@ class sr_GlobalState:
         self._clean_missing_proc_state()
 
         if len(self.procs) == 0:
-           print('already stopped')
+           print('...already stopped')
            return
 
         for c in self.components:
@@ -395,23 +397,28 @@ class sr_GlobalState:
 
         print('Done')
 
-        for pid in self.procs:
-            if not self.procs[pid]['claimed']:
-                print( "pid: %s-%s does not match any configured instance, sending it TERM" %  (pid, self.procs[pid]['cmdline'][0:5]) )
-                os.kill( pid, signal.SIGTERM )
+        attempts = 0
+        attempts_max = 5
+        while attempts < attempts_max:
+            for pid in self.procs:
+                if not self.procs[pid]['claimed']:
+                    print( "pid: %s-%s does not match any configured instance, sending it TERM" %  (pid, self.procs[pid]['cmdline'][0:5]) )
+                    os.kill( pid, signal.SIGTERM )
                 
-        print( 'Waiting to check if they stopped' )
-        time.sleep(5)
-        # update to reflect killed processes.
-        self._read_procs()
-        self._find_missing_instances()
-        self._clean_missing_proc_state()
-        self._read_states()
-        self._resolve()
+            ttw = 1<<attempts
+            print( 'Waiting %d sec. to check if %d processes stopped (try: %d)' %( ttw, len(self.procs), attempts ) )
+            time.sleep(ttw)
+            # update to reflect killed processes.
+            self._read_procs()
+            self._find_missing_instances()
+            self._clean_missing_proc_state()
+            self._read_states()
+            self._resolve()
         
-        if len( self.procs ) == 0:
-            print( 'All stopped after first try' )
-            return 0
+            if len( self.procs ) == 0:
+                print( 'All stopped after try %d' % attempts )
+                return 0
+            attempts += 1
 
         print( 'doing SIGKILL this time...' )
         for c in self.components:
@@ -433,7 +440,7 @@ class sr_GlobalState:
                 os.kill( pid, signal.SIGKILL )
 
         print( 'Waiting again...' )
-        time.sleep(2)
+        time.sleep(10)
         self._read_procs()
         self._find_missing_instances()
         self._clean_missing_proc_state()
@@ -448,7 +455,7 @@ class sr_GlobalState:
                    for i in self.states[c][cfg]['instance_pids']:
                        print( "failed to kill: %s/%s instance: %s, pid: %s )" % (c, cfg, i, self.states[c][cfg]['instance_pids'][i] ) )
         if len( self.procs ) == 0:
-            print( 'All stopped after second try' )
+            print( 'All stopped after KILL' )
             return 0
         else:
             print( 'not responding to SIGKILL:' )
@@ -489,9 +496,9 @@ class sr_GlobalState:
                    
             if (len(status['partial'])+len(status['running'])) < 1:
                 if c not in [ 'post' ]:
-                   print( 'sr_%s: all stopped' % c ) 
+                   print( 'sr_%s: all %d stopped' % (c, len(status['stopped'] )) ) 
             elif ( len(status['running']) == len(self.configs[c]) ):
-                print( 'sr_%s: all %d configuations are running' % (c, len(self.configs[c]) ) )
+                print( 'sr_%s: running %d (OK)' % (c, len(self.configs[c]) ) )
             else:
                 print( 'sr_%s: mixed status' % c )
                 bad=1
