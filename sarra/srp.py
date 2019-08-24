@@ -504,15 +504,15 @@ class sr_GlobalState:
 
 def main():
 
-   actions_supported = [ 'status' ]
-
-   gs = sr_GlobalState()   
+   actions = [ 'dump', 'restart', 'sanity', 'status', 'stop' ]
 
    if len(sys.argv) < 2:
-       action='status'
+       print('USAGE: %s (%s)' % (sys.argv[0], '|'.join(actions))  )
+       return
    else:
        action=sys.argv[1]
 
+   gs = sr_GlobalState()   
 
    if action == 'dump' :
       print('dumping...')
