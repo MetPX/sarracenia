@@ -90,26 +90,25 @@ class sr_GlobalState:
                 for cfg in os.listdir():
                    if os.path.isdir(cfg):
                        os.chdir(cfg)
-                       #print(' state directory for %s/%s is: %s ' % (c,cfg,os.getcwd()) )
                        self.states[c][cfg]={}
                        self.states[c][cfg]['instance_pids']={}
                        self.states[c][cfg]['queue_name']=None
                        self.states[c][cfg]['instances_expected']=0
                        for f in os.listdir():
-                            #print('f is %s' % f )
-                            # why try? files with 0 bytes, corrupted , etc...
-                            try:
-                                if f[-4:] == '.pid':
-                                    i = int(f[-6:-4])
-                                    print('from f:%s/%s/%s, instance extraced as: %s' % (c,cfg,f,i) )
-                                    self.states[c][cfg]['instance_pids'][i]= int( pathlib.Path(f).read_text() )
+                            t = pathlib.Path(f).read_text()
+                            if len(t) == 0:
+                                continue
+
+                            if f[-4:] == '.pid':
+                                i = int(f[-6:-4])
+                                if t.isdigit():
+                                    self.states[c][cfg]['instance_pids'][i]= int( t )
                                     self.states[c][cfg]['instances_expected'] += 1
-                                elif f[-6:] == '.qname' :
-                                    self.states[c][cfg]['queue_name'] = pathlib.Path(f).read_text()
-                                elif f[-6:] == '.state' and ( f[-12:-6] != '.retry' ):
-                                    self.states[c][cfg]['instances_expected'] = int ( pathlib.Path(f).read_text() )
-                            except:
-                                pass
+                            elif f[-6:] == '.qname' :
+                                self.states[c][cfg]['queue_name'] = t
+                            elif f[-6:] == '.state' and ( f[-12:-6] != '.retry' ):
+                                if t.isdigit():
+                                    self.states[c][cfg]['instances_expected'] = int ( t )
                        os.chdir('..')
                 os.chdir('..')
 
@@ -120,19 +119,19 @@ class sr_GlobalState:
         for c in self.components:
             if os.path.isdir(c):
                 os.chdir(c)
-                self.states[c] = {}
                 for cfg in os.listdir():
                    if os.path.isdir(cfg):
                        os.chdir(cfg)
-                       #print('cleaning state directory for %s/%s is: %s ' % (c,cfg,os.getcwd()) )
                        for f in os.listdir():
                             if f[-4:] == '.pid':
-                               try:
-                                  pid = int( pathlib.Path(f).read_text() )
-                                  if pid not in self.procs:
-                                      os.unlink(f)
-                               except:
-                                      os.unlink(f)
+                               t = pathlib.Path(f).read_text()
+                               if t.isdigit():
+                                   pid = int( t )
+                                   if pid not in self.procs:
+                                       os.unlink(f)
+                               else:
+                                   os.unlink(f)
+
                        os.chdir('..')
                 os.chdir('..')
                
@@ -149,18 +148,14 @@ class sr_GlobalState:
 
            for lf in os.listdir():
               lff = lf.split('_')
-              #print( 'lff= %s' % lff )
 
               if len(lff) > 3 :
                   c = lff[1]
-                  #print( 'c=%s' % lff )
                   cfg = '_'.join(lff[2:-1])
-                  #print( 'cfg=%s' % cfg )
                   suffix = lff[-1].split('.')
 
                   if suffix[1] == 'log':
                       inum = int(suffix[0])
-                      #print( 'inum=%s' % inum )
                       age = ageoffile(lf)
                       if not cfg in self.logs[c]:
                          self.logs[c][cfg]={}
@@ -223,21 +218,19 @@ class sr_GlobalState:
             if (c not in self.configs):
                continue
             for cfg in self.configs[c]:
-               #if cfg not in self.states[c]:
-               #   print( 'skipping %s/%s' % ( c, cfg ) )
-               #   continue
                if self.configs[c][cfg]['state'] in [ 'running', 'partial' ]:
                   for i in self.states[c][cfg]['instance_pids']:
-                      print( "for %s/%s - %s os.kill( %s, SIGTERM )" % \
-                          ( c, cfg, i, self.states[c][cfg]['instance_pids'][i] ) )
-                      os.kill( self.states[c][cfg]['instance_pids'][i], signal.SIGTERM )
+                      #print( "for %s/%s - %s os.kill( %s, SIGTERM )" % \
+                      #    ( c, cfg, i, self.states[c][cfg]['instance_pids'][i] ) )
+                      if self.states[c][cfg]['instance_pids'][i] in self.procs:
+                          os.kill( self.states[c][cfg]['instance_pids'][i], signal.SIGTERM )
 
         for pid in self.procs:
             if not self.procs[pid]['claimed']:
                 print( "pid: %s-%s does not match any configured instance, sending TERM" %  (pid, self.procs[pid]['cmdline']) )
                 os.kill( pid, signal.SIGTERM )
                 
-        print( 'Waiting for them to stop' )
+        print( 'Waiting to check if they stopped' )
         time.sleep(5)
         # update to reflect killed processes.
         self._read_procs()
@@ -251,12 +244,13 @@ class sr_GlobalState:
             for cfg in self.configs[c]:
                if self.configs[c][cfg]['state'] in [ 'running', 'partial' ]:
                    for i in self.states[c][cfg]['instance_pids']:
-                       print( "os.kill( %s, SIGKILL )" % self.states[c][cfg]['instance_pids'][i] )
-                       os.kill( self.states[c][cfg]['instance_pids'][i], signal.SIGKILL )
+                       if self.states[c][cfg]['instance_pids'][i] in self.procs:
+                           print( "os.kill( %s, SIGKILL )" % self.states[c][cfg]['instance_pids'][i] )
+                           os.kill( self.states[c][cfg]['instance_pids'][i], signal.SIGKILL )
 
         for pid in self.procs:
             if not self.procs[pid]['claimed']:
-                #print( "pid: %s-%s does not match any configured instance, would kill" %  (pid, self.procs[pid]['cmdline']) )
+                print( "pid: %s-%s does not match any configured instance, would kill" %  (pid, self.procs[pid]['cmdline']) )
                 os.kill( pid, signal.SIGKILL )
 
         time.sleep(2)
@@ -331,6 +325,7 @@ def main():
        action='status'
    else:
        action=sys.argv[1]
+
 
    if action == 'status' :
        print('status...')
