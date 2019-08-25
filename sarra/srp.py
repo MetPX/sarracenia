@@ -83,14 +83,20 @@ class sr_GlobalState:
         """
           start up a instance process (always daemonish/background fire & forget type process.)
         """
-        lfn = self.user_cache_dir + os.sep + 'log' + os.sep + 'sr_' + c + '_' + cfg + "_%02d" % i + '.log'
+        if cfg == None:
+            lfn = self.user_cache_dir + os.sep + 'log' + os.sep + 'sr_' + c + "_%02d" % i + '.log'
+        else:
+            lfn = self.user_cache_dir + os.sep + 'log' + os.sep + 'sr_' + c + '_' + cfg + "_%02d" % i + '.log'
 
         if c[0] != 'c' : #python components
-           cmd =  [ sys.executable,  component_path , '--no', "%d" % i , 'start', cfg ]
+           if cfg == None:
+               cmd =  [ sys.executable,  component_path , '--no', "%d" % i , 'start' ]
+           else:
+               cmd =  [ sys.executable,  component_path , '--no', "%d" % i , 'start', cfg ]
         else: #C components
            cmd =  [ component_path , 'start', cfg ]
 
-        #print( "launching +%s+  re-directed to: %s" % ( cmd, lfn ) ) 
+        print( "launching +%s+  re-directed to: %s" % ( cmd, lfn ) ) 
 
         with open( lfn, "a" ) as lf:
             subprocess.Popen( cmd, stdin=subprocess.DEVNULL, stdout=lf, stderr=subprocess.STDOUT )
@@ -106,9 +112,8 @@ class sr_GlobalState:
               if len(p['cmdline']) < 2:
                  continue
               n=os.path.basename(p['cmdline'][1]) 
-            else:
-              n=p['name']
-            if ( n.startswith( 'sr_' ) and ( me == p['username'] ) ):
+              p['name'] = n
+            if ( p['name'].startswith( 'sr_' ) and ( me == p['username'] ) ):
                 self.procs[proc.pid] = p
                 self.procs[proc.pid]['claimed'] = False
              
@@ -291,7 +296,7 @@ class sr_GlobalState:
 
             for cfg in self.configs[c]:
                if not cfg in self.states[c]:
-                  print('missing state for sr_%s/%s' % (c,cfg) )
+                  #print('missing state for sr_%s/%s' % (c,cfg) )
                   continue
                if len(self.states[c][cfg]['instance_pids']) > 0:
                   self.states[c][cfg]['missing_instances'] = []
@@ -309,7 +314,16 @@ class sr_GlobalState:
                       self.configs[c][cfg]['status'] = 'partial'
                   else:
                       self.configs[c][cfg]['status'] = 'running'
-            # check for too many instances.
+
+        # FIXME: missing check for too many instances.
+
+        auditors=0
+        for pid in self.procs:
+            if self.procs[pid]['name'][3:8] in [ 'audit' ] :
+                self.procs[pid]['claimed'] = True
+                auditors+=1
+
+        self.auditors=auditors
             
          
 
@@ -374,6 +388,10 @@ class sr_GlobalState:
                   for i in range(1,numi+1):
                       print( '.', end='' )
                       self._launch_instance( component_path, c, cfg, i )
+
+        c='audit' 
+        component_path = self._find_component_path(c)
+        self._launch_instance( component_path, c, None, 1 )
         print('Done')
         #FIXME: sr_audit
 
@@ -493,7 +511,18 @@ class sr_GlobalState:
     def status(self):
 
         bad=0
+
+        if self.auditors == 1:
+           audst="OK"     
+        elif self.auditors > 1:
+           audst="excess"     
+        else:
+           audst="missing"     
+
+        print("sr_audit: running %d (%s)" % (self.auditors, audst) )
+
         for c in self.configs:
+
             status={}
             for sv in self.status_values:
                 status[ sv ] =[]
