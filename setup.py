@@ -36,7 +36,7 @@ setup(
         "console_scripts":[
               "sr_audit=sarra.sr_audit:main",
               "sr=sarra.sr:main",
-              "srp=sarra.srp:main",
+              "sr1=sarra.sr1:main",
               "sr_report=sarra.sr_report:main",
               "sr_poll=sarra.sr_poll:main",
               "sr_post=sarra.sr_post:main",

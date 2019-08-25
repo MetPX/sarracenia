@@ -361,6 +361,31 @@ class sr_GlobalState:
                continue
             self._launch_instance( component_path, c, cfg, i )
  
+    def maint(self,action):
+        """
+           launch maintenance activity in parallel for all components.
+           append outputs separately to stdout as they complete.
+        """
+ 
+        plist = []
+        for c in self.components:
+            if (c not in self.configs):
+               continue
+            component_path = self._find_component_path(c)
+            if component_path == '':
+               continue
+            for cfg in self.configs[c]:
+               print('.', end='')
+               plist.append( subprocess.Popen( \
+                     [ component_path, action, cfg ], \
+                     stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT 
+                        ) )
+        print('Done')
+        for p in plist:
+            (outs, errs) = p.communicate()
+            print(outs.decode('utf8'))
+
+
     def sanity(self):
         self._find_missing_instances()
         print( 'missing: %s' % self.missing )
@@ -552,7 +577,7 @@ class sr_GlobalState:
 
 def main():
 
-   actions = [ 'dump', 'restart', 'sanity', 'status', 'stop' ]
+   actions = [ 'declare', 'dump', 'restart', 'sanity', 'setup', 'status', 'stop' ]
 
    if len(sys.argv) < 2:
        print('USAGE: %s (%s)' % (sys.argv[0], '|'.join(actions))  )
@@ -561,6 +586,10 @@ def main():
        action=sys.argv[1]
 
    gs = sr_GlobalState()   
+
+   if action in [ 'declare', 'setup' ]:
+      print('%s...' % action )
+      gs.maint(action)
 
    if action == 'dump' :
       print('dumping...')
