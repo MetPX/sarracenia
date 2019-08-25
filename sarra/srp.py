@@ -106,17 +106,25 @@ class sr_GlobalState:
         # read process table.
         self.procs={}
         me=getpass.getuser()
+        self.auditors=0
         for proc in psutil.process_iter():
             p = proc.as_dict()
+
+            # process name 'python3' is not helpful, so overwrite...
             if 'python' in p['name'] :
               if len(p['cmdline']) < 2:
                  continue
               n=os.path.basename(p['cmdline'][1]) 
               p['name'] = n
+
             if ( p['name'].startswith( 'sr_' ) and ( me == p['username'] ) ):
                 self.procs[proc.pid] = p
-                self.procs[proc.pid]['claimed'] = False
-             
+
+                if p['name'][3:8] == 'audit':
+                    self.procs[proc.pid]['claimed'] = True
+                    self.auditors+=1 
+                else:
+                    self.procs[proc.pid]['claimed'] = False
 
     def _read_configs(self):
         # read in configurations.
@@ -316,15 +324,6 @@ class sr_GlobalState:
                       self.configs[c][cfg]['status'] = 'running'
 
         # FIXME: missing check for too many instances.
-
-        auditors=0
-        for pid in self.procs:
-            if self.procs[pid]['name'][3:8] in [ 'audit' ] :
-                self.procs[pid]['claimed'] = True
-                auditors+=1
-
-        self.auditors=auditors
-            
          
 
     def __init__(self):
