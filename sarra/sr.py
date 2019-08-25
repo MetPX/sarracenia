@@ -96,7 +96,7 @@ class sr_GlobalState:
         else: #C components
            cmd =  [ component_path , 'start', cfg ]
 
-        print( "launching +%s+  re-directed to: %s" % ( cmd, lfn ) ) 
+        #print( "launching +%s+  re-directed to: %s" % ( cmd, lfn ) ) 
 
         with open( lfn, "a" ) as lf:
             subprocess.Popen( cmd, stdin=subprocess.DEVNULL, stdout=lf, stderr=subprocess.STDOUT )
@@ -444,6 +444,12 @@ class sr_GlobalState:
                           os.kill( self.states[c][cfg]['instance_pids'][i], signal.SIGTERM )
                           print( '.', end='' )
 
+        if self.auditors > 0:
+           for p in self.procs:
+               if 'audit' in self.procs[p]['name']:
+                  os.kill( p, signal.SIGTERM )
+                  print( '.', end='' )
+
         print('Done')
 
         attempts = 0
@@ -480,6 +486,11 @@ class sr_GlobalState:
                            print( "os.kill( %s, SIGKILL )" % self.states[c][cfg]['instance_pids'][i] )
                            os.kill( self.states[c][cfg]['instance_pids'][i], signal.SIGKILL )
                            print( '.', end='' )
+
+        if self.auditors > 0:
+           for p in self.proc:
+               if 'audit' in p['name']:
+                  os.kill( p, signal.SIGKILL )
 
         print('Done')
 
