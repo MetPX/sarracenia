@@ -1,265 +1,594 @@
 #!/usr/bin/env python3
+
 #
 # This file is part of sarracenia.
 # The sarracenia suite is Free and is proudly provided by the Government of Canada
-# Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
+# Copyright (C) Her Majesty The Queen in Right of Canada, Shared Services Canada, 2019
 #
-# Questions or bugs report: dps-client@ec.gc.ca
-# Sarracenia repository: https://github.com/MetPX/sarracenia
-# Documentation: https://github.com/MetPX/sarracenia
-#
-# sr.py : python3 program starting an environment of sarra processes
-#         found under ~/.config/sarra/*
-#
-#
-# Code contributed by:
-#  Michel Grenier - Shared Services Canada
-#  Last Changed   : Sep 22 10:41:32 EDT 2015
-#  Last Revision  : Sep 22 10:41:32 EDT 2015
-#
-########################################################################
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; version 2 of the License.
-#
-#  This program is distributed in the hope that it will be useful, 
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
-#
-#
-import logging, os, os.path, shutil, sys, time
 
-try :    
-         from sr_config          import *
-         from sr_poll            import *
-         from sr_post            import *
-         from sr_report          import *
-         from sr_sarra           import *
-         from sr_sender          import *
-         from sr_shovel          import *
-         from sr_subscribe       import *
-         from sr_watch           import *
-         from sr_winnow          import *
-except : 
-         from sarra.sr_config    import *
-         from sarra.sr_poll      import *
-         from sarra.sr_post      import *
-         from sarra.sr_report    import *
-         from sarra.sr_sarra     import *
-         from sarra.sr_sender    import *
-         from sarra.sr_shovel    import *
-         from sarra.sr_subscribe import *
-         from sarra.sr_watch     import *
-         from sarra.sr_winnow    import *
+"""
+   parallel version of sr. Generates a global state, then performs an action.
+   previous version would, recursion style, launch individual components.
+
+   TODO:
+       - when number of instances changes, currently have to stop/start individual component.
+         would be nice if srp, would notice and fix in sr sanity.
+
+       - perhaps accept subsets of configuration as globs?
+         just reduces the set of configs already read that are operated on.
+
+"""
+import os
+import os.path
+import psutil
+import appdirs
+import pathlib
+import getpass
+import time
+import signal
+import sys
+import subprocess
+
+def ageoffile(lf):
+    """ return number of seconds since a file was modified as a floating point number of seconds.
+        FIXME: mocked here for now. 
+    """
+    return(0);
+
+def _parse_cfg(cfg):
+    """ return configuration file as a dictionary.
+        FIXME: this is extremely rudimentary, doesn't do variable substitution, etc...
+               only want to use this to get 'instances' for now which should be ok 99% of the time.
+    """
+    cfgbody={}
+    for l in open(cfg,"r").readlines():
+       line = l.split()
+       if (len(line) < 1 ) or (  line[0] == '#' ):
+          continue
+       
+       cfgbody[line[0]] = ' '.join(line[1:]) 
+    return cfgbody
 
 
-# Uses sr_instances to get a good logger
-cfg = sr_instances()
+class sr_GlobalState:
 
-# instantiate each program  with its configuration file
-# and invoke action if one of cleanup,declare,setup
+    """
+       build a global state of all sarra processes running on the system for this user.
+       makes three data structures:  procs, configs, and states, indexed by component
+       and configuration name.
 
-def instantiate(dirconf,pgm,confname,action):
+       self.(procs|configs|states)[ component ][ config ]  something...
 
-    # c stuff always requiere to spawn a call
-
-    if pgm in ['audit','cpost','cpump'] :
-       # try to avoid error code while running sanity
-       if action == 'sanity' : return
-       cfg.logger.debug("%s %s %s" % ("sr_" + pgm,action,confname))
-       cfg.run_command([ "sr_" + pgm, action, confname])
-       return
-
-    #print(dirconf,pgm,confname,action)
-
-    config      = re.sub(r'(\.conf)','',confname)
-    orig        = sys.argv[0]
-
-    sys.argv[0] = 'sr_' + pgm
-
-    try:
-            inst  = None
-            cfg.logger.debug("inst %s %s %s" % (pgm,config,action))
-            if    pgm == 'poll':      inst = sr_poll     (config,[action])
-            elif  pgm == 'post':      inst = sr_post     (config,[action])
-            elif  pgm == 'sarra':     inst = sr_sarra    (config,[action])
-            elif  pgm == 'sender':    inst = sr_sender   (config,[action])
-            elif  pgm == 'shovel':    inst = sr_shovel   (config,[action])
-            elif  pgm == 'subscribe': inst = sr_subscribe(config,[action])
-            elif  pgm == 'watch':     inst = sr_watch    (config,[action])
-            elif  pgm == 'winnow':    inst = sr_winnow   (config,[action])
-            elif  pgm == 'report':    inst = sr_report   (config,[action])
-            elif  pgm == 'audit':     inst = sr_audit    (config,[action])
-            else: 
-                  cfg.logger.error("code not configured for process type sr_%s" % pgm)
-                  sys.exit(1)
-
-            if    action == 'cleanup': inst.exec_action('cleanup',False)
-            elif  action == 'declare': inst.exec_action('declare',False)
-            elif  action == 'setup':   inst.exec_action('setup',  False)
-
-            elif  action == 'remove':  inst.exec_action('remove',False)
-
-            sys.argv[0] = orig
-
-    except:
-            cfg.logger.error("could not instantiate and run sr_%s %s %s" % (pgm,action,confname))
-            sys.exit(1)
-
-      
-
-# invoke each program with its action and configuration file
-
-def invoke(dirconf,pgm,confname,action):
-
-    program = 'sr_' + pgm
-    config  = re.sub(r'(\.conf)','',confname)
-
-    # c does not implement action sanity yet
-    cfg.logger.info("action %s" % action)
-
-    try :
-             # anything but sr_post
-             if program != 'sr_post' :
-                cfg.logger.debug("%s %s %s" % (program,action,config))
-                cfg.run_command([program,action,config])
-                return
-
-             # sr_post needs -c with absolute confpath
-
-             confpath = dirconf + os.sep + pgm + os.sep + confname
-             sleeps=False
-
-             if ( action == 'status' ) :
-                 f=open(confpath,'r')
-                 for li in f.readlines():
-                     l = li.split()
-                     if len(l) < 2 :
-                        continue
-
-                     if l[0] == 'sleep' :
-                        if  float(l[1]) > 0:
-                           sleeps=True
-                 f.close()
-
-             if not sleeps:
-                 return
-
-             post = sr_post(confpath)
-
-             cfg.logger.debug("INVOKE %s %s %s %s" % (program,'-c',confpath,action))
-             cfg.run_command([program,'-c',confpath,action])
-             return
-
-    except :
-             cfg.logger.error("Invoke failed")
-             cfg.logger.debug('Exception details: ', exc_info=True)
+       naming: routines that start with *read* don't modify anything on disk.
+               routines that start with clean do...
+          
+    """
+    def _find_component_path( self, c ):
+        """
+            return the string to be used to run a component in Popen.
+        """
+        if c[0] != 'c' : #python components
+           s =  self.bin_dir + os.sep + 'sr_' + c
+           if not os.path.exists(s) :
+              s+='.py'
+           if not os.path.exists(s) :
+              print( "don't know where the script files are for: %s" % ( c ) )
+              return ''
+           return(s)
+        else: #C components
+           return('sr_' + c)
 
 
-# check number of config files
-
-def nbr_config(dirconf):
-    n = 0
-
-    if not os.path.isdir(dirconf)       : return 0
-
-    for confname in os.listdir(dirconf) :
-        if not '.conf' in confname      : continue
-        n += 1
- 
-    return n
-
-# recursive scan of ~/.config/sarra/* , invoking process according to
-# the process named from the parent directory
-
-def scandir(dirconf,pgm,action):
-
-    path = dirconf + os.sep + pgm
-
-    if not os.path.isdir(path) or len(os.listdir(path)) == 0 : 
-       if pgm == 'audit' :
-          cfg.logger.info("%s %s" % (pgm,action))
-          cfg.run_command(['sr_'+pgm,action])
-       return
-
-    for confname in os.listdir(path) :
-        if len(confname) < 5                 : continue
-        if not '.conf' in confname[-5:]      : continue
-        cfg.logger.info("%s %s %s" % (pgm,action,confname))
-        if action in ['cleanup','declare','setup']:
-              instantiate(dirconf,pgm,confname,action)
+    def _launch_instance( self, component_path, c, cfg, i ):
+        """
+          start up a instance process (always daemonish/background fire & forget type process.)
+        """
+        if cfg == None:
+            lfn = self.user_cache_dir + os.sep + 'log' + os.sep + 'sr_' + c + "_%02d" % i + '.log'
         else:
-              invoke(dirconf,pgm,confname,action)
+            lfn = self.user_cache_dir + os.sep + 'log' + os.sep + 'sr_' + c + '_' + cfg + "_%02d" % i + '.log'
+
+        if c[0] != 'c' : #python components
+           if cfg == None:
+               cmd =  [ sys.executable,  component_path , '--no', "%d" % i , 'start' ]
+           else:
+               cmd =  [ sys.executable,  component_path , '--no', "%d" % i , 'start', cfg ]
+        else: #C components
+           cmd =  [ component_path , 'start', cfg ]
+
+        print( "launching +%s+  re-directed to: %s" % ( cmd, lfn ) ) 
+
+        with open( lfn, "a" ) as lf:
+            subprocess.Popen( cmd, stdin=subprocess.DEVNULL, stdout=lf, stderr=subprocess.STDOUT )
 
 
-# ===================================
-# MAIN
-# ===================================
+    def _read_procs(self):
+        # read process table.
+        self.procs={}
+        me=getpass.getuser()
+        self.auditors=0
+        for proc in psutil.process_iter():
+            p = proc.as_dict()
+
+            # process name 'python3' is not helpful, so overwrite...
+            if 'python' in p['name'] :
+              if len(p['cmdline']) < 2:
+                 continue
+              n=os.path.basename(p['cmdline'][1]) 
+              p['name'] = n
+
+            if ( p['name'].startswith( 'sr_' ) and ( me == p['username'] ) ):
+                self.procs[proc.pid] = p
+
+                if p['name'][3:8] == 'audit':
+                    self.procs[proc.pid]['claimed'] = True
+                    self.auditors+=1 
+                else:
+                    self.procs[proc.pid]['claimed'] = False
+
+    def _read_configs(self):
+        # read in configurations.
+        self.configs={}
+        os.chdir(self.user_config_dir)
+       
+        for c in self.components:
+            if os.path.isdir(c):
+               os.chdir(c)
+               self.configs[c] = {}
+               for cfg in os.listdir() :
+                   
+                   if cfg[-4:] == '.off'  :
+                       cbase = cfg[0:-4]
+                       state = 'disabled'
+                   elif cfg[-5:] == '.conf':
+                       cbase = cfg[0:-5]
+                       state = 'stopped'
+                   else:
+                       cbase = cfg
+                       state = 'unknown'
+
+                   if state != 'unknown':
+                       self.configs[c][cbase] = {}
+                       self.configs[c][cbase]['status'] = state 
+                       cfgbody = _parse_cfg( cfg )
+  
+                       # ensure there is a known value of instances to run.
+                       if ( c in [ 'post', 'cpost' ] ):
+                           if  ( 'sleep' in cfgbody ) and ( cfgbody['sleep'][0] not in [ '-' , '0' ] ) : 
+                               numi=1
+                           else: 
+                               numi=0
+                       elif 'instances' in cfgbody:                        
+                           numi = int(cfgbody['instances']) 
+                       else:
+                           numi=1
+
+                       self.configs[c][cbase]['instances']  = numi
+
+               os.chdir('..')
+   
+    
+    def _read_states(self):
+        # read in state files
+        os.chdir(self.user_cache_dir)
+        self.states  = {}
+
+        for c in self.components:
+            if os.path.isdir(c):
+                os.chdir(c)
+                self.states[c] = {}
+                for cfg in os.listdir():
+                   if os.path.isdir(cfg):
+                       os.chdir(cfg)
+                       self.states[c][cfg]={}
+                       self.states[c][cfg]['instance_pids']={}
+                       self.states[c][cfg]['queue_name']=None
+                       self.states[c][cfg]['instances_expected']=0
+                       self.states[c][cfg]['has_state']=False
+
+                       #print( 'state %s/%s' % ( c, cfg ) )
+                       for f in os.listdir():
+                            t = pathlib.Path(f).read_text().strip()
+                           
+                            #print( 'read f:%s len: %d contents:%s' % ( f, len(t), t[0:10] ) )
+                            if len(t) == 0:
+                                continue
+
+                            #print( 'read f[-4:] = +%s+ ' % ( f[-4:] ) )
+                            if f[-4:] == '.pid':
+                                i = int(f[-6:-4])
+                                if t.isdigit():
+                                    #print( "%s/%s instance: %s, pid: %s" % 
+                                    #     ( c, cfg, i, t ) )
+                                    self.states[c][cfg]['instance_pids'][i]= int( t )
+                            elif f[-6:] == '.qname' :
+                                self.states[c][cfg]['queue_name'] = t
+                            elif f[-6:] == '.state' and ( f[-12:-6] != '.retry' ):
+                                if t.isdigit():
+                                    self.states[c][cfg]['instances_expected'] = int ( t )
+                       os.chdir('..')
+                os.chdir('..')
+
+    def _find_missing_instances(self): 
+        """ find processes which are no longer running, based on pidfiles in state, and procs.
+        """
+        os.chdir(self.user_cache_dir)
+        missing=[]
+        for c in self.components:
+            if os.path.isdir(c):
+                os.chdir(c)
+                for cfg in os.listdir():
+                   if os.path.isdir(cfg):
+                       os.chdir(cfg)
+                       for f in os.listdir():
+                            if f[-4:] == '.pid':
+                               i = int(f[-6:-4])
+                               t = pathlib.Path(f).read_text().strip()
+                               if t.isdigit():
+                                   pid = int( t )
+                                   if pid not in self.procs:
+                                       missing.append( [ c, cfg, i ] )
+                               else:
+                                   missing.append( [ c, cfg, i ] )
+
+                       os.chdir('..')
+                os.chdir('..')
+
+        self.missing = missing
+
+    
+
+    def _clean_missing_proc_state(self): 
+        """ remove state pid files for process which are not running
+        """
+
+        os.chdir(self.user_cache_dir)
+        for instance in self.missing:
+            ( c, cfg, i ) = instance
+            if os.path.isdir(c):
+                os.chdir(c)
+                for cfg in os.listdir():
+                   if os.path.isdir(cfg):
+                       os.chdir(cfg)
+                       for f in os.listdir():
+                            if f[-4:] == '.pid':
+                               t = pathlib.Path(f).read_text().strip()
+                               if t.isdigit():
+                                   pid = int( t )
+                                   if pid not in self.procs:
+                                       os.unlink(f)
+                               else:
+                                   os.unlink(f)
+
+                       os.chdir('..')
+                os.chdir('..')
+               
+
+    def _read_logs(self):
+
+        os.chdir(self.user_cache_dir)
+        if os.path.isdir('log'):
+           self.logs={}
+           for c in self.components:
+              self.logs[c]={}
+              
+           os.chdir('log')
+
+           for lf in os.listdir():
+              lff = lf.split('_')
+              #print('looking at: %s' %lf )
+              if len(lff) > 3 :
+                  c = lff[1]
+                  cfg = '_'.join(lff[2:-1])
+                  suffix = lff[-1].split('.')
+               
+                  if suffix[1] == 'log':
+                      inum = int(suffix[0])
+                      age = ageoffile(lf)
+                      if not cfg in self.logs[c]:
+                         self.logs[c][cfg]={}
+                      self.logs[c][cfg][inum]=age
+
+
+    def _resolve(self):
+        """
+           compare configs, states, & logs and fill things in.
+
+           things that could be identified: differences in state, running & configured instances.
+        """
+
+        # comparing states and configs to find missing instances, and correct state.
+        for c in self.components:
+            if (c not in self.states) or (c not in self.configs):
+                  continue
+
+            for cfg in self.configs[c]:
+               if not cfg in self.states[c]:
+                  #print('missing state for sr_%s/%s' % (c,cfg) )
+                  continue
+               if len(self.states[c][cfg]['instance_pids']) > 0:
+                  self.states[c][cfg]['missing_instances'] = []
+                  observed_instances=0
+                  for i in self.states[c][cfg]['instance_pids']:
+                      if self.states[c][cfg]['instance_pids'][i] not in self.procs:
+                         self.states[c][cfg]['missing_instances'].append(i) 
+                      else:
+                         observed_instances+=1
+                         self.procs[ self.states[c][cfg]['instance_pids'][i] ]['claimed'] = True
+
+                  if observed_instances < self.states[c][cfg]['instances_expected']:
+                      #print( "%s/%s observed_instances: %s expected: %s" % \
+                      #   ( c, cfg, observed_instances, self.states[c][cfg]['instances_expected'] ) )
+                      self.configs[c][cfg]['status'] = 'partial'
+                  else:
+                      self.configs[c][cfg]['status'] = 'running'
+
+        # FIXME: missing check for too many instances.
+         
+
+    def __init__(self):
+        """
+           side effect: changes current working directory FIXME?
+        """
+
+        self.appname   = 'sarra'
+        self.appauthor = 'science.gc.ca'
+        self.user_config_dir = appdirs.user_config_dir( self.appname, self.appauthor )
+        self.user_cache_dir  = appdirs.user_cache_dir (self.appname,self.appauthor)
+        self.components = [ 'audit', 'cpost', 'cpump', 'poll', 'post', 'report', 'sarra', 'sender', 'shovel', 'subscribe', 'watch', 'winnow' ]
+        self.status_values = [ 'disabled', 'stopped', 'partial', 'running' ]
+  
+        self.bin_dir = os.path.dirname( os.path.realpath(__file__) )
+
+        print('gathering global state: ', end='')
+        self._read_procs()
+        print('procs, ', end='')
+        self._read_configs() 
+        print('configs, ', end='')
+        self._read_states() 
+        print('state files, ', end='')
+        self._read_logs() 
+        print('logs, ', end='')
+        self._resolve()
+        self._find_missing_instances()
+        print('analysis - Done. ' )
+
+    def _start_missing(self):
+        for instance in self.missing:
+            ( c, cfg, i ) = instance
+            component_path = self._find_component_path(c)
+            if component_path == '':
+               continue
+            self._launch_instance( component_path, c, cfg, i )
+ 
+    def sanity(self):
+        self._find_missing_instances()
+        print( 'missing: %s' % self.missing )
+        print( 'starting them up...')
+        self._start_missing()
+        
+
+    def start(self):
+
+        if len(self.procs) > 0:
+           print('...already started')
+           return
+
+        for c in self.components:
+            if (c not in self.configs):
+               continue
+            component_path = self._find_component_path(c)
+            if component_path == '':
+               continue
+            for cfg in self.configs[c]:
+               #print('in start: component/cfg: %s/%s' % (c,cfg))
+               if self.configs[c][cfg]['status'] in [ 'stopped' ]:
+                  numi = self.configs[c][cfg]['instances']
+                  for i in range(1,numi+1):
+                      print( '.', end='' )
+                      self._launch_instance( component_path, c, cfg, i )
+
+        c='audit' 
+        component_path = self._find_component_path(c)
+        self._launch_instance( component_path, c, None, 1 )
+        print('Done')
+        #FIXME: sr_audit
+
+
+    def stop(self):
+
+        """
+           stop all of this users sr_ processes. 
+           return 0 on success, non-zero on failure.
+        """
+        self._clean_missing_proc_state()
+
+        if len(self.procs) == 0:
+           print('...already stopped')
+           return
+
+        for c in self.components:
+            if (c not in self.configs):
+               continue
+            for cfg in self.configs[c]:
+               if self.configs[c][cfg]['status'] in [ 'running', 'partial' ]:
+                  for i in self.states[c][cfg]['instance_pids']:
+                      #print( "for %s/%s - %s os.kill( %s, SIGTERM )" % \
+                      #    ( c, cfg, i, self.states[c][cfg]['instance_pids'][i] ) )
+                      if self.states[c][cfg]['instance_pids'][i] in self.procs:
+                          os.kill( self.states[c][cfg]['instance_pids'][i], signal.SIGTERM )
+                          print( '.', end='' )
+
+        print('Done')
+
+        attempts = 0
+        attempts_max = 5
+        while attempts < attempts_max:
+            for pid in self.procs:
+                if not self.procs[pid]['claimed']:
+                    print( "pid: %s-%s does not match any configured instance, sending it TERM" %  (pid, self.procs[pid]['cmdline'][0:5]) )
+                    os.kill( pid, signal.SIGTERM )
+                
+            ttw = 1<<attempts
+            print( 'Waiting %d sec. to check if %d processes stopped (try: %d)' %( ttw, len(self.procs), attempts ) )
+            time.sleep(ttw)
+            # update to reflect killed processes.
+            self._read_procs()
+            self._find_missing_instances()
+            self._clean_missing_proc_state()
+            self._read_states()
+            self._resolve()
+        
+            if len( self.procs ) == 0:
+                print( 'All stopped after try %d' % attempts )
+                return 0
+            attempts += 1
+
+        print( 'doing SIGKILL this time...' )
+        for c in self.components:
+            if (c not in self.configs):
+               continue
+            for cfg in self.configs[c]:
+               if self.configs[c][cfg]['status'] in [ 'running', 'partial' ]:
+                   for i in self.states[c][cfg]['instance_pids']:
+                       if self.states[c][cfg]['instance_pids'][i] in self.procs:
+                           print( "os.kill( %s, SIGKILL )" % self.states[c][cfg]['instance_pids'][i] )
+                           os.kill( self.states[c][cfg]['instance_pids'][i], signal.SIGKILL )
+                           print( '.', end='' )
+
+        print('Done')
+
+        for pid in self.procs:
+            if not self.procs[pid]['claimed']:
+                print( "pid: %s-%s does not match any configured instance, would kill" %  (pid, self.procs[pid]['cmdline']) )
+                os.kill( pid, signal.SIGKILL )
+
+        print( 'Waiting again...' )
+        time.sleep(10)
+        self._read_procs()
+        self._find_missing_instances()
+        self._clean_missing_proc_state()
+        self._read_states()
+        self._resolve()
+
+        for c in self.components:
+            if (c not in self.configs):
+               continue
+            for cfg in self.configs[c]:
+               if self.configs[c][cfg]['status'] in [ 'running', 'partial' ]:
+                   for i in self.states[c][cfg]['instance_pids']:
+                       print( "failed to kill: %s/%s instance: %s, pid: %s )" % (c, cfg, i, self.states[c][cfg]['instance_pids'][i] ) )
+        if len( self.procs ) == 0:
+            print( 'All stopped after KILL' )
+            return 0
+        else:
+            print( 'not responding to SIGKILL:' )
+            for p in self.procs:
+                print( '\t%s: %s' % (pid, self.procs[pid]['cmdline'][0:5]) )
+            return 1
+
+
+    def dump(self):
+
+        print( '\n\nRunning Processes\n\n' )
+        for pid in self.procs:
+            print( '\t%s: name:%s cmdline:%s' % (pid, self.procs[pid]['name'], self.procs[pid]['cmdline']) )
+
+        print( '\n\nConfigs\n\n' )
+        for c in self.configs:
+           print( '\t%s ' %c )
+           for cfg in self.configs[c]:
+               print( '\t\t%s : %s' % (cfg, self.configs[c][cfg] ) )
+
+        print( '\n\nStates\n\n' )
+        for c in self.states:
+           print( '\t%s ' %c )
+           for cfg in self.states[c]:
+               print( '\t\t%s : %s' % (cfg, self.states[c][cfg] ) )
+
+
+    def status(self):
+
+        bad=0
+
+        if self.auditors == 1:
+           audst="OK"     
+        elif self.auditors > 1:
+           audst="excess"     
+        else:
+           audst="missing"     
+
+        print("sr_audit: running %d (%s)" % (self.auditors, audst) )
+
+        for c in self.configs:
+
+            status={}
+            for sv in self.status_values:
+                status[ sv ] =[]
+
+            for cfg in self.configs[c]:
+                status[ self.configs[c][cfg]['status'] ].append( cfg )
+                   
+            if (len(status['partial'])+len(status['running'])) < 1:
+                if c not in [ 'post' ]:
+                   print( 'sr_%s: all %d stopped' % (c, len(status['stopped'] )) ) 
+            elif ( len(status['running']) == len(self.configs[c]) ):
+                print( 'sr_%s: running %d (OK)' % (c, len(self.configs[c]) ) )
+            elif ( len(status['running']) == (len(self.configs[c])-len(status['disabled'])) ):
+                print( 'sr_%s: running %d (OKd)' % (c, (len(self.configs[c])-len(status['disabled'])) ) )
+            else:
+                print( 'sr_%s: mixed status' % c )
+                bad=1
+                for sv in self.status_values:
+                    if len(status[sv]) > 0:
+                       print( '%10s: %s ' % ( sv, ', '.join(status[ sv ]) ) )
+
+        for pid in self.procs:
+            if not self.procs[pid]['claimed']:
+                bad=1
+                print( "pid: %s-%s is not a configured instance" %  (pid, self.procs[pid]['cmdline']) )
+        return bad
+
 
 def main():
 
-    # actions supported
-    actions_supported = ['start', 'stop', 'status', 'sanity', 'restart', 'reload', 'cleanup', 'declare', 'setup', 'remove']
+   actions = [ 'dump', 'restart', 'sanity', 'status', 'stop' ]
 
-    # actions extended (actions on config)
-    actions_supported.extend( ['list'] )
+   if len(sys.argv) < 2:
+       print('USAGE: %s (%s)' % (sys.argv[0], '|'.join(actions))  )
+       return
+   else:
+       action=sys.argv[1]
 
-    actstr = str(actions_supported)
-    actstr = actstr.replace(", ","|")
+   gs = sr_GlobalState()   
 
-    # validate action
-    if len(sys.argv) == 1 or sys.argv[1] not in actions_supported :
-       print("USAGE: %s %s (version: %s) " % (sys.argv[0],actstr,sarra.__version__) )
-       sys.exit(1)
+   if action == 'dump' :
+      print('dumping...')
+      gs.dump()
 
-    action = sys.argv[1]
-    config = None
+   elif action == 'restart' :
+      print('restarting...')
+      gs.stop()
+      gs.start()
 
-    if len(sys.argv) == 3 : config = sys.argv[2]
+   elif action == 'sanity' :
+      print('sanity...')
+      gs.sanity()
 
-    # action list
+   elif action == 'start' :
+      print('starting', end='')
+      gs.start()
 
-    if action == 'list' :
-       if config :
-           if config == 'plugins' :
-               cfg.print_configdir("packaged plugins",           cfg.package_dir     +os.sep+ 'plugins')
-               cfg.print_configdir("user plugins",               cfg.user_config_dir +os.sep+ 'plugins')
+   elif action == 'status' :
+       print('status...')
+       sys.exit( gs.status() )
 
-           else:
-               result = cfg.find_conf_file(config)
-               if  not result :
-                   print("no file named %s found in all sarra configs" % config )
-                   sys.exit(1)
-               cfg.list_file(result)
-       else:
-             for d in sorted(cfg.programs):
-                 cfg.print_configdir("configuration examples", cfg.package_dir     +os.sep+ 'examples' +os.sep+ d)
-             cfg.print_configdir("general",                    cfg.user_config_dir )
-             for d in sorted(cfg.programs):
-                 cfg.print_configdir("user configurations",    cfg.user_config_dir + os.sep + d)
-       sys.exit(0)
+   elif action == 'stop' :
+      print('stopping', end='')
+      gs.stop()
 
-    # Init logger here
-    cfg.build_instance(1)
-    cfg.setlog()
 
-    # loop on all possible programs ... add audit
-    programs = ['audit']
-    programs.extend(cfg.programs)
-    for d in programs:
-        pgm = d
-        scandir(cfg.user_config_dir,pgm,action)
 
-    sys.exit(0)
-
-# =========================================
-# direct invocation
-# =========================================
-
-if __name__=="__main__":
+if __name__ == "__main__":
    main()
+
