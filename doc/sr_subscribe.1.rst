@@ -2185,6 +2185,8 @@ SEE ALSO
 
 **Pump Adminisitrator Commands:**
 
+`sr(8) <sr.8.rst>`_ - overall manager (start|stop|status).
+
 `sr_shovel(8) <sr_shovel.8.rst>`_ - process messages (no downloading).
 
 `sr_winnow(8) <sr_winnow.8.rst>`_ - a shovel with cache on, to winnow wheat from chaff.
