@@ -71,26 +71,6 @@ if sys.hexversion > 0x03030000 :
 else: 
    py2old=True 
 
-class StreamToLogger(object):
-   """
-   Fake file-like stream object that redirects writes to a logger instance.
-   """
-   def __init__(self, logger, log_level=logging.INFO):
-      self.logger = logger
-      self.log_level = log_level
-      self.linebuf = ''
-
-   def write(self, buf):
-      for line in buf.rstrip().splitlines():
-         self.logger.log(self.log_level, line.rstrip())
-
-   def flush(self):
-      """
-        when stdout/stderr are assigned to a stream, builtin routine call flush.
-        if the logger doesn't have flush method, things bomb.
-      """
-      pass
-
 class sr_config:
 
     def __init__(self,config=None,args=None,action=None):
@@ -190,15 +170,12 @@ class sr_config:
 
         # logging is interactive at start
 
-        self.debug     = False
         self.statehost = False
         self.hostform  = 'short'
         self.loglevel  = logging.INFO
-
-        self.LOG_FORMAT= '%(asctime)s [%(levelname)s] %(message)s'
-        # self.LOG_FORMAT= '%(asctime)s [%(levelname)s] %(message)s %(module)s/%(funcName)s #%(lineno)d'
-        logging.basicConfig(level=self.loglevel, format = self.LOG_FORMAT )
-        self.logger = logging.getLogger()
+        self.logger = None
+        self.handler = None
+        self.setlog(interactive=True)
         self.logger.debug("sr_config __init__")
 
         # program_name
@@ -613,10 +590,6 @@ class sr_config:
 
     def defaults(self):
         self.logger.debug("sr_config defaults")
-
-        # IN BIG DEBUG
-        #self.debug = True
-        self.debug                = False
 
         self.retry_mode           = True
         self.retry_ttl            = None
@@ -1685,18 +1658,12 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'debug': # See: sr_config.7
-                     debug = self.debug
-                     if (words1 is None) or words[0][0:1] == '-' : 
-                        self.debug = True
+                     if (words1 is None) or words[0][0:1] == '-':
+                        self.loglevel = logging.DEBUG
                         n = 1
-                     else :
-                        self.debug = self.isTrue(words[1])
+                     elif self.isTrue(words[1]):
+                        self.loglevel = logging.DEBUG
                         n = 2
-
-                     if self.debug : self.loglevel = logging.DEBUG
-                     else:           self.loglevel = logging.INFO
-
-                     if debug != self.debug : self.set_loglevel()
 
                 elif words0 == 'delete': # See: sr_sarra.8
                      if (words1 is None) or words[0][0:1] == '-' : 
@@ -2040,15 +2007,20 @@ class sr_config:
                         self.lr_interval = int(float(words1))
                     n = 2
 
-                elif words0 in ['loglevel','ll']:  # See: sr_config.7
+                elif words0 in ['loglevel', 'll']:  # See: sr_config.7
                      level = words1.lower()
-                     if level in 'critical' : self.loglevel = logging.CRITICAL
-                     elif level in 'error'    : self.loglevel = logging.ERROR
-                     elif level in 'info'     : self.loglevel = logging.INFO
-                     elif level in 'warning'  : self.loglevel = logging.WARNING
-                     elif level in 'debug'    : self.loglevel = logging.DEBUG
-                     elif level in 'none'     : self.loglevel = None
-                     self.set_loglevel()
+                     if level in 'critical':
+                         self.loglevel = logging.CRITICAL
+                     elif level in 'error':
+                         self.loglevel = logging.ERROR
+                     elif level in 'info':
+                         self.loglevel = logging.INFO
+                     elif level in 'warning':
+                         self.loglevel = logging.WARNING
+                     elif level in 'debug':
+                         self.loglevel = logging.DEBUG
+                     elif level in 'none':
+                         self.loglevel = logging.NOTSET
                      n = 2
 
                 elif words0 in ['manager','feeder'] : # See: sr_config.7, sr_sarra.8
@@ -2673,57 +2645,43 @@ class sr_config:
                 self.lastflg = 'd'
                 self.sumalgo = self.sumalgos['d']
 
+    def setlog(self, interactive=False):
+        base_log_format = '%(asctime)s [%(levelname)s] {}%(message)s'
+        if logging.getLogger().hasHandlers():
+            for h in logging.getLogger().handlers:
+                logging.getLogger().removeHandler(h)
+        self.logger = logging.getLogger()
 
-    def set_loglevel(self):
-        if not self.loglevel:
-            if hasattr(self, 'logger'):
-                del self.logger
-            self.logpath = None
-            self.logger = logging.RootLogger(logging.CRITICAL)
-            self.logger.addHandler(logging.NullHandler())
+        if interactive or not self.logpath:
+            logging.basicConfig(format=base_log_format.format(''), level=self.loglevel)
+            self.logger.debug("logging to the console with {}".format(self.logger))
         else:
-            self.logger.setLevel(self.loglevel)
+            handler = self.create_handler(base_log_format.format(''), logging.INFO)
+            self.logger.addHandler(handler)
+            if self.loglevel == logging.DEBUG:
+                handler = self.create_handler(base_log_format.format('%(module)s/%(funcName)s #%(lineno)d '), logging.DEBUG)
+                self.logger.addHandler(handler)
+            self.logger.debug("logging to file ({}) with {}".format(self.logpath, self.logger))
 
-    def setlog(self):
-        if self.loglevel and self.logpath and self.lr_interval > 0 and self.lr_backupCount > 0:
-            self.logger.debug("Switching to rotating log file: %s" % self.logpath)
+    def create_handler(self, log_format, level):
+        if self.lr_interval > 0 and self.lr_backupCount > 0:
             handler = handlers.TimedRotatingFileHandler(self.logpath, when=self.lr_when, interval=self.lr_interval,
                                                         backupCount=self.lr_backupCount)
-            self.create_new_logger(self.LOG_FORMAT, handler)
-            if self.chmod_log:
-                os.chmod(self.logpath, self.chmod_log)
-            sys.stdout = StreamToLogger(self.logger, logging.INFO)
-            sys.stderr = StreamToLogger(self.logger, logging.ERROR)
-        elif self.loglevel and self.logpath:
-            self.logger.debug("Switching to log file: %s" % self.logpath)
-            handler = logging.FileHandler(self.logpath)
-            self.create_new_logger(self.LOG_FORMAT, handler)
-            if self.chmod_log:
-                os.chmod(self.logpath, self.chmod_log)
-        elif self.loglevel:
-            self.logger.debug('Keeping on screen logging')
-            handler = logging.StreamHandler()
-            self.create_new_logger(self.LOG_FORMAT, handler)
         else:
-            self.set_loglevel()
-
-    def create_new_logger(self, log_format, handler):
-        self.logger = logging.RootLogger(self.loglevel)
-        fmt = logging.Formatter(log_format)
-        handler.setFormatter(fmt)
-        self.logger.addHandler(handler)
-
-    # check url and add credentials if needed from credential file
+            handler = logging.FileHandler(self.logpath)
+        handler.setFormatter(logging.Formatter(log_format))
+        handler.setLevel(level)
+        if self.chmod_log:
+            os.chmod(self.logpath, self.chmod_log)
+        return handler
 
     def validate_urlstr(self,urlstr):
-
+        # check url and add credentials if needed from credential file
         ok, details = self.credentials.get(urlstr)
         if details == None :
            self.logger.error("bad credential %s" % urlstr)
            return False, urllib.parse.urlparse(urlstr)
-
         return True, details.url
-
 
     def validate_parts(self):
         self.logger.debug("sr_config validate_parts %s" % self.parts)

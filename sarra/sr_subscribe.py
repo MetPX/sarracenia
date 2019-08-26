@@ -2123,7 +2123,8 @@ def test_sr_subscribe():
     subscribe.option( opt1.split()  )
     subscribe.option( opt2.split()  )
     subscribe.option( opt3.split()  )
-    subscribe.debug   = True
+    subscribe.loglevel = logging.DEBUG
+    subscribe.setlog()
 
     # ==================
     # set instance

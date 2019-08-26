@@ -547,7 +547,7 @@ class sr_instances(sr_config):
         self.nbr_instances = 0
         self.build_instance(0)
         self.logpath       = None
-        self.setlog()
+        self.setlog(interactive=True)
         self.start()
 
     def reload_instance(self):

@@ -57,7 +57,7 @@ mkdir -p "$CONFDIR" 2> /dev/null
 export SR_CONFIG_EXAMPLES=`pwd`/../sarra/examples
 
 flow_configs="`cd ../sarra/examples; ls */*f[0-9][0-9].conf; ls */*f[0-9][0-9].inc`"
-sr_action "Adding flow test configurations..." add "-debug" ">> $flowsetuplog 2>\\&1" "$flow_configs"
+sr_action "Adding flow test configurations..." add " " ">> $flowsetuplog 2>\\&1" "$flow_configs"
 
 passed_checks=0
 count_of_checks=0
