@@ -16,7 +16,7 @@ sr Sarracenia Management CLI
 SYNOPSIS
 ========
 
-**sr** declar|dump|setup|start|stop|restart|status 
+**sr** declare|dump|setup|start|stop|restart|status 
 
 DESCRIPTION
 ===========
@@ -47,9 +47,7 @@ Call the corresponding function for each configuration.
   2019-08-25 11:58:19,500 [INFO] Using amqp module (AMQP 0-9-1)
   2019-08-25 11:58:19,537 [INFO] declaring exchange xs_tsource_poll (tsource@localhost)
   
-  .
-  .
-  .
+  ...
 
   blacklab% 
 
