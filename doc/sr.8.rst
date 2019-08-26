@@ -26,9 +26,8 @@ For the current user, it reads on all of the configuration files, state files, a
 consults the process table to determine the state of all components.  It then 
 makes the change requested.
 
-In general, sr will operate on all the processes, printing a '.' for item processed
-(sometimes a dot represents a configuration, other times a process) to signify
-progress. 
+In general, sr will print a '.' to signify progress (sometimes a dot 
+represents a configuration, other times a process) 
 
 **declare|setup**
 
@@ -56,6 +55,57 @@ Call the corresponding function for each configuration.
 
 The points represent the launching of the processes to run the operation for one configuration.
 The outputs are the results after they complete.
+
+**dump**
+
+print the three data structure used by sr.  There are three lists:  
+
+* processes thought to be related to sr.
+
+* configurations present
+
+* contents of the state files.
+
+*dump** is used for debugging or to get more detail than provided by status:: 
+
+    Running Processes
+         4238: name:sr_poll.py cmdline:['/usr/bin/python3', '/home/peter/src/sarracenia/sarra/sr_poll.py', '--no', '1', 'start', 'pulse']
+         .
+         . 
+         .
+    Configs
+       cpost 
+           veille_f34 : {'status': 'running', 'instances': 1}
+
+    States
+       cpost
+           veille_f34 : {'instance_pids': {1: 4251}, 'queue_name': None, 'instances_expected': 0, 'has_state': False, 'missing_instances': []}
+
+
+It is quite long, and so a bit too much information to look at in a raw state.
+Usually used in conjunction with linux filters, such as grep.
+for example::
+
+    blacklab% ./sr.py dump  | grep stopped
+        WMO_mesh_post : {'status': 'stopped', 'instances': 0}
+    	shim_f63 : {'status': 'stopped', 'instances': 0}
+    	test2_f61 : {'status': 'stopped', 'instances': 0}
+
+    blacklab% ./sr.py dump  | grep disabled
+        amqp_f30.conf : {'status': 'disabled', 'instances': 5}
+    blacklab%
+
+provides easy method to determine which configurations are in a particular state.
+Another example, if *sr status* reports sr_shovel/pclean_f90 as being partial, then 
+one can use dump to get more detail::
+
+    blacklab% ./sr.py dump | grep pclean_f90
+    4404: name:sr_shovel.py cmdline:['/usr/bin/python3', '/home/peter/src/sarracenia/sarra/sr_shovel.py', '--no', '1', 'start', 'pclean_f90']
+    4415: name:sr_shovel.py cmdline:['/usr/bin/python3', '/home/peter/src/sarracenia/sarra/sr_shovel.py', '--no', '3', 'start', 'pclean_f90']
+    4417: name:sr_shovel.py cmdline:['/usr/bin/python3', '/home/peter/src/sarracenia/sarra/sr_shovel.py', '--no', '4', 'start', 'pclean_f90']
+    4420: name:sr_shovel.py cmdline:['/usr/bin/python3', '/home/peter/src/sarracenia/sarra/sr_shovel.py', '--no', '5', 'start', 'pclean_f90']
+        pclean_f90 : {'status': 'partial', 'instances': 5}
+        pclean_f90 : {'instance_pids': {4: 4417, 3: 4415, 2: 4412, 1: 4404, 5: 4420}, 'queue_name': 'q_tfeed.sr_shovel.pclean_f90', 'instances_expected': 5, 'has_state': False, 'missing_instances': [2]}
 
 
 **start**
@@ -98,6 +148,7 @@ Sample OK status (sr is running)::
   sr_subscribe: running 10 (OKd)
   sr_watch: running 1 (OK)
   sr_winnow: running 2 (OK)
+  total running: configs: 27, processes: 93
   blacklab% 
   
 OK means that all configurations are running all instances.
@@ -146,6 +197,7 @@ Since there is a problem with sr_subscribe, more information
 is given. The disabled configuration is printed, and the partially 
 running one lists. A partially running configuration is one where 
 some instance processes are missing.
+
 
 
 
