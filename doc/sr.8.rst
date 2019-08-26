@@ -162,6 +162,14 @@ ENVIRONMENT VARIABLES
 There are no environment variables used by sr.  See individual components for
 their needs.
 
+BUGS
+====
+
+sr looks in the configuration files for the *instance* option, and expects a number there.
+If *instances* comes from an include file, or is a variable value (not a raw number) sr
+will not use it properly.
+
+
 SEE ALSO
 ========
 

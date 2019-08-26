@@ -1568,6 +1568,11 @@ In directory ~/.cache/sarra/log::
 
   A .sr_sender_configname_$instance.log  is created as a log of $instance process.
 
+.. NOTE::
+  known bug in the management interface `sr <sr.8.rst>_`  means that instance should
+  always be in the .conf file (not a .inc) and should always be an number 
+  (not a substituted variable or other more complex value.
+
 .. note::  
   FIXME: indicate Windows location also... dot files on Windows?
 
