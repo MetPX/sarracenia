@@ -555,7 +555,7 @@ class sr_GlobalState:
            audst="missing"     
 
         print("sr_audit: running %d (%s)" % (self.auditors, audst) )
-
+        configs_running=0
         for c in self.configs:
 
             status={}
@@ -579,10 +579,14 @@ class sr_GlobalState:
                     if len(status[sv]) > 0:
                        print( '%10s: %s ' % ( sv, ', '.join(status[ sv ]) ) )
 
+            configs_running += len(status['running'])
+
         for pid in self.procs:
             if not self.procs[pid]['claimed']:
                 bad=1
                 print( "pid: %s-%s is not a configured instance" %  (pid, self.procs[pid]['cmdline']) )
+
+        print( 'total running: configs: %d, processes: %d' % ( configs_running, len(self.procs)) )
         return bad
 
 
