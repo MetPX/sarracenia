@@ -2655,12 +2655,15 @@ class sr_config:
         if interactive or not self.logpath:
             logging.basicConfig(format=base_log_format.format(''), level=self.loglevel)
             self.logger.debug("logging to the console with {}".format(self.logger))
+            sys.stderr = sys.__stderr__
         else:
             handler = self.create_handler(base_log_format.format(''), logging.INFO)
             self.logger.addHandler(handler)
             if self.loglevel == logging.DEBUG:
                 handler = self.create_handler(base_log_format.format('%(module)s/%(funcName)s #%(lineno)d '), logging.DEBUG)
                 self.logger.addHandler(handler)
+            handler = self.create_handler('', logging.INFO)
+            sys.stderr = handler.stream
             self.logger.debug("logging to file ({}) with {}".format(self.logpath, self.logger))
 
     def create_handler(self, log_format, level):

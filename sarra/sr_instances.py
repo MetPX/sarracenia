@@ -732,7 +732,7 @@ class sr_instances(sr_config):
         #   inheritance of file descriptors changed.  I think earlier versions require PIPE
         #   later versions None is better.
         #   use of Pipe causes issue: https://github.com/MetPX/sarracenia/issues/63
-        subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.Popen(cmd)
 
     def start_parent(self):
         self.logger.debug(" pid %d instances %d no %d \n" % (os.getpid(),self.nbr_instances,self.no))
@@ -745,7 +745,6 @@ class sr_instances(sr_config):
              i=1
              while i <= self.nbr_instances :
                    self.build_instance(i)
-                   self.setlog()
                    self.start_instance()
                    i = i + 1
 
@@ -759,15 +758,12 @@ class sr_instances(sr_config):
         # as instance
         else:
              self.build_instance(self.no)
+             self.setlog()
              self.pid = os.getpid()
              ok = self.file_set_int(self.pidfile,self.pid)
-             self.setlog()
              if self.no > 0:
                 os.close(0)
-                #lfd=os.open( self.logpath, os.O_CREAT|os.O_WRONLY|os.O_APPEND )
-                #os.dup2(lfd,1)
-                #os.dup2(lfd,2)
-  
+
              self.logger.debug("start instance %d (pid=%d)\n" % (self.no, self.pid) )
 
              if not ok :
