@@ -2185,7 +2185,6 @@ def test_sr_subscribe():
 # ===================================
 
 def main():
-
     args,action,config,old = startup_args(sys.argv)
  
     subscribe = sr_subscribe(config,args,action)

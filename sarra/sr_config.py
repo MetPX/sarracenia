@@ -37,6 +37,7 @@ import os, re, socket, subprocess, sys, random, glob, time
 import urllib, urllib.parse, urllib.request, urllib.error
 import shutil
 import sarra
+import streamtologger
 
 from appdirs import *
 from logging import handlers
@@ -2646,24 +2647,21 @@ class sr_config:
                 self.sumalgo = self.sumalgos['d']
 
     def setlog(self, interactive=False):
-        base_log_format = '%(asctime)s [%(levelname)s] {}%(message)s'
+        base_log_format = '%(asctime)s [%(levelname)s] %(message)s'
         if logging.getLogger().hasHandlers():
             for h in logging.getLogger().handlers:
+                h.close()
                 logging.getLogger().removeHandler(h)
         self.logger = logging.getLogger()
+        self.logger.setLevel(self.loglevel)
 
         if interactive or not self.logpath:
-            logging.basicConfig(format=base_log_format.format(''), level=self.loglevel)
+            logging.basicConfig(format=base_log_format, level=self.loglevel)
             self.logger.debug("logging to the console with {}".format(self.logger))
-            sys.stderr = sys.__stderr__
         else:
-            handler = self.create_handler(base_log_format.format(''), logging.INFO)
+            handler = self.create_handler(base_log_format, logging.DEBUG)
             self.logger.addHandler(handler)
-            if self.loglevel == logging.DEBUG:
-                handler = self.create_handler(base_log_format.format('%(module)s/%(funcName)s #%(lineno)d '), logging.DEBUG)
-                self.logger.addHandler(handler)
-            handler = self.create_handler('', logging.INFO)
-            sys.stderr = handler.stream
+            #streamtologger.redirect(self.logpath)
             self.logger.debug("logging to file ({}) with {}".format(self.logpath, self.logger))
 
     def create_handler(self, log_format, level):

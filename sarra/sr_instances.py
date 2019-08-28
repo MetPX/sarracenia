@@ -736,42 +736,37 @@ class sr_instances(sr_config):
 
     def start_parent(self):
         self.logger.debug(" pid %d instances %d no %d \n" % (os.getpid(),self.nbr_instances,self.no))
-
-        # as parent
-        if   self.no == -1 :
-
-             # instance 0 is the parent... child starts at 1
-
-             i=1
-             while i <= self.nbr_instances :
-                   self.build_instance(i)
-                   self.start_instance()
-                   i = i + 1
-
-             # the number of instances has decreased... stop excedent
-             if i <= self.last_nbr_instances:
-                self.stop_instances(i,self.last_nbr_instances)
-
-             # write nbr_instances
-             self.file_set_int(self.statefile,self.nbr_instances)
-
-        # as instance
+        if self.no == -1 :
+            # as parent: instance -1 is the parent, children start at 1
+            i=1
+            while i <= self.nbr_instances:
+                self.build_instance(i)
+                self.start_instance()
+                i = i + 1
+            if i <= self.last_nbr_instances:
+               # the number of instances has decreased... stop excedent
+               self.stop_instances(i, self.last_nbr_instances)
+            self.file_set_int(self.statefile, self.nbr_instances)
         else:
-             self.build_instance(self.no)
-             self.setlog()
-             self.pid = os.getpid()
-             ok = self.file_set_int(self.pidfile,self.pid)
-             if self.no > 0:
-                os.close(0)
-
-             self.logger.debug("start instance %d (pid=%d)\n" % (self.no, self.pid) )
-
-             if not ok :
-                self.logger.error("could not write pid for instance %s" % self.instance_str)
-                self.logger.error("instance not started")
-                sys.exit(1)
-               
-             self.start()
+            # as instance, self.no > 0
+            self.build_instance(self.no)
+            self.pid = os.getpid()
+            ok = self.file_set_int(self.pidfile,self.pid)
+            self.setlog()
+            sys.stdout = self.logger.handlers[0].stream
+            sys.stderr = self.logger.handlers[0].stream
+            if sys.platform != 'win32':
+                # avoiding dup2 for win32 since 3.6 with the introduction of _WindowsConsoleIO
+                # introduced since issue 240: https://github.com/MetPX/sarracenia/issues/240
+                os.dup2(sys.stdout.fileno(), 1)
+                os.dup2(sys.stderr.fileno(), 2)
+            os.close(0)
+            self.logger.debug("start instance %d (pid=%d)\n" % (self.no, self.pid) )
+            if not ok :
+               self.logger.error("could not write pid for instance %s" % self.instance_str)
+               self.logger.error("instance not started")
+               sys.exit(1)
+            self.start()
         sys.exit(0)
 
     def status_instance(self,sanity=False):
