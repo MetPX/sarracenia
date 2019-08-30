@@ -753,13 +753,6 @@ class sr_instances(sr_config):
             self.pid = os.getpid()
             ok = self.file_set_int(self.pidfile,self.pid)
             self.setlog()
-            sys.stdout = self.logger.handlers[0].stream
-            sys.stderr = self.logger.handlers[0].stream
-            if sys.platform != 'win32':
-                # avoiding dup2 for win32 since 3.6 with the introduction of _WindowsConsoleIO
-                # introduced since issue 240: https://github.com/MetPX/sarracenia/issues/240
-                os.dup2(sys.stdout.fileno(), 1)
-                os.dup2(sys.stderr.fileno(), 2)
             os.close(0)
             self.logger.debug("start instance %d (pid=%d)\n" % (self.no, self.pid) )
             if not ok :

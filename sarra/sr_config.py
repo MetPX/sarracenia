@@ -37,7 +37,7 @@ import os, re, socket, subprocess, sys, random, glob, time
 import urllib, urllib.parse, urllib.request, urllib.error
 import shutil
 import sarra
-import streamtologger
+import io
 
 from appdirs import *
 from logging import handlers
@@ -71,6 +71,41 @@ if sys.hexversion > 0x03030000 :
    py2old=False
 else: 
    py2old=True 
+
+
+class StreamToLoggingHandler(io.TextIOWrapper):
+   """ Wrapper that delegate stream write operations to an underlying logging handler stream
+   """
+   def __init__(self, handler, stdno):
+       super(StreamToLoggingHandler, self).__init__(handler.stream.buffer)
+       self.handler = handler
+       self.stream = handler.stream
+       #self.closed = handler.stream.closed
+       self.stdno = stdno
+       self.dup()
+
+   def write(self, buf):
+       if self.stream != self.handler.stream:
+           # Support log rotation so need to check if fileno changed
+           self.stream = self.handler.stream
+           self.dup()
+       self.handler.stream.write(buf)
+
+   def flush(self):
+       handler.stream.flush()
+
+   def close(self):
+       self.handler.stream.close()
+       self.closed = self.handler.stream.closed
+
+   def fileno(self):
+       return self.handler.stream.fileno()
+
+   def dup(self):
+       # avoiding dup2 for win32 since 3.6 with the introduction of _WindowsConsoleIO
+       # introduced since issue 240: https://github.com/MetPX/sarracenia/issues/240
+       if sys.platform != 'win32':
+           os.dup2(self.fileno(), self.stdno)
 
 class sr_config:
 
@@ -2661,7 +2696,8 @@ class sr_config:
         else:
             handler = self.create_handler(base_log_format, logging.DEBUG)
             self.logger.addHandler(handler)
-            #streamtologger.redirect(self.logpath)
+            sys.stdout = StreamToLoggingHandler(handler, 1)
+            sys.stderr = StreamToLoggingHandler(handler, 2)
             self.logger.debug("logging to file ({}) with {}".format(self.logpath, self.logger))
 
     def create_handler(self, log_format, level):
