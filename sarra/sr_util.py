@@ -909,27 +909,31 @@ def startup_args(sys_argv):
 def nowflt():
     return timestr2flt(nowstr())
 
+
 def nowstr():
     return timeflt2str(time.time())
 
-def timeflt2str( f ):
-    utcdt = datetime.datetime.utcfromtimestamp(f)
-    return utcdt.strftime("%Y%m%d%H%M%S.%f")[:18]
 
-def v3timeflt2str( f ):
-    utcdt = datetime.datetime.utcfromtimestamp(f)
-    return utcdt.strftime("%Y%m%dT%H%M%S.%f")[:18]
- 
+def timeflt2str(f):
+    nsec = "{:.9g}".format(f % 1)[1:]
+    return "{}{}".format(time.strftime("%Y%m%d%H%M%S", time.gmtime(f)), nsec)
 
-def timestr2flt( s ):
+
+def v3timeflt2str(f):
+    nsec = "{:.9g}".format(f % 1)[1:]
+    return "{}{}".format(time.strftime("%Y%m%dT%H%M%S", time.gmtime(f)), nsec)
+
+
+def timestr2flt(s):
     if s[8] == "T":
         s = s.replace('T', '')
-    dt = datetime.datetime.strptime(s[:18], '%Y%m%d%H%M%S.%f')
-    utcdt = dt.replace(tzinfo=datetime.timezone.utc)
-    return utcdt.timestamp()
+    dt_tuple = int(s[0:4]), int(s[4:6]), int(s[6:8]), int(s[8:10]), int(s[10:12]), int(s[12:14])
+    t = datetime.datetime(*dt_tuple, tzinfo=datetime.timezone.utc)
+    return calendar.timegm(t.timetuple()) + float('0' + s[14:])
 
-def timev2tov3str( s ):
+
+def timev2tov3str(s):
     if s[8] == 'T':
         return s
     else:
-        return "{}T{}".format(s[0:8], s[8:])
+        return s[0:8] + 'T' + s[8:]

@@ -36,7 +36,7 @@ entry_point=sarra.log2save:main
 entry_point=sarra.sr_tailf:main
 
 [Python]
-version=3.6.7
+version=3.7.3
 bitness=64
 
 [Include]
