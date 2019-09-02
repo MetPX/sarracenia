@@ -16,7 +16,7 @@ sr Sarracenia Management CLI
 SYNOPSIS
 ========
 
-**sr** declar|dump|setup|start|stop|restart|status 
+**sr** declare|dump|setup|start|stop|restart|status 
 
 DESCRIPTION
 ===========
