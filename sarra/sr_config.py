@@ -73,39 +73,43 @@ else:
    py2old=True 
 
 
-class StreamToLoggingHandler(io.TextIOWrapper):
+class StdFileLogWrapper(io.TextIOWrapper):
    """ Wrapper that delegate stream write operations to an underlying logging handler stream
    """
    def __init__(self, handler, stdno):
-       super(StreamToLoggingHandler, self).__init__(handler.stream.buffer)
+       super(StdFileLogWrapper, self).__init__(handler.stream.buffer)
        self.handler = handler
        self.stream = handler.stream
-       #self.closed = handler.stream.closed
        self.stdno = stdno
-       self.dup()
+       self.dup2()
 
    def write(self, buf):
        if self.stream != self.handler.stream:
-           # Support log rotation so need to check if fileno changed
+           # Support log rotation so need to check if stream changed
+           # don't trust self.stream for write operation only there to check the change
            self.stream = self.handler.stream
-           self.dup()
+           self.dup2()
        self.handler.stream.write(buf)
 
-   def flush(self):
-       handler.stream.flush()
-
-   def close(self):
-       self.handler.stream.close()
-       self.closed = self.handler.stream.closed
-
    def fileno(self):
-       return self.handler.stream.fileno()
+       """ Fake the file descriptor for the underlying standard fd ( 1 or 2 )
+       """
+       return self.stdno
 
-   def dup(self):
+   def dup2(self):
        # avoiding dup2 for win32 since 3.6 with the introduction of _WindowsConsoleIO
        # introduced since issue 240: https://github.com/MetPX/sarracenia/issues/240
        if sys.platform != 'win32':
-           os.dup2(self.fileno(), self.stdno)
+           os.dup2(self.handler.stream.fileno(), self.fileno())
+
+   @property
+   def closed(self):
+       """ Override the closed property in parent (io.TextIOWrapper)
+
+       This is useful to really redirect the close info from the underlying stream
+       """
+       return self.handler.stream.closed
+
 
 class sr_config:
 
@@ -2696,8 +2700,8 @@ class sr_config:
         else:
             handler = self.create_handler(base_log_format, logging.DEBUG)
             self.logger.addHandler(handler)
-            sys.stdout = StreamToLoggingHandler(handler, 1)
-            sys.stderr = StreamToLoggingHandler(handler, 2)
+            sys.stdout = StdFileLogWrapper(handler, 1)
+            sys.stderr = StdFileLogWrapper(handler, 2)
             self.logger.debug("logging to file ({}) with {}".format(self.logpath, self.logger))
 
     def create_handler(self, log_format, level):
