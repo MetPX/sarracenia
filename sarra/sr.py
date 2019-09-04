@@ -432,6 +432,14 @@ class sr_GlobalState:
            print('...already stopped')
            return
 
+        # kill sr_audit first, so it does not restart while others shutting down.
+        # https://github.com/MetPX/sarracenia/issues/210
+        if self.auditors > 0:
+           for p in self.procs:
+               if 'audit' in self.procs[p]['name']:
+                  os.kill( p, signal.SIGTERM )
+                  print( '.', end='' )
+
         for c in self.components:
             if (c not in self.configs):
                continue
@@ -443,12 +451,6 @@ class sr_GlobalState:
                       if self.states[c][cfg]['instance_pids'][i] in self.procs:
                           os.kill( self.states[c][cfg]['instance_pids'][i], signal.SIGTERM )
                           print( '.', end='' )
-
-        if self.auditors > 0:
-           for p in self.procs:
-               if 'audit' in self.procs[p]['name']:
-                  os.kill( p, signal.SIGTERM )
-                  print( '.', end='' )
 
         print('Done')
 
@@ -476,6 +478,12 @@ class sr_GlobalState:
             attempts += 1
 
         print( 'doing SIGKILL this time...' )
+
+        if self.auditors > 0:
+           for p in self.proc:
+               if 'audit' in p['name']:
+                  os.kill( p, signal.SIGKILL )
+
         for c in self.components:
             if (c not in self.configs):
                continue
@@ -487,18 +495,13 @@ class sr_GlobalState:
                            os.kill( self.states[c][cfg]['instance_pids'][i], signal.SIGKILL )
                            print( '.', end='' )
 
-        if self.auditors > 0:
-           for p in self.proc:
-               if 'audit' in p['name']:
-                  os.kill( p, signal.SIGKILL )
-
-        print('Done')
 
         for pid in self.procs:
             if not self.procs[pid]['claimed']:
                 print( "pid: %s-%s does not match any configured instance, would kill" %  (pid, self.procs[pid]['cmdline']) )
                 os.kill( pid, signal.SIGKILL )
 
+        print('Done')
         print( 'Waiting again...' )
         time.sleep(10)
         self._read_procs()
