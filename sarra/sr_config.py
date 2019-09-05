@@ -942,9 +942,10 @@ class sr_config:
             self.logger.error("installing %s plugin %s failed: not found " % (opname, path) ) 
             return False
 
-        try    : 
-            exec(compile(open(script).read(), script, 'exec'))
-        except : 
+        try:
+            with open(script) as f:
+                exec(compile(f.read(), script, 'exec'))
+        except:
             self.logger.error("sr_config/execfile 2 failed for option '%s' and plugin '%s'" % (opname, path))
             self.logger.debug('Exception details: ', exc_info=True)
             return False
