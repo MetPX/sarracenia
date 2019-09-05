@@ -590,7 +590,12 @@ class SrConfigGeneralTestCase(SrConfigTestCase):
         self.cfg.option(w)
         self.assertEqual(self.cfg.heartbeat, 86400, "test 62: option subtopic did not work")
 
+
 def suite():
+    """ Create the test suite that include all sr_config test cases
+
+    :return: sr_config test suite
+    """
     suite = unittest.TestSuite()
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SrConfigRandomizeTestCase))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(PluginScriptTestCase))
@@ -598,7 +603,8 @@ def suite():
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SrConfigGeneralTestCase))
     return suite
 
+
 if __name__ == 'main':
-    suite().run()
+    suite().run(unittest.TestResult())
 
 
