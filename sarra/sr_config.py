@@ -93,14 +93,22 @@ class StdFileLogWrapper(io.TextIOWrapper):
 
    def fileno(self):
        """ Fake the file descriptor for the underlying standard fd ( 1 or 2 )
+
+       :return: the fileno from the faked std file
        """
        return self.stdno
 
    def dup2(self):
-       # avoiding dup2 for win32 since 3.6 with the introduction of _WindowsConsoleIO
-       # introduced since issue 240: https://github.com/MetPX/sarracenia/issues/240
+       """ Avoiding dup2 for win32 since 3.6 with the introduction of _WindowsConsoleIO
+
+       introduced since issue 240: https://github.com/MetPX/sarracenia/issues/240
+       :return: None
+       """
        if sys.platform != 'win32':
            os.dup2(self.handler.stream.fileno(), self.fileno())
+
+   def flush(self):
+       self.buffer.flush()
 
    @property
    def closed(self):
