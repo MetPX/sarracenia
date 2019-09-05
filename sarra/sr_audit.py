@@ -60,7 +60,7 @@ class sr_audit(sr_instances):
            self.hc = None
 
     def amqp_connect(self):
-        self.hc = HostConnect(logger = self.logger)
+        self.hc = HostConnect(logger=self.logger)
         self.hc.choose_amqp_alternative(self.use_amqplib, self.use_pika)
         self.hc.loop = False
         self.hc.set_url(self.admin)

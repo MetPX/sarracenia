@@ -223,26 +223,21 @@ class sr_credentials:
                 self.logger.error("sr_credentials/parse %s" % line)
                 self.logger.debug('Exception details: ', exc_info=True)
 
-    def read(self,path):
+    def read(self, path):
         self.logger.debug("sr_credentials read")
 
         # read in provided credentials (not mandatory)
-        try :
-              if os.path.exists(path):
+        try:
+            if os.path.exists(path):
+                with open(path) as f:
+                    lines = f.readlines()
 
-                 f = open(path,'r')
-                 lines = f.readlines()
-                 f.close
-
-                 for line in lines :
-                     self.parse(line)
-
-        except :
-                 self.logger.error("sr_credentials/read path = %s" % path)
-                 self.logger.debug('Exception details: ', exc_info=True)
-
+                for line in lines:
+                    self.parse(line)
+        except:
+            self.logger.error("sr_credentials/read path = %s" % path)
+            self.logger.debug('Exception details: ', exc_info=True)
         #self.logger.debug("credentials = %s\n" % self.credentials)
-
 
     def resolve(self,urlstr, url = None):
 

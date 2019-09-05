@@ -66,7 +66,7 @@ except ImportError:
    pika_available = False
 # ==========================================
 
-if sys.hexversion > 0x03030000 :
+if sys.hexversion > 0x03030000:
    from shutil import get_terminal_size
    py2old=False
 else: 
@@ -2481,16 +2481,17 @@ class sr_config:
                         self.source_from_exchange = self.isTrue(words[1])
                         n = 2
 
-                elif words0 == 'statehost': # MG FIXME to be documented somewhere ???
+                elif words0 == 'statehost':  # MG FIXME to be documented somewhere ???
                      self.statehost = True
-                     self.hostform  = 'short'
-                     if (words1 is None) or words[0][0:1] == '-' : 
+                     self.hostform = 'short'
+                     if words1 is None or words[0][0:1] == '-':
                         n = 1
-                     elif words1.lower() in ['short','fqdn']:
-                        self.hostform  = words1.lower()
+                     elif words1.lower() in ['short', 'fqdn']:
+                        self.hostform = words1.lower()
                         n = 2
                      else:
-                        if not self.isTrue(words[1]): self.statehost = False
+                        if not self.isTrue(words[1]):
+                            self.statehost = False
                         n = 2
 
                 elif words0 == 'strip': # See: sr_config.7 
