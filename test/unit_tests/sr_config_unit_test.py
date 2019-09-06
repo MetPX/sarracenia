@@ -19,7 +19,11 @@ except ImportError:
 
 
 class SrConfigTestCase(unittest.TestCase):
-    """ As the class is the parent of all others, it handles base configs used in all tests """
+    """ The parent class of all sr_config test cases
+
+    It handles base configs used in all tests
+    """
+    cfg = None
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -63,6 +67,7 @@ class ChecksumTestCase(SrConfigTestCase):
     """ Test cases related to checksum handling
 
     """
+    tmpdir = None
     tmpdirname = None
     tmppath = None
 
@@ -73,11 +78,9 @@ class ChecksumTestCase(SrConfigTestCase):
         :return:
         """
         super(ChecksumTestCase, cls).setUpClass()
-        # creating a temporary directory with testfile test_chksum_file
-        cls.tmpdirname = tempfile.TemporaryDirectory().name
-        os.mkdir(cls.tmpdirname)
+        cls.tmpdir = tempfile.TemporaryDirectory()
         cls.tmpfilname = 'test_chksum_file'
-        cls.tmppath = os.path.join(cls.tmpdirname, cls.tmpfilname)
+        cls.tmppath = os.path.join(cls.tmpdir.name, cls.tmpfilname)
         with open(cls.tmppath, 'wb') as f:
             f.write(b"0123456789")
             f.write(b"abcdefghij")
@@ -92,7 +95,7 @@ class ChecksumTestCase(SrConfigTestCase):
         """
         super(ChecksumTestCase, cls).tearDownClass()
         os.unlink(cls.tmppath)
-        os.rmdir(cls.tmpdirname)
+        cls.tmpdir.cleanup()
 
     def test_checksum_0(self):
         self.cfg.set_sumalgo('0')
@@ -126,7 +129,7 @@ class ChecksumTestCase(SrConfigTestCase):
                 chkn.update(chunk)
         self.assertEqual(chkn.get_value(), 'fd6b0296fe95e19fcef6f21f77efdfed', "test 02d: checksum_n did not work")
 
-    @unittest.skip("test_checksum_N commented  # TODO why this has been commented")
+    @unittest.skip("Commented  # TODO why this has been commented")
     def test_checksum_N(self):
         self.cfg.set_sumalgo('N')
         chk_n = self.cfg.sumalgo
@@ -296,7 +299,7 @@ class SrConfigGeneralTestCase(SrConfigTestCase):
         self.assertEqual(self.cfg.sumflg, 's', "test 19a: option sum or module validate_sum")
         self.assertEqual(self.cfg.sumalgo.registered_as(), 's', "test 19b: option sum or module validate_sum")
 
-    @unittest.skip("test_sum_N commented  # TODO why this has been commented")
+    @unittest.skip("Commented  # TODO why this has been commented")
     def test_sum_N(self):
         opt1 = "sum N"
         self.cfg.option(opt1.split())
@@ -395,21 +398,21 @@ class SrConfigGeneralTestCase(SrConfigTestCase):
         self.cfg.option(opt4.split())
         self.assertEqual(self.cfg.pstrip, '.*aaa', "test 32: option strip with pattern failed")
 
-    @unittest.skipIf(not pika_available, "test_use_pika: pika library is not available")
+    @unittest.skipIf(not pika_available, "pika library is not available")
     def test_use_pika(self):
         opt4 = 'use_pika'
         self.cfg.option(opt4.split())
         self.assertTrue(self.cfg.use_pika and not self.cfg.use_amqplib,
                         "test 33a: option use_pika boolean set to true without value failed")
 
-    @unittest.skipIf(not pika_available, "test_use_pika_true: pika library is not available")
+    @unittest.skipIf(not pika_available, "pika library is not available")
     def test_use_pika_true(self):
         opt4 = 'use_pika True'
         self.cfg.option(opt4.split())
         self.assertTrue(self.cfg.use_pika and not self.cfg.use_amqplib,
                         "test 33b: option use_pika boolean set to true failed")
 
-    @unittest.skipIf(not pika_available, "test_use_pika_false: pika library is not available")
+    @unittest.skipIf(not pika_available, "pika library is not available")
     def test_use_pika_false(self):
         opt4 = 'use_pika False'
         self.cfg.option(opt4.split())
@@ -504,7 +507,7 @@ class SrConfigGeneralTestCase(SrConfigTestCase):
         self.cfg.option(opt1.split())
         self.assertEqual(self.cfg.outlet, 'post', "test 50: option outlet value post did not work")
 
-    @unittest.skip("test_outlet_post: bad option setting skipped... its output confuses conformity... "
+    @unittest.skip("bad option setting skipped... its output confuses conformity... "
                    "complains about an error... and it is ok to complain.")
     def test_outlet_post(self):
         opt1 = "outlet toto"
@@ -597,15 +600,14 @@ def suite():
 
     :return: sr_config test suite
     """
-    suite = unittest.TestSuite()
-    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SrConfigRandomizeTestCase))
-    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(PluginScriptTestCase))
-    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(ChecksumTestCase))
-    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SrConfigGeneralTestCase))
-    return suite
+    sr_config_suite = unittest.TestSuite()
+    sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SrConfigRandomizeTestCase))
+    sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(PluginScriptTestCase))
+    sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(ChecksumTestCase))
+    sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SrConfigGeneralTestCase))
+    return sr_config_suite
 
 
 if __name__ == 'main':
-    suite().run(unittest.TestResult())
-
-
+    runner = unittest.TextTestRunner()
+    runner.run(suite())
