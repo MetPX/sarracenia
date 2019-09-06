@@ -46,6 +46,7 @@ class SrConfigTestCase(unittest.TestCase):
         """
         os.unlink("./bbb.inc")
         os.unlink("./aaa.conf")
+        os.removedirs(cls.cfg.user_cache_dir)
 
 
 class SrConfigRandomizeTestCase(SrConfigTestCase):
@@ -210,7 +211,7 @@ class SrConfigGeneralTestCase(SrConfigTestCase):
         self.cfg.option(opt1.split())
 
     def test_user_cache_dir(self):
-        test_cache_path = os.path.join(os.path.expanduser('~'), '.cache', 'sarra', '_jb_unittest_runner', 'aaa')
+        test_cache_path = os.path.join(os.path.expanduser('~'), '.cache', 'sarra', self.cfg.program_name, 'aaa')
         self.assertEqual(self.cfg.user_cache_dir, test_cache_path)
 
     def test_user_log_dir(self):
