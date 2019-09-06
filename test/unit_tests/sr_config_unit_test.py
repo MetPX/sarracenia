@@ -63,7 +63,7 @@ class SrConfigRandomizeTestCase(SrConfigTestCase):
         self.assertTrue(self.cfg.isTrue('true') or not self.cfg.isTrue('false'), "test 01b: problem with module isTrue")
 
 
-class ChecksumTestCase(SrConfigTestCase):
+class SrConfigChecksumTestCase(SrConfigTestCase):
     """ Test cases related to checksum handling
 
     """
@@ -77,7 +77,7 @@ class ChecksumTestCase(SrConfigTestCase):
 
         :return:
         """
-        super(ChecksumTestCase, cls).setUpClass()
+        super(SrConfigChecksumTestCase, cls).setUpClass()
         cls.tmpdir = tempfile.TemporaryDirectory()
         cls.tmpfilname = 'test_chksum_file'
         cls.tmppath = os.path.join(cls.tmpdir.name, cls.tmpfilname)
@@ -93,7 +93,7 @@ class ChecksumTestCase(SrConfigTestCase):
 
         :return:
         """
-        super(ChecksumTestCase, cls).tearDownClass()
+        super(SrConfigChecksumTestCase, cls).tearDownClass()
         os.unlink(cls.tmppath)
         cls.tmpdir.cleanup()
 
@@ -154,7 +154,7 @@ class ChecksumTestCase(SrConfigTestCase):
         self.assertEqual(chks.get_value(), long_chksum, "test 02f: checksum_s did not work")
 
 
-class PluginScriptTestCase(SrConfigTestCase):
+class SrConfigPluginScriptTestCase(SrConfigTestCase):
     """ Test cases related to plugin interfacing """
     def setUp(self) -> None:
         """ Creating a dummy script plugin which will be tested
@@ -602,8 +602,8 @@ def suite():
     """
     sr_config_suite = unittest.TestSuite()
     sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SrConfigRandomizeTestCase))
-    sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(PluginScriptTestCase))
-    sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(ChecksumTestCase))
+    sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SrConfigPluginScriptTestCase))
+    sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SrConfigChecksumTestCase))
     sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SrConfigGeneralTestCase))
     return sr_config_suite
 
