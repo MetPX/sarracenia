@@ -11,22 +11,26 @@ lists all changes between versions.
 *    new: #227 some support added to for rabbitmq to work with mqtt.
 *    new: tools to support migration of large Sundew configurations to Sarracenia.
 *
-* bugfix: #190 when printing v03 messages, post_log was misleading (not updated)
-*         #182 fixed support for file=NONE (Sundew compatibility)
-*         #174 sr too slow fixed by replacing it.
-*         #210 sr_audit race condition fixed by killing at the beginning of stop processing. 
+* bugfix: 
 *         #212 fix for size approximation being wrong on polls that don't provide exact size.
 *         #212 fix for interpretation of username in baseurl (FIXME: requires review)
+*         #210 sr_audit race condition fixed by killing at the beginning of stop processing. 
+*         #207 reassembly of partitioned files by sender.
 *         #201 fix for lookup in cache for partitioned files.
+*         #190 when printing v03 messages, post_log was misleading (not updated)
+*         #182 fixed support for file=NONE (Sundew compatibility)
+*         #174 sr too slow fixed by replacing it.
 *         also allowed removing some duplicate code. 
 *         lost backward compatibility warnings around in on_post calls.
 *         apparently, in Sundew keys: + is the same as .*  mapping added.
 *
-* testing improvements:
+* testing improvements/fixes:
 *         more design diagrams.
 *         unit testing refactored.
 *         #208 fixed: flow test is leaking...
+*         #206 log rotation corrupts flow tests.
 *         #184 some some flow test refactoring
+*         #182 sr_watch fails on high volumes in flow test.
 *   
 
 **2.19.04b2**
