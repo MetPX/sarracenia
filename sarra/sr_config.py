@@ -75,11 +75,13 @@ else:
 
 class StdFileLogWrapper(io.TextIOWrapper):
    """ Wrapper that delegate stream write operations to an underlying logging handler stream
+
+   It borrows the handler buffer at construction time and will update it as the logging rolls
    """
    def __init__(self, handler, stdno):
        super(StdFileLogWrapper, self).__init__(handler.stream.buffer)
-       self.handler = handler
        self.stream = handler.stream
+       self.handler = handler
        self.stdno = stdno
        self.dup2()
 
@@ -110,13 +112,20 @@ class StdFileLogWrapper(io.TextIOWrapper):
    def flush(self):
        self.buffer.flush()
 
+   def close(self):
+       pass
+
    @property
    def closed(self):
        """ Override the closed property in parent (io.TextIOWrapper)
 
        This is useful to really redirect the close info from the underlying stream
        """
-       return self.handler.stream.closed
+       return self.buffer.closed
+
+   @property
+   def buffer(self):
+       return self.handler.stream.buffer
 
 
 class sr_config:
