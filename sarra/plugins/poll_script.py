@@ -62,7 +62,7 @@ class POLL_SCRIPT(object):
       
       # run the shell script, for loop processes each line of output 
       #      as an absolute path to a file name.
-      proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+      proc = subprocess.Popen(cmd)
       
       for line in proc.stdout:
           fname = line.rstrip().decode("utf-8") 
