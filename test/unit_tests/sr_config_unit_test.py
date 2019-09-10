@@ -11,9 +11,7 @@ Code contributed by:
 """
 import _io
 import tempfile
-import tracemalloc
 import unittest
-from unittest.mock import patch
 
 try:
     from sr_config import *
