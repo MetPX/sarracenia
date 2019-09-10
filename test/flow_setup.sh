@@ -124,7 +124,7 @@ count_of_checks=$((${count_of_checks}+1))
 
 echo "======= Testing: sr_config"  >>  $unittestlog
 nbr_test=$(( ${nbr_test}+1 ))
-python -m unittest -v ${TESTDIR}/unit_tests/sr_config_unit_test.py >> $unittestlog 2>&1
+python3 -m unittest -v ${TESTDIR}/unit_tests/sr_config_unit_test.py >> $unittestlog 2>&1
 status=${?}
 if [ $status -ne 0 ]; then
    echo "======= Testing sr_config: Failed"
