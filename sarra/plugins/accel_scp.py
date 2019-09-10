@@ -106,15 +106,9 @@ class ACCEL_SCP(object):
        cmd  = parent.download_accel_scp_command[0].split() + [ arg1, arg2 ]
        logger.info("accel_scp :  %s" % ' '.join(cmd))
 
-       p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-       outstr, dummy = p.communicate()
-       result = p.returncode
-
-       if result != 0:  # Failed!
-          for line in outstr.splitlines():
-              logger.error("%s" % line.decode('utf-8') )
+       p = subprocess.Popen(cmd)
+       if p.returncode != 0:  # Failed!
           return False 
-
        return True
 
 
@@ -140,15 +134,9 @@ class ACCEL_SCP(object):
        cmd  = parent.download_accel_scp_command[0].split() + [ arg1, arg2 ]
        logger.info("accel_scp :  %s" % ' '.join(cmd))
 
-       p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-       outstr, dummy = p.communicate()
-       result = p.returncode
-
-       if result != 0:  # Failed!
-          for line in outstr.splitlines():
-              logger.error("%s" % outstr.decode('utf-8') )
+       p = subprocess.Popen(cmd)
+       if p.returncode != 0:  # Failed!
           return False 
-
        return True
 
    def registered_as(self) :
