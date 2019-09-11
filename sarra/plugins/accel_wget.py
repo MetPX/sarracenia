@@ -96,7 +96,7 @@ class ACCEL_WGET(object):
       cmd = parent.download_accel_wget_command[0].split() + [ msg.urlstr ]
       logger.debug("wget do_download in %s invoking: %s " % ( msg.new_dir, cmd ) )
 
-      p = subprocess.Popen(cmd)
+      p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
       outstr, dummy = p.communicate()
       result = p.returncode
 
