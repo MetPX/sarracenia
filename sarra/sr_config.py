@@ -1231,8 +1231,8 @@ class sr_config:
                     subprocess.run([sr_path+'/'+cmd_list[0]+'.py']+cmd_list[1:], check=True)
                 else:
                     subprocess.run(cmd_list, check=True)
-        except Exception as e:
-            self.logger.error("trying run command {} with {}".format(' '.join(cmd_list), e))
+        except subprocess.CalledProcessError as err:
+            self.logger.error("subprocess.run failed err={}".format(err))
             self.logger.debug("Exception details:", exc_info=True)
 
     def register_plugins(self):
