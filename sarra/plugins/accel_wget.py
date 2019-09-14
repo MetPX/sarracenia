@@ -96,25 +96,20 @@ class ACCEL_WGET(object):
       cmd = parent.download_accel_wget_command[0].split() + [ msg.urlstr ]
       logger.debug("wget do_download in %s invoking: %s " % ( msg.new_dir, cmd ) )
 
-      p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-      outstr, dummy = p.communicate()
-      result = p.returncode
-
-      if result == 0:  # Success!
-         for line in outstr.splitlines():
-              logger.info("%s" % line.decode('utf-8') )
-         #logger.info("%s" % outstr)
-         logger.info("wget Downloaded: %s " % ( msg.new_dir + os.sep + msg.new_file ) )
+      p = subprocess.Popen(cmd)
+      try:
+          p.wait(1)
+      except TimeoutExpired as err:
+          logger.error("too slow, skipping cmd={}, err={}".format(cmd, err))
+          logger.debug("Exception details:", exc_info=True)
+      if p.returncode != 0:  # Failed!
          if parent.reportback:
-            msg.report_publish(201,'Downloaded')
-         return True
+             msg.report_publish(499,'wget download failed')
+         return False 
 
-      for line in outstr.splitlines():
-              logger.error("%s" % line.decode('utf-8') )
-         
       if parent.reportback:
-         msg.report_publish(499,'wget download failed')
-      return False 
+         msg.report_publish(201,'Downloaded')
+      return True
 
 self.plugin='ACCEL_WGET'
 

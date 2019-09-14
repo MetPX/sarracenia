@@ -2123,7 +2123,8 @@ def test_sr_subscribe():
     subscribe.option( opt1.split()  )
     subscribe.option( opt2.split()  )
     subscribe.option( opt3.split()  )
-    subscribe.debug   = True
+    subscribe.loglevel = logging.DEBUG
+    subscribe.setlog()
 
     # ==================
     # set instance
@@ -2184,7 +2185,6 @@ def test_sr_subscribe():
 # ===================================
 
 def main():
-
     args,action,config,old = startup_args(sys.argv)
  
     subscribe = sr_subscribe(config,args,action)
