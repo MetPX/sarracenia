@@ -876,11 +876,11 @@ dévéloppement::
   git push
   git push origin sarra-v2.16.01a01
 
-* En suite, il faut publier la version avec les procédures suivants: `PyPI`, and `Launchpad`
+En suite, il faut publier la version avec les procédures suivants: `PyPI`_, and `Launchpad`_
 
-* une fois la génération de paquets complété, on devrait incrementer la version
-  dans master afin d´eviter la confusion avec la version publier
-  en incrémentant la version en master avec: `Réglage de la version`
+Une fois la génération de paquets complété, on devrait incrementer la version
+dans master afin d´eviter la confusion avec la version publier
+en incrémentant la version en master avec: `Réglage de la version`
 
 
 

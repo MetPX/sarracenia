@@ -1018,18 +1018,18 @@ Releasing
 
 When development for a version is complete. The following should occur:
 
-* A tag should be created to identify the end of the cycle::
+A tag should be created to identify the end of the cycle::
 
-  git checkout master
-  git tag -a sarra-v2.16.01a01 -m "release 2.16.01a01"
-  git push
-  git push origin sarra-v2.16.01a01
+   git checkout master
+   git tag -a sarra-v2.16.01a01 -m "release 2.16.01a01"
+   git push
+   git push origin sarra-v2.16.01a01
 
-* then proceed to update the various distribution methods: `PyPI`, and `Launchpad`
+then need to update the various distribution methods: `PyPI`_, and `Launchpad`_
 
-* after the package generation is complete, one should `Set the Version`
-  in master to the next logical increment to ensure no further development
-  occurs that is identified as the released version.    
+Once package generation is complete, one should `Set the Version`_
+in master to the next logical increment to ensure no further development
+occurs that is identified as the released version.    
 
 
 
