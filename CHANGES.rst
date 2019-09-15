@@ -12,8 +12,9 @@ lists all changes between versions.
 *    new: tools to support migration of large Sundew configurations to Sarracenia.
 *
 * bugfix: 
-*         #212 fix for size approximation being wrong on polls that don't provide exact size.
+*         #240,#254,#249,#252 logging and background launch output redirection.
 *         #212 fix for interpretation of username in baseurl (FIXME: requires review)
+*         #211 fix for size approximation being wrong on polls that don't provide exact size.
 *         #210 sr_audit race condition fixed by killing at the beginning of stop processing. 
 *         #207 reassembly of partitioned files by sender.
 *         #201 fix for lookup in cache for partitioned files.
