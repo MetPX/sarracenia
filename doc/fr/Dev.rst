@@ -825,6 +825,7 @@ Pour publier une version, il faut le faire :
 - télécharger la version sur pypi.org pour que l'installation avec pip réussisse.
 - télécharger la version sur launchpad.net, afin que l'installation des paquets debian
   l'utilisation du référentiel réussit.
+- incrémenter la version en master.
 
 Schéma de versionnement
 ~~~~~~~~~~~~~~~~~~~~~~~
