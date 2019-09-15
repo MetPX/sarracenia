@@ -168,7 +168,7 @@ Liste de contrôle :
 
 Il y aura, habituellement, un cycle dévéloppement sur la branche pendant un certain temps.
 Eventuellement, on va avoir du travail prêt à être incorporé dans la branche principale.
-La procédure se trouve ici: `Modification à master <Modification à master>`
+La procédure se trouve ici: `Modification à master <Modification à master>`_
 
 
 Tests
