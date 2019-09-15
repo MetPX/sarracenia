@@ -154,7 +154,7 @@ Checklist:
 - **update doc/** manual pages should get their updates ideally at the same time as the code.
 
 Usually there will be many such cycles on a development branch before one is ready
-to issue a pull request. Eventually, we get to `Commits to the Master Branch`
+to issue a pull request. Eventually, we get to `Commits to the Master Branch <Commits to the Master Branch>`
 
 
 Flow Test Description
