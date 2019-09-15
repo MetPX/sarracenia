@@ -146,11 +146,16 @@ Committing Code
 What should be done prior to committing to the master branch?
 Checklist:
 
+- do development on some other branch.  Usually the branch will be named after the issue being
+  addressed.  Example:  issue240, if we give up on an initial approach and start another one, 
+  there may be issue240_2 for a second attempt.  There may also be feature branches, such as v03.
 - **flow_test works** (See Testing) The master branch should always be functional, do not commit code if the flow_test is not working.
 - Natural consequence: if the code changes means tests need to change, include the test change in the commit.
 - **update doc/** manual pages should get their updates ideally at the same time as the code.
-- Update CHANGES.txt to assist in the release process.  Describe changes in code.
+- Update CHANGES.rst to assist in the release process.  Describe changes in code.
+- use dch (and/or edit debian/changelog directly) with copy of CHANGES.rst
 - If the code has an impact (different configuration, change in behaviour) Update doc/UPGRADING.rst
+- issue pullrequest
 
 
 
@@ -163,6 +168,8 @@ tested. Please add self-tests as appropriate to this process to reflect the new 
 
 A typical development workflow will be::
 
+   git branch issueXXX
+   git checkout issueXXX
    cd sarra ; *make coding changes*
    cd ..
    debuild -uc -us
@@ -172,11 +179,12 @@ A typical development workflow will be::
    cd ../sarracenia/test
    ./flow_cleanup.sh
    rm directories with state (indicated by flow_cleanup.sh)
-   ./flow_setup.sh  ; *starts the flows*
-   ./flow_limit.sh  ; *stops the flows after some period (default: 1000) *
-   ./flow_check.sh  ; *checks the flows*
-   ./flow_cleanup.sh  ; *cleans up the flows*
-   
+   ./flow_setup.sh  # *starts the flows*
+   ./flow_limit.sh  # *stops the flows after some period (default: 1000) *
+   ./flow_check.sh  # *checks the flows*
+   ./flow_cleanup.sh  # *cleans up the flows*
+   git commit -a  # on the branch...
+
 As part of the flow_setup.sh, various unit_test are run (located in the test/unit_tests
 sub-directory.) The flow tests can then indicate if there is an issue
 with the modification.
@@ -187,6 +195,8 @@ the configuration steps have been automated and can be applied with the flow_aut
 script in sarracenia/test/. Blind execution of this script on a working system may lead to undesirable
 side effects; you have been warned!
 
+
+   
 The configuration one is trying to replicate:
 
 .. image:: Flow_test.svg
@@ -910,6 +920,32 @@ able to terminate. If there was a significant problem, the cumulation
 would indicate it.
 
 
+Commits to the Master Branch
+----------------------------
+
+Aside from typos, and/or language fixups in the documentation, developers are
+not expected to commit to master. All work happens on development branches, 
+and all testing is expected to pass before one considers affecting master.
+Once the branch development is complete, or a unit of work-in-progress is felt
+to be worth merging to master, one should summarize the changes for 
+the debian change log, then issue a change request on github.
+
+::
+
+   vi CHANGES.rst # summarize the changes 
+   dch CHANGES.rst # copy/paste from CHANGES.rst, inserting one leading space.
+   # issue a pull request on github.com.
+
+A Second developer will review the pull request and the reviewer will decide on whether
+merging is appropriate. The developer is expected to examine each commit, and 
+understand it to some degree.
+
+The Travis CI test looks at pull requests and will run them as if it were merged.
+If the tests pass, then that is good qualitative indicator, however the tests are a bit
+fragile at the moment, so if they fail, it would be ideal for the reviewer to run
+the tests in their own development environment. If it passes in the local developer
+environment one can approve a merge in spite of Travis' complaints.  
+
 
 Building a Release
 ------------------
@@ -928,7 +964,7 @@ To publish a release one needs to:
 - upload the release to pypi.org so that installation with pip succeeds.
 - upload the release to launchpad.net, so that the installation of debian packages
   using the repository succeeds.
-
+- increment the version for future commits to master.
 
 Versioning Scheme
 ~~~~~~~~~~~~~~~~~
@@ -952,23 +988,43 @@ Example:
 The first alpha release in January 2016 would be versioned as ``metpx-sarracenia-2.16.01a01``
 
 
-Setting the Version
-~~~~~~~~~~~~~~~~~~~
+Set the Version
+~~~~~~~~~~~~~~~
 
-Each new release triggers a *tag* in the git repository ( executes *git tag -a sarra-v2.16.01a01 -m "release 2.16.01a01"* )
-
-A convenient script has been created to automate the release process. Simply run ``release.sh`` and it will guide you in cutting a new release.
-
+This is done to *start* development on a version.
 
 * Edit ``sarra/__init__.py`` manually and set the version number.
-* git commit -a
-* Run ```release.sh``` example::
-
-    ./release.sh "release 2.16.01a01"
-
-* you will be prompted to enter information about the release.
-
+* Edit CHANGES.rst to add a section for the version.
+* run dch to start the changelog for the current version. 
+* git commit -a 
 * git push
+
+If development continues and the time passes without the release occurring, then
+the version needs to be set to again (or overwritten).  For example, a development
+cycle begins in August, the version in master will be 2.19.08b1... but if development
+continues into September, one should use this procedure the change the version to 2.19.09b1.
+
+
+
+Releasing
+~~~~~~~~~
+
+
+When development for a version is complete. The following should occur:
+
+* A tag should be created to identify the end of the cycle::
+
+  git checkout master
+  git tag -a sarra-v2.16.01a01 -m "release 2.16.01a01"
+  git push
+  git push origin sarra-v2.16.01a01
+
+* then proceed to update the various distribution methods: `PyPI`, and `Launchpad`
+
+* after the package generation is complete, one should `Set the Version`
+  in master to the next logical increment to ensure no further development
+  occurs that is identified as the released version.    
+
 
 
 PyPi
