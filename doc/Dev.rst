@@ -152,11 +152,9 @@ Checklist:
 - **flow_test works** (See Testing) The master branch should always be functional, do not commit code if the flow_test is not working.
 - Natural consequence: if the code changes means tests need to change, include the test change in the commit.
 - **update doc/** manual pages should get their updates ideally at the same time as the code.
-- Update CHANGES.rst to assist in the release process.  Describe changes in code.
-- use dch (and/or edit debian/changelog directly) with copy of CHANGES.rst
-- If the code has an impact (different configuration, change in behaviour) Update doc/UPGRADING.rst
-- issue pullrequest
 
+Usually there will be many such cycles on a development branch before one is ready
+to issue a pull request. Eventually, we get to `Commits to the Master Branch`
 
 
 Flow Test Description
@@ -923,17 +921,24 @@ would indicate it.
 Commits to the Master Branch
 ----------------------------
 
-Aside from typos, and/or language fixups in the documentation, developers are
-not expected to commit to master. All work happens on development branches, 
-and all testing is expected to pass before one considers affecting master.
-Once the branch development is complete, or a unit of work-in-progress is felt
-to be worth merging to master, one should summarize the changes for 
-the debian change log, then issue a change request on github.
+Aside from typos, language fixups in the documentation, and incrementing
+the version, developers are not expected to commit to master. All work 
+happens on development branches, and all testing is expected to pass before 
+one considers affecting master. Once the branch development is complete, 
+or a unit of work-in-progress is felt to be worth merging to master, one 
+must summarize the changes from the branch for the debian change log, 
+update the UPGRADING file if necessary, and then issue a change 
+request on github.
 
 ::
-
+   
+   git checkout issueXXX
    vi CHANGES.rst # summarize the changes 
-   dch CHANGES.rst # copy/paste from CHANGES.rst, inserting one leading space.
+   dch # copy/paste from CHANGES.rst, inserting one leading space.
+   vi doc/UPGRADING.rst # rarely, if code has user impact.
+   vi doc/fr/UPGRADING.rst # bon... ceci est visible aux usagers, donc...
+   git commit -a
+   git push 
    # issue a pull request on github.com.
 
 A Second developer will review the pull request and the reviewer will decide on whether
@@ -993,6 +998,7 @@ Set the Version
 
 This is done to *start* development on a version.
 
+* git checkout master
 * Edit ``sarra/__init__.py`` manually and set the version number.
 * Edit CHANGES.rst to add a section for the version.
 * run dch to start the changelog for the current version. 
