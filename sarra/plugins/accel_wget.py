@@ -30,14 +30,7 @@ Instead of invoking wget, it will invoke the wget -p command. To the command wil
 See end of file for performance considerations.
 
 """
-
-import os,stat,time,sys
-import calendar
-
-class ACCEL_WGET(object): 
-
-   import urllib.parse
-
+class ACCEL_WGET(object):
    def __init__(self,parent):
 
       parent.declare_option( 'accel_wget_command' )
@@ -61,6 +54,7 @@ class ACCEL_WGET(object):
       return True
 
    def on_message(self,parent):
+      import urllib.parse
 
       logger = parent.logger
       msg    = parent.msg
@@ -86,6 +80,9 @@ class ACCEL_WGET(object):
 
 
    def do_download(self,parent):
+      import os
+      from subprocess import TimeoutExpired
+
       logger = parent.logger
       msg    = parent.msg
 

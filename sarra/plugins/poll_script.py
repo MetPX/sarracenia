@@ -27,11 +27,13 @@ what shows up in sr_poll log:
 
  
 """
+try:
+    from sr_util import timestr2flt
+except:
+    from sarra.sr_util import timestr2flt, timeflt2str
 
-import os,stat,time
-import calendar
 
-class POLL_SCRIPT(object): 
+class POLL_SCRIPT(object):
 
 
    def __init__(self,parent):
@@ -43,25 +45,18 @@ class POLL_SCRIPT(object):
       pass
           
    def perform(self,parent):
+      import os
+      import subprocess
+      import urllib.parse
+
       logger = parent.logger
       msg    = parent.msg
 
-      import subprocess
-      try:
-           from sr_util import timestr2flt
-      except:
-           from sarra.sr_util import timestr2flt
-
-
-
       cmd = parent.poll_script_command
 
-      #logger.debug("poll_script msg inbound: %s " % vars(msg) )
-      #logger.debug("poll_script parent inbound: %s " % vars(parent) )
       logger.debug("poll_script invoking: %s " % cmd )
       
-      # run the shell script, for loop processes each line of output 
-      #      as an absolute path to a file name.
+      # run the shell script, for loop processes each line of output as an absolute path to a file name.
       proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
       
       for line in proc.stdout:
@@ -79,11 +74,11 @@ class POLL_SCRIPT(object):
           mtimestr = timeflt2str(fst.st_mtime)
           atimestr = timeflt2str(fst.st_atime)
 
-          logger.debug(\
-              "poll_script exchange: %s url: %s to_cluster: %s partstr: %s " \
-              % (parent.exchange, msg.url, parent.to_clusters, msg.partstr) )
-          ok = parent.post(parent.exchange,parent.destination,fname,parent.to_clusters, msg.partstr,msg.sumstr, \
-               mtime=mtimestr, atime=atimestr)
+          logger.debug("poll_script exchange: %s url: %s to_cluster: %s partstr: %s " % (parent.exchange, msg.url,
+                                                                                         parent.to_clusters,
+                                                                                         msg.partstr) )
+          parent.post(parent.exchange,parent.destination,fname,parent.to_clusters, msg.partstr,msg.sumstr,
+                           mtime=mtimestr, atime=atimestr)
 
 
       return True 
