@@ -171,8 +171,7 @@ Il y aura, habituellement, un cycle dévéloppement sur la branche pendant un ce
 Tests
 -----
 
-Avant de livrer du code à la branche maître, comme mesure de contrôle qualité, il faut exécuter tous les auto-tests disponibles.
-À cette étape, on présume que les modifications spécifiques du code ont déjà été appliquées à l'unité testée. Ce contrôle réduira les possibilités de régression de la qualité de Sarracenia. Il est aussi essentiel de modifier les autotests afin de bien contrôler les changements qui ont été effectués au code et dans l'optique que ce code test sera réutilisé comme mesure de contrôle pour de futurs changements.
+Avant de livrer du code à la branche maître, comme mesure de contrôle qualité, il faut exécuter tous les auto-tests disponibles. À cette étape, on présume que les modifications spécifiques du code ont déjà été appliquées à l'unité testée. Ce contrôle réduira les possibilités de régression de la qualité de Sarracenia. Il est aussi essentiel de modifier les autotests afin de bien contrôler les changements qui ont été effectués au code et dans l'optique que ce code test sera réutilisé comme mesure de contrôle pour de futurs changements.
 
 La configuration que l'on essaie de répliquer:
 
