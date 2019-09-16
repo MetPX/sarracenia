@@ -17,6 +17,7 @@ lists all changes between versions.
 *         #211 fix for size approximation being wrong on polls that don't provide exact size.
 *         #210 sr_audit race condition fixed by killing at the beginning of stop processing. 
 *         #207 reassembly of partitioned files by sender.
+*         #202 Stack overflow on sr_watch restart.
 *         #201 fix for lookup in cache for partitioned files.
 *         #190 when printing v03 messages, post_log was misleading (not updated)
 *         #182 fixed support for file=NONE (Sundew compatibility)

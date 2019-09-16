@@ -11,6 +11,7 @@ metpx-sarracenia (2.19.09b1) UNRELEASED; urgency=medium
   *         #211 fix for size approximation being wrong on polls that don't provide exact size.
   *         #210 sr_audit race condition fixed by killing at the beginning of stop processing.
   *         #207 reassembly of partitioned files by sender.
+  *         #202 Stack overflow on sr_watch restart.
   *         #201 fix for lookup in cache for partitioned files.
   *         #190 when printing v03 messages, post_log was misleading (not updated)
   *         #182 fixed support for file=NONE (Sundew compatibility)
@@ -27,7 +28,6 @@ metpx-sarracenia (2.19.09b1) UNRELEASED; urgency=medium
   *         #184 some some flow test refactoring
   *         #182 sr_watch fails on high volumes in flow test.
   *
-  * 
 
  -- Peter Silva <peter@blacklab>  Sat, 07 Sep 2019 00:05:33 -0400
 
