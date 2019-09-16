@@ -576,11 +576,11 @@ class sr_GlobalState:
             elif ( len(status['running']) == (len(self.configs[c])-len(status['disabled'])) ):
                 print( 'sr_%s: running %d (OKd)' % (c, (len(self.configs[c])-len(status['disabled'])) ) )
             else:
-                print( 'sr_%s: mixed status' % c )
+                print( 'sr_%s: mixed status, %d configured.' % (c, len(self.configs[c])) )
                 bad=1
                 for sv in self.status_values:
                     if len(status[sv]) > 0:
-                       print( '%10s: %s ' % ( sv, ', '.join(status[ sv ]) ) )
+                       print( '\t%3d %s: %s ' % ( len(status[sv]), sv, ', '.join(status[ sv ]) ) )
 
             configs_running += len(status['running'])
 
