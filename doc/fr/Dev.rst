@@ -163,7 +163,7 @@ Liste de contrôle :
 - On développe dans une autre branche. Habituellement la branche sera nommée d'après l'*issue* qu´on traite. Exemple: *issue240*, si on change d´approche et on se reprend, on peut avoir un *issue240_2*. Il est aussi possible qu´on travaille sur des branches plus stratégiques, tel que *v03*. 
 - La branche maître doit toujours être fonctionnelle, ne pas soumettre de code (sur master) si le *flow_test* ne fonctionne pas.
 - Conséquence naturelle : si le changement de code signifie que les tests doivent changer, inclure le changement de test(s) dans le commit.
-- les docs devraient idéalement recevoir leurs mises à jour en même temps que le code.
+- La documentation devrait idéalement recevoir ses mises à jour en même temps que le code.
 
 Il y aura, habituellement, un cycle dévéloppement sur la branche pendant un certain temps. Eventuellement, on va avoir du travail prêt à être incorporé dans la branche principale. La procédure se trouve ici: `Modification à master`_
 
