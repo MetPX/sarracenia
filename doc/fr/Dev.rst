@@ -171,8 +171,8 @@ Il y aura, habituellement, un cycle dévéloppement sur la branche pendant un ce
 Tests
 -----
 
-Avant de livrer du code à la branche maître, comme mesure d'assurance qualité, il faut exécuter tous les auto-tests disponibles.
-Il est supposé que les modifications spécifiques du code ont déjà été apportées à l'unité testée. Veuillez ajouter des autotests au besoin à ce processus afin de refléter les nouveaux tests.
+Avant de livrer du code à la branche maître, comme mesure de contrôle qualité, il faut exécuter tous les auto-tests disponibles.
+À cette étape, on présume que les modifications spécifiques du code ont déjà été apportées à l'unité testée. Vous devrez aussi ajouter des autotests au besoin à ce processus afin de refléter les nouveaux tests.
 
 La configuration que l'on essaie de répliquer:
 
