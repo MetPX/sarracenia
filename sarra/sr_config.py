@@ -2074,10 +2074,10 @@ class sr_config:
                          self.loglevel = logging.CRITICAL
                      elif level in 'error':
                          self.loglevel = logging.ERROR
-                     elif level in 'info':
-                         self.loglevel = logging.INFO
                      elif level in 'warning':
                          self.loglevel = logging.WARNING
+                     elif level in 'info':
+                         self.loglevel = logging.INFO
                      elif level in 'debug':
                          self.loglevel = logging.DEBUG
                      elif level in 'none':
