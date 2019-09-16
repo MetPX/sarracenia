@@ -153,41 +153,40 @@ Sarracenia mais ne signeront pas les changements ou le paquet source::
     debuild -uc -uc -us
     sudo dpkg -i.../<le paquet qui vient d'être construit>>.
 
-Commetre au Dépôt Principale
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Soumettre des changements
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Que faut-il faire avant de s'engager dans la branche master ?
 Liste de contrôle :
 
-- La branche maître doit toujours être fonctionnelle, ne pas commettre de code si le *flow_test* ne fonctionne pas.
-- Conséquence naturelle : si le changement de code signifie que les tests doivent changer, inclure le changement de test dans le commit.
-- les docs devraient idéalement recevoir leurs mises à jour en même temps que le code.
-- Mettre à jour CHANGES.txt pour faciliter le processus de publication.  Décrire les changements dans le code.
-- Si le code a un impact (configuration différente, changement de comportement) Mettre à jour doc/UPGRADING.rst.
+- On développe dans une autre branche. Habituellement la branche sera nommée d'après l'*issue* qu´on traite. Exemple: *issue240*, si on change d´approche et on se reprend, on peut avoir un *issue240_2*. Il est aussi possible qu´on travaille sur des branches plus stratégiques, tel que *v03*. 
+- La branche maître doit toujours être fonctionnelle, ne pas soumettre de code (sur master) si le *flow_test* ne fonctionne pas.
+- Conséquence naturelle : si le changement de code signifie que les tests doivent changer, inclure le changement de test(s) dans le commit.
+- La documentation devrait idéalement recevoir ses mises à jour en même temps que le code.
 
+Il y aura, habituellement, un cycle dévéloppement sur la branche pendant un certain temps. Eventuellement, on va avoir du travail prêt à être incorporé dans la branche principale. La procédure se trouve ici: `Modification à master`_
 
 
 Tests
 -----
 
-Avant de livrer du code à la branche maître, comme mesure d'assurance qualité, il faut exécuter tous les auto-tests disponibles.
-Il est supposé que les modifications spécifiques du code ont déjà été apportées à l'unité.
-testé.  Veuillez ajouter des autotests au besoin à ce processus afin de refléter les nouveaux tests.
+Avant de livrer du code à la branche maître, comme mesure de contrôle qualité, il faut exécuter tous les auto-tests disponibles. À cette étape, on présume que les modifications spécifiques du code ont déjà été appliquées à l'unité testée. Ce contrôle réduira les possibilités de régression de la qualité de Sarracenia. Il est aussi essentiel de modifier les autotests afin de bien contrôler les changements qui ont été effectués au code et dans l'optique que ce code test sera réutilisé comme mesure de contrôle pour de futurs changements.
 
 La configuration que l'on essaie de répliquer:
 
 .. image:: ../Flow_test.svg
 
 Hypothèse : l'environnement de test est un PC linux, soit un ordinateur portable/desktop, soit un serveur sur lequel un serveur
-peut démarrer un navigateur. Si vous travaillez aussi avec l'implémentation c, il y a aussi ce qui suit
-flux définis:
+peut démarrer un navigateur. Si vous travaillez avec l'implémentation c, le flux suivant est aussi défini:
 
 .. image:: ../cFlow_test.svg
 
 Un flux de travail de développement typique sera::
 
-
-   cd sarra ; *make coding changes*
+   git branch issueXXX
+   git checkout issueXXX
+   cd sarra ; *changements au code*
    cd ..
    debuild -uc -us
    cd ../../sarrac
@@ -196,22 +195,17 @@ Un flux de travail de développement typique sera::
    cd test
    ./flow_cleanup.sh
    rm directories with state (indicated by flow_cleanup.sh)
-   ./flow_setup.sh  ; *starts the flows*
-   ./flow_check.sh  ; *checks the flows*
-   ./flow_cleanup.sh  ; *cleans up the flows*
-  
+   ./flow_setup.sh  # *starts the flows*
+   ./flow_check.sh  # *checks the flows*
+   ./flow_cleanup.sh  # *cleans up the flows*
+   git commit -a # sur la branch issueXXX 
 
-On peut alors étudier les résultats et déterminer le prochain cycle de 
-modifications à apporter.  Le reste de cette section documente ces étapes
-de façon beaucoup plus détaillée.  Avant de pouvoir exécuter le flow_test,
-certains pré-requis doivent être pris en compte.
+On peut alors étudier les résultats et déterminer le prochain cycle de modifications à apporter. Le reste de cette section documente ces étapes de façon beaucoup plus détaillée. Avant de pouvoir exécuter le flow_test, certains pré-requis doivent être pris en compte.
 
 Installation locale sur le poste de travail
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Le flow_test invoque la version de metpx-sarracenia qui est installée sur le système,
-et non pas ce qu'il y a dans l'arbre de développement.  Il est nécessaire d'installer le paquet sur
-le système afin qu'il exécute le flow_test.
+Le flow_test invoque la version de metpx-sarracenia qui est installée sur le système, et non pas ce qu'il y a dans l'arbre de développement.  Il est nécessaire d'installer le paquet sur le système afin qu'il exécute le flow_test.
 
 Dans votre arbre de développement....
 On peut soit créer une roue en cours d'exécution soit::
@@ -233,8 +227,7 @@ qui accomplit la même chose en utilisant l'empaquetage debian.
 Installer les serveurs sur le poste de travail
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Installez un minimum localhost broker, configurez les utilisateurs de test.
-avec les informations d'identification stockées pour localhost::
+Installez un minimum localhost broker, configurez les utilisateurs de test avec les informations d'identification stockées pour localhost::
 
 
      sudo apt-get install rabbitmq-server
@@ -266,14 +259,9 @@ avec les informations d'identification stockées pour localhost::
 
 .. Note::
 
-    Veuillez utiliser d'autres mots de passe dans les informations d'identification pour votre configuration, juste au cas où.
-    Les mots de passe ne doivent pas être codés en dur dans la suite d'auto-test.
-    Les utilisateurs bunnymaster, tsource, tsub et tfeed doivent être utilisés pour l'exécution des tests.
+    Veuillez utiliser d'autres mots de passe dans les informations d'identification pour votre configuration, juste au cas où. Les mots de passe ne doivent pas être codés en dur dans la suite d'auto-test. Les utilisateurs bunnymaster, tsource, tsub et tfeed doivent être utilisés pour l'exécution des tests.
 
-    L'idée ici est d'utiliser tsource, tsub et tfeed comme comptes de courtage pour tous les comptes de courtage.
-    et stockez les informations d'identification dans le fichier normal credentials.conf.
-    Aucun mot de passe ou fichier clé ne doit être stocké dans l'arborescence des sources, dans le cadre d'un auto-test.
-    suite.
+    L'idée ici est d'utiliser tsource, tsub et tfeed comme comptes pour les *broker* et de stocker leurs informations d'identification dans le fichier normal credentials.conf. Aucun mot de passe ou fichier clé ne doit être stocké dans l'arborescence des sources, dans le cadre d'une suite d'auto-test.
 
 Configuration de l'environnement de test de débit
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -772,8 +760,39 @@ capable d'y mettre fin. S'il y a eu un problème important, le cumul
 l'indiquerait.
 
 
-Bâtire un *release*
--------------------
+Modification à master
+---------------------
+
+Avec l´exception des fautes de frappe, ou de grammaire et/ou style, ou incrémentation
+de version, on s´attend que personne fasse des changements directement dans la branche 
+master. Tout le travail se fait dans les branches de dévéloppement, et on s´attend que tout 
+les tests soient réussis avant d´accepter de modifier master. Si le travail sur une branche 
+est fini, ou bien s´il y a un sous-ensemble qu´on estime mérite inclusion, on devrait 
+sommariser le travail faite dans la branch, et ensuite soumettre un *pull request* sur github::
+
+::
+
+  git checkout issueXXX
+  vi CHANGES.rst # créér une sommaire des changements
+  dch  # copie/coller des changements, avec l´ajout d´un espace au début de la ligne.
+  vi doc/UPGRADING.rst # si l´usager doit comprendre ou agir en fonction du changement.
+  vi doc/fr/UPGRADING.rst # et ou!
+  git commit -a
+  git push
+  # créér un pull request sur github. 
+  
+Un deuxième dév va réviser la reuête et peut accepter le requête. On s´attend que chaque
+*commit* soit révisé afin de le comprendre de façon générale.
+
+Travis-CI note les demandes de *pull* et roule des vérifications d´intégration.  Si ceux-ci
+fonctionnent c´est une bonne indication de qualité. Actuellement ces vérifcations sont un
+peu fragiles, alors s´ils ne marchent pas, celui qui révise devrait reproduire la configuration
+dans son environnement et rouler les tests.  Si ca marche dans un deuxième environnement
+de dév, on peut le *merger* en dépit des plaintes de Travis.
+
+
+Bâtir un *release*
+------------------
 
 MetPX-Sarracenia est distribué de différentes manières, et chacun a son propre processus de construction.
 Les versions empaquetées sont toujours préférables aux versions uniques, parce qu'elles sont reproductibles.
@@ -789,6 +808,7 @@ Pour publier une version, il faut le faire :
 - télécharger la version sur pypi.org pour que l'installation avec pip réussisse.
 - télécharger la version sur launchpad.net, afin que l'installation des paquets debian
   l'utilisation du référentiel réussit.
+- incrémenter la version en master.
 
 Schéma de versionnement
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -812,19 +832,39 @@ Le segment est ce qui serait utilisé au sein d'une série.  de PEP0440 ::
 Réglage de la version
 ~~~~~~~~~~~~~~~~~~~~~
 
-Chaque nouvelle version déclenche un *tag* dans le référentiel git (exécute *git tag -a sarra-v2.16.01a01 -m "release 2.16.01a01"*)
+Afin de partir la dévéloppement d´une version:
 
-Un script de commodité a été créé pour automatiser le processus de publication. Lancez simplement ``release.sh``` et il vous guidera dans la coupe d'une nouvelle version.
-
+* git checkout master
 * Editez ``sarra/__init__init__.py`` manuellement et réglez le numéro de version.
+* rajouter une section dans CHANGES.rst pour la nouvelle version.
+* dch afin de partir les changements debian pour la nouvelle version.
 * git commit -a
-* Exécuter ``release.sh`` exemple: :
+* git push 
 
-    ./release.sh "release 2.16.01a01"
+Si on dévéloppe pendant un mois sans éffectuer un *release*, on devrait
+modifier la version dans master pour le garder à jour. Par exemple, 
+Si on a commencé en août, et on continue en septembre, pour devrait 
+modifier la version en master de 2.19.08b1 à 2.19.09b1 ...
 
-* vous serez invité à entrer des informations sur la version.
 
-* git push
+Un *Release*
+~~~~~~~~~~~~
+
+Quand on décide qu´il faut publier une nouvelle version (faire un *Release*)
+Il faut créér une étiquette en git pour indiquer la fin du cycle de 
+dévéloppement::
+
+  git checkout master
+  git tag -a sarra-v2.16.01a01 -m "release 2.16.01a01"
+  git push
+  git push origin sarra-v2.16.01a01
+
+En suite, il faut publier la version avec les procédures suivants: `PyPI`_, and `Launchpad`_
+
+Une fois la génération de paquets complété, on devrait incrementer la version
+dans master afin d´eviter la confusion avec la version publier
+en incrémentant la version en master avec: `Réglage de la version`
+
 
 
 PyPi
