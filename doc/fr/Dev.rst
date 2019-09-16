@@ -153,38 +153,33 @@ Sarracenia mais ne signeront pas les changements ou le paquet source::
     debuild -uc -uc -us
     sudo dpkg -i.../<le paquet qui vient d'être construit>>.
 
-Commetre des changements
-~~~~~~~~~~~~~~~~~~~~~~~~
+
+Soumettre des changements
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Que faut-il faire avant de s'engager dans la branche master ?
 Liste de contrôle :
 
-- On dévéloppe dans une autre branche. Habituellement la branch sera nommé après le *issue* qu´on
-  traite.  Exemple: *issue240*, si on change d´approche et on se reprend, on peut avoir un *issue240_2*.
-  Ca se peut qu´on aie également des branches, plus stratégiques, tel que *v03*. 
-- La branche maître doit toujours être fonctionnelle, ne pas commettre de code si le *flow_test* ne fonctionne pas.
-- Conséquence naturelle : si le changement de code signifie que les tests doivent changer, inclure le changement de test dans le commit.
+- On développe dans une autre branche. Habituellement la branche sera nommée d'après l'*issue* qu´on traite. Exemple: *issue240*, si on change d´approche et on se reprend, on peut avoir un *issue240_2*. Il est aussi possible qu´on travaille sur des branches plus stratégiques, tel que *v03*. 
+- La branche maître doit toujours être fonctionnelle, ne pas soumettre de code (sur master) si le *flow_test* ne fonctionne pas.
+- Conséquence naturelle : si le changement de code signifie que les tests doivent changer, inclure le changement de test(s) dans le commit.
 - les docs devraient idéalement recevoir leurs mises à jour en même temps que le code.
 
-Il y aura, habituellement, un cycle dévéloppement sur la branche pendant un certain temps.
-Eventuellement, on va avoir du travail prêt à être incorporé dans la branche principale.
-La procédure se trouve ici: `Modification à master`_
+Il y aura, habituellement, un cycle dévéloppement sur la branche pendant un certain temps. Eventuellement, on va avoir du travail prêt à être incorporé dans la branche principale. La procédure se trouve ici: `Modification à master`_
 
 
 Tests
 -----
 
 Avant de livrer du code à la branche maître, comme mesure d'assurance qualité, il faut exécuter tous les auto-tests disponibles.
-Il est supposé que les modifications spécifiques du code ont déjà été apportées à l'unité.
-testé.  Veuillez ajouter des autotests au besoin à ce processus afin de refléter les nouveaux tests.
+Il est supposé que les modifications spécifiques du code ont déjà été apportées à l'unité testée. Veuillez ajouter des autotests au besoin à ce processus afin de refléter les nouveaux tests.
 
 La configuration que l'on essaie de répliquer:
 
 .. image:: ../Flow_test.svg
 
 Hypothèse : l'environnement de test est un PC linux, soit un ordinateur portable/desktop, soit un serveur sur lequel un serveur
-peut démarrer un navigateur. Si vous travaillez aussi avec l'implémentation c, il y a aussi ce qui suit
-flux définis:
+peut démarrer un navigateur. Si vous travaillez avec l'implémentation c, le flux suivant est aussi défini:
 
 .. image:: ../cFlow_test.svg
 
@@ -192,7 +187,7 @@ Un flux de travail de développement typique sera::
 
    git branch issueXXX
    git checkout issueXXX
-   cd sarra ; *make coding changes*
+   cd sarra ; *changements au code*
    cd ..
    debuild -uc -us
    cd ../../sarrac
@@ -206,17 +201,12 @@ Un flux de travail de développement typique sera::
    ./flow_cleanup.sh  # *cleans up the flows*
    git commit -a # sur la branch issueXXX 
 
-On peut alors étudier les résultats et déterminer le prochain cycle de 
-modifications à apporter.  Le reste de cette section documente ces étapes
-de façon beaucoup plus détaillée.  Avant de pouvoir exécuter le flow_test,
-certains pré-requis doivent être pris en compte.
+On peut alors étudier les résultats et déterminer le prochain cycle de modifications à apporter. Le reste de cette section documente ces étapes de façon beaucoup plus détaillée. Avant de pouvoir exécuter le flow_test, certains pré-requis doivent être pris en compte.
 
 Installation locale sur le poste de travail
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Le flow_test invoque la version de metpx-sarracenia qui est installée sur le système,
-et non pas ce qu'il y a dans l'arbre de développement.  Il est nécessaire d'installer le paquet sur
-le système afin qu'il exécute le flow_test.
+Le flow_test invoque la version de metpx-sarracenia qui est installée sur le système, et non pas ce qu'il y a dans l'arbre de développement.  Il est nécessaire d'installer le paquet sur le système afin qu'il exécute le flow_test.
 
 Dans votre arbre de développement....
 On peut soit créer une roue en cours d'exécution soit::
@@ -238,8 +228,7 @@ qui accomplit la même chose en utilisant l'empaquetage debian.
 Installer les serveurs sur le poste de travail
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Installez un minimum localhost broker, configurez les utilisateurs de test.
-avec les informations d'identification stockées pour localhost::
+Installez un minimum localhost broker, configurez les utilisateurs de test avec les informations d'identification stockées pour localhost::
 
 
      sudo apt-get install rabbitmq-server
@@ -271,14 +260,9 @@ avec les informations d'identification stockées pour localhost::
 
 .. Note::
 
-    Veuillez utiliser d'autres mots de passe dans les informations d'identification pour votre configuration, juste au cas où.
-    Les mots de passe ne doivent pas être codés en dur dans la suite d'auto-test.
-    Les utilisateurs bunnymaster, tsource, tsub et tfeed doivent être utilisés pour l'exécution des tests.
+    Veuillez utiliser d'autres mots de passe dans les informations d'identification pour votre configuration, juste au cas où. Les mots de passe ne doivent pas être codés en dur dans la suite d'auto-test. Les utilisateurs bunnymaster, tsource, tsub et tfeed doivent être utilisés pour l'exécution des tests.
 
-    L'idée ici est d'utiliser tsource, tsub et tfeed comme comptes de courtage pour tous les comptes de courtage.
-    et stockez les informations d'identification dans le fichier normal credentials.conf.
-    Aucun mot de passe ou fichier clé ne doit être stocké dans l'arborescence des sources, dans le cadre d'un auto-test.
-    suite.
+    L'idée ici est d'utiliser tsource, tsub et tfeed comme comptes pour les *broker* et de stocker leurs informations d'identification dans le fichier normal credentials.conf. Aucun mot de passe ou fichier clé ne doit être stocké dans l'arborescence des sources, dans le cadre d'une suite d'auto-test.
 
 Configuration de l'environnement de test de débit
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
