@@ -2,7 +2,18 @@
  MetPX-Sarracenia
 ==================
 
-**Documentation**
+.. image:: https://img.shields.io/pypi/v/metpx-sarracenia?style=flat
+  :alt: PyPI version
+  :target: https://pypi.org/project/metpx-sarracenia/
+
+.. image:: https://img.shields.io/pypi/pyversions/metpx-sarracenia.svg
+    :alt: Supported Python versions
+    :target: https://pypi.python.org/pypi/metpx-sarracenia.svg
+
+.. image:: https://travis-ci.org/benlapETS/metpx-sarracenia.svg?branch=master
+    :alt: Build Status
+    :target: https://travis-ci.org/benlapETS/metpx-sarracenia
+
 
 * Guides: [ `Guides <doc/sr_subscribe.1.rst#documentation>`_ ] [ `Guides en français <doc/fr/sr_subscribe.1.rst#documentation>`_ ]
 * Reference: [ `Manual Pages <doc/sr_subscribe.1.rst#see-also>`_ ] [ `Pages de manuel en français <doc/fr/sr_subscribe.1.rst#aussi-voir>`_ ]
