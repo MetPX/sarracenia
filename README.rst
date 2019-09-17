@@ -18,9 +18,9 @@
     :alt: Issue Tracker
     :target: https://github.com/MetPX/sarracenia/issues
 
-.. image:: https://travis-ci.org/benlapETS/metpx-sarracenia.svg?branch=master
+.. image:: https://travis-ci.com/MetPX/sarracenia.svg?branch=master
     :alt: Build Status
-    :target: https://travis-ci.org/benlapETS/metpx-sarracenia
+    :target: https://travis-ci.com/MetPX/sarracenia
 
 
 +-------------------------------------------------------+-----------------------------------------------------------------+
