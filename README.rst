@@ -4,8 +4,8 @@
 
 **Documentation**
 
-* Guides: [ `Guides <doc/sr_subscribe.1.rst#documentation>`_ ] [ `en français <doc/fr/sr_subscribe.1.rst#documentation>`_ ]
-* Reference: [ `Manual Pages <doc/sr_subscribe.1.rst#see-also>`_ ] [ `en français <doc/fr/sr_subscribe.1.rst#aussi-voir>`_ ]
+* Guides: [ `Guides <doc/sr_subscribe.1.rst#documentation>`_ ] [ `Guides en français <doc/fr/sr_subscribe.1.rst#documentation>`_ ]
+* Reference: [ `Manual Pages <doc/sr_subscribe.1.rst#see-also>`_ ] [ `Pages de manuel en français <doc/fr/sr_subscribe.1.rst#aussi-voir>`_ ]
 
 +-------------------------------------------------+--------------------------------------------------+
 |         Overview                                |            Survol                                |
