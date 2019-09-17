@@ -81,12 +81,10 @@ class ACCEL_WGET(object):
 
    def do_download(self,parent):
       import os
-      from subprocess import TimeoutExpired
+      import subprocess
 
       logger = parent.logger
       msg    = parent.msg
-
-      import subprocess
 
       msg.urlstr = msg.urlstr.replace("download:","http:")
       os.chdir( msg.new_dir )
@@ -94,11 +92,7 @@ class ACCEL_WGET(object):
       logger.debug("wget do_download in %s invoking: %s " % ( msg.new_dir, cmd ) )
 
       p = subprocess.Popen(cmd)
-      try:
-          p.wait(1)
-      except TimeoutExpired as err:
-          logger.error("too slow, skipping cmd={}, err={}".format(cmd, err))
-          logger.debug("Exception details:", exc_info=True)
+      p.wait()
       if p.returncode != 0:  # Failed!
          if parent.reportback:
              msg.report_publish(499,'wget download failed')

@@ -82,8 +82,6 @@ class ACCEL_SCP(object):
        import os
        import subprocess
 
-       from subprocess import TimeoutExpired
-
        logger = parent.logger
        msg    = parent.msg
 
@@ -105,11 +103,7 @@ class ACCEL_SCP(object):
        logger.info("accel_scp :  %s" % ' '.join(cmd))
 
        p = subprocess.Popen(cmd)
-       try:
-           p.wait(1)
-       except TimeoutExpired as err:
-           logger.error("too slow, skipping cmd={}, err={}".format(cmd, err))
-           logger.debug("Exception details:", exc_info=True)
+       p.wait()
        if p.returncode != 0:  # Failed!
           return False 
        return True
@@ -118,8 +112,6 @@ class ACCEL_SCP(object):
    def do_put(self,parent):
        import os
        import subprocess
-
-       from subprocess import TimeoutExpired
 
        logger = parent.logger
        msg    = parent.msg
@@ -142,11 +134,7 @@ class ACCEL_SCP(object):
        logger.info("accel_scp :  %s" % ' '.join(cmd))
 
        p = subprocess.Popen(cmd)
-       try:
-           p.wait(1)
-       except TimeoutExpired as err:
-           logger.error("too slow, skipping cmd={}, err={}".format(cmd, err))
-           logger.debug("Exception details:", exc_info=True)
+       p.wait()
        if p.returncode != 0:  # Failed!
           return False 
        return True
