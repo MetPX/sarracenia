@@ -30,14 +30,7 @@ Instead of invoking scp, it will invoke the scp -p command. To the command will 
 See end of file for performance considerations.
 
 """
-
-import os,stat,time,sys
-import calendar
-
-class ACCEL_SCP(object): 
-
-   import urllib.parse
-
+class ACCEL_SCP(object):
    def __init__(self,parent):
 
       self.registered_list = [ 'sftp' ]
@@ -47,6 +40,7 @@ class ACCEL_SCP(object):
       parent.declare_option( 'accel_scp_protocol' )
 
    def check_surpass_threshold(self,parent):
+      import os
 
       logger = parent.logger
       msg    = parent.msg
@@ -85,7 +79,9 @@ class ACCEL_SCP(object):
       return True
 
    def do_get(self,parent):
+       import os
        import subprocess
+
        logger = parent.logger
        msg    = parent.msg
 
@@ -107,18 +103,16 @@ class ACCEL_SCP(object):
        logger.info("accel_scp :  %s" % ' '.join(cmd))
 
        p = subprocess.Popen(cmd)
-       try:
-           p.wait(1)
-       except TimeoutExpired as err:
-           logger.error("too slow, skipping cmd={}, err={}".format(cmd, err))
-           logger.debug("Exception details:", exc_info=True)
+       p.wait()
        if p.returncode != 0:  # Failed!
           return False 
        return True
 
 
    def do_put(self,parent):
+       import os
        import subprocess
+
        logger = parent.logger
        msg    = parent.msg
 
@@ -140,11 +134,7 @@ class ACCEL_SCP(object):
        logger.info("accel_scp :  %s" % ' '.join(cmd))
 
        p = subprocess.Popen(cmd)
-       try:
-           p.wait(1)
-       except TimeoutExpired as err:
-           logger.error("too slow, skipping cmd={}, err={}".format(cmd, err))
-           logger.debug("Exception details:", exc_info=True)
+       p.wait()
        if p.returncode != 0:  # Failed!
           return False 
        return True

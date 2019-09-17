@@ -177,7 +177,7 @@ class sr_GlobalState:
             if os.path.isdir(c):
                 os.chdir(c)
                 self.states[c] = {}
-                for cfg in os.listdir():
+                for cfg in os.listdir('.'):
                    if os.path.isdir(cfg):
                        os.chdir(cfg)
                        self.states[c][cfg]={}
@@ -187,25 +187,27 @@ class sr_GlobalState:
                        self.states[c][cfg]['has_state']=False
 
                        #print( 'state %s/%s' % ( c, cfg ) )
-                       for f in os.listdir():
-                            t = pathlib.Path(f).read_text().strip()
-                           
-                            #print( 'read f:%s len: %d contents:%s' % ( f, len(t), t[0:10] ) )
-                            if len(t) == 0:
-                                continue
+                       for f in os.listdir('.'):
+                            f_obj = pathlib.Path(f)
+                            if f_obj.suffix in ['.pid', '.qname', '.state']:
+                                t = f_obj.read_text().strip()
 
-                            #print( 'read f[-4:] = +%s+ ' % ( f[-4:] ) )
-                            if f[-4:] == '.pid':
-                                i = int(f[-6:-4])
-                                if t.isdigit():
-                                    #print( "%s/%s instance: %s, pid: %s" % 
-                                    #     ( c, cfg, i, t ) )
-                                    self.states[c][cfg]['instance_pids'][i]= int( t )
-                            elif f[-6:] == '.qname' :
-                                self.states[c][cfg]['queue_name'] = t
-                            elif f[-6:] == '.state' and ( f[-12:-6] != '.retry' ):
-                                if t.isdigit():
-                                    self.states[c][cfg]['instances_expected'] = int ( t )
+                                #print( 'read f:%s len: %d contents:%s' % ( f, len(t), t[0:10] ) )
+                                if len(t) == 0:
+                                    continue
+
+                                #print( 'read f[-4:] = +%s+ ' % ( f[-4:] ) )
+                                if f[-4:] == '.pid':
+                                    i = int(f[-6:-4])
+                                    if t.isdigit():
+                                        #print( "%s/%s instance: %s, pid: %s" % 
+                                        #     ( c, cfg, i, t ) )
+                                        self.states[c][cfg]['instance_pids'][i]= int( t )
+                                elif f[-6:] == '.qname' :
+                                    self.states[c][cfg]['queue_name'] = t
+                                elif f[-6:] == '.state' and ( f[-12:-6] != '.retry' ):
+                                    if t.isdigit():
+                                        self.states[c][cfg]['instances_expected'] = int ( t )
                        os.chdir('..')
                 os.chdir('..')
 
