@@ -239,7 +239,7 @@ class sr_post(sr_instances):
         print("-e   <events>          default:create|delete|follow|link|modify\n")
         print("-pe  <post_exchange>        default:xs_\"broker.username\"")
         print("-h|--help\n")
-        print("-parts [0|1|sz]        0-computed blocksize (default), 1-whole files (no partitioning), sz-fixed blocksize")
+        print("-blocksize [0|1|sz]        0-computed blocksize (default), 1-whole files (no partitioning), sz-fixed blocksize")
         print("-to  <name1,name2,...> defines target clusters, default: ALL")
         print("-ptp <post_topic_prefix> default:v02.post")
         print("-sub <subtopic>        default:'path.of.file'")
