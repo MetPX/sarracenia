@@ -36,10 +36,20 @@ Installation Instructions
 git
 ---
 
+2.19.09b1
+---------
+
+*NOTICE*: removed *cleanup*, *remove*, from sr command (they are a bit dangerous). 
+          still available in sr1, will eventually be reimplemented, see #187
+
+
 2.19.04b2
 ---------
 
 *NOTICE*: bug from 4b1 fixed. workaround unnecessary.
+
+**BUG**: regression log handling a problem. Issues #240,#254,#249,#252 
+**BUG**: regression #238 sr_watch crashes when encountering file it can't read
 
 
 2.19.04b1
@@ -49,6 +59,7 @@ git
          workaround add the following to affected configurations::
 
             xattr_disable
+
 
          
 *NOTICE*: regression of v03 posting fixed.

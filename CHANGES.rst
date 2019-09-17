@@ -6,6 +6,9 @@ lists all changes between versions.
 
 **git repo**
 
+
+**2.19.09b1**
+
 *    new: #191 adding log_reject to debug checksums and reject/accept configurations
 *    new: #191 sr implementation replaced. old available as sr1. man page sr(8) added.
 *    new: #227 some support added to for rabbitmq to work with mqtt.
@@ -13,6 +16,7 @@ lists all changes between versions.
 *
 * bugfix: 
 *         #240,#254,#249,#252 logging and background launch output redirection.
+*         #238 sr_watch crashes when encountering file it can't read
 *         #212 fix for interpretation of username in baseurl (FIXME: requires review)
 *         #211 fix for size approximation being wrong on polls that don't provide exact size.
 *         #210 sr_audit race condition fixed by killing at the beginning of stop processing. 
