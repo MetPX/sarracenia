@@ -392,8 +392,8 @@ as an sr_post one, except that plugins are not supported.  With the shim
 library in place, whenever a file is written, the *accept/reject* clauses of
 the shimpost.conf file are consulted, and if accepted, the file is posted just
 as it would be by sr_post. If using with ssh, where one wants files which are
-scp'd to be posted, one needs to include the activation in the
-.bashrc and pass it the configuration to use::
+scp'd to be posted, one needs to include the activation in the .bashrc and pass 
+it the configuration to use::
 
   expoert LC_SRSHIM=shimpost.conf
 
@@ -494,6 +494,5 @@ SEE ALSO
 `sr_subscribe(1) <sr_subscribe.1.rst>`_ - the http-only download client.
 
 `sr_watch(1) <sr_watch.1.rst>`_ - the directory watching daemon.
-
 
 

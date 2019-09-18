@@ -510,7 +510,7 @@ File Detection Strategy Table
 +-------------+---------------------------------------+--------------------------------------+
 |sr_watch with|Files transferred with a *.tmp* suffix.|Receiving from most other systems     |
 |reject       |When complete, renamed without suffix. |(.tmp support built-in)               |
-|.*\.tmp$     |Actual suffix is settable.             |Use to receive from Sundew.           |
+|: \.*\\.tmp$ |Actual suffix is settable.             |Use to receive from Sundew.           |
 |(suffix)     |                                       |                                      |
 |             | - requires extra round trips for      |best choice for most trees on a       |
 |             |   rename (a little slower)            |single server or workstation. Full    |

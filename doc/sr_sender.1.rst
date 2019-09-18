@@ -64,7 +64,8 @@ When a queue is building up::
 And run the sender in *save* mode (which continually writes incoming messages to disk)
 in the log, a line for each message written to disk::
 
-  2017-03-03 12:14:51,386 [INFO] sr_sender saving 2 message topic: v02.post.home.peter.sarra_devdocroot.sub.SASP34_LEMM_031630__LEDA_60215
+  2017-03-03 12:14:51,386 [INFO] sr_sender saving 2 message 
+       topic: v02.post.home.peter.sarra_devdocroot.sub.SASP34_LEMM_031630__LEDA_60215
 
 Continue in this mode until the absent server is again available.  At that point::
 
@@ -73,12 +74,14 @@ Continue in this mode until the absent server is again available.  At that point
 
 While restoring from the disk file, messages like the following will appear in the log::
 
-  2017-03-03 12:15:02,969 [INFO] sr_sender restoring message 29 of 34: topic: v02.post.home.peter.sarra_devdocroot.sub.ON_02GD022_daily_hydrometric.csv
+  2017-03-03 12:15:02,969 [INFO] sr_sender restoring message 29 of 34: 
+    topic: v02.post.home.peter.sarra_devdocroot.sub.ON_02GD022_daily_hydrometric.csv
 
 
 After the last one::
 
-  2017-03-03 12:15:03,112 [INFO] sr_sender restore complete deleting save file: /home/peter/.cache/sarra/sender/tsource2send/sr_sender_tsource2send_0000.save 
+  2017-03-03 12:15:03,112 [INFO] sr_sender restore complete deleting save 
+    file: /home/peter/.cache/sarra/sender/tsource2send/sr_sender_tsource2send_0000.save 
 
 
 and the sr_sender will function normally thereafter.
@@ -126,7 +129,8 @@ Now we are ready to send the product... for example, if the selected notificatio
 
 Sends local file [**base_dir**]/relative/path/to/IMPORTANT_product
 to    **destination**/[**post_base_dir**]/relative/path/to/IMPORTANT_product
-(**kbytes_ps** is greater than 0, the process attempts to respect this delivery speed... ftp,ftps,or sftp)
+(**kbytes_ps** is greater than 0, the process attempts to respect 
+this delivery speed... ftp,ftps,or sftp)
 
 At this point, a pump-to-pump setup needs to send the remote notification...
 (If the post_broker is not set, there will be no posting... just products replication)
@@ -207,11 +211,9 @@ Usually this way of using **sr_sender** would not require posting of the product
 But if **post_broker** and **post_exchange** are provided, and **url** , as above, is set to
 **http://remote.apache.com**,  then **sr_sender** would reconstruct :
 
-Topic:
-**v02.post.my.new.important_location.IMPORTANT_product**
+Topic: **v02.post.my.new.important_location.IMPORTANT_product**
 
-Notice:
-**20150813161959.854 http://remote.apache.com/ my/new/important_location/IMPORTANT_product**
+Notice: **20150813161959.854 http://remote.apache.com/ my/new/important_location/IMPORTANT_product**
 
 
 SEE ALSO

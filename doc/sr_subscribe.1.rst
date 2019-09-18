@@ -55,7 +55,8 @@ subset of the options here, but where they are implemented, they have the same e
 The **sr_subscribe** command takes two arguments: an action start|stop|restart|reload|status, 
 followed by a configuration file. 
 
-When any component is invoked, an operation and a configuration file are specified. The operation is one of:
+When any component is invoked, an operation and a configuration file are specified. 
+The operation is one of:
 
  - foreground: run a single instance in the foreground logging to stderr
  - restart: stop and then start the configuration.
@@ -406,19 +407,23 @@ or even, log everything::
 
 etc... One can also modify the provided plugins, or write new ones to completely change the logging.
 
-At the end of the day (at midnight), these logs are rotated automatically by the components, and the old log gets a
-date suffix. The directory in which the logs are stored can be overridden by the **log** option, the number of rotated
-logs to keep are set by the **logrotate** parameter. The oldest log file is deleted when the
-maximum number of logs has been reach and this continues for each rotation. An interval takes a duration
-of the interval and it may takes a time unit suffix, such as 'd\|D' for days, 'h\|H' for hours, or 'm\|M' for minutes.
-If no unit is provided logs will rotate at midnight.  Here are some settings for log file management:
+At the end of the day (at midnight), these logs are rotated automatically by 
+the components, and the old log gets a date suffix. The directory in which 
+the logs are stored can be overridden by the **log** option, the number of 
+rotated logs to keep are set by the **logrotate** parameter. The oldest log 
+file is deleted when the maximum number of logs has been reach and this 
+continues for each rotation. An interval takes a duration of the interval and 
+it may takes a time unit suffix, such as 'd\|D' for days, 'h\|H' for hours, 
+or 'm\|M' for minutes. If no unit is provided logs will rotate at midnight.
+Here are some settings for log file management:
 
 - log <dir> ( default: ~/.cache/sarra/log ) (on Linux)
    The directory to store log files in.
 
 - statehost <False|True> ( default: False )
-   in large data centres, the home directory can be shared among thousands of nodes.  statehost adds the node name
-   after the cache directory to make it unique to each node.  so each node has it's own statefiles and logs.
+   In large data centres, the home directory can be shared among thousands of 
+   nodes. Statehost adds the node name after the cache directory to make it 
+   unique to each node. So each node has it's own statefiles and logs.
    example, on a node named goofy,  ~/.cache/sarra/log/ becomes ~/.cache/sarra/goofy/log.
 
 - logrotate <max_logs> ( default: 5 )
@@ -772,9 +777,14 @@ the pattern. The * (asterisk) character, means any number of occurrences.
 So:
 
  - .* means any sequence of characters of any length. In other words, match anything.
+
  - cap.* means any sequence of characters that starts with cap.
+
  - .*CAP.* means any sequence of characters with CAP somewhere in it. 
- - .*cap means any sequence of characters that ends with CAP.  In the case where multiple portions of the string could match, the longest one is selected.
+
+ - .*cap means any sequence of characters that ends with CAP.  In the case 
+   where multiple portions of the string could match, the longest one is selected.
+
  - .*?cap same as above, but *non-greedy*, meaning the shortest match is chosen.
 
 Please consult various internet resources for more information on the full
@@ -899,7 +909,8 @@ inflight <string> (default: .tmp or NONE if post_broker set)
 
 The  **inflight**  option sets how to ignore files when they are being transferred
 or (in mid-flight betweeen two systems). Incorrect setting of this option causes
-unreliable transfers, and care must be taken.  See `Delivery Completion (inflight)`_ for more details.
+unreliable transfers, and care must be taken.  See `Delivery Completion (inflight)`_ 
+for more details.
 
 The value can be a file name suffix, which is appended to create a temporary name during 
 the transfer.  If **inflight**  is set to **.**, then it is a prefix, to conform with 
