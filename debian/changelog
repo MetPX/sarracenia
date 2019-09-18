@@ -1,4 +1,13 @@
-metpx-sarracenia (2.19.09b1) UNRELEASED; urgency=medium
+metpx-sarracenia (2.19.09b2) UNRELEASED; urgency=medium
+
+  * documentation: usage string correction: replace parts by blocksize
+  * documentation: other corrections.
+  * windows package generation (pending)
+  * removed timeout on wait in process spawning plugins.
+
+ -- Peter Silva <peter@blacklab>  Tue, 17 Sep 2019 19:58:51 -0400
+
+metpx-sarracenia (2.19.09b1) unstable; urgency=medium
 
   *    new: #191 adding log_reject to debug checksums and reject/accept configurations
   *    new: #174 sr implementation replaced. old available as sr1. man page sr(8) added.
@@ -28,6 +37,7 @@ metpx-sarracenia (2.19.09b1) UNRELEASED; urgency=medium
   *         #184 some some flow test refactoring
   *         #182 sr_watch fails on high volumes in flow test.
   *
+  * 
 
  -- Peter Silva <peter@blacklab>  Sat, 07 Sep 2019 00:05:33 -0400
 
