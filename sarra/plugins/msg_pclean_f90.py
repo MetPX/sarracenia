@@ -28,14 +28,14 @@ class Msg_Pclean_F90(Msg_Pclean):
         result = True
         msg_relpath = parent.msg.relpath.strip('/')
         f20_path = os.path.join(parent.currentDir, self.all_fxx_dirs[0], msg_relpath)
-        path_dict = self.build_path_dict(parent.currentDir, self.all_fxx_dirs[1:], msg_relpath)
+        path_dict = self.build_path_dict(parent.currentDir, self.all_fxx_dirs[2:], msg_relpath)
 
         # f90 test
         for fxx_dir, path in path_dict.items():
             if not os.path.exists(path):
                 # propagation check to all path except f20 which is the origin
                 err_msg = "file not in folder {} with {:.3f}s elapsed"
-                lag = nowflt() - timestr2flt(parent.msg.headers['fdelay'])
+                lag = nowflt() - timestr2flt(parent.msg.headers['pubTime'])
                 parent.logger.error(err_msg.format(fxx_dir, lag))
                 parent.logger.debug("file missing={}".format(path))
                 result = False
@@ -73,7 +73,6 @@ class Msg_Pclean_F90(Msg_Pclean):
             result = False
 
         # cleanup
-        del parent.msg.headers['fdelay']
         del parent.msg.headers['toolong']
 
         return result

@@ -29,7 +29,7 @@ class Msg_Clean_F91(Msg_Pclean):
             for fxx_dir, path in path_dict.items():
                 if not os.path.exists(path):
                     err_msg = "file not in folder {} for {} test with {:.3f}s elapsed"
-                    lag = nowflt() - timestr2flt(parent.msg.headers['fdelay'])
+                    lag = nowflt() - timestr2flt(parent.msg.headers['pubTime'])
                     parent.logger.error(err_msg.format(fxx_dir[:-6], fxx_dir[-6:], lag))
                     parent.logger.debug("file missing={}".format(path))
                     result = False
@@ -37,7 +37,6 @@ class Msg_Clean_F91(Msg_Pclean):
             self.log_msg_details(parent)
             return False
 
-        del parent.msg.headers['fdelay']
         return result
 
 
