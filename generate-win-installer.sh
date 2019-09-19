@@ -28,7 +28,8 @@ rm -rf build
 python3 setup.py bdist_wheel
 
 VERSION=`grep __version__ sarra/__init__.py | cut -c15- | sed -e 's/"//g'`
-sed 's/__version__/'$VERSION'/' <win_installer.cfg.tem >win_installer.cfg
+PYVERSION="`python3 -V| awk '{ print $2; }'`"
+sed 's/__version__/'$VERSION'/; s/__pyversion__/'$PYVERSION'/;' <win_installer.cfg.tem >win_installer.cfg
 # NSIS packaging
 pynsist win_installer.cfg
 
