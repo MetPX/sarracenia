@@ -25,7 +25,7 @@ class Msg_Clean_F91(Msg_Pclean):
 
         if ext in self.test_extension_list:
             # checks all paths except f20, f30 which are not tested here, f30 is the origin
-            path_dict = self.build_path_dict(parent.currentDir, self.all_fxx_dirs[3:], msg_relpath, ext)
+            path_dict = self.build_path_dict(self.all_fxx_dirs[3:], msg_relpath, ext)
             for fxx_dir, path in path_dict.items():
                 if not os.path.exists(path):
                     err_msg = "file not in folder {} for {} test with {:.3f}s elapsed"

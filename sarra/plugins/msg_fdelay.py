@@ -43,7 +43,7 @@ class Msg_FDelay(object):
         if '/cfr/' in parent.msg.new_dir:
             f = os.path.join(parent.msg.new_dir, parent.msg.new_file)
         else:
-            f = os.path.join(parent.msg.new_dir, parent.msg.relpath.strip('/'))
+            f = parent.msg.relpath
         if not os.path.exists(f):
             parent.logger.error("did not find file {}".format(f))
             return False

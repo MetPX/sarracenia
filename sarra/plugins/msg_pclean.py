@@ -29,8 +29,7 @@ class Msg_Pclean(object):
                              'posted_by_srpost_test2',  # subscribe ftp_f70
                              'recd_by_srpoll_test1']   # subscribe q_f71
 
-    @staticmethod
-    def build_path_dict(root, fxx_dirs, relpath, ext=''):
+    def build_path_dict(self, fxx_dirs, relpath, ext=''):
         """ This build paths necessary to pclean tests
 
         It is a subset of all flow test path based on fxx download directory provided.
@@ -41,11 +40,9 @@ class Msg_Pclean(object):
         :param ext: the extension from the extension test (optional)
         :return: a dictionnary of all paths built
         """
-        import os
-
         results = {}
         for fxx_dir in fxx_dirs:
-            results["{}{}".format(fxx_dir, ext)] = os.path.join(root, fxx_dir, "{}{}".format(relpath, ext))
+            results["{}{}".format(fxx_dir, ext)] = relpath.replace(self.all_fxx_dirs[1], fxx_dir)
         return results
 
     def get_extension(self, msg):

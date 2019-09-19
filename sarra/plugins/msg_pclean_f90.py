@@ -26,9 +26,9 @@ class Msg_Pclean_F90(Msg_Pclean):
         parent.logger.info("msg_pclean_f90.py on_message")
 
         result = True
-        msg_relpath = parent.msg.relpath.strip('/')
-        f20_path = os.path.join(parent.currentDir, self.all_fxx_dirs[0], msg_relpath)
-        path_dict = self.build_path_dict(parent.currentDir, self.all_fxx_dirs[2:], msg_relpath)
+        msg_relpath = parent.msg.relpath
+        f20_path = msg_relpath.replace("{}/".format(self.all_fxx_dirs[1]), self.all_fxx_dirs[0])
+        path_dict = self.build_path_dict(self.all_fxx_dirs[2:], msg_relpath)
 
         # f90 test
         for fxx_dir, path in path_dict.items():
@@ -52,9 +52,9 @@ class Msg_Pclean_F90(Msg_Pclean):
                 parent.logger.debug("diffs found:\n{}".format("".join(diff)))
 
         # prepare f91 test
-        if os.path.exists(path_dict[self.all_fxx_dirs[1]]):
+        if os.path.exists(msg_relpath):
             test_extension = random.choice(self.test_extension_list)  # pick one test identified by file extension
-            src = path_dict[self.all_fxx_dirs[1]]  # src file is in f30 dir
+            src = msg_relpath  # src file is in f30 dir
             dest = "{}{}".format(src, test_extension)  # format input file for extension test (f91)
 
             try:
@@ -73,7 +73,8 @@ class Msg_Pclean_F90(Msg_Pclean):
             result = False
 
         # cleanup
-        del parent.msg.headers['toolong']
+        if 'toolong' in parent.msg.headers:
+            del parent.msg.headers['toolong']
 
         return result
 
