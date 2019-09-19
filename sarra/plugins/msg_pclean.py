@@ -45,14 +45,17 @@ class Msg_Pclean(object):
             results["{}{}".format(fxx_dir, ext)] = relpath.replace(self.all_fxx_dirs[1], fxx_dir)
         return results
 
-    def get_extension(self, msg):
+    def get_extension(self, relpath):
         """ Check whether the extension is in the header
 
         :param msg: the msg used for the test
         :return: the value corresponding to the extension key in the msg header
         """
-        if self.ext_key in msg.headers:
-            return msg.headers[self.ext_key]
+        from pathlib import Path
+
+        f = Path(relpath)
+        if ".{}".format(f.suffix) in self.test_extension_list:
+            return ".{}".format(f.suffix)
         else:
             return None
 

@@ -51,11 +51,15 @@ class Msg_Pclean_F90(Msg_Pclean):
                 diff = [d for d in diff if d[0] != ' ']  # Diffs without context
                 parent.logger.debug("diffs found:\n{}".format("".join(diff)))
 
-        # prepare f91 test
-        if os.path.exists(msg_relpath):
+        # prepare next f90 test
+        if msg_relpath[-6:] in self.test_extension_list:
+            # TODO maybe a cleaner way to do it
+            # this is the second f90 test
+            pass
+        elif os.path.exists(msg_relpath):
             test_extension = random.choice(self.test_extension_list)  # pick one test identified by file extension
             src = msg_relpath  # src file is in f30 dir
-            dest = "{}{}".format(src, test_extension)  # format input file for extension test (f91)
+            dest = "{}{}".format(src, test_extension)  # format input file for extension test (next f90)
 
             try:
                 if test_extension == '.slink':
@@ -68,7 +72,6 @@ class Msg_Pclean_F90(Msg_Pclean):
                     parent.logger.error("test '{}' is not supported".format(test_extension))
             except FileExistsError as err:
                 parent.logger.warning('skipping, found a moving target {}'.format(err))
-            parent.msg.headers[self.ext_key] = test_extension
         else:
             result = False
 
