@@ -16,7 +16,6 @@ xs_anonymous	topic
 xsarra	topic
 xs_mqtt_public  topic
 xs_tsource_clean_f90	topic
-xs_tsource_clean_f91	topic
 xs_tsource_clean_f92	topic
 xs_tsource_output	topic
 xs_tsource_poll	topic

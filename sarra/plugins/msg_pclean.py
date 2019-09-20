@@ -29,8 +29,7 @@ class Msg_Pclean(object):
                              'posted_by_srpost_test2',  # subscribe ftp_f70
                              'recd_by_srpoll_test1']   # subscribe q_f71
 
-    @staticmethod
-    def build_path_dict(root, fxx_dirs, relpath, ext=''):
+    def build_path_dict(self, fxx_dirs, relpath, ext=''):
         """ This build paths necessary to pclean tests
 
         It is a subset of all flow test path based on fxx download directory provided.
@@ -41,23 +40,20 @@ class Msg_Pclean(object):
         :param ext: the extension from the extension test (optional)
         :return: a dictionnary of all paths built
         """
-        import os
-
         results = {}
         for fxx_dir in fxx_dirs:
-            results["{}{}".format(fxx_dir, ext)] = os.path.join(root, fxx_dir, "{}{}".format(relpath, ext))
+            results["{}{}".format(fxx_dir, ext)] = relpath.replace(self.all_fxx_dirs[1], fxx_dir)
         return results
 
-    def get_extension(self, msg):
+    def get_extension(self, relpath):
         """ Check whether the extension is in the header
 
         :param msg: the msg used for the test
         :return: the value corresponding to the extension key in the msg header
         """
-        if self.ext_key in msg.headers:
-            return msg.headers[self.ext_key]
-        else:
-            return None
+        from pathlib import Path
+
+        return Path(relpath).suffix
 
     def log_msg_details(self, parent):
         parent.logger.error("message received is incorrect")

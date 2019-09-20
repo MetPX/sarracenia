@@ -18,7 +18,7 @@ class Msg_FDelay(object):
         if hasattr(parent, 'msg_fdelay') and type(parent.msg_fdelay) is list:
             parent.msg_fdelay = int(parent.msg_fdelay[0])
         elif not hasattr(parent, 'msg_fdelay'):
-            parent.msg_fdelay = 300
+            parent.msg_fdelay = 60
 
     def on_message(self, parent):
         import os
@@ -28,15 +28,9 @@ class Msg_FDelay(object):
         if parent.msg.sumflg == 'R':
             # 'R' msg will be removed by itself
             return False
-        if not 'fdelay' in parent.msg.headers:
-            parent.msg.headers['fdelay'] = nowstr()
 
         # Test msg delay
-        elapsedtime = nowflt() - timestr2flt(parent.msg.headers['fdelay'])
-        if 0 < elapsedtime < 1:
-            parent.logger.debug("msg_fdelay received msg")
-        else:
-            parent.logger.info("trying msg with {:.3f}s elapsed".format(elapsedtime))
+        elapsedtime = nowflt() - timestr2flt(parent.msg.headers['pubTime'])
         if elapsedtime < parent.msg_fdelay:
             dbg_msg = "message not old enough, sleeping for {:.3f} seconds"
             parent.logger.debug(dbg_msg.format(elapsedtime, parent.msg_fdelay - elapsedtime))
@@ -49,15 +43,14 @@ class Msg_FDelay(object):
         if '/cfr/' in parent.msg.new_dir:
             f = os.path.join(parent.msg.new_dir, parent.msg.new_file)
         else:
-            f = os.path.join(parent.msg.new_dir, parent.msg.relpath.strip('/'))
+            f = parent.msg.relpath
         if not os.path.exists(f):
             parent.logger.error("did not find file {}".format(f))
             return False
 
         # Test file delay
         filetime = os.stat(f)[stat.ST_MTIME]
-        now = nowflt()
-        elapsedtime = now - filetime
+        elapsedtime = nowflt() - filetime
         if elapsedtime < parent.msg_fdelay:
             dbg_msg = "file not old enough, sleeping for {:.3f} seconds"
             parent.logger.debug(dbg_msg.format(elapsedtime, parent.msg_fdelay - elapsedtime))

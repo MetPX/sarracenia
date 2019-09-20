@@ -116,16 +116,17 @@ printf "\t\tTEST RESULTS\n\n"
 tot2shov=$(( ${totshovel1} + ${totshovel2} ))
 t4=$(( ${totfileamqp}*4 ))
 t5=$(( ${totsent}/2 ))
+t6=$(( ${totfileamqp}*2 ))
 
 echo "                 | dd.weather routing |"
 calcres ${totshovel1} ${totshovel2} "sr_shovel\t (${totshovel1}) t_dd1 should have the same number of items as t_dd2\t (${totshovel2})"
 calcres ${totwinnow}  ${tot2shov}   "sr_winnow\t (${totwinnow}) should have the same of the number of items of shovels\t (${tot2shov})"
 calcres ${totsarp}    ${totwinpost} "sr_sarra\t (${totsarp}) should have the same number of items as winnows'post\t (${totwinpost})"
 calcres ${totfileamqp}   ${totsarp}    "sr_subscribe\t (${totfileamqp}) should have the same number of items as sarra\t\t (${totsarp})"
-calcres ${totfilermqtt}   ${totsarp}    "rabbitmqtt\t (${totfilermqtt}) should have the same number of items as sarra\t\t (${totsarp})"
 echo "                 | watch      routing |"
 calcres ${totwatch}   ${t4}         "sr_watch\t\t (${totwatch}) should be 4 times subscribe amqp_f30\t\t  (${totfileamqp})"
 calcres ${totsent}    ${totwatch}   "sr_sender\t\t (${totsent}) should have the same number of items as sr_watch  (${totwatch})"
+calcres ${totsubrmqtt} ${totwatch}  "rabbitmqtt\t\t (${totsubrmqtt}) should have the same number of items as sr_watch  (${totwatch})"
 calcres ${totsubu}    ${totsent}    "sr_subscribe u_sftp_f60 (${totsubu}) should have the same number of items as sr_sender (${totsent})"
 calcres ${totsubcp}   ${totsent}    "sr_subscribe cp_f61\t (${totsubcp}) should have the same number of items as sr_sender (${totsent})"
 echo "                 | poll       routing |"
@@ -137,8 +138,8 @@ calcres ${totsubftp}  ${totpost1}   "sr_subscribe ftp_f70\t (${totsubftp}) shoul
 calcres ${totpost1} ${totshimpost1} "sr_post test2_f61\t (${totpost1}) should have about the same number of items as shim_f63\t (${totshimpost1})"
 
 echo "                 | py infos   routing |"
-calcres ${totpropagated} ${totwinpost} "sr_shovel pclean_f90 (${totpropagated}) should have the same number of watched items winnows' post\t (${totwinpost})"
-calcres ${totremoved}    ${totwinpost} "sr_shovel pclean_f92 (${totremoved}) should have the same number of removed items winnows' post\t (${totwinpost})"
+calcres ${totpropagated} ${t6} "sr_shovel pclean_f90\t (${totpropagated}) should have twice the number of watched files\t (${totfileamqp})"
+calcres ${totremoved}    ${t6} "sr_shovel pclean_f92\t (${totremoved}) should have twice the number of watched files\t (${totfileamqp})"
 zerowanted "${missed_dispositions}" "${maxshovel}" "messages received that we don't know what happened."
 calcres ${totshortened} ${totfileamqp} \
    "count of truncated headers (${totshortened}) and subscribed messages (${totmsgamqp}) should have about the same number of items"

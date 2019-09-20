@@ -267,10 +267,13 @@ class sr_consumer:
     def msg_to_retry(self):
         self.last_msg_failed = True
 
-        if self.raw_msg == None : return
+        if self.raw_msg is None:
+            return
 
-        if self.raw_msg.isRetry : self.retry.add_msg_to_state_file(self.raw_msg)
-        else                    : self.retry.add_msg_to_new_file  (self.raw_msg)
+        if self.raw_msg.isRetry:
+            self.retry.add_msg_to_state_file(self.raw_msg)
+        else:
+            self.retry.add_msg_to_new_file(self.raw_msg)
 
         self.logger.info("appended to retry list file %s" % self.raw_msg.body)
 

@@ -64,7 +64,7 @@ class sr_retry:
         # performance issue... only do before close
         #os.fsync(self.state_fp)
 
-    def add_msg_to_new_file(self,message):
+    def add_msg_to_new_file(self, message):
         #self.logger.debug("DEBUG add to new file %s %s" % (os.path.basename(self.new_path),message.body))
         self.new_fp = self.msg_append_to_file(self.new_fp,self.new_path,message)
         # performance issue... only do before close
