@@ -74,7 +74,7 @@ else
 fi
 
 # Check queues and exchanges
-qchk 22 "queues existing after 1st audit"
+qchk 21 "queues existing after 1st audit"
 xchk "exchanges for flow test created"
 
 if [ "$1" = "declare" ]; then

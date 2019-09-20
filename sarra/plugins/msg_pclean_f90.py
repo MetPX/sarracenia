@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-""" msg_pclean_f90 module: first file propagation test for Sarracenia components (in flow test)
+""" msg_pclean_f90 module: file propagation test for Sarracenia components (in flow test)
 """
 from sarra.plugins.msg_pclean import Msg_Pclean
 from sarra.sr_util import nowflt, timestr2flt
@@ -10,11 +10,11 @@ class Msg_Pclean_F90(Msg_Pclean):
 
      - it checks if the propagation was ok
      - it randomly set a new test file with a different type in the watch dir (f31 amqp)
-     - it posts the product again with the extension of the file type created
+     - it posts the product to be treated by f92
+     - when the msg for the extension file comes back, recheck the propagation
 
-    When a product is not fully propagated, the error is reported
-
-    The posted message contains a tag in the header with the extension used for the test
+    When a product is not fully propagated, the error is reported and the test is considered as a
+    failure. It also checks if the file differs from original
     """
     def on_message(self, parent):
         import filecmp
@@ -31,8 +31,8 @@ class Msg_Pclean_F90(Msg_Pclean):
         path_dict = self.build_path_dict(self.all_fxx_dirs[2:], msg_relpath)
         ext = self.get_extension(msg_relpath)
 
-        # f90 test
         for fxx_dir, path in path_dict.items():
+            # f90 test
             if not os.path.exists(path):
                 # propagation check to all path except f20 which is the origin
                 err_msg = "file not in folder {} with {:.3f}s elapsed"
@@ -52,12 +52,8 @@ class Msg_Pclean_F90(Msg_Pclean):
                 diff = [d for d in diff if d[0] != ' ']  # Diffs without context
                 parent.logger.debug("diffs found:\n{}".format("".join(diff)))
 
-        # prepare next f90 test
-        if ext in self.test_extension_list:
-            # TODO maybe a cleaner way to do it
-            # this is the second f90 test
-            pass
-        elif os.path.exists(msg_relpath):
+        if ext not in self.test_extension_list:
+            # prepare next f90 test
             test_extension = random.choice(self.test_extension_list)  # pick one test identified by file extension
             src = msg_relpath  # src file is in f30 dir
             dest = "{}{}".format(src, test_extension)  # format input file for extension test (next f90)
@@ -71,13 +67,19 @@ class Msg_Pclean_F90(Msg_Pclean):
                     os.rename(src, dest)
                 else:
                     parent.logger.error("test '{}' is not supported".format(test_extension))
+            except FileNotFoundError as err:
+                # src is not there
+                parent.logger.error("test failed: {}".format(err))
+                parent.logger.debug("Exception details:", exc_info=True)
+                result=False
             except FileExistsError as err:
-                parent.logger.warning('skipping, found a moving target {}'.format(err))
-        else:
-            result = False
+                # dest is already there
+                parent.logger.error('skipping, found a moving target {}'.format(err))
+                parent.logger.debug("Exception details:", exc_info=True)
+                result=False
 
-        # cleanup
         if 'toolong' in parent.msg.headers:
+            # cleanup
             del parent.msg.headers['toolong']
 
         return result
