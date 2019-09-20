@@ -1,3 +1,9 @@
+metpx-sarracenia (2.19.09b3) UNRELEASED; urgency=medium
+
+  * new release started
+
+ -- Peter Silva <peter@bsqt.homeip.net>  Fri, 20 Sep 2019 14:48:16 -0400
+
 metpx-sarracenia (2.19.09b2) unstable; urgency=medium
 
   * documentation: usage string correction: replace parts by blocksize
@@ -5,9 +11,8 @@ metpx-sarracenia (2.19.09b2) unstable; urgency=medium
   * windows package generation (pending)
   * removed timeout on wait in process spawning plugins.
   * 
-  * 
 
- -- Peter Silva <peter@blacklab>  Tue, 17 Sep 2019 19:58:51 -0400
+ -- Peter Silva <peter@bsqt.homeip.net>  Tue, 17 Sep 2019 19:58:51 -0400
 
 metpx-sarracenia (2.19.09b1) unstable; urgency=medium
 
@@ -41,7 +46,7 @@ metpx-sarracenia (2.19.09b1) unstable; urgency=medium
   *
   * 
 
- -- Peter Silva <peter@blacklab>  Sat, 07 Sep 2019 00:05:33 -0400
+ -- Peter Silva <peter@bsqt.homeip.net>  Sat, 07 Sep 2019 00:05:33 -0400
 
 metpx-sarracenia (2.19.04b2) unstable; urgency=medium
 
