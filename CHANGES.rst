@@ -6,6 +6,12 @@ lists all changes between versions.
 
 **git repo**
 
+**2.19.09b2**
+
+  * documentation: usage string correction: replace parts by blocksize
+  * documentation: other corrections.
+  * windows package generation fixed (pending)
+  * removed timeout on wait in process spawning plugins.
 
 **2.19.09b1**
 

@@ -42,6 +42,8 @@ git
 *NOTICE*: removed *cleanup*, *remove*, from sr command (they are a bit dangerous). 
           still available in sr1, will eventually be reimplemented, see #187
 
+**BUG**:  accel_* plugins have a timeout of 1 on the subshells. may behave badly.
+          
 
 2.19.04b2
 ---------
