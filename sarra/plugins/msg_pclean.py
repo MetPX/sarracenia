@@ -53,11 +53,7 @@ class Msg_Pclean(object):
         """
         from pathlib import Path
 
-        f = Path(relpath)
-        if ".{}".format(f.suffix) in self.test_extension_list:
-            return ".{}".format(f.suffix)
-        else:
-            return None
+        return Path(relpath).suffix
 
     def log_msg_details(self, parent):
         parent.logger.error("message received is incorrect")

@@ -29,6 +29,7 @@ class Msg_Pclean_F90(Msg_Pclean):
         msg_relpath = parent.msg.relpath
         f20_path = msg_relpath.replace("{}/".format(self.all_fxx_dirs[1]), self.all_fxx_dirs[0])
         path_dict = self.build_path_dict(self.all_fxx_dirs[2:], msg_relpath)
+        ext = self.get_extension(msg_relpath)
 
         # f90 test
         for fxx_dir, path in path_dict.items():
@@ -40,7 +41,7 @@ class Msg_Pclean_F90(Msg_Pclean):
                 parent.logger.debug("file missing={}".format(path))
                 result = False
                 break
-            elif not filecmp.cmp(f20_path, path):
+            elif ext not in self.test_extension_list and not filecmp.cmp(f20_path, path):
                 # file differ check: f20 against others
                 parent.logger.warning("skipping, file differs from f20 file: {}".format(path))
                 with open(f20_path, 'r', encoding='iso-8859-1') as f:
@@ -52,7 +53,7 @@ class Msg_Pclean_F90(Msg_Pclean):
                 parent.logger.debug("diffs found:\n{}".format("".join(diff)))
 
         # prepare next f90 test
-        if msg_relpath[-6:] in self.test_extension_list:
+        if ext in self.test_extension_list:
             # TODO maybe a cleaner way to do it
             # this is the second f90 test
             pass

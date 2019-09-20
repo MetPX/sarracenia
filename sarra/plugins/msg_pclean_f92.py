@@ -16,24 +16,29 @@ class Msg_Clean_F92(Msg_Pclean):
 
         result = True
         msg_relpath = parent.msg.relpath
-        ext = self.get_extension(parent.msg)
+        ext = self.get_extension(msg_relpath)
 
-        if ext == '.moved':
-            # f30 watched file moved then does not need to delete it and it has propagated the move to f50, f60, f61
-            fxx_dirs = [self.all_fxx_dirs[0]] + self.all_fxx_dirs[6:]
-            path_dict = self.build_path_dict(fxx_dirs, msg_relpath)
-        else:
-            # f30 watched file hasnt moved now deleting it
-            fxx_dirs = self.all_fxx_dirs[0:3] + self.all_fxx_dirs[6:]
-            path_dict = self.build_path_dict(fxx_dirs, msg_relpath)
 
-        for fxx_dir, path in path_dict.items():
+        if ext in self.test_extension_list:
+            f20_path = msg_relpath.replace("{}/".format(self.all_fxx_dirs[1]), self.all_fxx_dirs[0])
+            f20_path = f20_path.replace(ext, '')
             try:
-                os.unlink(path)
-            except OSError as err:
+                os.unlink(f20_path)
+            except FileNotFoundError as err:
                 parent.logger.error("could not unlink in {}: {}".format(fxx_dir, err))
                 parent.logger.debug("Exception details:", exc_info=True)
                 result = False
+            fxx_dirs = self.all_fxx_dirs[1:2] + self.all_fxx_dirs[6:]
+            path_dict = self.build_path_dict(fxx_dirs, msg_relpath)
+            for fxx_dir, path in path_dict.items():
+                try:
+                    os.unlink(path)
+                    if ext != '.moved':
+                        os.unlink(path.replace(ext, ''))
+                except OSError as err:
+                    parent.logger.error("could not unlink in {}: {}".format(fxx_dir, err))
+                    parent.logger.debug("Exception details:", exc_info=True)
+                    result = False
         return result
 
 

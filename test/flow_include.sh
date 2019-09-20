@@ -190,16 +190,13 @@ function countall {
   countthem "`grep '\[INFO\] file_log downloaded to:' "$LOGDIR"/sr_subscribe_amqp_f30_*.log | wc -l`"
   totfileamqp="${tot}"
 
-  sumlogs msg_total $LOGDIR/sr_subscribe_rabbitmqtt_f31_*.log
-  totmsgrmqtt="${tot}"
-  countthem "`grep '\[INFO\] file_log downloaded to:' "$LOGDIR"/sr_subscribe_rabbitmqtt_f31_*.log | wc -l`"
-  totfilermqtt="${tot}"
-
   countthem "`grep '\[INFO\] post_log notice' "$LOGDIR"/sr_sender_tsource2send_f50_*.log | wc -l`"
   totsent="${tot}"
 
   no_hardlink_events='downloaded to:|symlinked to|removed'
   all_events="hardlink|$no_hardlink_events"
+  countthem "`grep -E "$all_events" "$LOGDIR"/sr_subscribe_rabbitmqtt_f31_*.log | grep -v DEBUG | wc -l`"
+  totsubrmqtt="${tot}"
   countthem "`grep -E "$all_events" "$LOGDIR"/sr_subscribe_u_sftp_f60_*.log | grep -v DEBUG | wc -l`"
   totsubu="${tot}"
   countthem "`grep -E "$all_events" "$LOGDIR"/sr_subscribe_cp_f61_*.log | grep -v DEBUG | wc -l`"
