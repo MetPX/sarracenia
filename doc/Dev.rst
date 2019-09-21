@@ -1150,9 +1150,16 @@ it isn't really properly done.  `Help Wanted  <https://github.com/MetPX/sarracen
 github
 ------
 
-Click on Releases, Edit the release,
-build packages locally or download from other sources.
-drag and drop into the the release.
+Click on Releases, Edit the release:
+
+* should we have release names?
+* copy/paste of changes from CHANGES.rst
+* copy/paste of Installation bit at the end from a previous release.
+* build packages locally or download from other sources.
+  drag and drop into the release.
+
+This will give us the ability to have old versions available.
+launchpad.net doesn't seem to keep old versions around.
 
 
 
