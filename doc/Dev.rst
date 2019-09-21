@@ -927,7 +927,6 @@ happens on development branches, and all testing is expected to pass before
 one considers affecting master. Once the branch development is complete, 
 or a unit of work-in-progress is felt to be worth merging to master, one 
 must summarize the changes from the branch for the debian change log, 
-update the UPGRADING file if necessary, and then issue a change 
 request on github.
 
 ::
@@ -1036,10 +1035,6 @@ occurs that is identified as the released version.
 PyPi
 ~~~~
 
-
-PyPi
-~~~~
-
 Pypi Credentials go in ~/.pypirc.  Sample Content::
 
   [pypi]
@@ -1091,14 +1086,6 @@ Then, from the shell, run::
  ./generate-win-installer.sh 2>&1 > log.txt
 
 The final package should be placed in build/nsis directory.
-
-github
-++++++
-
-Click on Releases, Edit the release,
-build packages locally or download from other sources.
-drag and drop into the the release.
-
 
 
 Daily Builds
@@ -1158,6 +1145,14 @@ using the python distutils::
 Unfortunately, it doesn't add proper dependencies, so one must install those 
 manually. So it will help if you must use .rpm's for compliance reasons, but
 it isn't really properly done.  `Help Wanted  <https://github.com/MetPX/sarracenia/issues57>`_
+
+
+github
+------
+
+Click on Releases, Edit the release,
+build packages locally or download from other sources.
+drag and drop into the the release.
 
 
 
