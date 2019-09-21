@@ -933,7 +933,7 @@ request on github.
 ::
    
    git checkout issueXXX
-   vi CHANGES.rst # summarize the changes 
+   vi CHANGES.rst # summarize the changes in Restructured Text
    dch # copy/paste from CHANGES.rst, inserting one leading space.
    vi doc/UPGRADING.rst # rarely, if code has user impact.
    vi doc/fr/UPGRADING.rst # bon... ceci est visible aux usagers, donc...
@@ -969,6 +969,7 @@ To publish a release one needs to:
 - upload the release to pypi.org so that installation with pip succeeds.
 - upload the release to launchpad.net, so that the installation of debian packages
   using the repository succeeds.
+- upload the release notes and binaries to github.com.
 - increment the version for future commits to master.
 
 Versioning Scheme
@@ -1032,6 +1033,9 @@ in master to the next logical increment to ensure no further development
 occurs that is identified as the released version.    
 
 
+PyPi
+~~~~
+
 
 PyPi
 ~~~~
@@ -1046,17 +1050,8 @@ Assuming pypi upload credentials are in place, uploading a new release used to b
 
     python3 setup.py bdist_wheel upload
 
-This still works with setuptools > 24, but ubuntu 16 only has version 20, so it can no longer be used there.
-Instead, one is supposed to use the twine package.  We have tried it once installing it vi pip3,
-next time, we should try the one provided with ubuntu 16.04 (via apt-get.)::
-
-   python3 setup.py bdist_wheel 
-   twine upload dist/metpx_sarracenia-2.17.7a2-py3-none-any.whl
-
-Note that the same version can never be uploaded twice.
-
-A convenient script has been created to build and publish the *wheel* file. Simply run ``publish-to-pypi.sh`` and it will guide you in that.
-
+Note that the CHANGES.rst file is in restructured text and is parsed by pypi.python.org
+on upload.  
 .. Note::
    When uploading pre-release packages (alpha,beta, or RC) PYpi does not serve those to users by default.
    For seamless upgrade, early testers need to do supply the ``--pre`` switch to pip::
@@ -1096,6 +1091,15 @@ Then, from the shell, run::
  ./generate-win-installer.sh 2>&1 > log.txt
 
 The final package should be placed in build/nsis directory.
+
+github
+++++++
+
+Click on Releases, Edit the release,
+build packages locally or download from other sources.
+drag and drop into the the release.
+
+
 
 Daily Builds
 ++++++++++++
