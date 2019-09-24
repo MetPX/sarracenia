@@ -35,7 +35,7 @@ def ageoffile(lf):
     """ return number of seconds since a file was modified as a floating point number of seconds.
         FIXME: mocked here for now. 
     """
-    return (0);
+    return 0
 
 
 def _parse_cfg(cfg):
@@ -53,6 +53,7 @@ def _parse_cfg(cfg):
     return cfgbody
 
 
+# noinspection PyArgumentList
 class sr_GlobalState:
     """
        build a global state of all sarra processes running on the system for this user.
@@ -75,11 +76,11 @@ class sr_GlobalState:
             if not os.path.exists(s):
                 s += '.py'
             if not os.path.exists(s):
-                print("don't know where the script files are for: %s" % (c))
+                print("don't know where the script files are for: %s" % c)
                 return ''
-            return (s)
+            return s
         else:  # C components
-            return ('sr_' + c)
+            return 'sr_' + c
 
     def _launch_instance(self, component_path, c, cfg: str, i):
         """
@@ -118,7 +119,7 @@ class sr_GlobalState:
                 n = os.path.basename(p['cmdline'][1])
                 p['name'] = n
 
-            if (p['name'].startswith('sr_') and (me == p['username'])):
+            if p['name'].startswith('sr_') and (me == p['username']):
                 self.procs[proc.pid] = p
 
                 if p['name'][3:8] == 'audit':
@@ -154,7 +155,7 @@ class sr_GlobalState:
                         cfgbody = _parse_cfg(cfg)
 
                         # ensure there is a known value of instances to run.
-                        if (c in ['post', 'cpost']):
+                        if c in ['post', 'cpost']:
                             if ('sleep' in cfgbody) and (cfgbody['sleep'][0] not in ['-', '0']):
                                 numi = 1
                             else:
@@ -225,10 +226,10 @@ class sr_GlobalState:
                 for cfg in os.listdir():
                     if os.path.isdir(cfg):
                         os.chdir(cfg)
-                        for f in os.listdir():
-                            if f[-4:] == '.pid':
-                                i = int(f[-6:-4])
-                                p = pathlib.Path(f)
+                        for filename in os.listdir():
+                            if filename[-4:] == '.pid':
+                                i = int(filename[-6:-4])
+                                p = pathlib.Path(filename)
                                 if sys.version_info[0] > 3 or sys.version_info[1] > 4:
                                     t = p.read_text().strip()
                                 else:
@@ -258,9 +259,9 @@ class sr_GlobalState:
                 for cfg in os.listdir():
                     if os.path.isdir(cfg):
                         os.chdir(cfg)
-                        for f in os.listdir():
-                            if f[-4:] == '.pid':
-                                p = pathlib.Path(f)
+                        for filename in os.listdir():
+                            if filename[-4:] == '.pid':
+                                p = pathlib.Path(filename)
                                 if sys.version_info[0] > 3 or sys.version_info[1] > 4:
                                     t = p.read_text().strip()
                                 else:
@@ -269,9 +270,9 @@ class sr_GlobalState:
                                 if t.isdigit():
                                     pid = int(t)
                                     if pid not in self.procs:
-                                        os.unlink(f)
+                                        os.unlink(filename)
                                 else:
-                                    os.unlink(f)
+                                    os.unlink(filename)
 
                         os.chdir('..')
                 os.chdir('..')
@@ -297,7 +298,7 @@ class sr_GlobalState:
                     if suffix[1] == 'log':
                         inum = int(suffix[0])
                         age = ageoffile(lf)
-                        if not cfg in self.logs[c]:
+                        if cfg not in self.logs[c]:
                             self.logs[c][cfg] = {}
                         self.logs[c][cfg][inum] = age
 
@@ -314,7 +315,7 @@ class sr_GlobalState:
                 continue
 
             for cfg in self.configs[c]:
-                if not cfg in self.states[c]:
+                if cfg not in self.states[c]:
                     # print('missing state for sr_%s/%s' % (c,cfg) )
                     continue
                 if len(self.states[c][cfg]['instance_pids']) > 0:
@@ -380,7 +381,7 @@ class sr_GlobalState:
 
         plist = []
         for c in self.components:
-            if (c not in self.configs):
+            if c not in self.configs:
                 continue
             component_path = self._find_component_path(c)
             if component_path == '':
@@ -397,19 +398,26 @@ class sr_GlobalState:
             print(outs.decode('utf8'))
 
     def sanity(self):
+        """ Run sanity by finding and starting missing instances
+
+        :return:
+        """
         self._find_missing_instances()
         print('missing: %s' % self.missing)
         print('starting them up...')
         self._start_missing()
 
     def start(self):
+        """ Starting all components
 
+        :return:
+        """
         if len(self.procs) > 0:
             print('...already started')
             return
 
         for c in self.components:
-            if (c not in self.configs):
+            if c not in self.configs:
                 continue
             component_path = self._find_component_path(c)
             if component_path == '':
@@ -448,7 +456,7 @@ class sr_GlobalState:
                     print('.', end='')
 
         for c in self.components:
-            if (c not in self.configs):
+            if c not in self.configs:
                 continue
             for cfg in self.configs[c]:
                 if self.configs[c][cfg]['status'] in ['running', 'partial']:
@@ -467,7 +475,7 @@ class sr_GlobalState:
             for pid in self.procs:
                 if not self.procs[pid]['claimed']:
                     print("pid: %s-%s does not match any configured instance, sending it TERM" % (
-                    pid, self.procs[pid]['cmdline'][0:5]))
+                        pid, self.procs[pid]['cmdline'][0:5]))
                     os.kill(pid, signal.SIGTERM)
 
             ttw = 1 << attempts
@@ -493,7 +501,7 @@ class sr_GlobalState:
                     os.kill(p, signal.SIGKILL)
 
         for c in self.components:
-            if (c not in self.configs):
+            if c not in self.configs:
                 continue
             for cfg in self.configs[c]:
                 if self.configs[c][cfg]['status'] in ['running', 'partial']:
@@ -519,13 +527,13 @@ class sr_GlobalState:
         self._resolve()
 
         for c in self.components:
-            if (c not in self.configs):
+            if c not in self.configs:
                 continue
             for cfg in self.configs[c]:
                 if self.configs[c][cfg]['status'] in ['running', 'partial']:
                     for i in self.states[c][cfg]['instance_pids']:
                         print("failed to kill: %s/%s instance: %s, pid: %s )" % (
-                        c, cfg, i, self.states[c][cfg]['instance_pids'][i]))
+                            c, cfg, i, self.states[c][cfg]['instance_pids'][i]))
         if len(self.procs) == 0:
             print('All stopped after KILL')
             return 0
@@ -536,7 +544,10 @@ class sr_GlobalState:
             return 1
 
     def dump(self):
+        """ Printing all running processes, configs, states
 
+        :return:
+        """
         print('\n\nRunning Processes\n\n')
         for pid in self.procs:
             print('\t%s: name:%s cmdline:%s' % (pid, self.procs[pid]['name'], self.procs[pid]['cmdline']))
@@ -554,7 +565,10 @@ class sr_GlobalState:
                 print('\t\t%s : %s' % (cfg, self.states[c][cfg]))
 
     def status(self):
+        """ Printing statuses for each component/configs found
 
+        :return:
+        """
         bad = 0
 
         if self.auditors == 1:
@@ -578,9 +592,9 @@ class sr_GlobalState:
             if (len(status['partial']) + len(status['running'])) < 1:
                 if c not in ['post']:
                     print('sr_%s: all %d stopped' % (c, len(status['stopped'])))
-            elif (len(status['running']) == len(self.configs[c])):
+            elif len(status['running']) == len(self.configs[c]):
                 print('sr_%s: running %d (OK)' % (c, len(self.configs[c])))
-            elif (len(status['running']) == (len(self.configs[c]) - len(status['disabled']))):
+            elif len(status['running']) == (len(self.configs[c]) - len(status['disabled'])):
                 print('sr_%s: running %d (OKd)' % (c, (len(self.configs[c]) - len(status['disabled']))))
             else:
                 print('sr_%s: mixed status, %d configured.' % (c, len(self.configs[c])))
@@ -601,6 +615,10 @@ class sr_GlobalState:
 
 
 def main():
+    """ Main thread for sr dealing with parsing and action switch
+
+    :return:
+    """
     actions = ['declare', 'dump', 'restart', 'sanity', 'setup', 'status', 'stop']
 
     if len(sys.argv) < 2:
