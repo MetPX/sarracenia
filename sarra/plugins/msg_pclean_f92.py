@@ -25,7 +25,7 @@ class Msg_Clean_F92(Msg_Pclean):
             try:
                 os.unlink(f20_path)
             except FileNotFoundError as err:
-                parent.logger.error("could not unlink in {}: {}".format(fxx_dir, err))
+                parent.logger.error("could not unlink in {}: {}".format(f20_path, err))
                 parent.logger.debug("Exception details:", exc_info=True)
                 result = False
             fxx_dirs = self.all_fxx_dirs[1:2] + self.all_fxx_dirs[6:]
