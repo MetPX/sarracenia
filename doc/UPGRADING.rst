@@ -36,6 +36,12 @@ Installation Instructions
 git
 ---
 
+2.19.09b2
+---------
+
+**BUG**:  new sr implementation broke python 3.4 compatibility when managing processes
+          with sr.py
+
 2.19.09b1
 ---------
 

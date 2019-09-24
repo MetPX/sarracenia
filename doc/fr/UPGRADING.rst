@@ -35,6 +35,23 @@ Instructions d´Installations
 git origin/master 
 -----------------
 
+2.19.09b2
+---------
+
+**BUG**:  la nouvelle implémentation de sr brise la compatibilité avec python 3.4
+          lorsqu'on gère des processus via sr.py
+
+
+2.19.09b1
+---------
+
+*NOTICE*: *cleanup*, *remove* ont été retiré de la commande sr (ils sont un peu dangereux)
+          ceux-ci sont toujours disponibles dans sr1, qui sera éventuellement réécrit, voir #187
+
+**BUG**:  l'extension accel_* utilise un délai de fermeture des sous processus (1sec)
+          qui est beaucoup trop restrictif
+
+
 2.19.04.b1
 ----------
 
@@ -49,7 +66,7 @@ git origin/master
 2.19.03.b1
 ----------
 
-*NOTICE*: le problèm sur Ubuntu 14.04 et 16.04 de la version antérieur est reglée.
+*NOTICE*: le problème sur Ubuntu 14.04 et 16.04 de la version antérieure est reglée.
 
 
 2.19.02.b2
