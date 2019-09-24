@@ -136,7 +136,7 @@ class sr_GlobalState:
             if os.path.isdir(c):
                 os.chdir(c)
                 self.configs[c] = {}
-                for cfg in os.listdir('.'):
+                for cfg in os.listdir():
 
                     if cfg[-4:] == '.off':
                         cbase = cfg[0:-4]
@@ -177,7 +177,7 @@ class sr_GlobalState:
             if os.path.isdir(c):
                 os.chdir(c)
                 self.states[c] = {}
-                for cfg in os.listdir('.'):
+                for cfg in os.listdir():
                     if os.path.isdir(cfg):
                         os.chdir(cfg)
                         self.states[c][cfg] = {}
@@ -187,7 +187,7 @@ class sr_GlobalState:
                         self.states[c][cfg]['has_state'] = False
 
                         # print( 'state %s/%s' % ( c, cfg ) )
-                        for pathname in os.listdir('.'):
+                        for pathname in os.listdir():
                             p = pathlib.Path(pathname)
                             if p.suffix in ['.pid', '.qname', '.state']:
                                 if sys.version_info[0] > 3 or sys.version_info[1] > 4:
@@ -222,10 +222,10 @@ class sr_GlobalState:
         for c in self.components:
             if os.path.isdir(c):
                 os.chdir(c)
-                for cfg in os.listdir('.'):
+                for cfg in os.listdir():
                     if os.path.isdir(cfg):
                         os.chdir(cfg)
-                        for f in os.listdir('.'):
+                        for f in os.listdir():
                             if f[-4:] == '.pid':
                                 i = int(f[-6:-4])
                                 p = pathlib.Path(f)
@@ -255,10 +255,10 @@ class sr_GlobalState:
             (c, cfg, i) = instance
             if os.path.isdir(c):
                 os.chdir(c)
-                for cfg in os.listdir('.'):
+                for cfg in os.listdir():
                     if os.path.isdir(cfg):
                         os.chdir(cfg)
-                        for f in os.listdir('.'):
+                        for f in os.listdir():
                             if f[-4:] == '.pid':
                                 p = pathlib.Path(f)
                                 if sys.version_info[0] > 3 or sys.version_info[1] > 4:
@@ -286,7 +286,7 @@ class sr_GlobalState:
 
             os.chdir('log')
 
-            for lf in os.listdir('.'):
+            for lf in os.listdir():
                 lff = lf.split('_')
                 # print('looking at: %s' %lf )
                 if len(lff) > 3:
@@ -488,7 +488,7 @@ class sr_GlobalState:
         print('doing SIGKILL this time...')
 
         if self.auditors > 0:
-            for p in self.proc:
+            for p in self.procs:
                 if 'audit' in p['name']:
                     os.kill(p, signal.SIGKILL)
 
