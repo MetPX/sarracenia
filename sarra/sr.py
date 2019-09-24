@@ -79,17 +79,17 @@ class sr_GlobalState:
            return('sr_' + c)
 
 
-    def _launch_instance( self, component_path, c, cfg, i ):
+    def _launch_instance( self, component_path, c, cfg: str, i ):
         """
           start up a instance process (always daemonish/background fire & forget type process.)
         """
-        if cfg == None:
+        if cfg is None:
             lfn = self.user_cache_dir + os.sep + 'log' + os.sep + 'sr_' + c + "_%02d" % i + '.log'
         else:
             lfn = self.user_cache_dir + os.sep + 'log' + os.sep + 'sr_' + c + '_' + cfg + "_%02d" % i + '.log'
 
         if c[0] != 'c' : #python components
-           if cfg == None:
+           if cfg is None:
                cmd =  [ sys.executable,  component_path , '--no', "%d" % i , 'start' ]
            else:
                cmd =  [ sys.executable,  component_path , '--no', "%d" % i , 'start', cfg ]
@@ -135,7 +135,7 @@ class sr_GlobalState:
             if os.path.isdir(c):
                os.chdir(c)
                self.configs[c] = {}
-               for cfg in os.listdir() :
+               for cfg in os.listdir('.') :
                    
                    if cfg[-4:] == '.off'  :
                        cbase = cfg[0:-4]
@@ -187,25 +187,28 @@ class sr_GlobalState:
                        self.states[c][cfg]['has_state']=False
 
                        #print( 'state %s/%s' % ( c, cfg ) )
-                       for f in os.listdir('.'):
-                            f_obj = pathlib.Path(f)
-                            if f_obj.suffix in ['.pid', '.qname', '.state']:
-                                t = f_obj.read_text().strip()
-
+                       for pathname in os.listdir('.'):
+                            p = pathlib.Path(pathname)
+                            if p.suffix in ['.pid', '.qname', '.state']:
+                                if sys.version_info[0] > 3 or sys.version_info[1] > 4:
+                                    t = p.read_text().strip()
+                                else:
+                                    with p.open() as f:
+                                        t = f.read().strip()
                                 #print( 'read f:%s len: %d contents:%s' % ( f, len(t), t[0:10] ) )
                                 if len(t) == 0:
                                     continue
 
                                 #print( 'read f[-4:] = +%s+ ' % ( f[-4:] ) )
-                                if f[-4:] == '.pid':
-                                    i = int(f[-6:-4])
+                                if pathname[-4:] == '.pid':
+                                    i = int(pathname[-6:-4])
                                     if t.isdigit():
                                         #print( "%s/%s instance: %s, pid: %s" % 
                                         #     ( c, cfg, i, t ) )
                                         self.states[c][cfg]['instance_pids'][i]= int( t )
-                                elif f[-6:] == '.qname' :
+                                elif pathname[-6:] == '.qname' :
                                     self.states[c][cfg]['queue_name'] = t
-                                elif f[-6:] == '.state' and ( f[-12:-6] != '.retry' ):
+                                elif pathname[-6:] == '.state' and ( pathname[-12:-6] != '.retry' ):
                                     if t.isdigit():
                                         self.states[c][cfg]['instances_expected'] = int ( t )
                        os.chdir('..')
@@ -219,13 +222,18 @@ class sr_GlobalState:
         for c in self.components:
             if os.path.isdir(c):
                 os.chdir(c)
-                for cfg in os.listdir():
+                for cfg in os.listdir('.'):
                    if os.path.isdir(cfg):
                        os.chdir(cfg)
-                       for f in os.listdir():
+                       for f in os.listdir('.'):
                             if f[-4:] == '.pid':
                                i = int(f[-6:-4])
-                               t = pathlib.Path(f).read_text().strip()
+                               p = pathlib.Path(f)
+                               if sys.version_info[0] > 3 or sys.version_info[1] > 4:
+                                   t = p.read_text().strip()
+                               else:
+                                   with p.open() as f:
+                                       t = f.read().strip()
                                if t.isdigit():
                                    pid = int( t )
                                    if pid not in self.procs:
@@ -249,14 +257,19 @@ class sr_GlobalState:
             ( c, cfg, i ) = instance
             if os.path.isdir(c):
                 os.chdir(c)
-                for cfg in os.listdir():
+                for cfg in os.listdir('.'):
                    if os.path.isdir(cfg):
                        os.chdir(cfg)
-                       for f in os.listdir():
+                       for f in os.listdir('.'):
                             if f[-4:] == '.pid':
-                               t = pathlib.Path(f).read_text().strip()
+                               p = pathlib.Path(f)
+                               if sys.version_info[0] > 3 or sys.version_info[1] > 4:
+                                   t = p.read_text().strip()
+                               else:
+                                   with p.open() as f:
+                                       t = f.read().strip()
                                if t.isdigit():
-                                   pid = int( t )
+                                   pid = int(t)
                                    if pid not in self.procs:
                                        os.unlink(f)
                                else:
@@ -276,7 +289,7 @@ class sr_GlobalState:
               
            os.chdir('log')
 
-           for lf in os.listdir():
+           for lf in os.listdir('.'):
               lff = lf.split('_')
               #print('looking at: %s' %lf )
               if len(lff) > 3 :
@@ -378,8 +391,8 @@ class sr_GlobalState:
                continue
             for cfg in self.configs[c]:
                print('.', end='')
-               plist.append( subprocess.Popen( \
-                     [ component_path, action, cfg ], \
+               plist.append( subprocess.Popen(
+                     [ component_path, action, cfg ],
                      stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT 
                         ) )
         print('Done')
@@ -525,7 +538,7 @@ class sr_GlobalState:
         else:
             print( 'not responding to SIGKILL:' )
             for p in self.procs:
-                print( '\t%s: %s' % (pid, self.procs[pid]['cmdline'][0:5]) )
+                print( '\t%s: %s' % (p, self.procs[p]['cmdline'][0:5]) )
             return 1
 
 
