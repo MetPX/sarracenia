@@ -42,6 +42,7 @@ git
 **BUG**:  new sr implementation broke python 3.4 compatibility when managing processes
           with sr.py
 
+
 2.19.09b1
 ---------
 
@@ -49,7 +50,7 @@ git
           still available in sr1, will eventually be reimplemented, see #187
 
 **BUG**:  accel_* plugins have a timeout of 1 on the subshells. may behave badly.
-          
+
 
 2.19.04b2
 ---------
