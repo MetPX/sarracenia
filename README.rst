@@ -79,5 +79,5 @@ Concepts: `Sarracenia in 10 Minutes Video (anglais seulement) <https://www.youtu
 
 Documentation *master* location: https://github.com/MetPX/sarracenia/blob/master/doc/sr_subscribe.1.rst#documentation
 
-Endroit principale pour la documentation: https://github.com/MetPX/sarracenia/blob/master/doc/fr/sr_subscribe.1.rst#documentation
+Documentation *principale* située à: https://github.com/MetPX/sarracenia/blob/master/doc/fr/sr_subscribe.1.rst#documentation
 
