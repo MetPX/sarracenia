@@ -106,8 +106,8 @@ Fingerprint Winnowing (use of the sum_ header)
    is optimal for this usage.
  
 Partitioning (use of the parts_ Header)
-   In any store and forward data pumping network that transports entire files limits the maximum
-   file size to the minimum available on any intervening node.  To avoid defining a maximum 
+   Any store on a forward data pumping network that transports entire files limits the maximum
+   file size to the minimum available on any intervening node. To avoid defining a maximum 
    file size, a segmentation standard is specified, allowing intervening nodes to hold
    only segments of the file, and forward them as they are received, rather than being
    forced to hold the entire file.
@@ -188,7 +188,7 @@ in messages when appropriate.
 
 **parts=<method>,<bsz>,<blktot>,<brem>,<bno>**
 
- A header indicating the method and parameters for partitioning applied for the file.
+ A header indicating the method and partitioning settings applied to the file.
  Partitioning is used to send a single file as a collection of segments, rather than as
  a single entity.  Partitioning is used to accelerate transfers of large data sets by using
  multiple streams, and/or to reduce storage use for extremely large files.
