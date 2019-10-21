@@ -2240,7 +2240,7 @@ for the delivery of the product.  The script receives the sr_sender class
 instance.  The script takes the parent as an argument, and for example, any
 modification to  **parent.msg.new_file**  will change the name of the file written locally.
 
-filename <keyword> (default:WHATFN)
+filename <keyword> (default:NONESENDER)
 -----------------------------------
 
 From **metpx-sundew** the support of this option give all sorts of possibilities
