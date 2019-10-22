@@ -123,9 +123,10 @@ class sr_message():
         self.to_clusters = []
         self.tbegin = nowflt()
         self.pubtime = None
+        self.partflg       =  None
 
     def change_partflg(self, partflg ):
-        self.partflg       =  partflg 
+        self.partflg       =  partflg
         self.partstr       = '%s,%d,%d,%d,%d' %\
                              (partflg,self.chunksize,self.block_count,self.remainder,self.current_block)
         self.headers['parts'] = self.partstr
