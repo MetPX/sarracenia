@@ -82,6 +82,7 @@ class sr_message():
         self.sumflg        = None
 
         # Default value for parts attributes
+        self.partflg = None
         self.chunksize = None
         self.length = None
         self.block_count = None
@@ -123,7 +124,6 @@ class sr_message():
         self.to_clusters = []
         self.tbegin = nowflt()
         self.pubtime = None
-        self.partflg       =  None
 
     def change_partflg(self, partflg ):
         self.partflg       =  partflg
