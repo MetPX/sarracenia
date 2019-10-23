@@ -92,6 +92,9 @@ class sr_message():
         self.offset = None
         self.filesize = None
 
+        # Setting default length
+        self.length = 0
+
         self.inline = parent.inline
         self.inline_max = parent.inline_max
         self.post_base_dir = parent.post_base_dir
