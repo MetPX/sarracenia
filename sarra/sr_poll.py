@@ -102,7 +102,6 @@ class sr_poll(sr_post):
                   return True
         except :
                   self.logger.warning("sr_poll/cd: could not cd to directory %s" % path )
-                  self.logger.debug('Exception details: ', exc_info=True)
         return False
 
     def check(self):
