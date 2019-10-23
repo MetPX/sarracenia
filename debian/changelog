@@ -1,6 +1,10 @@
-metpx-sarracenia (2.19.09b3) UNRELEASED; urgency=medium
+metpx-sarracenia (2.19.10b1) unstable; urgency=medium
 
-  * new release started
+  * bugfix #276 avoided repeat of #274 with self.length.
+  * bugfix #273, #275, partflg regression in poll scripts
+  * bugfix #270 from_cluster regression for older versions.
+  * bugfix #268 new sr implementation broke python 3.4 compatibility.
+  * documentation improvements.
 
  -- Peter Silva <peter@bsqt.homeip.net>  Fri, 20 Sep 2019 14:48:16 -0400
 
