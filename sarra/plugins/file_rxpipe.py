@@ -1,5 +1,5 @@
 class File_RxPipe(object):
-  """
+    """
     The File_RxPipe plugin takes names of all the files downloaded and feeds them to a named pipe.
     The pipe name is given by the 'file_rxpipe_name' setting in the configuration file.
 
@@ -28,19 +28,18 @@ class File_RxPipe(object):
 
   """
 
-  def __init__(self,parent):
-        if not hasattr(parent,'file_rxpipe_name'):
+    def __init__(self, parent):
+        if not hasattr(parent, 'file_rxpipe_name'):
             parent.logger.error("Missing file_rxpipe_name parameter")
-            return 
+            return
 
-        self.rxpipe = open( parent.file_rxpipe_name[0], "w" )
+        self.rxpipe = open(parent.file_rxpipe_name[0], "w")
 
-  def perform(self, parent):
-        self.rxpipe.write( parent.msg.new_file + "\n" )
+    def perform(self, parent):
+        self.rxpipe.write(parent.msg.new_file + "\n")
         self.rxpipe.flush()
         return None
 
-file_rxpipe=File_RxPipe(self)
-self.on_file=file_rxpipe.perform
 
-
+file_rxpipe = File_RxPipe(self)
+self.on_file = file_rxpipe.perform

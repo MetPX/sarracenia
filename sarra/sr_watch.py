@@ -19,9 +19,9 @@
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; version 2 of the License.
 #
-#  This program is distributed in the hope that it will be useful, 
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
@@ -37,38 +37,41 @@
 #
 #============================================================
 
-try :    
-         from sr_post            import *
-except : 
-         from sarra.sr_post      import *
+try:
+    from sr_post import *
+except:
+    from sarra.sr_post import *
+
 
 class sr_watch(sr_post):
-
     def check(self):
         self.logger.debug("%s check" % self.program_name)
 
-        if self.sleep <= 0  : self.sleep = 0.1
+        if self.sleep <= 0: self.sleep = 0.1
         # This gets executed after the config file parameters are read so you can't turn off caching with the line
-        #if not self.caching : self.caching = 300 
+        #if not self.caching : self.caching = 300
 
         sr_post.check(self)
+
 
 # ===================================
 # MAIN
 # ===================================
 
+
 def main():
 
-    args,action,config,old = startup_args(sys.argv)
+    args, action, config, old = startup_args(sys.argv)
 
-    watch = sr_watch(config,args,action)
-    watch.exec_action(action,old)
+    watch = sr_watch(config, args, action)
+    watch.exec_action(action, old)
 
     os._exit(0)
+
 
 # =========================================
 # direct invocation
 # =========================================
 
-if __name__=="__main__":
-   main()
+if __name__ == "__main__":
+    main()

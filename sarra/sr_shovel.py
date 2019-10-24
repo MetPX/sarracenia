@@ -22,9 +22,9 @@
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; version 2 of the License.
 #
-#  This program is distributed in the hope that it will be useful, 
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
@@ -56,23 +56,23 @@
 #============================================================
 #
 
-try :    
-         from sr_subscribe      import *
-except : 
-         from sarra.sr_subscribe import *
+try:
+    from sr_subscribe import *
+except:
+    from sarra.sr_subscribe import *
+
 
 class sr_shovel(sr_subscribe):
-
     def check(self):
 
-        if self.config_name == None : return
+        if self.config_name == None: return
 
         self.check_consumer_options()
 
         # exchanges suffix process if needed
 
-        if self.post_exchange == None and self.post_exchange_suffix :
-           self.post_exchange = 'xs_%s' % self.post_broker.username + self.post_exchange_suffix
+        if self.post_exchange == None and self.post_exchange_suffix:
+            self.post_exchange = 'xs_%s' % self.post_broker.username + self.post_exchange_suffix
 
         # ===========================================================
         # some sr_subscribe options reset to match sr_shovel behavior
@@ -80,9 +80,9 @@ class sr_shovel(sr_subscribe):
 
         # the message is consumed and posted (no download)
 
-        if not self.notify_only :
-           self.logger.error("sr_shovel works with notify_only True")
-           sys.exit(1)
+        if not self.notify_only:
+            self.logger.error("sr_shovel works with notify_only True")
+            sys.exit(1)
 
     def overwrite_defaults(self):
 
@@ -95,32 +95,35 @@ class sr_shovel(sr_subscribe):
         # in most cases, sarra downloads and repost for itself.
         # default post_broker and post_exchange are
 
-        if hasattr(self,'manager'):
-           self.post_broker = self.manager
+        if hasattr(self, 'manager'):
+            self.post_broker = self.manager
 
         # ===========================================================
         # some sr_subscribe options reset to understand user sr_shovel setup
         # ===========================================================
 
-        self.notify_only    = True
+        self.notify_only = True
         self.accept_unmatch = True
+
 
 # ===================================
 # MAIN
 # ===================================
 
+
 def main():
 
-    args,action,config,old = startup_args(sys.argv)
+    args, action, config, old = startup_args(sys.argv)
 
-    shovel = sr_shovel(config,args,action)
-    shovel.exec_action(action,old)
+    shovel = sr_shovel(config, args, action)
+    shovel.exec_action(action, old)
 
     os._exit(0)
+
 
 # =========================================
 # direct invocation
 # =========================================
 
-if __name__=="__main__":
-   main()
+if __name__ == "__main__":
+    main()

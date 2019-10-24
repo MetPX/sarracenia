@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
   Implement message filtering based on a routing table from MetPX-Sundew.
   Make it easier to feed clients exactly the same products with sarracenia,
@@ -16,12 +15,9 @@
 
 """
 
+
 class SundewRoute(object):
-
-
-    def __init__(self,parent):
-
- 
+    def __init__(self, parent):
         """
 
           For World Meteorological Organization message oriented routing.
@@ -32,62 +28,59 @@ class SundewRoute(object):
           init sets 'ahls_to_route' according to the contents of pxrouting
 
         """
-        self.ahls_to_route={}
+        self.ahls_to_route = {}
 
         logger = parent.logger
-        pxrf=open(parent.msg_pxrouting[0],'r')
-        possible_references=parent.msg_pxclient[0].split(',')
-        logger.info( "sundew_pxroute, target clients: %s" % possible_references )
+        pxrf = open(parent.msg_pxrouting[0], 'r')
+        possible_references = parent.msg_pxclient[0].split(',')
+        logger.info("sundew_pxroute, target clients: %s" % possible_references)
 
         for line in pxrf:
             words = line.split()
-            
-            if (len(words) < 2) or words[0] == '#' : 
-               continue
-        
+
+            if (len(words) < 2) or words[0] == '#':
+                continue
+
             if words[0] == 'clientAlias':
                 expansion = words[2].split(',')
-                for i in possible_references :
+                for i in possible_references:
                     if i in expansion:
-                       possible_references.append( words[1] )
-                       logger.debug( "sundew_pxroute adding clientAlias %s to possible_reference %s"  % \
-                               (words[1], possible_references) )
-                       continue
-                    
-            if words[0] == 'key' :
+                        possible_references.append(words[1])
+                        logger.debug( "sundew_pxroute adding clientAlias %s to possible_reference %s"  % \
+                                (words[1], possible_references) )
+                        continue
+
+            if words[0] == 'key':
                 expansion = words[2].split(',')
-                for i in possible_references :
+                for i in possible_references:
                     if i in expansion:
-                       self.ahls_to_route[ words[1] ] = True
-        
-        
+                        self.ahls_to_route[words[1]] = True
+
         pxrf.close()
-        
-        logger.debug( "sundew_pxroute For %s, the following headers are routed %s" % ( parent.msg_pxclient[0], self.ahls_to_route.keys() ) )
-        
-    def on_message(self,parent):
+
+        logger.debug(
+            "sundew_pxroute For %s, the following headers are routed %s" %
+            (parent.msg_pxclient[0], self.ahls_to_route.keys()))
+
+    def on_message(self, parent):
         logger = parent.logger
-        msg    = parent.msg
-        
+        msg = parent.msg
+
         ahl = msg.new_file.split('/')[-1][0:11]
 
-        if ( len(ahl) < 11 ) or ( ahl[6] != '_' ): 
-            logger.debug("sundew_pxroute not an AHL: %s, " % ahl )
+        if (len(ahl) < 11) or (ahl[6] != '_'):
+            logger.debug("sundew_pxroute not an AHL: %s, " % ahl)
             return False
 
-        if ( ahl in self.ahls_to_route.keys() ) :
-            logger.debug("sundew_pxroute yes, deliver: %s, " % ahl )
+        if (ahl in self.ahls_to_route.keys()):
+            logger.debug("sundew_pxroute yes, deliver: %s, " % ahl)
             return True
         else:
-            logger.debug("sundew_pxroute no, do not deliver: %s, " % ahl )
+            logger.debug("sundew_pxroute no, do not deliver: %s, " % ahl)
             return False
-
 
 
 # at this point the parent is  "self"
-sundewroute=SundewRoute(self)
-
+sundewroute = SundewRoute(self)
 
 self.on_message = sundewroute.on_message
-
-

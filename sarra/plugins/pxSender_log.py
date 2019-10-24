@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 """
 This plugin IS ONLY LOGGING  NO DOWNLOAD, NO SEND
 
@@ -28,58 +27,61 @@ simply do the job... and let go of the sundew config
 
 """
 
-import os,stat,time,sys
+import os, stat, time, sys
 import calendar
 
-class PXSENDER_LOG(object): 
 
-   import urllib.parse
+class PXSENDER_LOG(object):
 
-   def __init__(self,parent):
-       self.registered_list = [ 'http', 'ftp','sftp' ]
+    import urllib.parse
 
-   def do_download(self,parent):
-       parent.on_file_list = []
-       msg    = parent.msg
+    def __init__(self, parent):
+        self.registered_list = ['http', 'ftp', 'sftp']
 
-       src  = msg.baseurl + ':' + msg.relpath
-       src  = src.replace(' ','\ ')
+    def do_download(self, parent):
+        parent.on_file_list = []
+        msg = parent.msg
 
-       dest = msg.new_dir + os.sep + msg.new_file
+        src = msg.baseurl + ':' + msg.relpath
+        src = src.replace(' ', '\ ')
 
-       self.pxSender_print(parent,src,dest)
+        dest = msg.new_dir + os.sep + msg.new_file
 
-       return True
+        self.pxSender_print(parent, src, dest)
 
-   def do_send(self,parent):
-       msg    = parent.msg
+        return True
 
-       src  = parent.base_dir + msg.relpath
-       src  = src.replace(' ','\ ')
+    def do_send(self, parent):
+        msg = parent.msg
 
-       dest = parent.destination + msg.new_dir + os.sep + msg.new_file
+        src = parent.base_dir + msg.relpath
+        src = src.replace(' ', '\ ')
 
-       self.pxSender_print(parent,src,dest)
+        dest = parent.destination + msg.new_dir + os.sep + msg.new_file
 
-       return True
+        self.pxSender_print(parent, src, dest)
 
-   def pxSender_print(self,parent,src,dest):
-       logger = parent.logger
-       msg    = parent.msg
-       
-       if msg.headers['sum'][0] == 'L' : return True
-       if msg.headers['sum'][0] == 'R' : return True
+        return True
 
-       # file size
-       parts = msg.partstr.split(',')
-       if parts[0] == '1':
-           sz=int(parts[1])
-       else:
-           sz=int(parts[1])*int(parts[2])
+    def pxSender_print(self, parent, src, dest):
+        logger = parent.logger
+        msg = parent.msg
 
-       logger.info("(%d Bytes) File %s delivered to %s (lat=0.1,speed=0.1)",sz,src,dest)
+        if msg.headers['sum'][0] == 'L': return True
+        if msg.headers['sum'][0] == 'R': return True
 
-   def registered_as(self) :
-       return self.registered_list
+        # file size
+        parts = msg.partstr.split(',')
+        if parts[0] == '1':
+            sz = int(parts[1])
+        else:
+            sz = int(parts[1]) * int(parts[2])
 
-self.plugin='PXSENDER_LOG'
+        logger.info("(%d Bytes) File %s delivered to %s (lat=0.1,speed=0.1)",
+                    sz, src, dest)
+
+    def registered_as(self):
+        return self.registered_list
+
+
+self.plugin = 'PXSENDER_LOG'

@@ -20,9 +20,9 @@
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; version 2 of the License.
 #
-#  This program is distributed in the hope that it will be useful, 
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
@@ -35,79 +35,84 @@ from hashlib import md5
 from hashlib import sha512
 
 import sys
-import calendar,datetime
-import os,random,signal,stat,sys,time
+import calendar, datetime
+import os, random, signal, stat, sys, time
 import urllib
 import urllib.parse
 
 try:
-   from sr_xattr import *
+    from sr_xattr import *
 
 except:
-   from sarra.sr_xattr import *
-
+    from sarra.sr_xattr import *
 
 #============================================================
 # sigalarm
 #============================================================
 
+
 class TimeoutException(Exception):
     """timeout exception"""
     pass
 
+
 # alarm_cancel
 def alarm_cancel():
-    if sys.platform != 'win32' :
+    if sys.platform != 'win32':
         signal.alarm(0)
+
 
 # alarm_raise
 def alarm_raise(n, f):
     raise TimeoutException("signal alarm timed out")
 
+
 # alarm_set
 def alarm_set(time):
-    if sys.platform != 'win32' :
+    if sys.platform != 'win32':
         signal.signal(signal.SIGALRM, alarm_raise)
         signal.alarm(time)
+
 
 # =========================================
 # raw_message to mimic raw amqplib
 # use for retry and to convert from pika
 # =========================================
 
+
 class raw_message:
+    def __init__(self, logger):
+        self.logger = logger
+        self.delivery_info = {}
+        self.properties = {}
 
-   def __init__(self,logger):
-       self.logger        = logger
-       self.delivery_info = {}
-       self.properties    = {}
+    def pika_to_amqplib(self, method_frame, properties, body):
+        try:
+            self.body = body
 
-   def pika_to_amqplib(self, method_frame, properties, body ):
-       try :
-               self.body  = body
+            self.delivery_info['exchange'] = method_frame.exchange
+            self.delivery_info['routing_key'] = method_frame.routing_key
+            self.delivery_tag = method_frame.delivery_tag
 
-               self.delivery_info['exchange']         = method_frame.exchange
-               self.delivery_info['routing_key']      = method_frame.routing_key
-               self.delivery_tag                      = method_frame.delivery_tag
-
-               self.properties['application_headers'] = properties.headers
-       except:
-               self.logger.error("sr_amqp/pika_to_amqplib: in pika to amqplib %s %s" %(vars(method_frame),
-                                                                                       vars(properties)))
-               self.logger.debug('Exception details: ', exc_info=True)
+            self.properties['application_headers'] = properties.headers
+        except:
+            self.logger.error(
+                "sr_amqp/pika_to_amqplib: in pika to amqplib %s %s" %
+                (vars(method_frame), vars(properties)))
+            self.logger.debug('Exception details: ', exc_info=True)
 
 
 # =========================================
 # sr_proto : one place for throttle, onfly checksum, buffer io timeout
 # =========================================
 
-class sr_proto():
 
-    def __init__(self, parent) :
+class sr_proto():
+    def __init__(self, parent):
         #parent.logger.debug("sr_proto __init__")
 
         self.logger = parent.logger
-        self.parent = parent 
+        self.parent = parent
 
         self.init()
 
@@ -115,51 +120,52 @@ class sr_proto():
     def init(self):
         #self.logger.debug("sr_proto init")
 
-        self.sumalgo   = None
-        self.checksum  = None
-        self.data_sumalgo   = None
+        self.sumalgo = None
+        self.checksum = None
+        self.data_sumalgo = None
         self.data_checksum = None
-        self.fpos      = 0
+        self.fpos = 0
 
-        self.bufsize   = self.parent.bufsize
+        self.bufsize = self.parent.bufsize
         self.kbytes_ps = self.parent.kbytes_ps
-        self.bytes_ps  = self.kbytes_ps * 1024
-        self.tbytes    = 0
-        self.tbegin    = nowflt()
-        self.timeout   = self.parent.timeout
+        self.bytes_ps = self.kbytes_ps * 1024
+        self.tbytes = 0
+        self.tbegin = nowflt()
+        self.timeout = self.parent.timeout
 
-        self.iotime    = 30
+        self.iotime = 30
 
         if self.timeout > self.iotime: self.iotime = int(self.timeout)
 
         self.logger.debug("iotime %d" % self.iotime)
 
     # local_read_close
-    def local_read_close(self, src ):
+    def local_read_close(self, src):
         #self.logger.debug("sr_proto local_read_close")
 
         src.close()
 
         # finalize checksum
 
-        if self.sumalgo : self.checksum = self.sumalgo.get_value()
-        if self.data_sumalgo : self.data_checksum = self.data_sumalgo.get_value()
+        if self.sumalgo: self.checksum = self.sumalgo.get_value()
+        if self.data_sumalgo:
+            self.data_checksum = self.data_sumalgo.get_value()
 
     # local_read_open
-    def local_read_open(self, local_file, local_offset=0 ):
+    def local_read_open(self, local_file, local_offset=0):
         #self.logger.debug("sr_proto local_read_open")
 
         self.checksum = None
 
         # local_file opening and seeking if needed
 
-        src = open(local_file,'rb')
-        if local_offset != 0 : src.seek(local_offset,0)
+        src = open(local_file, 'rb')
+        if local_offset != 0: src.seek(local_offset, 0)
 
         # initialize sumalgo
 
-        if self.sumalgo : self.sumalgo.set_path(local_file)
-        if self.data_sumalgo : self.data_sumalgo.set_path(local_file)
+        if self.sumalgo: self.sumalgo.set_path(local_file)
+        if self.data_sumalgo: self.data_sumalgo.set_path(local_file)
 
         return src
 
@@ -179,8 +185,9 @@ class sr_proto():
 
         # finalize checksum
 
-        if self.sumalgo : self.checksum = self.sumalgo.get_value()
-        if self.data_sumalgo : self.data_checksum = self.data_sumalgo.get_value()
+        if self.sumalgo: self.checksum = self.sumalgo.get_value()
+        if self.data_sumalgo:
+            self.data_checksum = self.data_sumalgo.get_value()
 
     # local_write_open
     def local_write_open(self, local_file, local_offset=0):
@@ -189,33 +196,32 @@ class sr_proto():
         # reset ckecksum, fpos
 
         self.checksum = None
-        self.fpos     = 0
+        self.fpos = 0
 
         # local_file has to exists
 
-        if not os.path.isfile(local_file) :
-           dst = open(local_file,'w')
-           dst.close()
+        if not os.path.isfile(local_file):
+            dst = open(local_file, 'w')
+            dst.close()
 
         # local_file opening and seeking if needed
 
-        dst = open(local_file,'r+b')
-        if local_offset != 0 : dst.seek(local_offset,0)
+        dst = open(local_file, 'r+b')
+        if local_offset != 0: dst.seek(local_offset, 0)
 
         return dst
 
     def __on_data__(self, chunk):
 
         if not self.parent.on_data_list:
-           return chunk
+            return chunk
 
         new_chunk = chunk
-        for plugin in self.parent.on_data_list :
-           new_chunk = plugin(self,new_chunk)
+        for plugin in self.parent.on_data_list:
+            new_chunk = plugin(self, new_chunk)
 
-        if self.data_sumalgo  : self.data_sumalgo.update(new_chunk)
+        if self.data_sumalgo: self.data_sumalgo.update(new_chunk)
         return new_chunk
-        
 
     # read_write
     def read_write(self, src, dst, length=0):
@@ -223,65 +229,69 @@ class sr_proto():
 
         # reset speed
 
-        rw_length     = 0
-        self.tbytes   = 0.0
-        self.tbegin   = nowflt()
-
+        rw_length = 0
+        self.tbytes = 0.0
+        self.tbegin = nowflt()
 
         # length = 0, transfer entire remote file to local file
 
-        if length == 0 :
-           while True :
-                 if self.iotime: alarm_set(self.iotime)
-                 chunk = src.read(self.bufsize)
-                 if chunk :
+        if length == 0:
+            while True:
+                if self.iotime: alarm_set(self.iotime)
+                chunk = src.read(self.bufsize)
+                if chunk:
                     new_chunk = self.__on_data__(chunk)
                     dst.write(new_chunk)
                     rw_length += len(chunk)
-                 alarm_cancel()
-                 if not chunk : break
-                 if self.sumalgo  : self.sumalgo.update(chunk)
-                 if self.kbytes_ps: self.throttle(chunk)
-           return rw_length
+                alarm_cancel()
+                if not chunk: break
+                if self.sumalgo: self.sumalgo.update(chunk)
+                if self.kbytes_ps: self.throttle(chunk)
+            return rw_length
 
         # exact length to be transfered
 
-        nc = int(length/self.bufsize)
-        r  = length%self.bufsize
+        nc = int(length / self.bufsize)
+        r = length % self.bufsize
 
         # read/write bufsize "nc" times
 
-        i  = 0
-        while i < nc :
-              if self.iotime : alarm_set(self.iotime)
-              chunk = src.read(self.bufsize)
-              if chunk :
-                 new_chunk = self.__on_data__(chunk)
-                 rw_length += len(new_chunk)
-                 dst.write(new_chunk)
-              alarm_cancel()
-              if not chunk : break
-              if self.sumalgo  : self.sumalgo.update(chunk)
-              if self.kbytes_ps: self.throttle(chunk)
-              i = i + 1
+        i = 0
+        while i < nc:
+            if self.iotime: alarm_set(self.iotime)
+            chunk = src.read(self.bufsize)
+            if chunk:
+                new_chunk = self.__on_data__(chunk)
+                rw_length += len(new_chunk)
+                dst.write(new_chunk)
+            alarm_cancel()
+            if not chunk: break
+            if self.sumalgo: self.sumalgo.update(chunk)
+            if self.kbytes_ps: self.throttle(chunk)
+            i = i + 1
 
         # remaining
 
-        if r > 0 :
-           if self.iotime : alarm_set(self.iotime)
-           chunk = src.read(r)
-           if chunk :
-              new_chunk = self.__on_data__(chunk)
-              rw_length += len(new_chunk)
-              dst.write(new_chunk)
-           alarm_cancel()
-           if self.sumalgo  : self.sumalgo.update(chunk)
-           if self.kbytes_ps: self.throttle(chunk)
+        if r > 0:
+            if self.iotime: alarm_set(self.iotime)
+            chunk = src.read(r)
+            if chunk:
+                new_chunk = self.__on_data__(chunk)
+                rw_length += len(new_chunk)
+                dst.write(new_chunk)
+            alarm_cancel()
+            if self.sumalgo: self.sumalgo.update(chunk)
+            if self.kbytes_ps: self.throttle(chunk)
 
         return rw_length
 
     # read_writelocal
-    def read_writelocal(self, src_path, src, local_file, local_offset=0, length=0):
+    def read_writelocal(self,
+                        src_path,
+                        src,
+                        local_file,
+                        local_offset=0,
+                        length=0):
         #self.logger.debug("sr_proto read_writelocal")
 
         # open
@@ -289,25 +299,28 @@ class sr_proto():
 
         # initialize sumalgo
 
-        if self.sumalgo : self.sumalgo.set_path(src_path)
-        if self.data_sumalgo : self.data_sumalgo.set_path(src_path)
+        if self.sumalgo: self.sumalgo.set_path(src_path)
+        if self.data_sumalgo: self.data_sumalgo.set_path(src_path)
 
         # copy source to destination
 
-        rw_length = self.read_write( src, dst, length)
+        rw_length = self.read_write(src, dst, length)
 
         # close
-        self.local_write_close( dst )
+        self.local_write_close(dst)
 
         # warn if length mismatch without transformation.
 
-        if (not self.parent.on_data_list) and length != 0 and rw_length != length :
-           self.logger.error("util/writelocal mismatched file length writing %s. Message said to expect %d bytes.  Got %d bytes." % (local_file,length,rw_length))
+        if (not self.parent.on_data_list
+            ) and length != 0 and rw_length != length:
+            self.logger.error(
+                "util/writelocal mismatched file length writing %s. Message said to expect %d bytes.  Got %d bytes."
+                % (local_file, length, rw_length))
 
         return rw_length
 
     # readlocal_write
-    def readlocal_write(self, local_file, local_offset=0, length=0, dst=None ):
+    def readlocal_write(self, local_file, local_offset=0, length=0, dst=None):
         #self.logger.debug("sr_proto readlocal_write")
 
         # open
@@ -315,7 +328,7 @@ class sr_proto():
 
         # copy source to destination
 
-        rw_length = self.read_write( src, dst, length )
+        rw_length = self.read_write(src, dst, length)
 
         # close
 
@@ -323,15 +336,18 @@ class sr_proto():
 
         # warn if length mismatch without transformation.
 
-        if (not self.parent.on_data_list) and length != 0 and rw_length != length :
-           self.logger.error("util/readlocal mismatched file length reading %s. Message announced it as %d bytes, but read %d bytes " % (local_file,length,rw_length))
+        if (not self.parent.on_data_list
+            ) and length != 0 and rw_length != length:
+            self.logger.error(
+                "util/readlocal mismatched file length reading %s. Message announced it as %d bytes, but read %d bytes "
+                % (local_file, length, rw_length))
 
         return rw_length
 
     # set_iotime : bypass automated computation of iotime
-    def set_iotime(self,iotime) :
+    def set_iotime(self, iotime):
         self.logger.debug("sr_proto set_iotime %s" % iotime)
-        if iotime < 1 : iotime = 1
+        if iotime < 1: iotime = 1
         self.iotime = iotime
 
     # set_sumalgo
@@ -342,28 +358,29 @@ class sr_proto():
 
     def get_sumstr(self):
         if self.sumalgo:
-            return "{},{}".format(self.sumalgo.registered_as(), self.sumalgo.get_value())
+            return "{},{}".format(self.sumalgo.registered_as(),
+                                  self.sumalgo.get_value())
         else:
             return None
 
     # throttle
-    def throttle(self,buf) :
+    def throttle(self, buf):
         self.logger.debug("sr_proto throttle")
         self.tbytes = self.tbytes + len(buf)
-        span  = self.tbytes / self.bytes_ps
+        span = self.tbytes / self.bytes_ps
         rspan = nowflt() - self.tbegin
-        if span > rspan :
-           stime = span-rspan
-           time.sleep(span-rspan)
+        if span > rspan:
+            stime = span - rspan
+            time.sleep(span - rspan)
 
     # write_chunk
-    def write_chunk(self,chunk):
-        if self.chunk_iow : self.chunk_iow.write(chunk)
+    def write_chunk(self, chunk):
+        if self.chunk_iow: self.chunk_iow.write(chunk)
         self.rw_length += len(chunk)
         alarm_cancel()
-        if self.sumalgo  : self.sumalgo.update(chunk)
+        if self.sumalgo: self.sumalgo.update(chunk)
         if self.kbytes_ps: self.throttle(chunk)
-        if self.iotime   : alarm_set(self.iotime)
+        if self.iotime: alarm_set(self.iotime)
 
     # write_chunk_end
     def write_chunk_end(self):
@@ -372,451 +389,519 @@ class sr_proto():
         return self.rw_length
 
     # write_chunk_init
-    def write_chunk_init(self,proto):
+    def write_chunk_init(self, proto):
         self.chunk_iow = proto
-        self.tbytes    = 0.0
-        self.tbegin    = nowflt()
+        self.tbytes = 0.0
+        self.tbegin = nowflt()
         self.rw_length = 0
-        if self.iotime : alarm_set(self.iotime)
+        if self.iotime: alarm_set(self.iotime)
+
 
 # =========================================
 # sr_transport : one place for upload/download common stuff
 # =========================================
 
-class sr_transport():
 
-    def __init__(self) :
-        self.cdir   = None
+class sr_transport():
+    def __init__(self):
+        self.cdir = None
         self.pclass = None
-        self.proto  = None
+        self.proto = None
         self.scheme = None
 
-    def close(self) :
+    def close(self):
         self.logger.debug("%s_transport close" % self.scheme)
 
-        try    : self.proto.close()
-        except : pass
+        try:
+            self.proto.close()
+        except:
+            pass
 
-        self.cdir  = None
+        self.cdir = None
         self.proto = None
 
     # generalized download...
-    def download( self, parent ):
+    def download(self, parent):
         self.logger = parent.logger
         self.parent = parent
-        msg         = parent.msg
+        msg = parent.msg
         self.logger.debug("%s_transport download" % self.scheme)
 
-        token       = msg.relpath.split('/')
-        cdir        = '/'.join(token[:-1])
+        token = msg.relpath.split('/')
+        cdir = '/'.join(token[:-1])
         remote_file = token[-1]
-        urlstr      = msg.baseurl + '/' + msg.relpath
-        new_lock    = ''
+        urlstr = msg.baseurl + '/' + msg.relpath
+        new_lock = ''
 
-        new_dir     = msg.new_dir
-        new_file    = msg.new_file
+        new_dir = msg.new_dir
+        new_file = msg.new_file
 
-        try:    curdir = os.getcwd()
-        except: curdir = None
+        try:
+            curdir = os.getcwd()
+        except:
+            curdir = None
 
         if curdir != new_dir:
-           os.chdir(new_dir)
+            os.chdir(new_dir)
 
-        try :
-                parent.destination = msg.baseurl
+        try:
+            parent.destination = msg.baseurl
 
-                proto = self.proto
-                if not proto or not proto.check_is_connected() :
-                   self.logger.debug("%s_transport download connects" % self.scheme)
-                   proto = self.pclass(parent)
-                   ok = proto.connect()
-                   if not ok : return False
-                   self.proto = proto
+            proto = self.proto
+            if not proto or not proto.check_is_connected():
+                self.logger.debug(
+                    "%s_transport download connects" % self.scheme)
+                proto = self.pclass(parent)
+                ok = proto.connect()
+                if not ok: return False
+                self.proto = proto
 
-                #=================================
-                # if parts, check that the protol supports it
-                #=================================
+            #=================================
+            # if parts, check that the protol supports it
+            #=================================
 
-                if not hasattr(proto,'seek') and msg.partflg == 'i':
-                   self.logger.error("%s, inplace part file not supported" % self.scheme)
-                   msg.report_publish(499,'%s does not support partitioned file transfers' % self.scheme)
-                   return False
-                
-                cwd = None
-                if hasattr(proto,'getcwd') : cwd = proto.getcwd()
-                if cwd != cdir :
-                   self.logger.debug("%s_transport download cd to %s" % (self.scheme,cdir))
-                   proto.cd(cdir)
-    
-                remote_offset = 0
-                if  msg.partflg == 'i': remote_offset = msg.offset
-    
-                str_range = ''
-                if msg.partflg == 'i' :
-                   str_range = 'bytes=%d-%d'%(remote_offset,remote_offset+msg.length-1)
-    
-                #download file
-    
-                self.logger.debug('Beginning fetch of %s %s into %s %d-%d' % 
-                    (urlstr,str_range,new_file,msg.local_offset,msg.local_offset+msg.length-1))
-    
-                # FIXME  locking for i parts in temporary file ... should stay lock
-                # and file_reassemble... take into account the locking
+            if not hasattr(proto, 'seek') and msg.partflg == 'i':
+                self.logger.error(
+                    "%s, inplace part file not supported" % self.scheme)
+                msg.report_publish(
+                    499, '%s does not support partitioned file transfers' %
+                    self.scheme)
+                return False
 
-                proto.set_sumalgo(msg.sumalgo)
+            cwd = None
+            if hasattr(proto, 'getcwd'): cwd = proto.getcwd()
+            if cwd != cdir:
+                self.logger.debug("%s_transport download cd to %s" %
+                                  (self.scheme, cdir))
+                proto.cd(cdir)
 
-                if parent.inflight == None or msg.partflg == 'i' :
-                   self.get(remote_file,new_file,remote_offset,msg.local_offset,msg.length)
+            remote_offset = 0
+            if msg.partflg == 'i': remote_offset = msg.offset
 
-                elif parent.inflight == '.' :
-                   new_lock = '.' + new_file
-                   self.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length)
-                   if os.path.isfile(new_file) : os.remove(new_file)
-                   os.rename(new_lock, new_file)
-                      
-                elif parent.inflight[0] == '.' :
-                   new_lock  = new_file + parent.inflight
-                   self.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length)
-                   if os.path.isfile(new_file) : os.remove(new_file)
-                   os.rename(new_lock, new_file)
+            str_range = ''
+            if msg.partflg == 'i':
+                str_range = 'bytes=%d-%d' % (remote_offset,
+                                             remote_offset + msg.length - 1)
 
-                elif parent.inflight[-1] == '/' :
-                   try :  
-                          os.mkdir(parent.inflight)
-                          os.chmod(parent.inflight,parent.chmod_dir)
-                   except:pass
-                   new_lock  = parent.inflight + new_file
-                   self.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length)
-                   if os.path.isfile(new_file) : os.remove(new_file)
-                   os.rename(new_lock, new_file)
+            #download file
 
-                self.logger.debug('proto.checksum={}, msg.sumstr={}'.format(proto.checksum, msg.sumstr))
-                msg.onfly_checksum = proto.get_sumstr()
-                msg.data_checksum = proto.data_checksum
+            self.logger.debug('Beginning fetch of %s %s into %s %d-%d' %
+                              (urlstr, str_range, new_file, msg.local_offset,
+                               msg.local_offset + msg.length - 1))
 
-                # fix permission 
+            # FIXME  locking for i parts in temporary file ... should stay lock
+            # and file_reassemble... take into account the locking
 
-                self.set_local_file_attributes(new_file,msg)
+            proto.set_sumalgo(msg.sumalgo)
 
-                # fix message if no partflg (means file size unknown until now)
+            if parent.inflight == None or msg.partflg == 'i':
+                self.get(remote_file, new_file, remote_offset,
+                         msg.local_offset, msg.length)
 
-                if msg.partflg == None:
-                   msg.set_parts(partflg='1',chunksize=proto.fpos)
-    
-                msg.report_publish(201,'Downloaded')
-    
-                if parent.delete and hasattr(proto,'delete') :
-                   try   :
-                           proto.delete(remote_file)
-                           msg.logger.debug ('file deleted on remote site %s' % remote_file)
-                   except:
-                           msg.logger.error('unable to delete remote file %s' % remote_file)
-                           msg.logger.debug('Exception details: ', exc_info=True)
+            elif parent.inflight == '.':
+                new_lock = '.' + new_file
+                self.get(remote_file, new_lock, remote_offset,
+                         msg.local_offset, msg.length)
+                if os.path.isfile(new_file): os.remove(new_file)
+                os.rename(new_lock, new_file)
+
+            elif parent.inflight[0] == '.':
+                new_lock = new_file + parent.inflight
+                self.get(remote_file, new_lock, remote_offset,
+                         msg.local_offset, msg.length)
+                if os.path.isfile(new_file): os.remove(new_file)
+                os.rename(new_lock, new_file)
+
+            elif parent.inflight[-1] == '/':
+                try:
+                    os.mkdir(parent.inflight)
+                    os.chmod(parent.inflight, parent.chmod_dir)
+                except:
+                    pass
+                new_lock = parent.inflight + new_file
+                self.get(remote_file, new_lock, remote_offset,
+                         msg.local_offset, msg.length)
+                if os.path.isfile(new_file): os.remove(new_file)
+                os.rename(new_lock, new_file)
+
+            self.logger.debug('proto.checksum={}, msg.sumstr={}'.format(
+                proto.checksum, msg.sumstr))
+            msg.onfly_checksum = proto.get_sumstr()
+            msg.data_checksum = proto.data_checksum
+
+            # fix permission
+
+            self.set_local_file_attributes(new_file, msg)
+
+            # fix message if no partflg (means file size unknown until now)
+
+            if msg.partflg == None:
+                msg.set_parts(partflg='1', chunksize=proto.fpos)
+
+            msg.report_publish(201, 'Downloaded')
+
+            if parent.delete and hasattr(proto, 'delete'):
+                try:
+                    proto.delete(remote_file)
+                    msg.logger.debug(
+                        'file deleted on remote site %s' % remote_file)
+                except:
+                    msg.logger.error(
+                        'unable to delete remote file %s' % remote_file)
+                    msg.logger.debug('Exception details: ', exc_info=True)
 
         except:
-                #closing on problem
-                try    : self.close()
-                except : pass
-    
-                msg.logger.error("Download failed %s" % urlstr)
-                msg.logger.debug('Exception details: ', exc_info=True)
-                msg.report_publish(499,'%s download failed' % self.scheme)
-                if os.path.isfile(new_lock) :
-                    os.remove(new_lock)
-                return False
+            #closing on problem
+            try:
+                self.close()
+            except:
+                pass
+
+            msg.logger.error("Download failed %s" % urlstr)
+            msg.logger.debug('Exception details: ', exc_info=True)
+            msg.report_publish(499, '%s download failed' % self.scheme)
+            if os.path.isfile(new_lock):
+                os.remove(new_lock)
+            return False
         return True
 
     # generalized get...
-    def get( self, remote_file, local_file, remote_offset, local_offset, length ):
+    def get(self, remote_file, local_file, remote_offset, local_offset,
+            length):
         msg = self.parent.msg
 
         ok = None
-        if self.scheme in self.parent.do_gets :
-           self.logger.debug("using registered do_get for %s" % self.scheme)
-           do_get = self.parent.do_gets[self.scheme]
-           new_file     = msg.new_file
-           msg.new_file = local_file
-           ok = do_get(self.parent)
-           msg.new_file = new_file
-           if ok:
-              return
-           elif ok is False:
-              raise Exception('Not ok')
-           else:
-              self.logger.debug("sr_util/get ok is None executing this do_get %s" % do_get)
-        self.proto.get(remote_file, local_file, remote_offset, local_offset, length)
+        if self.scheme in self.parent.do_gets:
+            self.logger.debug("using registered do_get for %s" % self.scheme)
+            do_get = self.parent.do_gets[self.scheme]
+            new_file = msg.new_file
+            msg.new_file = local_file
+            ok = do_get(self.parent)
+            msg.new_file = new_file
+            if ok:
+                return
+            elif ok is False:
+                raise Exception('Not ok')
+            else:
+                self.logger.debug(
+                    "sr_util/get ok is None executing this do_get %s" % do_get)
+        self.proto.get(remote_file, local_file, remote_offset, local_offset,
+                       length)
 
     # generalized put...
-    def put(self, local_file, remote_file, local_offset=0, remote_offset=0, length=0 ):
+    def put(self,
+            local_file,
+            remote_file,
+            local_offset=0,
+            remote_offset=0,
+            length=0):
         msg = self.parent.msg
 
         ok = None
-        if self.scheme in self.parent.do_puts :
-           self.logger.debug("using registered do_put for %s" % self.scheme)
-           new_file     = msg.new_file
-           msg.new_file = remote_file
-           do_put = self.parent.do_puts[self.scheme]
-           ok = do_put(self.parent)
-           msg.new_file = new_file
-           if ok:
-              return
-           elif ok is False:
-              raise Exception('Not ok')
-           else:
-              self.logger.debug("sr_util/put ok is None executing this do_put %s" % do_put)
-        self.proto.put(local_file, remote_file, local_offset, remote_offset, length)
+        if self.scheme in self.parent.do_puts:
+            self.logger.debug("using registered do_put for %s" % self.scheme)
+            new_file = msg.new_file
+            msg.new_file = remote_file
+            do_put = self.parent.do_puts[self.scheme]
+            ok = do_put(self.parent)
+            msg.new_file = new_file
+            if ok:
+                return
+            elif ok is False:
+                raise Exception('Not ok')
+            else:
+                self.logger.debug(
+                    "sr_util/put ok is None executing this do_put %s" % do_put)
+        self.proto.put(local_file, remote_file, local_offset, remote_offset,
+                       length)
 
     # generalized send...
-    def send( self, parent ):
+    def send(self, parent):
         self.logger = parent.logger
         self.parent = parent
-        msg         = parent.msg
-        self.logger.debug("%s_transport send %s %s" % (self.scheme,msg.new_dir, msg.new_file) )
+        msg = parent.msg
+        self.logger.debug("%s_transport send %s %s" %
+                          (self.scheme, msg.new_dir, msg.new_file))
 
         local_path = msg.relpath
-        local_dir  = os.path.dirname( local_path).replace('\\','/')
-        local_file = os.path.basename(local_path).replace('\\','/')
-        new_dir    = msg.new_dir.replace('\\','/')
-        new_file   = msg.new_file.replace('\\','/')
-        new_lock   = None
+        local_dir = os.path.dirname(local_path).replace('\\', '/')
+        local_file = os.path.basename(local_path).replace('\\', '/')
+        new_dir = msg.new_dir.replace('\\', '/')
+        new_file = msg.new_file.replace('\\', '/')
+        new_lock = None
 
-        try:    curdir = os.getcwd()
-        except: curdir = None
+        try:
+            curdir = os.getcwd()
+        except:
+            curdir = None
 
         if curdir != local_dir:
-           os.chdir(local_dir)
+            os.chdir(local_dir)
 
-        try :
+        try:
 
-                proto = self.proto
-                if proto == None or not proto.check_is_connected() :
-                   self.logger.debug("%s_transport send connects" % self.scheme)
-                   proto = self.pclass(parent)
-                   ok = proto.connect()
-                   if not ok : return False
-                   self.proto = proto
-                   self.cdir = None
+            proto = self.proto
+            if proto == None or not proto.check_is_connected():
+                self.logger.debug("%s_transport send connects" % self.scheme)
+                proto = self.pclass(parent)
+                ok = proto.connect()
+                if not ok: return False
+                self.proto = proto
+                self.cdir = None
 
-                #=================================
-                # if parts, check that the protol supports it
-                #=================================
+            #=================================
+            # if parts, check that the protol supports it
+            #=================================
 
-                if not hasattr(proto,'seek') and msg.partflg == 'i':
-                   self.logger.error("%s, inplace part file not supported" % self.scheme)
-                   msg.report_publish(499,'%s does not support partitioned file transfers' % self.scheme)
-                   return False
+            if not hasattr(proto, 'seek') and msg.partflg == 'i':
+                self.logger.error(
+                    "%s, inplace part file not supported" % self.scheme)
+                msg.report_publish(
+                    499, '%s does not support partitioned file transfers' %
+                    self.scheme)
+                return False
 
-                #=================================
-                # if umask, check that the protocol supports it ... 
-                #=================================
+            #=================================
+            # if umask, check that the protocol supports it ...
+            #=================================
 
-                inflight = parent.inflight
-                if not hasattr(proto,'umask') and parent.inflight == 'umask' :
-                   self.logger.warning("%s, umask not supported" % self.scheme)
-                   inflight = None
+            inflight = parent.inflight
+            if not hasattr(proto, 'umask') and parent.inflight == 'umask':
+                self.logger.warning("%s, umask not supported" % self.scheme)
+                inflight = None
 
-                #=================================
-                # if renaming used, check that the protocol supports it ... 
-                #=================================
+            #=================================
+            # if renaming used, check that the protocol supports it ...
+            #=================================
 
-                if not hasattr(proto,'rename') and parent.inflight.startswith('.') :
-                   self.logger.warning("%s, rename not supported" % self.scheme)
-                   inflight = None
+            if not hasattr(proto,
+                           'rename') and parent.inflight.startswith('.'):
+                self.logger.warning("%s, rename not supported" % self.scheme)
+                inflight = None
 
-                #=================================
-                # remote set to new_dir
-                #=================================
-                
-                cwd = None
-                if hasattr(proto,'getcwd') : cwd = proto.getcwd()
-                if cwd != new_dir :
-                   self.logger.debug("%s_transport send cd to %s" % (self.scheme,new_dir))
-                   proto.cd_forced(775,new_dir)
+            #=================================
+            # remote set to new_dir
+            #=================================
 
-                #=================================
-                # delete event
-                #=================================
+            cwd = None
+            if hasattr(proto, 'getcwd'): cwd = proto.getcwd()
+            if cwd != new_dir:
+                self.logger.debug("%s_transport send cd to %s" % (self.scheme,
+                                                                  new_dir))
+                proto.cd_forced(775, new_dir)
 
-                if msg.sumflg == 'R' :
-                   if hasattr(proto,'delete') :
-                      msg.logger.debug("message is to remove %s" % new_file)
-                      proto.delete(new_file)
-                      msg.report_publish(205,'Reset Content : deleted')
-                      return True
-                   self.logger.error("%s, delete not supported" % self.scheme)
-                   msg.report_publish(499,'%s does not support delete' % self.scheme)
-                   return False
+            #=================================
+            # delete event
+            #=================================
 
-                #=================================
-                # link event
-                #=================================
+            if msg.sumflg == 'R':
+                if hasattr(proto, 'delete'):
+                    msg.logger.debug("message is to remove %s" % new_file)
+                    proto.delete(new_file)
+                    msg.report_publish(205, 'Reset Content : deleted')
+                    return True
+                self.logger.error("%s, delete not supported" % self.scheme)
+                msg.report_publish(499,
+                                   '%s does not support delete' % self.scheme)
+                return False
 
-                if msg.sumflg == 'L' :
-                   if hasattr(proto,'symlink') :
-                      msg.logger.debug("message is to link %s to: %s" % ( new_file, msg.headers['link'] ))
-                      proto.symlink(msg.headers['link'],new_file)
-                      msg.report_publish(205,'Reset Content : linked')
-                      return True
-                   self.logger.error("%s, symlink not supported" % self.scheme)
-                   msg.report_publish(499,'%s does not support symlink' % self.scheme)
-                   return False
+            #=================================
+            # link event
+            #=================================
 
-                #=================================
-                # send event
-                #=================================
+            if msg.sumflg == 'L':
+                if hasattr(proto, 'symlink'):
+                    msg.logger.debug("message is to link %s to: %s" %
+                                     (new_file, msg.headers['link']))
+                    proto.symlink(msg.headers['link'], new_file)
+                    msg.report_publish(205, 'Reset Content : linked')
+                    return True
+                self.logger.error("%s, symlink not supported" % self.scheme)
+                msg.report_publish(499,
+                                   '%s does not support symlink' % self.scheme)
+                return False
 
-                # the file does not exist... warn, sleep and return false for the next attempt
-                if not os.path.exists(local_file):
-                   self.logger.warning("product collision or base_dir not set, file %s does not exist" % local_file)
-                   time.sleep(0.01)
-                   return False
+            #=================================
+            # send event
+            #=================================
 
-                offset = 0
-                if  msg.partflg == 'i': offset = msg.offset
+            # the file does not exist... warn, sleep and return false for the next attempt
+            if not os.path.exists(local_file):
+                self.logger.warning(
+                    "product collision or base_dir not set, file %s does not exist"
+                    % local_file)
+                time.sleep(0.01)
+                return False
 
-                new_offset = msg.local_offset
-    
-                str_range = ''
-                if msg.partflg == 'i' :
-                   str_range = 'bytes=%d-%d'%(offset,offset+msg.length-1)
-    
-                #upload file
-    
-                if inflight == None or msg.partflg == 'i' :
-                   self.put(local_file, new_file, offset, new_offset, msg.length)
-                elif inflight == '.' :
-                   new_lock = '.'  + new_file
-                   self.put(local_file, new_lock )
-                   proto.rename(new_lock, new_file)
-                elif inflight[0] == '.' :
-                   new_lock = new_file + inflight
-                   self.put(local_file, new_lock )
-                   proto.rename(new_lock, new_file)
-                elif parent.inflight[-1] == '/' :
-                   try :
-                          proto.cd_forced(775,new_dir+'/'+parent.inflight)
-                          proto.cd_forced(775,new_dir)
-                   except:pass
-                   new_lock  = parent.inflight + new_file
-                   self.put(local_file,new_lock)
-                   proto.rename(new_lock, new_file)
-                elif inflight == 'umask' :
-                   proto.umask()
-                   self.put(local_file, new_file)
+            offset = 0
+            if msg.partflg == 'i': offset = msg.offset
 
-                # fix permission 
+            new_offset = msg.local_offset
 
-                self.set_remote_file_attributes(proto,new_file,msg)
-    
-                msg.logger.info('Sent: %s %s into %s/%s %d-%d' % 
-                    (local_path,str_range,new_dir,new_file,offset,offset+msg.length-1))
+            str_range = ''
+            if msg.partflg == 'i':
+                str_range = 'bytes=%d-%d' % (offset, offset + msg.length - 1)
 
-                if parent.reportback :
-                   msg.report_publish(201,'Delivered')
+            #upload file
+
+            if inflight == None or msg.partflg == 'i':
+                self.put(local_file, new_file, offset, new_offset, msg.length)
+            elif inflight == '.':
+                new_lock = '.' + new_file
+                self.put(local_file, new_lock)
+                proto.rename(new_lock, new_file)
+            elif inflight[0] == '.':
+                new_lock = new_file + inflight
+                self.put(local_file, new_lock)
+                proto.rename(new_lock, new_file)
+            elif parent.inflight[-1] == '/':
+                try:
+                    proto.cd_forced(775, new_dir + '/' + parent.inflight)
+                    proto.cd_forced(775, new_dir)
+                except:
+                    pass
+                new_lock = parent.inflight + new_file
+                self.put(local_file, new_lock)
+                proto.rename(new_lock, new_file)
+            elif inflight == 'umask':
+                proto.umask()
+                self.put(local_file, new_file)
+
+            # fix permission
+
+            self.set_remote_file_attributes(proto, new_file, msg)
+
+            msg.logger.info('Sent: %s %s into %s/%s %d-%d' %
+                            (local_path, str_range, new_dir, new_file, offset,
+                             offset + msg.length - 1))
+
+            if parent.reportback:
+                msg.report_publish(201, 'Delivered')
 
         except Exception as err:
 
-                #removing lock if left over
-                if new_lock != None and hasattr(proto,'delete') :
-                   try   : proto.delete(new_lock)
-                   except: pass
+            #removing lock if left over
+            if new_lock != None and hasattr(proto, 'delete'):
+                try:
+                    proto.delete(new_lock)
+                except:
+                    pass
 
-                #closing on problem
-                try    : self.close()
-                except : pass
+            #closing on problem
+            try:
+                self.close()
+            except:
+                pass
 
-                msg.logger.error("Delivery failed %s" % msg.new_dir+'/'+msg.new_file)
-                msg.logger.debug('Exception details: ', exc_info=True)
-                msg.report_publish(497,'%s delivery failed' % self.scheme)
+            msg.logger.error(
+                "Delivery failed %s" % msg.new_dir + '/' + msg.new_file)
+            msg.logger.debug('Exception details: ', exc_info=True)
+            msg.report_publish(497, '%s delivery failed' % self.scheme)
 
-                return False
+            return False
         return True
 
     # set_local_file_attributes
-    def set_local_file_attributes(self,local_file, msg) :
+    def set_local_file_attributes(self, local_file, msg):
         #self.logger.debug("sr_transport set_local_file_attributes %s" % local_file)
 
-        hdr  = msg.headers
+        hdr = msg.headers
 
         # if the file is not partitioned, the the onfly_checksum is for the whole file.
         # cache it here, along with the mtime.
-        if ( msg.partstr[0:2] == '1,' ) : 
-           if msg.onfly_checksum:
-               sumstr = msg.onfly_checksum
-           else:
-               sumstr = msg.sumstr
+        if (msg.partstr[0:2] == '1,'):
+            if msg.onfly_checksum:
+                sumstr = msg.onfly_checksum
+            else:
+                sumstr = msg.sumstr
 
-           x = sr_xattr( local_file )
-           x.set( 'sum' , sumstr )
+            x = sr_xattr(local_file)
+            x.set('sum', sumstr)
 
-           if self.parent.preserve_time and 'mtime' in hdr and hdr['mtime'] :
-               x.set( 'mtime' , hdr['mtime'] )
-           else:
-               st = os.stat(local_file)
-               mtime = timeflt2str( st.st_mtime )
-               x.set( 'mtime' , mtime )
-           x.persist()
+            if self.parent.preserve_time and 'mtime' in hdr and hdr['mtime']:
+                x.set('mtime', hdr['mtime'])
+            else:
+                st = os.stat(local_file)
+                mtime = timeflt2str(st.st_mtime)
+                x.set('mtime', mtime)
+            x.persist()
 
         mode = 0
-        if self.parent.preserve_mode and 'mode' in hdr :
-           try: 
-               mode = int( hdr['mode'], base=8)
-           except: 
-               mode = 0
-           if mode > 0 : 
-               os.chmod( local_file, mode )
+        if self.parent.preserve_mode and 'mode' in hdr:
+            try:
+                mode = int(hdr['mode'], base=8)
+            except:
+                mode = 0
+            if mode > 0:
+                os.chmod(local_file, mode)
 
-        if mode == 0 and  self.parent.chmod !=0 : 
-           os.chmod( local_file, self.parent.chmod )
+        if mode == 0 and self.parent.chmod != 0:
+            os.chmod(local_file, self.parent.chmod)
 
-        if self.parent.preserve_time and 'mtime' in hdr and hdr['mtime'] :
-           mtime = timestr2flt( hdr[ 'mtime' ] )
-           atime = mtime
-           if 'atime' in hdr and hdr['atime'] :
-               atime  =  timestr2flt( hdr[ 'atime' ] )
-           os.utime( local_file, (atime, mtime))
+        if self.parent.preserve_time and 'mtime' in hdr and hdr['mtime']:
+            mtime = timestr2flt(hdr['mtime'])
+            atime = mtime
+            if 'atime' in hdr and hdr['atime']:
+                atime = timestr2flt(hdr['atime'])
+            os.utime(local_file, (atime, mtime))
 
     # set_remote_file_attributes
-    def set_remote_file_attributes(self, proto, remote_file, msg) :
+    def set_remote_file_attributes(self, proto, remote_file, msg):
         #self.logger.debug("sr_transport set_remote_file_attributes %s" % remote_file)
 
-        hdr  = msg.headers
+        hdr = msg.headers
 
-        if hasattr(proto,'chmod') :
-           mode = 0
-           if self.parent.preserve_mode and 'mode' in hdr :
-              try   : mode = int( hdr['mode'], base=8)
-              except: mode = 0
-              if mode > 0 :
-                 try   : proto.chmod( mode, remote_file )
-                 except: pass
+        if hasattr(proto, 'chmod'):
+            mode = 0
+            if self.parent.preserve_mode and 'mode' in hdr:
+                try:
+                    mode = int(hdr['mode'], base=8)
+                except:
+                    mode = 0
+                if mode > 0:
+                    try:
+                        proto.chmod(mode, remote_file)
+                    except:
+                        pass
 
-           if mode == 0 and  self.parent.chmod !=0 : 
-              try   : proto.chmod( self.parent.chmod, remote_file )
-              except: pass
+            if mode == 0 and self.parent.chmod != 0:
+                try:
+                    proto.chmod(self.parent.chmod, remote_file)
+                except:
+                    pass
 
-        if hasattr(proto,'chmod') :
-           if self.parent.preserve_time and 'mtime' in hdr and hdr['mtime'] :
-              mtime = timestr2flt( hdr[ 'mtime' ] )
-              atime = mtime
-              if 'atime' in hdr and hdr['atime'] :
-                  atime  =  timestr2flt( hdr[ 'atime' ] )
-              try   : proto.utime( remote_file, (atime, mtime))
-              except: pass
+        if hasattr(proto, 'chmod'):
+            if self.parent.preserve_time and 'mtime' in hdr and hdr['mtime']:
+                mtime = timestr2flt(hdr['mtime'])
+                atime = mtime
+                if 'atime' in hdr and hdr['atime']:
+                    atime = timestr2flt(hdr['atime'])
+                try:
+                    proto.utime(remote_file, (atime, mtime))
+                except:
+                    pass
+
 
 # ===================================
 # startup args parsing
 # ===================================
 
+
 def startup_args(sys_argv):
 
-    actions = ['foreground', 'start', 'stop', 'status', 'sanity', 'restart', 'reload', 'cleanup', 'declare', 'setup' ]
-    actions.extend( ['add','disable', 'edit', 'enable', 'help', 'list',    'log',    'remove', 'rename'] )
+    actions = [
+        'foreground', 'start', 'stop', 'status', 'sanity', 'restart', 'reload',
+        'cleanup', 'declare', 'setup'
+    ]
+    actions.extend([
+        'add', 'disable', 'edit', 'enable', 'help', 'list', 'log', 'remove',
+        'rename'
+    ])
 
-    args    = None
-    action  = None
-    config  = None
-    old     = False
+    args = None
+    action = None
+    config = None
+    old = False
 
     # work with a copy
 
@@ -826,52 +911,55 @@ def startup_args(sys_argv):
 
     # program
 
-    if largv < 2 : return (args,action,config,old)
+    if largv < 2: return (args, action, config, old)
 
     # look for an action
 
-    last = largv-1
-    for idx,A in enumerate(argv):
+    last = largv - 1
+    for idx, A in enumerate(argv):
         a = A.lower()
-        if a in actions :
-          action = a
-          if idx == last  : old = True
-          break
+        if a in actions:
+            action = a
+            if idx == last: old = True
+            break
 
     # action preceeded by '-a' or '-action'
 
-    if action != None :
-       if argv[idx-1].lower() in [ '-a','-action' ] :
-          old   = False
-          argv.pop(idx-1)
-       argv.remove(a)
+    if action != None:
+        if argv[idx - 1].lower() in ['-a', '-action']:
+            old = False
+            argv.pop(idx - 1)
+        argv.remove(a)
 
     # program action?
 
-    if largv < 3 :
-       if a.strip('-') in ['h','help'] : args = [ argv[-1] ]
-       return (args,action,config,False)
+    if largv < 3:
+        if a.strip('-') in ['h', 'help']: args = [argv[-1]]
+        return (args, action, config, False)
 
     # program [... -[c|config] config...]
 
-    idx   = -1
+    idx = -1
     largv = len(argv)
-    try    : idx = argv.index('-c')
-    except :
-             try    : idx = argv.index('-config')
-             except : pass
-    if idx > -1 and idx < largv-1 :
-       config = argv[idx+1]
-       argv.pop(idx+1)
-       argv.pop(idx)
-       largv = len(argv)
-       old   = False
+    try:
+        idx = argv.index('-c')
+    except:
+        try:
+            idx = argv.index('-config')
+        except:
+            pass
+    if idx > -1 and idx < largv - 1:
+        config = argv[idx + 1]
+        argv.pop(idx + 1)
+        argv.pop(idx)
+        largv = len(argv)
+        old = False
 
     # if we have a config we are done
 
-    if config != None :
-       args = argv[1:]
-       return (args,action,config,old)
+    if config != None:
+        args = argv[1:]
+        return (args, action, config, old)
 
     # program [...] action config
     # program [...] config action
@@ -879,9 +967,10 @@ def startup_args(sys_argv):
     # if action was present it was removed with its [-a|-action]
     # so the config must be last arg
 
-    args   = argv[1:-1]
+    args = argv[1:-1]
     config = argv[-1]
-    return (args,action,config,old)
+    return (args, action, config, old)
+
 
 """
 
@@ -906,6 +995,7 @@ def startup_args(sys_argv):
     
 """
 
+
 def nowflt():
     return timestr2flt(nowstr())
 
@@ -927,7 +1017,8 @@ def v3timeflt2str(f):
 def timestr2flt(s):
     if s[8] == "T":
         s = s.replace('T', '')
-    dt_tuple = int(s[0:4]), int(s[4:6]), int(s[6:8]), int(s[8:10]), int(s[10:12]), int(s[12:14])
+    dt_tuple = int(s[0:4]), int(s[4:6]), int(s[6:8]), int(s[8:10]), int(
+        s[10:12]), int(s[12:14])
     t = datetime.datetime(*dt_tuple, tzinfo=datetime.timezone.utc)
     return calendar.timegm(t.timetuple()) + float('0' + s[14:])
 

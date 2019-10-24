@@ -5,7 +5,6 @@
 # The sarracenia suite is Free and is proudly provided by the Government of Canada
 # Copyright (C) Her Majesty The Queen in Right of Canada, Shared Services Canada, 2019
 #
-
 """
    parallel version of sr. Generates a global state, then performs an action.
    previous version would, recursion style, launch individual components.
@@ -93,16 +92,26 @@ class sr_GlobalState:
 
         if c[0] != 'c':  # python components
             if cfg is None:
-                cmd = [sys.executable, component_path, '--no', "%d" % i, 'start']
+                cmd = [
+                    sys.executable, component_path, '--no',
+                    "%d" % i, 'start'
+                ]
             else:
-                cmd = [sys.executable, component_path, '--no', "%d" % i, 'start', cfg]
+                cmd = [
+                    sys.executable, component_path, '--no',
+                    "%d" % i, 'start', cfg
+                ]
         else:  # C components
             cmd = [component_path, 'start', cfg]
 
         # print( "launching +%s+  re-directed to: %s" % ( cmd, lfn ) )
 
         with open(lfn, "a") as lf:
-            subprocess.Popen(cmd, stdin=subprocess.DEVNULL, stdout=lf, stderr=subprocess.STDOUT)
+            subprocess.Popen(
+                cmd,
+                stdin=subprocess.DEVNULL,
+                stdout=lf,
+                stderr=subprocess.STDOUT)
 
     def _read_procs(self):
         # read process table.
@@ -156,7 +165,8 @@ class sr_GlobalState:
 
                         # ensure there is a known value of instances to run.
                         if c in ['post', 'cpost']:
-                            if ('sleep' in cfgbody) and (cfgbody['sleep'][0] not in ['-', '0']):
+                            if ('sleep' in cfgbody) and (
+                                    cfgbody['sleep'][0] not in ['-', '0']):
                                 numi = 1
                             else:
                                 numi = 0
@@ -206,12 +216,15 @@ class sr_GlobalState:
                                     if t.isdigit():
                                         # print( "%s/%s instance: %s, pid: %s" %
                                         #     ( c, cfg, i, t ) )
-                                        self.states[c][cfg]['instance_pids'][i] = int(t)
+                                        self.states[c][cfg]['instance_pids'][
+                                            i] = int(t)
                                 elif pathname[-6:] == '.qname':
                                     self.states[c][cfg]['queue_name'] = t
-                                elif pathname[-6:] == '.state' and (pathname[-12:-6] != '.retry'):
+                                elif pathname[-6:] == '.state' and (
+                                        pathname[-12:-6] != '.retry'):
                                     if t.isdigit():
-                                        self.states[c][cfg]['instances_expected'] = int(t)
+                                        self.states[c][cfg][
+                                            'instances_expected'] = int(t)
                         os.chdir('..')
                 os.chdir('..')
 
@@ -322,11 +335,13 @@ class sr_GlobalState:
                     self.states[c][cfg]['missing_instances'] = []
                     observed_instances = 0
                     for i in self.states[c][cfg]['instance_pids']:
-                        if self.states[c][cfg]['instance_pids'][i] not in self.procs:
+                        if self.states[c][cfg]['instance_pids'][
+                                i] not in self.procs:
                             self.states[c][cfg]['missing_instances'].append(i)
                         else:
                             observed_instances += 1
-                            self.procs[self.states[c][cfg]['instance_pids'][i]]['claimed'] = True
+                            self.procs[self.states[c][cfg]['instance_pids'][
+                                i]]['claimed'] = True
 
                     if observed_instances < self.states[c][cfg]['instances_expected']:
                         # print( "%s/%s observed_instances: %s expected: %s" % \
@@ -344,10 +359,14 @@ class sr_GlobalState:
 
         self.appname = 'sarra'
         self.appauthor = 'science.gc.ca'
-        self.user_config_dir = appdirs.user_config_dir(self.appname, self.appauthor)
-        self.user_cache_dir = appdirs.user_cache_dir(self.appname, self.appauthor)
-        self.components = ['audit', 'cpost', 'cpump', 'poll', 'post', 'report', 'sarra', 'sender', 'shovel',
-                           'subscribe', 'watch', 'winnow']
+        self.user_config_dir = appdirs.user_config_dir(self.appname,
+                                                       self.appauthor)
+        self.user_cache_dir = appdirs.user_cache_dir(self.appname,
+                                                     self.appauthor)
+        self.components = [
+            'audit', 'cpost', 'cpump', 'poll', 'post', 'report', 'sarra',
+            'sender', 'shovel', 'subscribe', 'watch', 'winnow'
+        ]
         self.status_values = ['disabled', 'stopped', 'partial', 'running']
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
@@ -388,10 +407,12 @@ class sr_GlobalState:
                 continue
             for cfg in self.configs[c]:
                 print('.', end='')
-                plist.append(subprocess.Popen(
-                    [component_path, action, cfg],
-                    stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-                ))
+                plist.append(
+                    subprocess.Popen(
+                        [component_path, action, cfg],
+                        stdin=subprocess.DEVNULL,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.STDOUT))
         print('Done')
         for p in plist:
             (outs, errs) = p.communicate()
@@ -463,8 +484,10 @@ class sr_GlobalState:
                     for i in self.states[c][cfg]['instance_pids']:
                         # print( "for %s/%s - %s os.kill( %s, SIGTERM )" % \
                         #    ( c, cfg, i, self.states[c][cfg]['instance_pids'][i] ) )
-                        if self.states[c][cfg]['instance_pids'][i] in self.procs:
-                            os.kill(self.states[c][cfg]['instance_pids'][i], signal.SIGTERM)
+                        if self.states[c][cfg]['instance_pids'][
+                                i] in self.procs:
+                            os.kill(self.states[c][cfg]['instance_pids'][i],
+                                    signal.SIGTERM)
                             print('.', end='')
 
         print('Done')
@@ -474,12 +497,15 @@ class sr_GlobalState:
         while attempts < attempts_max:
             for pid in self.procs:
                 if not self.procs[pid]['claimed']:
-                    print("pid: %s-%s does not match any configured instance, sending it TERM" % (
-                        pid, self.procs[pid]['cmdline'][0:5]))
+                    print(
+                        "pid: %s-%s does not match any configured instance, sending it TERM"
+                        % (pid, self.procs[pid]['cmdline'][0:5]))
                     os.kill(pid, signal.SIGTERM)
 
             ttw = 1 << attempts
-            print('Waiting %d sec. to check if %d processes stopped (try: %d)' % (ttw, len(self.procs), attempts))
+            print(
+                'Waiting %d sec. to check if %d processes stopped (try: %d)' %
+                (ttw, len(self.procs), attempts))
             time.sleep(ttw)
             # update to reflect killed processes.
             self._read_procs()
@@ -506,15 +532,19 @@ class sr_GlobalState:
             for cfg in self.configs[c]:
                 if self.configs[c][cfg]['status'] in ['running', 'partial']:
                     for i in self.states[c][cfg]['instance_pids']:
-                        if self.states[c][cfg]['instance_pids'][i] in self.procs:
-                            print("os.kill( %s, SIGKILL )" % self.states[c][cfg]['instance_pids'][i])
-                            os.kill(self.states[c][cfg]['instance_pids'][i], signal.SIGKILL)
+                        if self.states[c][cfg]['instance_pids'][
+                                i] in self.procs:
+                            print("os.kill( %s, SIGKILL )" %
+                                  self.states[c][cfg]['instance_pids'][i])
+                            os.kill(self.states[c][cfg]['instance_pids'][i],
+                                    signal.SIGKILL)
                             print('.', end='')
 
         for pid in self.procs:
             if not self.procs[pid]['claimed']:
                 print(
-                    "pid: %s-%s does not match any configured instance, would kill" % (pid, self.procs[pid]['cmdline']))
+                    "pid: %s-%s does not match any configured instance, would kill"
+                    % (pid, self.procs[pid]['cmdline']))
                 os.kill(pid, signal.SIGKILL)
 
         print('Done')
@@ -532,8 +562,9 @@ class sr_GlobalState:
             for cfg in self.configs[c]:
                 if self.configs[c][cfg]['status'] in ['running', 'partial']:
                     for i in self.states[c][cfg]['instance_pids']:
-                        print("failed to kill: %s/%s instance: %s, pid: %s )" % (
-                            c, cfg, i, self.states[c][cfg]['instance_pids'][i]))
+                        print("failed to kill: %s/%s instance: %s, pid: %s )" %
+                              (c, cfg, i,
+                               self.states[c][cfg]['instance_pids'][i]))
         if len(self.procs) == 0:
             print('All stopped after KILL')
             return 0
@@ -550,7 +581,8 @@ class sr_GlobalState:
         """
         print('\n\nRunning Processes\n\n')
         for pid in self.procs:
-            print('\t%s: name:%s cmdline:%s' % (pid, self.procs[pid]['name'], self.procs[pid]['cmdline']))
+            print('\t%s: name:%s cmdline:%s' % (pid, self.procs[pid]['name'],
+                                                self.procs[pid]['cmdline']))
 
         print('\n\nConfigs\n\n')
         for c in self.configs:
@@ -591,26 +623,33 @@ class sr_GlobalState:
 
             if (len(status['partial']) + len(status['running'])) < 1:
                 if c not in ['post']:
-                    print('sr_%s: all %d stopped' % (c, len(status['stopped'])))
+                    print('sr_%s: all %d stopped' % (c,
+                                                     len(status['stopped'])))
             elif len(status['running']) == len(self.configs[c]):
                 print('sr_%s: running %d (OK)' % (c, len(self.configs[c])))
-            elif len(status['running']) == (len(self.configs[c]) - len(status['disabled'])):
-                print('sr_%s: running %d (OKd)' % (c, (len(self.configs[c]) - len(status['disabled']))))
+            elif len(status['running']) == (
+                    len(self.configs[c]) - len(status['disabled'])):
+                print('sr_%s: running %d (OKd)' %
+                      (c, (len(self.configs[c]) - len(status['disabled']))))
             else:
-                print('sr_%s: mixed status, %d configured.' % (c, len(self.configs[c])))
+                print('sr_%s: mixed status, %d configured.' %
+                      (c, len(self.configs[c])))
                 bad = 1
                 for sv in self.status_values:
                     if len(status[sv]) > 0:
-                        print('\t%3d %s: %s ' % (len(status[sv]), sv, ', '.join(status[sv])))
+                        print('\t%3d %s: %s ' % (len(status[sv]), sv,
+                                                 ', '.join(status[sv])))
 
             configs_running += len(status['running'])
 
         for pid in self.procs:
             if not self.procs[pid]['claimed']:
                 bad = 1
-                print("pid: %s-%s is not a configured instance" % (pid, self.procs[pid]['cmdline']))
+                print("pid: %s-%s is not a configured instance" %
+                      (pid, self.procs[pid]['cmdline']))
 
-        print('total running: configs: %d, processes: %d' % (configs_running, len(self.procs)))
+        print('total running: configs: %d, processes: %d' % (configs_running,
+                                                             len(self.procs)))
         return bad
 
 
@@ -619,7 +658,9 @@ def main():
 
     :return:
     """
-    actions = ['declare', 'dump', 'restart', 'sanity', 'setup', 'status', 'stop']
+    actions = [
+        'declare', 'dump', 'restart', 'sanity', 'setup', 'status', 'stop'
+    ]
 
     if len(sys.argv) < 2:
         print('USAGE: %s (%s)' % (sys.argv[0], '|'.join(actions)))

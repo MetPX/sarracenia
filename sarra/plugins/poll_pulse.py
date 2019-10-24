@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 """
  poll_pulse: a kind of keepalive and client messaging mechanism
 
@@ -13,33 +12,34 @@
 """
 
 
-class POLL_SCRIPT(object): 
+class POLL_SCRIPT(object):
+    def __init__(self, parent):
 
-   def __init__(self,parent):
+        # fake destination
 
-       # fake destination
+        if not hasattr(parent, 'destination') or not parent.destination:
+            parent.destination = parent.post_broker.geturl()
 
-       if not hasattr(parent,'destination') or not parent.destination:
-          parent.destination = parent.post_broker.geturl()
+        self.last_pulse_message = None
 
-       self.last_pulse_message = None
-          
-   def perform(self,parent):
-       logger      = parent.logger
+    def perform(self, parent):
+        logger = parent.logger
 
-       # we should sleep at least 2 mins
+        # we should sleep at least 2 mins
 
-       if parent.sleep == 0 : parent.sleep = 120
+        if parent.sleep == 0: parent.sleep = 120
 
-       # message_ttl if not set is 2 * sleep
+        # message_ttl if not set is 2 * sleep
 
-       if not parent.message_ttl : parent.message_ttl = int(parent.sleep * 1000)
+        if not parent.message_ttl:
+            parent.message_ttl = int(parent.sleep * 1000)
 
-       # pulse 
+        # pulse
 
-       parent.post_pulse()
+        parent.post_pulse()
 
-       return False
+        return False
+
 
 poll_script = POLL_SCRIPT(self)
 self.do_poll = poll_script.perform

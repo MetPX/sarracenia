@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 """
  download_scp: an example do_download option usage.
 
@@ -24,48 +23,49 @@
 
 """
 
-import os,stat,time
+import os, stat, time
 import calendar
 
-class SCP_DOWNLOAD(object): 
 
+class SCP_DOWNLOAD(object):
+    def __init__(self, parent):
+        if not hasattr(parent, 'download_scp_command'):
+            parent.download_scp_command = ['/usr/bin/scp']
+        pass
 
-   def __init__(self,parent):
-      if not hasattr(parent,'download_scp_command'):
-         parent.download_scp_command= [ '/usr/bin/scp' ]
-      pass
-          
-   def perform(self,parent):
-      logger = parent.logger
-      msg    = parent.msg
+    def perform(self, parent):
+        logger = parent.logger
+        msg = parent.msg
 
-      import subprocess
+        import subprocess
 
-      # rebuild an scp compatible source specification from the provide url ( proto://user@host// --> user@host: )
-      sourcefile = msg.url.hostname + ':' + msg.url.path
+        # rebuild an scp compatible source specification from the provide url ( proto://user@host// --> user@host: )
+        sourcefile = msg.url.hostname + ':' + msg.url.path
 
-      if msg.url.username:
-           sourcefile = msg.url.username +'@' + sourcefile
+        if msg.url.username:
+            sourcefile = msg.url.username + '@' + sourcefile
 
-      cmd = parent.download_scp_command[0].split() + [ sourcefile, msg.new_file ] 
+        cmd = parent.download_scp_command[0].split() + [
+            sourcefile, msg.new_file
+        ]
 
-      logger.debug("download_scp invoking: %s " % cmd )
-      
-      result =  subprocess.call( cmd )
-      
-      if (result == 0):  # Success!
-         if parent.reportback:
-            msg.report_publish(201,'Downloaded')
-         return True
-         
-      #Failure!
+        logger.debug("download_scp invoking: %s " % cmd)
 
-      if parent.reportback:
-         msg.report_publish(499,'download_scp failed invocation of: %s ' % cmd )
+        result = subprocess.call(cmd)
 
-      return False 
+        if (result == 0):  # Success!
+            if parent.reportback:
+                msg.report_publish(201, 'Downloaded')
+            return True
+
+        #Failure!
+
+        if parent.reportback:
+            msg.report_publish(499,
+                               'download_scp failed invocation of: %s ' % cmd)
+
+        return False
 
 
 scp_download = SCP_DOWNLOAD(self)
 self.do_download = scp_download.perform
-

@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 """
   Example use of do_download option.
 
@@ -24,35 +23,35 @@
 
 """
 
-import os,stat,time
+import os, stat, time
 import calendar
 
-class WGET_DOWNLOAD(object): 
 
-   def __init__(self,parent):
-      if not hasattr(parent,'download_wget_command'):
-         parent.download_wget_command= [ '/usr/bin/wget' ]
-          
-   def perform(self,parent):
-      logger = parent.logger
-      msg    = parent.msg
+class WGET_DOWNLOAD(object):
+    def __init__(self, parent):
+        if not hasattr(parent, 'download_wget_command'):
+            parent.download_wget_command = ['/usr/bin/wget']
 
-      import subprocess
+    def perform(self, parent):
+        logger = parent.logger
+        msg = parent.msg
 
-      msg.urlstr = msg.urlstr.replace("download:","http:")
-      cmd = parent.download_wget_command[0].split() + [ msg.urlstr ]
-      logger.info("download_wget invoking: %s " % cmd )
-      result =  subprocess.call( cmd )
-      
-      if result == 0:  # Success!
-         if parent.reportback:
-            msg.report_publish(201,'Downloaded')
-         return True
-         
-      if parent.reportback:
-         msg.report_publish(499,'wget download failed')
-      return False 
+        import subprocess
+
+        msg.urlstr = msg.urlstr.replace("download:", "http:")
+        cmd = parent.download_wget_command[0].split() + [msg.urlstr]
+        logger.info("download_wget invoking: %s " % cmd)
+        result = subprocess.call(cmd)
+
+        if result == 0:  # Success!
+            if parent.reportback:
+                msg.report_publish(201, 'Downloaded')
+            return True
+
+        if parent.reportback:
+            msg.report_publish(499, 'wget download failed')
+        return False
+
 
 wget_download = WGET_DOWNLOAD(self)
 self.do_download = wget_download.perform
-

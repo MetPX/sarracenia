@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 """
  download_cp: an example do_download option usage.
 
@@ -23,46 +22,47 @@
 
 """
 
-import os,stat,time
+import os, stat, time
 import calendar
 
-class CP_DOWNLOAD(object): 
 
+class CP_DOWNLOAD(object):
+    def __init__(self, parent):
+        if not hasattr(parent, 'download_cp_command'):
+            parent.download_cp_command = ['/usr/bin/cp']
+        pass
 
-   def __init__(self,parent):
-      if not hasattr(parent,'download_cp_command'):
-         parent.download_cp_command= [ '/usr/bin/cp' ]
-      pass
-          
-   def perform(self,parent):
-      logger = parent.logger
-      msg    = parent.msg
+    def perform(self, parent):
+        logger = parent.logger
+        msg = parent.msg
 
-      import subprocess
+        import subprocess
 
-      # rebuild an scp compatible source specification from the provide url ( proto://user@host// --> user@host: )
+        # rebuild an scp compatible source specification from the provide url ( proto://user@host// --> user@host: )
 
-      cmd = parent.download_cp_command[0].split() + [ msg.url.path, msg.new_dir + os.sep + msg.new_file ] 
+        cmd = parent.download_cp_command[0].split() + [
+            msg.url.path, msg.new_dir + os.sep + msg.new_file
+        ]
 
-      logger.debug("download_cp invoking: %s " % cmd )
-      
-      result =  subprocess.call( cmd )
-      
-      if (result == 0):  # Success!
-         if parent.reportback:
-            msg.report_publish(201,'Downloaded')
-         if hasattr(parent,'chmod'):
-            os.chmod(msg.new_file, parent.chmod)
-         return True
-         
-      #Failure!
+        logger.debug("download_cp invoking: %s " % cmd)
 
-      if parent.reportback:
-         msg.report_publish(499,'download_cp failed invocation of: %s ' % cmd )
+        result = subprocess.call(cmd)
 
-      return False 
+        if (result == 0):  # Success!
+            if parent.reportback:
+                msg.report_publish(201, 'Downloaded')
+            if hasattr(parent, 'chmod'):
+                os.chmod(msg.new_file, parent.chmod)
+            return True
+
+        #Failure!
+
+        if parent.reportback:
+            msg.report_publish(499,
+                               'download_cp failed invocation of: %s ' % cmd)
+
+        return False
 
 
 cp_download = CP_DOWNLOAD(self)
 self.do_download = cp_download.perform
-

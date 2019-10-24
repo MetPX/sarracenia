@@ -22,9 +22,9 @@
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; version 2 of the License.
 #
-#  This program is distributed in the hope that it will be useful, 
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
@@ -62,51 +62,53 @@
 # condition 2: from another broker/pump
 # broker                  = the remote broker...
 # exchange                = xpublic
-# product                 = usually the product placement is mirrored 
+# product                 = usually the product placement is mirrored
 #                           option document_root needs to be set
 # post_broker             = where sarra is running (manager)
 # post_exchange           = xpublic
 # post_message            = same as incoming message
 #                           message.headers['source']  left as is
-#                           message.headers['cluster'] left as is 
+#                           message.headers['cluster'] left as is
 #                           option url : gives new url announcement for this product
 # report_exchange         = xs_"remoteBrokerUser"
 #
 #
 #============================================================
 
-import os,sys,time
+import os, sys, time
 
-try :    
-         from sr_subscribe      import *
-         print( "Using local module definitions, not system ones")
-except : 
-         from sarra.sr_subscribe import *
+try:
+    from sr_subscribe import *
+    print("Using local module definitions, not system ones")
+except:
+    from sarra.sr_subscribe import *
+
 
 class sr_sarra(sr_subscribe):
-
     def check(self):
 
-        if self.config_name == None : return
+        if self.config_name == None: return
 
         self.check_consumer_options()
 
-        if self.post_broker == None : self.post_broker = self.broker
+        if self.post_broker == None: self.post_broker = self.broker
 
         # post exchanges suffix process if needed
 
-        if self.post_exchange == None and self.post_exchange_suffix :
-           self.post_exchange = 'xs_%s' % self.post_broker.username + self.post_exchange_suffix
+        if self.post_exchange == None and self.post_exchange_suffix:
+            self.post_exchange = 'xs_%s' % self.post_broker.username + self.post_exchange_suffix
 
         # verify post_base_dir
 
-        if self.post_base_dir == None :
-           if self.post_document_root != None :
-              self.post_base_dir = self.post_document_root
-              self.logger.warning("use post_base_dir instead of post_document_root")
-           elif self.document_root != None :
-              self.post_base_dir = self.document_root
-              self.logger.warning("use post_base_dir instead of document_root")
+        if self.post_base_dir == None:
+            if self.post_document_root != None:
+                self.post_base_dir = self.post_document_root
+                self.logger.warning(
+                    "use post_base_dir instead of post_document_root")
+            elif self.document_root != None:
+                self.post_base_dir = self.document_root
+                self.logger.warning(
+                    "use post_base_dir instead of document_root")
 
         # ===========================================================
         # some sr_subscribe options reset to match sr_sarra behavior
@@ -114,37 +116,36 @@ class sr_sarra(sr_subscribe):
 
         # currentDir is post_document_root if unset
 
-        if self.currentDir == None :
-           self.currentDir = self.post_document_root
+        if self.currentDir == None:
+            self.currentDir = self.post_document_root
 
         # always download ...
 
-        if self.notify_only :
-           self.logger.error("sarra notify_only True")
-           os._exit(1)
+        if self.notify_only:
+            self.logger.error("sarra notify_only True")
+            os._exit(1)
 
         # we dont save nor restore
 
-        if self.save or self.restore :
-           self.logger.error("sarra no save/restore support")
-           sys.exit(1)
+        if self.save or self.restore:
+            self.logger.error("sarra no save/restore support")
+            sys.exit(1)
 
         # we dont discard
 
-        if self.discard :
-           self.logger.error("sarra discard True")
-           sys.exit(1)
-
+        if self.discard:
+            self.logger.error("sarra discard True")
+            sys.exit(1)
 
         # default reportback if unset
 
-        if self.reportback == None : self.reportback = False
+        if self.reportback == None: self.reportback = False
 
         # do_task should have doit_download for now... make it a plugin later
         # and the download is the first thing that should be done
 
-        if not self.doit_download in self.do_task_list :
-           self.do_task_list.insert(0,self.doit_download)
+        if not self.doit_download in self.do_task_list:
+            self.do_task_list.insert(0, self.doit_download)
 
     def overwrite_defaults(self):
 
@@ -162,51 +163,50 @@ class sr_sarra(sr_subscribe):
 
         # default post_broker and post_exchange are
 
-        self.post_exchange  = 'xpublic'
-        if hasattr(self,'manager'):
-           self.post_broker = self.manager
+        self.post_exchange = 'xpublic'
+        if hasattr(self, 'manager'):
+            self.post_broker = self.manager
 
         # most of the time we want to mirror product directory and share queue
 
-        self.mirror         = True
+        self.mirror = True
 
         # no directory if not provided
 
-        self.currentDir     = None
-
+        self.currentDir = None
 
         # ===========================================================
         # some sr_subscribe options reset to understand user sr_sarra setup
         # ===========================================================
 
-        self.discard     = False
+        self.discard = False
         self.notify_only = False
-        self.restore     = False
-        self.save        = False
+        self.restore = False
+        self.save = False
 
-        self.reportback  = None
+        self.reportback = None
 
         self.accept_unmatch = True
-
 
 
 # ===================================
 # MAIN
 # ===================================
 
+
 def main():
 
-    args,action,config,old = startup_args(sys.argv)
+    args, action, config, old = startup_args(sys.argv)
 
-    sarra = sr_sarra(config,args,action)
-    sarra.exec_action(action,old)
+    sarra = sr_sarra(config, args, action)
+    sarra.exec_action(action, old)
 
     os._exit(0)
+
 
 # =========================================
 # direct invocation
 # =========================================
 
-if __name__=="__main__":
-   main()
-
+if __name__ == "__main__":
+    main()

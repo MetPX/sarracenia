@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 """
   Msg_Cclean_F90
   
@@ -32,7 +31,8 @@ class Msg_Cclean_F90(object):
 
         # compare all files againts the first one downloaded
         if not filecmp.cmp(original, self.subs_f44_path):
-            logger.error("file %s and %s differs" % original, self.subs_f44_path)
+            logger.error("file %s and %s differs" % original,
+                         self.subs_f44_path)
 
     def log_state(self, parent, propagated):
         logger = parent.logger
@@ -58,7 +58,8 @@ class Msg_Cclean_F90(object):
         if relp[0] != '/':
             relp = '/' + relp
         self.subs_f21_path = relp  # subscribe cdlnd_f21
-        self.subs_f44_path = relp.replace('/cfr/', '/cfile/')  # subscribe cfile_f44
+        self.subs_f44_path = relp.replace('/cfr/',
+                                          '/cfile/')  # subscribe cfile_f44
 
         # propagated count
         propagated = 0

@@ -21,9 +21,9 @@
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; version 2 of the License.
 #
-#  This program is distributed in the hope that it will be useful, 
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
@@ -34,10 +34,10 @@
 
 import os, urllib.request, urllib.error, ssl, sys
 
-try :
-         from sr_util            import *
-except :
-         from sarra.sr_util      import *
+try:
+    from sr_util import *
+except:
+    from sarra.sr_util import *
 
 #============================================================
 # http protocol in sarracenia supports/uses :
@@ -54,26 +54,26 @@ except :
 #
 # credentials()
 
-class sr_http(sr_proto):
 
-    def __init__(self, parent) :
+class sr_http(sr_proto):
+    def __init__(self, parent):
         parent.logger.debug("sr_http __init__")
-        sr_proto.__init__(self,parent)
+        sr_proto.__init__(self, parent)
         self.init()
 
     # cd
     def cd(self, path):
         self.logger.debug("sr_http cd %s" % path)
-        self.cwd  = os.path.dirname(path)
+        self.cwd = os.path.dirname(path)
         self.path = path
 
     # for compatibility... always new connection with http
     def check_is_connected(self):
         self.logger.debug("sr_http check_is_connected")
 
-        if self.destination != self.parent.destination :
-           self.close()
-           return False
+        if self.destination != self.parent.destination:
+            self.close()
+            return False
 
         return True
 
@@ -88,11 +88,11 @@ class sr_http(sr_proto):
 
         if self.connected: self.close()
 
-        self.connected   = False
+        self.connected = False
         self.destination = self.parent.destination
-        self.timeout     = self.parent.timeout
+        self.timeout = self.parent.timeout
 
-        if not self.credentials() : return False
+        if not self.credentials(): return False
 
         return True
 
@@ -101,39 +101,48 @@ class sr_http(sr_proto):
         self.logger.debug("sr_http credentials %s" % self.destination)
 
         try:
-                ok, details = self.parent.credentials.get(self.destination)
-                if details  : url = details.url
+            ok, details = self.parent.credentials.get(self.destination)
+            if details: url = details.url
 
-                self.user        = url.username
-                self.password    = url.password
+            self.user = url.username
+            self.password = url.password
 
-                if url.username == '' : self.user     = None
-                if url.password == '' : self.password = None
+            if url.username == '': self.user = None
+            if url.password == '': self.password = None
 
-                return True
+            return True
 
         except:
-                self.logger.error("sr_http/credentials: unable to get credentials for %s" % self.destination)
-                self.logger.debug('Exception details: ', exc_info=True)
+            self.logger.error(
+                "sr_http/credentials: unable to get credentials for %s" %
+                self.destination)
+            self.logger.debug('Exception details: ', exc_info=True)
 
         return False
 
     # get
-    def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0):
-        self.logger.debug( "sr_http get %s %s %d" % (remote_file,local_file,local_offset))
-        self.logger.debug( "sr_http self.path %s" % self.path)
+    def get(self,
+            remote_file,
+            local_file,
+            remote_offset=0,
+            local_offset=0,
+            length=0):
+        self.logger.debug("sr_http get %s %s %d" % (remote_file, local_file,
+                                                    local_offset))
+        self.logger.debug("sr_http self.path %s" % self.path)
 
         # open self.http
 
         url = self.destination + '/' + self.path + '/' + remote_file
 
-        ok  = self.__open__(url, remote_offset, length )
+        ok = self.__open__(url, remote_offset, length)
 
-        if not ok : return False
+        if not ok: return False
 
         # read from self.http write to local_file
 
-        rw_length = self.read_writelocal(remote_file, self.http, local_file, local_offset, length)
+        rw_length = self.read_writelocal(remote_file, self.http, local_file,
+                                         local_offset, length)
 
         return True
 
@@ -141,19 +150,20 @@ class sr_http(sr_proto):
     def init(self):
         sr_proto.init(self)
         self.logger.debug("sr_http init")
-        self.connected   = False
-        self.http        = None
-        self.details     = None
-        self.seek        = True
+        self.connected = False
+        self.http = None
+        self.details = None
+        self.seek = True
 
-        self.urlstr      = ''
-        self.path        = ''
-        self.cwd         = ''
+        self.urlstr = ''
+        self.path = ''
+        self.cwd = ''
 
-        self.data        = ''
-        self.entries     = {}
+        self.data = ''
+        self.entries = {}
 
-   # ls
+# ls
+
     def ls(self):
         self.logger.debug("sr_http ls")
 
@@ -163,125 +173,132 @@ class sr_http(sr_proto):
 
         url = self.destination + '/' + self.path
 
-        ok  = self.__open__( url )
+        ok = self.__open__(url)
 
-        if not ok : return self.entries
+        if not ok: return self.entries
 
         # get html page for directory
 
-        try :
-                 dbuf = None
-                 while  True:
-                        alarm_set(self.iotime)
-                        chunk = self.http.read(self.bufsize)
-                        alarm_cancel()
-                        if not chunk: break
-                        if dbuf : dbuf += chunk
-                        else    : dbuf  = chunk
+        try:
+            dbuf = None
+            while True:
+                alarm_set(self.iotime)
+                chunk = self.http.read(self.bufsize)
+                alarm_cancel()
+                if not chunk: break
+                if dbuf: dbuf += chunk
+                else: dbuf = chunk
 
-                 self.data = dbuf.decode('utf-8')
+            self.data = dbuf.decode('utf-8')
 
-                 # invoke parent defined on_html_page ... if any
+            # invoke parent defined on_html_page ... if any
 
-                 for plugin in self.parent.on_html_page_list:
-                     if not plugin(self):
-                        self.logger.warning("something wrong")
-                        return self.entries
+            for plugin in self.parent.on_html_page_list:
+                if not plugin(self):
+                    self.logger.warning("something wrong")
+                    return self.entries
 
         except:
-                self.logger.warning("sr_http/ls: unable to open %s" % self.urlstr)
-                self.logger.debug('Exception details: ', exc_info=True)
+            self.logger.warning("sr_http/ls: unable to open %s" % self.urlstr)
+            self.logger.debug('Exception details: ', exc_info=True)
 
         return self.entries
 
     # open
     def __open__(self, path, remote_offset=0, length=0):
-        self.logger.debug( "sr_http open")
+        self.logger.debug("sr_http open")
 
-        self.http      = None
+        self.http = None
         self.connected = False
-        self.req       = None
-        self.urlstr    = path
+        self.req = None
+        self.urlstr = path
 
         # have noticed that some site does not allow // in path
-        if path.startswith('http://')  and '//' in path[7:] :
-           self.urlstr = 'http://' + path[7:].replace('//','/')
-           
-        if path.startswith('https://') and '//' in path[8:] :
-           self.urlstr = 'https://' + path[8:].replace('//','/')
+        if path.startswith('http://') and '//' in path[7:]:
+            self.urlstr = 'http://' + path[7:].replace('//', '/')
+
+        if path.startswith('https://') and '//' in path[8:]:
+            self.urlstr = 'https://' + path[8:].replace('//', '/')
 
         alarm_set(self.iotime)
 
         try:
-                # when credentials are needed.
-                if self.user != None :                          
+            # when credentials are needed.
+            if self.user != None:
 
-                   # takeaway credentials info from urlstr
-                   cred        = self.user + '@'
-                   self.urlstr = self.urlstr.replace(cred,'')
-                   if self.password != None :                          
-                      cred        = self.user + ':' + self.password +'@'
-                      self.urlstr = self.urlstr.replace(cred,'')
+                # takeaway credentials info from urlstr
+                cred = self.user + '@'
+                self.urlstr = self.urlstr.replace(cred, '')
+                if self.password != None:
+                    cred = self.user + ':' + self.password + '@'
+                    self.urlstr = self.urlstr.replace(cred, '')
 
-                   # continue with authentication
-                   password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
-                   password_mgr.add_password(None, self.urlstr,self.user,self.password)
-                   handler = urllib.request.HTTPBasicAuthHandler(password_mgr)
-            
-                   # create "opener" (OpenerDirector instance)
-                   opener = urllib.request.build_opener(handler)
+                # continue with authentication
+                password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
+                password_mgr.add_password(None, self.urlstr, self.user,
+                                          self.password)
+                handler = urllib.request.HTTPBasicAuthHandler(password_mgr)
 
-                   # use the opener to fetch a URL
-                   opener.open(self.urlstr)
+                # create "opener" (OpenerDirector instance)
+                opener = urllib.request.build_opener(handler)
 
-                   # Install the opener.
-                   urllib.request.install_opener(opener)
+                # use the opener to fetch a URL
+                opener.open(self.urlstr)
 
-                # Now all calls to get the request use our opener.
-                self.req = urllib.request.Request(self.urlstr)
+                # Install the opener.
+                urllib.request.install_opener(opener)
 
-                # set range in byte if needed
-                if remote_offset != 0 :
-                   str_range = 'bytes=%d-%d'%(remote_offset,remote_offset + length-1)
-                   self.req.headers['Range'] = str_range
+            # Now all calls to get the request use our opener.
+            self.req = urllib.request.Request(self.urlstr)
 
-                # https without user : create/use an ssl context
-                ctx = None
-                if self.user == None and self.urlstr.startswith('https'):
-                   ctx = ssl.create_default_context()
-                   ctx.check_hostname = False
-                   ctx.verify_mode = ssl.CERT_NONE
+            # set range in byte if needed
+            if remote_offset != 0:
+                str_range = 'bytes=%d-%d' % (remote_offset,
+                                             remote_offset + length - 1)
+                self.req.headers['Range'] = str_range
 
-                # open... we are connected
-                if self.timeout == None :
-                   self.http = urllib.request.urlopen(self.req, context=ctx)
-                else :
-                   self.http = urllib.request.urlopen(self.req, timeout=self.timeout, context=ctx)
+            # https without user : create/use an ssl context
+            ctx = None
+            if self.user == None and self.urlstr.startswith('https'):
+                ctx = ssl.create_default_context()
+                ctx.check_hostname = False
+                ctx.verify_mode = ssl.CERT_NONE
 
-                self.connected = True
+            # open... we are connected
+            if self.timeout == None:
+                self.http = urllib.request.urlopen(self.req, context=ctx)
+            else:
+                self.http = urllib.request.urlopen(
+                    self.req, timeout=self.timeout, context=ctx)
 
-                alarm_cancel()
+            self.connected = True
 
-                return True
+            alarm_cancel()
+
+            return True
 
         except urllib.error.HTTPError as e:
-               self.logger.error('Download failed %s ' % self.urlstr)
-               self.logger.error('Server couldn\'t fulfill the request. Error code: %s, %s' % (e.code, e.reason))
-               alarm_cancel()
-               raise
+            self.logger.error('Download failed %s ' % self.urlstr)
+            self.logger.error(
+                'Server couldn\'t fulfill the request. Error code: %s, %s' %
+                (e.code, e.reason))
+            alarm_cancel()
+            raise
         except urllib.error.URLError as e:
-               self.logger.error('Download failed %s ' % self.urlstr)
-               self.logger.error('Failed to reach server. Reason: %s' % e.reason)
-               alarm_cancel()
-               raise
+            self.logger.error('Download failed %s ' % self.urlstr)
+            self.logger.error('Failed to reach server. Reason: %s' % e.reason)
+            alarm_cancel()
+            raise
         except:
-               self.logger.warning("sr_http/__open__: unable to open %s" % self.urlstr)
-               self.logger.debug('Exception details: ', exc_info=True)
-               alarm_cancel()
-               raise
+            self.logger.warning(
+                "sr_http/__open__: unable to open %s" % self.urlstr)
+            self.logger.debug('Exception details: ', exc_info=True)
+            alarm_cancel()
+            raise
 
         alarm_cancel()
         return False
+
 
 #============================================================
 #
@@ -289,8 +306,9 @@ class sr_http(sr_proto):
 #
 #============================================================
 
+
 class http_transport(sr_transport):
-    def __init__(self) :
+    def __init__(self):
         sr_transport.__init__(self)
         self.pclass = sr_http
         self.scheme = 'http'

@@ -30,120 +30,124 @@ Instead of invoking scp, it will invoke the scp -p command. To the command will 
 See end of file for performance considerations.
 
 """
+
+
 class ACCEL_SCP(object):
-   def __init__(self,parent):
+    def __init__(self, parent):
 
-      self.registered_list = [ 'sftp' ]
+        self.registered_list = ['sftp']
 
-      parent.declare_option( 'accel_scp_command' )
-      parent.declare_option( 'accel_scp_threshold' )
-      parent.declare_option( 'accel_scp_protocol' )
+        parent.declare_option('accel_scp_command')
+        parent.declare_option('accel_scp_threshold')
+        parent.declare_option('accel_scp_protocol')
 
-   def check_surpass_threshold(self,parent):
-      import os
+    def check_surpass_threshold(self, parent):
+        import os
 
-      logger = parent.logger
-      msg    = parent.msg
+        logger = parent.logger
+        msg = parent.msg
 
-      if msg.headers['sum'][0] == 'L' or msg.headers['sum'][0] == 'R' : return False
+        if msg.headers['sum'][0] == 'L' or msg.headers['sum'][0] == 'R':
+            return False
 
-      parts = msg.partstr.split(',')
-      if parts[0] == '1':
-          sz=int(parts[1])
-      else:
-          sz=int(parts[1])*int(parts[2])
+        parts = msg.partstr.split(',')
+        if parts[0] == '1':
+            sz = int(parts[1])
+        else:
+            sz = int(parts[1]) * int(parts[2])
 
-      urlstr = msg.baseurl + os.sep + msg.relpath
+        urlstr = msg.baseurl + os.sep + msg.relpath
 
-      logger.debug("scp sz: %d, threshold: %d" % ( sz, parent.accel_scp_threshold))
+        logger.debug("scp sz: %d, threshold: %d" %
+                     (sz, parent.accel_scp_threshold))
 
-      if sz < parent.accel_scp_threshold : return False
+        if sz < parent.accel_scp_threshold: return False
 
-      return True
+        return True
 
-   def on_start(self,parent):
-      parent.logger.info("on_start accel_scp")
+    def on_start(self, parent):
+        parent.logger.info("on_start accel_scp")
 
-      if not hasattr(parent,'accel_scp_command'):
-         parent.download_accel_scp_command= [ '/usr/bin/scp' ]
+        if not hasattr(parent, 'accel_scp_command'):
+            parent.download_accel_scp_command = ['/usr/bin/scp']
 
-      if not hasattr( parent, "accel_scp_threshold" ):
-             parent.accel_scp_threshold = [ "10M" ]
+        if not hasattr(parent, "accel_scp_threshold"):
+            parent.accel_scp_threshold = ["10M"]
 
-      if not hasattr( parent, "accel_scp_protocol" ):
-             parent.accel_scp_protocol = [ "sftp" ]
-          
-      if type(parent.accel_scp_threshold) is list:
-          parent.accel_scp_threshold = parent.chunksize_from_str( parent.accel_scp_threshold[0] )
+        if not hasattr(parent, "accel_scp_protocol"):
+            parent.accel_scp_protocol = ["sftp"]
 
-      return True
+        if type(parent.accel_scp_threshold) is list:
+            parent.accel_scp_threshold = parent.chunksize_from_str(
+                parent.accel_scp_threshold[0])
 
-   def do_get(self,parent):
-       import os
-       import subprocess
+        return True
 
-       logger = parent.logger
-       msg    = parent.msg
+    def do_get(self, parent):
+        import os
+        import subprocess
 
-       if not self.check_surpass_threshold(parent): return None
+        logger = parent.logger
+        msg = parent.msg
 
-       netloc = msg.baseurl.replace("sftp://",'')
-       if netloc[-1] == '/' : netloc = netloc[:-1]
+        if not self.check_surpass_threshold(parent): return None
 
-       arg1  = netloc + ':' + msg.relpath
-       arg1  = arg1.replace(' ','\ ')
+        netloc = msg.baseurl.replace("sftp://", '')
+        if netloc[-1] == '/': netloc = netloc[:-1]
 
-       arg2  = msg.new_dir + os.sep + msg.new_file
-       # strangely not requiered for arg2 : arg2  = arg2.replace(' ','\ ')
+        arg1 = netloc + ':' + msg.relpath
+        arg1 = arg1.replace(' ', '\ ')
 
-       # if the source file contains a : ... let python do it
-       if ':' in arg2 : return None
+        arg2 = msg.new_dir + os.sep + msg.new_file
+        # strangely not requiered for arg2 : arg2  = arg2.replace(' ','\ ')
 
-       cmd  = parent.download_accel_scp_command[0].split() + [ arg1, arg2 ]
-       logger.info("accel_scp :  %s" % ' '.join(cmd))
+        # if the source file contains a : ... let python do it
+        if ':' in arg2: return None
 
-       p = subprocess.Popen(cmd)
-       p.wait()
-       if p.returncode != 0:  # Failed!
-          return False 
-       return True
+        cmd = parent.download_accel_scp_command[0].split() + [arg1, arg2]
+        logger.info("accel_scp :  %s" % ' '.join(cmd))
+
+        p = subprocess.Popen(cmd)
+        p.wait()
+        if p.returncode != 0:  # Failed!
+            return False
+        return True
+
+    def do_put(self, parent):
+        import os
+        import subprocess
+
+        logger = parent.logger
+        msg = parent.msg
+
+        if not self.check_surpass_threshold(parent): return None
+
+        netloc = parent.destination.replace("sftp://", '')
+        if netloc[-1] == '/': netloc = netloc[:-1]
+
+        arg1 = msg.relpath
+        # strangely not requiered for arg1 : arg1  = arg1.replace(' ','\ ')
+
+        arg2 = netloc + ':' + msg.new_dir + os.sep + msg.new_file
+        arg2 = arg2.replace(' ', '\ ')
+
+        # if the target file contains a : ... let python do it
+        if ':' in arg1: return None
+
+        cmd = parent.download_accel_scp_command[0].split() + [arg1, arg2]
+        logger.info("accel_scp :  %s" % ' '.join(cmd))
+
+        p = subprocess.Popen(cmd)
+        p.wait()
+        if p.returncode != 0:  # Failed!
+            return False
+        return True
+
+    def registered_as(self):
+        return self.registered_list
 
 
-   def do_put(self,parent):
-       import os
-       import subprocess
-
-       logger = parent.logger
-       msg    = parent.msg
-
-       if not self.check_surpass_threshold(parent): return None
-
-       netloc = parent.destination.replace("sftp://",'')
-       if netloc[-1] == '/' : netloc = netloc[:-1]
-
-       arg1  = msg.relpath
-       # strangely not requiered for arg1 : arg1  = arg1.replace(' ','\ ')
-
-       arg2  = netloc + ':' + msg.new_dir + os.sep + msg.new_file
-       arg2  = arg2.replace(' ','\ ')
-
-       # if the target file contains a : ... let python do it
-       if ':' in arg1 : return None
-
-       cmd  = parent.download_accel_scp_command[0].split() + [ arg1, arg2 ]
-       logger.info("accel_scp :  %s" % ' '.join(cmd))
-
-       p = subprocess.Popen(cmd)
-       p.wait()
-       if p.returncode != 0:  # Failed!
-          return False 
-       return True
-
-   def registered_as(self) :
-       return self.registered_list
-
-self.plugin='ACCEL_SCP'
-
+self.plugin = 'ACCEL_SCP'
 """
 Caveats:
 

@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 """
   download_dd: an example do_download option usage.
 
@@ -27,71 +26,74 @@
   
 """
 
-import os,stat,time
+import os, stat, time
 import calendar
 
-class DD_DOWNLOAD(object): 
 
+class DD_DOWNLOAD(object):
+    def __init__(self, parent):
+        if not hasattr(parent, 'download_dd_command'):
+            parent.download_dd_command = [
+                "/bin/dd conv=sparse status=progress "
+            ]
 
-   def __init__(self,parent):
-      if not hasattr(parent,'download_dd_command'):
-         parent.download_dd_command= [ "/bin/dd conv=sparse status=progress " ]
+        if not hasattr(parent, 'download_dd_blocksize'):
+            parent.download_dd_blocksize = ["4096"]
 
-      if not hasattr(parent,'download_dd_blocksize'):
-         parent.download_dd_blocksize= [ "4096" ]
+        parent.download_dd_blocksize = int(parent.download_dd_blocksize[0])
+        pass
 
-      parent.download_dd_blocksize = int( parent.download_dd_blocksize[0] )
-      pass
-          
-   def perform(self,parent):
-      logger = parent.logger
-      msg    = parent.msg
+    def perform(self, parent):
+        logger = parent.logger
+        msg = parent.msg
 
-      import subprocess
+        import subprocess
 
-      args = [ "if=%s" % msg.url.path, "of=%s" % (msg.new_dir + os.sep + msg.new_file), \
-         "bs=%d" % parent.download_dd_blocksize ] 
+        args = [ "if=%s" % msg.url.path, "of=%s" % (msg.new_dir + os.sep + msg.new_file), \
+           "bs=%d" % parent.download_dd_blocksize ]
 
-      # parse 'parts' header to find slice to transfer.
-      ( method, sz, nparts, rem, partnum ) = msg.headers[ 'parts' ].split(',')
-      sz=int(sz)
-      nparts=int(nparts)
-      rem=int(rem)
-      partnum=int(partnum)
+        # parse 'parts' header to find slice to transfer.
+        (method, sz, nparts, rem, partnum) = msg.headers['parts'].split(',')
+        sz = int(sz)
+        nparts = int(nparts)
+        rem = int(rem)
+        partnum = int(partnum)
 
-      offset = ( sz * partnum )  / parent.download_dd_blocksize
+        offset = (sz * partnum) / parent.download_dd_blocksize
 
-      if ( method == 'i' ): 
-          args += [ "skip=%d" % offset ]  # offset from start of output file.
-          args += [ "seek=%d" % offset ]  # offset from start of input file.
-          args += [ "count=%d" % ( sz / parent.download_dd_blocksize ) ] # number of blocks to transfer.
+        if (method == 'i'):
+            args += ["skip=%d" % offset]  # offset from start of output file.
+            args += ["seek=%d" % offset]  # offset from start of input file.
+            args += ["count=%d" % (sz / parent.download_dd_blocksize)
+                     ]  # number of blocks to transfer.
 
-          if ( sz % parent.download_dd_blocksize ) != 0 :
-              logger.error("download_dd partition size %d (from sr_post), must be divisible by blockize (from plugin option): %d " % (sz, parent.download_dd_blocksize) )
-              return False
+            if (sz % parent.download_dd_blocksize) != 0:
+                logger.error(
+                    "download_dd partition size %d (from sr_post), must be divisible by blockize (from plugin option): %d "
+                    % (sz, parent.download_dd_blocksize))
+                return False
 
+        cmd = parent.download_dd_command[0].split() + args
 
-      cmd = parent.download_dd_command[0].split() + args
+        logger.info("download_dd invoking: %s " % cmd)
 
-      logger.info("download_dd invoking: %s " % cmd )
-      
-      result =  subprocess.call( cmd )
-      
-      if (result == 0):  # Success!
-         if parent.reportback:
-            msg.report_publish(201,'Downloaded')
-         if hasattr(parent,'chmod'):
-            os.chmod(msg.new_file, parent.chmod)
-         return True
-         
-      #Failure!
+        result = subprocess.call(cmd)
 
-      if parent.reportback:
-         msg.report_publish(499,'download_dd failed invocation of: %s ' % cmd )
+        if (result == 0):  # Success!
+            if parent.reportback:
+                msg.report_publish(201, 'Downloaded')
+            if hasattr(parent, 'chmod'):
+                os.chmod(msg.new_file, parent.chmod)
+            return True
 
-      return False 
+        #Failure!
+
+        if parent.reportback:
+            msg.report_publish(499,
+                               'download_dd failed invocation of: %s ' % cmd)
+
+        return False
 
 
 dd_download = DD_DOWNLOAD(self)
 self.do_download = dd_download.perform
-

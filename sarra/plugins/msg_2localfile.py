@@ -90,28 +90,29 @@
 
 """
 
-class Msg_2LocalFile():
 
-    def __init__(self,parent):
+class Msg_2LocalFile():
+    def __init__(self, parent):
         self.parent = parent
 
-    def on_message(self,parent):
+    def on_message(self, parent):
         l = parent.logger
         m = parent.msg
 
-        if m.baseurl == 'file:' : return True
+        if m.baseurl == 'file:': return True
 
         m.saved_baseurl = m.baseurl
         m.saved_relpath = m.relpath
 
         m.baseurl = 'file:'
-       
-        if parent.base_dir and not m.relpath.startswith(parent.base_dir) :
-           m.relpath = parent.base_dir + '/' + m.relpath
-           m.relpath.replace('//','/')
+
+        if parent.base_dir and not m.relpath.startswith(parent.base_dir):
+            m.relpath = parent.base_dir + '/' + m.relpath
+            m.relpath.replace('//', '/')
 
         return True
 
-msg_2localfile=Msg_2LocalFile(None)
 
-self.on_message=msg_2localfile.on_message
+msg_2localfile = Msg_2LocalFile(None)
+
+self.on_message = msg_2localfile.on_message

@@ -19,9 +19,9 @@
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; version 2 of the License.
 #
-#  This program is distributed in the hope that it will be useful, 
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
@@ -29,46 +29,46 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 
-import os,json,sys,random,time
+import os, json, sys, random, time
 
-try :    
-         from sr_amqp           import *
-         from sr_config         import *
-         from sr_message        import *
-         from sr_retry          import *
-         from sr_util           import *
-except : 
-         from sarra.sr_amqp     import *
-         from sarra.sr_config   import *
-         from sarra.sr_message  import *
-         from sarra.sr_retry    import *
-         from sarra.sr_util     import *
+try:
+    from sr_amqp import *
+    from sr_config import *
+    from sr_message import *
+    from sr_retry import *
+    from sr_util import *
+except:
+    from sarra.sr_amqp import *
+    from sarra.sr_config import *
+    from sarra.sr_message import *
+    from sarra.sr_retry import *
+    from sarra.sr_util import *
 
 # class sr_consumer
 
+
 class sr_consumer:
-
-    def __init__(self, parent, admin=False, loop=True ):
-        self.logger         = parent.logger
+    def __init__(self, parent, admin=False, loop=True):
+        self.logger = parent.logger
         self.logger.debug("sr_consumer __init__")
-        self.parent         = parent
-        self.broker         = parent.broker
+        self.parent = parent
+        self.broker = parent.broker
 
-        self.hc              = None
-        self.retry           = sr_retry(parent)
-        self.raw_msg         = None
+        self.hc = None
+        self.retry = sr_retry(parent)
+        self.raw_msg = None
         self.last_msg_failed = False
 
         reporting = self.isReporting()
 
-        if admin : return
+        if admin: return
 
-        self.use_pattern    = parent.masks != []
+        self.use_pattern = parent.masks != []
         self.accept_unmatch = parent.accept_unmatch
         self.save = False
 
         self.iotime = 30
-        if self.parent.timeout : self.iotime = int(self.parent.timeout)
+        if self.parent.timeout: self.iotime = int(self.parent.timeout)
 
         # truncated exponential backoff for consume...
 
@@ -81,16 +81,17 @@ class sr_consumer:
         self.build_queue()
         self.get_message()
 
-    def build_connection(self,loop=True):
+    def build_connection(self, loop=True):
         self.logger.debug("sr_consumer build_broker")
 
         self.logger.info("AMQP  broker(%s) user(%s) vhost(%s)" % \
                         (self.broker.hostname,self.broker.username,self.broker.path) )
 
-        self.hc = HostConnect( logger = self.logger )
-        self.hc.choose_amqp_alternative(self.parent.use_amqplib, self.parent.use_pika)
+        self.hc = HostConnect(logger=self.logger)
+        self.hc.choose_amqp_alternative(self.parent.use_amqplib,
+                                        self.parent.use_pika)
         self.hc.set_url(self.broker)
-        self.hc.loop=loop
+        self.hc.loop = loop
         return self.hc.connect()
 
     def build_consumer(self):
@@ -98,7 +99,7 @@ class sr_consumer:
 
         self.consumer = Consumer(self.hc)
 
-        if self.parent.prefetch > 0 :
+        if self.parent.prefetch > 0:
             self.consumer.add_prefetch(self.parent.prefetch)
 
         self.consumer.build()
@@ -108,28 +109,29 @@ class sr_consumer:
     def build_queue(self):
         self.logger.debug("sr_consumer build_queue")
 
-        self.bindings    = self.parent.bindings
+        self.bindings = self.parent.bindings
 
-        self.broker_str  = self.broker.geturl().replace(':'+self.broker.password+'@','@')
+        self.broker_str = self.broker.geturl().replace(
+            ':' + self.broker.password + '@', '@')
 
-        # queue name 
+        # queue name
         self.queue_declare(build=False)
 
-        # queue bindings 
+        # queue bindings
 
-        for tup in self.bindings :
+        for tup in self.bindings:
             exchange, key = tup
             self.logger.info('Binding queue %s with key %s from exchange %s on broker %s' % \
-		            ( self.queue_name, key, exchange, self.broker_str ) )
-            self.msg_queue.add_binding( exchange, key )
+              ( self.queue_name, key, exchange, self.broker_str ) )
+            self.msg_queue.add_binding(exchange, key)
 
-        # queue creation 
+        # queue creation
         self.msg_queue.build()
 
     def close(self):
-        if self.hc :
-           self.hc.close()
-           self.hc = None
+        if self.hc:
+            self.hc.close()
+            self.hc = None
         self.retry.close()
 
     def consume(self):
@@ -169,70 +171,75 @@ class sr_consumer:
             return False, self.msg
 
         # make use it as a sr_message
-        # dont bother with retry... 
+        # dont bother with retry...
         try:
             self.msg.from_amqplib(self.raw_msg)
             self.logger.debug("notice %s " % self.msg.notice)
             if self.msg.urlstr:
                 self.logger.debug("urlstr %s " % self.msg.urlstr)
         except:
-            self.logger.error("sr_consumer/consume malformed message %s" % vars(self.raw_msg))
+            self.logger.error("sr_consumer/consume malformed message %s" %
+                              vars(self.raw_msg))
             self.logger.debug('Exception details: ', exc_info=True)
             return None, None
 
         # special case : pulse
 
-        if self.msg.isPulse :
-           self.parent.pulse_count += 1
-           return True,self.msg
+        if self.msg.isPulse:
+            self.parent.pulse_count += 1
+            return True, self.msg
 
         # we have a message, reset timer (original or retry)
 
-        if not should_sleep : self.sleep_now = self.sleep_min 
+        if not should_sleep: self.sleep_now = self.sleep_min
 
         # normal message
 
-        if not self.raw_msg.isRetry : self.parent.message_count += 1
+        if not self.raw_msg.isRetry: self.parent.message_count += 1
 
         # make use of accept/reject
         # dont bother with retry... were good to be kept
-        if self.use_pattern :
+        if self.use_pattern:
 
-           # Adjust url to account for sundew extension if present, and files do not already include the names.
-           if urllib.parse.urlparse(self.msg.urlstr).path.count(":") < 1 and 'sundew_extension' in self.msg.headers.keys() :
-              urlstr=self.msg.urlstr + ':' + self.msg.headers[ 'sundew_extension' ]
-           else:
-              urlstr=self.msg.urlstr
+            # Adjust url to account for sundew extension if present, and files do not already include the names.
+            if urllib.parse.urlparse(self.msg.urlstr).path.count(
+                    ":") < 1 and 'sundew_extension' in self.msg.headers.keys():
+                urlstr = self.msg.urlstr + ':' + self.msg.headers['sundew_extension']
+            else:
+                urlstr = self.msg.urlstr
 
-           self.logger.debug("sr_consumer, path being matched: %s " % ( urlstr )  ) 
+            self.logger.debug("sr_consumer, path being matched: %s " %
+                              (urlstr))
 
-           if not self.parent.isMatchingPattern(self.msg.urlstr,self.accept_unmatch) :
-              self.logger.debug("Rejected by accept/reject options")
-              return False,self.msg
+            if not self.parent.isMatchingPattern(self.msg.urlstr,
+                                                 self.accept_unmatch):
+                self.logger.debug("Rejected by accept/reject options")
+                return False, self.msg
 
-        elif not self.accept_unmatch :
-              return False,self.msg
+        elif not self.accept_unmatch:
+            return False, self.msg
 
         # note that it is a retry or not in sr_message
 
-        return True,self.msg
+        return True, self.msg
 
     def get_message(self):
         if not hasattr(self.parent, 'msg'):
-           self.parent.msg = sr_message(self.parent)
+            self.parent.msg = sr_message(self.parent)
 
         self.raw_msg = None
         self.msg = self.parent.msg
         self.msg.user = self.broker.username
 
     def is_alive(self):
-        if not hasattr(self,'consumer') : return False
+        if not hasattr(self, 'consumer'): return False
         if self.consumer.channel == None: return False
         alarm_set(self.iotime)
-        try   : self.consumer.channel.basic_qos(0,self.consumer.prefetch,False)
-        except: 
-                alarm_cancel()
-                return False
+        try:
+            self.consumer.channel.basic_qos(0, self.consumer.prefetch, False)
+        except:
+            alarm_cancel()
+            return False
         alarm_cancel()
         return True
 
@@ -240,27 +247,27 @@ class sr_consumer:
         self.logger.debug("sr_consumer isReporting")
 
         self.report_exchange = None
-        self.report_manage   = False
+        self.report_manage = False
 
-        if not self.parent.reportback : return False
+        if not self.parent.reportback: return False
 
         self.report_exchange = self.parent.report_exchange
 
         # user has power to create exchanges
 
-        user           = self.broker.username
-        self.users     = self.parent.users
+        user = self.broker.username
+        self.users = self.parent.users
 
         self.isAllowed = user             in self.users    and \
                          self.users[user] in ['admin','feeder','manager']
 
         # default report_exchange if unset
 
-        if self.report_exchange == None :
-           self.report_exchange = 'xs_' + user
-           if self.isAllowed :
-              self.report_exchange = 'xreport'
-           self.parent.report_exchange = self.report_exchange
+        if self.report_exchange == None:
+            self.report_exchange = 'xs_' + user
+            if self.isAllowed:
+                self.report_exchange = 'xreport'
+            self.parent.report_exchange = self.report_exchange
 
         return True
 
@@ -280,11 +287,12 @@ class sr_consumer:
     def msg_worked(self):
         self.last_msg_failed = False
 
-        if self.raw_msg == None or not self.raw_msg.isRetry : return
+        if self.raw_msg == None or not self.raw_msg.isRetry: return
 
-        self.retry.add_msg_to_state_file(self.raw_msg,done=True)
+        self.retry.add_msg_to_state_file(self.raw_msg, done=True)
 
-        self.logger.debug("confirmed removed from the retry process %s" % self.raw_msg.body)
+        self.logger.debug(
+            "confirmed removed from the retry process %s" % self.raw_msg.body)
 
     def publish_back(self):
         self.logger.debug("sr_consumer publish_back")
@@ -294,39 +302,41 @@ class sr_consumer:
 
         return self.publisher
 
-    def queue_declare(self,build=False):
+    def queue_declare(self, build=False):
         self.logger.debug("sr_consumer queue_declare")
 
-        self.durable     = self.parent.durable
-        self.reset       = self.parent.reset
-        self.expire      = self.parent.expire
+        self.durable = self.parent.durable
+        self.reset = self.parent.reset
+        self.expire = self.parent.expire
         self.message_ttl = self.parent.message_ttl
 
-        # queue name 
+        # queue name
         self.set_queue_name()
 
         # queue settings
-        self.msg_queue   = Queue(self.hc,self.queue_name,durable=self.durable,reset=self.reset)
+        self.msg_queue = Queue(
+            self.hc, self.queue_name, durable=self.durable, reset=self.reset)
 
-        if self.expire != None :
-           self.msg_queue.add_expire(self.expire)
+        if self.expire != None:
+            self.msg_queue.add_expire(self.expire)
 
-        if self.message_ttl != None :
-           self.msg_queue.add_message_ttl(self.message_ttl)
+        if self.message_ttl != None:
+            self.msg_queue.add_message_ttl(self.message_ttl)
 
         # queue creation if needed
-        if build :
-           self.logger.info("declaring queue %s on %s" % (self.queue_name,self.broker.hostname))
-           self.msg_queue.build()
+        if build:
+            self.logger.info("declaring queue %s on %s" %
+                             (self.queue_name, self.broker.hostname))
+            self.msg_queue.build()
 
     #def random_queue_name(self) :
     def set_queue_name(self):
 
-        # queue file : fix it 
+        # queue file : fix it
 
-        queuefile  = self.parent.program_name
-        if self.parent.config_name :
-           queuefile += '.' + self.parent.config_name
+        queuefile = self.parent.program_name
+        if self.parent.config_name:
+            queuefile += '.' + self.parent.config_name
         queuefile += '.' + self.broker.username
 
         # queue path
@@ -338,39 +348,43 @@ class sr_consumer:
         # transition old queuepath to new queuepath...
 
         self.old_queuepath = self.parent.user_cache_dir + os.sep + queuefile
-        if os.path.isfile(self.old_queuepath) and not os.path.isfile(self.queuepath) :
-           # hardlink (copy of old)
-           os.link(self.old_queuepath,self.queuepath)
-           # during the transition both should be available is we go back
+        if os.path.isfile(
+                self.old_queuepath) and not os.path.isfile(self.queuepath):
+            # hardlink (copy of old)
+            os.link(self.old_queuepath, self.queuepath)
+            # during the transition both should be available is we go back
 
         # get rid up to the next line
         # ====================================================
 
-        if os.path.isfile(self.queuepath) :
-           f = open(self.queuepath)
-           self.queue_name = f.read()
-           f.close()
-           return
-        
-        self.queue_prefix = 'q_'+ self.broker.username
-        self.queue_name   = self.parent.queue_name
+        if os.path.isfile(self.queuepath):
+            f = open(self.queuepath)
+            self.queue_name = f.read()
+            f.close()
+            return
 
-        if self.queue_name :
-           if not self.queue_prefix in self.queue_name : 
-               self.logger.warning("non standard queue name %s" % self.queue_name )
-               #self.queue_name = self.queue_prefix + '.'+ self.queue_name
+        self.queue_prefix = 'q_' + self.broker.username
+        self.queue_name = self.parent.queue_name
+
+        if self.queue_name:
+            if not self.queue_prefix in self.queue_name:
+                self.logger.warning(
+                    "non standard queue name %s" % self.queue_name)
+                #self.queue_name = self.queue_prefix + '.'+ self.queue_name
 
         else:
-           self.queue_name  = self.queue_prefix 
-           self.queue_name += '.'  + self.parent.program_name
+            self.queue_name = self.queue_prefix
+            self.queue_name += '.' + self.parent.program_name
 
-           if self.parent.config_name : self.queue_name += '.'  + self.parent.config_name
-           if self.parent.queue_suffix: self.queue_name += '.'  + self.parent.queue_suffix
+            if self.parent.config_name:
+                self.queue_name += '.' + self.parent.config_name
+            if self.parent.queue_suffix:
+                self.queue_name += '.' + self.parent.queue_suffix
 
-           self.queue_name += '.'  + str(random.randint(0,100000000)).zfill(8)
-           self.queue_name += '.'  + str(random.randint(0,100000000)).zfill(8)
+            self.queue_name += '.' + str(random.randint(0, 100000000)).zfill(8)
+            self.queue_name += '.' + str(random.randint(0, 100000000)).zfill(8)
 
-        f = open(self.queuepath,'w')
+        f = open(self.queuepath, 'w')
         f.write(self.queue_name)
         f.close()
 
@@ -382,29 +396,28 @@ class sr_consumer:
 
         if self.build_connection(loop=False):
             self.hc.queue_delete(self.queue_name)
-            if self.report_manage :
+            if self.report_manage:
                 self.hc.exchange_delete(self.report_exchange)
 
-        try    :
-                 if hasattr(self,'queuepath') :
-                    os.unlink(self.queuepath)
-        except : pass
+        try:
+            if hasattr(self, 'queuepath'):
+                os.unlink(self.queuepath)
+        except:
+            pass
 
         self.retry.cleanup()
-
 
     def declare(self):
         self.logger.debug("sr_consume declare")
 
         if self.build_connection(loop=False):
             self.queue_declare(build=True)
-            if self.report_manage :
-               self.hc.exchange_declare(self.report_exchange)
-                  
+            if self.report_manage:
+                self.hc.exchange_declare(self.report_exchange)
+
     def setup(self):
         self.logger.debug("sr_consume setup")
         if self.build_connection(loop=False):
             self.build_queue()
-            if self.report_manage :
-               self.hc.exchange_declare(self.report_exchange)
-
+            if self.report_manage:
+                self.hc.exchange_declare(self.report_exchange)

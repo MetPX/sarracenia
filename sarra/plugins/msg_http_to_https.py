@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 """
 This plugin simply turns message with baseurl http://...  into   https://...
 Sample usage is to put this line anywhere in a configuration:
@@ -13,22 +12,23 @@ between dd.weather.gc.ca and the user  into  secured https transfers.
 
 """
 
-class msg_http_to_https(object): 
 
-    def __init__(self,parent):
-        logger     = parent.logger
+class msg_http_to_https(object):
+    def __init__(self, parent):
+        logger = parent.logger
 
-    def on_message(self,parent):
+    def on_message(self, parent):
 
         msg = parent.msg
 
-        if not 'http:' in msg.baseurl : return True
+        if not 'http:' in msg.baseurl: return True
 
-        baseurl = msg.baseurl.replace('http:','https:')
+        baseurl = msg.baseurl.replace('http:', 'https:')
 
-        msg.set_notice(baseurl,msg.relpath)
+        msg.set_notice(baseurl, msg.relpath)
 
         return True
 
-h= msg_http_to_https(self)
-self.on_message=h.on_message
+
+h = msg_http_to_https(self)
+self.on_message = h.on_message

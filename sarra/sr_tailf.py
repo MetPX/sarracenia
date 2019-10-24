@@ -9,7 +9,8 @@ started with: https://gist.github.com/amitsaha/5990310
 
 #!/usr/bin/python3
 
-import os,sys,time
+import os, sys, time
+
 
 def tail_file(filename, nlines):
     with open(filename) as qfile:
@@ -19,7 +20,7 @@ def tail_file(filename, nlines):
         while position >= 0:
             qfile.seek(position)
             next_char = qfile.read(1)
-            if next_char == "\n" and position != endf-1:
+            if next_char == "\n" and position != endf - 1:
                 linecnt += 1
 
             if linecnt == nlines:
@@ -29,19 +30,21 @@ def tail_file(filename, nlines):
         if position < 0:
             qfile.seek(0)
 
-        print(qfile.read(),end='')
+        print(qfile.read(), end='')
 
         while True:
-           l=qfile.readline() 
-           if (l):
-              sys.stdout.write(l)
-           else:
-              time.sleep(0.2)
+            l = qfile.readline()
+            if (l):
+                sys.stdout.write(l)
+            else:
+                time.sleep(0.2)
+
 
 def main():
     filename = sys.argv[1]
     #nlines = int(sys.argv[2])
     tail_file(filename, 10)
+
 
 if __name__ == '__main__':
     main()

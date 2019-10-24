@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 """
   example of mis-formed plugin.
   error: missing instantiation of class.
@@ -19,18 +18,18 @@ blacklab
 
 """
 
-class Bad_Plugin2(object): 
 
-    def __init__(self,parent):
+class Bad_Plugin2(object):
+    def __init__(self, parent):
         parent.logger.debug("log_all initialized")
-          
-    def on_message(self,parent):
+
+    def on_message(self, parent):
         msg = parent.msg
         parent.logger.info("log_all message accepted: %s %s%s topic=%s lag=%g %s" % \
            ( msg.pubtime, msg.basurl, msg.relpath, msg.topic, msg.get_elapse(), msg.hdrstr ) )
         return True
 
+
 #bad_plugin2 = Bad_Plugin2(self)  <-- need this line when declaring individual
 
 self.on_message = bad_plugin2.on_message
-

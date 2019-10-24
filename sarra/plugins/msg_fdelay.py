@@ -33,7 +33,8 @@ class Msg_FDelay(object):
         elapsedtime = nowflt() - timestr2flt(parent.msg.headers['pubTime'])
         if elapsedtime < parent.msg_fdelay:
             dbg_msg = "message not old enough, sleeping for {:.3f} seconds"
-            parent.logger.debug(dbg_msg.format(elapsedtime, parent.msg_fdelay - elapsedtime))
+            parent.logger.debug(
+                dbg_msg.format(elapsedtime, parent.msg_fdelay - elapsedtime))
             parent.consumer.sleep_now = parent.consumer.sleep_min
             parent.consumer.msg_to_retry()
             parent.msg.isRetry = False
@@ -53,7 +54,8 @@ class Msg_FDelay(object):
         elapsedtime = nowflt() - filetime
         if elapsedtime < parent.msg_fdelay:
             dbg_msg = "file not old enough, sleeping for {:.3f} seconds"
-            parent.logger.debug(dbg_msg.format(elapsedtime, parent.msg_fdelay - elapsedtime))
+            parent.logger.debug(
+                dbg_msg.format(elapsedtime, parent.msg_fdelay - elapsedtime))
             parent.consumer.sleep_now = parent.consumer.sleep_min
             parent.consumer.msg_to_retry()
             parent.msg.isRetry = False

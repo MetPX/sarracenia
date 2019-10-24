@@ -21,9 +21,9 @@
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; version 2 of the License.
 #
-#  This program is distributed in the hope that it will be useful, 
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
@@ -48,10 +48,10 @@ except ImportError:
     pass
 # ===========================================
 
-
 # ===========
 # HostConnect
 # ===========
+
 
 class HostConnect:
     def __init__(self, logger=None):
@@ -92,7 +92,8 @@ class HostConnect:
             try:
                 channel.close()
             except AMQPError as err:
-                self.logger.error("unable to close channel {} with {}".format(channel, err))
+                self.logger.error("unable to close channel {} with {}".format(
+                    channel, err))
                 self.logger.debug('Exception details:', exc_info=True)
             except Exception as err:
                 self.logger.error("Unexpected error: {}".format(err))
@@ -100,7 +101,8 @@ class HostConnect:
         try:
             self.connection.close()
         except AMQPError as err:
-            self.logger.error("unable to close connection {} with {}".format(self.connection, err))
+            self.logger.error("unable to close connection {} with {}".format(
+                self.connection, err))
             self.logger.debug('Exception details:', exc_info=True)
         except Exception as err:
             self.logger.error("Unexpected error: {}".format(err))
@@ -115,38 +117,56 @@ class HostConnect:
         """
         while True:
             try:
-                self.logger.debug("Connecting %s %s (ssl %s)" % (self.host, self.user, self.ssl))
+                self.logger.debug("Connecting %s %s (ssl %s)" %
+                                  (self.host, self.user, self.ssl))
                 host = self.host
                 if self.port is not None:
                     host = host + ':%s' % self.port
-                self.logger.debug("%s://%s:<pw>@%s%s ssl=%s" % (self.protocol, self.user, host, self.vhost, self.ssl))
+                self.logger.debug("%s://%s:<pw>@%s%s ssl=%s" %
+                                  (self.protocol, self.user, host, self.vhost,
+                                   self.ssl))
                 if self.use_amqp:
                     self.logger.info("Using amqp module (AMQP 0-9-1)")
-                    self.connection = amqp.Connection(host, userid=self.user, password=self.password,
-                                                      virtual_host=self.vhost, ssl=self.ssl)
+                    self.connection = amqp.Connection(
+                        host,
+                        userid=self.user,
+                        password=self.password,
+                        virtual_host=self.vhost,
+                        ssl=self.ssl)
                     if hasattr(self.connection, 'connect'):
                         # check for amqp 1.3.3 and 1.4.9 because connect doesn't exist in those older versions
                         self.connection.connect()
                 elif self.use_amqplib:
                     self.logger.info("Using amqplib module (mostly AMQP 0-8)")
-                    self.connection = amqplib_0_8.Connection(host, userid=self.user, password=self.password,
-                                                             virtual_host=self.vhost, ssl=self.ssl)
+                    self.connection = amqplib_0_8.Connection(
+                        host,
+                        userid=self.user,
+                        password=self.password,
+                        virtual_host=self.vhost,
+                        ssl=self.ssl)
                 elif self.use_pika:
                     self.logger.info("Using pika module (AMQP 0-9-1)")
-                    credentials = pika.PlainCredentials(self.user, self.password)
-                    parameters = pika.connection.ConnectionParameters(self.host, virtual_host=self.vhost,
-                                                                      credentials=credentials, ssl=self.ssl)
+                    credentials = pika.PlainCredentials(
+                        self.user, self.password)
+                    parameters = pika.connection.ConnectionParameters(
+                        self.host,
+                        virtual_host=self.vhost,
+                        credentials=credentials,
+                        ssl=self.ssl)
                     self.connection = pika.BlockingConnection(parameters)
                 else:
                     self.use_amqp = True
-                    raise ConnectionError("Not using any amqp client library, setting it back to default: AMQP")
+                    raise ConnectionError(
+                        "Not using any amqp client library, setting it back to default: AMQP"
+                    )
                 self.channel = self.new_channel()
                 self.logger.debug("Connected ")
                 for func in self.rebuilds:
                     func()
                 return True
             except AMQPError as err:
-                self.logger.error("AMQP cannot connect to {} with {}".format(self.host, err))
+                self.logger.error("AMQP cannot connect to {} with {}".format(
+                    self.host, err))
                 self.logger.debug('Exception details: ', exc_info=True)
 
                 if not self.loop:
@@ -162,10 +182,13 @@ class HostConnect:
 
     def exchange_declare(self, exchange, edelete=False, edurable=True):
         try:
-            self.channel.exchange_declare(exchange, 'topic', auto_delete=edelete, durable=edurable)
-            self.logger.info("declaring exchange %s (%s@%s)" % (exchange, self.user, self.host))
+            self.channel.exchange_declare(
+                exchange, 'topic', auto_delete=edelete, durable=edurable)
+            self.logger.info("declaring exchange %s (%s@%s)" %
+                             (exchange, self.user, self.host))
         except AMQPError as err:
-            self.logger.error("could not declare exchange %s (%s@%s): %s" % (exchange, self.user, self.host, err))
+            self.logger.error("could not declare exchange %s (%s@%s): %s" %
+                              (exchange, self.user, self.host, err))
             self.logger.debug('Exception details: ', exc_info=True)
         except Exception as err:
             self.logger.error("Unexpected error: {}".format(err))
@@ -186,9 +209,11 @@ class HostConnect:
         # proceed for all others
         try:
             self.channel.exchange_delete(exchange)
-            self.logger.info("deleting exchange %s (%s@%s)" % (exchange, self.user, self.host))
+            self.logger.info("deleting exchange %s (%s@%s)" %
+                             (exchange, self.user, self.host))
         except AMQPError as err:
-            self.logger.error("could not delete exchange %s (%s@%s): %s" % (exchange, self.user, self.host, err))
+            self.logger.error("could not delete exchange %s (%s@%s): %s" %
+                              (exchange, self.user, self.host, err))
             self.logger.debug('Exception details: ', exc_info=True)
         except Exception as err:
             self.logger.error("Unexpected error: {}".format(err))
@@ -200,7 +225,8 @@ class HostConnect:
         return channel
 
     def queue_delete(self, queue_name):
-        self.logger.info("deleting queue %s (%s@%s)" % (queue_name, self.user, self.host))
+        self.logger.info("deleting queue %s (%s@%s)" % (queue_name, self.user,
+                                                        self.host))
         try:
             self.channel.queue_delete(queue_name)
         except AMQPError as err:
@@ -208,7 +234,8 @@ class HostConnect:
             error_str = '%s' % svalue
             if 'NOT_FOUND' in error_str:
                 return
-            self.logger.error("could not delete queue %s (%s@%s): %s" % (queue_name, self.user, self.host, err))
+            self.logger.error("could not delete queue %s (%s@%s): %s" %
+                              (queue_name, self.user, self.host, err))
             self.logger.debug('Exception details: ', exc_info=True)
         except Exception as err:
             self.logger.error("Unexpected error: {}".format(err))
@@ -249,8 +276,8 @@ class HostConnect:
 # Consumer
 # ==========
 
-class Consumer:
 
+class Consumer:
     def __init__(self, hostconnect):
 
         self.hc = hostconnect
@@ -293,17 +320,21 @@ class Consumer:
         try:
             if self.hc.use_pika:
                 # self.logger.debug("consume PIKA is used")
-                method_frame, properties, body = self.channel.basic_get(queuename)
+                method_frame, properties, body = self.channel.basic_get(
+                    queuename)
                 if method_frame and properties and body:
-                    self.for_pika_msg.pika_to_amqplib(method_frame, properties, body)
+                    self.for_pika_msg.pika_to_amqplib(method_frame, properties,
+                                                      body)
                     msg = self.for_pika_msg
             else:
                 # self.logger.debug("consume AMQP or AMQPLIB is used")
                 msg = self.channel.basic_get(queuename)
         except AMQPError as err:
-            # FIXME: PAS-2019. recursion here may be dangerous when things go badly... 
+            # FIXME: PAS-2019. recursion here may be dangerous when things go badly...
             #        will stack grow without bound?
-            self.logger.error("sr_amqp/consume: could not consume in queue %s: %s" % (queuename, err))
+            self.logger.error(
+                "sr_amqp/consume: could not consume in queue %s: %s" %
+                (queuename, err))
             self.logger.debug('Exception details: ', exc_info=True)
             if self.hc.loop:
                 self.hc.reconnect()
@@ -323,8 +354,8 @@ class Consumer:
 # Publisher
 # ==========
 
-class Publisher:
 
+class Publisher:
     def __init__(self, hostconnect):
         self.hc = hostconnect
         self.logger = self.hc.logger
@@ -365,46 +396,70 @@ class Publisher:
                 self.logger.debug("publish AMQP is used")
                 if mexp:
                     expms = '%s' % mexp
-                    msg = amqp.Message(message, content_type='text/plain', application_headers=mheaders,
-                                       expiration=expms)
+                    msg = amqp.Message(
+                        message,
+                        content_type='text/plain',
+                        application_headers=mheaders,
+                        expiration=expms)
                 else:
-                    msg = amqp.Message(message, content_type='text/plain', application_headers=mheaders)
+                    msg = amqp.Message(
+                        message,
+                        content_type='text/plain',
+                        application_headers=mheaders)
                 self.channel.basic_publish(msg, exchange_name, exchange_key)
                 self.channel.tx_commit()
             elif self.hc.use_amqplib:
                 self.logger.debug("publish AMQPLIB is used")
                 if mexp:
                     expms = '%s' % mexp
-                    msg = amqplib_0_8.Message(message, content_type='text/plain', application_headers=mheaders,
-                                              expiration=expms)
+                    msg = amqplib_0_8.Message(
+                        message,
+                        content_type='text/plain',
+                        application_headers=mheaders,
+                        expiration=expms)
                 else:
-                    msg = amqplib_0_8.Message(message, content_type='text/plain', application_headers=mheaders)
+                    msg = amqplib_0_8.Message(
+                        message,
+                        content_type='text/plain',
+                        application_headers=mheaders)
                 self.channel.basic_publish(msg, exchange_name, exchange_key)
                 self.channel.tx_commit()
             elif self.hc.use_pika:
                 self.logger.debug("publish PIKA is used")
                 if mexp:
                     expms = '%s' % mexp
-                    properties = pika.BasicProperties(content_type='text/plain', delivery_mode=1, headers=mheaders,
-                                                      expiration=expms)
+                    properties = pika.BasicProperties(
+                        content_type='text/plain',
+                        delivery_mode=1,
+                        headers=mheaders,
+                        expiration=expms)
                 else:
-                    properties = pika.BasicProperties(content_type='text/plain', delivery_mode=1, headers=mheaders)
-                self.channel.basic_publish(exchange_name, exchange_key, message, properties, True)
+                    properties = pika.BasicProperties(
+                        content_type='text/plain',
+                        delivery_mode=1,
+                        headers=mheaders)
+                self.channel.basic_publish(exchange_name, exchange_key,
+                                           message, properties, True)
             else:
-                self.logger.debug("Couldn't choose an AMQP client library, setting it back to default amqp")
+                self.logger.debug(
+                    "Couldn't choose an AMQP client library, setting it back to default amqp"
+                )
                 self.hc.use_amqp = True
                 raise ConnectionError("No AMQP client library is set")
             return True
         except AMQPError as err:
             if self.hc.loop:
-                self.logger.error("sr_amqp/publish: Sleeping 5 seconds ... and reconnecting")
+                self.logger.error(
+                    "sr_amqp/publish: Sleeping 5 seconds ... and reconnecting")
                 self.logger.debug('Exception details: ', exc_info=True)
                 time.sleep(5)
                 self.hc.reconnect()
-                return self.publish(exchange_name, exchange_key, message, mheaders, mexp)
+                return self.publish(exchange_name, exchange_key, message,
+                                    mheaders, mexp)
             else:
-                self.logger.error("sr_amqp/publish: could not publish %s %s %s %s with %s"
-                                  % (exchange_name, exchange_key, message, mheaders, err))
+                self.logger.error(
+                    "sr_amqp/publish: could not publish %s %s %s %s with %s" %
+                    (exchange_name, exchange_key, message, mheaders, err))
                 self.logger.debug('Exception details: ', exc_info=True)
                 return False
         except Exception as err:
@@ -412,11 +467,11 @@ class Publisher:
             self.logger.debug("Exception details:", exc_info=True)
             return False
 
-
     def restore_clear(self):
         if self.restore_queue and self.restore_exchange:
             try:
-                self.channel.queue_unbind(self.restore_queue, self.restore_exchange, '#')
+                self.channel.queue_unbind(self.restore_queue,
+                                          self.restore_exchange, '#')
             except AMQPError:
                 pass
             except Exception as err:
@@ -438,13 +493,20 @@ class Publisher:
         try:
             self.restore_queue = parent.restore_queue
             self.restore_exchange = parent.post_exchange
-            self.restore_exchange += '.%s.%s.restore.' % (parent.program_name, parent.config_name)
+            self.restore_exchange += '.%s.%s.restore.' % (parent.program_name,
+                                                          parent.config_name)
             self.restore_exchange += str(random.randint(0, 100000000)).zfill(8)
-            self.channel.exchange_declare(self.restore_exchange, 'topic', auto_delete=True, durable=False)
-            self.channel.queue_bind(self.restore_queue, self.restore_exchange, '#')
+            self.channel.exchange_declare(
+                self.restore_exchange,
+                'topic',
+                auto_delete=True,
+                durable=False)
+            self.channel.queue_bind(self.restore_queue, self.restore_exchange,
+                                    '#')
         except AMQPError as err:
-            self.logger.error("sr_amqp/restore_set: restore_set exchange %s queuename %s with %s"
-                              % (self.restore_exchange, self.restore_queue, err))
+            self.logger.error(
+                "sr_amqp/restore_set: restore_set exchange %s queuename %s with %s"
+                % (self.restore_exchange, self.restore_queue, err))
             self.logger.debug('Exception details: ', exc_info=True)
             os._exit(1)
         except Exception as err:
@@ -456,9 +518,14 @@ class Publisher:
 # Queue
 # ==========
 
-class Queue:
 
-    def __init__(self, hc, qname, auto_delete=False, durable=False, reset=False):
+class Queue:
+    def __init__(self,
+                 hc,
+                 qname,
+                 auto_delete=False,
+                 durable=False,
+                 reset=False):
 
         self.hc = hc
         self.logger = self.hc.logger
@@ -497,8 +564,8 @@ class Queue:
             try:
                 self.channel.queue_delete(self.name)
             except AMQPError as err:
-                self.logger.error("could not delete queue %s (%s@%s) with %s"
-                                  % (self.name, self.hc.user, self.hc.host, err))
+                self.logger.error("could not delete queue %s (%s@%s) with %s" %
+                                  (self.name, self.hc.user, self.hc.host, err))
                 self.logger.debug('Exception details:', exc_info=True)
             except Exception as err:
                 self.logger.error("Unexpected error: {}".format(err))
@@ -521,15 +588,18 @@ class Queue:
         # queue bindings
         last_exchange_name = ''
         for exchange_name, exchange_key in self.bindings:
-            self.logger.debug("binding queue to exchange=%s with key=%s" % (exchange_name, exchange_key))
+            self.logger.debug("binding queue to exchange=%s with key=%s" %
+                              (exchange_name, exchange_key))
             try:
                 self.bind(exchange_name, exchange_key)
                 last_exchange_name = exchange_name
             except AMQPError as err:
-                self.logger.error("bind queue: %s to exchange: %s with key: %s failed with %s"
-                                  % (self.name, exchange_name, exchange_key, err))
-                self.logger.error("Permission issue with %s@%s or exchange %s not found."
-                                  % (self.hc.user, self.hc.host, exchange_name))
+                self.logger.error(
+                    "bind queue: %s to exchange: %s with key: %s failed with %s"
+                    % (self.name, exchange_name, exchange_key, err))
+                self.logger.error(
+                    "Permission issue with %s@%s or exchange %s not found." %
+                    (self.hc.user, self.hc.host, exchange_name))
                 self.logger.debug('Exception details:', exc_info=True)
             except Exception as err:
                 self.logger.error("Unexpected error: {}".format(err))
@@ -538,14 +608,18 @@ class Queue:
         # always allow pulse binding... use last exchange_name
         if last_exchange_name:
             exchange_key = 'v02.pulse.#'
-            self.logger.debug("binding queue to exchange=%s with key=%s (pulse)" % (last_exchange_name, exchange_key))
+            self.logger.debug(
+                "binding queue to exchange=%s with key=%s (pulse)" %
+                (last_exchange_name, exchange_key))
             try:
                 self.bind(last_exchange_name, exchange_key)
             except AMQPError as err:
-                self.logger.error("bind queue: %s to exchange: %s with key: %s failed.."
-                                  % (self.name, last_exchange_name, exchange_key))
-                self.logger.error("Permission issue with %s@%s or exchange %s not found with %s"
-                                  % (self.hc.user, self.hc.host, last_exchange_name, err))
+                self.logger.error(
+                    "bind queue: %s to exchange: %s with key: %s failed.." %
+                    (self.name, last_exchange_name, exchange_key))
+                self.logger.error(
+                    "Permission issue with %s@%s or exchange %s not found with %s"
+                    % (self.hc.user, self.hc.host, last_exchange_name, err))
                 self.logger.debug('Exception details:', exc_info=True)
             except Exception as err:
                 self.logger.error("Unexpected error: {}".format(err))
@@ -569,22 +643,31 @@ class Queue:
         try:
             if self.hc.use_pika:
                 self.logger.debug("queue_declare PIKA is used")
-                q_dclr_ok = self.channel.queue_declare(self.name, passive=False, durable=self.durable,
-                                                       exclusive=False, auto_delete=self.auto_delete, arguments=args)
+                q_dclr_ok = self.channel.queue_declare(
+                    self.name,
+                    passive=False,
+                    durable=self.durable,
+                    exclusive=False,
+                    auto_delete=self.auto_delete,
+                    arguments=args)
                 method = q_dclr_ok.method
                 self.qname, msg_count, consumer_count = method.queue, method.message_count, method.consumer_count
             else:
                 self.logger.debug("queue_declare AMQP or AMQPLIB is used")
-                self.qname, msg_count, consumer_count = self.channel.queue_declare(self.name, passive=False,
-                                                                                   durable=self.durable,
-                                                                                   exclusive=False,
-                                                                                   auto_delete=self.auto_delete,
-                                                                                   nowait=False, arguments=args)
+                self.qname, msg_count, consumer_count = self.channel.queue_declare(
+                    self.name,
+                    passive=False,
+                    durable=self.durable,
+                    exclusive=False,
+                    auto_delete=self.auto_delete,
+                    nowait=False,
+                    arguments=args)
             self.logger.debug("queue declare done")
             return msg_count
         except AMQPError as err:
-            self.logger.error("sr_amqp/build, queue declare: %s failed...(%s@%s) with %s"
-                              % (self.name, self.hc.user, self.hc.host, err))
+            self.logger.error(
+                "sr_amqp/build, queue declare: %s failed...(%s@%s) with %s" %
+                (self.name, self.hc.user, self.hc.host, err))
             self.logger.debug('Exception details: ', exc_info=True)
             return -1
         except Exception as err:

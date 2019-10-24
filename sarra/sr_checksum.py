@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
 
 A single checksum class is chosen by the source of data being injected into the network.
@@ -30,22 +29,23 @@ rather than after the fact as a second pass through the data.
 # checksum class
 # ===================================
 
+
 class sr_checksum(object):
-      """
+    """
       The default algorithm is to do a checksum of the entire contents of the file, which is called 'd'.
       """
-      def __init__(self):
-          self.value = None
 
-      def get_value(self):
-          return self.value
+    def __init__(self):
+        self.value = None
 
-      def registered_as(self):
-          return None
+    def get_value(self):
+        return self.value
 
-      def set_path(self,path):
-          pass
+    def registered_as(self):
+        return None
 
-      def update(self,chunk):
-          pass
+    def set_path(self, path):
+        pass
 
+    def update(self, chunk):
+        pass

@@ -16,39 +16,40 @@ help_str =  \
 """
 import sys
 
-def main(): 
-    if len(sys.argv) < 2 :
-       log_file = sys.stdin
+
+def main():
+    if len(sys.argv) < 2:
+        log_file = sys.stdin
     else:
-       log_file = open( sys.argv[1], "r" ) 
-    
+        log_file = open(sys.argv[1], "r")
+
     for m in log_file:
-            f = m.split()
+        f = m.split()
 
-            # wrong line or bad field count : skip this line
-            try :
-                  if f[3][-4:]  != '_log' :
-                    continue
-            except: continue
-    
-            timestamp=f[4].split('=')[1]
-            
-            path=f[6]
-            newurl=f[5]
-    
-            notice="%s %s %s" % ( timestamp, newurl, path )
-    
-            headers=' '.join(f[7:])[8:].replace("'","\"")
+        # wrong line or bad field count : skip this line
+        try:
+            if f[3][-4:] != '_log':
+                continue
+        except:
+            continue
 
-            thepath = path.strip('/')
-            words   = thepath.split('/')
-            topic='v02.post.' + '.'.join(words[:-1])
-    
-            print ( "[ \"%s\", %s, \"%s\" ] " % ( topic, headers, notice ))
-    
+        timestamp = f[4].split('=')[1]
+
+        path = f[6]
+        newurl = f[5]
+
+        notice = "%s %s %s" % (timestamp, newurl, path)
+
+        headers = ' '.join(f[7:])[8:].replace("'", "\"")
+
+        thepath = path.strip('/')
+        words = thepath.split('/')
+        topic = 'v02.post.' + '.'.join(words[:-1])
+
+        print("[ \"%s\", %s, \"%s\" ] " % (topic, headers, notice))
+
     log_file.close()
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     main()
-               

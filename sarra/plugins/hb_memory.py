@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 """
 default on_heartbeat handler that restarts components to deal with memory leaks.
 
@@ -31,11 +30,11 @@ hb_memory_multiplier (default: 3)
   
 """
 
-class Hb_Memory(object): 
 
-    def __init__(self,parent):
+class Hb_Memory(object):
+    def __init__(self, parent):
 
-        self.threshold  = None
+        self.threshold = None
         self.file_count = None
 
         # make parent know about these possible options
@@ -44,22 +43,22 @@ class Hb_Memory(object):
         parent.declare_option('hb_memory_baseline_file')
         parent.declare_option('hb_memory_multiplier')
 
-
-    def perform(self,parent):
-        import os,psutil,humanize
+    def perform(self, parent):
+        import os, psutil, humanize
         self.logger = parent.logger
 
         p = psutil.Process()
-        if hasattr(p,'memory_info'):
-           mem = p.memory_info()
+        if hasattr(p, 'memory_info'):
+            mem = p.memory_info()
         else:
-           mem = p.get_memory_info()
+            mem = p.get_memory_info()
 
         ost = os.times()
-        self.logger.info("hb_memory cpu_times user=%s system=%s elapse=%s" %(ost.user,ost.system,ost.elapsed))
+        self.logger.info("hb_memory cpu_times user=%s system=%s elapse=%s" %
+                         (ost.user, ost.system, ost.elapsed))
 
         if self.file_count == None:
-            if hasattr(parent,'hb_memory_baseline_file'):
+            if hasattr(parent, 'hb_memory_baseline_file'):
                 if type(parent.hb_memory_baseline_file) is list:
                     self.file_count = int(parent.hb_memory_baseline_file[0])
                 else:
@@ -67,21 +66,25 @@ class Hb_Memory(object):
             else:
                 self.file_count = 100
 
-        if self.threshold == None :
-            if hasattr(parent,'hb_memory_multiplier'):
+        if self.threshold == None:
+            if hasattr(parent, 'hb_memory_multiplier'):
                 if type(parent.hb_memory_multiplier) is list:
-                     parent.hb_memory_multiplier = parent.hb_memory_multiplier[0]
-                parent.hb_memory_multiplier = float( parent.hb_memory_multiplier )
+                    parent.hb_memory_multiplier = parent.hb_memory_multiplier[
+                        0]
+                parent.hb_memory_multiplier = float(
+                    parent.hb_memory_multiplier)
             else:
                 parent.hb_memory_multiplier = 3
-    
-            if hasattr(parent,'hb_memory_max'):
+
+            if hasattr(parent, 'hb_memory_max'):
                 if type(parent.hb_memory_max) is list:
                     parent.hb_memory_max = parent.hb_memory_max[0]
-    
-                self.threshold  = parent.chunksize_from_str(parent.hb_memory_max)
 
-            if ( parent.publish_count < self.file_count ) and ( parent.message_count < self.file_count ): 
+                self.threshold = parent.chunksize_from_str(
+                    parent.hb_memory_max)
+
+            if (parent.publish_count < self.file_count) and (
+                    parent.message_count < self.file_count):
                 self.logger.info("hb_memory current usage: %s, accumulating count (%d or %d of %d so far) before setting threshold" \
                       % ( humanize.naturalsize(mem.vms,binary=True), parent.publish_count, parent.message_count, self.file_count) )
                 return True
@@ -90,30 +93,33 @@ class Hb_Memory(object):
         # mem(rss=10199040, vms=52133888, shared=3887104, text=2867200, lib=0,\
         #          data=5967872, dirty=0, uss=6545408, pss=6872064, swap=0)
 
-        if self.threshold == None :
-           self.threshold = int(parent.hb_memory_multiplier * mem.vms)
-           self.logger.info("hb_memory threshold defaulted to %s" % humanize.naturalsize(self.threshold,binary=True) )
+        if self.threshold == None:
+            self.threshold = int(parent.hb_memory_multiplier * mem.vms)
+            self.logger.info("hb_memory threshold defaulted to %s" %
+                             humanize.naturalsize(self.threshold, binary=True))
 
         parent.logger.info( "hb_memory, current usage: %s trigger restart if increases past: %s " % \
             ( humanize.naturalsize(mem.vms,binary=True), humanize.naturalsize(self.threshold,binary=True) ) )
 
-        if mem.vms > self.threshold : self.restart(parent)
+        if mem.vms > self.threshold: self.restart(parent)
 
         return True
 
-    def restart(self,parent):
+    def restart(self, parent):
         import subprocess
         cmd = []
         cmd.append(parent.program_name)
-        if parent.user_args and len(parent.user_args) > 0 : cmd.extend(parent.user_args)
-        if parent.user_config: cmd.append( parent.user_config )
+        if parent.user_args and len(parent.user_args) > 0:
+            cmd.extend(parent.user_args)
+        if parent.user_config: cmd.append(parent.user_config)
 
         cmd.append('restart')
 
         parent.logger.info("hb_memory triggering %s" % cmd)
-        parent.run_command( cmd )
+        parent.run_command(cmd)
 
         return
 
-hb_memory  = Hb_Memory(self)
+
+hb_memory = Hb_Memory(self)
 self.on_heartbeat = hb_memory.perform
