@@ -82,6 +82,7 @@ class sr_message():
         self.sumflg        = None
 
         # Default value for parts attributes
+        self.partflg = None
         self.chunksize = None
         self.length = None
         self.block_count = None
@@ -90,6 +91,9 @@ class sr_message():
         self.lastchunk = None
         self.offset = None
         self.filesize = None
+
+        # Setting default length
+        self.length = 0
 
         self.inline = parent.inline
         self.inline_max = parent.inline_max
@@ -123,7 +127,6 @@ class sr_message():
         self.to_clusters = []
         self.tbegin = nowflt()
         self.pubtime = None
-        self.partflg       =  None
 
     def change_partflg(self, partflg ):
         self.partflg       =  partflg
