@@ -226,10 +226,15 @@ class sr_http(sr_proto):
                    # continue with authentication
                    password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
                    password_mgr.add_password(None, self.urlstr,self.user,self.password)
-                   handler = urllib.request.HTTPBasicAuthHandler(password_mgr)
+                   auth_handler = urllib.request.HTTPBasicAuthHandler(password_mgr)
             
+                   hctx = ssl.create_default_context()
+                   hctx.check_hostname = False
+                   hctx.verify_mode = ssl.CERT_NONE
+                   ssl_handler = urllib.request.HTTPSHandler(0,hctx)
+
                    # create "opener" (OpenerDirector instance)
-                   opener = urllib.request.build_opener(handler)
+                   opener = urllib.request.build_opener(auth_handler,ssl_handler)
 
                    # use the opener to fetch a URL
                    opener.open(self.urlstr)
