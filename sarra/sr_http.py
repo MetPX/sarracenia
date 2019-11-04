@@ -59,6 +59,7 @@ class sr_http(sr_proto):
     def __init__(self, parent) :
         parent.logger.debug("sr_http __init__")
         sr_proto.__init__(self,parent)
+        self.tlsctx = parent.tlsctx
         self.init()
 
     # cd
@@ -228,10 +229,10 @@ class sr_http(sr_proto):
                    password_mgr.add_password(None, self.urlstr,self.user,self.password)
                    auth_handler = urllib.request.HTTPBasicAuthHandler(password_mgr)
             
-                   hctx = ssl.create_default_context()
-                   hctx.check_hostname = False
-                   hctx.verify_mode = ssl.CERT_NONE
-                   ssl_handler = urllib.request.HTTPSHandler(0,hctx)
+                   #hctx = ssl.create_default_context()
+                   #hctx.check_hostname = False
+                   #hctx.verify_mode = ssl.CERT_NONE
+                   ssl_handler = urllib.request.HTTPSHandler(0,self.tlsctx)
 
                    # create "opener" (OpenerDirector instance)
                    opener = urllib.request.build_opener(auth_handler,ssl_handler)
@@ -253,9 +254,9 @@ class sr_http(sr_proto):
                 # https without user : create/use an ssl context
                 ctx = None
                 if self.user == None and self.urlstr.startswith('https'):
-                   ctx = ssl.create_default_context()
-                   ctx.check_hostname = False
-                   ctx.verify_mode = ssl.CERT_NONE
+                   ctx = self.tlsctx
+                   #ctx.check_hostname = False
+                   #ctx.verify_mode = ssl.CERT_NONE
 
                 # open... we are connected
                 if self.timeout == None :
