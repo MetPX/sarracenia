@@ -866,6 +866,7 @@ est un option qui a une valeur logique: vrai/faux)
 - **strip     <compte|regexp>   (défaut: 0)**
 - **suppress_duplicates   <off|on|999>     (défaut: off)**
 - **timeout     <numéro flottante>         (défaut: 0.0)**
+- **tls_rigour  <lax|medium|strict>        (défaut: medium)**
 
 
 attempts <compte> (défaut: 3)
@@ -1246,8 +1247,10 @@ déterminera les permissions de fichiers. (notez que l'option *chmod* est
 interprétée comme un synonyme de *default_mode*, et *chmod_dir* est un 
 synonyme de *default_dir_mode*).
 
-recompute_chksum <booléan> (défaut: False)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+recompute_chksum <booléan> (défaut: True)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+** option enlevée, toujours vrai maintenant **
 
 Pour chaque téléchargement, la somme de contrôle est calculée lors du 
 transfert. Si **recompute_chksum** est réglé sur Vrai, et la somme de contrôle
@@ -1264,6 +1267,19 @@ aussi des cas où, pour diverses raisons, l'amont de l'activité de la Les
 sommes de contrôle sont tout simplement erronées et devraient être 
 remplacées pour les consommateurs en aval.
 
+
+tls_rigour (default: medium)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+tls_rigour peut avoir une valeur de: *lax, medium, ou strict*, et indique
+à l´application le genre de sécurité qui devrait être toléré dans les
+connexions sécurisés (TLS, Transport Level Security or Secure Socket Layer
+SSL). TLS a plusieurs options a ajuster, par exemple: vérification des
+noms de host, des certificats, validation des certificats et les *bonnes*
+valeurs peuvent changer au cours des années. 
+
+Si une site, par exemple, utilise un certificat expiré, et qu´il faut néanmoins
+s´en servir, pon peut choisir *lax* comme valeur pour cette option.
 
 
 
