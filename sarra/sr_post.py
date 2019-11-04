@@ -249,6 +249,8 @@ class sr_post(sr_instances):
         print("-reset                 default:enable reset")
         print("-path <path1... pathN> default:required")
         print("-on_post <script>      default:None")
+        print("-tls_rigour (lax|medium|strict)      default:medium")
+        print("            set to lax if remote has expired cert, use strict to be pure") 
         print("DEBUG:")
         print("-debug")
         print("-r  : randomize chunk posting and checksum algorithm choice")

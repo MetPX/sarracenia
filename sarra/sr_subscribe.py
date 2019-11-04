@@ -579,7 +579,9 @@ class sr_subscribe(sr_instances):
            print("\tone url per line. as an example, the file could contain:")
            print("\thttp://myhttpuser:myhttppassword@apachehost.com/")
            print("\tftp://myftpuser:myftppassword@ftpserver.org/")
-           print("\tetc...")
+           print("\n\ttls_rigour         (lax|medium|strict) (default: medium)")
+           print("\t                adjust SSL parameters (lax to connect more often, strict to be most secure")
+           print("\n\tetc...")
 
         # ---------------------------
         # message posting
