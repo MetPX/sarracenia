@@ -257,6 +257,8 @@ class sr_poll(sr_post):
           "\texpire        <minutes>      (default: None)\n" +
           "\tmessage-ttl   <minutes>      (default: None)\n" +
           "\tqueue_name    <name>         (default: program set it for you)\n" +
+          "\ttls_rigour    (lax|medium|high)         (default: medium)\n" +
+          "\t              SSL strictness, use lax for expired certificates.\n" +
           "\nProcessing:\n" +
           "\tdo_line           <script>        (default None)\n" +
           "\tdo_poll           <script>        (default None)\n" +

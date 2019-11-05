@@ -38,6 +38,7 @@ import urllib, urllib.parse, urllib.request, urllib.error
 import shutil
 import sarra
 import io
+import ssl
 
 from appdirs import *
 from logging import handlers
@@ -223,6 +224,8 @@ class sr_config:
         # hostname
 
         self.hostname  = socket.getfqdn()
+        self.tls_rigour = 'normal'
+        self.tlsctx    = ssl.create_default_context()
         self.randid    = "%04x" % random.randint(0,65536)
 
         # logging is interactive at start
@@ -321,8 +324,8 @@ class sr_config:
            ( self.inflight, self.events, self.use_pika, self.topic_prefix) )
         self.logger.info( "\tinflight=%s events=%s use_amqplib=%s topic_prefix=%s" % \
            ( self.inflight, self.events, self.use_amqplib, self.topic_prefix) )
-        self.logger.info( "\tsuppress_duplicates=%s basis=%s retry_mode=%s retry_ttl=%sms" % \
-           ( self.caching, self.cache_basis, self.retry_mode, self.retry_ttl ) )
+        self.logger.info( "\tsuppress_duplicates=%s basis=%s retry_mode=%s retry_ttl=%sms tls_rigour=%s" % \
+           ( self.caching, self.cache_basis, self.retry_mode, self.retry_ttl, self.tls_rigour ) )
         self.logger.info( "\texpire=%sms reset=%s message_ttl=%s prefetch=%s accept_unmatch=%s delete=%s" % \
            ( self.expire, self.reset, self.message_ttl, self.prefetch, self.accept_unmatch, self.delete ) )
         self.logger.info( "\theartbeat=%s sanity_log_dead=%s default_mode=%03o default_mode_dir=%03o default_mode_log=%03o discard=%s durable=%s" % \
@@ -2557,6 +2560,27 @@ class sr_config:
 
                 elif words0 == 'to': # See: sr_config.7
                      self.to_clusters = words1
+                     n = 2
+
+                elif words0 in [ 'tls_rigour', 'tls_rigor', 'tlsr' ]: 
+                     self.tls_rigour = words1.lower()
+                     if self.tls_rigour == 'lax' :
+                         self.tlsctx = ssl.create_default_context()
+                         self.tlsctx.check_hostname = False
+                         self.tlsctx.verify_mode = ssl.CERT_NONE
+
+                     elif self.tls_rigour == 'strict' :
+                         self.tlsctx = ssl.create_default_context()
+                         self.tlsctx.check_hostname = True
+                         self.tlsctx.verify_mode = ssl.CERT_REQUIRED
+                         self.tlsctx.verify_flags = ssl.VERIFY_CHECK_CHAIN
+                         self.tlsctx.protocol = ssl.PROTOCOL_TLSv1_2
+
+                     elif self.tls_rigour == 'normal' :
+                         pass
+                     else:
+                         self.logger.warning("option tls_rigour must be one of:  lax, normal, strict")
+                         
                      n = 2
 
                 elif words0 in ['topic_prefix','tp'] : # See: sr_config.7 

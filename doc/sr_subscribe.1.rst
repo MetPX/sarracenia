@@ -867,8 +867,8 @@ and under which name.
 - **no_download|notify_only    <boolean>        (default: off)** 
 - **outlet    post|json|url    (default: post)** 
 - **overwrite <boolean>        (default: off)** 
-- **preserve_mode <boolead>  (default: on)**
-- **preserve_time <boolead>  (default: on)**
+- **preserve_mode <boolean>  (default: on)**
+- **preserve_time <boolean>  (default: on)**
 - **reject    <regexp pattern> (optional)** 
 - **retry    <boolean>         (default: On)** 
 - **retry_ttl    <duration>         (default: same as expire)** 
@@ -877,7 +877,8 @@ and under which name.
 - **suppress_duplicates   <off|on|999[smhdw]>     (default: off)**
 - **suppress_duplicates_basis   <data|name|path>     (default: path)**
 - **timeout     <float>         (default: 0)**
-
+- **tls_rigour   <lax|medium|strict>  (default: medium)**
+- **xattr_disable  <boolean>  (default: off)**
 
 attempts <count> (default: 3)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1254,6 +1255,27 @@ recompute_chksum <boolean> (Always on now)
 
 recompute_chksum option has been removed in 2.19.03b2. Recomputing will occur
 whenever appropriate without the need for a setting.
+
+tls_rigour (default: medium)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+tls_rigour can be set to: *lax, medium, or strict*, and gives a hint to the 
+application of how to configure TLS connections. TLS, or Transport Level 
+Security (used to be called Secure Socket Layer (SSL)) is the wrapping of 
+normal TCP sockets in standard encryption. There are many aspects of TLS 
+negotiations, hostname checking, Certificate checking, validation, choice of 
+ciphers. What is considered secure evolves over time, so settings which, a few
+years ago, were considered secure, are currently aggressively deprecated. This
+situation naturally leads to difficulties in communication due to different
+levels of compliance with whatever is currently defined as rigourous encryption.
+
+If a site being connected to, has, for example, and expired certificate, and 
+it is nevertheless necessary to use it, then set tls_rigour to *lax* and
+the connection should succeed regardless.
+
+
+
+
 
 xattr_disable (default: off)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2241,7 +2263,7 @@ instance.  The script takes the parent as an argument, and for example, any
 modification to  **parent.msg.new_file**  will change the name of the file written locally.
 
 filename <keyword> (default:NONESENDER)
------------------------------------
+---------------------------------------
 
 From **metpx-sundew** the support of this option give all sorts of possibilities
 for setting the remote filename. Some **keywords** are based on the fact that
