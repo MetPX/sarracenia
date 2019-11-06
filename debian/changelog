@@ -1,3 +1,9 @@
+metpx-sarracenia (2.19.11b1) unstable; urgency=medium
+
+  * bufix #280 added tls_rigour directive to help sr_poll deal with bad SSL certs.
+
+ -- Peter Silva <peter@idefix>  Wed, 06 Nov 2019 17:57:26 -0500
+
 metpx-sarracenia (2.19.10b1) unstable; urgency=medium
 
   * bugfix #276 avoided repeat of #274 with self.length.
