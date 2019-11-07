@@ -6,6 +6,18 @@ lists all changes between versions.
 
 **git repo**
 
+**2.19.11b1**
+
+  * bufix #280 added tls_rigour directive to help sr_poll deal with bad SSL certs.
+
+**2.19.10b1**
+
+  * bugfix #276 avoided repeat of #274 with self.length.
+  * bugfix #273, #275, partflg regression in poll scripts
+  * bugfix #270 from_cluster regression for older versions.
+  * bugfix #268 new sr implementation broke python 3.4 compatibility.
+  * documentation improvements.
+
 **2.19.09b2**
 
   * documentation: usage string correction: replace parts by blocksize
