@@ -157,9 +157,11 @@ remote hosts), by default, the vip will only keep the component from posting,
 but the actual poll will still happen, which can involve a high an unnecessary
 load on the nodes that do not have the vip.
 
-To have the nodes which do not have the vip perform no work, set the
-**poll_without_vip** option to *False* (or *off*).  This may reduce overhead
-forty-fold in some measured cases.
+To have the nodes which do not have the vip perform no work, for example
+if the corresponding sarra components have *delete* set, so that no state
+persistence is needed in the poll, set the **poll_without_vip** option 
+to *False* (or *off*). This reduces overhead forty-fold in some measured 
+cases.  
 
 
 POSTING SPECIFICATIONS

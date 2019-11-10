@@ -155,10 +155,11 @@ la destination qui est *pollé* (*sondé*) même quand ce n´est pas ce noeud qu
 va annoncer les nouveaux arrivés.
 
 Si les noeuds qui n´ont pas le vip peuvent être réélement entièrement passifs,
-on peut setté **poll_without_vip** à *False* (or *off*). Ceci peut réduire
-la charge sur les noeuds de facon significative (mésure à vingt fois moins
-de charge dans un cas.)  C´est donc utile de le choisir quand l´efficacité
-de la configuration global est une enjeu.
+comme si les *sarra* corréspondants on *delete* actif, alors il n´ont pas besoin
+de se maintenir à jour, on peut setter **poll_without_vip** à *False* (or *off*). 
+Ceci peut réduire la charge sur les noeuds de facon significative (mésuré à vingt fois 
+moins de charge dans un cas exemplaire.)  C´est donc utile de le choisir quand 
+l´efficacité de la configuration global est une enjeu.
 
 
 
