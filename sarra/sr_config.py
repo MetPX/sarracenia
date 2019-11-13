@@ -326,8 +326,8 @@ class sr_config:
            ( self.inflight, self.events, self.use_amqplib, self.topic_prefix) )
         self.logger.info( "\tsuppress_duplicates=%s basis=%s retry_mode=%s retry_ttl=%sms tls_rigour=%s" % \
            ( self.caching, self.cache_basis, self.retry_mode, self.retry_ttl, self.tls_rigour ) )
-        self.logger.info( "\texpire=%sms reset=%s message_ttl=%s prefetch=%s accept_unmatch=%s delete=%s" % \
-           ( self.expire, self.reset, self.message_ttl, self.prefetch, self.accept_unmatch, self.delete ) )
+        self.logger.info( "\texpire=%sms reset=%s message_ttl=%s prefetch=%s accept_unmatch=%s delete=%s poll_without_vip=%s" % \
+           ( self.expire, self.reset, self.message_ttl, self.prefetch, self.accept_unmatch, self.delete, self.poll_without_vip ) )
         self.logger.info( "\theartbeat=%s sanity_log_dead=%s default_mode=%03o default_mode_dir=%03o default_mode_log=%03o discard=%s durable=%s" % \
            ( self.heartbeat, self.sanity_log_dead, self.chmod, self.chmod_dir, self.chmod_log, self.discard, self.durable ) )
         self.logger.info( "\tpost_on_start=%s preserve_mode=%s preserve_time=%s realpath_post=%s base_dir=%s follow_symlinks=%s" % \
@@ -688,6 +688,7 @@ class sr_config:
         self.exchanges            = [ 'xlog', 'xpublic', 'xreport', 'xwinnow' ]
         self.topic_prefix         = 'v02.post'
         self.version              = 'v02'
+        self.poll_without_vip     = True
         self.post_topic_prefix    = None
         self.post_version         = 'v02'
         self.subtopic             = None
@@ -2331,6 +2332,14 @@ class sr_config:
                 elif words0 in ['post_exchange_split','pes', 'pxs']: # sr_config.7, sr_shovel.1
                      self.post_exchange_split = int(words1)
                      n = 2
+
+                elif words0 in ['poll_without_vip','pwv'] : # See: sr_config.7
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.poll_without_vip = True
+                        n = 1
+                     else :
+                        self.poll_without_vip = self.isTrue(words[1])
+                        n = 2
 
                 elif words0 == 'prefetch': # See: sr_consumer.1  (Nbr of prefetch message when queue is shared)
                      self.prefetch = int(words1)

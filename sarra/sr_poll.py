@@ -647,7 +647,8 @@ class sr_poll(sr_post):
                       start = nowflt()
 
                       #  do poll stuff
-                      ok = self.__do_poll__()
+                      if not self.sleeping or self.poll_without_vip :
+                          ok = self.__do_poll__()
 
                       #  check if sleep is to short
                       poll_time = nowflt() - start

@@ -91,10 +91,11 @@ Ces options définissent les fichiers pour lesquels l'utilisateur veut être
 notifié et où il doit être notifié il sera placé, et sous quel nom.
  
 - **filename  <option>         (optionnel)**
-- **directory <path>           (defaut: .)**
-- **accept    <patron regexp> [rename=] (must be set)**
+- **directory <path>           (défaut: .)**
+- **accept    <patron regexp> [rename=] (mandatoire)**
 - **reject    <patron regexp> (optionnel)**
-- **chmod     <integer>        (defaut: 0o400)**
+- **chmod     <integer>        (défaut: 0o400)**
+- **poll_without_vip <on|off>  (défaut: on)**
 
 L'option *filename* peut être utilisée pour définir un renommage global des produits.
 Ex.. :
@@ -146,6 +147,20 @@ ce qui signifie qu'un fichier ne sera pas publié à moins que le groupe n'ait l
 (sur une sortie ls qui ressemble à : ---r-----, comme un chmod 040 <fichier <fichier>commande).
 L'option **chmod** spécifie un masque, c'est à dire que les permissions doivent être
 au moins ce qui est spécifié.
+
+Comme tout les componsants, l'option **vip** signale que plusieurs noeuds
+dans une grappe participent et que le composant devraient être actif uniquement
+sur un noeud à la fois.  Souvent le *poll* doit se garder à jour de l´état sur
+la destination qui est *pollé* (*sondé*) même quand ce n´est pas ce noeud qui
+va annoncer les nouveaux arrivés.
+
+Si les noeuds qui n´ont pas le vip peuvent être réélement entièrement passifs,
+comme si les *sarra* corréspondants on *delete* actif, alors il n´ont pas besoin
+de se maintenir à jour, on peut setter **poll_without_vip** à *False* (or *off*). 
+Ceci peut réduire la charge sur les noeuds de facon significative (mésuré à vingt fois 
+moins de charge dans un cas exemplaire.)  C´est donc utile de le choisir quand 
+l´efficacité de la configuration global est une enjeu.
+
 
 
 
