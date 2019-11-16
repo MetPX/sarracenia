@@ -11,8 +11,10 @@
    This is a bit speculative at the time of this writing (2018/01). We expect to deploy over the winter
    and be completed in 2018/03. Given the volumes being copied the exact performance isn't easily measured.
    This article will be amended to reflect the advancing solution, until complete, then this note will be removed.
+
    Update 2019/02: Solution is deployed to all parallel weather prediction runs, continued progress to
    operational deployment.
+
    Update 2019/11: Solution is deployed 'post only' in operations, hope to complete auditing this month,
    and switch over next month.
 
