@@ -169,13 +169,36 @@ performance and was far more reliable than the parallel sr_watch method, and by 
 expected for early July 2017, the GPFS policy approach was selected.
  
 As the migration progressed, the file systems grew in that they had more files in the trees, and the GPFS-policy 
-method progressively slowed. Already in July, this was not an acceptable solution. At this point, the idea of intercepting 
-jobs' file i/o calls with a shim library was introduced. ECCC told SSC at the time, that having correct 
-feeds, and having everything ready for transition was the priority, so the focus of efforts was in that 
-direction until the migration was achieved in September. In spite of being a lower priority over the 
-summer, a C implementation of the sending portion of the sarra library was implemented along with a 
-prototype shim library to call it.
+method progressively slowed. Already in July 2017, this was not an acceptable solution. At this point, 
+the idea of intercepting jobs' file i/o calls with a shim library was introduced. ECCC told SSC 
+at the time, that having correct feeds, and having everything ready for transition was the 
+priority, so the focus of efforts was in that direction until the migration was achieved in 
+September. In spite of being a lower priority over the summer, a C implementation of the 
+sending portion of the sarra library was implemented along with a prototype shim library to call it.
  
+Shim library
+~~~~~~~~~~~~
+
+When a running application makes calls to API entry points that are provided by
+libraries or the kernel, there is a search process (resolved at application 
+load time) that finds the first entry in the path that has the proper signature.
+For example, in issuing a file close(2) call, the operating system will arrange
+for the correct routine in the correct library to be called.
+
+.. image:: shim_explanation_normal_close.svg
+
+A call to the close routine, indicates that a program has finished writing the
+file in question, and so usually indicates the earliest time it is useful to 
+advertise a file for transfer.  We can create a shim library, which has entry
+points that impersonate the ones being called by the application, in order
+to have file availability notifications posted by the application itself,
+without any application modification.
+
+.. image:: shim_explanation_shim_close.svg
+
+Usage of the shim library is documented in `sr_post(1) <sr_post.1.rst>`_
+
+
 Copying Files
 -------------
 
