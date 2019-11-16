@@ -613,7 +613,7 @@ FIXME: add diagram comparing size of various code bases.
 Sarracenia's reference implementation is less than 20 thousand lines in Python 
 3. Clients have contributed open source partial implementations in javascript,
 C#, and Go, and have implemented another in C was done to support the 
-`High Performance Computing use case. <mirroring_use_case.rst>`_
+`High Performance Computing use case. <hpc_mirroring_use_case.rst>`_
 The message format is `published <sr_post.7.rst>`_ and demonstrably program 
 language agnostic.
 

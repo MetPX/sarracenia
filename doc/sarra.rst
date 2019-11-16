@@ -129,7 +129,7 @@ Why Not Just Use Rsync?
 There are a number of tree replication tools that are widely used, why invent another?
 `RSync <https://rsync.samba.org/>`_, for example is a fabulous tool, and we 
 recommend it highly for many use cases. But there are times when Sarracenia can
-go 72 times faster than rsync: Case Study: `HPC Mirroring Use Case <mirroring_use_case.rst>`_
+go 72 times faster than rsync: Case Study: `HPC Mirroring Use Case <hpc_mirroring_use_case.rst>`_
 
 Rsync and other tools are comparison based (dealing with a single Source and Destination). Sarracenia, while it does 
 not require or use multi-casting, is oriented towards delivery to multiple receivers, particularly when the source

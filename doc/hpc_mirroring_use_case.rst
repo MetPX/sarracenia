@@ -13,6 +13,8 @@
    This article will be amended to reflect the advancing solution, until complete, then this note will be removed.
    Update 2019/02: Solution is deployed to all parallel weather prediction runs, continued progress to
    operational deployment.
+   Update 2019/11: Solution is deployed 'post only' in operations, hope to complete auditing this month,
+   and switch over next month.
 
 .. contents::
 
@@ -20,9 +22,14 @@
 Summary
 -------
 
-This project has taken longer than expected, over two years, as the problem space was explored with the 
+This project has taken longer than expected, over three years, as the problem space was explored with the 
 help of a very patient client while the tool to design and implement the efficient solution was eventually 
-settled on. The client is actually more of a partner, who had very large test cases available and 
+settled on. The client asked for a solution to make files available on the backup cluster within five
+minutes of their creation on the primary one, and the first version of mirroring, deployed in 2017,
+achieves roughly a 20 minute delay. Work continues on *version 2* which should achieve the five minute
+target the client set in 2016.  We hope version 2 will be finally implemented in December 2019.
+
+The client is actually more of a partner, who had very large test cases available and 
 ended up shouldering the responsibility for all of us to understand whether the solution was working or not. 
 While there are many specificities of this implementation, the resulting tool relies on no specific features 
 beyond a normal Linux file system to achieve a 72:1 speedup compared to rsync on real-time continuous 
@@ -35,13 +42,12 @@ the file systems are used for all the normal user applications as well.
 
 While this project had to suffer through the development, with the lessons learned and the tools 
 now available, it should be straightforward to apply this solution to other cases. The end result is 
-that one adds a `shim library`_ to the users' environment (transparent to user jobs), and 
+that one adds a `Shim Library`_ to the users' environment (transparent to user jobs), and 
 then every time a file is written, an AMQP message with file metadata is posted. A pool of transfer
 daemons are standing by to transfer the files posted to a shared queue. The number of subscribers 
 is programmable and scalable, and the techniques and topology to do the transfer are all easily 
 controlled to optimize transfers for whatever criteria are deemed most important.
 
-.. _shim library: https://en.wikipedia.org/wiki/Shim_(computing)
 
 Problem Statement
 -----------------
@@ -50,7 +56,7 @@ In November 2016, Environment and Climate Change Canada's (ECCC) Meteorological 
 as part of the High Performance Computing Replacement (HPCR) project asked for very large directory 
 trees to be mirrored in real-time. Shared Services Canada (SSC) had primary responsibility for deployment
 of HPCR, with ECCC/MSC being the sole user community. It was known from the outset that these trees would be too large to 
-deal with using ordinary tools. It is expected that it will take about 15 months to explore the 
+deal with using ordinary tools. It was expected that it would take about 15 months to explore the 
 issue and arrive at an effective operational deployment. It should be noted that SSC worked throughout 
 this period in close partnership with ECCC, and that this deployment required the very active participation of 
 sophisticated users to follow along with the twists and turns and different avenues explored and implemented.
@@ -89,7 +95,7 @@ stop being modified, and there is no maintenance period when one can catch up if
 There are essentially three parts of the problem:
  
  * Detection: obtain the list of files which have been modified (recently).
- * Transfer: copy them to the other cluster.
+ * Transfer: copy them to the other cluster (minimizing overhead.)
  * Performance: aspirational deadline to deliver a mirrored file: five minutes.
  
 The actual trees to mirror are the following::
@@ -108,14 +114,15 @@ The actual trees to mirror are the following::
  psilva@eccc1-ppp1:/home/sarr111/.config/sarra/poll$ 
  
 Initially, it was known that the number of files was large, but there was no knowledge of the actual 
-amounts involved.  Nor was that data even available until much later.
+amounts involved. Nor was that data even available until much later.
 
 The most efficient way to copy these trees, as was stated at the outset, would be for all of the jobs 
 writing files in the trees to explicitly announce the files to be copied. This would involve users 
-modifying their jobs to include invocation of sr_post (a command which queues up file transfers for 
-third parties to perform). ECCC set the additional constraint that modification of user jobs was 
+modifying their jobs to include invocation of sr_cpost (a command which queues up file transfers for 
+third parties to perform). However, the client set the additional constraint that modification of user jobs was 
 not feasible, so the method used to obtain the list of files to copy had to be implicit (done by the 
 system without active user involvement).
+
  
 Reading the Tree Takes Too Long
 -------------------------------
@@ -123,7 +130,7 @@ Reading the Tree Takes Too Long
 One could just scan at a higher level in order to scan a single parent directory, but the half-dozen 
 sub-trees trees were picked in order to have smaller ones which worked more quickly, regardless of the 
 method being used to obtain lists of new files. What do we mean when we say these trees are too large? 
-The largest of these trees is *hubs* ( /fs/site1/ops/eccc/cmod/prod/hubs ). rsync was run on the *hubs* 
+The largest of these trees is *hubs* ( /fs/site1/ops/eccc/cmod/prod/hubs ). Rsync was run on the *hubs* 
 directory, as just walking the tree once, without any file copying going on. The walk of the tree, using 
 rsync with checksumming disabled as an optimization, resulted in the log below::
  
@@ -146,7 +153,7 @@ Detection Methods: Inotify, Policy, SHIM
 -----------------------------------------
 
 There is a Linux kernel feature known as INOTIFY, which can trigger an event when a file is modified. By 
-setting an INOTIFY trigger on every directory in the tree, we can be notified of when any file is modified 
+setting an INOTIFY trigger on every directory in the tree, we can be notified when any file is modified 
 in the tree. This was the initial approach taken. It turns out (in January 2017), that INOTIFY is indeed a 
 Linux feature, in that the INOTIFY events only propagate across a single server. With a cluster file 
 system like GPFS, one needs to run an INOTIFY monitor on every kernel where files are written. So rather 
@@ -154,7 +161,7 @@ than running a single daemon, we were faced with running several hundred daemons
 each monitoring the same set of tens of millions of files. Since the deamons were running on many nodes, 
 the memory use rose into the terabyte range. 
  
-An alternate approach is, instead of running the modification detection at the Linux level, use the file 
+An alternate approach: instead of running the modification detection at the Linux level, use the file 
 system itself, which is database driven, to indicate which files had been modified. The HPC solution's main 
 storage system uses IBM's General Parallel File System, or GPFS. Using the *GPFS-policy* method, a query is 
 run against the file system database at as high a rhythm as can be sustained (around five to ten minutes per 
@@ -176,9 +183,24 @@ priority, so the focus of efforts was in that direction until the migration was 
 September. In spite of being a lower priority over the summer, a C implementation of the 
 sending portion of the sarra library was implemented along with a prototype shim library to call it.
  
-Shim library
+It should be noted that the GPFS-policy runs have been operationally deployed since 2017. This has
+turned out to be *version 1* of the mirroring solution, and has achieved a mirroring to secondary
+clusters with approximately 20 minutes of delay in getting the data to the second system.  Three years
+in, there is now an upgrade of the supercomputer clusters in progress with two new additional
+clusters online, The client is now using normal sarracenia methods to mirror from the old backup cluster
+to the new ones, with only a few seconds delay beyond what it takes to get to the backup cluster.
+
+It should also be noted that use of GPFS policy queries have imposed a significant and continuous
+load on the GPFS clusters, and are a constant worry to the GPFS administrators. They would very much
+like to get rid of it. Performance has stabilized in the past year, but it does appear to slow
+as the size of the file tree grows.  Many optimisations were implemented to obtain adequate
+performance.
+
+
+Shim Library
 ~~~~~~~~~~~~
 
+The method settled on for notification is a `shim library <https://en.wikipedia.org/wiki/Shim_(computing)>`_
 When a running application makes calls to API entry points that are provided by
 libraries or the kernel, there is a search process (resolved at application 
 load time) that finds the first entry in the path that has the proper signature.
@@ -189,14 +211,14 @@ for the correct routine in the correct library to be called.
 
 A call to the close routine, indicates that a program has finished writing the
 file in question, and so usually indicates the earliest time it is useful to 
-advertise a file for transfer.  We can create a shim library, which has entry
+advertise a file for transfer.  We created a shim library, which has entry
 points that impersonate the ones being called by the application, in order
 to have file availability notifications posted by the application itself,
 without any application modification.
 
 .. image:: shim_explanation_shim_close.svg
 
-Usage of the shim library is documented in `sr_post(1) <sr_post.1.rst>`_
+Usage of the shim library is detailed in `sr_post(1) <sr_post.1.rst>`_
 
 
 Copying Files
@@ -254,7 +276,7 @@ many files missing in practice, it wasn't usable for its intended purpose. The o
 HPCR solution as a whole (with mirroring deferred) occurred in September of 2017, and work on mirroring essentially 
 stopped until October (because of activities related to the commissioning work).
 
-We continued work on two approaches, the libsrshim, and the GPFS-policy. The queries run by the GPFS-policy had to to be tuned, eventually 
+We have continued work on two approaches, the libsrshim, and the GPFS-policy. The queries run by the GPFS-policy had to to be tuned, eventually 
 an overlap of 75 seconds (where a succeeding query would ask for file modifications up to a point 75 seconds before the last one 
 ended) because there were issues with files being missing in the copies. Even with this level of overlap, there were still missing 
 files. At this point, in late November, early December, the libsrshim was working well enough to be so encouraging that folks lost 
@@ -271,7 +293,7 @@ where efficiency was paramount (the libsrshim case).
 Does it Work?
 -------------
 
-In December 2017, the software for the libsrshim approach looks ready, it is deployed in some small parallel (non-operational runs). It is
+In December 2017, the software for the libsrshim approach looked ready, it is deployed in some small parallel (non-operational runs). It is
 expected that in January 2018, more parallel runs will be tried, and it should proceed to operations this winter. It is expected that the
 delay in files appearing on the second file system will be on the order of five minutes after they are written on the source tree, 
 or 72 times faster than rsync (see next section for performance info).
@@ -284,6 +306,26 @@ is still in development.
 * **FIXME:** include links to plugins
 
 * **FIXME:** Another approach being considered is to compare file system snapshots.
+
+As the shim library was used in wider and wider contexts to get it closer to deployment, a significant number of edge cases
+were encountered: 
+
+* use with non-login shells (especially scp) ( https://github.com/MetPX/sarrac/issues/66  ) 
+
+* Buggy Fortran applications improperly calling close  ( https://github.com/MetPX/sarrac/issues/12  ) 
+
+* tcl/tk treating any output to stderr as an failure ( https://github.com/MetPX/sarracenia/issues/69 )
+
+* *high performance shell scripts* (  https://github.com/MetPX/sarrac/issues/15 )
+
+* code that doesn't close every files ( https://github.com/MetPX/sarrac/issues/11 )
+
+* code that does not close even one file ( https://github.com/MetPX/sarrac/issues/68 ) 
+
+* there are paths in use longer than 255 characters ( https://github.com/MetPX/sarrac/issues/39 )
+
+Over the ensuing two years, these edge cases have been dealt with and we fully expect to 
+deploy version 2 mirroring to operations very soon.
 
 
 
@@ -495,8 +537,8 @@ Contributions
 
 **Peter Silva** - Manager, SSC DCSB Supercomputing Data Interchange
 
-   Project lead, made C implementation including shim library, hacked on the Python also from time to time.
-   Initial versions of most plugins.
+   Project lead, wrote C implementation including shim library, hacked on the Python 
+   also from time to time. Initial versions of most plugins (in Sarra.)
 
 **Michel Grenier** - SSC DCSB Supercomputing Data Interchange
 
@@ -514,6 +556,11 @@ Contributions
 
    Consultation/work on deployments with inotify solution. 
 
+**Michael Saraga** - SSC DCSB .Data Interchange
+
+   work on the C implementation in 2019, prepared native packaging and packages
+   for Suse and Redhat distributions.
+   
 **FIXME:** who else should be here: ?
 
 There was also support and oversight from management in both ECCC and SSC throughout the project.
