@@ -20,6 +20,8 @@ SYNOPSIS
 **sr_post|sr_cpost** [ *OPTIONS* ][ *-pb|--post_broker broker* ][ *-pbu|--post_base_url url[,url]...** ] 
 [ *-p|--path ] path1 path2...pathN* ]
 
+( also **libsrshim.so** )
+
 DESCRIPTION
 ===========
 
@@ -407,6 +409,76 @@ Then in the ~/.bashrc on the server running the remote command::
 SSH will only pass environment variables that start with LC_ (locale) so to get it 
 passed with minimal effort, we use that prefix.
 
+Shim Usage Tips
+---------------
+
+This method of notification does require some user environment setup.
+The user environment needs to the LD_PRELOAD environment variable set
+prior to launch of the process. Complications that remain as we have
+been testing for two years since the shim library was first implemented:
+
+* if we want to notice files created by remote scp processes (which create non-login shells)
+  then the environment hook must be in .bashrc. and using an environment
+  variable that starts with *LC_* to have ssh transmit the configuration value without 
+  having to modify sshd configuration in typical linux distributions. 
+  ( full discussion: https://github.com/MetPX/sarrac/issues/66 )
+
+* code that has certain weaknesses, such as in FORTRAN a lack of IMPLICIT NONE
+  https://github.com/MetPX/sarracenia/issues/69 may crash when the shim library
+  is introduced. The correction needed in those cases has so far been to correct
+  the application, and not the library.
+  ( also: https://github.com/MetPX/sarrac/issues/12 )
+
+* codes using the *exec* call ot `tcl/tk <www.tcl.tk>`_, by default considers any
+  output to file descriptor 2 (standard error) as an error condition.  
+  these messages can be labelled as INFO, or WARNING priority, but it will 
+  cause the tcl caller to indicate a fatal error has occurred.  Adding 
+  *-ignorestderr*  to invocations of *exec* avoids such unwarranted aborts.
+
+* Complex shell scripts can experience an inordinate performance impact.
+  Since *high performance shell scripts* is an oxymoron, the best solution,
+  performance-wise is to re-write the scripts in a more efficient scripting
+  language such as python  ( https://github.com/MetPX/sarrac/issues/15 )
+
+* Code bases that move large file hierarchies (e.g. *mv tree_with_thousands_of_files new_tree* )
+  will see a much higher cost for this operation, as it is implemented as
+  a renaming of each file in the tree, rather than a single operation on the root.
+  This is currently considered necessary because the accept/reject pattern matching
+  may result in a very different tree on the destination, rather than just the
+  same tree mirrored. See `Rename Processing`_ below for details.
+
+
+Rename Processing
+-----------------
+
+It should be noted that file renaming is not as simple in the mirroring case as in the underlying
+operating system. While the operation is a single atomic one in an operating system, when
+using notifications, there are accept/reject cases that create four possible effects.
+
++---------------+---------------------------+
+|               |    old name is:           |
++---------------+--------------+------------+
+|               |  *Accepted*  | *Rejected* |
+| New name is:  |              |            |
++---------------+--------------+------------+
+|  *Accepted*   |   rename     |   copy     |
++---------------+--------------+------------+
+|  *Rejected*   |   remove     |   nothing  |
++---------------+--------------+------------+
+
+When a file is moved, two notifications are created:
+
+*  One notification has the new name in the *relpath*, while containing and *oldname* 
+   field pointing at the old name.  This will trigger activities in the top half of
+   the table, either a rename, using the oldname field, or a copy if it is not present
+   at the destination.
+
+*  A second notification with the oldname in *relpath* which will be accepted
+   again, but this time it has the *newname* field, and process the remove action.
+
+While the renaming of a directory at the root of a large tree is a cheap atomic operation
+in Linux/Unix, mirroring that operation requires creating a rename posting for each file
+in the tree, and thus is far more expensive.
 
 
 ADMINISTRATOR SPECIFIC
