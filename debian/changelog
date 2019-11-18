@@ -1,3 +1,10 @@
+metpx-sarracenia (2.19.11b2) unstable; urgency=medium
+
+  * added xattr dependency on platforms other than windows.
+  * bugfix #245 added poll_without_vip feature to address certain cases.
+  
+ -- Peter Silva <peter@blacklab>  Mon, 18 Nov 2019 08:23:14 -0500
+
 metpx-sarracenia (2.19.11b1) unstable; urgency=medium
 
   * bufix #280 added tls_rigour directive to help sr_poll deal with bad SSL certs.
