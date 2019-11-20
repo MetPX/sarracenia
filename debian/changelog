@@ -1,3 +1,9 @@
+metpx-sarracenia (2.19.11b3) unstable; urgency=medium
+
+  * remove xattr dependency, which is broken on ubuntu 16.04 
+
+ -- Peter Silva <peter@idefix>  Wed, 20 Nov 2019 16:33:29 -0500
+
 metpx-sarracenia (2.19.11b2) unstable; urgency=medium
 
   * added xattr dependency on platforms other than windows.
