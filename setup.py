@@ -73,7 +73,6 @@ setup(
     "watchdog", 
     "netifaces", 
     "humanize",
-    "xattr;  sys_platform != 'win32'", 
     "psutil" ]
 
 )
