@@ -447,6 +447,7 @@ been testing for two years since the shim library was first implemented:
   may result in a very different tree on the destination, rather than just the
   same tree mirrored. See `Rename Processing`_ below for details.
 
+* *export SR_SHIMDEBUG=1* will get your more output than you want. use with care.
 
 Rename Processing
 -----------------
