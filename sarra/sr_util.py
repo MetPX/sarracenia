@@ -354,7 +354,9 @@ class sr_proto():
         rspan = nowflt() - self.tbegin
         if span > rspan :
            stime = span-rspan
-           time.sleep(span-rspan)
+           if stime > 10 :
+               self.logger.debug("sr_proto throttle sleeping for %g" % stime )
+           time.sleep(stime)
 
     # write_chunk
     def write_chunk(self,chunk):

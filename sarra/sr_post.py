@@ -1279,7 +1279,10 @@ class sr_post(sr_instances):
             now = nowflt()
             elapse = now - last_time
             if elapse < self.sleep:
-                time.sleep(self.sleep-elapse)
+                stime=self.sleep-elapse
+                if stime > 60:  # if sleeping for a long time, debug output is good...
+                    self.logger.debug("sleeping for more than 60 seconds: %g seconds. Elapsed since wakeup: %g Sleep setting: %g " % ( stime, elapse, self.sleep ) )
+                time.sleep(stime)
             last_time = now
 
         # FIXME This is unreachable code, need to figure out what to do with that
