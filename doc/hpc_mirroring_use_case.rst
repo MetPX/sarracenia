@@ -556,13 +556,19 @@ Contributions
 
 **Jamal Ayach** - SSC DCSB Supercomputing HPC Solutions
 
-   Consultation/work on deployments with inotify solution. 
+   Consultation/work on deployments with inotify solution, also 
+   native package installation on pre and post processors.
 
 **Michael Saraga** - SSC DCSB .Data Interchange
 
    work on the C implementation in 2019, prepared native packaging and packages
    for Suse and Redhat distributions.
    
+**Binh Ngo** - SSC DCSB Supercomputing HPC Solutions
+
+   native package installation on cray backends.
+
+
 **FIXME:** who else should be here: ?
 
 There was also support and oversight from management in both ECCC and SSC throughout the project.
