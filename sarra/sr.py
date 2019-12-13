@@ -591,11 +591,12 @@ class sr_GlobalState:
 
             if (len(status['partial']) + len(status['running'])) < 1:
                 if c not in ['post']:
-                    print('sr_%s: all %d stopped' % (c, len(status['stopped'])))
+                    print('sr_%s: all %d stopped ( %s )' % (c, len(status['stopped']), ', '.join(status['stopped'])) )
             elif len(status['running']) == len(self.configs[c]):
-                print('sr_%s: running %d (OK)' % (c, len(self.configs[c])))
+                print('sr_%s: running %d (OK) ( %s )' % (c, len(self.configs[c]), ', '.join(status['running'] )) )
             elif len(status['running']) == (len(self.configs[c]) - len(status['disabled'])):
-                print('sr_%s: running %d (OKd)' % (c, (len(self.configs[c]) - len(status['disabled']))))
+                print('sr_%s: running %d (OKd) ( %s )' % (c, \
+                    (len(self.configs[c]) - len(status['disabled']),  ', '.join(status['running'] ))) )
             else:
                 print('sr_%s: mixed status, %d configured.' % (c, len(self.configs[c])))
                 bad = 1
