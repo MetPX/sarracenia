@@ -1134,10 +1134,6 @@ class sr_post(sr_instances):
         self.cur_events  = OrderedDict()
         self.cur_events.update(self.left_events)
 
-        # nothing to do
-
-        if len(self.cur_events) <= 0: return
-
         # loop on all events
 
         for key in self.cur_events:
