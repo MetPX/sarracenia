@@ -1,27 +1,30 @@
-metpx-sarracenia (2.19.12b1) UNRELEASED; urgency=medium
+metpx-sarracenia (2.19.12b1) unstable; urgency=medium
 
-  * 
+  * added mention of SR_SHIMDEBUG to sr_post(1) man page.
+  * bugfix #287 ( sr_watch no heartbeat processing if no events occur )
+  * more debug output when application is sleeping. 
+  * sr status now prints all config names even if all stopped or all started.
 
- -- Peter Silva <peter@idefix>  Fri, 13 Dec 2019 14:16:13 -0500
+ -- Peter Silva <peter@bsqt.homeip.net>  Fri, 13 Dec 2019 14:16:13 -0500
 
 metpx-sarracenia (2.19.11b3) unstable; urgency=medium
 
   * remove xattr dependency, which is broken on ubuntu 16.04 
 
- -- Peter Silva <peter@idefix>  Wed, 20 Nov 2019 16:33:29 -0500
+ -- Peter Silva <peter@bsqt.homeip.net>  Wed, 20 Nov 2019 16:33:29 -0500
 
 metpx-sarracenia (2.19.11b2) unstable; urgency=medium
 
   * added xattr dependency on platforms other than windows.
   * bugfix #245 added poll_without_vip feature to address certain cases.
   
- -- Peter Silva <peter@blacklab>  Mon, 18 Nov 2019 08:23:14 -0500
+ -- Peter Silva <peter@bsqt.homeip.net>  Mon, 18 Nov 2019 08:23:14 -0500
 
 metpx-sarracenia (2.19.11b1) unstable; urgency=medium
 
   * bufix #280 added tls_rigour directive to help sr_poll deal with bad SSL certs.
 
- -- Peter Silva <peter@idefix>  Wed, 06 Nov 2019 17:57:26 -0500
+ -- Peter Silva <peter@bsqt.homeip.net>  Wed, 06 Nov 2019 17:57:26 -0500
 
 metpx-sarracenia (2.19.10b1) unstable; urgency=medium
 
