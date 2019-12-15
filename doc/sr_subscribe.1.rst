@@ -694,8 +694,8 @@ being set to *xs_<username>_kk* (overriding the *xpublic* default).
 These settings must appear in the configuration file before the corresponding 
 *topic_prefix* and *subtopic* settings.
 
-subtopic <amqp pattern> (subtopic need to be set)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+subtopic <amqp pattern> (default: #)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Within an exchange's postings, the subtopic setting narrows the product selection.
 To give a correct value to the subtopic,
@@ -753,6 +753,15 @@ One can use multiple bindings to multiple exchanges as follows::
   subtopic *.directory4.#
 
 Will declare two separate bindings to two different exchanges, and two different file trees.
+While default binding is to bind to everything, some brokers might not permit
+clients to set bindings, or one might want to use existing bindings.
+One can turn off queue binding as follows::
+
+  subtopic None
+
+(False, or off will also work.)
+
+
 
 
 

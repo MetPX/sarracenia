@@ -2538,19 +2538,25 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['subtopic','sub'] : # See: sr_config.7 
-                     self.subtopic = words1
 
-                     key = self.topic_prefix + '.' + self.subtopic
-                     key = key.replace(' ','%20')
-                     if key[-2:] == '.#' :
-                        key = key[:-2].replace('#','%23') + '.#'
-                     else:               
-                        key = key.replace('#','%23') 
+                     if self.isNone(words1):
+                         self.subtopic = "None"
+                         self.bindings=[] 
+                     else:
+                         self.subtopic = words1
 
-                     self.exchange = self.get_exchange_option()
-                     self.bindings.append( (self.exchange,key) )
-                     self.logger.debug("BINDINGS")
-                     self.logger.debug("BINDINGS %s"% self.bindings)
+                         key = self.topic_prefix + '.' + self.subtopic
+                         key = key.replace(' ','%20')
+                         if key[-2:] == '.#' :
+                            key = key[:-2].replace('#','%23') + '.#'
+                         else:               
+                            key = key.replace('#','%23') 
+
+                         self.exchange = self.get_exchange_option()
+                         self.bindings.append( (self.exchange,key) )
+                         self.logger.debug("BINDINGS")
+                         self.logger.debug("BINDINGS %s"% self.bindings)
+
                      n = 2
 
                 elif words0 == 'sum': # See: sr_config.7 

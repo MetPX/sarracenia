@@ -138,7 +138,7 @@ class sr_subscribe(sr_instances):
 
         # bindings (if no subtopic)
 
-        if self.bindings == []  :
+        if (self.bindings == []) and (self.subtopic != "None")  :
            key = self.topic_prefix + '.#'
            self.bindings.append( (self.exchange,key) )
            self.logger.debug("*** BINDINGS %s"% self.bindings)

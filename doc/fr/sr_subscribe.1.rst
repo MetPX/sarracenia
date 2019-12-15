@@ -681,6 +681,11 @@ on s´abonne avant de passer à *subtopic* pour les filtrer.
 subtopic <patron amqp> (doit être spécifié)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Il faut indiquer un *topic* pour indiquer les messages auquels on veut s'abonner.
+Celui-ci est construit à partir d´un *topic_prefix* auquel on rajoute le *subtopic*.
+On fait un liaison ( *binding* ) qui définit qu´on veut recevoir dans une queue
+les messages publiés sur un *exchange* avec le *topic* spécifié.
+
 On se sert de subtopic afin de raffiner la selection de produits parmi la gamme publié
 sur un *exchange* donné. Plusieurs options de thème (*subtopic*) peuvent être déclarées. 
 Donner une valeur correcte au sous-thème, On a le choix de filtrer en utilisant
@@ -741,6 +746,11 @@ On peut plusiers liaisons au plusieurs *exchange* ::
   subtopic *.directory4.#
 
 ce qui déclare deux abonnements à deux arborescences publiés par deux *exchange*  distincts.
+On peut supprimer toute déclaration de liaison ( *binding* ) ainsi::
+
+  subtopic None
+
+(ou bien *off*, *False* )
 
 
 
