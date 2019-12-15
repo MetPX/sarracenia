@@ -1,3 +1,10 @@
+metpx-sarracenia (2.19.12b2) unstable; urgency=medium
+
+  * bugfix #288 loop forever if binding fails.
+  * bugfix #288 allow subtopic None to avoid the loop if needed.
+
+ -- Peter Silva <peter@blacklab>  Sun, 15 Dec 2019 12:56:26 -0500
+
 metpx-sarracenia (2.19.12b1) unstable; urgency=medium
 
   * added mention of SR_SHIMDEBUG to sr_post(1) man page.
