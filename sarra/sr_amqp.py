@@ -520,20 +520,29 @@ class Queue:
 
         # queue bindings
         last_exchange_name = ''
-        for exchange_name, exchange_key in self.bindings:
-            self.logger.debug("binding queue to exchange=%s with key=%s" % (exchange_name, exchange_key))
-            try:
-                self.bind(exchange_name, exchange_key)
-                last_exchange_name = exchange_name
-            except AMQPError as err:
-                self.logger.error("bind queue: %s to exchange: %s with key: %s failed with %s"
+        bound=0
+        backoff=1
+        while bound < len(self.bindings):
+            for exchange_name, exchange_key in self.bindings:
+                self.logger.debug("binding queue to exchange=%s with key=%s" % (exchange_name, exchange_key))
+                try:
+                    self.bind(exchange_name, exchange_key)
+                    last_exchange_name = exchange_name
+                    bound += 1
+                    continue
+                except AMQPError as err:
+                    self.logger.error("bind queue: %s to exchange: %s with key: %s failed with %s"
                                   % (self.name, exchange_name, exchange_key, err))
-                self.logger.error("Permission issue with %s@%s or exchange %s not found."
+                    self.logger.error("Permission issue with %s@%s or exchange %s not found."
                                   % (self.hc.user, self.hc.host, exchange_name))
-                self.logger.debug('Exception details:', exc_info=True)
-            except Exception as err:
-                self.logger.error("Unexpected error: {}".format(err))
-                self.logger.debug("Exception details:", exc_info=True)
+                    self.logger.debug('Exception details:', exc_info=True)
+                except Exception as err:
+                    self.logger.error("Unexpected error: {}".format(err))
+                    self.logger.debug("Exception details:", exc_info=True)
+                self.logger.error( "sleeping %g seconds to try binding again..." % backoff )
+                time.sleep(backoff)
+                if backoff < 60:
+                    backoff *= 2
 
         # always allow pulse binding... use last exchange_name
         if last_exchange_name:
