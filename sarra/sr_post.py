@@ -992,7 +992,7 @@ class sr_post(sr_instances):
     # =============
 
     def process_event(self, event, src, dst ):
-        #self.logger.debug("process_event %s %s %s " % (event,src,dst) )
+        self.logger.debug("process_event %s %s %s " % (event,src,dst) )
 
         done  = True
         later = False
@@ -1015,7 +1015,10 @@ class sr_post(sr_instances):
 
         # directory : skipped, its content is watched
 
-        if os.path.isdir(src): return done
+        if os.path.isdir(src): 
+            dirs = list( map( lambda x: x[1][1], self.inl.items() ) )
+            self.logger.debug("skipping directory %s list: %s" % (src,dirs) )
+            return done
 
         # link ( os.path.exists = false, lstat = None )
 

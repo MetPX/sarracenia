@@ -99,7 +99,7 @@ class sr_GlobalState:
         else:  # C components
             cmd = [component_path, 'start', cfg]
 
-        # print( "launching +%s+  re-directed to: %s" % ( cmd, lfn ) )
+        #print( "launching +%s+  re-directed to: %s" % ( cmd, lfn ) )
 
         with open(lfn, "a") as lf:
             subprocess.Popen(cmd, stdin=subprocess.DEVNULL, stdout=lf, stderr=subprocess.STDOUT)
@@ -412,9 +412,6 @@ class sr_GlobalState:
 
         :return:
         """
-        if len(self.procs) > 0:
-            print('...already started')
-            return
 
         for c in self.components:
             if c not in self.configs:
@@ -423,7 +420,7 @@ class sr_GlobalState:
             if component_path == '':
                 continue
             for cfg in self.configs[c]:
-                # print('in start: component/cfg: %s/%s' % (c,cfg))
+                #print('in start: component/cfg: %s/%s' % (c,cfg))
                 if self.configs[c][cfg]['status'] in ['stopped']:
                     numi = self.configs[c][cfg]['instances']
                     for i in range(1, numi + 1):
@@ -432,7 +429,14 @@ class sr_GlobalState:
 
         c = 'audit'
         component_path = self._find_component_path(c)
-        self._launch_instance(component_path, c, None, 1)
+        running_audits = 0
+        for p in self.procs:
+            if 'audit' in self.procs[p]['name']:
+                running_audits += 1
+
+        if running_audits == 0:
+            self._launch_instance(component_path, c, None, 1)
+
         print('Done')
         # FIXME: sr_audit
 
