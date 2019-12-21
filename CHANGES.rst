@@ -6,6 +6,33 @@ lists all changes between versions.
 
 **git repo**
 
+**2.19.12b5**
+
+  * sr output improvements, more lively and informative about progress.
+  * sr start now starts anything that can be started (used to refuse in partial case.)
+
+**2.19.12b2**
+
+  * bugfix #288 loop forever if binding fails.
+  * bugfix #288 allow subtopic None to avoid the loop if needed.
+
+**2.19.12b1**
+
+  * added mention of SR_SHIMDEBUG to sr_post(1) man page.
+  * bugfix #287 ( sr_watch no heartbeat processing if no events occur )
+  * more debug output when application is sleeping. 
+  * sr status now prints all config names even if all stopped or all started.
+
+**2.19.11b3**
+
+  * remove xattr dependency, which is broken on ubuntu 16.04 
+
+**2.19.11b2**
+
+  * added xattr dependency on platforms other than windows.
+  * bugfix #245 added poll_without_vip feature to address certain cases.
+  
+
 **2.19.11b1**
 
   * bufix #280 added tls_rigour directive to help sr_poll deal with bad SSL certs.

@@ -1,3 +1,10 @@
+metpx-sarracenia (2.19.12b5) unstable; urgency=medium
+
+  * sr output improvements, more lively and informative about progress.
+  * sr start now starts anything that can be started (used to refuse in partial case.)
+
+ -- Peter Silva <peter@blacklab>  Sat, 21 Dec 2019 10:22:29 -0500
+
 metpx-sarracenia (2.19.12b2) unstable; urgency=medium
 
   * bugfix #288 loop forever if binding fails.
