@@ -992,7 +992,7 @@ class sr_post(sr_instances):
     # =============
 
     def process_event(self, event, src, dst ):
-        self.logger.debug("process_event %s %s %s " % (event,src,dst) )
+        #self.logger.debug("process_event %s %s %s " % (event,src,dst) )
 
         done  = True
         later = False

@@ -109,8 +109,13 @@ class sr_GlobalState:
         self.procs = {}
         me = getpass.getuser()
         self.auditors = 0
+        print( 'reading procs: ', end='', flush=True )
+        pcount = 0
         for proc in psutil.process_iter():
             p = proc.as_dict()
+
+            pcount += 1 
+            if pcount % 100 == 0 : print( '.', end='', flush=True )
 
             # process name 'python3' is not helpful, so overwrite...
             if 'python' in p['name']:
@@ -127,6 +132,7 @@ class sr_GlobalState:
                     self.auditors += 1
                 else:
                     self.procs[proc.pid]['claimed'] = False
+        print(' Done reading %d procs!' % pcount , flush=True )
 
     def _read_configs(self):
         # read in configurations.
@@ -352,18 +358,18 @@ class sr_GlobalState:
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
 
-        print('gathering global state: ', end='')
         self._read_procs()
-        print('procs, ', end='')
+        print('gathering global state: ', end='', flush=True)
+        print('procs, ', end='', flush=True)
         self._read_configs()
-        print('configs, ', end='')
+        print('configs, ', end='', flush=True)
         self._read_states()
-        print('state files, ', end='')
+        print('state files, ', end='', flush=True)
         self._read_logs()
-        print('logs, ', end='')
+        print('logs, ', end='', flush=True)
         self._resolve()
         self._find_missing_instances()
-        print('analysis - Done. ')
+        print('analysis - Done. ', flush=True)
 
     def _start_missing(self):
         for instance in self.missing:
@@ -413,6 +419,7 @@ class sr_GlobalState:
         :return:
         """
 
+        pcount=0
         for c in self.components:
             if c not in self.configs:
                 continue
@@ -424,21 +431,16 @@ class sr_GlobalState:
                 if self.configs[c][cfg]['status'] in ['stopped']:
                     numi = self.configs[c][cfg]['instances']
                     for i in range(1, numi + 1):
-                        print('.', end='')
+                        if pcount % 10 == 0 : print('.', end='', flush=True)
+                        pcount += 1
                         self._launch_instance(component_path, c, cfg, i)
 
         c = 'audit'
         component_path = self._find_component_path(c)
-        running_audits = 0
-        for p in self.procs:
-            if 'audit' in self.procs[p]['name']:
-                running_audits += 1
-
-        if running_audits == 0:
+        if self.auditors == 0:
             self._launch_instance(component_path, c, None, 1)
 
-        print('Done')
-        # FIXME: sr_audit
+        print('( %d ) Done' % pcount )
 
     def stop(self):
         """
@@ -451,13 +453,16 @@ class sr_GlobalState:
             print('...already stopped')
             return
 
+        print( 'sending SIGTERM ', end='', flush=True )
+        pcount=0
         # kill sr_audit first, so it does not restart while others shutting down.
         # https://github.com/MetPX/sarracenia/issues/210
         if self.auditors > 0:
             for p in self.procs:
                 if 'audit' in self.procs[p]['name']:
                     os.kill(p, signal.SIGTERM)
-                    print('.', end='')
+                    print('.', end='', flush=True)
+                    pcount += 1
 
         for c in self.components:
             if c not in self.configs:
@@ -469,9 +474,10 @@ class sr_GlobalState:
                         #    ( c, cfg, i, self.states[c][cfg]['instance_pids'][i] ) )
                         if self.states[c][cfg]['instance_pids'][i] in self.procs:
                             os.kill(self.states[c][cfg]['instance_pids'][i], signal.SIGTERM)
-                            print('.', end='')
+                            print('.', end='', flush=True)
+                            pcount += 1
 
-        print('Done')
+        print(' ( %d ) Done' % pcount, flush=True )
 
         attempts = 0
         attempts_max = 5
@@ -497,7 +503,7 @@ class sr_GlobalState:
                 return 0
             attempts += 1
 
-        print('doing SIGKILL this time...')
+        print('doing SIGKILL this time')
 
         if self.auditors > 0:
             for p in self.procs:
@@ -635,32 +641,32 @@ def main():
     gs = sr_GlobalState()
 
     if action in ['declare', 'setup']:
-        print('%s...' % action)
+        print('%s ' % action, end='', flush=True)
         gs.maint(action)
 
     if action == 'dump':
-        print('dumping...')
+        print('dumping ', end='', flush=True)
         gs.dump()
 
     elif action == 'restart':
-        print('restarting...')
+        print('restarting ', end='', flush=True)
         gs.stop()
         gs.start()
 
     elif action == 'sanity':
-        print('sanity...')
+        print('sanity ', end='', flush=True)
         gs.sanity()
 
     elif action == 'start':
-        print('starting', end='')
+        print('starting ', end='', flush=True)
         gs.start()
 
     elif action == 'status':
-        print('status...')
+        print('status ')
         sys.exit(gs.status())
 
     elif action == 'stop':
-        print('stopping', end='')
+        print('Stopping ', end='', flush=True)
         gs.stop()
 
 
