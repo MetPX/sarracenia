@@ -1259,6 +1259,9 @@ then the operating system  defaults (on linux, controlled by umask settings)
 will determine file permissions. (Note that the *chmod* option is interpreted as a synonym
 for *default_mode*, and *chmod_dir* is a synonym for *default_dir_mode*).
 
+When set in a posting component, it has the effect of eliding the *mode* 
+header from the messages.
+
 recompute_chksum <boolean> (Always on now)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

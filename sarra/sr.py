@@ -18,6 +18,9 @@
          just reduces the set of configs already read that are operated on.
 
 """
+
+from functools import partial
+
 import getpass
 import os
 import os.path
@@ -190,10 +193,13 @@ class sr_GlobalState:
                         self.states[c][cfg] = {}
                         self.states[c][cfg]['instance_pids'] = {}
                         self.states[c][cfg]['queue_name'] = None
-                        self.states[c][cfg]['instances_expected'] = 0
+                        if c[0] == 'c':
+                            self.states[c][cfg]['instances_expected'] = 1
+                        else:
+                            self.states[c][cfg]['instances_expected'] = 0
                         self.states[c][cfg]['has_state'] = False
+                        self.states[c][cfg]['retry_queue'] = 0
 
-                        # print( 'state %s/%s' % ( c, cfg ) )
                         for pathname in os.listdir():
                             p = pathlib.Path(pathname)
                             if p.suffix in ['.pid', '.qname', '.state']:
@@ -218,6 +224,10 @@ class sr_GlobalState:
                                 elif pathname[-6:] == '.state' and (pathname[-12:-6] != '.retry'):
                                     if t.isdigit():
                                         self.states[c][cfg]['instances_expected'] = int(t)
+                                elif pathname[-12:] == '.retry.state':
+                                     buffer=2**16
+                                     with open(p) as f:
+                                         self.states[c][cfg]['retry_queue'] += sum(x.count('\n') for x in iter(partial(f.read,buffer), ''))
                         os.chdir('..')
                 os.chdir('..')
 
@@ -574,6 +584,11 @@ class sr_GlobalState:
             for cfg in self.states[c]:
                 print('\t\t%s : %s' % (cfg, self.states[c][cfg]))
 
+        print('\n\nMissing instances\n\n')
+        for instance in self.missing:
+            (c, cfg, i) = instance
+            print('\t\t%s : %s %d' % (c, cfg, i))
+
     def status(self):
         """ Printing statuses for each component/configs found
 
@@ -581,6 +596,8 @@ class sr_GlobalState:
         """
         bad = 0
 
+        print('%-10s %-10s %-5s %3s %s' % ( 'Component', 'State', 'Good?', 'Qty', 'Configurations-i(r/e)-r(Retry)' ) )
+        print('%-10s %-10s %-5s %3s %s' % ( '---------', '-----', '-----', '---', '------------------------------' ) )
         if self.auditors == 1:
             audst = "OK"
         elif self.auditors > 1:
@@ -588,8 +605,9 @@ class sr_GlobalState:
         else:
             audst = "missing"
 
-        print("sr_audit: running %d (%s)" % (self.auditors, audst))
+        print("%-10s %-10s %-5s %3d" % ('audit', 'running', audst, self.auditors ))
         configs_running = 0
+        missing_state_files=0
         for c in self.configs:
 
             status = {}
@@ -597,31 +615,48 @@ class sr_GlobalState:
                 status[sv] = []
 
             for cfg in self.configs[c]:
-                status[self.configs[c][cfg]['status']].append(cfg)
+
+                sfx=''
+                if self.configs[c][cfg]['status'] != 'stopped' :
+                    m = sum( map( lambda x: c in x and cfg in x, self.missing ) ) #perhaps expensive, but I am lazy FIXME
+                    sfx += '-i(%d/%d)' % ( \
+                        len(self.states[c][cfg]['instance_pids']) - m, \
+                        self.states[c][cfg]['instances_expected'])
+                    if len(self.states[c][cfg]['instance_pids']) < self.states[c][cfg]['instances_expected'] :
+                        missing_state_files += (  self.states[c][cfg]['instances_expected'] - len(self.states[c][cfg]['instance_pids']) )
+                if self.states[c][cfg]['retry_queue'] > 0 :
+                    sfx += '-r%d' % self.states[c][cfg]['retry_queue']
+                status[self.configs[c][cfg]['status']].append( cfg+sfx )
+
+                #'-i(%d/%d)-r(%d)' % (len(self.states[c][cfg]['instance_pids']), self.states[c][cfg]['instances_expected'], self.states[c][cfg]['retry_queue'] ) )
+
 
             if (len(status['partial']) + len(status['running'])) < 1:
                 if c not in ['post']:
-                    print('sr_%s: all %d stopped ( %s )' % (c, len(status['stopped']), ', '.join(status['stopped'])) )
+                    print('%-10s %-10s %-5s %3d %s' % (c, 'stopped', 'OK', len(status['stopped']), ', '.join(status['stopped'])) )
             elif len(status['running']) == len(self.configs[c]):
-                print('sr_%s: running %d (OK) ( %s )' % (c, len(self.configs[c]), ', '.join(status['running'] )) )
+                print('%-10s %-10s %-5s %3d %s' % (c, 'running', 'OK', len(self.configs[c]), ', '.join(status['running'] )) )
             elif len(status['running']) == (len(self.configs[c]) - len(status['disabled'])):
-                print('sr_%s: running %d (OKd) ( %s )' % (c, \
+                print('%-10s %-10s %-5s %-3d %s' % (c, 'most', 'OKd', \
                     (len(self.configs[c]) - len(status['disabled']),  ', '.join(status['running'] ))) )
             else:
-                print('sr_%s: mixed status, %d configured.' % (c, len(self.configs[c])))
+                print('%-10s %-10s %-5s %3d' % (c, 'mixed', 'mult', len(self.configs[c])))
                 bad = 1
                 for sv in self.status_values:
                     if len(status[sv]) > 0:
-                        print('\t%3d %s: %s ' % (len(status[sv]), sv, ', '.join(status[sv])))
+                        print('    %3d %s: %s ' % (len(status[sv]), sv, ', '.join(status[sv])))
 
             configs_running += len(status['running'])
 
+        stray=0
         for pid in self.procs:
             if not self.procs[pid]['claimed']:
+                stray += 1
                 bad = 1
                 print("pid: %s-%s is not a configured instance" % (pid, self.procs[pid]['cmdline']))
 
-        print('total running: configs: %d, processes: %d' % (configs_running, len(self.procs)))
+        print('total running configs: %d ( processes: %d missing: %d stray: %d )' % \
+            (configs_running, len(self.procs), len(self.missing)+missing_state_files, stray))
         return bad
 
 
