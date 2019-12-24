@@ -655,7 +655,7 @@ class sr_GlobalState:
                 bad = 1
                 print("pid: %s-%s is not a configured instance" % (pid, self.procs[pid]['cmdline']))
 
-        print('total running configs: %d ( processes: %d missing: %d stray: %d )' % \
+        print('      total running configs: %3d ( processes: %d missing: %d stray: %d )' % \
             (configs_running, len(self.procs), len(self.missing)+missing_state_files, stray))
         return bad
 
