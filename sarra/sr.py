@@ -619,7 +619,7 @@ class sr_GlobalState:
                 sfx=''
                 if self.configs[c][cfg]['status'] != 'stopped' :
                     m = sum( map( lambda x: c in x and cfg in x, self.missing ) ) #perhaps expensive, but I am lazy FIXME
-                    sfx += '-i(%d/%d)' % ( \
+                    sfx += '-i%d/%d' % ( \
                         len(self.states[c][cfg]['instance_pids']) - m, \
                         self.states[c][cfg]['instances_expected'])
                     if len(self.states[c][cfg]['instance_pids']) < self.states[c][cfg]['instances_expected'] :
