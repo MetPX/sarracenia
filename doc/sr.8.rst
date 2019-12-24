@@ -79,6 +79,8 @@ print the three data structure used by sr.  There are three lists:
        cpost
            veille_f34 : {'instance_pids': {1: 4251}, 'queue_name': None, 'instances_expected': 0, 'has_state': False, 'missing_instances': []}
 
+    Missing
+       
 
 It is quite long, and so a bit too much information to look at in a raw state.
 Usually used in conjunction with linux filters, such as grep.
@@ -133,65 +135,59 @@ stop all processes::
 Sample OK status (sr is running)::
 
   blacklab% sr status
+  reading procs: .... Done reading 451 procs!
   gathering global state: procs, configs, state files, logs, analysis - Done. 
-  status...
-  sr_audit: running 1 (OK)
-  sr_cpost: running 1 (OK)
-  sr_cpump: running 2 (OK)
-  sr_poll: running 2 (OK)
-  sr_report: running 3 (OK)
-  sr_sarra: running 1 (OK)
-  sr_sender: running 1 (OK)
-  sr_shovel: running 4 (OK)
-  sr_subscribe: running 10 (OKd)
-  sr_watch: running 1 (OK)
-  sr_winnow: running 2 (OK)
-  total running: configs: 27, processes: 93
+  status 
+  Component  State      Good?  Qty Configurations-i(r/e)-r(Retry)
+  ---------  -----      -----  --- ------------------------------
+  audit      running    OK       1
+  cpost      running    OK       1 veille_f34-i1/1
+  cpump      running    OK       4 xvan_f15-i1/1, xvan_f14-i1/1, pelle_dd2_f05-i1/1, pelle_dd1_f04-i1/1
+  poll       running    OK       2 pulse-i1/1, f62-i1/1
+  report     running    OK       3 twinnow01_f10-i1/1, twinnow00_f10-i1/1, tsarra_f20-i1/1
+  sarra      running    OK       1 download_f20-i5/5
+  sender     running    OK       1 tsource2send_f50-i10/10
+  shovel     running    OK       5 t_dd2_f00-i3/3, pclean_f90-i5/5-r228, rabbitmqtt_f22-i5/5, t_dd1_f00-i3/3, pclean_f92-i5/5
+  subscribe  running    OK       9 cdnld_f21-i5/5, cclean_f91-i5/5, rabbitmqtt_f31-i5/5, u_sftp_f60-i5/5, cfile_f44-i5/5, ftp_f70-i5/5, amqp_f30-i5/5, cp_f61-i5/5, q_f71-i5/5
+  watch      running    OK       1 f40-i1/1
+  winnow     running    OK       2 t00_f10-i1/1, t01_f10-i1/1
+  total running configs: 29 ( processes: 95 missing: 0 stray: 0 )
   blacklab% 
-  
-OK means that all configurations are running all instances.
+
+OK means that all configurations are running all instances. The configurations are listed at right. For each configuraion, there
+is -i followed by the number of instance processes running, and the number configured (that should be running.) when the two
+aren't the same, there is a missing instance.  For shovel configuration pclean_f90, once can see that there are 5 instances running
+or 5 configured, but there are also 228 messages in the retry queue.
 OKd means that some while configurations are running, some are disabled (and are not running.)
 
-Sample OK status (when sr is stopped)::
+More complete status::
 
   blacklab% sr status
+  reading procs: ..... Done reading 523 procs!
   gathering global state: procs, configs, state files, logs, analysis - Done. 
-  status...
-  sr_audit: running 0 (missing)
-  sr_cpost: all 1 stopped
-  sr_cpump: all 2 stopped
-  sr_poll: all 2 stopped
-  sr_report: all 3 stopped
-  sr_sarra: all 1 stopped
-  sr_sender: all 1 stopped
-  sr_shovel: all 4 stopped
-  sr_subscribe: all 10 stopped
-  sr_watch: all 1 stopped
-  sr_winnow: all 2 stopped
-  blacklab%
-  
-Sample status when something is wrong::
-
-  blacklab% sr status
-  gathering global state: procs, configs, state files, logs, analysis - Done. 
-  status...
-  sr_audit: running 1 (OK)
-  sr_cpost: running 1 (OK)
-  sr_cpump: running 2 (OK)
-  sr_poll: running 2 (OK)
-  sr_report: running 3 (OK)
-  sr_sarra: running 1 (OK)
-  sr_sender: running 1 (OK)
-  sr_shovel: running 4 (OK)
-  sr_subscribe: mixed status
-    disabled: amqp_f30.conf 
-     partial: cfile_f44 
-     running: local_sub, cdnld_f21, cclean_f91, rabbitmqtt_f31, u_sftp_f60, ftp_f70, amqp_f30, cp_f61, q_f71 
-  sr_watch: running 1 (OK)
-  sr_winnow: running 2 (OK)
+  status 
+  Component  State      Good?  Qty Configurations-i(r/e)-r(Retry)
+  ---------  -----      -----  --- ------------------------------
+  audit      running    OK       1
+  cpost      running    OK       1 veille_f34-i1/1
+  cpump      mixed      mult     4
+        2 stopped: pelle_dd2_f05, pelle_dd1_f04 
+        1 partial: xvan_f15-i0/1 
+        1 running: xvan_f14-i1/1 
+  poll       running    OK       2 pulse-i1/1, f62-i1/1
+  report     running    OK       3 twinnow01_f10-i1/1, twinnow00_f10-i1/1, tsarra_f20-i1/1
+  sarra      running    OK       1 download_f20-i5/5
+  sender     running    OK       1 tsource2send_f50-i10/10
+  shovel     mixed      mult     5
+        2 stopped: t_dd2_f00, t_dd1_f00 
+        3 running: pclean_f90-i5/5-r1144, rabbitmqtt_f22-i5/5, pclean_f92-i5/5 
+  subscribe  running    OK       9 cdnld_f21-i5/5, cclean_f91-i5/5-r342, rabbitmqtt_f31-i5/5, u_sftp_f60-i5/5, cfile_f44-i5/5, ftp_f70-i5/5, amqp_f30-i5/5, cp_f61-i5/5, q_f71-i5/5
+  watch      running    OK       1 f40-i1/1
+  winnow     running    OK       2 t00_f10-i1/1, t01_f10-i1/1
+  total running configs: 24 ( processes: 86 missing: 1 stray: 0 )
   blacklab% 
 
-Since there is a problem with sr_subscribe, more information 
+Since there is a problem with sr_cpump and sr_shovel, more information 
 is given. The disabled configuration is printed, and the partially 
 running one lists. A partially running configuration is one where 
 some instance processes are missing.
