@@ -596,16 +596,16 @@ class sr_GlobalState:
         """
         bad = 0
 
-        print('%-10s %-10s %-5s %3s %s' % ( 'Component', 'State', 'Good?', 'Qty', 'Configurations-i(r/e)-r(Retry)' ) )
-        print('%-10s %-10s %-5s %3s %s' % ( '---------', '-----', '-----', '---', '------------------------------' ) )
+        print('%-10s %-10s %-6s %3s %s' % ( 'Component', 'State', 'Good?', 'Qty', 'Configurations-i(r/e)-r(Retry)' ) )
+        print('%-10s %-10s %-6s %3s %s' % ( '---------', '-----', '-----', '---', '------------------------------' ) )
         if self.auditors == 1:
             audst = "OK"
         elif self.auditors > 1:
             audst = "excess"
         else:
-            audst = "missing"
+            audst = "absent"
 
-        print("%-10s %-10s %-5s %3d" % ('audit', 'running', audst, self.auditors ))
+        print("%-10s %-10s %-6s %3d" % ('audit', 'running', audst, self.auditors ))
         configs_running = 0
         missing_state_files=0
         for c in self.configs:
@@ -633,14 +633,14 @@ class sr_GlobalState:
 
             if (len(status['partial']) + len(status['running'])) < 1:
                 if c not in ['post']:
-                    print('%-10s %-10s %-5s %3d %s' % (c, 'stopped', 'OK', len(status['stopped']), ', '.join(status['stopped'])) )
+                    print('%-10s %-10s %-6s %3d %s' % (c, 'stopped', 'OK', len(status['stopped']), ', '.join(status['stopped'])) )
             elif len(status['running']) == len(self.configs[c]):
-                print('%-10s %-10s %-5s %3d %s' % (c, 'running', 'OK', len(self.configs[c]), ', '.join(status['running'] )) )
+                print('%-10s %-10s %-6s %3d %s' % (c, 'running', 'OK', len(self.configs[c]), ', '.join(status['running'] )) )
             elif len(status['running']) == (len(self.configs[c]) - len(status['disabled'])):
-                print('%-10s %-10s %-5s %-3d %s' % (c, 'most', 'OKd', \
+                print('%-10s %-10s %-6s %-3d %s' % (c, 'most', 'OKd', \
                     (len(self.configs[c]) - len(status['disabled']),  ', '.join(status['running'] ))) )
             else:
-                print('%-10s %-10s %-5s %3d' % (c, 'mixed', 'mult', len(self.configs[c])))
+                print('%-10s %-10s %-6s %3d' % (c, 'mixed', 'mult', len(self.configs[c])))
                 bad = 1
                 for sv in self.status_values:
                     if len(status[sv]) > 0:
