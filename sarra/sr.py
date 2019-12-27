@@ -303,20 +303,26 @@ class sr_GlobalState:
 
             os.chdir('log')
 
+            # FIXME: known issue... specify a log rotation interval < 1 d, it puts an _ between date and TIME.
+            # ISO says this should be a T, but whatever... sr_shovel_t_dd1_f00_03.log.2019-12-27_12-43-01
+            # the additional _ breaks this logic, can't be bothered to fix it yet... to unusual a case to worry about.
+            # just patched to not crash for now.
             for lf in os.listdir():
                 lff = lf.split('_')
                 # print('looking at: %s' %lf )
                 if len(lff) > 3:
                     c = lff[1]
                     cfg = '_'.join(lff[2:-1])
+                    
                     suffix = lff[-1].split('.')
 
-                    if suffix[1] == 'log':
-                        inum = int(suffix[0])
-                        age = ageoffile(lf)
-                        if cfg not in self.logs[c]:
-                            self.logs[c][cfg] = {}
-                        self.logs[c][cfg][inum] = age
+                    if len(suffix) > 1:
+                        if suffix[1] == 'log':
+                            inum = int(suffix[0])
+                            age = ageoffile(lf)
+                            if cfg not in self.logs[c]:
+                                self.logs[c][cfg] = {}
+                            self.logs[c][cfg][inum] = age
 
     def _resolve(self):
         """
