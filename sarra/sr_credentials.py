@@ -87,7 +87,7 @@ class sr_credentials:
         self.credentials[urlstr] = details
 
     def get(self, urlstr ):
-        self.logger.debug("sr_credentials get %s" % urlstr)
+        #self.logger.debug("sr_credentials get %s" % urlstr)
 
         # already cached
 
@@ -99,11 +99,21 @@ class sr_credentials:
 
         url = urllib.parse.urlparse(urlstr)
 
+        # add anonymous default, if necessary.
+        if ( 'amqp' in url.scheme ) and \
+           ( (url.username == None) or (url.username == '') ):
+            urlstr = urllib.parse.urlunparse( ( url.scheme, \
+                'anonymous:anonymous@%s' % url.netloc, url.path, None, None, url.port ) )
+            url = urllib.parse.urlparse(urlstr)
+            if self.isValid(url) :
+                 self.add(urlstr)
+                 return False,self.credentials[urlstr]
+
         # resolved from defined credentials
 
         ok, details = self.resolve(urlstr, url)
         if ok : return True, details
-
+           
         # not found... is it valid ?
         if not self.isValid(url) :
            return False,None
@@ -111,7 +121,6 @@ class sr_credentials:
         # cache it as is... we dont want to validate every time
 
         self.add(urlstr)
-        self.logger.debug("sr_credentials get add %s %s" % (urlstr,self.credentials[urlstr]))
         return False,self.credentials[urlstr]
 
     def has(self, urlstr ):
