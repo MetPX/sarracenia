@@ -1,3 +1,9 @@
+metpx-sarracenia (2.19.12b6) UNRELEASED; urgency=medium
+
+  * issue #291 default anonymous:anonymous broker user.
+
+ -- Peter Silva <peter@blacklab>  Thu, 26 Dec 2019 23:27:36 -0500
+
 metpx-sarracenia (2.19.12b5) unstable; urgency=medium
 
   * sr output improvements, more lively and informative about progress.
