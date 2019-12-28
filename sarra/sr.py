@@ -22,7 +22,7 @@
 from functools import partial
 
 import getpass
-import os
+import os,re
 import os.path
 import pathlib
 import signal
@@ -40,19 +40,53 @@ def ageoffile(lf):
     """
     return 0
 
+def _parse_cfg_build_mask(cfg,option,arguments):
+    """ return new entry to be appended to list of masks
+    """
+    regex = re.compile( arguments[0] )
+    if len(arguments) > 1:
+         fn=arguments[1]
+    else:
+         fn=cfg['filename']
 
-def _parse_cfg(cfg):
+    return ( arguments[0], cfg['directory'], fn, regex, \
+             option.lower() in ['accept','get'], \
+             cfg['mirror'], cfg['strip'], cfg['pstrip'] )
+
+def _parse_cfg_empty():
+    """ return an empty, initialized configuration.
+    """
+    cfgbody = {}
+    cfgbody['directory'] = '${CWD}'
+    cfgbody['filename'] = None
+    cfgbody['masks'] =  []
+    cfgbody['mirror'] = False
+    cfgbody['strip'] = 0
+    cfgbody['pstrip'] = False
+    cfgbody['flatten'] = '/'
+    return cfgbody
+
+def _parse_cfg(cfg,parent=None):
     """ return configuration file as a dictionary.
         FIXME: this is extremely rudimentary, doesn't do variable substitution, etc...
                only want to use this to get 'instances' for now which should be ok 99% of the time.
     """
-    cfgbody = {}
+    if parent:
+       cfgbody=parent
+    else:
+       cfgbody=_parse_cfg_empty()
+ 
     for l in open(cfg, "r").readlines():
         line = l.split()
-        if (len(line) < 1) or (line[0] == '#'):
+        if (len(line) < 1) or (line[0].startswith('#')):
             continue
 
-        cfgbody[line[0]] = ' '.join(line[1:])
+        if line[0] in [ 'accept', 'reject', 'get' ]:
+            cfgbody[ 'masks' ].append( _parse_cfg_build_mask(cfgbody, line[0], line[1:] ) )
+        elif line[0] in [ 'include' ]:
+            cfgbody  = _parse_cfg( line[1] , cfgbody )
+        else:
+            cfgbody[line[0]] = ' '.join(line[1:])
     return cfgbody
 
 
@@ -171,7 +205,7 @@ class sr_GlobalState:
 
                     if state != 'unknown':
                         cfgbody = _parse_cfg(cfg)
-
+                        self.configs[c][cbase]['options'] = cfgbody
                         # ensure there is a known value of instances to run.
                         if c in ['post', 'cpost']:
                             if ('sleep' in cfgbody.keys()) and (cfgbody['sleep'] not in ['-', '0']):
