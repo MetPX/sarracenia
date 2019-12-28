@@ -97,7 +97,8 @@ if [ $cmd == 'stopped' ]; then
    stalled=0
    stalled_value=-1
    retry_msgcnt="`cat "$CACHEDIR"/*/*_f[0-9][0-9]/*retry* 2>/dev/null | sort -u | wc -l`"
-   while [ $retry_msgcnt -gt $(($smin * 20 / 100)) ]; do
+   #while [ $retry_msgcnt -gt $(($smin * 20 / 100)) ]; do
+   while [ $retry_msgcnt -gt 0 ]; do
         printf "Still %4s messages to retry, waiting...\r" "$retry_msgcnt"
         sleep 10
         retry_msgcnt="`cat "$CACHEDIR"/*/*_f[0-9][0-9]/*retry* 2> /dev/null | sort -u | wc -l`"
