@@ -408,16 +408,15 @@ class sr_message():
         self.set_hdrstr()
 
         # AMQP limits topic to 255 characters, so truncate and warn.
-        if self.topic.startswith('v02') and len(self.topic.encode("utf8")) >= amqp_ss_maxlen :
+        if len(self.topic.encode("utf8")) >= amqp_ss_maxlen :
            mxlen=amqp_ss_maxlen 
            # see truncation explanation from above.
            while( self.report_topic.encode("utf8")[mxlen-1] & 0xc0 == 0xc0 ):
                mxlen -= 1
 
-           self.logger.error( "reporting topic too long at %d characters (to fit 255 byte AMQP limit) to: %s " % \
-                        ( len(self.report_topic) , self.report_topic ) )
            self.report_topic = self.report_topic.encode("utf8")[0:mxlen].decode("utf8")
-           return False
+           self.logger.warning( "reporting topic too long. truncated to fit 255 byte AMQP limit: %s " % \
+                        ( self.report_topic ) )
 
         # if  there is a publisher
         if self.report_publisher != None :
@@ -591,16 +590,15 @@ class sr_message():
         if self.post_topic_prefix != self.topic_prefix:
             self.topic = self.topic.replace(self.topic_prefix,self.post_topic_prefix,1)
 
-        if not ( self.post_version == 'v03' ) and len(self.topic.encode("utf8")) >= amqp_ss_maxlen :
+        if len(self.topic.encode("utf8")) >= amqp_ss_maxlen :
            mxlen=amqp_ss_maxlen 
            # see truncation explanation from above.
            while( self.topic.encode("utf8")[mxlen-1] & 0xc0 == 0xc0 ):
                mxlen -= 1
 
            self.topic = self.topic.encode("utf8")[0:mxlen].decode("utf8")
-           self.logger.error( "too long topic at %d characters (to fit 255 byte AMQP limit) to: %s " % \
-                        ( len(self.topic) , self.topic ) )
-           return False
+           self.logger.warning( "too long topic.  Truncated to fit 255 byte AMQP limit: %s " % \
+                        ( self.topic ) )
 
         # in order to split winnowing into multiple instances, directs items with same checksum
         # to same shard. do that by keying on a specific character in the checksum.
