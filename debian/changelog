@@ -1,4 +1,4 @@
-metpx-sarracenia (2.19.12b6) UNRELEASED; urgency=medium
+metpx-sarracenia (2.19.12b6) unstable; urgency=medium
 
   * bugfix #294 drop messages that have headers that are too long.
   * work-around for #293 log file descriptors saying on original after rotation.
