@@ -6,6 +6,17 @@ lists all changes between versions.
 
 **git repo**
 
+**2.19.12b6**
+
+  * bugfix #294 drop messages that have headers that are too long.
+  * work-around for #293 log file descriptors saying on original after rotation.
+  * bugfix #292 errors in example for citypage download.
+  * bugfix #291 default anonymous:anonymous broker user.
+  * bugfix #285 sr sanity better handles missing C binaries.
+  * bugfix #283 sr display of c components improved.
+  * work-around for #258 trying to get better flow test results.
+  * sr output improvements.
+
 **2.19.12b5**
 
   * sr output improvements, more lively and informative about progress.
