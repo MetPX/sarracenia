@@ -141,8 +141,9 @@ echo "                 | py infos   routing |"
 calcres ${totpropagated} ${t6} "sr_shovel pclean_f90\t (${totpropagated}) should have twice the number of watched files\t (${totfileamqp})"
 calcres ${totremoved}    ${t6} "sr_shovel pclean_f92\t (${totremoved}) should have twice the number of watched files\t (${totfileamqp})"
 zerowanted "${missed_dispositions}" "${maxshovel}" "messages received that we don't know what happened."
-calcres ${totshortened} ${totfileamqp} \
-   "count of truncated headers (${totshortened}) and subscribed messages (${totmsgamqp}) should have about the same number of items"
+# check removed because of issue #294
+#calcres ${totshortened} ${totfileamqp} \
+#   "count of truncated headers (${totshortened}) and subscribed messages (${totmsgamqp}) should have about the same number of items"
 
 # these almost never are the same, and it's a problem with the post test. so failures here almost always false negative.
 #calcres ${totpost1} ${totsubu} "post test2_f61 ${totpost1} and subscribe u_sftp_f60 ${totsubu} run together. Should be about the same."
