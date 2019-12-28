@@ -165,7 +165,7 @@ class sr_GlobalState:
 
                         # ensure there is a known value of instances to run.
                         if c in ['post', 'cpost']:
-                            if ('sleep' in cfgbody) and (cfgbody['sleep'][0] not in ['-', '0']):
+                            if ('sleep' in cfgbody.keys()) and (cfgbody['sleep'] not in ['-', '0']):
                                 numi = 1
                             else:
                                 numi = 0
@@ -340,6 +340,8 @@ class sr_GlobalState:
                 if cfg not in self.states[c]:
                     # print('missing state for sr_%s/%s' % (c,cfg) )
                     continue
+                if (self.configs[c][cfg]['instances'] == 0):
+                        self.states[c][cfg]['instances_expected'] = 0
                 if len(self.states[c][cfg]['instance_pids']) > 0:
                     self.states[c][cfg]['missing_instances'] = []
                     observed_instances = 0
