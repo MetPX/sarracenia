@@ -2065,7 +2065,7 @@ class sr_config:
                     n = 2
 
                 elif words0 in ['logrotate_interval', 'lri']:
-                    if words1 and len(words1) > 1 and words1[-1] in 'mMhHdD':
+                    if words1 and len(words1) > 1 and words1[-1] in 'sSmMhHdD':
                         self.lr_when = words1[-1]
                         self.lr_interval = int(float(words1[:-1]))
                     else:
@@ -2761,8 +2761,12 @@ class sr_config:
         else:
             handler = self.create_handler(base_log_format, logging.DEBUG)
             self.logger.addHandler(handler)
-            sys.stdout = StdFileLogWrapper(handler, 1)
-            sys.stderr = StdFileLogWrapper(handler, 2)
+            if sys.platform != 'win32':
+                os.dup2( handler.stream.fileno(), 1 )
+                os.dup2( handler.stream.fileno(), 2 )
+                # replaced below with os.dup2 calls above, see issue #293
+                #sys.stdout = StdFileLogWrapper(handler, 1)
+                #sys.stderr = StdFileLogWrapper(handler, 2)
             self.logger.debug("logging to file ({}) with {}".format(self.logpath, self.logger))
 
     def create_handler(self, log_format, level):
