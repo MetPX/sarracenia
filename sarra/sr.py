@@ -104,8 +104,11 @@ class sr_GlobalState:
 
         #print( "launching +%s+  re-directed to: %s" % ( cmd, lfn ) )
 
-        with open(lfn, "a") as lf:
-            subprocess.Popen(cmd, stdin=subprocess.DEVNULL, stdout=lf, stderr=subprocess.STDOUT)
+        try:
+            with open(lfn, "a") as lf:
+                subprocess.Popen(cmd, stdin=subprocess.DEVNULL, stdout=lf, stderr=subprocess.STDOUT)
+        except Exception as ex:
+            print( "failed to launch: %s >%s >2&1 (reason: %s) " % ( ' '.join(cmd), lfn, ex ) )
 
     def _read_procs(self):
         # read process table.
@@ -148,33 +151,37 @@ class sr_GlobalState:
                 self.configs[c] = {}
                 for cfg in os.listdir():
 
+                    numi = 0
                     if cfg[-4:] == '.off':
                         cbase = cfg[0:-4]
                         state = 'disabled'
                     elif cfg[-5:] == '.conf':
                         cbase = cfg[0:-5]
                         state = 'stopped'
+                    elif cfg[-4:] == '.inc':
+                        cbase = cfg[0:-5]
+                        state = 'include'
+                        continue
                     else:
                         cbase = cfg
                         state = 'unknown'
 
+                    self.configs[c][cbase] = {}
+                    self.configs[c][cbase]['status'] = state
+
                     if state != 'unknown':
-                        self.configs[c][cbase] = {}
-                        self.configs[c][cbase]['status'] = state
                         cfgbody = _parse_cfg(cfg)
 
                         # ensure there is a known value of instances to run.
                         if c in ['post', 'cpost']:
                             if ('sleep' in cfgbody.keys()) and (cfgbody['sleep'] not in ['-', '0']):
                                 numi = 1
-                            else:
-                                numi = 0
                         elif 'instances' in cfgbody:
                             numi = int(cfgbody['instances'])
                         else:
                             numi = 1
 
-                        self.configs[c][cbase]['instances'] = numi
+                    self.configs[c][cbase]['instances'] = numi
 
                 os.chdir('..')
 
@@ -193,6 +200,13 @@ class sr_GlobalState:
                         self.states[c][cfg] = {}
                         self.states[c][cfg]['instance_pids'] = {}
                         self.states[c][cfg]['queue_name'] = None
+                        if c == 'audit' :
+                            self.states[c][cfg]['instances_expected'] = 1
+                        elif cfg not in self.configs[c] :
+                            self.states[c][cfg]['status'] = 'removed'
+                            self.states[c][cfg]['instances_expected'] = 0
+                        elif self.configs[c][cfg]['instances'] == 0:
+                            self.states[c][cfg]['instances_expected'] = 0
                         if c[0] == 'c':
                             self.states[c][cfg]['instances_expected'] = 1
                         else:
@@ -356,6 +370,8 @@ class sr_GlobalState:
                         # print( "%s/%s observed_instances: %s expected: %s" % \
                         #   ( c, cfg, observed_instances, self.states[c][cfg]['instances_expected'] ) )
                         self.configs[c][cfg]['status'] = 'partial'
+                    elif observed_instances == 0:
+                        self.configs[c][cfg]['status'] = 'stopped'
                     else:
                         self.configs[c][cfg]['status'] = 'running'
 
@@ -430,6 +446,14 @@ class sr_GlobalState:
         print('missing: %s' % self.missing)
         print('starting them up...')
         self._start_missing()
+
+        print('killing strays...')
+        for pid in self.procs:
+            if not self.procs[pid]['claimed']:
+                print("pid: %s-%s does not match any configured instance, sending it TERM" % (
+                        pid, self.procs[pid]['cmdline'][0:5]))
+                os.kill(pid, signal.SIGTERM)
+
 
     def start(self):
         """ Starting all components
@@ -625,6 +649,8 @@ class sr_GlobalState:
             for cfg in self.configs[c]:
 
                 sfx=''
+                if self.configs[c][cfg]['status'] == 'include' :
+                    continue
                 if self.configs[c][cfg]['status'] != 'stopped' :
                     m = sum( map( lambda x: c in x and cfg in x, self.missing ) ) #perhaps expensive, but I am lazy FIXME
                     sfx += '-i%d/%d' % ( \
