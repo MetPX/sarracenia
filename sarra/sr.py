@@ -403,17 +403,18 @@ class sr_GlobalState:
         for h in self.brokers:
            self.exchange_summary[h] = {}
            allx=[]
-           if 'exchange' in self.brokers[h]:
-               allx += self.brokers[h]['exchange'].keys() 
+           if 'exchanges' in self.brokers[h]:
+               allx += self.brokers[h]['exchanges'].keys() 
 
-           if 'exchange' in self.brokers[h]:
-               allx += self.brokers[h]['post_exchange'].keys()
+           if 'post_exchanges' in self.brokers[h]:
+               allx += self.brokers[h]['post_exchanges'].keys()
 
            for x in allx:
-               if x in self.brokers[h]['exchange']:
-                   a = len(self.brokers[h]['exchange'][x])
-               if x in self.brokers[h]['post_exchange']:
-                  a += len(self.brokers[h]['post_exchange'][x])
+               a=0
+               if x in self.brokers[h]['exchanges']:
+                   a += len(self.brokers[h]['exchanges'][x])
+               if x in self.brokers[h]['post_exchanges']:
+                  a += len(self.brokers[h]['post_exchanges'][x])
                self.exchange_summary[h][x]=a
                
                            
@@ -707,6 +708,18 @@ class sr_GlobalState:
             print( "exchanges: %s" % self.brokers[h]['exchanges'] )
             print( "queues: %s" % self.brokers[h]['queues'] )
             
+        print('\n\nbroker summaries:\n\n')
+        for h in self.brokers:
+            print('\nbroker: %s' % h )
+            print('exchanges: ', end='' )
+            for x in self.exchange_summary[h]:
+                print( "%s-%d, " % ( x, self.exchange_summary[h][x] ), end='' )
+            print('') 
+            print('queues: ', end='' )
+            for q in self.brokers[h]['queues']:
+                print( "%s-%d, " % ( q, len(self.brokers[h]['queues'][q]) ), end='' )
+            print('') 
+
 
         print('\n\nMissing instances\n\n')
         for instance in self.missing:
@@ -787,13 +800,11 @@ class sr_GlobalState:
         print('      total running configs: %3d ( processes: %d missing: %d stray: %d )' % \
             (configs_running, len(self.procs), len(self.missing)+missing_state_files, stray))
 
-        print('broker declarations:')
         for h in self.brokers:
-            print('broker: %s' % h )
-            print('exchanges: ', end='' )
             for x in self.exchange_summary[h]:
-                print( "%s-%d, \c" % ( x, self.exchange_summary[h][x] ), end='' )
-            print('') 
+                if self.exchange_summary[h][x] == 0:
+                    print( "exchange with no bindings: %s-%s " % ( h, x ), end='' )
+        
         return bad
 
 def main():
