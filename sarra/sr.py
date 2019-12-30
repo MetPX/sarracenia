@@ -21,17 +21,26 @@
 
 from functools import partial
 
+import appdirs
+import copy
 import getpass
-import os,re
+import logging
+import os
 import os.path
 import pathlib
+import psutil
+import re
 import signal
 import subprocess
 import sys
 import time
 
-import appdirs
-import psutil
+try:
+    from sr_cfg2 import *
+
+except:
+    from sarra.sr_cfg2 import *
+
 
 
 def ageoffile(lf):
@@ -39,56 +48,6 @@ def ageoffile(lf):
         FIXME: mocked here for now. 
     """
     return 0
-
-def _parse_cfg_build_mask(cfg,option,arguments):
-    """ return new entry to be appended to list of masks
-    """
-    regex = re.compile( arguments[0] )
-    if len(arguments) > 1:
-         fn=arguments[1]
-    else:
-         fn=cfg['filename']
-
-    return ( arguments[0], cfg['directory'], fn, regex, \
-             option.lower() in ['accept','get'], \
-             cfg['mirror'], cfg['strip'], cfg['pstrip'] )
-
-def _parse_cfg_empty():
-    """ return an empty, initialized configuration.
-    """
-    cfgbody = {}
-    cfgbody['directory'] = '${CWD}'
-    cfgbody['filename'] = None
-    cfgbody['masks'] =  []
-    cfgbody['mirror'] = False
-    cfgbody['strip'] = 0
-    cfgbody['pstrip'] = False
-    cfgbody['flatten'] = '/'
-    return cfgbody
-
-def _parse_cfg(cfg,parent=None):
-    """ return configuration file as a dictionary.
-        FIXME: this is extremely rudimentary, doesn't do variable substitution, etc...
-               only want to use this to get 'instances' for now which should be ok 99% of the time.
-    """
-    if parent:
-       cfgbody=parent
-    else:
-       cfgbody=_parse_cfg_empty()
- 
-    for l in open(cfg, "r").readlines():
-        line = l.split()
-        if (len(line) < 1) or (line[0].startswith('#')):
-            continue
-
-        if line[0] in [ 'accept', 'reject', 'get' ]:
-            cfgbody[ 'masks' ].append( _parse_cfg_build_mask(cfgbody, line[0], line[1:] ) )
-        elif line[0] in [ 'include' ]:
-            cfgbody  = _parse_cfg( line[1] , cfgbody )
-        else:
-            cfgbody[line[0]] = ' '.join(line[1:])
-    return cfgbody
-
 
 # noinspection PyArgumentList
 class sr_GlobalState:
@@ -178,6 +137,10 @@ class sr_GlobalState:
         # read in configurations.
         self.configs = {}
         os.chdir(self.user_config_dir)
+        default_cfg = sr_cfg2(self.logger,self.user_config_dir)
+        default_cfg.parse_file("admin.conf")
+        default_cfg.parse_file("default.conf")
+         
 
         for c in self.components:
             if os.path.isdir(c):
@@ -204,14 +167,15 @@ class sr_GlobalState:
                     self.configs[c][cbase]['status'] = state
 
                     if state != 'unknown':
-                        cfgbody = _parse_cfg(cfg)
+                        cfgbody = copy.deepcopy( default_cfg )
+                        cfgbody.parse_file( cfg )
                         self.configs[c][cbase]['options'] = cfgbody
                         # ensure there is a known value of instances to run.
                         if c in ['post', 'cpost']:
-                            if ('sleep' in cfgbody.keys()) and (cfgbody['sleep'] not in ['-', '0']):
+                            if hasattr(cfgbody,'sleep') and cfgbody.sleep not in ['-', '0']:
                                 numi = 1
-                        elif 'instances' in cfgbody:
-                            numi = int(cfgbody['instances'])
+                        elif hasattr(cfgbody, 'instances' ):
+                            numi = int(cfgbody.instances)
                         else:
                             numi = 1
 
@@ -417,11 +381,12 @@ class sr_GlobalState:
 
         # FIXME: missing check for too many instances.
 
-    def __init__(self):
+    def __init__(self,logger):
         """
            side effect: changes current working directory FIXME?
         """
 
+        self.logger = logger
         self.appname = 'sarra'
         self.appauthor = 'science.gc.ca'
         self.user_config_dir = appdirs.user_config_dir(self.appname, self.appauthor)
@@ -430,6 +395,7 @@ class sr_GlobalState:
                            'subscribe', 'watch', 'winnow']
         self.status_values = ['disabled', 'stopped', 'partial', 'running']
 
+ 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
 
         self._read_procs()
@@ -742,6 +708,12 @@ def main():
 
     :return:
     """
+    logger = logging.getLogger()
+    logging.basicConfig(format='%(asctime)s [%(levelname)s] %(message)s', level=logging.DEBUG)
+    logger.setLevel( logging.ERROR )
+
+
+
     actions = ['declare', 'dump', 'restart', 'sanity', 'setup', 'status', 'stop']
 
     if len(sys.argv) < 2:
@@ -750,7 +722,7 @@ def main():
     else:
         action = sys.argv[1]
 
-    gs = sr_GlobalState()
+    gs = sr_GlobalState(logger)
 
     if action in ['declare', 'setup']:
         print('%s ' % action, end='', flush=True)
