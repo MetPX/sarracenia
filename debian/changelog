@@ -1,6 +1,6 @@
-metpx-sarracenia (2.20.01b1) UNRELEASED; urgency=medium
+metpx-sarracenia (2.19.12b7) UNRELEASED; urgency=medium
 
-  * 
+  * fix for sr.py broken/inconsistant state (configs without state, state without configs)
 
  -- Peter Silva <peter@blacklab>  Sun, 29 Dec 2019 23:57:10 -0500
 
