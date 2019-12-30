@@ -6,6 +6,10 @@ lists all changes between versions.
 
 **git repo**
 
+**2.19.12b7**
+
+  * bugfix #295 sr status crashes if some directories are missing.
+
 **2.19.12b6**
 
   * bugfix #294 drop messages that have headers that are too long.
