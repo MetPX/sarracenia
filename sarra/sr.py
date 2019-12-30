@@ -140,7 +140,6 @@ class sr_GlobalState:
         default_cfg = sr_cfg2(self.logger,self.user_config_dir)
         default_cfg.parse_file("admin.conf")
         default_cfg.parse_file("default.conf")
-         
 
         for c in self.components:
             if os.path.isdir(c):
@@ -337,12 +336,96 @@ class sr_GlobalState:
                                 self.logs[c][cfg] = {}
                             self.logs[c][cfg][inum] = age
 
+    def _init_broker_host(self, bhost ):
+        if '@' in bhost:
+            host=bhost.split('@')[1]
+        else:
+            host=bhost
+
+        if not host in self.brokers:
+            self.brokers[host] = {}
+            self.brokers[host]['post_exchanges'] = {}
+            self.brokers[host]['exchanges'] = {}
+            self.brokers[host]['queues'] = {}
+        return host
+
+
+    def _resolve_brokers(self):
+        """ make a map of dependencies
+
+            on a given broker, 
+                 exchanges exist, 
+                      with publishers: [ 'c/cfg', 'c/cfg' ... ]
+                      with queues: [ 'qname', 'qname', ... ]
+                      for each queue: [ 'c/cfg', 'c/cfg', ... ]
+        """
+        self.brokers={}
+        for c in self.components:
+            if (c not in self.states) or (c not in self.configs):
+                continue
+            
+            for cfg in self.configs[c]:
+                o = self.configs[c][cfg]['options']
+                name = c + '/' + cfg
+                
+                if hasattr(o,'broker') and o.broker is not None:
+                    host = self._init_broker_host( o.broker.netloc )
+
+                    if hasattr(o,'exchange'):
+
+                        if hasattr(o,'queue'):
+                           q = o.queue
+                        else:
+                           try:
+                              q = self.states[c][cfg]['queue_name']
+                           except:
+                              q = 'unknown'
+
+                        if o.exchange in self.brokers[host]['exchanges']:
+                            self.brokers[host]['exchanges'][o.exchange].append( q )
+                        else:
+                            self.brokers[host]['exchanges'][o.exchange] = [ q ]
+                        if q in self.brokers[host]['queues']:
+                            self.brokers[host]['queues'][q].append( name )
+                        else:
+                            self.brokers[host]['queues'][q] = [ name ]
+
+                if hasattr(o,'post_broker') and o.post_broker is not None:
+                    host = self._init_broker_host( o.post_broker.netloc )
+
+                    if hasattr(o,'post_exchange'):
+                        if o.post_exchange in self.brokers[host]['post_exchanges']:
+                            self.brokers[host]['post_exchanges'][o.post_exchange].append( name )
+                        else:
+                            self.brokers[host]['post_exchanges'][o.post_exchange]= [ name ]
+                                      
+        self.exchange_summary= {}
+        for h in self.brokers:
+           self.exchange_summary[h] = {}
+           allx=[]
+           if 'exchange' in self.brokers[h]:
+               allx += self.brokers[h]['exchange'].keys() 
+
+           if 'exchange' in self.brokers[h]:
+               allx += self.brokers[h]['post_exchange'].keys()
+
+           for x in allx:
+               if x in self.brokers[h]['exchange']:
+                   a = len(self.brokers[h]['exchange'][x])
+               if x in self.brokers[h]['post_exchange']:
+                  a += len(self.brokers[h]['post_exchange'][x])
+               self.exchange_summary[h][x]=a
+               
+                           
+
     def _resolve(self):
         """
            compare configs, states, & logs and fill things in.
 
            things that could be identified: differences in state, running & configured instances.
         """
+
+        self._resolve_brokers()
 
         # comparing states and configs to find missing instances, and correct state.
         for c in self.components:
@@ -617,6 +700,14 @@ class sr_GlobalState:
             for cfg in self.states[c]:
                 print('\t\t%s : %s' % (cfg, self.states[c][cfg]))
 
+        print('\n\nBroker Bindings\n\n')
+        for h in self.brokers:
+            print( "\nhost: %s" % h )
+            print( "post_exchanges: %s" % self.brokers[h]['post_exchanges'] )
+            print( "exchanges: %s" % self.brokers[h]['exchanges'] )
+            print( "queues: %s" % self.brokers[h]['queues'] )
+            
+
         print('\n\nMissing instances\n\n')
         for instance in self.missing:
             (c, cfg, i) = instance
@@ -695,8 +786,15 @@ class sr_GlobalState:
 
         print('      total running configs: %3d ( processes: %d missing: %d stray: %d )' % \
             (configs_running, len(self.procs), len(self.missing)+missing_state_files, stray))
-        return bad
 
+        print('broker declarations:')
+        for h in self.brokers:
+            print('broker: %s' % h )
+            print('exchanges: ', end='' )
+            for x in self.exchange_summary[h]:
+                print( "%s-%d, \c" % ( x, self.exchange_summary[h][x] ), end='' )
+            print('') 
+        return bad
 
 def main():
     """ Main thread for sr dealing with parsing and action switch

@@ -34,6 +34,9 @@ except :
 """
    re-write of configuration parser.
    
+   Still very incomplete, it does just enough to work with sr.py for now.
+   Not usable as a replacement for sr_config.py (yet!) 
+
 """
 
 
@@ -45,6 +48,7 @@ class sr_cfg2:
 
    def __init__(self,logger,user_config_dir,parent=None):
 
+       self.bindings =  []
        self.__broker = None
        self.__post_broker = None
        sr_cfg2.logger = logger
@@ -62,12 +66,14 @@ class sr_cfg2:
        self.filename = None
        self.flatten = '/'
        self.hostname = socket.getfqdn()
+       print( 'hostname is: %s' % self.hostname )
        self.masks =  []
        self.mirror = False
        self.strip = 0
        self.pstrip = False
        self.randid = "%04x" % random.randint(0,65536)
        self.tls_rigour = 'normal'
+       self.topic_prefix = 'v02.post'
        self.users = {}
 
 
@@ -188,6 +194,16 @@ class sr_cfg2:
            for k in oth.__dict__.keys():
               self._merge_field( k, self._varsub(getattr(oth,k)) )
 
+   def _parse_binding(self, subtopic):
+       """
+         FIXME: see original parse, with substitions for url encoding.
+                also should sqwawk about error if no exchange or topic_prefix defined.
+                also None to reset to empty, not done.
+       """
+       if hasattr(self,'exchange') and hasattr(self,'topic_prefix'):
+           self.bindings.append( (self.exchange, self.topic_prefix + '.' + subtopic) )
+
+
    def _parse_declare(self, words):
 
        if words[0] in  [ 'env', 'envvar', 'var', 'value' ]:
@@ -200,9 +216,7 @@ class sr_cfg2:
 
 
    def parse_file(self, cfg):
-       """ return configuration file as a dictionary.
-           FIXME: this is extremely rudimentary, doesn't do variable substitution, etc...
-                  only want to use this to get 'instances' for now which should be ok 99% of the time.
+       """ add settings in file to self
        """
        for l in open(cfg, "r").readlines():
            line = l.split()
@@ -217,10 +231,16 @@ class sr_cfg2:
                self._parse_declare( line[1:] )
            elif line[0] in [ 'include' ]:
                self.parse_file( line[1] )
+           elif line[0] in [ 'subtopic' ]:
+               self._parse_binding( line[1] )
            else:
                setattr( self, line[0] , ' '.join(line[1:]) )
   
    def parse_args(self, isPost=False):
+        """
+           FIXME, many FIXME notes below. this is a currently unusable placeholder.
+           have not figured this out yet. many issues.
+        """
         
         parser=argparse.ArgumentParser( \
              description='Subscribe to one peer, and post what is downloaded' ,\
@@ -245,7 +265,7 @@ class sr_cfg2:
            -- accept/reject whole mess requires extension deriving a class from argparse.Action.
            
         """
-        parser.add_argument('--broker', default='amqp://localhost' + self.hostname, help='amqp://user:pw@host of peer to subscribe to')
+        parser.add_argument('--broker', default=None, help='amqp://user:pw@host of peer to subscribe to')
         #parser.add_argument('--clean_session', type=bool, default=False, help='start a new session, or resume old one?')
         #parser.add_argument('--clientid', default=host, help='like an AMQP queue name, identifies a group of subscribers')
         parser.add_argument('--component', choices=[ 'audit', 'cpost', 'cpump', 'poll', 'post', 'sarra', 'sender', 'shovel' 'subscribe', 'watch', 'winnow' ], \
@@ -254,6 +274,11 @@ class sr_cfg2:
         #parser.add_argument('--download', type=bool, default=True, help='should download data ?')
         #parser.add_argument('--encoding', choices=[ 'text', 'binary', 'guess'], help='encode payload in base64 (for binary) or text (utf-8)')
         parser.add_argument('--exchange', default='xpublic', help='root of the topic tree to subscribe to')
+
+        """
+        FIXME: in previous parser, exchange is a modifier for bindings, can have several different values for different subtopic bindings.
+           as currently coded, just a single value that over-writes previous setting, so only binding to a single exchange is possible.
+        """
         
         #parser.add_argument('--inline', dest='inline', action='store_true', help='include file data in the message')
         #parser.add_argument('--inline_max', type=int, default=1024, help='maximum message size to inline')
@@ -264,7 +289,7 @@ class sr_cfg2:
         #parser.add_argument('--lag_drop', default=7200, type=int, help='in seconds, drop messages older than that')
         
         # the web server address for the source of the locally published tree.
-        parser.add_argument('--post_broker', default='mqtt://' + self.hostname, help='broker to post downloaded files to')
+        parser.add_argument('--post_broker', default=None, help='broker to post downloaded files to')
         #parser.add_argument('--post_baseUrl', default='http://' + self.hostname + ':8000/data', help='base url of the files announced')
         parser.add_argument('--post_exchange', default='xpublic', help='root of the topic tree to announce')
         parser.add_argument('--post_exchange_split', type=int, default=0, help='split output into different exchanges 00,01,...')
@@ -297,11 +322,14 @@ if __name__ == "__main__" :
     os.chdir("/home/peter/.config/sarra")
     default_cfg.parse_file("default.conf")
 
-    cfg = default_cfg
+    cfg = copy.deepcopy(default_cfg)
 
     os.chdir("shovel")
     cfg.parse_file("t_dd1_f00.conf")
-    cfg.parse_args()
+
+    # FIXME... overrides with defaults, instead of only is non-default specified.
+    #    unclear how to combine with config file.
+    #cfg.parse_args()
 
     #pp = pprint.PrettyPrinter(depth=6) 
     #pp.pprint(cfg)
@@ -309,5 +337,9 @@ if __name__ == "__main__" :
     cfg.dump()
 
     print( "cfg.broker.password: %s" % cfg.broker.password )
-    print( "cfg.action: %s" % cfg.action )
-    print( "cfg.configurations: %s" % cfg.configurations )
+    print( "cfg.broker.netloc: %s" % cfg.broker.netloc )
+    if '@' in cfg.broker.netloc:
+        host=cfg.broker.netloc.split('@')[1]
+    print( "host: %s" % host )
+    #print( "cfg.action: %s" % cfg.action )
+    #print( "cfg.configurations: %s" % cfg.configurations )
