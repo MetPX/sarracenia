@@ -202,11 +202,12 @@ class sr_GlobalState:
                         self.states[c][cfg]['queue_name'] = None
                         if c == 'audit' :
                             self.states[c][cfg]['instances_expected'] = 1
-                        elif cfg not in self.configs[c] :
-                            self.states[c][cfg]['status'] = 'removed'
-                            self.states[c][cfg]['instances_expected'] = 0
-                        elif self.configs[c][cfg]['instances'] == 0:
-                            self.states[c][cfg]['instances_expected'] = 0
+                        elif c in self.configs: 
+                            if cfg not in self.configs[c] :
+                                self.states[c][cfg]['status'] = 'removed'
+                                self.states[c][cfg]['instances_expected'] = 0
+                            elif self.configs[c][cfg]['instances'] == 0:
+                                self.states[c][cfg]['instances_expected'] = 0
                         if c[0] == 'c':
                             self.states[c][cfg]['instances_expected'] = 1
                         else:
@@ -651,6 +652,10 @@ class sr_GlobalState:
                 sfx=''
                 if self.configs[c][cfg]['status'] == 'include' :
                     continue
+
+                if not ( c in self.states and cfg in self.states[c] ):
+                    continue
+
                 if self.configs[c][cfg]['status'] != 'stopped' :
                     m = sum( map( lambda x: c in x and cfg in x, self.missing ) ) #perhaps expensive, but I am lazy FIXME
                     sfx += '-i%d/%d' % ( \
@@ -666,8 +671,7 @@ class sr_GlobalState:
 
 
             if (len(status['partial']) + len(status['running'])) < 1:
-                if c not in ['post']:
-                    print('%-10s %-10s %-6s %3d %s' % (c, 'stopped', 'OK', len(status['stopped']), ', '.join(status['stopped'])) )
+                print('%-10s %-10s %-6s %3d %s' % (c, 'stopped', 'OK', len(status['stopped']), ', '.join(status['stopped'])) )
             elif len(status['running']) == len(self.configs[c]):
                 print('%-10s %-10s %-6s %3d %s' % (c, 'running', 'OK', len(self.configs[c]), ', '.join(status['running'] )) )
             elif len(status['running']) == (len(self.configs[c]) - len(status['disabled'])):
