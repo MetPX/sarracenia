@@ -167,6 +167,7 @@ class sr_GlobalState:
 
                     if state != 'unknown':
                         cfgbody = copy.deepcopy( default_cfg )
+                        cfgbody.merge( { 'program_name' : c, 'config': cbase,  'directory':'${PWD}' } )
                         cfgbody.parse_file( cfg )
                         self.configs[c][cbase]['options'] = cfgbody
                         # ensure there is a known value of instances to run.
@@ -805,6 +806,7 @@ class sr_GlobalState:
         print('      total running configs: %3d ( processes: %d missing: %d stray: %d )' % \
             (configs_running, len(self.procs), len(self.missing)+missing_state_files, stray))
 
+        # FIXME: does not seem to find any stray exchange (with no bindings...) hmm...
         for h in self.brokers:
             for x in self.exchange_summary[h]:
                 if self.exchange_summary[h][x] == 0:
