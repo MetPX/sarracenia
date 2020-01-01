@@ -137,9 +137,11 @@ class sr_GlobalState:
         # read in configurations.
         self.configs = {}
         os.chdir(self.user_config_dir)
-        default_cfg = sr_cfg2(self.logger,self.user_config_dir)
-        default_cfg.parse_file("admin.conf")
-        default_cfg.parse_file("default.conf")
+        self.default_cfg = sr_cfg2(self.logger,self.user_config_dir)
+        self.default_cfg.parse_file("default.conf")
+        self.default_cfg.parse_file("admin.conf")
+        self.admin_cfg = copy.deepcopy( self.default_cfg )
+        self.admin_cfg.parse_file("admin.conf")
 
         for c in self.components:
             if os.path.isdir(c):
@@ -166,8 +168,8 @@ class sr_GlobalState:
                     self.configs[c][cbase]['status'] = state
 
                     if state != 'unknown':
-                        cfgbody = copy.deepcopy( default_cfg )
-                        cfgbody.merge( { 'program_name' : c, 'config': cbase,  'directory':'${PWD}' } )
+                        cfgbody = copy.deepcopy( self.default_cfg )
+                        cfgbody.override( { 'program_name' : c, 'config': cbase,  'directory':'${PWD}' } )
                         cfgbody.parse_file( cfg )
                         self.configs[c][cbase]['options'] = cfgbody
                         # ensure there is a known value of instances to run.
@@ -349,10 +351,14 @@ class sr_GlobalState:
             host=bhost
 
         if not host in self.brokers:
+                 
             self.brokers[host] = {}
             self.brokers[host]['post_exchanges'] = {}
             self.brokers[host]['exchanges'] = {}
             self.brokers[host]['queues'] = {}
+            if hasattr(self.admin_cfg,'admin') and host in self.admin_cfg.admin:
+                self.brokers[host]['admin'] = self.admin_cfg.admin 
+
         return host
 
 
@@ -710,18 +716,28 @@ class sr_GlobalState:
         print('\n\nBroker Bindings\n\n')
         for h in self.brokers:
             print( "\nhost: %s" % h )
-            print( "post_exchanges: %s" % self.brokers[h]['post_exchanges'] )
-            print( "exchanges: %s" % self.brokers[h]['exchanges'] )
-            print( "queues: %s" % self.brokers[h]['queues'] )
+            print( "\npost_exchanges: " )
+            for x in self.brokers[h]['post_exchanges']:
+                print( "\t%s: %s" % ( x, self.brokers[h]['post_exchanges'][x] ) )
+            print( "\nexchanges: " )
+            for x in self.brokers[h]['exchanges']:
+                print( "\t%s: %s" % ( x, self.brokers[h]['exchanges'][x] ) )
+            print( "\nqueues: " ) 
+            for q in self.brokers[h]['queues']:
+                print( "\t%s: %s" % ( q, self.brokers[h]['queues'][q] ) )
             
         print('\n\nbroker summaries:\n\n')
         for h in self.brokers:
-            print('\nbroker: %s' % h )
-            print('exchanges: ', end='' )
+            if 'admin' in self.brokers[h]:
+                a='admin: %s' % self.brokers[h]['admin']
+            else:
+                a=''
+            print('\nbroker: %s  %s' % (h,a) )
+            print('\nexchanges: ', end='' )
             for x in self.exchange_summary[h]:
                 print( "%s-%d, " % ( x, self.exchange_summary[h][x] ), end='' )
             print('') 
-            print('queues: ', end='' )
+            print('\nqueues: ', end='' )
             for q in self.brokers[h]['queues']:
                 print( "%s-%d, " % ( q, len(self.brokers[h]['queues'][q]) ), end='' )
             print('') 
