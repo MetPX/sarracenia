@@ -177,12 +177,13 @@ class sr_cfg2:
        for k in sorted( self.__dict__.keys()):
            print( "%s=%s" % ( k, getattr(self,k) ))
 
-   
+
    def _merge_field(self, key, value ):
        if key == 'masks':
           self.masks += value
        else:
-          setattr(self,key,value)
+          if value is not None:
+              setattr(self,key,value)
 
 
    def merge(self, oth):
@@ -193,6 +194,24 @@ class sr_cfg2:
        else:
            for k in oth.__dict__.keys():
               self._merge_field( k, self._varsub(getattr(oth,k)) )
+   
+
+   def _override_field(self, key, value ):
+       if key == 'masks':
+          self.masks += value
+       else:
+          setattr(self,key,value)
+
+
+   def override(self, oth):
+
+       if type(oth) == dict:
+           for k in oth.keys():
+              self._override_field( k, self._varsub(oth[k]) )
+       else:
+           for k in oth.__dict__.keys():
+              self._override_field( k, self._varsub(getattr(oth,k)) )
+
 
    def _parse_binding(self, subtopic):
        """
@@ -247,14 +266,14 @@ class sr_cfg2:
              formatter_class=argparse.ArgumentDefaultsHelpFormatter )
         
         #FIXME accept/reject processing missing here.
-        parser.add_argument('--accept_unmatched', type=bool, default=False, help='default selection, if nothing matches' )
-        parser.add_argument('--action', '-a', \
+        parser.add_argument('--accept_unmatched', type=bool, default=False, nargs='?', help='default selection, if nothing matches' )
+        parser.add_argument('--action', '-a', nargs='?', \
            choices=[ 'add', 'cleanup', 'edit', 'declare', 'disable', 'edit', 'enable', 'foreground', 'list', 'log', 'remove', 'rename', 'restart', 'sanity', 'setup', 'start', 'stop', 'status' ], help='action to take on the specified configurations' )
         parser.add_argument('--admin', default='amqp://admin@' + self.hostname, help='amqp://user@host of peer to manage')
-        parser.add_argument('--attempts', type=int, default=3, help='how many times to try before queuing for retry')
-        parser.add_argument('--base_dir', '-bd', default=None, help="path to root of tree for relPaths in messages.")
-        parser.add_argument('--batch', type=int, default=100, help='how many transfers per each connection')
-        parser.add_argument('--blocksize', type=int, default=0, help='size to partition files. 0-guess, 1-never, any other number: that size')
+        parser.add_argument('--attempts', type=int, default=3, nargs='?', help='how many times to try before queuing for retry')
+        parser.add_argument('--base_dir', '-bd', default=None, nargs='?', help="path to root of tree for relPaths in messages.")
+        parser.add_argument('--batch', type=int, default=100, nargs='?', help='how many transfers per each connection')
+        parser.add_argument('--blocksize', type=int, default=0, nargs='?', help='size to partition files. 0-guess, 1-never, any other number: that size')
         """
            FIXME:  Most of this is gobblygook place holder stuff, by copying from wmo-mesh example.
            Don't really need this to work right now, so just leaving it around as-is.  Challenges:
@@ -265,15 +284,15 @@ class sr_cfg2:
            -- accept/reject whole mess requires extension deriving a class from argparse.Action.
            
         """
-        parser.add_argument('--broker', default=None, help='amqp://user:pw@host of peer to subscribe to')
+        parser.add_argument('--broker', default=None, nargs='?', help='amqp://user:pw@host of peer to subscribe to')
         #parser.add_argument('--clean_session', type=bool, default=False, help='start a new session, or resume old one?')
         #parser.add_argument('--clientid', default=host, help='like an AMQP queue name, identifies a group of subscribers')
         parser.add_argument('--component', choices=[ 'audit', 'cpost', 'cpump', 'poll', 'post', 'sarra', 'sender', 'shovel' 'subscribe', 'watch', 'winnow' ], \
-            help='which component to look for a configuration for')
+            nargs='?', help='which component to look for a configuration for')
         #parser.add_argument('--dir_prefix', default='data', help='local sub-directory to put data in')
         #parser.add_argument('--download', type=bool, default=True, help='should download data ?')
         #parser.add_argument('--encoding', choices=[ 'text', 'binary', 'guess'], help='encode payload in base64 (for binary) or text (utf-8)')
-        parser.add_argument('--exchange', default='xpublic', help='root of the topic tree to subscribe to')
+        parser.add_argument('--exchange', default='xpublic', nargs='?', help='root of the topic tree to subscribe to')
 
         """
         FIXME: in previous parser, exchange is a modifier for bindings, can have several different values for different subtopic bindings.
@@ -289,19 +308,19 @@ class sr_cfg2:
         #parser.add_argument('--lag_drop', default=7200, type=int, help='in seconds, drop messages older than that')
         
         # the web server address for the source of the locally published tree.
-        parser.add_argument('--post_broker', default=None, help='broker to post downloaded files to')
+        parser.add_argument('--post_broker', default=None, nargs='?', help='broker to post downloaded files to')
         #parser.add_argument('--post_baseUrl', default='http://' + self.hostname + ':8000/data', help='base url of the files announced')
-        parser.add_argument('--post_exchange', default='xpublic', help='root of the topic tree to announce')
-        parser.add_argument('--post_exchange_split', type=int, default=0, help='split output into different exchanges 00,01,...')
-        parser.add_argument('--post_topic_prefix', default='/v03/post', help='allows simultaneous use of multiple versions and types of messages')
+        parser.add_argument('--post_exchange', default='xpublic', nargs='?', help='root of the topic tree to announce')
+        parser.add_argument('--post_exchange_split', type=int, default=0, nargs='?', help='split output into different exchanges 00,01,...')
+        parser.add_argument('--post_topic_prefix', default='/v03/post', nargs='?', help='allows simultaneous use of multiple versions and types of messages')
         #parser.add_argument('--select', nargs=1, action='append', help='client-side filtering: accept/reject <regexp>' )
         #parser.add_argument('--subtopic', nargs=1, action='append', help='server-side filtering: MQTT subtopic, wilcards # to match rest, + to match one topic' )
-        parser.add_argument('--verbose', default=1, type=int, help='how chatty to be 0-rather quiet ... 3-quite chatty really')
+        parser.add_argument('--verbose', default=1, type=int, nargs='?', help='how chatty to be 0-rather quiet ... 3-quite chatty really')
 
         if isPost:
             parser.add_argument( 'path', nargs='+', help='files to post' )
         else:
-            parser.add_argument('action', \
+            parser.add_argument('action', nargs='?', \
                choices=[ 'add', 'cleanup', 'edit', 'declare', 'disable', 'edit', 'enable', 'foreground', 'list', 'log', 'remove', 'rename', 'restart', 'sanity', 'setup', 'start', 'stop', 'status' ], help='action to take on the specified configurations' )
             parser.add_argument( 'configurations', nargs='+', help='configurations to operate on' )
 
@@ -317,8 +336,8 @@ if __name__ == "__main__" :
     logging.basicConfig(format='%(asctime)s [%(levelname)s] %(message)s', level=logging.DEBUG)
     logger.setLevel( logging.ERROR )
 
-    default_cfg = sr_cfg2(logger,appdirs.user_config_dir( 'sarra','science.gc.ca' ))
-    default_cfg.merge( { 'program_name':'sr_subscribe', 'config':'t_dd1_f00' , 'directory':'${PWD}' } )
+    default_cfg = sr_cfg2(logger,appdirs.user_config_dir( 'sarra-test','science.gc.ca' ))
+    default_cfg.override( { 'program_name':'sr_shovel', 'config':'t_dd1_f00' , 'directory':'${PWD}' } )
     os.chdir("/home/peter/.config/sarra")
     default_cfg.parse_file("default.conf")
 
@@ -329,7 +348,7 @@ if __name__ == "__main__" :
 
     # FIXME... overrides with defaults, instead of only is non-default specified.
     #    unclear how to combine with config file.
-    #cfg.parse_args()
+    cfg.parse_args()
 
     #pp = pprint.PrettyPrinter(depth=6) 
     #pp.pprint(cfg)
