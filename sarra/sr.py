@@ -103,34 +103,69 @@ class sr_GlobalState:
         except Exception as ex:
             print( "failed to launch: %s >%s >2&1 (reason: %s) " % ( ' '.join(cmd), lfn, ex ) )
 
-    def _read_procs(self):
-        # read process table.
+    def save_procs(self,File="procs.json"):
+        """
+           dump image of process table to a file, one process per line, JSON UTF-8 encoded.
+        """
+        print( 'save_procs, cwd=%s'% os.getcwd() )
+        with open(File,'a') as f:
+            f.seek(0,0)
+            f.truncate()
+            f.write( getpass.getuser() + '\n' )
+            for proc in psutil.process_iter():
+                p = proc.as_dict()
+                pj = json.dumps(p,ensure_ascii=False)
+                #print( 'writing pj=+%s+' % pj )
+                f.write(pj +'\n')
+            
+    def _filter_sr_proc(self,p):
+        # process name 'python3' is not helpful, so overwrite...
+        if 'python' in p['name']:
+            if len(p['cmdline']) < 2:
+                return
+            n = os.path.basename(p['cmdline'][1])
+            p['name'] = n
+
+        if p['name'].startswith('sr_') and (self.me == p['username']):
+            self.procs[p['pid']] = p
+
+            if p['name'][3:8] == 'audit':
+                self.procs[p['pid']]['claimed'] = True
+                self.auditors += 1
+            else:
+                self.procs[p['pid']]['claimed'] = False
+
+
+
+    def read_proc_file(self,File="procs.json"):
+        """
+           read process table from a save file, for reproducible testing.
+        """
         self.procs = {}
-        me = getpass.getuser()
         self.auditors = 0
-        print( 'reading procs: ', end='', flush=True )
+        print( 'reading procs from %s: ' % File, end='', flush=True )
+        pcount = 0
+        with open(File,'r') as f:
+           self.me = f.readline().rstrip()
+           for pj in f.readlines():
+               p = json.loads(pj)       
+               self._filter_sr_proc(p)
+               pcount += 1 
+               if pcount % 100 == 0 : print( '.', end='', flush=True )
+        print(' Done reading %d procs from %s !' % ( pcount, File) , flush=True )
+      
+    def _read_procs(self):
+        # read process table from the system
+        self.procs = {}
+        self.me = getpass.getuser()
+        self.auditors = 0
         pcount = 0
         for proc in psutil.process_iter():
             p = proc.as_dict()
-
+            self._filter_sr_proc(p)
             pcount += 1 
             if pcount % 100 == 0 : print( '.', end='', flush=True )
 
-            # process name 'python3' is not helpful, so overwrite...
-            if 'python' in p['name']:
-                if len(p['cmdline']) < 2:
-                    continue
-                n = os.path.basename(p['cmdline'][1])
-                p['name'] = n
-
-            if p['name'].startswith('sr_') and (me == p['username']):
-                self.procs[proc.pid] = p
-
-                if p['name'][3:8] == 'audit':
-                    self.procs[proc.pid]['claimed'] = True
-                    self.auditors += 1
-                else:
-                    self.procs[proc.pid]['claimed'] = False
         print(' Done reading %d procs!' % pcount , flush=True )
 
     def _read_configs(self):
@@ -478,7 +513,10 @@ class sr_GlobalState:
         """
 
         self.logger = logger
-        self.appname = 'sarra'
+        self.appname = os.getenv( 'SR_DEV_APPNAME' )
+        if self.appname == None:
+            self.appname = 'sarra'
+        print( 'appname=%s' % self.appname )
         self.appauthor = 'science.gc.ca'
         self.user_config_dir = appdirs.user_config_dir(self.appname, self.appauthor)
         self.user_cache_dir = appdirs.user_cache_dir(self.appname, self.appauthor)
@@ -850,6 +888,10 @@ def main():
         action = sys.argv[1]
 
     gs = sr_GlobalState(logger)
+    # testing proc file i/o
+    #gs.save_procs()
+    #gs.read_proc_file()
+    return
 
     if action in ['declare', 'setup']:
         print('%s ' % action, end='', flush=True)
