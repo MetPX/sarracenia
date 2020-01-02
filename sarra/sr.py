@@ -516,7 +516,6 @@ class sr_GlobalState:
         self.appname = os.getenv( 'SR_DEV_APPNAME' )
         if self.appname == None:
             self.appname = 'sarra'
-        print( 'appname=%s' % self.appname )
         self.appauthor = 'science.gc.ca'
         self.user_config_dir = appdirs.user_config_dir(self.appname, self.appauthor)
         self.user_cache_dir = appdirs.user_cache_dir(self.appname, self.appauthor)
