@@ -1,6 +1,12 @@
-metpx-sarracenia (2.20.01b1) UNRELEASED; urgency=medium
+metpx-sarracenia (2.20.01b1) unstable; urgency=medium
 
-  * 
+  * re-release because of complications with publishing. 
+
+ -- Peter Silva <peter@blacklab>  Thu, 02 Jan 2020 12:59:11 -0500
+
+metpx-sarracenia (2.19.12b7) unstable; urgency=medium
+
+  * fix #295 sr tolerate missing directories.
 
  -- Peter Silva <peter@blacklab>  Sun, 29 Dec 2019 23:57:10 -0500
 
