@@ -241,8 +241,13 @@ class sr_GlobalState:
                                         self.states[c][cfg]['instances_expected'] = int(t)
                                 elif pathname[-12:] == '.retry.state':
                                      buffer=2**16
-                                     with open(p) as f:
-                                         self.states[c][cfg]['retry_queue'] += sum(x.count('\n') for x in iter(partial(f.read,buffer), ''))
+                                     try:
+                                         with open(p) as f:
+                                             self.states[c][cfg]['retry_queue'] += sum(x.count('\n') for x in iter(partial(f.read,buffer), ''))
+                                     except Exception as ex:
+                                             #print( 'info reading statefile %p gone before it was read: %s' % (p, ex) )
+                                             pass
+
                         os.chdir('..')
                 os.chdir('..')
 
