@@ -6,6 +6,10 @@ lists all changes between versions.
 
 **git repo**
 
+**2.20.01b2**
+
+  * bugfix: race condition where retry.state files might disappear while gathering status.
+
 **2.19.12b7**
 
   * bugfix #295 sr status crashes if some directories are missing.

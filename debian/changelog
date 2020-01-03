@@ -1,3 +1,9 @@
+metpx-sarracenia (2.20.01b2) unstable; urgency=medium
+
+  * bugfix: race condition where retry.state files might disappear while gathering status.
+
+ -- Peter Silva <peter@blacklab>  Fri, 03 Jan 2020 09:24:00 -0500
+
 metpx-sarracenia (2.20.01b1) unstable; urgency=medium
 
   * re-release because of complications with publishing. 
