@@ -34,6 +34,7 @@ import signal
 import subprocess
 import sys
 import time
+import shutil
 
 try:
     from sr_cfg2 import *
@@ -107,13 +108,14 @@ class sr_GlobalState:
         """
            dump image of process table to a file, one process per line, JSON UTF-8 encoded.
         """
-        print( 'save_procs, cwd=%s'% os.getcwd() )
+        print( 'save_procs to: %s' % File )
         with open(File,'a') as f:
             f.seek(0,0)
             f.truncate()
             f.write( getpass.getuser() + '\n' )
             for proc in psutil.process_iter():
                 p = proc.as_dict()
+                del p['environ']
                 pj = json.dumps(p,ensure_ascii=False)
                 #print( 'writing pj=+%s+' % pj )
                 f.write(pj +'\n')
@@ -143,7 +145,7 @@ class sr_GlobalState:
         """
         self.procs = {}
         self.auditors = 0
-        print( 'reading procs from %s: ' % File, end='', flush=True )
+        print( 'getting procs from %s: ' % File, end='', flush=True )
         pcount = 0
         with open(File,'r') as f:
            self.me = f.readline().rstrip()
@@ -152,7 +154,7 @@ class sr_GlobalState:
                self._filter_sr_proc(p)
                pcount += 1 
                if pcount % 100 == 0 : print( '.', end='', flush=True )
-        print(' Done reading %d procs from %s !' % ( pcount, File) , flush=True )
+        print(' Done! Read %d procs' % ( pcount ) , flush=True )
       
     def _read_procs(self):
         # read process table from the system
@@ -173,10 +175,14 @@ class sr_GlobalState:
         self.configs = {}
         os.chdir(self.user_config_dir)
         self.default_cfg = sr_cfg2(self.logger,self.user_config_dir)
-        self.default_cfg.parse_file("default.conf")
-        self.default_cfg.parse_file("admin.conf")
+        if os.path.exists( "default.conf" ):
+            self.default_cfg.parse_file("default.conf")
+        if os.path.exists( "admin.conf" ):
+            self.default_cfg.parse_file("admin.conf")
+
         self.admin_cfg = copy.deepcopy( self.default_cfg )
-        self.admin_cfg.parse_file("admin.conf")
+        if os.path.exists( "admin.conf" ):
+            self.admin_cfg.parse_file("admin.conf")
 
         for c in self.components:
             if os.path.isdir(c):
@@ -219,6 +225,79 @@ class sr_GlobalState:
                     self.configs[c][cbase]['instances'] = numi
 
                 os.chdir('..')
+
+    def _cleanse_credentials(self, savename ):
+        """
+           copy credentials to a savename file, replacing actual passwords with a place holder.
+
+        """
+       
+        sno=0
+
+        with open( savename, 'w' ) as save_config_file: 
+            with open( self.user_config_dir + os.sep + 'credentials.conf', 'r' ) as config_file:
+                 for cfl in config_file.readlines():
+                    lout = re.compile(':[^/][^/].*?@').sub(':secret%02d@' % sno, cfl, 1 )
+                    save_config_file.write( lout )
+                    sno += 1
+
+    def save_configs(self,savename):
+        """ DEVELOPER only... copy configuration to an alternate tree 
+        """
+        os.chdir(self.user_config_dir)
+        other_config_dir = appdirs.user_config_dir(savename, self.appauthor)
+
+        if not os.path.exists(other_config_dir):
+            os.mkdir(other_config_dir)
+
+        for f in [ 'default.conf', 'admin.conf' ]:
+            to = other_config_dir + os.sep + f
+            print( 'save_configs copying: %s %s' % ( f , to ) )
+            shutil.copyfile( f, to )                
+
+        self._cleanse_credentials(other_config_dir + os.sep + 'credentials.conf')
+
+        for c in self.components:
+            if os.path.isdir(c):
+                os.chdir(c)
+                other_c_dir= other_config_dir + os.sep + c
+                if not os.path.exists(other_c_dir):
+                    os.mkdir(other_c_dir)
+                self.states[c] = {}
+                for cfg in os.listdir():
+                    to=other_c_dir + os.sep + cfg
+                    print( 'save_configs copying: %s %s' % ( cfg , to ) )
+                    shutil.copyfile( cfg, to )                
+                os.chdir('..')
+
+    def save_states(self,savename):
+        """ DEVELOPER ONLY.. copy state files to an alternate tree.
+        """
+
+        os.chdir(self.user_cache_dir)
+        self.states = {}
+        other_cache_dir = appdirs.user_cache_dir(savename, self.appauthor)
+        if not os.path.exists(other_cache_dir):
+            os.mkdir(other_cache_dir)
+        for c in self.components:
+            if os.path.isdir(c):
+                os.chdir(c)
+                other_c_dir= other_cache_dir + os.sep + c
+                if not os.path.exists(other_c_dir):
+                    os.mkdir(other_c_dir)
+                self.states[c] = {}
+                for cfg in os.listdir():
+                    os.chdir(cfg)
+                    other_cfg_dir= other_c_dir + os.sep + cfg
+                    if not os.path.exists(other_cfg_dir):
+                        os.mkdir(other_cfg_dir)
+                    for f in os.listdir():
+                        to=other_cfg_dir + os.sep + f
+                        print( 'save_states copying: %s %s' % ( f , to ) )
+                        shutil.copyfile( f, to )                
+                    os.chdir('..')
+                os.chdir('..')
+        os.chdir('..')
 
     def _read_states(self):
         # read in state files
@@ -507,18 +586,30 @@ class sr_GlobalState:
 
         # FIXME: missing check for too many instances.
 
+    @property
+    def appname(self):
+        return self.__appname 
+
+    @appname.setter
+    def appname(self,n):
+        self.__appname = n
+        self.user_config_dir = appdirs.user_config_dir(self.appname, self.appauthor)
+        self.user_cache_dir = appdirs.user_cache_dir(self.appname, self.appauthor)
+        
     def __init__(self,logger):
         """
            side effect: changes current working directory FIXME?
         """
 
         self.logger = logger
+
+        self.appauthor = 'science.gc.ca'
         self.appname = os.getenv( 'SR_DEV_APPNAME' )
         if self.appname == None:
             self.appname = 'sarra'
-        self.appauthor = 'science.gc.ca'
-        self.user_config_dir = appdirs.user_config_dir(self.appname, self.appauthor)
-        self.user_cache_dir = appdirs.user_cache_dir(self.appname, self.appauthor)
+        else:
+            print( 'DEVELOPMENT using alternate application name: %s' % self.appname )
+
         self.components = ['audit', 'cpost', 'cpump', 'poll', 'post', 'report', 'sarra', 'sender', 'shovel',
                            'subscribe', 'watch', 'winnow']
         self.status_values = ['disabled', 'stopped', 'partial', 'running']
@@ -526,13 +617,19 @@ class sr_GlobalState:
  
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
 
-        self._read_procs()
-        print('gathering global state: ', end='', flush=True)
+        print('gathering global state: ', flush=True)
+
+        pf=self.user_cache_dir + os.sep + "procs.json"
+        if os.path.exists( pf ) :
+            self.read_proc_file(pf)
+        else:
+            self._read_procs()
+
         print('procs, ', end='', flush=True)
         self._read_configs()
-        print('configs, ', end='', flush=True)
+        print('got configs from %s' % self.user_config_dir, flush=True)
         self._read_states()
-        print('state files, ', end='', flush=True)
+        print('got state files from %s, ' % self.user_cache_dir , flush=True)
         self._read_logs()
         print('logs, ', end='', flush=True)
         self._resolve()
@@ -878,7 +975,7 @@ def main():
 
 
 
-    actions = ['declare', 'dump', 'restart', 'sanity', 'setup', 'status', 'stop']
+    actions = ['declare', 'devsnap', 'dump', 'restart', 'sanity', 'setup', 'status', 'stop']
 
     if len(sys.argv) < 2:
         print('USAGE: %s (%s)' % (sys.argv[0], '|'.join(actions)))
@@ -886,11 +983,11 @@ def main():
     else:
         action = sys.argv[1]
 
+
     gs = sr_GlobalState(logger)
     # testing proc file i/o
-    #gs.save_procs()
     #gs.read_proc_file()
-    return
+    #return
 
     if action in ['declare', 'setup']:
         print('%s ' % action, end='', flush=True)
@@ -916,6 +1013,16 @@ def main():
     elif action == 'status':
         print('status ')
         sys.exit(gs.status())
+
+    elif action == 'devsnap':
+        if len(sys.argv) < 3:
+           print( 'devsnap requires alternate app name as argument' )
+           sys.exit(1)
+
+        gs.save_states(sys.argv[2])
+        gs.save_configs(sys.argv[2])
+        gs.appname = sys.argv[2]
+        gs.save_procs( gs.user_cache_dir + os.sep + "procs.json" )
 
     elif action == 'stop':
         print('Stopping ', end='', flush=True)
