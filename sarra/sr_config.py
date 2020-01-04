@@ -150,8 +150,13 @@ class sr_config:
 
         self.action           = action
          
-        self.appname          = 'sarra'
         self.appauthor        = 'science.gc.ca'
+
+        self.appname = os.getenv( 'SR_DEV_APPNAME' )
+        if self.appname == None:
+            self.appname = 'sarra'
+        else:
+            print( 'DEVELOPMENT using alternate application name from SR_DEV_APPNAME: %s' % self.appname )
 
         self.programs         = ['post', 'watch', 'winnow', 'sarra', 'shovel', 'subscribe', 'sender', 'poll', 'report']
         self.programs.extend  ( ['cpost', 'cpump'] )
