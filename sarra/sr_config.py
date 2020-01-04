@@ -40,7 +40,8 @@ import sarra
 import io
 import ssl
 
-from appdirs import *
+import appdirs
+
 from logging import handlers
 
 try :
@@ -156,9 +157,9 @@ class sr_config:
         self.programs.extend  ( ['cpost', 'cpump'] )
 
         self.package_dir      = os.path.dirname(inspect.getfile(sr_credentials))
-        self.site_config_dir  = site_config_dir(self.appname,self.appauthor)
-        self.user_config_dir  = user_config_dir(self.appname,self.appauthor)
-        self.user_log_dir     = user_log_dir   (self.appname,self.appauthor)
+        self.site_config_dir  = appdirs.site_config_dir(self.appname,self.appauthor)
+        self.user_config_dir  = appdirs.user_config_dir(self.appname,self.appauthor)
+        self.user_log_dir     = appdirs.user_log_dir   (self.appname,self.appauthor)
         self.user_old_log_dir     = self.user_log_dir.replace(os.sep+'log',os.sep+'var'+os.sep+'log')
         self.user_plugins_dir = self.user_config_dir + '/plugins'
         self.http_dir         = self.user_config_dir + '/Downloads'
@@ -179,7 +180,7 @@ class sr_config:
         # and create var as a symbolic link to '.' so that var/log still works.
         # this code should be removed once all users are past the transition.
         #
-        var = user_cache_dir(self.appname,self.appauthor) + "/var"
+        var = appdirs.user_cache_dir(self.appname,self.appauthor) + "/var"
         if os.path.isdir( var ) and not os.path.islink( var ):
               print("sr_config __init__ migrating logs to new location (without 'var')")
               if os.path.isdir( self.user_log_dir ): 
@@ -301,7 +302,7 @@ class sr_config:
 
         # build user_cache_dir/program_name/[config_name|None] and make sure it exists
 
-        self.user_cache_dir  = user_cache_dir (self.appname,self.appauthor)
+        self.user_cache_dir  = appdirs.user_cache_dir (self.appname,self.appauthor)
         self.user_cache_dir += os.sep + self.program_name.replace('sr_','')
         self.user_cache_dir += os.sep + "%s" % self.config_name
         # user_cache_dir will be created later in configure()
@@ -630,7 +631,7 @@ class sr_config:
         # finalize user_cache_dir
 
         if hostdir and not hostdir in self.user_cache_dir :
-           self.user_cache_dir  = user_cache_dir (self.appname,self.appauthor)
+           self.user_cache_dir  = appdirs.user_cache_dir (self.appname,self.appauthor)
            self.user_cache_dir += os.sep + hostdir
            self.user_cache_dir += os.sep + self.program_name.replace('sr_','')
            self.user_cache_dir += os.sep + "%s" % self.config_name
