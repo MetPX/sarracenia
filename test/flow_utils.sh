@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+SR_CONFIG_EXAMPLES=`sr_subscribe list | awk '  / examples:/ { print $4; }; '`
+export SR_CONFIG_EXAMPLES=`dirname ${SR_CONFIG_EXAMPLES}`
+
 
 function application_dirs {
 python3 << EOF

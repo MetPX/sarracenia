@@ -13,7 +13,7 @@
 
 
 export TESTDIR="`pwd`"
-export PYTHONPATH="`pwd`/../"
+#export PYTHONPATH="`pwd`/../"
 . ./flow_utils.sh
 
 testdocroot="$HOME/sarra_devdocroot"
@@ -54,9 +54,7 @@ done
 
 mkdir -p "$CONFDIR" 2> /dev/null
 
-export SR_CONFIG_EXAMPLES=`pwd`/../sarra/examples
-
-flow_configs="`cd ../sarra/examples; ls */*f[0-9][0-9].conf; ls */*f[0-9][0-9].inc`"
+flow_configs="`cd ${SR_CONFIG_EXAMPLES}; ls */*f[0-9][0-9].conf; ls */*f[0-9][0-9].inc`"
 sr_action "Adding flow test configurations..." add " " ">> $flowsetuplog 2>\\&1" "$flow_configs"
 
 passed_checks=0
@@ -173,7 +171,7 @@ echo $MAX_MESSAGES
 fi
 
 # Start everything but sr_post
-flow_configs="audit/ `cd ../sarra/examples; ls */*f[0-9][0-9].conf | grep -v '^post'; ls poll/pulse.conf`"
+flow_configs="audit/ `cd ${SR_CONFIG_EXAMPLES}; ls */*f[0-9][0-9].conf | grep -v '^post'; ls poll/pulse.conf`"
 sr_action "Starting up all components..." start " " ">> $flowsetuplog 2>\\&1" "$flow_configs"
 echo "Done."
 

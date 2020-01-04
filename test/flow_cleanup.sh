@@ -95,7 +95,8 @@ for exchange in $exchanges_to_delete ; do
    rabbitmqadmin -H localhost -u bunnymaster -p ${adminpw} -f tsv delete exchange name=${exchange} >>$flowlogcleanup 2>&1
 done
 
-flow_configs="`cd ../sarra/examples; ls */*f[0-9][0-9].conf 2>/dev/null; ls */*f[0-9][0-9].inc 2>/dev/null; ls poll/pulse.conf 2>/dev/null`"
+echo "SR_CONFIG= ${SR_CONFIG_EXAMPLES} "
+flow_configs="`cd ${SR_CONFIG_EXAMPLES}; ls */*f[0-9][0-9].conf 2>/dev/null; ls */*f[0-9][0-9].inc 2>/dev/null; ls poll/pulse.conf 2>/dev/null`"
 sr_action "Removing flow configs..." remove " " ">> $flowlogcleanup 2>\\&1" "$flow_configs"
 
 echo "Removing flow config logs..."
