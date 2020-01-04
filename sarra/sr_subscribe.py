@@ -622,7 +622,7 @@ class sr_subscribe(sr_instances):
 
         print("\nDEBUG:")
         print("\t-debug")
-        print("\n for more information: https://github.com/MetPX/sarracenia/blob/master/doc/sr_subscribe.1.rst#documentation\n" )
+        print("\n for more information: https://github.com/MetPX/sarracenia/blob/master/doc/sr_subscribe.1.rst#documentation\n", flush=True )
 
     # =============
     # __on_file__

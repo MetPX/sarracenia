@@ -76,7 +76,7 @@ class sr_report(sr_subscribe):
     def help(self):
         print("Usage: %s [OPTIONS] configfile [add|cleanup|edit|foreground|start|stop|restart|reload|remove|setup|status]\n" % self.program_name )
         print("version: %s \n" % sarra.__version__ )
-        print("Or   : %s [OPTIONS] -b <broker> [add|cleanup|edit|foreground|start|stop|restart|reload|remove|setup|status]\n" % self.program_name )
+        print("Or   : %s [OPTIONS] -b <broker> [add|cleanup|edit|foreground|start|stop|restart|reload|remove|setup|status]\n" % self.program_name , flush=True)
         self.logger.info("OPTIONS:")
         self.logger.info("-b   <broker>   default:amqp://guest:guest@localhost/")
 

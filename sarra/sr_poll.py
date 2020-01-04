@@ -267,7 +267,7 @@ class sr_poll(sr_post):
 
         print("OPTIONS:")
         print("DEBUG:")
-        print("-debug")
+        print("-debug", flush=True)
 
     def load_ls_file(self,path):
         lsold = {}

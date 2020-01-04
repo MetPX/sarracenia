@@ -254,7 +254,7 @@ class sr_post(sr_instances):
         print("DEBUG:")
         print("-debug")
         print("-r  : randomize chunk posting and checksum algorithm choice")
-        print("-rr : reconnect between chunks\n")
+        print("-rr : reconnect between chunks\n", flush=True)
 
     # =============
     # on_add     (for SimpleEventHandler module)
