@@ -2718,7 +2718,7 @@ class sr_config:
             i+=1
             print( "%20s " % confname, end='' )
 
-        print("\n")
+        print("\n", flush=True)
 
     def set_sumalgo(self,sumflg):
         self.logger.debug("sr_config set_sumalgo %s" % sumflg)
