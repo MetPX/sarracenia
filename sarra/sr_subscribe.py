@@ -675,7 +675,7 @@ class sr_subscribe(sr_instances):
     # =============
 
     def __on_post__(self):
-        #self.logger.debug("%s __on_post__" % self.program_name)
+        self.logger.debug("%s __on_post__" % self.program_name)
 
         # on_post logic moved inside post.
         ok = self.msg.post(self)
@@ -1718,7 +1718,7 @@ class sr_subscribe(sr_instances):
 
         going_badly=0.01
         while True :
-              try  :
+              if True: #try  :
 
                       #  heartbeat (may be used to check if program is alive if not "has_vip")
                       ok = self.heartbeat_check()
@@ -1759,7 +1759,7 @@ class sr_subscribe(sr_instances):
                       ok = self.process_message()
                       going_badly=0.01
 
-              except Exception as err:
+              else: #except Exception as err:
                       err_msg = "{}/run going badly with {}, sleeping for {:.3f}."
                       self.logger.error(err_msg.format(self.program_name, err, going_badly))
                       self.logger.debug('Exception details: ', exc_info=True)

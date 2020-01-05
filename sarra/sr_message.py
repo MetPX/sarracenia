@@ -128,6 +128,18 @@ class sr_message():
         self.tbegin = nowflt()
         self.pubtime = None
 
+    def __print_json( self ):
+
+        if not self.topic.split('.')[1] in [ 'post', 'report' ]:
+            return
+
+        if self.post_version == 'v03':
+            json_line = json.dumps( ( self.pubtime, self.baseurl, self.relpath, self.headers ), sort_keys=True )
+        else:
+            json_line = json.dumps( ( self.topic, self.headers, self.notice ), sort_keys=True )
+
+        print("%s" % json_line, flush=True )
+
     def change_partflg(self, partflg ):
         self.partflg       =  partflg
         self.partstr       = '%s,%d,%d,%d,%d' %\
@@ -652,9 +664,11 @@ class sr_message():
                        return False
              
                if parent.outlet == 'json':
-                    parent.__print_json( self )
+                    self.__print_json()
+                    ok= True
                elif parent.outlet == 'url' :
                     print( "%s/%s" % ( self.base_url, self.relpath ) )
+                    ok= True
                else:
                     ok = self.publisher.publish(self.exchange+suffix, self.topic, body, None, self.message_ttl)
            else:
@@ -691,9 +705,11 @@ class sr_message():
                        return False
 
                if parent.outlet == 'json':
-                    parent.__print_json( self.msg )
+                    self.__print_json( )
+                    ok=True
                elif parent.outlet == 'url' :
                     print( "%s/%s" % ( self.base_url, self.relpath ) )
+                    ok=True
                else:
                     ok = self.publisher.publish(self.exchange+suffix,self.topic,self.notice,self.headers,self.message_ttl)
 
