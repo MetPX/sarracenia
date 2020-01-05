@@ -1718,7 +1718,7 @@ class sr_subscribe(sr_instances):
 
         going_badly=0.01
         while True :
-              if True: #try  :
+              try  :
 
                       #  heartbeat (may be used to check if program is alive if not "has_vip")
                       ok = self.heartbeat_check()
@@ -1759,7 +1759,7 @@ class sr_subscribe(sr_instances):
                       ok = self.process_message()
                       going_badly=0.01
 
-              else: #except Exception as err:
+              except Exception as err:
                       err_msg = "{}/run going badly with {}, sleeping for {:.3f}."
                       self.logger.error(err_msg.format(self.program_name, err, going_badly))
                       self.logger.debug('Exception details: ', exc_info=True)
