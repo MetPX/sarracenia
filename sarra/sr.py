@@ -491,6 +491,10 @@ class sr_GlobalState:
                 continue
             
             for cfg in self.configs[c]:
+
+                if not 'options' in self.configs[c][cfg] :
+                    continue
+
                 o = self.configs[c][cfg]['options']
                 name = c + '/' + cfg
                 
