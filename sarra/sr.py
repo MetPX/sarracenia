@@ -173,6 +173,8 @@ class sr_GlobalState:
     def _read_configs(self):
         # read in configurations.
         self.configs = {}
+        if not os.path.isdir(self.user_config_dir):
+           return
         os.chdir(self.user_config_dir)
         self.default_cfg = sr_cfg2(self.logger,self.user_config_dir)
         if os.path.exists( "default.conf" ):
@@ -274,8 +276,10 @@ class sr_GlobalState:
         """ DEVELOPER ONLY.. copy state files to an alternate tree.
         """
 
-        os.chdir(self.user_cache_dir)
         self.states = {}
+        if not os.path.isdir(self.user_cache_dir):
+           return
+        os.chdir(self.user_cache_dir)
         other_cache_dir = appdirs.user_cache_dir(savename, self.appauthor)
         if not os.path.exists(other_cache_dir):
             os.mkdir(other_cache_dir)
@@ -301,8 +305,10 @@ class sr_GlobalState:
 
     def _read_states(self):
         # read in state files
-        os.chdir(self.user_cache_dir)
         self.states = {}
+        if not os.path.isdir(self.user_cache_dir):
+           return
+        os.chdir(self.user_cache_dir)
 
         for c in self.components:
             if os.path.isdir(c):
@@ -368,8 +374,11 @@ class sr_GlobalState:
     def _find_missing_instances(self):
         """ find processes which are no longer running, based on pidfiles in state, and procs.
         """
-        os.chdir(self.user_cache_dir)
         missing = []
+        self.missing = []
+        if not os.path.isdir(self.user_cache_dir):
+           return
+        os.chdir(self.user_cache_dir)
         for c in self.components:
             if os.path.isdir(c):
                 os.chdir(c)
@@ -401,6 +410,8 @@ class sr_GlobalState:
         """ remove state pid files for process which are not running
         """
 
+        if not os.path.isdir(self.user_cache_dir):
+           return
         os.chdir(self.user_cache_dir)
         for instance in self.missing:
             (c, cfg, i) = instance
@@ -429,6 +440,8 @@ class sr_GlobalState:
 
     def _read_logs(self):
 
+        if not os.path.isdir(self.user_cache_dir):
+           return
         os.chdir(self.user_cache_dir)
         if os.path.isdir('log'):
             self.logs = {}
