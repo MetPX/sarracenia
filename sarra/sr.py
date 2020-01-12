@@ -627,6 +627,12 @@ class sr_GlobalState:
         else:
             print( 'DEVELOPMENT using alternate application name: %s' % self.appname )
 
+        if not os.path.isdir( self.user_config_dir ):
+            print( 'WARNING: No %s configuration found.' % self.appname )
+
+        if not os.path.isdir( self.user_cache_dir ):
+            print( 'WARNING: No %s configuration state or log files found.' % self.appname )
+
         self.components = ['audit', 'cpost', 'cpump', 'poll', 'post', 'report', 'sarra', 'sender', 'shovel',
                            'subscribe', 'watch', 'winnow']
         self.status_values = ['disabled', 'stopped', 'partial', 'running']
