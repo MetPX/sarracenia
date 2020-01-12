@@ -4,8 +4,8 @@ language: python
 
 matrix:
   include:
-  - name: "3.4-500limit"
-    python: "3.4"
+  - name: "3.5-500limit"
+    python: "3.5"
     env: LIMIT=500
   - name: "3.5-1000limit"
     python: "3.5"
