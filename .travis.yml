@@ -23,11 +23,10 @@ branches:
   - master
 
 install:
-- cd travis
-- ./flow_autoconfig.sh
+- travis/flow_autoconfig.sh
 
 script:
-- cd ../test
+- cd test
 - ./flow_setup.sh
 - timeout 30m ./flow_limit.sh $LIMIT
 - ./flow_check.sh
