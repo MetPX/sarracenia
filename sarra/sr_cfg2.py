@@ -63,6 +63,7 @@ class sr_cfg2:
        if parent is None:
           self.env = copy.deepcopy(os.environ)
 
+       self.exchanges = []
        self.filename = None
        self.flatten = '/'
        self.hostname = socket.getfqdn()
