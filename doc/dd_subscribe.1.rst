@@ -44,12 +44,15 @@ Options are placed in the configuration file, one per line, of the form::
 
     option <value>
 
-Comment lines begins with **#**. For example::
+For example::
 
     debug true
 
 would be a demonstration of setting the option to enable more verbose logging. 
 
+Comment lines begins with **#**. For example::
+
+    # This is a comment
 
 RABBITMQ CREDENTIAL OPTIONS
 ---------------------------
