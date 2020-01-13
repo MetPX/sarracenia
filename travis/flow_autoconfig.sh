@@ -78,6 +78,7 @@ cd /usr/local/bin
 sudo mv rabbitmqadmin rabbitmqadmin.1
 sudo wget http://localhost:15672/cli/rabbitmqadmin
 sudo chmod 755 rabbitmqadmin
+cd 
 
 echo
 
