@@ -975,7 +975,7 @@ Mise à jour du site Web du projet
 
 Avant mars 2018, le site Web principal du projet était metpx.sf.net.
 Ce site MetPX a été construit à partir de la documentation des différents modules.
-dans le projet. Il construit en utilisant tous les fichiers **.rst**** trouvés
+dans le projet. Il construit en utilisant tous les fichiers **.rst** trouvés
 dans le répertoire **sarracénie/doc** ainsi que *certains* des fichiers 
 **.rst** trouvés dans le fichier **Sundew/doc**. Au printemps 2018, le 
 développement a été transféré sur github.com.  Ce site rend .rst lors de 
