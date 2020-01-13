@@ -28,7 +28,7 @@ install:
 - travis/flow_autoconfig.sh
 
 script:
-- cd test
+- cd sr_insects/dynamic_flow
 - ./flow_setup.sh
 - timeout 30m ./flow_limit.sh $LIMIT
 - ./flow_check.sh
