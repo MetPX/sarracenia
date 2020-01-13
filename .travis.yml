@@ -7,6 +7,7 @@ matrix:
   - name: "3.6-500limit"
     python: "3.6"
     env: LIMIT=500
+    env: TEST=unit
 # while in issue187 branch shorter is better. 
 #  - name: "3.5-1000limit"
 #    python: "3.5"
@@ -28,7 +29,7 @@ install:
 - travis/flow_autoconfig.sh
 
 script:
-- cd ${HOME}/sr_insects/dynamic_flow
+- cd ${HOME}/sr_insects/$TEST
 - ./flow_setup.sh
 - timeout 30m ./flow_limit.sh $LIMIT
 - ./flow_check.sh
