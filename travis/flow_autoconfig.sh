@@ -11,7 +11,7 @@ sudo apt-get update
 sudo apt -y install rabbitmq-server erlang-nox sarrac librabbitmq4 libsarrac libsarrac-dev git
 
 pip3 install -U pip
-pip3 install -e ..
+pip3 install -e .
 pip3 install pyftpdlib paramiko 
 echo
 
