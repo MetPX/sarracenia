@@ -83,6 +83,6 @@ echo
 
 # Configure users
 sr_audit --users foreground
-
+echo "dir: +${PWD}+"
 git clone https://github.com/MetPX/sr_insects
 
