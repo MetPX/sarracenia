@@ -67,7 +67,6 @@ class sr_cfg2:
        self.filename = None
        self.flatten = '/'
        self.hostname = socket.getfqdn()
-       print( 'hostname is: %s' % self.hostname )
        self.masks =  []
        self.mirror = False
        self.strip = 0
