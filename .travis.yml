@@ -21,6 +21,7 @@ matrix:
 branches:
   only:
   - master
+  - issue187
 
 install:
 - travis/flow_autoconfig.sh
