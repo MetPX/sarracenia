@@ -33,9 +33,9 @@ Les messages sont envoyés à un serveur AMQP, également appelé courtier, spé
 CREDENTIALS
 -----------
 
-L'option broker définit toutes les informations d'identification pour se connecter au serveur **RabbitMQ****.
+L'option broker définit toutes les informations d'identification pour se connecter au serveur **RabbitMQ**.
 
-Courtier amqp{s}://<utilisateur>:<pw>@<brokerhost>[:port]/<vhost>****.
+Courtier amqp{s}://<utilisateur>:<pw>@<brokerhost>[:port]/<vhost>.
 
       (par défaut : amqps://anonymous:anonymous@dd.weather.gc.ca/)
 
@@ -342,7 +342,7 @@ L'option **post_base_url** définit le protocole, les informations d'
 identification, l'hôte et le port sous que le produit peut être récupéré. 
 
 Le corps d´un avis contient trois champs : l'heure de l'avis,
-cette valeur **base_url** et le chemin****, relatif à *post_base_dir*, si nécessaire.
+cette valeur **base_url** et le chemin, relatif à *post_base_dir*, si nécessaire.
 
 la concaténation des deux derniers champs de l'avis définit l´URL complete que les abonnés 
 utiliseront pour télécharger le produit.

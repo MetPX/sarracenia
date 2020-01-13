@@ -81,7 +81,7 @@ Il y a très peu d'options que **sr_audit** utilise :
 - **max_queue_size <int>     (default: 25000 nbr messages in queue)**
 
 L'option **admin** doit être définie, elle est normalement définie dans le fichier **default.conf**.
-et les détails de l'accréditation se trouveraient dans le fichier **credentials.conf****.
+et les détails de l'accréditation se trouveraient dans le fichier **credentials.conf**.
 Normalement, lors de la création des utilisateurs, les mots de passe 
 pour les communications avec le courtier sont définis par les valeurs 
 trouvées dans le fichier d'informations d'identification ( *credentials.conf* )

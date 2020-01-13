@@ -417,7 +417,7 @@ Note : Sur de tels clusters, tous les nœuds qui exécutent un composant avec
 l'option le même fichier de configuration crée par défaut un ***queue** 
 identique. Cibler les même courtier, il force la file d'attente à être 
 partagée. S'il faut l'éviter, l'utilisateur peut écraser la valeur par 
-défaut **queue_name**** en y rajoutant **${HOSTNAME}**.  Chaque nœud aura 
+défaut **queue_name** en y rajoutant **${HOSTNAME}**.  Chaque nœud aura 
 sa propre file d'attente, qui ne sera partagée que par les instances du nœud.
 ex : nom_de_files d'attente q_${BROKER_USER}.${PROGRAM}.${CONFIG}.${HOSTNAME}. )
 

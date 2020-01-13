@@ -42,11 +42,11 @@ CONFIGURATION
 
 Options are placed in the configuration file, one per line, of the form:: 
 
-  **option <value>** 
+    option <value>
 
 Comment lines begins with **#**. For example::
 
-  **debug true**
+    debug true
 
 would be a demonstration of setting the option to enable more verbose logging. 
 
