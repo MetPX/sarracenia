@@ -184,14 +184,14 @@ What goes into the files? See next section:
 Option Syntax
 -------------
 
-Options are placed in configuration files, one per line, in the form:
+Options are placed in configuration files, one per line, in the form::
 
-  **option <value>**
+    option <value>
 
 For example::
 
-  **debug true**
-  **debug**
+    debug true
+    debug
 
 sets the *debug* option to enable more verbose logging.  If no value is specified,
 the value true is implicit, so the above are equivalent.  A second example 

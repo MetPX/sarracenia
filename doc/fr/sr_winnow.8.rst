@@ -26,7 +26,7 @@ DESCRIPTION
 
 sr_winnow** est un programme qui s'abonne aux notifications de fichiers,
 et réenregistre les notifications, en supprimant les notifications redondantes en comparant leurs données
-L'en-tête **sum**** mémorise l'empreinte digitale d'un fichier comme décrit ci-dessus.
+L'en-tête **sum** mémorise l'empreinte digitale d'un fichier comme décrit ci-dessus.
 dans la page de manuel `sr_post(7) <sr_post.7.rst>`_ 
 
 **sr_winnow** est un `sr_subscribe(1) <sr_subscribe.1.rst>`_ avec les options suivantes forcées::
