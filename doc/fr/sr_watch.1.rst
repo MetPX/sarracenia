@@ -378,7 +378,7 @@ disponibles pour être transférés. La stratégie appropriée varie en fonction
  le délai **minimum pour signaler les changements** aux fichiers qui est acceptable, et
  la **taille de chaque fichier** dans l'arbre.
 
-L'arbre le plus facile à surveiller est le plus petit ** Avec un seul répertoire à surveiller où l'on 
+**L'arbre le plus facile à surveiller est le plus petit** Avec un seul répertoire à surveiller où l'on 
 affiche un message pour un composant *sr_sarra*, alors l'utilisation de l'option *delete* gardera en tout temps
 le nombre minimale de fichiers dans le répertoire et minimisera le temps de remarquer les nouveaux. Dans ces 
 conditions optimales, l'observation des fichiers dans un centième de seconde, c'est raisonnable 
