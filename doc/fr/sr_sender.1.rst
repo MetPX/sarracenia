@@ -102,7 +102,7 @@ un dans la notification sélectionnée donne le chemin absolu du fichier à envo
 La valeur par défaut est None, ce qui signifie que le chemin d'accès dans la notification est le chemin absolu.
 
 La **destination** définit le protocole et le serveur à utiliser pour livrer les produits.
-Sa forme est une url partielle, par exemple :  **ftp://myuser@myhost****
+Sa forme est une url partielle, par exemple :  **ftp://myuser@myhost**
 Le programme utilise le fichier ~/.conf/sarra/credentials.conf pour obtenir les détails restants.
 (mot de passe et options de connexion).  Les protocoles supportés sont ftp, ftps et sftp. Si le
 l'utilisateur a besoin d'implémenter un autre mécanisme d'envoi, il fournirait le script du plugin.
@@ -112,7 +112,7 @@ Sur le site distant, le **post_base_dir** sert aux mêmes fins que le **base_dir
 La valeur par défaut est None, ce qui signifie que le chemin d'accès délivré est absolu.
 Maintenant, nous sommes prêts à envoyer le produit..... Par exemple, si la notification sélectionnée ressemble à ceci :
 
-**2015081316161959.854 http://this.pump.com/ relative/path/to/IMPORTANT_produit****.
+**2015081316161959.854 http://this.pump.com/ relative/path/to/IMPORTANT_produit**.
 
 **sr_sender** effectue la pseudo-livraison suivante :
 
@@ -126,7 +126,7 @@ A ce stade, un besoin de configuration de pompe à pompe doit envoyer la notific
 juste la réplication de produits)
 
 L´avis contient toutes les mêmes informations (attributs de thème et autres en-têtes), à 
-l'exception du champ url, dans notre exemple.. :  **http://this.pump.com/****
+l'exception du champ url, dans notre exemple.. :  **http://this.pump.com/**
 
 Par défaut, **sr_sender** met la **destination** dans ce champ.
 L'utilisateur peut écraser ceci en spécifiant l'option **post_base_url**. Par exemple :

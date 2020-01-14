@@ -204,14 +204,14 @@ Que contiennent les fichiers ? Voir la section suivante :
 Syntaxe des options
 -------------------
 
-Les options sont placées dans les fichiers de configuration, une par ligne, ans le format suivant :
+Les options sont placées dans les fichiers de configuration, une par ligne, ans le format suivant::
 
-  option <valeur>******.
+    option <valeur>
 
 Par exemple::
 
-  **debug true****
-  **debug****
+    debug true
+    debug
 
 définit l'option *debug* pour activer une journalisation plus verbeuse.  Si aucune valeur n'est spécifiée,
 la valeur true est implicite. Les exemples ci-dessus sont donc équivalents.  Un deuxième exemple
@@ -239,8 +239,8 @@ Place les fichiers correspondant à X dans le répertoire de travail actuel,
 et le paramètre *directory A* ne fait rien par rapport à X.
 
 Pour fournir une description non fonctionnelle de la configuration ou des 
-commentaires, utilisez des lignes commençant par **#****.  Toutes les options
-sont sensibles aux majuscules et minuscules. ** **Debug** n'est pas le même
+commentaires, utilisez des lignes commençant par **#**.  Toutes les options
+sont sensibles aux majuscules et minuscules. **Debug** n'est pas le même
 que **debug** ou **DEBUG**. Il s'agit de trois options différentes (dont deux
 n'existent pas et n'auront aucun effet, mais devrait générer une 
 avertissement ´unknown option´).
@@ -427,7 +427,7 @@ Pour chaque url spécifié qui nécessite un mot de passe, on place une entrée
 correspondante dans *credentials.conf*. L'option broker définit toutes les 
 informations d'identification pour se connecter au serveur **RabbitMQ**.
 
-  broker amqp{s}://<utilisateur>:<pw>@<brokerhost>[:port]/<vhost>****.
+  broker amqp{s}://<utilisateur>:<pw>@<brokerhost>[:port]/<vhost>
 
 ::
 
@@ -447,7 +447,7 @@ et le courtier ainsi que les paramètres requis par les composants.  Une entrée
 - **ftp://user7:password7@host passive,binaire**
 - **ftp://user8:password8@host:2121 active,ascii**
 
-- **ftp://user7:De%3Aolonize@host passive,binaire,tls***
+- **ftp://user7:De%3Aolonize@host passive,binaire,tls**
 - **ftps://user8:%2fdot8@host:2121 active,ascii,tls,prot_p**
 
 
@@ -463,7 +463,7 @@ Note: :
 
  Ces chaînes sont codées par URL, donc si un compte a un mot de passe avec un
  mot de passe spécial. Son équivalent URL encodé peut être fourni.  Dans le 
- dernier exemple ci-dessus, %2f**** signifie que le mot de passe actuel 
+ dernier exemple ci-dessus, %2f signifie que le mot de passe actuel 
  esti : **/dot8**
  L'avant-dernier mot de passe est :  **De:olonize**. ( %3a étant la valeur 
  codée en url d'un caractère deux-points. )
@@ -504,7 +504,7 @@ partie " consommateur " de les programmes de Sarracenia.
 Réglage du courtier 
 -------------------
 
-broker amqp{s}://<user>:<password>@<brokerhost>[:port]/<vhost>*****.
+broker amqp{s}://<user>:<password>@<brokerhost>[:port]/<vhost>
 
 Un URI AMQP est utilisé pour configurer une connexion à une pompe à messages 
 (AMQP broker). Certains composants de Sarracenia définissent une valeur par 
@@ -521,7 +521,7 @@ pour plus d'informations sur le format URI de l'AMQP : ( https://www.rabbitmq.co
 soit dans le fichier default.conf, soit dans chaque fichier de configuration spécifique.
 L'option courtier indique à chaque composante quel courtier contacter.
 
-broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>****.
+broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>
 
 ::
       (par défaut : Aucun et il est obligatoire de le définir) 
@@ -541,7 +541,7 @@ Mise en file d'attente sur broker :
 - **durable <booléen> (par défaut : False)**
 - **expire <durée> (par défaut : 5m == cinq minutes. À OUTREPASSER)**
 - **message-ttl <durée> (par défaut : Aucun)**
-- **prefetch <N> (par défaut : 1)****
+- **prefetch <N> (par défaut : 1)**
 - **reset <booléen> (par défaut : False)**
 - **restore <booléen> (par défaut : False)**
 - **restore_to_queue <queuename> (par défaut : Aucun)**
@@ -560,8 +560,8 @@ Par défaut, les composants créent un nom de file d'attente qui doit être uniq
 Le nom_de_la_files_d'attente par défaut composants créent suit.. :  
 **q_<brokerUser>.<programName>.<configName><configName>** . Les utilisateurs 
 peuvent remplacer la valeur par défaut à condition qu'elle commence par 
-**q_<brokerUser>****. Certaines variables peuvent aussi être utilisées dans 
-le nom_de_la_file d'attente comme **${BROKER_USER},${PROGRAMME},${CONFIG},${HOSTNAME}******
+**q_<brokerUser>**. Certaines variables peuvent aussi être utilisées dans 
+le nom_de_la_file d'attente comme **${BROKER_USER},${PROGRAMME},${CONFIG},${HOSTNAME}**
 
 Quand plusieurs processus (*instances*) roulent sur un même serveurs, ils 
 partagent le même *home* alors ils vont tous partager le même fil.  On peut
@@ -655,7 +655,7 @@ fois qu'une file d'attente existe sur le courtier, il doit être lié (*bound*) 
 une échange. Les liaisons (*bindings*) définissent ce que l'on entend par
 les avis que le programme reçoit. La racine du thème
 est fixe, indiquant la version du protocole et le type de l'arborescence.
-(mais les développeurs peuvent l'écraser avec le **topic_prefix****.
+(mais les développeurs peuvent l'écraser avec le **topic_prefix*.
 option.)
 
 Ces options définissent les messages (notifications URL) que le programme reçoit :
@@ -714,8 +714,8 @@ Pour utiliser le sous-thème pour filtrer les produits, faites correspondre la
 chaîne de sous-thèmes avec le chemin relatif dans l´arborescence de répertoires sur le serveur.
 
 Par exemple, en consommant à partir de DD, pour donner une valeur correcte au sous-thème, on peut
-Parcourez notre site Web **http://dd.weather.gc.ca**** et notez tous les annuaires.
-d'intérêt.  Pour chaque arborescence de répertoires d'intérêt, écrivez un **subtopic****.
+Parcourez notre site Web **http://dd.weather.gc.ca** et notez tous les annuaires.
+d'intérêt.  Pour chaque arborescence de répertoires d'intérêt, écrivez un **subtopic**.
 comme suit :
 
 
@@ -1010,7 +1010,7 @@ avec des options::
 se traduirait par la création des répertoires et du fichier
 /mylocaldirectory/radar/PRECIP/GIF/WGJ/20131214141900_WGJ_PRECIP_PRECIP_SNOW.gif
 
-Vous pouvez modifier les répertoires en miroir avec l'option **strip***.
+Vous pouvez modifier les répertoires en miroir avec l'option **strip**.
 S'il est réglé sur N (un entier), les premiers ´N´ répertoires sont retirés.
 Par exemple ::
 
@@ -1130,7 +1130,7 @@ l'affectation à un courtier. Les valeurs d'argument valables sont :
 
   poster des messages sur un post_exchange
 
-  amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>*****.
+  amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>
   post_exchange <nom> (OBLIGATOIRE)** **.
   on_post <script> (par défaut : Aucun)**.
 
@@ -1523,7 +1523,7 @@ QUEUES - FILES D´ATTENTES et EXECUTION MULTIPLE
 ===============================================
 
 Lorsqu'il est exécuté, **sr_subscribe** choisit un nom de file d'attente qu'il écrit
-à un fichier nommé d'après le fichier de configuration donné en argument à sr_subscribe****.
+à un fichier nommé d'après le fichier de configuration donné en argument à sr_subscribe
 avec un suffixe.queue ( ."nom de configuration".queue). 
 Si sr_subscribe est arrêté, les messages publiés continuent de s'accumuler sur 
 le courtier dans cette file d'attente (jusqu´a son *expire* -ation).  Lorsque le 
@@ -1631,7 +1631,7 @@ sont pas définies et sr_subscribe fonctionnera en mode 'standalone'.
 Dans le cas des courtiers en grappe, vous devez définir les options pour l'option
 vip en mouvement.
 
-**vip 153.14.126.126.3****
+**vip 153.14.126.126.3**
 
 Lorsque **sr_subscribe** ne trouve pas le vip, il dort pendant 5 secondes et réessaie.
 S´il possède le vip, il consomme et traite un message, puis revérifie le vip.
@@ -1648,7 +1648,7 @@ il faut indiquer un courtier on on enverra les avis.
 L'option **post_broker** définit toutes les informations d'authentification 
 pour se connecter à courtier sortie **AMQP**.
 
-amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>*****.
+amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>
 
 Une fois connecté au courtier AMQP source, le programme construit des notifications après que
 le téléchargement d'un fichier a eu lieu. Pour construire la notification et l'envoyer à
@@ -1736,13 +1736,13 @@ Configurations à distance
 
 On peut spécifier des URI comme fichiers de configuration, plutôt que des fichiers locaux. Exemple :
 
-  - **--config http://dd.weather.gc.ca/alerts/doc/cap.conf*****.
+  - **--config http://dd.weather.gc.ca/alerts/doc/cap.conf**
 
 Au démarrage, sr_subscribe vérifie si le fichier local cap.conf existe dans le répertoire 
 répertoire de configuration local.  Si c'est le cas, alors le fichier sera lu pour trouver
 une ligne comme ça :
 
-  **--remote_config_config_url http://dd.weather.gc.ca/alerts/doc/cap.conf*****.
+  **--remote_config_config_url http://dd.weather.gc.ca/alerts/doc/cap.conf**
 
 Dans ce cas, il vérifiera l'URL distante et comparera le temps de modification.
 du fichier distant contre le fichier local. Le fichier distant n'est pas plus récent ou ne peut pas être modifié.
@@ -1914,7 +1914,7 @@ structure contenant tous les paramètres, comme **parent.<setting>**, et
 le contenu du message en tant que **parent.msg** et les en-têtes.
 sont disponibles sous la forme **parent.msg[ <header> <header> ]**.  
 Le chemin d'accès pour écrire un fichier to est disponible car il y a 
-aussi **parent.msg.new_dir** / **parent.msg.new_file****.
+aussi **parent.msg.new_dir** / **parent.msg.new_file**.
 
 Il y a aussi des plugins enregistrés utilisés pour ajouter ou écraser des plugins intégrés. 
 scripts de protocole de transfert. Ils doivent être déclarés à l'aide de l'option **plugin**.
@@ -1933,7 +1933,7 @@ Le script pour les protocoles de transfert sont :
 - do_send - pour mettre en œuvre des protocoles et processus d'envoi supplémentaires.
 
 
-L'enregistrement se fait avec un module nommé **registered_as****... Il définit
+L'enregistrement se fait avec un module nommé **registered_as**... Il définit
 une liste des protocoles pris en charge par le module fourni.
 
 
@@ -2213,7 +2213,7 @@ le placement par défaut, ou bien Les fichiers de configuration individuels peuv
 Lorsque des composants sont invoqués, le fichier fourni est interprété comme un fichier 
 (avec un suffixe.conf conf supposé.) S'il n'est pas trouvé comme chemin d'accès au 
 fichier, alors l'option recherchera dans le répertoire de configuration du 
-composant ( **config_dir** / **component******) pour un fichier.conf correspondant.
+composant ( **config_dir** / **component**) pour un fichier.conf correspondant.
 
 S'il n'est toujours pas trouvé, il le recherchera dans le répertoire de configuration du site.
 (linux : /usr/share/default/sarra/**component**).
@@ -2328,8 +2328,8 @@ Ce mot-clé a priorité sur le mot-clé précédent **filename**.
 Le motif **regexp** peut être utilisé pour définir les parties du répertoire si 
 une partie du message est mise en place.  à la parenthèse. **sr_sender** peut utiliser 
 ces parties pour construire le nom du répertoire. Les premières chaînes de parenthèses 
-jointes remplaceront le mot-clé **${0}****$ dans le nom du répertoire
-le second **${1}**** etc.
+jointes remplaceront le mot-clé **${0}**$ dans le nom du répertoire
+le second **${1}** etc.
 
 exemple d'utilisation: :
 

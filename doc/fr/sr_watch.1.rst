@@ -33,9 +33,9 @@ Les messages sont envoyés à un serveur AMQP, également appelé courtier, spé
 CREDENTIALS
 -----------
 
-L'option broker définit toutes les informations d'identification pour se connecter au serveur **RabbitMQ****.
+L'option broker définit toutes les informations d'identification pour se connecter au serveur **RabbitMQ**.
 
-Courtier amqp{s}://<utilisateur>:<pw>@<brokerhost>[:port]/<vhost>****.
+Courtier amqp{s}://<utilisateur>:<pw>@<brokerhost>[:port]/<vhost>.
 
       (par défaut : amqps://anonymous:anonymous@dd.weather.gc.ca/)
 
@@ -342,7 +342,7 @@ L'option **post_base_url** définit le protocole, les informations d'
 identification, l'hôte et le port sous que le produit peut être récupéré. 
 
 Le corps d´un avis contient trois champs : l'heure de l'avis,
-cette valeur **base_url** et le chemin****, relatif à *post_base_dir*, si nécessaire.
+cette valeur **base_url** et le chemin, relatif à *post_base_dir*, si nécessaire.
 
 la concaténation des deux derniers champs de l'avis définit l´URL complete que les abonnés 
 utiliseront pour télécharger le produit.
@@ -378,7 +378,7 @@ disponibles pour être transférés. La stratégie appropriée varie en fonction
  le délai **minimum pour signaler les changements** aux fichiers qui est acceptable, et
  la **taille de chaque fichier** dans l'arbre.
 
-L'arbre le plus facile à surveiller est le plus petit ** Avec un seul répertoire à surveiller où l'on 
+**L'arbre le plus facile à surveiller est le plus petit** Avec un seul répertoire à surveiller où l'on 
 affiche un message pour un composant *sr_sarra*, alors l'utilisation de l'option *delete* gardera en tout temps
 le nombre minimale de fichiers dans le répertoire et minimisera le temps de remarquer les nouveaux. Dans ces 
 conditions optimales, l'observation des fichiers dans un centième de seconde, c'est raisonnable 
