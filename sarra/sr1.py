@@ -246,7 +246,7 @@ def main():
 
     # Init logger here
     cfg.build_instance(1)
-    cfg.setlog()
+    cfg.setlog(interactive=True)
 
     # loop on all possible programs ... add audit
     programs = ['audit']
