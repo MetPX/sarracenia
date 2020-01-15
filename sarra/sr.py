@@ -465,7 +465,10 @@ class sr_GlobalState:
 
                     if len(suffix) > 1:
                         if suffix[1] == 'log':
-                            inum = int(suffix[0])
+                            try:
+                                inum = int(suffix[0])
+                            except:
+                                inum=0
                             age = ageoffile(lf)
                             if cfg not in self.logs[c]:
                                 self.logs[c][cfg] = {}
