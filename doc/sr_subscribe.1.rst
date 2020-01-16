@@ -2260,11 +2260,22 @@ SEE ALSO
 
 `https://github.com/MetPX/ <https://github.com/MetPX>`_ - sr_subscribe is a component of MetPX-Sarracenia, the AMQP based data pump.
 
+DEVELOPER ONLY OPTIONS
+======================
+
+The SR_DEV_APPNAME environment variable can be set so that the application configuration and state directories
+are created under a different name.  This is used in development to be able to have many configurations
+active at once.  It enables more testing than always working with the developer´s *real* configuration.
+
+Example:  export SR_DEV_APPNAME=sr-hoho... when you start up a component on a linux system, it will 
+look in ~/.config/sr-hoho/ for configuration files, and write state files in the ~/.cache/sr-hoho
+directory.
+
 
 SUNDEW COMPATIBILITY OPTIONS
 ============================
 
-For compatibility with sundew, there are some additional delivery options which can be specified.
+For compatibility with Sundew, there are some additional delivery options which can be specified.
 
 destfn_script <script> (default:None)
 -------------------------------------
@@ -2284,19 +2295,19 @@ The possible keywords are :
 
 
 **WHATFN**
- - the first part of the sundew filename (string before first :)
+ - the first part of the Sundew filename (string before first :)
 
 **HEADFN**
  - HEADER part of the sundew filename
 
 **SENDER**
- - the sundew filename may end with a string SENDER=<string> in this case the <string> will be the remote filename
+ - the Sundew filename may end with a string SENDER=<string> in this case the <string> will be the remote filename
 
 **NONE**
- - deliver with the complete sundew filename (without :SENDER=...)
+ - deliver with the complete Sundew filename (without :SENDER=...)
 
 **NONESENDER**
- - deliver with the complete sundew filename (with :SENDER=...)
+ - deliver with the complete Sundew filename (with :SENDER=...)
 
 **TIME**
  - time stamp appended to filename. Example of use: WHATFN:TIME
@@ -2373,7 +2384,7 @@ The other fields vary in meaning depending on context.  A sample file name::
 
    SACN43_CWAO_012000_AAA_41613:ncp1:CWAO:SA:3.A.I.E:3:20050201200339
 
-If a file is sent to sarracenia and it is named according to the sundew conventions, then the 
+If a file is sent to sarracenia and it is named according to the Sundew conventions, then the 
 following substitution fields are available::
 
   ${T1}    replace by bulletin's T1

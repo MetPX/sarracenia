@@ -6,6 +6,17 @@ lists all changes between versions.
 
 **git repo**
 
+**2.20.01b3**
+
+  * bugfix #231: post_exchange_split not splitting fairly or > 12 different buckets.
+  * sr declare not working in development mode.
+  * bugfix: sr1.py output improperly redirected to log. 
+  * some doc editorial fixes from nate.rosenstock, yay!
+  * some WIP issue #187: added SR_DEV_APPNAME support.
+  * some WIP issue #187: added devsnap option to sr to capture state for later analysis.
+  * bugfix outlet option was not working at all.
+  * bugfix #296: sr_subscribe list | grep was always empty.
+
 **2.20.01b2**
 
   * bugfix: race condition where retry.state files might disappear while gathering status.

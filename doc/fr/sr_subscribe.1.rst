@@ -2276,6 +2276,17 @@ AUSSI VOIR
 
 `https://github.com/MetPX/ <https://github.com/MetPX>`_ - sr_subscribe est un composant de MetPX-Sarracenia, la pompe de données basée sur AMQP.
 
+POUR DEV SEULEMENT
+==================
+
+la variable d´environnement SR_DEV_APPNAME peut être définit pour que les composants 
+lisent leur configurations et écrivent leurs fichiers d´états ailleurs que le *vrai* endroit.
+Ceci permet de fait des testes plus variés.
+
+Exemple:  export SR_DEV_APPNAME=sr-hoho... sur un serveur Linux, un composant qui démarra
+cherchera dans ~/.config/sr-hoho/ pour ces fichiers de configuration, mettra ces fichiers d´état dans
+le répertoire ~/.cache/sr-hoho
+
 
 COMPATIBILITE avec SUNDEW
 =========================
