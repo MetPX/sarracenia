@@ -1,8 +1,7 @@
 
 Benoit Lapointe <Benoit.Lapointe@canada.ca>
-  Current Development lead. Improving testing frameworks/
-  Design documentation / code hygiene.
-  MQTT interop work. 
+  Improving testing frameworks/ Design documentation / code hygiene.
+  Some MQTT interop work. 
 
 Michel Grenier <michel.grenier@IamRetiredNow.ca> (Retired)
   dd_subscribe, sr_subscribe, sr_sarra, sr_post, 
