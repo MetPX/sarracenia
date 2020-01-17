@@ -618,17 +618,16 @@ class sr_message():
         if self.post_exchange_split > 0 :
            if 'integrity' in self.headers : 
                if self.headers['integrity']['method'] in ['cod','random']:
-                   suffix= "%02d" % ( ord(self.headers['integrity']['value'][-1]) % self.post_exchange_split )
+                   suffix= "%02d" % ( sum( bytearray(self.headers['integrity']['value'], 'ascii')) % self.post_exchange_split )
                    self.logger.debug( "post_exchange_split set, keying on %s , suffix is %s" % \
-                        ( self.headers['sum']['value'][-1], suffix) )
+                        ( self.headers['sum']['value'], suffix) )
                else: 
-                   # base64 encoding always ends with = or ==, so last char bad...
-                   suffix= "%02d" % ( ord(self.headers['integrity']['value'][-4]) % self.post_exchange_split )
+                   suffix= "%02d" % ( sum( bytearray(self.headers['integrity']['value'],'ascii')) % self.post_exchange_split )
                    self.logger.debug( "post_exchange_split set, keying on %s , suffix is %s" % \
-                        ( self.headers['sum']['value'][-4], suffix) )
+                        ( self.headers['sum']['value'], suffix) )
            else:
-               suffix= "%02d" % ( ord(self.headers['sum'][-1]) % self.post_exchange_split )
-               self.logger.debug( "post_exchange_split set, keying on %s , suffix is %s" % ( self.headers['sum'][-1], suffix) )
+               suffix= "%02d" % ( sum( bytearray(self.headers['sum'], 'ascii')) % self.post_exchange_split )
+               self.logger.debug( "post_exchange_split set, keying on %s , suffix is %s" % ( self.headers['sum'], suffix) )
         else:
            suffix=""
 

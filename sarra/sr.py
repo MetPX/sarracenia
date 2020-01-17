@@ -96,7 +96,7 @@ class sr_GlobalState:
         else:  # C components
             cmd = [component_path, 'start', cfg]
 
-        #print( "launching +%s+  re-directed to: %s" % ( cmd, lfn ) )
+        print( "launching +%s+  re-directed to: %s" % ( cmd, lfn ), flush=True )
 
         try:
             with open(lfn, "a") as lf:
@@ -623,12 +623,13 @@ class sr_GlobalState:
 
         self.logger = logger
 
+        self.bin_dir = os.path.dirname(os.path.realpath(__file__))
         self.appauthor = 'science.gc.ca'
         self.appname = os.getenv( 'SR_DEV_APPNAME' )
         if self.appname == None:
             self.appname = 'sarra'
         else:
-            print( 'DEVELOPMENT using alternate application name: %s' % self.appname )
+            print( 'DEVELOPMENT using alternate application name: %s, bindir=%s' % (self.appname, self.bin_dir ))
 
         if not os.path.isdir( self.user_config_dir ):
             print( 'WARNING: No %s configuration found.' % self.appname )
@@ -685,8 +686,12 @@ class sr_GlobalState:
                 continue
             for cfg in self.configs[c]:
                 print('.', end='')
-                plist.append(subprocess.Popen(
-                    [component_path, action, cfg],
+                if c[0] != 'c':  # python components
+                    cmd = [sys.executable, component_path, action, cfg]
+                else:
+                    cmd = [component_path, action, cfg]
+
+                plist.append(subprocess.Popen( cmd,
                     stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
                 ))
         print('Done')
@@ -726,7 +731,7 @@ class sr_GlobalState:
             if component_path == '':
                 continue
             for cfg in self.configs[c]:
-                #print('in start: component/cfg: %s/%s' % (c,cfg))
+                print('in start: component/cfg: %s/%s' % (c,cfg))
                 if self.configs[c][cfg]['status'] in ['stopped']:
                     numi = self.configs[c][cfg]['instances']
                     for i in range(1, numi + 1):
