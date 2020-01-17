@@ -6,6 +6,8 @@ lists all changes between versions.
 
 **git repo**
 
+  * change amqp message encoding to application/json for v03.
+
 **2.20.01b3**
 
   * bugfix #231: post_exchange_split not splitting fairly or > 12 different buckets.
