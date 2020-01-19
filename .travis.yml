@@ -4,10 +4,18 @@ language: python
 
 matrix:
   include:
-  - name: "3.6-500limit"
+  - name: "3.6-unit"
     python: "3.6"
     env: LIMIT=500
     env: TEST=unit
+  - name: "3.6-static_flow"
+    python: "3.6"
+    env: LIMIT=500
+    env: TEST=sr-static_flow
+  - name: "3.6-dynamic_flow"
+    python: "3.6"
+    env: LIMIT=500
+    env: TEST=sr-dynamic_flow
 # while in issue187 branch shorter is better. 
 #  - name: "3.5-1000limit"
 #    python: "3.5"

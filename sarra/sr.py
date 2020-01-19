@@ -96,7 +96,7 @@ class sr_GlobalState:
         else:  # C components
             cmd = [component_path, 'start', cfg]
 
-        print( "launching +%s+  re-directed to: %s" % ( cmd, lfn ), flush=True )
+        #print( "launching +%s+  re-directed to: %s" % ( cmd, lfn ), flush=True )
 
         try:
             with open(lfn, "a") as lf:
@@ -731,7 +731,6 @@ class sr_GlobalState:
             if component_path == '':
                 continue
             for cfg in self.configs[c]:
-                print('in start: component/cfg: %s/%s' % (c,cfg))
                 if self.configs[c][cfg]['status'] in ['stopped']:
                     numi = self.configs[c][cfg]['instances']
                     for i in range(1, numi + 1):
