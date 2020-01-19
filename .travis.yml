@@ -11,11 +11,11 @@ matrix:
   - name: "3.6-static_flow"
     python: "3.6"
     env: LIMIT=500
-    env: TEST=sr-static_flow
+    env: TEST=static_flow
   - name: "3.6-dynamic_flow"
     python: "3.6"
     env: LIMIT=500
-    env: TEST=sr-dynamic_flow
+    env: TEST=dynamic_flow
 # while in issue187 branch shorter is better. 
 #  - name: "3.5-1000limit"
 #    python: "3.5"
