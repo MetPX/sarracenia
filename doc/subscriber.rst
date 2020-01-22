@@ -518,10 +518,10 @@ Optimize File Selection per Process
 
 * Often users specif # as their subtopic, meaning the accept/rejects do all the work. In many cases, users are only interested in a small fraction of the files being published.  For best performance, **Make *subtopic* as specific as possible** to have minimize sending messages that are send by the broker and arrive on the subscriber only to be rejected. (use *log_reject* option to find such products.)
 
-* Reject early, Reject often:  Place *reject* statements as early as possible in the file. As rejection saves processing of any later regex's in the configuration.
+* **Place *reject* statements as early as possible in the configuration**. As rejection saves processing of any later regex's in the configuration.
 
-* Have few accept/reject clauses: Evaluation of a accept/reject, because it 
-  involves a regular expression match, is expensive, but evaluating a complex
+* **Have few accept/reject clauses**: because it involves a regular expression
+  match, accept/reject clauses are expensive, but evaluating a complex
   regex is not much more expensive than a simple one, so it is better to have
   a few complicated ones than many simple ones.  Example::
 
