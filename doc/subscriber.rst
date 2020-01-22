@@ -520,29 +520,42 @@ Optimize File Selection per Process
 
 * Reject early, Reject often:  Place *reject* statements as early as possible in the file. As rejection saves processing of any later regex's in the configuration.
 
-* Have few accept/reject clauses: Evaluation of a accept/reject, because it involves a regular expression match, is expensive, but evaluating a complex regex is not much more expensive than a simple one, so it is better to have a few complicated ones than many simple ones.
-
-Example::
+* Have few accept/reject clauses: Evaluation of a accept/reject, because it 
+  involves a regular expression match, is expensive, but evaluating a complex
+  regex is not much more expensive than a simple one, so it is better to have
+  a few complicated ones than many simple ones.  Example::
 
           accept .*/SR/KWAL.*
           accept .*/SO/KWAL.*
 
-will run at rougly half the speed (or double the cpu overhead) compared to ::
+  will run at rougly half the speed (or double the cpu overhead) compared to ::
 
          accept .*/S[OR]/KWAL.*
 
 * **Use suppress_duplicates**.  In some cases, there is a risk of the same file
-being announced more than once.  Usually clients do not want redundant copies 
-of files transferred.  The *suppress_duplicates* option sets up a cache of 
-checksums of the files which have gone by, and prevents their being processed
-again. 
+  being announced more than once.  Usually clients do not want redundant copies 
+  of files transferred.  The *suppress_duplicates* option sets up a cache of 
+  checksums of the files which have gone by, and prevents their being processed
+  again. 
  
-* If you are transferring small files, the built-in transfer processing is quite good, but **if there are large files** in the mix, then oflloading to a C binary is going to go faster. **Use plugins such as accel_wget, accel_sftp, accel_cp** (for local files.) These plugins have threshold settings so that the optimial python transer methods are still used for files smaller than the threshold.
+* If you are transferring small files, the built-in transfer processing is quite
+  good, but **if there are large files** in the mix, then oflloading to a C 
+  binary is going to go faster. **Use plugins such as accel_wget, accel_sftp, 
+  accel_cp** (for local files.) These plugins have threshold settings so that
+  the optimial python transer methods are still used for files smaller than the
+  threshold.
 
-* **increasing prefetch** can reduce the average latency (being amortised over the number of messages prefetched.) 
-  It can improve performance over long-distances or in high message rates within an data centre.
+* **increasing prefetch** can reduce the average latency (being amortised over
+  the number of messages prefetched.) It can improve performance over long 
+  distances or in high message rates within an data centre.
 
-* If you control the origin of a product stream, and the consumers will want a very large proportion of the products announced, and the products are small (a few K at most), then consider combining use of v03 with inlining for optimal transfer of small files.  Note, if you have a wide variety of users who all want different data sets, inlining can be counter-productive. This will also result in larger messages and mean much higher load on the broker.  It may optimize a few specific cases, while slowing the broker down overall.
+* If you control the origin of a product stream, and the consumers will want a
+  very large proportion of the products announced, and the products are small
+  (a few K at most), then consider combining use of v03 with inlining for 
+  optimal transfer of small files.  Note, if you have a wide variety of users
+  who all want different data sets, inlining can be counter-productive. This
+  will also result in larger messages and mean much higher load on the broker.
+  It may optimize a few specific cases, while slowing the broker down overall.
 
 
 Use Instances
