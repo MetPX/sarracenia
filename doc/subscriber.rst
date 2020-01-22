@@ -599,6 +599,16 @@ since all files with the same checksum end up with the same winnow, it works.
 The winnow processes then post to the exchange used by the real processing 
 pools.
 
+Why is high performance duplicate suppresion a good thing? Because the 
+availability model of Sarracenia is to have individual application stacks
+blindly produce redudant copies of products. It requires no application
+adjustment from single node to participating in a cluster.  Sarracenia
+selects the first result we receive for forwarding. This avoids any sort 
+of quorum protocol, a source if great complexity in high availability 
+schemes, and by measuring based on output, minimizes the potential for
+systems to appear up, when not actually being completely functional. The 
+applications do not need to know that there is another stack producing the same
+products, which simplifies them as well.
 
  
 Plugins
