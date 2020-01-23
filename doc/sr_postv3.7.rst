@@ -849,7 +849,7 @@ is assured by making the right choices.
 * expiry (how long a queue should exist when no-one is consuming from it.  Default: a few 
   minutes for development, but can set much longer for production)
 
-* message-ttl (the life-span of queued messages. Messages that are too old will not 
+* message_ttl (the life-span of queued messages. Messages that are too old will not 
   be delivered: default is forever.)
 
 * Pre-fetch is an AMQP tunable to determine how many messages a client will 

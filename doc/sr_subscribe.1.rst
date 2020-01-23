@@ -551,7 +551,7 @@ Setting the queue on broker :
 - **queue         <name>         (default: q_<brokerUser>.<programName>.<configName>)**
 - **durable       <boolean>      (default: False)**
 - **expire        <duration>      (default: 5m  == five minutes. RECOMMEND OVERRIDING)**
-- **message-ttl   <duration>      (default: None)**
+- **message_ttl   <duration>      (default: None)**
 - **prefetch      <N>            (default: 1)**
 - **reset         <boolean>      (default: False)**
 - **restore       <boolean>      (default: False)**
@@ -621,10 +621,10 @@ and in early use (when default was 1 week) brokers would often get overloaded wi
 long queues for left-over experiments.  
 
 
-message-ttl <duration>  (default: None)
+message_ttl <duration>  (default: None)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The  **message-ttl**  option set the time a message can live in the queue.
+The  **message_ttl**  option set the time a message can live in the queue.
 Past that time, the message is taken out of the queue by the broker.
 
 prefetch <N> (default: 1)

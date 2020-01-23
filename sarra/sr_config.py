@@ -2108,7 +2108,7 @@ class sr_config:
                      self.max_queue_size = int(words[1])
                      n = 2
 
-                elif words0 == 'message_ttl':  # See: sr_consumer.7
+                elif words0 in [ 'message-ttl', 'message_ttl' ]:  # See: sr_consumer.7
                      if    words1.lower() == 'none' :
                            self.message_ttl = None
                      else:
