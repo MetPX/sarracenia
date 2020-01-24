@@ -492,7 +492,7 @@ Other Parameters
 
 There are other parameters, such as persistence (have queues survive broker restarts, default to true),
 expiry (how long a queue should exist when no-one is consuming from it.  Default: a few 
-minutes for development, but can set much longer for production) message-ttl (the life-span of queued
+minutes for development, but can set much longer for production) message_ttl (the life-span of queued
 messages. messages that are too old, will not be delivered. default is forever.)
 Pre-fetch is an AMQP tunable to determine how many messages a client will retrieve from
 a broker at once, optimizing streaming.

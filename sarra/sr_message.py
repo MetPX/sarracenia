@@ -174,10 +174,21 @@ class sr_message():
 
         # compare dates...
 
-        if self.parent.preserve_time and 'mtime' in self.headers:
+        if 'mtime' in self.headers:
             new_mtime = timestr2flt(self.headers[ 'mtime' ])
-            if new_mtime <= lstat[stat.ST_MTIME]:
-               self.logger.debug("sr_csnbd %s new version not newer" % (fname ) )
+            old_mtime=0.0
+
+            if self.parent.preserve_time :
+               old_mtime = lstat[stat.ST_MTIME]
+            elif supports_extended_attributes:
+               try:
+                   x = sr_xattr( os.path.join(self.new_dir, self.new_file) )
+                   old_mtime = timestr2flt(x.get( 'mtime' ))
+               except:
+                   pass
+
+            if new_mtime <= old_mtime:
+               self.logger.debug("sr_csnbd %s new version not newer" % ( fname ) )
                if self.log_reject:
                    self.logger.info("rejected: mtime not newer %s " % (fname ) )
                return True

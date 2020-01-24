@@ -507,6 +507,110 @@ accept clauses.
   Yes, this is confusing.  No, it cannot be helped.  
 
 
+Performance
+-----------
+
+If transfers are going too slowly, the steps are as follows:
+
+
+Optimize File Selection per Process
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Often users specif # as their subtopic, meaning the accept/rejects do all the work. In many cases, users are only interested in a small fraction of the files being published.  For best performance, **Make *subtopic* as specific as possible** to have minimize sending messages that are send by the broker and arrive on the subscriber only to be rejected. (use *log_reject* option to find such products.)
+
+* **Place *reject* statements as early as possible in the configuration**. As rejection saves processing of any later regex's in the configuration.
+
+* **Have few accept/reject clauses**: because it involves a regular expression
+  match, accept/reject clauses are expensive, but evaluating a complex
+  regex is not much more expensive than a simple one, so it is better to have
+  a few complicated ones than many simple ones.  Example::
+
+          accept .*/SR/KWAL.*
+          accept .*/SO/KWAL.*
+
+  will run at rougly half the speed (or double the cpu overhead) compared to ::
+
+         accept .*/S[OR]/KWAL.*
+
+* **Use suppress_duplicates**.  In some cases, there is a risk of the same file
+  being announced more than once.  Usually clients do not want redundant copies 
+  of files transferred.  The *suppress_duplicates* option sets up a cache of 
+  checksums of the files which have gone by, and prevents their being processed
+  again. 
+ 
+* If you are transferring small files, the built-in transfer processing is quite
+  good, but **if there are large files** in the mix, then oflloading to a C 
+  binary is going to go faster. **Use plugins such as accel_wget, accel_sftp, 
+  accel_cp** (for local files.) These plugins have threshold settings so that
+  the optimial python transer methods are still used for files smaller than the
+  threshold.
+
+* **increasing prefetch** can reduce the average latency (being amortised over
+  the number of messages prefetched.) It can improve performance over long 
+  distances or in high message rates within an data centre.
+
+* If you control the origin of a product stream, and the consumers will want a
+  very large proportion of the products announced, and the products are small
+  (a few K at most), then consider combining use of v03 with inlining for 
+  optimal transfer of small files.  Note, if you have a wide variety of users
+  who all want different data sets, inlining can be counter-productive. This
+  will also result in larger messages and mean much higher load on the broker.
+  It may optimize a few specific cases, while slowing the broker down overall.
+
+
+Use Instances
+~~~~~~~~~~~~~
+
+Once you have optimized what a single subscriber can do, if it is not fast enough, 
+then use the *instances* option to have more processes participate in the 
+processing.  Having 10 or 20 instances is not a problem at all.  The maximum 
+number of instances that will increase performance will plateau at some point
+that varies depending on latency to broker, how fast the instances are at processing
+each file, the prefetch in use, etc...  One has to experiment.
+
+Examining instance logs, if they seem to be waiting for messages for a long time,
+not actually doing any transfer, then one might have reached queue saturation.
+This often happens at around 40 to 75 instances. Rabbitmq manages a single queue
+with a single CPU, and there is a limit to how many messages a queue can process
+in a given unit of time.
+
+If the queue becomes saturated, then we need to partition the subscriptions
+into multiple configurations.  Each configuration will have a separate queue,
+and the queues will get their own CPU's.  With such partitioning, we have gone
+to a hundred or so instances and not seen saturation.  We don't know when we run
+out of performance.
+
+We haven't needed to scale the broker itself yet.
+
+
+High Performance Duplicate Suppression
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+One caveat to the use of *instances* is that *suppress_duplicates* is ineffective
+as the different occurrences of the same file will not be received by the same 
+instance, and so with n instances, roughly n-1/n duplicates will slip through. 
+
+In order to properly suppress duplicate file announcements in data streams 
+that need multiple instances, one uses winnowing with *post_exchange_split*.
+This option sends data to multiple post exchanges based on the data checksum,
+so that all duplicate files will be routed to the same winnow process.
+Each winnow process runs the normal duplicate suppression used in single instances,
+since all files with the same checksum end up with the same winnow, it works.
+The winnow processes then post to the exchange used by the real processing 
+pools.
+
+Why is high performance duplicate suppresion a good thing? Because the 
+availability model of Sarracenia is to have individual application stacks
+blindly produce redudant copies of products. It requires no application
+adjustment from single node to participating in a cluster.  Sarracenia
+selects the first result we receive for forwarding. This avoids any sort 
+of quorum protocol, a source if great complexity in high availability 
+schemes, and by measuring based on output, minimizes the potential for
+systems to appear up, when not actually being completely functional. The 
+applications do not need to know that there is another stack producing the same
+products, which simplifies them as well.
+
+ 
 Plugins
 -------
 

@@ -540,7 +540,7 @@ Mise en file d'attente sur broker :
 - **queue <nom> (par défaut : q_<brokerUser>.<programName>.<configName>.<configName>)**
 - **durable <booléen> (par défaut : False)**
 - **expire <durée> (par défaut : 5m == cinq minutes. À OUTREPASSER)**
-- **message-ttl <durée> (par défaut : Aucun)**
+- **message_ttl <durée> (par défaut : Aucun)**
 - **prefetch <N> (par défaut : 1)**
 - **reset <booléen> (par défaut : False)**
 - **restore <booléen> (par défaut : False)**
@@ -595,10 +595,10 @@ les ressources du courtier seront assignées, et au début de l'utilisation
 surchargés de très peu d'argent. de longues files d'attente pour les 
 expériences restantes.
 
-message-ttl <durée> (par défaut : Aucun)
+message_ttl <durée> (par défaut : Aucun)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-L'option **message-ttl** (*message time to live*) définit la durée de vie
+L'option **message_ttl** (*message time to live*) définit la durée de vie
 d´un message dans la file d'attente. Passé ce délai, le message est retiré de 
 la file d'attente par le courtier.
 
