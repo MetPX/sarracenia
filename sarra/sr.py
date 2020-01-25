@@ -96,7 +96,7 @@ class sr_GlobalState:
         else:  # C components
             cmd = [component_path, 'start', cfg]
 
-        print( "launching +%s+  re-directed to: %s" % ( cmd, lfn ), flush=True )
+        #print( "launching +%s+  re-directed to: %s" % ( cmd, lfn ), flush=True )
 
         try:
             with open(lfn, "a") as lf:
@@ -709,7 +709,7 @@ class sr_GlobalState:
             if component_path == '':
                 continue
             for cfg in self.configs[c]:
-                print('in start: component/cfg: %s/%s' % (c,cfg))
+                #print('in start: component/cfg: %s/%s' % (c,cfg))
                 if self.configs[c][cfg]['status'] in ['stopped']:
                     numi = self.configs[c][cfg]['instances']
                     for i in range(1, numi + 1):
@@ -999,28 +999,28 @@ def main():
     #return
 
     if action in ['declare', 'setup']:
-        print('%s ' % action, end='', flush=True)
+        print('%s: ' % action, end='', flush=True)
         gs.maint(action)
 
     if action == 'dump':
-        print('dumping ', end='', flush=True)
+        print('dumping: ', end='', flush=True)
         gs.dump()
 
     elif action == 'restart':
-        print('restarting ', end='', flush=True)
+        print('restarting: ', end='', flush=True)
         gs.stop()
         gs.start()
 
     elif action == 'sanity':
-        print('sanity ', end='', flush=True)
+        print('sanity: ', end='', flush=True)
         gs.sanity()
 
     elif action == 'start':
-        print('starting ', end='', flush=True)
+        print('starting:', end='', flush=True)
         gs.start()
 
     elif action == 'status':
-        print('status ')
+        print('status: ')
         sys.exit(gs.status())
 
     elif action == 'devsnap':
@@ -1034,7 +1034,7 @@ def main():
         gs.save_procs( gs.user_cache_dir + os.sep + "procs.json" )
 
     elif action == 'stop':
-        print('Stopping ', end='', flush=True)
+        print('Stopping: ', end='', flush=True)
         gs.stop()
 
 
