@@ -6,6 +6,11 @@ lists all changes between versions.
 
 **git repo**
 
+**2.20.01b4**
+
+  * there was some debug output in sr.py that snuck into the last release. removed.
+  * bugfix #300 when deciding whether to download use mtime from attribute if preserve_time is off.
+  * bugfix #299 documentation: message_ttl is the name of the option, not message-ttl.
   * change amqp message encoding to application/json for v03.
 
 **2.20.01b3**

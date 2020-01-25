@@ -1,3 +1,12 @@
+metpx-sarracenia (2.20.01bi4) unstable; urgency=medium
+
+  * there was some debug output in sr.py that snuck into the last release. removed.
+  * bugfix #300 when deciding whether to download use mtime from attribute if preserve_time is off.
+  * bugfix #299 documentation: message_ttl is the name of the option, not message-ttl.
+  * change amqp message encoding to application/json for v03.
+
+ -- Peter Silva <peter@bsqt.homeip.net>  Sat, 25 Jan 2020 00:59:48 -0500
+
 metpx-sarracenia (2.20.01b3) unstable; urgency=medium
 
   * bugfix #231: post_exchange_split not splitting fairly or > 12 different buckets.

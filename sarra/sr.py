@@ -1020,28 +1020,28 @@ def main():
     #return
 
     if action in ['declare', 'setup']:
-        print('%s ' % action, end='', flush=True)
+        print('%s: ' % action, end='', flush=True)
         gs.maint(action)
 
     if action == 'dump':
-        print('dumping ', end='', flush=True)
+        print('dumping: ', end='', flush=True)
         gs.dump()
 
     elif action == 'restart':
-        print('restarting ', end='', flush=True)
+        print('restarting: ', end='', flush=True)
         gs.stop()
         gs.start()
 
     elif action == 'sanity':
-        print('sanity ', end='', flush=True)
+        print('sanity: ', end='', flush=True)
         gs.sanity()
 
     elif action == 'start':
-        print('starting ', end='', flush=True)
+        print('starting:', end='', flush=True)
         gs.start()
 
     elif action == 'status':
-        print('status ')
+        print('status: ')
         sys.exit(gs.status())
 
     elif action == 'devsnap':
@@ -1055,7 +1055,7 @@ def main():
         gs.save_procs( gs.user_cache_dir + os.sep + "procs.json" )
 
     elif action == 'stop':
-        print('Stopping ', end='', flush=True)
+        print('Stopping: ', end='', flush=True)
         gs.stop()
 
 
