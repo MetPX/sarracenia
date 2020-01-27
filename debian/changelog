@@ -6,7 +6,7 @@ metpx-sarracenia (2.20.01b5) unstable; urgency=medium
 
  -- Peter Silva <peter@idefix>  Mon, 27 Jan 2020 09:53:22 -0500
 
-metpx-sarracenia (2.20.01bi4) unstable; urgency=medium
+metpx-sarracenia (2.20.01b4) unstable; urgency=medium
 
   * there was some debug output in sr.py that snuck into the last release. removed.
   * bugfix #300 when deciding whether to download use mtime from attribute if preserve_time is off.
