@@ -12,16 +12,18 @@ matrix:
     python: "3.6"
     env: LIMIT=500
     env: TEST=static_flow
-# while in issue187 branch shorter is better. 
-#  - name: "3.5-1000limit"
-#    python: "3.5"
-#    env: LIMIT=1000
-#  - name: "3.6-2000limit"
-#    python: "3.6"
-#    env: LIMIT=2000
-#  - name: "3.7-3000limit"
-#    python: "3.7"
-#    env: LIMIT=3000
+  - name: "3.5-1000limit"
+    python: "3.5"
+    env: LIMIT=1000
+    env: TEST=dynamic_flow
+  - name: "3.6-2000limit"
+    python: "3.6"
+    env: LIMIT=2000
+    env: TEST=dynamic_flow
+  - name: "3.7-3000limit"
+    python: "3.7"
+    env: LIMIT=3000
+    env: TEST=dynamic_flow
 
 
 branches:
