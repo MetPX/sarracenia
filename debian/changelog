@@ -1,4 +1,4 @@
-metpx-sarracenia (2.20.01b5) unstable; urgency=medium
+metpx-sarracenia (2.20.02b1) unstable; urgency=medium
 
   * more debug code needed to be removed, this time with a functional impact. (try/except had been commented.)
   * correcting the release name (get rid of errant i)
