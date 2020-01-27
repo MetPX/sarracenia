@@ -1,3 +1,11 @@
+metpx-sarracenia (2.20.01b5) unstable; urgency=medium
+
+  * more debug code needed to be removed, this time with a functional impact. (try/except had been commented.)
+  * correcting the release name (get rid of errant i)
+  * bugfix: there was a crash in sr.py when logs aren´t names as expected.  
+
+ -- Peter Silva <peter@idefix>  Mon, 27 Jan 2020 09:53:22 -0500
+
 metpx-sarracenia (2.20.01bi4) unstable; urgency=medium
 
   * there was some debug output in sr.py that snuck into the last release. removed.

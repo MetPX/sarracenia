@@ -6,6 +6,12 @@ lists all changes between versions.
 
 **git repo**
 
+**2.20.01b5**
+
+  * more debug code needed to be removed (introduced in b3), this time with a functional impact. (try/except had been commented.)
+  * correcting the release name (get rid of errant i)
+  * bugfix: there was a crash in sr.py when logs aren´t names as expected.  
+
 **2.20.01b4**
 
   * there was some debug output in sr.py that snuck into the last release. removed.
