@@ -8,16 +8,6 @@
 
 .. Note::
 
-   This is a bit speculative at the time of this writing (2018/01). We expect to deploy over the winter
-   and be completed in 2018/03. Given the volumes being copied the exact performance isn't easily measured.
-   This article will be amended to reflect the advancing solution, until complete, then this note will be removed.
-
-   Update 2019/02: Solution is deployed to all parallel weather prediction runs, continued progress to
-   operational deployment.
-
-   Update 2019/11: Solution is deployed 'post only' in operations, hope to complete auditing this month,
-   and switch over next month.
-
 .. contents::
 
 
@@ -28,8 +18,7 @@ This project has taken longer than expected, over three years, as the problem sp
 help of a very patient client while the tool to design and implement the efficient solution was eventually 
 settled on. The client asked for a solution to make files available on the backup cluster within five
 minutes of their creation on the primary one, and the first version of mirroring, deployed in 2017,
-achieves roughly a 20 minute delay. Work continues on *version 2* which should achieve the five minute
-target the client set in 2016.  We hope version 2 will be finally implemented in December 2019.
+achieves roughly a 20 minute delay.  Version 2 was deployed in January 2020.
 
 The client is actually more of a partner, who had very large test cases available and 
 ended up shouldering the responsibility for all of us to understand whether the solution was working or not. 
@@ -100,7 +89,7 @@ There are essentially three parts of the problem:
  * Transfer: copy them to the other cluster (minimizing overhead.)
  * Performance: aspirational deadline to deliver a mirrored file: five minutes.
  
-The actual trees to mirror are the following::
+The actual trees to mirror were the following in the original contract phase (retrospectively called U0)::
  
  psilva@eccc1-ppp1:/home/sarr111/.config/sarra/poll$ grep directory *hall1*.conf
  policy_hall1_admin.conf:directory /fs/site1/ops/eccc/cmod/prod/admin
@@ -187,15 +176,15 @@ sending portion of the sarra library was implemented along with a prototype shim
  
 It should be noted that the GPFS-policy runs have been operationally deployed since 2017. This has
 turned out to be *version 1* of the mirroring solution, and has achieved a mirroring to secondary
-clusters with approximately 20 minutes of delay in getting the data to the second system.  Three years
-in, there is now an upgrade of the supercomputer clusters in progress with two new additional
-clusters online, The client is now using normal sarracenia methods to mirror from the old backup cluster
+clusters with approximately 20 minutes of delay in getting the data to the second system. Three years
+in, there is now an upgrade of the supercomputer clusters (called U1) in progress with two new additional
+clusters online, The client is now using normal Sarracenia methods to mirror from the old backup cluster
 to the new ones, with only a few seconds delay beyond what it takes to get to the backup cluster.
 
 It should also be noted that use of GPFS policy queries have imposed a significant and continuous
 load on the GPFS clusters, and are a constant worry to the GPFS administrators. They would very much
 like to get rid of it. Performance has stabilized in the past year, but it does appear to slow
-as the size of the file tree grows.  Many optimisations were implemented to obtain adequate
+as the size of the file tree grows. Many optimisations were implemented to obtain adequate
 performance.
 
 
@@ -213,7 +202,7 @@ for the correct routine in the correct library to be called.
 
 A call to the close routine, indicates that a program has finished writing the
 file in question, and so usually indicates the earliest time it is useful to 
-advertise a file for transfer.  We created a shim library, which has entry
+advertise a file for transfer. We created a shim library, which has entry
 points that impersonate the ones being called by the application, in order
 to have file availability notifications posted by the application itself,
 without any application modification.
@@ -269,6 +258,7 @@ nodes and removed tcp/ip setup/teardown overhead. The 'copy the files to the oth
 of the problem was stable by the end of the summer of 2017, and the impact on system stability 
 is minimized.
  
+
 Shim Library Necessary
 ----------------------
 
@@ -278,7 +268,7 @@ many files missing in practice, it wasn't usable for its intended purpose. The o
 HPCR solution as a whole (with mirroring deferred) occurred in September of 2017, and work on mirroring essentially 
 stopped until October (because of activities related to the commissioning work).
 
-We have continued work on two approaches, the libsrshim, and the GPFS-policy. The queries run by the GPFS-policy had to to be tuned, eventually 
+We continued to work on two approaches, the libsrshim, and the GPFS-policy. The queries run by the GPFS-policy had to to be tuned, eventually 
 an overlap of 75 seconds (where a succeeding query would ask for file modifications up to a point 75 seconds before the last one 
 ended) because there were issues with files being missing in the copies. Even with this level of overlap, there were still missing 
 files. At this point, in late November, early December, the libsrshim was working well enough to be so encouraging that folks lost 
@@ -295,15 +285,10 @@ where efficiency was paramount (the libsrshim case).
 Does it Work?
 -------------
 
-In December 2017, the software for the libsrshim approach looked ready, it is deployed in some small parallel (non-operational runs). It is
-expected that in January 2018, more parallel runs will be tried, and it should proceed to operations this winter. It is expected that the
-delay in files appearing on the second file system will be on the order of five minutes after they are written on the source tree, 
-or 72 times faster than rsync (see next section for performance info).
+In December 2017, the software for the libsrshim approach looked ready, it was deployed in some small parallel (non-operational runs). Testing
+in parallel runs started in January 2018. There were many edge cases, and testing continued for two years, until finally being
+ready for deployment in December 2019. I
 
-The question naturally arose, if the directory tree cannot be traversed, how do we know that the source and destination trees are the same?
-A program to pick random files on the source tree is used to feed an sr_poll, which then adjusts the path to compare it to the same file
-on the destination. Over a large number of samples, we get a quantification of how accurate the copy is. The plugin for this comparison
-is still in development.  
 
 * **FIXME:** include links to plugins
 
@@ -326,9 +311,18 @@ were encountered:
 
 * there are paths in use longer than 255 characters ( https://github.com/MetPX/sarrac/issues/39 )
 
-Over the ensuing two years, these edge cases have been dealt with and we fully expect to 
-deploy version 2 mirroring to operations very soon.
+* clashes in symbols, causing sed to crash ( https://github.com/MetPX/sarrac/issues/80 )
 
+Over the ensuing two years, these edge cases have been dealt with and deployment finally happenned
+with the transition to U1 in January 2020. It is expected that the delay in 
+files appearing on the second file system will be on the order of five minutes
+after they are written on the source tree, or 72 times faster than rsync (see
+next section for performance info), but we don´t have concrete metrics yet.
+
+The question naturally arose, if the directory tree cannot be traversed, how do we know that the source and destination trees are the same?
+A program to pick random files on the source tree is used to feed an sr_poll, which then adjusts the path to compare it to the same file
+on the destination. Over a large number of samples, we get a quantification of how accurate the copy is. The plugin for this comparison
+is still in development.  
 
 
 
