@@ -6,24 +6,19 @@ matrix:
   include:
   - name: "3.6-unit"
     python: "3.6"
-    env: LIMIT=500
-    env: TEST=unit
+    env: LIMIT=500 TEST=unit
   - name: "3.6-static_flow"
     python: "3.6"
-    env: LIMIT=500
-    env: TEST=static_flow
+    env: LIMIT=500 TEST=static_flow
   - name: "3.5-1000limit"
     python: "3.5"
-    env: LIMIT=1000
-    env: TEST=dynamic_flow
+    env: LIMIT=1000 TEST=dynamic_flow
   - name: "3.6-2000limit"
     python: "3.6"
-    env: LIMIT=2000
-    env: TEST=dynamic_flow
+    env: LIMIT=2000 TEST=dynamic_flow
   - name: "3.7-3000limit"
     python: "3.7"
-    env: LIMIT=3000
-    env: TEST=dynamic_flow
+    env: LIMIT=3000 TEST=dynamic_flow
 
 
 branches:
