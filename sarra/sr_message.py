@@ -193,14 +193,14 @@ class sr_message():
                    self.logger.info("rejected: mtime not newer %s " % (fname ) )
                return True
 
-        if self.sumflg in [ '0', 'n', 'z'] : 
-            self.logger.debug("sr_csnbd content_match %s sum 0/n/z never matches" % (fname ) )
-            return False
- 
         if end > fsiz :
            self.logger.debug("sr_csnbd content_match file not big enough... considered different")
            return False
 
+        if self.sumflg in [ '0', 'n', 'z'] : 
+            self.logger.debug("sr_csnbd content_match %s sum 0/n/z always matches" % (fname ) )
+            return True
+ 
         try   : self.compute_local_checksum()
         except: 
                 self.logger.debug("sr_csnbd something went wrong when computing local checksum... considered different")
