@@ -660,8 +660,12 @@ class sr_poll(sr_post):
                       self.logger.error("sr_poll/run failed")
                       self.logger.debug('Exception details: ', exc_info=True)
 
-              self.logger.debug("poll is sleeping %d seconds " % self.sleep)
-              time.sleep(self.sleep)
+              try:
+                  self.logger.debug("poll is sleeping %d seconds " % self.sleep)
+                  time.sleep(self.sleep)
+
+              except:
+                  pass
 
 # ===================================
 # MAIN
