@@ -21,7 +21,7 @@ To hack on the sarracenia source, you need:
   works with python3 even though the documentation says it is for python2.)
 - python3 pyftpdlib module, used to run an ftpserver on a high port during the flow test.
 - git. in order to download the source from the github repository.
-- a dedicated rabbitmq broker, with administrative access, to run the flow_test.
+- a dedicated rabbitmq broker, with administrative access, to run the sr_insects tests.
   The flow test creates and destroys exchanges and will disrupt any active flows on the broker.
 
 after you have cloned the source code::
@@ -149,7 +149,7 @@ Checklist:
 - do development on some other branch.  Usually the branch will be named after the issue being
   addressed.  Example:  issue240, if we give up on an initial approach and start another one, 
   there may be issue240_2 for a second attempt.  There may also be feature branches, such as v03.
-- **flow_test works** (See Testing) The master branch should always be functional, do not commit code if the flow_test is not working.
+- **sr_insects tests works** (See Testing) The master branch should always be functional, do not commit code if the sr_insects tests are not working.
 - Natural consequence: if the code changes means tests need to change, include the test change in the commit.
 - **update doc/** manual pages should get their updates ideally at the same time as the code.
 
@@ -157,12 +157,14 @@ Usually there will be many such cycles on a development branch before one is rea
 to issue a pull request. Eventually, we get to `Commits to the Master Branch`_
 
 
-Flow Test Description
----------------------
+sr_insects Tests Description
+----------------------------
 
 Before committing code to the master branch, as a Quality Assurance measure, one should run 
 all available self-tests. It is assumed that the specific changes in the code have already been unit
 tested. Please add self-tests as appropriate to this process to reflect the new ones.
+
+There is a separate git repository containing the more complex tests https://github.com/MetPX/sr_insects
 
 A typical development workflow will be::
 
@@ -174,20 +176,41 @@ A typical development workflow will be::
    cd ../sarrac
    debuild -uc -us
    sudo dpkg -i ../*.deb
-   cd ../sarracenia/test
-   ./flow_cleanup.sh
-   rm directories with state (indicated by flow_cleanup.sh)
-   ./flow_setup.sh  # *starts the flows*
-   ./flow_limit.sh  # *stops the flows after some period (default: 1000) *
-   ./flow_check.sh  # *checks the flows*
-   ./flow_cleanup.sh  # *cleans up the flows*
+   cd ..
+
+   git clone https://github.com/MetPX/sr_insects
+   cd sr_insects
+   for test in unit static_flow dynamic_flow; do
+      cd $test
+      ./flow_setup.sh  # *starts the flows*
+      ./flow_limit.sh  # *stops the flows after some period (default: 1000) *
+      ./flow_check.sh  # *checks the flows*
+      ./flow_cleanup.sh  # *cleans up the flows*
+      cd ..
+   done
+
+   #assuming all the tests pass.
    git commit -a  # on the branch...
 
-As part of the flow_setup.sh, various unit_test are run (located in the test/unit_tests
-sub-directory.) The flow tests can then indicate if there is an issue
-with the modification.
+The *unit* test in sr_insects is the shortest one taking a minute or so, and not requiring
+much configuration at all. They are sanity tests of code behaviour. Generally takes a minute
+or two on a laptop.
 
-Note that the development system must be configured for the flow test to run successfully. See the next
+The *static_flow* tests are a bit more complicated, testing more components, using single
+threaded components in a linear way (all data moves uniformly forward.) It should be
+more straight-forward to identify issues as there is no deletion and so it lends itself well
+to repeating subset tests to identify individual issues. It takes about two minutes on a laptop.
+
+The *dynamic_flow* test add advanced features:  multi-instances, the winnow component, retry logic testing, 
+and includes file removals as well. Most of the documentation here refers to runnig the
+dynamic_flow test, as it is the most complicated one, and the ancestor of the others.  The unit
+test was separated out from the beginnig of the dynamic_flow test, and the static_flow is
+a simplified version of the original flow test as well.
+
+Generally speaking, one should run the tests in sequence and ensure the results of earlier 
+tests are good before proceeding to the next test.
+
+Note that the development system must be configured for the sr_insects tests to run successfully. See the next
 section for configuration instructions. For development with a fresh OS installation,
 the configuration steps have been automated and can be applied with the flow_autoconfig.sh
 script in sarracenia/test/. Blind execution of this script on a working system may lead to undesirable
@@ -203,7 +226,7 @@ The configuration one is trying to replicate:
 Python Flow Coverage
 ~~~~~~~~~~~~~~~~~~~~
 
-Following table describes what each element of the flow test does, and the test coverage
+Following table describes what each element of the dynamic flow test does, and the test coverage
 shows functionality covered.
 
 +-------------------+--------------------------------------+-------------------------------------+
@@ -322,7 +345,7 @@ Running Flow Test
 -----------------
 
 This section documents these steps in much more detail.  
-Before one can run the flow_test, some pre-requisites must be taken care of.
+Before one can run the sr_insects tests, some pre-requisites must be taken care of.
 note that there is travis-ci.com integration for at least the master branch
 to verify functionality on a variety of python version.  Consulte::
 
@@ -334,9 +357,9 @@ for the latest test results.
 Local Installation on Workstation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The flow_test invokes the version of metpx-sarracenia that is installed on the system,
+The sr_insects tests invokes the version of metpx-sarracenia that is installed on the system,
 and not what is in the development tree.  It is necessary to install the package on 
-the system in order to have it run the flow_test.
+the system in order to have it run the sr_insects tests.
 
 In your development tree ...    
 One can either create a wheel by running either::
@@ -529,8 +552,8 @@ Only proceed to the flow_check tests if all the tests in flow_setup.sh pass.
 
 
 
-Run Flow Test
-~~~~~~~~~~~~~
+Run Dynamic Flow Test
+~~~~~~~~~~~~~~~~~~~~~
 
 The flow_check.sh script reads the log files of all the components started, and compares the number
 of messages, looking for a correspondence within +- 10%   It takes a few minutes for the
