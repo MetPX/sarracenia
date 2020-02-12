@@ -2669,7 +2669,7 @@ class sr_config:
                         xattr_disabled = self.isTrue(words[1])
                         n = 2
                      if xattr_disabled:
-                        self.logger.error("hoho! disabling xattr!")
+                        self.logger.info("checksum caching in file attributes has been disabled")
                         disable_xattr()
 
                 else :
