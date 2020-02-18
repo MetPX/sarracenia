@@ -160,7 +160,11 @@ class sr_consumer:
             should_sleep = True
 
         if should_sleep:
-            time.sleep(self.sleep_now)
+            try:
+               time.sleep(self.sleep_now)
+            except:
+               self.logger.info("woke from sleep by alarm.. %s " % self.msg.notice)
+
             self.sleep_now = self.sleep_now * 2
             if self.sleep_now > self.sleep_max:
                 self.sleep_now = self.sleep_max
