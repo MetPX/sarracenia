@@ -1199,7 +1199,8 @@ the cache size limited. Different settings are appropriate for different use cas
 A raw integer interval is in seconds, if the suffix m,h,d, or w are used, then the interval 
 is in minutes, hours, days, or weeks. After the interval expires the contents are 
 dropped, so duplicates separated by a large enough interval will get through.
-A value of 1d (day) or 1w (week) can be appropriate. 
+A value of 1d (day) or 1w (week) can be appropriate.  Setting the option without specifying
+a time will result in 300 seconds (or 5 minutes) being the expiry interval.
 
 **Use of the cache is incompatible with the default *parts 0* strategy**, one must specify an 
 alternate strategy.  One must use either a fixed blocksize, or always never partition files. 
