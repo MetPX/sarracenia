@@ -249,7 +249,10 @@ class sr_cfg2:
            elif line[0] in [ 'declare' ]:
                self._parse_declare( line[1:] )
            elif line[0] in [ 'include' ]:
-               self.parse_file( line[1] )
+               try:
+                   self.parse_file( line[1] )
+               except:
+                   print( "failed to parse: %s" % line[1] )
            elif line[0] in [ 'subtopic' ]:
                self._parse_binding( line[1] )
            else:
