@@ -361,6 +361,8 @@ class Publisher:
 
     def publish(self, exchange_name, exchange_key, message, mheaders, mexp=0):
 
+      ebo=2
+      while True:
         if 'v03.' in exchange_key:
             ct='application/json'
         else:
@@ -400,22 +402,15 @@ class Publisher:
                 self.hc.use_amqp = True
                 raise ConnectionError("No AMQP client library is set")
             return True
-        except AMQPError as err:
-            if self.hc.loop:
-                self.logger.error("sr_amqp/publish: Sleeping 5 seconds ... and reconnecting")
-                self.logger.debug('Exception details: ', exc_info=True)
-                time.sleep(5)
-                self.hc.reconnect()
-                return self.publish(exchange_name, exchange_key, message, mheaders, mexp)
-            else:
-                self.logger.error("sr_amqp/publish: could not publish %s %s %s %s with %s"
-                                  % (exchange_name, exchange_key, message, mheaders, err))
-                self.logger.debug('Exception details: ', exc_info=True)
-                return False
+        #except AMQPError as err:
         except Exception as err:
-            self.logger.error("unexpected error: {}".format(err))
-            self.logger.debug("Exception details:", exc_info=True)
-            return False
+                if  ebo <  65: 
+                     ebo = ebo * 2 
+                self.logger.error("sr_amqp/publish: Sleeping %d seconds ... and reconnecting" % ebo)
+                self.logger.debug('Exception details: ', exc_info=True)
+                time.sleep(ebo)
+                self.hc.reconnect()
+                #return self.publish(exchange_name, exchange_key, message, mheaders, mexp)
 
 
     def restore_clear(self):
