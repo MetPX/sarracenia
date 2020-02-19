@@ -6,6 +6,23 @@ lists all changes between versions.
 
 **git repo**
 
+**2.20.02b2**
+
+  * if a publish fails, retry forever, do not give up (result of major
+    outages) probably fixing a regression.
+  * added exponential backoff to publish retries.
+  * improved testing on travis (unit tests, static flow, dynamic flow) more to
+    come.
+  * sr.py now prints an error message when it fails to find an include file
+    (used to crash.)
+  * extraneous log messages cleaned up.
+  * catch a timeout exception that happens when the app is sleeping, not a
+    bige problem, not worth a major error message (sr_poll)
+  * if we get a message about a newer version of a file, call it new if
+    mtime is newer, or if checksum is useless (0, random, name) use
+    checksum as last resort.
+
+
 **2.20.01b5**
 
   * more debug code needed to be removed (introduced in b3), this time with a functional impact. (try/except had been commented.)
