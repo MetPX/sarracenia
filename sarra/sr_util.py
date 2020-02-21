@@ -496,15 +496,13 @@ class sr_transport():
                 msg.onfly_checksum = proto.get_sumstr()
                 msg.data_checksum = proto.data_checksum
 
-                # fix permission 
-
-                self.set_local_file_attributes(new_file,msg)
-
                 # fix message if no partflg (means file size unknown until now)
-
                 if msg.partflg == None:
                    msg.set_parts(partflg='1',chunksize=proto.fpos)
     
+                # fix permission 
+                self.set_local_file_attributes(new_file,msg)
+
                 msg.report_publish(201,'Downloaded')
     
                 if parent.delete and hasattr(proto,'delete') :
