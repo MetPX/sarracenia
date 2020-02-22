@@ -639,7 +639,7 @@ class sr_GlobalState:
 
         self.components = ['audit', 'cpost', 'cpump', 'poll', 'post', 'report', 'sarra', 'sender', 'shovel',
                            'subscribe', 'watch', 'winnow']
-        self.status_values = ['disabled', 'stopped', 'partial', 'running']
+        self.status_values = ['disabled', 'include', 'stopped', 'partial', 'running', 'unknown' ]
 
  
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
