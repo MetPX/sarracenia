@@ -29,6 +29,8 @@ class File_RxPipe(object):
   """
 
   def __init__(self,parent):
+        parent.declare_option('file_rxpipe_name')
+
         if not hasattr(parent,'file_rxpipe_name'):
             parent.logger.error("Missing file_rxpipe_name parameter")
             return 
