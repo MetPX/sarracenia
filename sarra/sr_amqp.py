@@ -88,23 +88,23 @@ class HostConnect:
                 cid = channel.channel_number
             else:
                 cid = channel.channel_id
-            self.logger.debug("closing channel_id: %s" % cid)
+            self.logger.debug("sr_amqp/close 0 closing channel_id: %s" % cid)
             try:
                 channel.close()
             except AMQPError as err:
-                self.logger.error("unable to close channel {} with {}".format(channel, err))
-                self.logger.debug('Exception details:', exc_info=True)
+                self.logger.error("sr_amqp/close 1 unable to close channel {} with {}".format(channel, err))
+                self.logger.debug('sr_amqp/close 1 Exception details:', exc_info=True)
             except Exception as err:
-                self.logger.error("Unexpected error: {}".format(err))
-                self.logger.debug("Exception details:", exc_info=True)
+                self.logger.error("sr_amqp/close 1 Unexpected error: {}".format(err))
+                self.logger.debug("sr_amqp/close 1 Exception details:", exc_info=True)
         try:
             self.connection.close()
         except AMQPError as err:
-            self.logger.error("unable to close connection {} with {}".format(self.connection, err))
-            self.logger.debug('Exception details:', exc_info=True)
+            self.logger.error("sr_amqp/close 2 unable to close connection {} with {}".format(self.connection, err))
+            self.logger.debug('sr_amqp/close 2 Exception details:', exc_info=True)
         except Exception as err:
-            self.logger.error("Unexpected error: {}".format(err))
-            self.logger.debug("Exception details:", exc_info=True)
+            self.logger.error("sr_amqp/close 2 Unexpected error: {}".format(err))
+            self.logger.debug("sr_amqp/close 2 Exception details:", exc_info=True)
         self.toclose = []
         self.connection = None
 

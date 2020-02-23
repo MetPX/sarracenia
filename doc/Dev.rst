@@ -201,6 +201,9 @@ threaded components in a linear way (all data moves uniformly forward.) It shoul
 more straight-forward to identify issues as there is no deletion and so it lends itself well
 to repeating subset tests to identify individual issues. It takes about two minutes on a laptop.
 
+The *flakey_broker* tests are the same as the *static_flow*, but slowed down so that they last
+a few minutes, and the broker is shutdown and restarted repeatedly while it is running.
+
 The *dynamic_flow* test add advanced features:  multi-instances, the winnow component, retry logic testing, 
 and includes file removals as well. Most of the documentation here refers to runnig the
 dynamic_flow test, as it is the most complicated one, and the ancestor of the others.  The unit
