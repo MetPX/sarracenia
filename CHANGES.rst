@@ -6,6 +6,12 @@ lists all changes between versions.
 
 **git repo**
 
+**2.20.02b3**
+
+  * bugfix #311 cosmetic error message in file_rxpipe_name plugin.
+  * bugfix #310 sr status crash... KeyError:'unknown'
+  * bugfix #309 polling download fails: object is not subscriptable.
+
 **2.20.02b2**
 
   * if a publish fails, retry forever, do not give up (result of major
