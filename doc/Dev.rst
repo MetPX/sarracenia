@@ -163,6 +163,8 @@ sr_insects Tests Description
 Before committing code to the master branch, as a Quality Assurance measure, one should run 
 all available self-tests. It is assumed that the specific changes in the code have already been unit
 tested. Please add self-tests as appropriate to this process to reflect the new ones.
+Generally speaking one should solve problems at the first test that fails as each test
+is more complicated than the previous one.
 
 There is a separate git repository containing the more complex tests https://github.com/MetPX/sr_insects
 
@@ -192,17 +194,31 @@ A typical development workflow will be::
    #assuming all the tests pass.
    git commit -a  # on the branch...
 
+Unit
+~~~~
+
 The *unit* test in sr_insects is the shortest one taking a minute or so, and not requiring
 much configuration at all. They are sanity tests of code behaviour. Generally takes a minute
 or two on a laptop.
+
+Static Flow
+~~~~~~~~~~~
 
 The *static_flow* tests are a bit more complicated, testing more components, using single
 threaded components in a linear way (all data moves uniformly forward.) It should be
 more straight-forward to identify issues as there is no deletion and so it lends itself well
 to repeating subset tests to identify individual issues. It takes about two minutes on a laptop.
 
+Flakey Broker
+~~~~~~~~~~~~~
+
 The *flakey_broker* tests are the same as the *static_flow*, but slowed down so that they last
-a few minutes, and the broker is shutdown and restarted repeatedly while it is running.
+a few minutes, and the broker is shutdown and restarted while the posting is happenning.  
+Note that post_log prints before a message is posted (because post_log is an on_post plugin, and
+that action, allows one to modify the post, so it needs to be before the post actually happens.)
+
+Dynamic Flow
+~~~~~~~~~~~~
 
 The *dynamic_flow* test add advanced features:  multi-instances, the winnow component, retry logic testing, 
 and includes file removals as well. Most of the documentation here refers to runnig the
@@ -219,15 +235,10 @@ the configuration steps have been automated and can be applied with the flow_aut
 script in sarracenia/test/. Blind execution of this script on a working system may lead to undesirable
 side effects; you have been warned!
 
-
-   
 The configuration one is trying to replicate:
 
 .. image:: Flow_test.svg
 
-
-Python Flow Coverage
-~~~~~~~~~~~~~~~~~~~~
 
 Following table describes what each element of the dynamic flow test does, and the test coverage
 shows functionality covered.
