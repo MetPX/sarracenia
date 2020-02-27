@@ -35,7 +35,7 @@ install:
 script:
 - cd ${HOME}/sr_insects/$TEST
 - ./flow_setup.sh
-- timeout 30m ./flow_limit.sh $LIMIT
+- timeout 60m ./flow_limit.sh $LIMIT
 - ./flow_check.sh
 - ./flow_cleanup.sh
 
