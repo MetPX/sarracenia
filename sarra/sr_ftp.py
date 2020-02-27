@@ -220,7 +220,7 @@ class sr_ftp(sr_proto):
                 return True
 
         except:
-            self.logger.error("Unable to connect to %s (user:%s)" % self.host, self.user)
+            self.logger.error("Unable to connect to %s (user:%s)" % ( self.host, self.user ) )
             self.logger.debug('Exception details: ', exc_info=True)
 
         alarm_cancel()
