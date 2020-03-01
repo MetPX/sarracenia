@@ -2251,7 +2251,9 @@ SEE ALSO
 
 **Formats:**
 
-`sr_post(7) <sr_post.7.rst>`_ - The format of announcement messages.
+`sr_post(7) <sr_post.7.rst>`_ - The v02 format of announcement messages.
+
+`sr_postv3(7) <sr_postv3.7.rst>`_ - The v03 format of announcement messages.
 
 `sr_report(7) <sr_report.7.rst>`_ - The format of report messages.
 

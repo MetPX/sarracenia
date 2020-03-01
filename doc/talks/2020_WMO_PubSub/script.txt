@@ -1,0 +1,293 @@
+
+===================================================
+ MetPX Sarracenia: For Open Pub/Sub Data Transfers
+===================================================
+
+
+-----------------
+Status March 2020
+-----------------
+
+
+Hi There! I'm Peter Silva and I work for Shared Services Canada's Integrated 
+High Performace Computing group. I'm the manager of Data Interchange,
+and we have created a tool to take care of that problem in a comprehensive way.
+
+Layers Background
+
+Here is a sort of schematic view of the network environment for the 
+Meteorological Service of Canada. I will use this diagram to help
+illustrate a number of Sarracenia deployments we have done, in a vaguely
+chronological order.
+
+It is divided into four quadrants, on the top left we see the meteorological operations
+zone, where most data acquisition systems reside, there is also a national network
+connecting to 7 cities in Canada where Storm Prediction Centres, each operating
+at least two Integrated Forecaster workstations desks manned 24 hours a day.
+these offices are spread across six timezones over 9000 kilometers 
+The forecasters use NinJo. and we ship outputs from the central
+telecommunications hub at the Canadian Meteorological Centre in Montréal.
+
+On the right, you see the Science Zone, where the high performance
+computing resources used by the met service are hosted as an all of
+government, service.  That the met service is just one example of a department
+with access to the shared resources is symobolized by the other government
+department zone on the right.
+
+On the bottom left, you can see the DMZ for Met Services (A DMZ is a zone where internet
+facing services are hosted, while remaining isolated from internal operations.)
+There is a second DMZ on the bottom a bit to the right, where the all of government
+externally accessible HPC resources are.
+
+Between the four main zones there are firewalls, and the access rules to
+them can be summarized by analogy to a diode. A diode only lets electricity
+pass in one direction.  Conceptually, connections initiation only flows
+in one direction across the firewalls, permitted 
+
+Departments cannot initiate connections into each others´ operations zones.
+They can all initiate connections into the Science zone. No connections to
+government operations zones are permitted from the Science zone. However
+the Science zone can connect to it´s DMZ.
+
+Another consideration is that there are some services which are required
+to produce government-wide mission critical services, which are shown
+in the parts of the diagram with the yellow background.
+
+
+Layers Background,Legend
+
+In this network, there is a set of Sarracenia datapumps, given their own symbol.
+The pumps mediate data flows within and across network zone boundaries. Those flows
+can, in principle use any protocol, but to in our experience so far, we have
+been get by using only three: AMQPS, HTTPS, and SFTP, so in the following
+examples we will indicate the protocol flows using the colours shown in the legend.
+
+
+Layers Background,Dissemination
+
+
+In 2004, we were working on replacing the former GTS switch for Canada
+by writing MetPX/Sundew, the ancestor of Sarracenia. One of the services we
+put in place was the raw datamart, dd.weather.gc.ca which is just deep
+tree of web accessible folders, created by Sundew writing files to it.
+From the outset, it was understood that having clients poll the directories 
+using HTTP web scraping was inelegant and expensive in terms of compute 
+and network bandwidth.
+
+We studied a few technologies, and in 2006 began experimenting with AMQP
+and the RabbitMQ message broker. Over the following two years, the results
+were quite promising, and so in 2008 we deployed the message broker beside
+the apache broker on our datamart, and this gave us our initial pub/sub
+solution, as a minor extension to Sundew.
+
+We were quite happy with this initial version.
+
+In 2009, I went to CBS/Namibia, and chatted with a number of colleagues,
+and concluded that based on this starting point, we could likely
+take care of international GTS exchanges. However the code at
+the time was a set of custom scripts tightly coupled to specific
+hosts and such, and it was plainly not ready for public use.
+at that time.
+
+Layers Background,URP2010
+
+We have used dozens shemes to ensure that a backup server
+takes over when the primary dies. They often require very 
+specific setup, and have many failure modes.  The more 
+elaborate the scheme, the more complicated it is to 
+ensure they work.
+
+Around that time, we were having difficulties, on the order of
+monthly, with a system that was ingesting RADAR volume scans
+and outputting thousands of products. The same system was running
+fine in the storm prediction centres, but the load was higher
+on our configuration, and the failovers, about once a month
+would fail, neither server would have quorum and the
+entire service would be down as a result.
+
+We changed the setup so each Unified RADAR Processor was an 
+independent system, and had it announce its' products when 
+they were available. Our data transfer system would then 
+take the first result and send it out. we went from monthly
+failures to a full year without an outage with that change.
+
+Layers SunVsSarra
+
+We had come to realize the limitations of Sundew, which
+only works with files (not directories) and has
+very specific requirements for file names that
+make it hard to use outside of the pure GTS context.
+
+In 2013, we decided it was time for a fresh start. Rather
+than custom plugin scripts for Sundew, we started Sarracenia
+as an replacement for it, with pub-sub as the only 
+data routing mechanism. In contrast to Sundew, which was
+very idiosyncratic and has only one implementation, Sarracenia
+is more general and has benefitted from multiple implementations:
+
+Layers SarraImpl
+
+
+So concretely, what is Sarracenia? Fundamentally
+everything revolves around the message format.
+
+
+Layers MsgFmt
+
+We currently use v02 format essentially in all deployments. 
+v03 is conceptually the same, and only has advantages compared 
+to v02, but as it is a completely different encoding, 
+a transition needs to happen over time.
+
+So here you see a sample message, there are a lot more fields than were 
+discussed in past WMO meetings, but essentially it is just a slight superset.
+The pubTime establishes when the message was first injected into the network.
+The baseURL establishes the retrieval protocol, currently built-in are SFTP
+and HTTPS, but it other protocols are desirable, such as S3, or IPFS, the
+interplanetary file system, there is room for it. The relPath tells us the 
+relative location from the baseURL to get the specific item.
+We also include mtime, size, and an checksum field as file metadata.
+We currently use the checksum field to mark file type as well,
+for symbolic links.
+
+The atime and mode fields are used only for the mirroring case,
+and the remaining fields are experimental tags to enhance routing.
+
+
+As the body of the message is a JSON payload, it can easily be transported
+over any messaging protocol. What are we asking of the Protocol?
+
+Here we have, in the envelope, the exchange and topic.
+
+Layers MsgFmt,MQTTspice
+
+If we want to use MQTT, we can just replace them with MQTT equivalents.
+
+Does this mean we can use any messaging protocol?
+
+One consideration in our usage is streaming vs. selection.
+
+Layers 1toMany
+
+In some protocols, like the traditional GTS, AMQP 1.0, and Kafka,
+we have a single stream of messages that must be sent intact. That means,
+at the protocol level, you send the same firehose of products 
+to all clients, It there is any content tuning done it is for administrators
+to establish other channels.  If everyone is interested in the same data, 
+such as when you are transporting log files, that's fine. If you have many 
+different consumers interested in different subsets of the data, then 
+should not all have to process the firehose.  
+
+If you want the client to be able to subscribe only to what interests
+them, and you have servers with many different datasets, some sort
+of hierarchical topic tree is really helpful 
+
+
+So we have seen some early use cases, now I will just show several
+more to illustrate how general the concept is and the purpose of
+some components.
+
+Layers Background,NWSAcquisition
+
+So we had developed initial versions, and in 2014 we applied the same
+dissemination case shown earlier to feed forecaster workstations
+at the Pan-Am Games, which went very well.  Just before Christmas
+2015, in a week, the Americans asked us to reapidle replaced our GTS socket 
+connections. Since then, we poll an SFTP server they run for us,
+using one process to generate the list of files to retrieve,
+then separate processes (8 of them?) do the actual retrievals.
+Once we have the files on our main data pump, we need to
+send it to the supercomputer in the science zone.  Since no servers in the 
+science zone can subscribe to data pumps in the Met Ops zone,
+we feed a pump in the science zone using SFTP.
+
+Consumers in the science zone can then subscribe to DDSR.SCIENCE
+to get the data in real-time. One example, as a legacy style feed, we
+feed to the supercomputer from the pumps using SFTP.
+
+Layers Background,NWPDissem
+
+Once the supercomputer has processed the data, they send their products using 
+SFTP to our a hot directory on our data pump.  We generate a message
+for every file that arrives there, and then consumers, such as the DDSR.CMC
+data pump can then pull the products to where they need them.
+
+
+Layers Background,HPCMirroring
+
+We have dual supercomputing environments, with dual cluster storage file 
+systems each with many petabytes, and tens of millions of files.  One 
+of the justifications for this arrangement is to be able to run
+the NWP models on the backup storage cluster. For that to work
+we need to be able to synchronize the two, in real-time, as the
+runs proceed 24 hours per day. The deadline for getting a file
+on the alternate cluster is five minutes.
+
+As a baseline for comparison we ran rsync across part of the tree
+we want to replicate, with checksumming turned of to reduce
+IO load. It took 6 hours for a single pass, just identifying which
+files needed to be copied. from 2016 until early January, we
+had a solution that was 20 times faster than that, giving us
+about 20 minutes delay before the copy arrives. Last month,
+we implemented a second generation solution, where the user
+jobs generate the posts using a fairly transparent shim library
+and now the files are usually there within a second, and almost always in
+less than one minute. It is also the first operational deployment
+to use v03 format messages.
+
+Now that the mirroring is considered viable, the client will be
+running jobs on the backup cluster to confirm that model runs
+based on the mirror are viable.
+
+
+Layers Background,WMOSample
+
+A last example flow is the feed we have been sharing over the
+past year or so, as a demonstration of pub-sub for the WMO.
+The data is initially acquired using Local Data Manager (LDM)
+listening to an internet stream from Colorado (UNIDATA.)
+we turn the products we receive into files, and transfer
+them to our main DDSR.CMC data pump using SFTP.  Then we push
+to the science zone with SFTP again.  Within the science
+zone, I can subscribe to v03 messages using my account on goc-dx and pull
+the files into my account. I then publish v03 messages to the
+external facing server after I place each file there using
+SFTP. 
+
+From there, colleagues from around the world have access.
+
+
+So those are some deployments we have done with the current
+stack, There are dozens of others that could be discussed,
+but I guess the point is that we are heavily using this
+technology for all data pumping. To emphasize that point,
+
+Here are some snapshots from last week of the management GUI 
+of the rabbitmq brokers for some of our data pumps at moderately
+busy times.
+
+.. image:: Zoning_21_ddi_cmc_snap.png
+
+ddi is a pump used by non mission critical and development
+users, you can see here we are publishing nearly 1400 files
+per second, some of these messages may be rejected by
+the subscriber so it doesn't correspond exactly to file
+transfers but it should be closely related. you can see
+there are thousands of connections, sharing just under
+400 queues, which gives the idea there are many cases
+of consumers sharing a single queue.
+
+Then there are similar snapshots of broker traffic
+on the other two main datapumps, ddsr.cmc and ddsr.science
+
+.. image:: Zoning_22_ddsr_cmc_snap.png
+.. image:: Zoning_23_ddsr_science_snap.png
+
+So that's an overview of how Sarracenia pub/sub messaging
+is the heart of Data Interchange. For us it is 
+much more than a dissemination tool, it is also
+used for acquisition, and as means of feeding data between
+applications. We are also trying to make it easier
+for end user adoption.
+
+

@@ -36,6 +36,20 @@ Installation Instructions
 git
 ---
 
+2.20.02b3
+---------
+
+Latest stable version.
+
+
+2.20.02b1
+---------
+
+**BUG**: regression in posts failing to stop on broker failure #313 how much earlier
+         this problem goes back is uncertain.  was not present in 2.18.10b2 likely
+         introduced in 2.19.04... but not clear. Upgrade to 2.20.02b3
+
+
 2.19.09b2
 ---------
 
