@@ -931,10 +931,18 @@ sub-directory of the destination into which the file should be written while in 
 Whether a prefix or suffix is specified, when the transfer is 
 complete, the file is renamed to its permanent name to allow further processing.
 
-The  **inflight**  option can also be specified as a time interval, for example, 
-10 for 10 seconds.  When set to a time interval, a reader of a file ensures that 
-it waits until the file has not been modified in that interval. So a file will 
+When posting a file with sr_post, sr_cpost, or sr_watch, the  **inflight**  option 
+can also be specified as a time interval, for example, 10 for 10 seconds.  
+When set to a time interval, file posting process ensures that it waits until 
+the file has not been modified in that interval. So a file will 
 not be processed until it has stayed the same for at least 10 seconds. 
+If you see the error message::
+
+    inflight setting: 300, not for remote
+
+It is because the time interval setting is only supported by sr_post/sr_cpost/sr_watch.
+in looking at local files before generating a post, it is not used as say, a means
+of delaying sending files.
 
 Lastly, **inflight** can be set to *NONE*, which case the file is written directly
 with the final name, where the recipient will wait to receive a post notifying it
