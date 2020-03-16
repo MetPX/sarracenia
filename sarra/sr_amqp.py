@@ -158,7 +158,9 @@ class HostConnect:
             except Exception as err:
                 self.logger.error("Unexpected error: {}".format(err))
                 self.logger.debug("Exception details:", exc_info=True)
-                return False
+
+                if not self.loop:
+                    return False
 
     def exchange_declare(self, exchange, edelete=False, edurable=True):
         try:
