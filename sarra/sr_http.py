@@ -271,12 +271,12 @@ class sr_http(sr_proto):
                 return True
 
         except urllib.error.HTTPError as e:
-               self.logger.error('Download failed %s ' % self.urlstr)
+               self.logger.error('Download failed 4 %s ' % self.urlstr)
                self.logger.error('Server couldn\'t fulfill the request. Error code: %s, %s' % (e.code, e.reason))
                alarm_cancel()
                raise
         except urllib.error.URLError as e:
-               self.logger.error('Download failed %s ' % self.urlstr)
+               self.logger.error('Download failed 5 %s ' % self.urlstr)
                self.logger.error('Failed to reach server. Reason: %s' % e.reason)
                alarm_cancel()
                raise

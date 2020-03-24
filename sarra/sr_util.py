@@ -521,7 +521,7 @@ class sr_transport():
                 try    : self.close()
                 except : pass
     
-                msg.logger.error("Download failed %s" % urlstr)
+                msg.logger.error("Download failed 3 %s" % urlstr)
                 msg.logger.debug('Exception details: ', exc_info=True)
                 msg.report_publish(499,'%s download failed' % self.scheme)
                 if os.path.isfile(new_lock) :

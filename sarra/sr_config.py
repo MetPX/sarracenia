@@ -2891,7 +2891,7 @@ class sr_config:
                      self.logger.warning('file %s could not be processed1 (%s)' % (path,urlstr))
                      self.logger.warning('resume with the one on the server')
                else:
-                     self.logger.error('Download failed: %s' % urlstr)                    
+                     self.logger.error('Download failed 0: %s' % urlstr)                    
                      self.logger.error('Server couldn\'t fulfill the request')
                      self.logger.error('Error code: %s, %s' % (e.code, e.reason))
 
@@ -2900,7 +2900,7 @@ class sr_config:
                      self.logger.warning('file %s could not be processed2 (%s)' % (path,urlstr))
                      self.logger.warning('resume with the one on the server')
                else:
-                     self.logger.error('Download failed: %s' % urlstr)                                    
+                     self.logger.error('Download failed 1: %s' % urlstr)                                    
                      self.logger.error('Failed to reach server. Reason: %s' % e.reason)            
 
         except:
@@ -2908,7 +2908,7 @@ class sr_config:
                      self.logger.warning('file %s could not be processed3 (%s)' % (path,urlstr))
                      self.logger.warning('resume with the one on the server')
                else:
-                     self.logger.error('Download failed: %s' % urlstr )
+                     self.logger.error('Download failed 2: %s' % urlstr )
                      self.logger.error('Unexpected error')
                      self.logger.debug('Exception details: ', exc_info=True)
 
