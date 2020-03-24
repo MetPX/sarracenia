@@ -192,6 +192,8 @@ class sr_message():
                if self.log_reject:
                    self.logger.info("rejected: mtime not newer %s " % (fname ) )
                return True
+            else:
+               self.logger.debug("sr_csnbd %s new version is newer" % ( fname ) )
 
         if self.sumflg in [ '0', 'n', 'z'] : 
             self.logger.debug("sr_csnbd content_match %s sum 0/n/z never matches" % (fname ) )
