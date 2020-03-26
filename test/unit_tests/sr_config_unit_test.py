@@ -54,6 +54,45 @@ class SrConfigTestCase(unittest.TestCase):
         os.removedirs(cls.cfg.user_cache_dir)
 
 
+class SrConfigDeliveryOptionsTestCase(SrConfigTestCase):
+    """ Test cases related to delivery options
+
+    see: https://github.com/MetPX/sarracenia/blob/master/doc/sr_subscribe.1.rst#delivery-specifications
+    """
+    def setUp(self) -> None:
+        self.cfg.defaults()
+
+    def test_n_flag(self):
+        opt1 = "-n"
+        self.cfg.option(opt1.split())
+        self.assertTrue(self.cfg.notify_only, "notify_only option does not work properly")
+
+    def test_no_download(self):
+        opt1 = "no_download True"
+        self.cfg.option(opt1.split())
+        self.assertTrue(self.cfg.notify_only, "no_download option does not work properly")
+
+    def test_no_download_flag(self):
+        opt1 = "--no_download"
+        self.cfg.option(opt1.split())
+        self.assertTrue(self.cfg.notify_only, "no_download option does not work properly")
+
+    def test_notify_only(self):
+        opt1 = "notify_only True"
+        self.cfg.option(opt1.split())
+        self.assertTrue(self.cfg.notify_only, "notify_only option does not work properly")
+
+    def test_notify_only_flag(self):
+        opt1 = "--notify_only"
+        self.cfg.option(opt1.split())
+        self.assertTrue(self.cfg.notify_only, "notify_only option does not work properly")
+
+    def test_notify_only_false(self):
+        opt1 = "notify_only False"
+        self.cfg.option(opt1.split())
+        self.assertFalse(self.cfg.notify_only, "notify_only False option does not work properly")
+
+
 class SrConfigRandomizeTestCase(SrConfigTestCase):
     def test_include_inc(self):
         self.assertTrue(self.cfg.randomize, "test 01a: problem with include")
@@ -712,13 +751,14 @@ def suite():
     :return: sr_config test suite
     """
     sr_config_suite = unittest.TestSuite()
-    sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SrConfigRandomizeTestCase))
-    sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SrConfigPluginScriptTestCase))
     sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SrConfigChecksumTestCase))
+    sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SrConfigDeliveryOptionsTestCase))
     sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SrConfigGeneralTestCase))
-    sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SrConfigStdFileStreams))
+    sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SrConfigPluginScriptTestCase))
+    sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SrConfigRandomizeTestCase))
     sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SrConfigStdFilesFileDescriptors))
     sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SrConfigStdFilesOutput))
+    sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SrConfigStdFileStreams))
     return sr_config_suite
 
 

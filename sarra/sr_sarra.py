@@ -117,12 +117,6 @@ class sr_sarra(sr_subscribe):
         if self.currentDir == None :
            self.currentDir = self.post_document_root
 
-        # always download ...
-
-        if self.notify_only :
-           self.logger.error("sarra notify_only True")
-           os._exit(1)
-
         # we dont save nor restore
 
         if self.save or self.restore :
