@@ -6,8 +6,16 @@ lists all changes between versions.
 
 **git repo**
 
+**2.20.03b1**
+
+  * fix #312, added recovery from EPIPE errors to file_rxpipe plugin.
+  * fix #316, added proper error message when inflight option specified wrong.
+  * fix #320, fix to loop on certain timeout errors, and not fail or exit.
+  * fix #321, fix to honour -n (notify_only) in sarra component. 
+ 
 **2.20.02b3**
 
+  * bugfixes #304 the retry forever thing.
   * bugfix #311 cosmetic error message in file_rxpipe_name plugin.
   * bugfix #310 sr status crash... KeyError:'unknown'
   * bugfix #309 polling download fails: object is not subscriptable.
