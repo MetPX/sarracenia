@@ -37,12 +37,17 @@ class File_RxPipe(object):
 
         self.rxpipe = open( parent.file_rxpipe_name[0], "w" )
 
-  def perform(self, parent):
-        self.rxpipe.write( parent.msg.new_file + "\n" )
-        self.rxpipe.flush()
-        return None
+  def on_file(self, parent):
+  
+        while True:
+           try:
+               self.rxpipe.write( parent.msg.new_file + "\n" )
+               self.rxpipe.flush()
+               return True
+           except:
+               parent.logger.warning("write to pipe failed, sleep then retry")
+               time.sleep(1)
 
 file_rxpipe=File_RxPipe(self)
-self.on_file=file_rxpipe.perform
-
+self.on_file=file_rxpipe.on_file
 
