@@ -769,6 +769,7 @@ def list_options():
     results = re.findall(p1, s)
     return sorted(set(results))
 
+
 def suite():
     """ Create the test suite that include all sr_config test cases
 
