@@ -699,6 +699,7 @@ class sr_message():
                for h in self.headers:
                    # v02 wants simple strings, cannot have dicts like in v03.
                    if type(self.headers[h]) is dict:
+                       self.logger.debug( "dict header flattening to a string: header[ %s ] = %s " % ( h, self.headers[h] ) )
                        self.headers[h] = json.dumps( self.headers[h] )
 
                    if len(self.headers[h].encode("utf8")) >= amqp_ss_maxlen:
