@@ -54,6 +54,11 @@ class SrConfigTestCase(unittest.TestCase):
         os.removedirs(cls.cfg.user_cache_dir)
 
 
+class OptionSyntaxTestCase(unittest.TestCase):
+    def test_2_words_option(self):
+        pass
+
+
 class DeliveryOptionsTestCase(SrConfigTestCase):
     """ Test cases related to delivery options
 
@@ -608,7 +613,6 @@ class GeneralConfigTestCase(SrConfigTestCase):
     # def sundew_getDestInfos(self, filename):
     # def validate_urlstr(self,urlstr):
 
-
     def test_sundew_dirPattern(self):
         # example of output for next test : new_dir = /20180404140433/SACN04CWAO140251RRA
         d_dir = '/${RYYYY}${RMM}${RDD}${RHH}${RMM}${RSS}/${T1}${T2}${A1}${A2}${ii}${CCCC}${YY}${GG}${Gg}${BBB}/'
@@ -623,7 +627,6 @@ class GeneralConfigTestCase(SrConfigTestCase):
         # TODO should add test duration_from_str instead of testing it implicitly
         self.assertEqual(self.cfg.sanity_log_dead, 86400,
                          "test 60: option sanity_log_dead or module duration_from_str did not work")
-
 
     def test_heartbeat(self):
         opt1 = "sanity_log_dead 1D"
@@ -756,6 +759,15 @@ class FileOutputTestCase(StdFileRedirectionTestCase):
             lines = f.readlines()
         self.assertEqual(lines[0], 'test_stdout\n')
 
+
+def list_options():
+    with open(os.path.join(os.path.dirname(__file__), '../../doc/sr_subscribe.1.rst')) as f:
+        s = f.read()
+    p1 = re.compile(r"([^ \t\n\r\f\v\*]+)\s+"
+                    r"(<.*?>(\[.*\])?)?\s*"
+                    r"(\(\s*[Dd]efault:[^\(.]*\))", re.VERBOSE)
+    results = re.findall(p1, s)
+    return sorted(set(results))
 
 def suite():
     """ Create the test suite that include all sr_config test cases
