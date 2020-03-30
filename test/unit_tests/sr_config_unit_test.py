@@ -229,11 +229,11 @@ class PluginScriptTestCase(SrConfigTestCase):
 
     def test_load_script(self):
         self.cfg.execfile("on_message", self.path)
-        self.assertIsNotNone(self.cfg.on_message, "test 04: problem with module execfile script not loaded")
+        self.assertIsNotNone(getattr(self.cfg, "on_message"), "test 04: problem with module execfile script not loaded")
 
     def test_run_script(self):
         self.cfg.this_value = 0
-        self.cfg.on_message(self.cfg)
+        getattr(self.cfg, "on_message")(self.cfg)
         self.assertEqual(self.cfg.this_value, 1, "test 05: problem to run the script ")
 
 
