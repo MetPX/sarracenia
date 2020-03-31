@@ -365,7 +365,7 @@ class sr_post(sr_instances):
            #self.logger.debug("ok lstat None")
            return False
 
-        age = nowflt() - lstat[stat.ST_MTIME]
+        age = nowflt() - lstat.st_mtime
         if age < self.inflight :
            self.logger.debug("%d vs (inflight setting) %d seconds. Too New!" % (age,self.inflight) )
            return True

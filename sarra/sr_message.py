@@ -179,7 +179,7 @@ class sr_message():
             old_mtime=0.0
 
             if self.parent.preserve_time :
-               old_mtime = lstat[stat.ST_MTIME]
+               old_mtime = lstat.st_mtime
             elif supports_extended_attributes:
                try:
                    x = sr_xattr( os.path.join(self.new_dir, self.new_file) )
@@ -193,7 +193,7 @@ class sr_message():
                    self.logger.info("rejected: mtime not newer %s " % (fname ) )
                return True
             else:
-               self.logger.debug("sr_csnbd {} new version is {} newer".format(new_mtime-old_mtime, fname))
+               self.logger.debug("sr_csnbd {} new version is {} newer (new: {} vs old: {} )".format(fname, new_mtime-old_mtime, new_mtime, old_mtime ))
 
         if self.sumflg in [ '0', 'n', 'z'] : 
             self.logger.debug("sr_csnbd content_match %s sum 0/n/z never matches" % (fname ) )

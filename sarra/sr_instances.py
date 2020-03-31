@@ -593,7 +593,7 @@ class sr_instances(sr_config):
         # check log age 
 
         if os.path.exists(self.logpath):
-           log_age  = os.stat(self.logpath)[stat.ST_MTIME]
+           log_age  = os.stat(self.logpath).st_mtime
         else:
            log_age = 0
 

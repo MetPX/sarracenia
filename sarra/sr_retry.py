@@ -493,13 +493,13 @@ class sr_retry:
         
         if not os.path.isfile(self.retry_path): return
 
-        retry_age = os.stat(self.retry_path)[stat.ST_MTIME]
+        retry_age = os.stat(self.retry_path).st_mtime
 
         if os.path.isfile(self.state_path):
-           state_age = os.stat(self.state_path)[stat.ST_MTIME]
+           state_age = os.stat(self.state_path).st_mtime
            if retry_age > state_age : os.unlink(self.state_path)
 
         if os.path.isfile(self.new_path):
-           new_age = os.stat(self.new_path)[stat.ST_MTIME]
+           new_age = os.stat(self.new_path).st_mtime
            if retry_age > new_age : os.unlink(self.new_path)
 

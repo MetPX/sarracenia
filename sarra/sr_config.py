@@ -2855,7 +2855,7 @@ class sr_config:
                            info = resp.info()
                            ts = time.strptime(info.get('Last-Modified'),"%a, %d %b %Y %H:%M:%S %Z")
                            last_mod_remote = time.mktime(ts)
-                           last_mod_local  = os.stat(path)[stat.ST_MTIME]
+                           last_mod_local  = os.stat(path).st_mtime
                            if last_mod_remote <= last_mod_local:
                               self.logger.info("file %s is up to date (%s)" % (path,urlstr))
                               return True
