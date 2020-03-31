@@ -763,9 +763,10 @@ class FileOutputTestCase(StdFileRedirectionTestCase):
 def list_options():
     with open(os.path.join(os.path.dirname(__file__), '../../doc/sr_subscribe.1.rst')) as f:
         s = f.read()
-    p1 = re.compile(r"([^ \t\n\r\f\v\*]+)\s+"
-                    r"(<.*?>(\[.*\])?)?\s*"
-                    r"(\(\s*[Dd]efault:[^\(.]*\))", re.VERBOSE)
+    p1 = re.compile(r"([a-zA-Z_]+)\s+"        # option (words0)
+                    r"(<.*?>(\[.*\])?)+\s+"   # option (words1)
+                    r"(\((no )?default.*?\))+",   # default option
+                    re.VERBOSE)
     results = re.findall(p1, s)
     return sorted(set(results))
 
