@@ -15,8 +15,10 @@ import unittest
 
 try:
     from sr_config import *
+    from sr_xattr import *
 except ImportError:
     from sarra.sr_config import *
+    from sarra.sr_xattr import *
 
 
 class SrConfigTestCase(unittest.TestCase):
@@ -54,9 +56,20 @@ class SrConfigTestCase(unittest.TestCase):
         os.removedirs(cls.cfg.user_cache_dir)
 
 
-class OptionSyntaxTestCase(unittest.TestCase):
-    def test_2_words_option(self):
-        pass
+class BooleanOptionsTestCase(unittest.TestCase):
+    def test_default_value(self):
+        cfg = sr_config()
+        cfg.configure()
+        for name, no_default, default_value, removed in list_options('boolean'):
+            if not removed:
+                with self.subTest('test_{}'.format(name)):
+                    if name == 'debug':
+                        self.assertEqual(cfg.loglevel, logging.INFO)
+                    elif name == 'xattr_disable':
+                        self.assertEqual(xattr_disabled, cfg.isTrue(default_value.strip()))
+                    else:
+                        self.assertEqual(getattr(cfg, name), cfg.isTrue(default_value.strip()))
+
 
 
 class DeliveryOptionsTestCase(SrConfigTestCase):
@@ -760,12 +773,13 @@ class FileOutputTestCase(StdFileRedirectionTestCase):
         self.assertEqual(lines[0], 'test_stdout\n')
 
 
-def list_options():
+def list_options(option_value_type):
     with open(os.path.join(os.path.dirname(__file__), '../../doc/sr_subscribe.1.rst')) as f:
         s = f.read()
-    p1 = re.compile(r"([a-zA-Z_]+)\s+"        # option (words0)
-                    r"(<.*?>(\[.*\])?)+\s+"   # option (words1)
-                    r"(\((no )?default.*?\))+",   # default option
+    p1 = re.compile(r"([a-zA-Z_]+)\s+"                                         # option name (words0)
+                    r"<{}>+\s+"                                                # option value (words1)
+                    r"\((no )?default: *(.*?)\)+\s*"
+                    r"\(?(removed)?\)?".format(option_value_type),   # default option
                     re.VERBOSE)
     results = re.findall(p1, s)
     return sorted(set(results))
