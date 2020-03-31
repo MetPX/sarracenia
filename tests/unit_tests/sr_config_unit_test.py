@@ -60,16 +60,39 @@ class BooleanOptionsTestCase(unittest.TestCase):
     def test_default_value(self):
         cfg = sr_config()
         cfg.configure()
-        for name, no_default, default_value, removed in list_options('boolean'):
-            if not removed:
-                with self.subTest('test_{}'.format(name)):
-                    if name == 'debug':
-                        self.assertEqual(cfg.loglevel, logging.INFO)
-                    elif name == 'xattr_disable':
-                        self.assertEqual(xattr_disabled, cfg.isTrue(default_value.strip()))
-                    else:
-                        self.assertEqual(getattr(cfg, name), cfg.isTrue(default_value.strip()))
+        for name, no_default, default_value, removed in list_options(r'boolean'):
+            with self.subTest('test_{}'.format(name)):
+                if removed:
+                    self.skipTest('Option has been removed')
+                if name == 'debug':
+                    self.assertEqual(cfg.loglevel, logging.INFO)
+                elif name == 'xattr_disable':
+                    self.assertEqual(xattr_disabled, cfg.isTrue(default_value.strip()))
+                else:
+                    self.assertEqual(getattr(cfg, name), cfg.isTrue(default_value.strip()))
 
+    def test_set_value(self):
+        cfg = sr_config()
+        cfg.configure()
+        for name, no_default, default_value, removed in list_options(r'boolean'):
+            cfg.option([name, 'true'])
+            with self.subTest('test_set_true_{}'.format(name)):
+                if removed:
+                    self.skipTest('Option has been removed')
+                elif name in ['use_amqplib', 'use_pika', 'xattr_disable']:
+                    self.skipTest('Cannot test')
+                elif name == 'debug':
+                    self.assertEqual(cfg.loglevel, logging.DEBUG)
+                else:
+                    self.assertTrue(getattr(cfg, name))
+            cfg.option([name, 'false'])
+            with self.subTest('test_set_false_{}'.format(name)):
+                if removed:
+                    self.skipTest('Option has been removed')
+                elif name == 'debug':
+                    self.assertEqual(cfg.loglevel, logging.DEBUG)
+                else:
+                    self.assertFalse(getattr(cfg, name))
 
 
 class DeliveryOptionsTestCase(SrConfigTestCase):
@@ -773,13 +796,13 @@ class FileOutputTestCase(StdFileRedirectionTestCase):
         self.assertEqual(lines[0], 'test_stdout\n')
 
 
-def list_options(option_value_type):
+def list_options(option_value_type, default_value=r'.*?'):
     with open(os.path.join(os.path.dirname(__file__), '../../doc/sr_subscribe.1.rst')) as f:
         s = f.read()
-    p1 = re.compile(r"([a-zA-Z_]+)\s+"                                         # option name (words0)
-                    r"<{}>+\s+"                                                # option value (words1)
-                    r"\((no )?default: *(.*?)\)+\s*"
-                    r"\(?(removed)?\)?".format(option_value_type),   # default option
+    p1 = re.compile(r"([a-zA-Z_]+)\s+"                                             # name (words0)
+                    r"<{}>\s+"                                                     # value type (words1)
+                    r"\((no )?default:\s+({})\)\s*"                                   # default value
+                    r"\(?(removed)?\)?".format(option_value_type, default_value),
                     re.VERBOSE)
     results = re.findall(p1, s)
     return sorted(set(results))
