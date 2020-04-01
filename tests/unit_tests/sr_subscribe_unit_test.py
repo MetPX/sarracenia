@@ -2,13 +2,31 @@ import logging
 import os
 import sys
 import unittest
+import tests.unit_tests.sr_config_unit_test as cfg_tests
 
 from sarra.sr_subscribe import sr_subscribe
 
 
-class MyTestCase(unittest.TestCase):
-    def test_something(self):
-        self.assertEqual(True, False)
+class OptionsTestCase(unittest.TestCase):
+    def test_default_boolean_value(self):
+        subscriber = sr_subscribe()
+        subscriber.configure()
+        subscriber.overwrite_defaults()
+        for option_tuple in cfg_tests.list_options(r'.*?boolean.*?'):
+            name = option_tuple[0]
+            default_value = option_tuple[3]
+            removed = option_tuple[4]
+            with self.subTest('test_{}'.format(name)):
+                if removed:
+                    self.skipTest('Option has been removed')
+                if name == 'debug':
+                    self.assertEqual(subscriber.loglevel, logging.INFO)
+                elif name == 'xattr_disable':
+                    self.assertEqual(cfg_tests.xattr_disabled, subscriber.isTrue(default_value.strip()))
+                elif name == 'suppress_duplicates':
+                    self.assertFalse(subscriber.caching)
+                else:
+                    self.assertEqual(getattr(subscriber, name), subscriber.isTrue(default_value.strip()))
 
 
 # ===================================
@@ -141,5 +159,16 @@ def test_sr_subscribe():
     sys.exit(0)
 
 
+def suite():
+    """ Create the test suite that include all sr_config test cases
+
+    :return: sr_config test suite
+    """
+    sr_config_suite = unittest.TestSuite()
+    sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(OptionsTestCase))
+    return sr_config_suite
+
+
 if __name__ == '__main__':
-    unittest.main()
+    runner = unittest.TextTestRunner()
+    runner.run(suite())

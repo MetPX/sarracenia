@@ -1577,9 +1577,9 @@ class sr_config:
                         save_currentFileOption = self.currentFileOption
                         self.currentFileOption = words2
                         n = 3
-                     
 
-                     self.masks.append((pattern, self.currentDir, self.currentFileOption, mask_regexp, accepting, self.mirror, self.strip, self.pstrip, self.flatten ))
+                     self.masks.append((pattern, self.currentDir, self.currentFileOption, mask_regexp, accepting,
+                                        self.mirror, self.strip, self.pstrip, self.flatten))
 
                      if len(words) > 2:
                          self.currentFileOption = save_currentFileOption 

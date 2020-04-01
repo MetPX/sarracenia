@@ -13,6 +13,8 @@ import _io
 import tempfile
 import unittest
 
+from sarra.sr_subscribe import sr_subscribe
+
 try:
     from sr_config import *
     from sr_xattr import *
@@ -56,25 +58,13 @@ class SrConfigTestCase(unittest.TestCase):
         os.removedirs(cls.cfg.user_cache_dir)
 
 
-class BooleanOptionsTestCase(unittest.TestCase):
-    def test_default_value(self):
+class OptionsTestCase(unittest.TestCase):
+    def test_set_value_true(self):
         cfg = sr_config()
         cfg.configure()
-        for name, no_default, default_value, removed in list_options(r'boolean'):
-            with self.subTest('test_{}'.format(name)):
-                if removed:
-                    self.skipTest('Option has been removed')
-                if name == 'debug':
-                    self.assertEqual(cfg.loglevel, logging.INFO)
-                elif name == 'xattr_disable':
-                    self.assertEqual(xattr_disabled, cfg.isTrue(default_value.strip()))
-                else:
-                    self.assertEqual(getattr(cfg, name), cfg.isTrue(default_value.strip()))
-
-    def test_set_value(self):
-        cfg = sr_config()
-        cfg.configure()
-        for name, no_default, default_value, removed in list_options(r'boolean'):
+        for option_tuple in list_options(r'.*?boolean.*?'):
+            name = option_tuple[0]
+            removed = option_tuple[4]
             cfg.option([name, 'true'])
             with self.subTest('test_set_true_{}'.format(name)):
                 if removed:
@@ -83,14 +73,27 @@ class BooleanOptionsTestCase(unittest.TestCase):
                     self.skipTest('Cannot test')
                 elif name == 'debug':
                     self.assertEqual(cfg.loglevel, logging.DEBUG)
+                elif name == 'suppress_duplicates':
+                    self.assertTrue(cfg.caching)
                 else:
                     self.assertTrue(getattr(cfg, name))
+
+    def test_set_value_false(self):
+        cfg = sr_config()
+        cfg.configure()
+        for option_tuple in list_options(r'.*?boolean.*?'):
+            name = option_tuple[0]
+            removed = option_tuple[4]
             cfg.option([name, 'false'])
             with self.subTest('test_set_false_{}'.format(name)):
                 if removed:
                     self.skipTest('Option has been removed')
+                elif name in ['use_amqplib', 'use_pika', 'xattr_disable']:
+                    self.skipTest('Cannot test')
                 elif name == 'debug':
-                    self.assertEqual(cfg.loglevel, logging.DEBUG)
+                    self.assertEqual(cfg.loglevel, logging.INFO)
+                elif name == 'suppress_duplicates':
+                    self.assertFalse(cfg.caching)
                 else:
                     self.assertFalse(getattr(cfg, name))
 
@@ -799,10 +802,11 @@ class FileOutputTestCase(StdFileRedirectionTestCase):
 def list_options(option_value_type, default_value=r'.*?'):
     with open(os.path.join(os.path.dirname(__file__), '../../doc/sr_subscribe.1.rst')) as f:
         s = f.read()
-    p1 = re.compile(r"([a-zA-Z_]+)\s+"                                             # name (words0)
-                    r"<{}>\s+"                                                     # value type (words1)
-                    r"\((no )?default:\s+({})\)\s*"                                   # default value
-                    r"\(?(removed)?\)?".format(option_value_type, default_value),
+    p1 = re.compile(r"([a-zA-Z_]+)"                                             # name (words0)
+                    r"\s+<({})>"                                                # value type (words1)
+                    r"\s+\((no )?default:\s+({})\)"                                        # default value
+                    r"\s*(\(removed\))?"                                                   # option removed
+                    r"\s*(\(options:\s*(.*)\))?".format(option_value_type, default_value), # options with keyword
                     re.VERBOSE)
     results = re.findall(p1, s)
     return sorted(set(results))
@@ -817,6 +821,7 @@ def suite():
     sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(ChecksumTestCase))
     sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(DeliveryOptionsTestCase))
     sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(GeneralConfigTestCase))
+    sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(OptionsTestCase))
     sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(PluginScriptTestCase))
     sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(RandomizeTestCase))
     sr_config_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(FileDescriptorsTestCase))
