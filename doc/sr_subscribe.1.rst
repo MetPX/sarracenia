@@ -270,7 +270,7 @@ interpreted in order.  for thoses cases, a second declaration overrides the firs
 
 Options to be reused in different config files can be grouped in an *include* file:
 
-  - **include <includeConfigPath> (no default)**
+  - **include <path> (no default)**
 
 The includeConfigPath would normally reside under the same config dir of its
 master configs. If a URL is supplied as an includeConfigPATH, then a remote 
@@ -371,8 +371,8 @@ To begin with, one can select the logging level:
 - debug <boolean> (default: False)
    Setting option debug is identical to use  **loglevel debug**
 
-- loglevel <level> (default: info)
-   The level of logging as expressed by python's logging. Possible values are :  critical, error, info, warning, debug.
+- loglevel <keyword> (default: info) (options: critical|error|info|warning|debug|none)
+   The level of logging as expressed by python's logging. Possible values are: critical, error, info, warning, debug, none.
 
 - log_reject <boolean> (default: False)
    print a log message when *rejecting* messages (choosing not to download the corresponding files)
@@ -417,7 +417,7 @@ it may takes a time unit suffix, such as 'd\|D' for days, 'h\|H' for hours,
 or 'm\|M' for minutes. If no unit is provided logs will rotate at midnight.
 Here are some settings for log file management:
 
-- log <dir> (default: ~/.cache/sarra/log) (on Linux)
+- log <path> (default: ~/.cache/sarra/log) (on Linux)
    The directory to store log files in.
 
 - statehost <boolean> (default: False)
@@ -429,14 +429,11 @@ Here are some settings for log file management:
 - logrotate <int> (default: 5)
    Maximum number of logs archived.
 
-- logrotate_interval <duration> (default: 1)
-   The duration of the interval with an optional time unit (ie 5m, 2h, 3d)
+- logrotate_interval <duration> (default: 1d)
+   The duration of the interval (ie 5m, 2h, 3d) the default behaviour is to rotate every day at midnight.
 
 - chmod_log <octalint> (default: 0600)
    The permission bits to set on log files.
-
-
-
 
 CREDENTIALS
 -----------
@@ -541,14 +538,14 @@ Once connected to an AMQP broker, the user needs to create a queue.
 
 Setting the queue on broker :
 
-- **queue         <name>         (default: q_<brokerUser>.<programName>.<configName>)**
+- **queue         <string>       (default: q_<brokerUser>.<programName>.<configName>.<random>)**
 - **durable       <boolean>      (default: False)**
 - **expire        <duration>     (default: 5m)**
 - **message_ttl   <duration>     (default: None)**
 - **prefetch      <int>          (default: 1)**
 - **reset         <boolean>      (default: False)**
 - **restore       <boolean>      (default: False)**
-- **restore_to_queue <queuename> (default: None)**
+- **restore_to_queue <string>    (default: None)**
 - **save          <boolean>      (default: False)**
 
 
@@ -557,13 +554,14 @@ and users do not need to set them.  For less usual cases, the user
 may need to override the defaults.  The queue is where the notifications
 are held on the server for each subscriber.
 
-[ queue|queue_name|qn <name>]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+queue <string> (default: q_<brokerUser>.<programName>.<configName>.<random>)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-By default, components create a queue name that should be unique. The 
-default queue_name components create follows the following convention: 
+By default, components create a queue name that should be unique. This option
+also works using *queue_name* or *qn*. The default queue (queue_name, qn) components
+create follows the following convention:
 
-   **q_<brokerUser>.<programName>.<configName>.<random>.<random>** 
+   **q_<brokerUser>.<programName>.<configName>.<random>**
 
 Where:
 
@@ -588,8 +586,6 @@ Instances started on any node with access to the same shared file will use the
 same queue. Some may want use the *queue_name* option as a more explicit method
 of sharing work across multiple nodes.
 
-
-
 durable <boolean> (default: False)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -612,7 +608,6 @@ The **expire** setting **MUST BE OVERRIDDEN** for operational use.
 The default is set low because it defines how long resources on the broker will be assigned,
 and in early use (when default was 1 week) brokers would often get overloaded with very 
 long queues for left-over experiments.  
-
 
 message_ttl <duration>  (default: None)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -644,12 +639,16 @@ the reception cache is also discarded.
 The AMQP protocol defines other queue options which are not exposed
 via sarracenia, because sarracenia itself picks appropriate values.
 
-save/restore
-~~~~~~~~~~~~
+save <boolean> (default: False)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The **save** option is used to read messages from the queue and write them
 to a local file, saving them for future processing, rather than processing
 them immediately.  See the `Sender Destination Unavailable`_ section for more details.
+
+restore <boolean> (default: False)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 The **restore** option implements the reverse function, reading from the file
 for processing.  
 
@@ -671,13 +670,13 @@ option.)
 
 These options define which messages (URL notifications) the program receives:
 
- - **exchange      <name>         (default: xpublic)** 
- - **exchange_suffix      <name>  (default: None)** 
+ - **exchange            <string> (default: xpublic)**
+ - **exchange_suffix     <string> (default: None)**
  - **topic_prefix  <amqp_pattern> (default: v02.post) -- developer option**
  - **subtopic      <amqp_pattern> (default: #) -- must appear after exchange**
 
-exchange <name> (default: xpublic) and exchange_suffix
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+exchange <string> (default: xpublic) and exchange_suffix
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The convention on data pumps is to use the *xpublic* exchange. Users can establish
 private data flow for their own processing. Users can declare their own exchanges
@@ -864,22 +863,22 @@ and under which name.
 - **inline_max   <int>         (default: 1024)**
 - **inplace       <boolean>        (default: on)**
 - **kbytes_ps <int>               (default: 0)**
-- **inflight  <string>         (default: .tmp|None) -- None is if post_broker set)**
+- **inflight  <string>         (default: .tmp) -- None if post_broker set**
 - **mirror    <boolean>        (default: off)** 
 - **no_download|notify_only    <boolean>        (default: off)**
-- **outlet    <post|json|url>    (default: post)**
+- **outlet    <keyword>    (default: post) (options: post|json|url)**
 - **overwrite <boolean>        (default: off)** 
 - **preserve_mode <boolean>  (default: on)**
 - **preserve_time <boolean>  (default: on)**
 - **reject    <regexp_pattern> (no default) (optional)**
-- **retry    <boolean>         (default: on)**
+- **retry|retry_mode   <boolean>         (default: on)**
 - **retry_ttl    <duration>         (default: None)**
 - **source_from_exchange  <boolean> (default: off)**
 - **strip     <count|regexp_pattern>   (default: 0)**
-- **suppress_duplicates   <off|on|duration>     (default: off)**
-- **suppress_duplicates_basis   <data|name|path>     (default: path)**
+- **suppress_duplicates   <boolean|duration>     (default: off)**
+- **suppress_duplicates_basis   <keyword>     (default: path) (options: data|name|path)**
 - **timeout     <float>         (default: 0)**
-- **tls_rigour   <lax|medium|strict>  (default: medium)**
+- **tls_rigour   <keyword>  (default: medium) (options: lax|medium|strict)**
 - **xattr_disable  <boolean>  (default: off)**
 
 attempts <int> (default: 3)
@@ -907,8 +906,8 @@ timeout <float> (default: 0)
 The **timeout** option, sets the number of seconds to wait before aborting a
 connection or download transfer (applied per buffer during transfer).
 
-inflight <string> (default: .tmp|None) -- None is if post_broker set
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+inflight <string> (default: .tmp) -- None if post_broker set
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The  **inflight**  option sets how to ignore files when they are being transferred
 or (in mid-flight betweeen two systems). Incorrect setting of this option causes
@@ -1106,11 +1105,11 @@ The **inplace** option defaults to True.
 Depending of **inplace** and if the message was a part, the path can
 change again (adding a part suffix if necessary).
 
-outlet <post|json|url> (default: post)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+outlet <keyword> (default: post) (options: post|json|url)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The **outlet** option is used to allow writing of posts to file instead of
-posting to a broker. The valid argument values are:
+posting to a broker. The valid argument values are (post, json, url):
 
 **post:**
 
@@ -1189,7 +1188,7 @@ heartbeat <int> (default: 300) (in seconds)
 The **heartbeat** option sets how often to execute periodic processing as determined by 
 the list of on_heartbeat plugins. By default, it prints a log message every heartbeat.
 
-suppress_duplicates <off|on|duration> (default: off)
+suppress_duplicates <boolean|duration> (default: off)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When **suppress_duplicates** (also **cache** ) is set to a non-zero time interval, each new message
@@ -1218,8 +1217,8 @@ a **first layer of subscribers (sr_shovels)** with duplicate suppression turned
 off and output with *post_exchange_split*, which route posts by checksum to 
 a **second layer of subscibers (sr_winnow) whose duplicate suppression caches are active.**
   
-suppress_duplicates_basis <data|name|path> (default: path)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+suppress_duplicates_basis <keyword> (default: path) (options: data|name|path)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A keyword option (alternative: *cache_basis* ) to identify which files are compared for 
 duplicate suppression purposes. Normally, the duplicate suppression uses the entire path
@@ -1239,8 +1238,8 @@ speed in kilobytes per second... ftp,ftps,or sftp)
 
 **FIXME**: kbytes_ps... only implemented by sender? or subscriber as well, data only, or messages also?
 
-preserve_time <boolean>(default: on)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+preserve_time <boolean> (default: on)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 On unix-like systems, when the *ls* commend or a file browser shows modification or 
 access times, it is a display of the posix *st_atime*, and *st_ctime* elements of a 
@@ -1272,8 +1271,8 @@ recompute_chksum <boolean> (default: on) (removed)
 recompute_chksum option has been removed in 2.19.03b2. Recomputing will occur
 whenever appropriate without the need for a setting.
 
-tls_rigour <lax|medium|strict> (default: medium)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+tls_rigour <keyword> (default: medium) (options: lax|medium|strict)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 tls_rigour can be set to: *lax, medium, or strict*, and gives a hint to the 
 application of how to configure TLS connections. TLS, or Transport Level 
@@ -1439,13 +1438,13 @@ The log will contain messages from all three plugins every heartbeat interval, a
 if additional periodic processing is needed, the user can configure addition
 plugins to run with the *on_heartbeat* option. 
 
-sanity_log_dead <interval> (default: 1.5*heartbeat)
+sanity_log_dead <int> (default: 1.5*heartbeat)
 ---------------------------------------------------
 
 The **sanity_log_dead** option sets how long to consider too long before restarting
 a component.
 
-suppress_duplicates <off|on|duration> (default: off)
+suppress_duplicates <boolean|duration> (default: off)
 ----------------------------------------------------
 
 The cleanup of expired elements in the duplicate suppression store happens at
@@ -1538,7 +1537,7 @@ Subscribers usually bind to the xpublic exchange to get the main data feed. This
 
 Another example, a user named Alice will have at least two exchanges:
 
-  - xs_Alice the exhange where Alice posts her file notifications and report messages (via many tools).
+  - xs_Alice the exchange where Alice posts her file notifications and report messages (via many tools).
   - xr_Alice the exchange where Alice reads her report messages from (via sr_report).
   - Alice can create a new exchange by just posting to it (with sr_post or sr_cpost) if it meets the naming rules.
 
@@ -1584,12 +1583,12 @@ report_back and report_exchange
 For each download, by default, an amqp report message is sent back to the broker.
 This is done with option :
 
-- **report_back <boolean>        (default: True)** 
-- **report_exchange <report_exchangename> (default: xreport|xs_*username* )**
+- **report_back|reportback  <boolean>  (default: True)**
+- **report_exchange         <string>   (default: xs_<username> )**
 
 When a report is generated, it is sent to the configured *report_exchange*. Administrative
 components post directly to *xreport*, whereas user components post to their own 
-exchanges (xs_*username*). The report daemons then copy the messages to *xreport* after validation.
+exchanges (xs_<username>). The report daemons then copy the messages to *xreport* after validation.
 
 These reports are used for delivery tuning and for data sources to generate statistical information.
 Set this option to **False**, to prevent generation of reports.
@@ -1678,12 +1677,12 @@ the download of a file has occurred. To build the notification and send it to
 the next hop broker, the user sets these options :
 
  - **blocksize <int>            (default: 0)**
- - **outlet <post|json|url>       (default: post)**
+ - **outlet <keyword>       (default: post) (options: post|json|url)**
  - **post_base_dir <path>    (default: None) (optional)**
  - **post_topic_prefix <string> (default: v02.post)**
  - **post_exchange     <string>         (default: xpublic)**
  - **post_exchange_split   <int>   (default: 0)**
- - **post_base_url          <amqp_url>     (default: None) (MANDATORY)**
+ - **post_url|post_base_url          <amqp_url>     (default: None) (MANDATORY)**
  - **on_post           <script>       (default: None)**
 
 
@@ -1716,12 +1715,12 @@ Example of that usage would be:  -pbd ~user  -url sftp:user@host
 For file: url's, base_dir is usually not appropriate.  To post an absolute path,
 omit the -pbd setting, and just specify the complete path as an argument.
 
-post_url <amqp_url> (default: None) (MANDATORY)
-------------------------------------------
+post_url|post_base_url <amqp_url> (default: None) (MANDATORY)
+-------------------------------------------------------------
 
 The **post_url** option sets how to get the file... it defines the protocol,
 host, port, and optionally, the user. It is best practice to not include 
-passwords in urls. The amqp_url syntax is amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>
+passwords in urls. The amqp_url syntax would be amqp{s}://<user>@<brokerhost>[:port]/<vhost>
 
 post_exchange <string> (default: xpublic)
 -----------------------------------------
@@ -2427,7 +2426,7 @@ These settings pertain to previous versions of the client, and have been superce
 - **http-user     <url    user>  (now in credentials.conf)** 
 - **http-password <url    pass>  (now in credentials.conf)** 
 - **topic         <amqp_pattern> (deprecated)**
-- **exchange_type <type>         (default: topic)** 
+- **exchange_type <type>         (default: topic)**
 - **exchange_key  <amqp_pattern> (deprecated)**
 - **lock      <locktext>         (renamed to inflight)** 
 
