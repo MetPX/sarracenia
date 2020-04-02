@@ -1,8 +1,13 @@
-metpx-sarracenia (2.20.03b1) UNRELEASED; urgency=medium
+metpx-sarracenia (2.20.04b1) UNRELEASED; urgency=medium
 
-  * 
+  * fix #300 files with identical mtimes were *different* because float != int.
+  * fix #312 added recovery from EPIPE errors to file_rxpipe plugin.
+  * fix #316 added proper error message when inflight option specified wrong.
+  * fix #320 fix to loop on certain timeout errors, and not fail or exit.
+  * fix #321 fix to honour -n (notify_only) in sarra component. 
+  * fix #323 correctly post v02 messages with non-string headers.
 
- -- peter <peter@fractal>  Tue, 24 Mar 2020 14:30:49 -0400
+ -- peter <peter@bsqt.homeip.net>  Tue, 24 Mar 2020 14:30:49 -0400
 
 metpx-sarracenia (2.20.02b3) unstable; urgency=medium
 
@@ -36,7 +41,7 @@ metpx-sarracenia (2.20.02b1) unstable; urgency=medium
   * correcting the release name (get rid of errant i)
   * bugfix: there was a crash in sr.py when logs aren´t names as expected.  
 
- -- Peter Silva <peter@idefix>  Mon, 27 Jan 2020 09:53:22 -0500
+ -- Peter Silva <peter@bsqt.homeip.net>  Mon, 27 Jan 2020 09:53:22 -0500
 
 metpx-sarracenia (2.20.01b4) unstable; urgency=medium
 
@@ -58,7 +63,7 @@ metpx-sarracenia (2.20.01b3) unstable; urgency=medium
   * bugfix outlet option was not working at all.
   * bugfix #296: sr_subscribe list | grep was always empty.
 
- -- Peter Silva <peter@idefix>  Thu, 16 Jan 2020 17:11:28 -0500
+ -- Peter Silva <peter@bsqt.homeip.net>  Thu, 16 Jan 2020 17:11:28 -0500
 
 metpx-sarracenia (2.20.01b2) unstable; urgency=medium
 

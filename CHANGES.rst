@@ -6,13 +6,14 @@ lists all changes between versions.
 
 **git repo**
 
-**2.20.03b1**
+**2.20.04b1**
 
-  * fix #300, replaced stat[stat.ST_MTIME] (integer) by stat.st_mtime (float)
-  * fix #312, added recovery from EPIPE errors to file_rxpipe plugin.
-  * fix #316, added proper error message when inflight option specified wrong.
-  * fix #320, fix to loop on certain timeout errors, and not fail or exit.
-  * fix #321, fix to honour -n (notify_only) in sarra component. 
+  * fix #300 replaced stat[stat.ST_MTIME] (integer) by stat.st_mtime (float)
+  * fix #312 added recovery from EPIPE errors to file_rxpipe plugin.
+  * fix #316 added proper error message when inflight option specified wrong.
+  * fix #320 fix to loop on certain timeout errors, and not fail or exit.
+  * fix #321 fix to honour -n (notify_only) in sarra component. 
+  * fix #323 correctly post v02 messages with non-string headers.
  
 **2.20.02b3**
 
