@@ -702,7 +702,7 @@ class sr_message():
                        self.logger.debug( "dict header flattening to a string: header[ %s ] = %s " % ( h, self.headers[h] ) )
                        self.headers[h] = json.dumps( self.headers[h] )
 
-                   if len(self.headers[h].encode("utf8")) >= amqp_ss_maxlen:
+                   if (type(self.headers[h]) is str) and (len(self.headers[h].encode("utf8")) >= amqp_ss_maxlen):
 
                        # strings in utf, and if names have special characters, the length
                        # of the encoded string wll be longer than what is returned by len(. so actually need to look
