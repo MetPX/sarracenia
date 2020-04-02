@@ -538,14 +538,14 @@ Once connected to an AMQP broker, the user needs to create a queue.
 
 Setting the queue on broker :
 
-- **queue         <string>       (default: q_<brokerUser>.<programName>.<configName>.<random>)**
-- **durable       <boolean>      (default: False)**
+- **queue         <name>       (default: q_<brokerUser>.<programName>.<configName>.<random>)**
+- **durable       <boolean>      (default: True)**
 - **expire        <duration>     (default: 5m)**
 - **message_ttl   <duration>     (default: None)**
 - **prefetch      <int>          (default: 1)**
 - **reset         <boolean>      (default: False)**
 - **restore       <boolean>      (default: False)**
-- **restore_to_queue <string>    (default: None)**
+- **restore_to_queue <name>    (default: None)**
 - **save          <boolean>      (default: False)**
 
 
@@ -554,8 +554,8 @@ and users do not need to set them.  For less usual cases, the user
 may need to override the defaults.  The queue is where the notifications
 are held on the server for each subscriber.
 
-queue <string> (default: q_<brokerUser>.<programName>.<configName>.<random>)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+queue <name> (default: q_<brokerUser>.<programName>.<configName>.<random>)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 By default, components create a queue name that should be unique. This option
 also works using *queue_name* or *qn*. The default queue (queue_name, qn) components
@@ -586,8 +586,8 @@ Instances started on any node with access to the same shared file will use the
 same queue. Some may want use the *queue_name* option as a more explicit method
 of sharing work across multiple nodes.
 
-durable <boolean> (default: False)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+durable <boolean> (default: True)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The  **durable** option, if set to True, means writes the queue
 on disk if the broker is restarted.
@@ -670,13 +670,13 @@ option.)
 
 These options define which messages (URL notifications) the program receives:
 
- - **exchange            <string> (default: xpublic)**
- - **exchange_suffix     <string> (default: None)**
+ - **exchange            <name> (default: xpublic)**
+ - **exchange_suffix     <name> (default: None)**
  - **topic_prefix  <amqp_pattern> (default: v02.post) -- developer option**
  - **subtopic      <amqp_pattern> (default: #) -- must appear after exchange**
 
-exchange <string> (default: xpublic) and exchange_suffix
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+exchange <name> (default: xpublic) and exchange_suffix
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The convention on data pumps is to use the *xpublic* exchange. Users can establish
 private data flow for their own processing. Users can declare their own exchanges
@@ -863,7 +863,7 @@ and under which name.
 - **inline_max   <int>         (default: 1024)**
 - **inplace       <boolean>        (default: on)**
 - **kbytes_ps <int>               (default: 0)**
-- **inflight  <string>         (default: .tmp) -- None if post_broker set**
+- **inflight  <ext>         (default: .tmp) -- None if post_broker set**
 - **mirror    <boolean>        (default: off)** 
 - **no_download|notify_only    <boolean>        (default: off)**
 - **outlet    <keyword>    (default: post) (options: post|json|url)**
@@ -876,9 +876,9 @@ and under which name.
 - **source_from_exchange  <boolean> (default: off)**
 - **strip     <count|regexp_pattern>   (default: 0)**
 - **suppress_duplicates   <boolean|duration>     (default: off)**
-- **suppress_duplicates_basis   <keyword>     (default: path) (options: data|name|path)**
+- **suppress_duplicates_basis|cache_basis   <keyword>     (default: path) (options: data|name|path)**
 - **timeout     <float>         (default: 0)**
-- **tls_rigour   <keyword>  (default: medium) (options: lax|medium|strict)**
+- **tls_rigour   <keyword>  (default: normal) (options: lax|normal|strict)**
 - **xattr_disable  <boolean>  (default: off)**
 
 attempts <int> (default: 3)
@@ -906,8 +906,8 @@ timeout <float> (default: 0)
 The **timeout** option, sets the number of seconds to wait before aborting a
 connection or download transfer (applied per buffer during transfer).
 
-inflight <string> (default: .tmp) -- None if post_broker set
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+inflight <ext> (default: .tmp) -- None if post_broker set
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The  **inflight**  option sets how to ignore files when they are being transferred
 or (in mid-flight betweeen two systems). Incorrect setting of this option causes
@@ -1117,7 +1117,7 @@ posting to a broker. The valid argument values are (post, json, url):
 
   **post_broker       <amqp_url>     (default: None)**
   **post_exchange     <name>         (default: None) (MANDATORY)**
-  **post_topic_prefix <string>       (default: v02.post)**
+  **post_topic_prefix <name>       (default: v02.post)**
   **on_post           <script>       (default: None)**
 
   The **amqp_url** syntax is amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>.
@@ -1189,7 +1189,7 @@ The **heartbeat** option sets how often to execute periodic processing as determ
 the list of on_heartbeat plugins. By default, it prints a log message every heartbeat.
 
 suppress_duplicates <boolean|duration> (default: off)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When **suppress_duplicates** (also **cache** ) is set to a non-zero time interval, each new message
 is compared against ones received within that interval, to see if it is a duplicate. 
@@ -1217,8 +1217,8 @@ a **first layer of subscribers (sr_shovels)** with duplicate suppression turned
 off and output with *post_exchange_split*, which route posts by checksum to 
 a **second layer of subscibers (sr_winnow) whose duplicate suppression caches are active.**
   
-suppress_duplicates_basis <keyword> (default: path) (options: data|name|path)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+suppress_duplicates_basis|cache_basis <keyword> (default: path) (options: data|name|path)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A keyword option (alternative: *cache_basis* ) to identify which files are compared for 
 duplicate suppression purposes. Normally, the duplicate suppression uses the entire path
@@ -1271,10 +1271,10 @@ recompute_chksum <boolean> (default: on) (removed)
 recompute_chksum option has been removed in 2.19.03b2. Recomputing will occur
 whenever appropriate without the need for a setting.
 
-tls_rigour <keyword> (default: medium) (options: lax|medium|strict)
+tls_rigour <keyword> (default: normal) (options: lax|normal|strict)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-tls_rigour can be set to: *lax, medium, or strict*, and gives a hint to the 
+tls_rigour can be set to: *lax, normal, or strict*, and gives a hint to the
 application of how to configure TLS connections. TLS, or Transport Level 
 Security (used to be called Secure Socket Layer (SSL)) is the wrapping of 
 normal TCP sockets in standard encryption. There are many aspects of TLS 
@@ -1584,7 +1584,7 @@ For each download, by default, an amqp report message is sent back to the broker
 This is done with option :
 
 - **report_back|reportback  <boolean>  (default: True)**
-- **report_exchange         <string>   (default: xs_<username> )**
+- **report_exchange         <name>   (default: xs_<username> )**
 
 When a report is generated, it is sent to the configured *report_exchange*. Administrative
 components post directly to *xreport*, whereas user components post to their own 
@@ -1645,7 +1645,7 @@ the server go down, the **vip** is moved on another server.
 Both servers would run **sr_subscribe**. It is for that reason that the
 following options were implemented:
 
- - **vip          <string>          (default: None)**
+ - **vip          <ip>          (default: None)**
 
 When you run only one **sr_subscribe** on one server, these options are not set,
 and sr_subscribe will run in 'standalone mode'.
@@ -1679,8 +1679,8 @@ the next hop broker, the user sets these options :
  - **blocksize <int>            (default: 0)**
  - **outlet <keyword>       (default: post) (options: post|json|url)**
  - **post_base_dir <path>    (default: None) (optional)**
- - **post_topic_prefix <string> (default: v02.post)**
- - **post_exchange     <string>         (default: xpublic)**
+ - **post_topic_prefix <name> (default: v02.post)**
+ - **post_exchange     <name>         (default: xpublic)**
  - **post_exchange_split   <int>   (default: 0)**
  - **post_url|post_base_url          <amqp_url>     (default: None) (MANDATORY)**
  - **on_post           <script>       (default: None)**
@@ -1722,7 +1722,7 @@ The **post_url** option sets how to get the file... it defines the protocol,
 host, port, and optionally, the user. It is best practice to not include 
 passwords in urls. The amqp_url syntax would be amqp{s}://<user>@<brokerhost>[:port]/<vhost>
 
-post_exchange <string> (default: xpublic)
+post_exchange <name> (default: xpublic)
 -----------------------------------------
 
 The **post_exchange** option set under which exchange the new notification
@@ -2290,8 +2290,8 @@ for the delivery of the product.  The script receives the sr_sender class
 instance.  The script takes the parent as an argument, and for example, any
 modification to  **parent.msg.new_file**  will change the name of the file written locally.
 
-filename <keyword> (default: NONESENDER)
-----------------------------------------
+filename <keyword> (default: NONESENDER) (options: WHATFN|HEADFN|SENDER|NONE|NONESENDER|TIME)
+---------------------------------------------------------------------------------------------
 
 From **metpx-sundew** the support of this option give all sorts of possibilities
 for setting the remote filename. Some **keywords** are based on the fact that
@@ -2306,7 +2306,7 @@ The possible keywords are :
  - HEADER part of the sundew filename
 
 **SENDER**
- - the Sundew filename may end with a string SENDER=<string> in this case the <string> will be the remote filename
+ - the Sundew filename may end with a string SENDER=<name> in this case the <name> will be the remote filename
 
 **NONE**
  - deliver with the complete Sundew filename (without :SENDER=...)
