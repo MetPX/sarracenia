@@ -2694,7 +2694,7 @@ class sr_config:
                          self.logger.debug("extend add %s = '%s'" % (words[0],getattr(self,words[0])))
 
         except:
-                self.logger.error("sr_config/option 4: problem evaluating option %s" % words[0])
+                self.logger.error("sr_config/option 4: problem evaluating option: {}, value: {}".format(words0, words1))
                 self.logger.debug('Exception details: ', exc_info=True)
 
         if needexit :
