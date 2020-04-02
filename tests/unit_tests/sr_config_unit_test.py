@@ -12,6 +12,8 @@ Code contributed by:
 import _io
 import tempfile
 import unittest
+from io import StringIO
+from logging import StreamHandler, Formatter
 
 from sarra.sr_subscribe import sr_subscribe
 
@@ -59,43 +61,77 @@ class SrConfigTestCase(unittest.TestCase):
 
 
 class OptionsTestCase(unittest.TestCase):
+    def setUp(self) -> None:
+        self.cfg = sr_config()
+        self.cfg.configure()
+        self.REMOVED_MSG = 'Option has been removed'
+        self.NOTEST_MSG = 'Cannot test'
+        self.log_stream = StringIO()
+        self.test_loghandler = StreamHandler(self.log_stream)
+        self.test_loghandler.setFormatter(Formatter('%(levelname)s'))
+        self.cfg.logger.addHandler(self.test_loghandler)
+        
+    def tearDown(self) -> None:
+        self.cfg.logger.removeHandler(self.test_loghandler)
+
     def test_set_value_true(self):
-        cfg = sr_config()
-        cfg.configure()
         for option_tuple in list_options(r'.*?boolean.*?'):
             name = option_tuple[0]
             removed = option_tuple[4]
-            cfg.option([name, 'true'])
+            self.cfg.option([name, 'true'])
+            self.assertNotEqual(self.log_stream.getvalue(), 'ERROR\n')
             with self.subTest('test_set_true_{}'.format(name)):
                 if removed:
-                    self.skipTest('Option has been removed')
+                    self.skipTest(self.REMOVED_MSG)
                 elif name in ['use_amqplib', 'use_pika', 'xattr_disable']:
-                    self.skipTest('Cannot test')
+                    self.skipTest(self.NOTEST_MSG)
                 elif name == 'debug':
-                    self.assertEqual(cfg.loglevel, logging.DEBUG)
+                    self.assertEqual(self.cfg.loglevel, logging.DEBUG)
                 elif name == 'suppress_duplicates':
-                    self.assertTrue(cfg.caching)
+                    self.assertTrue(self.cfg.caching)
                 else:
-                    self.assertTrue(getattr(cfg, name))
+                    self.assertTrue(getattr(self.cfg, name))
 
     def test_set_value_false(self):
-        cfg = sr_config()
-        cfg.configure()
         for option_tuple in list_options(r'.*?boolean.*?'):
             name = option_tuple[0]
             removed = option_tuple[4]
-            cfg.option([name, 'false'])
+            self.cfg.option([name, 'false'])
+            self.assertNotEqual(self.log_stream.getvalue(), 'ERROR\n')
             with self.subTest('test_set_false_{}'.format(name)):
                 if removed:
-                    self.skipTest('Option has been removed')
+                    self.skipTest(self.REMOVED_MSG)
                 elif name in ['use_amqplib', 'use_pika', 'xattr_disable']:
-                    self.skipTest('Cannot test')
+                    self.skipTest(self.NOTEST_MSG)
                 elif name == 'debug':
-                    self.assertEqual(cfg.loglevel, logging.INFO)
+                    self.assertEqual(self.cfg.loglevel, logging.INFO)
                 elif name == 'suppress_duplicates':
-                    self.assertFalse(cfg.caching)
+                    self.assertFalse(self.cfg.caching)
                 else:
-                    self.assertFalse(getattr(cfg, name))
+                    self.assertFalse(getattr(self.cfg, name))
+
+    def test_set_value_keyword(self):
+        for option_tuple in list_options(r'.*?keyword.*?'):
+            name = option_tuple[0]
+            removed = option_tuple[4]
+            if removed:
+                self.skipTest(self.REMOVED_MSG)
+            else:
+                for value in option_tuple[-1].split('|'):
+                    testvalue = value
+                    with self.subTest('test_set_{}_{}'.format(value, name)):
+                        if name == 'filename':
+                            testname = 'currentFileOption'
+                        elif name == 'loglevel':
+                            if value.upper() == 'NONE':
+                                testvalue = 'NOTSET'
+                            testvalue = getattr(logging, testvalue.upper())
+                            testname = name
+                        else:
+                            testname = name
+                        self.cfg.option([name, value])
+                        self.assertNotEqual(self.log_stream.getvalue(), 'ERROR\n')
+                        self.assertEqual(getattr(self.cfg, testname), testvalue)
 
 
 class DeliveryOptionsTestCase(SrConfigTestCase):
