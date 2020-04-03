@@ -18,7 +18,7 @@ class OptionsTestCase(unittest.TestCase):
             removed = option_tuple[4]
             with self.subTest('test_{}'.format(name)):
                 if removed:
-                    self.skipTest('Option has been removed')
+                    self.skipTest('Option has been removed {}'.format(name))
                 if name == 'debug':
                     self.assertEqual(subscriber.loglevel, logging.INFO)
                 elif name == 'xattr_disable':

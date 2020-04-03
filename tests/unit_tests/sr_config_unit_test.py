@@ -64,8 +64,8 @@ class OptionsTestCase(unittest.TestCase):
     def setUp(self) -> None:
         self.cfg = sr_config()
         self.cfg.configure()
-        self.REMOVED_MSG = 'Option has been removed'
-        self.NOTEST_MSG = 'Cannot test'
+        self.REMOVED_MSG = 'Option {} has been removed'
+        self.NOTEST_MSG = 'Cannot test {}'
         self.log_stream = StringIO()
         self.test_loghandler = StreamHandler(self.log_stream)
         self.test_loghandler.setFormatter(Formatter('%(levelname)s'))
@@ -82,9 +82,9 @@ class OptionsTestCase(unittest.TestCase):
             self.assertNotEqual(self.log_stream.getvalue(), 'ERROR\n')
             with self.subTest('test_set_true_{}'.format(name)):
                 if removed:
-                    self.skipTest(self.REMOVED_MSG)
+                    self.skipTest(self.REMOVED_MSG.format(name))
                 elif name in ['use_amqplib', 'use_pika', 'xattr_disable']:
-                    self.skipTest(self.NOTEST_MSG)
+                    self.skipTest(self.NOTEST_MSG.format(name))
                 elif name == 'debug':
                     self.assertEqual(self.cfg.loglevel, logging.DEBUG)
                 elif name == 'suppress_duplicates':
@@ -100,9 +100,9 @@ class OptionsTestCase(unittest.TestCase):
             self.assertNotEqual(self.log_stream.getvalue(), 'ERROR\n')
             with self.subTest('test_set_false_{}'.format(name)):
                 if removed:
-                    self.skipTest(self.REMOVED_MSG)
+                    self.skipTest(self.REMOVED_MSG.format(name))
                 elif name in ['use_amqplib', 'use_pika', 'xattr_disable']:
-                    self.skipTest(self.NOTEST_MSG)
+                    self.skipTest(self.NOTEST_MSG.format(name))
                 elif name == 'debug':
                     self.assertEqual(self.cfg.loglevel, logging.INFO)
                 elif name == 'suppress_duplicates':
@@ -115,7 +115,7 @@ class OptionsTestCase(unittest.TestCase):
             name = option_tuple[0]
             removed = option_tuple[4]
             if removed:
-                self.skipTest(self.REMOVED_MSG)
+                self.skipTest(self.REMOVED_MSG.format(name))
             else:
                 for value in option_tuple[-1].split('|'):
                     testvalue = value
