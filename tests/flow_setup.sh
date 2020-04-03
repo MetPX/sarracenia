@@ -119,7 +119,7 @@ nbr_test=0
 nbr_fail=0
 
 count_of_checks=$((${count_of_checks}+1))
-for t in sr_config sr_sarra sr_subscribe; do
+for t in sr_cache sr_config sr_sarra sr_subscribe; do
     echo "======= Testing: "${t}  >>  $unittestlog
 
     nbr_test=$(( ${nbr_test}+1 ))
