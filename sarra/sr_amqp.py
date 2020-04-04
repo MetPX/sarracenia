@@ -156,7 +156,7 @@ class HostConnect:
                 self.logger.error("Sleeping 5 seconds ...")
                 time.sleep(5)
             except Exception as err:
-                self.logger.error("Unexpected error: {}".format(err))
+                self.logger.error("03 Unexpected error: {}".format(err))
                 self.logger.debug("Exception details:", exc_info=True)
 
                 if not self.loop:
@@ -170,7 +170,7 @@ class HostConnect:
             self.logger.error("could not declare exchange %s (%s@%s): %s" % (exchange, self.user, self.host, err))
             self.logger.debug('Exception details: ', exc_info=True)
         except Exception as err:
-            self.logger.error("Unexpected error: {}".format(err))
+            self.logger.error(" 04 Unexpected error: {}".format(err))
             self.logger.debug("Exception details:", exc_info=True)
 
     def exchange_delete(self, exchange):
@@ -193,7 +193,7 @@ class HostConnect:
             self.logger.error("could not delete exchange %s (%s@%s): %s" % (exchange, self.user, self.host, err))
             self.logger.debug('Exception details: ', exc_info=True)
         except Exception as err:
-            self.logger.error("Unexpected error: {}".format(err))
+            self.logger.error(" 05 Unexpected error: {}".format(err))
             self.logger.debug("Exception details:", exc_info=True)
 
     def new_channel(self):
@@ -213,7 +213,7 @@ class HostConnect:
             self.logger.error("could not delete queue %s (%s@%s): %s" % (queue_name, self.user, self.host, err))
             self.logger.debug('Exception details: ', exc_info=True)
         except Exception as err:
-            self.logger.error("Unexpected error: {}".format(err))
+            self.logger.error(" 06 Unexpected error: {}".format(err))
             self.logger.debug("Exception details:", exc_info=True)
 
     def reconnect(self):
@@ -312,7 +312,7 @@ class Consumer:
                 self.logger.debug("consume resume ok")
                 msg = self.consume(queuename)
         except Exception as err:
-            self.logger.error("Unexpected error: {}".format(err))
+            self.logger.error("07 Unexpected error: {}".format(err))
             self.logger.debug("Exception details:", exc_info=True)
 
         if msg is not None:
@@ -356,7 +356,7 @@ class Publisher:
             alarm_cancel()
             return False
         except Exception as err:
-            self.logger.error("unexpected error: {}".format(err))
+            self.logger.error("08 unexpected error: {}".format(err))
             self.logger.debug("Exception details:", exc_info=True)
         alarm_cancel()
         return True
@@ -422,7 +422,7 @@ class Publisher:
             except AMQPError:
                 pass
             except Exception as err:
-                self.logger.error("Unexpected error: {}".format(err))
+                self.logger.error("08 Unexpected error: {}".format(err))
                 self.logger.debug("Exception details:", exc_info=True)
             self.restore_queue = None
 
@@ -432,7 +432,7 @@ class Publisher:
             except AMQPError:
                 pass
             except Exception as err:
-                self.logger.error("Unexpected error: {}".format(err))
+                self.logger.error("09 Unexpected error: {}".format(err))
                 self.logger.debug("Exception details:", exc_info=True)
             self.restore_exchange = None
 
@@ -450,7 +450,7 @@ class Publisher:
             self.logger.debug('Exception details: ', exc_info=True)
             os._exit(1)
         except Exception as err:
-            self.logger.error("Unexpected error: {}".format(err))
+            self.logger.error("10 Unexpected error: {}".format(err))
             self.logger.debug("Exception details:", exc_info=True)
 
 
@@ -503,7 +503,7 @@ class Queue:
                                   % (self.name, self.hc.user, self.hc.host, err))
                 self.logger.debug('Exception details:', exc_info=True)
             except Exception as err:
-                self.logger.error("Unexpected error: {}".format(err))
+                self.logger.error("11 Unexpected error: {}".format(err))
                 self.logger.debug("Exception details:", exc_info=True)
 
         # declare queue
@@ -539,7 +539,7 @@ class Queue:
                                   % (self.hc.user, self.hc.host, exchange_name))
                     self.logger.debug('Exception details:', exc_info=True)
                 except Exception as err:
-                    self.logger.error("Unexpected error: {}".format(err))
+                    self.logger.error("12 Unexpected error: {}".format(err))
                     self.logger.debug("Exception details:", exc_info=True)
                 self.logger.error( "sleeping %g seconds to try binding again..." % backoff )
                 time.sleep(backoff)
@@ -559,7 +559,7 @@ class Queue:
                                   % (self.hc.user, self.hc.host, last_exchange_name, err))
                 self.logger.debug('Exception details:', exc_info=True)
             except Exception as err:
-                self.logger.error("Unexpected error: {}".format(err))
+                self.logger.error("13 Unexpected error: {}".format(err))
                 self.logger.debug("Exception details:", exc_info=True)
         else:
             self.logger.warning("this process will not receive pulse message")
@@ -599,5 +599,5 @@ class Queue:
             self.logger.debug('Exception details: ', exc_info=True)
             return -1
         except Exception as err:
-            self.logger.error("Unexpected error: {}".format(err))
+            self.logger.error("14 Unexpected error: {}".format(err))
             self.logger.debug("Exception details:", exc_info=True)

@@ -2912,7 +2912,7 @@ class sr_config:
                      self.logger.warning('resume with the one on the server')
                else:
                      self.logger.error('Download failed 2: %s' % urlstr )
-                     self.logger.error('Unexpected error')
+                     self.logger.error('20 Unexpected error')
                      self.logger.debug('Exception details: ', exc_info=True)
 
         try   : os.unlink(path+'.downloading')
