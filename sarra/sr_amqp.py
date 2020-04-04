@@ -33,7 +33,6 @@
 #
 
 import amqp
-from amqp import AMQPError
 
 from sarra.sr_util import *
 
@@ -91,17 +90,11 @@ class HostConnect:
             self.logger.debug("sr_amqp/close 0 closing channel_id: %s" % cid)
             try:
                 channel.close()
-            except AMQPError as err:
+            except Exception as err:
                 self.logger.error("sr_amqp/close 1 unable to close channel {} with {}".format(channel, err))
                 self.logger.debug('sr_amqp/close 1 Exception details:', exc_info=True)
-            except Exception as err:
-                self.logger.error("sr_amqp/close 1 Unexpected error: {}".format(err))
-                self.logger.debug("sr_amqp/close 1 Exception details:", exc_info=True)
         try:
             self.connection.close()
-        except AMQPError as err:
-            self.logger.error("sr_amqp/close 2 unable to close connection {} with {}".format(self.connection, err))
-            self.logger.debug('sr_amqp/close 2 Exception details:', exc_info=True)
         except Exception as err:
             self.logger.error("sr_amqp/close 2 Unexpected error: {}".format(err))
             self.logger.debug("sr_amqp/close 2 Exception details:", exc_info=True)
@@ -145,7 +138,8 @@ class HostConnect:
                 for func in self.rebuilds:
                     func()
                 return True
-            except AMQPError as err:
+
+            except Exception as err:
                 self.logger.error("AMQP cannot connect to {} with {}".format(self.host, err))
                 self.logger.debug('Exception details: ', exc_info=True)
 
@@ -153,25 +147,17 @@ class HostConnect:
                     self.logger.error("Could not connect to broker")
                     return False
 
-                self.logger.error("Sleeping 5 seconds ...")
-                time.sleep(5)
-            except Exception as err:
-                self.logger.error("03 Unexpected error: {}".format(err))
-                self.logger.debug("Exception details:", exc_info=True)
+            self.logger.info("Sleeping 5 seconds ...")
+            time.sleep(5)
 
-                if not self.loop:
-                    return False
 
     def exchange_declare(self, exchange, edelete=False, edurable=True):
         try:
             self.channel.exchange_declare(exchange, 'topic', auto_delete=edelete, durable=edurable)
             self.logger.info("declaring exchange %s (%s@%s)" % (exchange, self.user, self.host))
-        except AMQPError as err:
+        except Exception as err:
             self.logger.error("could not declare exchange %s (%s@%s): %s" % (exchange, self.user, self.host, err))
             self.logger.debug('Exception details: ', exc_info=True)
-        except Exception as err:
-            self.logger.error(" 04 Unexpected error: {}".format(err))
-            self.logger.debug("Exception details:", exc_info=True)
 
     def exchange_delete(self, exchange):
 
@@ -189,12 +175,9 @@ class HostConnect:
         try:
             self.channel.exchange_delete(exchange)
             self.logger.info("deleting exchange %s (%s@%s)" % (exchange, self.user, self.host))
-        except AMQPError as err:
+        except Exception as err:
             self.logger.error("could not delete exchange %s (%s@%s): %s" % (exchange, self.user, self.host, err))
             self.logger.debug('Exception details: ', exc_info=True)
-        except Exception as err:
-            self.logger.error(" 05 Unexpected error: {}".format(err))
-            self.logger.debug("Exception details:", exc_info=True)
 
     def new_channel(self):
         channel = self.connection.channel()
@@ -205,16 +188,13 @@ class HostConnect:
         self.logger.info("deleting queue %s (%s@%s)" % (queue_name, self.user, self.host))
         try:
             self.channel.queue_delete(queue_name)
-        except AMQPError as err:
+        except Exception as err:
             (stype, svalue, tb) = sys.exc_info()
             error_str = '%s' % svalue
             if 'NOT_FOUND' in error_str:
                 return
             self.logger.error("could not delete queue %s (%s@%s): %s" % (queue_name, self.user, self.host, err))
             self.logger.debug('Exception details: ', exc_info=True)
-        except Exception as err:
-            self.logger.error(" 06 Unexpected error: {}".format(err))
-            self.logger.debug("Exception details:", exc_info=True)
 
     def reconnect(self):
         self.close()
@@ -292,33 +272,33 @@ class Consumer:
 
         msg = None
 
-        try:
-            if self.hc.use_pika:
-                # self.logger.debug("consume PIKA is used")
-                method_frame, properties, body = self.channel.basic_get(queuename)
-                if method_frame and properties and body:
-                    self.for_pika_msg.pika_to_amqplib(method_frame, properties, body)
-                    msg = self.for_pika_msg
-            else:
-                # self.logger.debug("consume AMQP or AMQPLIB is used")
-                msg = self.channel.basic_get(queuename)
-        except AMQPError as err:
-            # FIXME: PAS-2019. recursion here may be dangerous when things go badly... 
-            #        will stack grow without bound?
-            self.logger.error("sr_amqp/consume: could not consume in queue %s: %s" % (queuename, err))
-            self.logger.debug('Exception details: ', exc_info=True)
-            if self.hc.loop:
-                self.hc.reconnect()
-                self.logger.debug("consume resume ok")
-                msg = self.consume(queuename)
-        except Exception as err:
-            self.logger.error("07 Unexpected error: {}".format(err))
-            self.logger.debug("Exception details:", exc_info=True)
+        while True: 
+            try:
+                if self.hc.use_pika:
+                    # self.logger.debug("consume PIKA is used")
+                    method_frame, properties, body = self.channel.basic_get(queuename)
+                    if method_frame and properties and body:
+                        self.for_pika_msg.pika_to_amqplib(method_frame, properties, body)
+                        msg = self.for_pika_msg
+                else:
+                    # self.logger.debug("consume AMQP or AMQPLIB is used")
+                    msg = self.channel.basic_get(queuename)
+            except Exception as err:
+                self.logger.warning("sr_amqp/consume: could not consume in queue %s: %s" % (queuename, err))
+                self.logger.debug('Exception details: ', exc_info=True)
+                if self.hc.loop:
+                    self.hc.reconnect()
+                    self.logger.debug("consume resume ok")
+                    continue
+                    #msg = self.consume(queuename)
+            #except Exception as err:
+            #    self.logger.info("07 Unexpected error: {}".format(err))
+            #    self.logger.debug("Exception details:", exc_info=True)
 
-        if msg is not None:
-            msg.isRetry = False
+            if msg is not None:
+                msg.isRetry = False
 
-        return msg
+            return msg
 
 
 # ==========
@@ -352,9 +332,6 @@ class Publisher:
                 self.channel.confirm_delivery()
             else:
                 self.channel.tx_select()
-        except AMQPError:
-            alarm_cancel()
-            return False
         except Exception as err:
             self.logger.error("08 unexpected error: {}".format(err))
             self.logger.debug("Exception details:", exc_info=True)
@@ -404,7 +381,6 @@ class Publisher:
                 self.hc.use_amqp = True
                 raise ConnectionError("No AMQP client library is set")
             return True
-        #except AMQPError as err:
         except Exception as err:
                 if  ebo <  65: 
                      ebo = ebo * 2 
@@ -419,8 +395,6 @@ class Publisher:
         if self.restore_queue and self.restore_exchange:
             try:
                 self.channel.queue_unbind(self.restore_queue, self.restore_exchange, '#')
-            except AMQPError:
-                pass
             except Exception as err:
                 self.logger.error("08 Unexpected error: {}".format(err))
                 self.logger.debug("Exception details:", exc_info=True)
@@ -429,8 +403,6 @@ class Publisher:
         if self.restore_exchange:
             try:
                 self.channel.exchange_delete(self.restore_exchange)
-            except AMQPError:
-                pass
             except Exception as err:
                 self.logger.error("09 Unexpected error: {}".format(err))
                 self.logger.debug("Exception details:", exc_info=True)
@@ -444,14 +416,11 @@ class Publisher:
             self.restore_exchange += str(random.randint(0, 100000000)).zfill(8)
             self.channel.exchange_declare(self.restore_exchange, 'topic', auto_delete=True, durable=False)
             self.channel.queue_bind(self.restore_queue, self.restore_exchange, '#')
-        except AMQPError as err:
+        except Exception as err:
             self.logger.error("sr_amqp/restore_set: restore_set exchange %s queuename %s with %s"
                               % (self.restore_exchange, self.restore_queue, err))
             self.logger.debug('Exception details: ', exc_info=True)
             os._exit(1)
-        except Exception as err:
-            self.logger.error("10 Unexpected error: {}".format(err))
-            self.logger.debug("Exception details:", exc_info=True)
 
 
 # ==========
@@ -498,13 +467,10 @@ class Queue:
         if self.reset:
             try:
                 self.channel.queue_delete(self.name)
-            except AMQPError as err:
+            except Exception as err:
                 self.logger.error("could not delete queue %s (%s@%s) with %s"
                                   % (self.name, self.hc.user, self.hc.host, err))
                 self.logger.debug('Exception details:', exc_info=True)
-            except Exception as err:
-                self.logger.error("11 Unexpected error: {}".format(err))
-                self.logger.debug("Exception details:", exc_info=True)
 
         # declare queue
 
@@ -532,15 +498,12 @@ class Queue:
                     last_exchange_name = exchange_name
                     bound += 1
                     continue
-                except AMQPError as err:
+                except Exception as err:
                     self.logger.error("bind queue: %s to exchange: %s with key: %s failed with %s"
                                   % (self.name, exchange_name, exchange_key, err))
                     self.logger.error("Permission issue with %s@%s or exchange %s not found."
                                   % (self.hc.user, self.hc.host, exchange_name))
                     self.logger.debug('Exception details:', exc_info=True)
-                except Exception as err:
-                    self.logger.error("12 Unexpected error: {}".format(err))
-                    self.logger.debug("Exception details:", exc_info=True)
                 self.logger.error( "sleeping %g seconds to try binding again..." % backoff )
                 time.sleep(backoff)
                 if backoff < 60:
@@ -552,15 +515,12 @@ class Queue:
             self.logger.debug("binding queue to exchange=%s with key=%s (pulse)" % (last_exchange_name, exchange_key))
             try:
                 self.bind(last_exchange_name, exchange_key)
-            except AMQPError as err:
+            except Exception as err:
                 self.logger.error("bind queue: %s to exchange: %s with key: %s failed.."
                                   % (self.name, last_exchange_name, exchange_key))
                 self.logger.error("Permission issue with %s@%s or exchange %s not found with %s"
                                   % (self.hc.user, self.hc.host, last_exchange_name, err))
                 self.logger.debug('Exception details:', exc_info=True)
-            except Exception as err:
-                self.logger.error("13 Unexpected error: {}".format(err))
-                self.logger.debug("Exception details:", exc_info=True)
         else:
             self.logger.warning("this process will not receive pulse message")
 
@@ -593,11 +553,8 @@ class Queue:
                                                                                    nowait=False, arguments=args)
             self.logger.debug("queue declare done")
             return msg_count
-        except AMQPError as err:
+        except Exception as err:
             self.logger.error("sr_amqp/build, queue declare: %s failed...(%s@%s) with %s"
                               % (self.name, self.hc.user, self.hc.host, err))
             self.logger.debug('Exception details: ', exc_info=True)
             return -1
-        except Exception as err:
-            self.logger.error("14 Unexpected error: {}".format(err))
-            self.logger.debug("Exception details:", exc_info=True)
