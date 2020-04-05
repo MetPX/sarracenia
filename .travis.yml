@@ -4,9 +4,9 @@ language: python
 
 matrix:
   include:
-  - name: "3.6-test"
+  - name: "3.6-tests"
     python: "3.6"
-    env: LIMIT=500 TEST=test
+    env: LIMIT=500 TEST=tests
   - name: "3.6-static_flow"
     python: "3.6"
     env: LIMIT=500 TEST=static_flow
