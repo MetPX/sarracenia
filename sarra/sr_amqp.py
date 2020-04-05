@@ -144,7 +144,7 @@ class HostConnect:
                 self.logger.debug('Exception details: ', exc_info=True)
 
                 if not self.loop:
-                    self.logger.error("Could not connect to broker")
+                    self.logger.error("giving up. Failed to connect to broker")
                     return False
 
             self.logger.info("Sleeping 5 seconds ...")
@@ -341,6 +341,7 @@ class Publisher:
     def publish(self, exchange_name, exchange_key, message, mheaders, mexp=0):
 
       ebo=2
+      connected=True
       while True:
         if 'v03.' in exchange_key:
             ct='application/json'
@@ -387,8 +388,10 @@ class Publisher:
                 self.logger.error("sr_amqp/publish: Sleeping %d seconds ... and reconnecting" % ebo)
                 self.logger.debug('Exception details: ', exc_info=True)
                 time.sleep(ebo)
-                self.hc.reconnect()
-                #return self.publish(exchange_name, exchange_key, message, mheaders, mexp)
+                connected=False
+
+        if not connected:
+            self.hc.reconnect()
 
 
     def restore_clear(self):

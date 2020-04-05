@@ -181,7 +181,11 @@ class sr_post(sr_instances):
         # =============
 
         loop = True
-        if self.sleep <= 0 : loop = False
+        #20200404 - PS looping for connection has nothing to do with looping for watch.
+        #   self.sleep says whether watch should loop.  
+        #   loop is about whether we try over and over to connect... two are not related.
+        #   that's why following line is commented.
+        #if self.sleep <= 0 : loop = False
 
         self.post_hc = HostConnect( logger = self.logger )
         self.post_hc.choose_amqp_alternative(self.use_amqplib, self.use_pika)
@@ -1489,6 +1493,7 @@ class sr_post(sr_instances):
            self.post_hc.loop=False
            if self.post_hc.connect():
                self.declare_exchanges(cleanup=True)
+           self.post_hc.loop=True
 
         # caching
 
@@ -1509,6 +1514,7 @@ class sr_post(sr_instances):
            self.post_hc.loop=False;
            if self.post_hc.connect():
                self.declare_exchanges()
+           self.post_hc.loop=True
 
         self.close()
 
