@@ -2906,13 +2906,12 @@ class sr_config:
                      self.logger.error('Download failed 1: %s' % urlstr)                                    
                      self.logger.error('Failed to reach server. Reason: %s' % e.reason)            
 
-        except:
+        except Exception as e:
                if os.path.isfile(path) :
-                     self.logger.warning('file %s could not be processed3 (%s)' % (path,urlstr))
+                     self.logger.warning('file %s could not be processed3 (%s) %s' % (path,urlstr,e.reason))
                      self.logger.warning('resume with the one on the server')
                else:
-                     self.logger.error('Download failed 2: %s' % urlstr )
-                     self.logger.error('20 Unexpected error')
+                     self.logger.error('Download failed 2: %s %s' % (urlstr, e.reason) )
                      self.logger.debug('Exception details: ', exc_info=True)
 
         try   : os.unlink(path+'.downloading')

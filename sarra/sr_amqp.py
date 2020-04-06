@@ -82,6 +82,15 @@ class HostConnect:
         self.rebuilds.append(func)
 
     def close(self):
+        """
+
+         20200404-PAS FIXME
+         as per: https://www.rabbitmq.com/channels.html
+          "A channel only exists in the context of a connection and never on its own. 
+           When a connection is closed, so are all channels on it."
+
+         so wondering why we shut down all the channels here.
+        """
         for channel in self.toclose:
             if self.use_pika:
                 cid = channel.channel_number
@@ -93,10 +102,13 @@ class HostConnect:
             except Exception as err:
                 self.logger.error("sr_amqp/close 1 unable to close channel {} with {}".format(channel, err))
                 self.logger.debug('sr_amqp/close 1 Exception details:', exc_info=True)
+                # no other closes will work, so do not continue closing channels.
+                break
+
         try:
             self.connection.close()
         except Exception as err:
-            self.logger.error("sr_amqp/close 2 Unexpected error: {}".format(err))
+            self.logger.error("sr_amqp/close 2: {}".format(err))
             self.logger.debug("sr_amqp/close 2 Exception details:", exc_info=True)
         self.toclose = []
         self.connection = None
@@ -283,22 +295,19 @@ class Consumer:
                 else:
                     # self.logger.debug("consume AMQP or AMQPLIB is used")
                     msg = self.channel.basic_get(queuename)
+
+                if msg is not None:
+                    msg.isRetry = False
+                return msg
+
             except Exception as err:
                 self.logger.warning("sr_amqp/consume: could not consume in queue %s: %s" % (queuename, err))
                 self.logger.debug('Exception details: ', exc_info=True)
-                if self.hc.loop:
-                    self.hc.reconnect()
-                    self.logger.debug("consume resume ok")
-                    continue
-                    #msg = self.consume(queuename)
-            #except Exception as err:
-            #    self.logger.info("07 Unexpected error: {}".format(err))
-            #    self.logger.debug("Exception details:", exc_info=True)
 
-            if msg is not None:
-                msg.isRetry = False
 
-            return msg
+            if self.hc.loop:
+                self.hc.reconnect()
+                self.logger.debug("consume resume ok")
 
 
 # ==========
@@ -333,7 +342,7 @@ class Publisher:
             else:
                 self.channel.tx_select()
         except Exception as err:
-            self.logger.error("08 unexpected error: {}".format(err))
+            self.logger.error("is_alive/confirm_delivery or tx_select: {}".format(err))
             self.logger.debug("Exception details:", exc_info=True)
         alarm_cancel()
         return True
@@ -399,7 +408,7 @@ class Publisher:
             try:
                 self.channel.queue_unbind(self.restore_queue, self.restore_exchange, '#')
             except Exception as err:
-                self.logger.error("08 Unexpected error: {}".format(err))
+                self.logger.error("08 restore/unbind: {}".format(err))
                 self.logger.debug("Exception details:", exc_info=True)
             self.restore_queue = None
 
@@ -407,7 +416,7 @@ class Publisher:
             try:
                 self.channel.exchange_delete(self.restore_exchange)
             except Exception as err:
-                self.logger.error("09 Unexpected error: {}".format(err))
+                self.logger.error("09 exchange_delete: {}".format(err))
                 self.logger.debug("Exception details:", exc_info=True)
             self.restore_exchange = None
 
