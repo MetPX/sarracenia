@@ -894,7 +894,7 @@ class sr_config:
 
 
         self.execfile("on_heartbeat",'hb_memory')
-        self.execfile("on_heartbeat",'hb_pulse')
+        #self.execfile("on_heartbeat",'hb_pulse')
         self.execfile("on_html_page",'html_page')
 
         #self.on_post_list = [ self.on_post ]

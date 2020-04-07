@@ -1,8 +1,7 @@
 #!/usr/bin/python3
 
 """
-  default on_heartbeat pulse processing...
-  if pulse is emitted for a while, and than missing
+  if pulse is emitted for a while, and then missing,
   we will issue a reconnection.
 
   caveat 1 : once pulsing has started... it must continue
