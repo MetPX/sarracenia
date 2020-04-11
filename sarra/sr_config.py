@@ -328,8 +328,8 @@ class sr_config:
            (self.program_name, sarra.__version__) )
         self.logger.info( "\tinflight=%s events=%s use_pika=%s topic_prefix=%s" % \
            ( self.inflight, self.events, self.use_pika, self.topic_prefix) )
-        self.logger.info( "\tinflight=%s events=%s use_amqplib=%s topic_prefix=%s" % \
-           ( self.inflight, self.events, self.use_amqplib, self.topic_prefix) )
+        self.logger.info( "\tinline=%s events=%s use_amqplib=%s topic_prefix=%s" % \
+           ( self.inline, self.events, self.use_amqplib, self.topic_prefix) )
         self.logger.info( "\tsuppress_duplicates=%s basis=%s retry_mode=%s retry_ttl=%sms tls_rigour=%s" % \
            ( self.caching, self.cache_basis, self.retry_mode, self.retry_ttl, self.tls_rigour ) )
         self.logger.info( "\texpire=%sms reset=%s message_ttl=%s prefetch=%s accept_unmatch=%s delete=%s poll_without_vip=%s" % \
@@ -1985,7 +1985,7 @@ class sr_config:
                         self.inplace = self.isTrue(words[1])
                         n = 2
 
-                elif words0 in ['instances','i']: # See: sr_config.7
+                elif words0 in ['instance', 'instances','i']: # See: sr_config.7
                      self.nbr_instances = int(words[1])
                      n = 2
 
