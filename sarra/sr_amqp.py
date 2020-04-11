@@ -91,19 +91,18 @@ class HostConnect:
 
          so wondering why we shut down all the channels here.
         """
-        for channel in self.toclose:
-            if self.use_pika:
-                cid = channel.channel_number
-            else:
-                cid = channel.channel_id
-            self.logger.debug("sr_amqp/close 0 closing channel_id: %s" % cid)
-            try:
-                channel.close()
-            except Exception as err:
-                self.logger.error("sr_amqp/close 1 unable to close channel {} with {}".format(channel, err))
-                self.logger.debug('sr_amqp/close 1 Exception details:', exc_info=True)
-                # no other closes will work, so do not continue closing channels.
-                break
+        #for channel in self.toclose:
+        #    if self.use_pika:
+        #        cid = channel.channel_number
+        #    else:
+        #        cid = channel.channel_id
+        #    self.logger.debug("sr_amqp/close 0 closing channel_id: %s" % cid)
+        #    try:
+        #        channel.close()
+        #    except Exception as err:
+        #        #by default ignore.. doesn't matter... but for debugging, might be interesting...
+        #        #self.logger.error("sr_amqp/close 1 unable to close channel {} with {}".format(channel, err))
+        #        self.logger.debug('sr_amqp/close 1 unable to close channel {} with {} :'.format(channel,err), exc_info=True)
 
         try:
             self.connection.close()
