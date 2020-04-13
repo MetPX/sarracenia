@@ -117,6 +117,7 @@ class HostConnect:
  
         :returns True if successful, False otherwise.
         """
+        ebo=1
         while True:
             try:
                 self.logger.debug("Connecting %s %s (ssl %s)" % (self.host, self.user, self.ssl))
@@ -158,8 +159,9 @@ class HostConnect:
                     self.logger.error("giving up. Failed to connect to broker")
                     return False
 
-            self.logger.info("Sleeping 5 seconds ...")
-            time.sleep(5)
+            if ebo < 60 : ebo *= 2
+            self.logger.info("Sleeping {} seconds ...".format( ebo) )
+            time.sleep(ebo)
 
 
     def exchange_declare(self, exchange, edelete=False, edurable=True):
