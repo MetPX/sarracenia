@@ -6,8 +6,14 @@ lists all changes between versions.
 
 **git repo**
 
-  * another improvement in error recovery. big improvement in results on flakey_flow
+**2.20.04b2**
 
+  * #320 another improvement in error recovery. better results on flakey_flow
+  * #319 remove pulse, causes more harm than benefit, perhaps re-introduce after better testing.
+  * connection recovery: remove recursion (vulnerable to stack exhaustion on long failures.)
+  * connection recovery: add exponential backoff to several failure modes.
+  * remove channel close logic (unnecessary, as entire connection is closed, which closes all channels.)
+ 
 **2.20.04b1**
 
   * fix #300 replaced stat[stat.ST_MTIME] (integer) by stat.st_mtime (float)

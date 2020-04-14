@@ -1,4 +1,14 @@
-metpx-sarracenia (2.20.04b1) UNRELEASED; urgency=medium
+metpx-sarracenia (2.20.04b2) unstable; urgency=medium
+
+  * #320 another improvement in error recovery. significant improvement in results on flakey_flow
+  * #319 remove pulse, causes more harm than benefit, perhaps re-introduce after better testing.
+  * connection recovery: remove recursion (vulnerable to stack exhaustion on long failures.)
+  * connection recovery: add exponential backoff to several failure modes.
+  * remove channel close logic (unnecessary, as entire connection is closed, which closes all channels.)
+
+ -- peter <peter@bsqt.homeip.net>  Mon, 13 Apr 2020 21:39:00 -0400
+
+metpx-sarracenia (2.20.04b1) unstable; urgency=medium
 
   * fix #300 files with identical mtimes were *different* because float != int.
   * fix #312 file_rxpipe plugin added handling of EPIPE erorrs.
