@@ -334,6 +334,12 @@ class Publisher:
             self.channel.tx_select()
 
     def is_alive(self):
+        """
+           FIXME:
+           is_alive is dead code, it caused problems and so was removed.
+           there are two is_alive's not sure which one is the problem.
+           https://github.com/MetPX/sarracenia/issues/236
+        """
         if not hasattr(self, 'channel'):
             return False
         alarm_set(self.iotime)

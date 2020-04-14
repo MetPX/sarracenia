@@ -230,6 +230,12 @@ class sr_consumer:
         self.msg.user = self.broker.username
 
     def is_alive(self):
+        """
+           FIXME: likely remove? or create proper test to confirm function. 
+           this is only called from hb_pulse.  Was removed in v2.20.04b2.
+           would need to create a test that demonstrates usefulness.
+           https://github.com/MetPX/sarracenia/issues/236
+        """
         if not hasattr(self,'consumer') : return False
         if self.consumer.channel == None: return False
         alarm_set(self.iotime)
