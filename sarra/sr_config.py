@@ -961,6 +961,7 @@ class sr_config:
             self.logger.error("installing %s plugin %s failed: not found " % (opname, path) ) 
             return False
 
+        self.logger.debug('installing: %s plugin %s' % ( opname, path ) )
         try:
             with open(script) as f:
                 exec(compile(f.read(), script, 'exec'))
