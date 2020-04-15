@@ -482,18 +482,30 @@ class Queue:
         self.logger.debug("building queue %s" % self.name)
         self.channel = self.hc.new_channel()
 
-        # reset
-        if self.reset:
+        ebo=1
+        while True:
             try:
-                self.channel.queue_delete(self.name)
+                # reset
+                if self.reset:
+                    try:
+                        self.channel.queue_delete(self.name)
+                    except Exception as err:
+                        self.logger.error("could not delete queue %s (%s@%s) with %s"
+                                          % (self.name, self.hc.user, self.hc.host, err))
+                        self.logger.debug('Exception details:', exc_info=True)
+    
+                # declare queue
+    
+                msg_count = self.declare()
+                break
             except Exception as err:
-                self.logger.error("could not delete queue %s (%s@%s) with %s"
+                self.logger.error("sr_amqp/build could not declare queue %s (%s@%s) with %s"
                                   % (self.name, self.hc.user, self.hc.host, err))
                 self.logger.debug('Exception details:', exc_info=True)
 
-        # declare queue
-
-        msg_count = self.declare()
+            if ebo < 64: ebo *= 2 
+            self.logger.info("sr_amqp/build sleeping {} seconds ...".format( ebo) )
+            time.sleep(ebo)
 
         # something went wrong
         if msg_count == -1:
@@ -556,24 +568,18 @@ class Queue:
             args['x-message-ttl'] = self.message_ttl
 
         # create queue
-        try:
-            if self.hc.use_pika:
+        if self.hc.use_pika:
                 self.logger.debug("queue_declare PIKA is used")
                 q_dclr_ok = self.channel.queue_declare(self.name, passive=False, durable=self.durable,
                                                        exclusive=False, auto_delete=self.auto_delete, arguments=args)
                 method = q_dclr_ok.method
                 self.qname, msg_count, consumer_count = method.queue, method.message_count, method.consumer_count
-            else:
+        else:
                 self.logger.debug("queue_declare AMQP or AMQPLIB is used")
                 self.qname, msg_count, consumer_count = self.channel.queue_declare(self.name, passive=False,
                                                                                    durable=self.durable,
                                                                                    exclusive=False,
                                                                                    auto_delete=self.auto_delete,
                                                                                    nowait=False, arguments=args)
-            self.logger.debug("queue declare done")
-            return msg_count
-        except Exception as err:
-            self.logger.error("sr_amqp/build, queue declare: %s failed...(%s@%s) with %s"
-                              % (self.name, self.hc.user, self.hc.host, err))
-            self.logger.debug('Exception details: ', exc_info=True)
-            return -1
+        self.logger.debug("queue declare done")
+        return msg_count
