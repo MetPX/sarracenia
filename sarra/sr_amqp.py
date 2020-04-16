@@ -448,19 +448,29 @@ class Publisher:
 
 class Queue:
 
-    def __init__(self, hc, qname, auto_delete=False, durable=False, reset=False):
+    #def __init__(self, hc, qname, auto_delete=False, durable=False, reset=False):
+    def __init__(self, hc, qname, prop_arg={ 'auto_delete':False, 'durable':False, 'reset':False, 'expire':0, 'message_ttl':0 } ):
+
+        # have arguments override defaults.
+        properties={ 'auto_delete':False, 'durable':False, 'reset':False, 'expire':0, 'message_ttl':0 }
+        properties.update(prop_arg)
 
         self.hc = hc
         self.logger = self.hc.logger
         self.name = qname
         self.qname = qname
         self.channel = None
-        self.auto_delete = auto_delete
-        self.durable = durable
-        self.reset = reset
+        self.properties=properties
+        self.auto_delete = properties['auto_delete']
+        self.durable = properties['durable']
+        self.reset = properties['reset']
 
-        self.expire = 0
-        self.message_ttl = 0
+        if (properties['expire'] == None): properties['expire'] = 0
+
+        self.expire = properties['expire']
+
+        if (properties['message_ttl'] == None): properties['message_ttl'] = 0
+        self.message_ttl = properties['message_ttl']
 
         self.bindings = []
 
@@ -471,9 +481,11 @@ class Queue:
 
     def add_expire(self, expire):
         self.expire = expire
+        self.properties['expire'] = expire
 
     def add_message_ttl(self, message_ttl):
         self.message_ttl = message_ttl
+        self.properties['message_ttl'] = message_ttl
 
     def bind(self, exchange_name, exchange_key):
         self.channel.queue_bind(self.qname, exchange_name, exchange_key)

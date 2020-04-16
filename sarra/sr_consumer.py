@@ -316,13 +316,14 @@ class sr_consumer:
         self.set_queue_name()
 
         # queue settings
-        self.msg_queue   = Queue(self.hc,self.queue_name,durable=self.durable,reset=self.reset)
+        self.msg_queue   = Queue(self.hc,self.queue_name, 
+             { 'durable':self.durable,'reset':self.reset, 'expire':self.expire, 'message_ttl':self.message_ttl } )
 
-        if self.expire != None :
-           self.msg_queue.add_expire(self.expire)
+        #if self.expire != None :
+        #   self.msg_queue.add_expire(self.expire)
 
-        if self.message_ttl != None :
-           self.msg_queue.add_message_ttl(self.message_ttl)
+        #if self.message_ttl != None :
+        #   self.msg_queue.add_message_ttl(self.message_ttl)
 
         # queue creation if needed
         if build :
