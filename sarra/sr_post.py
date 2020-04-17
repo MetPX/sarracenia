@@ -1537,8 +1537,10 @@ class sr_post(sr_instances):
         # do exchanges
               
         for x in exchanges :
-            if cleanup: self.post_hc.exchange_delete(x)
-            else      : self.post_hc.exchange_declare(x)
+            if cleanup: 
+                self.post_hc.exchange_delete(x)
+            elif self.declare_exchange: 
+                self.post_hc.exchange_declare(x)
 
 
     def setup(self):

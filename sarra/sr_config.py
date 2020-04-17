@@ -336,6 +336,7 @@ class sr_config:
            ( self.expire, self.reset, self.message_ttl, self.prefetch, self.accept_unmatch, self.delete, self.poll_without_vip ) )
         self.logger.info( "\theartbeat=%s sanity_log_dead=%s default_mode=%03o default_mode_dir=%03o default_mode_log=%03o discard=%s durable=%s" % \
            ( self.heartbeat, self.sanity_log_dead, self.chmod, self.chmod_dir, self.chmod_log, self.discard, self.durable ) )
+        self.logger.info( "\tdeclare_queue=%s declare_exchange=%s bind_queue=%s" % ( self.declare_queue, self.declare_exchange, self.bind_queue ) )
         self.logger.info( "\tpost_on_start=%s preserve_mode=%s preserve_time=%s realpath_post=%s base_dir=%s follow_symlinks=%s" % \
            ( self.post_on_start, self.preserve_mode, self.preserve_time, self.realpath_post, self.base_dir, self.follow_symlinks ) )
         self.logger.info( "\tmirror=%s flatten=%s realpath_post=%s strip=%s base_dir=%s report_back=%s log_reject=%s" % \
@@ -687,8 +688,14 @@ class sr_config:
 
         # consumer
         self.attempts             = 3   # number of times to attempt downloads.
-        self.broker               = None
         self.bindings             = []
+        self.broker               = None
+
+        # deal with more locked down brokers by turning these off.
+        self.bind_queue      = True
+        self.declare_queue   = True
+        self.declare_exchange = True
+
         self.exchange             = None
         self.exchange_suffix      = None
         self.exchanges            = [ 'xlog', 'xpublic', 'xreport', 'xwinnow' ]
@@ -1635,6 +1642,14 @@ class sr_config:
                      # FIXME MG should we test if directory exists ? and warn if not 
                      n = 2
 
+                elif words0 in ['bind_queue','bq']: # See: sr_config.7
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.bind_queue = True
+                        n = 1
+                     else :
+                        self.bind_queue = self.isTrue(words[1])
+                        n = 2
+
                 elif words0 in ['broker','b'] : # See: sr_consumer.7 ++   fixme: everywhere, perhaps reduce
                      urlstr      = words1
                      ok, url     = self.validate_urlstr(urlstr)
@@ -1735,6 +1750,22 @@ class sr_config:
                         n = 1
                      elif self.isTrue(words[1]):
                         self.loglevel = logging.DEBUG
+                        n = 2
+
+                elif words0 in ['declare_exchange','de','dx']: # See: sr_config.7
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.declare_exchange = True
+                        n = 1
+                     else :
+                        self.declare_exchange = self.isTrue(words[1])
+                        n = 2
+
+                elif words0 in ['declare_queue','dq']: # See: sr_config.7
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.declare_queue = True
+                        n = 1
+                     else :
+                        self.declare_queue = self.isTrue(words[1])
                         n = 2
 
                 elif words0 == 'delete': # See: sr_sarra.8

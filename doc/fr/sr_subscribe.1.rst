@@ -546,6 +546,8 @@ Mise en file d'attente sur broker :
 - **restore <booléen> (par défaut : False)**
 - **restore_to_queue <queuename> (par défaut : Aucun)**
 - **save <booléen> (par défaut : False)**
+- **declare_queue <booléen> (par défaut : True)**
+- **bind_queue <booléen> (par défaut : True)**
 
 Habituellement, les composants devinent des valeurs par défaut raisonnables pour
 toutes ces valeurs et les utilisateurs n'ont pas besoin de les définir.  Pour 
@@ -644,6 +646,14 @@ restore_to_queue <queuename> (par défaut : Aucun)
 Si **restore_to_queue** est spécifié, alors plutôt que de déclencher le mode local
 les messages restaurés sont enregistrés dans un échange temporaire.
 à la file d'attente donnée.  Pour un exemple, voir `Shovel Save/Restore`_.
+
+declare_queue/bind_queue
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Durant l'initialisation du composant, par défaut, on déclare la queue, et ces liaisons (bindings)
+afin d´assurer qu´ils dont à jour. On peut supprimer ce comportement en mettant *False*
+comme valeur à ces options.  Utile pour les courtiers qui ne permettent pas aux usager
+de setter leur queue et liaisons.
 
 
 Liaisons de file d´attente AMQP 

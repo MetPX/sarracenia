@@ -557,6 +557,8 @@ Setting the queue on broker :
 - **restore       <boolean>      (default: False)**
 - **restore_to_queue <queuename> (default: None)**
 - **save          <boolean>      (default: False)**
+- **declare_queue <boolean>      (default: True)**
+- **bind_queue    <boolean>      (default: True)**
 
 
 Usually components guess reasonable defaults for all these values
@@ -663,6 +665,16 @@ for processing.
 If **restore_to_queue** is specified, then rather than triggering local
 processing, the messages restored are posted to a temporary exchange 
 bound to the given queue.  For an example, see `Shovel Save/Restore`_ 
+
+declare_queue/bind_queue
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+On startup, by default, Sarracenia redeclares resources and bindings to ensure they
+are uptodate.  If the queue already exists, These flags can be 
+set to False, so no attempt to declare the queue is made, or it´s bindings. 
+These options are useful on brokers that do not permit users to declare their queues.
+
+
 
 
 AMQP QUEUE BINDINGS

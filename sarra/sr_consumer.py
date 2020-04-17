@@ -307,23 +307,15 @@ class sr_consumer:
     def queue_declare(self,build=False):
         self.logger.debug("sr_consumer queue_declare")
 
-        self.durable     = self.parent.durable
-        self.reset       = self.parent.reset
-        self.expire      = self.parent.expire
-        self.message_ttl = self.parent.message_ttl
-
         # queue name 
         self.set_queue_name()
 
         # queue settings
         self.msg_queue   = Queue(self.hc,self.queue_name, 
-             { 'durable':self.durable,'reset':self.reset, 'expire':self.expire, 'message_ttl':self.message_ttl } )
-
-        #if self.expire != None :
-        #   self.msg_queue.add_expire(self.expire)
-
-        #if self.message_ttl != None :
-        #   self.msg_queue.add_message_ttl(self.message_ttl)
+             { 'durable':self.parent.durable,'reset':self.parent.reset, 
+               'expire':self.parent.expire, 'message_ttl':self.parent.message_ttl,
+               'declare':self.parent.declare_queue, 'bind':self.parent.bind_queue 
+             } )
 
         # queue creation if needed
         if build :
@@ -409,13 +401,13 @@ class sr_consumer:
 
         if self.build_connection(loop=False):
             self.queue_declare(build=True)
-            if self.report_manage :
+            if self.report_manage and self.declare_exchange :
                self.hc.exchange_declare(self.report_exchange)
                   
     def setup(self):
         self.logger.debug("sr_consume setup")
         if self.build_connection(loop=False):
             self.build_queue()
-            if self.report_manage :
+            if self.report_manage and self.declare_exchange :
                self.hc.exchange_declare(self.report_exchange)
 

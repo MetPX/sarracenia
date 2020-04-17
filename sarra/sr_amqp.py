@@ -448,11 +448,13 @@ class Publisher:
 
 class Queue:
 
-    #def __init__(self, hc, qname, auto_delete=False, durable=False, reset=False):
-    def __init__(self, hc, qname, prop_arg={ 'auto_delete':False, 'durable':False, 'reset':False, 'expire':0, 'message_ttl':0 } ):
+    __default_queue_properties = { 'auto_delete':False, 'durable':False, 'reset':False, \
+        'expire':0, 'message_ttl':0, 'declare':True, 'bind':True }
+
+    def __init__(self, hc, qname, prop_arg=__default_queue_properties ):
 
         # have arguments override defaults.
-        properties={ 'auto_delete':False, 'durable':False, 'reset':False, 'expire':0, 'message_ttl':0 }
+        properties=Queue.__default_queue_properties.copy()
         properties.update(prop_arg)
 
         self.hc = hc
@@ -461,16 +463,9 @@ class Queue:
         self.qname = qname
         self.channel = None
         self.properties=properties
-        self.auto_delete = properties['auto_delete']
-        self.durable = properties['durable']
-        self.reset = properties['reset']
 
         if (properties['expire'] == None): properties['expire'] = 0
-
-        self.expire = properties['expire']
-
         if (properties['message_ttl'] == None): properties['message_ttl'] = 0
-        self.message_ttl = properties['message_ttl']
 
         self.bindings = []
 
@@ -478,14 +473,6 @@ class Queue:
 
     def add_binding(self, exchange_name, exchange_key):
         self.bindings.append((exchange_name, exchange_key))
-
-    def add_expire(self, expire):
-        self.expire = expire
-        self.properties['expire'] = expire
-
-    def add_message_ttl(self, message_ttl):
-        self.message_ttl = message_ttl
-        self.properties['message_ttl'] = message_ttl
 
     def bind(self, exchange_name, exchange_key):
         self.channel.queue_bind(self.qname, exchange_name, exchange_key)
@@ -495,10 +482,10 @@ class Queue:
         self.channel = self.hc.new_channel()
 
         ebo=1
-        while True:
+        while self.properties['declare']:
             try:
                 # reset
-                if self.reset:
+                if self.properties['reset']:
                     try:
                         self.channel.queue_delete(self.name)
                     except Exception as err:
@@ -509,6 +496,11 @@ class Queue:
                 # declare queue
     
                 msg_count = self.declare()
+                # something went wrong
+                if msg_count == -1:
+                     return
+                self.logger.info( "declared queue %s (%s@%s) " % (self.name, 
+                    self.hc.user, self.hc.host) )
                 break
             except Exception as err:
                 self.logger.error("sr_amqp/build could not declare queue %s (%s@%s) with %s"
@@ -519,8 +511,8 @@ class Queue:
             self.logger.info("sr_amqp/build sleeping {} seconds ...".format( ebo) )
             time.sleep(ebo)
 
-        # something went wrong
-        if msg_count == -1:
+
+        if not self.properties['bind']:
             return
 
         # no bindings... in declare mode
@@ -574,24 +566,24 @@ class Queue:
 
         # queue arguments
         args = {}
-        if self.expire > 0:
-            args['x-expires'] = self.expire
-        if self.message_ttl > 0:
-            args['x-message-ttl'] = self.message_ttl
+        if self.properties['expire'] > 0:
+            args['x-expires'] = self.properties['expire']
+        if self.properties['message_ttl'] > 0:
+            args['x-message-ttl'] = self.properties['message_ttl']
 
         # create queue
         if self.hc.use_pika:
                 self.logger.debug("queue_declare PIKA is used")
-                q_dclr_ok = self.channel.queue_declare(self.name, passive=False, durable=self.durable,
-                                                       exclusive=False, auto_delete=self.auto_delete, arguments=args)
+                q_dclr_ok = self.channel.queue_declare(self.name, passive=False, durable=self.properties['durable'],
+                                                       exclusive=False, auto_delete=self.properties['auto_delete'], arguments=args)
                 method = q_dclr_ok.method
                 self.qname, msg_count, consumer_count = method.queue, method.message_count, method.consumer_count
         else:
                 self.logger.debug("queue_declare AMQP or AMQPLIB is used")
                 self.qname, msg_count, consumer_count = self.channel.queue_declare(self.name, passive=False,
-                                                                                   durable=self.durable,
+                                                                                   durable=self.properties['durable'],
                                                                                    exclusive=False,
-                                                                                   auto_delete=self.auto_delete,
+                                                                                   auto_delete=self.properties['auto_delete'],
                                                                                    nowait=False, arguments=args)
         self.logger.debug("queue declare done")
         return msg_count
