@@ -8,6 +8,8 @@ This document teaches novice user with Python on Windows how they could easily r
 The screenshots were taken from *Windows Server 2012 R2 Standard* edition. Feel free to create issues if you believe that this
 document could be enhanced with one (or more) important case(s).
 
+.. Contents::
+
 Running Sarracenia with a Command Prompt
 ----------------------------------------
 From the Start Menu:
