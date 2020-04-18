@@ -90,6 +90,15 @@ running.  Should instances be running, it shares the same message queue with the
 A user stop the **foreground** instance by simply using <ctrl-c> on linux
 or use other means to kill the process.
 
+After a configuration has been refined, *start* to launch the component as a background 
+service (daemon or fleet of daemons whose number is controlled by the *instances* option.) 
+If multiple configurations and components need to be run together, the entire fleet 
+can be similarly controlled using the `sr(8) <sr.8.rst>`_ command. 
+
+To have components run all the time, on Linux one can use `systemd <https://www.freedesktop.org/wiki/Software/systemd/>`_ integration,
+as described in the `Admin Guide <Admin.rst>`_ On Windows, one can configure a service,
+as described in the `Windows user manual <windows/Windows.rst>`_
+
 The actions **cleanup**, **declare**, **setup** can be used to manage resources on
 the rabbitmq server. The resources are either queues or exchanges. **declare** creates
 the resources. **setup** creates and additionally binds the queues.
@@ -112,7 +121,8 @@ throughs and should start with them.
 Users:
 
 * `Installation <Install.rst>`_ - initial installation.
-* `Subscriber Guide <subscriber.rst>`_ - effective downloading from a pump.
+* `Subscriber Guide <subscriber.rst>`_ - effective downloading from a pump (mostly on Linux)
+* `Windows User Guide <windows/Windows.rst>`_ - Windows specific variations.
 * `Source Guide <source.rst>`_ - effective uploading to a pump
 * `Programming Guide <Prog.rst>`_ - Programming custom plugins for workflow integration.
 

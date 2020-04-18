@@ -97,6 +97,16 @@ Si des instances sont en cours d'exécution, il partage la même file d'attente
 d'avis avec eux. Un utilisateur arrête l'instance **foreground** en
 utilisant simplement <ctrl-c> sur linux. ou utilise d'autres moyens pour tuer le processus.
 
+Lorsque que la configuration sera assez raffinée pour être utiliser on peut le partir comme
+service (un processus, où bien une flotte de processus, dont le nombre est configuré par
+l´option *instances*.) on se sert de *start*, *status*, et *stop*. pour les partir,
+intérroger le statut de la flotte, ou bien fermer tous les instances.  
+
+Pour avoir des composantes qui roulent toujours, en linux on peut se servir de l'intégration
+systemd tel que décrit dans le `guide des Administrateurs <Admin.rst>`_. Sur Windows,
+on peut définir une services tel que décrit dans le `Windows user manual (anglais) <../windows/Windows.rst>`_
+
+
 Les actions **cleanup**, **declare**, **setup** peuvent être utilisées pour gérer les 
 ressources sur le courtier rabbitmq. Les ressources sont soit des files d'attente,
 soit des échanges. **declare** crée les ressources. **setup** crée les files 
