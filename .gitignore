@@ -11,4 +11,5 @@ sarra-c*
 build
 pynsist_pkgs
 sarra/*.pyc
+.idea
 
