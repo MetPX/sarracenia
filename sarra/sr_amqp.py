@@ -163,7 +163,6 @@ class HostConnect:
             self.logger.info("Sleeping {} seconds ...".format( ebo) )
             time.sleep(ebo)
 
-
     def exchange_declare(self, exchange, edelete=False, edurable=True):
         try:
             self.channel.exchange_declare(exchange, 'topic', auto_delete=edelete, durable=edurable)
@@ -193,6 +192,10 @@ class HostConnect:
             self.logger.debug('Exception details: ', exc_info=True)
 
     def new_channel(self):
+        # TODO Document error: this method might raise exceptions here from this call.
+        # FIXME This seems actually properly handled by connect() which is one of its caller,
+        #  but publisher.build and Queue.build doesnt handle it which is called by sr_consumer, sr_post, sr_subscribe
+        #  (that is scary).
         channel = self.connection.channel()
         self.toclose.append(channel)
         return channel
@@ -249,6 +252,8 @@ class Consumer:
     def __init__(self, hostconnect):
 
         self.hc = hostconnect
+        # FIXME propagation of root logger should be avoided
+        #  correct usage would be self.logger = logging.getLogger(__name__)
         self.logger = self.hc.logger
         self.prefetch = 20
         self.channel = None
@@ -264,12 +269,15 @@ class Consumer:
             self.for_pika_msg = raw_message(self.logger)
 
     def add_prefetch(self, prefetch):
+        # FIXME confusing name: should be call set_prefetch (this looks like a setter here)
+        #  add_* would 'add' some value to a list
         self.prefetch = prefetch
 
     def build(self):
         self.logger.debug("building consumer")
         self.channel = self.hc.new_channel()
         if self.prefetch != 0:
+            # FIXME if we dont care and only apply here why we put it in variable
             prefetch_size = 0  # dont care
             a_global = False  # only apply here
             self.channel.basic_qos(prefetch_size, self.prefetch, a_global)
@@ -277,6 +285,11 @@ class Consumer:
     def ack(self, msg):
         self.logger.debug("--------------> ACK")
         self.logger.debug("--------------> %s" % msg.delivery_tag)
+        # TODO 1. figure out if there is a risk of delivery_tag being 0 as we ack only single messages
+        #  (default mutiple=False) and zero is reserved to ack multiple messages
+        # TODO 2. basic_ack may raise many type of Exception that are not handled at this level which will then be
+        #  reraise from here. Ensure that it is the expected behaviour and that we document those right here. Then
+        #  every caller of this method will be advised of what to handle.
         self.channel.basic_ack(msg.delivery_tag)
 
     def consume(self, queuename):
@@ -300,6 +313,9 @@ class Consumer:
                 return msg
 
             except Exception as err:
+                # TODO Maybe provide different handling for irrecoverable vs recoverable error such:
+                #  1. irrecoverable would include reconnection handling (ie hc.reconnect)
+                #  2. recoverable would have a different handling which is unkown at this point
                 self.logger.warning("sr_amqp/consume: could not consume in queue %s: %s" % (queuename, err))
                 self.logger.debug('Exception details: ', exc_info=True)
 
@@ -331,12 +347,10 @@ class Publisher:
             self.channel.tx_select()
 
     def is_alive(self):
-        """
-           FIXME:
-           is_alive is dead code, it caused problems and so was removed.
-           there are two is_alive's not sure which one is the problem.
-           https://github.com/MetPX/sarracenia/issues/236
-        """
+        # FIXME: is_alive is dead code, it caused problems and so was removed.
+        #  there are two is_alive's not sure which one is the problem.
+        #  https://github.com/MetPX/sarracenia/issues/236
+        # FIXME 2: if is_alive is dead code, why hb_pulse plugins using it and is hb_pulse used anywhere ?
         if not hasattr(self, 'channel'):
             return False
         alarm_set(self.iotime)
@@ -447,7 +461,13 @@ class Queue:
 
     __default_queue_properties = { 'auto_delete':False, 'durable':False, 'reset':False, \
         'expire':0, 'message_ttl':0, 'declare':True, 'bind':True }
-
+    # FIXME using mutable default argument is not recommended, this is an anti-pattern
+    #  https://docs.quantifiedcode.com/python-anti-patterns/correctness/mutable_default_value_as_argument.html
+    #  why not declaring every named argument as we would do normally ? This would improve:
+    #  1. READABILITY: keep a good readability when someone want to declare a queue and want to change a default value
+    #     which would be easy at first sight, this procedure obfuscate args we might want to change
+    #  2. CORRECTNESS: avoid the risk of a catastrophic change that would include a list (maybe bindings) in the args
+    #     which we only shallow copy and where values would be shared among all instances
     def __init__(self, hc, qname, prop_arg=__default_queue_properties ):
 
         # have arguments override defaults.
@@ -472,10 +492,18 @@ class Queue:
         self.bindings.append((exchange_name, exchange_key))
 
     def bind(self, exchange_name, exchange_key):
+        # FIXME why does this method exist (it is only called by Queue.build), no external calls (ie like from
+        #  sr_consumer the setter methods)
         self.channel.queue_bind(self.qname, exchange_name, exchange_key)
 
     def build(self):
+        # FIXME Too many reponsabilities in that single method, should consider breaking it
+        #  down into reset(delete), bind and/or bind pulse with error handling encapsulated in each part.
         self.logger.debug("building queue %s" % self.name)
+        # TODO document error: new_channel has unhandled exception that needs to be address from
+        #  here like OSError, IOError, and children of AMQPError. Either it needs to be handle here or
+        #  it needs to be documented (I mean well structured docstring) to allow proper handling at higher levels of
+        #  calls
         self.channel = self.hc.new_channel()
 
         ebo=1
@@ -484,6 +512,8 @@ class Queue:
                 # reset
                 if self.properties['reset']:
                     try:
+                        # FIXME inconsistency: the call might need to be delegated in a separate method to be
+                        #  consistent with Queue.bind call (if so I would recommend delegating the error handling too)
                         self.channel.queue_delete(self.name)
                     except Exception as err:
                         self.logger.error("could not delete queue %s (%s@%s) with %s"
@@ -491,12 +521,8 @@ class Queue:
                         self.logger.debug('Exception details:', exc_info=True)
     
                 # declare queue
-    
-                msg_count = self.declare()
-
-                if msg_count != -1:
-                    self.logger.info( "declared queue %s (%s@%s) " % (self.name, 
-                        self.hc.user, self.hc.host) )
+                self.declare()
+                self.logger.info("declared queue %s (%s@%s) " % (self.name, self.hc.user, self.hc.host))
                 break
 
             except Exception as err:
@@ -522,6 +548,12 @@ class Queue:
         last_exchange_name = ''
         bound=0
         backoff=1
+        # FIXME bad loop: There is a loophole here...
+        #  What if it has 6 bindings and the first 5 fails multiple times,
+        #  we got unlucky and we then loop several times binding the same
+        #  last one 6 times. Not only we fail binding the five first but
+        #  we falsely think we did bind everything and also induce very poor
+        #  performance because of the backoff sleep time
         while bound < len(self.bindings):
             for exchange_name, exchange_key in self.bindings:
                 self.logger.debug("binding queue to exchange=%s with key=%s" % (exchange_name, exchange_key))
@@ -533,6 +565,7 @@ class Queue:
                 except Exception as err:
                     self.logger.error("bind queue: %s to exchange: %s with key: %s failed with %s"
                                   % (self.name, exchange_name, exchange_key, err))
+                    # FIXME unsuitable error msg: The exception is too broad to conclude this is a permission issue
                     self.logger.error("Permission issue with %s@%s or exchange %s not found."
                                   % (self.hc.user, self.hc.host, exchange_name))
                     self.logger.debug('Exception details:', exc_info=True)
@@ -573,6 +606,7 @@ class Queue:
                 self.logger.debug("queue_declare PIKA is used")
                 q_dclr_ok = self.channel.queue_declare(self.name, passive=False, durable=self.properties['durable'],
                                                        exclusive=False, auto_delete=self.properties['auto_delete'], arguments=args)
+                # FIXME confusing variable naming: This is not a method but a namedtuple
                 method = q_dclr_ok.method
                 self.qname, msg_count, consumer_count = method.queue, method.message_count, method.consumer_count
         else:
@@ -582,5 +616,6 @@ class Queue:
                                                                                    exclusive=False,
                                                                                    auto_delete=self.properties['auto_delete'],
                                                                                    nowait=False, arguments=args)
-        self.logger.debug("queue declare done")
+        self.logger.debug("queue declare done: qname:{}, msg_count:{}, consumer_count:{}".format(self.qname, msg_count,
+                                                                                                 consumer_count))
         return msg_count
