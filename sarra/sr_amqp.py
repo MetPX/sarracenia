@@ -304,9 +304,8 @@ class Consumer:
                 self.logger.debug('Exception details: ', exc_info=True)
 
 
-            if self.hc.loop:
-                self.hc.reconnect()
-                self.logger.debug("consume resume ok")
+            self.hc.reconnect()
+            self.logger.debug("consume resume ok")
 
 
 # ==========
