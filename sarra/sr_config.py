@@ -2626,11 +2626,16 @@ class sr_config:
                          self.tlsctx.verify_mode = ssl.CERT_NONE
 
                      elif self.tls_rigour == 'strict' :
-                         self.tlsctx = ssl.create_default_context()
+                         self.tlsctx = ssl.SSLContext(ssl.PROTOCOL_TLS)
+                         self.tlsctx.options |= ssl.OP_NO_TLSv1
+                         self.tlsctx.options |= ssl.OP_NO_TLSv1_1
                          self.tlsctx.check_hostname = True
                          self.tlsctx.verify_mode = ssl.CERT_REQUIRED
-                         self.tlsctx.verify_flags = ssl.VERIFY_CHECK_CHAIN
-                         self.tlsctx.protocol = ssl.PROTOCOL_TLSv1_2
+                         self.tlsctx.load_default_certs()
+                         # TODO Find a way to reintroduce certificate revocation (CRL) in the future
+                         #  self.tlsctx.verify_flags = ssl.VERIFY_CRL_CHECK_CHAIN
+                         #  https://github.com/MetPX/sarracenia/issues/330
+
 
                      elif self.tls_rigour == 'normal' :
                          pass
