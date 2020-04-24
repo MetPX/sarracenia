@@ -493,12 +493,12 @@ class Queue:
                 # declare queue
     
                 msg_count = self.declare()
-                # something went wrong
-                if msg_count == -1:
-                     return
-                self.logger.info( "declared queue %s (%s@%s) " % (self.name, 
-                    self.hc.user, self.hc.host) )
+
+                if msg_count != -1:
+                    self.logger.info( "declared queue %s (%s@%s) " % (self.name, 
+                        self.hc.user, self.hc.host) )
                 break
+
             except Exception as err:
                 self.logger.error("sr_amqp/build could not declare queue %s (%s@%s) with %s"
                                   % (self.name, self.hc.user, self.hc.host, err))
