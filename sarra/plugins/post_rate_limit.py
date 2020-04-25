@@ -43,6 +43,7 @@ class Post_Rate_Limit(object):
 
         parent.post_rate_limit_msgcount += 1
         if ( parent.post_rate_limit_msgcount > parent.post_rate_limit ):
+            parent.logger.info( "post_rate_limit %d messages/second, sleeping" % parent.post_rate_limit )
             time.sleep(1-time_elapsed)
             time_elapsed=1         
 
