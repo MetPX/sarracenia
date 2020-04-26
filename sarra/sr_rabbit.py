@@ -15,28 +15,10 @@ rabbitmqadmin = 'rabbitmqadmin'
 # rabbitmqadmin
 #===========================
 
-def exec_rabbitmqadmin(url,options,logger=None):
+def exec_rabbitmqadmin(url,options,logger=None,simulate=False):
     
     """
-    #  This logic downloads rabbitmqadmin into cwd wherever it is invoked.
-    #  ends up littering file system with rabbitmqadmin copies.  disabled in favour of 
-    #  having it manually downloaded once during installation.
-
-    if not os.path.isfile(rabbitmqadmin):
-       try :
-             import urllib.request, urllib.error
-             urlstr   = "http://"+ url.hostname + ':15672/cli/rabbitmqadmin'
-             req      = urllib.request.Request(urlstr)
-             response = urllib.request.urlopen(req)
-             f = open(rabbitmqadmin,'wb')
-             buf = response.read(10000000)
-             f.write(buf)
-             f.close()
-             os.chmod(rabbitmqadmin,0o755)
-       except :
-             #(stype, svalue, tb) = sys.exc_info()
-             #print("Type: %s, Value: %s" % (stype, svalue))
-             pass
+       invoke rabbitmqadmin..
     """
 
     try :
@@ -52,11 +34,21 @@ def exec_rabbitmqadmin(url,options,logger=None):
            if logger != None : logger.debug("command = %s" % command)
            if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5) :
                    if logger : logger.debug("using subprocess.getstatusoutput")
+
+                   if simulate:
+                       logger.info( "dry_run: %s" % ' '.join(command) )
+                       return 0,None
+
                    return subprocess.getstatusoutput(command)
            else :
                    cmdlin = command.replace("'",'')
                    cmdlst = cmdlin.split()
                    if logger : logger.debug("using subprocess.run cmdlst=%s" %  ' '.join(cmdlst) )
+
+                   if simulate:
+                      logger.info("dry_run: %s" % cmdlin )
+                      return 0,None
+
                    rclass = subprocess.run(cmdlst,stdout=subprocess.PIPE)
                    if rclass.returncode == 0 : 
                        output =rclass.stdout
@@ -73,7 +65,7 @@ def exec_rabbitmqadmin(url,options,logger=None):
     return 0,None
     
 
-def rabbitmq_add_user( url, role, user, passwd, logger  ):
+def rabbitmq_add_user( url, role, user, passwd, logger, simulate  ):
     
     # properly declare user
 
@@ -83,7 +75,7 @@ def rabbitmq_add_user( url, role, user, passwd, logger  ):
     if role == 'admin': declare += " tags=administrator "
     else:               declare += ' tags="" '
 
-    dummy = run_rabbitmqadmin( url,declare,logger )
+    dummy = run_rabbitmqadmin( url,declare,logger, simulate )
     
     # admin and feeder gets the same permissions
 
@@ -93,7 +85,7 @@ def rabbitmq_add_user( url, role, user, passwd, logger  ):
        r="read=.*"
        logger.info("permission user '%s' role %s  %s %s %s " % (user,'feeder',c,w,r))
        declare = "declare permission vhost=/ user='%s' %s %s %s"%(user,c,w,r)
-       dummy   = run_rabbitmqadmin( url,declare,logger)
+       dummy   = run_rabbitmqadmin( url,declare,logger,simulate)
        return
 
     # source
@@ -104,7 +96,7 @@ def rabbitmq_add_user( url, role, user, passwd, logger  ):
        r="read='^q_%s.*|^x[lrs]_%s.*|^x.*public$'" % ( user, user )
        logger.info("permission user '%s' role %s  %s %s %s " % (user,'source',c,w,r))
        declare = "declare permission vhost=/ user='%s' %s %s %s"%(user,c,w,r)
-       dummy = run_rabbitmqadmin( url,declare,logger)
+       dummy = run_rabbitmqadmin( url,declare,logger,simulate)
        return
 
     # subscribe
@@ -115,27 +107,27 @@ def rabbitmq_add_user( url, role, user, passwd, logger  ):
        r="read='^q_%s.*|^x[lrs]_%s.*|^x.*public$'" % (user,user)
        logger.info("permission user '%s' role %s  %s %s %s " % (user,'source',c,w,r))
        declare = "declare permission vhost=/ user='%s' %s %s %s"%(user,c,w,r)
-       dummy = run_rabbitmqadmin( url,declare,logger )
+       dummy = run_rabbitmqadmin( url,declare,logger,simulate )
 
-def rabbitmq_del_user( url, user, logger  ):
+def rabbitmq_del_user( url, user, logger, simulate  ):
     logger.info("deleting user %s" % user)
     delete = "delete user name='%s'"%user
-    dummy  = run_rabbitmqadmin( url,delete,logger )
+    dummy  = run_rabbitmqadmin( url,delete,logger,simulate )
 
-def rabbitmq_get_exchanges( url, logger  ):
+def rabbitmq_get_exchanges( url, logger ):
     logger.info("geting exchanges")
     cmd = "list exchanges name"
-    return run_rabbitmqadmin( url, cmd, logger )
+    return run_rabbitmqadmin( url, cmd, logger)
 
-def rabbitmq_get_queues( url, logger  ):
+def rabbitmq_get_queues( url, logger ):
     logger.info("geting queues")
     cmd = "list queues name messages state"
     return run_rabbitmqadmin( url, cmd, logger )
 
-def rabbitmq_get_users( url, logger  ):
+def rabbitmq_get_users( url, logger ):
     logger.info("geting users")
     cmd = "list users name"
-    return run_rabbitmqadmin( url, cmd, logger )
+    return run_rabbitmqadmin( url, cmd, logger)
 
 #===========================
 # direct access to rabbitmq management plugin
@@ -268,11 +260,14 @@ if __name__ == "__main__":
     print( "permissions for %s: \nqueues: %s\nexchanges: %s\nbindings %s" % ( u , up['queues'], up['exchanges'], up['bindings'] ) )
     #print( "\n\nbindings: %s" % json.loads(exec_rabbitmqadmin(url,"list bindings")[1]) )
 
-def run_rabbitmqadmin(url,options,logger):
+def run_rabbitmqadmin(url,options,logger,simulate=False):
 
     logger.debug("sr_rabbit run_rabbitmqadmin %s" % options)
     try :
-             (status, answer) = exec_rabbitmqadmin(url,options,logger)
+             (status, answer) = exec_rabbitmqadmin(url,options,logger,simulate)
+
+             if simulate: return
+
              if status != 0 or answer == None or len(answer) == 0 or 'error' in answer :
                 logger.error("run_rabbitmqadmin invocation failed")
                 return []

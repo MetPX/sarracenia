@@ -73,6 +73,8 @@ There are very few options that **sr_audit** uses:
 
 **max_queue_size <int>     (default: 25000 nbr messages in queue)** 
 
+**dry_run  <boolean> (default: False)** 
+
 The **admin** option must be defined and normally be set in the file **default.conf**
 and the credential details would be found in the file **credentials.conf**
 Normally when users are created, the passwords for communications with the broker are set based
@@ -81,6 +83,8 @@ on the values found in the credentials file.
 When the *reset* option is given, user passwords and permissions will be reset to their expected
 values.  Normally, an existing user's permissions are left untouched by an audit run.
 
+The dry_run option will print what audit would do if run, and make no changes to the
+broker.
 
 VERIFY PUMP SETTINGS
 ====================

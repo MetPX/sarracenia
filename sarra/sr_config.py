@@ -326,8 +326,8 @@ class sr_config:
 
         self.logger.info( "log settings start for %s (version: %s):" % \
            (self.program_name, sarra.__version__) )
-        self.logger.info( "\tinflight=%s events=%s use_pika=%s topic_prefix=%s" % \
-           ( self.inflight, self.events, self.use_pika, self.topic_prefix) )
+        self.logger.info( "\tinflight=%s events=%s use_pika=%s topic_prefix=%s dry_run=%s" % \
+           ( self.inflight, self.events, self.use_pika, self.topic_prefix, self.dry_run) )
         self.logger.info( "\tinline=%s events=%s use_amqplib=%s topic_prefix=%s" % \
            ( self.inline, self.events, self.use_amqplib, self.topic_prefix) )
         self.logger.info( "\tsuppress_duplicates=%s basis=%s retry_mode=%s retry_ttl=%sms tls_rigour=%s" % \
@@ -708,6 +708,7 @@ class sr_config:
 
         self.queue_name           = None
         self.queue_suffix         = None
+        self.dry_run              = False
         self.durable              = True
         self.expire               = 1000 *60 * 5  # 5 mins = 1000millisec * 60s * 5m 
         self.reset                = False
@@ -1849,6 +1850,14 @@ class sr_config:
                 elif words0 == 'do_send': # See sr_config.7, and sr_sender.1
                      ok = self.execfile("do_send",words1)
                      n = 2
+
+                elif words0 == 'dry_run'   : # See sr_config.7 ++
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.dry_run = True
+                        n = 1
+                     else :
+                        self.dry_run = self.isTrue(words[1])
+                        n = 2
 
                 elif words0 == 'durable'   : # See sr_config.7 ++
                      if (words1 is None) or words[0][0:1] == '-' : 

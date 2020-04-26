@@ -46,12 +46,15 @@ except :
 class sr_audit(sr_instances):
 
     def amqp_add_exchange(self,e):
-        self.logger.info("adding exchange '%s'" % e)
 
         if not hasattr( self, 'hc'):
              self.amqp_connect()
 
-        self.hc.exchange_declare(e)
+        if not self.dry_run:
+            self.logger.info("adding exchange '%s'" % e)
+            self.hc.exchange_declare(e)
+        else:
+            self.logger.info("dry_run: adding exchange '%s'" % e)
 
     def amqp_close(self):
         self.logger.debug("audit close")
@@ -67,12 +70,20 @@ class sr_audit(sr_instances):
         self.hc.connect()
 
     def amqp_del_exchange(self,e):
-        self.logger.info("deleting exchange %s" % e)
-        self.hc.exchange_delete(e)
+
+        if not self.dry_run:
+            self.logger.info("deleting exchange %s" % e)
+            self.hc.exchange_delete(e)
+        else:
+            self.logger.info("dry_run: deleting exchange '%s'" % e)
 
     def amqp_del_queue(self,q):
-        self.logger.info("deleting queue %s" % q)
-        self.hc.queue_delete(q)
+
+        if not self.dry_run:
+            self.logger.info("deleting queue %s" % q)
+            self.hc.queue_delete(q)
+        else:
+            self.logger.info("dry_run: deleting queue '%s'" % e)
 
     def amqp_isconnected(self):
         return not ( self.hc == None or self.hc.connection == None)
@@ -85,7 +96,7 @@ class sr_audit(sr_instances):
 
         ok, details = self.credentials.get(user_cred_qurl)
         if not ok :
-           self.logger.info("Entry missing for %s in %s" % ( user_cred_qurl, \
+           self.logger.error("Entry missing for %s in %s" % ( user_cred_qurl, \
                    self.user_config_dir + os.sep + 'credentials.conf' ))
            return
 
@@ -93,7 +104,7 @@ class sr_audit(sr_instances):
 
         # rabbitmq_add_user
 
-        rabbitmq_add_user(self.admin,role,u,upw,self.logger)
+        rabbitmq_add_user(self.admin,role,u,upw,self.logger,self.dry_run)
          
         # source
 
@@ -188,6 +199,12 @@ class sr_audit(sr_instances):
 
     def run_sr_setup(self):
         self.logger.debug("setting up exchanges and queues from all config")
+
+        if self.dry_run:
+            self.logger.info("dry_run: sr declare")
+            self.logger.info("dry_run: sr setup")
+            return
+
         self.run_command(['sr','declare'])
         self.run_command(['sr','setup'])
 
@@ -213,7 +230,7 @@ class sr_audit(sr_instances):
             if exchange in exchange_rab : continue
             exchange_lst.append(exchange)
 
-        self.logger.info("sr_audit verify_exchanges, defined: %s" % lst_dict )
+        self.logger.debug("sr_audit verify_exchanges, defined: %s" % lst_dict )
 
         for e in self.exchanges : 
             if e in exchange_lst :
@@ -312,7 +329,7 @@ class sr_audit(sr_instances):
         ampersand = admin.index('@',8)
         admin = admin[0:colon] + admin[ampersand:]
 
-        self.logger.info("sr_audit pumps using account: %s for pulse" % admin )
+        self.logger.debug("sr_audit pumps using account: %s for pulse" % admin )
 
         # poll directory must exists
         try:
@@ -322,9 +339,9 @@ class sr_audit(sr_instances):
             self.logger.debug("Exception details", exc_info=True)
 
         cfn = self.user_config_dir + "/poll/pulse.conf"
-        self.logger.info("sr_audit pulse configuration %s" % cfn )
+        self.logger.debug("sr_audit pulse configuration %s" % cfn )
         if not ( os.path.isfile(cfn) or os.path.isfile(cfn + ".off") ):
-           self.logger.info("creating %s" % cfn ) 
+           self.logger.debug("creating %s" % cfn ) 
            cf=open(cfn,'w')
            cf.write( '# Initial pulse emitting configuration, by sr_audit, tune to taste. \n')
            cf.write( '# To get original back, just remove this file, and run sr_audit (or wait a few minutes)\n' )
@@ -353,7 +370,7 @@ class sr_audit(sr_instances):
         ampersand = feeder.index('@',8)
         feeder = feeder[0:colon] + feeder[ampersand:]
 
-        self.logger.info("sr_audit pumps using account: %s for report routing" % feeder )
+        self.logger.debug("sr_audit pumps using account: %s for report routing" % feeder )
 
         # shovel directory must exists
         try:
@@ -365,47 +382,54 @@ class sr_audit(sr_instances):
         if self.report_daemons: 
            for u in self.sources :
              cfn = self.user_config_dir + "/shovel/rr_" + "xreport2" + u + ".conf"
-             self.logger.info("sr_audit report routing configuration source: %s, shovel: %s" % ( u, cfn ) )
+             self.logger.debug("sr_audit report routing configuration source: %s, shovel: %s" % ( u, cfn ) )
              if not ( os.path.isfile(cfn) or os.path.isfile(cfn + ".off") ):
-                self.logger.info("creating %s" % cfn ) 
-                cf=open(cfn,'w')
-                cf.write( '# Initial report routing to sources configuration, by sr_audit, tune to taste. \n')
-                cf.write( '#     To get original back, just remove this file, and run sr_audit (or wait a few minutes)\n' )
-                cf.write( '#     To suppress report routing, rename this file to %s.off  \n\n' % os.path.basename(cfn) )
-                cf.write( 'broker %s\n' % feeder )
-                cf.write( 'exchange xreport\n' )
-                cf.write( 'topic_prefix v02.report\n' )
-                cf.write( 'subtopic #\n' )
-                cf.write( 'accept_unmatch True\n' )
-                cf.write( 'msg_by_source %s\n' % u  )
-                cf.write( 'on_message msg_by_source\n' )
-                cf.write( 'on_post None\n' )
-                cf.write( 'report_back False\n' )
-                cf.write( 'post_broker %s\n' % feeder )
-                cf.write( 'post_exchange xr_%s\n' % u )
-                cf.close()
+
+                if self.dry_run: 
+                    self.logger.info("dry_run creating %s" % cfn ) 
+                else:
+                    self.logger.info("creating %s" % cfn ) 
+                    cf=open(cfn,'w')
+                    cf.write( '# Initial report routing to sources configuration, by sr_audit, tune to taste. \n')
+                    cf.write( '#     To get original back, just remove this file, and run sr_audit (or wait a few minutes)\n' )
+                    cf.write( '#     To suppress report routing, rename this file to %s.off  \n\n' % os.path.basename(cfn) )
+                    cf.write( 'broker %s\n' % feeder )
+                    cf.write( 'exchange xreport\n' )
+                    cf.write( 'topic_prefix v02.report\n' )
+                    cf.write( 'subtopic #\n' )
+                    cf.write( 'accept_unmatch True\n' )
+                    cf.write( 'msg_by_source %s\n' % u  )
+                    cf.write( 'on_message msg_by_source\n' )
+                    cf.write( 'on_post None\n' )
+                    cf.write( 'report_back False\n' )
+                    cf.write( 'post_broker %s\n' % feeder )
+                    cf.write( 'post_exchange xr_%s\n' % u )
+                    cf.close()
 
            for u in self.sources+self.subscribes:
              cfn = self.user_config_dir + "/shovel/rr_" + u + "2xreport.conf"
-             self.logger.info("sr_audit report routing configuration subscriber: %s, shovel: %s" % ( u, cfn ) )
+             self.logger.debug("sr_audit report routing configuration subscriber: %s, shovel: %s" % ( u, cfn ) )
              if not ( os.path.isfile(cfn) or os.path.isfile(cfn + ".off") ):
-                self.logger.info("creating %s" % cfn ) 
-                cf=open(cfn,'w')
-                cf.write( '# Initial report routing configuration created by sr_audit, tune to taste.\n ')
-                cf.write( '#     To get original back, just remove this file, and run sr_audit (or wait a few minutes)\n' )
-                cf.write( '#     To suppress report routing, rename this file to %s.off  \n\n' % os.path.basename(cfn) )
-                cf.write( 'broker %s\n' % feeder )
-                cf.write( 'exchange xs_%s\n' % u )
-                cf.write( 'topic_prefix v02.report\n' )
-                cf.write( 'subtopic #\n' )
-                cf.write( 'accept_unmatch True\n' )
-                cf.write( 'msg_by_user %s\n' % u  )
-                cf.write( 'on_message msg_by_user\n' )
-                cf.write( 'on_post None\n' )
-                cf.write( 'report_back False\n' )
-                cf.write( 'post_broker %s\n' % feeder )
-                cf.write( 'post_exchange xreport\n' )
-                cf.close()
+                if self.dry_run: 
+                    self.logger.info("dry_run creating %s" % cfn ) 
+                else:
+                    self.logger.info("creating %s" % cfn ) 
+                    cf=open(cfn,'w')
+                    cf.write( '# Initial report routing configuration created by sr_audit, tune to taste.\n ')
+                    cf.write( '#     To get original back, just remove this file, and run sr_audit (or wait a few minutes)\n' )
+                    cf.write( '#     To suppress report routing, rename this file to %s.off  \n\n' % os.path.basename(cfn) )
+                    cf.write( 'broker %s\n' % feeder )
+                    cf.write( 'exchange xs_%s\n' % u )
+                    cf.write( 'topic_prefix v02.report\n' )
+                    cf.write( 'subtopic #\n' )
+                    cf.write( 'accept_unmatch True\n' )
+                    cf.write( 'msg_by_user %s\n' % u  )
+                    cf.write( 'on_message msg_by_user\n' )
+                    cf.write( 'on_post None\n' )
+                    cf.write( 'report_back False\n' )
+                    cf.write( 'post_broker %s\n' % feeder )
+                    cf.write( 'post_exchange xreport\n' )
+                    cf.close()
 
 
     def verify_users(self):
@@ -414,7 +438,7 @@ class sr_audit(sr_instances):
         # get users name (a list of dictionnaries)
 
         lst_dict = rabbitmq_get_users( self.admin, self.logger )
-        self.logger.info("sr_audit verify_users, defined: %s" % lst_dict )
+        self.logger.debug("sr_audit verify_users, defined: %s" % lst_dict )
 
         user_lst = []
         for edict in lst_dict :
@@ -422,11 +446,11 @@ class sr_audit(sr_instances):
             if user == '' : continue
             user_lst.append(user)
 
-        self.logger.info("sr_audit verify_users user_lst = %s" % user_lst)
+        self.logger.debug("sr_audit verify_users user_lst = %s" % user_lst)
 
         # admins
 
-        self.logger.info("sr_audit verify_users admins = %s" % self.admins)
+        self.logger.debug("sr_audit verify_users admins = %s" % self.admins)
         for u in self.admins :
             if u in user_lst :
                user_lst.remove(u)
@@ -436,7 +460,7 @@ class sr_audit(sr_instances):
 
         # feeders
 
-        self.logger.info("sr_audit verify_users feeders = %s" % self.feeders)
+        self.logger.debug("sr_audit verify_users feeders = %s" % self.feeders)
         for u in self.feeders:
             if u in user_lst :
                user_lst.remove(u)
@@ -446,7 +470,7 @@ class sr_audit(sr_instances):
 
         # sources
 
-        self.logger.info("sr_audit verify_users sources = %s" % self.sources)
+        self.logger.debug("sr_audit verify_users sources = %s" % self.sources)
         for u in self.sources :
             if u in user_lst :
                user_lst.remove(u)
@@ -456,7 +480,7 @@ class sr_audit(sr_instances):
 
         # subscribes
 
-        self.logger.info("sr_audit verify_users subscribes = %s" % self.subscribes)
+        self.logger.debug("sr_audit verify_users subscribes = %s" % self.subscribes)
         for u in self.subscribes:
             if u in user_lst :
                user_lst.remove(u)
@@ -467,7 +491,7 @@ class sr_audit(sr_instances):
         # delete leftovers
         for u in user_lst :
             self.logger.warning("unnecessary user %s" % u)
-            rabbitmq_del_user(self.admin,u,self.logger)
+            rabbitmq_del_user(self.admin,u,self.logger,self.dry_run)
 
     def verify_queues(self):
         self.logger.debug("sr_audit verify_queues")
@@ -616,7 +640,7 @@ class sr_audit(sr_instances):
                     # create report shovel configs first
                     self.verify_report_routing()
                     # create pulse configs
-                    self.verify_pulse()
+                    # self.verify_pulse()
                     # verify users from default/credentials
                     self.verify_users()
                     # verify overall exchanges (once everything created)

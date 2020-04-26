@@ -80,6 +80,8 @@ Il y a très peu d'options que **sr_audit** utilise :
 
 - **max_queue_size <int>     (default: 25000 nbr messages in queue)**
 
+- **dry_run  <booléen> (default: False)**
+
 L'option **admin** doit être définie, elle est normalement définie dans le fichier **default.conf**.
 et les détails de l'accréditation se trouveraient dans le fichier **credentials.conf**.
 Normalement, lors de la création des utilisateurs, les mots de passe 
@@ -91,7 +93,8 @@ utilisateurs seront réinitialisés à leur valeurs attendues.
 Normalement, les permissions d'un utilisateur existant sont 
 laissées intactes par un audit.
 
-
+L'option *dry_run* permet de voir ce que va faire **sr_audit**, sans
+éffectuer de changement sur le courtier. 
 
 VÉRIFIER LES RÉGLAGES DE LA POMPE
 =================================
