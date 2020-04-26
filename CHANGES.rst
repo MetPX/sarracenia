@@ -6,6 +6,12 @@ lists all changes between versions.
 
 **git repo**
 
+  * progress on #329 getting tls_rigour strict to be honoured.
+  * added dry_run to sr_audit, for non-descructive simulation of audit actions.
+  * fix #326 only open named pipe when actually writing.
+  * working on #324. queue declarations failures now loop, rather than being ignored.
+  * #324 Added declare_queue, bind_queue, declare_exchange options, to get former behaviour if needed.
+
 **2.20.04b2**
 
   * #320 another improvement in error recovery. better results on flakey_flow
