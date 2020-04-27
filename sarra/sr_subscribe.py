@@ -144,7 +144,6 @@ class sr_subscribe(sr_instances):
            self.logger.debug("*** BINDINGS %s"% self.bindings)
 
         # queue
-        self.logger.debug("FIXME setting queue_name=%s " % self.queue_name )
         if self.queue_name == None :
            if not self.program_name in [ 'sr_report', 'sr_subscribe' ] :
               self.queue_name  = 'q_' + self.broker.username + '.'
