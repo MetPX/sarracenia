@@ -58,9 +58,9 @@ class sr_winnow(sr_subscribe):
         # we cannot have more than one instance since we 
         # need to work with a single cache.
 
-        if self.nbr_instances != 1 :
-           self.logger.error("Only one instance allowed... set to 1")
-           os._exit(1)
+        if ( self.nbr_instances > 1 ) and not self.exchange_split :
+            self.logger.debug("instance > 1, forcing exchange_split on, modifying exchange setting.")
+            self.exchange_split = True
 
         # post_exchange must be provided
 

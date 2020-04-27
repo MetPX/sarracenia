@@ -66,6 +66,37 @@ the option settings.
 
 See `sr_subscribe(1) <sr_subscribe.1.rst>`_  for more details.
 
+Multiple Instances
+------------------
+
+- **exchange_split       <boolean>      (default: False)**
+- **instances            <integer>      (default: 1)**
+
+when there a flow has too many messages to be handled by a single instance,
+sr_winnow performs differently from the other other components because
+splitting sr_winnows work across multiple instances requires that the
+files with the same name always go to the same instance.  
+
+To use multiple processes, the upstream component feeding the winnow
+will include in it's configuration, for example::
+
+   post_exchange xs_hoho
+   post_exchange_split 4
+
+that will cause the following exchanges to be created: xs_hoho00, xs_hoho01,
+xs_hoho02, xs_hoho03, and files to be sent to the exchanges based on the
+hash of their names. The corresponding winnows need to be configured as follows::
+
+   echange xs_hoho
+   exchange_split 
+   instances 4
+   
+With this configuration, winnow will be started with four instances.
+Instances for other components, share a common queue, 
+sr_winnow instances, with the above settings, will each bind to 
+one of the exchanges using a non-shared queue.
+
+
  
 SEE ALSO
 ========
