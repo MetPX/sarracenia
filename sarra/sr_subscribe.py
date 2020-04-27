@@ -144,8 +144,6 @@ class sr_subscribe(sr_instances):
            self.logger.debug("*** BINDINGS %s"% self.bindings)
 
         # queue
-        print('FIXME hoho program_name={} queuename={} exchange_split={}'.format( \
-            self.program_name, self.queue_name, self.exchange_split) )
         self.logger.debug("FIXME setting queue_name=%s " % self.queue_name )
         if self.queue_name == None :
            if not self.program_name in [ 'sr_report', 'sr_subscribe' ] :
@@ -154,7 +152,6 @@ class sr_subscribe(sr_instances):
               if self.exchange_split :
                   self.queue_name += "_%02d" % ( (self.no>0) * ( self.no - 1 ) )
 
-        print("FIXME set to queue_name=%s " % self.queue_name )
         # retry
 
         if self.retry_ttl == None:
