@@ -184,12 +184,6 @@ class sr_consumer:
             self.logger.debug('Exception details: ', exc_info=True)
             return None, None
 
-        # special case : pulse
-
-        if self.msg.isPulse :
-           self.parent.pulse_count += 1
-           return True,self.msg
-
         # we have a message, reset timer (original or retry)
 
         if not should_sleep : self.sleep_now = self.sleep_min 
@@ -228,23 +222,6 @@ class sr_consumer:
         self.raw_msg = None
         self.msg = self.parent.msg
         self.msg.user = self.broker.username
-
-    def is_alive(self):
-        """
-           FIXME: likely remove? or create proper test to confirm function. 
-           this is only called from hb_pulse.  Was removed in v2.20.04b2.
-           would need to create a test that demonstrates usefulness.
-           https://github.com/MetPX/sarracenia/issues/236
-        """
-        if not hasattr(self,'consumer') : return False
-        if self.consumer.channel == None: return False
-        alarm_set(self.iotime)
-        try   : self.consumer.channel.basic_qos(0,self.consumer.prefetch,False)
-        except: 
-                alarm_cancel()
-                return False
-        alarm_cancel()
-        return True
 
     def isReporting(self):
         self.logger.debug("sr_consumer isReporting")

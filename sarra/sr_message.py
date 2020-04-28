@@ -338,34 +338,8 @@ class sr_message():
                else:
                     self.notice = msg.body
 
-               if 'pulse' in self.topic:
-                   self.pubtime = self.notice.split(' ')[0]
-               else:
-                   self.pubtime, self.baseurl, self.relpath = self.notice.split(' ')[0:3]
+               self.pubtime, self.baseurl, self.relpath = self.notice.split(' ')[0:3]
            self.isRetry   = msg.isRetry
-
-
-
-        # pulse message... parse it
-        # exchange='v02.pulse'
-        # notice='epoch_time.msec a_pulse message to log'
-
-        self.isPulse = False
-        if self.topic.startswith('v02.pulse'):
-           self.urlstr  = None
-           self.isPulse = True
-
-           # parse pulse notice
-           token = self.notice.split(' ')
-           self.pubtime = token[0]
-
-           # pulse message
-           if self.topic == 'v02.pulse.message':
-              pulse_message = ' '.join(token[1:])
-              self.logger.warning("pulse message = %s" % pulse_message)
-              return
-
-           return
 
         # retransmission case :
         # topic is name of the queue...

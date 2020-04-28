@@ -312,46 +312,6 @@ class sr_audit(sr_instances):
             else:
                self.logger.info("noticed exchange %s leaving alone." % e)
 
-    def verify_pulse(self):
-        """
-           Each pump should have a poll process that pulse a message to keep alive consuming processes
-        """
-        self.logger.info("sr_audit pulse configuration")
-
-        if not self.admin :
-           self.logger.warning("No pulse if no admin user set ")
-           return 
-
-        admin = self.admin.geturl()
-
-        # remove the password from the URL...
-        colon = admin.index(':',6)
-        ampersand = admin.index('@',8)
-        admin = admin[0:colon] + admin[ampersand:]
-
-        self.logger.debug("sr_audit pumps using account: %s for pulse" % admin )
-
-        # poll directory must exists
-        try:
-            os.makedirs(self.user_config_dir + "/poll", 0o775,True)
-        except OSError as err:
-            self.logger.error("could not create directory ({}) with {}".format(self.user_config_dir, err))
-            self.logger.debug("Exception details", exc_info=True)
-
-        cfn = self.user_config_dir + "/poll/pulse.conf"
-        self.logger.debug("sr_audit pulse configuration %s" % cfn )
-        if not ( os.path.isfile(cfn) or os.path.isfile(cfn + ".off") ):
-           self.logger.debug("creating %s" % cfn ) 
-           cf=open(cfn,'w')
-           cf.write( '# Initial pulse emitting configuration, by sr_audit, tune to taste. \n')
-           cf.write( '# To get original back, just remove this file, and run sr_audit (or wait a few minutes)\n' )
-           cf.write( '# To suppress pulsing, rename this file to %s.off  \n\n' % os.path.basename(cfn) )
-           cf.write( 'post_broker %s\n' % admin )
-           cf.write( 'post_exchange xpublic\n')
-           cf.write( 'do_poll poll_pulse\n' )
-           cf.close()
-
-
     def verify_report_routing(self):
         """
            Each subscriber writes reports to xs_<user>.  These reports need to get back to sources.
@@ -639,8 +599,6 @@ class sr_audit(sr_instances):
                     self.amqp_connect()
                     # create report shovel configs first
                     self.verify_report_routing()
-                    # create pulse configs
-                    # self.verify_pulse()
                     # verify users from default/credentials
                     self.verify_users()
                     # verify overall exchanges (once everything created)

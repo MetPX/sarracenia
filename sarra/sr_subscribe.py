@@ -1745,10 +1745,6 @@ class sr_subscribe(sr_instances):
                       ok, self.msg = self.consumer.consume()
                       if not ok : continue
 
-                      #  pulse message, go on to the next
-
-                      if self.msg.isPulse : continue
-
                       #  in save mode
 
                       if self.save :

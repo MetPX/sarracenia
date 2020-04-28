@@ -15,7 +15,7 @@ lists all changes between versions.
 **2.20.04b2**
 
   * #320 another improvement in error recovery. better results on flakey_flow
-  * #319 remove pulse, causes more harm than benefit, perhaps re-introduce after better testing.
+  * #236 #319 remove pulse, causes more harm than benefit, perhaps re-introduce after better testing.
   * connection recovery: remove recursion (vulnerable to stack exhaustion on long failures.)
   * connection recovery: add exponential backoff to several failure modes.
   * remove channel close logic (unnecessary, as entire connection is closed, which closes all channels.)
