@@ -6,16 +6,18 @@ lists all changes between versions.
 
 **git repo**
 
+  * #327 exchange_split implemented.
   * progress on #329 getting tls_rigour strict to be honoured.
   * added dry_run to sr_audit, for non-descructive simulation of audit actions.
   * fix #326 only open named pipe when actually writing.
   * working on #324. queue declarations failures now loop, rather than being ignored.
   * #324 Added declare_queue, bind_queue, declare_exchange options, to get former behaviour if needed.
+  * #236 eliminated rest of pulse code. Feature not needed on recent rabbitmq versions.
 
 **2.20.04b2**
 
   * #320 another improvement in error recovery. better results on flakey_flow
-  * #236 #319 remove pulse, causes more harm than benefit, perhaps re-introduce after better testing.
+  * #236 #319 deactivated pulse, causes more harm than benefit, perhaps re-introduce after better testing.
   * connection recovery: remove recursion (vulnerable to stack exhaustion on long failures.)
   * connection recovery: add exponential backoff to several failure modes.
   * remove channel close logic (unnecessary, as entire connection is closed, which closes all channels.)
