@@ -65,6 +65,7 @@ class sr_consumer:
 
         self.use_pattern    = parent.masks != []
         self.accept_unmatch = parent.accept_unmatch
+        self.exchange_split = parent.exchange_split
         self.save = False
 
         self.iotime = 30
@@ -94,7 +95,7 @@ class sr_consumer:
         return self.hc.connect()
 
     def build_consumer(self):
-        self.logger.debug("sr_consumer build_consumer")
+        self.logger.debug("sr_consumer build_consumer queue_name=%s" % self.parent.queue_name)
 
         self.consumer = Consumer(self.hc)
 
@@ -106,7 +107,7 @@ class sr_consumer:
         self.retry_msg = self.retry.message
 
     def build_queue(self):
-        self.logger.debug("sr_consumer build_queue")
+        self.logger.debug("sr_consumer build_queue queue_name=%s" % self.parent.queue_name)
 
         self.bindings    = self.parent.bindings
 
@@ -302,12 +303,20 @@ class sr_consumer:
     #def random_queue_name(self) :
     def set_queue_name(self):
 
+        self.logger.debug("sr_consumer set_queue_name parent.queue_name=%s parent.exchange_split=%s" % \
+             ( self.parent.queue_name, self.parent.exchange_split ))
         # queue file : fix it 
 
         queuefile  = self.parent.program_name
         if self.parent.config_name :
            queuefile += '.' + self.parent.config_name
         queuefile += '.' + self.broker.username
+
+        if self.parent.exchange_split : 
+           iid=( (self.parent.no>0) * ( self.parent.no  - 1 ) )
+           self.logger.debug("sr_consumer exchange_split, queue_name=%s instance=%02d " % \
+               (self.parent.queue_name, iid ) )
+           queuefile += "_%02d" % iid
 
         # queue path
 
@@ -339,10 +348,14 @@ class sr_consumer:
            if not self.queue_prefix in self.queue_name : 
                self.logger.warning("non standard queue name %s" % self.queue_name )
                #self.queue_name = self.queue_prefix + '.'+ self.queue_name
-
         else:
+           self.logger.error("standard queue name based on: prefix=%s program_name=%s exchange_split=%s no=%s" % \
+                  (self.queue_prefix, self.parent.program_name, self.parent.exchange_split, self.parent.no) )
            self.queue_name  = self.queue_prefix 
            self.queue_name += '.'  + self.parent.program_name
+
+           if self.parent.exchange_split : 
+               self.queue_name += "%02d" % ( (self.parent.no>0)*( self.parent.no  - 1 ) )
 
            if self.parent.config_name : self.queue_name += '.'  + self.parent.config_name
            if self.parent.queue_suffix: self.queue_name += '.'  + self.parent.queue_suffix

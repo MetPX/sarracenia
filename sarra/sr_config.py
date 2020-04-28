@@ -697,6 +697,7 @@ class sr_config:
         self.declare_exchange = True
 
         self.exchange             = None
+        self.exchange_split       = False
         self.exchange_suffix      = None
         self.exchanges            = [ 'xlog', 'xpublic', 'xreport', 'xwinnow' ]
         self.topic_prefix         = 'v02.post'
@@ -1082,6 +1083,9 @@ class sr_config:
 
         if self.exchange_suffix :
            self.exchange = 'xs_%s' % self.broker.username + '_' + self.exchange_suffix
+
+        if self.exchange_split :
+           self.exchange += '%02d' % ( (self.no > 0) * (self.no -1) )
 
         return self.exchange
 
@@ -1895,6 +1899,14 @@ class sr_config:
                 elif words0 in ['exchange','ex'] : # See: sr_config.7 ++ everywhere fixme?
                      self.exchange = words1
                      n = 2
+
+                elif words0 in ['exchange_split'] : # FIXME: sr_config.7 ++ everywhere fixme?
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.exchange_split = True
+                        n = 1
+                     else :
+                        self.exchange_split = self.isTrue(words[1])
+                        n = 2
 
                 elif words0 in ['exchange_suffix'] : # FIXME: sr_config.7 ++ everywhere fixme?
                      self.exchange_suffix = words1
