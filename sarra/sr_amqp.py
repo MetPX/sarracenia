@@ -495,8 +495,8 @@ class Queue:
                 msg_count = self.declare()
 
                 if msg_count != -1:
-                    self.logger.info( "declared queue %s (%s@%s) " % (self.name, 
-                        self.hc.user, self.hc.host) )
+                    self.logger.info( "declared queue %s (%s@%s) %s messages already waiting" % (self.name, 
+                        self.hc.user, self.hc.host, msg_count) )
                 break
 
             except Exception as err:
@@ -540,21 +540,6 @@ class Queue:
                 time.sleep(backoff)
                 if backoff < 60:
                     backoff *= 2
-
-        # always allow pulse binding... use last exchange_name
-        #if last_exchange_name:
-        #    exchange_key = 'v02.pulse.#'
-        #    self.logger.debug("binding queue to exchange=%s with key=%s (pulse)" % (last_exchange_name, exchange_key))
-        #    try:
-        #       self.bind(last_exchange_name, exchange_key)
-        #    except Exception as err:
-        #        self.logger.error("bind queue: %s to exchange: %s with key: %s failed.."
-        #                          % (self.name, last_exchange_name, exchange_key))
-        #        self.logger.error("Permission issue with %s@%s or exchange %s not found with %s"
-        #                         % (self.hc.user, self.hc.host, last_exchange_name, err))
-        #       self.logger.debug('Exception details:', exc_info=True)
-        #else:
-        #    self.logger.warning("this process will not receive pulse message")
 
         self.logger.debug("queue build done")
 
