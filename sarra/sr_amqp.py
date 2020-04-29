@@ -352,7 +352,7 @@ class Publisher:
         #  there are two is_alive's not sure which one is the problem.
         #  https://github.com/MetPX/sarracenia/issues/236
         # FIXME 2: if is_alive is dead code, why hb_pulse plugins using it and is hb_pulse used anywhere ?
-        if not hasattr(self, 'channel'):
+        if self.channel is None:
             return False
         alarm_set(self.iotime)
         try:
