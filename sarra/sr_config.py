@@ -697,6 +697,7 @@ class sr_config:
         self.declare_exchange = True
 
         self.exchange             = None
+        self.exchange_split       = False
         self.exchange_suffix      = None
         self.exchanges            = [ 'xlog', 'xpublic', 'xreport', 'xwinnow' ]
         self.topic_prefix         = 'v02.post'
@@ -748,16 +749,11 @@ class sr_config:
 
         self.message_count        = 0
         self.publish_count        = 0
-        self.pulse_count          = 0
 
         # new set
         self.base_dir             = None
         self.post_base_dir        = None
         self.post_base_url        = None
-
-        # pulse  
-
-        self.pulse_message        = None
 
         # deprecated set
         self.document_root        = None
@@ -902,7 +898,6 @@ class sr_config:
 
 
         self.execfile("on_heartbeat",'hb_memory')
-        #self.execfile("on_heartbeat",'hb_pulse')
         self.execfile("on_html_page",'html_page')
 
         #self.on_post_list = [ self.on_post ]
@@ -1088,6 +1083,9 @@ class sr_config:
 
         if self.exchange_suffix :
            self.exchange = 'xs_%s' % self.broker.username + '_' + self.exchange_suffix
+
+        if self.exchange_split :
+           self.exchange += '%02d' % ( (self.no > 0) * (self.no -1) )
 
         return self.exchange
 
@@ -1902,6 +1900,14 @@ class sr_config:
                      self.exchange = words1
                      n = 2
 
+                elif words0 in ['exchange_split'] : # FIXME: sr_config.7 ++ everywhere fixme?
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.exchange_split = True
+                        n = 1
+                     else :
+                        self.exchange_split = self.isTrue(words[1])
+                        n = 2
+
                 elif words0 in ['exchange_suffix'] : # FIXME: sr_config.7 ++ everywhere fixme?
                      self.exchange_suffix = words1
                      n = 2
@@ -2410,10 +2416,6 @@ class sr_config:
                      else :
                         self.preserve_time = self.isTrue(words[1])
                         n = 2
-
-                elif words0 == 'pulse_message' : # MG to be documented
-                     self.pulse_message = words1
-                     n = 2
 
                 elif words0 == 'pump':  # See: sr_audit.1  (give pump hints or setting errors)
                      if (words1 is None) or words[0][0:1] == '-' : 

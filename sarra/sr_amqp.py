@@ -566,22 +566,6 @@ class Queue:
                 if backoff < 60:
                     backoff *= 2
 
-        # TODO If pulse is finally removed, then remove those commented lines
-        # always allow pulse binding... use last exchange_name
-        #if last_exchange_name:
-        #    exchange_key = 'v02.pulse.#'
-        #    self.logger.debug("binding queue to exchange=%s with key=%s (pulse)" % (last_exchange_name, exchange_key))
-        #    try:
-        #       self.bind(last_exchange_name, exchange_key)
-        #    except Exception as err:
-        #        self.logger.error("bind queue: %s to exchange: %s with key: %s failed.."
-        #                          % (self.name, last_exchange_name, exchange_key))
-        #        self.logger.error("Permission issue with %s@%s or exchange %s not found with %s"
-        #                         % (self.hc.user, self.hc.host, last_exchange_name, err))
-        #       self.logger.debug('Exception details:', exc_info=True)
-        #else:
-        #    self.logger.warning("this process will not receive pulse message")
-
         self.logger.debug("queue build done")
 
     def declare(self):

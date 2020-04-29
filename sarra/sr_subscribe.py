@@ -144,11 +144,12 @@ class sr_subscribe(sr_instances):
            self.logger.debug("*** BINDINGS %s"% self.bindings)
 
         # queue
-
         if self.queue_name == None :
            if not self.program_name in [ 'sr_report', 'sr_subscribe' ] :
               self.queue_name  = 'q_' + self.broker.username + '.'
               self.queue_name += self.program_name + '.' + self.config_name
+              if self.exchange_split :
+                  self.queue_name += "_%02d" % ( (self.no>0) * ( self.no - 1 ) )
 
         # retry
 
@@ -1155,7 +1156,7 @@ class sr_subscribe(sr_instances):
         oldname = None
         if 'oldname' in self.msg.headers :
            #self.logger.debug("%s doit_download - oldname=%s" % (self.program_name, self.msg.headers['oldname']) )
-           oldname = self.msg.headers
+           oldname = self.msg.headers['oldname']
 
            # set 'move to' file
            newpath = self.msg.new_dir + '/' + self.msg.new_file
@@ -1745,10 +1746,6 @@ class sr_subscribe(sr_instances):
                       ok, self.msg = self.consumer.consume()
                       if not ok : continue
 
-                      #  pulse message, go on to the next
-
-                      if self.msg.isPulse : continue
-
                       #  in save mode
 
                       if self.save :
@@ -1985,7 +1982,6 @@ class sr_subscribe(sr_instances):
            return
 
         # consumer declare
-
         self.consumer = sr_consumer(self,admin=True)
         self.consumer.declare()
 

@@ -1,10 +1,15 @@
-metpx-sarracenia (2.20.04b3) UNRELEASED; urgency=medium
+metpx-sarracenia (2.20.04b3) unstable; urgency=medium
 
+  * correct sr sanity to not kill foreground processes.
+  * found circular reference issue with file rename. #66 and more recent cases.
+  * #329 tls_rigour strict was broken. fixed.
+  * #327 exchange_split implemented.
   * progress on #329 getting tls_rigour strict to be honoured.
   * added dry_run to sr_audit, for non-descructive simulation of audit actions.
   * fix #326 only open named pipe when actually writing.
   * working on #324. queue declarations failures now loop, rather than being ignored.
   * #324 Added declare_queue, bind_queue, declare_exchange options, to get former behaviour if needed.
+  * #236 eliminated rest of pulse code. Feature not needed on recent rabbitmq versions.
 
  -- peter <peter@bsqt.homeip.net>  Mon, 13 Apr 2020 21:39:00 -0400
 

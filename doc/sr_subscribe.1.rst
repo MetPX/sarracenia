@@ -559,7 +559,7 @@ Once connected to an AMQP broker, the user needs to create a queue.
 Setting the queue on broker :
 
 - **queue         <name>         (default: q_<brokerUser>.<programName>.<configName>)**
-- **durable       <boolean>      (default: False)**
+- **durable       <boolean>      (default: True)**
 - **expire        <duration>      (default: 5m  == five minutes. RECOMMEND OVERRIDING)**
 - **message_ttl   <duration>      (default: None)**
 - **prefetch      <N>            (default: 1)**
@@ -609,7 +609,7 @@ of sharing work across multiple nodes.
 
 
 
-durable <boolean> (default: False)
+durable <boolean> (default: True)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The  **durable** option, if set to True, means writes the queue
