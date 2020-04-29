@@ -94,6 +94,7 @@ class HostConnect:
 
          so wondering why we shut down all the channels here.
         """
+        # TODO remove those commented lines
         #for channel in self.toclose:
         #    if self.use_pika:
         #        cid = channel.channel_number
@@ -112,6 +113,7 @@ class HostConnect:
         except Exception as err:
             self.logger.error("sr_amqp/close 2: {}".format(err))
             self.logger.debug("sr_amqp/close 2 Exception details:", exc_info=True)
+        # FIXME toclose not useful as we don't close channels anymore
         self.toclose = []
         self.connection = None
 
