@@ -10,10 +10,6 @@
 #
 # __init__.py : contains version number of sarracenia
 #
-#
-# Code contributed by:
-#  Khosrow Ebrahimpour - Shared Services Canada
-#
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by

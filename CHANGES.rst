@@ -6,6 +6,9 @@ lists all changes between versions.
 
 **git repo**
 
+  * correct sr sanity to not kill foreground processes.
+  * found circular reference issue with file rename. #66 and more recent cases.
+  * #329 tls_rigour strict was broken. fixed.
   * #327 exchange_split implemented.
   * progress on #329 getting tls_rigour strict to be honoured.
   * added dry_run to sr_audit, for non-descructive simulation of audit actions.
