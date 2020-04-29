@@ -1156,7 +1156,7 @@ class sr_subscribe(sr_instances):
         oldname = None
         if 'oldname' in self.msg.headers :
            #self.logger.debug("%s doit_download - oldname=%s" % (self.program_name, self.msg.headers['oldname']) )
-           oldname = self.msg.headers
+           oldname = self.msg.headers['oldname']
 
            # set 'move to' file
            newpath = self.msg.new_dir + '/' + self.msg.new_file
@@ -1982,7 +1982,6 @@ class sr_subscribe(sr_instances):
            return
 
         # consumer declare
-
         self.consumer = sr_consumer(self,admin=True)
         self.consumer.declare()
 
