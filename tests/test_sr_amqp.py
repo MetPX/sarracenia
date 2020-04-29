@@ -9,6 +9,10 @@ sr_amqp_unit_test.py : test utility tool used for sr_amqp
 Code contributed by:
  Benoit Lapointe - Shared Services Canada
 """
+import asyncio
+import time
+from threading import Thread
+
 import amqp
 import re
 import json
@@ -20,12 +24,14 @@ import urllib.parse
 from io import StringIO
 from unittest.mock import Mock, call, patch, DEFAULT
 
-from amqp.connection import SSLError
+from amqp.connection import SSLError, Connection
+from vine import promise
+
 try:
     from amqplib import client_0_8
 except ImportError:
     pass
-from amqp import AMQPError, RecoverableConnectionError, ResourceError
+from amqp import AMQPError, RecoverableConnectionError, ResourceError, ChannelError, PreconditionFailed, Channel
 from sarra.sr_amqp import HostConnect, Publisher, Consumer, Queue
 
 
@@ -428,19 +434,6 @@ class ConsumerCase(HostConnectBaseCase):
         self.assertEqual(expected, chan.mock_calls, self.amqp_channel_assert_msg)
         self.assertNoErrorInLog()
 
-    @patch('sarra.sr_util.raw_message')
-    def test_ack_Exception(self, msg, hc, chan):
-        # Prepare test
-        msg.delivery_tag = 1
-        chan.basic_ack.side_effect = Exception('AMQP failed during basic_ack execution')
-        self.consumer.channel = chan
-        # Execute test
-        self.consumer.ack(msg)
-        # Evaluate results
-        expected = [call.basic_ack(msg.delivery_tag)]
-        self.assertEqual(expected, chan.mock_calls, self.amqp_channel_assert_msg)
-        self.assertErrorInLog()
-
     def test_add_prefetch(self, hc, chan):
         # Prepare test
         new_prefetch = 10
@@ -456,7 +449,7 @@ class ConsumerCase(HostConnectBaseCase):
         # Execute test
         self.consumer.build()
         # Evaluate results
-        expected = [call.basic_recover(requeue=True), call.basic_qos(0, 20, False)]
+        expected = [call.basic_qos(0, 20, False)]
         self.assertEqual(expected, chan.mock_calls, self.amqp_channel_assert_msg)
         self.assertNoErrorInLog()
 
@@ -468,8 +461,10 @@ class ConsumerCase(HostConnectBaseCase):
         # Execute test
         self.consumer.build()
         # Evaluate results
-        expected = [call.basic_recover(requeue=True)]
-        self.assertEqual(expected, chan.mock_calls, self.amqp_channel_assert_msg)
+        expected = [call.new_channel()]
+        self.assertEqual(expected, hc.mock_calls, self.hc_assert_msg)
+        expected = []
+        self.assertEqual(expected, chan.mock_calls, self.hc_assert_msg)
         self.assertNoErrorInLog()
 
     @patch('amqp.Message')
@@ -484,36 +479,27 @@ class ConsumerCase(HostConnectBaseCase):
         # Evaluate results
         self.assertEqual(msg, msg_returned)
 
-    @patch('amqp.Message')
-    def test_consume_loop_AMQPError(self, msg, hc, chan):
-        # Prepare test
-        hc.use_pika = False
-        self.consumer.logger.setLevel(logging.WARNING)
-        self.consumer.hc = hc
-        chan.basic_get.side_effect = [AMQPError(self.AMQPError_msg), msg]
-        self.consumer.channel = chan
-        # Execute test
-        msg_returned = self.consumer.consume(self.qname)
-        # Evaluate results
-        expected = [call.basic_get(self.qname)]*2
-        self.assertEqual(expected, chan.mock_calls, self.amqp_channel_assert_msg)
-        self.assertEqual(msg, msg_returned)
-        self.assertErrorInLog(r'WARNING')
+    @patch('sarra.sr_util.raw_message')
+    def test_consume__IrrecoverabeChannelError(self, msg, hc, chan):
+        """ If a wrong delivery tag is provided, the next basic get will fail with PRECONDITION_FAILED error
 
-    @patch('amqp.Message')
-    def test_consume_loop_Exception(self, msg, hc, chan):
+        This is an irrecoverable error and the process must create a new connection to amqp
+        """
         # Prepare test
-        hc.use_pika = False
-        self.consumer.hc = hc
-        chan.basic_get.side_effect = [Exception(self.Exception_msg), msg]
+        msg.delivery_tag = 1
+        errmsg = 'Basic.ack: (406) PRECONDITION_FAILED - unknown delivery tag {}'.format(msg.delivery_tag)
+        chan.basic_get.side_effect = [PreconditionFailed(errmsg), msg]
         self.consumer.channel = chan
+        self.consumer.hc = hc
+        hc.use_pika = False
         # Execute test
-        msg_returned = self.consumer.consume(self.qname)
+        self.consumer.consume(self.qname)
         # Evaluate results
-        expected = [call.basic_get(self.qname)]*2
+        expected = [call.basic_get(self.qname), call.basic_get(self.qname)]
         self.assertEqual(expected, chan.mock_calls, self.amqp_channel_assert_msg)
-        self.assertEqual(msg, msg_returned)
-        self.assertErrorInLog(r'WARNING')
+        expected = [call.reconnect()]
+        self.assertEqual(expected, hc.mock_calls, self.hc_assert_msg)
+        self.assertErrorInLog(re.escape(errmsg))
 
 
 @patch('amqp.Channel')
@@ -731,21 +717,18 @@ class QueueCase(HostConnectBaseCase):
     def tearDown(self) -> None:
         self.q.logger.removeHandler(self.assertHandler)
 
-    def test_init__with_mutable_args(self, chan):
-        Queue.__init__.__defaults__[0]['test_list'] = [1, 2, 3]
-        Queue.__init__.__defaults__[0]['expires'] = 10
-        self.q = Queue(self.hc, self.qname)
-        q1 = Queue(self.hc, self.qname + '_1')
-        q1.properties['test_list'][0] = 4
-        q1.properties['test_list'].append(5)
-        q1.properties['expires'] = 1
-        self.assertEqual(10, self.q.properties['expires'])
-        self.assertEqual(1, self.q.properties['test_list'][0])
-        self.assertEqual(3, len(self.q.properties['test_list']))
+    def test_init__mutable_args_are_evil(self, chan):
+        Queue.__init__.__defaults__[0]['a'] = []
+        a = Queue(self.hc, self.qname)
+        b = Queue(self.hc, self.qname)
+        a.properties['a'].append(1)
+        self.assertIn(1, b.properties['a'])
 
     def test_init__defaults_contains_mutable(self, chan):
-        for v in Queue.__init__.__defaults__[0].values():
-            self.assertNotIsInstance(v, (list, dict, set), '{} is mutable'.format(v))
+        defaults_copy = Queue.__init__.__defaults__[0].copy()
+        for v1, v2 in zip(Queue.__init__.__defaults__[0].values(), defaults_copy.values()):
+            if type(v1) not in [bool, int, float, tuple, str, frozenset]:
+                self.assertNotEqual(id(v1), id(v2), '{} is mutable'.format(v1))
 
     def test_add_binding(self, chan):
         # Prepare test
@@ -792,6 +775,11 @@ class QueueCase(HostConnectBaseCase):
 
     @patch('sarra.sr_amqp.HostConnect')
     def test_build__new_channel_Exception(self, hc, chan):
+        """ Build is expected to be called at startup then the expected behaviour is to fail fast on exception
+
+        This is why new_channel exceptions should not be handled, so analysts starting processes would be instantly
+        aware of build problems.
+        """
         # Prepare test
         xname = '{}_xname'.format(self.test_build.__name__)
         xkey = '{}_xkey'.format(self.test_build.__name__)
@@ -802,15 +790,15 @@ class QueueCase(HostConnectBaseCase):
         self.q.hc = hc
         self.q.declare = Mock(return_value=self.msg_count)
         # Execute test
-        self.q.build()
-        # Evaluate results
-        expected = [call.new_channel()]
-        self.assertEqual(expected, hc.mock_calls, self.hc_assert_msg)
-        expected = [call.queue_bind(self.qname, xname, xkey)
-                    # , call.queue_bind(self.qname, 'test_build_xname', 'v02.pulse.#')
-                    ]
-        self.assertEqual(expected, chan.mock_calls, self.amqp_channel_assert_msg)
-        self.assertNoErrorInLog()
+        try:
+            self.q.build()
+        except Exception:
+            # Evaluate results
+            expected = [call.new_channel()]
+            self.assertEqual(expected, hc.mock_calls, self.hc_assert_msg)
+            expected = []
+            self.assertEqual(expected, chan.mock_calls, self.amqp_channel_assert_msg)
+            self.assertNoErrorInLog()
 
     @patch('sarra.sr_amqp.HostConnect')
     def test_build__reset__queue_delete_Exception(self, hc, chan):
@@ -930,9 +918,8 @@ class QueueCase(HostConnectBaseCase):
         self.q.bindings.append((xname + '_1', xkey + '_1'))
         chan.queue_bind.side_effect = [AMQPError(self.AMQPError_msg), AMQPError(self.AMQPError_msg),  # both bindings fail
                                        AMQPError(self.AMQPError_msg), DEFAULT,  # xname fails, xname_1 succeeds
-                                       AMQPError(self.AMQPError_msg), AMQPError(self.AMQPError_msg),  # both bindings fail
-                                       AMQPError(self.AMQPError_msg), DEFAULT,  # xname fails, xname_1 succeeds
-                                       DEFAULT]  # this is for pulse
+                                       # DEFAULT  # this is for pulse
+                                       ]*2
         hc.new_channel.return_value = chan
         self.q.declare = Mock(return_value=self.msg_count)
         hc.user = 'test_user'
@@ -952,35 +939,19 @@ class QueueCase(HostConnectBaseCase):
         self.assertEqual(expected, sleep.mock_calls, self.sleep_assert_msg)
         self.assertErrorInLog()
         matched = self.find_in_log(r'ERROR bind queue.*?{} '.format(xname))
-        self.assertLess(2, len(matched), 'bind to {} failed'.format(xname))
+        self.assertLess(4, len(matched), 'bind to {} failed'.format(xname))
 
     def test_declare(self, chan):
         # Prepare test
         chan.queue_declare.return_value = self.qname, self.msg_count, 1
         self.q.channel = chan
         # Execute test
-        results = self.q.declare()
+        self.q.declare()
         # Evaluate results
         expected = [call.queue_declare(self.q.name, passive=False, durable=self.q.properties['durable'],
                                        exclusive=False, auto_delete=self.q.properties['auto_delete'], nowait=False,
                                        arguments={})]
         self.assertEqual(expected, chan.mock_calls, self.amqp_channel_assert_msg)
-        self.assertEqual(self.msg_count, results)
-
-    def test_declare__AMQPError(self, chan):
-        # Prepare test
-        chan.queue_declare.side_effect = AMQPError(self.AMQPError_msg)
-        self.q.channel = chan
-        # Execute test
-        try:
-            self.q.declare()
-        except Exception:
-            # Evaluate results
-            expected = [call.queue_declare(self.q.name, passive=False, durable=self.q.properties['durable'],
-                                       exclusive=False, auto_delete=self.q.properties['auto_delete'], nowait=False,
-                                       arguments={})]
-            self.assertEqual(expected, chan.mock_calls, self.amqp_channel_assert_msg)
-            self.assertNoErrorInLog()
 
     def test_declare__Exception(self, chan):
         # Prepare test
@@ -988,8 +959,8 @@ class QueueCase(HostConnectBaseCase):
         self.q.channel = chan
         # Execute test
         try:
-            result = self.q.declare()
-        except Exception:
+            self.q.declare()
+        except:
             # Evaluate results
             expected = [call.queue_declare(self.q.name, passive=False, durable=self.q.properties['durable'],
                                            exclusive=False, auto_delete=self.q.properties['auto_delete'], nowait=False,
@@ -1003,13 +974,12 @@ class QueueCase(HostConnectBaseCase):
         self.q.channel = chan
         self.q.properties['expire'] = 1
         # Execute test
-        result = self.q.declare()
+        self.q.declare()
         # Evaluate results
         expected = [call.queue_declare(self.q.name, passive=False, durable=self.q.properties['durable'],
                                        exclusive=False, auto_delete=self.q.properties['auto_delete'], nowait=False,
                                        arguments={'x-expires': 1})]
         self.assertEqual(expected, chan.mock_calls, self.amqp_channel_assert_msg)
-        self.assertEqual(self.msg_count, result)
 
     def test_declare__message_ttl_gt_0(self, chan):
         # Prepare test
@@ -1017,13 +987,12 @@ class QueueCase(HostConnectBaseCase):
         self.q.channel = chan
         self.q.properties['message_ttl'] = 1
         # Execute test
-        result = self.q.declare()
+        self.q.declare()
         # Evaluate results
         expected = [call.queue_declare(self.q.name, passive=False, durable=self.q.properties['durable'],
                                        exclusive=False, auto_delete=self.q.properties['auto_delete'], nowait=False,
                                        arguments={'x-message-ttl': 1})]
         self.assertEqual(expected, chan.mock_calls, self.amqp_channel_assert_msg)
-        self.assertEqual(self.msg_count, result)
 
     def test_declare__expire_message_ttl_gt_0(self, chan):
         # Prepare test
@@ -1032,45 +1001,117 @@ class QueueCase(HostConnectBaseCase):
         self.q.properties['expire'] = 1
         self.q.properties['message_ttl'] = 1
         # Execute test
-        result = self.q.declare()
+        self.q.declare()
         # Evaluate results
         expected = [call.queue_declare(self.q.name, passive=False, durable=self.q.properties['durable'],
                                        exclusive=False, auto_delete=self.q.properties['auto_delete'], nowait=False,
                                        arguments={'x-expires': 1, 'x-message-ttl': 1})]
         self.assertEqual(expected, chan.mock_calls, self.amqp_channel_assert_msg)
-        self.assertEqual(self.msg_count, result)
 
 
 class RabbitMqAmqpCase(unittest.TestCase):
     def setUp(self) -> None:
-        self.conn = amqp.Connection('localhost', 'bunnymaster', 'ZTI0MjFmZGM0YzM3YmQwOWJlNjhlNjMz')
-        self.conn.connect()
-        self.chan = self.conn.channel()
+        self.conn_admin = amqp.Connection('localhost', 'bunnymaster', 'ZTI0MjFmZGM0YzM3YmQwOWJlNjhlNjMz')
+        self.conn_admin.connect()
+        self.chan_admin = self.conn_admin.channel()
+        self.conn_user = amqp.Connection('localhost', 'anonymous', 'anonymous')
+        self.conn_user.connect()
+        self.chan_user = self.conn_user.channel()
         self.qname_fmt = 'q_{}'
         self.xname_fmt = 'x_{}'
         self.xkey_fmt = 'k_{}'
+        self.l = []
 
     def tearDown(self) -> None:
-        self.chan.close()
-        self.conn.close()
+        self.conn_admin.close()
+        self.conn_user.close()
 
     def test_close(self):
-        self.conn.close()
-        self.assertFalse(self.chan.is_open)
+        self.conn_admin.close()
+        self.assertFalse(self.chan_admin.is_open)
 
     def test_queue_declare(self):
         qname = self.qname_fmt.format(self.test_queue_declare.__name__)
-        result = self.chan.queue_declare(qname)
+        result = self.chan_admin.queue_declare(qname)
         self.assertEqual((qname, 0, 0), tuple(result))
-        self.chan.queue_delete(self.qname_fmt.format(self.test_queue_declare.__name__))
+        self.chan_admin.queue_delete(self.qname_fmt.format(self.test_queue_declare.__name__))
 
     def test_sr_amqp__Queue__build_sequence(self):
-        qname = self.qname_fmt.format(self.test_queue_declare.__name__)
-        xname = self.xname_fmt.format(self.test_queue_declare.__name__)
-        xkey = self.xkey_fmt.format(self.test_queue_declare.__name__)
-        delete_result = self.chan.queue_delete(qname)
-        declare_result = self.chan.queue_declare(qname)
-        self.chan.queue_bind(qname, 'amq.topic', xkey)
+        qname = self.qname_fmt.format(self.test_sr_amqp__Queue__build_sequence.__name__)
+        xname = self.xname_fmt.format(self.test_sr_amqp__Queue__build_sequence.__name__)
+        xkey = self.xkey_fmt.format(self.test_sr_amqp__Queue__build_sequence.__name__)
+        delete_result = self.chan_admin.queue_delete(qname)
+        declare_result = self.chan_admin.queue_declare(qname)
+        self.chan_admin.queue_bind(qname, 'amq.topic', xkey)
+
+    def test_tx_publish(self):
+        xname = self.xname_fmt.format(self.test_tx_publish.__name__)
+        qname = self.qname_fmt.format('anonymous_{}'.format(self.test_tx_publish.__name__))
+        self.chan_admin.tx_select()
+        self.chan_admin.exchange_declare(xname, 'topic')
+        self.chan_user.queue_declare(qname)
+        self.chan_admin.queue_bind(qname, xname)
+        for i in range(2000):
+            msg = amqp.Message('message{}'.format(i))
+            self.chan_admin.basic_publish(msg, exchange=xname)
+            self.chan_admin.tx_commit()
+        self.chan_admin.exchange_delete(xname)
+        self.chan_admin.queue_delete(qname)
+
+    def test_confirm_publish_ack(self):
+        xname = self.xname_fmt.format(self.test_confirm_publish_ack.__name__)
+        qname = self.qname_fmt.format('anonymous_{}'.format(self.test_confirm_publish_ack.__name__))
+        self.chan_admin.confirm_select()
+        self.chan_admin.events['basic_ack'].add(self.ack_handling)
+        self.chan_admin.events['basic_nack'].add(self.nack_handling)
+        self.chan_admin.exchange_declare(xname, 'topic')
+        self.chan_user.queue_declare(qname)
+        self.chan_admin.queue_bind(qname, xname)
+        for i in range(2000):
+            msg = amqp.Message('message{}'.format(i))
+            self.chan_admin.basic_publish(msg, xname)
+        self.chan_admin.exchange_delete(xname)
+        self.chan_admin.queue_delete(qname)
+        self.assertEqual(2000, self.l[0])
+
+    def test_confirm_publish_nack(self):
+        # # self.chan_admin.exchange_delete(xname)
+        # self.chan_admin.queue_delete(qname)
+        # for i in range(5):
+        #     msg = amqp.Message('message{}'.format(i+50000))
+        #     try:
+        #         self.chan_admin.basic_publish(msg, xname)
+        #     except Exception as err:
+        #         print(err)
+        pass
+
+    def test_ack__wrong_delivery_tag(self):
+        xname = self.xname_fmt.format(self.test_ack__wrong_delivery_tag.__name__)
+        qname = self.qname_fmt.format('anonymous_{}'.format(self.test_ack__wrong_delivery_tag.__name__))
+        self.chan_admin.tx_select()
+        self.chan_admin.exchange_declare(xname, 'topic')
+        self.chan_user.queue_declare(qname)
+        self.chan_admin.queue_bind(qname, xname)
+        for i in range(3):
+            msg = amqp.Message('message'+str(i))
+            self.chan_admin.basic_publish(msg, xname)
+            self.chan_admin.tx_commit()
+            self.chan_user.basic_get(qname)
+            self.chan_user.basic_ack(i+1)
+        self.chan_user.basic_ack(4)
+        try:
+            msg = self.chan_user.basic_get(qname)
+            self.fail('this must fails, something is wrong with this channel: {}'.format(self.chan_user))
+        except PreconditionFailed as err:
+            pass
+        self.chan_admin.queue_delete(qname)
+        self.chan_admin.exchange_delete(xname)
+
+    def nack_handling(self, delivery_tag, multiple):
+        self.l = delivery_tag, multiple
+
+    def ack_handling(self, delivery_tag, multiple):
+        self.l = delivery_tag, multiple
 
 
 class RabbitMqAmqplibCase(unittest.TestCase):
