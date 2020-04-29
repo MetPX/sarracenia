@@ -61,6 +61,9 @@ class HostConnect:
         self.channel = None
         self.ssl = False
 
+        # FIXME propagation of root logger should be avoided we are doing it all over the sr_ code
+        #  Every module should have its own logger correct usage would be self.logger = logging.getLogger(__name__)
+        #  Also it have a default value of None which doesn't make sense as the execution will fails through many ways
         self.logger = logger
 
         self.protocol = 'amqp'
@@ -192,10 +195,6 @@ class HostConnect:
             self.logger.debug('Exception details: ', exc_info=True)
 
     def new_channel(self):
-        # TODO Document error: this method might raise exceptions here from this call.
-        # FIXME This seems actually properly handled by connect() which is one of its caller,
-        #  but publisher.build and Queue.build doesnt handle it which is called by sr_consumer, sr_post, sr_subscribe
-        #  (that is scary).
         channel = self.connection.channel()
         self.toclose.append(channel)
         return channel
@@ -252,8 +251,7 @@ class Consumer:
     def __init__(self, hostconnect):
 
         self.hc = hostconnect
-        # FIXME propagation of root logger should be avoided
-        #  correct usage would be self.logger = logging.getLogger(__name__)
+        # FIXME root logger propagation
         self.logger = self.hc.logger
         self.prefetch = 20
         self.channel = None
@@ -270,7 +268,7 @@ class Consumer:
 
     def add_prefetch(self, prefetch):
         # FIXME confusing name: should be call set_prefetch (this looks like a setter here)
-        #  add_* would 'add' some value to a list
+        #  add_* would 'add' some value to a list, btw why would we need a setter
         self.prefetch = prefetch
 
     def build(self):
@@ -332,6 +330,7 @@ class Publisher:
 
     def __init__(self, hostconnect):
         self.hc = hostconnect
+        # FIXME root logger propagation
         self.logger = self.hc.logger
         self.hc.add_build(self.build)
         self.iotime = 30
@@ -475,6 +474,7 @@ class Queue:
         properties.update(prop_arg)
 
         self.hc = hc
+        # FIXME root logger propagation
         self.logger = self.hc.logger
         self.name = qname
         self.qname = qname
@@ -497,13 +497,9 @@ class Queue:
         self.channel.queue_bind(self.qname, exchange_name, exchange_key)
 
     def build(self):
-        # FIXME Too many reponsabilities in that single method, should consider breaking it
+        # TODO Too many reponsabilities in that single method, should consider breaking it
         #  down into reset(delete), bind and/or bind pulse with error handling encapsulated in each part.
         self.logger.debug("building queue %s" % self.name)
-        # TODO document error: new_channel has unhandled exception that needs to be address from
-        #  here like OSError, IOError, and children of AMQPError. Either it needs to be handle here or
-        #  it needs to be documented (I mean well structured docstring) to allow proper handling at higher levels of
-        #  calls
         self.channel = self.hc.new_channel()
 
         ebo=1
@@ -512,8 +508,6 @@ class Queue:
                 # reset
                 if self.properties['reset']:
                     try:
-                        # FIXME inconsistency: the call might need to be delegated in a separate method to be
-                        #  consistent with Queue.bind call (if so I would recommend delegating the error handling too)
                         self.channel.queue_delete(self.name)
                     except Exception as err:
                         self.logger.error("could not delete queue %s (%s@%s) with %s"
@@ -549,11 +543,9 @@ class Queue:
         bound=0
         backoff=1
         # FIXME bad loop: There is a loophole here...
-        #  What if it has 6 bindings and the first 5 fails multiple times,
-        #  we got unlucky and we then loop several times binding the same
-        #  last one 6 times. Not only we fail binding the five first but
-        #  we falsely think we did bind everything and also induce very poor
-        #  performance because of the backoff sleep time
+        #  What if it has 6 bindings and the first 5 fails multiple times, we got unlucky and we then loop several
+        #  times binding the same last one 6 times. Not only we fail binding the five first but we falsely think
+        #  we did bind everything and also induce very poor performance because of the backoff sleep time
         while bound < len(self.bindings):
             for exchange_name, exchange_key in self.bindings:
                 self.logger.debug("binding queue to exchange=%s with key=%s" % (exchange_name, exchange_key))
@@ -574,6 +566,7 @@ class Queue:
                 if backoff < 60:
                     backoff *= 2
 
+        # TODO If pulse is finally removed, then remove those commented lines
         # always allow pulse binding... use last exchange_name
         #if last_exchange_name:
         #    exchange_key = 'v02.pulse.#'
@@ -606,7 +599,7 @@ class Queue:
                 self.logger.debug("queue_declare PIKA is used")
                 q_dclr_ok = self.channel.queue_declare(self.name, passive=False, durable=self.properties['durable'],
                                                        exclusive=False, auto_delete=self.properties['auto_delete'], arguments=args)
-                # FIXME confusing variable naming: This is not a method but a namedtuple
+                # FIXME confusing variable naming: This is not a method but a namedtuple returned by the queue_declare
                 method = q_dclr_ok.method
                 self.qname, msg_count, consumer_count = method.queue, method.message_count, method.consumer_count
         else:
