@@ -9,10 +9,6 @@ sr_amqp_unit_test.py : test utility tool used for sr_amqp
 Code contributed by:
  Benoit Lapointe - Shared Services Canada
 """
-import asyncio
-import time
-from threading import Thread
-
 import amqp
 import re
 import json
@@ -24,14 +20,13 @@ import urllib.parse
 from io import StringIO
 from unittest.mock import Mock, call, patch, DEFAULT
 
-from amqp.connection import SSLError, Connection
-from vine import promise
+from amqp.connection import SSLError
 
 try:
     from amqplib import client_0_8
 except ImportError:
     pass
-from amqp import AMQPError, RecoverableConnectionError, ResourceError, ChannelError, PreconditionFailed, Channel
+from amqp import AMQPError, RecoverableConnectionError, ResourceError, PreconditionFailed
 from sarra.sr_amqp import HostConnect, Publisher, Consumer, Queue
 
 
@@ -1032,9 +1027,19 @@ class RabbitMqAmqpCase(unittest.TestCase):
 
     def test_queue_declare(self):
         qname = self.qname_fmt.format(self.test_queue_declare.__name__)
-        result = self.chan_admin.queue_declare(qname)
-        self.assertEqual((qname, 0, 0), tuple(result))
+        result = self.chan_admin.queue_declare(qname, passive=False, durable=False,
+                                                       exclusive=False, auto_delete=False)
+        self.assertEqual((qname, 0, 0), (result.queue, result.message_count, result.consumer_count))
         self.chan_admin.queue_delete(self.qname_fmt.format(self.test_queue_declare.__name__))
+
+    def test_multiple_queue_bind(self):
+        qname = self.qname_fmt.format(self.test_multiple_queue_bind.__name__)
+        xname = self.xname_fmt.format(self.test_multiple_queue_bind.__name__)
+        xkey = self.xkey_fmt.format(self.test_multiple_queue_bind.__name__)
+        declare_result = self.chan_admin.queue_declare(qname)
+        self.chan_admin.queue_bind(qname, 'amq.topic', xkey)
+        self.chan_admin.queue_bind(qname, 'amq.topic', xkey)
+        delete_result = self.chan_admin.queue_delete(qname)
 
     def test_sr_amqp__Queue__build_sequence(self):
         qname = self.qname_fmt.format(self.test_sr_amqp__Queue__build_sequence.__name__)
