@@ -544,7 +544,7 @@ class sr_transport():
            if ok:
               return
            elif ok is False:
-              raise Exception('Not ok')
+              raise Exception('do_get returned')
            else:
               self.logger.debug("sr_util/get ok is None executing this do_get %s" % do_get)
         self.proto.get(remote_file, local_file, remote_offset, local_offset, length)
@@ -564,7 +564,7 @@ class sr_transport():
            if ok:
               return
            elif ok is False:
-              raise Exception('Not ok')
+              raise Exception('do_put returned')
            else:
               self.logger.debug("sr_util/put ok is None executing this do_put %s" % do_put)
         self.proto.put(local_file, remote_file, local_offset, remote_offset, length)
@@ -940,3 +940,23 @@ def timev2tov3str(s):
         return s
     else:
         return s[0:8] + 'T' + s[8:]
+
+def durationToSeconds(str_value):
+   """
+   this function converts duration to seconds.
+   str_value should be a number followed by a unit [s,m,h,d,w] ex. 1w, 4d, 12h
+   """
+   factor    = 1
+
+   if str_value[-1] in 'sS'   : factor *= 1
+   elif str_value[-1] in 'mM' : factor *= 60
+   elif str_value[-1] in 'hH' : factor *= 60 * 60
+   elif str_value[-1] in 'dD' : factor *= 60 * 60 * 24
+   elif str_value[-1] in 'wW' : factor *= 60 * 60 * 24 * 7
+   if str_value[-1].isalpha() : str_value = str_value[:-1]
+
+   duration = float(str_value) * factor
+
+   return duration
+
+

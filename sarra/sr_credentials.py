@@ -175,7 +175,7 @@ class sr_credentials:
         return True
 
     def parse(self,line):
-        self.logger.debug("sr_credentials parse %s" % self.pwre.sub(':<secret!>@', line, count=1) )
+        #self.logger.debug("sr_credentials parse %s" % self.pwre.sub(':<secret!>@', line, count=1) )
 
         try:
                 sline = line.strip()
