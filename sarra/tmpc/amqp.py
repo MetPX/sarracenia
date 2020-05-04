@@ -63,29 +63,28 @@ class AMQP(TMPC):
            self.__getSetup()
            return
         else: # publisher...
-           self.__connect()
+           self.__putSetup()
            #FIXME... not sure what to do about this...
-           self.publisher = Publisher(self.post_hc)
+           #self.publisher = Publisher(self.post_hc)
 
 
-    def __connect(self):
+    def __connect(self,broker):
         """
           connect to broker. 
           returns with self.channel set to a new channel.
 
           Expect caller to handle errors.
         """
-        b=self.broker
-        host= b.hostname 
-        if b.port:
-           host += ':{}'.format(b.port)
+        host= broker.hostname 
+        if broker.port:
+           host += ':{}'.format(broker.port)
 
         self.connection = amqp.Connection(
             host=host,
-            userid=b.username, 
-            password=b.password,
+            userid=broker.username, 
+            password=broker.password,
             virtual_host=self.props['vhost'], 
-            ssl= (b.scheme[-1]=='s' )
+            ssl= (broker.scheme[-1]=='s' )
         )
         if hasattr(self.connection, 'connect'):
             # check for amqp 1.3.3 and 1.4.9 because connect doesn't exist in those older versions
@@ -107,7 +106,8 @@ class AMQP(TMPC):
             # tear the whole thing down, and start over.
             try:
                 # from sr_consumer.build_connection...
-                self.__connect()
+                self.__connect(self.broker)
+
                 self.logger.debug('getSetup ... 1. connected')
 
                 if self.props['prefetch'] != 0 :
@@ -146,10 +146,55 @@ class AMQP(TMPC):
                         self.channel.queue_bind( self.props['queue_name'], exchange, topic )
 
                 # Setup Successfully Complete! 
+                self.logger.debug('getSetup ... Done!')
                 return
 
             except Exception as err:
                 self.logger.error("AMQP getSetup failed to {} with {}".format(self.broker.hostname, err))
+                self.logger.debug('Exception details: ', exc_info=True)
+
+            if not self.props['message_strategy']['stubborn']: return
+
+            if ebo < 60 : ebo *= 2
+
+            self.logger.info("Sleeping {} seconds ...".format( ebo) )
+            time.sleep(ebo)
+
+
+    def __putSetup(self):
+        ebo=1
+        while True:
+
+            # It does not really matter how it fails, the recovery approach is always the same:
+            # tear the whole thing down, and start over.
+            try:
+                # from sr_consumer.build_connection...
+                self.__connect(self.props['post_broker'])
+
+                # transaction mode... confirms would be better...
+                self.channel.tx_select()
+
+                self.logger.debug('putSetup ... 1. connected')
+
+                if self.props['declare']:
+
+                    self.logger.debug('putSetup ... 1. declaring')
+                    
+                    self.channel.exchange_declare(
+                        self.props['post_exchange'], 'topic',
+                        auto_delete=self.props['auto_delete'], durable=self.props['durable']  )
+
+                    self.mttl='0'
+                    if self.props['message_ttl']:
+                        x = int(durationToSeconds(self.props['message_ttl']) * 1000)
+                        if x > 0: self.mttl = "%d" % x 
+                # Setup Successfully Complete! 
+                self.logger.debug('putSetup ... Done!')
+                return
+
+            except Exception as err:
+                self.logger.error("AMQP putSetup failed to {} with {}".format( 
+                    self.props['post_broker'].hostname, err) )
                 self.logger.debug('Exception details: ', exc_info=True)
 
             if not self.props['message_strategy']['stubborn']: return
@@ -173,21 +218,72 @@ class AMQP(TMPC):
 
     def getNewMessage( self ):
 
+        if not self.get: #build_consumer
+            self.logger.error("getting from a publisher")
+            return None
+
+        ebo=1
         while True:
-            if self.get: #build_consumer
-                try:
-                    msg = self.channel.basic_get(self.props['queue_name']) 
-                    return msg 
-                except:
-                    self.logger.warning("tmpc.amqp.getNewMessage: failed %s: %s" % (queuename, err))
-                    self.logger.debug('Exception details: ', exc_info=True)
+            try:
+                msg = self.channel.basic_get(self.props['queue_name']) 
+                return msg 
+            except:
+                self.logger.warning("tmpc.amqp.getNewMessage: failed %s: %s" % (queuename, err))
+                self.logger.debug('Exception details: ', exc_info=True)
 
             if not self.props['message_strategy']['stubborn']:
-                 return None
+                return None
 
             self.close()
             self.__getSetup()
 
+            if ebo < 60 : ebo *= 2
+
+            self.logger.info("Sleeping {} seconds ...".format( ebo) )
+            time.sleep(ebo)
+
+    def putNewMessage(self, topic, headers, body, exchange=None ):
+        """
+        put a new message out, to the configured exchange by default.
+        """
+        if self.get: #build_consumer
+            self.logger.error("publishing from a consumer")
+            return None
+
+        ebo=1
+        while True:
+            try:
+                if topic.startswith('v03'):
+                    ct='application/json'
+                else:
+                    ct='text/plain'
+                
+                if not exchange :
+                    exchange=self.props['post_exchange']
+
+                AMQP_Message = amqp.Message(body, content_type=ct, 
+                     application_headers=headers, expiration=self.mttl)
+
+                self.channel.basic_publish( AMQP_Message, exchange, topic ) 
+
+                self.channel.tx_commit()
+                self.logger.info("published {}".format(body ) )
+                return # no failure == success :-)
+
+            except Exception as err:
+                self.logger.warning("tmpc.amqp.putNewMessage: failed %s: %s" % (exchange, err))
+                self.logger.debug('Exception details: ', exc_info=True)
+
+            if not self.props['message_strategy']['stubborn']:
+                return None
+
+            self.close()
+            self.__putSetup()
+
+            if ebo < 60 : ebo *= 2
+
+            self.logger.info("Sleeping {} seconds ...".format( ebo) )
+            time.sleep(ebo)
 
     def close(self):
         try:

@@ -170,7 +170,7 @@ class TMPC():
           tell broker that a given message has been received.
         """ 
 
-    def putNewMessage( self, topic, message ):
+    def putNewMessage( self, props, body ):
         """
            publish a message as set up to the given topic.
         """

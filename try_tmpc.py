@@ -51,10 +51,19 @@ print( "This one is an: %s" % h.url_proto() )
 #h=tmpc.TMPC( "amqp://localhost", { 'Queue':'try_tmpc'  } , l )
 
 i=0
-while i < 10:
+while i < 5:
     m = h.getNewMessage()
     if m is not None:
         print( "message: %s" % m )
         print( "message body: %s" % m.body )
-    time.sleep(1)
     i += 1
+
+h.close()
+
+body = '{"to_clusters": "localhost", "mtime": "20200219T052341.602167606", "atime": "20200503T193742.142436504", "mode": "644", "pubTime": "20200504T010014.301291943", "baseUrl": "http://localhost:8090", "relPath": "/20200105/WXO-DD/meteocode/atl/csv/2020-01-05T03-00-01Z_FPHX14_r20zf_WG.csv", "integrity": {"method": "sha512", "value": "bu9QBxNCqIJ+of4He6G5eTAIYptTlHRK6Hp1G3ILeg5+U2lu8Y9S4JXmiuTsxUCgvGrERculuzN4\n49q7cb1wJg=="}, "size": 410} '
+
+p=TMPC( cfg.post_broker, logger, cd, get=False)
+
+p.putNewMessage( 'v03.post.20200105.WXO-DD.meteocode.atl', None, body )
+
+
