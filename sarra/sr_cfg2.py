@@ -55,7 +55,7 @@ class sr_cfg2:
    logger = None
    credentials = None
 
-   def __init__(self,logger,user_config_dir,parent=None):
+   def __init__(self,logger,parent=None, appdir_stuff={ 'appauthor':'science.gc.ca', 'appname':'sarra' }):
 
        self.bindings =  []
        self.__broker = None
@@ -64,8 +64,10 @@ class sr_cfg2:
 
        if sr_cfg2.credentials is None:
           sr_cfg2.credentials=sr_credentials(sr_cfg2.logger)
-          sr_cfg2.credentials.read( user_config_dir + os.sep + "credentials.conf" )
-
+          sr_cfg2.credentials.read( 
+              appdirs.user_config_dir( appdir_stuff['appname'], 
+                                       appdir_stuff['appauthor']  ) 
+              + os.sep + "credentials.conf" )
        # FIXME... Linux only for now, no appdirs
        self.directory = None
 
@@ -378,7 +380,7 @@ class sr_cfg2:
 
         self.merge(args)
 
-def one_config( component, config, logger, overrides=None, appdir_stuff={ 'vendor':'science.gc.ca', 'appname':'sarra' } ):
+def one_config( component, config, logger, overrides=None, appdir_stuff={ 'appauthor':'science.gc.ca', 'appname':'sarra' } ):
 
     """
       single call return a fully parsed single configuration for a single component to run.
@@ -392,8 +394,8 @@ def one_config( component, config, logger, overrides=None, appdir_stuff={ 'vendo
 
       appdir_stuff can be to override file locations for testing during development.
     """
-    default_cfg_dir = appdirs.user_config_dir( appdir_stuff['appname'], appdir_stuff['vendor']  )
-    default_cfg = sr_cfg2( logger, default_cfg_dir ) 
+    default_cfg_dir = appdirs.user_config_dir( appdir_stuff['appname'], appdir_stuff['appauthor']  )
+    default_cfg = sr_cfg2( logger, parent=None, appdir_stuff=appdir_stuff )
     default_cfg.appdir_stuff = appdir_stuff 
 
     if overrides:
@@ -420,7 +422,7 @@ def one_config( component, config, logger, overrides=None, appdir_stuff={ 'vendo
     if ( component in [ 'report', 'sarra', 'sender', 'shovel', 'subscribe', 'winnow' ] ) :
          # a consuming component.
        
-         queuefile = appdirs.user_cache_dir( appdir_stuff['appname'], appdir_stuff['vendor']  )
+         queuefile = appdirs.user_cache_dir( appdir_stuff['appname'], appdir_stuff['appauthor']  )
          queuefile += os.sep + component + os.sep + config[0:-5] 
          queuefile += os.sep + 'sr_' + component + '.' + config + '.' + cfg.broker.username 
          if hasattr(cfg,'exchange_split') and hasattr(cfg,'no') and ( cfg.no > 0 ):

@@ -175,7 +175,7 @@ class sr_GlobalState:
         if not os.path.isdir(self.user_config_dir):
            return
         os.chdir(self.user_config_dir)
-        self.default_cfg = sr_cfg2(self.logger,self.user_config_dir)
+        self.default_cfg = sr_cfg2(self.logger, { 'appauthor':self.appauthor, 'appname':self.appname } )
         if os.path.exists( "default.conf" ):
             self.default_cfg.parse_file("default.conf")
         if os.path.exists( "admin.conf" ):
