@@ -5,10 +5,14 @@ Version 3 Refactor
 
 Abstract Goals:
 
-* absolute configuration compatibility (upward compatible.)
+* Absolute configuration compatibility (upward compatible.)
+  including all plugins.
 
 * multi-protocol support.
   ability to put in urls for mqtt, or different amqp libraries, perhaps others.
+
+* internally represent things in v03 messages, have something built
+  v02 ones for compatibility, but operate in v03.
 
 * less code, simpler code.
   more readable, elegant, pythonic code.
@@ -21,8 +25,10 @@ goals of opportunity:
 
   * add stuff to make it work as an API?
   * Finish off log rotation.
-
-
+  * Assume python >= 3.4 remove old cruft.
+  * Assume ubuntu >= 18.04 remove old cruft.
+  * Assume systemd, remove sysv integration.
+ 
 Uknowns
 -------
 
@@ -50,6 +56,8 @@ more idiomatic::
 
 What makes more sense... Does it make any practical difference?
 
+
+
 Concrete Plan
 -------------
 
@@ -60,3 +68,30 @@ and a simpler model for config file parsing.
 HMPC - Topic Message Protocol Client... a generalization of the message
 passing library with a simplified API.  abstracts the protocol differences
 away.
+
+
+Progress
+--------
+
+sr_amqp.py is completely replaced by HMPC. All the important logic is preserved,
+but it is transcribed into new classes. Should have identical failure
+recovery behaviour. This is working in a demo form. To reproduce,
+fire up sr_insects, run setup. and the configurations will be installed.
+
+
+sr_cfg2.py is still a stub, it has a lot of features and options, but
+it isn't clear how to expand it to all of them. the thing about instances
+inheriting from configure... it is odd, but hard to see how changing that
+will not break everything, plugin-wise... thinking about having defaults
+distributed to the classes that use the settings, and having something
+that brings them together, instead of one massive config thing.
+
+Thinking about replacing sr_consumer with a new class that implements the
+General Algorithm describe in `Concepts <Concepts.rst#the-general-algorithm>`
+
+Thinking about just removing the sr_ prefix from classes for replacements,
+since they are in sarra directory anyways. so have an internal class 
+sarra/instances, sarra/sarra <- replace consumer...
+
+
+
