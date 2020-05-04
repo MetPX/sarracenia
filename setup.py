@@ -21,6 +21,7 @@ print("packages = %s" % packages)
 
 setup(
     name='metpx-sarracenia',
+    python_requires='>3.4',
     version=sarra.__version__,
     description='Subscribe, Acquire, and Re-Advertise products.',
     long_description=(read('README.rst') + '\n\n' +

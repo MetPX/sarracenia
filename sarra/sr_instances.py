@@ -36,12 +36,6 @@ import logging,os,psutil,signal,subprocess,sys
 from sys import platform as _platform
 from pathlib import PureWindowsPath
 
-if sys.hexversion > 0x03030000 :
-   from shutil import copyfile,get_terminal_size
-   py2old=False
-else: 
-   py2old=True 
-
 try :
          from sr_config      import *
          from sr_util        import *
@@ -374,7 +368,7 @@ class sr_instances(sr_config):
 
         # add
 
-        if   action == 'add' and not py2old:
+        if   action == 'add' :
              if not os.path.isdir(def_dir):
                 try    : os.makedirs(def_dir, 0o775,True)
                 except : pass
