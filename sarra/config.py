@@ -50,7 +50,7 @@ class AddBinding(argparse.Action):
 
         namespace.bindings.append( ( namespace.topic_prefix, namespace.exchange, values ) )
 
-class sr_cfg2:
+class Config:
 
    logger = None
    credentials = None
@@ -60,11 +60,11 @@ class sr_cfg2:
        self.bindings =  []
        self.__broker = None
        self.__post_broker = None
-       sr_cfg2.logger = logger
+       Config.logger = logger
 
-       if sr_cfg2.credentials is None:
-          sr_cfg2.credentials=sr_credentials(sr_cfg2.logger)
-          sr_cfg2.credentials.read( 
+       if Config.credentials is None:
+          Config.credentials=sr_credentials(Config.logger)
+          Config.credentials.read( 
               appdirs.user_config_dir( appdir_stuff['appname'], 
                                        appdir_stuff['appauthor']  ) 
               + os.sep + "credentials.conf" )
@@ -90,7 +90,7 @@ class sr_cfg2:
 
    def _validate_urlstr(self,urlstr):
        # check url and add credentials if needed from credential file
-       ok, details = sr_cfg2.credentials.get(urlstr)
+       ok, details = Config.credentials.get(urlstr)
        if details == None :
            self.logger.error("bad credential %s" % urlstr)
            return False, urllib.parse.urlparse(urlstr)
@@ -390,12 +390,12 @@ def one_config( component, config, logger, overrides=None, appdir_stuff={ 'appau
       apply component default overrides ( maps to: component/check ?)
       read in component/config.conf
       parse arguments from command line.
-      return sr_cfg2 instance item.
+      return config instance item.
 
       appdir_stuff can be to override file locations for testing during development.
     """
     default_cfg_dir = appdirs.user_config_dir( appdir_stuff['appname'], appdir_stuff['appauthor']  )
-    default_cfg = sr_cfg2( logger, parent=None, appdir_stuff=appdir_stuff )
+    default_cfg = Config( logger, parent=None, appdir_stuff=appdir_stuff )
     default_cfg.appdir_stuff = appdir_stuff 
 
     if overrides:

@@ -18,7 +18,7 @@ import time
 import sys
 
 import appdirs
-from sarra.sr_cfg2 import one_config
+from sarra.config import one_config
 
 from urllib.parse import urlparse,urlunparse
 

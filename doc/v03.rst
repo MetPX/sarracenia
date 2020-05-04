@@ -32,6 +32,16 @@ goals of opportunity:
 Uknowns
 -------
 
+Things that are not clear at the outset.
+
+
+Ship of Theseus
+~~~~~~~~~~~~~~~
+
+It might be that the re-factoring inherent in v03 results in a 
+Ship of Theseus, where it works the same way as v02, but all
+the parts are different... obviously a concern/risk... 
+might be a feature.
 
 Dictionaries or Members for Properties?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -55,7 +65,8 @@ more idiomatic::
    hasattr(cfg,'member') vs. 'member' in cfg (dictionary)
 
 What makes more sense... Does it make any practical difference?
-
+not sure... need to keep the members for places where
+plugins are called, but can use properties elsewhere, if desired.
 
 
 Concrete Plan
