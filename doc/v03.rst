@@ -1,0 +1,62 @@
+
+==================
+Version 3 Refactor
+==================
+
+Abstract Goals:
+
+* absolute configuration compatibility (upward compatible.)
+
+* multi-protocol support.
+  ability to put in urls for mqtt, or different amqp libraries, perhaps others.
+
+* less code, simpler code.
+  more readable, elegant, pythonic code.
+  make maintenance easier. 
+
+while you're at it
+------------------
+
+goals of opportunity:
+
+  * add stuff to make it work as an API?
+  * Finish off log rotation.
+
+
+Uknowns
+-------
+
+
+Dictionaries or Members for Properties?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There seems to be a tension between using class members and dictionaries
+for settings.  members seem more convenient, but harder to manipulate,
+though we have equivalent idioms. Argparse returns options as their own
+members of this parsing object.  There is a hierarchy to reconcile:
+
+* protocol defaults
+* consumer defaults
+* component defaults
+* configuration settings (overrides)
+* command line options (overrides)
+
+resolving them to apply overrides, mais more sense as operations
+on dictionaries, printing, saving loading, again makes more sense
+as dictionaries.  In code, members are slightly shorter, and perhaps
+more idiomatic:: 
+
+   hasattr(cfg,'member') vs. 'member' in cfg (dictionary)
+
+What makes more sense... Does it make any practical difference?
+
+Concrete Plan
+-------------
+
+replace sarra/sr_config with sarra/sr_cfg2. The new sr_cfg2 uses argparse 
+and a simpler model for config file parsing.
+
+
+HMPC - Topic Message Protocol Client... a generalization of the message
+passing library with a simplified API.  abstracts the protocol differences
+away.
