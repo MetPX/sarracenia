@@ -64,9 +64,6 @@ class AMQP(TMPC):
            return
         else: # publisher...
            self.__putSetup()
-           #FIXME... not sure what to do about this...
-           #self.publisher = Publisher(self.post_hc)
-
 
     def __connect(self,broker):
         """
@@ -108,7 +105,7 @@ class AMQP(TMPC):
                 # from sr_consumer.build_connection...
                 self.__connect(self.broker)
 
-                self.logger.debug('getSetup ... 1. connected')
+                self.logger.debug('getSetup ... 1. connected to {}'.format(self.props['broker'].hostname) )
 
                 if self.props['prefetch'] != 0 :
                     self.channel.basic_qos( 0, self.props['prefetch'], True )
@@ -118,7 +115,7 @@ class AMQP(TMPC):
                 # from Queue declare
                 if self.props['declare']:
 
-                    self.logger.debug('getSetup ... 1. declaring')
+                    self.logger.debug('getSetup ... 1. declaring {} '.format(self.props['queue_name'] ) )
                     args={}
                     if self.props['expire']:
                         x = int(durationToSeconds(self.props['expire']) * 1000)
@@ -169,19 +166,19 @@ class AMQP(TMPC):
             # tear the whole thing down, and start over.
             try:
                 # from sr_consumer.build_connection...
-                self.__connect(self.props['post_broker'])
+                self.__connect(self.props['broker'])
 
                 # transaction mode... confirms would be better...
                 self.channel.tx_select()
 
-                self.logger.debug('putSetup ... 1. connected')
+                self.logger.debug('putSetup ... 1. connected to {}'.format(self.props['broker'].hostname ) )
 
                 if self.props['declare']:
 
-                    self.logger.debug('putSetup ... 1. declaring')
+                    self.logger.debug('putSetup ... 1. declaring {}'.format(self.props['exchange']) )
                     
                     self.channel.exchange_declare(
-                        self.props['post_exchange'], 'topic',
+                        self.props['exchange'], 'topic',
                         auto_delete=self.props['auto_delete'], durable=self.props['durable']  )
 
                     self.mttl='0'
@@ -194,7 +191,7 @@ class AMQP(TMPC):
 
             except Exception as err:
                 self.logger.error("AMQP putSetup failed to {} with {}".format( 
-                    self.props['post_broker'].hostname, err) )
+                    self.props['broker'].hostname, err) )
                 self.logger.debug('Exception details: ', exc_info=True)
 
             if not self.props['message_strategy']['stubborn']: return
@@ -242,7 +239,7 @@ class AMQP(TMPC):
             self.logger.info("Sleeping {} seconds ...".format( ebo) )
             time.sleep(ebo)
 
-    def putNewMessage(self, topic, headers, body, exchange=None ):
+    def putNewMessage(self, topic, body, headers=None, content_type='application/json', exchange=None ):
         """
         put a new message out, to the configured exchange by default.
         """
@@ -253,21 +250,16 @@ class AMQP(TMPC):
         ebo=1
         while True:
             try:
-                if topic.startswith('v03'):
-                    ct='application/json'
-                else:
-                    ct='text/plain'
-                
                 if not exchange :
-                    exchange=self.props['post_exchange']
+                    exchange=self.props['exchange']
 
-                AMQP_Message = amqp.Message(body, content_type=ct, 
+                AMQP_Message = amqp.Message(body, content_type=content_type, 
                      application_headers=headers, expiration=self.mttl)
 
                 self.channel.basic_publish( AMQP_Message, exchange, topic ) 
 
                 self.channel.tx_commit()
-                self.logger.info("published {}".format(body ) )
+                self.logger.info("published {} to {} ".format(body, exchange) )
                 return # no failure == success :-)
 
             except Exception as err:

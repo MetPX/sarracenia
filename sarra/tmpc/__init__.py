@@ -1,11 +1,10 @@
 
 """
-  TMPC ... a Hierarchical Multi-Message Protocol client library...
+  TMPC ... a Topic-message Multi-Protocol client library...
 
-  A multi-protocol library for use by hierarchical message passing implementations.
-  clients use JSON for the message body. The JSON body will have "topic" inserted
-  into it by the library, to avoid creating a metadata wrapper.
-
+  A multi-protocol library for use by hierarchical message passing implementations,
+  (messages which have a 'topic' header that is used for routing by brokers.)
+ 
   intent is to be specialized for topic based data distribution (MQTT style.)
   API to allow pass-through of protocol specific properties, but apply templates for genericity.
 
@@ -17,18 +16,20 @@
         subTopic  
         id   (queue for amqp, id for mqtt)
 
+  this library knows nothing about Sarracenia, the only code used from sarra is to interpret
+  duration properties, from sr_util.
   
   usage:
-     c= hmm( broker, True, '5m', { 'batch':1 } )
+     c= TMPC( broker, True, '5m', { 'batch':1 } )
 
-     c.get_new_message()
+     c.getNewMessage()()
        - if there is a new message, from a publisher, return it, otherwise return None.
        
-     p= hmm( broker, True, '5m', { 'batch':1 } )
+     p=TMPC( broker, True, '5m', { 'batch':1 } )
      p.post_new_message()
+
      p.close()
        - tear down connection.     
-
 
 """
 import copy
@@ -107,7 +108,7 @@ class TMPC():
        for get:
            'batch'  : 100  # how many messages to get at once
            'broker' : an sr_broker ?
-           'Queue'  : Mandatory, name of a queue.
+           'Queue'  : Mandatory, name of a queue. (only in AMQP... hmm...)
            'bindings' : [ list of bindings ]
 
            'loop'
@@ -115,6 +116,7 @@ class TMPC():
            'message_ttl'    
 
        for put:
+           'exchange' (only in AMQP... hmm...)
        
 
        """
@@ -123,6 +125,7 @@ class TMPC():
        self.props = copy.deepcopy(TMPC.__default_properties)
        self.props_args = props
        self.broker = broker
+
        self.logger = logger
        protos=[]
        """ relevant:
@@ -170,7 +173,7 @@ class TMPC():
           tell broker that a given message has been received.
         """ 
 
-    def putNewMessage( self, props, body ):
+    def putNewMessage( self, topic, body, headers, content_type ):
         """
            publish a message as set up to the given topic.
         """
