@@ -796,6 +796,21 @@ or not.
 This filtering requires implementation of a local dataless pump with 
 sr_winnow. See the Administrator Guide for more information.
 
+Web Proxies
+-----------
+
+The best method of working with web proxies is to put the following
+in the default.conf::
+
+   declare env HTTP_PROXY http://yourproxy.com
+   declare env HTTPS_PROXY http://yourproxy.com
+
+Putting in default.conf ensures that all subscribers will use
+the proxy, not just a single configuration. 
+
+
+
+
 More Information
 ----------------
 

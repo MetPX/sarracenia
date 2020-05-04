@@ -613,6 +613,19 @@ serveurs sont souvent configurés pour fournir des services. L'approche de Sarra
 Ce filtrage nécessite la mise en œuvre d'une pompe locale sans données avec
 sr_winnow. Consultez le Guide de l'administrateur pour plus d'informations.
 
+Proxy Web
+---------
+
+Afin de se servir d'un proxy web, la méthode préconisé sera de rajouté
+cela dans le *default.conf*::
+
+   declare env HTTP_PROXY http://yourproxy.com
+   declare env HTTPS_PROXY http://yourproxy.com
+
+En le mettant là, tout les abonnements vont s´en servir.
+
+
+
 Plus d'informations
 -------------------
 
