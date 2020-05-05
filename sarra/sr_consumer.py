@@ -322,19 +322,6 @@ class sr_consumer:
 
         self.queuepath = self.parent.user_cache_dir + os.sep + queuefile + '.qname'
 
-        # ====================================================
-        # FIXME get rid of this code in 2018 (after release 2.17.11a1)
-        # transition old queuepath to new queuepath...
-
-        self.old_queuepath = self.parent.user_cache_dir + os.sep + queuefile
-        if os.path.isfile(self.old_queuepath) and not os.path.isfile(self.queuepath) :
-           # hardlink (copy of old)
-           os.link(self.old_queuepath,self.queuepath)
-           # during the transition both should be available is we go back
-
-        # get rid up to the next line
-        # ====================================================
-
         if os.path.isfile(self.queuepath) :
            f = open(self.queuepath)
            self.queue_name = f.read()

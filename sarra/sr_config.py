@@ -68,11 +68,7 @@ except ImportError:
    pika_available = False
 # ==========================================
 
-if sys.hexversion > 0x03030000:
-   from shutil import get_terminal_size
-   py2old=False
-else: 
-   py2old=True 
+from shutil import get_terminal_size
 
 
 class StdFileLogWrapper(io.TextIOWrapper):
@@ -2756,10 +2752,8 @@ class sr_config:
     def print_configdir(self,prefix,configdir):
 
         print("\n%s: ( %s )" % (prefix,configdir))
-        if py2old: columns=80
-        else:
-                   term = get_terminal_size((80,20))
-                   columns=term.columns
+        term = get_terminal_size((80,20))
+        columns=term.columns
 
         i=0
         if not os.path.isdir(configdir): 

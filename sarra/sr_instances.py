@@ -80,108 +80,8 @@ class sr_instances(sr_config):
         self.retry_path    = self.user_cache_dir + os.sep + self.instance_name + '.retry'
         self.save_path     = self.user_cache_dir + os.sep + self.instance_name + '.save'
 
-        # ===
-        # MG conversion from 4 to 2 digits instance name
-        # get rid of these 3 lines in 2019 :-)
-        self.build_path(i)
-        self.old_path      = False
-        self.build_old_path(i)
-        # ===
-
         self.isrunning     = False
         self.pid           = self.file_get_int(self.pidfile)
-
-    # ===
-    # MG conversion from 4 to 2 digits instance name
-    # get rid of this module in 2019 :-)
-    def build_path(self,i):
-        self.logger.debug( "sr_instances build_path instance %d" % i)
-        self.instance      = i
-        self.instance_name = self.basic_name + '_%.2d' % i
-
-        self.instance_str  = self.program_name
-        if self.config_name: self.instance_str += ' ' + self.config_name + ' %.2d' % i
-
-        self.pidfile       = self.user_cache_dir + os.sep + self.instance_name + '.pid'
-        self.logpath       = self.user_log_dir   + os.sep + self.instance_name + '.log'
-        self.retry_path    = self.user_cache_dir + os.sep + self.instance_name + '.retry'
-        self.save_path     = self.user_cache_dir + os.sep + self.instance_name + '.save'
-
-    # ===
-    # MG conversion from 4 to 2 digits instance name
-    # get rid of this module in 2019 :-)
-    def build_old_path(self,i):
-        self.logger.debug( "sr_instances build_old_path instance %d" % i)
-        self.old_instance_name = self.basic_name + '_%.4d' % i
-
-        self.old_instance_str  = self.program_name
-        if self.config_name: self.old_instance_str += ' ' + self.config_name + ' %.4d' % i
-
-        self.old_pidfile       = self.user_cache_dir + os.sep + self.old_instance_name + '.pid'
-        self.old_logpath       = self.user_log_dir   + os.sep + self.old_instance_name + '.log'
-        self.old_retry_path    = self.user_cache_dir + os.sep + self.old_instance_name + '.retry'
-        self.old_save_path     = self.user_cache_dir + os.sep + self.old_instance_name + '.save'
-
-        # running the old style
-        if os.path.exists(self.old_logpath):
-           self.logger.debug( "sr_instances build_old_path running old style %d" % i)
-           self.old_path      = True
-           self.instance_name = self.old_instance_name
-           self.instance_str  = self.old_instance_str
-           self.pidfile       = self.old_pidfile
-           self.logpath       = self.old_logpath
-           self.retry_path    = self.old_retry_path
-           self.save_path     = self.old_save_path
-
-    # ===
-    # MG conversion from 4 to 2 digits instance name
-    # get rid of this module in 2019 :-)
-    def build_path_migration(self,i):
-        self.logger.debug( "sr_instances build_path_migration %d" % i)
-
-        # already converted
-        if not self.old_path : return
-
-        # set new path
-        self.build_path(i)
-
-        # migrate each file...
-
-        # should never happened for pidfile since we migrate on start
-
-        if not os.path.exists(self.pidfile) :
-           if os.path.exists(self.old_pidfile) :
-              os.rename(self.old_pidfile,self.pidfile)
-
-        # we dont check existance of new log because the startup already wrote in it.
-        if os.path.exists(self.old_logpath) :
-           os.rename(self.old_logpath,self.logpath)
-
-        if not os.path.exists(self.save_path) :
-           if os.path.exists(self.old_save_path) :
-              os.rename(self.old_save_path,self.save_path)
-
-        if not os.path.exists(self.retry_path) :
-           if os.path.exists(self.old_retry_path) :
-              os.rename(self.old_retry_path,self.retry_path)
-
-        if not os.path.exists(self.retry_path+'.heart') :
-           if os.path.exists(self.old_retry_path+'.heart') :
-              os.rename(self.old_retry_path+'.heart',self.retry_path+'.heart')
-
-        if not os.path.exists(self.retry_path+'.new') :
-           if os.path.exists(self.old_retry_path+'.new') :
-              os.rename(self.old_retry_path+'.new',self.retry_path+'.new')
-
-        if not os.path.exists(self.retry_path+'.state') :
-           if os.path.exists(self.old_retry_path+'.state') :
-              os.rename(self.old_retry_path+'.state',self.retry_path+'.state')
-
-        if not os.path.exists(self.retry_path+'.work') :
-           if os.path.exists(self.old_retry_path+'.work') :
-              os.rename(self.old_retry_path+'.work',self.retry_path+'.work')
-
-        self.logger.info("instance string converted")
 
 
     def cleanup_parent(self,log_cleanup=False):
@@ -712,14 +612,6 @@ class sr_instances(sr_config):
         if self.user_config != None : cmd.append(self.user_config)
      
         self.logger.info("%s starting" % self.instance_str)
-
-        # ===
-        # MG conversion from 4 to 2 digits instance name
-        # get rid of these 3 lines in 2019 :-)
-        if os.path.exists(self.old_logpath):
-           self.old_path      = True
-           self.build_path_migration(self.instance)
-        # ===
 
         self.logger.debug("cmd = %s" % cmd)
         # FIXME: at around 3.4, https://docs.python.org/3/library/os.html#fd-inheritance
