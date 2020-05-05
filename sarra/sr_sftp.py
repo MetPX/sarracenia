@@ -35,10 +35,7 @@ import logging, paramiko, os,sys,time
 from   paramiko import *
 from   stat     import *
 
-try :
-         from sr_util            import *
-except :
-         from sarra.sr_util      import *
+from sarra.sr_util      import *
 
 #============================================================
 # sftp protocol in sarracenia supports/uses :

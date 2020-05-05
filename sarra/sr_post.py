@@ -52,22 +52,13 @@ from watchdog.observers         import Observer
 from watchdog.observers.polling import PollingObserver
 from watchdog.events            import PatternMatchingEventHandler
 
-try :    
-         from sr_amqp            import *
-         from sr_cache           import *
-         from sr_instances       import *
-         from sr_message         import *
-         from sr_rabbit          import *
-         from sr_util            import *
-         from sr_xattr import *
-except : 
-         from sarra.sr_xattr import *
-         from sarra.sr_amqp      import *
-         from sarra.sr_cache     import *
-         from sarra.sr_instances import *
-         from sarra.sr_message   import *
-         from sarra.sr_rabbit    import *
-         from sarra.sr_util      import *
+from sarra.sr_xattr import *
+from sarra.sr_amqp      import *
+from sarra.sr_cache     import *
+from sarra.sr_instances import *
+from sarra.sr_message   import *
+from sarra.sr_rabbit    import *
+from sarra.sr_util      import *
 
 #============================================================
 

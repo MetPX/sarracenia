@@ -21,13 +21,8 @@ import appdirs
 
 from random import randint
 
-try :
-   from sr_util        import *
-   from sr_credentials import *
-
-except :
-   from sarra.sr_util        import *
-   from sarra.sr_credentials import *
+from sarra.sr_util        import *
+from sarra.sr_credentials import *
 
 
 
@@ -40,6 +35,9 @@ except :
 """
 
 class AddBinding(argparse.Action):
+    """
+    called by argparse to deal with queue bindings.
+    """
     def __call__(self, parser, namespace, values, option_string):
 
         if not hasattr(namespace,'exchange'):

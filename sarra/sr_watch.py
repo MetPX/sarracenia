@@ -37,10 +37,7 @@
 #
 #============================================================
 
-try :    
-         from sr_post            import *
-except : 
-         from sarra.sr_post      import *
+from sarra.sr_post      import *
 
 class sr_watch(sr_post):
 

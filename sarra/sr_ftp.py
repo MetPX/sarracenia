@@ -33,10 +33,7 @@
 
 import ftplib,os,sys,time
 
-try :
-         from sr_util            import *
-except :
-         from sarra.sr_util      import *
+from sarra.sr_util      import *
 
 #============================================================
 # ftp protocol in sarracenia supports/uses :

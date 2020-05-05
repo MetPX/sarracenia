@@ -34,10 +34,7 @@
 
 import os, urllib.request, urllib.error, ssl, sys
 
-try :
-         from sr_util            import *
-except :
-         from sarra.sr_util      import *
+from sarra.sr_util      import *
 
 #============================================================
 # http protocol in sarracenia supports/uses :

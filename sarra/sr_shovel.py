@@ -56,10 +56,7 @@
 #============================================================
 #
 
-try :    
-         from sr_subscribe      import *
-except : 
-         from sarra.sr_subscribe import *
+from sarra.sr_subscribe import *
 
 class sr_shovel(sr_subscribe):
 

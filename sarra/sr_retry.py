@@ -32,12 +32,8 @@
 import os,json,sys,time
 from _codecs import decode, encode
 
-try :
-         from sr_config          import *
-         from sr_util            import *
-except :
-         from sarra.sr_config    import *
-         from sarra.sr_util      import *
+from sarra.sr_config    import *
+from sarra.sr_util      import *
 
 # class sr_retry
 

@@ -44,16 +44,10 @@ import appdirs
 
 from logging import handlers
 
-try :
-   from sr_checksum          import *
-   from sr_credentials       import *
-   from sr_util              import *
-   from sr_xattr             import *
-except :
-   from sarra.sr_checksum    import *
-   from sarra.sr_credentials import *
-   from sarra.sr_util        import *
-   from sarra.sr_xattr       import *
+from sarra.sr_checksum    import *
+from sarra.sr_credentials import *
+from sarra.sr_util        import *
+from sarra.sr_xattr       import *
 
 # ======= amqp alternative libraries =======
 try:
