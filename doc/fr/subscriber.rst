@@ -616,13 +616,12 @@ sr_winnow. Consultez le Guide de l'administrateur pour plus d'informations.
 Proxy Web
 ---------
 
-Afin de se servir d'un proxy web, la méthode préconisé sera de rajouté
-cela dans le *default.conf*::
+Afin de se servir d'un proxy web, la méthode préconisée est de rajouter dans le *default.conf*, les déclarations suivantes:
 
    declare env HTTP_PROXY http://yourproxy.com
    declare env HTTPS_PROXY http://yourproxy.com
 
-En le mettant là, tout les abonnements vont s´en servir.
+En procédant ainsi, tous les abonnés vont se servir du proxy et non uniquement une configuration spécifique.
 
 
 
