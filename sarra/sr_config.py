@@ -165,37 +165,6 @@ class sr_config:
         self.user_plugins_dir = self.user_config_dir + '/plugins'
         self.http_dir         = self.user_config_dir + '/Downloads'
 
-        # umask change for directory creation and chmod
-        # 2017/06/20- FIXME commenting this out, because it seems wrong!... why override umask?
-        #try    : os.umask(0)
-        #except : pass
-
-        # FIXME:
-        # before 2.16.08x sr_log was a comment (that became sr_report). so the log directory was needed
-        # to store configuration states.  The actual log file directory was moved under 'var/' to put
-        # it out of the way.  in newer versions, the state directory for sr_report became 'reports',
-        # so it is possible to have log used for the normal purpose.
-        #
-        # For existing configurations, if ~/.cache/sarra/var/log exists, move it to ~/.cache/sarra/log
-        # so everything still works, move the old var out of the way (to var.old.)
-        # and create var as a symbolic link to '.' so that var/log still works.
-        # this code should be removed once all users are past the transition.
-        #
-        var = appdirs.user_cache_dir(self.appname,self.appauthor) + "/var"
-        if os.path.isdir( var ) and not os.path.islink( var ):
-              print("sr_config __init__ migrating logs to new location (without 'var')")
-              if os.path.isdir( self.user_log_dir ): 
-                 print("sr_config __init__ moving old sr_log state directory out of the way to .old")
-                 os.rename( self.user_log_dir, self.user_log_dir.replace("/log", "/log.old" ))            
-              print("sr_config __init__ moving old log file directory the new location %s " % self.user_log_dir )
-              shutil.move( self.user_old_log_dir, self.user_log_dir)
-              print("sr_config __init__ moving old var directory out of the way to %s.old" % ( var ) )
-              os.rename( var, var + ".old" )
-              if sys.platform != 'win32' :
-                 print("sr_config __init__ create var symlink so no scripts need to be change for now. ")
-                 os.symlink( "." , var )
-
-
         try: 
             os.makedirs(self.user_config_dir, 0o775,True)
         except Exception as ex:
@@ -313,10 +282,7 @@ class sr_config:
 
 
     def xcl( self, x ):
-        if sys.hexversion > 0x03030000 :
-            return x.__qualname__.split('.')[0] + ' '
-        else:
-            return x.__name__ + ' '
+        return x.__qualname__.split('.')[0] + ' '
 
     def log_settings(self):
 
