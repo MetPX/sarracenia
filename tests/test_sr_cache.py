@@ -511,15 +511,15 @@ class CacheBasis(Enum):
 
 
 def suite():
-    """ Create the test suite that include all sr_amqp test cases
+    """ Create the test suite that include all sr_cache test cases
 
-    :return: sr_amqp test suite
+    :return: sr_cache test suite
     """
     sr_amqp_suite = unittest.TestSuite()
     sr_amqp_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SrCacheCase))
     return sr_amqp_suite
 
 
-if __name__ == 'main':
+if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     runner.run(suite())

@@ -1145,6 +1145,6 @@ def suite():
     return sr_amqp_suite
 
 
-if __name__ == 'main':
+if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     runner.run(suite())
