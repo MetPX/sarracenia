@@ -175,15 +175,15 @@ class sr_GlobalState:
                 p['cmdline'] = l[10:]
                 p['name'] = l[10]
                 self._filter_sr_proc(p)
-                if pcount % 100 == 0 : print( '.', end='', flush=True )
+                # so fast no longer worth printing for...
+                #if pcount % 100 == 0 : print( '.', end='', flush=True )
         else:
             for proc in psutil.process_iter( ['pid','cmdline','name', 'username' ] ):
                 p = proc.as_dict()
                 self._filter_sr_proc(p)
                 pcount += 1
                 if pcount % 100 == 0 : print( '.', end='', flush=True )
-
-        print(' Done reading %d procs!' % pcount , flush=True )
+                print(' Done reading %d procs!' % pcount , flush=True )
 
     def _read_configs(self):
         # read in configurations.
@@ -659,7 +659,7 @@ class sr_GlobalState:
  
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
 
-        print('gathering global state: ', flush=True)
+        #print('gathering global state: ', flush=True)
 
         pf=self.user_cache_dir + os.sep + "procs.json"
         if os.path.exists( pf ) :
@@ -667,16 +667,16 @@ class sr_GlobalState:
         else:
             self._read_procs()
 
-        print('procs, ', end='', flush=True)
+        #print('procs, ', end='', flush=True)
         self._read_configs()
-        print('got configs from %s' % self.user_config_dir, flush=True)
+        #print('got configs from %s' % self.user_config_dir, flush=True)
         self._read_states()
-        print('got state files from %s, ' % self.user_cache_dir , flush=True)
+        #print('got state files from %s, ' % self.user_cache_dir , flush=True)
         self._read_logs()
-        print('logs, ', end='', flush=True)
+        #print('logs, ', end='', flush=True)
         self._resolve()
         self._find_missing_instances()
-        print('analysis - Done. ', flush=True)
+        #print('analysis - Done. ', flush=True)
 
     def _start_missing(self):
         for instance in self.missing:
