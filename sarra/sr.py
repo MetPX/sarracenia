@@ -114,11 +114,9 @@ class sr_GlobalState:
             f.seek(0,0)
             f.truncate()
             f.write( getpass.getuser() + '\n' )
-            for proc in psutil.process_iter():
-                p = proc.as_dict()
-                del p['environ']
+            for proc in psutil.process_iter( ['pid','cmdline','name', 'username' ] ):
+                p = proc.info
                 pj = json.dumps(p,ensure_ascii=False)
-                #print( 'writing pj=+%s+' % pj )
                 f.write(pj +'\n')
             
     def _filter_sr_proc(self,p):
@@ -161,29 +159,8 @@ class sr_GlobalState:
         self.procs = {}
         self.me = getpass.getuser()
         self.auditors = 0
-        pcount = 0
-        if platform.system() == 'Linux':
-            # on busy Linux servers, running ps is > 200x faster than psutil
-            # bug report opened: https://github.com/giampaolo/psutil/issues/1751
-            psproc = subprocess.run( [ '/bin/ps', '-ux' ],  capture_output=True )
-            for psline in psproc.stdout.decode().splitlines():
-                l = psline.split()
-                if l[1] == 'PID' : continue
-                p = {}
-                p['username'] = l[0]
-                p['pid'] = int(l[1])
-                p['cmdline'] = l[10:]
-                p['name'] = l[10]
-                self._filter_sr_proc(p)
-                # so fast no longer worth printing for...
-                #if pcount % 100 == 0 : print( '.', end='', flush=True )
-        else:
-            for proc in psutil.process_iter( ['pid','cmdline','name', 'username' ] ):
-                p = proc.as_dict()
-                self._filter_sr_proc(p)
-                pcount += 1
-                if pcount % 100 == 0 : print( '.', end='', flush=True )
-                print(' Done reading %d procs!' % pcount , flush=True )
+        for proc in psutil.process_iter( ['pid','cmdline','name', 'username' ] ):
+            self._filter_sr_proc(proc.info)
 
     def _read_configs(self):
         # read in configurations.
