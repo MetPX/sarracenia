@@ -28,13 +28,14 @@ import logging
 import os
 import os.path
 import pathlib
+import platform
 import psutil
 import re
+import shutil
 import signal
 import subprocess
 import sys
 import time
-import shutil
 
 try:
     from sr_cfg2 import *
@@ -161,11 +162,26 @@ class sr_GlobalState:
         self.me = getpass.getuser()
         self.auditors = 0
         pcount = 0
-        for proc in psutil.process_iter():
-            p = proc.as_dict()
-            self._filter_sr_proc(p)
-            pcount += 1 
-            if pcount % 100 == 0 : print( '.', end='', flush=True )
+        if platform.system() == 'Linux':
+            # on busy Linux servers, running ps is > 200x faster than psutil
+            # bug report opened: https://github.com/giampaolo/psutil/issues/1751
+            psproc = subprocess.run( [ '/bin/ps', '-ux' ],  capture_output=True )
+            for psline in psproc.stdout.decode().splitlines():
+                l = psline.split()
+                if l[1] == 'PID' : continue
+                p = {}
+                p['username'] = l[0]
+                p['pid'] = int(l[1])
+                p['cmdline'] = l[10:]
+                p['name'] = l[10]
+                self._filter_sr_proc(p)
+                if pcount % 100 == 0 : print( '.', end='', flush=True )
+        else:
+            for proc in psutil.process_iter( ['pid','cmdline','name', 'username' ] ):
+                p = proc.as_dict()
+                self._filter_sr_proc(p)
+                pcount += 1
+                if pcount % 100 == 0 : print( '.', end='', flush=True )
 
         print(' Done reading %d procs!' % pcount , flush=True )
 
