@@ -6,6 +6,11 @@ lists all changes between versions.
 
 **git repo**
 
+
+   * sr command now 200x faster ( #174, #315, #180, #187 )
+
+**2.20.04b3**
+
   * correct sr sanity to not kill foreground processes.
   * found circular reference issue with file rename. #66 and more recent cases.
   * #329 tls_rigour strict was broken. fixed.
