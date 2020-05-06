@@ -9,6 +9,7 @@
 # Documentation: https://github.com/MetPX/sarracenia
 #
 # sr_cache.py : python3 program generalise caching for sr programs
+# TODO documentation: caching for what purpose, motive or benefit ? based on what policy, model, algorithm ?
 #
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
@@ -43,13 +44,13 @@ import urllib.parse
 #              sum time path part
 #
 # cache_dict : {}  
-#              cache_dict[sum] = [ (time1,[path1,part1]),(time2,[path2,part2])...]
+#              cache_dict[sum] = {path1*part1: time1, path2*part2: time2, ...}
 #
-from sarra.sr_util import timestr2flt, timeflt2str, nowflt
+from sarra.sr_util import nowflt
 
 
 class sr_cache():
-
+    # TODO reformat this file (whitespaces and other PEP8...)
     def __init__(self, parent ):
         parent.logger.debug("sr_cache init")
 
@@ -69,6 +70,7 @@ class sr_cache():
         self.count         = 0
 
     def check(self, key, path, part):
+        # TODO in docstring: the write operation may raise OSError this is unhandled at this point
         self.logger.debug("sr_cache check basis=%s" % self.cache_basis )
 
         # not found 
@@ -77,6 +79,8 @@ class sr_cache():
         # set time and value
         now   = nowflt()
 
+        # TODO put cache basis possible strings in an enum to assure that those options come from a single shared
+        #  declaration and sr_cache controls possible options.
         if self.cache_basis == 'name':
             relpath = path.split('/')[-1]
         elif self.cache_basis == 'path':
@@ -84,11 +88,15 @@ class sr_cache():
         elif self.cache_basis == 'data':
             relpath = "data"
 
+        # FIXME Local variable 'relpath' might be referenced before assignment.
+        #  Why not use an else instead of last elif for declaring relpath there will always be those only 3 options
+        #  isnt it?
         qpath = urllib.parse.quote(relpath)
         value = '%s*%s' % (relpath,part)
 
         # new... add
-        if not key in self.cache_dict :
+        if key not in self.cache_dict :
+           # FIXME meaningless debug msg
            self.logger.debug("new")
            kdict = {}
            kdict[value] = now
@@ -108,7 +116,8 @@ class sr_cache():
         kdict[value] = now
 
         # differ or newer, write to file
-
+        # FIXME no mather what happens in the method those 2 lines will be called, and the write operation is the most
+        #  prone to fail (with unhandled ValueError, IOError) in this method, why not put it before the first check ?
         self.fp.write("%s %f %s %s\n"%(key,now,qpath,part))
         self.count += 1
 
@@ -119,21 +128,25 @@ class sr_cache():
            return False
 
         # if not present and not a part : it is a new entry
-
-        if part == None or not part[0] in "pi" :
+        if part is None or part[0] not in "pi" :
+           # FIXME meaningless debug msg
            self.logger.debug("differ")
            return True
 
         # if weird part ... its a new entry
-
+        # FIXME shouldn't we signal this weirdness here (raise exception, log error, not keeping in cache, ...)
         ptoken = part.split(',')
         if len(ptoken) < 4 :
+           # FIXME meaningless debug msg
            self.logger.debug("differ")
            return True
 
         # build a wiser dict value without
         # block_count and remainder (ptoken 2 and 3)
-
+        # FIXME the remainder of this method is wrong. It will trivially have a match because we just
+        #  added the entry in kdict, then we will always find the value and return false. It will not change
+        #  anything at all though. Worst, the cache hit will falsely indicate that we hit an old entry. Then,
+        #  partitioned files would be lost
         pvalue = value
         pvalue = pvalue.replace(','+ptoken[2],'',10)
         pvalue = pvalue.replace(','+ptoken[3],'',10)
@@ -143,6 +156,7 @@ class sr_cache():
 
         for value in kdict :
 
+            # TODO repeated code: consider extracting to a method
             kvalue = value
             kvalue = kvalue.replace(','+ptoken[2],'',10)
             kvalue = kvalue.replace(','+ptoken[3],'',10)
@@ -150,18 +164,24 @@ class sr_cache():
             # if we find the value... its in cache... its old
 
             if pvalue == kvalue :
+               # TODO understand in which circumstance this would happens ? when we would have the same checksum,
+               #  <method>, <bsz>, <bno>, but different <blktot> or <brem> and conclude we have the same value
+               #  and would it make a difference
                self.cache_hit = value
                return False
 
         # did not find it... its new
 
+        # FIXME meaningless debug msg
         self.logger.debug("differ")
 
         return True
 
     def check_msg(self, msg):
+        # TODO document in docstring: sr_cache may raise OSErrors this is unhandled at this point
         self.logger.debug("sr_cache check_msg")
 
+        # TODO repeated code: in sr_cache.check consider extracting to a method
         if self.cache_basis == 'name':
             relpath = msg.relpath.split('/')[-1]
         elif self.cache_basis == 'path':
@@ -177,7 +197,9 @@ class sr_cache():
 
         return self.check(sumstr,relpath,partstr)
 
-    def clean(self, fp = None, delpath = None):
+    def clean(self, fp=None, delpath=None):
+        # FIXME fp as arg make no sense: it is only called from self using self.fp, need to change to
+        #  boolean and call write from self.fp
         self.logger.debug("sr_cache clean")
 
         # create refreshed dict
@@ -186,7 +208,7 @@ class sr_cache():
         new_dict   = {}
         self.count = 0
 
-        if delpath != None:
+        if delpath is not None:
             qdelpath = urllib.parse.quote(delpath)
         else:
             qdelpath = None
@@ -212,7 +234,7 @@ class sr_cache():
                 ndict[value] = t
                 self.count  += 1
 
-                if fp : fp.write("%s %f %s %s\n"%(key,t,qpath,part))
+                if fp : fp.write("%s %f %s %s\n"%(key,t,qpath,part))  # TODO need justification: no try-except for a write
 
             if len(ndict) > 0 : new_dict[key] = ndict
 
@@ -224,12 +246,12 @@ class sr_cache():
         try   :
                 self.fp.flush()
                 self.fp.close()
-        except: pass
+        except: pass  # TODO need justification: why are we silently excepting io error ? this is a bare except
         self.fp = None
 
         if unlink:
            try   : os.unlink(self.cache_file)
-           except: pass
+           except: pass  # TODO need justification: why are we silently excepting io error ? this is a bare except
 
         self.cache_dict = {}
         self.count      = 0
@@ -240,19 +262,19 @@ class sr_cache():
         # close,remove file, open new empty file
         self.fp.close()
         if os.path.exists( self.cache_file ):
-            os.unlink( self.cache_file )
+            os.unlink( self.cache_file )  # FIXME inconsistencies: to try-except or not to try-except
         self.fp = open(self.cache_file,'w')
 
         # clean cache removing delpath
 
-        self.clean(self.fp, delpath)
+        self.clean(self.fp, delpath)  # FIXME passing fp: this is an attribute why passing it as an arg ?
 
     def free(self):
         self.logger.debug("sr_cache free")
         self.cache_dict = {}
         self.count      = 0
         try   : os.unlink(self.cache_file)
-        except: pass
+        except: pass  # TODO need justification: why are we silently excepting io error ? this is a bare except
         self.fp = open(self.cache_file,'w')
 
     def load(self):
@@ -295,7 +317,7 @@ class sr_cache():
                   ttl   = now - ctime
                   if ttl > self.expire : continue
 
-              except: # skip corrupted line.
+              except: # skip corrupted line.  # FIXME wrong bare except: what is the exception expected here ? AttributeError, indexError, ValueError ?
                   self.logger.error("sr_cache load corrupted line %d in %s" % ( lineno, self.cache_file) )
                   continue
 
@@ -314,7 +336,7 @@ class sr_cache():
 
         self.cache_file = cache_file
 
-        if cache_file == None :
+        if cache_file is None :
            self.cache_file  = self.parent.user_cache_dir + os.sep 
            self.cache_file += 'recent_files_%.3d.cache' % self.parent.instance
 
@@ -327,13 +349,13 @@ class sr_cache():
         if self.fp : self.fp.close()
         try   : 
                 os.unlink(self.cache_file)
-        except: pass
+        except: pass  # TODO need justification: why are we silently excepting io error ? this is a bare except
 
         # new empty file, write unexpired entries
         try   : 
                 self.fp = open(self.cache_file,'w')
-                self.clean(self.fp)
-        except: pass
+                self.clean(self.fp)  # FIXME passing fp: this is an attribute why passing it as an arg ?
+        except: pass  # TODO need justification: why are we silently excepting io error ? this is a bare except
 
 
     def check_expire(self):
