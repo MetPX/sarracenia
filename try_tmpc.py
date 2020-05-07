@@ -48,7 +48,6 @@ print('hoho... have a config... broker: %s ' % urlunparse(cfg.broker) )
 
 h=TMPC( cfg.broker, logger, cd)
 print( "This one is an: %s" % h.url_proto() )
-#h=tmpc.TMPC( "amqp://localhost", { 'Queue':'try_tmpc'  } , l )
 
 i=0
 while i < 5:

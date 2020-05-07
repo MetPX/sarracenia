@@ -1,3 +1,9 @@
+metpx-sarracenia (3.00.00exp) UNRELEASED; urgency=medium
+
+  * forked off from master.
+
+ -- peter <peter@fractal>  Wed, 06 May 2020 18:01:01 -0400
+
 metpx-sarracenia (2.20.04b3) unstable; urgency=medium
 
   * correct sr sanity to not kill foreground processes.

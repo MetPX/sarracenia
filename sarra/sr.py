@@ -29,14 +29,16 @@ import os
 import os.path
 import pathlib
 import psutil
+import random
 import re
+import shutil
 import signal
 import subprocess
 import sys
 import time
-import shutil
 
 import sarra.config
+import sarra.tmpc
 
 
 
@@ -109,12 +111,8 @@ class sr_GlobalState:
             f.seek(0,0)
             f.truncate()
             f.write( getpass.getuser() + '\n' )
-            for proc in psutil.process_iter():
-                p = proc.as_dict()
-                del p['environ']
-                pj = json.dumps(p,ensure_ascii=False)
-                #print( 'writing pj=+%s+' % pj )
-                f.write(pj +'\n')
+            for proc in psutil.process_iter( ['pid','cmdline','name', 'username' ] ):
+                f.write( json.dumps(proc.info,ensure_ascii=False) + '\n' )
             
     def _filter_sr_proc(self,p):
         # process name 'python3' is not helpful, so overwrite...
@@ -126,7 +124,6 @@ class sr_GlobalState:
 
         if p['name'].startswith('sr_') and (self.me == p['username']):
             self.procs[p['pid']] = p
-
             if p['name'][3:8] == 'audit':
                 self.procs[p['pid']]['claimed'] = True
                 self.auditors += 1
@@ -156,20 +153,16 @@ class sr_GlobalState:
         self.procs = {}
         self.me = getpass.getuser()
         self.auditors = 0
-        pcount = 0
-        for proc in psutil.process_iter():
-            p = proc.as_dict()
-            self._filter_sr_proc(p)
-            pcount += 1 
-            if pcount % 100 == 0 : print( '.', end='', flush=True )
 
-        print(' Done reading %d procs!' % pcount , flush=True )
+        for proc in psutil.process_iter( ['pid','cmdline','name', 'username' ] ):
+            self._filter_sr_proc(proc.info)
 
     def _read_configs(self):
         # read in configurations.
         self.configs = {}
         if not os.path.isdir(self.user_config_dir):
            return
+
         os.chdir(self.user_config_dir)
         self.default_cfg = sarra.config.Config(self.logger, None, { 'appauthor':self.appauthor, 'appname':self.appname } )
         if os.path.exists( "default.conf" ):
@@ -486,6 +479,41 @@ class sr_GlobalState:
 
         return host
 
+    def __resolved_exchanges(self, c, cfg, o):
+        """
+          Guess the name of an exchange. looking at either a direct setting,
+          or an existing queue state file, or lastly just guess based on conventions.
+        """
+        if hasattr(o,'exchange'):
+            return [ o.exchange ]
+
+        x =  'xs_%s' % o.broker.username
+
+        if hasattr(o,'exchange_suffix'):
+           x += '_%s' % o.exchange_suffix
+
+        if hasattr(o,'exchange_split'):
+           for i in range(0,o.instances):
+               y = x + '%02d' % i   
+        else:
+           return [ x ]
+
+    def __guess_queue_name(self, c, cfg, o):
+        """
+          Guess the name of a queue. looking at either a direct setting,
+          or an existing queue state file, or lastly just guess based on conventions.
+        """
+        if hasattr(o,'queue_name'):
+            return o.queue_name
+
+        if self.states[c][cfg]['queue_name']:
+            return self.states[c][cfg]['queue_name']
+
+        n= 'q_' + o.broker.username + '.sr_' + c + '.' + cfg
+        n += '.'  + str(random.randint(0,100000000)).zfill(8)
+        n += '.'  + str(random.randint(0,100000000)).zfill(8)
+
+        return n
 
     def _resolve_brokers(self):
         """ make a map of dependencies
@@ -507,32 +535,45 @@ class sr_GlobalState:
                     continue
 
                 o = self.configs[c][cfg]['options']
+                if not hasattr(o,'instances'):
+                    o.instances = 1
+
                 name = c + '/' + cfg
                 
                 if hasattr(o,'broker') and o.broker is not None:
                     host = self._init_broker_host( o.broker.netloc )
 
-                    if hasattr(o,'exchange'):
+                    xl = self.__resolved_exchanges( c, cfg, o )
 
-                        if hasattr(o,'queue'):
-                           q = o.queue
-                        else:
-                           try:
-                              q = self.states[c][cfg]['queue_name']
-                           except:
-                              q = 'unknown'
+                    q = self.__guess_queue_name( c, cfg, o )
 
-                        if o.exchange in self.brokers[host]['exchanges']:
-                            self.brokers[host]['exchanges'][o.exchange].append( q )
+                    self.configs[c][cfg]['options'].resolved_qname = q
+
+                    for exch in xl :
+                        if exch in self.brokers[host]['exchanges']:
+                            self.brokers[host]['exchanges'][exch].append( q )
                         else:
-                            self.brokers[host]['exchanges'][o.exchange] = [ q ]
-                        if q in self.brokers[host]['queues']:
-                            self.brokers[host]['queues'][q].append( name )
-                        else:
-                            self.brokers[host]['queues'][q] = [ name ]
+                            self.brokers[host]['exchanges'][exch] = [ q ]
+
+                    if q in self.brokers[host]['queues']:
+                        self.brokers[host]['queues'][q].append( name )
+                    else:
+                        self.brokers[host]['queues'][q] = [ name ]
 
                 if hasattr(o,'post_broker') and o.post_broker is not None:
                     host = self._init_broker_host( o.post_broker.netloc )
+
+                    o.broker = o.post_broker
+                    if hasattr( o, 'post_exchange'): 
+                        o.exchange = o.post_exchange
+                    if hasattr( o, 'post_exchange_split'): 
+                        o.exchange_split = o.post_exchange_split
+                    if hasattr( o, 'post_exchange_suffix' ): 
+                        o.exchange_suffix = o.post_exchange_suffix
+
+                    xl = self.__resolved_exchanges( c, cfg, o )
+
+                    self.configs[c][cfg]['options'].resolved_exchanges = xl
 
                     if hasattr(o,'post_exchange'):
                         if o.post_exchange in self.brokers[host]['post_exchanges']:
@@ -639,7 +680,7 @@ class sr_GlobalState:
  
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
 
-        print('gathering global state: ', flush=True)
+        #print('gathering global state: ', flush=True)
 
         pf=self.user_cache_dir + os.sep + "procs.json"
         if os.path.exists( pf ) :
@@ -647,16 +688,16 @@ class sr_GlobalState:
         else:
             self._read_procs()
 
-        print('procs, ', end='', flush=True)
+        #print('procs, ', end='', flush=True)
         self._read_configs()
-        print('got configs from %s' % self.user_config_dir, flush=True)
+        #print('got configs from %s' % self.user_config_dir, flush=True)
         self._read_states()
-        print('got state files from %s, ' % self.user_cache_dir , flush=True)
+        #print('got state files from %s, ' % self.user_cache_dir , flush=True)
         self._read_logs()
-        print('logs, ', end='', flush=True)
+        #print('logs, ', end='', flush=True)
         self._resolve()
         self._find_missing_instances()
-        print('analysis - Done. ', flush=True)
+        #print('analysis - Done. ', flush=True)
 
     def _start_missing(self):
         for instance in self.missing:
@@ -665,6 +706,51 @@ class sr_GlobalState:
             if component_path == '':
                 continue
             self._launch_instance(component_path, c, cfg, i)
+
+    def declare(self):
+
+
+        # declare exchanges first.
+        for c in self.components:
+            if (c not in self.states) or (c not in self.configs):
+                continue
+
+            for cfg in self.configs[c]:
+                if not 'options' in self.configs[c][cfg] :
+                    continue
+                self.logger.info( 'looking at %s/%s ' % ( c, cfg ) )
+                o = self.configs[c][cfg]['options']
+                od = o.dictify()
+                if hasattr(o, 'resolved_exchanges') and o.resolved_exchanges is not None :
+                     for rx in o.resolved_exchanges:
+                         od['exchange'] = rx
+                         od['broker'] = od['post_broker']
+                         xdc = sarra.tmpc.TMPC( o.post_broker, self.logger, od, get=False )
+                         self.logger.info( 'declared exchange (on %s@%s) : %s' % \
+                             ( o.post_broker.username, o.post_broker.hostname, rx ) )
+                         xdc.close() 
+
+        # then declare and bind queues....
+        for c in self.components:
+            if (c not in self.states) or (c not in self.configs):
+                continue
+
+            for cfg in self.configs[c]:
+                if not 'options' in self.configs[c][cfg] :
+                    continue
+                self.logger.info( 'looking at %s/%s ' % ( c, cfg ) )
+                o = self.configs[c][cfg]['options']
+                od = o.dictify()
+                if hasattr(o, 'resolved_qname' ):
+                     # declare by doing a setup and close.
+                     od['queue_name'] = o.resolved_qname
+                     qdc = sarra.tmpc.TMPC( o.broker, self.logger, od )
+                     self.logger.info( '%s@%s declared queue: %s' % \
+                             ( o.broker.username, o.broker.hostname, o.resolved_qname ) )
+                     qdc.close()
+
+ 
+
 
     def maint(self, action):
         """
@@ -680,7 +766,6 @@ class sr_GlobalState:
             if component_path == '':
                 continue
             for cfg in self.configs[c]:
-                print('.', end='')
                 if c[0] != 'c':  # python components
                     cmd = [sys.executable, component_path, action, cfg]
                 else:
@@ -996,7 +1081,7 @@ def main():
     """
     logger = logging.getLogger()
     logging.basicConfig(format='%(asctime)s [%(levelname)s] %(message)s', level=logging.DEBUG)
-    logger.setLevel( logging.ERROR )
+    logger.setLevel( logging.INFO )
 
 
 
@@ -1016,7 +1101,11 @@ def main():
 
     if action in ['declare', 'setup']:
         print('%s: ' % action, end='', flush=True)
-        gs.maint(action)
+        gs.declare()
+
+    #if action in ['declare', 'setup']:
+    #    print('%s: ' % action, end='', flush=True)
+    #    gs.maint(action)
 
     if action == 'dump':
         print('dumping: ', end='', flush=True)
@@ -1056,3 +1145,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+

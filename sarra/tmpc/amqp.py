@@ -95,6 +95,7 @@ class AMQP(TMPC):
         Setup so we can get messages.
 
         if message_strategy is stubborn, will loop here forever.
+             connect, declare queue, apply bindings.
         """
         ebo=1
         while True:
@@ -131,14 +132,13 @@ class AMQP(TMPC):
                         auto_delete=self.props['auto_delete'], nowait=False,
                         arguments=args )
     
-                #FIXME bindings not done yet.
                 if self.props['bind']:
                     self.logger.debug('getSetup ... 1. binding')
                     broker_str = self.broker.geturl().replace(':'+self.broker.password+'@','@')
                     for tup in self.props['bindings'] :          
                         prefix, exchange, values = tup
                         topic= prefix + '.' + values[0]
-                        self.logger.info('Binding queue %s with key %s from exchange %s on broker %s' % \
+                        self.logger.error('Binding queue %s with key %s from exchange %s on broker %s' % \
                             ( self.props['queue_name'], topic, exchange, broker_str ) )
                         self.channel.queue_bind( self.props['queue_name'], exchange, topic )
 
@@ -148,7 +148,7 @@ class AMQP(TMPC):
 
             except Exception as err:
                 self.logger.error("AMQP getSetup failed to {} with {}".format(self.broker.hostname, err))
-                self.logger.debug('Exception details: ', exc_info=True)
+                self.logger.error('Exception details: ', exc_info=True)
 
             if not self.props['message_strategy']['stubborn']: return
 
@@ -201,6 +201,23 @@ class AMQP(TMPC):
             self.logger.info("Sleeping {} seconds ...".format( ebo) )
             time.sleep(ebo)
 
+    def __putCleanUp(self):
+
+        try: 
+            self.channel.exchange_delete( self.props['exchange'] )            
+        except Exception as err:
+            self.logger.error("AMQP putCleanup failed to {} with {}".format( 
+                self.props['broker'].hostname, err) )
+            self.logger.debug('Exception details: ', exc_info=True)
+
+    def __getCleanUp(self):
+
+        try: 
+            self.channel.queue_delete( self.props['queue_name'] )            
+        except Exception as err:
+            self.logger.error("AMQP putCleanup failed to {} with {}".format( 
+                self.props['broker'].hostname, err) )
+            self.logger.debug('Exception details: ', exc_info=True)
 
     @classmethod
     def assimilate(cls,obj):

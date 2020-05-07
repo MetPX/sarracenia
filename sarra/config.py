@@ -101,7 +101,6 @@ class Config:
    @broker.setter
    def broker(self,v):
        if type(v) is str:
-           self.logger.warning( "setting broker to: %s" % v )
            ok, url = self._validate_urlstr(v)
            if ok:
                self.__broker = url
@@ -115,7 +114,6 @@ class Config:
    @post_broker.setter
    def post_broker(self,v):
        if type(v) is str:
-          self.logger.warning( "setting post_broker to: %s" % v )
           ok, url = self._validate_urlstr(v)
           if ok:
              self.__post_broker = url
@@ -261,7 +259,7 @@ class Config:
                 also None to reset to empty, not done.
        """
        if hasattr(self,'exchange') and hasattr(self,'topic_prefix'):
-           self.bindings.append( (self.exchange, self.topic_prefix + '.' + subtopic) )
+           self.bindings.append( (self.topic_prefix,  self.exchange, subtopic) )
 
 
    def _parse_declare(self, words):
