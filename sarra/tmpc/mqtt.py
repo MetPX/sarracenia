@@ -1,5 +1,8 @@
 
 from sarra.tmpc import TMPC
+import logging
+
+logger = logging.getLogger( __name__ )
 
 class MQTT(TMPC):
 
@@ -7,7 +10,7 @@ class MQTT(TMPC):
         """
 
         """
-        print("__init__ MQTT TMPC implementation using paho client library")
+        logger.error("__init__ MQTT TMPC using paho client library: not implemented.")
 
     @classmethod
     def assimilate(cls,obj):

@@ -26,11 +26,14 @@
 # the real AMQP library... not this one... 
 import amqp
 
+import logging
+
 from sarra.sr_util import *
 
 from sarra.tmpc import TMPC
 import copy
 
+logger = logging.getLogger( __name__ )
 
 class AMQP(TMPC):
 
@@ -49,7 +52,7 @@ class AMQP(TMPC):
            connect to broker, depending on message_strategy stubborness, remain connected.
            
         """
-        self.logger.debug("__init__ AMQP")
+        logger.debug("__init__ AMQP")
 
         AMQP.assimilate(self)
         self.props.update(copy.deepcopy(AMQP.__default_properties))
@@ -106,17 +109,18 @@ class AMQP(TMPC):
                 # from sr_consumer.build_connection...
                 self.__connect(self.broker)
 
-                self.logger.debug('getSetup ... 1. connected to {}'.format(self.props['broker'].hostname) )
+                logger.debug('getSetup ... 1. connected to {}'.format(self.props['broker'].hostname) )
 
                 if self.props['prefetch'] != 0 :
                     self.channel.basic_qos( 0, self.props['prefetch'], True )
            
                 #FIXME: test self.first_setup and props['reset']... delete queue...
+                broker_str = self.broker.geturl().replace(':'+self.broker.password+'@','@')
     
                 # from Queue declare
                 if self.props['declare']:
 
-                    self.logger.debug('getSetup ... 1. declaring {} '.format(self.props['queue_name'] ) )
+                    logger.debug('getSetup ... 1. declaring {} '.format(self.props['queue_name'] ) )
                     args={}
                     if self.props['expire']:
                         x = int(durationToSeconds(self.props['expire']) * 1000)
@@ -131,30 +135,30 @@ class AMQP(TMPC):
                         durable=self.props['durable'], exclusive=False, 
                         auto_delete=self.props['auto_delete'], nowait=False,
                         arguments=args )
+                    logger.info('queue declared %s (as: %s) ' % ( self.props['queue_name'], broker_str ) )
     
                 if self.props['bind']:
-                    self.logger.debug('getSetup ... 1. binding')
-                    broker_str = self.broker.geturl().replace(':'+self.broker.password+'@','@')
+                    logger.debug('getSetup ... 1. binding')
                     for tup in self.props['bindings'] :          
                         prefix, exchange, values = tup
                         topic= prefix + '.' + values[0]
-                        self.logger.error('Binding queue %s with key %s from exchange %s on broker %s' % \
+                        logger.info('queue %s bound key %s to exchange %s (as: %s)' % \
                             ( self.props['queue_name'], topic, exchange, broker_str ) )
                         self.channel.queue_bind( self.props['queue_name'], exchange, topic )
 
                 # Setup Successfully Complete! 
-                self.logger.debug('getSetup ... Done!')
+                logger.debug('getSetup ... Done!')
                 return
 
             except Exception as err:
-                self.logger.error("AMQP getSetup failed to {} with {}".format(self.broker.hostname, err))
-                self.logger.error('Exception details: ', exc_info=True)
+                logger.error("AMQP getSetup failed to {} with {}".format(self.broker.hostname, err))
+                logger.error('Exception details: ', exc_info=True)
 
             if not self.props['message_strategy']['stubborn']: return
 
             if ebo < 60 : ebo *= 2
 
-            self.logger.info("Sleeping {} seconds ...".format( ebo) )
+            logger.info("Sleeping {} seconds ...".format( ebo) )
             time.sleep(ebo)
 
 
@@ -170,35 +174,37 @@ class AMQP(TMPC):
 
                 # transaction mode... confirms would be better...
                 self.channel.tx_select()
+                broker_str = self.broker.geturl().replace(':'+self.broker.password+'@','@')
 
-                self.logger.debug('putSetup ... 1. connected to {}'.format(self.props['broker'].hostname ) )
+                logger.debug('putSetup ... 1. connected to {}'.format(broker_str ) )
 
                 if self.props['declare']:
 
-                    self.logger.debug('putSetup ... 1. declaring {}'.format(self.props['exchange']) )
+                    logger.debug('putSetup ... 1. declaring {}'.format(self.props['exchange']) )
                     
                     self.channel.exchange_declare(
                         self.props['exchange'], 'topic',
                         auto_delete=self.props['auto_delete'], durable=self.props['durable']  )
 
+                    logger.info('exchange declared: %s (as: %s) ' % ( self.props['exchange'], broker_str ) )
                     self.mttl='0'
                     if self.props['message_ttl']:
                         x = int(durationToSeconds(self.props['message_ttl']) * 1000)
                         if x > 0: self.mttl = "%d" % x 
                 # Setup Successfully Complete! 
-                self.logger.debug('putSetup ... Done!')
+                logger.debug('putSetup ... Done!')
                 return
 
             except Exception as err:
-                self.logger.error("AMQP putSetup failed to {} with {}".format( 
+                logger.error("AMQP putSetup failed to {} with {}".format( 
                     self.props['broker'].hostname, err) )
-                self.logger.debug('Exception details: ', exc_info=True)
+                logger.debug('Exception details: ', exc_info=True)
 
             if not self.props['message_strategy']['stubborn']: return
 
             if ebo < 60 : ebo *= 2
 
-            self.logger.info("Sleeping {} seconds ...".format( ebo) )
+            logger.info("Sleeping {} seconds ...".format( ebo) )
             time.sleep(ebo)
 
     def __putCleanUp(self):
@@ -206,18 +212,18 @@ class AMQP(TMPC):
         try: 
             self.channel.exchange_delete( self.props['exchange'] )            
         except Exception as err:
-            self.logger.error("AMQP putCleanup failed to {} with {}".format( 
+            logger.error("AMQP putCleanup failed to {} with {}".format( 
                 self.props['broker'].hostname, err) )
-            self.logger.debug('Exception details: ', exc_info=True)
+            logger.debug('Exception details: ', exc_info=True)
 
     def __getCleanUp(self):
 
         try: 
             self.channel.queue_delete( self.props['queue_name'] )            
         except Exception as err:
-            self.logger.error("AMQP putCleanup failed to {} with {}".format( 
+            logger.error("AMQP putCleanup failed to {} with {}".format( 
                 self.props['broker'].hostname, err) )
-            self.logger.debug('Exception details: ', exc_info=True)
+            logger.debug('Exception details: ', exc_info=True)
 
     @classmethod
     def assimilate(cls,obj):
@@ -233,7 +239,7 @@ class AMQP(TMPC):
     def getNewMessage( self ):
 
         if not self.get: #build_consumer
-            self.logger.error("getting from a publisher")
+            logger.error("getting from a publisher")
             return None
 
         ebo=1
@@ -242,8 +248,8 @@ class AMQP(TMPC):
                 msg = self.channel.basic_get(self.props['queue_name']) 
                 return msg 
             except:
-                self.logger.warning("tmpc.amqp.getNewMessage: failed %s: %s" % (queuename, err))
-                self.logger.debug('Exception details: ', exc_info=True)
+                logger.warning("tmpc.amqp.getNewMessage: failed %s: %s" % (queuename, err))
+                logger.debug('Exception details: ', exc_info=True)
 
             if not self.props['message_strategy']['stubborn']:
                 return None
@@ -253,7 +259,7 @@ class AMQP(TMPC):
 
             if ebo < 60 : ebo *= 2
 
-            self.logger.info("Sleeping {} seconds ...".format( ebo) )
+            logger.info("Sleeping {} seconds ...".format( ebo) )
             time.sleep(ebo)
 
     def putNewMessage(self, topic, body, headers=None, content_type='application/json', exchange=None ):
@@ -261,7 +267,7 @@ class AMQP(TMPC):
         put a new message out, to the configured exchange by default.
         """
         if self.get: #build_consumer
-            self.logger.error("publishing from a consumer")
+            logger.error("publishing from a consumer")
             return None
 
         ebo=1
@@ -276,12 +282,12 @@ class AMQP(TMPC):
                 self.channel.basic_publish( AMQP_Message, exchange, topic ) 
 
                 self.channel.tx_commit()
-                self.logger.info("published {} to {} ".format(body, exchange) )
+                logger.info("published {} to {} ".format(body, exchange) )
                 return # no failure == success :-)
 
             except Exception as err:
-                self.logger.warning("tmpc.amqp.putNewMessage: failed %s: %s" % (exchange, err))
-                self.logger.debug('Exception details: ', exc_info=True)
+                logger.warning("tmpc.amqp.putNewMessage: failed %s: %s" % (exchange, err))
+                logger.debug('Exception details: ', exc_info=True)
 
             if not self.props['message_strategy']['stubborn']:
                 return None
@@ -291,7 +297,7 @@ class AMQP(TMPC):
 
             if ebo < 60 : ebo *= 2
 
-            self.logger.info("Sleeping {} seconds ...".format( ebo) )
+            logger.info("Sleeping {} seconds ...".format( ebo) )
             time.sleep(ebo)
 
     def close(self):
@@ -299,7 +305,7 @@ class AMQP(TMPC):
             self.connection.close()
 
         except Exception as err:
-            self.logger.error("sr_amqp/close 2: {}".format(err))
-            self.logger.debug("sr_amqp/close 2 Exception details:", exc_info=True)
+            logger.error("sr_amqp/close 2: {}".format(err))
+            logger.debug("sr_amqp/close 2 Exception details:", exc_info=True)
         # FIXME toclose not useful as we don't close channels anymore
         self.connection=None

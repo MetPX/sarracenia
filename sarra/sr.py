@@ -41,7 +41,6 @@ import sarra.config
 import sarra.tmpc
 
 
-
 def ageoffile(lf):
     """ return number of seconds since a file was modified as a floating point number of seconds.
         FIXME: mocked here for now. 
@@ -164,7 +163,7 @@ class sr_GlobalState:
            return
 
         os.chdir(self.user_config_dir)
-        self.default_cfg = sarra.config.Config(self.logger, None, { 'appauthor':self.appauthor, 'appname':self.appname } )
+        self.default_cfg = sarra.config.Config(None, { 'appauthor':self.appauthor, 'appname':self.appname } )
         if os.path.exists( "default.conf" ):
             self.default_cfg.parse_file("default.conf")
         if os.path.exists( "admin.conf" ):
@@ -506,8 +505,9 @@ class sr_GlobalState:
         if hasattr(o,'queue_name'):
             return o.queue_name
 
-        if self.states[c][cfg]['queue_name']:
-            return self.states[c][cfg]['queue_name']
+        if cfg in self.states[c]: 
+            if self.states[c][cfg]['queue_name']:
+                return self.states[c][cfg]['queue_name']
 
         n= 'q_' + o.broker.username + '.sr_' + c + '.' + cfg
         n += '.'  + str(random.randint(0,100000000)).zfill(8)
@@ -652,12 +652,10 @@ class sr_GlobalState:
         self.user_config_dir = appdirs.user_config_dir(self.appname, self.appauthor)
         self.user_cache_dir = appdirs.user_cache_dir(self.appname, self.appauthor)
         
-    def __init__(self,logger):
+    def __init__(self):
         """
            side effect: changes current working directory FIXME?
         """
-
-        self.logger = logger
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
         self.appauthor = 'science.gc.ca'
@@ -718,16 +716,16 @@ class sr_GlobalState:
             for cfg in self.configs[c]:
                 if not 'options' in self.configs[c][cfg] :
                     continue
-                self.logger.info( 'looking at %s/%s ' % ( c, cfg ) )
+                logging.info( 'looking at %s/%s ' % ( c, cfg ) )
                 o = self.configs[c][cfg]['options']
                 od = o.dictify()
                 if hasattr(o, 'resolved_exchanges') and o.resolved_exchanges is not None :
                      for rx in o.resolved_exchanges:
                          od['exchange'] = rx
                          od['broker'] = od['post_broker']
-                         xdc = sarra.tmpc.TMPC( o.post_broker, self.logger, od, get=False )
-                         self.logger.info( 'declared exchange (on %s@%s) : %s' % \
-                             ( o.post_broker.username, o.post_broker.hostname, rx ) )
+                         xdc = sarra.tmpc.TMPC( o.post_broker, od, get=False )
+                         #logging.info( 'declared %s exchange (using: %s@%s)' % \
+                         #    ( rx, o.post_broker.username, o.post_broker.hostname ) )
                          xdc.close() 
 
         # then declare and bind queues....
@@ -738,15 +736,15 @@ class sr_GlobalState:
             for cfg in self.configs[c]:
                 if not 'options' in self.configs[c][cfg] :
                     continue
-                self.logger.info( 'looking at %s/%s ' % ( c, cfg ) )
+                logging.info( 'looking at %s/%s ' % ( c, cfg ) )
                 o = self.configs[c][cfg]['options']
                 od = o.dictify()
                 if hasattr(o, 'resolved_qname' ):
                      # declare by doing a setup and close.
                      od['queue_name'] = o.resolved_qname
-                     qdc = sarra.tmpc.TMPC( o.broker, self.logger, od )
-                     self.logger.info( '%s@%s declared queue: %s' % \
-                             ( o.broker.username, o.broker.hostname, o.resolved_qname ) )
+                     qdc = sarra.tmpc.TMPC( o.broker, od )
+                     #logging.info( 'declared %s queue (using: %s@%s)' % \
+                     #        ( o.resolved_qname, o.broker.username, o.broker.hostname ) )
                      qdc.close()
 
  
@@ -1094,7 +1092,7 @@ def main():
         action = sys.argv[1]
 
 
-    gs = sr_GlobalState(logger)
+    gs = sr_GlobalState()
     # testing proc file i/o
     #gs.read_proc_file()
     #return

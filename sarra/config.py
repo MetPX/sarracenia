@@ -25,7 +25,6 @@ from sarra.sr_util        import *
 from sarra.sr_credentials import *
 
 
-
 """
    re-write of configuration parser.
    
@@ -50,18 +49,16 @@ class AddBinding(argparse.Action):
 
 class Config:
 
-   logger = None
    credentials = None
 
-   def __init__(self,logger,parent=None, appdir_stuff={ 'appauthor':'science.gc.ca', 'appname':'sarra' }):
+   def __init__(self,parent=None, appdir_stuff={ 'appauthor':'science.gc.ca', 'appname':'sarra' }):
 
        self.bindings =  []
        self.__broker = None
        self.__post_broker = None
-       Config.logger = logger
 
        if Config.credentials is None:
-          Config.credentials=sr_credentials(Config.logger)
+          Config.credentials=sr_credentials()
           Config.credentials.read( 
               appdirs.user_config_dir( appdir_stuff['appname'], 
                                        appdir_stuff['appauthor']  ) 
@@ -90,7 +87,7 @@ class Config:
        # check url and add credentials if needed from credential file
        ok, details = Config.credentials.get(urlstr)
        if details == None :
-           self.logger.error("bad credential %s" % urlstr)
+           logging.error("bad credential %s" % urlstr)
            return False, urllib.parse.urlparse(urlstr)
        return True, details.url
 
@@ -376,7 +373,7 @@ class Config:
 
         self.merge(args)
 
-def one_config( component, config, logger, overrides=None, appdir_stuff={ 'appauthor':'science.gc.ca', 'appname':'sarra' } ):
+def one_config( component, config, overrides=None, appdir_stuff={ 'appauthor':'science.gc.ca', 'appname':'sarra' } ):
 
     """
       single call return a fully parsed single configuration for a single component to run.
@@ -391,7 +388,7 @@ def one_config( component, config, logger, overrides=None, appdir_stuff={ 'appau
       appdir_stuff can be to override file locations for testing during development.
     """
     default_cfg_dir = appdirs.user_config_dir( appdir_stuff['appname'], appdir_stuff['appauthor']  )
-    default_cfg = Config( logger, parent=None, appdir_stuff=appdir_stuff )
+    default_cfg = Config( parent=None, appdir_stuff=appdir_stuff )
     default_cfg.appdir_stuff = appdir_stuff 
 
     if overrides:
@@ -437,7 +434,7 @@ def one_config( component, config, logger, overrides=None, appdir_stuff={ 'appau
                  queue_name += '.'  + str(random.randint(0,100000000)).zfill(8)
                  cfg.queue_name = queue_name
 
-         logger.error( 'queue_name set to {}'.format(cfg.queue_name) )
+         logging.error( 'queue_name set to {}'.format(cfg.queue_name) )
          f=open( queuefile, 'w' )
          f.write( cfg.queue_name )
          f.close()

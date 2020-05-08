@@ -33,7 +33,9 @@
 
 """
 import copy
+import logging
 
+logger = logging.getLogger( __name__ )
 
 class TMPC():
     
@@ -50,7 +52,7 @@ class TMPC():
            }
     }
 
-    def __init__( self, broker, logger, props=None, get=True ):
+    def __init__( self, broker, props=None, get=True ):
        """
        initialize a broker connection. Connections are unidirectional.
        either for get or put.
@@ -68,8 +70,6 @@ class TMPC():
        MQTTv3   --> paho                --> mqtt, mqtts
        AMQPv1.0 --> qpid-proton         --> amq1, amq1s
 
-
-       logger is the logging facility the library should use.
 
        If get=True, then this is a consuming instance.
        expect calls to get* routines.
@@ -127,7 +127,6 @@ class TMPC():
        self.props_args = props
        self.broker = broker
 
-       self.logger = logger
        protos=[]
        """ relevant:
          https://stackoverflow.com/questions/18020074/convert-a-baseclass-object-into-a-subclass-object-idiomatically
@@ -170,7 +169,7 @@ class TMPC():
         """
 
     def ackMessage( self, m ):
-        """
+      """
           tell broker that a given message has been received.
         """ 
 

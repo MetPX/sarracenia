@@ -43,6 +43,10 @@
 # (passive true and binary true are credentials default and may be omitted)
 #
 
+import logging
+
+logger = logging.getLogger( __name__ )
+
 import os,urllib,urllib.parse,sys,re
 
 # a class for credential details/options
@@ -70,12 +74,14 @@ class credential_details:
 
 class sr_credentials:
 
-    def __init__(self, logger):
-        self.logger      = logger
+    def __init__(self, Unused_logger=None ):
+        """
+           logger argument no longer used... left there for API compat with old calls.
+        """
         self.credentials = {}
         self.pwre=re.compile(':[^/:]*@')
         
-        self.logger.debug("sr_credentials __init__")
+        logging.debug("sr_credentials __init__")
 
     def add(self,urlstr,details=None):
 
@@ -87,12 +93,12 @@ class sr_credentials:
         self.credentials[urlstr] = details
 
     def get(self, urlstr ):
-        #self.logger.debug("sr_credentials get %s" % urlstr)
+        #logging.debug("sr_credentials get %s" % urlstr)
 
         # already cached
 
         if self.has(urlstr) :
-           #self.logger.debug("sr_credentials get in cache %s %s" % (urlstr,self.credentials[urlstr]))
+           #logging.debug("sr_credentials get in cache %s %s" % (urlstr,self.credentials[urlstr]))
            return True, self.credentials[urlstr]
 
         # create url object if needed
@@ -124,7 +130,7 @@ class sr_credentials:
         return False,self.credentials[urlstr]
 
     def has(self, urlstr ):
-        self.logger.debug("sr_credentials has %s" % urlstr)
+        logging.debug("sr_credentials has %s" % urlstr)
         return urlstr in self.credentials
 
     def isTrue(self,S):
@@ -175,7 +181,7 @@ class sr_credentials:
         return True
 
     def parse(self,line):
-        #self.logger.debug("sr_credentials parse %s" % self.pwre.sub(':<secret!>@', line, count=1) )
+        #logging.debug("sr_credentials parse %s" % self.pwre.sub(':<secret!>@', line, count=1) )
 
         try:
                 sline = line.strip()
@@ -193,7 +199,7 @@ class sr_credentials:
                 # no option
                 if len(parts) == 1 :
                    if not self.isValid(url,details) :
-                      self.logger.error("bad credential 1 (%s)" % line)
+                      logging.error("bad credential 1 (%s)" % line)
                       return
                    self.add(urlstr,details)
                    return
@@ -217,11 +223,11 @@ class sr_credentials:
                     elif  keyword == 'ssl'         : details.tls         = False
                     elif  keyword == 'tls'         : details.tls         = True
                     elif  keyword == 'prot_p'      : details.prot_p      = True
-                    else: self.logger.warning("bad credential option (%s)" % keyword)
+                    else: logging.warning("bad credential option (%s)" % keyword)
         
                 # need to check validity
                 if not self.isValid(url,details) :
-                   self.logger.error("bad credential 2 (%s)" % line)
+                   logging.error("bad credential 2 (%s)" % line)
                    return
 
                 # seting options to protocol
@@ -229,11 +235,11 @@ class sr_credentials:
                 self.add(urlstr,details)
 
         except:
-                self.logger.error("sr_credentials/parse %s" % line)
-                self.logger.debug('Exception details: ', exc_info=True)
+                logging.error("sr_credentials/parse %s" % line)
+                logging.debug('Exception details: ', exc_info=True)
 
     def read(self, path):
-        self.logger.debug("sr_credentials read")
+        logging.debug("sr_credentials read")
 
         # read in provided credentials (not mandatory)
         try:
@@ -244,9 +250,9 @@ class sr_credentials:
                 for line in lines:
                     self.parse(line)
         except:
-            self.logger.error("sr_credentials/read path = %s" % path)
-            self.logger.debug('Exception details: ', exc_info=True)
-        #self.logger.debug("credentials = %s\n" % self.credentials)
+            logging.error("sr_credentials/read path = %s" % path)
+            logging.debug('Exception details: ', exc_info=True)
+        #logging.debug("credentials = %s\n" % self.credentials)
 
     def resolve(self,urlstr, url = None):
 
@@ -283,7 +289,7 @@ class sr_credentials:
             # resolved : cache it and return
 
             self.credentials[urlstr] = details
-            #self.logger.debug("sr_credentials get resolved %s %s" % (urlstr,details))
+            #logging.debug("sr_credentials get resolved %s %s" % (urlstr,details))
             return True, details
 
         return False, None
