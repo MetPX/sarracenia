@@ -41,6 +41,7 @@ import time
 import sarra.config
 import sarra.tmpc
 
+logger = logging.getLogger( __name__ )
 
 def ageoffile(lf):
     """ return number of seconds since a file was modified as a floating point number of seconds.
@@ -842,22 +843,19 @@ class sr_GlobalState:
         """
 
         pcount=0
-        for c in self.components:
-            if c not in self.configs:
-                continue
+        for f in self.filtered_configurations:
+            ( c, cfg ) = f.split(os.sep)
+ 
             component_path = self._find_component_path(c)
             if component_path == '':
                 continue
-            for cfg in self.configs[c]:
-                f = c + os.sep + cfg
-                if f not in self.filtered_configurations:
-                    continue
-                if self.configs[c][cfg]['status'] in ['stopped']:
-                    numi = self.configs[c][cfg]['instances']
-                    for i in range(1, numi + 1):
-                        if pcount % 10 == 0 : print('.', end='', flush=True)
-                        pcount += 1
-                        self._launch_instance(component_path, c, cfg, i)
+
+            if self.configs[c][cfg]['status'] in ['stopped']:
+                numi = self.configs[c][cfg]['instances']
+                for i in range(1, numi + 1):
+                    if pcount % 10 == 0 : print('.', end='', flush=True)
+                    pcount += 1
+                    self._launch_instance(component_path, c, cfg, i)
 
         c = 'audit'
         component_path = self._find_component_path(c)
@@ -888,23 +886,17 @@ class sr_GlobalState:
                     print('.', end='', flush=True)
                     pcount += 1
 
-        for c in self.components:
-            if c not in self.configs:
-                continue
-            for cfg in self.configs[c]:
-
-                f = c + os.sep + cfg
-                if f not in self.filtered_configurations:
-                    continue
-
-                if self.configs[c][cfg]['status'] in ['running', 'partial']:
-                    for i in self.states[c][cfg]['instance_pids']:
-                        # print( "for %s/%s - %s os.kill( %s, SIGTERM )" % \
-                        #    ( c, cfg, i, self.states[c][cfg]['instance_pids'][i] ) )
-                        if self.states[c][cfg]['instance_pids'][i] in self.procs:
-                            os.kill(self.states[c][cfg]['instance_pids'][i], signal.SIGTERM)
-                            print('.', end='', flush=True)
-                            pcount += 1
+        for f in self.filtered_configurations:
+            ( c, cfg ) = f.split(os.sep)
+ 
+            if self.configs[c][cfg]['status'] in ['running', 'partial']:
+                for i in self.states[c][cfg]['instance_pids']:
+                    # print( "for %s/%s - %s os.kill( %s, SIGTERM )" % \
+                    #    ( c, cfg, i, self.states[c][cfg]['instance_pids'][i] ) )
+                    if self.states[c][cfg]['instance_pids'][i] in self.procs:
+                        os.kill(self.states[c][cfg]['instance_pids'][i], signal.SIGTERM)
+                        print('.', end='', flush=True)
+                        pcount += 1
 
         print(' ( %d ) Done' % pcount, flush=True )
 
@@ -939,20 +931,14 @@ class sr_GlobalState:
                 if 'audit' in p['name']:
                     os.kill(p, signal.SIGKILL)
 
-        for c in self.components:
-            if c not in self.configs:
-                continue
-            for cfg in self.configs[c]:
-                f = c + os.sep + cfg
-                if f not in self.filtered_configurations:
-                    continue
-
-                if self.configs[c][cfg]['status'] in ['running', 'partial']:
-                    for i in self.states[c][cfg]['instance_pids']:
-                        if self.states[c][cfg]['instance_pids'][i] in self.procs:
-                            print("os.kill( %s, SIGKILL )" % self.states[c][cfg]['instance_pids'][i])
-                            os.kill(self.states[c][cfg]['instance_pids'][i], signal.SIGKILL)
-                            print('.', end='')
+        for f in self.filtered_configurations:
+            ( c, cfg ) = f.split(os.sep)
+            if self.configs[c][cfg]['status'] in ['running', 'partial']:
+                for i in self.states[c][cfg]['instance_pids']:
+                    if self.states[c][cfg]['instance_pids'][i] in self.procs:
+                        print("os.kill( %s, SIGKILL )" % self.states[c][cfg]['instance_pids'][i])
+                        os.kill(self.states[c][cfg]['instance_pids'][i], signal.SIGKILL)
+                        print('.', end='')
 
         for pid in self.procs:
             if not self.procs[pid]['claimed']:
@@ -969,19 +955,13 @@ class sr_GlobalState:
         self._read_states()
         self._resolve()
 
-        for c in self.components:
-            if c not in self.configs:
-                continue
-            for cfg in self.configs[c]:
+        for f in self.filtered_configurations:
+            ( c, cfg ) = f.split(os.sep)
+            if self.configs[c][cfg]['status'] in ['running', 'partial']:
+                for i in self.states[c][cfg]['instance_pids']:
+                    print("failed to kill: %s/%s instance: %s, pid: %s )" % (
+                        c, cfg, i, self.states[c][cfg]['instance_pids'][i]))
 
-                f = c + os.sep + cfg
-                if f not in self.filtered_configurations:
-                    continue
-
-                if self.configs[c][cfg]['status'] in ['running', 'partial']:
-                    for i in self.states[c][cfg]['instance_pids']:
-                        print("failed to kill: %s/%s instance: %s, pid: %s )" % (
-                            c, cfg, i, self.states[c][cfg]['instance_pids'][i]))
         if len(self.procs) == 0:
             print('All stopped after KILL')
             return 0
