@@ -24,6 +24,7 @@ while you're at it
 goals of opportunity:
 
   * add stuff to make it work as an API?
+  * potentially new plugin api to allow groups (of messages and/or files.)
   * Finish off log rotation.
   * Assume python >= 3.4 remove old cruft.
   * Assume ubuntu >= 18.04 remove old cruft.
@@ -67,6 +68,17 @@ more idiomatic::
 What makes more sense... Does it make any practical difference?
 not sure... need to keep the members for places where
 plugins are called, but can use properties elsewhere, if desired.
+
+Known Problems
+--------------
+
+* passing of logs around is really odd. we didn't understand what 
+  python logging objects were. Need to use them in the normal way.
+  new modules are built that way...
+
+* this weird try/except thing for importing modules... tried removing
+  it but it broke parsing of checksums... sigh... have to spend time
+  on specifically that problem.
 
 
 Concrete Plan
