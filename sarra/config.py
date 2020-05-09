@@ -65,10 +65,12 @@ class Config:
               setattr(self,i,parent[i])
 
        self.exchanges = []
+       self.post_exchanges = []
        self.filename = None
        self.flatten = '/'
        self.hostname = socket.getfqdn()
        self.masks =  []
+       self.instances = 1
        self.mirror = False
        self.strip = 0
        self.pstrip = False
@@ -295,20 +297,26 @@ class Config:
        """ 
        if self.broker is not None:
           if not hasattr(self,'exchange') or self.exchange is None:
-              x = 'xs_%s' % self.broker.username
+              self.exchange = 'xs_%s' % self.broker.username
  
-              if hasattr(self,'exchange_suffix'):
-                  x += '_%s' % self.exchange_suffix
-              self.exchange = x
+          if hasattr(self,'exchange_suffix'):
+                  self.exchange += '_%s' % self.exchange_suffix
 
        if self.post_broker is not None:
           if not hasattr(self,'post_exchange') or self.post_exchange is None:
-              x = 'xs_%s' % self.post_broker.username
+              self.post_exchange = 'xs_%s' % self.post_broker.username
  
-              if hasattr(self,'post_exchange_suffix'):
-                  x += '_%s' % self.post_exchange_suffix
+          if hasattr(self,'post_exchange_suffix'):
+                  self.post_exchange += '_%s' % self.post_exchange_suffix
 
-              self.post_exchange = x
+          if hasattr(self,'post_exchange_split'):
+                  l = [] 
+                  for i in range(0,int(self.post_exchange_split)):
+                      y = self.post_exchange + '%02d' %  i
+                      l.append(y)
+                  self.post_exchange = l
+          else:
+                  self.post_exchange = [ self.post_exchange ]
 
        if ( self.bindings == [] and hasattr(self,'exchange') ):
           self.bindings = [ ( self.topic_prefix, self.exchange, '#' ) ] 
@@ -378,6 +386,7 @@ class Config:
         parser.add_argument('--inline', dest='inline', default=self.inline, action='store_true', help='include file data in the message')
         parser.add_argument('--inline_encoding', choices=[ 'text', 'binary', 'guess'], default=self.inline_encoding, help='encode payload in base64 (for binary) or text (utf-8)')
         parser.add_argument('--inline_max', type=int, default=self.inline_max, help='maximum message size to inline')
+        parser.add_argument('--instances', type=int, help='number of processes to run per configuration')
         
         parser.set_defaults( bindings=[] )
 

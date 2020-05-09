@@ -179,18 +179,12 @@ class AMQP(TMPC):
                 logger.debug('putSetup ... 1. connected to {}'.format(broker_str ) )
 
                 if self.props['declare']:
-
                     logger.debug('putSetup ... 1. declaring {}'.format(self.props['exchange']) )
-                    
-                    self.channel.exchange_declare(
-                        self.props['exchange'], 'topic',
-                        auto_delete=self.props['auto_delete'], durable=self.props['durable']  )
+                    for x in self.props['exchange']:
+                        self.channel.exchange_declare( x, 'topic', 
+                             auto_delete=self.props['auto_delete'], durable=self.props['durable']  )
+                        logger.info('exchange declared: %s (as: %s) ' % ( x, broker_str ) )
 
-                    logger.info('exchange declared: %s (as: %s) ' % ( self.props['exchange'], broker_str ) )
-                    self.mttl='0'
-                    if self.props['message_ttl']:
-                        x = int(durationToSeconds(self.props['message_ttl']) * 1000)
-                        if x > 0: self.mttl = "%d" % x 
                 # Setup Successfully Complete! 
                 logger.debug('putSetup ... Done!')
                 return

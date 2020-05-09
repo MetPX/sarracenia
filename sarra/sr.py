@@ -487,7 +487,9 @@ class sr_GlobalState:
           or an existing queue state file, or lastly just guess based on conventions.
         """
         if hasattr(o,'exchange'):
-            return [ o.exchange ]
+            if type(o.exchange) != list:
+                return [ o.exchange ]
+            return o.exchange
 
         x =  'xs_%s' % o.broker.username
 
@@ -582,10 +584,7 @@ class sr_GlobalState:
                     self.configs[c][cfg]['options'].resolved_exchanges = xl
 
                     if hasattr(o,'post_exchange'):
-                        if o.post_exchange in self.brokers[host]['post_exchanges']:
-                            self.brokers[host]['post_exchanges'][o.post_exchange].append( name )
-                        else:
-                            self.brokers[host]['post_exchanges'][o.post_exchange]= [ name ]
+                        self.brokers[host]['exchange'] = o.post_exchange
                                       
         self.exchange_summary= {}
         for h in self.brokers:
@@ -653,7 +652,6 @@ class sr_GlobalState:
           identify subset of configurations to operate on.
         """
            
-        print( 'patterns: %s' % patterns )
         self.filtered_configurations=[]
         for c in self.components:
             if (c not in self.configs):
