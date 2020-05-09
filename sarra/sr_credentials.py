@@ -47,6 +47,8 @@ import logging
 
 logger = logging.getLogger( __name__ )
 
+logger.setLevel( logging.INFO )
+
 import os,urllib,urllib.parse,sys,re
 
 # a class for credential details/options
@@ -81,7 +83,7 @@ class sr_credentials:
         self.credentials = {}
         self.pwre=re.compile(':[^/:]*@')
         
-        logging.debug("sr_credentials __init__")
+        logger.debug("sr_credentials __init__")
 
     def add(self,urlstr,details=None):
 
@@ -93,12 +95,12 @@ class sr_credentials:
         self.credentials[urlstr] = details
 
     def get(self, urlstr ):
-        #logging.debug("sr_credentials get %s" % urlstr)
+        #logger.debug("sr_credentials get %s" % urlstr)
 
         # already cached
 
         if self.has(urlstr) :
-           #logging.debug("sr_credentials get in cache %s %s" % (urlstr,self.credentials[urlstr]))
+           #logger.debug("sr_credentials get in cache %s %s" % (urlstr,self.credentials[urlstr]))
            return True, self.credentials[urlstr]
 
         # create url object if needed
@@ -130,7 +132,7 @@ class sr_credentials:
         return False,self.credentials[urlstr]
 
     def has(self, urlstr ):
-        logging.debug("sr_credentials has %s" % urlstr)
+        logger.debug("sr_credentials has %s" % urlstr)
         return urlstr in self.credentials
 
     def isTrue(self,S):
@@ -181,7 +183,7 @@ class sr_credentials:
         return True
 
     def parse(self,line):
-        #logging.debug("sr_credentials parse %s" % self.pwre.sub(':<secret!>@', line, count=1) )
+        #logger.debug("sr_credentials parse %s" % self.pwre.sub(':<secret!>@', line, count=1) )
 
         try:
                 sline = line.strip()
@@ -199,7 +201,7 @@ class sr_credentials:
                 # no option
                 if len(parts) == 1 :
                    if not self.isValid(url,details) :
-                      logging.error("bad credential 1 (%s)" % line)
+                      logger.error("bad credential 1 (%s)" % line)
                       return
                    self.add(urlstr,details)
                    return
@@ -223,11 +225,11 @@ class sr_credentials:
                     elif  keyword == 'ssl'         : details.tls         = False
                     elif  keyword == 'tls'         : details.tls         = True
                     elif  keyword == 'prot_p'      : details.prot_p      = True
-                    else: logging.warning("bad credential option (%s)" % keyword)
+                    else: logger.warning("bad credential option (%s)" % keyword)
         
                 # need to check validity
                 if not self.isValid(url,details) :
-                   logging.error("bad credential 2 (%s)" % line)
+                   logger.error("bad credential 2 (%s)" % line)
                    return
 
                 # seting options to protocol
@@ -235,11 +237,11 @@ class sr_credentials:
                 self.add(urlstr,details)
 
         except:
-                logging.error("sr_credentials/parse %s" % line)
-                logging.debug('Exception details: ', exc_info=True)
+                logger.error("sr_credentials/parse %s" % line)
+                logger.debug('Exception details: ', exc_info=True)
 
     def read(self, path):
-        logging.debug("sr_credentials read")
+        logger.debug("sr_credentials read")
 
         # read in provided credentials (not mandatory)
         try:
@@ -250,9 +252,9 @@ class sr_credentials:
                 for line in lines:
                     self.parse(line)
         except:
-            logging.error("sr_credentials/read path = %s" % path)
-            logging.debug('Exception details: ', exc_info=True)
-        #logging.debug("credentials = %s\n" % self.credentials)
+            logger.error("sr_credentials/read path = %s" % path)
+            logger.debug('Exception details: ', exc_info=True)
+        #logger.debug("credentials = %s\n" % self.credentials)
 
     def resolve(self,urlstr, url = None):
 
@@ -289,7 +291,7 @@ class sr_credentials:
             # resolved : cache it and return
 
             self.credentials[urlstr] = details
-            #logging.debug("sr_credentials get resolved %s %s" % (urlstr,details))
+            #logger.debug("sr_credentials get resolved %s %s" % (urlstr,details))
             return True, details
 
         return False, None
