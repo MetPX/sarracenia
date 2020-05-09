@@ -77,7 +77,11 @@
 
 import os,sys,time
 
-from sarra.sr_subscribe import *
+try :    
+         from sr_subscribe      import *
+         print( "Using local module definitions, not system ones")
+except : 
+         from sarra.sr_subscribe import *
 
 class sr_sarra(sr_subscribe):
 

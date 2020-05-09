@@ -40,7 +40,10 @@
 
 #============================================================
 
-from sarra.sr_subscribe import *
+try :    
+         from sr_subscribe       import *
+except : 
+         from sarra.sr_subscribe import *
 
 class sr_report(sr_subscribe):
 

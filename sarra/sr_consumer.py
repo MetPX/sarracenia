@@ -31,11 +31,18 @@
 
 import os,json,sys,random,time
 
-from sarra.sr_amqp     import *
-from sarra.sr_config   import *
-from sarra.sr_message  import *
-from sarra.sr_retry    import *
-from sarra.sr_util     import *
+try :    
+         from sr_amqp           import *
+         from sr_config         import *
+         from sr_message        import *
+         from sr_retry          import *
+         from sr_util           import *
+except : 
+         from sarra.sr_amqp     import *
+         from sarra.sr_config   import *
+         from sarra.sr_message  import *
+         from sarra.sr_retry    import *
+         from sarra.sr_util     import *
 
 # class sr_consumer
 

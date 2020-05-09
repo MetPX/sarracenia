@@ -40,7 +40,11 @@ import os,random,signal,stat,sys,time
 import urllib
 import urllib.parse
 
-from sarra.sr_xattr import *
+try:
+   from sr_xattr import *
+
+except:
+   from sarra.sr_xattr import *
 
 
 #============================================================

@@ -46,8 +46,13 @@ amqp_ss_maxlen = 253
 from base64 import b64decode, b64encode
 from mimetypes import guess_type
 
-from sarra.sr_util    import *
-from sarra.sr_xattr   import *
+
+try :
+         from sr_util         import *
+         from sr_xattr        import *
+except :
+         from sarra.sr_util    import *
+         from sarra.sr_xattr   import *
 
 class sr_message():
 

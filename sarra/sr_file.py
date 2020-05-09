@@ -34,7 +34,10 @@
 
 import os, stat, sys, time
 
-from sarra.sr_util import *
+try:
+    from sr_util import *
+except:
+    from sarra.sr_util import *
 
 #============================================================
 # file protocol in sarracenia supports/uses :

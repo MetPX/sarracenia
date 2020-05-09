@@ -36,8 +36,12 @@ import logging,os,psutil,signal,subprocess,sys
 from sys import platform as _platform
 from pathlib import PureWindowsPath
 
-from sarra.sr_config import *
-from sarra.sr_util   import *
+try :
+         from sr_config      import *
+         from sr_util        import *
+except :
+         from sarra.sr_config import *
+         from sarra.sr_util   import *
 
 class sr_instances(sr_config):
 

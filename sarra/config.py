@@ -21,8 +21,13 @@ import appdirs
 
 from random import randint
 
-from sarra.sr_util        import *
-from sarra.sr_credentials import *
+try :
+   from sr_util        import *
+   from sr_credentials import *
+
+except :
+   from sarra.sr_util        import *
+   from sarra.sr_credentials import *
 
 
 """
