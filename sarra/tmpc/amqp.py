@@ -142,7 +142,7 @@ class AMQP(TMPC):
                     for tup in self.props['bindings'] :          
                         prefix, exchange, values = tup
                         topic= prefix + '.' + values[0]
-                        logger.info('queue %s bound key %s to exchange %s (as: %s)' % \
+                        logger.info('binding %s with %s to %s (as: %s)' % \
                             ( self.props['queue_name'], topic, exchange, broker_str ) )
                         self.channel.queue_bind( self.props['queue_name'], exchange, topic )
 

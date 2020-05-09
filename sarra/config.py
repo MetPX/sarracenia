@@ -33,19 +33,6 @@ from sarra.sr_credentials import *
 
 """
 
-class AddBinding(argparse.Action):
-    """
-    called by argparse to deal with queue bindings.
-    """
-    def __call__(self, parser, namespace, values, option_string):
-
-        if not hasattr(namespace,'exchange'):
-           raise 'exchange needed before subtopic'
-
-        if not hasattr(namespace,'topic_prefix'):
-           raise 'topic_prefix needed before subtopic'
-
-        namespace.bindings.append( ( namespace.topic_prefix, namespace.exchange, values ) )
 
 class Config:
 
@@ -68,6 +55,9 @@ class Config:
 
        if parent is None:
           self.env = copy.deepcopy(os.environ)
+       else:
+          for i in parent:
+              setattr(self,i,parent[i])
 
        self.exchanges = []
        self.filename = None
@@ -265,7 +255,7 @@ class Config:
            name, value = words[1].split('=')
            self.env[name] = value
        elif words[0] in [ 'source' , 'subscriber', 'subscribe' ]:
-           self.users[words[0]] = words[1:] 
+           self.users[words[1]] = words[0] 
        elif words[0] in [ 'exchange' ]:
            self.exchanges.append( words[1] ) 
 
@@ -294,6 +284,31 @@ class Config:
            else:
                setattr( self, line[0] , ' '.join(line[1:]) )
   
+   def fill_missing_options(self):
+       """ 
+         There are default options that apply only if they are not overridden... 
+       """ 
+       if self.bindings == [] :
+          self.bindings = [ ( self.topic_prefix, self.exchange, '#' ) ] 
+
+   class AddBinding(argparse.Action):
+        """
+        called by argparse to deal with queue bindings.
+        """
+        def __call__(self, parser, namespace, values, option_string):
+    
+            if values == 'None':
+                namespace.bindings = []
+    
+            if not hasattr(namespace,'exchange'):
+               raise 'exchange needed before subtopic'
+    
+            if not hasattr(namespace,'topic_prefix'):
+               raise 'topic_prefix needed before subtopic'
+    
+            namespace.bindings.append( ( namespace.topic_prefix, namespace.exchange, values ) )
+
+
    def parse_args(self, isPost=False):
         """
            Use argparse.parser to modify defaults.
@@ -305,9 +320,6 @@ class Config:
              description='Subscribe to one peer, and post what is downloaded' ,\
              formatter_class=argparse.ArgumentDefaultsHelpFormatter )
         
-        #FIXME accept/reject processing missing here.
-        
-        parser.binding = self.bindings
         parser.add_argument('--accept_unmatched', default=self.accept_unmatch, type=bool, nargs='?', help='default selection, if nothing matches' )
         parser.add_argument('--action', '-a', nargs='?', \
            choices=[ 'add', 'cleanup', 'edit', 'declare', 'disable', 'edit', 'enable', 'foreground', 'list', 'log', 'remove', 'rename', 'restart', 'sanity', 'setup', 'start', 'stop', 'status' ], help='action to take on the specified configurations' )
@@ -331,6 +343,7 @@ class Config:
         #parser.add_argument('--clientid', help='like an AMQP queue name, identifies a group of subscribers')
         parser.add_argument('--component', choices=[ 'audit', 'cpost', 'cpump', 'poll', 'post', 'sarra', 'sender', 'shovel' 'subscribe', 'watch', 'winnow' ], \
             nargs='?', help='which component to look for a configuration for')
+        parser.add_argument('--debug', action='store_true', help='pring debugging output (very verbose)')
         #parser.add_argument('--dir_prefix', help='local sub-directory to put data in')
         #parser.add_argument('--download', type=bool, help='should download data ?')
         parser.add_argument('--exchange', nargs='?', default=self.exchange, help='root of the topic tree to subscribe to')
@@ -359,14 +372,14 @@ class Config:
         parser.add_argument('--post_topic_prefix', nargs='?', help='allows simultaneous use of multiple versions and types of messages')
         parser.add_argument('--topic_prefix', nargs='?', default=self.topic_prefix, help='allows simultaneous use of multiple versions and types of messages')
         parser.add_argument('--select', nargs=1, action='append', help='client-side filtering: accept/reject <regexp>' )
-        parser.add_argument('--subtopic', nargs=1, action=AddBinding, help='server-side filtering: MQTT subtopic, wilcards # to match rest, + to match one topic' )
+        parser.add_argument('--subtopic', nargs=1, action=Config.AddBinding, help='server-side filtering: MQTT subtopic, wilcards # to match rest, + to match one topic' )
 
         if isPost:
             parser.add_argument( 'path', nargs='+', help='files to post' )
         else:
             parser.add_argument('action', nargs='?', \
                choices=[ 'add', 'cleanup', 'edit', 'declare', 'disable', 'edit', 'enable', 'foreground', 'list', 'log', 'remove', 'rename', 'restart', 'sanity', 'setup', 'start', 'stop', 'status' ], help='action to take on the specified configurations' )
-            parser.add_argument( 'configurations', nargs='+', help='configurations to operate on' )
+            parser.add_argument( 'configurations', nargs='*', help='configurations to operate on' )
 
         args = parser.parse_args()
         #FIXME need to apply _varsub
@@ -411,6 +424,8 @@ def one_config( component, config, overrides=None, appdir_stuff={ 'appauthor':'s
     # FIXME... overrides with defaults, instead of only if non-default specified.
     #    unclear how to combine with config file.
     cfg.parse_args()
+
+    cfg.fill_missing_options()
 
     if ( component in [ 'report', 'sarra', 'sender', 'shovel', 'subscribe', 'winnow' ] ) :
          # a consuming component.

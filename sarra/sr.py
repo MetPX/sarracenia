@@ -23,6 +23,7 @@ from functools import partial
 
 import appdirs
 import copy
+import fnmatch
 import getpass
 import logging
 import os
@@ -201,6 +202,7 @@ class sr_GlobalState:
                         cfgbody = copy.deepcopy( self.default_cfg )
                         cfgbody.override( { 'program_name' : c, 'config': cbase,  'directory':'${PWD}' } )
                         cfgbody.parse_file( cfg )
+                        #cfgbody.fill_missing_options()
                         self.configs[c][cbase]['options'] = cfgbody
                         # ensure there is a known value of instances to run.
                         if c in ['post', 'cpost']:
@@ -492,8 +494,11 @@ class sr_GlobalState:
            x += '_%s' % o.exchange_suffix
 
         if hasattr(o,'exchange_split'):
+           l=[]
            for i in range(0,o.instances):
                y = x + '%02d' % i   
+               l.append(y)
+           return l
         else:
            return [ x ]
 
@@ -598,7 +603,6 @@ class sr_GlobalState:
                if x in self.brokers[h]['post_exchanges']:
                   a += len(self.brokers[h]['post_exchanges'][x])
                self.exchange_summary[h][x]=a
-               
                            
 
     def _resolve(self):
@@ -642,6 +646,26 @@ class sr_GlobalState:
 
         # FIXME: missing check for too many instances.
 
+
+    def _match_patterns(self,patterns=None):
+        """
+          identify subset of configurations to operate on.
+        """
+           
+        print( 'patterns: %s' % patterns )
+        self.filtered_configurations=[]
+        for c in self.components:
+            if (c not in self.configs):
+                continue
+            for cfg in self.configs[c]:
+                fcc = c + os.sep + cfg
+                if (patterns is None) or (len(patterns) < 1):
+                    self.filtered_configurations.append(fcc)
+                else:
+                    for p in patterns: 
+                        if fnmatch.fnmatch( fcc, p ):
+                            self.filtered_configurations.append(fcc)
+
     @property
     def appname(self):
         return self.__appname 
@@ -652,7 +676,7 @@ class sr_GlobalState:
         self.user_config_dir = appdirs.user_config_dir(self.appname, self.appauthor)
         self.user_cache_dir = appdirs.user_cache_dir(self.appname, self.appauthor)
         
-    def __init__(self):
+    def __init__(self,config_fnmatches=None):
         """
            side effect: changes current working directory FIXME?
         """
@@ -696,6 +720,7 @@ class sr_GlobalState:
         self._resolve()
         self._find_missing_instances()
         #print('analysis - Done. ', flush=True)
+        self._match_patterns(config_fnmatches)
 
     def _start_missing(self):
         for instance in self.missing:
@@ -714,6 +739,11 @@ class sr_GlobalState:
                 continue
 
             for cfg in self.configs[c]:
+
+                f = c + os.sep + cfg
+                if f not in self.filtered_configurations:
+                    continue
+
                 if not 'options' in self.configs[c][cfg] :
                     continue
                 logging.info( 'looking at %s/%s ' % ( c, cfg ) )
@@ -734,6 +764,11 @@ class sr_GlobalState:
                 continue
 
             for cfg in self.configs[c]:
+
+                f = c + os.sep + cfg
+                if f not in self.filtered_configurations:
+                    continue
+
                 if not 'options' in self.configs[c][cfg] :
                     continue
                 logging.info( 'looking at %s/%s ' % ( c, cfg ) )
@@ -764,6 +799,11 @@ class sr_GlobalState:
             if component_path == '':
                 continue
             for cfg in self.configs[c]:
+
+                f = c + os.sep + cfg
+                if f not in self.filtered_configurations:
+                    continue
+
                 if c[0] != 'c':  # python components
                     cmd = [sys.executable, component_path, action, cfg]
                 else:
@@ -809,6 +849,9 @@ class sr_GlobalState:
             if component_path == '':
                 continue
             for cfg in self.configs[c]:
+                f = c + os.sep + cfg
+                if f not in self.filtered_configurations:
+                    continue
                 if self.configs[c][cfg]['status'] in ['stopped']:
                     numi = self.configs[c][cfg]['instances']
                     for i in range(1, numi + 1):
@@ -849,6 +892,11 @@ class sr_GlobalState:
             if c not in self.configs:
                 continue
             for cfg in self.configs[c]:
+
+                f = c + os.sep + cfg
+                if f not in self.filtered_configurations:
+                    continue
+
                 if self.configs[c][cfg]['status'] in ['running', 'partial']:
                     for i in self.states[c][cfg]['instance_pids']:
                         # print( "for %s/%s - %s os.kill( %s, SIGTERM )" % \
@@ -895,6 +943,10 @@ class sr_GlobalState:
             if c not in self.configs:
                 continue
             for cfg in self.configs[c]:
+                f = c + os.sep + cfg
+                if f not in self.filtered_configurations:
+                    continue
+
                 if self.configs[c][cfg]['status'] in ['running', 'partial']:
                     for i in self.states[c][cfg]['instance_pids']:
                         if self.states[c][cfg]['instance_pids'][i] in self.procs:
@@ -921,6 +973,11 @@ class sr_GlobalState:
             if c not in self.configs:
                 continue
             for cfg in self.configs[c]:
+
+                f = c + os.sep + cfg
+                if f not in self.filtered_configurations:
+                    continue
+
                 if self.configs[c][cfg]['status'] in ['running', 'partial']:
                     for i in self.states[c][cfg]['instance_pids']:
                         print("failed to kill: %s/%s instance: %s, pid: %s )" % (
@@ -1017,6 +1074,10 @@ class sr_GlobalState:
 
             for cfg in self.configs[c]:
 
+                f = c + os.sep + cfg
+                if f not in self.filtered_configurations:
+                    continue
+
                 sfx=''
                 if self.configs[c][cfg]['status'] == 'include' :
                     continue
@@ -1081,18 +1142,35 @@ def main():
     logging.basicConfig(format='%(asctime)s [%(levelname)s] %(message)s', level=logging.DEBUG)
     logger.setLevel( logging.INFO )
 
-
+    if sys.argv[1] == '--debug':
+        logger.setLevel( logging.DEBUG )
+    else:
+        logger.setLevel( logging.INFO )
 
     actions = ['declare', 'devsnap', 'dump', 'restart', 'sanity', 'setup', 'status', 'stop']
 
-    if len(sys.argv) < 2:
+    cfg = sarra.config.Config( { 'accept_unmatch':True,  'exchange':'xpublic',
+       'inline':False, 'inline_encoding':'auto', 'inline_max':4096, 'subtopic':None } )
+    cfg.parse_args()
+
+    cfg.fill_missing_options()
+
+    #cfg.dump()
+
+    if not hasattr(cfg, 'configurations'):
+        cfg.configurations=[ '*/*' ]
+
+    if not hasattr( cfg, 'action' ):
+        cfg.dump()
         print('USAGE: %s (%s)' % (sys.argv[0], '|'.join(actions)))
         return
-    else:
-        action = sys.argv[1]
+
+    action = cfg.action
 
 
-    gs = sr_GlobalState()
+    gs = sr_GlobalState(cfg.configurations)
+
+    #print("filtered_config: %s" % gs.filtered_configurations )
     # testing proc file i/o
     #gs.read_proc_file()
     #return
