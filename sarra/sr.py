@@ -202,7 +202,7 @@ class sr_GlobalState:
                         cfgbody = copy.deepcopy( self.default_cfg )
                         cfgbody.override( { 'program_name' : c, 'config': cbase,  'directory':'${PWD}' } )
                         cfgbody.parse_file( cfg )
-                        #cfgbody.fill_missing_options()
+                        cfgbody.fill_missing_options()
                         self.configs[c][cbase]['options'] = cfgbody
                         # ensure there is a known value of instances to run.
                         if c in ['post', 'cpost']:
@@ -1155,13 +1155,10 @@ def main():
 
     cfg.fill_missing_options()
 
-    #cfg.dump()
-
     if not hasattr(cfg, 'configurations'):
         cfg.configurations=[ '*/*' ]
 
     if not hasattr( cfg, 'action' ):
-        cfg.dump()
         print('USAGE: %s (%s)' % (sys.argv[0], '|'.join(actions)))
         return
 

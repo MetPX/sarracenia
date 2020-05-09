@@ -288,7 +288,24 @@ class Config:
        """ 
          There are default options that apply only if they are not overridden... 
        """ 
-       if self.bindings == [] :
+       if self.broker is not None:
+          if not hasattr(self,'exchange') or self.exchange is None:
+              x = 'xs_%s' % self.broker.username
+ 
+              if hasattr(self,'exchange_suffix'):
+                  x += '_%s' % self.exchange_suffix
+              self.exchange = x
+
+       if self.post_broker is not None:
+          if not hasattr(self,'post_exchange') or self.post_exchange is None:
+              x = 'xs_%s' % self.post_broker.username
+ 
+              if hasattr(self,'post_exchange_suffix'):
+                  x += '_%s' % self.post_exchange_suffix
+
+              self.post_exchange = x
+
+       if ( self.bindings == [] and hasattr(self,'exchange') ):
           self.bindings = [ ( self.topic_prefix, self.exchange, '#' ) ] 
 
    class AddBinding(argparse.Action):
