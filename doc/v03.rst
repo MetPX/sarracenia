@@ -11,7 +11,7 @@ Abstract Goals:
 * multi-protocol support.
   ability to put in urls for mqtt, or different amqp libraries, perhaps others.
 
-* internally represent things in v03 messages, have something built
+* internally represent things in v03 messages, have something build
   v02 ones for compatibility, but operate in v03.
 
 * less code, simpler code.
@@ -78,7 +78,9 @@ Known Problems
 
 * this weird try/except thing for importing modules... tried removing
   it but it broke parsing of checksums... sigh... have to spend time
-  on specifically that problem.
+  on specifically that problem. On new modules ( sarra.config, 
+  sarra.tmpc.*, sr.py ) using normal imports. likely need to
+  refactor how checksum plugin mechanism works then try again.
 
 
 Concrete Plan
@@ -87,6 +89,8 @@ Concrete Plan
 replace sarra/sr_config with sarra/sr_cfg2. The new sr_cfg2 uses argparse 
 and a simpler model for config file parsing.
 
+make sr.py accept operations on subsets, so it becomes the unique entry point.
+internalize implementation of all management stuff, declare etc...
 
 HMPC - Topic Message Protocol Client... a generalization of the message
 passing library with a simplified API.  abstracts the protocol differences

@@ -729,6 +729,8 @@ class sr_GlobalState:
     def _start_missing(self):
         for instance in self.missing:
             (c, cfg, i) = instance
+            if not ( c+os.sep+cfg in self.filtered_configurations ):
+                continue
             component_path = self._find_component_path(c)
             if component_path == '':
                 continue
@@ -827,7 +829,12 @@ class sr_GlobalState:
         :return:
         """
         self._find_missing_instances()
-        print('missing: %s' % self.missing)
+        filtered_missing = []
+        for m in self.missing:
+            if m[0]+os.sep+m[1] in self.filtered_configurations :
+               filtered_missing.append(m)
+
+        print('missing: %s' % filtered_missing )
         print('starting them up...')
         self._start_missing()
 
