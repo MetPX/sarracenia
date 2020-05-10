@@ -203,7 +203,7 @@ class sr_GlobalState:
                         cfgbody = copy.deepcopy( self.default_cfg )
                         cfgbody.override( { 'program_name' : c, 'config': cbase,  'directory':'${PWD}' } )
                         cfgbody.parse_file( cfg )
-                        cfgbody.fill_missing_options()
+                        cfgbody.fill_missing_options(c,cfg)
                         self.configs[c][cbase]['options'] = cfgbody
                         # ensure there is a known value of instances to run.
                         if c in ['post', 'cpost']:
@@ -1131,7 +1131,8 @@ def main():
        'inline':False, 'inline_encoding':'auto', 'inline_max':4096, 'subtopic':None } )
     cfg.parse_args()
 
-    cfg.fill_missing_options()
+    #FIXME... hmm... so... 
+    #cfg.fill_missing_options()
 
     if not hasattr(cfg, 'configurations'):
         cfg.configurations=[ '*/*' ]
@@ -1193,6 +1194,7 @@ def main():
         print('Stopping: ', end='', flush=True)
         gs.stop()
 
+    print('')
 
 if __name__ == "__main__":
     main()

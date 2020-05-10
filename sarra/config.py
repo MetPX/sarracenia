@@ -11,13 +11,14 @@
 
 """
 
-import os
-import re
-import copy
-import argparse
-import socket
-import logging
 import appdirs
+import argparse
+import copy
+import logging
+import os
+import pathlib
+import re
+import socket
 
 from random import randint
 
@@ -48,6 +49,8 @@ class Config:
        self.bindings =  []
        self.__broker = None
        self.__post_broker = None
+
+       self.appdir_stuff = appdir_stuff
 
        if Config.credentials is None:
           Config.credentials=sr_credentials()
@@ -291,16 +294,46 @@ class Config:
            else:
                setattr( self, line[0] , ' '.join(line[1:]) )
   
-   def fill_missing_options(self):
+   def fill_missing_options(self,component,config):
        """ 
          There are default options that apply only if they are not overridden... 
        """ 
+
        if self.broker is not None:
           if not hasattr(self,'exchange') or self.exchange is None:
               self.exchange = 'xs_%s' % self.broker.username
  
           if hasattr(self,'exchange_suffix'):
                   self.exchange += '_%s' % self.exchange_suffix
+       
+          queuefile = appdirs.user_cache_dir( self.appdir_stuff['appname'],
+               self.appdir_stuff['appauthor']  )
+          queuefile += os.sep + component + os.sep + config[0:-5] 
+          queuefile += os.sep + 'sr_' + component + '.' + config[0:-5] + '.' + self.broker.username 
+
+          if hasattr(self,'exchange_split') and hasattr(self,'no') and ( self.no > 0 ):
+              queuefile += "%02d" % self.no
+          queuefile  += '.qname'
+
+          if not hasattr(self,'queue_name'):
+             if os.path.isfile( queuefile ) :
+                 f = open(queuefile,'r')
+                 self.queue_name = f.read()
+                 f.close()
+             else:
+                 queue_name = 'q_' + self.broker.username + '.sr_' + component +  '.' + config[0:-5]
+                 if hasattr(self,'queue_suffix'): queue_name += '.' + self.queue_suffix
+                 queue_name += '.'  + str(random.randint(0,100000000)).zfill(8)
+                 queue_name += '.'  + str(random.randint(0,100000000)).zfill(8)
+                 self.queue_name = queue_name
+
+          logging.debug( 'queue_name set to {}'.format(self.queue_name) )
+          if not os.path.isdir( os.path.dirname(queuefile) ):
+              pathlib.Path(os.path.dirname(queuefile)).mkdir(parents=True, exist_ok=True)
+          f=open( queuefile, 'w' )
+          f.write( self.queue_name )
+          f.close()
+
 
        if self.post_broker is not None:
           if not hasattr(self,'post_exchange') or self.post_exchange is None:
@@ -456,34 +489,8 @@ def one_config( component, config, overrides=None, appdir_stuff={ 'appauthor':'s
     #    unclear how to combine with config file.
     cfg.parse_args()
 
-    cfg.fill_missing_options()
+    cfg.fill_missing_options(component,config)
 
-    if ( component in [ 'report', 'sarra', 'sender', 'shovel', 'subscribe', 'winnow' ] ) :
-         # a consuming component.
-       
-         queuefile = appdirs.user_cache_dir( appdir_stuff['appname'], appdir_stuff['appauthor']  )
-         queuefile += os.sep + component + os.sep + config[0:-5] 
-         queuefile += os.sep + 'sr_' + component + '.' + config + '.' + cfg.broker.username 
-         if hasattr(cfg,'exchange_split') and hasattr(cfg,'no') and ( cfg.no > 0 ):
-              queuefile += "%02d" % cfg.no
-         queuefile  += '.qname'
-
-         if not hasattr(cfg,'queue_name'):
-             if os.path.isfile( queuefile ) :
-                 f = open(queuefile,'r')
-                 cfg.queue_name = f.read()
-                 f.close()
-             else:
-                 queue_name = 'q_' + cfg.broker.username + '.sr_' + component +  '.' + config
-                 if hasattr(cfg,'queue_suffix'): queue_name += '.' + cfg.queue_suffix
-                 queue_name += '.'  + str(random.randint(0,100000000)).zfill(8)
-                 queue_name += '.'  + str(random.randint(0,100000000)).zfill(8)
-                 cfg.queue_name = queue_name
-
-         logging.error( 'queue_name set to {}'.format(cfg.queue_name) )
-         f=open( queuefile, 'w' )
-         f.write( cfg.queue_name )
-         f.close()
 
     #pp = pprint.PrettyPrinter(depth=6) 
     #pp.pprint(cfg)

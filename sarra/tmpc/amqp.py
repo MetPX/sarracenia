@@ -180,6 +180,8 @@ class AMQP(TMPC):
 
                 if self.props['declare']:
                     logger.debug('putSetup ... 1. declaring {}'.format(self.props['exchange']) )
+                    if type(self.props['exchange']) is not list:
+                        self.props['exchange'] = [ self.props['exchange'] ] 
                     for x in self.props['exchange']:
                         self.channel.exchange_declare( x, 'topic', 
                              auto_delete=self.props['auto_delete'], durable=self.props['durable']  )
