@@ -442,7 +442,7 @@ class Config:
             parser.add_argument( 'path', nargs='+', help='files to post' )
         else:
             parser.add_argument('action', nargs='?', \
-               choices=[ 'add', 'cleanup', 'edit', 'declare', 'disable', 'edit', 'enable', 'foreground', 'list', 'log', 'remove', 'rename', 'restart', 'sanity', 'setup', 'start', 'stop', 'status' ], help='action to take on the specified configurations' )
+               choices=[ 'add', 'cleanup', 'edit', 'declare', 'disable', 'dump', 'edit', 'enable', 'foreground', 'list', 'log', 'remove', 'rename', 'restart', 'sanity', 'setup', 'start', 'stop', 'status' ], help='action to take on the specified configurations' )
             parser.add_argument( 'configurations', nargs='*', help='configurations to operate on' )
 
         args = parser.parse_args()

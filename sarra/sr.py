@@ -653,17 +653,22 @@ class sr_GlobalState:
         """
            
         self.filtered_configurations=[]
+
+        candidates=['audit']
         for c in self.components:
             if (c not in self.configs):
                 continue
             for cfg in self.configs[c]:
                 fcc = c + os.sep + cfg
-                if (patterns is None) or (len(patterns) < 1):
-                    self.filtered_configurations.append(fcc)
-                else:
-                    for p in patterns: 
-                        if fnmatch.fnmatch( fcc, p ):
-                            self.filtered_configurations.append(fcc)
+                candidates.append(fcc)
+
+        for fcc in candidates:
+            if (patterns is None) or (len(patterns) < 1):
+                self.filtered_configurations.append(fcc)
+            else:
+                for p in patterns: 
+                    if fnmatch.fnmatch( fcc, p ):
+                        self.filtered_configurations.append(fcc)
 
     @property
     def appname(self):
@@ -842,10 +847,22 @@ class sr_GlobalState:
 
         pcount=0
         for f in self.filtered_configurations:
-            ( c, cfg ) = f.split(os.sep)
- 
+            if os.sep in f :
+                ( c, cfg ) = f.split(os.sep)
+            else:
+                c = f
+                cfg = None 
+
             component_path = self._find_component_path(c)
             if component_path == '':
+                continue
+
+            if c == 'audit':
+                if self.auditors == 0:
+                    self._launch_instance(component_path, c, None, 1)
+                    continue
+ 
+            if cfg == None:
                 continue
 
             if self.configs[c][cfg]['status'] in ['stopped']:
@@ -855,10 +872,6 @@ class sr_GlobalState:
                     pcount += 1
                     self._launch_instance(component_path, c, cfg, i)
 
-        c = 'audit'
-        component_path = self._find_component_path(c)
-        if self.auditors == 0:
-            self._launch_instance(component_path, c, None, 1)
 
         print('( %d ) Done' % pcount )
 
@@ -877,7 +890,8 @@ class sr_GlobalState:
         pcount=0
         # kill sr_audit first, so it does not restart while others shutting down.
         # https://github.com/MetPX/sarracenia/issues/210
-        if self.auditors > 0:
+
+        if ( 'audit' in self.filtered_configurations ) and self.auditors > 0:
             for p in self.procs:
                 if 'audit' in self.procs[p]['name']:
                     os.kill(p, signal.SIGTERM)
@@ -885,6 +899,8 @@ class sr_GlobalState:
                     pcount += 1
 
         for f in self.filtered_configurations:
+            if f == 'audit' : continue
+
             ( c, cfg ) = f.split(os.sep)
  
             if self.configs[c][cfg]['status'] in ['running', 'partial']:
@@ -917,19 +933,26 @@ class sr_GlobalState:
             self._read_states()
             self._resolve()
 
-            if len(self.procs) == 0:
+            running_pids=0
+            for f in self.filtered_configurations:
+                if f == 'audit' : continue
+                ( c, cfg ) = f.split(os.sep)
+                running_pids += len(self.states[c][cfg]['instance_pids'])
+
+            if running_pids == 0:
                 print('All stopped after try %d' % attempts)
                 return 0
             attempts += 1
 
         print('doing SIGKILL this time')
 
-        if self.auditors > 0:
+        if ( 'audit' in self.filtered_configurations ) and self.auditors > 0:
             for p in self.procs:
                 if 'audit' in p['name']:
                     os.kill(p, signal.SIGKILL)
 
         for f in self.filtered_configurations:
+            if f == 'audit' : continue
             ( c, cfg ) = f.split(os.sep)
             if self.configs[c][cfg]['status'] in ['running', 'partial']:
                 for i in self.states[c][cfg]['instance_pids']:
@@ -954,6 +977,7 @@ class sr_GlobalState:
         self._resolve()
 
         for f in self.filtered_configurations:
+            if f == 'audit' : continue
             ( c, cfg ) = f.split(os.sep)
             if self.configs[c][cfg]['status'] in ['running', 'partial']:
                 for i in self.states[c][cfg]['instance_pids']:
@@ -1149,15 +1173,10 @@ def main():
     #print("filtered_config: %s" % gs.filtered_configurations )
     # testing proc file i/o
     #gs.read_proc_file()
-    #return
 
     if action in ['declare', 'setup']:
         print('%s: ' % action, end='', flush=True)
         gs.declare()
-
-    #if action in ['declare', 'setup']:
-    #    print('%s: ' % action, end='', flush=True)
-    #    gs.maint(action)
 
     if action == 'dump':
         print('dumping: ', end='', flush=True)
