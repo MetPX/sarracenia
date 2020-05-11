@@ -473,7 +473,6 @@ class sr_GlobalState:
         if not host in self.brokers:
                  
             self.brokers[host] = {}
-            self.brokers[host]['post_exchanges'] = {}
             self.brokers[host]['exchanges'] = {}
             self.brokers[host]['queues'] = {}
             if hasattr(self.admin_cfg,'admin') and host in self.admin_cfg.admin:
@@ -600,8 +599,6 @@ class sr_GlobalState:
                a=0
                if x in self.brokers[h]['exchanges']:
                    a += len(self.brokers[h]['exchanges'][x])
-               if x in self.brokers[h]['post_exchanges']:
-                  a += len(self.brokers[h]['post_exchanges'][x])
                self.exchange_summary[h][x]=a
                            
 
@@ -1003,9 +1000,6 @@ class sr_GlobalState:
         print('\n\nBroker Bindings\n\n')
         for h in self.brokers:
             print( "\nhost: %s" % h )
-            print( "\npost_exchanges: " )
-            for x in self.brokers[h]['post_exchanges']:
-                print( "\t%s: %s" % ( x, self.brokers[h]['post_exchanges'][x] ) )
             print( "\nexchanges: " )
             for x in self.brokers[h]['exchanges']:
                 print( "\t%s: %s" % ( x, self.brokers[h]['exchanges'][x] ) )
