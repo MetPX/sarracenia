@@ -740,53 +740,38 @@ class sr_GlobalState:
 
 
         # declare exchanges first.
-        for c in self.components:
-            if (c not in self.states) or (c not in self.configs):
+        for f in self.filtered_configurations:
+            if f == 'audit' : continue
+
+            ( c, cfg ) = f.split(os.sep)
+
+            if not 'options' in self.configs[c][cfg] :
                 continue
-
-            for cfg in self.configs[c]:
-
-                f = c + os.sep + cfg
-                if f not in self.filtered_configurations:
-                    continue
-
-                if not 'options' in self.configs[c][cfg] :
-                    continue
-                logging.info( 'looking at %s/%s ' % ( c, cfg ) )
-                o = self.configs[c][cfg]['options']
-                od = o.dictify()
-                if hasattr(o, 'resolved_exchanges') and o.resolved_exchanges is not None :
-                     for rx in o.resolved_exchanges:
-                         od['exchange'] = rx
-                         od['broker'] = od['post_broker']
-                         xdc = sarra.tmpc.TMPC( o.post_broker, od, get=False )
-                         #logging.info( 'declared %s exchange (using: %s@%s)' % \
-                         #    ( rx, o.post_broker.username, o.post_broker.hostname ) )
-                         xdc.close() 
+            logging.info( 'looking at %s/%s ' % ( c, cfg ) )
+            o = self.configs[c][cfg]['options']
+            od = o.dictify()
+            if hasattr(o, 'resolved_exchanges') and o.resolved_exchanges is not None :
+                 for rx in o.resolved_exchanges:
+                     od['exchange'] = rx
+                     od['broker'] = od['post_broker']
+                     xdc = sarra.tmpc.TMPC( o.post_broker, od, get=False )
+                     xdc.close() 
 
         # then declare and bind queues....
-        for c in self.components:
-            if (c not in self.states) or (c not in self.configs):
+        for f in self.filtered_configurations:
+            if f == 'audit' : continue
+
+            ( c, cfg ) = f.split(os.sep)
+
+            if not 'options' in self.configs[c][cfg] :
                 continue
-
-            for cfg in self.configs[c]:
-
-                f = c + os.sep + cfg
-                if f not in self.filtered_configurations:
-                    continue
-
-                if not 'options' in self.configs[c][cfg] :
-                    continue
-                logging.info( 'looking at %s/%s ' % ( c, cfg ) )
-                o = self.configs[c][cfg]['options']
-                od = o.dictify()
-                if hasattr(o, 'resolved_qname' ):
-                     # declare by doing a setup and close.
-                     od['queue_name'] = o.resolved_qname
-                     qdc = sarra.tmpc.TMPC( o.broker, od )
-                     #logging.info( 'declared %s queue (using: %s@%s)' % \
-                     #        ( o.resolved_qname, o.broker.username, o.broker.hostname ) )
-                     qdc.close()
+            logging.info( 'looking at %s/%s ' % ( c, cfg ) )
+            o = self.configs[c][cfg]['options']
+            od = o.dictify()
+            if hasattr(o, 'resolved_qname' ):
+                 od['queue_name'] = o.resolved_qname
+                 qdc = sarra.tmpc.TMPC( o.broker, od )
+                 qdc.close()
 
  
 
@@ -854,11 +839,6 @@ class sr_GlobalState:
 
         pcount=0
         for f in self.filtered_configurations:
-            if os.sep in f :
-                ( c, cfg ) = f.split(os.sep)
-            else:
-                c = f
-                cfg = None 
 
             component_path = self._find_component_path(c)
             if component_path == '':
@@ -869,8 +849,7 @@ class sr_GlobalState:
                     self._launch_instance(component_path, c, None, 1)
                     continue
  
-            if cfg == None:
-                continue
+            ( c, cfg ) = f.split(os.sep)
 
             if self.configs[c][cfg]['status'] in ['stopped']:
                 numi = self.configs[c][cfg]['instances']
