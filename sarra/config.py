@@ -406,6 +406,7 @@ class Config:
         #parser.add_argument('--clientid', help='like an AMQP queue name, identifies a group of subscribers')
         parser.add_argument('--component', choices=[ 'audit', 'cpost', 'cpump', 'poll', 'post', 'sarra', 'sender', 'shovel' 'subscribe', 'watch', 'winnow' ], \
             nargs='?', help='which component to look for a configuration for')
+        parser.add_argument('--dangerWillRobinson', action='store_true', default=False, help='Confirm you want to do something dangerous')
         parser.add_argument('--debug', action='store_true', help='pring debugging output (very verbose)')
         #parser.add_argument('--dir_prefix', help='local sub-directory to put data in')
         #parser.add_argument('--download', type=bool, help='should download data ?')

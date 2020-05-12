@@ -677,13 +677,14 @@ class sr_GlobalState:
         self.user_config_dir = appdirs.user_config_dir(self.appname, self.appauthor)
         self.user_cache_dir = appdirs.user_cache_dir(self.appname, self.appauthor)
         
-    def __init__(self,config_fnmatches=None):
+    def __init__(self,opt,config_fnmatches=None):
         """
            side effect: changes current working directory FIXME?
         """
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
         self.appauthor = 'science.gc.ca'
+        self.options=opt
         self.appname = os.getenv( 'SR_DEV_APPNAME' )
         if self.appname == None:
             self.appname = 'sarra'
@@ -735,11 +736,9 @@ class sr_GlobalState:
 
     def declare(self):
 
-
         # declare exchanges first.
         for f in self.filtered_configurations:
             if f == 'audit' : continue
-
             ( c, cfg ) = f.split(os.sep)
 
             if not 'options' in self.configs[c][cfg] :
@@ -770,8 +769,35 @@ class sr_GlobalState:
                  qdc = sarra.tmpc.TMPC( o.broker, od )
                  qdc.close()
 
+    def cleanup(self):
  
+        if len(self.filtered_configurations) > 1 and not self.options.dangerWillRobinson:
+           logging.error("specify --dangerWillRobinson to cleanup > 1 config at a time")
+           return
 
+        queues_to_delete=[]
+        for f in self.filtered_configurations:
+            if f == 'audit' : continue
+            ( c, cfg ) = f.split(os.sep)
+          
+            o = self.configs[c][cfg]['options']
+
+            if hasattr(o,'resolved_qname'):
+                #print('deleting: %s is: %s @ %s' % (f, o.resolved_qname, o.broker.hostname ))
+                queues_to_delete.append( (o.broker,o.resolved_qname) )
+   
+        print( 'queues to delete: %s' ) 
+        for h in self.brokers:
+            for qd in queues_to_delete:
+                if qd[0].hostname != h: continue
+                for x in self.brokers[h]['exchanges']:
+                    xx = self.brokers[h]['exchanges'][x]
+                    if qd[1] in xx:
+                        print(' remove %s from %s subscribers: %s ' % (qd[1], x, xx) )
+                        xx.remove(qd[1])
+                        if len(xx) < 1:
+                             print( "no more queues, removing exchange %s" % x )
+                   
 
     def maint(self, action):
         """
@@ -837,16 +863,18 @@ class sr_GlobalState:
         pcount=0
         for f in self.filtered_configurations:
 
+            if f == 'audit':
+                if self.auditors == 0:
+                    component_path = self._find_component_path(f)
+                    self._launch_instance(component_path, f, None, 1)
+                    continue
+
+            ( c, cfg ) = f.split(os.sep)
+
             component_path = self._find_component_path(c)
             if component_path == '':
                 continue
-
-            if c == 'audit':
-                if self.auditors == 0:
-                    self._launch_instance(component_path, c, None, 1)
-                    continue
  
-            ( c, cfg ) = f.split(os.sep)
 
             if self.configs[c][cfg]['status'] in ['stopped']:
                 numi = self.configs[c][cfg]['instances']
@@ -1148,7 +1176,7 @@ def main():
     action = cfg.action
 
 
-    gs = sr_GlobalState(cfg.configurations)
+    gs = sr_GlobalState(cfg,cfg.configurations)
 
     #print("filtered_config: %s" % gs.filtered_configurations )
     # testing proc file i/o
@@ -1157,6 +1185,10 @@ def main():
     if action in ['declare', 'setup']:
         print('%s: ' % action, end='', flush=True)
         gs.declare()
+
+    if action == 'cleanup':
+        print('cleanup: ', end='', flush=True)
+        gs.cleanup()
 
     if action == 'dump':
         print('dumping: ', end='', flush=True)
