@@ -686,7 +686,7 @@ class sr_GlobalState:
         self.appauthor = 'science.gc.ca'
         self.options=opt
         self.appname = os.getenv( 'SR_DEV_APPNAME' )
-        if self.appname == None:
+        if self.appname is None:
             self.appname = 'sarra'
         else:
             print( 'DEVELOPMENT using alternate application name: %s, bindir=%s' % (self.appname, self.bin_dir ))

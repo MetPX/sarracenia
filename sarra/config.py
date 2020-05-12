@@ -86,7 +86,7 @@ class Config:
    def _validate_urlstr(self,urlstr):
        # check url and add credentials if needed from credential file
        ok, details = Config.credentials.get(urlstr)
-       if details == None :
+       if details is None :
            logging.error("bad credential %s" % urlstr)
            return False, urllib.parse.urlparse(urlstr)
        return True, details.url
