@@ -8,8 +8,8 @@
 # Sarracenia repository: https://github.com/MetPX/sarracenia
 # Documentation: https://github.com/MetPX/sarracenia
 #
-# sr_cache.py : python3 program generalise caching for sr programs
-# TODO documentation: caching for what purpose, motive or benefit ? based on what policy, model, algorithm ?
+# sr_cache.py : python3 program that generalise caching for sr programs, it is used as a time based buffer that
+#               prevents, when activated, identical files (of some kinds) from being processed more than once.
 #
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
@@ -50,7 +50,6 @@ from sarra.sr_util import nowflt
 
 
 class sr_cache():
-    # TODO reformat this file (whitespaces and other PEP8...)
     def __init__(self, parent ):
         parent.logger.debug("sr_cache init")
 
@@ -70,7 +69,6 @@ class sr_cache():
         self.count         = 0
 
     def check(self, key, path, part):
-        # TODO in docstring: the write operation may raise OSError this is unhandled at this point
         self.logger.debug("sr_cache check basis=%s" % self.cache_basis )
 
         # not found 
@@ -79,8 +77,6 @@ class sr_cache():
         # set time and value
         now   = nowflt()
 
-        # TODO put cache basis possible strings in an enum to assure that those options come from a single shared
-        #  declaration and sr_cache controls possible options.
         if self.cache_basis == 'name':
             relpath = path.split('/')[-1]
         elif self.cache_basis == 'path':
@@ -88,57 +84,41 @@ class sr_cache():
         elif self.cache_basis == 'data':
             relpath = "data"
 
-        # FIXME Local variable 'relpath' might be referenced before assignment.
-        #  Why not use an else instead of last elif for declaring relpath there will always be those only 3 options
-        #  isnt it?
         qpath = urllib.parse.quote(relpath)
         value = '%s*%s' % (relpath,part)
 
-        # new... add
         if key not in self.cache_dict :
-           # FIXME meaningless debug msg
-           self.logger.debug("new")
+           self.logger.debug("adding a new entry in cache")
            kdict = {}
            kdict[value] = now
            self.cache_dict[key] = kdict
            self.fp.write("%s %f %s %s\n"%(key,now,qpath,part))
            self.count += 1
-           # new entry
            return True
 
-        # key (sum) in cache ... 
-        # if value "path part" already there update its time
-        # if value "path part" not there add it 
-        # this ends up to be the same code
-
+        self.logger.debug("sum already in cache: key={}".format(key))
         kdict   = self.cache_dict[key]
         present = value in kdict
         kdict[value] = now
 
         # differ or newer, write to file
-        # FIXME no mather what happens in the method those 2 lines will be called, and the write operation is the most
-        #  prone to fail (with unhandled ValueError, IOError) in this method, why not put it before the first check ?
         self.fp.write("%s %f %s %s\n"%(key,now,qpath,part))
         self.count += 1
 
-        # present = old entry
-
-        if present :
+        if present:
+           self.logger.debug("updated time of old entry: value={}".format(value))
            self.cache_hit = value
            return False
+        else:
+           self.logger.debug("added value={}".format(value))
 
-        # if not present and not a part : it is a new entry
-        if part is None or part[0] not in "pi" :
-           # FIXME meaningless debug msg
-           self.logger.debug("differ")
+        if part is None or part[0] not in "pi":
+           self.logger.debug("new entry, not a part: part={}".format(part))
            return True
 
-        # if weird part ... its a new entry
-        # FIXME shouldn't we signal this weirdness here (raise exception, log error, not keeping in cache, ...)
         ptoken = part.split(',')
         if len(ptoken) < 4 :
-           # FIXME meaningless debug msg
-           self.logger.debug("differ")
+           self.logger.debug("new entry, weird part: ptoken={}".format(ptoken))
            return True
 
         # build a wiser dict value without
@@ -146,7 +126,7 @@ class sr_cache():
         # FIXME the remainder of this method is wrong. It will trivially have a match because we just
         #  added the entry in kdict, then we will always find the value and return false. It will not change
         #  anything at all though. Worst, the cache hit will falsely indicate that we hit an old entry. Then,
-        #  partitioned files would be lost
+        #  partitioned files would be lost. And why are we removing blktot and brem to do such a check.
         pvalue = value
         pvalue = pvalue.replace(','+ptoken[2],'',10)
         pvalue = pvalue.replace(','+ptoken[3],'',10)
@@ -155,8 +135,6 @@ class sr_cache():
         # build a similar value to compare with pvalue
 
         for value in kdict :
-
-            # TODO repeated code: consider extracting to a method
             kvalue = value
             kvalue = kvalue.replace(','+ptoken[2],'',10)
             kvalue = kvalue.replace(','+ptoken[3],'',10)
@@ -164,21 +142,16 @@ class sr_cache():
             # if we find the value... its in cache... its old
 
             if pvalue == kvalue :
-               # TODO understand in which circumstance this would happens ? when we would have the same checksum,
-               #  <method>, <bsz>, <bno>, but different <blktot> or <brem> and conclude we have the same value
-               #  and would it make a difference
                self.cache_hit = value
                return False
 
-        # did not find it... its new
-
-        # FIXME meaningless debug msg
-        self.logger.debug("differ")
+        # FIXME variable value was overwritten by loop variable value. Using pvalue is safer here
+        #  for when the loop bug will be fixed.
+        self.logger.debug("did not find it... its new: pvalue={}".format(pvalue))
 
         return True
 
     def check_msg(self, msg):
-        # TODO document in docstring: sr_cache may raise OSErrors this is unhandled at this point
         self.logger.debug("sr_cache check_msg")
 
         # TODO repeated code: in sr_cache.check consider extracting to a method
@@ -234,7 +207,7 @@ class sr_cache():
                 ndict[value] = t
                 self.count  += 1
 
-                if fp : fp.write("%s %f %s %s\n"%(key,t,qpath,part))  # TODO need justification: no try-except for a write
+                if fp : fp.write("%s %f %s %s\n"%(key,t,qpath,part))
 
             if len(ndict) > 0 : new_dict[key] = ndict
 
@@ -262,7 +235,7 @@ class sr_cache():
         # close,remove file, open new empty file
         self.fp.close()
         if os.path.exists( self.cache_file ):
-            os.unlink( self.cache_file )  # FIXME inconsistencies: to try-except or not to try-except
+            os.unlink( self.cache_file )
         self.fp = open(self.cache_file,'w')
 
         # clean cache removing delpath
