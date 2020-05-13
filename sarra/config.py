@@ -67,7 +67,7 @@ class Config:
           for i in parent:
               setattr(self,i,parent[i])
 
-       self.exchanges = []
+       self.declared_exchanges = []
        self.post_exchanges = []
        self.filename = None
        self.flatten = '/'
@@ -90,6 +90,19 @@ class Config:
            logging.error("bad credential %s" % urlstr)
            return False, urllib.parse.urlparse(urlstr)
        return True, details.url
+
+   @property
+   def admin(self):
+       return self.__admin
+
+   @admin.setter
+   def admin(self,v):
+       if type(v) is str:
+           ok, url = self._validate_urlstr(v)
+           if ok:
+               self.__admin = url
+       else:
+           self.__admin = v
 
    @property
    def broker(self):
@@ -192,6 +205,9 @@ class Config:
       """
       cd=self.__dict__
 
+      if hasattr(self,'admin'):
+         cd['admin'] = self.admin
+
       if hasattr(self,'broker'):
          cd['broker'] = self.broker
 
@@ -267,7 +283,7 @@ class Config:
        elif words[0] in [ 'source' , 'subscriber', 'subscribe' ]:
            self.users[words[1]] = words[0] 
        elif words[0] in [ 'exchange' ]:
-           self.exchanges.append( words[1] ) 
+           self.declared_exchanges.append( words[1] ) 
 
 
    def parse_file(self, cfg):

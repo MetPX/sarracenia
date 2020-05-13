@@ -485,10 +485,12 @@ class sr_GlobalState:
           Guess the name of an exchange. looking at either a direct setting,
           or an existing queue state file, or lastly just guess based on conventions.
         """
+        exl = [] 
+        if hasattr(o,'declared_exchanges'):
+            exl.extend(o.declared_exchanges)
         if hasattr(o,'exchange'):
-            if type(o.exchange) != list:
-                return [ o.exchange ]
-            return o.exchange
+            exl.append(o.exchange)
+            return exl
 
         x =  'xs_%s' % o.broker.username
 
@@ -502,7 +504,8 @@ class sr_GlobalState:
                l.append(y)
            return l
         else:
-           return [ x ]
+           exl.append(x)
+           return exl
 
     def __guess_queue_name(self, c, cfg, o):
         """
@@ -547,6 +550,16 @@ class sr_GlobalState:
 
                 name = c + '/' + cfg
                 
+                if hasattr(o,'admin') and o.admin is not None:
+                    host = self._init_broker_host( o.admin.netloc )
+                    if hasattr(o,'declared_exchanges'):
+                         for x in o.declared_exchanges:
+                             if not x in self.brokers[o.admin.hostname]['exchanges']:
+                                 self.brokers[o.admin.hostname]['exchanges'][x]=[ 'declared' ]
+                             else:
+                                if not 'declared' in self.brokers[o.admin.hostname]['exchanges'][x]:
+                                    self.brokers[o.admin.hostname]['exchanges'][x].append( 'declared' )
+
                 if hasattr(o,'broker') and o.broker is not None:
                     host = self._init_broker_host( o.broker.netloc )
 
@@ -769,6 +782,7 @@ class sr_GlobalState:
                  qdc = sarra.tmpc.TMPC( o.broker, od )
                  qdc.close()
 
+
     def cleanup(self):
  
         if len(self.filtered_configurations) > 1 and not self.options.dangerWillRobinson:
@@ -784,6 +798,13 @@ class sr_GlobalState:
 
             if hasattr(o,'resolved_qname'):
                 #print('deleting: %s is: %s @ %s' % (f, o.resolved_qname, o.broker.hostname ))
+                od = o.dictify() 
+                od[ 'declare' ] = False 
+                od[ 'bind' ] = False 
+                od[ 'queue_name' ] = o.resolved_qname
+                qdc = sarra.tmpc.TMPC( o.broker, od, get=True )
+                qdc.getCleanUp() 
+                qdc.close() 
                 queues_to_delete.append( (o.broker,o.resolved_qname) )
    
         print( 'queues to delete: %s' ) 
@@ -796,7 +817,10 @@ class sr_GlobalState:
                         print(' remove %s from %s subscribers: %s ' % (qd[1], x, xx) )
                         xx.remove(qd[1])
                         if len(xx) < 1:
-                             print( "no more queues, removing exchange %s" % x )
+                           print( "no more queues, removing exchange %s" % x )
+                           qdc = sarra.tmpc.TMPC( o.post_broker, od, get=False )
+                           qdc.getCleanup() 
+                           qdc.close() 
                    
 
     def maint(self, action):

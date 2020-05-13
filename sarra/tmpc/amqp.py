@@ -203,7 +203,7 @@ class AMQP(TMPC):
             logger.info("Sleeping {} seconds ...".format( ebo) )
             time.sleep(ebo)
 
-    def __putCleanUp(self):
+    def putCleanUp(self):
 
         try: 
             self.channel.exchange_delete( self.props['exchange'] )            
@@ -212,7 +212,7 @@ class AMQP(TMPC):
                 self.props['broker'].hostname, err) )
             logger.debug('Exception details: ', exc_info=True)
 
-    def __getCleanUp(self):
+    def getCleanUp(self):
 
         try: 
             self.channel.queue_delete( self.props['queue_name'] )            
