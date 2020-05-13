@@ -42,6 +42,16 @@ except :
 
 class Config:
 
+   # lookup in dictionary, respond with canonical version.
+   synonyms = { 
+     'cache' : 'suppress_duplicates', 'no_duplicates' : 'suppress_duplicates', 
+     'cache_basis': 'suppress_duplicates_basis',  
+     'instance' : 'instances',
+     'chmod' : 'default_mode',
+     'chmod_dir' : 'default_dir_mode',
+     'chmod_log' : 'default_log_mode',
+     \
+   }
    credentials = None
 
    def __init__(self,parent=None, appdir_stuff={ 'appauthor':'science.gc.ca', 'appname':'sarra' }):
@@ -272,6 +282,7 @@ class Config:
                 also None to reset to empty, not done.
        """
        if hasattr(self,'exchange') and hasattr(self,'topic_prefix'):
+           exch=self.exchange
            self.bindings.append( (self.topic_prefix,  self.exchange, subtopic) )
 
 
@@ -300,7 +311,7 @@ class Config:
                self.masks.append( self._build_mask( line[0], line[1:] ) )
            elif line[0] in [ 'declare' ]:
                self._parse_declare( line[1:] )
-           elif line[0] in [ 'include' ]:
+           elif line[0] in [ 'include', 'config' ]:
                try:
                    self.parse_file( line[1] )
                except:
@@ -308,7 +319,11 @@ class Config:
            elif line[0] in [ 'subtopic' ]:
                self._parse_binding( line[1] )
            else:
-               setattr( self, line[0] , ' '.join(line[1:]) )
+               k=line[0]
+               if k in Config.synonyms:
+                  k=Config.synonyms[k]
+               setattr( self, k, ' '.join(line[1:]) )
+
   
    def fill_missing_options(self,component,config):
        """ 
@@ -322,6 +337,9 @@ class Config:
           if hasattr(self,'exchange_suffix'):
                   self.exchange += '_%s' % self.exchange_suffix
        
+          if hasattr(self,'exchange_split') and hasattr(self,'no') and ( self.no > 0 ):
+              self.exchange += "%02d" % self.no
+
           queuefile = appdirs.user_cache_dir( self.appdir_stuff['appname'],
                self.appdir_stuff['appauthor']  )
           queuefile += os.sep + component + os.sep + config[0:-5] 

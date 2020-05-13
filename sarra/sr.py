@@ -213,6 +213,14 @@ class sr_GlobalState:
                             numi = int(cfgbody.instances)
                         else:
                             numi = 1
+                        if ( numi > 1 ) and \
+                           hasattr(cfgbody,'exchange_split'):
+                            print( 'exchange: %s split: %d' % \
+                               (cfgbody.exchange, numi) ) 
+                            l=[]
+                            for i in range(0,numi):
+                               l.append( cfgbody.exchange + '%02d' % i )
+                            cfgbody.exchange = l
 
                     self.configs[c][cbase]['instances'] = numi
 
@@ -486,10 +494,14 @@ class sr_GlobalState:
           or an existing queue state file, or lastly just guess based on conventions.
         """
         exl = [] 
-        if hasattr(o,'declared_exchanges'):
-            exl.extend(o.declared_exchanges)
+        #if hasattr(o,'declared_exchanges'):
+        #    exl.extend(o.declared_exchanges)
+
         if hasattr(o,'exchange'):
-            exl.append(o.exchange)
+            if type(o.exchange) == list:
+                exl.extend(o.exchange)
+            else:
+                exl.append(o.exchange)
             return exl
 
         x =  'xs_%s' % o.broker.username
@@ -556,6 +568,7 @@ class sr_GlobalState:
                          for x in o.declared_exchanges:
                              if not x in self.brokers[o.admin.hostname]['exchanges']:
                                  self.brokers[o.admin.hostname]['exchanges'][x]=[ 'declared' ]
+                                 self.brokers[o.admin.hostname]['admin']=o.admin
                              else:
                                 if not 'declared' in self.brokers[o.admin.hostname]['exchanges'][x]:
                                     self.brokers[o.admin.hostname]['exchanges'][x].append( 'declared' )
@@ -807,7 +820,7 @@ class sr_GlobalState:
                 qdc.close() 
                 queues_to_delete.append( (o.broker,o.resolved_qname) )
    
-        print( 'queues to delete: %s' ) 
+        print( 'queues to delete: %s' % queues_to_delete ) 
         for h in self.brokers:
             for qd in queues_to_delete:
                 if qd[0].hostname != h: continue
@@ -818,8 +831,13 @@ class sr_GlobalState:
                         xx.remove(qd[1])
                         if len(xx) < 1:
                            print( "no more queues, removing exchange %s" % x )
-                           qdc = sarra.tmpc.TMPC( o.post_broker, od, get=False )
-                           qdc.getCleanup() 
+                           od= { 'declare':False, \
+                                 'exchange':x, \
+                                 'broker': self.brokers[h]['admin'],\
+                               }
+                           qdc = sarra.tmpc.TMPC( 
+                                    o.post_broker, od, get=False )
+                           qdc.putCleanUp() 
                            qdc.close() 
                    
 
