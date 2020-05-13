@@ -45,6 +45,7 @@ class Config:
    # lookup in dictionary, respond with canonical version.
    synonyms = { 
      'cache' : 'suppress_duplicates', 'no_duplicates' : 'suppress_duplicates', 
+     'caching' : 'suppress_duplicates', 
      'cache_basis': 'suppress_duplicates_basis',  
      'instance' : 'instances',
      'chmod' : 'default_mode',
@@ -204,10 +205,13 @@ class Config:
        """
 
        for k in sorted( self.__dict__.keys()):
-           if k in ['env']:
-              print('skipping %s' % k)
-           else:
-              print( "%s=%s" % ( k, getattr(self,k) ))
+           v=getattr(self,k)
+           if type(v) == urllib.parse.ParseResult:
+              v = v.scheme + '://' + v.username + '@' + v.hostname
+           v = str(v)
+           if len(v) > 70:
+               v = v[0:70] + '...'
+           print( "\t%s=%s" % ( k, v ) )
 
    def dictify(self):
       """

@@ -208,7 +208,7 @@ class AMQP(TMPC):
         try: 
             self.channel.exchange_delete( self.props['exchange'] )            
         except Exception as err:
-            logger.error("AMQP putCleanup failed to {} with {}".format( 
+            logger.error("AMQP putCleanup failed on {} with {}".format( 
                 self.props['broker'].hostname, err) )
             logger.debug('Exception details: ', exc_info=True)
 

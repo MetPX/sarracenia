@@ -562,16 +562,16 @@ class sr_GlobalState:
 
                 name = c + '/' + cfg
                 
-                if hasattr(o,'admin') and o.admin is not None:
+                if hasattr(o,'admin') and (o.admin is not None) :
                     host = self._init_broker_host( o.admin.netloc )
                     if hasattr(o,'declared_exchanges'):
                          for x in o.declared_exchanges:
-                             if not x in self.brokers[o.admin.hostname]['exchanges']:
-                                 self.brokers[o.admin.hostname]['exchanges'][x]=[ 'declared' ]
-                                 self.brokers[o.admin.hostname]['admin']=o.admin
+                             if not x in self.brokers[host]['exchanges']:
+                                 self.brokers[host]['exchanges'][x]=[ 'declared' ]
+                                 self.brokers[host]['admin']=o.admin
                              else:
-                                if not 'declared' in self.brokers[o.admin.hostname]['exchanges'][x]:
-                                    self.brokers[o.admin.hostname]['exchanges'][x].append( 'declared' )
+                                if not 'declared' in self.brokers[host]['exchanges'][x]:
+                                    self.brokers[host]['exchanges'][x].append( 'declared' )
 
                 if hasattr(o,'broker') and o.broker is not None:
                     host = self._init_broker_host( o.broker.netloc )
@@ -811,11 +811,9 @@ class sr_GlobalState:
 
             if hasattr(o,'resolved_qname'):
                 #print('deleting: %s is: %s @ %s' % (f, o.resolved_qname, o.broker.hostname ))
-                od = o.dictify() 
-                od[ 'declare' ] = False 
-                od[ 'bind' ] = False 
-                od[ 'queue_name' ] = o.resolved_qname
-                qdc = sarra.tmpc.TMPC( o.broker, od, get=True )
+                qdc = sarra.tmpc.TMPC( o.broker, { 'declare':False, 'bind':False, 
+                         'broker':o.broker, 'queue_name':o.resolved_qname
+                    }, get=True )
                 qdc.getCleanUp() 
                 qdc.close() 
                 queues_to_delete.append( (o.broker,o.resolved_qname) )
@@ -831,15 +829,24 @@ class sr_GlobalState:
                         xx.remove(qd[1])
                         if len(xx) < 1:
                            print( "no more queues, removing exchange %s" % x )
-                           od= { 'declare':False, \
-                                 'exchange':x, \
-                                 'broker': self.brokers[h]['admin'],\
-                               }
-                           qdc = sarra.tmpc.TMPC( 
-                                    o.post_broker, od, get=False )
+                           qdc = sarra.tmpc.TMPC( o.post_broker, { 
+                                 'declare':False, 'exchange':x, 
+                                 'broker': self.brokers[h]['admin'], }, 
+                                 get=False )
                            qdc.putCleanUp() 
                            qdc.close() 
                    
+    def config_list(self):
+        for f in self.filtered_configurations:
+            if f == 'audit' : continue
+            ( c, cfg ) = f.split(os.sep)
+
+            if not 'options' in self.configs[c][cfg] :
+                continue
+            o = self.configs[c][cfg]['options']
+            print( '\nConfig of %s/%s: ' % ( c, cfg ) )
+            o.dump()
+
 
     def maint(self, action):
         """
@@ -1235,6 +1242,9 @@ def main():
     if action == 'dump':
         print('dumping: ', end='', flush=True)
         gs.dump()
+
+    if action == 'list':
+        gs.config_list()
 
     elif action == 'restart':
         print('restarting: ', end='', flush=True)
