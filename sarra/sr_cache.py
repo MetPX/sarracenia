@@ -76,16 +76,9 @@ class sr_cache():
 
         # set time and value
         now   = nowflt()
-
-        if self.cache_basis == 'name':
-            relpath = path.split('/')[-1]
-        elif self.cache_basis == 'path':
-            relpath = path
-        elif self.cache_basis == 'data':
-            relpath = "data"
-
+        relpath = self.__get_relpath(path)
         qpath = urllib.parse.quote(relpath)
-        value = '%s*%s' % (relpath,part)
+        value = '%s*%s' % (relpath, part)
 
         if key not in self.cache_dict :
            self.logger.debug("adding a new entry in cache")
@@ -154,14 +147,7 @@ class sr_cache():
     def check_msg(self, msg):
         self.logger.debug("sr_cache check_msg")
 
-        # TODO repeated code: in sr_cache.check consider extracting to a method
-        if self.cache_basis == 'name':
-            relpath = msg.relpath.split('/')[-1]
-        elif self.cache_basis == 'path':
-            relpath = msg.relpath
-        elif self.cache_basis == 'data':
-            relpath = "data"
-
+        relpath = self.__get_relpath(msg.relpath)
         sumstr  = msg.headers['sum']
         partstr = relpath
 
@@ -169,6 +155,17 @@ class sr_cache():
            partstr = msg.headers['parts']
 
         return self.check(sumstr,relpath,partstr)
+
+    def __get_relpath(self, path):
+        if self.cache_basis == 'name':
+            result = path.split('/')[-1]
+        elif self.cache_basis == 'path':
+            result = path
+        elif self.cache_basis == 'data':
+            result = "data"
+        else:
+            raise ValueError("invalid cache basis: cache_basis={}".format(self.cache_basis))
+        return result
 
     def clean(self, persist=False, delpath=None):
         self.logger.debug("sr_cache clean")
