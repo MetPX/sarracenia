@@ -58,6 +58,7 @@ class Config:
    def __init__(self,parent=None, appdir_stuff={ 'appauthor':'science.gc.ca', 'appname':'sarra' }):
 
        self.bindings =  []
+       self.__admin = None
        self.__broker = None
        self.__post_broker = None
 

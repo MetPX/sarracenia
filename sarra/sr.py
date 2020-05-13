@@ -563,6 +563,9 @@ class sr_GlobalState:
                 name = c + '/' + cfg
                 
                 if hasattr(o,'admin') and (o.admin is not None) :
+                    # FIXME: sometimes o.admin is a string... no idea why.. upstream cause should be addressed.
+                    if type(o.admin) == str:
+                        o.admin = urllib.parse( o.admin )
                     host = self._init_broker_host( o.admin.netloc )
                     if hasattr(o,'declared_exchanges'):
                          for x in o.declared_exchanges:
@@ -771,12 +774,10 @@ class sr_GlobalState:
                 continue
             logging.info( 'looking at %s/%s ' % ( c, cfg ) )
             o = self.configs[c][cfg]['options']
-            od = o.dictify()
             if hasattr(o, 'resolved_exchanges') and o.resolved_exchanges is not None :
-                 for rx in o.resolved_exchanges:
-                     od['exchange'] = rx
-                     od['broker'] = od['post_broker']
-                     xdc = sarra.tmpc.TMPC( o.post_broker, od, get=False )
+                     xdc = sarra.tmpc.TMPC( o.post_broker, { 
+                               'broker':o.post_broker, 
+                               'exchange':o.resolved_exchanges }, get=False )
                      xdc.close() 
 
         # then declare and bind queues....
@@ -837,6 +838,9 @@ class sr_GlobalState:
                            qdc.close() 
                    
     def config_list(self):
+        """
+        display the resulting settings for selected configurations.
+        """
         for f in self.filtered_configurations:
             if f == 'audit' : continue
             ( c, cfg ) = f.split(os.sep)
