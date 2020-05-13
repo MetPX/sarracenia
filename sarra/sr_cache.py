@@ -215,16 +215,20 @@ class sr_cache():
 
     def close(self, unlink=False):
         self.logger.debug("sr_cache close")
-        try   :
-                self.fp.flush()
-                self.fp.close()
-        except: pass  # TODO need justification: why are we silently excepting io error ? this is a bare except
+        try:
+            self.fp.flush()
+            self.fp.close()
+        except Exception as err:
+            self.logger.warning('did not close: cache_file={}, err={}'.format(self.cache_file, err))
+            self.logger.debug('Exception details:', exc_info=True)
         self.fp = None
 
         if unlink:
-           try   : os.unlink(self.cache_file)
-           except: pass  # TODO need justification: why are we silently excepting io error ? this is a bare except
-
+            try:
+                os.unlink(self.cache_file)
+            except Exception as err:
+                self.logger.warning("did not unlink: cache_file={}: err={}".format(self.cache_file, err))
+                self.logger.debug('Exception details:', exc_info=True)
         self.cache_dict = {}
         self.count      = 0
 
@@ -244,8 +248,11 @@ class sr_cache():
         self.logger.debug("sr_cache free")
         self.cache_dict = {}
         self.count      = 0
-        try   : os.unlink(self.cache_file)
-        except: pass  # TODO need justification: why are we silently excepting io error ? this is a bare except
+        try:
+            os.unlink(self.cache_file)
+        except Exception as err:
+            self.logger.warning("did not unlink: cache_file={}, err={}".format(self.cache_file, err))
+            self.logger.debug('Exception details:', exc_info=True)
         self.fp = open(self.cache_file,'w')
 
     def load(self):
@@ -288,8 +295,10 @@ class sr_cache():
                   ttl   = now - ctime
                   if ttl > self.expire : continue
 
-              except: # skip corrupted line.  # FIXME wrong bare except: what is the exception expected here ? AttributeError, indexError, ValueError ?
-                  self.logger.error("sr_cache load corrupted line %d in %s" % ( lineno, self.cache_file) )
+              except Exception as err:
+                  err_msg_fmt = "load corrupted: lineno={}, cache_file={}, err={}"
+                  self.logger.error(err_msg_fmt.format(lineno, self.cache_file, err))
+                  self.logger.debug('Exception details:', exc_info=True)
                   continue
 
               #  add info in cache
@@ -318,16 +327,18 @@ class sr_cache():
 
         # close,remove file
         if self.fp : self.fp.close()
-        try   : 
-                os.unlink(self.cache_file)
-        except: pass  # TODO need justification: why are we silently excepting io error ? this is a bare except
-
+        try:
+            os.unlink(self.cache_file)
+        except Exception as err:
+            self.logger.warning("did not unlink: cache_file={}, err={}".format(self.cache_file, err))
+            self.logger.debug('Exception details:', exc_info=True)
         # new empty file, write unexpired entries
-        try   : 
-                self.fp = open(self.cache_file,'w')
-                self.clean(persist=True)
-        except: pass  # TODO need justification: why are we silently excepting io error ? this is a bare except
-
+        try:
+            self.fp = open(self.cache_file,'w')
+            self.clean(persist=True)
+        except Exception as err:
+            self.logger.warning("did not clean: cache_file={}, err={}".format(self.cache_file, err))
+            self.logger.debug('Exception details:', exc_info=True)
 
     def check_expire(self):
         self.logger.debug("sr_cache check_expire")
