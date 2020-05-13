@@ -21,6 +21,7 @@ import os
 import time
 import unittest
 from enum import Enum, auto
+from io import TextIOWrapper
 from unittest import TestCase
 from unittest.mock import patch, call, Mock, DEFAULT
 
@@ -276,6 +277,7 @@ class SrCacheCase(TestCase):
     @patch('sarra.sr_cache.nowflt')
     def test_clean__fp(self, nowflt, fp):
         # Prepare test
+        self.cache.fp = fp
         self.key = self.test_clean__fp.__name__
         nowflt.return_value = self.now
         self.cache.expire = 50
@@ -284,10 +286,10 @@ class SrCacheCase(TestCase):
         self.cache.cache_dict[self.key] = self.cache_entry
         self.cache.cache_dict[self.then_key] = {ENTRY_KEY_FMT.format(self.file, self.part): self.then}
         # Execute test
-        self.cache.clean(fp)
+        self.cache.clean(persist=True)
 
         # Evaluate results
-        expected = [call.__bool__(), call.write('{} {:f} {} {}\n'.format(self.key, self.now, self.file, self.part))]
+        expected = [call.write('{} {:f} {} {}\n'.format(self.key, self.now, self.file, self.part))]
         self.assertEqual(expected, fp.mock_calls, ASSERT_MOCK_CALLS)
 
     @patch('sarra.sr_cache.nowflt')
@@ -388,22 +390,24 @@ class SrCacheCase(TestCase):
     @patch('_io.TextIOWrapper')
     def test_delete_path(self, fp, mocked_open, mocked_os):
         # Prepare test
+        mocked_open.return_value = fp
         self.key = self.test_delete_path.__name__
         self.cache.clean = Mock()
-        self.cache.fp = fp
+        fisrt_fp = Mock(spec=TextIOWrapper)
+        self.cache.fp = fisrt_fp
         self.cache.cache_dict[self.key] = self.cache_entry
         self.cache.count = 1
         # Execute test
         self.cache.delete_path(self.path)
 
         # Evaluate internal state (attribute values)
-        self.assertNotEqual(fp, self.cache.fp, ASSERT_INVALID_VALUE_FMT.format('sr_cache.fp'))
+        self.assertNotEqual(fisrt_fp, fp, ASSERT_INVALID_VALUE_FMT.format('sr_cache.fp'))
         self.assertEqual(mocked_open(), self.cache.fp, ASSERT_INVALID_VALUE_FMT.format('sr_cache.fp'))
 
         # Evaluate external calls
         expected = [call.unlink(self.cache.cache_file)]
         self.assertIn(expected, mocked_os.mock_calls, ASSERT_MOCK_CALLS)
-        self.cache.clean.assert_called_once_with(self.cache.fp, self.path)
+        self.cache.clean.assert_called_once_with(persist=True, delpath=self.path)
 
     @patch('sarra.sr_cache.os')
     @patch('builtins.open')
@@ -487,7 +491,7 @@ class SrCacheCase(TestCase):
         self.assertEqual(expected, mocked_open.mock_calls, ASSERT_MOCK_CALLS)
         expected = [call.unlink(self.cache.cache_file)]
         self.assertEqual(expected, mocked_os.mock_calls, ASSERT_MOCK_CALLS)
-        self.cache.clean.assert_called_with(mocked_open())
+        self.cache.clean.assert_called_with(persist=True)
 
     @patch('sarra.sr_cache.nowflt')
     def test_check_expire(self, nowflt):

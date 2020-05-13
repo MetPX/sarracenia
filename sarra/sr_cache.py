@@ -170,9 +170,7 @@ class sr_cache():
 
         return self.check(sumstr,relpath,partstr)
 
-    def clean(self, fp=None, delpath=None):
-        # FIXME fp as arg make no sense: it is only called from self using self.fp, need to change to
-        #  boolean and call write from self.fp
+    def clean(self, persist=False, delpath=None):
         self.logger.debug("sr_cache clean")
 
         # create refreshed dict
@@ -207,7 +205,8 @@ class sr_cache():
                 ndict[value] = t
                 self.count  += 1
 
-                if fp : fp.write("%s %f %s %s\n"%(key,t,qpath,part))
+                if persist:
+                    self.fp.write("%s %f %s %s\n"%(key,t,qpath,part))
 
             if len(ndict) > 0 : new_dict[key] = ndict
 
@@ -239,8 +238,7 @@ class sr_cache():
         self.fp = open(self.cache_file,'w')
 
         # clean cache removing delpath
-
-        self.clean(self.fp, delpath)  # FIXME passing fp: this is an attribute why passing it as an arg ?
+        self.clean(persist=True, delpath=delpath)
 
     def free(self):
         self.logger.debug("sr_cache free")
@@ -327,7 +325,7 @@ class sr_cache():
         # new empty file, write unexpired entries
         try   : 
                 self.fp = open(self.cache_file,'w')
-                self.clean(self.fp)  # FIXME passing fp: this is an attribute why passing it as an arg ?
+                self.clean(persist=True)
         except: pass  # TODO need justification: why are we silently excepting io error ? this is a bare except
 
 
