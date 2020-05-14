@@ -729,6 +729,7 @@ class sr_GlobalState:
            side effect: changes current working directory FIXME?
         """
 
+        self.directory = os.getcwd()
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
         self.appauthor = 'science.gc.ca'
         self.options=opt
@@ -770,6 +771,7 @@ class sr_GlobalState:
         self._find_missing_instances()
         #print('analysis - Done. ', flush=True)
         self._match_patterns(config_fnmatches)
+        os.chdir(self.directory)
 
     def _start_missing(self):
         for instance in self.missing:
@@ -794,12 +796,10 @@ class sr_GlobalState:
             else:
                component=sp[-2]
                cfg=sp[-1]
-            print('guess that is for: %s / %s ' % (component, cfg ) )
+
             iedir = os.path.dirname(inspect.getfile(sarra.config.Config)) + os.sep + 'examples'
-            print('in_exemplum_dir=%s' % iedir )
             
             destdir = self.user_config_dir + os.sep + component
-            print('destcfgdir=%s' % self.user_config_dir )
 
             suggestions = [ l,  os.path.join( iedir, component, cfg ) ]
             found=False
@@ -913,7 +913,7 @@ class sr_GlobalState:
         logging.info('FIXME remove! %s' % self.filtered_configurations)
 
         if len(self.filtered_configurations) == 0 :
-           logging.error("a time")
+           logging.error("No configuration matched")
            return
 
         if len(self.filtered_configurations) > 1 and not self.options.dangerWillRobinson:

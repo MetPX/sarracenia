@@ -447,8 +447,8 @@ class Config:
         parser.add_argument('--broker', nargs='?', help='amqp://user:pw@host of peer to subscribe to')
         #parser.add_argument('--clean_session', type=bool, help='start a new session, or resume old one?')
         #parser.add_argument('--clientid', help='like an AMQP queue name, identifies a group of subscribers')
-        parser.add_argument('--component', choices=Config.components, nargs='?', \
-                  help='which component to look for a configuration for' )
+        #parser.add_argument('--component', choices=Config.components, nargs='?', \
+        #          help='which component to look for a configuration for' )
         parser.add_argument('--dangerWillRobinson', action='store_true', default=False, help='Confirm you want to do something dangerous')
         parser.add_argument('--debug', action='store_true', help='pring debugging output (very verbose)')
         #parser.add_argument('--dir_prefix', help='local sub-directory to put data in')
