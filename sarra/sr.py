@@ -789,6 +789,27 @@ class sr_GlobalState:
                 continue
             self._launch_instance(component_path, c, cfg, i)
 
+
+    def run_command(self, cmd_list):
+        sr_path = os.environ.get('SARRA_LIB')
+        sc_path = os.environ.get('SARRAC_LIB')
+
+        try:
+            if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5):
+                subprocess.check_call(cmd_list, close_fds=False)
+            else:
+                logging.debug("using subprocess.run")
+                if sc_path and cmd_list[0].startswith("sr_cp"):
+                    subprocess.run([sc_path+'/'+cmd_list[0]]+cmd_list[1:], check=True)
+                elif sr_path and cmd_list[0].startswith("sr"):
+                    subprocess.run([sr_path+'/'+cmd_list[0]+'.py']+cmd_list[1:], check=True)
+                else:
+                    subprocess.run(cmd_list, check=True)
+        except subprocess.CalledProcessError as err:
+            logging.error("subprocess.run failed err={}".format(err))
+            logging.debug("Exception details:", exc_info=True)
+
+
     def add(self):
 
         if not hasattr(self,'leftovers') or ( len(self.leftovers) == 0 ):
@@ -854,7 +875,24 @@ class sr_GlobalState:
 
     def disable(self):
 
-        # declare exchanges first.
+        for f in self.filtered_configurations:
+            if f == 'audit' : continue
+            ( c, cfg ) = f.split(os.sep)
+
+            if not 'options' in self.configs[c][cfg] :
+                continue
+
+            if len(self.states[c][cfg]['instance_pids']) > 0:
+                logging.error("cannot disable %f while it is running! " )
+                continue
+
+            cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
+            disabledfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.off'
+            logging.info( 'renaming at %s to %s ' % ( cfgfile, disabledfile ) )
+            os.rename( cfgfile, disabledfile )
+
+    def edit(self):
+
         for f in self.filtered_configurations:
             if f == 'audit' : continue
             ( c, cfg ) = f.split(os.sep)
@@ -863,9 +901,17 @@ class sr_GlobalState:
                 continue
 
             cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
-            disabledfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.off'
-            logging.info( 'renaming at %s to %s ' % ( cfgfile, disabledfile ) )
-            os.rename( cfgfile, disabledfile )
+            editor=os.environ.get('EDITOR')
+
+            if not editor:
+                if _platform == 'win32' :
+                    editor='notepad'
+                else:
+                    editor='vi'
+                self.logger.info('using %s. Set EDITOR variable pick another one.' % editor )
+
+            self.run_command([ editor, cfgfile] )
+
 
     def enable(self):
 
@@ -962,10 +1008,15 @@ class sr_GlobalState:
            return
 
         for f in self.filtered_configurations:
+
             if f == 'audit' : continue
             ( c, cfg ) = f.split(os.sep)
 
             if not 'options' in self.configs[c][cfg] :
+                continue
+
+            if len(self.states[c][cfg]['instance_pids']) > 0:
+                logging.error("cannot remove %f while it is running! " )
                 continue
 
             cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
@@ -1379,6 +1430,9 @@ def main():
 
     if action == 'disable':
         gs.disable()
+
+    if action == 'edit':
+        gs.edit()
 
     if action == 'enable':
         gs.enable()

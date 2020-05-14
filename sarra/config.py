@@ -44,7 +44,7 @@ class Config:
 
    components =  [ 'audit', 'cpost', 'cpump', 'poll', 'post', 'sarra', 'sender', 'shovel' 'subscribe', 'watch', 'winnow' ]
 
-   commands = [ 'add', 'cleanup', 'edit', 'declare', 'disable', 'edit', 'enable', 'foreground', 'list', 'log', 'remove', 'rename', 'restart', 'sanity', 'setup', 'show', 'start', 'stop', 'status' ]
+   commands = [ 'add', 'cleanup', 'edit', 'declare', 'disable', 'edit', 'enable', 'foreground', 'list', 'remove', 'restart', 'sanity', 'setup', 'show', 'start', 'stop', 'status' ]
 
    # lookup in dictionary, respond with canonical version.
    synonyms = { 
