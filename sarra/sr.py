@@ -682,6 +682,8 @@ class sr_GlobalState:
         """
            
         self.filtered_configurations=[]
+        self.leftovers=[]
+        leftover_matches={}
 
         candidates=['audit']
         for c in self.components:
@@ -691,14 +693,13 @@ class sr_GlobalState:
                 fcc = c + os.sep + cfg
                 candidates.append(fcc)
 
+        for p in patterns: 
+            leftover_matches[p] = 0
+ 
         for fcc in candidates:
             if (patterns is None) or (len(patterns) < 1):
                 self.filtered_configurations.append(fcc)
             else:
-                leftover_matches={}
-                for p in patterns: 
-                    leftover_matches[p] = 0
- 
                 for p in patterns: 
                     if fnmatch.fnmatch( fcc, p ):
                         self.filtered_configurations.append(fcc)
@@ -708,11 +709,16 @@ class sr_GlobalState:
                         self.filtered_configurations.append(fcc)
                         leftover_matches[p]+=1
  
-                self.leftovers=[]
-                for p in patterns:
-                    if leftover_matches[p] == 0:
-                        self.leftovers.append(p)
-                         
+                    if p[-5:] == '.off' and fnmatch.fnmatch( fcc, p[0:-4] ) :
+                        self.filtered_configurations.append(fcc)
+                        leftover_matches[p]+=1
+ 
+        for p in patterns:
+             if leftover_matches[p] == 0:
+                 self.leftovers.append(p)
+
+        logging.debug( 'filtered_configurations: %s' % self.filtered_configurations ) 
+        logging.debug( 'leftovers: %s' % self.leftovers ) 
 
     @property
     def appname(self):
@@ -805,7 +811,6 @@ class sr_GlobalState:
             found=False
             for candidate in suggestions:
                 if os.path.exists( candidate ):
-                     print('found=%s' % candidate )
                      pathlib.Path( destdir ).mkdir(parents=True, exist_ok=True)
                      logger.info("copying: %s to %s " % ( candidate, destdir+os.sep+cfg ) ) 
                      shutil.copyfile( candidate, destdir+os.sep+cfg )
@@ -846,6 +851,42 @@ class sr_GlobalState:
                  od['queue_name'] = o.resolved_qname
                  qdc = sarra.tmpc.TMPC( o.broker, od )
                  qdc.close()
+
+    def disable(self):
+
+        # declare exchanges first.
+        for f in self.filtered_configurations:
+            if f == 'audit' : continue
+            ( c, cfg ) = f.split(os.sep)
+
+            if not 'options' in self.configs[c][cfg] :
+                continue
+
+            cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
+            disabledfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.off'
+            logging.info( 'renaming at %s to %s ' % ( cfgfile, disabledfile ) )
+            os.rename( cfgfile, disabledfile )
+
+    def enable(self):
+
+        # declare exchanges first.
+        for f in self.filtered_configurations:
+            if f == 'audit' : continue
+            ( c, cfg ) = f.split(os.sep)
+
+            disabledfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.off'
+            cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
+
+            if os.path.exists( cfgfile ):
+                logging.error( '%s already enabled' % f )
+                continue
+
+            if not os.path.exists( disabledfile ):
+                logging.error( '%s disabled configuration not found' % f )
+                continue
+
+            logging.info( 'renaming at %s to %s ' % ( disabledfile, cfgfile ) )
+            os.rename( disabledfile, cfgfile)
 
 
     def cleanup(self):
@@ -1335,6 +1376,12 @@ def main():
         gs.save_configs(sys.argv[2])
         gs.appname = sys.argv[2]
         gs.save_procs( gs.user_cache_dir + os.sep + "procs.json" )
+
+    if action == 'disable':
+        gs.disable()
+
+    if action == 'enable':
+        gs.enable()
 
     if action == 'dump':
         print('dumping: ', end='', flush=True)
