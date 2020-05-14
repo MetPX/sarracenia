@@ -1028,10 +1028,15 @@ class sr_GlobalState:
         """
 
 
-        if hasattr(self,'leftovers') and ( len(self.leftovers) > 0 ) and ( 'examples' in self.leftovers ) :
-            print( 'Examples:' )
-            for c in sarra.config.Config.components:
-                self.print_configdir(" of %s "% c, os.path.normpath( self.package_lib_dir +os.sep+ 'examples' +os.sep+ c ) )
+        if hasattr(self,'leftovers') and ( len(self.leftovers) > 0 ):
+           if  ( 'examples' in self.leftovers ) :
+               print( 'Sample Configurations:' )
+               for c in sarra.config.Config.components:
+                   self.print_configdir(" of %s "% c, os.path.normpath( self.package_lib_dir +os.sep+ 'examples' +os.sep+ c ) )
+           elif ( 'plugins' in self.leftovers ):
+               print( 'Provided plugins:' )
+               self.print_configdir(" of plugins: ", os.path.normpath( self.package_lib_dir +os.sep+ 'plugins' ) )
+
         else:
             for c in sarra.config.Config.components:
                 self.print_configdir("for %s" %c,    os.path.normpath( self.user_config_dir + os.sep + c ))
