@@ -84,9 +84,9 @@ class sr_GlobalState:
           start up a instance process (always daemonish/background fire & forget type process.)
         """
         if cfg is None:
-            lfn = self.user_cache_dir + os.sep + 'log' + os.sep + 'sr_' + c + "_%02d" % i + '.log'
+            lfn = self.log_dir + os.sep + 'sr_' + c + "_%02d" % i + '.log'
         else:
-            lfn = self.user_cache_dir + os.sep + 'log' + os.sep + 'sr_' + c + '_' + cfg + "_%02d" % i + '.log'
+            lfn = self.log_dir + os.sep + 'sr_' + c + '_' + cfg + "_%02d" % i + '.log'
 
         if c[0] != 'c':  # python components
             if cfg is None:
@@ -709,7 +709,7 @@ class sr_GlobalState:
                         self.filtered_configurations.append(fcc)
                         leftover_matches[p]+=1
  
-                    if p[-5:] == '.off' and fnmatch.fnmatch( fcc, p[0:-4] ) :
+                    if p[-4:] == '.off' and fnmatch.fnmatch( fcc, p[0:-4] ) :
                         self.filtered_configurations.append(fcc)
                         leftover_matches[p]+=1
  
@@ -737,6 +737,7 @@ class sr_GlobalState:
 
         self.directory = os.getcwd()
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
+        self.package_lib_dir = os.path.dirname(inspect.getfile(sarra.config.Config)) 
         self.appauthor = 'science.gc.ca'
         self.options=opt
         self.appname = os.getenv( 'SR_DEV_APPNAME' )
@@ -760,6 +761,7 @@ class sr_GlobalState:
 
         #print('gathering global state: ', flush=True)
 
+        self.log_dir = self.user_cache_dir + os.sep + 'log'
         pf=self.user_cache_dir + os.sep + "procs.json"
         if os.path.exists( pf ) :
             self.read_proc_file(pf)
@@ -883,7 +885,7 @@ class sr_GlobalState:
                 continue
 
             if len(self.states[c][cfg]['instance_pids']) > 0:
-                logging.error("cannot disable %f while it is running! " )
+                logging.error("cannot disable %s while it is running! " % f )
                 continue
 
             cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
@@ -974,12 +976,47 @@ class sr_GlobalState:
                                  get=False )
                            qdc.putCleanUp() 
                            qdc.close() 
+
+    def print_configdir(self,prefix,configdir):
+
+        if not os.path.isdir(configdir) or (len(os.listdir(configdir)) == 0 ):
+           return
+
+        print("%s: ( %s )" % (prefix,configdir))
+        term = shutil.get_terminal_size((80,20))
+        columns=term.columns
+
+        i=0
+        for confname in sorted( os.listdir(configdir) ):
+            if confname[0] == '.' or confname[-1] == '~' : continue
+            if os.path.isdir(configdir+os.sep+confname) : continue
+            if ( ((i+1)*21) >= columns ):
+                 print('')
+                 i=0
+            i+=1
+            print( "%20s " % confname, end='' )
+
+        print("\n", flush=True)
+
+
                    
     def config_list(self):
         """
         display all configurations possible for each component
         """
-        print('not implemented')
+
+
+        if hasattr(self,'leftovers') and ( len(self.leftovers) > 0 ) and ( 'examples' in self.leftovers ) :
+            print( 'Examples:' )
+            for c in sarra.config.Config.components:
+                self.print_configdir(" of %s "% c, os.path.normpath( self.package_lib_dir +os.sep+ 'examples' +os.sep+ c ) )
+        else:
+            for c in sarra.config.Config.components:
+                self.print_configdir("for %s" %c,    os.path.normpath( self.user_config_dir + os.sep + c ))
+
+            self.print_configdir("general",                os.path.normpath( self.user_config_dir ))
+            print( "logs are in: %s\n" % os.path.normpath( self.log_dir ))
+    
 
     def config_show(self):
         """
@@ -1020,6 +1057,10 @@ class sr_GlobalState:
                 continue
 
             cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
+
+            if not os.path.exists( cfgfile ):
+                 cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.off'
+
             logging.info( 'removing %s ' % ( cfgfile ) )
             os.unlink( cfgfile )
 
