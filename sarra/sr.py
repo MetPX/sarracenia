@@ -936,6 +936,28 @@ class sr_GlobalState:
             logging.info( 'renaming at %s to %s ' % ( disabledfile, cfgfile ) )
             os.rename( disabledfile, cfgfile)
 
+    def foreground(self):
+
+        for f in self.filtered_configurations:
+            if f == 'audit' : continue
+            ( c, cfg ) = f.split(os.sep)
+
+            if not 'options' in self.configs[c][cfg] :
+                continue
+
+            cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
+
+            component_path = self._find_component_path(c) 
+
+            if c[0] != 'c':  # python components
+                if cfg is None:
+                    cmd = [sys.executable, component_path, 'foreground']
+                else:
+                    cmd = [sys.executable, component_path, 'foreground', cfg]
+            else:  # C components
+                cmd = [component_path, 'foreground', cfg]
+
+            self.run_command(cmd)
 
     def cleanup(self):
  
@@ -1481,6 +1503,9 @@ def main():
     if action == 'dump':
         print('dumping: ', end='', flush=True)
         gs.dump()
+
+    if action == 'foreground':
+        gs.foreground()
 
     if action == 'list':
         gs.config_list()

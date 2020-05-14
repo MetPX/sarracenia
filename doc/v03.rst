@@ -126,4 +126,18 @@ sarra/instances, sarra/sarra <- replace consumer...
 Added configuration selection to sr.py (e.g. subscribe/\*) and 
 *setup*, and *cleanup* options. 
 
-Next: add/remove/list
+add/remove/enable/disable/edit done.
+
+'log' dropped for now... (which log ?)
+
+
+FIXME
+-----
+
+FIXME are things left to the side that need to be seen to.
+
+* changed behaviour of 'sr list' , 'sr list examples' needs to be documented.
+
+* new command 'sr show' needs to be documented. 
+
+
