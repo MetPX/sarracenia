@@ -25,6 +25,7 @@ import appdirs
 import copy
 import fnmatch
 import getpass
+import inspect
 import logging
 import os
 import os.path
@@ -676,6 +677,8 @@ class sr_GlobalState:
     def _match_patterns(self,patterns=None):
         """
           identify subset of configurations to operate on.
+          fnmatch the patterns from the command line to the list of known configurations.
+          put all the ones that do not match in leftovers.
         """
            
         self.filtered_configurations=[]
@@ -692,9 +695,24 @@ class sr_GlobalState:
             if (patterns is None) or (len(patterns) < 1):
                 self.filtered_configurations.append(fcc)
             else:
+                leftover_matches={}
+                for p in patterns: 
+                    leftover_matches[p] = 0
+ 
                 for p in patterns: 
                     if fnmatch.fnmatch( fcc, p ):
                         self.filtered_configurations.append(fcc)
+                        leftover_matches[p]+=1
+ 
+                    if p[-5:] == '.conf' and fnmatch.fnmatch( fcc, p[0:-5] ) :
+                        self.filtered_configurations.append(fcc)
+                        leftover_matches[p]+=1
+ 
+                self.leftovers=[]
+                for p in patterns:
+                    if leftover_matches[p] == 0:
+                        self.leftovers.append(p)
+                         
 
     @property
     def appname(self):
@@ -762,6 +780,39 @@ class sr_GlobalState:
             if component_path == '':
                 continue
             self._launch_instance(component_path, c, cfg, i)
+
+    def add(self):
+
+        if not hasattr(self,'leftovers') or ( len(self.leftovers) == 0 ):
+            logging.error("nothing specified to add" )
+
+        for l in self.leftovers:
+            sp = l.split(os.sep)
+            if ( len(sp) == 1 ) or ( (len(sp) > 1 ) and (sp[-2] not in sarra.config.Config.components + [ 'plugins'] ) ):
+               component='subscribe'
+               cfg=sp[-1]
+            else:
+               component=sp[-2]
+               cfg=sp[-1]
+            print('guess that is for: %s / %s ' % (component, cfg ) )
+            iedir = os.path.dirname(inspect.getfile(sarra.config.Config)) + os.sep + 'examples'
+            print('in_exemplum_dir=%s' % iedir )
+            
+            destdir = self.user_config_dir + os.sep + component
+            print('destcfgdir=%s' % self.user_config_dir )
+
+            suggestions = [ l,  os.path.join( iedir, component, cfg ) ]
+            found=False
+            for candidate in suggestions:
+                if os.path.exists( candidate ):
+                     print('found=%s' % candidate )
+                     pathlib.Path( destdir ).mkdir(parents=True, exist_ok=True)
+                     logger.info("copying: %s to %s " % ( candidate, destdir+os.sep+cfg ) ) 
+                     shutil.copyfile( candidate, destdir+os.sep+cfg )
+                     found=True
+                     break
+            if not found:
+                logger.error("did not find anything to copy for: %s" % l ) 
 
     def declare(self):
 
@@ -839,6 +890,12 @@ class sr_GlobalState:
                    
     def config_list(self):
         """
+        display all configurations possible for each component
+        """
+        print('not implemented')
+
+    def config_show(self):
+        """
         display the resulting settings for selected configurations.
         """
         for f in self.filtered_configurations:
@@ -851,6 +908,28 @@ class sr_GlobalState:
             print( '\nConfig of %s/%s: ' % ( c, cfg ) )
             o.dump()
 
+    def remove(self):
+
+        logging.info('FIXME remove! %s' % self.filtered_configurations)
+
+        if len(self.filtered_configurations) == 0 :
+           logging.error("a time")
+           return
+
+        if len(self.filtered_configurations) > 1 and not self.options.dangerWillRobinson:
+           logging.error("specify --dangerWillRobinson to remove > 1 config at a time")
+           return
+
+        for f in self.filtered_configurations:
+            if f == 'audit' : continue
+            ( c, cfg ) = f.split(os.sep)
+
+            if not 'options' in self.configs[c][cfg] :
+                continue
+
+            cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
+            logging.info( 'removing %s ' % ( cfgfile ) )
+            os.unlink( cfgfile )
 
     def maint(self, action):
         """
@@ -1235,6 +1314,10 @@ def main():
     # testing proc file i/o
     #gs.read_proc_file()
 
+    if action in ['add' ]:
+        print('%s: ' % action, end='', flush=True)
+        gs.add()
+
     if action in ['declare', 'setup']:
         print('%s: ' % action, end='', flush=True)
         gs.declare()
@@ -1242,30 +1325,6 @@ def main():
     if action == 'cleanup':
         print('cleanup: ', end='', flush=True)
         gs.cleanup()
-
-    if action == 'dump':
-        print('dumping: ', end='', flush=True)
-        gs.dump()
-
-    if action == 'list':
-        gs.config_list()
-
-    elif action == 'restart':
-        print('restarting: ', end='', flush=True)
-        gs.stop()
-        gs.start()
-
-    elif action == 'sanity':
-        print('sanity: ', end='', flush=True)
-        gs.sanity()
-
-    elif action == 'start':
-        print('starting:', end='', flush=True)
-        gs.start()
-
-    elif action == 'status':
-        print('status: ')
-        sys.exit(gs.status())
 
     elif action == 'devsnap':
         if len(sys.argv) < 3:
@@ -1276,6 +1335,36 @@ def main():
         gs.save_configs(sys.argv[2])
         gs.appname = sys.argv[2]
         gs.save_procs( gs.user_cache_dir + os.sep + "procs.json" )
+
+    if action == 'dump':
+        print('dumping: ', end='', flush=True)
+        gs.dump()
+
+    if action == 'list':
+        gs.config_list()
+
+    if action == 'remove':
+        gs.remove()
+
+    elif action == 'restart':
+        print('restarting: ', end='', flush=True)
+        gs.stop()
+        gs.start()
+
+    elif action == 'sanity':
+        print('sanity: ', end='', flush=True)
+        gs.sanity()
+
+    if action == 'show':
+        gs.config_show()
+
+    elif action == 'start':
+        print('starting:', end='', flush=True)
+        gs.start()
+
+    elif action == 'status':
+        print('status: ')
+        sys.exit(gs.status())
 
     elif action == 'stop':
         print('Stopping: ', end='', flush=True)

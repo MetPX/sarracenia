@@ -42,6 +42,10 @@ except :
 
 class Config:
 
+   components =  [ 'audit', 'cpost', 'cpump', 'poll', 'post', 'sarra', 'sender', 'shovel' 'subscribe', 'watch', 'winnow' ]
+
+   commands = [ 'add', 'cleanup', 'edit', 'declare', 'disable', 'edit', 'enable', 'foreground', 'list', 'log', 'remove', 'rename', 'restart', 'sanity', 'setup', 'show', 'start', 'stop', 'status' ]
+
    # lookup in dictionary, respond with canonical version.
    synonyms = { 
      'cache' : 'suppress_duplicates', 'no_duplicates' : 'suppress_duplicates', 
@@ -423,8 +427,8 @@ class Config:
              formatter_class=argparse.ArgumentDefaultsHelpFormatter )
         
         parser.add_argument('--accept_unmatched', default=self.accept_unmatch, type=bool, nargs='?', help='default selection, if nothing matches' )
-        parser.add_argument('--action', '-a', nargs='?', \
-           choices=[ 'add', 'cleanup', 'edit', 'declare', 'disable', 'edit', 'enable', 'foreground', 'list', 'log', 'remove', 'rename', 'restart', 'sanity', 'setup', 'start', 'stop', 'status' ], help='action to take on the specified configurations' )
+        parser.add_argument('--action', '-a', nargs='?', choices=Config.commands, 
+             help='action to take on the specified configurations' )
         parser.add_argument('--admin', help='amqp://user@host of peer to manage')
         parser.add_argument('--attempts', type=int, nargs='?', help='how many times to try before queuing for retry')
         parser.add_argument('--base_dir', '-bd', nargs='?', help="path to root of tree for relPaths in messages.")
@@ -443,8 +447,8 @@ class Config:
         parser.add_argument('--broker', nargs='?', help='amqp://user:pw@host of peer to subscribe to')
         #parser.add_argument('--clean_session', type=bool, help='start a new session, or resume old one?')
         #parser.add_argument('--clientid', help='like an AMQP queue name, identifies a group of subscribers')
-        parser.add_argument('--component', choices=[ 'audit', 'cpost', 'cpump', 'poll', 'post', 'sarra', 'sender', 'shovel' 'subscribe', 'watch', 'winnow' ], \
-            nargs='?', help='which component to look for a configuration for')
+        parser.add_argument('--component', choices=Config.components, nargs='?', \
+                  help='which component to look for a configuration for' )
         parser.add_argument('--dangerWillRobinson', action='store_true', default=False, help='Confirm you want to do something dangerous')
         parser.add_argument('--debug', action='store_true', help='pring debugging output (very verbose)')
         #parser.add_argument('--dir_prefix', help='local sub-directory to put data in')
