@@ -8,7 +8,8 @@
 # Sarracenia repository: https://github.com/MetPX/sarracenia
 # Documentation: https://github.com/MetPX/sarracenia
 #
-# sr_cache.py : python3 program generalise caching for sr programs
+# sr_cache.py : python3 program that generalise caching for sr programs, it is used as a time based buffer that
+#               prevents, when activated, identical files (of some kinds) from being processed more than once.
 #
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
@@ -30,7 +31,7 @@
 #
 #
 
-import os,sys,time
+import os
 
 import urllib.parse
 
@@ -43,13 +44,12 @@ import urllib.parse
 #              sum time path part
 #
 # cache_dict : {}  
-#              cache_dict[sum] = [ (time1,[path1,part1]),(time2,[path2,part2])...]
+#              cache_dict[sum] = {path1*part1: time1, path2*part2: time2, ...}
 #
-from sarra.sr_util import timestr2flt, timeflt2str, nowflt
+from sarra.sr_util import nowflt
 
 
 class sr_cache():
-
     def __init__(self, parent ):
         parent.logger.debug("sr_cache init")
 
@@ -76,64 +76,50 @@ class sr_cache():
 
         # set time and value
         now   = nowflt()
-
-        if self.cache_basis == 'name':
-            relpath = path.split('/')[-1]
-        elif self.cache_basis == 'path':
-            relpath = path
-        elif self.cache_basis == 'data':
-            relpath = "data"
-
+        relpath = self.__get_relpath(path)
         qpath = urllib.parse.quote(relpath)
-        value = '%s*%s' % (relpath,part)
+        value = '%s*%s' % (relpath, part)
 
-        # new... add
-        if not key in self.cache_dict :
-           self.logger.debug("new")
+        if key not in self.cache_dict :
+           self.logger.debug("adding a new entry in cache")
            kdict = {}
            kdict[value] = now
            self.cache_dict[key] = kdict
            self.fp.write("%s %f %s %s\n"%(key,now,qpath,part))
            self.count += 1
-           # new entry
            return True
 
-        # key (sum) in cache ... 
-        # if value "path part" already there update its time
-        # if value "path part" not there add it 
-        # this ends up to be the same code
-
+        self.logger.debug("sum already in cache: key={}".format(key))
         kdict   = self.cache_dict[key]
         present = value in kdict
         kdict[value] = now
 
         # differ or newer, write to file
-
         self.fp.write("%s %f %s %s\n"%(key,now,qpath,part))
         self.count += 1
 
-        # present = old entry
-
-        if present :
+        if present:
+           self.logger.debug("updated time of old entry: value={}".format(value))
            self.cache_hit = value
            return False
+        else:
+           self.logger.debug("added value={}".format(value))
 
-        # if not present and not a part : it is a new entry
-
-        if part == None or not part[0] in "pi" :
-           self.logger.debug("differ")
+        if part is None or part[0] not in "pi":
+           self.logger.debug("new entry, not a part: part={}".format(part))
            return True
-
-        # if weird part ... its a new entry
 
         ptoken = part.split(',')
         if len(ptoken) < 4 :
-           self.logger.debug("differ")
+           self.logger.debug("new entry, weird part: ptoken={}".format(ptoken))
            return True
 
         # build a wiser dict value without
         # block_count and remainder (ptoken 2 and 3)
-
+        # FIXME the remainder of this method is wrong. It will trivially have a match because we just
+        #  added the entry in kdict, then we will always find the value and return false. It will not change
+        #  anything at all though. Worst, the cache hit will falsely indicate that we hit an old entry. Then,
+        #  partitioned files would be lost. And why are we removing blktot and brem to do such a check.
         pvalue = value
         pvalue = pvalue.replace(','+ptoken[2],'',10)
         pvalue = pvalue.replace(','+ptoken[3],'',10)
@@ -142,7 +128,6 @@ class sr_cache():
         # build a similar value to compare with pvalue
 
         for value in kdict :
-
             kvalue = value
             kvalue = kvalue.replace(','+ptoken[2],'',10)
             kvalue = kvalue.replace(','+ptoken[3],'',10)
@@ -153,22 +138,16 @@ class sr_cache():
                self.cache_hit = value
                return False
 
-        # did not find it... its new
-
-        self.logger.debug("differ")
+        # FIXME variable value was overwritten by loop variable value. Using pvalue is safer here
+        #  for when the loop bug will be fixed.
+        self.logger.debug("did not find it... its new: pvalue={}".format(pvalue))
 
         return True
 
     def check_msg(self, msg):
         self.logger.debug("sr_cache check_msg")
 
-        if self.cache_basis == 'name':
-            relpath = msg.relpath.split('/')[-1]
-        elif self.cache_basis == 'path':
-            relpath = msg.relpath
-        elif self.cache_basis == 'data':
-            relpath = "data"
-
+        relpath = self.__get_relpath(msg.relpath)
         sumstr  = msg.headers['sum']
         partstr = relpath
 
@@ -177,7 +156,18 @@ class sr_cache():
 
         return self.check(sumstr,relpath,partstr)
 
-    def clean(self, fp = None, delpath = None):
+    def __get_relpath(self, path):
+        if self.cache_basis == 'name':
+            result = path.split('/')[-1]
+        elif self.cache_basis == 'path':
+            result = path
+        elif self.cache_basis == 'data':
+            result = "data"
+        else:
+            raise ValueError("invalid cache basis: cache_basis={}".format(self.cache_basis))
+        return result
+
+    def clean(self, persist=False, delpath=None):
         self.logger.debug("sr_cache clean")
 
         # create refreshed dict
@@ -186,7 +176,7 @@ class sr_cache():
         new_dict   = {}
         self.count = 0
 
-        if delpath != None:
+        if delpath is not None:
             qdelpath = urllib.parse.quote(delpath)
         else:
             qdelpath = None
@@ -212,7 +202,8 @@ class sr_cache():
                 ndict[value] = t
                 self.count  += 1
 
-                if fp : fp.write("%s %f %s %s\n"%(key,t,qpath,part))
+                if persist:
+                    self.fp.write("%s %f %s %s\n"%(key,t,qpath,part))
 
             if len(ndict) > 0 : new_dict[key] = ndict
 
@@ -221,16 +212,20 @@ class sr_cache():
 
     def close(self, unlink=False):
         self.logger.debug("sr_cache close")
-        try   :
-                self.fp.flush()
-                self.fp.close()
-        except: pass
+        try:
+            self.fp.flush()
+            self.fp.close()
+        except Exception as err:
+            self.logger.warning('did not close: cache_file={}, err={}'.format(self.cache_file, err))
+            self.logger.debug('Exception details:', exc_info=True)
         self.fp = None
 
         if unlink:
-           try   : os.unlink(self.cache_file)
-           except: pass
-
+            try:
+                os.unlink(self.cache_file)
+            except Exception as err:
+                self.logger.warning("did not unlink: cache_file={}: err={}".format(self.cache_file, err))
+                self.logger.debug('Exception details:', exc_info=True)
         self.cache_dict = {}
         self.count      = 0
 
@@ -244,15 +239,17 @@ class sr_cache():
         self.fp = open(self.cache_file,'w')
 
         # clean cache removing delpath
-
-        self.clean(self.fp, delpath)
+        self.clean(persist=True, delpath=delpath)
 
     def free(self):
         self.logger.debug("sr_cache free")
         self.cache_dict = {}
         self.count      = 0
-        try   : os.unlink(self.cache_file)
-        except: pass
+        try:
+            os.unlink(self.cache_file)
+        except Exception as err:
+            self.logger.warning("did not unlink: cache_file={}, err={}".format(self.cache_file, err))
+            self.logger.debug('Exception details:', exc_info=True)
         self.fp = open(self.cache_file,'w')
 
     def load(self):
@@ -295,8 +292,10 @@ class sr_cache():
                   ttl   = now - ctime
                   if ttl > self.expire : continue
 
-              except: # skip corrupted line.
-                  self.logger.error("sr_cache load corrupted line %d in %s" % ( lineno, self.cache_file) )
+              except Exception as err:
+                  err_msg_fmt = "load corrupted: lineno={}, cache_file={}, err={}"
+                  self.logger.error(err_msg_fmt.format(lineno, self.cache_file, err))
+                  self.logger.debug('Exception details:', exc_info=True)
                   continue
 
               #  add info in cache
@@ -314,7 +313,7 @@ class sr_cache():
 
         self.cache_file = cache_file
 
-        if cache_file == None :
+        if cache_file is None :
            self.cache_file  = self.parent.user_cache_dir + os.sep 
            self.cache_file += 'recent_files_%.3d.cache' % self.parent.instance
 
@@ -325,16 +324,18 @@ class sr_cache():
 
         # close,remove file
         if self.fp : self.fp.close()
-        try   : 
-                os.unlink(self.cache_file)
-        except: pass
-
+        try:
+            os.unlink(self.cache_file)
+        except Exception as err:
+            self.logger.warning("did not unlink: cache_file={}, err={}".format(self.cache_file, err))
+            self.logger.debug('Exception details:', exc_info=True)
         # new empty file, write unexpired entries
-        try   : 
-                self.fp = open(self.cache_file,'w')
-                self.clean(self.fp)
-        except: pass
-
+        try:
+            self.fp = open(self.cache_file,'w')
+            self.clean(persist=True)
+        except Exception as err:
+            self.logger.warning("did not clean: cache_file={}, err={}".format(self.cache_file, err))
+            self.logger.debug('Exception details:', exc_info=True)
 
     def check_expire(self):
         self.logger.debug("sr_cache check_expire")
