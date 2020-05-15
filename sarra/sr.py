@@ -681,9 +681,12 @@ class sr_GlobalState:
           put all the ones that do not match in leftovers.
         """
            
+        logging.debug( 'starting match_patterns with: %s' % patterns ) 
         self.filtered_configurations=[]
         self.leftovers=[]
         leftover_matches={}
+        if ( patterns is None ) or (patterns == []):
+           patterns=[ '*' + os.sep + '*' ]
 
         candidates=['audit']
         for c in self.components:
@@ -717,8 +720,36 @@ class sr_GlobalState:
              if leftover_matches[p] == 0:
                  self.leftovers.append(p)
 
-        logging.debug( 'filtered_configurations: %s' % self.filtered_configurations ) 
-        logging.debug( 'leftovers: %s' % self.leftovers ) 
+        if len(self.leftovers) > 0:
+           if ( 'examples' == self.leftovers[0] ) or ( 'plugins' == self.leftovers[0] ) :
+              candidates=[]
+              if len(patterns) == 1:
+                 patterns = [ '*'+os.sep+'*' ]
+              else:
+                 patterns = patterns[1:]
+              if self.leftovers[0] == 'examples' :
+                  for c in self.components:
+                      if c == 'audit': continue
+                      d = self.package_lib_dir + os.sep + 'examples' + os.sep + c
+                      if not os.path.exists( d ): continue
+                      l = os.listdir( d ) 
+                      candidates.extend( list( map( lambda x: c+os.sep+x[0:x.rfind('.')], l ) ) )
+              else:
+                  d = self.package_lib_dir + os.sep + 'plugins'
+                  if os.path.exists( d ): 
+                      l = os.listdir( d )
+                      l.remove( '__init__.py' )
+                      candidates.extend( list( map( lambda x: 'plugins' + os.sep + x[0:x.rfind('.')], l ) ) )
+
+
+              for fcc in candidates:
+                  for p in patterns: 
+                      if fnmatch.fnmatch( fcc, p ):
+                          self.filtered_configurations.append(fcc)
+
+
+        logging.debug( 'match_patterns result filtered_configurations: %s' % self.filtered_configurations ) 
+        logging.debug( 'match_patterns result leftovers: %s' % self.leftovers ) 
 
     @property
     def appname(self):
@@ -999,27 +1030,39 @@ class sr_GlobalState:
                            qdc.putCleanUp() 
                            qdc.close() 
 
-    def print_configdir(self,prefix,configdir):
+    print_column=0
+
+    def print_configdir(self,prefix,configdir,component):
+        """
+          pretty print in columns a subdirectory of a configuration directory, respecting selections,
+          except for the default ones to always include (admin, default, credentials)
+        """
 
         if not os.path.isdir(configdir) or (len(os.listdir(configdir)) == 0 ):
            return
 
-        print("%s: ( %s )" % (prefix,configdir))
+        #print("%s: ( %s )" % (prefix,configdir))
         term = shutil.get_terminal_size((80,20))
         columns=term.columns
+        count=0
 
-        i=0
         for confname in sorted( os.listdir(configdir) ):
             if confname[0] == '.' or confname[-1] == '~' : continue
             if os.path.isdir(configdir+os.sep+confname) : continue
-            if ( ((i+1)*21) >= columns ):
+            if ( ((sr_GlobalState.print_column+1)*33) >= columns ):
                  print('')
-                 i=0
-            i+=1
-            print( "%20s " % confname, end='' )
+                 sr_GlobalState.print_column=0
+            if (component != '') :
+                f = component + os.sep + confname[0:confname.rfind('.')]
+                if ( f not in self.filtered_configurations):
+                     continue
+                f = component + os.sep + confname
+            else:
+                f = confname
 
-        print("\n", flush=True)
-
+            sr_GlobalState.print_column+=1
+            count+=1
+            print( "%-32s " % f, end='' )
 
                    
     def config_list(self):
@@ -1029,20 +1072,20 @@ class sr_GlobalState:
 
 
         if hasattr(self,'leftovers') and ( len(self.leftovers) > 0 ):
-           if  ( 'examples' in self.leftovers ) :
-               print( 'Sample Configurations:' )
+           if  ( 'examples' == self.leftovers[0] ) :
+               print( 'Sample Configurations: (from: %s )' %  (self.package_lib_dir+os.sep+'examples') )
                for c in sarra.config.Config.components:
-                   self.print_configdir(" of %s "% c, os.path.normpath( self.package_lib_dir +os.sep+ 'examples' +os.sep+ c ) )
-           elif ( 'plugins' in self.leftovers ):
-               print( 'Provided plugins:' )
-               self.print_configdir(" of plugins: ", os.path.normpath( self.package_lib_dir +os.sep+ 'plugins' ) )
-
+                   self.print_configdir(" of %s "% c, os.path.normpath( self.package_lib_dir +os.sep+ 'examples' +os.sep+ c ), c )
+           elif ( 'plugins' == self.leftovers[0] ):
+               print( 'Provided plugins: ( %s ) ' % self.package_lib_dir )
+               self.print_configdir(" of plugins: ", os.path.normpath( self.package_lib_dir +os.sep+ 'plugins' ), 'plugins' )
         else:
-            for c in sarra.config.Config.components:
-                self.print_configdir("for %s" %c,    os.path.normpath( self.user_config_dir + os.sep + c ))
+            print( 'User Configurations: (from: %s )' %  self.user_config_dir )
+            for c in sarra.config.Config.components :
+                self.print_configdir("for %s" %c,    os.path.normpath( self.user_config_dir + os.sep + c), c )
 
-            self.print_configdir("general",                os.path.normpath( self.user_config_dir ))
-            print( "logs are in: %s\n" % os.path.normpath( self.log_dir ))
+            self.print_configdir("general",                os.path.normpath( self.user_config_dir ), '' )
+            print( "\nlogs are in: %s\n" % os.path.normpath( self.log_dir ))
     
 
     def config_show(self):
@@ -1457,9 +1500,6 @@ def main():
 
     #FIXME... hmm... so... 
     #cfg.fill_missing_options()
-
-    if not hasattr(cfg, 'configurations'):
-        cfg.configurations=[ '*/*' ]
 
     if not hasattr( cfg, 'action' ):
         print('USAGE: %s (%s)' % (sys.argv[0], '|'.join(actions)))
