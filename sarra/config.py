@@ -22,13 +22,8 @@ import socket
 
 from random import randint
 
-try :
-   from sr_util        import *
-   from sr_credentials import *
-
-except :
-   from sarra.sr_util        import *
-   from sarra.sr_credentials import *
+from sarra.sr_util import * 
+from sarra.sr_credentials  import *
 
 
 """
@@ -37,7 +32,10 @@ except :
    Still very incomplete, it does just enough to work with sr.py for now.
    Not usable as a replacement for sr_config.py (yet!) 
 
+   FIXME: respect appdir stuff using an environment variable.
+   for not just hard coded as a class variable appdir_stuff
 """
+
 
 
 class Config:
@@ -47,6 +45,8 @@ class Config:
    commands = [ 'add', 'cleanup', 'edit', 'declare', 'disable', 'edit', 'enable', 'foreground', 'list', 'remove', 'restart', 'sanity', 'setup', 'show', 'start', 'stop', 'status' ]
 
    # lookup in dictionary, respond with canonical version.
+   appdir_stuff = { 'appauthor':'science.gc.ca', 'appname':'sarra' }
+
    synonyms = { 
      'cache' : 'suppress_duplicates', 'no_duplicates' : 'suppress_duplicates', 
      'caching' : 'suppress_duplicates', 
@@ -59,20 +59,19 @@ class Config:
    }
    credentials = None
 
-   def __init__(self,parent=None, appdir_stuff={ 'appauthor':'science.gc.ca', 'appname':'sarra' }):
+
+   def __init__(self,parent=None ):
 
        self.bindings =  []
        self.__admin = None
        self.__broker = None
        self.__post_broker = None
 
-       self.appdir_stuff = appdir_stuff
-
        if Config.credentials is None:
           Config.credentials=sr_credentials()
           Config.credentials.read( 
-              appdirs.user_config_dir( appdir_stuff['appname'], 
-                                       appdir_stuff['appauthor']  ) 
+              appdirs.user_config_dir( Config.appdir_stuff['appname'], 
+                                       Config.appdir_stuff['appauthor']  ) 
               + os.sep + "credentials.conf" )
        # FIXME... Linux only for now, no appdirs
        self.directory = None
@@ -84,16 +83,21 @@ class Config:
               setattr(self,i,parent[i])
 
        self.declared_exchanges = []
-       self.post_exchanges = []
+       self.env = {}
+       self.exchange = None
        self.filename = None
        self.flatten = '/'
        self.hostname = socket.getfqdn()
+       self.inline = False
+       self.inline_max = 4096
+       self.inline_encoding = 'guess'
        self.masks =  []
        self.instances = 1
        self.mirror = False
-       self.strip = 0
+       self.post_exchanges = []
        self.pstrip = False
        self.randid = "%04x" % random.randint(0,65536)
+       self.strip = 0
        self.tls_rigour = 'normal'
        self.topic_prefix = 'v02.post'
        self.users = {}
@@ -333,6 +337,21 @@ class Config:
                   k=Config.synonyms[k]
                setattr( self, k, ' '.join(line[1:]) )
 
+   def get_log_filename(self, component, configuration, no):
+       """
+          return the name of a single logfile for a single instance.
+       """
+       logdir = appdirs.user_cache_dir( Config.appdir_stuff['appname'],
+               Config.appdir_stuff['appauthor']  ) + os.sep + 'log'
+
+       if configuration is None:
+          configuration=''
+       else:
+          configuration='_' + configuration
+
+       return logdir + 'os.sep' + 'sr_' + component + configuration + '_%02d' % no + '.log'
+       
+
   
    def fill_missing_options(self,component,config):
        """ 
@@ -349,8 +368,8 @@ class Config:
           if hasattr(self,'exchange_split') and hasattr(self,'no') and ( self.no > 0 ):
               self.exchange += "%02d" % self.no
 
-          queuefile = appdirs.user_cache_dir( self.appdir_stuff['appname'],
-               self.appdir_stuff['appauthor']  )
+          queuefile = appdirs.user_cache_dir( Config.appdir_stuff['appname'],
+               Config.appdir_stuff['appauthor']  )
           queuefile += os.sep + component + os.sep + config[0:-5] 
           queuefile += os.sep + 'sr_' + component + '.' + config[0:-5] + '.' + self.broker.username 
 
@@ -471,6 +490,7 @@ class Config:
         #parser.add_argument('--lag_drop', type=int, help='in seconds, drop messages older than that')
         
         # the web server address for the source of the locally published tree.
+        parser.add_argument('--loglevel', choices=[ 'none', 'debug', 'info', 'warning', 'error' ], help='encode payload in base64 (for binary) or text (utf-8)')
         parser.add_argument('--no', type=int, help='instance number of this process')
         parser.add_argument('--queue_name', nargs='?', help='name of AMQP consumer queue to create')
         parser.add_argument('--post_broker', nargs='?', help='broker to post downloaded files to')
@@ -494,7 +514,7 @@ class Config:
 
         self.merge(args)
 
-def one_config( component, config, overrides=None, appdir_stuff={ 'appauthor':'science.gc.ca', 'appname':'sarra' } ):
+def one_config( component, config, overrides=None ):
 
     """
       single call return a fully parsed single configuration for a single component to run.
@@ -508,9 +528,8 @@ def one_config( component, config, overrides=None, appdir_stuff={ 'appauthor':'s
 
       appdir_stuff can be to override file locations for testing during development.
     """
-    default_cfg_dir = appdirs.user_config_dir( appdir_stuff['appname'], appdir_stuff['appauthor']  )
-    default_cfg = Config( parent=None, appdir_stuff=appdir_stuff )
-    default_cfg.appdir_stuff = appdir_stuff 
+    default_cfg_dir = appdirs.user_config_dir( Config.appdir_stuff['appname'], Config.appdir_stuff['appauthor']  )
+    default_cfg = Config( parent=None, )
 
     if overrides:
         default_cfg.override( overrides )
