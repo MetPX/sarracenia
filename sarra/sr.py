@@ -504,7 +504,7 @@ class sr_GlobalState:
                     continue
 
                 o = self.configs[c][cfg]['options']
-                name = c + '/' + cfg
+                name = c + os.sep + cfg
                 
                 if hasattr(o,'broker') and o.broker is not None:
                     host = self._init_broker_host( o.broker.netloc )
