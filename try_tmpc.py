@@ -30,7 +30,7 @@ logger.setLevel( logging.DEBUG )
 print( 'ihpc default properties: %s' % TMPC.default_props() )
 print( 'amqp default properties: %s' % AMQP.default_props() )
 
-cfg=one_config( "sarra", "download_f20.conf", logger, TMPC.default_props() )
+cfg=one_config( "sarra", "download_f20.conf", TMPC.default_props() )
 
 #cfg.dump()
 
@@ -46,7 +46,7 @@ for k in sorted(cd):
 print('hoho... have a config... broker: %s ' % urlunparse(cfg.broker) )
 
 
-h=TMPC( cfg.broker, logger, cd)
+h=TMPC( cfg.broker, cd)
 print( "This one is an: %s" % h.url_proto() )
 
 i=0
@@ -68,7 +68,7 @@ for k in cd.keys():
      if k.startswith('post_'):
         pd[k[5:]] = pd[k]
 
-p=TMPC( cfg.post_broker, logger, pd, get=False)
+p=TMPC( cfg.post_broker, pd, get=False)
 
 p.putNewMessage( 'v03.post.20200105.WXO-DD.meteocode.atl', body )
 
