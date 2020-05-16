@@ -30,6 +30,7 @@ import logging
 import os
 import os.path
 import pathlib
+import platform
 import psutil
 import random
 import re
@@ -155,7 +156,6 @@ class sr_GlobalState:
         self.procs = {}
         self.me = getpass.getuser()
         self.auditors = 0
-
         for proc in psutil.process_iter( ['pid','cmdline','name', 'username' ] ):
             self._filter_sr_proc(proc.info)
 
