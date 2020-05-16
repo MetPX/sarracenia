@@ -166,7 +166,7 @@ class sr_GlobalState:
            return
 
         os.chdir(self.user_config_dir)
-        self.default_cfg = sarra.config.Config(None, { 'appauthor':self.appauthor, 'appname':self.appname } )
+        self.default_cfg = sarra.config.Config()
         if os.path.exists( "default.conf" ):
             self.default_cfg.parse_file("default.conf")
         if os.path.exists( "admin.conf" ):
@@ -561,7 +561,7 @@ class sr_GlobalState:
                 if not hasattr(o,'instances'):
                     o.instances = 1
 
-                name = c + '/' + cfg
+                name = c + os.sep + cfg
                 
                 if hasattr(o,'admin') and (o.admin is not None) :
                     # FIXME: sometimes o.admin is a string... no idea why.. upstream cause should be addressed.
@@ -833,9 +833,9 @@ class sr_GlobalState:
             else:
                 logging.debug("using subprocess.run")
                 if sc_path and cmd_list[0].startswith("sr_cp"):
-                    subprocess.run([sc_path+'/'+cmd_list[0]]+cmd_list[1:], check=True)
+                    subprocess.run([sc_path+os.sep+cmd_list[0]]+cmd_list[1:], check=True)
                 elif sr_path and cmd_list[0].startswith("sr"):
-                    subprocess.run([sr_path+'/'+cmd_list[0]+'.py']+cmd_list[1:], check=True)
+                    subprocess.run([sr_path+os.sep+cmd_list[0]+'.py']+cmd_list[1:], check=True)
                 else:
                     subprocess.run(cmd_list, check=True)
         except subprocess.CalledProcessError as err:
