@@ -89,6 +89,8 @@ class sr_GlobalState:
         else:
             lfn = self.log_dir + os.sep + 'sr_' + c + '_' + cfg + "_%02d" % i + '.log'
 
+        os.makedirs(os.path.dirname(lfn), exist_ok=True)
+
         if c[0] != 'c':  # python components
             if cfg is None:
                 cmd = [sys.executable, component_path, '--no', "%d" % i, 'start']
@@ -133,7 +135,6 @@ class sr_GlobalState:
             else:
                 self.procs[p['pid']]['claimed'] =  ( 'foreground' in p['cmdline'] )
 
-
     def read_proc_file(self,File="procs.json"):
         """
            read process table from a save file, for reproducible testing.
@@ -155,6 +156,8 @@ class sr_GlobalState:
         # read process table from the system
         self.procs = {}
         self.me = getpass.getuser()
+        if sys.platform == 'win32':
+            self.me = os.environ['userdomain'] + '\\\\' + self.me
         self.auditors = 0
         for proc in psutil.process_iter( ['pid','cmdline','name', 'username' ] ):
             self._filter_sr_proc(proc.info)
@@ -560,7 +563,6 @@ class sr_GlobalState:
                 o = self.configs[c][cfg]['options']
                 if not hasattr(o,'instances'):
                     o.instances = 1
-
                 name = c + os.sep + cfg
                 
                 if hasattr(o,'admin') and (o.admin is not None) :
