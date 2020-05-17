@@ -30,12 +30,13 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 
-import inspect
-import logging
-import netifaces
-import os, re, socket, subprocess, sys, random, glob, time
+import glob, inspect, logging
+import netifaces, random
+import os, os.path
+import re, shutil
+import socket, subprocess, sys
+import time
 import urllib, urllib.parse, urllib.request, urllib.error
-import shutil
 import sarra
 import io
 import ssl
@@ -2828,6 +2829,7 @@ class sr_config:
 
     def create_handler(self, log_format, level):
         if self.lr_interval > 0 and self.lr_backupCount > 0:
+            os.makedirs(os.path.dirname(self.logpath), exist_ok=True)
             handler = handlers.TimedRotatingFileHandler(self.logpath, when=self.lr_when, interval=self.lr_interval,
                                                         backupCount=self.lr_backupCount)
         else:

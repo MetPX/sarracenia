@@ -89,6 +89,8 @@ class sr_GlobalState:
         else:
             lfn = self.user_cache_dir + os.sep + 'log' + os.sep + 'sr_' + c + '_' + cfg + "_%02d" % i + '.log'
 
+        os.makedirs(os.path.dirname(lfn), exist_ok=True)
+
         if c[0] != 'c':  # python components
             if cfg is None:
                 cmd = [sys.executable, component_path, '--no', "%d" % i, 'start']
