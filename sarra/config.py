@@ -36,6 +36,21 @@ from sarra.sr_credentials  import *
    for not just hard coded as a class variable appdir_stuff
 """
 
+def get_log_filename(component, configuration, no):
+       """
+          return the name of a single logfile for a single instance.
+       """
+       logdir = appdirs.user_cache_dir( Config.appdir_stuff['appname'],
+               Config.appdir_stuff['appauthor']  ) + os.sep + 'log'
+
+       if configuration is None:
+          configuration=''
+       else:
+          configuration='_' + configuration
+
+       return logdir + os.sep + 'sr_' + component + configuration + '_%02d' % no + '.log'
+       
+
 
 
 class Config:
@@ -336,21 +351,6 @@ class Config:
                if k in Config.synonyms:
                   k=Config.synonyms[k]
                setattr( self, k, ' '.join(line[1:]) )
-
-   def get_log_filename(self, component, configuration, no):
-       """
-          return the name of a single logfile for a single instance.
-       """
-       logdir = appdirs.user_cache_dir( Config.appdir_stuff['appname'],
-               Config.appdir_stuff['appauthor']  ) + os.sep + 'log'
-
-       if configuration is None:
-          configuration=''
-       else:
-          configuration='_' + configuration
-
-       return logdir + 'os.sep' + 'sr_' + component + configuration + '_%02d' % no + '.log'
-       
 
   
    def fill_missing_options(self,component,config):
