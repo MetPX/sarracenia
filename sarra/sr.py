@@ -138,7 +138,6 @@ class sr_GlobalState:
             else:
                 self.procs[p['pid']]['claimed'] =  ( 'foreground' in p['cmdline'] )
 
-
     def read_proc_file(self,File="procs.json"):
         """
            read process table from a save file, for reproducible testing.
@@ -160,6 +159,8 @@ class sr_GlobalState:
         # read process table from the system
         self.procs = {}
         self.me = getpass.getuser()
+        if sys.platform == 'win32':
+            self.me = os.environ['userdomain'] + '\\\\' + self.me
         self.auditors = 0
         for proc in psutil.process_iter( ['pid','cmdline','name', 'username' ] ):
             self._filter_sr_proc(proc.info)
