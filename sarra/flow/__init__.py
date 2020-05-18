@@ -5,11 +5,14 @@ import sarra.plugins
 import time
 import types
 
+from abc import ABCMeta, abstractmethod
+
 from sarra.sr_util import nowflt
 
 logger = logging.getLogger( __name__ )
 
 class Flow:
+    __metaclass__ = ABCMeta
     """
       implement the General Algorithm from the Concepts Guide.
       just pure program logic all the start, status, stop, log & instance management taken care of elsewhere.
@@ -21,6 +24,7 @@ class Flow:
   
     def __init__(self,o=None):
 
+       
        # FIXME: set o.sleep, o.housekeeping
        self.o = types.SimpleNamespace()
        self.o.sleep = 10
@@ -91,20 +95,19 @@ class Flow:
         # apply on_message plugins.
         logger.info('filter - unimplemented')
 
-#
-# sort of an abstract base class, subclass must implement the following entry points:
-#
-#    def gather(self):
-#        logger.info('gather - unimplemented')
-# 
-#   
-#    def do( self ):
-#        logger.info('do - unimplemented')
-#   
-#    def post( self ):
-#        # post messages
-#        # apply on_post plugins
-#        logger.info('post - unimplemented')
+    @abstractmethod
+    def gather(self):
+        logger.info('gather - unimplemented')
+ 
+    @abstractmethod 
+    def do( self ):
+        logger.info('do - unimplemented')
+  
+    @abstractmethod 
+    def post( self ):
+        # post messages
+        # apply on_post plugins
+        logger.info('post - unimplemented')
    
     def report( self ):
         # post reports
