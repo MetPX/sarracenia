@@ -245,15 +245,13 @@ class Config:
    def _build_mask(self, option, arguments):
        """ return new entry to be appended to list of masks
        """
-       #regex = re.compile( arguments[0] )
+       regex = re.compile( arguments[0] )
        if len(arguments) > 1:
             fn=arguments[1]
        else:
             fn=self.filename
    
-       return ( arguments[0], self.directory, fn,  \
-                option.lower() in ['accept','get'], \
-                self.mirror, self.strip, self.pstrip )
+       return ( arguments[0], self.directory, fn, regex, option.lower() in ['accept','get'], self.mirror, self.strip, self.pstrip, self.flatten )
 
 
    def dump(self):

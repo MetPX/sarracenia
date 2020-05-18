@@ -1,6 +1,7 @@
 
 import logging
 import netifaces
+import os
 import sarra.plugins
 import time
 import types
@@ -108,9 +109,35 @@ class Flow:
     def filter(self):
         # apply cache, reject.
         # apply masks, reject.
-        logger.info('self.o.bindings %s' % self.o.bindings )
+
+        self.filtered_worklist = []
+        for m in self.new_worklist:
+            url = m['baseUrl'] + os.sep + m['relPath']
+            for mask in self.o.masks:
+                logger.info('filter - checking: %s' % str(mask) )
+                pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
+                if mask_regexp.match( url ):
+                    if not accepting:
+                        if self.o.log_reject:
+                            logger.info( "reject: mask=%s strip=%s pattern=%s" % (str(mask), strip, m) ) 
+                            break
+                    self.filtered_worklist.append(m)
+                    logger.info( "isMatchingPattern: accepted mask=%s strip=%s" % (str(mask), strip) )
+                    break
+
+            if self.o.accept_unmatched:
+                logger.info( "accept: unmatched pattern=%s" % (url) )
+                self.filtered_worklist.append(m)
+            elif self.o.log_reject 
+                logger.info( "reject: unmatched pattern=%s" % (url) )
+                
+        self.new_worklist=[]
+        for m in self.filtered_worklist:
+            logger('run plugins on %s' % m )
+            self.new_worklist.append(m)
+
         # apply on_message plugins.
-        logger.info('filter - unimplemented')
+        logger.info('filter - done')
 
     @abstractmethod
     def gather(self):
