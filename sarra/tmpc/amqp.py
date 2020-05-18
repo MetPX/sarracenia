@@ -37,6 +37,9 @@ logger = logging.getLogger( __name__ )
 
 class AMQP(TMPC):
 
+    # length of an AMQP short string (used for headers and many properties)
+    amqp_ss_maxlen = 255  
+
     __default_properties = { 'queue_name':None, 
                'exchange': None, 'topic_prefix':None, 'subtopic' : None,  
                'durable':True, 'expire': '5m', 'message_ttl':0, 
@@ -52,17 +55,19 @@ class AMQP(TMPC):
            connect to broker, depending on message_strategy stubborness, remain connected.
            
         """
-        logger.debug("__init__ AMQP")
+        logger.info("__init__ AMQP 0")
 
         AMQP.assimilate(self)
         self.props.update(copy.deepcopy(AMQP.__default_properties))
 
+        logger.info("__init__ AMQP 1")
         self.first_setup=True
 
         if self.props_args:
             self.props.update(copy.deepcopy(self.props_args)) 
 
-        if self.get: #build_consumer
+        logger.info("__init__ AMQP 2")
+        if self.is_subscriber: #build_consumer
            self.__getSetup()
            return
         else: # publisher...
@@ -100,6 +105,7 @@ class AMQP(TMPC):
         if message_strategy is stubborn, will loop here forever.
              connect, declare queue, apply bindings.
         """
+        logger.info("AMQP getSetup 0")
         ebo=1
         while True:
 
@@ -109,7 +115,7 @@ class AMQP(TMPC):
                 # from sr_consumer.build_connection...
                 self.__connect(self.broker)
 
-                logger.debug('getSetup ... 1. connected to {}'.format(self.props['broker'].hostname) )
+                logger.info('getSetup ... 1. connected to {}'.format(self.props['broker'].hostname) )
 
                 if self.props['prefetch'] != 0 :
                     self.channel.basic_qos( 0, self.props['prefetch'], True )
@@ -126,7 +132,7 @@ class AMQP(TMPC):
                         x = int(durationToSeconds(self.props['expire']) * 1000)
                         if x > 0: args['x-expires'] = x
                     if self.props['message_ttl']:
-                        x = int(durationToSeconds(self.props['x-message-ttl']) * 1000 )
+                        x = int(durationToSeconds(self.props['message_ttl']) * 1000 )
                         if x > 0: args['x-message-ttl'] = x
   
                     #FIXME: conver expire, message_ttl to proper units.
@@ -138,7 +144,7 @@ class AMQP(TMPC):
                     logger.info('queue declared %s (as: %s) ' % ( self.props['queue_name'], broker_str ) )
     
                 if self.props['bind']:
-                    logger.debug('getSetup ... 1. binding')
+                    logger.info('getSetup ... 1. binding')
                     for tup in self.props['bindings'] :          
                         prefix, exchange, values = tup
                         topic= prefix + '.' + values[0]
@@ -147,7 +153,7 @@ class AMQP(TMPC):
                         self.channel.queue_bind( self.props['queue_name'], exchange, topic )
 
                 # Setup Successfully Complete! 
-                logger.debug('getSetup ... Done!')
+                logger.info('getSetup ... Done!')
                 return
 
             except Exception as err:
@@ -163,6 +169,7 @@ class AMQP(TMPC):
 
 
     def __putSetup(self):
+        logger.info("AMQP putSetup 0")
         ebo=1
         while True:
 
@@ -231,17 +238,65 @@ class AMQP(TMPC):
     def url_proto(self):
         return "amqp"
 
+    def v02tov03message( raw_msg ):
+        msg = raw_msg.headers
+        pubtime, baseurl, relpath = raw_msg.body.split(' ')[0:3]
+        msg[ 'pubTime' ] = timev2tov3str( pubtime )
+        msg[ 'baseUrl' ] = baseurl
+        msg[ 'relPath' ] = relPath
+        for t in [ 'atime', 'mtime' ]:
+            if t in msg:
+                msg[ t ] = timev2tov3str( msg[ t ] )
+
+        if 'sum' in msg:
+            sum_algo_map = { "a":"arbitrary", "d":"md5", "s":"sha512", 
+               "n":"md5name", "0":"random", "L":"link", "R":"remove", "z":"cod" }
+            sm = sum_algo_map[ msg["sum"][0] ]
+            if sm in [ 'random' ] :
+                sv = msg["sum"][2:]
+            elif sm in [ 'cod' ] :
+                sv = sum_algo_map[ msg["sum"][2:] ]
+            else:
+                sv = encode( decode( msg["sum"][2:], 'hex'), 'base64' ).decode('utf-8').strip()
+            msg[ "integrity" ] = { "method": sm, "value": sv }
+            del msg['sum']
+
+
+        if 'parts' in msg:
+            ( style, chunksz, block_count, remainder, current_block ) = msg['parts'].split(',')
+            if style in [ 'i' , 'p' ]:
+                msg['blocks'] = {}
+                msg['blocks']['method'] = {'i': 'inplace', 'p': 'partitioned'}[style]
+                msg['blocks']['size'] = str(chunksz)
+                msg['blocks']['count'] = str(block_count)
+                msg['blocks']['remainder'] = str(remainder)
+                msg['blocks']['number'] = str(current_block)
+            else:
+                msg['size'] = chunksz
+            del msg['parts']
+     
+        return msg
+                      
 
     def getNewMessage( self ):
 
-        if not self.get: #build_consumer
+        if not self.is_subscriber: #build_consumer
             logger.error("getting from a publisher")
             return None
 
         ebo=1
         while True:
             try:
-                msg = self.channel.basic_get(self.props['queue_name']) 
+                raw_msg = self.channel.basic_get(self.props['queue_name']) 
+                #logger.info("msg varlist: %s" % raw_msg.__dict__ )
+                if raw_msg is not None:
+                    if raw_msg.properties['content_type'] == 'application/json':
+                        msg = json.loads( raw_msg.body )
+                    else:
+                        msg = v02tov03message( raw_msg )
+                    msg['topic'] = raw_msg.delivery_info['routing_key']
+                else:
+                    msg = None
                 return msg 
             except:
                 logger.warning("tmpc.amqp.getNewMessage: failed %s: %s" % (queuename, err))
@@ -258,27 +313,106 @@ class AMQP(TMPC):
             logger.info("Sleeping {} seconds ...".format( ebo) )
             time.sleep(ebo)
 
-    def putNewMessage(self, topic, body, headers=None, content_type='application/json', exchange=None ):
+    def v03tov02message( h ):
+
+        v02main=h["pubTime"].replace("T","") + ' ' + h["baseURL" ] + ' ' + h["relPath"]
+        del h["pubTime"]
+        del h["baseURL"]
+        del h["relPath"]
+
+        #FIXME: ensure headers are < 255 chars.
+        for k in [ 'mtime', 'atime' ]:
+            h[ k ] = h[k].replace("T","")
+
+        #FIXME: sum header encoding.
+        if 'size' in h:
+            h[ 'parts' ] = '1,%d,1,0,0' % h['size']
+            del h['size']
+
+        if 'blocks' in h:
+            if h['parts'] == 'inplace': 
+                m='i'
+            else: 
+                m='p'
+            p=h['blocks']
+            h[ 'parts' ] = '%s,%d,%d,%d,%d' % ( m, p['size'], p['count'], 
+                  p['remainder'], p['number'] )
+            del h['blocks']
+
+        if 'content' in h:  #v02 does not support inlining
+            del h['content']
+
+        if 'integrity' in h:
+            sum_algo_v3tov2 = { "arbitrary":"a", "md5":"d", "sha512":"s", 
+                "md5name":"n", "random":"0", "link":"L", "remove":"R", "cod":"z" }
+            sa = sum_algo_v3tov2[ self.headers[ "integrity" ][ "method" ] ]
+
+            # transform sum value
+            if sa in [ '0' ]:
+                sv = self.headers[ "integrity" ][ "value" ]
+            elif sa in [ 'z' ]:
+                sv = sum_algo_v3tov2[ self.headers[ "integrity" ][ "value" ] ]
+            else:
+                sv = encode( decode( self.headers[ "integrity" ][ "value" ].encode('utf-8'), "base64" ), 'hex' )
+            
+            h[ "sum" ] = sa + ',' + sv
+            del self.headers['integrity']
+
+        return ( v02main, h)
+                       
+
+
+    def putNewMessage(self, body, content_type='application/json', exchange=None ):
         """
         put a new message out, to the configured exchange by default.
         """
-        if self.get: #build_consumer
+        if self.is_subscriber: #build_consumer
             logger.error("publishing from a consumer")
             return None
+
+        topic = body['topic']
+        del body['topic']
+        topic = topic.replace('#','%23')
+        topic = topic.replace('#','%23')
+        if len(topic) >= 255: # ensure topic is <= 255 characters
+           logger.error("message topic too long, truncating")
+           mxlen=amqp_ss_maxlen
+           while( topic.encode("utf8")[mxlen-1] & 0xc0 == 0xc0 ):
+               mxlen -= 1
+           topic = topic.encode("utf8")[0:mxlen].decode("utf8")
+
+
+        if not exchange :
+            exchange=self.props['exchange']
+ 
+        if self.props['message_ttl']:
+           ttl = "%d" * int(durationToSeconds(self.props['message_ttl']) * 1000 )
+        else:
+           ttl = "0"   
+
+        if topic.startswith('v02'): #unless explicitly otherwise
+           (raw_body, headers ) = v03tov02message(body) 
+           for k in headers:
+                if len(headers[k]) >= amqp_ss_maxlen:
+                    logger.error("message header %s too long, dropping" % k )
+                    return
+
+           AMQP_Message = amqp.Message(raw_body, content_type='text/plain', 
+                application_headers=headers, expire=ttl )
+        else: #assume v03
+           raw_body=json.dumps(body)
+           AMQP_Message = amqp.Message(raw_body, content_type='application/json', 
+                application_headers=None, expire=ttl )
 
         ebo=1
         while True:
             try:
-                if not exchange :
-                    exchange=self.props['exchange']
 
-                AMQP_Message = amqp.Message(body, content_type=content_type, 
-                     application_headers=headers, expiration=self.mttl)
+                for x in exchange:
+                    self.channel.basic_publish( AMQP_Message, x, topic ) 
+                    self.channel.tx_commit()
+                    logger.info("published {} to {} ".format(body, exchange) )
 
-                self.channel.basic_publish( AMQP_Message, exchange, topic ) 
-
-                self.channel.tx_commit()
-                logger.info("published {} to {} ".format(body, exchange) )
                 return # no failure == success :-)
 
             except Exception as err:
@@ -295,6 +429,7 @@ class AMQP(TMPC):
 
             logger.info("Sleeping {} seconds ...".format( ebo) )
             time.sleep(ebo)
+
 
     def close(self):
         try:

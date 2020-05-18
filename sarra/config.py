@@ -48,6 +48,9 @@ def get_log_filename(component, configuration, no):
        else:
           configuration='_' + configuration
 
+       if configuration[-5:] == '.conf':
+          configuration=configuration[:-5]
+
        return logdir + os.sep + 'sr_' + component + configuration + '_%02d' % no + '.log'
        
 
@@ -65,11 +68,11 @@ class Config:
    synonyms = { 
      'cache' : 'suppress_duplicates', 'no_duplicates' : 'suppress_duplicates', 
      'caching' : 'suppress_duplicates', 
-     'cache_basis': 'suppress_duplicates_basis',  
-     'instance' : 'instances',
-     'chmod' : 'default_mode',
-     'chmod_dir' : 'default_dir_mode',
+     'cache_basis': 'suppress_duplicates_basis',  'instance' : 'instances',
+     'chmod' : 'default_mode', 'chmod_dir' : 'default_dir_mode',
      'chmod_log' : 'default_log_mode',
+     'logdays': 'lr_backupCount',
+     'logrotate_interval': 'lr_interval',
      \
    }
    credentials = None
@@ -97,6 +100,10 @@ class Config:
           for i in parent:
               setattr(self,i,parent[i])
 
+       self.chmod = 0o0
+       self.chmod_dir = 0o775
+       self.chmod_log = 0o600
+
        self.declared_exchanges = []
        self.env = {}
        self.exchange = None
@@ -106,6 +113,9 @@ class Config:
        self.inline = False
        self.inline_max = 4096
        self.inline_encoding = 'guess'
+       self.lr_backupCount = 5
+       self.lr_interval = 1
+       self.lr_when = 'midnight'
        self.masks =  []
        self.instances = 1
        self.mirror = False
@@ -545,7 +555,13 @@ def one_config( component, config, overrides=None ):
     cfg = copy.deepcopy(default_cfg)
 
     os.chdir(component)
-    cfg.parse_file(config)
+
+    if config[-5:] != '.conf' :
+        fname = config + '.conf'
+    else:
+        fname = config
+
+    cfg.parse_file(fname)
 
     os.chdir(store_pwd)
     # FIXME... overrides with defaults, instead of only if non-default specified.

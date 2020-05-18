@@ -91,15 +91,27 @@ class sr_GlobalState:
 
         os.makedirs(os.path.dirname(lfn), exist_ok=True)
 
-        if c[0] != 'c':  # python components
-            if cfg is None:
-                cmd = [sys.executable, component_path, '--no', "%d" % i, 'start']
-            else:
-                cmd = [sys.executable, component_path, '--no', "%d" % i, 'start', cfg]
-        else:  # C components
-            cmd = [component_path, 'start', cfg]
+        if c == 'shovel':
+           component_path = os.path.dirname(component_path) + os.sep + 'instance.py'
+           #cmd = [sys.executable, component_path, '--no', "%d" % i, 'start', c + os.sep + cfg]
+           cmd = [sys.executable, component_path, '--no', "%d" % i ]
+           print("sys.argv=%s" % sys.argv)
+           if sys.argv[0].find('python') >= 0:
+               cmd.extend( sys.argv[2:] )
+           else:
+               print("sys.argv[1:]=%s" % sys.argv[1:] )
+               cmd.extend( sys.argv[1:] )
 
-        #print( "launching +%s+  re-directed to: %s" % ( cmd, lfn ), flush=True )
+        else:
+            if c[0] != 'c':  # python components
+                if cfg is None:
+                    cmd = [sys.executable, component_path, '--no', "%d" % i, 'start']
+                else:
+                    cmd = [sys.executable, component_path, '--no', "%d" % i, 'start', cfg]
+            else:  # C components
+                cmd = [component_path, 'start', cfg]
+
+        print( "launching +%s+  re-directed to: %s" % ( cmd, lfn ), flush=True )
 
         try:
             with open(lfn, "a") as lf:

@@ -5,6 +5,12 @@
   A multi-protocol library for use by hierarchical message passing implementations,
   (messages which have a 'topic' header that is used for routing by brokers.)
  
+       - regardless of protocol, the message format returned should be the same.
+       - the message is turned into a python dictionary, corresponding to key-value pairs
+         in the message body, and properties.
+       - topic is special field that may end up in the message body, or some sort of property
+         or metadata.
+
   intent is to be specialized for topic based data distribution (MQTT style.)
   API to allow pass-through of protocol specific properties, but apply templates for genericity.
 
@@ -52,10 +58,10 @@ class TMPC():
            }
     }
 
-    def __init__( self, broker, props=None, get=True ):
+    def __init__( self, broker, props=None, is_subscriber=True ):
        """
        initialize a broker connection. Connections are unidirectional.
-       either for get or put.
+       either for subscribing or publishing.
 
        props is a dictionary or properties/parameters.
        supplied as overrides to the default properties listed above.
@@ -71,10 +77,10 @@ class TMPC():
        AMQPv1.0 --> qpid-proton         --> amq1, amq1s
 
 
-       If get=True, then this is a consuming instance.
+       If is_subscriber=True, then this is a consuming instance.
        expect calls to get* routines.
 
-       if get=False, then expect/permit only calls to put*
+       if is_subscriber=False, then expect/permit only calls to put*
 
        messaging_strategy:
         how to manage the connection. Covers whether to treat the connection
@@ -121,7 +127,8 @@ class TMPC():
        
 
        """
-       self.get = get
+       logger.info( 'tmpc/__init__ 1' )
+       self.is_subscriber = is_subscriber
 
        self.props = copy.deepcopy(TMPC.__default_properties)
        self.props_args = props
@@ -136,10 +143,11 @@ class TMPC():
             purl = sc.url_proto(self)
             if self.broker.scheme[0:4] == purl :
                 sc.__init__(self,broker)
+                logger.info( 'tmpc/__init__ done.' )
                 return
             protos.append(purl) 
 
-       print( "unsupported broker URL. Pick one of: %s" % protos )
+       logger.critical( "unsupported broker URL. Pick one of: %s" % protos )
 
     def default_props():
         """
