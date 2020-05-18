@@ -55,18 +55,15 @@ class AMQP(TMPC):
            connect to broker, depending on message_strategy stubborness, remain connected.
            
         """
-        logger.info("__init__ AMQP 0")
 
         AMQP.assimilate(self)
         self.props.update(copy.deepcopy(AMQP.__default_properties))
 
-        logger.info("__init__ AMQP 1")
         self.first_setup=True
 
         if self.props_args:
             self.props.update(copy.deepcopy(self.props_args)) 
 
-        logger.info("__init__ AMQP 2")
         if self.is_subscriber: #build_consumer
            self.__getSetup()
            return
@@ -105,7 +102,6 @@ class AMQP(TMPC):
         if message_strategy is stubborn, will loop here forever.
              connect, declare queue, apply bindings.
         """
-        logger.info("AMQP getSetup 0")
         ebo=1
         while True:
 
@@ -153,7 +149,7 @@ class AMQP(TMPC):
                         self.channel.queue_bind( self.props['queue_name'], exchange, topic )
 
                 # Setup Successfully Complete! 
-                logger.info('getSetup ... Done!')
+                logger.debug('getSetup ... Done!')
                 return
 
             except Exception as err:
@@ -169,7 +165,6 @@ class AMQP(TMPC):
 
 
     def __putSetup(self):
-        logger.info("AMQP putSetup 0")
         ebo=1
         while True:
 

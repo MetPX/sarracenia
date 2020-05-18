@@ -901,7 +901,7 @@ class sr_GlobalState:
             if hasattr(o, 'resolved_exchanges') and o.resolved_exchanges is not None :
                      xdc = sarra.tmpc.TMPC( o.post_broker, { 
                                'broker':o.post_broker, 
-                               'exchange':o.resolved_exchanges }, get=False )
+                               'exchange':o.resolved_exchanges }, is_subscriber=False )
                      xdc.close() 
 
         # then declare and bind queues....

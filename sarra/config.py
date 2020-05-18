@@ -66,11 +66,13 @@ class Config:
    appdir_stuff = { 'appauthor':'science.gc.ca', 'appname':'sarra' }
 
    synonyms = { 
+     'accept_unmatch': 'accempt_unmatched',
      'cache' : 'suppress_duplicates', 'no_duplicates' : 'suppress_duplicates', 
      'caching' : 'suppress_duplicates', 
      'cache_basis': 'suppress_duplicates_basis',  'instance' : 'instances',
      'chmod' : 'default_mode', 'chmod_dir' : 'default_dir_mode',
      'chmod_log' : 'default_log_mode',
+     'heartbeat' : 'housekeeping',
      'logdays': 'lr_backupCount',
      'logrotate_interval': 'lr_interval',
      \
@@ -110,6 +112,8 @@ class Config:
        self.filename = None
        self.flatten = '/'
        self.hostname = socket.getfqdn()
+       self.sleep = 10
+       self.housekeeping = 30
        self.inline = False
        self.inline_max = 4096
        self.inline_encoding = 'guess'
@@ -126,6 +130,7 @@ class Config:
        self.tls_rigour = 'normal'
        self.topic_prefix = 'v02.post'
        self.users = {}
+       self.vip = None
 
 
    def _validate_urlstr(self,urlstr):

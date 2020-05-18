@@ -127,7 +127,6 @@ class TMPC():
        
 
        """
-       logger.info( 'tmpc/__init__ 1' )
        self.is_subscriber = is_subscriber
 
        self.props = copy.deepcopy(TMPC.__default_properties)
@@ -143,7 +142,6 @@ class TMPC():
             purl = sc.url_proto(self)
             if self.broker.scheme[0:4] == purl :
                 sc.__init__(self,broker)
-                logger.info( 'tmpc/__init__ done.' )
                 return
             protos.append(purl) 
 
@@ -157,14 +155,14 @@ class TMPC():
         return TMPC.__default_properties
 
     def url_proto(self):
-        print( "undefined")
+        return "undefined"
 
     def getNewMessage( self ):
         """
         If there is one new message available, return it. Otherwise return None. Do not block.
 
         """
-        pass
+        logger.error("cleanup unimplemented")
 
     def getNewMessages( self ):
         """
@@ -175,27 +173,32 @@ class TMPC():
         On failure, this routine blocks, and loops reconnecting to broker, until interaction with broker is successful.
         
         """
+        logger.error("getNewMessages unimplemented")
 
     def ackMessage( self, m ):
-      """
+        """
           tell broker that a given message has been received.
         """ 
+        logger.error("ackMessage unimplemented")
 
     def putNewMessage( self, topic, body, headers, content_type ):
         """
            publish a message as set up to the given topic.
         """
+        logger.error("putNewMessage unimplemented")
 
 
     def close(self):
         """
            tear down an existing connection.
         """
+        logger.error("close unimplemented")
 
     def cleanup(self):
         """
           get rid of server-side resources associated with a client. (queues/id's, etc...)
         """
+        logger.error("cleanup unimplemented")
 
 import importlib.util
 

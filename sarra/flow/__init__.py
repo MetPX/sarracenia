@@ -2,7 +2,10 @@
 import logging
 import netifaces
 import sarra.plugins
+import time
 import types
+
+from sarra.sr_util import nowflt
 
 logger = logging.getLogger( __name__ )
 
@@ -35,6 +38,8 @@ class Flow:
        if o is not None:
            self.o = o
 
+       self.o.dump()
+    
 
     def has_vip(self):
         # no vip given... standalone always has vip.
@@ -81,22 +86,25 @@ class Flow:
                time.sleep(stime)
                last_time = now
 
-    def gather(self):
-        logger.info('gather - unimplemented')
- 
     def filter(self):
         # apply masks, reject.
         # apply on_message plugins.
- 
         logger.info('filter - unimplemented')
-   
-    def do( self ):
-        logger.info('do - unimplemented')
-   
-    def post( self ):
-        # post messages
-        # apply on_post plugins
-        logger.info('post - unimplemented')
+
+#
+# sort of an abstract base class, subclass must implement the following entry points:
+#
+#    def gather(self):
+#        logger.info('gather - unimplemented')
+# 
+#   
+#    def do( self ):
+#        logger.info('do - unimplemented')
+#   
+#    def post( self ):
+#        # post messages
+#        # apply on_post plugins
+#        logger.info('post - unimplemented')
    
     def report( self ):
         # post reports
