@@ -36,22 +36,39 @@ from sarra.sr_credentials  import *
    for not just hard coded as a class variable appdir_stuff
 """
 
+def get_user_config_dir():
+    return appdirs.user_config_dir( 
+          Config.appdir_stuff['appname'], 
+          Config.appdir_stuff['appauthor']  ) 
+
+def get_pid_filename(component, configuration, no):
+
+   piddir = appdirs.user_cache_dir( Config.appdir_stuff['appname'], Config.appdir_stuff['appauthor']  ) 
+   piddir += os.sep + component + os.sep
+
+   if configuration[-5:] == '.conf':
+      configuration=configuration[:-5]
+   piddir += configuration + os.sep
+
+   return piddir + os.sep + 'sr_' + component + '_' + configuration + '_%02d' % no + '.pid'
+
+
 def get_log_filename(component, configuration, no):
-       """
-          return the name of a single logfile for a single instance.
-       """
-       logdir = appdirs.user_cache_dir( Config.appdir_stuff['appname'],
-               Config.appdir_stuff['appauthor']  ) + os.sep + 'log'
+   """
+      return the name of a single logfile for a single instance.
+   """
+   logdir = appdirs.user_cache_dir( Config.appdir_stuff['appname'],
+           Config.appdir_stuff['appauthor']  ) + os.sep + 'log'
 
-       if configuration is None:
-          configuration=''
-       else:
-          configuration='_' + configuration
+   if configuration is None:
+      configuration=''
+   else:
+      configuration='_' + configuration
 
-       if configuration[-5:] == '.conf':
-          configuration=configuration[:-5]
+   if configuration[-5:] == '.conf':
+      configuration=configuration[:-5]
 
-       return logdir + os.sep + 'sr_' + component + configuration + '_%02d' % no + '.log'
+   return logdir + os.sep + 'sr_' + component + configuration + '_%02d' % no + '.log'
        
 
 

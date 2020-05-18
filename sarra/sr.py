@@ -137,8 +137,9 @@ class sr_GlobalState:
             if len(p['cmdline']) < 2:
                 return
             n = os.path.basename(p['cmdline'][1])
+            if n == 'instance.py':
+                n = 'sr_' + p['cmdline'][-1].split('/')[0]  + '.py'
             p['name'] = n
-
         if p['name'].startswith('sr_') and (self.me == p['username']):
             self.procs[p['pid']] = p
             if p['name'][3:8] == 'audit':

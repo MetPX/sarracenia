@@ -25,6 +25,7 @@ class Flow:
     def __init__(self,o=None):
 
        
+       self._stop_requested = False
        # FIXME: set o.sleep, o.housekeeping
        self.o = types.SimpleNamespace()
        self.o.sleep = 10
@@ -42,7 +43,8 @@ class Flow:
        if o is not None:
            self.o = o
 
-       self.o.dump()
+       logger.info('shovel constructor')
+       #self.o.dump()
     
 
     def has_vip(self):
@@ -59,6 +61,8 @@ class Flow:
                     j+=1
         return False
 
+    def please_stop(self):
+        self._stop_requested = True
 
     def run(self):
 
@@ -68,6 +72,10 @@ class Flow:
             last_time = nowflt()
        
         while True:
+
+           if self._stop_requested:
+               self.close()
+               break
 
            if self.has_vip():
                worklist = self.gather()
@@ -91,7 +99,9 @@ class Flow:
                last_time = now
 
     def filter(self):
+        # apply cache, reject.
         # apply masks, reject.
+        logger.info('self.o.bindings %s' % self.o.bindings )
         # apply on_message plugins.
         logger.info('filter - unimplemented')
 
@@ -109,7 +119,12 @@ class Flow:
         # apply on_post plugins
         logger.info('post - unimplemented')
    
+    @abstractmethod 
     def report( self ):
         # post reports
         # apply on_report plugins
         logger.info('report -unimplemented')
+
+    @abstractmethod 
+    def close( self ):
+        logger.info('closing')
