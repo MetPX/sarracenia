@@ -65,6 +65,9 @@ class Flow:
         self._stop_requested = True
 
     def run(self):
+        """
+          check if stop_requested once in a while, but never return otherwise.
+        """
 
         next_housekeeping=nowflt()+self.o.housekeeping
 
@@ -95,7 +98,11 @@ class Flow:
                    stime=self.o.sleep-elapsed
                    if stime > 60:  # if sleeping for a long time, debug output is good...
                        logger.debug("sleeping for more than 60 seconds: %g seconds. Elapsed since wakeup: %g Sleep setting: %g " % ( stime, elapsed, self.o.sleep ) )
-               time.sleep(stime)
+               try:
+                   time.sleep(stime)
+               except:
+                   logger.info("flow woken abnormally from sleep")
+
                last_time = now
 
     def filter(self):

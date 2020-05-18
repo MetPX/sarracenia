@@ -31,11 +31,11 @@ class instance:
 
     def __init__(self):
         self.running_instance = None
+        original_sigint = signal.getsignal(signal.SIGINT)
 
     def stop_signal(self, signum, stack):
-        logging.info('signal received')
+        logging.info('signal %d received' % signum )
         self.running_instance.please_stop()
-        return
 
     def start(self):
         """
@@ -142,6 +142,7 @@ class instance:
                     mode = cfg_preparse.chmod_log
                 os.chmod(logfilename, mode )
 
+            # FIXME: https://docs.python.org/3/library/contextlib.html portable redirection...
             if sys.platform != 'win32' :
                 os.dup2( handler.stream.fileno(), 1 )
                 os.dup2( handler.stream.fileno(), 2 )
@@ -167,7 +168,7 @@ class instance:
 
         self.running_instance.run()
         # run should never return...
-        return  
+        sys.exit(0)  
      
 if __name__ == '__main__':
     i = instance()

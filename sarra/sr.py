@@ -93,7 +93,6 @@ class sr_GlobalState:
 
         if c == 'shovel':
            component_path = os.path.dirname(component_path) + os.sep + 'instance.py'
-           #cmd = [sys.executable, component_path, '--no', "%d" % i, 'start', c + os.sep + cfg]
            cmd = [sys.executable, component_path, '--no', "%d" % i ]
            print("sys.argv=%s" % sys.argv)
            if sys.argv[0].find('python') >= 0:
@@ -995,10 +994,20 @@ class sr_GlobalState:
 
             component_path = self._find_component_path(c) 
 
-            if c[0] != 'c':  # python components
-                if cfg is None:
+            if c == 'shovel':
+               component_path = os.path.dirname(component_path) + os.sep + 'instance.py'
+               cmd = [sys.executable, component_path, '--no', "0" ]
+               print("sys.argv=%s" % sys.argv)
+               if sys.argv[0].find('python') >= 0:
+                   cmd.extend( sys.argv[2:] )
+               else:
+                   print("sys.argv[1:]=%s" % sys.argv[1:] )
+                   cmd.extend( sys.argv[1:] )
+    
+            elif c[0] != 'c':  # python components
+              if cfg is None:
                     cmd = [sys.executable, component_path, 'foreground']
-                else:
+              else:
                     cmd = [sys.executable, component_path, 'foreground', cfg]
             else:  # C components
                 cmd = [component_path, 'foreground', cfg]
