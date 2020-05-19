@@ -1,3 +1,13 @@
+metpx-sarracenia (2.20.05) unstable; urgency=medium
+
+  * sr command now 200x faster ( #174, #315, #180, #187 )
+  * sr on Windows, username retrieval fixed. so now it finds it's processes.
+  * sr portable path (greater use of os.sep, for windows)
+  * in some situations, log file directory not created (noticed on Windows.)
+  * more unit testing.
+
+ -- peter <peter@fractal>  Mon, 18 May 2020 20:52:45 -0400
+
 metpx-sarracenia (2.20.04b3) unstable; urgency=medium
 
   * correct sr sanity to not kill foreground processes.

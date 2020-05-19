@@ -6,8 +6,13 @@ lists all changes between versions.
 
 **git repo**
 
+**2.20.05**
 
    * sr command now 200x faster ( #174, #315, #180, #187 )
+   * sr on Windows, username retrieval fixed. so now it finds it's processes.
+   * sr portable path (greater use of os.sep, for windows)
+   * in some situations, log file directory not created (noticed on Windows.)
+   * more unit testing.
 
 **2.20.04b3**
 
