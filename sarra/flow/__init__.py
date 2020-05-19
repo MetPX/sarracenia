@@ -44,6 +44,10 @@ class Flow:
        if o is not None:
            self.o = o
 
+       # initialize plugins.
+
+
+
        logger.info('shovel constructor')
        #self.o.dump()
     
@@ -113,10 +117,12 @@ class Flow:
         self.filtered_worklist = []
         for m in self.new_worklist:
             url = m['baseUrl'] + os.sep + m['relPath']
+            matched=False
             for mask in self.o.masks:
                 logger.info('filter - checking: %s' % str(mask) )
                 pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
                 if mask_regexp.match( url ):
+                    matched=True
                     if not accepting:
                         if self.o.log_reject:
                             logger.info( "reject: mask=%s strip=%s pattern=%s" % (str(mask), strip, m) ) 
@@ -125,11 +131,12 @@ class Flow:
                     logger.info( "isMatchingPattern: accepted mask=%s strip=%s" % (str(mask), strip) )
                     break
 
-            if self.o.accept_unmatched:
-                logger.info( "accept: unmatched pattern=%s" % (url) )
-                self.filtered_worklist.append(m)
-            elif self.o.log_reject 
-                logger.info( "reject: unmatched pattern=%s" % (url) )
+            if not matched:
+                if self.o.accept_unmatched:
+                    logger.info( "accept: unmatched pattern=%s" % (url) )
+                    self.filtered_worklist.append(m)
+                elif self.o.log_reject:
+                    logger.info( "reject: unmatched pattern=%s" % (url) )
                 
         self.new_worklist=[]
         for m in self.filtered_worklist:
