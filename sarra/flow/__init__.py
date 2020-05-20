@@ -3,6 +3,9 @@ import logging
 import netifaces
 import os
 from sarra.v2wrapper import V2Wrapper
+
+# v3 plugin architecture...
+import sarra.plugin
 import time
 import types
 
@@ -56,10 +59,39 @@ class Flow:
            self.v2plugins = vw
            logger.info( 'v2 plugins initialized')
        
+       if hasattr( o, 'v3plugins'):
+           self._loadV3Plugins(self.o.v3plugins)
+
        logger.info('shovel constructor')
        #self.o.dump()
    
     
+    def _loadV3Plugins(self,plugins_to_load):
+
+        v3p={}
+        logger.info( 'v3 plugins to loaded: %s' % ( plugins_to_load ) )
+        for c in plugins_to_load: 
+            plugin = sarra.plugin.load_library( c )
+            logger.info( 'v3 plugins loaded: %s as %s' % ( c, plugin ) )
+            for entry_point in sarra.plugin.entry_points:
+                 if hasattr( plugin, entry_point ):
+                    fn = getattr( plugin, entry_point )
+                    if callable(fn):
+                        if entry_point in v3p:
+                           v3p[entry_point].append(fn)
+                        else:
+                           v3p[entry_point] = [ fn ]
+        self.v3plugins = v3p
+        logger.info( 'v3 plugins initialized')
+ 
+    def _runV3Plugins(self,entry_point):
+
+        if hasattr(self,'v3plugins') and ( entry_point in self.v3plugins ):
+           for p in self.v3plugins[entry_point]:
+               self.new_worklist = p(self.new_worklist)
+               if len(self.new_worklist) == 0:
+                  return
+
 
     def has_vip(self):
         # no vip given... standalone always has vip.
@@ -159,10 +191,10 @@ class Flow:
                 
         self.new_worklist=[]
         for m in self.filtered_worklist:
-            logger.info('run plugins on %s' % m )
             self.v2plugins.run('on_message', m)
             self.new_worklist.append(m)
 
+        self._runV3Plugins('on_messages')
         # apply on_message plugins.
         logger.debug('filter - done')
 

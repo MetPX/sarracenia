@@ -305,6 +305,7 @@ class Config:
        self.declared_exchanges = []
        self.env = {}
        self.v2plugins = {}
+       self.v3plugins = []
        self.exchange = None
        self.filename = None
        self.flatten = '/'
@@ -593,8 +594,14 @@ class Config:
                    print( "failed to parse: %s" % line[1] )
            elif line[0] in [ 'subtopic' ]:
                self._parse_binding( line[1] )
+           elif line[0] in [ 'import' ]:
+               self.v3plugins.append( line[1] )
            elif line[0] in Config.entry_points:
+               if line[1] in self.v3plugins:
+                   self.v3plugins.remove( line[1] )
                self._parse_v2plugin(line[0],line[1])
+           elif line[0] in [ 'unimport' ]:
+               self._parse_v3unplugin(line[1])
            else:
                k=line[0]
                if k in Config.synonyms:

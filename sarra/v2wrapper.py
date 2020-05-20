@@ -216,7 +216,6 @@ class V2Wrapper:
            run plugins for a given entry point.
         """
         self.msg=Message(m)
-        print( "plugins[ %s ] = %s" % ( ep, self.plugins[ep] ) )
         for plugin in self.plugins[ep]:
              ok = plugin(self) 
 
