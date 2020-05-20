@@ -593,7 +593,7 @@ class Config:
                    print( "failed to parse: %s" % line[1] )
            elif line[0] in [ 'subtopic' ]:
                self._parse_binding( line[1] )
-           elif line[0][0:3] in [ 'on_', 'do_' ] or ( line[0] == 'plugin' ):
+           elif line[0] in Config.entry_points:
                self._parse_v2plugin(line[0],line[1])
            else:
                k=line[0]
@@ -631,7 +631,6 @@ class Config:
                  queue_name += '.'  + str(random.randint(0,100000000)).zfill(8)
                  self.queue_name = queue_name
 
-          logging.debug( 'queue_name set to {}'.format(self.queue_name) )
           if not os.path.isdir( os.path.dirname(queuefile) ):
               pathlib.Path(os.path.dirname(queuefile)).mkdir(parents=True, exist_ok=True)
           f=open( queuefile, 'w' )

@@ -30,6 +30,8 @@ import logging
 
 from sarra.sr_util import *
 
+import v2wrapper
+
 from sarra.tmpc import TMPC
 import copy
 
@@ -233,46 +235,6 @@ class AMQP(TMPC):
     def url_proto(self):
         return "amqp"
 
-    def v02tov03message( raw_msg ):
-        msg = raw_msg.headers
-        pubtime, baseurl, relpath = raw_msg.body.split(' ')[0:3]
-        msg[ 'pubTime' ] = timev2tov3str( pubtime )
-        msg[ 'baseUrl' ] = baseurl
-        msg[ 'relPath' ] = relPath
-        for t in [ 'atime', 'mtime' ]:
-            if t in msg:
-                msg[ t ] = timev2tov3str( msg[ t ] )
-
-        if 'sum' in msg:
-            sum_algo_map = { "a":"arbitrary", "d":"md5", "s":"sha512", 
-               "n":"md5name", "0":"random", "L":"link", "R":"remove", "z":"cod" }
-            sm = sum_algo_map[ msg["sum"][0] ]
-            if sm in [ 'random' ] :
-                sv = msg["sum"][2:]
-            elif sm in [ 'cod' ] :
-                sv = sum_algo_map[ msg["sum"][2:] ]
-            else:
-                sv = encode( decode( msg["sum"][2:], 'hex'), 'base64' ).decode('utf-8').strip()
-            msg[ "integrity" ] = { "method": sm, "value": sv }
-            del msg['sum']
-
-
-        if 'parts' in msg:
-            ( style, chunksz, block_count, remainder, current_block ) = msg['parts'].split(',')
-            if style in [ 'i' , 'p' ]:
-                msg['blocks'] = {}
-                msg['blocks']['method'] = {'i': 'inplace', 'p': 'partitioned'}[style]
-                msg['blocks']['size'] = str(chunksz)
-                msg['blocks']['count'] = str(block_count)
-                msg['blocks']['remainder'] = str(remainder)
-                msg['blocks']['number'] = str(current_block)
-            else:
-                msg['size'] = chunksz
-            del msg['parts']
-     
-        return msg
-                      
-
     def getNewMessage( self ):
 
         if not self.is_subscriber: #build_consumer
@@ -287,9 +249,10 @@ class AMQP(TMPC):
                 if raw_msg is not None:
                     if raw_msg.properties['content_type'] == 'application/json':
                         msg = json.loads( raw_msg.body )
+                        msg['topic'] = raw_msg.delivery_info['routing_key']
                     else:
-                        msg = v02tov03message( raw_msg )
-                    msg['topic'] = raw_msg.delivery_info['routing_key']
+                        msg = sarra.v2wrapper.v02tov03message( 
+                            raw_msg.body, raw_message.headers, raw_msg.delivery_info['routing_key'] )
                 else:
                     msg = None
                 return msg 
@@ -386,14 +349,14 @@ class AMQP(TMPC):
            ttl = "0"   
 
         if topic.startswith('v02'): #unless explicitly otherwise
-           (raw_body, headers ) = v03tov02message(body) 
-           for k in headers:
-                if len(headers[k]) >= amqp_ss_maxlen:
+           v2m = sarra.v2wrapper.Message(body) 
+           for k in v2m.headers:
+                if len(v2m.headers[k]) >= amqp_ss_maxlen:
                     logger.error("message header %s too long, dropping" % k )
                     return
 
-           AMQP_Message = amqp.Message(raw_body, content_type='text/plain', 
-                application_headers=headers, expire=ttl )
+           AMQP_Message = amqp.Message(v2m.notice, content_type='text/plain', 
+                application_headers=v2m.headers, expire=ttl )
         else: #assume v03
            raw_body=json.dumps(body)
            AMQP_Message = amqp.Message(raw_body, content_type='application/json', 
