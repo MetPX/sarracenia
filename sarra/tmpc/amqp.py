@@ -250,6 +250,8 @@ class AMQP(TMPC):
                     if raw_msg.properties['content_type'] == 'application/json':
                         msg = json.loads( raw_msg.body )
                         msg['topic'] = raw_msg.delivery_info['routing_key']
+                        msg['delivery_tag'] = raw_msg.delivery_info['delivery_tag']
+                        msg['_deleteOnPost'] = [ 'topic', 'delivery_tag' ]
                     else:
                         msg = sarra.v2wrapper.v02tov03message( 
                             raw_msg.body, raw_message.headers, raw_msg.delivery_info['routing_key'] )
@@ -271,55 +273,6 @@ class AMQP(TMPC):
             logger.info("Sleeping {} seconds ...".format( ebo) )
             time.sleep(ebo)
 
-    def v03tov02message( h ):
-
-        v02main=h["pubTime"].replace("T","") + ' ' + h["baseURL" ] + ' ' + h["relPath"]
-        del h["pubTime"]
-        del h["baseURL"]
-        del h["relPath"]
-
-        #FIXME: ensure headers are < 255 chars.
-        for k in [ 'mtime', 'atime' ]:
-            h[ k ] = h[k].replace("T","")
-
-        #FIXME: sum header encoding.
-        if 'size' in h:
-            h[ 'parts' ] = '1,%d,1,0,0' % h['size']
-            del h['size']
-
-        if 'blocks' in h:
-            if h['parts'] == 'inplace': 
-                m='i'
-            else: 
-                m='p'
-            p=h['blocks']
-            h[ 'parts' ] = '%s,%d,%d,%d,%d' % ( m, p['size'], p['count'], 
-                  p['remainder'], p['number'] )
-            del h['blocks']
-
-        if 'content' in h:  #v02 does not support inlining
-            del h['content']
-
-        if 'integrity' in h:
-            sum_algo_v3tov2 = { "arbitrary":"a", "md5":"d", "sha512":"s", 
-                "md5name":"n", "random":"0", "link":"L", "remove":"R", "cod":"z" }
-            sa = sum_algo_v3tov2[ self.headers[ "integrity" ][ "method" ] ]
-
-            # transform sum value
-            if sa in [ '0' ]:
-                sv = self.headers[ "integrity" ][ "value" ]
-            elif sa in [ 'z' ]:
-                sv = sum_algo_v3tov2[ self.headers[ "integrity" ][ "value" ] ]
-            else:
-                sv = encode( decode( self.headers[ "integrity" ][ "value" ].encode('utf-8'), "base64" ), 'hex' )
-            
-            h[ "sum" ] = sa + ',' + sv
-            del self.headers['integrity']
-
-        return ( v02main, h)
-                       
-
-
     def putNewMessage(self, body, content_type='application/json', exchange=None ):
         """
         put a new message out, to the configured exchange by default.
@@ -329,37 +282,41 @@ class AMQP(TMPC):
             return None
 
         topic = body['topic']
-        del body['topic']
         topic = topic.replace('#','%23')
         topic = topic.replace('#','%23')
-        if len(topic) >= 255: # ensure topic is <= 255 characters
-           logger.error("message topic too long, truncating")
-           mxlen=amqp_ss_maxlen
-           while( topic.encode("utf8")[mxlen-1] & 0xc0 == 0xc0 ):
-               mxlen -= 1
-           topic = topic.encode("utf8")[0:mxlen].decode("utf8")
 
+        if len(topic) >= 255: # ensure topic is <= 255 characters
+            logger.error("message topic too long, truncating")
+            mxlen=amqp_ss_maxlen
+            while( topic.encode("utf8")[mxlen-1] & 0xc0 == 0xc0 ):
+                mxlen -= 1
+            topic = topic.encode("utf8")[0:mxlen].decode("utf8")
+
+        if '_deleteOnPost' in body:
+            for k in body['_deleteOnPost']:
+               del body[k]
+            del body['_deleteOnPost']      
 
         if not exchange :
             exchange=self.props['exchange']
  
         if self.props['message_ttl']:
-           ttl = "%d" * int(durationToSeconds(self.props['message_ttl']) * 1000 )
+            ttl = "%d" * int(durationToSeconds(self.props['message_ttl']) * 1000 )
         else:
-           ttl = "0"   
+            ttl = "0"   
 
         if topic.startswith('v02'): #unless explicitly otherwise
-           v2m = sarra.v2wrapper.Message(body) 
-           for k in v2m.headers:
+            v2m = sarra.v2wrapper.Message(body) 
+            for k in v2m.headers:
                 if len(v2m.headers[k]) >= amqp_ss_maxlen:
                     logger.error("message header %s too long, dropping" % k )
                     return
-
-           AMQP_Message = amqp.Message(v2m.notice, content_type='text/plain', 
+            AMQP_Message = amqp.Message(v2m.notice, content_type='text/plain', 
                 application_headers=v2m.headers, expire=ttl )
         else: #assume v03
-           raw_body=json.dumps(body)
-           AMQP_Message = amqp.Message(raw_body, content_type='application/json', 
+
+            raw_body=json.dumps(body)
+            AMQP_Message = amqp.Message(raw_body, content_type='application/json', 
                 application_headers=None, expire=ttl )
 
         ebo=1

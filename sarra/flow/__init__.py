@@ -135,6 +135,11 @@ class Flow:
                         if self.o.log_reject:
                             logger.info( "reject: mask=%s strip=%s pattern=%s" % (str(mask), strip, m) ) 
                             break
+                    # FIXME... missing dir mapping with mirror, strip, etc...
+                    m['newDir'] = maskDir
+                    # FIXME... missing FileOption processing.
+                    m['newFile'] = os.path.basename(m['relPath'])
+                    m['_deleteOnPost'].extend( [ 'newDir', 'newFile' ] )
                     self.filtered_worklist.append(m)
                     logger.info( "isMatchingPattern: accepted mask=%s strip=%s" % (str(mask), strip) )
                     break
@@ -142,6 +147,11 @@ class Flow:
             if not matched:
                 if self.o.accept_unmatched:
                     logger.info( "accept: unmatched pattern=%s" % (url) )
+                    # FIXME... missing dir mapping with mirror, strip, etc...
+                    m['newDir'] = maskDir
+                    # FIXME... missing FileOption processing.
+                    m['newFile'] = os.path.basename(m['relPath'])
+                    m['_deleteOnPost'].extend( [ 'newDir', 'newFile' ] )
                     self.filtered_worklist.append(m)
                 elif self.o.log_reject:
                     logger.info( "reject: unmatched pattern=%s" % (url) )

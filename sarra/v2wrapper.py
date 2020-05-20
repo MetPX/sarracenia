@@ -18,16 +18,20 @@ class Message:
          in v3, a message is just a dictionary. in v2 it is an object.
          build from sr_message.
         """
-        # FIXME: new_dir, new_file
-        # FIXME: sumstr, partstr, 
-        # FIXME: url (result of urlparse?)
-        # FIXME: headers
+        # FIXME: new_baseurl, new_relpath, new_path ... ?
 
         self.pubtime=h['pubTime'].replace("T","")
         self.baseurl=v3m['baseURL']
         self.relpath=v3m['relPath']
 
-        self.notice=self.pubtime + ' ' + h["baseURL" ] + ' ' + h["relPath"]
+        if 'new_dir' in h:
+            self.new_dir=v3m['newDir']
+            self.new_file=v3m['newFile']
+
+        self.urlstr= self.baseurl + self.relpath
+        self.url = urllib.parse.urlparse(self.urlstr)
+
+        self.notice=self.pubtime + ' ' + h["baseURL" ] + ' ' + h["relPath"].replace( ' ','%20').replace('#','%23')
         del h["pubTime"]
         del h["baseURL"]
         del h["relPath"]
@@ -73,17 +77,22 @@ class Message:
 
 
     def get_elapse():
+        logger.info("get elapse not implemented")
         pass
 
     def set_parts():
+        logger.info("set_parts not implemented")
         pass
 
 def v02tov03message( body, headers, topic ):
         msg = headers
         msg[ 'topic' ] = topic
+        if not '_deleteOnPost' in headers:
+            msg[ '_deleteOnPost' ] = [ 'topic' ]
+
         pubtime, baseurl, relpath = body.split(' ')[0:3]
         msg[ 'pubTime' ] = timev2tov3str( pubtime )
-        msg[ 'baseUrl' ] = baseurl
+        msg[ 'baseUrl' ] = baseurl.replace( '%20',' ').replace('%23','#')
         msg[ 'relPath' ] = relPath
         for t in [ 'atime', 'mtime' ]:
             if t in msg:

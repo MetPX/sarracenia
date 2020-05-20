@@ -8,8 +8,13 @@
        - regardless of protocol, the message format returned should be the same.
        - the message is turned into a python dictionary, corresponding to key-value pairs
          in the message body, and properties.
-       - topic is special field that may end up in the message body, or some sort of property
+       - topic is special key that may end up in the message body, or some sort of property
          or metadata.
+       - There is a special dict item:  "_DeleteOnPost"
+         to identify keys which are added only for local use.
+         they will be removed from the message when publishing.
+         examples:  topic (sent outside body), message-id (used for acknowledgements.)
+                    new_basedir, new_... (settings...)
 
   intent is to be specialized for topic based data distribution (MQTT style.)
   API to allow pass-through of protocol specific properties, but apply templates for genericity.
@@ -36,6 +41,7 @@
 
      p.close()
        - tear down connection.     
+
 
 """
 import copy
