@@ -130,6 +130,12 @@ add/remove/enable/disable/edit done.
 
 'log' dropped for now... (which log ?)
 
+added list, show, and built prototype shovel... required
+a instance (sets state files and logs) and then calls flow... 
+shovel is a sub-class of flow.
+
+
+
 
 FIXME
 -----

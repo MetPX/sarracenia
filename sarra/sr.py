@@ -842,16 +842,13 @@ class sr_GlobalState:
         sc_path = os.environ.get('SARRAC_LIB')
 
         try:
-            if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5):
-                subprocess.check_call(cmd_list, close_fds=False)
+            logging.debug("using subprocess.run")
+            if sc_path and cmd_list[0].startswith("sr_cp"):
+                subprocess.run([sc_path+os.sep+cmd_list[0]]+cmd_list[1:], check=True)
+            elif sr_path and cmd_list[0].startswith("sr"):
+                subprocess.run([sr_path+os.sep+cmd_list[0]+'.py']+cmd_list[1:], check=True)
             else:
-                logging.debug("using subprocess.run")
-                if sc_path and cmd_list[0].startswith("sr_cp"):
-                    subprocess.run([sc_path+os.sep+cmd_list[0]]+cmd_list[1:], check=True)
-                elif sr_path and cmd_list[0].startswith("sr"):
-                    subprocess.run([sr_path+os.sep+cmd_list[0]+'.py']+cmd_list[1:], check=True)
-                else:
-                    subprocess.run(cmd_list, check=True)
+                subprocess.run(cmd_list, check=True)
         except subprocess.CalledProcessError as err:
             logging.error("subprocess.run failed err={}".format(err))
             logging.debug("Exception details:", exc_info=True)
@@ -1516,9 +1513,9 @@ def main():
     else:
         logger.setLevel( logging.INFO )
 
-    actions = ['declare', 'devsnap', 'dump', 'restart', 'sanity', 'setup', 'status', 'stop']
+    actions = ['declare', 'devsnap', 'dump', 'restart', 'sanity', 'setup', 'show', 'status', 'stop']
 
-    cfg = sarra.config.Config( { 'accept_unmatch':True,  'exchange':'xpublic',
+    cfg = sarra.config.Config( { 'accept_unmatched':True,  'exchange':'xpublic',
        'inline':False, 'inline_encoding':'auto', 'inline_max':4096, 'subtopic':None } )
     cfg.parse_args()
 

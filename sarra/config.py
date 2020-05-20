@@ -14,10 +14,12 @@
 import appdirs
 import argparse
 import copy
+import inspect
 import logging
 import os
 import pathlib
 import re
+import shutil
 import socket
 
 from random import randint
@@ -34,7 +36,27 @@ from sarra.sr_credentials  import *
 
    FIXME: respect appdir stuff using an environment variable.
    for not just hard coded as a class variable appdir_stuff
+
+   start with some helper functions.
+
+   then declare sarra.Config class
+
+   follow by the one_config entry point that allows a configuration to be read
+   in one call.
 """
+
+def get_package_lib_dir():
+    return os.path.dirname(inspect.getfile(Config))
+
+def get_site_config_dir():
+    return appdirs.site_config_dir( 
+          Config.appdir_stuff['appname'], 
+          Config.appdir_stuff['appauthor']  ) 
+
+def get_user_cache_dir():
+    return appdirs.user_cache_dir( 
+          Config.appdir_stuff['appname'], 
+          Config.appdir_stuff['appauthor']  ) 
 
 def get_user_config_dir():
     return appdirs.user_config_dir( 
@@ -42,7 +64,9 @@ def get_user_config_dir():
           Config.appdir_stuff['appauthor']  ) 
 
 def get_pid_filename(component, configuration, no):
-
+   """
+     return the file name for the pid file for the specified instance.
+   """
    piddir = appdirs.user_cache_dir( Config.appdir_stuff['appname'], Config.appdir_stuff['appauthor']  ) 
    piddir += os.sep + component + os.sep
 
@@ -70,14 +94,171 @@ def get_log_filename(component, configuration, no):
 
    return logdir + os.sep + 'sr_' + component + configuration + '_%02d' % no + '.log'
        
+def wget_config(urlstr,path,remote_config_url=False):
+    logger.debug("wget_config %s %s" % (urlstr,path))
+
+    try :
+            req  = urllib.request.Request(urlstr)
+            resp = urllib.request.urlopen(req)
+            if os.path.isfile(path) :
+               try:
+                       info = resp.info()
+                       ts = time.strptime(info.get('Last-Modified'),"%a, %d %b %Y %H:%M:%S %Z")
+                       last_mod_remote = time.mktime(ts)
+                       last_mod_local  = os.stat(path).st_mtime
+                       if last_mod_remote <= last_mod_local:
+                          logger.info("file %s is up to date (%s)" % (path,urlstr))
+                          return True
+               except:
+                       logger.error("could not compare modification dates... downloading")
+                       logger.debug('Exception details: ', exc_info=True)
+
+            fp = open(path+'.downloading','wb')
+
+            # top program config only needs to keep the url
+            # we set option remote_config_url with the urlstr
+            # at the first line of the config...
+            # includes/plugins  etc... may be left as url in the config...
+            # as the urlstr is kept in the config this option would be useless
+            # (and damagable for plugins)
+
+            if remote_config_url :
+               fp.write(bytes("remote_config_url %s\n"%urlstr,'utf-8'))
+            while True:
+                  chunk = resp.read(8192)
+                  if not chunk : break
+                  fp.write(chunk)
+            fp.close()
+
+            try   : os.unlink(path)
+            except: pass
+            os.rename(path+'.downloading',path)
+
+            logger.info("file %s downloaded (%s)" % (path,urlstr))
+
+            return True
+
+    except urllib.error.HTTPError as e:
+           if os.path.isfile(path) :
+                 logger.warning('file %s could not be processed1 (%s)' % (path,urlstr))
+                 logger.warning('resume with the one on the server')
+           else:
+                 logger.error('Download failed 0: %s' % urlstr)
+                 logger.error('Server couldn\'t fulfill the request')
+                 logger.error('Error code: %s, %s' % (e.code, e.reason))
+
+    except urllib.error.URLError as e:
+           if os.path.isfile(path) :
+                 logger.warning('file %s could not be processed2 (%s)' % (path,urlstr))
+                 logger.warning('resume with the one on the server')
+           else:
+                 logger.error('Download failed 1: %s' % urlstr)
+                 logger.error('Failed to reach server. Reason: %s' % e.reason)
+
+    except Exception as e:
+           if os.path.isfile(path) :
+                 logger.warning('file %s could not be processed3 (%s) %s' % (path,urlstr,e.reason))
+                 logger.warning('resume with the one on the server')
+           else:
+                 logger.error('Download failed 2: %s %s' % (urlstr, e.reason) )
+                 logger.debug('Exception details: ', exc_info=True)
+
+    try   : os.unlink(path+'.downloading')
+    except: pass
+
+
+    if os.path.isfile(path) :
+       logger.warning("continue using existing %s"%path)
+
+    return False
+
+
+def config_path(subdir,config, mandatory=True, ctype='conf'):
+    """
+    Given a subdir/config look for file in configish places.
+
+    return Tuple:   Found (True/False), path_of_file_found|config_that_was_not_found
+    """
+    logger.debug("config_path = %s %s" % (subdir,config))
+
+    if config == None : return False,None
+
+    # remote config
+
+    if config.startswith('http:') :
+       urlstr = config
+       name   = os.path.basename(config)
+       if not name.endswith(ctype) : name += '.' + ctype
+       path   = get_user_config_dir() + os.sep + subdir + os.sep + name
+       config = name
+
+       logger.debug("http url %s path %s name %s" % (urlstr,path,name))
+
+       # do not allow plugin (Peter's mandatory decision)
+       # because plugins may need system or python packages
+       # that may not be installed on the current server.
+       if subdir == 'plugins' :
+          logger.error("it is not allowed to download plugins")
+       else :
+          ok = Config.wget_config(urlstr,path)
+
+    # priority 1 : config given is a valid path
+
+    logger.debug("config_path %s " % config )
+    if os.path.isfile(config) :
+       return True,config
+    config_file = os.path.basename(config)
+    config_name = re.sub(r'(\.inc|\.conf|\.py)','',config_file)
+    ext         = config_file.replace(config_name,'')
+    if ext == '': ext = '.' + ctype
+    config_path = config_name + ext
+
+    # priority 1.5: config file given without extenion...
+    if os.path.isfile(config_path) :
+       return True,config_path
+
+    # priority 2 : config given is a user one
+
+    config_path = os.path.join(get_user_config_dir(), subdir, config_name + ext)
+    logger.debug("config_path %s " % config_path )
+
+    if os.path.isfile(config_path) :
+       return True,config_path
+
+    # priority 3 : config given to site config
+
+    config_path = os.path.join(get_site_config_dir(), subdir, config_name + ext)
+    logger.debug("config_path %s " % config_path )
+
+    if os.path.isfile(config_path) :
+       return True,config_path
+
+    # priority 4 : plugins
+
+    if subdir == 'plugins' :
+        config_path = get_package_lib_dir() + os.sep + 'plugins' + os.sep + config_name + ext
+        logger.debug("config_path %s " % config_path )
+        if os.path.isfile(config_path) :
+           return True,config_path
+
+    # return bad file ... 
+    if mandatory :
+       if subdir == 'plugins' : logger.error("script not found %s" % config)
+       elif config_name != 'plugins' : logger.error("file not found %s" % config)
+
+    return False,config
+
 
 
 
 class Config:
 
+   entry_points = [ 'do_download', 'do_get', 'do_poll', 'do_put', 'do_send',
+       'on_message', 'on_data', 'on_file', 'on_heartbeat', 'on_housekeeping', 'on_html_page', 'on_line',  
+       'on_part', 'on_post', 'on_report', 'on_start', 'on_stop', 'on_watch', 'plugin' ]
    components =  [ 'audit', 'cpost', 'cpump', 'poll', 'post', 'sarra', 'sender', 'shovel', 'subscribe', 'watch', 'winnow' ]
 
-   commands = [ 'add', 'cleanup', 'edit', 'declare', 'disable', 'edit', 'enable', 'foreground', 'list', 'remove', 'restart', 'sanity', 'setup', 'show', 'start', 'stop', 'status' ]
+   actions = [ 'add', 'cleanup', 'edit', 'declare', 'disable', 'edit', 'enable', 'foreground', 'list', 'remove', 'restart', 'sanity', 'setup', 'show', 'start', 'stop', 'status' ]
 
    # lookup in dictionary, respond with canonical version.
    appdir_stuff = { 'appauthor':'science.gc.ca', 'appname':'sarra' }
@@ -106,9 +287,7 @@ class Config:
 
        if Config.credentials is None:
           Config.credentials=sr_credentials()
-          Config.credentials.read( 
-              appdirs.user_config_dir( Config.appdir_stuff['appname'], 
-                                       Config.appdir_stuff['appauthor']  ) 
+          Config.credentials.read( get_user_config_dir()
               + os.sep + "credentials.conf" )
        # FIXME... Linux only for now, no appdirs
        self.directory = None
@@ -125,6 +304,7 @@ class Config:
 
        self.declared_exchanges = []
        self.env = {}
+       self.v2plugins = {}
        self.exchange = None
        self.filename = None
        self.flatten = '/'
@@ -257,15 +437,26 @@ class Config:
    def dump(self):
        """ print out what the configuration looks like.
        """
-
+       term = shutil.get_terminal_size((80,20))
+       mxcolumns=term.columns
+       column=0
        for k in sorted( self.__dict__.keys()):
            v=getattr(self,k)
            if type(v) == urllib.parse.ParseResult:
               v = v.scheme + '://' + v.username + '@' + v.hostname
-           v = str(v)
-           if len(v) > 70:
-               v = v[0:70] + '...'
-           print( "\t%s=%s" % ( k, v ) )
+           ks = str(k)
+           vs = str(v)
+           if len(vs) > mxcolumns/2:
+                vs = vs[0:int(mxcolumns/2)] + '...'
+           last_column=column
+           column += len(ks) + len(vs) + 3
+           if column >= mxcolumns:
+               print(',')
+               column=len(ks) + len(vs) + 1
+           elif last_column > 0:
+               print(', ', end='')
+           print( ks+'='+vs, end='' )
+       print('')
 
    def dictify(self):
       """
@@ -332,6 +523,19 @@ class Config:
            for k in oth.__dict__.keys():
               self._override_field( k, self._varsub(getattr(oth,k)) )
 
+   def _resolve_exchange(self):
+       if not hasattr(self,'exchange') or self.exchange is None:
+          self.exchange = 'xs_%s' % self.broker.username
+          logging.debug( 'fill_missing_options no exchange setting, default to: {}'.format(self.exchange) )
+ 
+          if hasattr(self,'exchange_suffix'):
+             self.exchange += '_%s' % self.exchange_suffix
+             logging.debug( 'fill_missing_options adding suffix, {}'.format(self.exchange) )
+       
+          if hasattr(self,'exchange_split') and hasattr(self,'no') and ( self.no > 0 ):
+             self.exchange += "%02d" % self.no
+             logging.debug( 'fill_missing_options adding split, {}'.format(self.exchange) )
+
 
    def _parse_binding(self, subtopic):
        """
@@ -339,10 +543,23 @@ class Config:
                 also should sqwawk about error if no exchange or topic_prefix defined.
                 also None to reset to empty, not done.
        """
+       self._resolve_exchange()
        if hasattr(self,'exchange') and hasattr(self,'topic_prefix'):
-           exch=self.exchange
            self.bindings.append( (self.topic_prefix,  self.exchange, subtopic) )
 
+   def _parse_v2plugin(self, entryPoint, value ):
+       """
+       config file parsing for a v2 plugin.
+
+       """
+       if not entryPoint in Config.entry_points:
+           logging.error( "undefined entry point: {} skipped".format(entryPoint) )
+           return
+
+       if not entryPoint in self.v2plugins:
+           self.v2plugins[entryPoint] = [ value ] 
+       else:
+           self.v2plugins[entryPoint].append( value )
 
    def _parse_declare(self, words):
 
@@ -376,6 +593,8 @@ class Config:
                    print( "failed to parse: %s" % line[1] )
            elif line[0] in [ 'subtopic' ]:
                self._parse_binding( line[1] )
+           elif line[0][0:3] in [ 'on_', 'do_' ] or ( line[0] == 'plugin' ):
+               self._parse_v2plugin(line[0],line[1])
            else:
                k=line[0]
                if k in Config.synonyms:
@@ -387,16 +606,9 @@ class Config:
        """ 
          There are default options that apply only if they are not overridden... 
        """ 
-
-       if self.broker is not None:
-          if not hasattr(self,'exchange') or self.exchange is None:
-              self.exchange = 'xs_%s' % self.broker.username
- 
-          if hasattr(self,'exchange_suffix'):
-                  self.exchange += '_%s' % self.exchange_suffix
        
-          if hasattr(self,'exchange_split') and hasattr(self,'no') and ( self.no > 0 ):
-              self.exchange += "%02d" % self.no
+       if self.broker is not None:
+          self._resolve_exchange()
 
           queuefile = appdirs.user_cache_dir( Config.appdir_stuff['appname'],
                Config.appdir_stuff['appauthor']  )
@@ -455,8 +667,7 @@ class Config:
             if values == 'None':
                 namespace.bindings = []
     
-            if not hasattr(namespace,'exchange'):
-               raise 'exchange needed before subtopic'
+            namespace._resolve_exchange()
     
             if not hasattr(namespace,'topic_prefix'):
                raise 'topic_prefix needed before subtopic'
@@ -475,8 +686,8 @@ class Config:
              description='Subscribe to one peer, and post what is downloaded' ,\
              formatter_class=argparse.ArgumentDefaultsHelpFormatter )
         
-        parser.add_argument('--accept_unmatched', default=self.accept_unmatch, type=bool, nargs='?', help='default selection, if nothing matches' )
-        parser.add_argument('--action', '-a', nargs='?', choices=Config.commands, 
+        parser.add_argument('--accept_unmatched', default=self.accept_unmatched, type=bool, nargs='?', help='default selection, if nothing matches' )
+        parser.add_argument('--action', '-a', nargs='?', choices=Config.actions, 
              help='action to take on the specified configurations' )
         parser.add_argument('--admin', help='amqp://user@host of peer to manage')
         parser.add_argument('--attempts', type=int, nargs='?', help='how many times to try before queuing for retry')
@@ -529,14 +740,14 @@ class Config:
         parser.add_argument('--post_exchange_split', type=int, nargs='?', help='split output into different exchanges 00,01,...')
         parser.add_argument('--post_topic_prefix', nargs='?', help='allows simultaneous use of multiple versions and types of messages')
         parser.add_argument('--topic_prefix', nargs='?', default=self.topic_prefix, help='allows simultaneous use of multiple versions and types of messages')
+        #FIXME: select/accept/reject in parser not implemented.
         parser.add_argument('--select', nargs=1, action='append', help='client-side filtering: accept/reject <regexp>' )
         parser.add_argument('--subtopic', nargs=1, action=Config.AddBinding, help='server-side filtering: MQTT subtopic, wilcards # to match rest, + to match one topic' )
 
         if isPost:
             parser.add_argument( 'path', nargs='+', help='files to post' )
         else:
-            parser.add_argument('action', nargs='?', \
-               choices=[ 'add', 'cleanup', 'edit', 'declare', 'disable', 'dump', 'edit', 'enable', 'foreground', 'list', 'log', 'remove', 'rename', 'restart', 'sanity', 'setup', 'start', 'stop', 'status' ], help='action to take on the specified configurations' )
+            parser.add_argument('action', nargs='?', choices=Config.actions, help='action to take on the specified configurations' )
             parser.add_argument( 'configurations', nargs='*', help='configurations to operate on' )
 
         args = parser.parse_args()
@@ -544,34 +755,43 @@ class Config:
 
         self.merge(args)
 
+
+
+
 def one_config( component, config, overrides=None ):
 
     """
       single call return a fully parsed single configuration for a single component to run.
 
-      read in default.conf
-      FIXME: should read admin.conf ?
+      read in admin.conf and default.conf
+
       apply component default overrides ( maps to: component/check ?)
       read in component/config.conf
       parse arguments from command line.
       return config instance item.
 
+      
       appdir_stuff can be to override file locations for testing during development.
+
     """
-    default_cfg_dir = appdirs.user_config_dir( Config.appdir_stuff['appname'], Config.appdir_stuff['appauthor']  )
-    default_cfg = Config( parent=None, )
+    default_cfg_dir = get_user_config_dir()
+    default_cfg = Config( parent=None )
 
     if overrides:
         default_cfg.override( overrides )
 
+    store_pwd=os.getcwd()
     default_cfg.override(  { 'program_name':component, 
           'configurations': [ config ], 
-          'directory':'${PWD}', 
-          'accept_unmatch':True } )
+          'directory': store_pwd, 
+          'accept_unmatched':True } )
 
-    store_pwd=os.getcwd()
     os.chdir( default_cfg_dir )
-    default_cfg.parse_file("default.conf")
+
+    for g in [ "admin.conf", "default.conf" ]:
+        if os.path.exists( g ):
+           default_cfg.parse_file( g )
+
     cfg = copy.deepcopy(default_cfg)
 
     os.chdir(component)

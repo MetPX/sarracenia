@@ -61,7 +61,7 @@ class instance:
         
         cfg_preparse=sarra.config.Config( \
             { 
-               'accept_unmatch':False, 'exchange':None, 'inline':False, 'inline_encoding':'guess'
+               'accept_unmatched':False, 'exchange':None, 'inline':False, 'inline_encoding':'guess'
             } )
          
         cfg_preparse.parse_file( default_cfg_dir + os.sep + "default.conf")
@@ -164,6 +164,7 @@ class instance:
             self.running_instance = Audit()
         else:
             cfg=sarra.config.one_config( component, config, TMPC.default_props() )
+            cfg.dump()
             self.running_instance = Shovel( cfg )                
 
         self.running_instance.run()

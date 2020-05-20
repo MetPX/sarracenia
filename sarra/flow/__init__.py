@@ -2,7 +2,7 @@
 import logging
 import netifaces
 import os
-import sarra.plugins
+from sarra.v2wrapper import V2Wrapper
 import time
 import types
 
@@ -11,6 +11,7 @@ from abc import ABCMeta, abstractmethod
 from sarra.sr_util import nowflt
 
 logger = logging.getLogger( __name__ )
+
 
 class Flow:
     __metaclass__ = ABCMeta
@@ -45,11 +46,18 @@ class Flow:
            self.o = o
 
        # initialize plugins.
+       if hasattr( o, 'v2plugins' ):
+           logger.info('plugins: %s' % o.v2plugins )
+           vw = V2Wrapper( self.o )
+           for e in o.v2plugins:
+               logger.info('resolving: %s' % e)
+               for v in o.v2plugins[e]:
+                   vw.add( e, v )
 
-
-
+           logger.info( 'plugins initialized')
        logger.info('shovel constructor')
        #self.o.dump()
+   
     
 
     def has_vip(self):
@@ -140,7 +148,7 @@ class Flow:
                 
         self.new_worklist=[]
         for m in self.filtered_worklist:
-            logger('run plugins on %s' % m )
+            logger.info('run plugins on %s' % m )
             self.new_worklist.append(m)
 
         # apply on_message plugins.
