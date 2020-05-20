@@ -53,8 +53,9 @@ class Flow:
                logger.info('resolving: %s' % e)
                for v in o.v2plugins[e]:
                    vw.add( e, v )
-
+           self.v2plugins = vw
            logger.info( 'plugins initialized')
+       
        logger.info('shovel constructor')
        #self.o.dump()
    
@@ -127,7 +128,7 @@ class Flow:
             url = m['baseUrl'] + os.sep + m['relPath']
             matched=False
             for mask in self.o.masks:
-                logger.info('filter - checking: %s' % str(mask) )
+                #logger.info('filter - checking: %s' % str(mask) )
                 pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
                 if mask_regexp.match( url ):
                     matched=True
@@ -141,12 +142,12 @@ class Flow:
                     m['newFile'] = os.path.basename(m['relPath'])
                     m['_deleteOnPost'].extend( [ 'newDir', 'newFile' ] )
                     self.filtered_worklist.append(m)
-                    logger.info( "isMatchingPattern: accepted mask=%s strip=%s" % (str(mask), strip) )
+                    logger.debug( "isMatchingPattern: accepted mask=%s strip=%s" % (str(mask), strip) )
                     break
 
             if not matched:
                 if self.o.accept_unmatched:
-                    logger.info( "accept: unmatched pattern=%s" % (url) )
+                    logger.debug( "accept: unmatched pattern=%s" % (url) )
                     # FIXME... missing dir mapping with mirror, strip, etc...
                     m['newDir'] = maskDir
                     # FIXME... missing FileOption processing.
@@ -159,10 +160,11 @@ class Flow:
         self.new_worklist=[]
         for m in self.filtered_worklist:
             logger.info('run plugins on %s' % m )
+            self.v2plugins.run('on_message', m)
             self.new_worklist.append(m)
 
         # apply on_message plugins.
-        logger.info('filter - done')
+        logger.debug('filter - done')
 
     @abstractmethod
     def gather(self):

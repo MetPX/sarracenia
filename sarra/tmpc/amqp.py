@@ -252,6 +252,7 @@ class AMQP(TMPC):
                         msg['topic'] = raw_msg.delivery_info['routing_key']
                         msg['delivery_tag'] = raw_msg.delivery_info['delivery_tag']
                         msg['_deleteOnPost'] = [ 'topic', 'delivery_tag' ]
+
                     else:
                         msg = sarra.v2wrapper.v02tov03message( 
                             raw_msg.body, raw_message.headers, raw_msg.delivery_info['routing_key'] )

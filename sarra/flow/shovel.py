@@ -29,12 +29,12 @@ class Shovel(Flow):
          if m is not None:
               self.new_worklist.append( m )
 
-         logger.info( 'shovel/gather work_list: %s' % self.new_worklist ) 
+         #logger.info( 'shovel/gather work_list: %s' % self.new_worklist ) 
 
          return
 
      def post( self ):
-         logger.info( 'shovel/post work_list: %s' % self.new_worklist ) 
+         #logger.info( 'shovel/post work_list: %s' % self.new_worklist ) 
          for m in self.new_worklist:
              # FIXME: outlet = url, outlet=json.
              self.poster.putNewMessage(m)

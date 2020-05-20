@@ -1,8 +1,12 @@
 
+from base64 import b64decode, b64encode
+from codecs import decode,encode
+
 import logging
 import os
 import sarra.config
 import time
+import urllib
 import types
 
 from abc import ABCMeta, abstractmethod
@@ -21,19 +25,19 @@ class Message:
         # FIXME: new_baseurl, new_relpath, new_path ... ?
 
         self.pubtime=h['pubTime'].replace("T","")
-        self.baseurl=v3m['baseURL']
-        self.relpath=v3m['relPath']
-
+        self.baseurl=h['baseUrl']
+        self.relpath=h['relPath']
+        self.topic=h['topic']
         if 'new_dir' in h:
-            self.new_dir=v3m['newDir']
-            self.new_file=v3m['newFile']
+            self.new_dir=h['newDir']
+            self.new_file=h['newFile']
 
         self.urlstr= self.baseurl + self.relpath
         self.url = urllib.parse.urlparse(self.urlstr)
 
-        self.notice=self.pubtime + ' ' + h["baseURL" ] + ' ' + h["relPath"].replace( ' ','%20').replace('#','%23')
+        self.notice=self.pubtime + ' ' + h["baseUrl" ] + ' ' + h["relPath"].replace( ' ','%20').replace('#','%23')
         del h["pubTime"]
-        del h["baseURL"]
+        del h["baseUrl"]
         del h["relPath"]
 
         #FIXME: ensure headers are < 255 chars.
@@ -61,23 +65,29 @@ class Message:
         if 'integrity' in h:
             sum_algo_v3tov2 = { "arbitrary":"a", "md5":"d", "sha512":"s", 
                 "md5name":"n", "random":"0", "link":"L", "remove":"R", "cod":"z" }
-            sa = sum_algo_v3tov2[ self.headers[ "integrity" ][ "method" ] ]
+            sa = sum_algo_v3tov2[ h[ "integrity" ][ "method" ] ]
 
             # transform sum value
             if sa in [ '0' ]:
-                sv = self.headers[ "integrity" ][ "value" ]
+                sv = h[ "integrity" ][ "value" ]
             elif sa in [ 'z' ]:
-                sv = sum_algo_v3tov2[ self.headers[ "integrity" ][ "value" ] ]
+                sv = sum_algo_v3tov2[ h[ "integrity" ][ "value" ] ]
             else:
-                sv = encode( decode( self.headers[ "integrity" ][ "value" ].encode('utf-8'), "base64" ), 'hex' )
+                sv = encode( decode( h[ "integrity" ][ "value" ].encode('utf-8'), "base64" ), 'hex' ).decode( 'utf-8' )
             h[ "sum" ] = sa + ',' + sv
             del h['integrity']
 
         self.headers=h
+        self.hdrstr=str(h)
 
 
-    def get_elapse():
+    def set_hdrstr(self):
+        logger.info("set_hdrstr not implemented")
+        pass
+
+    def get_elapse(self):
         logger.info("get elapse not implemented")
+        return 1.0
         pass
 
     def set_parts():
@@ -142,7 +152,7 @@ class V2Wrapper:
 
         self.user_cache_dir=sarra.config.get_user_cache_dir()
         self.instance = o.no
-
+        self.o = o
         self.plugins = {}
         for ep in sarra.config.Config.entry_points:
              self.plugins[ep] = []
@@ -203,5 +213,10 @@ class V2Wrapper:
         """
            run plugins for a given entry point.
         """
-        v2m = Message(m)
+        self.msg=Message(m)
+        print( "plugins[ %s ] = %s" % ( ep, self.plugins[ep] ) )
+        for plugin in self.plugins[ep]:
+             ok = plugin(self) 
+
+             if not ok: break
 
