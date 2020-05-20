@@ -11,7 +11,7 @@ from sarra.sr_util import nowflt
 
 logger = logging.getLogger( __name__ )
 
-class v2wrapper:
+class V2Wrapper:
 
     def __init__(self, o):
         """

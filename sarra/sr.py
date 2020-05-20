@@ -765,6 +765,7 @@ class sr_GlobalState:
         logging.debug( 'match_patterns result filtered_configurations: %s' % self.filtered_configurations ) 
         logging.debug( 'match_patterns result leftovers: %s' % self.leftovers ) 
 
+    # FIXME: this should be in config.py
     @property
     def appname(self):
         return self.__appname 
