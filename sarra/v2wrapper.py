@@ -9,8 +9,6 @@ import time
 import urllib
 import types
 
-from abc import ABCMeta, abstractmethod
-
 from sarra.sr_util import nowflt
 
 logger = logging.getLogger( __name__ )
@@ -142,7 +140,11 @@ class V2Wrapper:
 
     def __init__(self, o):
         """
-           Add plugins, returning True on Success.
+           A wrapper class to run v02 plugins.
+           us run(entry_point,module)
+
+           entry_point is a string like 'on_message',  and module being the one to add.
+
         """
         global logger
 

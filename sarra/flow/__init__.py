@@ -54,7 +54,7 @@ class Flow:
                for v in o.v2plugins[e]:
                    vw.add( e, v )
            self.v2plugins = vw
-           logger.info( 'plugins initialized')
+           logger.info( 'v2 plugins initialized')
        
        logger.info('shovel constructor')
        #self.o.dump()
