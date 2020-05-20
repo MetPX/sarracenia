@@ -75,6 +75,8 @@ the rabbitmq server, or manage the configurations.
  - add:           copy to the list of available configurations.
  - list:          list all the configurations available. 
  - list plugins:  list all the plugins available. 
+ - list examples:  list all the plugins available. 
+ - show           view an interpreted version of a configuration file.
  - edit:          modify an existing configuration.
  - remove:        remove a configuration.
  - disable:       mark a configuration as ineligible to run. 
@@ -314,14 +316,36 @@ Settings in an individual .conf file are read in after the default.conf
 file, and so can override defaults. Options specified on
 the command line override configuration files.
 
-
-
 plugin options
 ~~~~~~~~~~~~~~
 
 Sarracenia makes extensive use of small python code snippets that customize
-processing called *plugins.* Plugins define and use additional settings,
-that are usually prefixed with the name of the plugin::
+processing called *plugins.* Plugins define and use additional settings.
+For the most pythonic experience one should use the *import* option.
+For example::
+
+  import sarra.lib.msg.log.Log
+
+The log.py file included in the package is like this::
+
+  from sarra.plugin import Plugin
+  import logging
+
+  logger = logging.getLogger( __name__ ) 
+
+  class Log(Plugin):
+
+    def on_messages(self,worklist):
+        for msg in worklist:
+            logger.info( "msg/log received: %s " % msg )
+        return worklist
+
+To add special processing of messages, create a module in the python
+path, and have it include entry points. One can also use no-import
+to remove a library that is imported by default.
+
+There is and older (v2) style of plugins as well. That are usually 
+prefixed with the name of the plugin::
 
   msg_to_clusters DDI
   msg_to_clusters DD
