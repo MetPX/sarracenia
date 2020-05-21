@@ -134,6 +134,11 @@ added list, show, and built prototype shovel... required
 a instance (sets state files and logs) and then calls flow... 
 shovel is a sub-class of flow.
 
+Got a skeleton for v2 plugins working (v2wrapper.py)
+implemented import-based and group oriented v3 plugin framework. ( #213 )
+
+
+
 
 
 

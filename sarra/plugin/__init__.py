@@ -21,7 +21,7 @@ entry_points = [ 'do_download', 'do_get', 'do_poll', 'do_put', 'do_send',
 
 class Plugin:
     """
-    FIXME: document the API's for all the entry points.
+    FIXME: document the API signatures for all the entry points. 
     """
     __metaclass__ = ABCMeta
 
@@ -31,92 +31,92 @@ class Plugin:
         logger.info( 'intializing %s' % self.name )
         pass
 
-    @abstractmethod
-    def name(self):
-        return __name__
+#    @abstractmethod
+#    def name(self):
+#        return __name__
+#
+#    @abstractmethod
+#    def on_files(self,messages):
+#        pass
+#
+#    @abstractmethod
+#    def on_messages(self,messages):
+#        pass
+#
+#    @abstractmethod
+#    def do_download(self,messages): 
+#        pass
+#
+#    @abstractmethod
+#    def do_get(self,messages): 
+#        pass
+#
+#    @abstractmethod
+#    def do_poll(self): 
+#        pass
+#
+#    @abstractmethod
+#    def do_put(self): 
+#        pass
+#
+#    @abstractmethod
+#    def do_send(self):
+#        pass
+#
+#    @abstractmethod
+#    def on_data(self): 
+#        pass
+#
+#    @abstractmethod
+#    def on_files(self,worklist): 
+#        pass
+#
+#    @abstractmethod
+#    def on_housekeeping(self):
+#        pass
+#
+#    @abstractmethod
+#    def on_html_page(self): 
+#        pass
+#
+#    @abstractmethod
+#    def on_line(self): 
+#        pass
+#
+#    @abstractmethod
+#    def on_part(self): 
+#        pass
+#
+#    @abstractmethod
+#    def on_post(self): 
+#        pass
+#
+#    @abstractmethod
+#    def on_report(self): 
+#        pass
+#
+#    @abstractmethod
+#    def on_start(self): 
+#        pass
+#
+#    @abstractmethod
+#    def on_stop(self):
+#        pass
+#
+#    @abstractmethod
+#    def on_watch(self):
+#        pass
+#
 
-    @abstractmethod
-    def on_files(self,messages):
-        pass
-
-    @abstractmethod
-    def on_messages(self,messages):
-        pass
-
-    @abstractmethod
-    def do_download(self,messages): 
-        pass
-
-    @abstractmethod
-    def do_get(self,messages): 
-        pass
-
-    @abstractmethod
-    def do_poll(self): 
-        pass
-
-    @abstractmethod
-    def do_put(self): 
-        pass
-
-    @abstractmethod
-    def do_send(self):
-        pass
-
-    @abstractmethod
-    def on_data(self): 
-        pass
-
-    @abstractmethod
-    def on_files(self,worklist): 
-        pass
-
-    @abstractmethod
-    def on_housekeeping(self):
-        pass
-
-    @abstractmethod
-    def on_html_page(self): 
-        pass
-
-    @abstractmethod
-    def on_line(self): 
-        pass
-
-    @abstractmethod
-    def on_part(self): 
-        pass
-
-    @abstractmethod
-    def on_post(self): 
-        pass
-
-    @abstractmethod
-    def on_report(self): 
-        pass
-
-    @abstractmethod
-    def on_start(self): 
-        pass
-
-    @abstractmethod
-    def on_stop(self):
-        pass
-
-    @abstractmethod
-    def on_watch(self):
-        pass
 
 
-
-
-def load_library(factory_path):
+def load_library(factory_path,options):
 
     logger.info( 'load_plugin: %s' % factory_path )
     packagename, classname = factory_path.rsplit('.', 1)
     module = importlib.import_module(packagename)
     class_ = getattr(module, classname)
 
-    plugin = class_(factory_path)
+    plugin = class_(options)
     return plugin
 

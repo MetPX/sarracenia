@@ -211,6 +211,13 @@ class V2Wrapper:
         return True
 
 
+    def housekeeping(self):
+        """
+           run plugins for a given entry point.
+        """
+        for plugin in self.plugins['on_housekeeping']:
+             plugin(self) 
+
     def run(self,ep,m):
         """
            run plugins for a given entry point.

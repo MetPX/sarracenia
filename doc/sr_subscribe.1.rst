@@ -341,7 +341,7 @@ The log.py file included in the package is like this::
         return worklist
 
 To add special processing of messages, create a module in the python
-path, and have it include entry points. One can also use no-import
+path, and have it include entry points. One can also use *no-import*
 to remove a library that is imported by default.
 
 There is and older (v2) style of plugins as well. That are usually 

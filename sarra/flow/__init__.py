@@ -11,6 +11,8 @@ import types
 
 from abc import ABCMeta, abstractmethod
 
+from sarra.nodupe import NoDupe
+
 from sarra.sr_util import nowflt
 
 logger = logging.getLogger( __name__ )
@@ -31,12 +33,29 @@ class Flow:
 
        
        self._stop_requested = False
-       # FIXME: set o.sleep, o.housekeeping
-       self.o = types.SimpleNamespace()
-       self.o.sleep = 10
-       self.o.housekeeping = 30
+
+       # override? or merge... hmm...
+       if o is not None:
+           self.o = o
+       else:
+           # FIXME: set o.sleep, o.housekeeping
+           self.o = types.SimpleNamespace()
+           self.o.sleep = 10
+           self.o.housekeeping = 30
+
+       self.v3plugins = {}
+
+
 
        # FIXME: open cache, get masks. 
+       if o.suppress_duplicates > 0:
+           logger.info('NoDupe is on' )
+           self.o.noDupe = NoDupe(o)
+           if hasattr(self.o,'v3plugins'):
+                self.o.v3plugins.append('sarra.plugin.nodupe.NoDupe') 
+           else:
+                self.o.v3plugins =[ 'sarra.plugin.nodupe.NoDupe' ]
+
        # FIXME: open new_worklist
        # FIXME: initialize retry_list
        # FIXME: initialize vip 
@@ -44,10 +63,6 @@ class Flow:
 
        # FIXME: open retry
  
-       # override? or merge... hmm...
-       if o is not None:
-           self.o = o
-
        # initialize plugins.
        if hasattr( o, 'v2plugins' ):
            logger.info('plugins: %s' % o.v2plugins )
@@ -68,20 +83,19 @@ class Flow:
     
     def _loadV3Plugins(self,plugins_to_load):
 
-        v3p={}
-        logger.info( 'v3 plugins to loaded: %s' % ( plugins_to_load ) )
+        logger.info( 'v3 plugins to load: %s' % ( plugins_to_load ) )
         for c in plugins_to_load: 
-            plugin = sarra.plugin.load_library( c )
-            logger.info( 'v3 plugins loaded: %s as %s' % ( c, plugin ) )
+            plugin = sarra.plugin.load_library( c, self.o )
+            logger.info( 'v3 plugin loading: %s an instance of: %s' % ( c, plugin ) )
             for entry_point in sarra.plugin.entry_points:
                  if hasattr( plugin, entry_point ):
                     fn = getattr( plugin, entry_point )
                     if callable(fn):
-                        if entry_point in v3p:
-                           v3p[entry_point].append(fn)
+                        logger.info( 'v3 registering %s/%s' % (c, entry_point))
+                        if entry_point in self.v3plugins:
+                           self.v3plugins[entry_point].append(fn)
                         else:
-                           v3p[entry_point] = [ fn ]
-        self.v3plugins = v3p
+                           self.v3plugins[entry_point] = [ fn ]
         logger.info( 'v3 plugins initialized')
  
     def _runV3Plugins(self,entry_point):
@@ -197,6 +211,17 @@ class Flow:
         self._runV3Plugins('on_messages')
         # apply on_message plugins.
         logger.debug('filter - done')
+
+    @abstractmethod
+    def housekeeping(self):
+        logger.info('housekeeping - started')
+
+        self.v2plugins.housekeeping()
+
+        for p in self.v3plugins['on_housekeeping']:
+            p()
+
+        logger.info('housekeeping - done')
 
     @abstractmethod
     def gather(self):

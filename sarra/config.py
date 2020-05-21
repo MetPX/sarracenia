@@ -63,6 +63,7 @@ def get_user_config_dir():
           Config.appdir_stuff['appname'], 
           Config.appdir_stuff['appauthor']  ) 
 
+
 def get_pid_filename(component, configuration, no):
    """
      return the file name for the pid file for the specified instance.
@@ -265,7 +266,8 @@ class Config:
 
    synonyms = { 
      'accept_unmatch': 'accempt_unmatched',
-     'cache' : 'suppress_duplicates', 'no_duplicates' : 'suppress_duplicates', 
+     'cache' : 'suppress_duplicates', 
+     'no_duplicates' : 'suppress_duplicates', 
      'caching' : 'suppress_duplicates', 
      'cache_basis': 'suppress_duplicates_basis',  'instance' : 'instances',
      'chmod' : 'default_mode', 'chmod_dir' : 'default_dir_mode',
@@ -527,15 +529,12 @@ class Config:
    def _resolve_exchange(self):
        if not hasattr(self,'exchange') or self.exchange is None:
           self.exchange = 'xs_%s' % self.broker.username
-          logging.debug( 'fill_missing_options no exchange setting, default to: {}'.format(self.exchange) )
  
           if hasattr(self,'exchange_suffix'):
              self.exchange += '_%s' % self.exchange_suffix
-             logging.debug( 'fill_missing_options adding suffix, {}'.format(self.exchange) )
        
           if hasattr(self,'exchange_split') and hasattr(self,'no') and ( self.no > 0 ):
              self.exchange += "%02d" % self.no
-             logging.debug( 'fill_missing_options adding split, {}'.format(self.exchange) )
 
 
    def _parse_binding(self, subtopic):
@@ -600,7 +599,7 @@ class Config:
                if line[1] in self.v3plugins:
                    self.v3plugins.remove( line[1] )
                self._parse_v2plugin(line[0],line[1])
-           elif line[0] in [ 'unimport' ]:
+           elif line[0] in [ 'no-import' ]:
                self._parse_v3unplugin(line[1])
            else:
                k=line[0]
@@ -614,6 +613,19 @@ class Config:
          There are default options that apply only if they are not overridden... 
        """ 
        
+       if hasattr(self,'suppress_duplicates'): 
+           if (type(self.suppress_duplicates) is str):
+               if isTrue(self.suppress_duplicates):
+                   self.suppress_duplicates=300
+               else:
+                   self.suppress_duplicates=durationToSeconds(self.suppress_duplicates)
+       else:
+           self.suppress_duplicates=0
+          
+       # FIXME: note that v2 *user_cache_dir* is, v3 called:  cfg_run_dir
+       if not hasattr(self, 'cfg_run_dir'):
+          self.cfg_run_dir = os.path.join( get_user_cache_dir(), component, config[0:-5] )
+
        if self.broker is not None:
           self._resolve_exchange()
 

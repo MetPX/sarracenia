@@ -34,18 +34,26 @@
 from hashlib import md5
 from hashlib import sha512
 
-import sys
 import calendar,datetime
-import os,random,signal,stat,sys,time
+import logging
+import os
+import random
+import signal
+import stat
+import sys
+import time
 import urllib
 import urllib.parse
 
-try:
-   from sr_xattr import *
+logger = logging.getLogger( __name__ )
 
-except:
-   from sarra.sr_xattr import *
+from sarra.sr_xattr import *
 
+
+def isTrue(S):
+    s = S.lower()
+    if  s == 'true' or s == 'yes' or s == 'on' or s == '1': return True
+    return False
 
 #============================================================
 # sigalarm
@@ -945,6 +953,7 @@ def durationToSeconds(str_value):
    """
    this function converts duration to seconds.
    str_value should be a number followed by a unit [s,m,h,d,w] ex. 1w, 4d, 12h
+   return 0.0 for invalid string.
    """
    factor    = 1
 
@@ -955,7 +964,11 @@ def durationToSeconds(str_value):
    elif str_value[-1] in 'wW' : factor *= 60 * 60 * 24 * 7
    if str_value[-1].isalpha() : str_value = str_value[:-1]
 
-   duration = float(str_value) * factor
+   try:
+       duration = float(str_value) * factor
+   except:
+       logger.error( "durationToSeconds, conversion failed for: %s" % str_value )
+       duration = 0.0
 
    return duration
 
