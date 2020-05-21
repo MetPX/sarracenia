@@ -1,4 +1,5 @@
 
+import copy
 import logging
 import netifaces
 import os
@@ -45,16 +46,14 @@ class Flow:
 
        self.v3plugins = {}
 
+       self.new_worklist=[]
 
 
        # FIXME: open cache, get masks. 
        if o.suppress_duplicates > 0:
            logger.info('NoDupe is on' )
-           self.o.noDupe = NoDupe(o)
-           if hasattr(self.o,'v3plugins'):
-                self.o.v3plugins.append('sarra.plugin.nodupe.NoDupe') 
-           else:
-                self.o.v3plugins =[ 'sarra.plugin.nodupe.NoDupe' ]
+           self.noDupe = NoDupe(o)
+           self.noDupe.open()
 
        # FIXME: open new_worklist
        # FIXME: initialize retry_list
@@ -131,9 +130,10 @@ class Flow:
 
         next_housekeeping=nowflt()+self.o.housekeeping
 
+        current_sleep = self.o.sleep
         if self.o.sleep > 0:
             last_time = nowflt()
-       
+   
         while True:
 
            if self._stop_requested:
@@ -141,23 +141,31 @@ class Flow:
                break
 
            if self.has_vip():
-               worklist = self.gather()
-               self.filter()
-               self.do()
-               self.post()
-               self.report()
+               self.gather()
+               if len(self.new_worklist) == 0:
+                   if (current_sleep < 1):
+                       current_sleep *= 2
+               else:
+                   current_sleep = self.o.sleep
+                   self.filter()
+                   self.do()
+                   self.post()
+                   self.report()
          
            now = nowflt()
            if now > next_housekeeping:
                logger.info('on_housekeeping')
                next_housekeeping=now+self.o.housekeeping
 
-           if self.o.sleep > 0:
+           if current_sleep > 0:
                elapsed = now - last_time
-               if elapsed < self.o.sleep:
-                   stime=self.o.sleep-elapsed
+               if elapsed < current_sleep:
+                   stime=current_sleep-elapsed
                    if stime > 60:  # if sleeping for a long time, debug output is good...
                        logger.debug("sleeping for more than 60 seconds: %g seconds. Elapsed since wakeup: %g Sleep setting: %g " % ( stime, elapsed, self.o.sleep ) )
+               else:
+                   logger.debug( 'worked too long to sleep!')
+                   continue
                try:
                    time.sleep(stime)
                except:
@@ -166,12 +174,18 @@ class Flow:
                last_time = now
 
     def filter(self):
-        # apply cache, reject.
-        # apply masks, reject.
 
+        logger.debug('filter - start')
         self.filtered_worklist = []
         for m in self.new_worklist:
             url = m['baseUrl'] + os.sep + m['relPath']
+
+            # apply cache, reject.
+            if not self.noDupe.check_msg(m):
+               logger.info("Ignored %s not modified" % str(m)[0:40]+'...' )
+               continue
+
+            # apply masks, reject.
             matched=False
             for mask in self.o.masks:
                 #logger.info('filter - checking: %s' % str(mask) )
@@ -205,7 +219,9 @@ class Flow:
                 
         self.new_worklist=[]
         for m in self.filtered_worklist:
-            self.v2plugins.run('on_message', m)
+            mm =  copy.deepcopy(m)
+            self.v2plugins.run('on_message', mm)
+            #FIXME: figure out how to reconcile changes to message with v3 worklist.
             self.new_worklist.append(m)
 
         self._runV3Plugins('on_messages')
@@ -216,10 +232,14 @@ class Flow:
     def housekeeping(self):
         logger.info('housekeeping - started')
 
+        if o.suppress_duplicates > 0:
+            self.noDupe.on_housekeeping()
+
         self.v2plugins.housekeeping()
 
         for p in self.v3plugins['on_housekeeping']:
             p()
+
 
         logger.info('housekeeping - done')
 
@@ -245,4 +265,8 @@ class Flow:
 
     @abstractmethod 
     def close( self ):
-        logger.info('closing')
+        logger.info('flow closing')
+        if self.o.suppress_duplicates > 0:
+            self.noDupe.save()
+            self.noDupe.close()
+

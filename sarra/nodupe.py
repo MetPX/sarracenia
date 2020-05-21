@@ -46,7 +46,7 @@ class NoDupe():
     def __init__(self, options ):
         logger.debug("NoDupe init")
 
-        self.options        = options
+        self.o        = options
         self.cache_dict    = {}
         self.cache_file    = None
         self.cache_hit     = None
@@ -55,9 +55,36 @@ class NoDupe():
         self.last_expire   = nowflt()
         self.count         = 0
 
-    def check(self, key, path, part):
-        logger.debug("NoDupe check basis=%s" % self.suppress_duplicates_basis )
+        self.last_time  = nowflt()
+        self.last_count = 0
+        self.o = options
 
+
+    def on_housekeeping(self):
+
+        logger.info("hk_cache start (%d)" % len(self.cache_dict))
+
+        if self.o.cache_stat :
+           count = self.count
+           self.save()
+
+           now       = nowflt()
+           new_count = self.count
+
+           logger.info("hb_cache was %d, but since %5.2f sec, increased up to %d, now saved %d entries" %
+                           ( self.last_count, now-self.last_time, count, new_count))
+
+           self.last_time  = now
+           self.last_count = new_count
+
+        else :
+           self.save()
+           logger.info("hb_cache saved (%d)" % len(self.cache_dict))
+
+        return True
+
+
+    def check(self, key, path, part):
         # not found 
         self.cache_hit = None
 
@@ -68,7 +95,7 @@ class NoDupe():
         value = '%s*%s' % (relpath, part)
 
         if key not in self.cache_dict :
-           logger.debug("adding a new entry in cache")
+           logger.debug("adding a new entry in NoDupe cache")
            kdict = {}
            kdict[value] = now
            self.cache_dict[key] = kdict
@@ -76,7 +103,7 @@ class NoDupe():
            self.count += 1
            return True
 
-        logger.debug("sum already in cache: key={}".format(key))
+        logger.debug("sum already in NoDupe cache: key={}".format(key))
         kdict   = self.cache_dict[key]
         present = value in kdict
         kdict[value] = now
@@ -86,7 +113,7 @@ class NoDupe():
         self.count += 1
 
         if present:
-           logger.debug("updated time of old entry: value={}".format(value))
+           logger.debug("updated time of old NoDupe entry: value={}".format(value))
            self.cache_hit = value
            return False
         else:
@@ -132,26 +159,29 @@ class NoDupe():
         return True
 
     def check_msg(self, msg):
-        logger.debug("NoDupe check_msg")
 
-        relpath = self.__get_relpath(msg.relpath)
-        sumstr  = msg.headers['sum']
+        relpath = self.__get_relpath( msg['relPath'] )
+        sumstr  = msg['integrity']['method']+','+msg[ 'integrity' ]['value'].replace('\n','')
         partstr = relpath
 
-        if sumstr[0] not in ['R','L'] :
-           partstr = msg.headers['parts']
+        if msg['integrity']['method'] not in ['remove','link'] :
+           if 'size' in msg:
+               partstr = '1,' + str(msg['size'])
+           else:
+               partstr = msg['blocks']
 
+        logger.debug("NoDupe calling check( %s, %s, %s )" % ( sumstr, relpath, partstr ) )
         return self.check(sumstr,relpath,partstr)
 
     def __get_relpath(self, path):
-        if self.suppress_duplicates_basis == 'name':
+        if self.o.suppress_duplicates_basis == 'name':
             result = path.split('/')[-1]
-        elif self.suppress_duplicates_basis == 'path':
+        elif self.o.suppress_duplicates_basis == 'path':
             result = path
-        elif self.suppress_duplicates_basis == 'data':
+        elif self.o.suppress_duplicates_basis == 'data':
             result = "data"
         else:
-            raise ValueError("invalid choice for suppress_duplicates_basis valid ones:{}".format(self.suppress_duplicates_basis))
+            raise ValueError("invalid choice for suppress_duplicates_basis valid ones:{}".format(self.o.suppress_duplicates_basis))
         return result
 
     def clean(self, persist=False, delpath=None):
@@ -301,8 +331,8 @@ class NoDupe():
         self.cache_file = cache_file
 
         if cache_file is None :
-           self.cache_file  = self.options.cfg_run_dir + os.sep 
-           self.cache_file += 'recent_files_%.3d.cache' % self.options.instance
+           self.cache_file  = self.o.cfg_run_dir + os.sep 
+           self.cache_file += 'recent_files_%.3d.cache' % self.o.no
 
         self.load()
 

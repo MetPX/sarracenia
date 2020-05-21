@@ -137,6 +137,7 @@ shovel is a sub-class of flow.
 Got a skeleton for v2 plugins working (v2wrapper.py)
 implemented import-based and group oriented v3 plugin framework. ( #213 )
 
+cache (no called noDupe) is basically working.
 
 
 

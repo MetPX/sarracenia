@@ -40,6 +40,7 @@ class Shovel(Flow):
              self.poster.putNewMessage(m)
 
      def close( self ):
+         super().close()
          self.consumer.close()
          self.poster.close()
          logger.info( 'shovel/close completed cleanly' )

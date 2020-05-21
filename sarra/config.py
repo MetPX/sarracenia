@@ -312,7 +312,7 @@ class Config:
        self.filename = None
        self.flatten = '/'
        self.hostname = socket.getfqdn()
-       self.sleep = 10
+       self.sleep = 0.1 
        self.housekeeping = 30
        self.inline = False
        self.inline_max = 4096
@@ -622,6 +622,9 @@ class Config:
        else:
            self.suppress_duplicates=0
           
+       if not hasattr(self,'suppress_duplicates_basis'): 
+           self.suppress_duplicates_basis='data'
+
        # FIXME: note that v2 *user_cache_dir* is, v3 called:  cfg_run_dir
        if not hasattr(self, 'cfg_run_dir'):
           self.cfg_run_dir = os.path.join( get_user_cache_dir(), component, config[0:-5] )
