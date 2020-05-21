@@ -69,11 +69,11 @@ class File_Amheadalert:
                parent.logger.info('catenating: %s to %s ' % (fn, p[2:] ))
                # does > mean move/rename? or append? dunno amheadalert.
                # rename version:
-               #shutil.move( fn ,p[2:] )             
+               shutil.move( fn ,p[2:] )             
                # append version:
-               with open(p[2:],'a+') as d:
-                  with open(fn,'r') as s:
-                      d.write(s.read()) 
+               #with open(p[2:],'a+') as d:
+               #   with open(fn,'r') as s:
+               #       d.write(s.read()) 
             elif p[0] == '|':
                cmd= "cat %s %s" % (fn,p)
                parent.logger.info('piping: %s ' % (cmd ))
