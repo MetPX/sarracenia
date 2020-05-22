@@ -138,7 +138,6 @@ class Flow:
 
     def _runPluginsTime(self,entry_point):
         for p in self.plugins[entry_point]:
-            logger.info('%s... p is %s' % (entry_point, p ) )
             p()
     
 
@@ -192,8 +191,20 @@ class Flow:
                else:
                    current_sleep = self.o.sleep
                    self.filter()
+
+                   self.ack(self.worklist.ok)
+                   self.worklist.ok=[]
+                   self.ack(self.worklist.rejected)
+                   self.worklist.rejected=[]
+
                    self.do()
                    self.post()
+
+                   self.ack(self.worklist.ok)
+                   self.worklist.ok=[]
+                   self.ack(self.worklist.rejected)
+                   self.worklist.rejected=[]
+
                    self.report()
          
            now = nowflt()
@@ -209,7 +220,7 @@ class Flow:
                    if stime > 60:  # if sleeping for a long time, debug output is good...
                        logger.debug("sleeping for more than 60 seconds: %g seconds. Elapsed since wakeup: %g Sleep setting: %g " % ( stime, elapsed, self.o.sleep ) )
                else:
-                   logger.debug( 'worked too long to sleep!')
+                   #logger.debug( 'worked too long to sleep!')
                    continue
                try:
                    time.sleep(stime)
@@ -262,11 +273,6 @@ class Flow:
         # apply on_messages plugins.
         self._runPluginsWorklist('on_messages')
 
-        self.ack(self.worklist.ok)
-        self.worklist.ok=[]
-        self.ack(self.worklist.rejected)
-        self.worklist.rejected=[]
-
         logger.debug('filter - done')
 
     @abstractmethod
@@ -275,6 +281,10 @@ class Flow:
  
     @abstractmethod 
     def do( self ):
+
+        # mark all remaining messages as done.
+        self.worklist.ok = self.worklist.incoming
+        self.worklist.incoming = []
         logger.info('do - unimplemented')
   
     @abstractmethod 
@@ -284,7 +294,7 @@ class Flow:
         logger.info('post - unimplemented')
    
     @abstractmethod 
-    def ack( self, m ):
+    def ack( self, worklist ):
         # acknowledge_messages
         logger.info('ack - unimplemented')
 
