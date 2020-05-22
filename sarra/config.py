@@ -627,7 +627,11 @@ class Config:
 
        # FIXME: note that v2 *user_cache_dir* is, v3 called:  cfg_run_dir
        if not hasattr(self, 'cfg_run_dir'):
-          self.cfg_run_dir = os.path.join( get_user_cache_dir(), component, config[0:-5] )
+          if config[-5:] == '.conf':
+              cfg=config[:-5]
+          else:
+              cfg=config
+          self.cfg_run_dir = os.path.join( get_user_cache_dir(), component, cfg )
 
        if self.broker is not None:
           self._resolve_exchange()
