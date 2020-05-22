@@ -843,7 +843,6 @@ class sr_GlobalState:
         sc_path = os.environ.get('SARRAC_LIB')
 
         try:
-            logging.debug("using subprocess.run")
             if sc_path and cmd_list[0].startswith("sr_cp"):
                 subprocess.run([sc_path+os.sep+cmd_list[0]]+cmd_list[1:], check=True)
             elif sr_path and cmd_list[0].startswith("sr"):

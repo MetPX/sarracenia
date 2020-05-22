@@ -10,8 +10,5 @@ class Log(Plugin):
 
     def on_messages(self,worklist):
 
-        for msg in worklist:
+        for msg in worklist.incoming:
             logger.info( "msg/log received: %s " % msg )
-
-        return worklist
-

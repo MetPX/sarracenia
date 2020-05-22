@@ -128,15 +128,19 @@ class Flow:
                            self.plugins[entry_point] = [ fn ]
         logger.info( 'v3 plugins initialized')
  
-    def _runPlugins(self,entry_point):
+    def _runPluginsWorklist(self,entry_point):
 
         if hasattr(self,'plugins') and ( entry_point in self.plugins ):
            for p in self.plugins[entry_point]:
-               logger.info( 'v3 registering running %s/%s' % (p, entry_point))
                p(self.worklist)
                if len(self.worklist.incoming) == 0:
                   return
 
+    def _runPluginsTime(self,entry_point):
+        for p in self.plugins[entry_point]:
+            logger.info('%s... p is %s' % (entry_point, p ) )
+            p()
+    
 
     def has_vip(self):
         # no vip given... standalone always has vip.
@@ -155,6 +159,11 @@ class Flow:
     def please_stop(self):
         self._stop_requested = True
 
+    @abstractmethod 
+    def close( self ):
+        logger.info('flow closing')
+        self._runPluginsTime('on_stop')
+
     def run(self):
         """
           check if stop_requested once in a while, but never return otherwise.
@@ -166,10 +175,8 @@ class Flow:
         if self.o.sleep > 0:
             last_time = nowflt()
    
-        logger.info(" all v3 plugins: %s" % self.plugins )
-        for p in self.plugins['on_start']:
-            logger.info('on_start... p is %s' % p )
-            p()
+        #logger.info(" all v3 plugins: %s" % self.plugins )
+        self._runPluginsTime('on_start')
 
         while True:
 
@@ -192,6 +199,7 @@ class Flow:
            now = nowflt()
            if now > next_housekeeping:
                logger.info('on_housekeeping')
+               self._runPluginsTime('on_housekeeping')
                next_housekeeping=now+self.o.housekeeping
 
            if current_sleep > 0:
@@ -227,7 +235,7 @@ class Flow:
                     if not accepting:
                         if self.o.log_reject:
                             logger.info( "reject: mask=%s strip=%s pattern=%s" % (str(mask), strip, m) ) 
-                            self.ack(m)
+                            self.worklist.rejected.append(m)
                             break
                     # FIXME... missing dir mapping with mirror, strip, etc...
                     m['newDir'] = maskDir
@@ -249,24 +257,17 @@ class Flow:
                     self.filtered_worklist.append(m)
                 elif self.o.log_reject:
                     logger.info( "reject: unmatched pattern=%s" % (url) )
-                    self.ack(m)
+                    self.worklist.rejected.append(m)
                 
         # apply on_messages plugins.
-        self._runPlugins('on_messages')
+        self._runPluginsWorklist('on_messages')
 
+        self.ack(self.worklist.ok)
+        self.worklist.ok=[]
         self.ack(self.worklist.rejected)
         self.worklist.rejected=[]
 
         logger.debug('filter - done')
-
-    @abstractmethod
-    def housekeeping(self):
-        logger.info('housekeeping - started')
-
-        for p in self.plugins['on_housekeeping']:
-            p()
-
-        logger.info('housekeeping - done')
 
     @abstractmethod
     def gather(self):
@@ -292,15 +293,4 @@ class Flow:
         # post reports
         # apply on_report plugins
         logger.info('report -unimplemented')
-
-    @abstractmethod 
-    def close( self ):
-        logger.info('flow closing')
-
-        for p in self.plugins['on_stop']:
-            p()
-
-        if self.o.suppress_duplicates > 0:
-            self.noDupe.save()
-            self.noDupe.close()
 

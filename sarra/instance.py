@@ -164,7 +164,6 @@ class instance:
             self.running_instance = Audit()
         else:
             cfg=sarra.config.one_config( component, config, TMPC.default_props() )
-            cfg.dump()
             self.running_instance = Shovel( cfg )                
 
         self.running_instance.run()

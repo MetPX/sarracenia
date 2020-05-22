@@ -2,12 +2,13 @@
 from base64 import b64decode, b64encode
 from codecs import decode,encode
 
+import copy
 import logging
 import os
 import sarra.config
 import time
-import urllib
 import types
+import urllib
 
 from sarra.plugin import Plugin
 
@@ -224,7 +225,7 @@ class V2Wrapper(Plugin):
         outgoing=[]
         for m in worklist.incoming:
             mm = copy.deepcopy(m)
-            if self.v2plugins.run('on_message', mm):
+            if self.run('on_message', mm):
                outgoing.append(m)
             else:
                worklist.rejected.append(m)
@@ -254,6 +255,7 @@ class V2Wrapper(Plugin):
            run plugins for a given entry point.
         """
         self.msg=Message(m)
+        ok=True
         for plugin in self.v2plugins[ep]:
              ok = plugin(self) 
              if not ok: break
