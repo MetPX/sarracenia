@@ -16,7 +16,7 @@
 #  Michel Grenier - Shared Services Canada
 #  Last Changed   : Wed Jul 26 18:57:19 UTC 2017
 #  copied and re-arranged after his retirement... don't blame him any more...
-#  He wrote it as NoDupe.py
+#  He wrote it as sr_cache.py Peter Silva turned it into a v3 plugin.
 #
 
 import os
@@ -39,14 +39,31 @@ logger = logging.getLogger( __name__ )
 # cache_dict : {}  
 #              cache_dict[sum] = {path1*part1: time1, path2*part2: time2, ...}
 #
+
+
 from sarra.sr_util import nowflt
 
+from sarra.plugin import Plugin
 
-class NoDupe():
+
+class NoDupe(Plugin):
+    """
+
+       options:
+
+       suppress_duplicates - duration in seconds (floating point.)
+       basis - 'data', 'path', 'name'
+
+    """
+
     def __init__(self, options ):
         logger.debug("NoDupe init")
 
         self.o        = options
+
+        if hasattr(options,'suppress_duplicates_basis'):
+            self.o.basis = options.suppress_duplicates_basis
+
         self.cache_dict    = {}
         self.cache_file    = None
         self.cache_hit     = None
@@ -57,31 +74,23 @@ class NoDupe():
 
         self.last_time  = nowflt()
         self.last_count = 0
-        self.o = options
 
 
     def on_housekeeping(self):
 
-        logger.info("hk_cache start (%d)" % len(self.cache_dict))
+        logger.info("hk_nodupe start (%d)" % len(self.cache_dict))
 
-        if self.o.cache_stat :
-           count = self.count
-           self.save()
+        count = self.count
+        self.save()
 
-           now       = nowflt()
-           new_count = self.count
+        now       = nowflt()
+        new_count = self.count
 
-           logger.info("hb_cache was %d, but since %5.2f sec, increased up to %d, now saved %d entries" %
+        logger.info("hk_nodupe was %d, but since %5.2f sec, increased up to %d, now saved %d entries" %
                            ( self.last_count, now-self.last_time, count, new_count))
 
-           self.last_time  = now
-           self.last_count = new_count
-
-        else :
-           self.save()
-           logger.info("hb_cache saved (%d)" % len(self.cache_dict))
-
-        return True
+        self.last_time  = now
+        self.last_count = new_count
 
 
     def check(self, key, path, part):
@@ -158,7 +167,7 @@ class NoDupe():
 
         return True
 
-    def check_msg(self, msg):
+    def check_message(self, msg):
 
         relpath = self.__get_relpath( msg['relPath'] )
         sumstr  = msg['integrity']['method']+','+msg[ 'integrity' ]['value'].replace('\n','')
@@ -173,15 +182,34 @@ class NoDupe():
         logger.debug("NoDupe calling check( %s, %s, %s )" % ( sumstr, relpath, partstr ) )
         return self.check(sumstr,relpath,partstr)
 
+    def on_messages(self, worklist ):
+
+        new_incoming=[]
+        for m in worklist.incoming:
+            if self.check_message( m ):
+               new_incoming.append(m)
+            else:
+               worklist.rejected.append(m)
+
+        worklist.incoming=new_incoming
+            
+    def on_start(self):
+        self.open()  
+
+    def on_stop(self):
+        self.save()  
+        self.close()  
+
+  
     def __get_relpath(self, path):
-        if self.o.suppress_duplicates_basis == 'name':
+        if self.o.basis == 'name':
             result = path.split('/')[-1]
-        elif self.o.suppress_duplicates_basis == 'path':
+        elif self.o.basis == 'path':
             result = path
-        elif self.o.suppress_duplicates_basis == 'data':
+        elif self.o.basis == 'data':
             result = "data"
         else:
-            raise ValueError("invalid choice for suppress_duplicates_basis valid ones:{}".format(self.o.suppress_duplicates_basis))
+            raise ValueError("invalid choice for NoDupe basis valid ones:{}".format(self.o.basis))
         return result
 
     def clean(self, persist=False, delpath=None):

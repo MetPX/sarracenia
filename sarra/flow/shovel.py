@@ -22,20 +22,20 @@ class Shovel(Flow):
  
      def gather( self ): 
   
-         self.new_worklist=[]
+         self.worklist.incoming=[]
          m = self.consumer.getNewMessage() 
          # raw message has... m.body, m.t
          # FIXME: perhaps if becomes while...
          if m is not None:
-              self.new_worklist.append( m )
+              self.worklist.incoming.append( m )
 
-         #logger.info( 'shovel/gather work_list: %s' % self.new_worklist ) 
+         #logger.info( 'shovel/gather work_list: %s' % self.worklist.incoming ) 
 
          return
 
      def post( self ):
-         #logger.info( 'shovel/post work_list: %s' % self.new_worklist ) 
-         for m in self.new_worklist:
+         #logger.info( 'shovel/post work_list: %s' % self.worklist.incoming ) 
+         for m in self.worklist.incoming:
              # FIXME: outlet = url, outlet=json.
              self.poster.putNewMessage(m)
 
@@ -45,6 +45,10 @@ class Shovel(Flow):
          self.poster.close()
          logger.info( 'shovel/close completed cleanly' )
  
+     def ack( self, mlist ):
+         for m in mlist:
+             self.consumer.ack( m )
+
      #def do( self ):
      #    pass
 

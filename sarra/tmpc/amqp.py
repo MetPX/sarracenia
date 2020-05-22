@@ -30,7 +30,7 @@ import logging
 
 from sarra.sr_util import *
 
-import v2wrapper
+from sarra.plugin import v2wrapper 
 
 from sarra.tmpc import TMPC
 import copy
@@ -254,7 +254,7 @@ class AMQP(TMPC):
                         msg['_deleteOnPost'] = [ 'topic', 'delivery_tag' ]
 
                     else:
-                        msg = sarra.v2wrapper.v02tov03message( 
+                        msg = v2wrapper.v02tov03message( 
                             raw_msg.body, raw_message.headers, raw_msg.delivery_info['routing_key'] )
                 else:
                     msg = None
@@ -273,6 +273,20 @@ class AMQP(TMPC):
 
             logger.info("Sleeping {} seconds ...".format( ebo) )
             time.sleep(ebo)
+
+    def ack( self, m ):
+        """
+           do what you need to acknowledge that processing of a message is done.
+        """
+        if not self.is_subscriber: #build_consumer
+            logger.error("getting from a publisher")
+            return 
+
+        if not 'delivery_tag' in m:
+            logger.error("cannot acknowledge message without a delivery_tag")
+            return 
+
+        self.channel.basic_ack( m['delivery_tag'] )
 
     def putNewMessage(self, body, content_type='application/json', exchange=None ):
         """
@@ -307,7 +321,7 @@ class AMQP(TMPC):
             ttl = "0"   
 
         if topic.startswith('v02'): #unless explicitly otherwise
-            v2m = sarra.v2wrapper.Message(body) 
+            v2m = v2wrapper.Message(body) 
             for k in v2m.headers:
                 if len(v2m.headers[k]) >= amqp_ss_maxlen:
                     logger.error("message header %s too long, dropping" % k )

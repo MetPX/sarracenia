@@ -9,6 +9,8 @@ import time
 import urllib
 import types
 
+from sarra.plugin import Plugin
+
 from sarra.sr_util import nowflt
 
 logger = logging.getLogger( __name__ )
@@ -136,7 +138,7 @@ def v02tov03message( body, headers, topic ):
         return msg
  
 
-class V2Wrapper:
+class V2Wrapper(Plugin):
 
     def __init__(self, o):
         """
@@ -150,21 +152,27 @@ class V2Wrapper:
 
         # FIXME, insert parent fields for v2 plugins to use here.
         self.logger=logger
-        self.logger.error('v2wrapper init done')
+        self.logger.error('v2wrapper init start')
 
         self.user_cache_dir=sarra.config.get_user_cache_dir()
         self.instance = o.no
         self.o = o
-        self.plugins = {}
-        for ep in sarra.config.Config.entry_points:
-             self.plugins[ep] = []
+        self.v2plugins = {}
+        for ep in sarra.config.Config.v2entry_points:
+             self.v2plugins[ep] = []
+        
+        for e in o.v2plugins:
+            logger.info('resolving: %s' % e)
+            for v in o.v2plugins[e]:
+                self.add( e, v )
+ 
+        self.logger.error('v2wrapper init done')
 
 
     def declare_option(self,option):
         logger.info('v2plugin option: %s declared' % option)
 
     def add(self, opname, path):
-
 
         setattr(self,opname,None)
 
@@ -181,9 +189,10 @@ class V2Wrapper:
             return False
 
         logger.debug('installing: %s %s' % ( opname, path ) )
+
         try:
             with open(script) as f:
-                exec(compile(f.read(), script, 'exec'))
+                exec(compile(f.read().replace('self.plugin','self.v2plugin'), script, 'exec'))
         except:
             logger.error("sr_config/execfile 2 failed for option '%s' and plugin '%s'" % (opname, path))
             logger.debug('Exception details: ', exc_info=True)
@@ -194,37 +203,59 @@ class V2Wrapper:
             return False
 
         if opname == 'plugin' :
-            pci = self.plugin.lower()
-            exec( pci + ' = ' + self.plugin + '(self)' )
-            pcv = eval( 'vars('+ self.plugin +')' )
-            for when in sarra.config.Config.entry_points:
+
+            pci = self.v2plugin.lower()
+            exec( pci + ' = ' + self.v2plugin + '(self)' )
+            pcv = eval( 'vars('+ self.v2plugin +')' )
+            for when in sarra.config.Config.v2entry_points:
                 if when in pcv:
-                    logger.debug("registering %s from %s" % ( when, path ) )
+                    logger.debug("v2 registering %s from %s" % ( when, path ) )
                     exec( 'self.' + when + '=' + pci + '.' + when )
-                    eval( 'self.plugins["' + when + '"].append(' + pci + '.' + when + ')' )
+                    eval( 'self.v2plugins["' + when + '"].append(' + pci + '.' + when + ')' )
         else:
             #eval( 'self.' + opname + '_list.append(self.' + opname + ')' )
-            eval( 'self.plugins["' + opname +'"].append( self.' + opname + ')' )
+            eval( 'self.v2plugins["' + opname +'"].append( self.' + opname + ')' )
 
-        # following gives backward compatibility with existing plugins that don't follow new naming convention.
 
         return True
 
+    def on_messages(self,worklist):
 
-    def housekeeping(self):
+        outgoing=[]
+        for m in worklist.incoming:
+            mm = copy.deepcopy(m)
+            if self.v2plugins.run('on_message', mm):
+               outgoing.append(m)
+            else:
+               worklist.rejected.append(m)
+        # set incoming for future steps.
+        worklist.incoming=outgoing
+
+    def on_time(self, time ):
         """
            run plugins for a given entry point.
         """
-        for plugin in self.plugins['on_housekeeping']:
-             plugin(self) 
+        logger.info('v2 run %s' % time )
+        for plugin in self.v2plugins[time]:
+             logger.info('v2 plugin is: %s' % plugin )
+             plugin(self.o)
+
+    def on_housekeeping(self):
+        self.on_time('on_housekeeping')
+
+    def on_start(self):
+        self.on_time('on_start')
+
+    def on_stop(self):
+        self.on_time('on_stop')
 
     def run(self,ep,m):
         """
            run plugins for a given entry point.
         """
         self.msg=Message(m)
-        for plugin in self.plugins[ep]:
+        for plugin in self.v2plugins[ep]:
              ok = plugin(self) 
-
              if not ok: break
 
+        return ok

@@ -11,6 +11,26 @@ logger = logging.getLogger( __name__ )
 """
 1st draft of a v03 plugin method.
 
+worklist given to on_plugins...
+
+    worklist.incoming --> new messages to continue processing
+    worklist.ok       --> successfully processed
+    worklist.rejected --> messages to not be further processed.
+    worklist.retry    --> messages for which processing failed.
+
+
+Initially all messages are placed in incoming.
+if a plugin decides:
+
+- a message is not relevant, it is moved to rejected.
+- all processing has been done, it moves it to ok.
+- an operation failed and it should be retried later, move to retry
+
+if a
+Do not remove from all lists, only move messages between them.
+   it is necessary to put rejected messages in the appropriate worklist
+   so they can be acknowledged as received.
+
 """
 
 entry_points = [ 'do_download', 'do_get', 'do_poll', 'do_put', 'do_send',

@@ -254,7 +254,7 @@ def config_path(subdir,config, mandatory=True, ctype='conf'):
 
 class Config:
 
-   entry_points = [ 'do_download', 'do_get', 'do_poll', 'do_put', 'do_send',
+   v2entry_points = [ 'do_download', 'do_get', 'do_poll', 'do_put', 'do_send',
        'on_message', 'on_data', 'on_file', 'on_heartbeat', 'on_housekeeping', 'on_html_page', 'on_line',  
        'on_part', 'on_post', 'on_report', 'on_start', 'on_stop', 'on_watch', 'plugin' ]
    components =  [ 'audit', 'cpost', 'cpump', 'poll', 'post', 'sarra', 'sender', 'shovel', 'subscribe', 'watch', 'winnow' ]
@@ -307,7 +307,7 @@ class Config:
        self.declared_exchanges = []
        self.env = {}
        self.v2plugins = {}
-       self.v3plugins = []
+       self.plugins = []
        self.exchange = None
        self.filename = None
        self.flatten = '/'
@@ -552,7 +552,7 @@ class Config:
        config file parsing for a v2 plugin.
 
        """
-       if not entryPoint in Config.entry_points:
+       if not entryPoint in Config.v2entry_points:
            logging.error( "undefined entry point: {} skipped".format(entryPoint) )
            return
 
@@ -594,10 +594,10 @@ class Config:
            elif line[0] in [ 'subtopic' ]:
                self._parse_binding( line[1] )
            elif line[0] in [ 'import' ]:
-               self.v3plugins.append( line[1] )
-           elif line[0] in Config.entry_points:
-               if line[1] in self.v3plugins:
-                   self.v3plugins.remove( line[1] )
+               self.plugins.append( line[1] )
+           elif line[0] in Config.v2entry_points:
+               if line[1] in self.plugins:
+                   self.plugins.remove( line[1] )
                self._parse_v2plugin(line[0],line[1])
            elif line[0] in [ 'no-import' ]:
                self._parse_v3unplugin(line[1])

@@ -3,7 +3,6 @@ import copy
 import logging
 import netifaces
 import os
-from sarra.v2wrapper import V2Wrapper
 
 # v3 plugin architecture...
 import sarra.plugin
@@ -11,8 +10,6 @@ import time
 import types
 
 from abc import ABCMeta, abstractmethod
-
-from sarra.nodupe import NoDupe
 
 from sarra.sr_util import nowflt
 
@@ -22,65 +19,99 @@ logger = logging.getLogger( __name__ )
 class Flow:
     __metaclass__ = ABCMeta
     """
-      implement the General Algorithm from the Concepts Guide.
-      just pure program logic all the start, status, stop, log & instance management taken care of elsewhere.
-      
+    Implement the General Algorithm from the Concepts Guide.
+    just pure program logic all the start, status, stop, log & instance management taken care of elsewhere.
       need to know whether to sleep between passes  
       o.sleep - an interval (floating point number of seconds)
       o.housekeeping - 
+
+      A flow processes worklists of messages
+
+      worklist given to plugins...
+
+          worklist.incoming --> new messages to continue processing
+          worklist.ok       --> successfully processed
+          worklist.rejected --> messages to not be further processed.
+          worklist.retry    --> messages for which processing failed.
+
+      Initially all messages are placed in incoming.
+      if a plugin decides:
+      
+      - a message is not relevant, it is moved to rejected.
+      - all processing has been done, it moves it to ok.
+      - an operation failed and it should be retried later, move to retry
+
+    plugins must not remove messages from all worklists, re-classify them.
+    it is necessary to put rejected messages in the appropriate worklist
+    so they can be acknowledged as received.
+
+    filter 
+
+     
     """
   
     def __init__(self,o=None):
 
+       """
+
+         o.sleep
+         o.housekeeping
+         o.vip
+      
+       """
        
        self._stop_requested = False
 
        # override? or merge... hmm...
        if o is not None:
            self.o = o
+           logger.info('dump options;')
+           o.dump()
        else:
            # FIXME: set o.sleep, o.housekeeping
            self.o = types.SimpleNamespace()
            self.o.sleep = 10
            self.o.housekeeping = 30
+           # FIXME: initialize vip 
+           self.o.vip = None
 
-       self.v3plugins = {}
+       self.plugins = {}
+       self.plugins['load'] = []
 
-       self.new_worklist=[]
+       # FIXME: open new worklist
+       self.worklist = types.SimpleNamespace()
+       self.worklist.ok = []
+       self.worklist.incoming = []
+       self.worklist.rejected = []
+
+       #FIXME: load retry from disk?
+       self.worklist.retry = []
 
 
-       # FIXME: open cache, get masks. 
+       # open cache, get masks. 
        if o.suppress_duplicates > 0:
-           logger.info('NoDupe is on' )
-           self.noDupe = NoDupe(o)
-           self.noDupe.open()
+           # prepend...
+           self.plugins['load'] = [ 'sarra.plugin.nodupe.NoDupe' ]
 
-       # FIXME: open new_worklist
-       # FIXME: initialize retry_list
-       # FIXME: initialize vip 
-       self.o.vip = None
 
        # FIXME: open retry
- 
+
+
        # initialize plugins.
        if hasattr( o, 'v2plugins' ):
-           logger.info('plugins: %s' % o.v2plugins )
-           vw = V2Wrapper( self.o )
-           for e in o.v2plugins:
-               logger.info('resolving: %s' % e)
-               for v in o.v2plugins[e]:
-                   vw.add( e, v )
-           self.v2plugins = vw
-           logger.info( 'v2 plugins initialized')
-       
-       if hasattr( o, 'v3plugins'):
-           self._loadV3Plugins(self.o.v3plugins)
+           self.plugins['load'].append( 'sarra.plugin.v2wrapper.V2Wrapper' )
+ 
+       if hasattr( o, 'plugins'):
+           self.plugins['load'].extend( self.o.plugins )
+
+       self._loadPlugins( self.plugins['load'] )
+
 
        logger.info('shovel constructor')
        #self.o.dump()
    
     
-    def _loadV3Plugins(self,plugins_to_load):
+    def _loadPlugins(self, plugins_to_load):
 
         logger.info( 'v3 plugins to load: %s' % ( plugins_to_load ) )
         for c in plugins_to_load: 
@@ -91,18 +122,19 @@ class Flow:
                     fn = getattr( plugin, entry_point )
                     if callable(fn):
                         logger.info( 'v3 registering %s/%s' % (c, entry_point))
-                        if entry_point in self.v3plugins:
-                           self.v3plugins[entry_point].append(fn)
+                        if entry_point in self.plugins:
+                           self.plugins[entry_point].append(fn)
                         else:
-                           self.v3plugins[entry_point] = [ fn ]
+                           self.plugins[entry_point] = [ fn ]
         logger.info( 'v3 plugins initialized')
  
-    def _runV3Plugins(self,entry_point):
+    def _runPlugins(self,entry_point):
 
-        if hasattr(self,'v3plugins') and ( entry_point in self.v3plugins ):
-           for p in self.v3plugins[entry_point]:
-               self.new_worklist = p(self.new_worklist)
-               if len(self.new_worklist) == 0:
+        if hasattr(self,'plugins') and ( entry_point in self.plugins ):
+           for p in self.plugins[entry_point]:
+               logger.info( 'v3 registering running %s/%s' % (p, entry_point))
+               p(self.worklist)
+               if len(self.worklist.incoming) == 0:
                   return
 
 
@@ -134,6 +166,11 @@ class Flow:
         if self.o.sleep > 0:
             last_time = nowflt()
    
+        logger.info(" all v3 plugins: %s" % self.plugins )
+        for p in self.plugins['on_start']:
+            logger.info('on_start... p is %s' % p )
+            p()
+
         while True:
 
            if self._stop_requested:
@@ -142,7 +179,7 @@ class Flow:
 
            if self.has_vip():
                self.gather()
-               if len(self.new_worklist) == 0:
+               if len(self.worklist.incoming) == 0:
                    if (current_sleep < 1):
                        current_sleep *= 2
                else:
@@ -177,13 +214,8 @@ class Flow:
 
         logger.debug('filter - start')
         self.filtered_worklist = []
-        for m in self.new_worklist:
+        for m in self.worklist.incoming:
             url = m['baseUrl'] + os.sep + m['relPath']
-
-            # apply cache, reject.
-            if not self.noDupe.check_msg(m):
-               logger.info("Ignored %s not modified" % str(m)[0:40]+'...' )
-               continue
 
             # apply masks, reject.
             matched=False
@@ -195,6 +227,7 @@ class Flow:
                     if not accepting:
                         if self.o.log_reject:
                             logger.info( "reject: mask=%s strip=%s pattern=%s" % (str(mask), strip, m) ) 
+                            self.ack(m)
                             break
                     # FIXME... missing dir mapping with mirror, strip, etc...
                     m['newDir'] = maskDir
@@ -216,30 +249,22 @@ class Flow:
                     self.filtered_worklist.append(m)
                 elif self.o.log_reject:
                     logger.info( "reject: unmatched pattern=%s" % (url) )
+                    self.ack(m)
                 
-        self.new_worklist=[]
-        for m in self.filtered_worklist:
-            mm =  copy.deepcopy(m)
-            self.v2plugins.run('on_message', mm)
-            #FIXME: figure out how to reconcile changes to message with v3 worklist.
-            self.new_worklist.append(m)
+        # apply on_messages plugins.
+        self._runPlugins('on_messages')
 
-        self._runV3Plugins('on_messages')
-        # apply on_message plugins.
+        self.ack(self.worklist.rejected)
+        self.worklist.rejected=[]
+
         logger.debug('filter - done')
 
     @abstractmethod
     def housekeeping(self):
         logger.info('housekeeping - started')
 
-        if o.suppress_duplicates > 0:
-            self.noDupe.on_housekeeping()
-
-        self.v2plugins.housekeeping()
-
-        for p in self.v3plugins['on_housekeeping']:
+        for p in self.plugins['on_housekeeping']:
             p()
-
 
         logger.info('housekeeping - done')
 
@@ -258,6 +283,11 @@ class Flow:
         logger.info('post - unimplemented')
    
     @abstractmethod 
+    def ack( self, m ):
+        # acknowledge_messages
+        logger.info('ack - unimplemented')
+
+    @abstractmethod 
     def report( self ):
         # post reports
         # apply on_report plugins
@@ -266,6 +296,10 @@ class Flow:
     @abstractmethod 
     def close( self ):
         logger.info('flow closing')
+
+        for p in self.plugins['on_stop']:
+            p()
+
         if self.o.suppress_duplicates > 0:
             self.noDupe.save()
             self.noDupe.close()
