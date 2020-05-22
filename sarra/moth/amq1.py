@@ -1,17 +1,17 @@
 
-from sarra.tmpc import TMPC
+from sarra.moth import Moth
 
 import logging
  
 logger = logging.getLogger( __name__ )
 
-class AMQ1(TMPC):
+class AMQ1(Moth):
 
     def __init__( self, broker ):
         """
 
         """
-        logger.error("__init__ AMQP 1.0 TMPC using qpid-proton library: not implemented")
+        logger.error("__init__ AMQP 1.0 Moth using qpid-proton library: not implemented")
 
     @classmethod
     def assimilate(cls,obj):

@@ -132,12 +132,19 @@ add/remove/enable/disable/edit done.
 
 added list, show, and built prototype shovel... required
 a instance (sets state files and logs) and then calls flow... 
+flow/run() is visibly  the general algorithm,
 shovel is a sub-class of flow.
 
 Got a skeleton for v2 plugins working (v2wrapper.py)
 implemented import-based and group oriented v3 plugin framework. ( #213 )
 
 cache (no called noDupe) is basically working.
+
+re-wrote how the v3 plugins work to use worklists, and then re-cast
+cache and v2plugins as plugins themselves.
+
+renamed message queue abstract class from tmpc to moth
+(what does sarracenia eat?)
 
 
 

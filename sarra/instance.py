@@ -4,8 +4,8 @@ import copy
 import logging
 import logging.handlers
 import os
-from sarra.tmpc import TMPC
-from sarra.tmpc.amqp import AMQP
+from sarra.moth import Moth
+from sarra.moth.amqp import AMQP
 import signal
 import sys
 import time
@@ -163,7 +163,7 @@ class instance:
             logger.info('auditing...')
             self.running_instance = Audit()
         else:
-            cfg=sarra.config.one_config( component, config, TMPC.default_props() )
+            cfg=sarra.config.one_config( component, config, Moth.default_props() )
             self.running_instance = Shovel( cfg )                
 
         self.running_instance.run()

@@ -32,12 +32,12 @@ from sarra.sr_util import *
 
 from sarra.plugin import v2wrapper 
 
-from sarra.tmpc import TMPC
+from sarra.moth import Moth
 import copy
 
 logger = logging.getLogger( __name__ )
 
-class AMQP(TMPC):
+class AMQP(Moth):
 
     # length of an AMQP short string (used for headers and many properties)
     amqp_ss_maxlen = 255  
@@ -260,7 +260,7 @@ class AMQP(TMPC):
                     msg = None
                 return msg 
             except:
-                logger.warning("tmpc.amqp.getNewMessage: failed %s: %s" % (queuename, err))
+                logger.warning("moth.amqp.getNewMessage: failed %s: %s" % (queuename, err))
                 logger.debug('Exception details: ', exc_info=True)
 
             if not self.props['message_strategy']['stubborn']:
@@ -346,7 +346,7 @@ class AMQP(TMPC):
                 return # no failure == success :-)
 
             except Exception as err:
-                logger.warning("tmpc.amqp.putNewMessage: failed %s: %s" % (exchange, err))
+                logger.warning("moth.amqp.putNewMessage: failed %s: %s" % (exchange, err))
                 logger.debug('Exception details: ', exc_info=True)
 
             if not self.props['message_strategy']['stubborn']:

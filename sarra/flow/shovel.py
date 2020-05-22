@@ -1,5 +1,5 @@
 
-from sarra.tmpc import TMPC
+from sarra.moth import Moth
 from sarra.flow import Flow
 import logging
 
@@ -13,10 +13,10 @@ class Shovel(Flow):
 
          if hasattr(o,'broker'):
              od = o.dictify()
-             self.consumer = TMPC( o.broker, od, is_subscriber=True )
+             self.consumer = Moth( o.broker, od, is_subscriber=True )
 
          if hasattr(o,'post_broker'):
-             self.poster = TMPC( o.post_broker, {
+             self.poster = Moth( o.post_broker, {
                   'broker':o.post_broker, 'exchange':o.post_exchange }, 
                   is_subscriber=False )
  

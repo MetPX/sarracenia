@@ -41,7 +41,7 @@ import sys
 import time
 
 import sarra.config
-import sarra.tmpc
+import sarra.moth
 
 logger = logging.getLogger( __name__ )
 
@@ -896,7 +896,7 @@ class sr_GlobalState:
             logging.info( 'looking at %s/%s ' % ( c, cfg ) )
             o = self.configs[c][cfg]['options']
             if hasattr(o, 'resolved_exchanges') and o.resolved_exchanges is not None :
-                     xdc = sarra.tmpc.TMPC( o.post_broker, { 
+                     xdc = sarra.moth.Moth( o.post_broker, { 
                                'broker':o.post_broker, 
                                'exchange':o.resolved_exchanges }, is_subscriber=False )
                      xdc.close() 
@@ -914,7 +914,7 @@ class sr_GlobalState:
             od = o.dictify()
             if hasattr(o, 'resolved_qname' ):
                  od['queue_name'] = o.resolved_qname
-                 qdc = sarra.tmpc.TMPC( o.broker, od )
+                 qdc = sarra.moth.Moth( o.broker, od )
                  qdc.close()
 
     def disable(self):
@@ -1026,7 +1026,7 @@ class sr_GlobalState:
 
             if hasattr(o,'resolved_qname'):
                 #print('deleting: %s is: %s @ %s' % (f, o.resolved_qname, o.broker.hostname ))
-                qdc = sarra.tmpc.TMPC( o.broker, { 'declare':False, 'bind':False, 
+                qdc = sarra.moth.Moth( o.broker, { 'declare':False, 'bind':False, 
                          'broker':o.broker, 'queue_name':o.resolved_qname
                     }, get=True )
                 qdc.getCleanUp() 
@@ -1044,7 +1044,7 @@ class sr_GlobalState:
                         xx.remove(qd[1])
                         if len(xx) < 1:
                            print( "no more queues, removing exchange %s" % x )
-                           qdc = sarra.tmpc.TMPC( o.post_broker, { 
+                           qdc = sarra.moth.Moth( o.post_broker, { 
                                  'declare':False, 'exchange':x, 
                                  'broker': self.brokers[h]['admin'], }, 
                                  get=False )

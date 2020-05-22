@@ -1,6 +1,6 @@
 
 """
-  TMPC ... a Topic-message Multi-Protocol client library...
+  Moth ... Messages Organized by Topic Headers
 
   A multi-protocol library for use by hierarchical message passing implementations,
   (messages which have a 'topic' header that is used for routing by brokers.)
@@ -31,12 +31,12 @@
   duration properties, from sr_util.
   
   usage:
-     c= TMPC( broker, True, '5m', { 'batch':1 } )
+     c= Moth( broker, True, '5m', { 'batch':1 } )
 
      c.getNewMessage()()
        - if there is a new message, from a publisher, return it, otherwise return None.
        
-     p=TMPC( broker, True, '5m', { 'batch':1 } )
+     p=Moth( broker, True, '5m', { 'batch':1 } )
      p.post_new_message()
 
      p.close()
@@ -49,7 +49,7 @@ import logging
 
 logger = logging.getLogger( __name__ )
 
-class TMPC():
+class Moth():
     
     __default_properties = { 
            'accept_unmatch':True,
@@ -135,7 +135,7 @@ class TMPC():
        """
        self.is_subscriber = is_subscriber
 
-       self.props = copy.deepcopy(TMPC.__default_properties)
+       self.props = copy.deepcopy(Moth.__default_properties)
        self.props_args = props
        self.broker = broker
 
@@ -144,7 +144,7 @@ class TMPC():
          https://stackoverflow.com/questions/18020074/convert-a-baseclass-object-into-a-subclass-object-idiomatically
          assmimilate in the vein of the Borg: "You will be assimilated." Turns the caller into child class.
        """
-       for sc in TMPC.__subclasses__() :
+       for sc in Moth.__subclasses__() :
             purl = sc.url_proto(self)
             if self.broker.scheme[0:4] == purl :
                 sc.__init__(self,broker)
@@ -158,7 +158,7 @@ class TMPC():
         get default properties to override, used by client for validation. 
 
         """
-        return TMPC.__default_properties
+        return Moth.__default_properties
 
     def url_proto(self):
         return "undefined"
@@ -209,16 +209,16 @@ class TMPC():
 import importlib.util
 
 if importlib.util.find_spec("amqp"):
-    import sarra.tmpc.amqp
+    import sarra.moth.amqp
 
 if importlib.util.find_spec("paho"):
-    import sarra.tmpc.mqtt
+    import sarra.moth.mqtt
 
 if importlib.util.find_spec("proton"):
-    import sarra.tmpc.amq1
+    import sarra.moth.amq1
 
 if importlib.util.find_spec("paho"):
-    import sarra.tmpc.pika
+    import sarra.moth.pika
 
 
 
