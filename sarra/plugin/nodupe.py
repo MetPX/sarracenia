@@ -61,6 +61,14 @@ class NoDupe(Plugin):
 
         self.o        = options
 
+        if hasattr(options,'loglevel'):
+            logger.setLevel( getattr(logging, options.loglevel.upper()  ) )
+        else:
+            logger.setLevel( logging.INFO )
+
+        if hasattr(options,'suppress_duplicates'):
+            self.o.time_to_live = options.suppress_duplicates
+
         if hasattr(options,'suppress_duplicates_basis'):
             self.o.basis = options.suppress_duplicates_basis
 
@@ -235,7 +243,7 @@ class NoDupe(Plugin):
                 # expired or keep
                 t   = kdict[value]
                 ttl = now - t
-                if ttl > self.o.suppress_duplicates : continue
+                if ttl > self.o.time_to_live : continue
 
                 parts = value.split('*')
                 path  = parts[0]
@@ -335,7 +343,7 @@ class NoDupe(Plugin):
                   # skip expired entry
 
                   ttl   = now - ctime
-                  if ttl > self.o.suppress_duplicates : continue
+                  if ttl > self.o.time_to_live : continue
 
               except Exception as err:
                   err_msg_fmt = "load corrupted: lineno={}, cache_file={}, err={}"
@@ -387,7 +395,7 @@ class NoDupe(Plugin):
         now = nowflt()
 
         elapse = now - self.last_expire
-        if elapse > self.o.suppress_duplicates :
+        if elapse > self.o.time_to_live :
            self.last_expire = now
            self.clean()
 

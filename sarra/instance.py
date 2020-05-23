@@ -51,7 +51,7 @@ class instance:
     
         """
         logger = logging.getLogger()
-        logging.basicConfig(format='%(asctime)s [%(levelname)s] %(message)s', level=logging.DEBUG)
+        logging.basicConfig(format='%(asctime)s [%(levelname)s] %(name)s %(message)s', level=logging.DEBUG)
         logger.setLevel( logging.INFO )
          
         # FIXME: honour SR_ variable for moving preferences...
@@ -75,9 +75,7 @@ class instance:
         if cfg_preparse.debug:
              loglevel = logging.DEBUG
         elif hasattr(cfg_preparse,'loglevel'):
-            llk = { 'none': logging.NOTSET, 'debug':logging.debug, 'info':logging.info, 'warning': logging.WARNING, 'error':logging.ERROR, 'critical':logging.CRITICAL }
-            ll = cfg_preparse.loglevel.lower()
-            loglevel =  llk[ll]
+            loglevel =  getattr(logging, cfg_preparse.loglevel.upper() )
         else:
             loglevel = logging.INFO
          
@@ -163,10 +161,11 @@ class instance:
             logger.info('auditing...')
             self.running_instance = Audit()
         else:
-            cfg=sarra.config.one_config( component, config, Moth.default_props() )
+            cfg=sarra.config.one_config( component, config )
             self.running_instance = Shovel( cfg )                
 
         self.running_instance.run()
+
         # run should never return...
         sys.exit(0)  
      

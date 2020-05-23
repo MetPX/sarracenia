@@ -159,4 +159,32 @@ FIXME are things left to the side that need to be seen to.
 
 * new command 'sr show' needs to be documented. 
 
+* scopable properties for internal classes, like they exist for plugins.
+
+Incompatibilities
+-----------------
+
+There are not supposed to be any.  This is a running list of things to fix or document.
+breaking changes:
+
+* loglevel none -> loglevel notset (now passing loglevel setting directly to python logging module, none isn't defined.)
+
+
+
+Features
+--------
+
+* sarra.plugin API is now vanilla python with no magic settings. just standard classes, using standard import mechanism.
+  debugging should be much simpler now as the interpreter will provide much better error messages on startup.
+
+* properties/options for classes are now hierarchical, so can set debug to specific classes within app.
+
+* sarra.moth class abstracts away AMQP, so messaging protocol becomes pluggable.
+
+* use the sarra. prefix (already present) so remove obsolete sr_ prefix on modules.
+
+* API access to flows.
+
+* sr ability to select multiple components and configurations to operate on.
+
 

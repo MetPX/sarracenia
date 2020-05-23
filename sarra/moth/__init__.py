@@ -49,9 +49,7 @@ import logging
 
 logger = logging.getLogger( __name__ )
 
-class Moth():
-    
-    __default_properties = { 
+default_options = { 
            'accept_unmatch':True,
            'batch': 100, 
            'bindings':None, 
@@ -59,10 +57,15 @@ class Moth():
            'inline': False,
            'inline_encoding': 'guess',
            'inline_max': 4096,
+           'loglevel': 'info',
            'message_strategy': { 
                  'reset': True, 'stubborn' : True, 'failure_duration':'5m' 
            }
-    }
+}
+
+
+class Moth():
+    
 
     def __init__( self, broker, props=None, is_subscriber=True ):
        """
@@ -133,13 +136,32 @@ class Moth():
        
 
        """
-       self.is_subscriber = is_subscriber
-
-       self.props = copy.deepcopy(Moth.__default_properties)
-       self.props_args = props
-       self.broker = broker
 
        protos=[]
+       self.is_subscriber = is_subscriber
+
+       if props is not None:
+           self.props = copy.deepcopy(props)
+
+       self.broker = broker
+
+       me='sarra.moth.Moth'
+
+       # apply settings from props.
+       if 'settings' in self.props:
+           logger.error('self.props.settings' % ( self.props['settings'] ) ) 
+           if me in self.props['settings']:
+               logger.error('FIXME: self.props[\'settings\'][%s] = %s' % ( me, self.props['settings'][me] ) ) 
+               for s in self.props['settings'][me]:
+                   self.props[s] = self.props['settings'][me][s]
+           else:
+              logger.error('no settings %s settings' % me )
+       else:
+           logger.error('no settings' )
+
+       logger.setLevel( getattr(logging, self.props['loglevel'].upper()  ))
+       logger.error ( '%s loglevel set to: %s' % (me, self.props['loglevel'])  )
+
        """ relevant:
          https://stackoverflow.com/questions/18020074/convert-a-baseclass-object-into-a-subclass-object-idiomatically
          assmimilate in the vein of the Borg: "You will be assimilated." Turns the caller into child class.
@@ -153,12 +175,13 @@ class Moth():
 
        logger.critical( "unsupported broker URL. Pick one of: %s" % protos )
 
-    def default_props():
+    @property
+    def default_options():
         """
         get default properties to override, used by client for validation. 
 
         """
-        return Moth.__default_properties
+        return Moth.__default_options
 
     def url_proto(self):
         return "undefined"

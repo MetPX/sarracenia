@@ -5,6 +5,9 @@ import logging
 
 logger = logging.getLogger( '__name__' )
 
+default_options = { 'download' : False }
+
+
 class Shovel(Flow):
 
      def __init__( self, o ):
@@ -17,8 +20,11 @@ class Shovel(Flow):
 
          if hasattr(o,'post_broker'):
              self.poster = Moth( o.post_broker, {
-                  'broker':o.post_broker, 'exchange':o.post_exchange }, 
-                  is_subscriber=False )
+                  'broker':o.post_broker, 'exchange':o.post_exchange,
+                  'loglevel':o.loglevel, 'message_strategy':o.message_strategy,
+                  'vhost':'/', 'declare': True, 'auto_delete' : False,
+                  'durable':o.durable, 
+             }, is_subscriber=False )
  
      def gather( self ): 
   

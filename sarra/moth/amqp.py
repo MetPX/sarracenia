@@ -37,20 +37,18 @@ import copy
 
 logger = logging.getLogger( __name__ )
 
+default_options = { 'queue_name':None, 
+               'exchange': None, 'topic_prefix':None, 'subtopic' : None,  
+               'durable':True, 'expire': '5m', 'message_ttl':0, 
+               'loglevel':'warning',
+               'prefetch':25, 'auto_delete':False, 'vhost':'/',
+               'reset':False, 'declare':True, 'bind':True, 
+}
+
 class AMQP(Moth):
 
     # length of an AMQP short string (used for headers and many properties)
     amqp_ss_maxlen = 255  
-
-    __default_properties = { 'queue_name':None, 
-               'exchange': None, 'topic_prefix':None, 'subtopic' : None,  
-               'durable':True, 'expire': '5m', 'message_ttl':0, 
-               'prefetch':25, 'auto_delete':False, 'vhost':'/',
-               'reset':False, 'declare':True, 'bind':True, 
-    }
-
-    def default_props():
-       return AMQP.__default_properties
 
     def __init__( self, broker ):
         """
@@ -59,13 +57,18 @@ class AMQP(Moth):
         """
 
         AMQP.assimilate(self)
-        self.props.update(copy.deepcopy(AMQP.__default_properties))
 
         self.first_setup=True
 
-        if self.props_args:
-            self.props.update(copy.deepcopy(self.props_args)) 
+        me='sarra.moth.amqp.AMQP'
 
+        if ( 'settings' in self.props ) and ( me in self.props['settings'] ):
+            logger.error('props[%s] = %s ' % ( me, self.props['settings'][me] ) )
+            for s in self.props['settings'][me]:
+                self.props[s] = self.props['settings'][me][s]
+
+        logger.setLevel( getattr(logging, self.props['loglevel'].upper()  ) )
+        logger.error( '%s loglevel set to: %s ' % ( me, self.props['loglevel'] ) )
         if self.is_subscriber: #build_consumer
            self.__getSetup()
            return

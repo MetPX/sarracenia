@@ -15,6 +15,11 @@ from sarra.sr_util import nowflt
 
 logger = logging.getLogger( __name__ )
 
+default_options = {  
+         'sleep' : 0.1,   
+           'vip' : None,  
+  'housekeeping' : 30     
+}
 
 class Flow:
     __metaclass__ = ABCMeta
@@ -54,10 +59,6 @@ class Flow:
 
        """
 
-         o.sleep
-         o.housekeeping
-         o.vip
-      
        """
        
        self._stop_requested = False
@@ -138,6 +139,7 @@ class Flow:
 
     def _runPluginsTime(self,entry_point):
         for p in self.plugins[entry_point]:
+            logger.error('p=%s' % p )
             p()
     
 
@@ -176,6 +178,7 @@ class Flow:
    
         #logger.info(" all v3 plugins: %s" % self.plugins )
         self._runPluginsTime('on_start')
+        spamming=True
 
         while True:
 
@@ -185,28 +188,51 @@ class Flow:
 
            if self.has_vip():
                self.gather()
-               if len(self.worklist.incoming) == 0:
-                   if (current_sleep < 1):
-                       current_sleep *= 2
+               logger.info( '0 gathered incoming: %d, ok: %d, rejected: %d, retry: %d' % ( 
+                    len(self.worklist.incoming), len(self.worklist.ok), 
+                    len(self.worklist.rejected), len(self.worklist.retry)) )
+
+               if ( len(self.worklist.incoming) == 0 ):
+                   spamming=True
                else:
                    current_sleep = self.o.sleep
-                   self.filter()
 
-                   self.ack(self.worklist.ok)
-                   self.worklist.ok=[]
-                   self.ack(self.worklist.rejected)
-                   self.worklist.rejected=[]
+               self.filter()
 
-                   self.do()
-                   self.post()
+               logger.info( '1 filtered incoming: %d, ok: %d, rejected: %d, retry: %d' % ( 
+                   len(self.worklist.incoming), len(self.worklist.ok), 
+                   len(self.worklist.rejected), len(self.worklist.retry)) )
 
-                   self.ack(self.worklist.ok)
-                   self.worklist.ok=[]
-                   self.ack(self.worklist.rejected)
-                   self.worklist.rejected=[]
+               self.ack(self.worklist.ok)
+               self.worklist.ok=[]
+               self.ack(self.worklist.rejected)
+               self.worklist.rejected=[]
 
-                   self.report()
+               logger.info( '2 filter-acks incoming: %d, ok: %d, rejected: %d, retry: %d' % ( 
+                   len(self.worklist.incoming), len(self.worklist.ok), 
+                   len(self.worklist.rejected), len(self.worklist.retry)) )
+
+               self.do()
+               logger.info( '3 do incoming: %d, ok: %d, rejected: %d, retry: %d' % ( 
+                   len(self.worklist.incoming), len(self.worklist.ok), 
+                   len(self.worklist.rejected), len(self.worklist.retry)) )
+
+               self.post()
+
+               self.ack(self.worklist.ok)
+               self.worklist.ok=[]
+               self.ack(self.worklist.rejected)
+               self.worklist.rejected=[]
+
+               logger.info( '4 incoming: %d, ok: %d, rejected: %d, retry: %d' % ( 
+                   len(self.worklist.incoming), len(self.worklist.ok), 
+                   len(self.worklist.rejected), len(self.worklist.retry)) )
+
+               self.report()
          
+           if spamming and (current_sleep < 5):
+                current_sleep *= 2
+
            now = nowflt()
            if now > next_housekeeping:
                logger.info('on_housekeeping')

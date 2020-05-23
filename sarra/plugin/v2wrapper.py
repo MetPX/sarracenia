@@ -36,6 +36,7 @@ class Message:
         self.urlstr= self.baseurl + self.relpath
         self.url = urllib.parse.urlparse(self.urlstr)
 
+
         self.notice=self.pubtime + ' ' + h["baseUrl" ] + ' ' + h["relPath"].replace( ' ','%20').replace('#','%23')
         del h["pubTime"]
         del h["baseUrl"]
@@ -150,6 +151,11 @@ class V2Wrapper(Plugin):
 
         """
         global logger
+ 
+        if hasattr(o,'loglevel'):
+            logger.setLevel( getattr(logging, o.loglevel.upper()  ) )
+        else:
+            logger.setLevel( logging.INFO )
 
         # FIXME, insert parent fields for v2 plugins to use here.
         self.logger=logger
@@ -167,6 +173,10 @@ class V2Wrapper(Plugin):
             for v in o.v2plugins[e]:
                 self.add( e, v )
  
+        # backward compat...
+        self.o.user_cache_dir = self.o.cfg_run_dir
+        self.o.instance = self.o.no
+
         self.logger.error('v2wrapper init done')
 
 
@@ -199,22 +209,36 @@ class V2Wrapper(Plugin):
             logger.debug('Exception details: ', exc_info=True)
             return False
 
-        if getattr(self,opname) is None:
-            logger.error("%s plugin %s incorrect: does not set self.%s" % (opname, path, opname ))
-            return False
-
         if opname == 'plugin' :
+            if getattr(self,'v2plugin') is None:
+                logger.error("%s plugin %s incorrect: does not set self.%s" % ('v2plugin', path, 'v2plugin' ))
+                return False
 
             pci = self.v2plugin.lower()
-            exec( pci + ' = ' + self.v2plugin + '(self)' )
+            s = pci + ' = ' + self.v2plugin + '(self)' 
+            logger.error('execing "%s"' % s )
+            exec( pci + ' = ' + self.v2plugin + '(self)'  )
+            s = 'vars('+ self.v2plugin +')'
+            logger.error('eval "%s"' % s )
             pcv = eval( 'vars('+ self.v2plugin +')' )
             for when in sarra.config.Config.v2entry_points:
                 if when in pcv:
                     logger.debug("v2 registering %s from %s" % ( when, path ) )
-                    exec( 'self.' + when + '=' + pci + '.' + when )
+                
+                    # 2020/05/22. I think the commented exec can be removed.
+                    #FIXME: this breaks things horrible in v3. I do not see the usefulness even in v2.
+                    #       everything is done with the lists, so value of setting individual value is nil.
+                    #      self.on_start... vs.   
+                    #       self.v2plugins['on_start'].append( thing. )
+                    #exec( 'self.' + when + '=' + pci + '.' + when )
                     eval( 'self.v2plugins["' + when + '"].append(' + pci + '.' + when + ')' )
         else:
+            if getattr(self,opname) is None:
+                logger.error("%s plugin %s incorrect: does not set self.%s" % (opname, path, opname ))
+                return False
+
             #eval( 'self.' + opname + '_list.append(self.' + opname + ')' )
+            logger.error( 'eval: self.v2plugins["' + opname +'"].append( self.' + opname + ')' )
             eval( 'self.v2plugins["' + opname +'"].append( self.' + opname + ')' )
 
 
@@ -255,6 +279,7 @@ class V2Wrapper(Plugin):
            run plugins for a given entry point.
         """
         self.msg=Message(m)
+
         ok=True
         for plugin in self.v2plugins[ep]:
              ok = plugin(self) 

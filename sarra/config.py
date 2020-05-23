@@ -28,6 +28,14 @@ from sarra.sr_util import *
 from sarra.sr_credentials  import *
 
 
+import sarra.flow
+import sarra.flow.shovel
+import sarra.moth
+import sarra.moth.amqp
+
+
+
+
 """
    re-write of configuration parser.
    
@@ -326,6 +334,7 @@ class Config:
        self.post_exchanges = []
        self.pstrip = False
        self.randid = "%04x" % random.randint(0,65536)
+       self.settings = {}
        self.strip = 0
        self.tls_rigour = 'normal'
        self.topic_prefix = 'v02.post'
@@ -387,7 +396,7 @@ class Config:
 
        if word is None:
            return word
-       elif type(word) in [ bool, int ]:
+       elif type(word) in [ bool, int, float ]:
            return word
        elif not '$' in word:
            return word
@@ -566,11 +575,38 @@ class Config:
        if words[0] in  [ 'env', 'envvar', 'var', 'value' ]:
            name, value = words[1].split('=')
            self.env[name] = value
+       elif words[0] in [ 'option', 'o' ]:
+           self._parse_option(words[1],words[2:])
        elif words[0] in [ 'source' , 'subscriber', 'subscribe' ]:
            self.users[words[1]] = words[0] 
        elif words[0] in [ 'exchange' ]:
            self.declared_exchanges.append( words[1] ) 
 
+   def _parse_setting(self, opt, value ):
+       """
+          v3 plugin accept options for specific modules.
+    
+          parsed from:
+          set sarra.plugins.log.msg.Log.level debug
+
+          example:   
+          opt= sarra.plugins.log.msg.Log.level  value = debug
+
+          results in:
+          self.settings[ sarra.plugins.log.msg.Log ][level] = debug
+
+          options should be fed to plugin class on instantiation.
+          stripped of class... 
+               options = { 'level' : 'debug' }
+    
+
+       """
+       opt_class = '.'.join(opt.split('.')[:-1])
+       opt_var   = opt.split('.')[-1]
+       if opt_class not in self.settings:
+          self.settings[opt_class] = {}
+
+       self.settings[opt_class][opt_var] = ' '.join(value) 
 
    def parse_file(self, cfg):
        """ add settings in file to self
@@ -595,6 +631,8 @@ class Config:
                self._parse_binding( line[1] )
            elif line[0] in [ 'import' ]:
                self.plugins.append( line[1] )
+           elif line[0] in [ 'set', 'setting', 's' ]:
+               self._parse_setting(line[1], line[2:])
            elif line[0] in Config.v2entry_points:
                if line[1] in self.plugins:
                    self.plugins.remove( line[1] )
@@ -659,9 +697,11 @@ class Config:
 
           if not os.path.isdir( os.path.dirname(queuefile) ):
               pathlib.Path(os.path.dirname(queuefile)).mkdir(parents=True, exist_ok=True)
-          f=open( queuefile, 'w' )
-          f.write( self.queue_name )
-          f.close()
+
+          if self.queue_name is not None:
+              f=open( queuefile, 'w' )
+              f.write( self.queue_name )
+              f.close()
 
 
        if self.post_broker is not None:
@@ -756,7 +796,7 @@ class Config:
         #parser.add_argument('--lag_drop', type=int, help='in seconds, drop messages older than that')
         
         # the web server address for the source of the locally published tree.
-        parser.add_argument('--loglevel', choices=[ 'none', 'debug', 'info', 'warning', 'error' ], help='encode payload in base64 (for binary) or text (utf-8)')
+        parser.add_argument('--loglevel', choices=[ 'notset', 'debug', 'info', 'warning', 'error', 'critical' ], help='encode payload in base64 (for binary) or text (utf-8)')
         parser.add_argument('--no', type=int, help='instance number of this process')
         parser.add_argument('--queue_name', nargs='?', help='name of AMQP consumer queue to create')
         parser.add_argument('--post_broker', nargs='?', help='broker to post downloaded files to')
@@ -781,9 +821,26 @@ class Config:
         self.merge(args)
 
 
+def default_config( component ):
+
+    cfg = Config()
+
+    cfg.override(  { 'program_name':component, 'directory': os.getcwd(), 'accept_unmatched':True } )
+    cfg.override( sarra.moth.default_options )
+    cfg.override( sarra.moth.amqp.default_options )
+
+    if component in [ 'shovel' ]:
+        cfg.override(  sarra.flow.default_options )
+        cfg.override(  sarra.flow.shovel.default_options )
+
+    for g in [ "admin.conf", "default.conf" ]:
+        if os.path.exists( get_user_config_dir() + os.sep + g ):
+           cfg.parse_file( get_user_config_dir() + os.sep + g )
+
+    return cfg
 
 
-def one_config( component, config, overrides=None ):
+def one_config( component, config ):
 
     """
       single call return a fully parsed single configuration for a single component to run.
@@ -799,19 +856,11 @@ def one_config( component, config, overrides=None ):
       appdir_stuff can be to override file locations for testing during development.
 
     """
-    default_cfg_dir = get_user_config_dir()
-    default_cfg = Config( parent=None )
-
-    if overrides:
-        default_cfg.override( overrides )
+    default_cfg = default_config( component )
 
     store_pwd=os.getcwd()
-    default_cfg.override(  { 'program_name':component, 
-          'configurations': [ config ], 
-          'directory': store_pwd, 
-          'accept_unmatched':True } )
 
-    os.chdir( default_cfg_dir )
+    os.chdir( get_user_config_dir() )
 
     for g in [ "admin.conf", "default.conf" ]:
         if os.path.exists( g ):
@@ -829,8 +878,7 @@ def one_config( component, config, overrides=None ):
     cfg.parse_file(fname)
 
     os.chdir(store_pwd)
-    # FIXME... overrides with defaults, instead of only if non-default specified.
-    #    unclear how to combine with config file.
+
     cfg.parse_args()
 
     cfg.fill_missing_options(component,config)

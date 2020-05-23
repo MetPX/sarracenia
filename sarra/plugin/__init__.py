@@ -1,3 +1,13 @@
+#!/usr/bin/env python3
+
+#
+# This file is part of sarracenia.
+# The sarracenia suite is Free and is proudly provided by the Government of Canada
+# Copyright (C) Her Majesty The Queen in Right of Canada, Shared Services Canada, 2020
+#
+
+
+import copy
 import importlib
 import logging
 
@@ -10,6 +20,19 @@ logger = logging.getLogger( __name__ )
 
 """
 1st draft of a v03 plugin method.
+
+__init__ accepts options as an argument.
+
+options is a dictionary of settings, used to override default behaviour
+
+a setting is declared:
+
+set sarra.plugin.msg.log.Log.level debug
+
+the plugin should get the setting:
+
+    options.level = 'debug'
+
 
 worklist given to on_plugins...
 
@@ -48,6 +71,12 @@ class Plugin:
     @abstractmethod
     def __init__(self, options):
         self.o = options
+
+        if hasattr(options,'loglevel'):
+            logger.setLevel( getattr(logging, options.loglevel.upper()  ) )
+        else:
+            logger.setLevel( logging.INFO )
+
         logger.info( 'intializing %s' % self.name )
         pass
 
@@ -137,6 +166,15 @@ def load_library(factory_path,options):
     module = importlib.import_module(packagename)
     class_ = getattr(module, classname)
 
-    plugin = class_(options)
+    if hasattr(options,'settings'):
+        opt = copy.deepcopy(options)
+        # strip off the class prefix.
+        if factory_path in options.settings:
+            for s in options.settings[factory_path]:
+                setattr(opt,s,options.settings[factory_path][s])
+    else:
+        opt=options
+
+    plugin = class_(opt)
     return plugin
 
