@@ -165,6 +165,13 @@ class Flow:
         logger.info('flow closing')
         self._runPluginsTime('on_stop')
 
+    def _log_incoming(self,desc):
+        logger.debug( '%s incoming: %d, ok: %d, rejected: %d, retry: %d' % ( 
+                    desc,
+                    len(self.worklist.incoming), len(self.worklist.ok), 
+                    len(self.worklist.rejected), len(self.worklist.retry)) )
+
+
     def run(self):
         """
           check if stop_requested once in a while, but never return otherwise.
@@ -188,9 +195,7 @@ class Flow:
 
            if self.has_vip():
                self.gather()
-               logger.info( '0 gathered incoming: %d, ok: %d, rejected: %d, retry: %d' % ( 
-                    len(self.worklist.incoming), len(self.worklist.ok), 
-                    len(self.worklist.rejected), len(self.worklist.retry)) )
+               self._log_incoming( 'A gathered' )
 
                if ( len(self.worklist.incoming) == 0 ):
                    spamming=True
@@ -199,23 +204,18 @@ class Flow:
 
                self.filter()
 
-               logger.info( '1 filtered incoming: %d, ok: %d, rejected: %d, retry: %d' % ( 
-                   len(self.worklist.incoming), len(self.worklist.ok), 
-                   len(self.worklist.rejected), len(self.worklist.retry)) )
+               self._log_incoming( 'B filtered' )
 
                self.ack(self.worklist.ok)
                self.worklist.ok=[]
                self.ack(self.worklist.rejected)
                self.worklist.rejected=[]
 
-               logger.info( '2 filter-acks incoming: %d, ok: %d, rejected: %d, retry: %d' % ( 
-                   len(self.worklist.incoming), len(self.worklist.ok), 
-                   len(self.worklist.rejected), len(self.worklist.retry)) )
+               self._log_incoming( 'C filter-acks' )
 
                self.do()
-               logger.info( '3 do incoming: %d, ok: %d, rejected: %d, retry: %d' % ( 
-                   len(self.worklist.incoming), len(self.worklist.ok), 
-                   len(self.worklist.rejected), len(self.worklist.retry)) )
+
+               self._log_incoming( 'D do' )
 
                self.post()
 
@@ -224,9 +224,7 @@ class Flow:
                self.ack(self.worklist.rejected)
                self.worklist.rejected=[]
 
-               logger.info( '4 incoming: %d, ok: %d, rejected: %d, retry: %d' % ( 
-                   len(self.worklist.incoming), len(self.worklist.ok), 
-                   len(self.worklist.rejected), len(self.worklist.retry)) )
+               self._log_incoming( 'E incoming' )
 
                self.report()
          

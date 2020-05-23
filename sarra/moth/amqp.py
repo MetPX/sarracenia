@@ -40,10 +40,28 @@ logger = logging.getLogger( __name__ )
 default_options = { 'queue_name':None, 
                'exchange': None, 'topic_prefix':None, 'subtopic' : None,  
                'durable':True, 'expire': '5m', 'message_ttl':0, 
-               'loglevel':'warning',
+               'loglevel':'info',
                'prefetch':25, 'auto_delete':False, 'vhost':'/',
                'reset':False, 'declare':True, 'bind':True, 
 }
+
+
+
+def _msgRawToDict( raw_msg ):
+                if raw_msg is not None:
+                    if raw_msg.properties['content_type'] == 'application/json':
+                        msg = json.loads( raw_msg.body )
+                        msg['topic'] = raw_msg.delivery_info['routing_key']
+                        msg['delivery_tag'] = raw_msg.delivery_info['delivery_tag']
+                        msg['_deleteOnPost'] = [ 'topic', 'delivery_tag' ]
+                    else:
+                        msg = v2wrapper.v02tov03message( 
+                            raw_msg.body, raw_message.headers, raw_msg.delivery_info['routing_key'] )
+                else:
+                    msg = None
+                return msg
+
+
 
 class AMQP(Moth):
 
@@ -238,6 +256,23 @@ class AMQP(Moth):
     def url_proto(self):
         return "amqp"
 
+    def newMessages( self ):
+
+        if not self.is_subscriber: #build_consumer
+            logger.error("getting from a publisher")
+            return None
+
+        fetched=0
+        ml=[]
+        m=self.getNewMessage()
+
+        while (m is not None) and (fetched < self.props['prefetch']):
+            ml.append(m)
+            m=self.getNewMessage()
+            fetched += 1
+
+        return ml
+
     def getNewMessage( self ):
 
         if not self.is_subscriber: #build_consumer
@@ -248,20 +283,9 @@ class AMQP(Moth):
         while True:
             try:
                 raw_msg = self.channel.basic_get(self.props['queue_name']) 
-                #logger.info("msg varlist: %s" % raw_msg.__dict__ )
-                if raw_msg is not None:
-                    if raw_msg.properties['content_type'] == 'application/json':
-                        msg = json.loads( raw_msg.body )
-                        msg['topic'] = raw_msg.delivery_info['routing_key']
-                        msg['delivery_tag'] = raw_msg.delivery_info['delivery_tag']
-                        msg['_deleteOnPost'] = [ 'topic', 'delivery_tag' ]
-
-                    else:
-                        msg = v2wrapper.v02tov03message( 
-                            raw_msg.body, raw_message.headers, raw_msg.delivery_info['routing_key'] )
-                else:
-                    msg = None
-                return msg 
+                msg = _msgRawToDict( raw_msg ) 
+                logger.info("msg: %s" % msg )
+                return msg
             except:
                 logger.warning("moth.amqp.getNewMessage: failed %s: %s" % (queuename, err))
                 logger.debug('Exception details: ', exc_info=True)

@@ -20,30 +20,28 @@ class Shovel(Flow):
 
          if hasattr(o,'post_broker'):
              self.poster = Moth( o.post_broker, {
-                  'broker':o.post_broker, 'exchange':o.post_exchange,
-                  'loglevel':o.loglevel, 'message_strategy':o.message_strategy,
-                  'vhost':'/', 'declare': True, 'auto_delete' : False,
-                  'durable':o.durable, 
+                 'broker':o.post_broker, 'exchange':o.post_exchange,
+                 'loglevel':o.loglevel, 'message_strategy':o.message_strategy,
+                 'vhost':'/', 'declare': True, 'auto_delete' : False,
+                 'durable':o.durable, 
              }, is_subscriber=False )
  
      def gather( self ): 
   
-         self.worklist.incoming=[]
-         m = self.consumer.getNewMessage() 
-         # raw message has... m.body, m.t
-         # FIXME: perhaps if becomes while...
-         if m is not None:
-              self.worklist.incoming.append( m )
-
-         #logger.info( 'shovel/gather work_list: %s' % self.worklist.incoming ) 
+         self.worklist.incoming= self.consumer.newMessages()
+         #logger.debug( 'shovel/gather work_list: %s' % self.worklist.incoming ) 
 
          return
 
      def post( self ):
          #logger.info( 'shovel/post work_list: %s' % self.worklist.incoming ) 
+
          for m in self.worklist.incoming:
              # FIXME: outlet = url, outlet=json.
              self.poster.putNewMessage(m)
+             self.worklist.ok.append(m)
+
+         self.worklist.incoming=[]
 
      def close( self ):
          super().close()
