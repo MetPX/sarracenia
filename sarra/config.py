@@ -281,6 +281,7 @@ class Config:
      'chmod' : 'default_mode', 'chmod_dir' : 'default_dir_mode',
      'chmod_log' : 'default_log_mode',
      'heartbeat' : 'housekeeping',
+     'll': 'loglevel',
      'logdays': 'lr_backupCount',
      'logrotate_interval': 'lr_interval',
      \
@@ -643,7 +644,12 @@ class Config:
                k=line[0]
                if k in Config.synonyms:
                   k=Config.synonyms[k]
-               setattr( self, k, ' '.join(line[1:]) )
+               if len(line) == 1: 
+                   v = True
+               else:
+                   v =  ' '.join(line[1:])
+
+               setattr( self, k, v )
 
   
    def fill_missing_options(self,component,config):
@@ -651,6 +657,7 @@ class Config:
          There are default options that apply only if they are not overridden... 
        """ 
        
+  
        if hasattr(self,'suppress_duplicates'): 
            if (type(self.suppress_duplicates) is str):
                if isTrue(self.suppress_duplicates):
@@ -659,6 +666,14 @@ class Config:
                    self.suppress_duplicates=durationToSeconds(self.suppress_duplicates)
        else:
            self.suppress_duplicates=0
+
+       # patch, as there is no 'none' level in python logging module... 
+       #    mapping so as not to break v2 configs.
+       if hasattr(self,'loglevel'):
+           if self.loglevel == 'none':
+              self.loglevel = 'critical'
+
+
           
        if not hasattr(self,'suppress_duplicates_basis'): 
            self.suppress_duplicates_basis='data'
