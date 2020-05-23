@@ -363,13 +363,6 @@ class Flow:
 
         self.worklist.incoming=[]
 
-
-   
-    @abstractmethod 
-    def ack( self, worklist ):
-        # acknowledge_messages
-        logger.info('unimplemented')
-
     @abstractmethod 
     def report( self ):
         # post reports
