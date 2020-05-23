@@ -450,8 +450,9 @@ class Config:
    def dump(self):
        """ print out what the configuration looks like.
        """
-       term = shutil.get_terminal_size((80,20))
-       mxcolumns=term.columns
+       #term = shutil.get_terminal_size((80,20))
+       #mxcolumns=term.columns
+       mxcolumns=70
        column=0
        for k in sorted( self.__dict__.keys()):
            v=getattr(self,k)
@@ -460,7 +461,7 @@ class Config:
            ks = str(k)
            vs = str(v)
            if len(vs) > mxcolumns/2:
-                vs = vs[0:int(mxcolumns/2)] + '...'
+                vs = vs[0:int(mxcolumns/2)] + '...\''
            last_column=column
            column += len(ks) + len(vs) + 3
            if column >= mxcolumns:
@@ -841,12 +842,6 @@ def default_config( component ):
     cfg = Config()
 
     cfg.override(  { 'program_name':component, 'directory': os.getcwd(), 'accept_unmatched':True } )
-    cfg.override( sarra.moth.default_options )
-    cfg.override( sarra.moth.amqp.default_options )
-
-    if component in [ 'shovel' ]:
-        cfg.override(  sarra.flow.default_options )
-        cfg.override(  sarra.flow.shovel.default_options )
 
     for g in [ "admin.conf", "default.conf" ]:
         if os.path.exists( get_user_config_dir() + os.sep + g ):

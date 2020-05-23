@@ -6,26 +6,35 @@ import logging
 
 logger = logging.getLogger( '__name__' )
 
-default_options = { 'download' : False }
-
 
 class Shovel(Flow):
 
-     def __init__( self, o ):
+     default_options = { 'download' : False }
 
-         super().__init__(o)
+     @classmethod
+     def assimilate(cls,obj):
+         obj.__class__ = Shovel
 
-         if hasattr(o,'broker'):
-             od = o.dictify()
-             self.consumer = sarra.moth.Moth( o.broker, od, is_subscriber=True )
+     def name(self):
+         return 'shovel'
 
-         if hasattr(o,'post_broker'):
-             props = { 
-                 'broker':o.post_broker, 'exchange':o.post_exchange,
-                 'loglevel':o.loglevel, 'message_strategy':o.message_strategy
-             }
-             self.poster = sarra.moth.Moth( o.post_broker, props, is_subscriber=False )
+     def __init__( self ):
+
+         Shovel.assimilate(self)
+
+         if hasattr(self.o,'broker'):
+             od = sarra.moth.default_options
+             od.update( self.o.dictify() )
+             self.consumer = sarra.moth.Moth( self.o.broker, od, is_subscriber=True )
+
+         if hasattr(self.o,'post_broker'):
+             props = sarra.moth.default_options
+             props.update ( { 
+                 'broker':self.o.post_broker, 'exchange':self.o.post_exchange,
+             } )
+             self.poster = sarra.moth.Moth( self.o.post_broker, props, is_subscriber=False )
  
+
      def gather( self ): 
   
          self.worklist.incoming= self.consumer.newMessages()

@@ -13,7 +13,7 @@ import time
 import appdirs
 import sarra.config 
 from sarra.audit import Audit
-from sarra.flow.shovel import Shovel
+from sarra.flow import Flow
 
 from urllib.parse import urlparse,urlunparse
 
@@ -162,7 +162,7 @@ class instance:
             self.running_instance = Audit()
         else:
             cfg=sarra.config.one_config( component, config )
-            self.running_instance = Shovel( cfg )                
+            self.running_instance = Flow( cfg )                
 
         self.running_instance.run()
 

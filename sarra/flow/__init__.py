@@ -9,6 +9,7 @@ import sarra.plugin
 import time
 import types
 
+
 from abc import ABCMeta, abstractmethod
 
 from sarra.sr_util import nowflt
@@ -18,7 +19,8 @@ logger = logging.getLogger( __name__ )
 default_options = {  
          'sleep' : 0.1,   
            'vip' : None,  
-  'housekeeping' : 30     
+  'housekeeping' : 30,     
+  'loglevel'     : 'info'
 }
 
 class Flow:
@@ -55,7 +57,7 @@ class Flow:
      
     """
   
-    def __init__(self,o=None):
+    def __init__(self,cfg=None):
 
        """
 
@@ -63,16 +65,35 @@ class Flow:
        
        self._stop_requested = False
 
+
+       self.o = types.SimpleNamespace()
+
+       for k in default_options:
+            setattr( self.o, k, default_options[k] )
+
+       component = cfg.configurations[0].split(os.sep)[0]
+       component_found=False
+       subclass_names=[]
+       for subclass in Flow.__subclasses__() :
+           if component == subclass.name(self):
+              component_found=True
+              break 
+           subclass_names.append(subclass.name())
+
+       if not component_found:
+           logger.critical( 'unknown flow. valid choices: %s' % subclass_names )
+           return
+
+       for k in subclass.default_options:
+            setattr( self.o, k, subclass.default_options[k] )
+
+       alist = [ a for a in dir(cfg) if not a.startswith('__') ]
+
+       for a in alist:
+            logger.info(' bring in parent property: self.o.%s=%s' % ( a, getattr(cfg,a) ) )
+            setattr( self.o, a, getattr(cfg,a) )
+
        # override? or merge... hmm...
-       if o is not None:
-           self.o = o
-       else:
-           # FIXME: set o.sleep, o.housekeeping
-           self.o = types.SimpleNamespace()
-           self.o.sleep = 10
-           self.o.housekeeping = 30
-           # FIXME: initialize vip 
-           self.o.vip = None
 
        self.plugins = {}
        self.plugins['load'] = []
@@ -88,7 +109,7 @@ class Flow:
 
 
        # open cache, get masks. 
-       if o.suppress_duplicates > 0:
+       if self.o.suppress_duplicates > 0:
            # prepend...
            self.plugins['load'] = [ 'sarra.plugin.nodupe.NoDupe' ]
 
@@ -97,17 +118,19 @@ class Flow:
 
 
        # initialize plugins.
-       if hasattr( o, 'v2plugins' ):
+       if hasattr( self.o, 'v2plugins' ):
            self.plugins['load'].append( 'sarra.plugin.v2wrapper.V2Wrapper' )
  
-       if hasattr( o, 'plugins'):
+       if hasattr( self.o, 'plugins'):
            self.plugins['load'].extend( self.o.plugins )
 
        self.loadPlugins( self.plugins['load'] )
 
 
        logger.info('shovel constructor')
-       #self.o.dump()
+       self.o.dump()
+
+       subclass.__init__(self)
    
     
     def loadPlugins(self, plugins_to_load):
@@ -325,3 +348,4 @@ class Flow:
         # apply on_report plugins
         logger.info('unimplemented')
 
+import sarra.flow.shovel
