@@ -17,10 +17,12 @@ from sarra.sr_util import nowflt
 logger = logging.getLogger( __name__ )
 
 default_options = {  
-         'sleep' : 0.1,   
-           'vip' : None,  
+  'accept_unmatched' : False,
+  'download'     : False,
   'housekeeping' : 30,     
-  'loglevel'     : 'info'
+  'loglevel'     : 'info',
+         'sleep' : 0.1,   
+           'vip' : None
 }
 
 class Flow:
@@ -75,11 +77,12 @@ class Flow:
        component_found=False
        subclass_names=[]
        for subclass in Flow.__subclasses__() :
+           subclass_names.append(subclass.name(self))
            if component == subclass.name(self):
               component_found=True
               break 
-           subclass_names.append(subclass.name())
 
+       logger.info( 'valid flows: %s' % subclass_names )
        if not component_found:
            logger.critical( 'unknown flow. valid choices: %s' % subclass_names )
            return
@@ -90,7 +93,6 @@ class Flow:
        alist = [ a for a in dir(cfg) if not a.startswith('__') ]
 
        for a in alist:
-            logger.info(' bring in parent property: self.o.%s=%s' % ( a, getattr(cfg,a) ) )
             setattr( self.o, a, getattr(cfg,a) )
 
        # override? or merge... hmm...
@@ -129,6 +131,18 @@ class Flow:
 
        logger.info('shovel constructor')
        self.o.dump()
+
+       if hasattr(self.o,'broker'):
+             od = sarra.moth.default_options
+             od.update( self.o.dictify() )
+             self.consumer = sarra.moth.Moth( self.o.broker, od, is_subscriber=True )
+
+       if hasattr(self.o,'post_broker'):
+             props = sarra.moth.default_options
+             props.update ( {
+                 'broker':self.o.post_broker, 'exchange':self.o.post_exchange,
+             } )
+             self.poster = sarra.moth.Moth( self.o.post_broker, props, is_subscriber=False )
 
        subclass.__init__(self)
    
@@ -182,8 +196,16 @@ class Flow:
 
     @abstractmethod 
     def close( self ):
-        logger.info('flow closing')
+
         self._runPluginsTime('on_stop')
+        self.consumer.close()
+        self.poster.close()
+        logger.info( 'flow/close completed cleanly' )
+
+
+    def ack( self, mlist ):
+         for m in mlist:
+             self.consumer.ack( m )
 
     def ackWorklist(self,desc):
         logger.debug( '%s incoming: %d, ok: %d, rejected: %d, retry: %d' % ( 
@@ -321,7 +343,8 @@ class Flow:
 
     @abstractmethod
     def gather(self):
-        logger.info('unimplemented')
+        self.worklist.incoming= self.consumer.newMessages()
+
  
     @abstractmethod 
     def do( self ):
@@ -329,13 +352,18 @@ class Flow:
         # mark all remaining messages as done.
         self.worklist.ok = self.worklist.incoming
         self.worklist.incoming = []
-        logger.info('unimplemented')
+        logger.info('unimplemented, assuming everything worked...')
   
     @abstractmethod 
     def post( self ):
-        # post messages
-        # apply on_post plugins
-        logger.info('unimplemented')
+        for m in self.worklist.incoming:
+             # FIXME: outlet = url, outlet=json.
+             self.poster.putNewMessage(m)
+             self.worklist.ok.append(m)
+
+        self.worklist.incoming=[]
+
+
    
     @abstractmethod 
     def ack( self, worklist ):

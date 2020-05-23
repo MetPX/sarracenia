@@ -9,7 +9,11 @@ logger = logging.getLogger( '__name__' )
 
 class Shovel(Flow):
 
-     default_options = { 'download' : False }
+     default_options = { 
+         'download' : False, 
+         'accept_unmatched': True, 
+         'suppress_duplicates': 0
+     }
 
      @classmethod
      def assimilate(cls,obj):
@@ -22,35 +26,6 @@ class Shovel(Flow):
 
          Shovel.assimilate(self)
 
-         if hasattr(self.o,'broker'):
-             od = sarra.moth.default_options
-             od.update( self.o.dictify() )
-             self.consumer = sarra.moth.Moth( self.o.broker, od, is_subscriber=True )
-
-         if hasattr(self.o,'post_broker'):
-             props = sarra.moth.default_options
-             props.update ( { 
-                 'broker':self.o.post_broker, 'exchange':self.o.post_exchange,
-             } )
-             self.poster = sarra.moth.Moth( self.o.post_broker, props, is_subscriber=False )
- 
-
-     def gather( self ): 
-  
-         self.worklist.incoming= self.consumer.newMessages()
-         #logger.debug( 'shovel/gather work_list: %s' % self.worklist.incoming ) 
-
-         return
-
-     def post( self ):
-         #logger.info( 'shovel/post work_list: %s' % self.worklist.incoming ) 
-
-         for m in self.worklist.incoming:
-             # FIXME: outlet = url, outlet=json.
-             self.poster.putNewMessage(m)
-             self.worklist.ok.append(m)
-
-         self.worklist.incoming=[]
 
      def close( self ):
          super().close()
