@@ -165,7 +165,7 @@ class Flow:
         logger.info('flow closing')
         self._runPluginsTime('on_stop')
 
-    def _log_incoming(self,desc):
+    def _log_worklist(self,desc):
         logger.debug( '%s incoming: %d, ok: %d, rejected: %d, retry: %d' % ( 
                     desc,
                     len(self.worklist.incoming), len(self.worklist.ok), 
@@ -195,7 +195,7 @@ class Flow:
 
            if self.has_vip():
                self.gather()
-               self._log_incoming( 'A gathered' )
+               self._log_worklist( 'A gathered' )
 
                if ( len(self.worklist.incoming) == 0 ):
                    spamming=True
@@ -204,18 +204,18 @@ class Flow:
 
                self.filter()
 
-               self._log_incoming( 'B filtered' )
+               self._log_worklist( 'B filtered' )
 
                self.ack(self.worklist.ok)
                self.worklist.ok=[]
                self.ack(self.worklist.rejected)
                self.worklist.rejected=[]
 
-               self._log_incoming( 'C filter-acks' )
+               self._log_worklist( 'C filter-acks' )
 
                self.do()
 
-               self._log_incoming( 'D do' )
+               self._log_worklist( 'D do' )
 
                self.post()
 
@@ -224,7 +224,7 @@ class Flow:
                self.ack(self.worklist.rejected)
                self.worklist.rejected=[]
 
-               self._log_incoming( 'E incoming' )
+               self._log_worklist( 'E after post' )
 
                self.report()
          

@@ -17,4 +17,4 @@ class Log(Plugin):
     def on_messages(self,worklist):
 
         for msg in worklist.incoming:
-            logger.warning( "received: %s " % msg )
+            logger.info( "received: %s " % msg )

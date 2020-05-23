@@ -51,7 +51,7 @@ class instance:
     
         """
         logger = logging.getLogger()
-        logging.basicConfig(format='%(asctime)s [%(levelname)s] %(name)s %(message)s', level=logging.DEBUG)
+        logging.basicConfig(format='%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s', level=logging.DEBUG)
         logger.setLevel( logging.INFO )
          
         # FIXME: honour SR_ variable for moving preferences...
