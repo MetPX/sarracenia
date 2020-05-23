@@ -140,8 +140,9 @@ class Moth():
        protos=[]
        self.is_subscriber = is_subscriber
 
+       self.props=copy.deepcopy(default_options)
        if props is not None:
-           self.props = copy.deepcopy(props)
+           self.props.update(props)
 
        self.broker = broker
 
@@ -169,7 +170,7 @@ class Moth():
        for sc in Moth.__subclasses__() :
             purl = sc.url_proto(self)
             if self.broker.scheme[0:4] == purl :
-                sc.__init__(self,broker)
+                sc.__init__(self,broker,self.props)
                 return
             protos.append(purl) 
 

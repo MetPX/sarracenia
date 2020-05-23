@@ -1,5 +1,6 @@
 
-from sarra.moth import Moth
+import sarra.moth
+import copy
 from sarra.flow import Flow
 import logging
 
@@ -16,15 +17,14 @@ class Shovel(Flow):
 
          if hasattr(o,'broker'):
              od = o.dictify()
-             self.consumer = Moth( o.broker, od, is_subscriber=True )
+             self.consumer = sarra.moth.Moth( o.broker, od, is_subscriber=True )
 
          if hasattr(o,'post_broker'):
-             self.poster = Moth( o.post_broker, {
+             props = { 
                  'broker':o.post_broker, 'exchange':o.post_exchange,
-                 'loglevel':o.loglevel, 'message_strategy':o.message_strategy,
-                 'vhost':'/', 'declare': True, 'auto_delete' : False,
-                 'durable':o.durable, 
-             }, is_subscriber=False )
+                 'loglevel':o.loglevel, 'message_strategy':o.message_strategy
+             }
+             self.poster = sarra.moth.Moth( o.post_broker, props, is_subscriber=False )
  
      def gather( self ): 
   
@@ -53,8 +53,8 @@ class Shovel(Flow):
          for m in mlist:
              self.consumer.ack( m )
 
-     #def do( self ):
-     #    pass
+     def do( self ):
+         pass
 
      
      def report( self ):

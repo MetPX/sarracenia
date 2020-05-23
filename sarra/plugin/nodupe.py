@@ -62,6 +62,7 @@ class NoDupe(Plugin):
         self.o        = options
 
         if hasattr(options,'loglevel'):
+            logger.error( 'loglevel is: %s' % options.loglevel )
             logger.setLevel( getattr(logging, options.loglevel.upper()  ) )
         else:
             logger.setLevel( logging.INFO )
@@ -86,7 +87,7 @@ class NoDupe(Plugin):
 
     def on_housekeeping(self):
 
-        logger.info("hk_nodupe start (%d)" % len(self.cache_dict))
+        logger.info("start (%d)" % len(self.cache_dict))
 
         count = self.count
         self.save()
@@ -94,7 +95,7 @@ class NoDupe(Plugin):
         now       = nowflt()
         new_count = self.count
 
-        logger.info("hk_nodupe was %d, but since %5.2f sec, increased up to %d, now saved %d entries" %
+        logger.info("was %d, but since %5.2f sec, increased up to %d, now saved %d entries" %
                            ( self.last_count, now-self.last_time, count, new_count))
 
         self.last_time  = now
@@ -197,6 +198,8 @@ class NoDupe(Plugin):
             if self.check_message( m ):
                new_incoming.append(m)
             else:
+               if self.o.log_reject:
+                   logger.info("rejected %s" % m['relPath'] )
                worklist.rejected.append(m)
 
         worklist.incoming=new_incoming

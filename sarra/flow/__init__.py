@@ -114,20 +114,20 @@ class Flow:
     
     def _loadPlugins(self, plugins_to_load):
 
-        logger.info( 'v3 plugins to load: %s' % ( plugins_to_load ) )
+        logger.info( 'plugins to load: %s' % ( plugins_to_load ) )
         for c in plugins_to_load: 
             plugin = sarra.plugin.load_library( c, self.o )
-            logger.info( 'v3 plugin loading: %s an instance of: %s' % ( c, plugin ) )
+            logger.info( 'plugin loading: %s an instance of: %s' % ( c, plugin ) )
             for entry_point in sarra.plugin.entry_points:
                  if hasattr( plugin, entry_point ):
                     fn = getattr( plugin, entry_point )
                     if callable(fn):
-                        logger.info( 'v3 registering %s/%s' % (c, entry_point))
+                        logger.info( 'registering %s/%s' % (c, entry_point))
                         if entry_point in self.plugins:
                            self.plugins[entry_point].append(fn)
                         else:
                            self.plugins[entry_point] = [ fn ]
-        logger.info( 'v3 plugins initialized')
+        logger.info( 'plugins initialized')
  
     def _runPluginsWorklist(self,entry_point):
 
@@ -139,7 +139,6 @@ class Flow:
 
     def _runPluginsTime(self,entry_point):
         for p in self.plugins[entry_point]:
-            logger.error('p=%s' % p )
             p()
     
 
@@ -165,11 +164,16 @@ class Flow:
         logger.info('flow closing')
         self._runPluginsTime('on_stop')
 
-    def _log_worklist(self,desc):
+    def ackWorklist(self,desc):
         logger.debug( '%s incoming: %d, ok: %d, rejected: %d, retry: %d' % ( 
                     desc,
                     len(self.worklist.incoming), len(self.worklist.ok), 
                     len(self.worklist.rejected), len(self.worklist.retry)) )
+
+        self.ack(self.worklist.ok)
+        self.worklist.ok=[]
+        self.ack(self.worklist.rejected)
+        self.worklist.rejected=[]
 
 
     def run(self):
@@ -195,7 +199,7 @@ class Flow:
 
            if self.has_vip():
                self.gather()
-               self._log_worklist( 'A gathered' )
+               self.ackWorklist( 'A gathered' )
 
                if ( len(self.worklist.incoming) == 0 ):
                    spamming=True
@@ -204,27 +208,22 @@ class Flow:
 
                self.filter()
 
-               self._log_worklist( 'B filtered' )
-
-               self.ack(self.worklist.ok)
-               self.worklist.ok=[]
-               self.ack(self.worklist.rejected)
-               self.worklist.rejected=[]
-
-               self._log_worklist( 'C filter-acks' )
+               self.ackWorklist( 'B filtered' )
 
                self.do()
 
-               self._log_worklist( 'D do' )
+               self.ackWorklist( 'D do' )
+
+               # need to acknowledge incoming here, because posting will delete message-id
+               self.ack(self.worklist.incoming)
 
                self.post()
 
-               self.ack(self.worklist.ok)
+               # post should have moved stuff from incoming to others, 
+               # but they were already acked above.
+               self.worklist.incoming=[]
                self.worklist.ok=[]
-               self.ack(self.worklist.rejected)
                self.worklist.rejected=[]
-
-               self._log_worklist( 'E after post' )
 
                self.report()
          
@@ -255,7 +254,7 @@ class Flow:
 
     def filter(self):
 
-        logger.debug('filter - start')
+        logger.debug('start')
         self.filtered_worklist = []
         for m in self.worklist.incoming:
             url = m['baseUrl'] + os.sep + m['relPath']
@@ -297,11 +296,11 @@ class Flow:
         # apply on_messages plugins.
         self._runPluginsWorklist('on_messages')
 
-        logger.debug('filter - done')
+        logger.debug('done')
 
     @abstractmethod
     def gather(self):
-        logger.info('gather - unimplemented')
+        logger.info('unimplemented')
  
     @abstractmethod 
     def do( self ):
@@ -309,22 +308,22 @@ class Flow:
         # mark all remaining messages as done.
         self.worklist.ok = self.worklist.incoming
         self.worklist.incoming = []
-        logger.info('do - unimplemented')
+        logger.info('unimplemented')
   
     @abstractmethod 
     def post( self ):
         # post messages
         # apply on_post plugins
-        logger.info('post - unimplemented')
+        logger.info('unimplemented')
    
     @abstractmethod 
     def ack( self, worklist ):
         # acknowledge_messages
-        logger.info('ack - unimplemented')
+        logger.info('unimplemented')
 
     @abstractmethod 
     def report( self ):
         # post reports
         # apply on_report plugins
-        logger.info('report -unimplemented')
+        logger.info('unimplemented')
 

@@ -48,19 +48,18 @@ default_options = { 'queue_name':None,
 
 
 def _msgRawToDict( raw_msg ):
-                if raw_msg is not None:
-                    if raw_msg.properties['content_type'] == 'application/json':
-                        msg = json.loads( raw_msg.body )
-                        msg['topic'] = raw_msg.delivery_info['routing_key']
-                        msg['delivery_tag'] = raw_msg.delivery_info['delivery_tag']
-                        msg['_deleteOnPost'] = [ 'topic', 'delivery_tag' ]
-                    else:
-                        msg = v2wrapper.v02tov03message( 
-                            raw_msg.body, raw_message.headers, raw_msg.delivery_info['routing_key'] )
-                else:
-                    msg = None
-                return msg
-
+    if raw_msg is not None:
+        if raw_msg.properties['content_type'] == 'application/json':
+            msg = json.loads( raw_msg.body )
+            msg['topic'] = raw_msg.delivery_info['routing_key']
+            msg['delivery_tag'] = raw_msg.delivery_info['delivery_tag']
+            msg['_deleteOnPost'] = [ 'topic', 'delivery_tag' ]
+        else:
+            msg = v2wrapper.v02tov03message( 
+                raw_msg.body, raw_message.headers, raw_msg.delivery_info['routing_key'] )
+    else:
+        msg = None
+    return msg
 
 
 class AMQP(Moth):
@@ -68,13 +67,16 @@ class AMQP(Moth):
     # length of an AMQP short string (used for headers and many properties)
     amqp_ss_maxlen = 255  
 
-    def __init__( self, broker ):
+    def __init__( self, broker, props ):
         """
            connect to broker, depending on message_strategy stubborness, remain connected.
            
         """
 
         AMQP.assimilate(self)
+
+        self.props=copy.deepcopy(default_options)
+        self.props.update(props)
 
         self.first_setup=True
 
@@ -284,7 +286,7 @@ class AMQP(Moth):
             try:
                 raw_msg = self.channel.basic_get(self.props['queue_name']) 
                 msg = _msgRawToDict( raw_msg ) 
-                logger.info("msg: %s" % msg )
+                #logger.info("msg: %s" % msg )
                 return msg
             except:
                 logger.warning("moth.amqp.getNewMessage: failed %s: %s" % (queuename, err))
@@ -310,7 +312,7 @@ class AMQP(Moth):
             return 
 
         if not 'delivery_tag' in m:
-            logger.error("cannot acknowledge message without a delivery_tag")
+            logger.warning("cannot acknowledge message without a delivery_tag: %s " % m['relPath'] )
             return 
 
         self.channel.basic_ack( m['delivery_tag'] )
