@@ -30,6 +30,71 @@ goals of opportunity:
   * Assume ubuntu >= 18.04 remove old cruft.
   * Assume systemd, remove sysv integration.
  
+V02 Plugin Pain Points
+----------------------
+
+Writing plugins should be a straight-forward thing for people with a rudimentary
+knowledge of python, and some understanding of the task at hand. in version 2,
+writing plugins is a lot harder than it should be.  
+
+* syntax error, v2 gives basically a binary response, either reading in the plugin worked
+  or it didn't... it is very unfriendly compared to normal python.
+
+* when a setting is put in a config file, it's value is [ value ], and not value (It's in a list.)
+
+* weird scoping issue of import (import in main does not carry over to on_messag, need to import again.)
+  what the heck is self, what the heck is parent?  these are not obvious in the plugins.
+
+* bizarre use of python logger API... self.logger? wha?
+
+* inability to call from python code (no API.)
+
+* inability to *add* messages within a plugin (can only process the message you have.)
+
+* inability to process groups of messages at a time (say for concurrent sends or downloads, rather than just one at time.
+
+* poor handling of message acknowledgements. v02 just ackowledges the previous message when a new one is received.
+
+* lack of clarity about options, versus working variables, because they are in the same namespace
+  in a plugin, if you find self.setting==True  ... is that because the application set it somewhere, 
+  or because an option was set by a client... is it a setting or a variable?
+
+* making changes to messages is a bit complicated, because they evolved over different message formats.
+
+
+Changes planned in v03 to address pain points:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* use importlib from python, much more standard way to register plugins.
+  now syntax errors will be picked up just like any other python module being imported,
+  with a reasonable error message.
+
+* no strange decoration at end of 
+   
+* plural event callbacks replace singular ones.  on_messages replaces on_message
+
+* messages are just python dictionaries. fields defined by json.loads( v03 payload format )
+  messages only contain the actual fields, no settings or other things...
+  plain data.
+ 
+* callbacks move messages between worklists. A worklist is just a list of messages. There are four:
+
+  * worklist.incoming -- messages yet to be processed.
+  * worklist.rejected -- message which are not to be further processed.
+  * worklist.ok -- messages which have been successfully processed.
+  * worklist.retry   -- messages for which processing was attempted, but it failed.
+
+* acknowledgements done more pro-actively.
+
+* add scoping mechanism to define plugin properties.
+
+* properties fed to __init__ of the plugin,  parent is gone from the plugins, they should
+  just refer to self.o for the options/settings they need. (self.o clearly separates options
+  from working data.)
+
+
+
+
 Uknowns
 -------
 
