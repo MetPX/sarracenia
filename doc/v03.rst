@@ -169,6 +169,7 @@ breaking changes:
 
 * loglevel none -> loglevel notset (now passing loglevel setting directly to python logging module, none isn't defined.)
 
+* log messages and output in interactive, will be completely different.
 
 
 Features
