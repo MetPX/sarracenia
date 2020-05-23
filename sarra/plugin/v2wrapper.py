@@ -262,7 +262,6 @@ class V2Wrapper(Plugin):
         """
         logger.info('v2 run %s' % time )
         for plugin in self.v2plugins[time]:
-             logger.info('v2 plugin is: %s' % plugin )
              plugin(self.o)
 
     def on_housekeeping(self):

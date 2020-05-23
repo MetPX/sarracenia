@@ -66,8 +66,6 @@ class Flow:
        # override? or merge... hmm...
        if o is not None:
            self.o = o
-           logger.info('dump options;')
-           o.dump()
        else:
            # FIXME: set o.sleep, o.housekeeping
            self.o = types.SimpleNamespace()
@@ -105,14 +103,14 @@ class Flow:
        if hasattr( o, 'plugins'):
            self.plugins['load'].extend( self.o.plugins )
 
-       self._loadPlugins( self.plugins['load'] )
+       self.loadPlugins( self.plugins['load'] )
 
 
        logger.info('shovel constructor')
        #self.o.dump()
    
     
-    def _loadPlugins(self, plugins_to_load):
+    def loadPlugins(self, plugins_to_load):
 
         logger.info( 'plugins to load: %s' % ( plugins_to_load ) )
         for c in plugins_to_load: 
