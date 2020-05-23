@@ -187,4 +187,9 @@ Features
 
 * sr ability to select multiple components and configurations to operate on.
 
+* messages are acknowledged more quickly, should help with throughput.
+
+* plugin API are now based on groups of messages, rather than individual ones, allowing people
+  to organize concurrent work.
+
 
