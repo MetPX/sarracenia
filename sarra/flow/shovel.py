@@ -27,16 +27,6 @@ class Shovel(Flow):
          Shovel.assimilate(self)
 
 
-     def close( self ):
-         super().close()
-         self.consumer.close()
-         self.poster.close()
-         logger.info( 'shovel/close completed cleanly' )
- 
-     def ack( self, mlist ):
-         for m in mlist:
-             self.consumer.ack( m )
-
      def do( self ):
          pass
 

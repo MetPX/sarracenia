@@ -12,7 +12,6 @@ import time
 
 import appdirs
 import sarra.config 
-from sarra.audit import Audit
 from sarra.flow import Flow
 
 from urllib.parse import urlparse,urlunparse

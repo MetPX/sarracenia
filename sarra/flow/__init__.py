@@ -76,6 +76,7 @@ class Flow:
        component = cfg.configurations[0].split(os.sep)[0]
        component_found=False
        subclass_names=[]
+       logger.error( 'flow.__subclasses__() returns: %s' % Flow.__subclasses__() )
        for subclass in Flow.__subclasses__() :
            subclass_names.append(subclass.name(self))
            if component == subclass.name(self):
@@ -370,3 +371,4 @@ class Flow:
         logger.info('unimplemented')
 
 import sarra.flow.shovel
+import sarra.flow.winnow

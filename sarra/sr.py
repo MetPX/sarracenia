@@ -91,16 +91,13 @@ class sr_GlobalState:
 
         os.makedirs(os.path.dirname(lfn), exist_ok=True)
 
-        if c == 'shovel':
+        if c in [ 'shovel', 'winnow' ]:
            component_path = os.path.dirname(component_path) + os.sep + 'instance.py'
            cmd = [sys.executable, component_path, '--no', "%d" % i ]
-           print("sys.argv=%s" % sys.argv)
            if sys.argv[0].find('python') >= 0:
                cmd.extend( sys.argv[2:] )
            else:
-               print("sys.argv[1:]=%s" % sys.argv[1:] )
                cmd.extend( sys.argv[1:] )
-
         else:
             if c[0] != 'c':  # python components
                 if cfg is None:
