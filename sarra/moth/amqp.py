@@ -40,7 +40,7 @@ logger = logging.getLogger( __name__ )
 default_options = { 'queue_name':None, 
                'exchange': None, 'topic_prefix':None, 'subtopic' : None,  
                'durable':True, 'expire': '5m', 'message_ttl':0, 
-               'loglevel':'info',
+               'logLevel':'info',
                'prefetch':25, 'auto_delete':False, 'vhost':'/',
                'reset':False, 'declare':True, 'bind':True, 
 }
@@ -72,8 +72,9 @@ class AMQP(Moth):
            connect to broker, depending on message_strategy stubborness, remain connected.
            
         """
-
         AMQP.assimilate(self)
+
+        logging.basicConfig(format='%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s' )
 
         self.props=copy.deepcopy(default_options)
         self.props.update(props)
@@ -87,8 +88,9 @@ class AMQP(Moth):
             for s in self.props['settings'][me]:
                 self.props[s] = self.props['settings'][me][s]
 
-        logger.setLevel( getattr(logging, self.props['loglevel'].upper()  ) )
-        logger.error( '%s loglevel set to: %s ' % ( me, self.props['loglevel'] ) )
+        logging.basicConfig( format=self.props['logFormat'], level=getattr(logging, self.props['logLevel'].upper()) )
+
+        logger.error( '%s logLevel set to: %s ' % ( me, self.props['logLevel'] ) )
         if self.is_subscriber: #build_consumer
            self.__getSetup()
            return
@@ -136,7 +138,7 @@ class AMQP(Moth):
                 # from sr_consumer.build_connection...
                 self.__connect(self.broker)
 
-                logger.info('getSetup ... 1. connected to {}'.format(self.props['broker'].hostname) )
+                logger.info('getSetup connected to {}'.format(self.props['broker'].hostname) )
 
                 if self.props['prefetch'] != 0 :
                     self.channel.basic_qos( 0, self.props['prefetch'], True )
@@ -273,6 +275,7 @@ class AMQP(Moth):
             m=self.getNewMessage()
             fetched += 1
 
+        logger.debug("got (%d) done." % len(ml) )
         return ml
 
     def getNewMessage( self ):
@@ -370,7 +373,7 @@ class AMQP(Moth):
                 for x in exchange:
                     self.channel.basic_publish( AMQP_Message, x, topic ) 
                     self.channel.tx_commit()
-                    logger.info("published {} to {} ".format(body, exchange) )
+                    logger.debug("published {} to {} under: {} ".format(body, exchange, topic) )
 
                 return # no failure == success :-)
 

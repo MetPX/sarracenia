@@ -58,7 +58,8 @@ default_options = {
            'inline': False,
            'inline_encoding': 'guess',
            'inline_max': 4096,
-           'loglevel': 'info',
+           'logFormat' : '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
+           'logLevel': 'info',
            'message_strategy': { 
                  'reset': True, 'stubborn' : True, 'failure_duration':'5m' 
            }
@@ -154,12 +155,8 @@ class Moth():
            if me in self.props['settings']:
                for s in self.props['settings'][me]:
                    self.props[s] = self.props['settings'][me][s]
-           else:
-              logger.error('no settings %s settings' % me )
-       else:
-           logger.error('no settings' )
 
-       logger.setLevel( getattr(logging, self.props['loglevel'].upper()  ))
+       logging.basicConfig( format=self.props['logFormat'], level=getattr(logging, self.props['logLevel'].upper()) )
 
        """ relevant:
          https://stackoverflow.com/questions/18020074/convert-a-baseclass-object-into-a-subclass-object-idiomatically

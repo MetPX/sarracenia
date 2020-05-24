@@ -1501,7 +1501,7 @@ def main():
     :return:
     """
     logger = logging.getLogger()
-    logging.basicConfig(format='%(asctime)s [%(levelname)s] %(message)s', level=logging.DEBUG)
+    logging.basicConfig(format='%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s', level=logging.DEBUG)
     logger.setLevel( logging.INFO )
 
     if sys.argv[1] == '--debug':

@@ -20,7 +20,8 @@ default_options = {
   'accept_unmatched' : False,
   'download'     : False,
   'housekeeping' : 30,     
-  'loglevel'     : 'info',
+  'logFormat'    : '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
+  'logLevel'     : 'info',
          'sleep' : 0.1,   
            'vip' : None
 }
@@ -67,6 +68,8 @@ class Flow:
        
        self._stop_requested = False
 
+       me='flow'
+       logging.basicConfig(format='%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s', level=logging.DEBUG)
 
        self.o = types.SimpleNamespace()
 
@@ -74,23 +77,26 @@ class Flow:
             setattr( self.o, k, default_options[k] )
 
        component = cfg.configurations[0].split(os.sep)[0]
-       component_found=False
+       subclass=None
        subclass_names=[]
        logger.error( 'flow.__subclasses__() returns: %s' % Flow.__subclasses__() )
-       for subclass in Flow.__subclasses__() :
-           subclass_names.append(subclass.name(self))
-           if component == subclass.name(self):
-              component_found=True
-              break 
+       for sc in Flow.__subclasses__() :
+           subclass_names.append(sc.name(self))
+           if component == sc.name(self):
+              subclass=sc
 
        logger.info( 'valid flows: %s' % subclass_names )
-       if not component_found:
+       if subclass is None:
            logger.critical( 'unknown flow. valid choices: %s' % subclass_names )
            return
 
        for k in subclass.default_options:
             setattr( self.o, k, subclass.default_options[k] )
 
+       logging.basicConfig( format=self.o.logFormat, level=getattr(logging, self.o.logLevel.upper()) ) 
+
+       logger.error( '%s logLevel set to: %s ' % ( me, self.o.logLevel ) )
+   
        alist = [ a for a in dir(cfg) if not a.startswith('__') ]
 
        for a in alist:
@@ -225,6 +231,8 @@ class Flow:
           check if stop_requested once in a while, but never return otherwise.
         """
 
+        logger.error( "working directory: %s" % os.getcwd() )
+
         next_housekeeping=nowflt()+self.o.housekeeping
 
         current_sleep = self.o.sleep
@@ -297,11 +305,13 @@ class Flow:
                last_time = now
 
 
-
-
-
-
-
+    def set_new(self,m, maskDir, maskFileOption, mirror, strip, pstrip, flatten):
+        """
+        """
+        m['newDir'] = maskDir
+        m['newFile'] = os.path.basename(m['relPath'])
+        m['_deleteOnPost'].extend( [ 'newDir', 'newFile' ] )
+ 
 
     def filter(self):
 
@@ -313,8 +323,9 @@ class Flow:
             # apply masks, reject.
             matched=False
             for mask in self.o.masks:
-                #logger.info('filter - checking: %s' % str(mask) )
+                logger.info('filter - checking: %s' % str(mask) )
                 pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
+
                 if mask_regexp.match( url ):
                     matched=True
                     if not accepting:
@@ -323,10 +334,8 @@ class Flow:
                             self.worklist.rejected.append(m)
                             break
                     # FIXME... missing dir mapping with mirror, strip, etc...
-                    m['newDir'] = maskDir
-                    # FIXME... missing FileOption processing.
-                    m['newFile'] = os.path.basename(m['relPath'])
-                    m['_deleteOnPost'].extend( [ 'newDir', 'newFile' ] )
+                    self.set_new(m, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten )
+
                     self.filtered_worklist.append(m)
                     logger.debug( "isMatchingPattern: accepted mask=%s strip=%s" % (str(mask), strip) )
                     break
@@ -364,8 +373,14 @@ class Flow:
   
     @abstractmethod 
     def post( self ):
+
+        self._runPluginsWorklist('on_post')
+
         for m in self.worklist.incoming:
              # FIXME: outlet = url, outlet=json.
+             if self.o.topic_prefix != self.o.post_topic_prefix:
+                 m['topic'] = m['topic'].replace( self.o.topic_prefix, self.o.post_topic_prefix )
+
              self.poster.putNewMessage(m)
              self.worklist.ok.append(m)
 

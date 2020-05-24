@@ -152,11 +152,8 @@ class V2Wrapper(Plugin):
         """
         global logger
  
-        if hasattr(o,'loglevel'):
-            logger.setLevel( getattr(logging, o.loglevel.upper()  ) )
-        else:
-            logger.setLevel( logging.INFO )
-
+        logging.basicConfig( format=o.logFormat, level=getattr(logging, o.logLevel.upper()) )
+ 
         # FIXME, insert parent fields for v2 plugins to use here.
         self.logger=logger
         self.logger.error('v2wrapper init start')

@@ -18,6 +18,7 @@ import inspect
 import logging
 import os
 import pathlib
+import pprint
 import re
 import shutil
 import socket
@@ -81,6 +82,7 @@ def get_pid_filename(component, configuration, no):
 
    if configuration[-5:] == '.conf':
       configuration=configuration[:-5]
+
    piddir += configuration + os.sep
 
    return piddir + os.sep + 'sr_' + component + '_' + configuration + '_%02d' % no + '.pid'
@@ -281,7 +283,9 @@ class Config:
      'chmod' : 'default_mode', 'chmod_dir' : 'default_dir_mode',
      'chmod_log' : 'default_log_mode',
      'heartbeat' : 'housekeeping',
-     'll': 'loglevel',
+     'log_format': 'logFormat',
+     'll': 'logLevel',
+     'loglevel': 'logLevel',
      'logdays': 'lr_backupCount',
      'logrotate_interval': 'lr_interval',
      \
@@ -452,7 +456,7 @@ class Config:
        """
        #term = shutil.get_terminal_size((80,20))
        #mxcolumns=term.columns
-       mxcolumns=70
+       mxcolumns=5
        column=0
        for k in sorted( self.__dict__.keys()):
            v=getattr(self,k)
@@ -460,16 +464,16 @@ class Config:
               v = v.scheme + '://' + v.username + '@' + v.hostname
            ks = str(k)
            vs = str(v)
-           if len(vs) > mxcolumns/2:
-                vs = vs[0:int(mxcolumns/2)] + '...\''
+           if len(vs) > 100:
+                vs = vs[0:70] + '...\''
            last_column=column
            column += len(ks) + len(vs) + 3
-           if column >= mxcolumns:
-               print(',')
-               column=len(ks) + len(vs) + 1
-           elif last_column > 0:
-               print(', ', end='')
-           print( ks+'='+vs, end='' )
+           #if column >= mxcolumns:
+           #    print(',')
+           #    column=len(ks) + len(vs) + 1
+           #elif last_column > 0:
+           #    print(', ', end='')
+           print( ks+'='+vs)
        print('')
 
    def dictify(self):
@@ -670,9 +674,9 @@ class Config:
 
        # patch, as there is no 'none' level in python logging module... 
        #    mapping so as not to break v2 configs.
-       if hasattr(self,'loglevel'):
-           if self.loglevel == 'none':
-              self.loglevel = 'critical'
+       if hasattr(self,'logLevel'):
+           if self.logLevel == 'none':
+              self.logLevel = 'critical'
 
 
           
@@ -680,11 +684,12 @@ class Config:
            self.suppress_duplicates_basis='data'
 
        # FIXME: note that v2 *user_cache_dir* is, v3 called:  cfg_run_dir
+       if config[-5:] == '.conf':
+           cfg=config[:-5]
+       else:
+           cfg=config
+
        if not hasattr(self, 'cfg_run_dir'):
-          if config[-5:] == '.conf':
-              cfg=config[:-5]
-          else:
-              cfg=config
           self.cfg_run_dir = os.path.join( get_user_cache_dir(), component, cfg )
 
        if self.broker is not None:
@@ -692,8 +697,8 @@ class Config:
 
           queuefile = appdirs.user_cache_dir( Config.appdir_stuff['appname'],
                Config.appdir_stuff['appauthor']  )
-          queuefile += os.sep + component + os.sep + config[0:-5] 
-          queuefile += os.sep + 'sr_' + component + '.' + config[0:-5] + '.' + self.broker.username 
+          queuefile += os.sep + component + os.sep + cfg
+          queuefile += os.sep + 'sr_' + component + '.' + cfg + '.' + self.broker.username 
 
           if hasattr(self,'exchange_split') and hasattr(self,'no') and ( self.no > 0 ):
               queuefile += "%02d" % self.no
@@ -705,7 +710,7 @@ class Config:
                  self.queue_name = f.read()
                  f.close()
              else:
-                 queue_name = 'q_' + self.broker.username + '.sr_' + component +  '.' + config[0:-5]
+                 queue_name = 'q_' + self.broker.username + '.sr_' + component +  '.' + cfg
                  if hasattr(self,'queue_suffix'): queue_name += '.' + self.queue_suffix
                  queue_name += '.'  + str(random.randint(0,100000000)).zfill(8)
                  queue_name += '.'  + str(random.randint(0,100000000)).zfill(8)
@@ -812,7 +817,7 @@ class Config:
         #parser.add_argument('--lag_drop', type=int, help='in seconds, drop messages older than that')
         
         # the web server address for the source of the locally published tree.
-        parser.add_argument('--loglevel', choices=[ 'notset', 'debug', 'info', 'warning', 'error', 'critical' ], help='encode payload in base64 (for binary) or text (utf-8)')
+        parser.add_argument('--logLevel', choices=[ 'notset', 'debug', 'info', 'warning', 'error', 'critical' ], help='encode payload in base64 (for binary) or text (utf-8)')
         parser.add_argument('--no', type=int, help='instance number of this process')
         parser.add_argument('--queue_name', nargs='?', help='name of AMQP consumer queue to create')
         parser.add_argument('--post_broker', nargs='?', help='broker to post downloaded files to')
@@ -894,8 +899,8 @@ def one_config( component, config ):
     cfg.fill_missing_options(component,config)
 
 
-    #pp = pprint.PrettyPrinter(depth=6) 
-    #pp.pprint(cfg)
+    pp = pprint.PrettyPrinter(depth=6) 
+    pp.pprint(cfg)
 
 
     return cfg

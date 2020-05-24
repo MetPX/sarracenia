@@ -70,6 +70,8 @@ class instance:
          
         cfg_preparse.parse_file( default_cfg_dir + os.sep + "default.conf")
         cfg_preparse.parse_args()
+
+
         #cfg_preparse.dump()
          
         if cfg_preparse.action not in [ 'foreground', 'start' ]:

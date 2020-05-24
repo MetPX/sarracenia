@@ -61,12 +61,8 @@ class NoDupe(Plugin):
 
         self.o        = options
 
-        if hasattr(options,'loglevel'):
-            logger.error( 'loglevel is: %s' % options.loglevel )
-            logger.setLevel( getattr(logging, options.loglevel.upper()  ) )
-        else:
-            logger.setLevel( logging.INFO )
-
+        logging.basicConfig( format=self.o.logFormat, level=getattr(logging, self.o.logLevel.upper()) )
+ 
         if hasattr(options,'suppress_duplicates'):
             self.o.time_to_live = options.suppress_duplicates
 

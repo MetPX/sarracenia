@@ -72,10 +72,7 @@ class Plugin:
     def __init__(self, options):
         self.o = options
 
-        if hasattr(options,'loglevel'):
-            logger.setLevel( getattr(logging, options.loglevel.upper()  ) )
-        else:
-            logger.setLevel( logging.INFO )
+        logging.basicConfig( format=self.o.logFormat, level=getattr(logging, self.o.logLevel.upper()) )
 
         logger.info( 'intializing %s' % self.name )
         pass
