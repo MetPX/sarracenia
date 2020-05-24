@@ -289,7 +289,7 @@ class AMQP(Moth):
             try:
                 raw_msg = self.channel.basic_get(self.props['queue_name']) 
                 msg = _msgRawToDict( raw_msg ) 
-                #logger.info("msg: %s" % msg )
+                logger.info("new msg: %s" % msg )
                 return msg
             except:
                 logger.warning("moth.amqp.getNewMessage: failed %s: %s" % (queuename, err))

@@ -93,15 +93,15 @@ class Flow:
        for k in subclass.default_options:
             setattr( self.o, k, subclass.default_options[k] )
 
-       logging.basicConfig( format=self.o.logFormat, level=getattr(logging, self.o.logLevel.upper()) ) 
-
-       logger.error( '%s logLevel set to: %s ' % ( me, self.o.logLevel ) )
-   
        alist = [ a for a in dir(cfg) if not a.startswith('__') ]
 
        for a in alist:
+            #logger.error( 'self.o.%s = %s' % ( a, getattr(cfg,a) ) )
             setattr( self.o, a, getattr(cfg,a) )
 
+       logging.basicConfig( format=self.o.logFormat, level=getattr(logging, self.o.logLevel.upper()) ) 
+       logger.error( '%s logLevel set to: %s ' % ( me, self.o.logLevel ) )
+   
        # override? or merge... hmm...
 
        self.plugins = {}

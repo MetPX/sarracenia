@@ -317,6 +317,7 @@ class Config:
        self.chmod_dir = 0o775
        self.chmod_log = 0o600
 
+       self.debug = False
        self.declared_exchanges = []
        self.env = {}
        self.v2plugins = {}
@@ -672,6 +673,9 @@ class Config:
        else:
            self.suppress_duplicates=0
 
+       if self.debug:
+          self.logLevel = 'debug'
+
        # patch, as there is no 'none' level in python logging module... 
        #    mapping so as not to break v2 configs.
        if hasattr(self,'logLevel'):
@@ -744,6 +748,7 @@ class Config:
        if ( self.bindings == [] and hasattr(self,'exchange') ):
           self.bindings = [ ( self.topic_prefix, self.exchange, '#' ) ] 
 
+
    class AddBinding(argparse.Action):
         """
         called by argparse to deal with queue bindings.
@@ -763,9 +768,30 @@ class Config:
 
    def parse_args(self, isPost=False):
         """
+        user information:
+           accept a configguration, apply argParse library to augment the given configuration
+           with command line settings.
+
+           the post component has a different calling convention than others, so use that flag
+           if called from post.
+
+        development notes:
            Use argparse.parser to modify defaults.
            FIXME, many FIXME notes below. this is a currently unusable placeholder.
            have not figured this out yet. many issues.
+
+           FIXME #1:
+           parseArgs often sets the value of the variable, regardless of it's presence (normally a good thing.)
+           ( if you have 'store_true' then default needed, for broker, just a string, it ignores if not present.)
+           This has the effect of overriding settings in the file parsed before the arguments.
+           Therefore: often supply defaults... but... sigh...
+           
+           but there is another consideration stopping me from supplying defaults, wish I remembered what it was.
+           I think it is:
+           FIXME #2: 
+           arguments are parsed twice: once to get basic stuff (loglevel, component, action)
+           and if the parsing fails there, the usage will print the wrong defaults... 
+
         """
         
         parser=argparse.ArgumentParser( \
@@ -796,7 +822,7 @@ class Config:
         #parser.add_argument('--component', choices=Config.components, nargs='?', \
         #          help='which component to look for a configuration for' )
         parser.add_argument('--dangerWillRobinson', action='store_true', default=False, help='Confirm you want to do something dangerous')
-        parser.add_argument('--debug', action='store_true', help='pring debugging output (very verbose)')
+        parser.add_argument('--debug', action='store_true', default=self.debug, help='pring debugging output (very verbose)')
         #parser.add_argument('--dir_prefix', help='local sub-directory to put data in')
         #parser.add_argument('--download', type=bool, help='should download data ?')
         parser.add_argument('--exchange', nargs='?', default=self.exchange, help='root of the topic tree to subscribe to')
@@ -891,16 +917,15 @@ def one_config( component, config ):
         fname = config
 
     cfg.parse_file(fname)
-
+    
     os.chdir(store_pwd)
 
     cfg.parse_args()
 
-    cfg.fill_missing_options(component,config)
+    cfg.fill_missing_options( component, config )
 
-
-    pp = pprint.PrettyPrinter(depth=6) 
-    pp.pprint(cfg)
+    #pp = pprint.PrettyPrinter(depth=6) 
+    #pp.pprint(cfg)
 
 
     return cfg

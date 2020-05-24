@@ -12,7 +12,7 @@ import urllib
 
 from sarra.plugin import Plugin
 
-from sarra.sr_util import nowflt
+from sarra.sr_util import nowflt,timestr2flt
 
 logger = logging.getLogger( __name__ )
 
@@ -88,9 +88,7 @@ class Message:
         pass
 
     def get_elapse(self):
-        logger.info("get elapse not implemented")
-        return 1.0
-        pass
+        return nowflt() - timestr2flt( self.pubtime )
 
     def set_parts():
         logger.info("set_parts not implemented")
