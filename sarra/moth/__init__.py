@@ -33,8 +33,9 @@
   usage:
      c= Moth( broker, True, '5m', { 'batch':1 } )
 
-     c.getNewMessage()()
-       - if there is a new message, from a publisher, return it, otherwise return None.
+     c.newMessages()()
+       - if there are new messages from a publisher, return them, otherwise return
+         an empty list []].
        
      p=Moth( broker, True, '5m', { 'batch':1 } )
      p.post_new_message()
@@ -150,9 +151,7 @@ class Moth():
 
        # apply settings from props.
        if 'settings' in self.props:
-           logger.error('self.props.settings' % ( self.props['settings'] ) ) 
            if me in self.props['settings']:
-               logger.error('FIXME: self.props[\'settings\'][%s] = %s' % ( me, self.props['settings'][me] ) ) 
                for s in self.props['settings'][me]:
                    self.props[s] = self.props['settings'][me][s]
            else:
@@ -161,7 +160,6 @@ class Moth():
            logger.error('no settings' )
 
        logger.setLevel( getattr(logging, self.props['loglevel'].upper()  ))
-       logger.error ( '%s loglevel set to: %s' % (me, self.props['loglevel'])  )
 
        """ relevant:
          https://stackoverflow.com/questions/18020074/convert-a-baseclass-object-into-a-subclass-object-idiomatically

@@ -972,4 +972,3 @@ def durationToSeconds(str_value):
 
    return duration
 
-

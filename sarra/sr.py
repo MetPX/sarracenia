@@ -80,7 +80,7 @@ class sr_GlobalState:
         else:  # C components
             return 'sr_' + c
 
-    def _launch_instance(self, component_path, c, cfg: str, i):
+    def _launch_instance(self, component_path, c, cfg, i):
         """
           start up a instance process (always daemonish/background fire & forget type process.)
         """
@@ -94,10 +94,9 @@ class sr_GlobalState:
         if c in [ 'shovel', 'winnow' ]:
            component_path = os.path.dirname(component_path) + os.sep + 'instance.py'
            cmd = [sys.executable, component_path, '--no', "%d" % i ]
-           if sys.argv[0].find('python') >= 0:
-               cmd.extend( sys.argv[2:] )
-           else:
-               cmd.extend( sys.argv[1:] )
+           logger.error( 'sys.argv is: %s, len: %d' % ( sys.argv, len(sys.argv) ) )
+           # FIXME, would like to forward things like --debug...
+           cmd.extend( [ 'start',  c + os.sep + cfg ] )
         else:
             if c[0] != 'c':  # python components
                 if cfg is None:
@@ -988,7 +987,7 @@ class sr_GlobalState:
 
             component_path = self._find_component_path(c) 
 
-            if c == 'shovel':
+            if c in [ 'shovel', 'winnow' ]:
                component_path = os.path.dirname(component_path) + os.sep + 'instance.py'
                cmd = [sys.executable, component_path, '--no', "0" ]
                print("sys.argv=%s" % sys.argv)

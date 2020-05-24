@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 #
-# This file is part of sarracenia.
+# This file is part of Sarracenia.
 # The sarracenia suite is Free and is proudly provided by the Government of Canada
 # Copyright (C) Her Majesty The Queen in Right of Canada, Shared Services Canada, 2019
 #

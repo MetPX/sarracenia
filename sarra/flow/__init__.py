@@ -41,7 +41,7 @@ class Flow:
           worklist.incoming --> new messages to continue processing
           worklist.ok       --> successfully processed
           worklist.rejected --> messages to not be further processed.
-          worklist.retry    --> messages for which processing failed.
+          worklist.failed    --> messages for which processing failed.
 
       Initially all messages are placed in incoming.
       if a plugin decides:
@@ -108,7 +108,7 @@ class Flow:
        self.worklist.rejected = []
 
        #FIXME: load retry from disk?
-       self.worklist.retry = []
+       self.worklist.failed = []
 
 
        # open cache, get masks. 
@@ -209,10 +209,10 @@ class Flow:
              self.consumer.ack( m )
 
     def ackWorklist(self,desc):
-        logger.debug( '%s incoming: %d, ok: %d, rejected: %d, retry: %d' % ( 
+        logger.debug( '%s incoming: %d, ok: %d, rejected: %d, failed: %d' % ( 
                     desc,
                     len(self.worklist.incoming), len(self.worklist.ok), 
-                    len(self.worklist.rejected), len(self.worklist.retry)) )
+                    len(self.worklist.rejected), len(self.worklist.failed)) )
 
         self.ack(self.worklist.ok)
         self.worklist.ok=[]
@@ -296,6 +296,13 @@ class Flow:
 
                last_time = now
 
+
+
+
+
+
+
+
     def filter(self):
 
         logger.debug('start')
@@ -328,7 +335,7 @@ class Flow:
                 if self.o.accept_unmatched:
                     logger.debug( "accept: unmatched pattern=%s" % (url) )
                     # FIXME... missing dir mapping with mirror, strip, etc...
-                    m['newDir'] = maskDir
+                    m['newDir'] = os.getcwd()
                     # FIXME... missing FileOption processing.
                     m['newFile'] = os.path.basename(m['relPath'])
                     m['_deleteOnPost'].extend( [ 'newDir', 'newFile' ] )
