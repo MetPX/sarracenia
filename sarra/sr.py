@@ -95,7 +95,13 @@ class sr_GlobalState:
            component_path = os.path.dirname(component_path) + os.sep + 'instance.py'
            cmd = [sys.executable, component_path, '--no', "%d" % i ]
            logger.error( 'sys.argv is: %s, len: %d' % ( sys.argv, len(sys.argv) ) )
-           # FIXME, would like to forward things like --debug...
+
+           # would like to forward things like --debug...
+           for arg in sys.argv[1:-1]:
+                  if arg in [ 'start', 'restart' ]:
+                      break
+                  cmd.append( arg )
+
            cmd.extend( [ 'start',  c + os.sep + cfg ] )
         else:
             if c[0] != 'c':  # python components

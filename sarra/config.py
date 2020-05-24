@@ -658,7 +658,6 @@ class Config:
                       if type(getattr(self,k)) is float:
                           v = float(v)
                       if type(getattr(self,k)) is int:
-                          print( 'k=%s, v=%s' % ( k, v ) )
                           v = int(v)
 
                setattr( self, k, v )

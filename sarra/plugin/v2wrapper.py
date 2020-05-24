@@ -151,6 +151,7 @@ class V2Wrapper(Plugin):
         global logger
  
         logging.basicConfig( format=o.logFormat, level=getattr(logging, o.logLevel.upper()) )
+        logger.error('loggin: fmt=%s, level=%s' % ( o.logFormat, o.logLevel ) )
  
         # FIXME, insert parent fields for v2 plugins to use here.
         self.logger=logger
@@ -172,7 +173,7 @@ class V2Wrapper(Plugin):
         self.o.user_cache_dir = self.o.cfg_run_dir
         self.o.instance = self.o.no
 
-        self.logger.error('v2wrapper init done')
+        self.logger.debug('v2wrapper init done')
 
 
     def declare_option(self,option):
