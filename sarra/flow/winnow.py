@@ -26,9 +26,6 @@ class Winnow(Flow):
 
          Winnow.assimilate(self)
 
-     def do( self ):
-         pass
-
      def report( self ):
          """
          winnows inherently do not do anything substantive to a file, so suppress reports.

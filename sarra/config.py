@@ -654,6 +654,12 @@ class Config:
                    v = True
                else:
                    v =  ' '.join(line[1:])
+                   if hasattr(self,k) and k not in [ 'strip' ]:
+                      if type(getattr(self,k)) is float:
+                          v = float(v)
+                      if type(getattr(self,k)) is int:
+                          print( 'k=%s, v=%s' % ( k, v ) )
+                          v = int(v)
 
                setattr( self, k, v )
 
@@ -708,7 +714,7 @@ class Config:
               queuefile += "%02d" % self.no
           queuefile  += '.qname'
 
-          if not hasattr(self,'queue_name'):
+          if (not hasattr(self,'queue_name')) or ( self.queue_name is None ):
              if os.path.isfile( queuefile ) :
                  f = open(queuefile,'r')
                  self.queue_name = f.read()
@@ -872,6 +878,10 @@ def default_config( component ):
 
     cfg = Config()
 
+    cfg.override( sarra.moth.default_options )
+    cfg.override( sarra.moth.amqp.default_options )
+    cfg.override( sarra.flow.default_options )
+
     cfg.override(  { 'program_name':component, 'directory': os.getcwd(), 'accept_unmatched':True } )
 
     for g in [ "admin.conf", "default.conf" ]:
@@ -899,16 +909,15 @@ def one_config( component, config ):
     """
     default_cfg = default_config( component )
 
-    store_pwd=os.getcwd()
-
-    os.chdir( get_user_config_dir() )
-
-    for g in [ "admin.conf", "default.conf" ]:
-        if os.path.exists( g ):
-           default_cfg.parse_file( g )
+    logger.error( 'default' )
+    print( 'default' )
+    default_cfg.dump()     
 
     cfg = copy.deepcopy(default_cfg)
 
+    store_pwd=os.getcwd()
+
+    os.chdir( get_user_config_dir() )
     os.chdir(component)
 
     if config[-5:] != '.conf' :
@@ -918,10 +927,16 @@ def one_config( component, config ):
 
     cfg.parse_file(fname)
     
+    logger.error( 'after file' )
+    print( 'after file' )
+    cfg.dump()     
     os.chdir(store_pwd)
 
     cfg.parse_args()
 
+    logger.error( 'after args' )
+    print( 'after args' )
+    cfg.dump()     
     cfg.fill_missing_options( component, config )
 
     #pp = pprint.PrettyPrinter(depth=6) 

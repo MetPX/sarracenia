@@ -38,7 +38,7 @@ import copy
 logger = logging.getLogger( __name__ )
 
 default_options = { 'queue_name':None, 
-               'exchange': None, 'topic_prefix':None, 'subtopic' : None,  
+               'exchange': None, 'topic_prefix':'v03.post', 'subtopic' : None,  
                'durable':True, 'expire': '5m', 'message_ttl':0, 
                'logLevel':'info',
                'prefetch':25, 'auto_delete':False, 'vhost':'/',
@@ -84,13 +84,13 @@ class AMQP(Moth):
         me='sarra.moth.amqp.AMQP'
 
         if ( 'settings' in self.props ) and ( me in self.props['settings'] ):
-            logger.error('props[%s] = %s ' % ( me, self.props['settings'][me] ) )
+            logger.debug('props[%s] = %s ' % ( me, self.props['settings'][me] ) )
             for s in self.props['settings'][me]:
                 self.props[s] = self.props['settings'][me][s]
 
         logging.basicConfig( format=self.props['logFormat'], level=getattr(logging, self.props['logLevel'].upper()) )
 
-        logger.error( '%s logLevel set to: %s ' % ( me, self.props['logLevel'] ) )
+        logger.debug( '%s logLevel set to: %s ' % ( me, self.props['logLevel'] ) )
         if self.is_subscriber: #build_consumer
            self.__getSetup()
            return

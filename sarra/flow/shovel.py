@@ -26,11 +26,6 @@ class Shovel(Flow):
 
          Shovel.assimilate(self)
 
-
-     def do( self ):
-         pass
-
-     
      def report( self ):
          """
          shovels inherently do not do anything substantive to a file, so suppress reports.

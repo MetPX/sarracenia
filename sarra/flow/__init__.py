@@ -79,7 +79,7 @@ class Flow:
        component = cfg.configurations[0].split(os.sep)[0]
        subclass=None
        subclass_names=[]
-       logger.error( 'flow.__subclasses__() returns: %s' % Flow.__subclasses__() )
+       logger.debug( 'flow.__subclasses__() returns: %s' % Flow.__subclasses__() )
        for sc in Flow.__subclasses__() :
            subclass_names.append(sc.name(self))
            if component == sc.name(self):
@@ -96,11 +96,11 @@ class Flow:
        alist = [ a for a in dir(cfg) if not a.startswith('__') ]
 
        for a in alist:
-            #logger.error( 'self.o.%s = %s' % ( a, getattr(cfg,a) ) )
+            #logger.debug( 'self.o.%s = %s' % ( a, getattr(cfg,a) ) )
             setattr( self.o, a, getattr(cfg,a) )
 
        logging.basicConfig( format=self.o.logFormat, level=getattr(logging, self.o.logLevel.upper()) ) 
-       logger.error( '%s logLevel set to: %s ' % ( me, self.o.logLevel ) )
+       logger.debug( '%s logLevel set to: %s ' % ( me, self.o.logLevel ) )
    
        # override? or merge... hmm...
 
@@ -231,7 +231,7 @@ class Flow:
           check if stop_requested once in a while, but never return otherwise.
         """
 
-        logger.error( "working directory: %s" % os.getcwd() )
+        logger.debug( "working directory: %s" % os.getcwd() )
 
         next_housekeeping=nowflt()+self.o.housekeeping
 
@@ -334,7 +334,7 @@ class Flow:
                             self.worklist.rejected.append(m)
                             break
                     # FIXME... missing dir mapping with mirror, strip, etc...
-                    self.set_new(m, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten )
+                    self.set_new(m, maskDir, maskFileOption, mirror, strip, pstrip, flatten )
 
                     self.filtered_worklist.append(m)
                     logger.debug( "isMatchingPattern: accepted mask=%s strip=%s" % (str(mask), strip) )
@@ -344,10 +344,7 @@ class Flow:
                 if self.o.accept_unmatched:
                     logger.debug( "accept: unmatched pattern=%s" % (url) )
                     # FIXME... missing dir mapping with mirror, strip, etc...
-                    m['newDir'] = os.getcwd()
-                    # FIXME... missing FileOption processing.
-                    m['newFile'] = os.path.basename(m['relPath'])
-                    m['_deleteOnPost'].extend( [ 'newDir', 'newFile' ] )
+                    self.set_new(m, os.getcwd(), None, self.o.mirror, self.o.strip, self.o.pstrip, self.o.flatten )
                     self.filtered_worklist.append(m)
                 elif self.o.log_reject:
                     logger.info( "reject: unmatched pattern=%s" % (url) )
@@ -360,7 +357,7 @@ class Flow:
 
     @abstractmethod
     def gather(self):
-        self.worklist.incoming= self.consumer.newMessages()
+        self.worklist.incoming=self.consumer.newMessages()
 
  
     @abstractmethod 
@@ -369,14 +366,14 @@ class Flow:
         # mark all remaining messages as done.
         self.worklist.ok = self.worklist.incoming
         self.worklist.incoming = []
-        logger.info('unimplemented, assuming everything worked...')
+        logger.info('everything worked!')
   
     @abstractmethod 
     def post( self ):
 
         self._runPluginsWorklist('on_post')
 
-        for m in self.worklist.incoming:
+        for m in self.worklist.ok:
              # FIXME: outlet = url, outlet=json.
              if self.o.topic_prefix != self.o.post_topic_prefix:
                  m['topic'] = m['topic'].replace( self.o.topic_prefix, self.o.post_topic_prefix )
@@ -384,7 +381,7 @@ class Flow:
              self.poster.putNewMessage(m)
              self.worklist.ok.append(m)
 
-        self.worklist.incoming=[]
+        self.worklist.ok=[]
 
     @abstractmethod 
     def report( self ):
