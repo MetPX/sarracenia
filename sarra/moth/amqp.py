@@ -276,18 +276,17 @@ class AMQP(Moth):
             return None
 
         ml=[]
-
         m=self.getNewMessage()
         if m is not None:
-           fetched=1
-           ml.append(m)
-        else:
-           fetched=0
-
-        while (m is not None) and (fetched < self.props['prefetch']):
-            m=self.getNewMessage()
+            fetched=1
             ml.append(m)
-            fetched += 1
+
+            while fetched < self.props['prefetch']:
+                m=self.getNewMessage()
+                if m is None:
+                    break
+                ml.append(m)
+                fetched += 1
 
         logger.debug("got (%d) done." % len(ml) )
         return ml
