@@ -264,17 +264,15 @@ class Flow:
 
                self.do()
 
-               self.ackWorklist( 'D do' )
-
-               # need to acknowledge incoming here, because posting will delete message-id
-               self.ack(self.worklist.incoming)
+               # need to acknowledge here, because posting will delete message-id
+               self.ack(self.worklist.ok)
 
                self.post()
 
+               self.ackWorklist( 'D do' )
+
                # post should have moved stuff from incoming to others, 
                # but they were already acked above.
-               self.worklist.incoming=[]
-               self.worklist.ok=[]
                self.worklist.rejected=[]
 
                self.report()
@@ -366,20 +364,19 @@ class Flow:
         # mark all remaining messages as done.
         self.worklist.ok = self.worklist.incoming
         self.worklist.incoming = []
-        logger.info('everything worked!')
+        logger.info('processing %d messages worked!' % len(self.worklist.ok) )
   
     @abstractmethod 
     def post( self ):
 
-        self._runPluginsWorklist('on_post')
+        self._runPluginsWorklist('on_post starting for %d messages' % len(self.worklist.ok) )
 
         for m in self.worklist.ok:
              # FIXME: outlet = url, outlet=json.
+             logger.info( 'message: %s' % m )
              if self.o.topic_prefix != self.o.post_topic_prefix:
                  m['topic'] = m['topic'].replace( self.o.topic_prefix, self.o.post_topic_prefix )
-
              self.poster.putNewMessage(m)
-             self.worklist.ok.append(m)
 
         self.worklist.ok=[]
 

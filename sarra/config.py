@@ -909,9 +909,9 @@ def one_config( component, config ):
     """
     default_cfg = default_config( component )
 
-    logger.error( 'default' )
-    print( 'default' )
-    default_cfg.dump()     
+    #logger.error( 'default' )
+    #print( 'default' )
+    #default_cfg.dump()     
 
     cfg = copy.deepcopy(default_cfg)
 
@@ -927,16 +927,17 @@ def one_config( component, config ):
 
     cfg.parse_file(fname)
     
-    logger.error( 'after file' )
-    print( 'after file' )
-    cfg.dump()     
+    #logger.error( 'after file' )
+    #print( 'after file' )
+    #cfg.dump()     
     os.chdir(store_pwd)
 
     cfg.parse_args()
 
-    logger.error( 'after args' )
-    print( 'after args' )
-    cfg.dump()     
+    #logger.error( 'after args' )
+    #print( 'after args' )
+    #cfg.dump()     
+
     cfg.fill_missing_options( component, config )
 
     #pp = pprint.PrettyPrinter(depth=6) 

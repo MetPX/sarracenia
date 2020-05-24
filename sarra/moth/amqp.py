@@ -37,6 +37,14 @@ import copy
 
 logger = logging.getLogger( __name__ )
 
+"""
+amqp_ss_maxlen 
+
+the maximum length of a "short string", as per AMQP protocol, in bytes.
+
+"""
+amqp_ss_maxlen = 255
+
 default_options = { 'queue_name':None, 
                'exchange': None, 'topic_prefix':'v03.post', 'subtopic' : None,  
                'durable':True, 'expire': '5m', 'message_ttl':0, 
@@ -51,12 +59,13 @@ def _msgRawToDict( raw_msg ):
     if raw_msg is not None:
         if raw_msg.properties['content_type'] == 'application/json':
             msg = json.loads( raw_msg.body )
-            msg['topic'] = raw_msg.delivery_info['routing_key']
-            msg['delivery_tag'] = raw_msg.delivery_info['delivery_tag']
-            msg['_deleteOnPost'] = [ 'topic', 'delivery_tag' ]
         else:
             msg = v2wrapper.v02tov03message( 
                 raw_msg.body, raw_message.headers, raw_msg.delivery_info['routing_key'] )
+
+        msg['topic'] = raw_msg.delivery_info['routing_key']
+        msg['delivery_tag'] = raw_msg.delivery_info['delivery_tag']
+        msg['_deleteOnPost'] = [ 'topic', 'delivery_tag' ]
     else:
         msg = None
     return msg
@@ -266,13 +275,18 @@ class AMQP(Moth):
             logger.error("getting from a publisher")
             return None
 
-        fetched=0
         ml=[]
+
         m=self.getNewMessage()
+        if m is not None:
+           fetched=1
+           ml.append(m)
+        else:
+           fetched=0
 
         while (m is not None) and (fetched < self.props['prefetch']):
-            ml.append(m)
             m=self.getNewMessage()
+            ml.append(m)
             fetched += 1
 
         logger.debug("got (%d) done." % len(ml) )
@@ -324,10 +338,12 @@ class AMQP(Moth):
         """
         put a new message out, to the configured exchange by default.
         """
+
         if self.is_subscriber: #build_consumer
             logger.error("publishing from a consumer")
             return None
 
+        #body = copy.deepcopy(bd)
         topic = body['topic']
         topic = topic.replace('#','%23')
         topic = topic.replace('#','%23')
