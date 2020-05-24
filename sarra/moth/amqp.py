@@ -280,7 +280,6 @@ class AMQP(Moth):
         if m is not None:
             fetched=1
             ml.append(m)
-
             while fetched < self.props['prefetch']:
                 m=self.getNewMessage()
                 if m is None:
@@ -301,16 +300,21 @@ class AMQP(Moth):
         while True:
             try:
                 raw_msg = self.channel.basic_get(self.props['queue_name']) 
-                msg = _msgRawToDict( raw_msg ) 
-                logger.info("new msg: %s" % msg )
-                return msg
-            except:
-                logger.warning("moth.amqp.getNewMessage: failed %s: %s" % (queuename, err))
+
+                if (raw_msg is None) and (self.connection.connected):
+                    return None
+                else:
+                    msg = _msgRawToDict( raw_msg ) 
+                    logger.info("new msg: %s" % msg )
+                    return msg
+            except Exception as err:
+                logger.warning("moth.amqp.getNewMessage: failed %s: %s" % (self.props['queue_name'], err))
                 logger.debug('Exception details: ', exc_info=True)
 
             if not self.props['message_strategy']['stubborn']:
                 return None
 
+            logger.warning( 'lost connection to broker' )
             self.close()
             self.__getSetup()
 
@@ -410,6 +414,7 @@ class AMQP(Moth):
 
     def close(self):
         try:
+            self.connection.collect()
             self.connection.close()
 
         except Exception as err:

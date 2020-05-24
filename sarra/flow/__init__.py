@@ -294,7 +294,9 @@ class Flow:
                        logger.debug("sleeping for more than 60 seconds: %g seconds. Elapsed since wakeup: %g Sleep setting: %g " % ( stime, elapsed, self.o.sleep ) )
                else:
                    #logger.debug( 'worked too long to sleep!')
+                   last_time = now
                    continue
+
                try:
                    time.sleep(stime)
                except:
