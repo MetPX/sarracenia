@@ -158,11 +158,11 @@ class V2Wrapper(Plugin):
         global logger
  
         logging.basicConfig( format=o.logFormat, level=getattr(logging, o.logLevel.upper()) )
-        logger.error('loggin: fmt=%s, level=%s' % ( o.logFormat, o.logLevel ) )
+        logger.info('logging: fmt=%s, level=%s' % ( o.logFormat, o.logLevel ) )
  
         # FIXME, insert parent fields for v2 plugins to use here.
         self.logger=logger
-        self.logger.error('v2wrapper init start')
+        self.logger.info('v2wrapper init start')
 
         self.user_cache_dir=sarra.config.get_user_cache_dir()
         self.instance = o.no
@@ -180,7 +180,7 @@ class V2Wrapper(Plugin):
         self.o.user_cache_dir = self.o.cfg_run_dir
         self.o.instance = self.o.no
 
-        self.logger.debug('v2wrapper init done')
+        self.logger.info('v2wrapper init done')
 
 
     def declare_option(self,option):
@@ -191,18 +191,18 @@ class V2Wrapper(Plugin):
         setattr(self,opname,None)
 
         if path == 'None' or path == 'none' or path == 'off':
-             logger.debug("Reset plugin %s to None" % opname )
+             logger.info("Reset plugin %s to None" % opname )
              exec( 'self.' + opname + '_list = [ ]' )
              return True
 
         ok,script = sarra.config.config_path('plugins',path,mandatory=True,ctype='py')
         if ok:
-            logger.debug("installing %s %s" % (opname, script ) )
+            logger.info("installing %s %s" % (opname, script ) )
         else:
             logger.error("installing %s %s failed: not found " % (opname, path) )
             return False
 
-        logger.debug('installing: %s %s' % ( opname, path ) )
+        logger.info('installing: %s %s' % ( opname, path ) )
 
         try:
             with open(script) as f:
@@ -219,14 +219,12 @@ class V2Wrapper(Plugin):
 
             pci = self.v2plugin.lower()
             s = pci + ' = ' + self.v2plugin + '(self)' 
-            logger.error('execing "%s"' % s )
             exec( pci + ' = ' + self.v2plugin + '(self)'  )
             s = 'vars('+ self.v2plugin +')'
-            logger.error('eval "%s"' % s )
             pcv = eval( 'vars('+ self.v2plugin +')' )
             for when in sarra.config.Config.v2entry_points:
                 if when in pcv:
-                    logger.debug("v2 registering %s from %s" % ( when, path ) )
+                    logger.info("v2 registering %s from %s" % ( when, path ) )
                 
                     # 2020/05/22. I think the commented exec can be removed.
                     #FIXME: this breaks things horrible in v3. I do not see the usefulness even in v2.
@@ -241,7 +239,6 @@ class V2Wrapper(Plugin):
                 return False
 
             #eval( 'self.' + opname + '_list.append(self.' + opname + ')' )
-            logger.error( 'eval: self.v2plugins["' + opname +'"].append( self.' + opname + ')' )
             eval( 'self.v2plugins["' + opname +'"].append( self.' + opname + ')' )
 
 

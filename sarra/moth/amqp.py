@@ -373,7 +373,20 @@ class AMQP(Moth):
             del body['_deleteOnPost']      
 
         if not exchange :
-            exchange=self.props['exchange']
+            if (type(self.props['exchange']) is list):
+                if ( len(self.props['exchange']) > 1 ):
+                    if 'post_exchange_split' in self.props:
+                        # FIXME: assert ( len(self.props['exchange']) == self.props['post_exchange_split'] )
+                        #        if that isn't true... then there is something wrong... should we check ?
+                        idx = sum( bytearray(body['integrity']['value'], 'ascii')) % len(self.props['exchange'])
+                        exchange=self.props['exchange'][idx]
+                    else:
+                        logger.error('do not know which exchange to publish to: %s' % self.props['exchange'] )
+                        return
+                else:
+                    exchange=self.props['exchange'][0]
+            else:
+                exchange=self.props['exchange']
  
         if self.props['message_ttl']:
             ttl = "%d" * int(durationToSeconds(self.props['message_ttl']) * 1000 )
@@ -397,13 +410,10 @@ class AMQP(Moth):
         ebo=1
         while True:
             try:
-
-                for x in exchange:
-                    self.channel.basic_publish( AMQP_Message, x, topic ) 
+                    self.channel.basic_publish( AMQP_Message, exchange, topic ) 
                     self.channel.tx_commit()
-                    logger.debug("published {} to {} under: {} ".format(body, exchange, topic) )
-
-                return # no failure == success :-)
+                    logger.info("published {} to {} under: {} ".format(body, exchange, topic) )
+                    return # no failure == success :-)
 
             except Exception as err:
                 logger.warning("moth.amqp.putNewMessage: failed %s: %s" % (exchange, err))

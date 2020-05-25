@@ -17,7 +17,7 @@ class Winnow(Flow):
 
      @classmethod
      def assimilate(cls,obj):
-         obj.__class__ = Shovel
+         obj.__class__ = Winnow
 
      def name(self):
          return 'winnow'
