@@ -59,9 +59,13 @@ def _msgRawToDict( raw_msg ):
     if raw_msg is not None:
         if raw_msg.properties['content_type'] == 'application/json':
             msg = json.loads( raw_msg.body )
+            if ('size' in msg): 
+                 logger.error( 'size matters, type: %s, value: %s' % ( type(msg['size']), msg['size'] ) )
+                 if (type(msg['size']) is str):
+                     msg['size'] = int(msg['size']) 
         else:
             msg = v2wrapper.v02tov03message( 
-                raw_msg.body, raw_message.headers, raw_msg.delivery_info['routing_key'] )
+                raw_msg.body, raw_msg.headers, raw_msg.delivery_info['routing_key'] )
 
         msg['topic'] = raw_msg.delivery_info['routing_key']
         msg['delivery_tag'] = raw_msg.delivery_info['delivery_tag']
@@ -114,8 +118,13 @@ class AMQP(Moth):
           Expect caller to handle errors.
         """
         host= broker.hostname 
-        if broker.port:
-           host += ':{}'.format(broker.port)
+        if broker.port is None:
+            if (broker.scheme[-1]=='s' ):
+                host += ':5671'
+            else:
+                host += ':5672'
+        else:
+            host += ':{}'.format(broker.port)
 
         self.connection = amqp.Connection(
             host=host,

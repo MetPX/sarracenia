@@ -12,7 +12,7 @@ import urllib
 
 from sarra.plugin import Plugin
 
-from sarra.sr_util import nowflt,timestr2flt
+from sarra.sr_util import nowflt,timestr2flt,timev2tov3str
 
 logger = logging.getLogger( __name__ )
 
@@ -22,13 +22,14 @@ class Message:
         """
          in v3, a message is just a dictionary. in v2 it is an object.
          build from sr_message.
+
+         assign everything, except topic... because the topic is stored outside the body in v02.
         """
         # FIXME: new_baseurl, new_relpath, new_path ... ?
 
         self.pubtime=h['pubTime'].replace("T","")
         self.baseurl=h['baseUrl']
         self.relpath=h['relPath']
-        self.topic=h['topic']
         if 'new_dir' in h:
             self.new_dir=h['newDir']
             self.new_file=h['newFile']
@@ -48,6 +49,9 @@ class Message:
 
         #FIXME: sum header encoding.
         if 'size' in h:
+            if type(h['size']) is str:
+                h['size'] = int(h['size'] )
+
             h[ 'parts' ] = '1,%d,1,0,0' % h['size']
             del h['size']
 
@@ -60,6 +64,8 @@ class Message:
             h[ 'parts' ] = '%s,%d,%d,%d,%d' % ( m, p['size'], p['count'], 
                   p['remainder'], p['number'] )
             del h['blocks']
+
+        self.partstr = h['parts']
 
         if 'content' in h:  #v02 does not support inlining
             del h['content']
@@ -81,7 +87,7 @@ class Message:
 
         self.headers=h
         self.hdrstr=str(h)
-
+        self.isRetry=False
 
     def set_hdrstr(self):
         logger.info("set_hdrstr not implemented")
@@ -100,9 +106,9 @@ def v02tov03message( body, headers, topic ):
         if not '_deleteOnPost' in headers:
             msg[ '_deleteOnPost' ] = [ 'topic' ]
 
-        pubtime, baseurl, relpath = body.split(' ')[0:3]
-        msg[ 'pubTime' ] = timev2tov3str( pubtime )
-        msg[ 'baseUrl' ] = baseurl.replace( '%20',' ').replace('%23','#')
+        pubTime, baseUrl, relPath = body.split(' ')[0:3]
+        msg[ 'pubTime' ] = timev2tov3str( pubTime )
+        msg[ 'baseUrl' ] = baseUrl.replace( '%20',' ').replace('%23','#')
         msg[ 'relPath' ] = relPath
         for t in [ 'atime', 'mtime' ]:
             if t in msg:
@@ -127,13 +133,14 @@ def v02tov03message( body, headers, topic ):
             if style in [ 'i' , 'p' ]:
                 msg['blocks'] = {}
                 msg['blocks']['method'] = {'i': 'inplace', 'p': 'partitioned'}[style]
-                msg['blocks']['size'] = str(chunksz)
-                msg['blocks']['count'] = str(block_count)
-                msg['blocks']['remainder'] = str(remainder)
-                msg['blocks']['number'] = str(current_block)
+                msg['blocks']['size'] = int(chunksz)
+                msg['blocks']['count'] = int(block_count)
+                msg['blocks']['remainder'] = int(remainder)
+                msg['blocks']['number'] = int(current_block)
             else:
                 msg['size'] = chunksz
             del msg['parts']
+
      
         return msg
  
@@ -274,6 +281,7 @@ class V2Wrapper(Plugin):
            run plugins for a given entry point.
         """
         self.msg=Message(m)
+        self.msg.topic = m['topic']
 
         ok=True
         for plugin in self.v2plugins[ep]:

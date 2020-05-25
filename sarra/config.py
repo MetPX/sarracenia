@@ -658,7 +658,9 @@ class Config:
                       if type(getattr(self,k)) is float:
                           v = float(v)
                       if type(getattr(self,k)) is int:
-                          v = int(v)
+                          # the only integers that have units are durations.
+                          # integers without units will come out unchanged.
+                          v = durationToSeconds(v)
 
                setattr( self, k, v )
 

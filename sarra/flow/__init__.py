@@ -22,7 +22,9 @@ default_options = {
   'housekeeping' : 30,     
   'logFormat'    : '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
   'logLevel'     : 'info',
+  'post_topic_prefix' : 'v02.post',
          'sleep' : 0.1,   
+  'topic_prefix' : 'v02.post',
            'vip' : None
 }
 
@@ -316,14 +318,14 @@ class Flow:
     def filter(self):
 
         logger.debug('start')
-        self.filtered_worklist = []
+        filtered_worklist = []
         for m in self.worklist.incoming:
             url = m['baseUrl'] + os.sep + m['relPath']
 
             # apply masks, reject.
             matched=False
             for mask in self.o.masks:
-                logger.info('filter - checking: %s' % str(mask) )
+                #logger.info('filter - checking: %s' % str(mask) )
                 pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
 
                 if mask_regexp.match( url ):
@@ -336,7 +338,7 @@ class Flow:
                     # FIXME... missing dir mapping with mirror, strip, etc...
                     self.set_new(m, maskDir, maskFileOption, mirror, strip, pstrip, flatten )
 
-                    self.filtered_worklist.append(m)
+                    filtered_worklist.append(m)
                     logger.debug( "isMatchingPattern: accepted mask=%s strip=%s" % (str(mask), strip) )
                     break
 
@@ -345,11 +347,12 @@ class Flow:
                     logger.debug( "accept: unmatched pattern=%s" % (url) )
                     # FIXME... missing dir mapping with mirror, strip, etc...
                     self.set_new(m, os.getcwd(), None, self.o.mirror, self.o.strip, self.o.pstrip, self.o.flatten )
-                    self.filtered_worklist.append(m)
+                    filtered_worklist.append(m)
                 elif self.o.log_reject:
                     logger.info( "reject: unmatched pattern=%s" % (url) )
                     self.worklist.rejected.append(m)
                 
+        self.worklist.incoming=filtered_worklist
         # apply on_messages plugins.
         self._runPluginsWorklist('on_messages')
 
