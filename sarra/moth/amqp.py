@@ -60,7 +60,6 @@ def _msgRawToDict( raw_msg ):
         if raw_msg.properties['content_type'] == 'application/json':
             msg = json.loads( raw_msg.body )
             if ('size' in msg): 
-                 logger.error( 'size matters, type: %s, value: %s' % ( type(msg['size']), msg['size'] ) )
                  if (type(msg['size']) is str):
                      msg['size'] = int(msg['size']) 
         else:

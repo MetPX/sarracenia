@@ -37,7 +37,6 @@ class Message:
         self.urlstr= self.baseurl + self.relpath
         self.url = urllib.parse.urlparse(self.urlstr)
 
-
         self.notice=self.pubtime + ' ' + h["baseUrl" ] + ' ' + h["relPath"].replace( ' ','%20').replace('#','%23')
         del h["pubTime"]
         del h["baseUrl"]
@@ -75,6 +74,8 @@ class Message:
                 "md5name":"n", "random":"0", "link":"L", "remove":"R", "cod":"z" }
             sa = sum_algo_v3tov2[ h[ "integrity" ][ "method" ] ]
 
+            logger.error( 'setting sumflg to %s' % sa )
+            self.sumflag = sa
             # transform sum value
             if sa in [ '0' ]:
                 sv = h[ "integrity" ][ "value" ]
