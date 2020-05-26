@@ -38,9 +38,6 @@ class Message:
         self.url = urllib.parse.urlparse(self.urlstr)
 
         self.notice=self.pubtime + ' ' + h["baseUrl" ] + ' ' + h["relPath"].replace( ' ','%20').replace('#','%23')
-        del h["pubTime"]
-        del h["baseUrl"]
-        del h["relPath"]
 
         #FIXME: ensure headers are < 255 chars.
         for k in [ 'mtime', 'atime' ]:
@@ -50,9 +47,7 @@ class Message:
         if 'size' in h:
             if type(h['size']) is str:
                 h['size'] = int(h['size'] )
-
             h[ 'parts' ] = '1,%d,1,0,0' % h['size']
-            del h['size']
 
         if 'blocks' in h:
             if h['parts'] == 'inplace': 
@@ -62,12 +57,8 @@ class Message:
             p=h['blocks']
             h[ 'parts' ] = '%s,%d,%d,%d,%d' % ( m, p['size'], p['count'], 
                   p['remainder'], p['number'] )
-            del h['blocks']
 
         self.partstr = h['parts']
-
-        if 'content' in h:  #v02 does not support inlining
-            del h['content']
 
         if 'integrity' in h:
             sum_algo_v3tov2 = { "arbitrary":"a", "md5":"d", "sha512":"s", 
@@ -84,7 +75,7 @@ class Message:
             else:
                 sv = encode( decode( h[ "integrity" ][ "value" ].encode('utf-8'), "base64" ), 'hex' ).decode( 'utf-8' )
             h[ "sum" ] = sa + ',' + sv
-            del h['integrity']
+            self.sumflg = sa
 
         self.headers=h
         self.hdrstr=str(h)

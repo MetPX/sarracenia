@@ -394,6 +394,12 @@ class AMQP(Moth):
 
         if topic.startswith('v02'): #unless explicitly otherwise
             v2m = v2wrapper.Message(body) 
+
+            # v2wrapp
+            for h in [ 'pubTime', 'baseUrl', 'relPath', 'size', 'blocks', 'content', 'integrity' ]:
+                if h in v2m.headers:
+                    del v2m.headers[h]
+
             for k in v2m.headers:
                 if len(v2m.headers[k]) >= amqp_ss_maxlen:
                     logger.error("message header %s too long, dropping" % k )
