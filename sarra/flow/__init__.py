@@ -65,7 +65,7 @@ class Flow:
     def __init__(self,cfg=None):
 
        """
-
+       The cfg is should be an sarra/config object.
        """
        
        self._stop_requested = False
@@ -73,18 +73,21 @@ class Flow:
        me='flow'
        logging.basicConfig(format='%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s', level=logging.DEBUG)
 
-       self.o = types.SimpleNamespace()
+       #self.o = types.SimpleNamespace()
+       #
+       #for k in default_options:
+       #     setattr( self.o, k, default_options[k] )
+       #
+       #component = cfg.configurations[0].split(os.sep)[0]
 
-       for k in default_options:
-            setattr( self.o, k, default_options[k] )
+       self.o = cfg
 
-       component = cfg.configurations[0].split(os.sep)[0]
        subclass=None
        subclass_names=[]
        logger.debug( 'flow.__subclasses__() returns: %s' % Flow.__subclasses__() )
        for sc in Flow.__subclasses__() :
            subclass_names.append(sc.name(self))
-           if component == sc.name(self):
+           if self.o.program_name == sc.name(self):
               subclass=sc
 
        logger.info( 'valid flows: %s' % subclass_names )
@@ -92,14 +95,12 @@ class Flow:
            logger.critical( 'unknown flow. valid choices: %s' % subclass_names )
            return
 
-       for k in subclass.default_options:
-            setattr( self.o, k, subclass.default_options[k] )
-
-       alist = [ a for a in dir(cfg) if not a.startswith('__') ]
-
-       for a in alist:
-            #logger.debug( 'self.o.%s = %s' % ( a, getattr(cfg,a) ) )
-            setattr( self.o, a, getattr(cfg,a) )
+       #for k in subclass.default_options:
+       #     setattr( self.o, k, subclass.default_options[k] )
+       #alist = [ a for a in dir(cfg) if not a.startswith('__') ]
+       #for a in alist:
+       #     #logger.debug( 'self.o.%s = %s' % ( a, getattr(cfg,a) ) )
+       #     setattr( self.o, a, getattr(cfg,a) )
 
        logging.basicConfig( format=self.o.logFormat, level=getattr(logging, self.o.logLevel.upper()) ) 
        logger.debug( '%s logLevel set to: %s ' % ( me, self.o.logLevel ) )
@@ -139,7 +140,6 @@ class Flow:
 
 
        logger.info('shovel constructor')
-       self.o.dump()
 
        if hasattr(self.o,'broker'):
              od = sarra.moth.default_options
@@ -310,9 +310,9 @@ class Flow:
     def set_new(self,m, maskDir, maskFileOption, mirror, strip, pstrip, flatten):
         """
         """
-        m['newDir'] = maskDir
-        m['newFile'] = os.path.basename(m['relPath'])
-        m['_deleteOnPost'].extend( [ 'newDir', 'newFile' ] )
+        m['new_dir'] = maskDir
+        m['new_file'] = os.path.basename(m['relPath'])
+        m['_deleteOnPost'].extend( [ 'new_dir', 'new_file' ] )
  
 
     def filter(self):
@@ -336,7 +336,7 @@ class Flow:
                             self.worklist.rejected.append(m)
                             break
                     # FIXME... missing dir mapping with mirror, strip, etc...
-                    self.set_new(m, maskDir, maskFileOption, mirror, strip, pstrip, flatten )
+                    self.o.set_newMessageFields(m, url, pattern, maskDir, maskFileOption, mirror, strip, pstrip, flatten )
 
                     filtered_worklist.append(m)
                     logger.debug( "isMatchingPattern: accepted mask=%s strip=%s" % (str(mask), strip) )
@@ -346,7 +346,8 @@ class Flow:
                 if self.o.accept_unmatched:
                     logger.debug( "accept: unmatched pattern=%s" % (url) )
                     # FIXME... missing dir mapping with mirror, strip, etc...
-                    self.set_new(m, os.getcwd(), None, self.o.mirror, self.o.strip, self.o.pstrip, self.o.flatten )
+                    self.o.set_newMessageFields(m, url, None, self.o.currentDir, self.o.filename, 
+                       self.o.mirror, self.o.strip, self.o.pstrip, self.o.flatten )
                     filtered_worklist.append(m)
                 elif self.o.log_reject:
                     logger.info( "reject: unmatched pattern=%s" % (url) )

@@ -34,6 +34,17 @@ import sarra.flow.shovel
 import sarra.moth
 import sarra.moth.amqp
 
+default_options = {
+
+  'realpath_post' : False,
+  'documentRoot' : None,
+  'baseDir' : None,
+  'post_documentRoot' : None,
+  'post_baseDir' : None,
+  'post_baseUrl' : None
+
+
+}
 
 
 
@@ -274,9 +285,13 @@ class Config:
    # lookup in dictionary, respond with canonical version.
    appdir_stuff = { 'appauthor':'science.gc.ca', 'appname':'sarra' }
 
+   # Correct name on the right, old name on the left.
    synonyms = { 
      'accept_unmatch': 'accempt_unmatched',
+     'basedir' : 'baseDir',
+     'baseurl' : 'baseUrl',
      'cache' : 'suppress_duplicates', 
+     'document_root' : 'documentRoot',
      'no_duplicates' : 'suppress_duplicates', 
      'caching' : 'suppress_duplicates', 
      'cache_basis': 'suppress_duplicates_basis',  'instance' : 'instances',
@@ -288,7 +303,10 @@ class Config:
      'loglevel': 'logLevel',
      'logdays': 'lr_backupCount',
      'logrotate_interval': 'lr_interval',
-     \
+     'post_basedir' : 'post_baseDir',
+     'post_baseurl' : 'post_baseUrl',
+     'post_document_root' : 'post_documentRoot'
+     
    }
    credentials = None
 
@@ -319,6 +337,7 @@ class Config:
 
        self.debug = False
        self.declared_exchanges = []
+       self.destfn_script=None
        self.env = {}
        self.v2plugins = {}
        self.plugins = []
@@ -438,7 +457,6 @@ class Config:
                if sys.platform == 'win32':
                    result = result.replace('\\','/')
        return result
-
 
    def _build_mask(self, option, arguments):
        """ return new entry to be appended to list of masks
@@ -561,6 +579,7 @@ class Config:
        """
        self._resolve_exchange()
        if hasattr(self,'exchange') and hasattr(self,'topic_prefix'):
+           logger.error( "binding: %s %s %s" % ( self.topic_prefix, self.exchange, subtopic ) )
            self.bindings.append( (self.topic_prefix,  self.exchange, subtopic) )
 
    def _parse_v2plugin(self, entryPoint, value ):
@@ -635,6 +654,7 @@ class Config:
                except:
                    print( "failed to parse: %s" % line[1] )
            elif line[0] in [ 'subtopic' ]:
+               logger.error( 'FIXME: subtopic is: %s' % line[1] )
                self._parse_binding( line[1] )
            elif line[0] in [ 'import' ]:
                self.plugins.append( line[1] )
@@ -755,8 +775,464 @@ class Config:
        if ( self.bindings == [] and hasattr(self,'exchange') ):
           self.bindings = [ ( self.topic_prefix, self.exchange, '#' ) ] 
 
+       if hasattr( self, 'documentRoot' ) and (self.documentRoot is not None):
+           path = os.path.abspath(self.documentRoot)
+           if self.realpath_post:
+               path = os.path.realpath(path)
 
-   class AddBinding(argparse.Action):
+           if sys.platform == 'win32' and words0.find( '\\' ) :
+               logger.warning( "%s %s" % (words0, words1) )
+               logger.warning( "use of backslash ( \\ ) is an escape character. For a path separator use forward slash ( / )." )
+
+           if sys.platform == 'win32':
+               self.documentRoot = path.replace('\\','/')
+           else:
+               self.documentRoot = path
+           n = 2
+
+
+       # verify post_baseDir
+
+       if self.post_baseDir is None :
+           if self.post_documentRoot is not None :
+              self.post_baseDir = self.post_documentRoot
+              logger.warning("use post_baseDir instead of post_documentRoot")
+           elif self.documentRoot is not None :
+              self.post_baseDir = self.documentRoot
+              logger.warning("use post_baseDir instead of documentRoot")
+
+
+
+   """
+      2020/05/26 FIXME here begins sheer terror.
+      following routines are taken verbatim from v2. 
+      trying not to touch it... it is painful.
+      setting new_ values for downloading etc...
+      sundew_* ... 
+   """
+
+   def sundew_basename_parts(self,pattern,basename):
+        """
+        modified from metpx SenderFTP
+        """
+
+        if pattern == None : return []
+        parts = re.findall( pattern, basename )
+        if len(parts) == 2 and parts[1] == '' : parts.pop(1)
+        if len(parts) != 1 : return None
+
+        lst = []
+        if isinstance(parts[0],tuple) :
+           lst = list(parts[0])
+        else:
+          lst.append(parts[0])
+
+        return lst
+
+   # from metpx SenderFTP
+   def sundew_dirPattern(self,pattern,urlstr,basename,destDir) :
+        """
+        does substitutions for patterns in directories.
+
+        """
+        BN = basename.split(":")
+        EN = BN[0].split("_")
+
+        BP = self.sundew_basename_parts(pattern,urlstr)
+
+        ndestDir = ""
+        DD = destDir.split("/")
+        for  ddword in DD :
+             if ddword == "" : continue
+
+             nddword = ""
+             DW = ddword.split("$")
+             for dwword in DW :
+                 nddword += self.sundew_matchPattern(BN,EN,BP,dwword,dwword)
+
+             ndestDir += "/" + nddword
+
+        # This code might add an unwanted '/' in front of ndestDir
+        # if destDir does not start with a substitution $ and
+        # if destDir does not start with a / ... it does not need one
+
+        if destDir[0] != '$' and destDir[0] != '/' :
+            if ndestDir[0] == '/' : ndestDir = ndestDir[1:]
+
+        return ndestDir
+
+   def sundew_getDestInfos(self, currentFileOption, filename):
+        """
+        modified from sundew client
+
+        WHATFN         -- First part (':') of filename 
+        HEADFN         -- Use first 2 fields of filename
+        NONE           -- Use the entire filename
+        TIME or TIME:  -- TIME stamp appended
+        DESTFN=fname   -- Change the filename to fname
+
+        ex: mask[2] = 'NONE:TIME'
+        """
+        if currentFileOption == None : return filename
+        timeSuffix   = ''
+        satnet       = ''
+        parts        = filename.split(':')
+        firstPart    = parts[0]
+
+        if 'sundew_extension' in msg.keys() :
+           parts = [ parts[0] ] + msg[ 'sundew_extension' ].split(':')
+           filename = ':'.join(parts)
+
+        destFileName = filename
+
+        for spec in currentFileOption.split(':'):
+            if spec == 'WHATFN':
+                destFileName =  firstPart
+            elif spec == 'HEADFN':
+                headParts = firstPart.split('_')
+                if len(headParts) >= 2:
+                    destFileName = headParts[0] + '_' + headParts[1]
+                else:
+                    destFileName = headParts[0]
+            elif spec == 'SENDER' and 'SENDER=' in filename:
+                 i = filename.find('SENDER=')
+                 if i >= 0 : destFileName = filename[i+7:].split(':')[0]
+                 if destFileName[-1] == ':' : destFileName = destFileName[:-1]
+            elif spec == 'NONE':
+                 if 'SENDER=' in filename:
+                     i = filename.find('SENDER=')
+                     destFileName = filename[:i]
+                 else :
+                     if len(parts) >= 6 :
+                        # PX default behavior : keep 6 first fields
+                        destFileName = ':'.join(parts[:6])
+                        #  PDS default behavior  keep 5 first fields
+                        if len(parts[4]) != 1 : destFileName = ':'.join(parts[:5])
+                 # extra trailing : removed if present
+                 if destFileName[-1] == ':' : destFileName = destFileName[:-1]
+            elif spec == 'NONESENDER':
+                 if 'SENDER=' in filename:
+                     i = filename.find('SENDER=')
+                     j = filename.find(':',i)
+                     destFileName = filename[:i+j]
+                 else :
+                     if len(parts) >= 6 :
+                        # PX default behavior : keep 6 first fields
+                        destFileName = ':'.join(parts[:6])
+                        #  PDS default behavior  keep 5 first fields
+                        if len(parts[4]) != 1 : destFileName = ':'.join(parts[:5])
+                 # extra trailing : removed if present
+                 if destFileName[-1] == ':' : destFileName = destFileName[:-1]
+            elif re.compile('SATNET=.*').match(spec):
+                 satnet = ':' + spec
+            elif re.compile('DESTFN=.*').match(spec):
+                 destFileName = spec[7:]
+            elif re.compile('DESTFNSCRIPT=.*').match(spec):
+                 old_destfn_script  = self.destfn_script
+                 saved_new_file     = msg['new_file']
+                 msg['new_file']  = destFileName
+                 self.destfn_script = None
+                 script = spec[13:]
+                 self.execfile('destfn_script',script)
+                 if self.destfn_script != None :
+                    ok = self.destfn_script(self)
+                 destFileName       = msg['new_file']
+                 self.destfn_script = old_destfn_script
+                 msg['new_file']  = saved_new_file
+                 if destFileName == None : destFileName = old_destFileName
+            elif spec == 'TIME':
+                 timeSuffix = ':' + time.strftime("%Y%m%d%H%M%S",time.gmtime())
+                 if 'pubTime' in msg :
+                    timeSuffix = ":" + msg['pubTime'].split('.')[0]
+                 if 'pubTime' in msg:
+                    timeSuffix = ":" + msg['pubtime'].split('.')[0]
+                    timeSuffix = timeSuffix.replace('T','')
+                 # check for PX or PDS behavior ...
+                 # if file already had a time extension keep his...
+                 if len(parts[-1]) == 14 and parts[-1][0] == '2' :
+                    timeSuffix = ':' + parts[-1]
+
+            else:
+                logger.error("Don't understand this DESTFN parameter: %s" % spec)
+                return (None, None)
+        return destFileName + satnet + timeSuffix
+
+   # modified from metpx SenderFTP
+   def sundew_matchPattern(self,BN,EN,BP,keywd,defval) :
+
+        BN6 = time.strftime("%Y%m%d%H%M%S", time.gmtime())
+        if len(BN) >= 7 : BN6 = BN[6]
+
+        if   keywd[:4] == "{T1}"    : return (EN[0])[0:1]   + keywd[4:]
+        elif keywd[:4] == "{T2}"    : return (EN[0])[1:2]   + keywd[4:]
+        elif keywd[:4] == "{A1}"    : return (EN[0])[2:3]   + keywd[4:]
+        elif keywd[:4] == "{A2}"    : return (EN[0])[3:4]   + keywd[4:]
+        elif keywd[:4] == "{ii}"    : return (EN[0])[4:6]   + keywd[4:]
+        elif keywd[:6] == "{CCCC}"  : return  EN[1]         + keywd[6:]
+        elif keywd[:4] == "{YY}"    : return (EN[2])[0:2]   + keywd[4:]
+        elif keywd[:4] == "{GG}"    : return (EN[2])[2:4]   + keywd[4:]
+        elif keywd[:4] == "{Gg}"    : return (EN[2])[4:6]   + keywd[4:]
+        elif keywd[:5] == "{BBB}"   : return (EN[3])[0:3]   + keywd[5:]
+        # from pds'datetime suffix... not sure
+        elif keywd[:7] == "{RYYYY}" : return BN6[0:4]       + keywd[7:]
+        elif keywd[:5] == "{RMM}"   : return BN6[4:6]       + keywd[5:]
+        elif keywd[:5] == "{RDD}"   : return BN6[6:8]       + keywd[5:]
+        elif keywd[:5] == "{RHH}"   : return BN6[8:10]      + keywd[5:]
+        elif keywd[:5] == "{RMN}"   : return BN6[10:12]     + keywd[5:]
+        elif keywd[:5] == "{RSS}"   : return BN6[12:14]     + keywd[5:]
+
+        # Matching with basename parts if given
+
+        if BP != None :
+           for i,v in enumerate(BP):
+               kw  = '{' + str(i) +'}'
+               lkw = len(kw)
+               if keywd[:lkw] == kw : return v + keywd[lkw:]
+
+        return defval
+
+
+   def set_dir_pattern(self,cdir):
+
+        new_dir = cdir
+
+        if '${BD}' in cdir and self.baseDir != None :
+           new_dir = new_dir.replace('${BD}',self.baseDir)
+
+        if '${PBD}' in cdir and self.post_baseDir != None :
+           new_dir = new_dir.replace('${PBD}',self.post_baseDir)
+
+        if '${DR}' in cdir and self.documentRoot != None :
+           logger.warning("DR = documentRoot should be replaced by BD for base_dir")
+           new_dir = new_dir.replace('${DR}',self.documentRoot)
+
+        if '${PDR}' in cdir and self.post_baseDir != None :
+           logger.warning("PDR = post_documentRoot should be replaced by PBD for post_baseDir")
+           new_dir = new_dir.replace('${PDR}',self.post_baseDir)
+
+        if '${YYYYMMDD}' in cdir :
+           YYYYMMDD = time.strftime("%Y%m%d", time.gmtime())
+           new_dir  = new_dir.replace('${YYYYMMDD}',YYYYMMDD)
+
+        if '${SOURCE}' in cdir :
+           new_dir = new_dir.replace('${SOURCE}',msg['source'])
+
+        if '${DD}' in cdir :
+           DD = time.strftime("%d", time.gmtime())
+           new_dir = new_dir.replace('${DD}',DD)
+
+        if '${HH}' in cdir :
+           HH = time.strftime("%H", time.gmtime())
+           new_dir = new_dir.replace('${HH}',HH)
+
+        if '${YYYY}' in cdir :
+           YYYY = time.strftime("%Y", time.gmtime())
+           new_dir = new_dir.replace('${YYYY}',YYYY)
+
+        if '${MM}' in cdir :
+           MM = time.strftime("%m", time.gmtime())
+           new_dir = new_dir.replace('${MM}',MM)
+
+        if '${JJJ}' in cdir :
+           JJJ = time.strftime("%j", time.gmtime())
+           new_dir = new_dir.replace('${JJJ}',JJJ)
+
+
+        # Parsing cdir to subtract time from it in the following formats
+        # time unit can be: sec/mins/hours/days/weeks
+
+        # ${YYYY-[number][time_unit]}
+        offset_check = re.search(r'\$\{YYYY-(\d+)(\D)\}', cdir)
+        if offset_check:
+          seconds = self.duration_from_str(''.join(offset_check.group(1,2)), 's')
+
+          epoch  = time.mktime(time.gmtime()) - seconds
+          YYYY1D = time.strftime("%Y", time.localtime(epoch) )
+          new_dir = re.sub('\$\{YYYY-\d+\D\}',YYYY1D, new_dir)
+
+        # ${MM-[number][time_unit]}
+        offset_check = re.search(r'\$\{MM-(\d+)(\D)\}', cdir)
+        if offset_check:
+          seconds = self.duration_from_str(''.join(offset_check.group(1,2)), 's')
+
+          epoch = time.mktime(time.gmtime()) - seconds
+          MM1D  =  time.strftime("%m", time.localtime(epoch) )
+          new_dir = re.sub('\$\{MM-\d+\D\}',MM1D, new_dir)
+
+        # ${JJJ-[number][time_unit]}
+        offset_check = re.search(r'\$\{JJJ-(\d+)(\D)\}', cdir)
+        if offset_check:
+          seconds = self.duration_from_str(''.join(offset_check.group(1,2)), 's')
+
+          epoch = time.mktime(time.gmtime()) - seconds
+          JJJ1D = time.strftime("%j", time.localtime(epoch) )
+          new_dir = re.sub('\$\{JJJ-\d+\D\}',JJJ1D, new_dir)
+
+        # ${YYYYMMDD-[number][time_unit]}
+        offset_check = re.search(r'\$\{YYYYMMDD-(\d+)(\D)\}', cdir)
+        if offset_check:
+          seconds = self.duration_from_str(''.join(offset_check.group(1,2)), 's')
+
+          epoch = time.mktime(time.gmtime()) - seconds
+          YYYYMMDD = time.strftime("%Y%m%d", time.localtime(epoch) )
+          new_dir = re.sub('\$\{YYYYMMDD-\d+\D\}', YYYYMMDD, new_dir)
+
+        new_dir = self.varsub(new_dir)
+
+        return new_dir
+
+
+
+
+   # ==============================================
+   # how will the download file land on this server
+   # with all options, this is really tricky
+   # ==============================================
+
+   def set_newMessageFields(self, msg, urlstr, pattern, maskDir, maskFileOption, 
+         mirror, strip, pstrip, flatten ):
+
+        
+        self.currentDir = maskDir
+
+        logger.debug("newMsgFields: strip=%s, mirror=%s flatten=%s pbd=%s msg[\'relPath\']=%s" %  \
+             ( strip, mirror, flatten, self.post_baseDir, msg['relPath'] ) )
+
+        # relative path by default mirror 
+
+        relPath = '%s' % msg['relPath']
+
+        # case S=0  sr_post -> sr_suscribe... rename in headers
+        # FIXME: 255 char limit on headers, rename will break!
+        if 'rename' in msg : relPath = '%s' % msg['rename']
+
+        token    = relPath.split('/')
+        filename = token[-1]
+
+        # if provided, strip (integer) ... strip N heading directories
+        #         or  pstrip (pattern str) strip regexp pattern from relPath
+        # cannot have both (see setting of option strip in sr_config)
+
+        if strip > 0 :
+           #MG folling code was a fix...
+           #   if strip is a number of directories
+           #   add 1 to strip not to count '/'
+           #   impact to current configs avoided by commenting out
+
+           #if relPath[0] == '/' : strip = strip + 1
+           try :
+                   token   = token[strip:]
+
+           # strip too much... keep the filename
+           except:
+                   token   = [filename]
+
+        # strip using a pattern
+
+        elif pstrip != None :
+           logger.debug( 'newMsgFields:  pattern stripping active: %s' % pstrip )
+
+           #MG FIXME Peter's wish to have replacement in pstrip (ex.:${SOURCE}...)
+           try:    relstrip = re.sub(pstrip,'',relPath,1)
+           except: relstrip = relPath
+
+           # if filename dissappear... same as numeric strip, keep the filename
+           if not filename in relstrip : relstrip = filename
+           token = relstrip.split('/')
+
+        # if flatten... we flatten relative path
+        # strip taken into account
+
+
+        if flatten != '/' :
+           filename  = flatten.join(token)
+           token[-1] = [filename]
+
+        if maskFileOption != None :
+           try   :  filename  = self.sundew_getDestInfos(filename)
+           except:  logger.error("problem with accept file option %s" % maskFileOption )
+           token[-1] = [filename]
+
+        # MG this was taken from the sr_sender when not derived from sr_subscribe.
+        # if a desftn_script is set in a plugin, it is going to be applied on all file
+        # this might be confusing
+
+        if self.destfn_script :
+           self.new_file = filename
+           ok = self.destfn_script(self)
+           if filename != self.new_file :
+              logger.debug("destfn_script : %s becomes %s "  % (filename,self.new_file) )
+              filename = self.new_file
+              token[-1] = [filename]
+
+        # not mirroring
+
+        if not mirror :
+           token = [filename]
+
+        # uses current dir
+
+        new_dir = ''
+        if self.currentDir : new_dir = self.currentDir
+
+        # add relPath
+
+        if len(token) > 1 :
+           new_dir = new_dir + '/' + '/'.join(token[:-1])
+
+        if '$' in new_dir :
+           new_dir = self.set_dir_pattern(new_dir)
+
+        # resolution of sundew's dirPattern
+
+        tfname = filename
+        if 'sundew_extension' in msg.keys() :
+            tfname  = filename.split(':')[0] + ':' + msg[ 'sundew_extension' ]
+
+        # when sr_sender did not derived from sr_subscribe it was always called
+        new_dir = self.sundew_dirPattern(pattern, urlstr, tfname, new_dir)
+
+        logger.debug( "newMsgFields: new_dir = %s" % new_dir )
+
+        # reset relPath from new_dir
+
+        relPath = new_dir + '/' + filename
+        if self.post_baseDir :
+           relPath = relPath.replace(self.post_baseDir, '')
+
+        # set the results for the new file (downloading or sending)
+
+        msg['new_baseUrl'] = 'file:'
+
+        # final value
+        # NOTE : normpath keeps '/a/b/c' and '//a/b/c' the same
+        #        Everywhere else // or /../ are corrected.
+        #        but if the number of / starting the path > 2  ... it will result into 1 /
+
+        msg['new_dir'] = os.path.normpath(new_dir)
+        msg['new_relPath'] = os.path.normpath(relPath)
+
+        if sys.platform == 'win32':
+            msg['new_dir'] = msg['new_dir'].replace('\\', '/')
+            msg['new_relPath'] = msg['new_relPath'].replace('\\', '/')
+            if re.match('[A-Z]:', self.currentDir, flags=re.IGNORECASE):
+                msg['new_dir'] = msg['new_dir'].lstrip('/')
+                msg['new_relPath'] = msg['new_relPath'].lstrip('/')
+
+        msg['new_file'] = filename
+
+        msg['_deleteOnPost'].extend( [ 'new_dir', 'new_file', 'new_relPath' ] )
+        if self.post_broker and self.post_baseUrl:
+            msg['new_baseUrl'] = self.post_baseUrl
+
+   """
+       2020/05/26 PAS... FIXME: end of sheer terror. 
+   """
+
+
+
+
+   class addBinding(argparse.Action):
         """
         called by argparse to deal with queue bindings.
         """
@@ -800,7 +1276,7 @@ class Config:
            and if the parsing fails there, the usage will print the wrong defaults... 
 
         """
-        
+         
         parser=argparse.ArgumentParser( \
              description='Subscribe to one peer, and post what is downloaded' ,\
              formatter_class=argparse.ArgumentDefaultsHelpFormatter )
@@ -861,7 +1337,7 @@ class Config:
         parser.add_argument('--topic_prefix', nargs='?', default=self.topic_prefix, help='allows simultaneous use of multiple versions and types of messages')
         #FIXME: select/accept/reject in parser not implemented.
         parser.add_argument('--select', nargs=1, action='append', help='client-side filtering: accept/reject <regexp>' )
-        parser.add_argument('--subtopic', nargs=1, action=Config.AddBinding, help='server-side filtering: MQTT subtopic, wilcards # to match rest, + to match one topic' )
+        parser.add_argument('--subtopic', nargs=1, action=Config.addBinding, help='server-side filtering: MQTT subtopic, wilcards # to match rest, + to match one topic' )
 
         if isPost:
             parser.add_argument( 'path', nargs='+', help='files to post' )
@@ -875,15 +1351,14 @@ class Config:
         self.merge(args)
 
 
-def default_config( component ):
+def default_config():
 
     cfg = Config()
-
+    cfg.currentDir = os.getcwd()
+    cfg.override( default_options )
     cfg.override( sarra.moth.default_options )
     cfg.override( sarra.moth.amqp.default_options )
     cfg.override( sarra.flow.default_options )
-
-    cfg.override(  { 'program_name':component, 'directory': os.getcwd(), 'accept_unmatched':True } )
 
     for g in [ "admin.conf", "default.conf" ]:
         if os.path.exists( get_user_config_dir() + os.sep + g ):
@@ -908,7 +1383,8 @@ def one_config( component, config ):
       appdir_stuff can be to override file locations for testing during development.
 
     """
-    default_cfg = default_config( component )
+    default_cfg = default_config( )
+    default_cfg.override(  { 'program_name':component, 'directory': os.getcwd(), 'accept_unmatched':True } )
 
     #logger.error( 'default' )
     #print( 'default' )

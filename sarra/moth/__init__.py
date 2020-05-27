@@ -53,7 +53,7 @@ logger = logging.getLogger( __name__ )
 default_options = { 
            'accept_unmatch':True,
            'batch': 100, 
-           'bindings':None, 
+           'bindings':[], 
            'broker': None, 
            'inline': False,
            'inline_encoding': 'guess',

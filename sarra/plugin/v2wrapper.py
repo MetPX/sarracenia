@@ -31,8 +31,8 @@ class Message:
         self.baseurl=h['baseUrl']
         self.relpath=h['relPath']
         if 'new_dir' in h:
-            self.new_dir=h['newDir']
-            self.new_file=h['newFile']
+            self.new_dir=h['new_dir']
+            self.new_file=h['new_file']
 
         self.urlstr= self.baseurl + self.relpath
         self.url = urllib.parse.urlparse(self.urlstr)
@@ -41,7 +41,8 @@ class Message:
 
         #FIXME: ensure headers are < 255 chars.
         for k in [ 'mtime', 'atime' ]:
-            h[ k ] = h[k].replace("T","")
+            if k in h:
+                h[ k ] = h[k].replace("T","")
 
         #FIXME: sum header encoding.
         if 'size' in h:
@@ -50,7 +51,7 @@ class Message:
             h[ 'parts' ] = '1,%d,1,0,0' % h['size']
 
         if 'blocks' in h:
-            if h['parts'] == 'inplace': 
+            if h['blocks']['method'] == 'inplace': 
                 m='i'
             else: 
                 m='p'
@@ -58,14 +59,14 @@ class Message:
             h[ 'parts' ] = '%s,%d,%d,%d,%d' % ( m, p['size'], p['count'], 
                   p['remainder'], p['number'] )
 
-        self.partstr = h['parts']
+        if 'parts' in h:
+            self.partstr = h['parts']
 
         if 'integrity' in h:
             sum_algo_v3tov2 = { "arbitrary":"a", "md5":"d", "sha512":"s", 
                 "md5name":"n", "random":"0", "link":"L", "remove":"R", "cod":"z" }
             sa = sum_algo_v3tov2[ h[ "integrity" ][ "method" ] ]
 
-            logger.error( 'setting sumflg to %s' % sa )
             self.sumflag = sa
             # transform sum value
             if sa in [ '0' ]:
@@ -80,6 +81,15 @@ class Message:
         self.headers=h
         self.hdrstr=str(h)
         self.isRetry=False
+
+        # from sr_message/sr_new ...
+        self.local_offset  = 0
+        self.in_partfile   = False
+        self.local_checksum= None
+
+        self.target_file   = None
+        # does not cover partitioned files.
+
 
     def set_hdrstr(self):
         logger.info("set_hdrstr not implemented")
@@ -160,6 +170,9 @@ class V2Wrapper(Plugin):
         self.instance = o.no
         self.o = o
         self.v2plugins = {}
+        self.consumer = types.SimpleNamespace()
+        self.consumer.sleep_min = 0.01
+
         for ep in sarra.config.Config.v2entry_points:
              self.v2plugins[ep] = []
         

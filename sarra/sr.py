@@ -182,16 +182,18 @@ class sr_GlobalState:
         if not os.path.isdir(self.user_config_dir):
            return
 
-        os.chdir(self.user_config_dir)
-        self.default_cfg = sarra.config.Config()
-        if os.path.exists( "default.conf" ):
-            self.default_cfg.parse_file("default.conf")
-        if os.path.exists( "admin.conf" ):
-            self.default_cfg.parse_file("admin.conf")
+        self.default_cfg = sarra.config.default_config()
 
-        self.admin_cfg = copy.deepcopy( self.default_cfg )
-        if os.path.exists( "admin.conf" ):
-            self.admin_cfg.parse_file("admin.conf")
+        #self.default_cfg = sarra.config.Config()
+        #if os.path.exists( "default.conf" ):
+        #    self.default_cfg.parse_file("default.conf")
+        #if os.path.exists( "admin.conf" ):
+        #    self.default_cfg.parse_file("admin.conf")
+
+        #self.admin_cfg = copy.deepcopy( self.default_cfg )
+        #if os.path.exists( "admin.conf" ):
+        #    self.admin_cfg.parse_file("admin.conf")
+        os.chdir(self.user_config_dir)
 
         for c in self.components:
             if os.path.isdir(c):
@@ -501,8 +503,8 @@ class sr_GlobalState:
             self.brokers[host] = {}
             self.brokers[host]['exchanges'] = {}
             self.brokers[host]['queues'] = {}
-            if hasattr(self.admin_cfg,'admin') and host in self.admin_cfg.admin:
-                self.brokers[host]['admin'] = self.admin_cfg.admin 
+            if hasattr(self,'admin') and host in self.admin:
+                self.brokers[host]['admin'] = self.admin 
 
         return host
 

@@ -66,9 +66,10 @@ def _msgRawToDict( raw_msg ):
             msg = v2wrapper.v02tov03message( 
                 raw_msg.body, raw_msg.headers, raw_msg.delivery_info['routing_key'] )
 
+        msg['exchange'] = raw_msg.delivery_info['exchange']
         msg['topic'] = raw_msg.delivery_info['routing_key']
         msg['delivery_tag'] = raw_msg.delivery_info['delivery_tag']
-        msg['_deleteOnPost'] = [ 'topic', 'delivery_tag' ]
+        msg['_deleteOnPost'] = [ 'exchange', 'topic', 'delivery_tag' ]
     else:
         msg = None
     return msg

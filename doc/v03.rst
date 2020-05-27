@@ -29,6 +29,7 @@ goals of opportunity:
   * Assume python >= 3.4 remove old cruft.
   * Assume ubuntu >= 18.04 remove old cruft.
   * Assume systemd, remove sysv integration.
+  * have options adopt camelCase where possible.
  
 V02 Plugin Pain Points
 ----------------------
@@ -51,9 +52,11 @@ writing plugins is a lot harder than it should be.
 
 * inability to *add* messages within a plugin (can only process the message you have.)
 
-* inability to process groups of messages at a time (say for concurrent sends or downloads, rather than just one at time.
+* inability to process groups of messages at a time (say for concurrent sends or 
+  downloads, rather than just one at time.
 
-* poor handling of message acknowledgements. v02 just ackowledges the previous message when a new one is received.
+* poor handling of message acknowledgements. v02 just ackowledges the previous message 
+  when a new one is received.
 
 * lack of clarity about options, versus working variables, because they are in the same namespace
   in a plugin, if you find self.setting==True  ... is that because the application set it somewhere, 
@@ -62,8 +65,8 @@ writing plugins is a lot harder than it should be.
 * making changes to messages is a bit complicated, because they evolved over different message formats.
 
 
-Changes planned in v03 to address pain points:
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Changes planned to address pain points
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * use importlib from python, much more standard way to register plugins.
   now syntax errors will be picked up just like any other python module being imported,
@@ -95,8 +98,8 @@ Changes planned in v03 to address pain points:
 
 
 
-Uknowns
--------
+Unknowns
+--------
 
 Things that are not clear at the outset.
 
@@ -225,6 +228,11 @@ FIXME are things left to the side that need to be seen to.
 * new command 'sr show' needs to be documented. 
 
 * scopable properties for internal classes, like they exist for plugins.
+
+* took the code required to implement set_newMessageFields verbatim from v2.
+  It is pretty hairy... perhaps turn into a plugin, to get it out of the 
+  main code?  Don't think it will ever go away.  It is fairly ugly, but 
+  very useful and heavily used in existing configs. probably OK. 
 
 Incompatibilities
 -----------------
