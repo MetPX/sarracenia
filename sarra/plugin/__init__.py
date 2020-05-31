@@ -58,7 +58,7 @@ Do not remove from all lists, only move messages between them.
 
 entry_points = [ 'do_download', 'do_get', 'do_poll', 'do_put', 'do_send',
    'on_messages', 'on_data', 'on_files', 'on_housekeeping', 'on_html_page', 
-   'on_line', 'on_part', 'on_post', 'on_report', 'on_start', 'on_stop', 
+   'on_line', 'on_part', 'on_posts', 'on_report', 'on_start', 'on_stop', 
    'on_watch' ]
 
 
@@ -79,78 +79,136 @@ class Plugin:
 
 #    @abstractmethod
 #    def name(self):
+#        """
+#          Task: return the name of a plugin for reference purposes.
+#        """
 #        return __name__
 #
 #    @abstractmethod
-#    def on_files(self,messages):
+#    def on_files(self,worklist):
+#        """
+#          Task: operate on worklist.ok (files which have arrived.)
+#        """
 #        pass
 #
 #    @abstractmethod
-#    def on_messages(self,messages):
+#    def on_messages(self,worklist):
+#        """
+#          Task: operate on worklist.incoming to help decide which messages to process further.
+#                and move messages to worklist.rejected to prevent further processing.
+#                do not delete any messages, only move between worklists, because acknowledgements have not happenned yet.
+#        """
 #        pass
 #
 #    @abstractmethod
-#    def do_download(self,messages): 
+#    def do_download(self,worklist): 
+#        """
+#          Task: operate on worklist.incoming to do corresponding file transfers
+#                moving messages to worklist.ok on success, worklist.failed otherwise.
+#                do not delete any messages, only move between worklists, because acknowledgements have not happenned yet.
+#        """
 #        pass
 #
 #    @abstractmethod
-#    def do_get(self,messages): 
+#    def do_get(self,worklist): 
+#        """
+#          Task: operate on worklist.incoming to do corresponding file transfers
+#                moving messages to worklist.ok on success, worklist.failed otherwise.
+#                do not delete any messages, only move between worklists, because acknowledgements have not happenned yet.
+#        """
 #        pass
 #
 #    @abstractmethod
 #    def do_poll(self): 
+#        """
+#          Task: build worklist.incoming, a form of gather()
+#        """
 #        pass
 #
 #    @abstractmethod
 #    def do_put(self): 
+#        """
+#          Task: 
+#        """
 #        pass
 #
 #    @abstractmethod
 #    def do_send(self):
+#        """
+#          Task: 
+#        """
 #        pass
 #
 #    @abstractmethod
 #    def on_data(self): 
+#        """
+#          Task: 
+#        """
 #        pass
 #
 #    @abstractmethod
-#    def on_files(self,worklist): 
+#    def on_posts(self,worklist): 
+#        """
+#          Task: operate on worklist.ok, and worklist.failed.
+#                this is just prior to posting, to make final adjustments.
+#                all messages are already aknowledged, so deleting messages from worklists here is fine.
+#        """
 #        pass
 #
 #    @abstractmethod
 #    def on_housekeeping(self):
+#        """
+#          Task: 
+#        """
 #        pass
 #
 #    @abstractmethod
 #    def on_html_page(self): 
+#        """
+#          Task: 
+#        """
 #        pass
 #
 #    @abstractmethod
 #    def on_line(self): 
+#        """
+#          Task: 
+#        """
 #        pass
 #
 #    @abstractmethod
 #    def on_part(self): 
-#        pass
-#
-#    @abstractmethod
-#    def on_post(self): 
+#        """
+#          Task: 
+#        """
 #        pass
 #
 #    @abstractmethod
 #    def on_report(self): 
+#        """
+#          Task: 
+#        """
 #        pass
 #
 #    @abstractmethod
 #    def on_start(self): 
+#        """
+#          Task: 
+#        """
 #        pass
 #
 #    @abstractmethod
 #    def on_stop(self):
+#        """
+#          Task: 
+#        """
 #        pass
 #
 #    @abstractmethod
 #    def on_watch(self):
+#        """
+#          Task: 
+#        """
 #        pass
 #
 

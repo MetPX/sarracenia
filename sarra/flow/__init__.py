@@ -120,12 +120,14 @@ class Flow:
        self.worklist.failed = []
 
 
+       self.plugins['load'] = [ 'sarra.plugin.retry.Retry' ]
+
        # open cache, get masks. 
        if self.o.suppress_duplicates > 0:
            # prepend...
-           self.plugins['load'] = [ 'sarra.plugin.nodupe.NoDupe' ]
+           self.plugins['load'].append( 'sarra.plugin.nodupe.NoDupe' )
 
-
+       
        # FIXME: open retry
 
 
@@ -214,7 +216,8 @@ class Flow:
 
     def ack( self, mlist ):
          for m in mlist:
-             self.consumer.ack( m )
+             if not (('isRetry' in m) and m['isRetry']):
+                 self.consumer.ack( m )
 
     def ackWorklist(self,desc):
         logger.debug( '%s incoming: %d, ok: %d, rejected: %d, failed: %d' % ( 
@@ -268,14 +271,11 @@ class Flow:
 
                # need to acknowledge here, because posting will delete message-id
                self.ack(self.worklist.ok)
+               self.ack(self.worklist.failed)
 
                self.post()
 
                self.ackWorklist( 'D do' )
-
-               # post should have moved stuff from incoming to others, 
-               # but they were already acked above.
-               self.worklist.rejected=[]
 
                self.report()
          

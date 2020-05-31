@@ -46,6 +46,21 @@ default_options = {
 
 }
 
+"""
+   for backward compatibility, 
+
+   convert some old plugins that are hard to get working with
+   v2wrapper, into v3 plugin.
+
+   the fdelay ones makes in depth use of sr_replay function, and
+   that has changed in v3 too much.
+
+"""
+convert_to_v3 = {
+
+  'plugin msg_fdelay' : [ 'import', 'sarra.plugin.msg.fdelay.FDelay' ]
+
+}
 
 
 """
@@ -469,6 +484,9 @@ class Config:
    
        return ( arguments[0], self.directory, fn, regex, option.lower() in ['accept','get'], self.mirror, self.strip, self.pstrip, self.flatten )
 
+   def declare_option(self,option):
+       logger.info('v2plugin option: %s declared' % option)
+
 
    def dump(self):
        """ print out what the configuration looks like.
@@ -579,7 +597,6 @@ class Config:
        """
        self._resolve_exchange()
        if hasattr(self,'exchange') and hasattr(self,'topic_prefix'):
-           logger.error( "binding: %s %s %s" % ( self.topic_prefix, self.exchange, subtopic ) )
            self.bindings.append( (self.topic_prefix,  self.exchange, subtopic) )
 
    def _parse_v2plugin(self, entryPoint, value ):
@@ -641,6 +658,10 @@ class Config:
            line = l.split()
            if (len(line) < 1) or (line[0].startswith('#')):
                continue
+
+           if l.strip() in convert_to_v3:
+               logger.error('Got it! Converting %s to v3: %s' % ( l.strip(), line ) )
+               line=convert_to_v3[l.strip()]
    
            line = list( map( lambda x : self._varsub(x), line ) )
 
@@ -654,7 +675,6 @@ class Config:
                except:
                    print( "failed to parse: %s" % line[1] )
            elif line[0] in [ 'subtopic' ]:
-               logger.error( 'FIXME: subtopic is: %s' % line[1] )
                self._parse_binding( line[1] )
            elif line[0] in [ 'import' ]:
                self.plugins.append( line[1] )
@@ -735,6 +755,8 @@ class Config:
               queuefile += "%02d" % self.no
           queuefile  += '.qname'
 
+          self.queue_filename=queuefile
+
           if (not hasattr(self,'queue_name')) or ( self.queue_name is None ):
              if os.path.isfile( queuefile ) :
                  f = open(queuefile,'r')
@@ -754,6 +776,10 @@ class Config:
               f=open( queuefile, 'w' )
               f.write( self.queue_name )
               f.close()
+
+       if hasattr(self,'no' ):
+           self.pid_filename=get_pid_filename( component, cfg, self.no )
+           self.retry_path=self.pid_filename.replace('.pid','.retry')
 
 
        if self.post_broker is not None:

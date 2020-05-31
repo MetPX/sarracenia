@@ -164,7 +164,7 @@ class V2Wrapper(Plugin):
  
         # FIXME, insert parent fields for v2 plugins to use here.
         self.logger=logger
-        self.logger.info('v2wrapper init start')
+        logger.info('v2wrapper init start')
 
         self.user_cache_dir=sarra.config.get_user_cache_dir()
         self.instance = o.no
@@ -185,7 +185,7 @@ class V2Wrapper(Plugin):
         self.o.user_cache_dir = self.o.cfg_run_dir
         self.o.instance = self.o.no
 
-        self.logger.info('v2wrapper init done')
+        logger.info('v2wrapper init done')
 
 
     def declare_option(self,option):
