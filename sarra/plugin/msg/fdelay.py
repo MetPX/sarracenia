@@ -24,16 +24,23 @@ class FDelay(Plugin):
 
         self.o = options
 
+        logging.basicConfig( 
+             format=self.o.logFormat, 
+             level=getattr( logging, self.o.logLevel.upper() ) )
+
         logger.error('hoho! FIXME init')
         #parent.declare_option('fdelay')
         if hasattr(self.o, 'msg_fdelay'):
             self.o.fdelay = self.o.msg_fdelay 
 
-        if hasattr(self.o, 'fdelay') and type(self.o.fdelay) is list:
-            self.fdelay = int(self.o.fdelay[0])
-        elif not hasattr(self.o, 'fdelay'):
+        if not hasattr(self.o, 'fdelay'):
             self.o.fdelay = 60
 
+        if type(self.o.fdelay) is list:
+            self.o.fdelay = self.o.fdelay[0]
+
+        if type(self.o.fdelay) not in [ int, float ]:
+            self.o.fdelay = float(self.o.fdelay[0])
 
 
     def on_messages(self, worklist):
@@ -41,11 +48,13 @@ class FDelay(Plugin):
         import stat
 
         # Prepare msg delay test
+        logger.info('FIXME: fdelay?' )
         outgoing=[]
         for m in worklist.incoming:
             if m['integrity']['method'] == 'remove':
                 # 'remove' msg will be removed by itself
                 worklist.rejected.append(m)
+                logger.error('marked rejected 0')
                 continue
 
             # Test msg delay
@@ -56,6 +65,7 @@ class FDelay(Plugin):
                 m['isRetry'] = False
                 message['_deleteOnPost'].append( 'isRetry' )
                 worklist.failed.append(m)
+                logger.error('marked failed 1')
                 continue
 
             # Prepare file delay test
@@ -66,6 +76,7 @@ class FDelay(Plugin):
             if not os.path.exists(f):
                 logger.error("did not find file {}".format(f))
                 worklist.failed.append(m)
+                logger.error('marked failed 2')
                 continue
 
             # Test file delay
@@ -77,8 +88,10 @@ class FDelay(Plugin):
                 m['isRetry'] = False
                 message['_deleteOnPost'].append( 'isRetry' )
                 worklist.failed.append(m)
+                logger.error('marked failed 3')
                 continue
 
+            logger.error('appending to outgoing')
             outgoing.append(m)
 
         worklist.incoming=outgoing

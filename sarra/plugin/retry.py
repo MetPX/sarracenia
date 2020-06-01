@@ -61,6 +61,9 @@ i
 
         self.o     = options
 
+        logging.basicConfig( format=self.o.logFormat, 
+             level=getattr(logging, self.o.logLevel.upper()) )
+
         # initialize all retry path if retry_path is provided
         if hasattr(self.o,'retry_path') : self.init()
 
@@ -139,9 +142,9 @@ i
         self.retry_fp, message = self.msg_get_from_file(self.retry_fp, self.retry_path)
 
         # FIXME MG as discussed with Peter
-        # no heartbeat in get ...
+        # no housekeeping in get ...
         # if no message (and new or state file there)
-        # we wait for heartbeat to present retry messages
+        # we wait for housekeeping to present retry messages
         if not message :
            try   : os.unlink(self.retry_path)
            except: pass
@@ -167,7 +170,7 @@ i
           and try processing that again.
         """
 
-        logger.info("FIXME! worklist is %d " % len(worklist.incoming) )
+        logger.info("FIXME! len(worklist) is %d " % len(worklist.incoming) )
         if len(worklist.incoming) > 0:
             return
 
@@ -199,7 +202,7 @@ i
         self.state_work = self.state_path        + '.work'
         self.state_fp   = None
 
-        # working file at heartbeat
+        # working file at housekeeping
 
         self.heart_path = self.o.retry_path + '.heart'
         self.heart_fp   = None
@@ -287,7 +290,7 @@ i
         return fp,msg
 
     def on_housekeeping(self):
-        logger.info("sr_retry on_heartbeat")
+        logger.info("sr_retry on_housekeeping")
 
         # finish retry before reshuffling all retries entries
 
@@ -410,7 +413,7 @@ i
              except: pass
 
         except:
-                logger.error("sr_retry/on_heartbeat: something went wrong")
+                logger.error("sr_retry/on_housekeeping: something went wrong")
                 logger.debug('Exception details: ', exc_info=True)
 
         # no more retry
@@ -421,7 +424,7 @@ i
            except: pass
 
 
-        # heartbeat file becomes new retry
+        # housekeeping file becomes new retry
 
         else:
            logger.info("Number of messages in retry list %d" % N)
@@ -439,7 +442,7 @@ i
 
         self.last_body = None
         elapse         = nowflt()-now
-        logger.info("sr_retry on_heartbeat elapse %f" % elapse)
+        logger.info("sr_retry on_housekeeping elapse %f" % elapse)
 
 
     def on_posts(self,worklist):

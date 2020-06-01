@@ -284,10 +284,15 @@ class V2Wrapper(Plugin):
         """
         self.msg=Message(m)
         self.msg.topic = m['topic']
+        self.restore=self.o.__dict__
+        for o in self.restore:
+             setattr( self.msg, o, getattr(self.o,o) )
 
         ok=True
         for plugin in self.v2plugins[ep]:
              ok = plugin(self) 
              if not ok: break
 
+        for o in self.restore:
+             setattr( self.o, o, getattr(self.msg,o) )
         return ok
