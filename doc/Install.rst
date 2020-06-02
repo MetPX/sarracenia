@@ -23,11 +23,11 @@ will be installed by the package manager automatically.
 Ubuntu/Debian (apt/dpkg)
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-On Ubuntu 14.04/16.04/17.10/18.04 and derivatives of same::
+On Ubuntu 16.04 or later... and derivatives of same::
 
   sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx
   sudo apt-get update
-  sudo apt-get install python3-paramiko   # required SFTP support.
+  sudo apt-get install python3-paramiko   # required for SFTP support.
   sudo apt-get install metpx-sarracenia  # only supports HTTP/HTTPS
   sudo apt-get install sarrac # optional C client.
 
