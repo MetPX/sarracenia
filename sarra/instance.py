@@ -24,7 +24,7 @@ from urllib.parse import urlparse,urlunparse
 class RedirectedTimedRotatingFileHandler( logging.handlers.TimedRotatingFileHandler ):
 
     def doRollover(self):
-        super().do_rollover()
+        super().doRollover()
 
         if sys.platform != 'win32' :
             os.dup2( self.stream.fileno(), 1 )
