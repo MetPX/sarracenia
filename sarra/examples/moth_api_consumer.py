@@ -30,7 +30,7 @@ while True:
     m = h.getNewMessage()
     if m is not None:
         print( "message: %s" % m )
-    h.ack(m)
+        h.ack(m)
     time.sleep(0.1)
 
 h.close()
