@@ -355,6 +355,7 @@ class Config:
        self.destfn_script=None
        self.env = {}
        self.v2plugins = {}
+       self.v2plugin_options = []
        self.plugins = []
        self.exchange = None
        self.filename = None
@@ -484,8 +485,16 @@ class Config:
    
        return ( arguments[0], self.directory, fn, regex, option.lower() in ['accept','get'], self.mirror, self.strip, self.pstrip, self.flatten )
 
-   def declare_option(self,option):
-       logger.info('v2plugin option: %s declared' % option)
+   #def declare_option(self,option):
+   #    logger.info('v2plugin option: %s declared' % option)
+
+   #    self.v2plugin_options.append(option)
+
+   #    #if not hasattr(self,option): return
+
+   #    logger.info('value type is: %s' % type(getattr(self,option)) )
+   #    if type(getattr(self,option)) is not list:
+   #        setattr(self,option, [ getattr(self,option) ] )
 
 
    def dump(self):
@@ -1445,7 +1454,6 @@ def one_config( component, config ):
 
     #pp = pprint.PrettyPrinter(depth=6) 
     #pp.pprint(cfg)
-
 
     return cfg
 

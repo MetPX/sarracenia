@@ -64,6 +64,7 @@ i
         logging.basicConfig( format=self.o.logFormat, 
              level=getattr(logging, self.o.logLevel.upper()) )
 
+        logger.error('logLevel=%s' % self.o.logLevel )
         # initialize all retry path if retry_path is provided
         if hasattr(self.o,'retry_path') : self.init()
 
@@ -170,12 +171,12 @@ i
           and try processing that again.
         """
 
-        logger.info("FIXME! len(worklist) is %d " % len(worklist.incoming) )
+        logger.debug("FIXME! len(worklist) is %d " % len(worklist.incoming) )
         if len(worklist.incoming) > 0:
             return
 
         ( ok, m ) = self.get_retry()
-        logger.info("FIXME! from worklist is %s " % m )
+        logger.info("FIXME! loglevel=%s from retry is %s " % (self.o.logLevel, m) )
         if m is not None:
              worklist.incoming.append(m)
 

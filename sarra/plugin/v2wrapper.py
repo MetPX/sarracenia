@@ -152,10 +152,16 @@ class V2Wrapper(Plugin):
     def __init__(self, o):
         """
            A wrapper class to run v02 plugins.
-           us run(entry_point,module)
+           us run_entry(entry_point,module)
 
            entry_point is a string like 'on_message',  and module being the one to add.
 
+           weird v2 stuff:   
+                when calling init, self is a config/subscriber...
+                when calling on_message, self is a message...
+                that is kind of blown away for each message...
+                parent is the config/subscriber in both cases.
+                so v2 state variables are always stored in parent.
         """
         global logger
  
@@ -166,9 +172,12 @@ class V2Wrapper(Plugin):
         self.logger=logger
         logger.info('v2wrapper init start')
 
+        self.state_vars=[]
+
         self.user_cache_dir=sarra.config.get_user_cache_dir()
         self.instance = o.no
         self.o = o
+
         self.v2plugins = {}
         self.consumer = types.SimpleNamespace()
         self.consumer.sleep_min = 0.01
@@ -181,15 +190,28 @@ class V2Wrapper(Plugin):
             for v in o.v2plugins[e]:
                 self.add( e, v )
  
+        #propage options back to self.o for on_timing calls.
+        for v2o in self.o.v2plugin_options:
+            setattr( self.o, v2o, getattr(self,v2o ) )
+
         # backward compat...
         self.o.user_cache_dir = self.o.cfg_run_dir
         self.o.instance = self.o.no
+        self.o.logger = self.logger
 
         logger.info('v2wrapper init done')
 
 
     def declare_option(self,option):
         logger.info('v2plugin option: %s declared' % option)
+
+        self.state_vars.append(option)
+        if not hasattr(self,option): return
+
+        logger.info('value type is: %s' % type(getattr(self,option)) )
+        if type(getattr(self,option)) is not list:
+            setattr(self,option, [ getattr(self,option) ] )
+
 
     def add(self, opname, path):
 
@@ -209,6 +231,8 @@ class V2Wrapper(Plugin):
 
         logger.info('installing: %s %s' % ( opname, path ) )
 
+        c1=copy.deepcopy(vars(self))
+
         try:
             with open(script) as f:
                 exec(compile(f.read().replace('self.plugin','self.v2plugin'), script, 'exec'))
@@ -222,6 +246,7 @@ class V2Wrapper(Plugin):
                 logger.error("%s plugin %s incorrect: does not set self.%s" % ('v2plugin', path, 'v2plugin' ))
                 return False
 
+            # pci plugin-class-instance... parent is self (a v2wrapper)
             pci = self.v2plugin.lower()
             s = pci + ' = ' + self.v2plugin + '(self)' 
             exec( pci + ' = ' + self.v2plugin + '(self)'  )
@@ -245,7 +270,16 @@ class V2Wrapper(Plugin):
 
             #eval( 'self.' + opname + '_list.append(self.' + opname + ')' )
             eval( 'self.v2plugins["' + opname +'"].append( self.' + opname + ')' )
+  
+        c2=vars(self)
+        c12diff = list( set(c2) - set(c1) ) 
+        logger.error('init added: +%s+ to %s' % (c12diff, self.state_vars) )
+        if len(c12diff) > 0 :
+            self.state_vars.extend(c12diff)
 
+        for opt in self.state_vars:
+             if hasattr(self,opt):
+                 setattr( self.o, opt, getattr(self,opt) )
 
         return True
 
@@ -254,7 +288,7 @@ class V2Wrapper(Plugin):
         outgoing=[]
         for m in worklist.incoming:
             mm = copy.deepcopy(m)
-            if self.run('on_message', mm):
+            if self.run_entry('on_message', mm):
                outgoing.append(m)
             else:
                worklist.rejected.append(m)
@@ -278,21 +312,29 @@ class V2Wrapper(Plugin):
     def on_stop(self):
         self.on_time('on_stop')
 
-    def run(self,ep,m):
+    def run_entry(self,ep,m):
         """
            run plugins for a given entry point.
         """
         self.msg=Message(m)
         self.msg.topic = m['topic']
-        self.restore=self.o.__dict__
-        for o in self.restore:
-             setattr( self.msg, o, getattr(self.o,o) )
+        self.o.msg = self.msg
+
+        varsb4=copy.deepcopy(vars(self.msg))
+
+        for opt in self.state_vars:
+             if hasattr(self.o,opt):
+                 setattr( self.msg, opt, getattr(self.o,opt) )
 
         ok=True
         for plugin in self.v2plugins[ep]:
-             ok = plugin(self) 
+             ok = plugin(self.o) 
              if not ok: break
 
-        for o in self.restore:
-             setattr( self.o, o, getattr(self.msg,o) )
+        vars_after=vars(self.msg)
+
+        diff=list( set(vars_after) - set(varsb4) )
+        if len(diff) > 0:
+            self.state_vars.extend(diff)
+
         return ok

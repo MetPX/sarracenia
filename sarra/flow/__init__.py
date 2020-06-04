@@ -131,15 +131,14 @@ class Flow:
        # FIXME: open retry
 
 
+       if hasattr( self.o, 'plugins'):
+           self.plugins['load'].extend( self.o.plugins )
+
        # initialize plugins.
        if hasattr( self.o, 'v2plugins' ):
            self.plugins['load'].append( 'sarra.plugin.v2wrapper.V2Wrapper' )
  
-       if hasattr( self.o, 'plugins'):
-           self.plugins['load'].extend( self.o.plugins )
-
        self.loadPlugins( self.plugins['load'] )
-
 
        logger.info('shovel constructor')
 

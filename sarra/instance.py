@@ -55,8 +55,7 @@ class instance:
     
         """
         logger = logging.getLogger()
-        logging.basicConfig(format='%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s', level=logging.DEBUG)
-        logger.setLevel( logging.INFO )
+        logging.basicConfig(format='%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s', level=logging.INFO )
          
         # FIXME: honour SR_ variable for moving preferences...
         default_cfg_dir = appdirs.user_config_dir( 
@@ -79,12 +78,14 @@ class instance:
             return
     
         if cfg_preparse.debug:
-             loglevel = logging.DEBUG
-        elif hasattr(cfg_preparse,'loglevel'):
-            loglevel =  getattr(logging, cfg_preparse.loglevel.upper() )
+             logLevel = logging.DEBUG
+        elif hasattr(cfg_preparse,'logLevel'):
+            logLevel =  getattr(logging, cfg_preparse.logLevel.upper() )
         else:
-            loglevel = logging.INFO
+            logLevel = logging.INFO
          
+        logger.setLevel(logLevel)
+
         if not hasattr(cfg_preparse,'no') and not (cfg_preparse.action == 'foreground'):
             logger.critical('need an instance number to run.')
             return
@@ -93,8 +94,6 @@ class instance:
             logger.critical("can only run one configuration in an instance" ) 
             return
          
-    
-    
         # FIXME: do we put explicit error handling here for bad input?
         #        probably worth exploring.
         #
@@ -125,13 +124,13 @@ class instance:
             #print('logfilename= %s' % logfilename )
             os.makedirs(os.path.dirname(logfilename), exist_ok=True)
     
-            log_format = '%(asctime)s [%(levelname)s] %(message)s'
+            log_format = '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s'
             if logging.getLogger().hasHandlers():
                 for h in logging.getLogger().handlers:
                     h.close()
                     logging.getLogger().removeHandler(h)
             logger = logging.getLogger()
-            logger.setLevel(loglevel)
+            logger.setLevel(logLevel)
     
             handler = RedirectedTimedRotatingFileHandler(logfilename, 
                 when=lr_when, interval=lr_interval, backupCount=lr_backupCount)
@@ -152,7 +151,7 @@ class instance:
                 os.dup2( handler.stream.fileno(), 2 )
     
         else:
-            logger.setLevel(loglevel)
+            logger.setLevel(logLevel)
     
         signal.signal(signal.SIGTERM, self.stop_signal)
         signal.signal(signal.SIGINT, self.stop_signal)
