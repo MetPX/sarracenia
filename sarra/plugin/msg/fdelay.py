@@ -63,7 +63,7 @@ class FDelay(Plugin):
                 dbg_msg = "message not old enough, sleeping for {:.3f} seconds"
                 logger.debug(dbg_msg.format(elapsedtime, self.o.fdelay - elapsedtime))
                 m['isRetry'] = False
-                message['_deleteOnPost'].append( 'isRetry' )
+                m['_deleteOnPost'].append( 'isRetry' )
                 worklist.failed.append(m)
                 logger.error('marked failed 1')
                 continue
@@ -86,7 +86,7 @@ class FDelay(Plugin):
                 dbg_msg = "file not old enough, sleeping for {:.3f} seconds"
                 logger.debug(dbg_msg.format(elapsedtime, self.o.fdelay - elapsedtime))
                 m['isRetry'] = False
-                message['_deleteOnPost'].append( 'isRetry' )
+                m['_deleteOnPost'].append( 'isRetry' )
                 worklist.failed.append(m)
                 logger.error('marked failed 3')
                 continue

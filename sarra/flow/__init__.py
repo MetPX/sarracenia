@@ -274,10 +274,12 @@ class Flow:
 
                self.post()
 
-               self.ackWorklist( 'D do' )
-
                self.report()
          
+               self.worklist.ok=[]
+               self.worklist.failed=[]
+
+
            if spamming and (current_sleep < 5):
                 current_sleep *= 2
 
