@@ -369,7 +369,8 @@ class AMQP(Moth):
 
         if '_deleteOnPost' in body:
             for k in body['_deleteOnPost']:
-               del body[k]
+               if k in body:
+                   del body[k]
             del body['_deleteOnPost']      
 
         if not exchange :

@@ -38,6 +38,7 @@ class Retry(Plugin):
     so continuous, but append-only io... with an occasional housekeeping cycle.
     to resolve them
    
+    retry_ttl how long 
     self.retry_cache 
           - a dictionary indexed by some sort of key to prevent duplicate messages
             being stored in it.
@@ -50,10 +51,13 @@ class Retry(Plugin):
     .state.work --
 
     .state
-i            
+            
     whenever a message is added to the retry_cache, it is appended to a cumulative
     list of entries to add to the retry list.  
       
+
+    One must remove the *delivery_tag* of messages placed on the retry list,
+    as reception from the source has already been acknowledged.
     """
     def __init__(self, options ):
 
@@ -61,22 +65,27 @@ i
 
         self.o     = options
 
+        if not hasattr(self.o,'retry_ttl'):
+             self.o.retry_ttl = None
+
         logging.basicConfig( format=self.o.logFormat, 
              level=getattr(logging, self.o.logLevel.upper()) )
 
-        logger.error('logLevel=%s' % self.o.logLevel )
+        logger.debug('logLevel=%s' % self.o.logLevel )
+
         # initialize all retry path if retry_path is provided
         if hasattr(self.o,'retry_path') : self.init()
 
 
     def add_msg_to_state_file(self,message,done=False):
-        #logger.debug("DEBUG add to state file %s %s %s" % (os.path.basename(self.state_path),message,done))
+
+        logger.debug("DEBUG add to state file %s %s %s" % (os.path.basename(self.state_path),message,done))
         self.state_fp = self.msg_append_to_file(self.state_fp,self.state_path,message,done)
         # performance issue... only do before close
         #os.fsync(self.state_fp)
 
     def add_msg_to_new_file(self, message):
-        #logger.debug("DEBUG add to new file %s %s" % (os.path.basename(self.new_path),message))
+        logger.debug("DEBUG add to new file %s %s" % (os.path.basename(self.new_path),message))
         self.new_fp = self.msg_append_to_file(self.new_fp,self.new_path,message)
         # performance issue... only do before close
         #os.fsync(self.new_fp)
@@ -120,13 +129,16 @@ i
         return msg
 
     def msgToJSON(self, message, done=False ):
-        logger.debug('Encoding msg to json: message={}'.format(vars(message)))
+        logger.debug('Encoding msg to json: message={}'.format(message))
 
         if done:
             message['_retry_tag_'] = 'done'
             message['_deleteOnPost'].append( '_retry_tag_' )
 
-        return json.dumps( message , sort_keys=True) + '\n'
+        s= json.dumps( message , sort_keys=True) + '\n'
+        logger.debug('json version={}'.format(s))
+
+        return s
 
     def get(self):
         """
@@ -171,12 +183,11 @@ i
           and try processing that again.
         """
 
-        logger.debug("FIXME! len(worklist) is %d " % len(worklist.incoming) )
         if len(worklist.incoming) > 0:
             return
 
         ( ok, m ) = self.get_retry()
-        logger.info("FIXME! loglevel=%s from retry is %s " % (self.o.logLevel, m) )
+        logger.debug("loading from retry: %s " % (m) )
         if m is not None:
              worklist.incoming.append(m)
 
@@ -215,7 +226,7 @@ i
 
         """
         urlstr = message['baseUrl'] + '/' + message['relPath'] 
-        sumstr  = message['sum']
+        sumstr  = json.dumps(message['integrity'])
         cache_key = urlstr + ' ' + sumstr 
 
         if 'parts' in message :
@@ -347,7 +358,7 @@ i
                    fp, message = self.msg_get_from_file(fp, self.state_work)
                    if not message : break
                    i = i + 1
-                   logger.debug("DEBUG message %s" % vars(message))
+                   logger.debug("DEBUG message %s" % message)
                    if self.in_cache(message): continue
                    valid = self.is_valid(message)
                    if not valid: continue
@@ -372,7 +383,7 @@ i
                    fp, message = self.msg_get_from_file(fp, self.retry_work)
                    if not message : break
                    i = i + 1
-                   logger.debug("DEBUG message %s" % vars(message))
+                   logger.debug("DEBUG message %s" % message)
                    if self.in_cache(message): continue
                    if not self.is_valid(message): continue
 
@@ -450,13 +461,15 @@ i
         """
          worklist.failed should be put on the retry list.
         """
-        logger.error( "adding %d to retry _list" % len(worklist.failed) )
+        logger.debug( "adding %d to retry _list" % len(worklist.failed) )
 
         for m in worklist.failed:
-             if self.raw_msg.isRetry:
-                 self.add_msg_to_state_file(m)
-             else:
+             if ( 'isRetry' in m ) and m['isRetry']: 
+                 if 'delivery_tag' in m:
+                     del m['delivery_tag']
                  self.add_msg_to_new_file(m)
+             else:
+                 self.add_msg_to_state_file(m)
 
         worklist.failed=[]      
 

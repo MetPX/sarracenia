@@ -215,6 +215,7 @@ class Flow:
 
     def ack( self, mlist ):
          for m in mlist:
+             # see plugin/retry.py
              if not (('isRetry' in m) and m['isRetry']):
                  self.consumer.ack( m )
 
@@ -376,7 +377,9 @@ class Flow:
     @abstractmethod 
     def post( self ):
 
-        self._runPluginsWorklist('on_post starting for %d messages' % len(self.worklist.ok) )
+        logger.debug( 'on_post starting for %d messages' % len(self.worklist.ok) )
+
+        self._runPluginsWorklist('on_posts')
 
         for m in self.worklist.ok:
              # FIXME: outlet = url, outlet=json.
