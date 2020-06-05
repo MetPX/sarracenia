@@ -22,7 +22,6 @@ default_options = {
   'housekeeping' : 30,     
   'logFormat'    : '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
   'logLevel'     : 'info',
-  'post_topic_prefix' : 'v02.post',
          'sleep' : 0.1,   
   'topic_prefix' : 'v02.post',
            'vip' : None
@@ -81,6 +80,9 @@ class Flow:
        #component = cfg.configurations[0].split(os.sep)[0]
 
        self.o = cfg
+
+       if not hasattr(self.o,'post_topic_prefix'):
+           self.o.post_topic_prefix=self.o.topic_prefix
 
        subclass=None
        subclass_names=[]
