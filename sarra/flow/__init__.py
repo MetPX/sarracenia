@@ -28,7 +28,6 @@ default_options = {
 }
 
 class Flow:
-    __metaclass__ = ABCMeta
     """
     Implement the General Algorithm from the Concepts Guide.
     just pure program logic all the start, status, stop, log & instance management taken care of elsewhere.
@@ -60,6 +59,7 @@ class Flow:
 
      
     """
+    __metaclass__ = ABCMeta
   
     def __init__(self,cfg=None):
 
@@ -140,14 +140,9 @@ class Flow:
        if hasattr( self.o, 'v2plugins' ):
            self.plugins['load'].append( 'sarra.plugin.v2wrapper.V2Wrapper' )
  
+       subclass.__init__(self)
+
        self.loadPlugins( self.plugins['load'] )
-
-       logger.info('shovel constructor')
-
-       if hasattr(self.o,'broker'):
-             od = sarra.moth.default_options
-             od.update( self.o.dictify() )
-             self.consumer = sarra.moth.Moth( self.o.broker, od, is_subscriber=True )
 
        if hasattr(self.o,'post_broker'):
              props = sarra.moth.default_options
@@ -156,7 +151,6 @@ class Flow:
              } )
              self.poster = sarra.moth.Moth( self.o.post_broker, props, is_subscriber=False )
 
-       subclass.__init__(self)
    
     
     def loadPlugins(self, plugins_to_load):
@@ -210,16 +204,14 @@ class Flow:
     def close( self ):
 
         self._runPluginsTime('on_stop')
-        self.consumer.close()
+
         self.poster.close()
         logger.info( 'flow/close completed cleanly' )
 
 
     def ack( self, mlist ):
-         for m in mlist:
-             # see plugin/retry.py
-             if not (('isRetry' in m) and m['isRetry']):
-                 self.consumer.ack( m )
+        for p in self.plugins["ack"]:
+            p(mlist)
 
     def ackWorklist(self,desc):
         logger.debug( '%s incoming: %d, ok: %d, rejected: %d, failed: %d' % ( 
@@ -365,8 +357,11 @@ class Flow:
 
     @abstractmethod
     def gather(self):
-        self.worklist.incoming=self.consumer.newMessages()
-
+        self.worklist.incoming=[]
+        for p in self.plugins["gather"]:
+           new_incoming=p()
+           if len(new_incoming) > 0:
+              self.worklist.incoming.extend(new_incoming) 
  
     @abstractmethod 
     def do( self ):

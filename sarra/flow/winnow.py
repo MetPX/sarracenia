@@ -24,6 +24,8 @@ class Winnow(Flow):
 
      def __init__( self ):
 
+         logger.error('hoho... winnowing!')
+         self.plugins['load'].append('sarra.plugin.gather.message.Message')
          Winnow.assimilate(self)
 
      def report( self ):

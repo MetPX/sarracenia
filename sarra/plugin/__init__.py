@@ -56,10 +56,9 @@ Do not remove from all lists, only move messages between them.
 
 """
 
-entry_points = [ 'do_download', 'do_get', 'do_poll', 'do_put', 'do_send',
-   'on_messages', 'on_data', 'on_files', 'on_housekeeping', 'on_html_page', 
-   'on_line', 'on_part', 'on_posts', 'on_report', 'on_start', 'on_stop', 
-   'on_watch' ]
+entry_points = [ 'ack', 'do_download', 'do_get', 'do_poll', 'do_put', 'do_send',
+   'gather', 'on_messages', 'on_data', 'on_files', 'on_housekeeping', 'on_html_page', 
+   'on_line', 'on_part', 'on_posts', 'on_report', 'on_start', 'on_stop' ]
 
 
 class Plugin:
@@ -88,6 +87,20 @@ class Plugin:
 #    def on_files(self,worklist):
 #        """
 #          Task: operate on worklist.ok (files which have arrived.)
+#        """
+#        pass
+
+#    @abstractmethod
+#    def gather(self):
+#        """
+#          Task: gather messages from a source... return a list of messages.
+#        """
+#        return []
+#
+#    @abstractmethod
+#    def ack(self,messagelist):
+#        """
+#          Task: acknowledge messages from a gather source. 
 #        """
 #        pass
 #
@@ -199,13 +212,6 @@ class Plugin:
 #
 #    @abstractmethod
 #    def on_stop(self):
-#        """
-#          Task: 
-#        """
-#        pass
-#
-#    @abstractmethod
-#    def on_watch(self):
 #        """
 #          Task: 
 #        """
