@@ -187,7 +187,7 @@ NOTE:
   
   $ mkdir /tmp/swob_downloads
   
-  Add the following directive and value pair to **swob.conf** configuration file before the **accept .*** line :
+  Add the following option and value pair to **swob.conf** configuration file before the **accept .*** line :
   
   *directory /tmp/swob_downloads*
 
