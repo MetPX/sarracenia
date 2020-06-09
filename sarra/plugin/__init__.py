@@ -58,7 +58,7 @@ Do not remove from all lists, only move messages between them.
 
 entry_points = [ 'ack', 'do_download', 'do_get', 'do_poll', 'do_put', 'do_send',
    'gather', 'on_messages', 'on_data', 'on_files', 'on_housekeeping', 'on_html_page', 
-   'on_line', 'on_part', 'on_posts', 'on_report', 'on_start', 'on_stop' ]
+   'on_line', 'on_part', 'on_posts', 'on_report', 'on_start', 'on_stop', 'post' ]
 
 
 class Plugin:
@@ -165,6 +165,15 @@ class Plugin:
 #          Task: operate on worklist.ok, and worklist.failed.
 #                this is just prior to posting, to make final adjustments.
 #                all messages are already aknowledged, so deleting messages from worklists here is fine.
+#                if you delete a message from the worklist.ok, it will not be posted.
+#        """
+#        pass
+#
+#    @abstractmethod
+#    def post(self,worklist): 
+#        """
+#          Task: operate on worklist.ok, and worklist.failed. modifies them appropriately.
+#                message acknowledgement has already occurred before they are called.
 #        """
 #        pass
 #

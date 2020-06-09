@@ -144,14 +144,6 @@ class Flow:
 
        self.loadPlugins( self.plugins['load'] )
 
-       if hasattr(self.o,'post_broker'):
-             props = sarra.moth.default_options
-             props.update ( {
-                 'broker':self.o.post_broker, 'exchange':self.o.post_exchange,
-             } )
-             self.poster = sarra.moth.Moth( self.o.post_broker, props, is_subscriber=False )
-
-   
     
     def loadPlugins(self, plugins_to_load):
 
@@ -204,8 +196,6 @@ class Flow:
     def close( self ):
 
         self._runPluginsTime('on_stop')
-
-        self.poster.close()
         logger.info( 'flow/close completed cleanly' )
 
 
@@ -377,15 +367,8 @@ class Flow:
         logger.debug( 'on_post starting for %d messages' % len(self.worklist.ok) )
 
         self._runPluginsWorklist('on_posts')
-
-        for m in self.worklist.ok:
-             # FIXME: outlet = url, outlet=json.
-             logger.info( 'message: %s' % m )
-             if self.o.topic_prefix != self.o.post_topic_prefix:
-                 m['topic'] = m['topic'].replace( self.o.topic_prefix, self.o.post_topic_prefix )
-             self.poster.putNewMessage(m)
-
-        self.worklist.ok=[]
+        for p in self.plugins["post"]:
+             p(self.worklist)
 
     @abstractmethod 
     def report( self ):
