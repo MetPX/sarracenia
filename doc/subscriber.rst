@@ -180,8 +180,15 @@ NOTE:
 
   The above will write the files in the current working directory, and they will arrive quickly.
   It might be better to make a dedicated directory and use the *directory* option to place the files there.
-  for example:  
-  mkdir /tmp/swob_downloads
+  
+  For example:  
+  
+  Run the following command on the command-line, with correct permissions:
+  
+  $ mkdir /tmp/swob_downloads
+  
+  Add the following option alue to **swob.conf** configuration file before the **accept .*** line :
+  
   *directory /tmp/swob_downloads*
 
 On the first line, *broker* indicates where to connect to get the
