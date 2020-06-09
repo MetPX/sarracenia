@@ -478,8 +478,8 @@ the files will belong to the pump administrator, and privileged access is not re
 
 
 
-The General Algorithm
----------------------
+The Flow Algorithm
+------------------
 
 All of the components that subscribe (subscribe, sarra, sender, shovel, winnow)
 share substantial code and differ only in default settings.  
@@ -492,7 +492,7 @@ share substantial code and differ only in default settings.
  |  PHASE   |                 DESCRIPTION                                 |
  |          |                                                             |
  +----------+-------------------------------------------------------------+
- | *List*   | Get information about an initial list of files              |
+ | *gather* | Get information about an initial list of files              |
  |          |                                                             |
  |          | from: a queue, a directory, a polling script.               |
  +----------+-------------------------------------------------------------+
@@ -512,9 +512,9 @@ share substantial code and differ only in default settings.
  +----------+-------------------------------------------------------------+
  | *Post*   | run on_post scripts                                         |
  |          |                                                             |
- |          | Post announcement of file downloads/sent to post_broker     |
  +----------+-------------------------------------------------------------+
- | *Report* | Post report of action to origin (to inform source)          |
+ | *Outlet* | Post announcement of file downloads/sent to post_broker     |
+ |          | or otherwise dispose of task (to file, or retry... or)      |
  +----------+-------------------------------------------------------------+
 
 The main components of the python implementation of Sarracenia all implement the same 
@@ -523,62 +523,54 @@ can be inserted using small python scripts called on_*, do_*.
 
 The components just have different default settings:
 
-.. table:: **Table 2: How Each Component Uses the Common Algorithm**
+.. table:: **Table 2: How Each Component Uses the Flow Algorithm**
  :align: center
 
  +------------------------+--------------------------+
  | Component              | Use of the algorithm     |
  +------------------------+--------------------------+
- | *sr_subscribe*         | List=read from queue     |
+ | *sr_subscribe*         | Gather=gather.message    |
  |                        |                          |
  |   Download file from a | Filter                   |
  |   pump. If the local   |                          |
  |   host is a pump,      | Do=Download              |
  |   post the downloaded  |                          |
- |   file.                | Post=optional            |
- |                        |                          |
- |                        | Report=optional          |
- |                        |                          |
+ |   file.                | Outlet=optional          |
  +------------------------+--------------------------+
- | *sr_poll*              | List=run do_poll script  |
+ | *sr_poll*              | Gather=gather.remote     |
  |                        |                          |
  |   Find files on other  | Filter                   |
  |   servers to post to   |                          |
  |   a pump.              | Do=nil                   |
  |                        |                          |
- |                        | Post=yes                 |
- |                        |                          |
- |                        | Report=no                |
+ |                        | Outlet=yes               |
+ |                        |   Message?, File?        |
  +------------------------+--------------------------+
- | *sr_shovel/sr_winnow*  | List=read from queue     |
+ | *sr_shovel/sr_winnow*  | Gather=gather.message    |
  |                        |                          |
  |   Move posts or        | Filter (shovel cache=off)|
  |   reports around.      |                          |
  |                        | Do=nil                   |
  |                        |                          |
- |                        | Post=yes                 |
- |                        |                          |
- |                        | Report=optional          |
+ |                        | Outlet=yes               |
  +------------------------+--------------------------+
- | *sr_post/watch*        | List=read file system    |
+ | *sr_post/watch*        | Gather=gather.file       |
  |                        |                          |
  |   Find file on a       | Filter                   |
  |   local server to      |                          |
  |   post                 | Do=nil                   |
  |                        |                          |
- |                        | Post=yes                 |
- |                        |                          |
- |                        | Report=no                |
+ |                        | Outlet=yes               |
+ |                        |   Message?, File?        |
  +------------------------+--------------------------+
- | *sr_sender*            | List=read queue          |
+ | *sr_sender*            | Gather=??                |
+ |                        |   Message?, File?        |
  |                        |                          |
  |   Send files from a    | Filter                   |
  |   pump. If remote is   |                          |
  |   also a pump, post    | Do=sendfile              |
  |   the sent file there. |                          |
- |                        | Post=optional            |
- |                        |                          |
- |                        | Report=optional          |
+ |                        | Outlet=optional          |
  +------------------------+--------------------------+
 
 Components are easily composed using AMQP brokers, which create elegant networks

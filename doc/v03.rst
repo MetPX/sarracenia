@@ -112,6 +112,7 @@ Ship of Theseus, where it works the same way as v02, but all
 the parts are different... obviously a concern/risk... 
 might be a feature.
 
+
 Dictionaries or Members for Properties?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -214,6 +215,12 @@ cache and v2plugins as plugins themselves.
 renamed message queue abstract class from tmpc to moth
 (what does sarracenia eat?)
 
+with shovel and winnow replaced by new implementations, it passes
+the dynamic flow test, including the retry module ported to v3, and
+a number of v2 modules used as-is.
+
+working on sr_post component now (in v3: plugin.gather.file.File)
+
 
 
 
@@ -244,6 +251,8 @@ breaking changes:
 
 * log messages and output in interactive, will be completely different.
 
+* dropping on_watch plugins. afaict, no-one uses them.  Also, the way v03 works it would be an on_message for a watch.
+  makes more sense that way anyways.
 
 Features
 --------
@@ -266,4 +275,6 @@ Features
 * plugin API are now based on groups of messages, rather than individual ones, allowing people
   to organize concurrent work.
 
+* integrity (checksums) are now plugins.
 
+* gather (inlet? sources of messages) are now plugins.
