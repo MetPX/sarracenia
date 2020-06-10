@@ -200,8 +200,9 @@ class Flow:
 
 
     def ack( self, mlist ):
-        for p in self.plugins["ack"]:
-            p(mlist)
+        if "ack" in self.plugins:
+            for p in self.plugins["ack"]:
+                p(mlist)
 
     def ackWorklist(self,desc):
         logger.debug( '%s incoming: %d, ok: %d, rejected: %d, failed: %d' % ( 
@@ -264,6 +265,9 @@ class Flow:
                self.worklist.ok=[]
                self.worklist.failed=[]
 
+           if self.o.sleep < 0 :
+                self.close()
+                break
 
            if spamming and (current_sleep < 5):
                 current_sleep *= 2
@@ -378,3 +382,4 @@ class Flow:
 
 import sarra.flow.shovel
 import sarra.flow.winnow
+import sarra.flow.post

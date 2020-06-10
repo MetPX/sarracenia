@@ -91,7 +91,7 @@ class sr_GlobalState:
 
         os.makedirs(os.path.dirname(lfn), exist_ok=True)
 
-        if c in [ 'shovel', 'winnow' ]:
+        if c in [ 'post', 'shovel', 'winnow' ]:
            component_path = os.path.dirname(component_path) + os.sep + 'instance.py'
            cmd = [sys.executable, component_path, '--no', "%d" % i ]
            logger.error( 'sys.argv is: %s, len: %d' % ( sys.argv, len(sys.argv) ) )
@@ -995,7 +995,7 @@ class sr_GlobalState:
 
             component_path = self._find_component_path(c) 
 
-            if c in [ 'shovel', 'winnow' ]:
+            if c in [ 'post', 'shovel', 'winnow' ]:
                component_path = os.path.dirname(component_path) + os.sep + 'instance.py'
                cmd = [sys.executable, component_path, '--no', "0" ]
                print("sys.argv=%s" % sys.argv)

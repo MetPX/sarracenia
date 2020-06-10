@@ -31,8 +31,11 @@ from sarra.sr_credentials  import *
 
 import sarra.flow
 import sarra.flow.shovel
+import sarra.flow.winnow
+import sarra.flow.post
 import sarra.moth
 import sarra.moth.amqp
+import sarra.plugin.integrity
 
 default_options = {
 
@@ -318,7 +321,9 @@ class Config:
      'loglevel': 'logLevel',
      'logdays': 'lr_backupCount',
      'logrotate_interval': 'lr_interval',
+     'post_base_dir' : 'post_baseDir',
      'post_basedir' : 'post_baseDir',
+     'post_base_url' : 'post_baseUrl',
      'post_baseurl' : 'post_baseUrl',
      'post_document_root' : 'post_documentRoot'
      
@@ -340,9 +345,9 @@ class Config:
        # FIXME... Linux only for now, no appdirs
        self.directory = None
 
-       if parent is None:
-          self.env = copy.deepcopy(os.environ)
-       else:
+       self.env = copy.deepcopy(os.environ)
+
+       if parent is not None:
           for i in parent:
               setattr(self,i,parent[i])
 
@@ -353,7 +358,6 @@ class Config:
        self.debug = False
        self.declared_exchanges = []
        self.destfn_script=None
-       self.env = {}
        self.v2plugins = {}
        self.v2plugin_options = []
        self.plugins = []
@@ -585,6 +589,7 @@ class Config:
               self._override_field( k, self._varsub(oth[k]) )
        else:
            for k in oth.__dict__.keys():
+              logger.error( 'k=%s, v=%s' % ( k, getattr(oth,k) ) )
               self._override_field( k, self._varsub(getattr(oth,k)) )
 
    def _resolve_exchange(self):
@@ -660,6 +665,16 @@ class Config:
 
        self.settings[opt_class][opt_var] = ' '.join(value) 
 
+   def _parse_sum( self, value ):
+       if value in sarra.plugin.integrity.known_methods :
+          self.sum = value
+          return
+       
+       for sc in sarra.plugin.integrity.Integrity.__subclasses__() :
+           if hasattr(sc,'registered_as') and (sc.registered_as == value ):
+               self.sum = sc.__name__.lower()
+               return
+
    def parse_file(self, cfg):
        """ add settings in file to self
        """
@@ -689,6 +704,8 @@ class Config:
                self.plugins.append( line[1] )
            elif line[0] in [ 'set', 'setting', 's' ]:
                self._parse_setting(line[1], line[2:])
+           elif line[0] in [ 'sum'  ]:
+               self._parse_sum(line[1])
            elif line[0] in Config.v2entry_points:
                if line[1] in self.plugins:
                    self.plugins.remove( line[1] )
@@ -1112,7 +1129,7 @@ class Config:
           YYYYMMDD = time.strftime("%Y%m%d", time.localtime(epoch) )
           new_dir = re.sub('\$\{YYYYMMDD-\d+\D\}', YYYYMMDD, new_dir)
 
-        new_dir = self.varsub(new_dir)
+        new_dir = self._varsub(new_dir)
 
         return new_dir
 
@@ -1389,12 +1406,13 @@ class Config:
 def default_config():
 
     cfg = Config()
+    logger.error('env: %s' % cfg.env.keys() )
     cfg.currentDir = os.getcwd()
     cfg.override( default_options )
     cfg.override( sarra.moth.default_options )
     cfg.override( sarra.moth.amqp.default_options )
     cfg.override( sarra.flow.default_options )
-
+    
     for g in [ "admin.conf", "default.conf" ]:
         if os.path.exists( get_user_config_dir() + os.sep + g ):
            cfg.parse_file( get_user_config_dir() + os.sep + g )
@@ -1427,6 +1445,9 @@ def one_config( component, config ):
 
     cfg = copy.deepcopy(default_cfg)
 
+    if component in [ 'post' ]:
+       cfg.override( sarra.flow.post.default_options )
+    
     store_pwd=os.getcwd()
 
     os.chdir( get_user_config_dir() )
@@ -1451,6 +1472,9 @@ def one_config( component, config ):
     #cfg.dump()     
 
     cfg.fill_missing_options( component, config )
+
+    if component in [ 'post' ]:
+       cfg.postpath=cfg.configurations[1:]
 
     #pp = pprint.PrettyPrinter(depth=6) 
     #pp.pprint(cfg)

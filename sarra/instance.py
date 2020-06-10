@@ -90,7 +90,8 @@ class instance:
             logger.critical('need an instance number to run.')
             return
          
-        if len(cfg_preparse.configurations) > 1 :
+        if (len(cfg_preparse.configurations) > 1 ) and \
+           ( cfg_preparse.configurations[0].split(os.sep)[0] != 'post' ):
             logger.critical("can only run one configuration in an instance" ) 
             return
          

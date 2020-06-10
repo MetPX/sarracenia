@@ -26,6 +26,7 @@ from watchdog.events            import PatternMatchingEventHandler
 from sarra.sr_xattr import *
 from sarra.sr_util      import *
 from sarra.plugin import Plugin
+import sarra.plugin.integrity
 
 import logging
 
@@ -49,7 +50,7 @@ class File(Plugin):
     this is taken from v2's sr_post.py
     """
     def on_add(self, event, src, dst):
-        #logger.debug("%s %s %s" % ( event, src, dst ) )
+        logger.debug("%s %s %s" % ( event, src, dst ) )
         self.new_events['%s %s'%(src,dst)] = ( event, src, dst )
 
     def on_created(self, event):
@@ -72,9 +73,10 @@ class File(Plugin):
         """ 
         """ 
 
-        logger.debug("%s used to be overwrite_defaults" % self.program_name)
-     
         self.o = options
+
+        logger.debug("%s used to be overwrite_defaults" % self.o.program_name)
+     
         self.obs_watched   = []
         self.watch_handler = None
         self.post_topic_prefix = "v02.post"
@@ -84,7 +86,7 @@ class File(Plugin):
         self.left_events   = OrderedDict()
 
         self.o.blocksize     = 200 * 1024 * 1024
-
+        self.o.create_modify = ( 'create' in self.o.events ) or ( 'modify' in self.o.events )
 
     def path_inflight(self,path,lstat):
         """
@@ -135,172 +137,129 @@ class File(Plugin):
 
         return newname
 
-    def path_rejected(self,path):
-        #logger.debug("path_rejected %s" % path )
-
-        if not self.o.post_base_url:
-            self.o.post_base_url = 'file:/'
-        
-        if self.o.masks == [] : return False
-
-        self.o.post_relpath = path
-        if self.o.post_base_dir : self.o.post_relpath = path.replace(self.o.post_base_dir, '')
-
-        urlstr = self.o.post_base_url + '/' + self.o.post_relpath
-
-        if self.o.realpath_filter and not self.o.realpath_post :
-           if os.path.exists(path) :
-              fltr_post_relpath = os.path.realpath(path)
-              if sys.platform == 'win32':
-                  fltr_post_relpath = fltr_post_relpath.replace('\\','/')
-
-              if self.o.post_base_dir : fltr_post_relpath = fltr_post_relpath.replace(self.post_base_dir, '')
-              urlstr = self.o.post_base_url + '/' + fltr_post_relpath
-        
-        if not self.isMatchingPattern(urlstr,self.o.accept_unmatch) :
-           logger.debug("%s Rejected by accept/reject options" % urlstr )
-           return True
-
-        logger.debug( "%s not rejected" % urlstr )
-        return False
-
     def post_delete(self, path, key=None, value=None):
         logger.debug("post_delete %s (%s,%s)" % (path,key,value) )
 
-        # post_init (message)
-        self.post_init(path,None)
+        msg = self.msg_init(path,None)
 
         # sumstr
         hash   = sha512()
         hash.update(bytes(os.path.basename(path), encoding='utf-8'))
-        sumstr = 'R,%s' % hash.hexdigest()
+        sumstr = { 'method':'remove' , 'value': b64encode(hash.digest()).decode('utf-8') }
 
         # partstr
         partstr = None
 
         # completing headers
-        self.msg.headers['sum'] = sumstr
+        msg['integrity'] = sumstr
 
         # used when moving a file
         if key != None :
-           self.msg.headers[key] = value
-           if key == 'newname' and self.post_base_dir :
-              self.msg.new_dir  = os.path.dirname( value)
-              self.msg.new_file = os.path.basename(value)
-              self.msg.headers[key] = value.replace(self.post_base_dir, '')
+           msg[key] = value
+           if key == 'newname' and self.post_baseDir :
+              msg['new_dir']  = os.path.dirname( value)
+              msg['new_file'] = os.path.basename(value)
+              msg[key] = value.replace(self.o.post_baseDir, '')
 
-        return ok
+        return [ msg ]
 
     def post_file(self, path, lstat, key=None, value=None):
-        #logger.debug("post_file %s" % path )
+        logger.debug("post_file %s" % path )
 
         # check if it is a part file
-        if path.endswith('.'+self.msg.part_ext):
+        if path.endswith('.'+self.o.part_ext):
            return self.post_file_part(path,lstat)
         
         # This variable means that part_file_assemble plugin is loaded and will handle posting the original file (being assembled)
 
         elif hasattr(self, 'suppress_posting_partial_assembled_file'):
-            return False
+            return []
 
         # check the value of blocksize
 
         fsiz  = lstat[stat.ST_SIZE]
-        blksz = self.set_blocksize(self.blocksize,fsiz)
+        blksz = self.set_blocksize(self.o.blocksize,fsiz)
 
         # if we should send the file in parts
 
         if blksz > 0 and blksz < fsiz :
            return self.post_file_in_parts(path,lstat)
 
-        # post_init (message)
-        self.post_init(path,lstat)
+        msg = self.msg_init(path,lstat)
 
         # partstr
 
-        partstr = '1,%d,1,0,0' % fsiz
+        msg[ "size" ] = fsiz
 
-        sumstr = self.compute_sumstr(path, fsiz)
+        sumstr = self.compute_sumstr(path, msg)
+        #sumstr = { "method": "notImplemented", value: "bad" } 
  
-        # caching ... 
-
-        if self.caching :
-           new_post = self.cache.check(str(sumstr),self.post_relpath,partstr)
-           if new_post : logger.info("caching %s"% path)
-           else        : 
-                         logger.debug("already posted %s"% path)
-                         return False
-
         # complete message        
-        if self.post_topic_prefix.startswith('v03') and self.inline and fsiz < self.inline_max :        
+        if self.o.post_topic_prefix.startswith('v03') and self.o.inline and fsiz < self.o.inline_max :        
  
-           if self.inline_encoding == 'guess':
+           if self.o.inline_encoding == 'guess':
               e = guess_type(path)[0]
               binary = not e or not ('text' in e )
            else:
-              binary = (self.inline_encoding == 'text' )
+              binary = (self.o.inline_encoding == 'text' )
 
            f = open(path,'rb')
            d = f.read()
            f.close()
 
            if binary:
-               self.msg.headers[ "content" ] = { "encoding": "base64", "value": b64encode(d).decode('utf-8') }
+               msg[ "content" ] = { "encoding": "base64", "value": b64encode(d).decode('utf-8') }
            else:
                try:
-                   self.msg.headers[ "content" ] = { "encoding": "utf-8", "value": d.decode('utf-8') }
+                   msg[ "content" ] = { "encoding": "utf-8", "value": d.decode('utf-8') }
                except:
-                   self.msg.headers[ "content" ] = { "encoding": "base64", "value": b64encode(d).decode('utf-8') }
+                   msg[ "content" ] = { "encoding": "base64", "value": b64encode(d).decode('utf-8') }
 
-        self.msg.headers['parts'] = partstr
-        self.msg.headers['sum']   = sumstr
+        msg['integrity']   = sumstr
 
         # used when moving a file
 
         if key != None : 
-           self.msg.headers[key] = value
-           if key == 'oldname' and self.post_base_dir :
-              self.msg.headers[key] = value.replace(self.post_base_dir, '')
+           msg[key] = value
+           if key == 'oldname' and self.post_baseDir :
+              msg[key] = value.replace(self.o.post_baseDir, '')
 
-        return msg
+        return [ msg ]
 
-    def compute_sumstr(self, path, fsiz):
+    def compute_sumstr(self, path, msg):
         xattr = sr_xattr(path)
         
-        if self.randomize:
-            algos = ['0', 'd', 'n', 's', 'z,d', 'z,s']
-            sumflg = choice(algos)
-        elif 'sum' in xattr.x and 'mtime' in xattr.x:
+        if self.o.randomize:
+            methods = ['random', 'md5', 'md5name', 'sha512', 'cod,md5', 'cod,sha512' ]
+            sumflg = choice(methods)
+        elif 'integrity' in xattr.x and 'mtime' in xattr.x:
             if xattr.get('mtime') >= self.msg.headers['mtime']:
                 logger.debug("mtime remembered by xattr")
-                return xattr.get('sum')
+                return xattr.get('integrity')
             else:
                 logger.debug("xattr sum too old")
-                sumflg = self.sumflg
+                sumflg = self.o.sumflg
         else:
-            sumflg = self.sumflg
+            sumflg = self.o.sumflg
 
-        xattr.set('mtime', self.msg.headers['mtime'])
+        xattr.set('mtime', msg['mtime'])
 
         logger.debug("sum set by compute_sumstr")
 
-        if sumflg[:2] == 'z,' and len(sumflg) > 2:
+        if sumflg[:4] == 'cod,' and len(sumflg) > 2:
             sumstr = sumflg
         else:
-            if not sumflg[0] in ['0', 'd', 'n', 's', 'z']: sumflg = 'd'
-
-            self.set_sumalgo(sumflg)
-            sumalgo = self.sumalgo
+            sumalgo = sarra.plugin.integrity.Integrity( sumflg )
             sumalgo.set_path(path)
 
             # compute checksum
 
-            if sumflg in ['d','s'] :
+            if sumflg in ['md5','sha512'] :
 
                 fp = open(path,'rb')
                 i  = 0
-                while i<fsiz :
-                    buf = fp.read(self.bufsize)
+                while i < msg['size'] :
+                    buf = fp.read(self.o.bufsize)
                     if not buf: break
                     sumalgo.update(buf)
                     i  += len(buf)
@@ -308,17 +267,16 @@ class File(Plugin):
 
             # setting sumstr
             checksum = sumalgo.get_value()
-            sumstr = '%s,%s' % (sumflg, checksum)
+            sumstr = { 'method':sumflg, 'value': checksum }
 
-        xattr.set('sum', sumstr)
+        xattr.set('integrity', sumstr)
         xattr.persist()
         return sumstr
 
     def post_file_in_parts(self, path, lstat):
         #logger.debug("post_file_in_parts %s" % path )
 
-        # post_init (message)
-        self.post_init(path,lstat)
+        msg = self.msg_init(path,lstat)
 
         # check the value of blocksize
 
@@ -333,7 +291,7 @@ class File(Plugin):
 
         # default sumstr
 
-        sumstr = self.sumflg
+        sumstr = self.o.sumflg
 
         # loop on chunks
 
@@ -343,20 +301,19 @@ class File(Plugin):
             #blocks = [8, 3, 1, 2, 9, 6, 0, 7, 4, 5] # Testing
             logger.info('Sending partitions in the following order: '+str(blocks))
 
+        messages=[]
         for i in blocks: 
 
               # setting sumalgo for that part
 
-              sumflg = self.sumflg
+              sumflg = self.o.sumflg
 
               if sumflg[:2] == 'z,' and len(sumflg) > 2 :
                  sumstr = sumflg
 
               else:
-                 sumflg = self.sumflg
-                 if not self.sumflg[0] in ['0','d','n','s','z' ]: sumflg = 'd'
-                 self.set_sumalgo(sumflg)
-                 sumalgo = self.sumalgo
+                 sumflg = self.o.sumflg
+                 sumalgo = sarra.plugin.integrity.Integrity( sumflg )
                  sumalgo.set_path(path)
 
               # compute block stuff
@@ -372,13 +329,11 @@ class File(Plugin):
 
               # set partstr
 
-              partstr = 'i,%d,%d,%d,%d' %\
-                        (chunksize,block_count,remainder,current_block)
-
+              partstr = { 'method': 'inplace' , 'size':chunksize, 'count':block_count, 'remainder':remainder, 'number':current_block }
               # compute checksum if needed
 
-              if not self.sumflg in ['0','n','z'] :
-                 bufsize = self.bufsize
+              if not self.sumflg in ['random','md5name','cod'] :
+                 bufsize = self.o.bufsize
                  if length < bufsize : bufsize = length
 
                  fp = open(path,'rb')
@@ -392,28 +347,18 @@ class File(Plugin):
                  fp.close()
 
                  checksum = sumalgo.get_value()
-                 sumstr   = '%s,%s' % (sumflg,checksum)
-
-              # caching
-
-              if self.caching :
-                 new_post = self.cache.check(str(sumstr),self.post_relpath,partstr)
-                 if new_post : logger.info("caching %s (%s)"% (path,partstr) )
-                 else        :
-                               logger.debug("already posted %s (%s)"%(path,partstr) )
-                               continue
+                 sumstr   = { 'method':sumflg, 'value':checksum }
 
               # complete  message
 
-              self.msg.headers['parts'] = partstr
-              self.msg.headers['sum']   = sumstr
+              msg['integrity']   = sumstr
+              messages.extend(copy(deepcopy(msg)))
 
-        return True
+        return messages
 
     def post_file_part(self, path, lstat):
 
-        # post_init (message)
-        self.post_init(path,lstat)
+        msg=self.msg_init(path,lstat)
 
         # verify suffix
 
@@ -427,25 +372,16 @@ class File(Plugin):
 
         # check rename see if it has the right part suffix (if present)
         if 'rename' in self.msg.headers and not suffix in self.msg.headers['rename']:
-           self.msg.headers['rename'] += suffix
-
-        # caching
-
-        if self.caching :
-           new_post = self.cache.check(str(sumstr),path,partstr)
-           if new_post : logger.info("caching %s"% path)
-           else        : 
-                         logger.debug("already posted %s"% path)
-                         return False
+           msg['rename'] += suffix
 
         # complete  message
 
-        self.msg.headers['parts'] = partstr
-        self.msg.headers['sum']   = sumstr
+        msg['parts'] = partstr
+        msg['integrity']   = sumstr
 
-        return True
+        return [ msg ]
 
-    def post_init(self, path, lstat=None, key=None, value=None):
+    def msg_init(self, path, lstat=None, key=None, value=None):
 
         msg = {}
         msg[ 'new_dir' ]  = os.path.dirname(path)
@@ -453,13 +389,13 @@ class File(Plugin):
 
         # relpath
 
-        if self.o.post_base_dir :
-           post_relPath = path.replace(self.o.post_base_dir, '')
+        if self.o.post_baseDir :
+           post_relPath = path.replace(self.o.post_baseDir, '')
         else:
            post_relPath = path
 
         # exchange
-        msg['exchange'] = self.post_exchange
+        msg['exchange'] = self.o.post_exchange
 
         # topic
         words = post_relPath.strip('/').split('/')
@@ -469,12 +405,11 @@ class File(Plugin):
             subtopic=''           
         msg['topic'] = self.o.post_topic_prefix + '.' + subtopic
 
-        if self.subtopic: self.msg.set_topic_usr(self.post_topic_prefix,self.subtopic)
         msg[ '_deleteOnPost' ] = [ 'post_relpath', 'new_dir', 'new_file', 'exchange' ]
 
         # notice
         msg[ 'relPath' ]  = post_relPath
-        msg[ 'baseUrl' ]  = self.o.post_base_url
+        msg[ 'baseUrl' ]  = self.o.post_baseUrl
 
         # rename
         rename = self.path_renamed(post_relPath)
@@ -482,12 +417,17 @@ class File(Plugin):
 
         # headers
 
-        if self.o.to_clusters != None : msg['to_clusters']  = self.o.to_clusters
-        if self.o.cluster     != None : msg['from_cluster'] = self.o.cluster
-        if self.o.source      != None : msg['source']       = self.o.source
-        if key              != None : msg[key]            = value
+        if hasattr(self.o, 'to_clusters' ) and ( self.o.to_clusters is not None) : 
+            msg['to_clusters']  = self.o.to_clusters
+        if hasattr(self.o, 'self.o.cluster' ) and ( self.o.cluster is not None) : 
+            msg['from_cluster'] = self.o.cluster
 
-        if lstat == None : return
+        if hasattr(self.o, 'self.o.source' ) and ( self.o.source is not None ): 
+            msg['source']       = self.o.source
+
+        if key is not None : msg[key]            = value
+
+        if lstat is None : return
 
         if self.o.preserve_time:
             msg['mtime'] = timeflt2str(lstat.st_mtime)
@@ -501,12 +441,7 @@ class File(Plugin):
     def post_link(self, path, key=None, value=None ):
         #logger.debug("post_link %s" % path )
 
-        # accept this file
-
-        if self.path_rejected (path): return False
-
-        # post_init (message)
-        self.post_init(path,None)
+        msg = self.msg_init(path,None)
 
         # resolve link
 
@@ -520,31 +455,17 @@ class File(Plugin):
 
         hash = sha512()
         hash.update( bytes( link, encoding='utf-8' ) )
-        sumstr = 'L,%s' % hash.hexdigest()
-
-        # caching
-
-        if self.caching :
-           new_post = self.cache.check(str(sumstr),self.post_relpath,partstr)
-           if new_post : logger.info("caching %s"% path)
-           else        : 
-                         logger.debug("already posted %s"% path)
-                         return False
-
+        msg[ 'integrity' ]  = { 'method':'link', 'value':b64encode(hash.digest()).decode('utf-8') }
+        
         # complete headers
-
-        self.msg.headers['link'] = link
-        self.msg.headers['sum']  = sumstr
+        msg['link'] = link
+        msg['integrity']  = sumstr
 
         # used when moving a file
 
-        if key != None : self.msg.headers[key] = value
+        if key != None : msg[key] = value
 
-        # post message
-
-        ok = self.__on_post__()
-
-        return ok
+        return [ msg ]
 
     def post_move(self, src, dst ):
         #logger.debug("post_move %s %s" % (src,dst) )
@@ -554,7 +475,7 @@ class File(Plugin):
         src = src.replace('/./', '/' )
         dst = dst.replace('/./', '/' )
 
-        if os.path.islink(dst) and self.realpath_post:
+        if os.path.islink(dst) and self.o.realpath_post:
            dst = os.path.realpath(dst)
            if sys.platform == 'win32':
                   dst = dst.replace('\\','/')
@@ -562,37 +483,37 @@ class File(Plugin):
         # file
 
         if os.path.isfile(dst) :
-           ok = self.post_delete(src,               'newname', dst)
-           ok = self.post_file  (dst, os.stat(dst), 'oldname', src)
-           return True
+           msg1 = self.post_delete(src,               'newname', dst)
+           msg2 = self.post_file  (dst, os.stat(dst), 'oldname', src)
+           return [ msg1, msg2 ]
 
         # link
 
         if os.path.islink(dst) :
-           ok = self.post_delete(src, 'newname', dst)
-           ok = self.post_link  (dst, 'oldname', src)
-           return True
+           msg1 = self.post_delete(src, 'newname', dst)
+           msg2 = self.post_link  (dst, 'oldname', src)
+           return [ msg1, msg2 ]
 
         # directory
+        messages = []
         if os.path.isdir(dst) :
             for x in os.listdir(dst):
 
                 dst_x = dst + '/' + x
                 src_x = src + '/' + x
 
-                ok = self.post_move(src_x,dst_x)
+                messages = self.post_move(src_x,dst_x)
 
             # directory list to delete at end
             self.move_dir_lst.append( (src,dst) )
 
-        return True
+        return messages
 
     def post1file(self,path,lstat):
 
-        done = True
+        messages = []
 
         # watchdog funny ./ added at end of directory path ... removed
-
         path = path.replace( '/./', '/' )
 
         # always use / as separator for paths being posted.
@@ -602,53 +523,53 @@ class File(Plugin):
         # path is a link
 
         if os.path.islink(path):
-           ok = self.post_link(path)
+           messages.extend(self.post_link(path))
 
-           if self.follow_symlinks :
+           if self.o.follow_symlinks :
               link  = os.readlink(path)
               try   : 
                    rpath = os.path.realpath(link)
                    if sys.platform == 'win32':
                        rpath = rpath.replace('\\','/')
 
-              except: return done
+              except: return messages
 
               lstat = None
               if os.path.exists(rpath) : lstat = os.stat(rpath)
 
-              ok = self.post1file(rpath,lstat)
+              messages.extend(self.post1file(rpath,lstat))
 
-           return done
+           return messages
 
         # path deleted
 
         if lstat == None :
-           ok = self.post_delete(path)
-           return done
+           messages.extend(self.post_delete(path))
+           return messages
 
         # path is a file
 
         if os.path.isfile(path):
-           ok = self.post_file(path,lstat)
-           return done
+           messages.extend(self.post_file(path,lstat))
+           return messages
 
         # at this point it is a create,modify directory
+        return messages
 
-        return done
 
     def post1move(self, src, dst ):
         #logger.debug("post1move %s %s" % (src,dst) )
 
         self.move_dir_lst = []
 
-        ok = self.post_move(src,dst)
+        messages = self.post_move(src,dst)
 
         for tup in self.move_dir_lst :
             src, dst = tup
             #logger.debug("deleting moved directory %s" % src )
-            ok = self.post_delete(src, 'newname', dst)
+            messages.extend( self.post_delete(src, 'newname', dst) )
 
-        return True
+        return messages
 
     def process_event(self, event, src, dst ):
         #logger.debug("process_event %s %s %s " % (event,src,dst) )
@@ -660,15 +581,15 @@ class File(Plugin):
 
         if event == 'delete' :
            if event in self.events:
-              ok = self.post1file(src,None)
-           return done
+              msg = self.post1file(src,None)
+           return [ msg ]
 
         # move
 
         if event == 'move':
-           if self.create_modify:
-              ok = self.post1move(src,dst)
-           return done
+           if self.o.create_modify:
+              msg = self.post1move(src,dst)
+           return [ msg ]
 
         # create or modify
 
@@ -677,47 +598,45 @@ class File(Plugin):
         if os.path.isdir(src): 
             dirs = list( map( lambda x: x[1][1], self.inl.items() ) )
             logger.debug("skipping directory %s list: %s" % (src,dirs) )
-            return done
+            return []
 
         # link ( os.path.exists = false, lstat = None )
 
         if os.path.islink(src) :
            if 'link' in self.events :
-              ok = self.post1file(src,None)
-           return done
+              msg = self.post1file(src,None)
+           return [ msg ]
 
         # file : must exists
         #       (may have been deleted since event caught)
 
-        if not os.path.exists(src) : return done
+        if not os.path.exists(src) : return []
 
         # file : must be old enough
 
         lstat = os.stat(src)
-        if self.path_inflight(src,lstat): return later
+        if self.path_inflight(src,lstat): return []
 
         # post it
 
-        if self.create_modify :
-           ok = self.post1file(src,lstat)
+        if self.o.create_modify :
+           msg = self.post1file(src,lstat)
 
-        return done
+        return [ msg ]
+
 
     def set_blocksize(self,bssetting,fsiz):
 
       tfactor =  50 * 1024 * 1024
       
-      if bssetting == 0 : ## autocompute
-            if   fsiz > 100*tfactor: return 10 * tfactor
-            elif fsiz > 10*tfactor : return int((fsiz+9)/10)
-            elif fsiz > tfactor :    return int((fsiz+2)/ 3)
-            else:                    return fsiz 
+      if bssetting == 0 : ## default blocksize
+          return tfactor
              
-      elif  bssetting == 1 : ## send file as one piece.
-            return fsiz
+      elif bssetting == 1 : ## send file as one piece.
+          return fsiz
              
       else: ## partstr=i
-            return bssetting
+          return bssetting
 
 
     def wakeup(self):
@@ -763,7 +682,7 @@ class File(Plugin):
 
         # how to proceed with symlink
 
-        if os.path.islink(src) and self.realpath_post :
+        if os.path.islink(src) and self.o.realpath_post :
            src = os.path.realpath(src)
            if sys.platform == 'win32':
                src = src.replace('\\','/')
@@ -771,6 +690,7 @@ class File(Plugin):
         # walk src directory, this walk is depth first... there could be a lot of time
         # between *listdir* run, and when a file is visited, if there are subdirectories before you get there.
         # hence the existence check after listdir (crashed in flow_tests of > 20,000)
+        
         for x in os.listdir(src):
             path = src + '/' + x
             if os.path.isdir(path):
@@ -792,7 +712,7 @@ class File(Plugin):
                realp = realp.replace('\\','/')
 
             logger.info("sr_watch %s is a link to directory %s" % ( p, realp) )
-            if self.realpath_post:
+            if self.o.realpath_post:
                 d=realp
             else:
                 d=p + '/' + '.'
@@ -811,7 +731,7 @@ class File(Plugin):
         if os.access( d , os.R_OK|os.X_OK ):
            try:
                ow = self.observer.schedule(self.watch_handler, d, recursive=True )
-               self.obs_watched.append(ow)
+               self.obs_watched.extend(ow)
                self.inl[dir_dev_id] = (ow,d)
                logger.info("sr_watch priming watch (instance=%d) scheduled for: %s " % (len(self.obs_watched), d))
            except:
@@ -835,7 +755,7 @@ class File(Plugin):
     def watch_dir(self, sld ):
         logger.debug("watch_dir %s" % sld )
 
-        if self.force_polling :
+        if self.o.force_polling :
            logger.info("sr_watch polling observer overriding default (slower but more reliable.)")
            self.observer = PollingObserver()
         else:
@@ -849,34 +769,45 @@ class File(Plugin):
 
         logger.info("sr_watch priming walk done, but not yet active. Starting...")
         self.observer.start()
-        logger.info("sr_watch now active on %s posting to exchange: %s"%(sld,self.post_exchange))
+        logger.info("sr_watch now active on %s posting to exchange: %s"%(sld,self.o.post_exchange))
 
-        if self.post_on_start:
+        if self.o.post_on_start:
             self.walk(sld)
 
 
     def on_start(self):
-        if self.sleep > 0 : 
-            self.watch_dir(d)
+        pbd = self.o.post_baseDir
+        self.dirstack={}
+        self.dirstack_index=-1
+        for d in self.o.postpath :
+            self.dirstack_index += 1
+            self.dirstack[ self.dirstack_index ] = { 'relPath': d, 'pos': 0 }
+            if os.path.isdir(d) :
+                self.dirstack[ self.dirstack_index ]['type'] = 'dir' 
+            elif os.path.islink(d):
+                self.dirstack[ self.dirstack_index ]['type'] = 'link' 
+            elif os.path.isfile(d):
+                self.dirstack[ self.dirstack_index ]['type'] = 'file' 
+
 
     def gather(self):
-        logger.info("%s run partflg=%s, sum=%s, caching=%s basis=%s" % \
-              ( self.program_name, self.partflg, self.sumflg, self.caching, self.cache_basis ))
+        logger.info("%s run partflg=%s, sum=%s, suppress_duplicates=%s basis=%s pbd=%s" % \
+              ( self.o.program_name, self.o.partflg, self.o.sumflg, self.o.suppress_duplicates, 
+                self.o.suppress_duplicates_basis, self.o.post_baseDir ))
         logger.info("%s realpath_post=%s follow_links=%s force_polling=%s"  % \
-              ( self.program_name, self.realpath_post, self.follow_symlinks, self.force_polling ) )
+              ( self.o.program_name, self.o.realpath_post, self.o.follow_symlinks, self.o.force_polling ) )
 
-        pbd = self.post_base_dir
+        pbd = self.o.post_baseDir
 
-        for d in self.postpath :
-            logger.debug("postpath = %s" % d)
-            if pbd and not d.startswith(pbd) : d = pbd + '/' + d
+        messages = []
+        d=self.o.postpath[0]
+        
+        if pbd and not d.startswith(pbd) : d = pbd + '/' + d
+ 
+        lstat = os.lstat(d)
+        new_messages=[]
 
-            if os.path.isdir(d) :
-                self.walk(d)
-            elif os.path.islink(d):
-                self.post1file(d,None)
-            elif os.path.isfile(d):
-                self.post1file(d,os.stat(d))
-            else: 
-                logger.error("could not post %s (exists %s)" % (d,os.path.exists(d)) )
+        new_messages = self.post1file(d,lstat)
 
+        logger.error( 'new_messages: %s' % new_messages ) 
+        return messages 

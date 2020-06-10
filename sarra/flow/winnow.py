@@ -6,14 +6,14 @@ import logging
 
 logger = logging.getLogger( '__name__' )
 
+default_options = { 
+    'download' : False, 
+    'accept_unmatched': True, 
+    'suppress_duplicates': 300
+}
 
 class Winnow(Flow):
 
-     default_options = { 
-         'download' : False, 
-         'accept_unmatched': True, 
-         'suppress_duplicates': 300
-     }
 
      @classmethod
      def assimilate(cls,obj):
