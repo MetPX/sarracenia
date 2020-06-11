@@ -48,6 +48,14 @@ class File(Plugin):
     read the file system, create messages for the files you find.
 
     this is taken from v2's sr_post.py
+
+    FIXME FIXME FIXME
+    FIXME: the sr_post version would post files on the fly as it was traversing trees.
+    so it was incremental and had little overhead.  This one is does the whole recursion
+    in one gather.
+
+    It will fail horribly for large trees. Need to re-formulate to replace recursion with interation.
+    perhaps a good time to use python iterators.
     """
     def on_add(self, event, src, dst):
         logger.debug("%s %s %s" % ( event, src, dst ) )
@@ -408,6 +416,7 @@ class File(Plugin):
         msg[ '_deleteOnPost' ] = [ 'post_relpath', 'new_dir', 'new_file', 'exchange' ]
 
         # notice
+        msg[ 'pubTime' ]  = v3timeflt2str(time.time())
         msg[ 'relPath' ]  = post_relPath
         msg[ 'baseUrl' ]  = self.o.post_baseUrl
 
@@ -572,6 +581,9 @@ class File(Plugin):
         return messages
 
     def process_event(self, event, src, dst ):
+        """
+          return a list of messages.
+        """
         #logger.debug("process_event %s %s %s " % (event,src,dst) )
 
         done  = True
@@ -581,15 +593,14 @@ class File(Plugin):
 
         if event == 'delete' :
            if event in self.events:
-              msg = self.post1file(src,None)
-           return [ msg ]
+               return self.post1file(src,None)
+           return []
 
         # move
 
         if event == 'move':
            if self.o.create_modify:
-              msg = self.post1move(src,dst)
-           return [ msg ]
+               return self.post1move(src,dst)
 
         # create or modify
 
@@ -604,8 +615,8 @@ class File(Plugin):
 
         if os.path.islink(src) :
            if 'link' in self.events :
-              msg = self.post1file(src,None)
-           return [ msg ]
+              return self.post1file(src,None)
+           return []
 
         # file : must exists
         #       (may have been deleted since event caught)
@@ -620,10 +631,8 @@ class File(Plugin):
         # post it
 
         if self.o.create_modify :
-           msg = self.post1file(src,lstat)
-
-        return [ msg ]
-
+           return self.post1file(src,lstat)
+        return []
 
     def set_blocksize(self,bssetting,fsiz):
 
@@ -647,12 +656,6 @@ class File(Plugin):
         #     left for later work. PS-20170105
         #     more details: https://github.com/gorakhargosh/watchdog/issues/392
 
-        # on_watch 
-
-        ok = self.__on_watch__()
-        if not ok:
-            return
-
         # pile up left events to process
 
         self.left_events.update(self.new_events)
@@ -665,19 +668,24 @@ class File(Plugin):
 
         # loop on all events
 
+        message=[]
         for key in self.cur_events:
             event, src, dst = self.cur_events[key]
             done = False
             try:
-                done = self.process_event(event, src, dst)
+                messages.extend( self.process_event(event, src, dst) )
             except OSError as err:
                 logger.error("could not process event({}): {}".format(event, err))
                 logger.debug("Exception details:", exc_info=True)
                 self.left_events.pop(key)
             if done:
                 self.left_events.pop(key)
+        return messages
 
     def walk(self, src ):
+        """
+          walk directory tree returning 1 message for each file in it.
+        """
         logger.debug("walk %s" % src )
 
         # how to proceed with symlink
@@ -691,15 +699,18 @@ class File(Plugin):
         # between *listdir* run, and when a file is visited, if there are subdirectories before you get there.
         # hence the existence check after listdir (crashed in flow_tests of > 20,000)
         
+        messages=[]
         for x in os.listdir(src):
             path = src + '/' + x
             if os.path.isdir(path):
-               self.walk(path)
+               messages.extend(self.walk(path))
                continue
 
             # add path created
             if os.path.exists(path):
-                self.post1file(path,os.stat(path))
+                messages.extend(self.post1file(path,os.stat(path)))
+        return messages
+
 
     def walk_priming(self,p):
         """
@@ -772,25 +783,15 @@ class File(Plugin):
         logger.info("sr_watch now active on %s posting to exchange: %s"%(sld,self.o.post_exchange))
 
         if self.o.post_on_start:
-            self.walk(sld)
-
+            return self.walk(sld)
 
     def on_start(self):
-        pbd = self.o.post_baseDir
-        self.dirstack={}
-        self.dirstack_index=-1
-        for d in self.o.postpath :
-            self.dirstack_index += 1
-            self.dirstack[ self.dirstack_index ] = { 'relPath': d, 'pos': 0 }
-            if os.path.isdir(d) :
-                self.dirstack[ self.dirstack_index ]['type'] = 'dir' 
-            elif os.path.islink(d):
-                self.dirstack[ self.dirstack_index ]['type'] = 'link' 
-            elif os.path.isfile(d):
-                self.dirstack[ self.dirstack_index ]['type'] = 'file' 
-
+        self.primed = False
 
     def gather(self):
+        """
+           from sr_post.py/run 
+        """
         logger.info("%s run partflg=%s, sum=%s, suppress_duplicates=%s basis=%s pbd=%s" % \
               ( self.o.program_name, self.o.partflg, self.o.sumflg, self.o.suppress_duplicates, 
                 self.o.suppress_duplicates_basis, self.o.post_baseDir ))
@@ -800,14 +801,26 @@ class File(Plugin):
         pbd = self.o.post_baseDir
 
         messages = []
-        d=self.o.postpath[0]
-        
-        if pbd and not d.startswith(pbd) : d = pbd + '/' + d
- 
-        lstat = os.lstat(d)
-        new_messages=[]
 
-        new_messages = self.post1file(d,lstat)
+        if self.primed:
+           return self.wakeup()
 
-        logger.error( 'new_messages: %s' % new_messages ) 
+        for d in self.o.postpath :
+            logger.debug("postpath = %s" % d)
+            if pbd and not d.startswith(pbd) : d = pbd + '/' + d
+
+            if self.o.sleep > 0 :
+               messages.extend( self.watch_dir(d) )
+               continue
+
+            if   os.path.isdir(d) :
+                 messages.extend( self.walk(d) )
+            elif os.path.islink(d):
+                 messages.extend( self.post1file(d,None) )
+            elif os.path.isfile(d):
+                 messages.extend( self.post1file(d,os.stat(d)) )
+            else:
+                 logger.error("could not post %s (exists %s)" % (d,os.path.exists(d)) )
+
+        self.primed = True
         return messages 
