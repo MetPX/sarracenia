@@ -38,8 +38,6 @@ class Integrity:
 
     @abstractmethod
     def __init__(self,method):
-        logger.info('init! Integrity.__subclasses__(): %s' % Integrity.__subclasses__() )
-        
         #default established
         method=None
         default='sha512'
@@ -96,11 +94,7 @@ import sarra.plugin.integrity.md5name
 import sarra.plugin.integrity.md5
 import sarra.plugin.integrity.random
 import sarra.plugin.integrity.sha512
-print('Parsing! Integrity.__subclasses__(): %s' % Integrity.__subclasses__() )
 
 known_methods = []
 for sc in Integrity.__subclasses__() :
     known_methods.append( sc.__name__.lower() )
-        
-for sc in known_methods:
-    print( 'name: %s ' % ( sc)  )

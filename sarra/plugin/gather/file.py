@@ -56,6 +56,8 @@ class File(Plugin):
 
     It will fail horribly for large trees. Need to re-formulate to replace recursion with interation.
     perhaps a good time to use python iterators.
+  
+    also should likely switch from listdir to scandir
     """
     def on_add(self, event, src, dst):
         logger.debug("%s %s %s" % ( event, src, dst ) )
@@ -164,7 +166,7 @@ class File(Plugin):
         # used when moving a file
         if key != None :
            msg[key] = value
-           if key == 'newname' and self.post_baseDir :
+           if key == 'newname' and self.o.post_baseDir :
               msg['new_dir']  = os.path.dirname( value)
               msg['new_file'] = os.path.basename(value)
               msg[key] = value.replace(self.o.post_baseDir, '')
@@ -229,7 +231,7 @@ class File(Plugin):
 
         if key != None : 
            msg[key] = value
-           if key == 'oldname' and self.post_baseDir :
+           if key == 'oldname' and self.o.post_baseDir :
               msg[key] = value.replace(self.o.post_baseDir, '')
 
         return [ msg ]
@@ -436,7 +438,7 @@ class File(Plugin):
 
         if key is not None : msg[key]            = value
 
-        if lstat is None : return
+        if lstat is None : return msg
 
         if self.o.preserve_time:
             msg['mtime'] = timeflt2str(lstat.st_mtime)
@@ -481,6 +483,7 @@ class File(Plugin):
 
         # watchdog funny ./ added at end of directory path ... removed
 
+        messages=[]
         src = src.replace('/./', '/' )
         dst = dst.replace('/./', '/' )
 
@@ -492,19 +495,18 @@ class File(Plugin):
         # file
 
         if os.path.isfile(dst) :
-           msg1 = self.post_delete(src,               'newname', dst)
-           msg2 = self.post_file  (dst, os.stat(dst), 'oldname', src)
-           return [ msg1, msg2 ]
+           messages.extend( self.post_delete(src,               'newname', dst) )
+           messages.extend( self.post_file  (dst, os.stat(dst), 'oldname', src) )
+           return messages
 
         # link
 
         if os.path.islink(dst) :
-           msg1 = self.post_delete(src, 'newname', dst)
-           msg2 = self.post_link  (dst, 'oldname', src)
-           return [ msg1, msg2 ]
+           messages.extend( self.post_delete(src, 'newname', dst) )
+           messages.extend( self.post_link  (dst, 'oldname', src) )
+           return messages
 
         # directory
-        messages = []
         if os.path.isdir(dst) :
             for x in os.listdir(dst):
 
@@ -668,7 +670,7 @@ class File(Plugin):
 
         # loop on all events
 
-        message=[]
+        messages=[]
         for key in self.cur_events:
             event, src, dst = self.cur_events[key]
             done = False
@@ -740,18 +742,19 @@ class File(Plugin):
             logger.debug("Exception details:", exc_info=True)
 
         if os.access( d , os.R_OK|os.X_OK ):
-           try:
+           #try:
+           if True:
                ow = self.observer.schedule(self.watch_handler, d, recursive=True )
-               self.obs_watched.extend(ow)
+               self.obs_watched.append(ow)
                self.inl[dir_dev_id] = (ow,d)
                logger.info("sr_watch priming watch (instance=%d) scheduled for: %s " % (len(self.obs_watched), d))
-           except:
-               logger.warning("sr_watch priming watch: %s failed, deferred." % d)
-               logger.debug('Exception details:', exc_info=True)
+           #except:
+           #    logger.warning("sr_watch priming watch: %s failed, deferred." % d)
+           #    logger.debug('Exception details:', exc_info=True)
 
-               # add path created
-               self.on_add( 'create', p, None )
-               return True
+           #    # add path created
+           #    self.on_add( 'create', p, None )
+           #    return True
 
         else:
             logger.warning("sr_watch could not schedule priming watch of: %s (EPERM) deferred." % d)
@@ -784,6 +787,8 @@ class File(Plugin):
 
         if self.o.post_on_start:
             return self.walk(sld)
+        else:
+            return []
 
     def on_start(self):
         self.primed = False
@@ -810,15 +815,16 @@ class File(Plugin):
             if pbd and not d.startswith(pbd) : d = pbd + '/' + d
 
             if self.o.sleep > 0 :
-               messages.extend( self.watch_dir(d) )
-               continue
+                messages.extend( self.watch_dir(d) )
+                continue
 
-            if   os.path.isdir(d) :
-                 messages.extend( self.walk(d) )
+            if os.path.isdir(d) :
+                logger.debug("postpath = %s" % d)
+                messages.extend( self.walk(d) )
             elif os.path.islink(d):
-                 messages.extend( self.post1file(d,None) )
+                messages.extend( self.post1file(d,None) )
             elif os.path.isfile(d):
-                 messages.extend( self.post1file(d,os.stat(d)) )
+                messages.extend( self.post1file(d,os.stat(d)) )
             else:
                  logger.error("could not post %s (exists %s)" % (d,os.path.exists(d)) )
 

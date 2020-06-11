@@ -305,7 +305,7 @@ class Config:
 
    # Correct name on the right, old name on the left.
    synonyms = { 
-     'accept_unmatch': 'accempt_unmatched',
+     'accept_unmatch': 'accept_unmatched',
      'basedir' : 'baseDir',
      'baseurl' : 'baseUrl',
      'cache' : 'suppress_duplicates', 
@@ -1406,7 +1406,6 @@ class Config:
 def default_config():
 
     cfg = Config()
-    logger.error('env: %s' % cfg.env.keys() )
     cfg.currentDir = os.getcwd()
     cfg.override( default_options )
     cfg.override( sarra.moth.default_options )
@@ -1447,6 +1446,8 @@ def one_config( component, config ):
 
     if component in [ 'post' ]:
        cfg.override( sarra.flow.post.default_options )
+    elif component in [ 'watch' ]:
+       cfg.override( sarra.flow.watch.default_options )
     
     store_pwd=os.getcwd()
 
@@ -1473,8 +1474,10 @@ def one_config( component, config ):
 
     cfg.fill_missing_options( component, config )
 
-    if component in [ 'post' ]:
+    if component in [ 'post', 'watch' ]:
        cfg.postpath=cfg.configurations[1:]
+       if hasattr(cfg,'path'):
+           cfg.postpath.append( cfg.path )
 
     #pp = pprint.PrettyPrinter(depth=6) 
     #pp.pprint(cfg)

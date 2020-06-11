@@ -9,6 +9,7 @@ import copy
 import logging
 import logging.handlers
 import os
+import pathlib
 from sarra.moth import Moth
 from sarra.moth.amqp import AMQP
 import signal
@@ -159,6 +160,9 @@ class instance:
      
     
         pidfilename = sarra.config.get_pid_filename( component, config, cfg_preparse.no )
+        if not os.path.isdir( os.path.dirname(pidfilename) ):
+              pathlib.Path(os.path.dirname(pidfilename)).mkdir(parents=True, exist_ok=True)
+
         with open( pidfilename, 'w' ) as pfn:
             pfn.write( '%d' % os.getpid() )
          

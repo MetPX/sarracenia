@@ -310,6 +310,7 @@ class Flow:
         logger.debug('start')
         filtered_worklist = []
         for m in self.worklist.incoming:
+            logger.warning('message: %s ' % m)
             url = m['baseUrl'] + os.sep + m['relPath']
 
             # apply masks, reject.
@@ -383,3 +384,4 @@ class Flow:
 import sarra.flow.shovel
 import sarra.flow.winnow
 import sarra.flow.post
+import sarra.flow.watch
