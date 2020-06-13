@@ -40,7 +40,7 @@ class ACCEL_WGET(object):
    def on_start(self,parent):
 
       if not hasattr(parent,'accel_wget_command'):
-         parent.download_accel_wget_command= [ '/usr/bin/wget' ]
+         parent.accel_wget_command= [ '/usr/bin/wget -q' ]
 
       if not hasattr( parent, "accel_wget_threshold" ):
              parent.accel_wget_threshold = [ "1M" ]
@@ -88,7 +88,7 @@ class ACCEL_WGET(object):
 
       msg.urlstr = msg.urlstr.replace("download:","http:")
       os.chdir( msg.new_dir )
-      cmd = parent.download_accel_wget_command[0].split() + [ msg.urlstr ]
+      cmd = parent.accel_wget_command[0].split() + [ msg.urlstr ]
       logger.debug("wget do_download in %s invoking: %s " % ( msg.new_dir, cmd ) )
 
       p = subprocess.Popen(cmd)
