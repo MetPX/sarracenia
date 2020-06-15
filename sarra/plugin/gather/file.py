@@ -470,7 +470,6 @@ class File(Plugin):
         
         # complete headers
         msg['link'] = link
-        msg['integrity']  = sumstr
 
         # used when moving a file
 
@@ -594,7 +593,7 @@ class File(Plugin):
         # delete
 
         if event == 'delete' :
-           if event in self.events:
+           if event in self.o.events:
                return self.post1file(src,None)
            return []
 
@@ -616,7 +615,7 @@ class File(Plugin):
         # link ( os.path.exists = false, lstat = None )
 
         if os.path.islink(src) :
-           if 'link' in self.events :
+           if 'link' in self.o.events :
               return self.post1file(src,None)
            return []
 

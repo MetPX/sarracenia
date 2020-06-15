@@ -47,7 +47,7 @@ amqp_ss_maxlen = 255
 
 default_options = { 'queue_name':None, 
                'exchange': None, 'topic_prefix':'v03.post', 'subtopic' : None,  
-               'durable':True, 'expire': '5m', 'message_ttl':0, 
+               'durable':True, 'expire': 300, 'message_ttl':0, 
                'logLevel':'info',
                'prefetch':25, 'auto_delete':False, 'vhost':'/',
                'reset':False, 'declare':True, 'bind':True, 
@@ -170,10 +170,10 @@ class AMQP(Moth):
                     logger.debug('getSetup ... 1. declaring {} '.format(self.props['queue_name'] ) )
                     args={}
                     if self.props['expire']:
-                        x = int(durationToSeconds(self.props['expire']) * 1000)
+                        x = int(self.props['expire'] * 1000)
                         if x > 0: args['x-expires'] = x
                     if self.props['message_ttl']:
-                        x = int(durationToSeconds(self.props['message_ttl']) * 1000 )
+                        x = int(self.props['message_ttl'] * 1000 )
                         if x > 0: args['x-message-ttl'] = x
   
                     #FIXME: conver expire, message_ttl to proper units.

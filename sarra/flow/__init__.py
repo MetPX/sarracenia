@@ -20,6 +20,7 @@ default_options = {
   'accept_unmatched' : False,
   'download'     : False,
   'housekeeping' : 30,     
+  'log_reject'     : False,
   'logFormat'    : '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
   'logLevel'     : 'info',
          'sleep' : 0.1,   
@@ -310,7 +311,7 @@ class Flow:
         logger.debug('start')
         filtered_worklist = []
         for m in self.worklist.incoming:
-            logger.warning('message: %s ' % m)
+            #logger.warning('message: %s ' % m)
             url = m['baseUrl'] + os.sep + m['relPath']
 
             # apply masks, reject.
@@ -323,7 +324,7 @@ class Flow:
                     matched=True
                     if not accepting:
                         if self.o.log_reject:
-                            logger.info( "reject: mask=%s strip=%s pattern=%s" % (str(mask), strip, m) ) 
+                            logger.info( "reject: mask=%s strip=%s url=%s" % (str(mask), strip, url) ) 
                             self.worklist.rejected.append(m)
                             break
                     # FIXME... missing dir mapping with mirror, strip, etc...

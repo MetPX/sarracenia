@@ -69,6 +69,9 @@ class NoDupe(Plugin):
         if hasattr(options,'suppress_duplicates_basis'):
             self.o.basis = options.suppress_duplicates_basis
 
+        logger.info( 'time_to_live=%d, basis=%s, log_reject=%s' % \
+           ( self.o.time_to_live, self.o.basis, self.o.log_reject ) )
+
         self.cache_dict    = {}
         self.cache_file    = None
         self.cache_hit     = None

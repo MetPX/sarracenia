@@ -49,6 +49,22 @@ default_options = {
 
 }
 
+# all the boolean settings.
+flag_options = [ 'bind_queue', 'cache_stat', 'declare_exchange', \
+    'declare_queue', 'delete', 'discard', 'dry_run', 'durable', 'exchange_split', 'realpath_filter', \
+    'follow_symlinks', 'force_polling', 'inline', 'inplace', 'log_reject', 'pipe', 'restore', \
+    'report_daemons', 'mirror', 'notify_only', 'overwrite', 'post_on_start', 'poll_without_vip', \
+    'preserve_mode', 'preserve_time', 'pump_flag', 'randomize', 'realpath_post', 'reconnect', \
+    'reportback', 'reset', 'retry_mode', 'save', 'set_passwords', 'source_from_exchange', \
+    'use_amqplib', 'use_pika', 'users_flag' 
+]
+
+#all the duration options.
+duration_options = [ 'timeout', 'expire', 'heartbeat', 'inflight', 'message_ttl', \
+   'retry_ttl', 'sanity_log_dead', 'sleep', 'timeout' 
+]
+
+
 """
    for backward compatibility, 
 
@@ -684,8 +700,8 @@ class Config:
                continue
 
            if l.strip() in convert_to_v3:
-               logger.error('Got it! Converting %s to v3: %s' % ( l.strip(), line ) )
                line=convert_to_v3[l.strip()]
+               logger.info('Converting \"%s\" to v3: \"%s\"' % ( l.strip(), line ) )
    
            line = list( map( lambda x : self._varsub(x), line ) )
 
@@ -712,6 +728,16 @@ class Config:
                self._parse_v2plugin(line[0],line[1])
            elif line[0] in [ 'no-import' ]:
                self._parse_v3unplugin(line[1])
+           elif line[0] in duration_options:
+               if len(line) == 1:
+                   logger.error( '%s is a duration option requiring a decimal number of seconds value' % line[0] ) 
+                   continue
+               setattr(self, line[0], durationToSeconds(line[1]) )
+           elif line[0] in flag_options:
+               if len(line) == 1:
+                   setattr(self, line[0], True )
+               else:
+                   setattr(self, line[0], isTrue(line[1]) )
            else:
                k=line[0]
                if k in Config.synonyms:
@@ -749,14 +775,21 @@ class Config:
        if self.debug:
           self.logLevel = 'debug'
 
+       # double check to ensure duration options are properly parsed
+       for d in duration_options:
+           if hasattr(self,d) and ( type(getattr(self,d)) is str):
+              setattr(self,d, durationToSeconds(getattr(self,d)))
+
+       for f in flag_options:
+           if hasattr(self,f) and (type(getattr(self,f)) is str):
+              setattr(self,f, isTrue(getattr(self,f)))
+
        # patch, as there is no 'none' level in python logging module... 
        #    mapping so as not to break v2 configs.
        if hasattr(self,'logLevel'):
            if self.logLevel == 'none':
               self.logLevel = 'critical'
 
-
-          
        if not hasattr(self,'suppress_duplicates_basis'): 
            self.suppress_duplicates_basis='data'
 
@@ -841,7 +874,6 @@ class Config:
            else:
                self.documentRoot = path
            n = 2
-
 
        # verify post_baseDir
 
