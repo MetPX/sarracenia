@@ -98,19 +98,63 @@ Changes planned to address pain points
 
 
 
-Unknowns
---------
-
-Things that are not clear at the outset.
-
-
 Ship of Theseus
-~~~~~~~~~~~~~~~
+---------------
 
 It might be that the re-factoring inherent in v03 results in a 
 Ship of Theseus, where it works the same way as v02, but all
 the parts are different... obviously a concern/risk... 
 might be a feature.
+
+Now that we are a good way throught the process, a
+papping of source code transcriptions between
+the two versions, is clear:
+
++--------------------------+---------------------------+
+| Version 2 file           | Version 3 file            |
++--------------------------+---------------------------+
+| sr_config.py             | config.py                 |
++--------------------------+---------------------------+
+| sr_instances.py          | sr.py for most mgmt.      |
+|                          | instance.py single proc   |
+|                          |                           |
++--------------------------+---------------------------+
+| sr_consumer.py           | moth/__init__.py          |
+| sr_amqp.py               | moth/amqp.py              |
+| sr_message.py            |                           |
++--------------------------+---------------------------+
+| sr_checksum.py           | integrity/__init__.py     |
+| sum/*                    | integrity/*               |
++--------------------------+---------------------------+
+| sr_cache.py              | plugin/nodupe.py          |
++--------------------------+---------------------------+
+| sr_retry.py              | plugin/retry.py           |
++--------------------------+---------------------------+
+| sr_post.py               | plugin/gather/file.py     |
+|                          | flow/post.py              |
++--------------------------+---------------------------+
+| sr_poll.py               | plugin/gather/remote.py   |
+|                          | flow/poll.py              |
++--------------------------+---------------------------+
+| sr_util.py/sr_proto      | transfer/                 |
+| sr_util.py/sr_transport  | transfer/__init__.py      |
+| sr_ftp.py                | transfer/ftp.py           |
+| sr_http.py               | transfer/http.py          |
+| sr_sftp.py               | transfer/sftp.py          |
+|                          |                           |
++--------------------------+---------------------------+
+| plugins/                 | plugin/                   |
++--------------------------+---------------------------+
+| overall flow             | flow/__init__             |
++--------------------------+---------------------------+
+| sr_subscribe.py          | flow/subscribe.py         |
+| sr_shovel.py             | flow/shovel.py            |
+| sr_winnow.py             | flow/winnow.py            |
+| sr_report.py             | flow/report.py            |
+| sr_sarra.py              | flow/sarra.py             |
++--------------------------+---------------------------+
+
+
 
 
 Dictionaries or Members for Properties?
