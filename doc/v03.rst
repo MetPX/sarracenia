@@ -72,7 +72,10 @@ Changes planned to address pain points
   now syntax errors will be picked up just like any other python module being imported,
   with a reasonable error message.
 
-* no strange decoration at end of 
+* no strange decoration at end of plugins (self.plugin = , etc... just plain python.)
+
+* The strange choice of *parent* as a place for storing settings is puzzling to people.
+  *parent* instance variable becomes *options*,  *self.parent* becomes *self.o*
    
 * plural event callbacks replace singular ones.  on_messages replaces on_message
 
@@ -107,7 +110,7 @@ the parts are different... obviously a concern/risk...
 might be a feature.
 
 Now that we are a good way throught the process, a
-papping of source code transcriptions between
+mapping of source code transcriptions between
 the two versions, is clear:
 
 +--------------------------+---------------------------+
@@ -120,26 +123,37 @@ the two versions, is clear:
 |                          |                           |
 +--------------------------+---------------------------+
 | sr_consumer.py           | moth/__init__.py          |
+|                          |                           |
 | sr_amqp.py               | moth/amqp.py              |
+|                          |                           |
 | sr_message.py            |                           |
 +--------------------------+---------------------------+
-| sr_checksum.py           | integrity/__init__.py     |
-| sum/*                    | integrity/*               |
+| sr_checksum.py           | plugin/integrity/         |
+|                          |      __init__.py          |
+| sum/*                    |      *                    |
 +--------------------------+---------------------------+
 | sr_cache.py              | plugin/nodupe.py          |
 +--------------------------+---------------------------+
 | sr_retry.py              | plugin/retry.py           |
 +--------------------------+---------------------------+
 | sr_post.py               | plugin/gather/file.py     |
+|                          |                           |
 |                          | flow/post.py              |
 +--------------------------+---------------------------+
 | sr_poll.py               | plugin/gather/remote.py   |
+|                          |                           |
 |                          | flow/poll.py              |
 +--------------------------+---------------------------+
-| sr_util.py/sr_proto      | transfer/                 |
-| sr_util.py/sr_transport  | transfer/__init__.py      |
+|                          | transfer/__init__.py      |
+| sr_util.py/sr_proto      |  * transfer.Protocol      |
+| sr_util.py/sr_transport  |  * transfer.Transport     |
+|                          |                           |
+| sr_file.py               | transfer/file.py          |
+|                          |                           |
 | sr_ftp.py                | transfer/ftp.py           |
+|                          |                           |
 | sr_http.py               | transfer/http.py          |
+|                          |                           |
 | sr_sftp.py               | transfer/sftp.py          |
 |                          |                           |
 +--------------------------+---------------------------+
@@ -148,9 +162,13 @@ the two versions, is clear:
 | overall flow             | flow/__init__             |
 +--------------------------+---------------------------+
 | sr_subscribe.py          | flow/subscribe.py         |
+|                          |                           |
 | sr_shovel.py             | flow/shovel.py            |
+|                          |                           |
 | sr_winnow.py             | flow/winnow.py            |
+|                          |                           |
 | sr_report.py             | flow/report.py            |
+|                          |                           |
 | sr_sarra.py              | flow/sarra.py             |
 +--------------------------+---------------------------+
 
@@ -200,14 +218,14 @@ Concrete Plan
 -------------
 
 replace sarra/sr_config with sarra/sr_cfg2. The new sr_cfg2 uses argparse 
-and a simpler model for config file parsing.
+and a simpler model for config file parsing. This became config.py
 
 make sr.py accept operations on subsets, so it becomes the unique entry point.
 internalize implementation of all management stuff, declare etc...
 
 HMPC - Topic Message Protocol Client... a generalization of the message
 passing library with a simplified API.  abstracts the protocol differences
-away.
+away. (This later became the Moth module.)
 
 
 Progress
@@ -227,14 +245,17 @@ will not break everything, plugin-wise... thinking about having defaults
 distributed to the classes that use the settings, and having something
 that brings them together, instead of one massive config thing.
 renamed to config.py (aka: sarra.config) and exercising it with
-sr.py.
+sr.py 
 
 Thinking about replacing sr_consumer with a new class that implements the
 General Algorithm describe in `Concepts <Concepts.rst#the-general-algorithm>`
+this happenned and became the Flow Module, and *the General Algorithm* got 
+renamed *the Flow Algorithm*
 
 Thinking about just removing the sr_ prefix from classes for replacements,
 since they are in sarra directory anyways. so have an internal class 
-sarra/instances, sarra/sarra <- replace consumer...
+sarra/instances, sarra/sarra <- replace consumer... This happenned
+and became a place holder for progress.
 
 Added configuration selection to sr.py (e.g. subscribe/\*) and 
 *setup*, and *cleanup* options. 
@@ -251,19 +272,21 @@ shovel is a sub-class of flow.
 Got a skeleton for v2 plugins working (v2wrapper.py)
 implemented import-based and group oriented v3 plugin framework. ( #213 )
 
-cache (no called noDupe) is basically working.
+cache (now called noDupe) working.
 
 re-wrote how the v3 plugins work to use worklists, and then re-cast
 cache and v2plugins as plugins themselves.
 
 renamed message queue abstract class from tmpc to moth
-(what does sarracenia eat?)
+(what does a Sarracenia eat?)
 
-with shovel and winnow replaced by new implementations, it passes
-the dynamic flow test, including the retry module ported to v3, and
+With shovel and winnow replaced by new implementations, it passes
+the dynamic flow test, including the Retry module ported to v3, and
 a number of v2 modules used as-is.
 
-working on sr_post component now (in v3: plugin.gather.file.File)
+Completed an initial version of the sr_post component now (in v3: plugin.gather.file.File)
+Now working on sr_poll, which will take a while because it involve refactoring: sr_file, sr_http,
+sr_ftp, sr_sftp into the transfer module
 
 
 
@@ -288,15 +311,17 @@ FIXME are things left to the side that need to be seen to.
 Incompatibilities
 -----------------
 
-There are not supposed to be any.  This is a running list of things to fix or document.
+There are not supposed to be any. This is a running list of things to fix or document.
 breaking changes:
 
 * loglevel none -> loglevel notset (now passing loglevel setting directly to python logging module, none isn't defined.)
 
 * log messages and output in interactive, will be completely different.
 
-* dropping on_watch plugins. afaict, no-one uses them.  Also, the way v03 works it would be an on_message for a watch.
+* dropping on_watch plugins. afaict, no-one uses them.  The way v03 works it would be an on_message for a watch.
   makes more sense that way anyways.
+
+* plugins that access internals of sr_retry need to be rewritten, as the class is now plugin/retry.py.
 
 Features
 --------
@@ -308,7 +333,7 @@ Features
 
 * sarra.moth class abstracts away AMQP, so messaging protocol becomes pluggable.
 
-* use the sarra. prefix (already present) so remove obsolete sr_ prefix on modules.
+* use the sarra. prefix (already present) to replace sr_ prefix on modules.
 
 * API access to flows.
 
@@ -322,3 +347,9 @@ Features
 * integrity (checksums) are now plugins.
 
 * gather (inlet? sources of messages) are now plugins.
+
+
+Idiomatic Code Mappings
+=======================
+
+set_topic 
