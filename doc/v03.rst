@@ -252,7 +252,7 @@ General Algorithm describe in `Concepts <Concepts.rst#the-general-algorithm>`
 this happenned and became the Flow Module, and *the General Algorithm* got 
 renamed *the Flow Algorithm*
 
-Thinking about just removing the sr_ prefix from classes for replacements,
+Thinking about just removing the sr\_ prefix from classes for replacements,
 since they are in sarra directory anyways. so have an internal class 
 sarra/instances, sarra/sarra <- replace consumer... This happenned
 and became a place holder for progress.
@@ -333,7 +333,7 @@ Features
 
 * sarra.moth class abstracts away AMQP, so messaging protocol becomes pluggable.
 
-* use the sarra. prefix (already present) to replace sr_ prefix on modules.
+* use the sarra. prefix (already present) to replace sr\_ prefix on modules.
 
 * API access to flows.
 
@@ -349,7 +349,3 @@ Features
 * gather (inlet? sources of messages) are now plugins.
 
 
-Idiomatic Code Mappings
-=======================
-
-set_topic 
