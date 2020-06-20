@@ -16,7 +16,7 @@
 import os,json,sys,time
 from _codecs import decode, encode
 
-from sarra.sr_util import nowflt,timestr2flt
+from sarra import nowflt,timestr2flt
 
 
 import logging
@@ -171,7 +171,6 @@ class Retry(Plugin):
            #logger.error("MG invalid %s" % message)
            return False,None
 
-        logger.error("FIXME: return %s" % message)
         message['isRetry'] = True
         message['_deleteOnPost'].append( 'isRetry' )
         

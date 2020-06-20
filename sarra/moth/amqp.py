@@ -25,15 +25,17 @@
 
 # the real AMQP library... not this one... 
 import amqp
+import copy
+import json
 
 import logging
 
-from sarra.sr_util import *
+from sarra import durationToSeconds
+
+from sarra.moth import Moth
 
 from sarra.plugin import v2wrapper 
 
-from sarra.moth import Moth
-import copy
 
 logger = logging.getLogger( __name__ )
 

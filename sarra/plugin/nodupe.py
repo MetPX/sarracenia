@@ -41,7 +41,7 @@ logger = logging.getLogger( __name__ )
 #
 
 
-from sarra.sr_util import nowflt
+from sarra import nowflt
 
 from sarra.plugin import Plugin
 

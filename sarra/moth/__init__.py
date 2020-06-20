@@ -1,6 +1,7 @@
 
 """
   Moth ... Messages Organized by Topic Headers
+           (en français: Messages organisés par thème hierarchique. )
 
   A multi-protocol library for use by hierarchical message passing implementations,
   (messages which have a 'topic' header that is used for routing by brokers.)
@@ -28,7 +29,7 @@
         id   (queue for amqp, id for mqtt)
 
   this library knows nothing about Sarracenia, the only code used from sarra is to interpret
-  duration properties, from sr_util.
+  duration properties, from the root sarra/__init__.py
   
   usage:
      c= Moth( broker, True, '5m', { 'batch':1 } )

@@ -12,7 +12,7 @@ import types
 
 from abc import ABCMeta, abstractmethod
 
-from sarra.sr_util import nowflt
+from sarra import nowflt
 
 logger = logging.getLogger( __name__ )
 

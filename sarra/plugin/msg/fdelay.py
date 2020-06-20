@@ -28,7 +28,7 @@ class FDelay(Plugin):
              format=self.o.logFormat, 
              level=getattr( logging, self.o.logLevel.upper() ) )
 
-        logger.error('hoho! FIXME init')
+        logger.debug('hoho! FIXME init')
         #parent.declare_option('fdelay')
         if hasattr(self.o, 'msg_fdelay'):
             self.o.fdelay = self.o.msg_fdelay 
@@ -54,7 +54,7 @@ class FDelay(Plugin):
             if m['integrity']['method'] == 'remove':
                 # 'remove' msg will be removed by itself
                 worklist.rejected.append(m)
-                logger.error('marked rejected 0')
+                logger.debug('marked rejected 0')
                 continue
 
             # Test msg delay
@@ -65,7 +65,7 @@ class FDelay(Plugin):
                 m['isRetry'] = False
                 m['_deleteOnPost'].append( 'isRetry' )
                 worklist.failed.append(m)
-                logger.error('marked failed 1')
+                logger.debug('marked failed 1')
                 continue
 
             # Prepare file delay test
@@ -74,9 +74,9 @@ class FDelay(Plugin):
             else:
                 f = m['relPath']
             if not os.path.exists(f):
-                logger.error("did not find file {}".format(f))
+                logger.debug("did not find file {}".format(f))
                 worklist.failed.append(m)
-                logger.error('marked failed 2')
+                logger.debug('marked failed 2')
                 continue
 
             # Test file delay
@@ -88,10 +88,10 @@ class FDelay(Plugin):
                 m['isRetry'] = False
                 m['_deleteOnPost'].append( 'isRetry' )
                 worklist.failed.append(m)
-                logger.error('marked failed 3')
+                logger.debug('marked failed 3')
                 continue
 
-            logger.error('appending to outgoing')
+            logger.debug('appending to outgoing')
             outgoing.append(m)
 
         worklist.incoming=outgoing

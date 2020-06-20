@@ -26,6 +26,8 @@ from watchdog.events            import PatternMatchingEventHandler
 from sarra.sr_xattr import *
 from sarra.sr_util      import *
 from sarra.plugin import Plugin
+from sarra.plugin.gather import msg_init
+
 import sarra.plugin.integrity
 
 import logging
@@ -121,36 +123,10 @@ class File(Plugin):
 
         return False
 
-    def path_renamed(self,path):
-
-        newname = path
-
-        # rename path given with no filename
-
-        if self.o.rename :
-           newname = self.o.rename
-           if self.o.rename[-1] == '/' :
-              newname += os.path.basename(path)
-
-        # strip 'N' heading directories
-
-        if self.o.strip > 0:
-           strip = self.o.strip
-           if path[0] == '/' : strip = strip + 1
-           # if we strip too much... keep the filename
-           token = path.split('/')
-           try :   token   = token[strip:]
-           except: token   = [os.path.basename(path)]
-           newname = '/'+'/'.join(token)
-
-        if newname == path : return None
-
-        return newname
-
     def post_delete(self, path, key=None, value=None):
         logger.debug("post_delete %s (%s,%s)" % (path,key,value) )
 
-        msg = self.msg_init(path,None)
+        msg = msg_init(path,self.o,None)
 
         # sumstr
         hash   = sha512()
@@ -195,7 +171,7 @@ class File(Plugin):
         if blksz > 0 and blksz < fsiz :
            return self.post_file_in_parts(path,lstat)
 
-        msg = self.msg_init(path,lstat)
+        msg = msg_init(path,self.o,lstat)
 
         # partstr
 
@@ -286,7 +262,7 @@ class File(Plugin):
     def post_file_in_parts(self, path, lstat):
         #logger.debug("post_file_in_parts %s" % path )
 
-        msg = self.msg_init(path,lstat)
+        msg = msg_init(path,self.o,lstat)
 
         # check the value of blocksize
 
@@ -368,7 +344,7 @@ class File(Plugin):
 
     def post_file_part(self, path, lstat):
 
-        msg=self.msg_init(path,lstat)
+        msg=msg_init(path,self.o,lstat)
 
         # verify suffix
 
@@ -391,68 +367,10 @@ class File(Plugin):
 
         return [ msg ]
 
-    def msg_init(self, path, lstat=None, key=None, value=None):
-
-        msg = {}
-        msg[ 'new_dir' ]  = os.path.dirname(path)
-        msg[ 'new_file' ] = os.path.basename(path)
-
-        # relpath
-
-        if self.o.post_baseDir :
-           post_relPath = path.replace(self.o.post_baseDir, '')
-        else:
-           post_relPath = path
-
-        # exchange
-        msg['exchange'] = self.o.post_exchange
-
-        # topic
-        words = post_relPath.strip('/').split('/')
-        if len(words) > 1 :
-            subtopic = '.'.join(words[:-1]).replace('..','.')
-        else:
-            subtopic=''           
-        msg['topic'] = self.o.post_topic_prefix + '.' + subtopic
-
-        msg[ '_deleteOnPost' ] = [ 'post_relpath', 'new_dir', 'new_file', 'exchange' ]
-
-        # notice
-        msg[ 'pubTime' ]  = v3timeflt2str(time.time())
-        msg[ 'relPath' ]  = post_relPath
-        msg[ 'baseUrl' ]  = self.o.post_baseUrl
-
-        # rename
-        rename = self.path_renamed(post_relPath)
-        if rename           != None : msg['rename']       = rename
-
-        # headers
-
-        if hasattr(self.o, 'to_clusters' ) and ( self.o.to_clusters is not None) : 
-            msg['to_clusters']  = self.o.to_clusters
-        if hasattr(self.o, 'self.o.cluster' ) and ( self.o.cluster is not None) : 
-            msg['from_cluster'] = self.o.cluster
-
-        if hasattr(self.o, 'self.o.source' ) and ( self.o.source is not None ): 
-            msg['source']       = self.o.source
-
-        if key is not None : msg[key]            = value
-
-        if lstat is None : return msg
-
-        if self.o.preserve_time:
-            msg['mtime'] = timeflt2str(lstat.st_mtime)
-            msg['atime'] = timeflt2str(lstat.st_atime)
-
-        if self.o.preserve_mode:
-            msg['mode']  = "%o" % ( lstat[stat.ST_MODE] & 0o7777 )
-
-        return msg
-
     def post_link(self, path, key=None, value=None ):
         #logger.debug("post_link %s" % path )
 
-        msg = self.msg_init(path,None)
+        msg = msg_init(path,self.o,None)
 
         # resolve link
 

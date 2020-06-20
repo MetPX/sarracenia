@@ -22,13 +22,14 @@ import pprint
 import re
 import shutil
 import socket
+import time
 
 from random import randint
 
-from sarra.sr_util import * 
+#from sarra.sr_util import * 
 from sarra.sr_credentials  import *
 
-
+from sarra import durationToSeconds
 import sarra.flow
 import sarra.flow.shovel
 import sarra.flow.winnow
@@ -98,6 +99,12 @@ convert_to_v3 = {
    follow by the one_config entry point that allows a configuration to be read
    in one call.
 """
+
+
+def isTrue(S):
+    s = S.lower()
+    if  s == 'true' or s == 'yes' or s == 'on' or s == '1': return True
+    return False
 
 def get_package_lib_dir():
     return os.path.dirname(inspect.getfile(Config))
@@ -394,7 +401,7 @@ class Config:
        self.mirror = False
        self.post_exchanges = []
        self.pstrip = False
-       self.randid = "%04x" % random.randint(0,65536)
+       self.randid = "%04x" % randint(0,65536)
        self.settings = {}
        self.strip = 0
        self.tls_rigour = 'normal'
@@ -824,8 +831,8 @@ class Config:
              else:
                  queue_name = 'q_' + self.broker.username + '.sr_' + component +  '.' + cfg
                  if hasattr(self,'queue_suffix'): queue_name += '.' + self.queue_suffix
-                 queue_name += '.'  + str(random.randint(0,100000000)).zfill(8)
-                 queue_name += '.'  + str(random.randint(0,100000000)).zfill(8)
+                 queue_name += '.'  + str(randint(0,100000000)).zfill(8)
+                 queue_name += '.'  + str(randint(0,100000000)).zfill(8)
                  self.queue_name = queue_name
 
           if not os.path.isdir( os.path.dirname(queuefile) ):
