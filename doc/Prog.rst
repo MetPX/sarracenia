@@ -179,6 +179,7 @@ An example of the *plugin* format, one can use of file_noop.py in a configuratio
   plugin file_noop
 
 The content of the file to be placed (on Linux) in ~/.config/sarra/plugins would be:
+
 .. code:: python
 
   # MUST: declare a class with Upper case characters in it.
