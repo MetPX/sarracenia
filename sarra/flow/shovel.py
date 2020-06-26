@@ -28,10 +28,3 @@ class Shovel(Flow):
          self.plugins['load'].append('sarra.plugin.gather.message.Message')
          self.plugins['load'].append('sarra.plugin.post.message.Message')
          Shovel.assimilate(self)
-
-     def report( self ):
-         """
-         shovels inherently do not do anything substantive to a file, so suppress reports.
-         """
-         pass
-

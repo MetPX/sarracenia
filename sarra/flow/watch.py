@@ -41,14 +41,7 @@ class Watch(Flow):
 
      def __init__( self ):
 
-         logger.error('hoho... shoveling!')
+         logger.info('watching!')
          self.plugins['load'].append('sarra.plugin.gather.file.File')
          self.plugins['load'].append('sarra.plugin.post.message.Message')
          Watch.assimilate(self)
-
-     def report( self ):
-         """
-         shovels inherently do not do anything substantive to a file, so suppress reports.
-         """
-         pass
-

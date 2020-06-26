@@ -24,14 +24,7 @@ class Winnow(Flow):
 
      def __init__( self ):
 
-         logger.error('hoho... winnowing!')
+         logger.info('winnowing!')
          self.plugins['load'].append('sarra.plugin.gather.message.Message')
          self.plugins['load'].append('sarra.plugin.post.message.Message')
          Winnow.assimilate(self)
-
-     def report( self ):
-         """
-         winnows inherently do not do anything substantive to a file, so suppress reports.
-         """
-         pass
-
