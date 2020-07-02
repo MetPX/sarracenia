@@ -229,11 +229,11 @@ a simplified version of the original flow test as well.
 Generally speaking, one should run the tests in sequence and ensure the results of earlier 
 tests are good before proceeding to the next test.
 
-Note that the development system must be configured for the sr_insects tests to run successfully. See the next
-section for configuration instructions. For development with a fresh OS installation,
+Note that the development system must be configured for the sr_insects tests to run successfully. See 
+the next section for configuration instructions. For development with a fresh OS installation,
 the configuration steps have been automated and can be applied with the flow_autoconfig.sh
-script in sarracenia/test/. Blind execution of this script on a working system may lead to undesirable
-side effects; you have been warned!
+script in sr_insects (https://github.com/MetPX/sr_insects/blob/master/flow_autoconfig.sh). Blind 
+execution of this script on a working system may lead to undesirable side effects; you have been warned!
 
 The configuration one is trying to replicate:
 
