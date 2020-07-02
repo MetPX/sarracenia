@@ -30,7 +30,8 @@ branches:
   - issue187
 
 install:
-- travis/flow_autoconfig.sh
+- travis/install.sh
+- ${HOME}/sr_insects/flow_autoconfig.sh
 
 script:
 - cd ${HOME}/sr_insects/$TEST
