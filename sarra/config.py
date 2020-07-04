@@ -65,6 +65,9 @@ duration_options = [ 'timeout', 'expire', 'heartbeat', 'inflight', 'message_ttl'
    'retry_ttl', 'sanity_log_dead', 'sleep', 'timeout' 
 ]
 
+#size options
+size_options = [ 'blocksize', 'bytes_per_second', 'inline_max' ]
+
 
 """
    for backward compatibility, 
@@ -374,6 +377,8 @@ class Config:
           for i in parent:
               setattr(self,i,parent[i])
 
+       self.bufsize = 1024*1024
+       self.bytes_ps = 0
        self.chmod = 0o0
        self.chmod_dir = 0o775
        self.chmod_log = 0o600
@@ -617,7 +622,10 @@ class Config:
 
    def _resolve_exchange(self):
        if not hasattr(self,'exchange') or self.exchange is None:
-          self.exchange = 'xs_%s' % self.broker.username
+          if hasattr(self, 'post_broker') and self.post_broker is not None:
+              self.exchange = 'xs_%s' % self.post_broker.username
+          else:
+              self.exchange = 'xs_%s' % self.broker.username
  
           if hasattr(self,'exchange_suffix'):
              self.exchange += '_%s' % self.exchange_suffix
@@ -740,6 +748,11 @@ class Config:
                    logger.error( '%s is a duration option requiring a decimal number of seconds value' % line[0] ) 
                    continue
                setattr(self, line[0], durationToSeconds(line[1]) )
+           elif line[0] in size_options:
+               if len(line) == 1:
+                   logger.error( '%s is a size option requiring a integer number of bytes (or multiple) value' % line[0] ) 
+                   continue
+               setattr(self, line[0], chunksize_from_str(line[1]) )
            elif line[0] in flag_options:
                if len(line) == 1:
                    setattr(self, line[0], True )
@@ -787,6 +800,16 @@ class Config:
            if hasattr(self,d) and ( type(getattr(self,d)) is str):
               setattr(self,d, durationToSeconds(getattr(self,d)))
 
+       if hasattr(self,'kbytes_ps'):
+           bytes_ps =  chunksize_from_str(self.kbytes_ps)
+           if not self.kbytes_ps[-1].isalpha():
+               bytes_ps *= 1024
+           setattr(self,'bytes_per_second', bytes_ps )
+            
+       for d in size_options:
+           if hasattr(self,d) and ( type(getattr(self,d)) is str):
+              setattr(self,d, chunksize_from_str(getattr(self,d)))
+
        for f in flag_options:
            if hasattr(self,f) and (type(getattr(self,f)) is str):
               setattr(self,f, isTrue(getattr(self,f)))
@@ -810,7 +833,9 @@ class Config:
           self.cfg_run_dir = os.path.join( get_user_cache_dir(), component, cfg )
 
        if self.broker is not None:
+
           self._resolve_exchange()
+          
 
           queuefile = appdirs.user_cache_dir( Config.appdir_stuff['appname'],
                Config.appdir_stuff['appauthor']  )
