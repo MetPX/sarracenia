@@ -409,6 +409,7 @@ class Config:
        self.randid = "%04x" % randint(0,65536)
        self.settings = {}
        self.strip = 0
+       self.timeout = 300
        self.tls_rigour = 'normal'
        self.topic_prefix = 'v02.post'
        self.users = {}

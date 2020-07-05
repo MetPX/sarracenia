@@ -73,6 +73,7 @@ setup(
     "watchdog", 
     "netifaces", 
     "humanize",
-    "psutil" ]
+    "paramiko",
+    "psutil>=5.3.0" ]
 
 )
