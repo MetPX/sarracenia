@@ -173,6 +173,12 @@ the two versions, is clear:
 +--------------------------+---------------------------+
 
 
+Mappings
+~~~~~~~~
+
+v2->v3 instance variables::
+
+    self.user_cache_dir --> self.o.cfg_run_dir
 
 
 Dictionaries or Members for Properties?

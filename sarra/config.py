@@ -698,14 +698,22 @@ class Config:
        self.settings[opt_class][opt_var] = ' '.join(value) 
 
    def _parse_sum( self, value ):
-       if value in sarra.plugin.integrity.known_methods :
+       if ( value in sarra.plugin.integrity.known_methods ) or ( value[0:4] == 'cod,' ) :
           self.sum = value
           return
        
+       if (value[0:2] == 'z,') :
+           value=value[3:]
+           self.sum='cod,'
+       else:
+           self.sum=''
+
        for sc in sarra.plugin.integrity.Integrity.__subclasses__() :
            if hasattr(sc,'registered_as') and (sc.registered_as == value ):
-               self.sum = sc.__name__.lower()
+               self.sum += sc.__name__.lower()
                return
+       # FIXME this is an error return case, how to designate an invalid checksum?
+       self.sum='invalid'
 
    def parse_file(self, cfg):
        """ add settings in file to self

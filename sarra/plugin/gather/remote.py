@@ -12,6 +12,7 @@ import logging
 
 logger = logging.getLogger( __name__ )
 
+from sarra.plugin.gather import msg_init
 
 import sarra.config 
 
@@ -86,36 +87,35 @@ class Remote(Plugin):
         desclst  = {}
 
         for f in new_lst :
-            #logger.debug("checking %s (%s)" % (f,ls[f]))
+            logger.debug("checking %s (%s)" % (f,ls[f]))
 
             # keep a newer entry
             if not f in old_ls:
-                #logger.debug("IS NEW %s" % f)
+                logger.debug("IS NEW %s" % f)
                 filelst.append(f)
                 desclst[f] = ls[f]
                 continue
 
             # keep a modified entry
             if ls[f] != old_ls[f] :
-                #logger.debug("IS DIFFERENT %s from (%s,%s)" % (f,old_ls[f],ls[f]))
+                logger.debug("IS DIFFERENT %s from (%s,%s)" % (f,old_ls[f],ls[f]))
                 filelst.append(f)
                 desclst[f] = ls[f]
                 continue
 
-            #logger.debug("IS IDENTICAL %s" % f)
+            logger.debug("IS IDENTICAL %s" % f)
 
         return filelst,desclst
-
 
     def gather(self):
 
         if self.dest != None :
-           ok = self.post_new_urls()
-           return ok
+           msgs = self.post_new_urls()
+           return msgs
 
         logger.error("Service unavailable %s" % scheme)
 
-        return False
+        return []
 
     def load_ls_file(self,path):
         lsold = {}
@@ -155,11 +155,11 @@ class Remote(Plugin):
                 matched = False
                 self.line = ls[f]
 
-                if self.on_line_list : 
-                    for plugin in self.on_line_list :
-                        ok = plugin(self)
-                        if not ok: break
-                    if not ok: continue
+                #if self.on_line_list : 
+                #    for plugin in self.on_line_list :
+                #        ok = plugin(self)
+                #        if not ok: break
+                #    if not ok: continue
       
                 if self.line[0] == 'd' :
                    d = f.strip(os.sep)
@@ -177,21 +177,22 @@ class Remote(Plugin):
     def poll_directory(self,pdir,lspath):
         logger.debug("poll_directory %s %s" % (pdir,lspath))
         npost = 0
+        msgs = []
 
         # cd to that directory
 
         logger.debug(" cd %s" % pdir)
         ok = self.cd( pdir )
-        if not ok : return npost
+        if not ok : return []
 
         # ls that directory
 
         ok, file_dict, dir_dict = self.lsdir()
-        if not ok : return npost
+        if not ok : return []
 
         # when not sleeping
-
-        if not self.sleeping :
+        #if not self.sleeping :
+        if True:
 
            # get file list from difference in ls
 
@@ -200,8 +201,7 @@ class Remote(Plugin):
 
            # post poll list
 
-           n = self.poll_list_post( pdir, desclst, filelst ) 
-           npost += n
+           msgs.extend( self.poll_list_post( pdir, desclst, filelst )  )
 
         # sleeping or not, write the directory file content 
 
@@ -216,99 +216,105 @@ class Remote(Plugin):
             d_lspath = lspath + '_'    + d
             d_pdir   = pdir   + os.sep + d
                         
-            n = self.poll_directory(d_pdir, d_lspath)
-            npost += n
+            msgs.extend( self.poll_directory(d_pdir, d_lspath) )
 
-        return npost
+        return msgs
 
-    def post(self,post_exchange,post_baseUrl,post_relpath,to_clusters, \
-                  partstr=None,sumstr=None,rename=None,mtime=None,atime=None,mode=None,link=None):
+    #def post(self,post_exchange,post_baseUrl,post_relpath,to_clusters, \
+    #              partstr=None,sumstr=None,rename=None,mtime=None,atime=None,mode=None,link=None):
+    #
+    #   self.msg.exchange = post_exchange
+    #   
+    #   self.msg.set_topic(self.post_topic_prefix,post_relpath)
+    #   if self.subtopic != None : self.msg.set_topic_usr(self.post_topic_prefix,self.subtopic)
 
-        self.msg.exchange = post_exchange
-        
-        self.msg.set_topic(self.post_topic_prefix,post_relpath)
-        if self.subtopic != None : self.msg.set_topic_usr(self.post_topic_prefix,self.subtopic)
-
-        self.msg.set_notice(post_baseUrl,post_relpath)
+    #   self.msg.set_notice(post_baseUrl,post_relpath)
 
         # set message headers
-        msg = {}
+    #   msg = msg_init(
 
-        msg['to_clusters'] = to_clusters
+    #   msg['to_clusters'] = to_clusters
 
-        if partstr  != None : msg['parts']        = partstr
-        if sumstr   != None : msg['sum']          = sumstr
-        if rename   != None : msg['rename']       = rename
+    #   if partstr  != None : msg['parts']        = partstr
+    #   if sumstr   != None : msg['sum']          = sumstr
+    #   if rename   != None : msg['rename']       = rename
 
-        if self.preserve_time:
-            if mtime    != None : msg['mtime']        = mtime
-            if atime    != None : msg['atime']        = atime
+    #   if self.preserve_time:
+    #       if mtime    != None : msg['mtime']        = mtime
+    #       if atime    != None : msg['atime']        = atime
 
-        if self.preserve_mode:
-            if mode     != None : msg['mode']         = "%o" % ( mode & 0o7777 )
+    #   if self.preserve_mode:
+    #       if mode     != None : msg['mode']         = "%o" % ( mode & 0o7777 )
 
-        if link     != None : msg['link']         = link
+    #   if link     != None : msg['link']         = link
 
-        if self.cluster != None : msg['from_cluster'] = self.cluster
-        if self.source  != None : msg['source']       = self.source
+    #   if self.cluster != None : msg['from_cluster'] = self.cluster
+    #   if self.source  != None : msg['source']       = self.source
 
-        logger.debug("Added %s" % (self.msg.notice))
+    #   logger.debug("Added %s" % (self.msg.notice))
 
-        return ok
+    #   return ok
 
 
     def poll_file_post(self,ssiz,destDir,remote_file):
 
         path = destDir + '/'+ remote_file
 
+
         # posting a localfile
         if self.o.post_baseUrl.startswith('file:') :
            if os.path.isfile(path)   :
               try   : lstat = os.stat(path)
               except: lstat = None
-              ok    = self.post1file(path,lstat)
+              ok    = msg_init(path, self.o, lstat)
               return ok
 
-        self.o.post_relPath = destDir + '/'+ remote_file
+        post_relPath = destDir + '/'+ remote_file
 
-        self.sumstr  = self.o.sumflg
-        self.partstr = None
+        msg = msg_init( post_relPath, self.o, None )
+
+        if self.o.sumflg and ( ',' in self.o.sumflg ) :
+                m,v = self.o.sumflg.split(',')
+                msg['integrity'] = { 'method': m, 'value': v }
 
         try :
                 isiz = int(ssiz)
                 msg['size'] = isiz
         except: pass
 
-        this_rename  = self.rename
+        this_rename  = self.o.rename
 
         # FIX ME generalized fileOption
-        if FileOption != None :
+        if FileOption is not None :
            parts = FileOption.split('=')
            option = parts[0].strip()
            if option == 'rename' and len(parts) == 2 : 
               this_rename = parts[1].strip()
 
-        if this_rename != None and this_rename[-1] == '/' :
+        if this_rename is not None and this_rename[-1] == '/' :
            this_rename += remote_file
-                
-        ok = self.post(self, self.o.post_exchange,self.o.post_baseUrl,self.o.post_relPath,self.o.to_clusters, \
-                       self.partstr, self.sumstr,this_rename)
 
-        return ok
+        if this_rename is not None:
+           msg['rename'] = this_rename
+
+        #ok = self.post(self, self.o.post_exchange,self.o.post_baseUrl,self.o.post_relPath,self.o.to_clusters, \
+        #               self.partstr, self.sumstr,this_rename)
+
+        return msg
 
 
     def poll_list_post(self, destDir, desclst, filelst ):
  
         n = 0
+        msgs = []
 
         for idx,remote_file in enumerate(filelst) :
             desc = desclst[remote_file]
             ssiz = desc.split()[4]
 
-            ok = self.poll_file_post(ssiz,destDir,remote_file)
-            if ok : n += 1
+            msgs.extend( self.poll_file_post(ssiz,destDir,remote_file) )
 
-        return n
+        return msgs
 
 
     # =============
@@ -323,6 +329,7 @@ class Remote(Plugin):
 
         self.pulllst     = []
 
+        msgs = []
         # number of post files
 
         npost = 0
@@ -336,7 +343,7 @@ class Remote(Plugin):
             logger.debug('Exception details: ', exc_info=True)
             logger.error("Sleeping 30 secs and retry")
             time.sleep(30)
-            return True
+            return []
 
         if hasattr(self.dest,'file_index'): self.dest_file_index = self.dest.file_index
         # loop on all directories where there are pulls to do
@@ -351,20 +358,19 @@ class Remote(Plugin):
             path         = path.replace('${','')
             path         = path.replace('}','')
             path         = path.replace('/','_')
-            lsPath       = self.user_cache_dir + os.sep + 'ls' + path
+            lsPath       = self.o.cfg_run_dir + os.sep + 'ls' + path
 
-            currentDir   = self.set_dir_pattern(destDir)
+            currentDir   = self.o.set_dir_pattern(destDir)
 
             if currentDir == '' : currentDir = destDir
-
-            npost += self.poll_directory( currentDir, lsPath )
+            msgs.extend( self.poll_directory( currentDir, lsPath ) )
 
         # close connection
 
         try   : self.dest.close()
         except: pass
 
-        return npost > 0
+        return msgs
 
 
     # write ls file

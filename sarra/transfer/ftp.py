@@ -37,6 +37,7 @@ import logging
 logger = logging.getLogger( __name__ )
 
 from sarra.transfer import Protocol,Transport
+from sarra.transfer import alarm_cancel,alarm_set,alarm_raise
 
 #============================================================
 # ftp protocol in sarracenia supports/uses :
@@ -133,12 +134,12 @@ class Ftp(Protocol):
         if self.ftp == None  : return False
         if not self.connected : return False
 
-        if self.destination != self.parent.destination :
+        if self.destination != self.o.destination :
            self.close()
            return False
 
         self.batch = self.batch + 1
-        if self.batch > self.parent.batch :
+        if self.batch > self.o.batch :
            self.close()
            return False
 
@@ -173,10 +174,10 @@ class Ftp(Protocol):
 
     # connect...
     def connect(self):
-        logger.debug("sr_ftp connect %s" % self.parent.destination)
+        logger.debug("sr_ftp connect %s" % self.o.destination)
 
         self.connected   = False
-        self.destination = self.parent.destination
+        self.destination = self.o.destination
 
         if not self.credentials() : return False
 
@@ -185,7 +186,7 @@ class Ftp(Protocol):
         alarm_set(self.o.timeout)
         try:
                 expire  = -999
-                if self.parent.timeout : expire = self.parent.timeout
+                if self.o.timeout : expire = self.o.timeout
                 if self.port == '' or self.port == None : self.port = 21
 
                 if not self.tls :
@@ -234,7 +235,7 @@ class Ftp(Protocol):
         logger.debug("sr_ftp credentials %s" % self.destination)
 
         try:
-                ok, details = self.parent.credentials.get(self.destination)
+                ok, details = self.o.credentials.get(self.destination)
                 if details  : url = details.url
 
                 self.host     = url.hostname
@@ -355,7 +356,7 @@ class Ftp(Protocol):
         if hasattr(self, 'file_index'): fil = ' '.join(opart2[self.file_index:])
         else: fil = ' '.join(opart2[8:])
         # next line is for backwards compatibility only
-        if not self.parent.ls_file_index in [-1,len(opart2)-1] : fil =  ' '.join(opart2[self.parent.ls_file_index:])
+        #if not self.ls_file_index in [-1,len(opart2)-1] : fil =  ' '.join(opart2[self.ls_file_index:])
         line = ' '.join(opart2)
 
         self.entries[fil] = line
@@ -394,7 +395,7 @@ class Ftp(Protocol):
         self.ftp.mkd(remote_dir)
         alarm_cancel()
         alarm_set(self.o.timeout)
-        self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(self.parent.chmod_dir) + ' ' + remote_dir)
+        self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(self.o.chmod_dir) + ' ' + remote_dir)
         alarm_cancel()
 
     # put
