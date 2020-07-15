@@ -409,7 +409,7 @@ Install a minimal localhost broker and configure rabbitmq test users::
     declare env SR_CONFIG_EXAMPLES=${HOME}/git/sarracenia/sarra/examples
     EOF
 
-    RABBITMQ_PASS = S0M3R4nD0MP4sS
+    RABBITMQ_PASS=S0M3R4nD0MP4sS
     cat > ~/.config/sarra/credentials.conf << EOF
     amqp://bunnymaster:${RABBITMQ_PASS}@localhost/
     amqp://tsource:${RABBITMQ_PASS}@localhost/
