@@ -45,8 +45,8 @@ The Guides should also be revised to reflect additions or changes:
 
 - `Install.rst <Install.rst>`_ (Installation)
 - `Dev.rst <Dev.rst>`_ (this guide for developers)
-- `Subscribers.rst <Subscribers.rst>`_ (a guide for how to read data from a pump.)
-- `Source.rst <Source.rst>`_ (a guide for those publishing data to a pump.)
+- `subscriber.rst <subscriber.rst>`_ (a guide for how to read data from a pump.)
+- `source.rst <source.rst>`_ (a guide for those publishing data to a pump.)
 - `Admin.rst <Admin.rst>`_ (an Admininistrator´s Guide.)
 
 When there are new sections, they should likely start out in design/ and after
