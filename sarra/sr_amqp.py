@@ -290,7 +290,15 @@ class Consumer:
         # TODO 2. basic_ack may raise many type of Exception that are not handled at this level which will then be
         #  reraise from here. Ensure that it is the expected behaviour and that we document those right here. Then
         #  every caller of this method will be advised of what to handle.
-        self.channel.basic_ack(msg.delivery_tag)
+
+        try:
+            ret = self.channel.basic_ack(msg.delivery_tag)
+            self.logger.debug( "basic_ack returned: %s " % ret )
+        except Exception as err: # cannot recover failed ack, only applies within connection.
+            self.logger.warning("sr_amqp/basic_ack could not ack in: %s" % (err) )
+            self.logger.debug('Exception details: ', exc_info=True)
+            self.hc.reconnect()
+            self.logger.debug( "reconnected after failed basic_ack" )
 
     def consume(self, queuename):
 
