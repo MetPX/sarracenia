@@ -87,7 +87,14 @@ class sr_GlobalState:
         if cfg is None:
             lfn = self.user_cache_dir + os.sep + 'log' + os.sep + 'sr_' + c + "_%02d" % i + '.log'
         else:
-            lfn = self.user_cache_dir + os.sep + 'log' + os.sep + 'sr_' + c + '_' + cfg + "_%02d" % i + '.log'
+            # FIXME: honouring statehost missing.
+            s = self.configs[c][cfg]['options'].statehost.lower()
+            if (s == 'true') or (s == 'yes') or (s == 'on') or (s == '1'): 
+                lfn = self.user_cache_dir + os.sep + self.hostname
+            else:
+                lfn = self.user_cache_dir
+
+            lfn += os.sep + 'log' + os.sep + 'sr_' + c + '_' + cfg + "_%02d" % i + '.log'
 
         os.makedirs(os.path.dirname(lfn), exist_ok=True)
 
@@ -268,15 +275,18 @@ class sr_GlobalState:
                     shutil.copyfile( cfg, to )                
                 os.chdir('..')
 
-    def save_states(self,savename):
+    def save_states_dir(self,savename,dir):
         """ DEVELOPER ONLY.. copy state files to an alternate tree.
+            FIXME: statehost honoured kludgily.
         """
 
-        self.states = {}
-        if not os.path.isdir(self.user_cache_dir):
+        if not os.path.isdir(dir):
            return
-        os.chdir(self.user_cache_dir)
+        os.chdir(dir)
         other_cache_dir = appdirs.user_cache_dir(savename, self.appauthor)
+        if os.path.basename(dir) == self.hostdir:
+           other_cache_dir += os.sep + self.hostdir
+
         if not os.path.exists(other_cache_dir):
             os.mkdir(other_cache_dir)
         for c in self.components:
@@ -299,12 +309,19 @@ class sr_GlobalState:
                 os.chdir('..')
         os.chdir('..')
 
-    def _read_states(self):
-        # read in state files
+    def save_states(self,savename):
         self.states = {}
-        if not os.path.isdir(self.user_cache_dir):
+        self.save_states_dir(savename,self.user_cache_dir)
+        self.save_states_dir(savename,self.user_cache_dir + os.sep + self.hostdir )
+
+
+
+    def _read_state_dir(self,dir):
+        # read in state files
+        if not os.path.isdir(dir):
            return
-        os.chdir(self.user_cache_dir)
+
+        os.chdir(dir)
 
         for c in self.components:
             if os.path.isdir(c):
@@ -367,14 +384,20 @@ class sr_GlobalState:
                         os.chdir('..')
                 os.chdir('..')
 
-    def _find_missing_instances(self):
+    def _read_states(self):
+        self.states = {}
+        self._read_state_dir(self.user_cache_dir)
+        self._read_state_dir(self.user_cache_dir + os.sep + self.hostdir )
+        
+
+
+    def _find_missing_instances_dir(self,dir):
         """ find processes which are no longer running, based on pidfiles in state, and procs.
         """
-        missing = []
-        self.missing = []
-        if not os.path.isdir(self.user_cache_dir):
+        if not os.path.isdir(dir):
            return
-        os.chdir(self.user_cache_dir)
+        os.chdir(dir)
+        missing = []
         for c in self.components:
             if os.path.isdir(c):
                 os.chdir(c)
@@ -400,15 +423,21 @@ class sr_GlobalState:
                         os.chdir('..')
                 os.chdir('..')
 
-        self.missing = missing
+        self.missing.extend( missing )
 
-    def _clean_missing_proc_state(self):
+    def _find_missing_instances(self):
+        self.missing = []
+        self._find_missing_instances_dir(self.user_cache_dir)
+        self._find_missing_instances_dir(self.user_cache_dir + os.sep + self.hostdir )
+
+
+    def _clean_missing_proc_state_dir(self,dir):
         """ remove state pid files for process which are not running
         """
 
-        if not os.path.isdir(self.user_cache_dir):
+        if not os.path.isdir(dir):
            return
-        os.chdir(self.user_cache_dir)
+        os.chdir(dir)
         for instance in self.missing:
             (c, cfg, i) = instance
             if os.path.isdir(c):
@@ -434,11 +463,17 @@ class sr_GlobalState:
                         os.chdir('..')
                 os.chdir('..')
 
-    def _read_logs(self):
+    def _clean_missing_proc_state(self):
+        self._clean_missing_proc_state_dir(self.user_cache_dir)
+        self._clean_missing_proc_state_dir(self.user_cache_dir + os.sep + self.hostdir )
 
-        if not os.path.isdir(self.user_cache_dir):
+
+
+    def _read_logs_dir(self,dir):
+
+        if not os.path.isdir(dir):
            return
-        os.chdir(self.user_cache_dir)
+        os.chdir(dir)
         if os.path.isdir('log'):
             self.logs = {}
             for c in self.components:
@@ -469,6 +504,12 @@ class sr_GlobalState:
                             if cfg not in self.logs[c]:
                                 self.logs[c][cfg] = {}
                             self.logs[c][cfg][inum] = age
+
+    def _read_logs(self):
+        self._read_logs_dir(self.user_cache_dir)
+        self._read_logs_dir(self.user_cache_dir + os.sep + self.hostdir )
+
+
 
     def _init_broker_host(self, bhost ):
         if '@' in bhost:
@@ -611,6 +652,8 @@ class sr_GlobalState:
         self.__appname = n
         self.user_config_dir = appdirs.user_config_dir(self.appname, self.appauthor)
         self.user_cache_dir = appdirs.user_cache_dir(self.appname, self.appauthor)
+
+            
         
     def __init__(self,logger):
         """
@@ -622,6 +665,10 @@ class sr_GlobalState:
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
         self.appauthor = 'science.gc.ca'
         self.appname = os.getenv( 'SR_DEV_APPNAME' )
+        self.hostname = socket.getfqdn()
+        self.hostdir = self.hostname.split('.')[0]
+
+
         if self.appname == None:
             self.appname = 'sarra'
         else:

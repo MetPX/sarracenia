@@ -72,6 +72,7 @@ class sr_cfg2:
        self.strip = 0
        self.pstrip = False
        self.randid = "%04x" % random.randint(0,65536)
+       self.statehost = 'off'
        self.tls_rigour = 'normal'
        self.topic_prefix = 'v02.post'
        self.users = {}
