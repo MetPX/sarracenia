@@ -116,7 +116,8 @@ class sr_GlobalState:
             f.seek(0,0)
             f.truncate()
             f.write( getpass.getuser() + '\n' )
-            for proc in psutil.process_iter( ['pid','cmdline','name', 'username' ] ):
+            for proc in psutil.process_iter( ):
+                p = proc.as_dict( ['pid','cmdline','name', 'username' ] )
                 p = proc.info
                 pj = json.dumps(p,ensure_ascii=False)
                 f.write(pj +'\n')
@@ -162,8 +163,8 @@ class sr_GlobalState:
         if sys.platform == 'win32':
             self.me = os.environ['userdomain'] + '\\\\' + self.me
         self.auditors = 0
-        for proc in psutil.process_iter( ['pid','cmdline','name', 'username' ] ):
-            self._filter_sr_proc(proc.info)
+        for proc in psutil.process_iter( ):
+            self._filter_sr_proc(proc.as_dict( ['pid','cmdline','name', 'username' ] ))
 
     def _read_configs(self):
         # read in configurations.
