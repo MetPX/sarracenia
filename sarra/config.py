@@ -407,6 +407,7 @@ class Config:
        self.post_exchanges = []
        self.pstrip = False
        self.randid = "%04x" % randint(0,65536)
+       self.statehost = 'off'
        self.settings = {}
        self.strip = 0
        self.timeout = 300
