@@ -124,8 +124,7 @@ class sr_GlobalState:
             f.truncate()
             f.write( getpass.getuser() + '\n' )
             for proc in psutil.process_iter( ):
-                p = proc.as_dict( ['pid','cmdline','name', 'username' ] )
-                p = proc.info
+                p = proc.as_dict( ['pid','cmdline','name', 'username', 'create_time' ] )
                 pj = json.dumps(p,ensure_ascii=False)
                 f.write(pj +'\n')
             
@@ -171,7 +170,7 @@ class sr_GlobalState:
             self.me = os.environ['userdomain'] + '\\\\' + self.me
         self.auditors = 0
         for proc in psutil.process_iter( ):
-            self._filter_sr_proc(proc.as_dict( ['pid','cmdline','name', 'username' ] ))
+            self._filter_sr_proc(proc.as_dict( ['pid','cmdline','name', 'username', 'create_time' ] ))
 
     def _read_configs(self):
         # read in configurations.
@@ -753,8 +752,9 @@ class sr_GlobalState:
         self._start_missing()
 
         print('killing strays...')
+        now=time.time()
         for pid in self.procs:
-            if not self.procs[pid]['claimed']:
+            if (not self.procs[pid]['claimed']) and ( (now-self.procs[pid]['create_time']) > 50 ) :
                 print("pid: %s-%s does not match any configured instance, sending it TERM" % (
                         pid, self.procs[pid]['cmdline'][0:5]))
                 os.kill(pid, signal.SIGTERM)
