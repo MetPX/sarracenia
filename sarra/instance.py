@@ -122,7 +122,13 @@ class instance:
          
         # init logs here. need to know instance number and configuration and component before here.
         if cfg_preparse.action == 'start':
-            logfilename = sarra.config.get_log_filename( component, config, cfg_preparse.no )
+            if cfg_preparse.statehost:
+                hostdir = cfg_preparse.hostdir
+            else:
+                hostdir = None
+
+            logfilename = sarra.config.get_log_filename( hostdir, component, config, cfg_preparse.no )
+
             #print('logfilename= %s' % logfilename )
             os.makedirs(os.path.dirname(logfilename), exist_ok=True)
     
@@ -158,8 +164,12 @@ class instance:
         signal.signal(signal.SIGTERM, self.stop_signal)
         signal.signal(signal.SIGINT, self.stop_signal)
      
-    
-        pidfilename = sarra.config.get_pid_filename( component, config, cfg_preparse.no )
+        if cfg_preparse.statehost:
+            hostdir = cfg_preparse.hostdir
+        else:
+            hostdir = None
+         
+        pidfilename = sarra.config.get_pid_filename( hostdir, component, config, cfg_preparse.no )
         if not os.path.isdir( os.path.dirname(pidfilename) ):
               pathlib.Path(os.path.dirname(pidfilename)).mkdir(parents=True, exist_ok=True)
 

@@ -26,6 +26,7 @@ import copy
 import fnmatch
 import getpass
 import inspect
+import json
 import logging
 import os
 import os.path
@@ -89,8 +90,7 @@ class sr_GlobalState:
             lfn = self.log_dir + os.sep + 'sr_' + c + "_%02d" % i + '.log'
         else:
             # FIXME: honouring statehost missing.
-            s = self.configs[c][cfg]['options'].statehost.lower()
-            if (s == 'true') or (s == 'yes') or (s == 'on') or (s == '1'): 
+            if self.configs[c][cfg]['options'].statehost:
                 lfn = self.user_cache_dir + os.sep + self.hostname
             else:
                 lfn = self.user_cache_dir
@@ -99,7 +99,7 @@ class sr_GlobalState:
 
         os.makedirs(os.path.dirname(lfn), exist_ok=True)
 
-        if c in [ 'poll', 'post', 'shovel', 'watch', 'winnow' ]:
+        if c in [ 'post', 'shovel', 'watch', 'winnow' ]:
            component_path = os.path.dirname(component_path) + os.sep + 'instance.py'
            cmd = [sys.executable, component_path, '--no', "%d" % i ]
            logger.error( 'sys.argv is: %s, len: %d' % ( sys.argv, len(sys.argv) ) )
@@ -201,6 +201,7 @@ class sr_GlobalState:
         #self.admin_cfg = copy.deepcopy( self.default_cfg )
         #if os.path.exists( "admin.conf" ):
         #    self.admin_cfg.parse_file("admin.conf")
+        print( 'scanning %s' % self.user_config_dir )
         os.chdir(self.user_config_dir)
 
         for c in self.components:
@@ -208,7 +209,8 @@ class sr_GlobalState:
                 os.chdir(c)
                 self.configs[c] = {}
                 for cfg in os.listdir():
-
+                    if cfg[0] == '.':
+                        continue
                     numi = 0
                     if cfg[-4:] == '.off':
                         cbase = cfg[0:-4]
@@ -338,17 +340,19 @@ class sr_GlobalState:
 
 
 
-    def _read_state_dir( self, dir ):
+    def _read_state_dir( self, dir1 ):
         # read in state files
-        if not os.path.isdir(dir):
+        if not os.path.isdir(dir1):
            return
-        os.chdir(dir)
+        os.chdir(dir1)
 
         for c in self.components:
             if os.path.isdir(c):
                 os.chdir(c)
                 self.states[c] = {}
                 for cfg in os.listdir():
+                    if not cfg in self.states[c]:
+                        continue
                     if os.path.isdir(cfg):
                         os.chdir(cfg)
                         self.states[c][cfg] = {}
@@ -377,16 +381,14 @@ class sr_GlobalState:
                                 else:
                                     with p.open() as f:
                                         t = f.read().strip()
-                                # print( 'read f:%s len: %d contents:%s' % ( f, len(t), t[0:10] ) )
+                                #print( 'read pathname:%s len: %d contents:%s' % ( pathname, len(t), t[0:10] ) )
                                 if len(t) == 0:
                                     continue
 
-                                # print( 'read f[-4:] = +%s+ ' % ( f[-4:] ) )
                                 if pathname[-4:] == '.pid':
                                     i = int(pathname[-6:-4])
                                     if t.isdigit():
-                                        # print( "%s/%s instance: %s, pid: %s" %
-                                        #     ( c, cfg, i, t ) )
+                                        #print( "%s/%s instance: %s, pid: %s" % ( c, cfg, i, t ) )
                                         self.states[c][cfg]['instance_pids'][i] = int(t)
                                 elif pathname[-6:] == '.qname':
                                     self.states[c][cfg]['queue_name'] = t
@@ -1037,7 +1039,7 @@ class sr_GlobalState:
 
             component_path = self._find_component_path(c) 
 
-            if c in [ 'poll', 'post', 'shovel', 'watch', 'winnow' ]:
+            if c in [ 'post', 'shovel', 'watch', 'winnow' ]:
                component_path = os.path.dirname(component_path) + os.sep + 'instance.py'
                cmd = [sys.executable, component_path, '--no', "0" ]
                if sys.argv[0].find('python') >= 0:
@@ -1072,7 +1074,7 @@ class sr_GlobalState:
                 #print('deleting: %s is: %s @ %s' % (f, o.resolved_qname, o.broker.hostname ))
                 qdc = sarra.moth.Moth( o.broker, { 'declare':False, 'bind':False, 
                          'broker':o.broker, 'queue_name':o.resolved_qname
-                    }, get=True )
+                    }, is_subscriber=True )
                 qdc.getCleanUp() 
                 qdc.close() 
                 queues_to_delete.append( (o.broker,o.resolved_qname) )
@@ -1091,7 +1093,7 @@ class sr_GlobalState:
                            qdc = sarra.moth.Moth( o.post_broker, { 
                                  'declare':False, 'exchange':x, 
                                  'broker': self.brokers[h]['admin'], }, 
-                                 get=False )
+                                 is_subscriber=False )
                            qdc.putCleanUp() 
                            qdc.close() 
 
@@ -1187,7 +1189,10 @@ class sr_GlobalState:
             if not 'options' in self.configs[c][cfg] :
                 continue
 
-            if len(self.states[c][cfg]['instance_pids']) > 0:
+            if not cfg in self.states[c]:
+                continue 
+
+            if ( 'instance_pids' in self.states[c][cfg] ) and len(self.states[c][cfg]['instance_pids']) > 0:
                 logging.error("cannot remove %f while it is running! " )
                 continue
 
@@ -1604,15 +1609,15 @@ def main():
     if action == 'disable':
         gs.disable()
 
+    if action == 'dump':
+        print('dumping: ', end='', flush=True)
+        gs.dump()
+
     if action == 'edit':
         gs.edit()
 
     if action == 'enable':
         gs.enable()
-
-    if action == 'dump':
-        print('dumping: ', end='', flush=True)
-        gs.dump()
 
     if action == 'foreground':
         gs.foreground()

@@ -57,7 +57,7 @@ flag_options = [ 'bind_queue', 'cache_stat', 'declare_exchange', \
     'report_daemons', 'mirror', 'notify_only', 'overwrite', 'post_on_start', 'poll_without_vip', \
     'preserve_mode', 'preserve_time', 'pump_flag', 'randomize', 'realpath_post', 'reconnect', \
     'reportback', 'reset', 'retry_mode', 'save', 'set_passwords', 'source_from_exchange', \
-    'use_amqplib', 'use_pika', 'users_flag' 
+    'statehost', 'use_amqplib', 'use_pika', 'users_flag' 
 ]
 
 #all the duration options.
@@ -117,10 +117,14 @@ def get_site_config_dir():
           Config.appdir_stuff['appname'], 
           Config.appdir_stuff['appauthor']  ) 
 
-def get_user_cache_dir():
-    return appdirs.user_cache_dir( 
-          Config.appdir_stuff['appname'], 
-          Config.appdir_stuff['appauthor']  ) 
+def get_user_cache_dir(hostdir):
+    """
+      hostdir = None if statehost is false, 
+    """
+    ucd = appdirs.user_cache_dir( Config.appdir_stuff['appname'], Config.appdir_stuff['appauthor']  ) 
+    if hostdir:
+       ucd = os.path.join( ucd, hostdir ) 
+    return ucd
 
 def get_user_config_dir():
     return appdirs.user_config_dir( 
@@ -128,11 +132,11 @@ def get_user_config_dir():
           Config.appdir_stuff['appauthor']  ) 
 
 
-def get_pid_filename(component, configuration, no):
+def get_pid_filename(hostdir, component, configuration, no):
    """
      return the file name for the pid file for the specified instance.
    """
-   piddir = appdirs.user_cache_dir( Config.appdir_stuff['appname'], Config.appdir_stuff['appauthor']  ) 
+   piddir = get_user_cache_dir(hostdir)
    piddir += os.sep + component + os.sep
 
    if configuration[-5:] == '.conf':
@@ -143,12 +147,11 @@ def get_pid_filename(component, configuration, no):
    return piddir + os.sep + 'sr_' + component + '_' + configuration + '_%02d' % no + '.pid'
 
 
-def get_log_filename(component, configuration, no):
+def get_log_filename(hostdir, component, configuration, no):
    """
       return the name of a single logfile for a single instance.
    """
-   logdir = appdirs.user_cache_dir( Config.appdir_stuff['appname'],
-           Config.appdir_stuff['appauthor']  ) + os.sep + 'log'
+   logdir = get_user_cache_dir(hostdir) + os.sep + 'log'
 
    if configuration is None:
       configuration=''
@@ -324,7 +327,7 @@ class Config:
        'on_part', 'on_post', 'on_report', 'on_start', 'on_stop', 'on_watch', 'plugin' ]
    components =  [ 'audit', 'cpost', 'cpump', 'poll', 'post', 'sarra', 'sender', 'shovel', 'subscribe', 'watch', 'winnow' ]
 
-   actions = [ 'add', 'cleanup', 'edit', 'declare', 'disable', 'edit', 'enable', 'foreground', 'list', 'remove', 'restart', 'sanity', 'setup', 'show', 'start', 'stop', 'status' ]
+   actions = [ 'add', 'cleanup', 'devsnap', 'dump', 'edit', 'declare', 'disable', 'edit', 'enable', 'foreground', 'list', 'remove', 'restart', 'sanity', 'setup', 'show', 'start', 'stop', 'status' ]
 
    # lookup in dictionary, respond with canonical version.
    appdir_stuff = { 'appauthor':'science.gc.ca', 'appname':'sarra' }
@@ -393,6 +396,7 @@ class Config:
        self.filename = None
        self.flatten = '/'
        self.hostname = socket.getfqdn()
+       self.hostdir = socket.getfqdn().split('.')[0]
        self.sleep = 0.1 
        self.housekeeping = 30
        self.inline = False
@@ -407,7 +411,7 @@ class Config:
        self.post_exchanges = []
        self.pstrip = False
        self.randid = "%04x" % randint(0,65536)
-       self.statehost = 'off'
+       self.statehost = False
        self.settings = {}
        self.strip = 0
        self.timeout = 300
@@ -840,7 +844,12 @@ class Config:
            cfg=config
 
        if not hasattr(self, 'cfg_run_dir'):
-          self.cfg_run_dir = os.path.join( get_user_cache_dir(), component, cfg )
+          if self.statehost:
+              hostdir = self.hostdir
+          else:
+              hostdir = None
+          self.cfg_run_dir = os.path.join( get_user_cache_dir(hostdir), component, cfg )
+
 
        if self.broker is not None:
 
@@ -849,6 +858,10 @@ class Config:
 
           queuefile = appdirs.user_cache_dir( Config.appdir_stuff['appname'],
                Config.appdir_stuff['appauthor']  )
+
+          if self.statehost:
+               queuefile += os.sep + self.hostdir 
+          
           queuefile += os.sep + component + os.sep + cfg
           queuefile += os.sep + 'sr_' + component + '.' + cfg + '.' + self.broker.username 
 
@@ -879,7 +892,11 @@ class Config:
               f.close()
 
        if hasattr(self,'no' ):
-           self.pid_filename=get_pid_filename( component, cfg, self.no )
+           if self.statehost:
+               hostdir = self.hostdir
+           else:
+               hostdir = None
+           self.pid_filename=get_pid_filename( hostdir, component, cfg, self.no )
            self.retry_path=self.pid_filename.replace('.pid','.retry')
 
 

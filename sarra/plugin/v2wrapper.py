@@ -174,7 +174,14 @@ class V2Wrapper(Plugin):
 
         self.state_vars=[]
 
-        self.user_cache_dir=sarra.config.get_user_cache_dir()
+        
+        if o.statehost:
+           hostdir = o.hostdir
+        else:
+           hostdir = None 
+
+        self.user_cache_dir=sarra.config.get_user_cache_dir(hostdir)
+
         self.instance = o.no
         self.o = o
 
