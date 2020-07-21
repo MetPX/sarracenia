@@ -87,7 +87,6 @@ class sr_GlobalState:
         if cfg is None:
             lfn = self.user_cache_dir + os.sep + 'log' + os.sep + 'sr_' + c + "_%02d" % i + '.log'
         else:
-            # FIXME: honouring statehost missing.
             s = self.configs[c][cfg]['options'].statehost.lower()
             if (s == 'true') or (s == 'yes') or (s == 'on') or (s == '1'): 
                 lfn = self.user_cache_dir + os.sep + self.hostname
@@ -143,7 +142,7 @@ class sr_GlobalState:
                 self.procs[p['pid']]['claimed'] = True
                 self.auditors += 1
             else:
-                self.procs[p['pid']]['claimed'] =  ( 'foreground' in p['cmdline'] )
+                self.procs[p['pid']]['claimed'] =  (p['name'][3:] == 'post') or ( 'foreground' in p['cmdline'] )
 
     def read_proc_file(self,File="procs.json"):
         """
@@ -754,9 +753,9 @@ class sr_GlobalState:
         print('killing strays...')
         now=time.time()
         for pid in self.procs:
-            if (not self.procs[pid]['claimed']) and ( (now-self.procs[pid]['create_time']) > 50 ) :
-                print("pid: %s-%s does not match any configured instance, sending it TERM" % (
-                        pid, self.procs[pid]['cmdline'][0:5]))
+            if (not self.procs[pid]['claimed']) and ( (now-self.procs[pid]['create_time']) > 50 ):
+                print("pid: %s-%s (name: %s) does not match any configured instance, sending it TERM" % (
+                        pid, self.procs[pid]['cmdline'][0:5], self.procs[pid]['name']))
                 os.kill(pid, signal.SIGTERM)
 
 
