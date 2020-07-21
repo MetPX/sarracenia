@@ -137,8 +137,8 @@ class sr_GlobalState:
             f.seek(0,0)
             f.truncate()
             f.write( getpass.getuser() + '\n' )
-            for proc in psutil.process_iter( ['pid','cmdline','name', 'username' ] ):
-                f.write( json.dumps(proc.info,ensure_ascii=False) + '\n' )
+            for proc in psutil.process_iter():
+                f.write( json.dumps( proc.as_dict( ['pid','cmdline','name', 'username', 'create_time' ] ),ensure_ascii=False) + '\n' )
             
     def _filter_sr_proc(self,p):
         # process name 'python3' is not helpful, so overwrite...
@@ -155,7 +155,7 @@ class sr_GlobalState:
                 self.procs[p['pid']]['claimed'] = True
                 self.auditors += 1
             else:
-                self.procs[p['pid']]['claimed'] =  ( 'foreground' in p['cmdline'] )
+                self.procs[p['pid']]['claimed'] =   (p['name'][3:] == 'post') or ( 'foreground' in p['cmdline'] )
 
     def read_proc_file(self,File="procs.json"):
         """
@@ -181,8 +181,8 @@ class sr_GlobalState:
         if sys.platform == 'win32':
             self.me = os.environ['userdomain'] + '\\\\' + self.me
         self.auditors = 0
-        for proc in psutil.process_iter( ['pid','cmdline','name', 'username' ] ):
-            self._filter_sr_proc(proc.info)
+        for proc in psutil.process_iter():
+            self._filter_sr_proc( proc.as_dict( ['pid','cmdline','name', 'username', 'create_time' ] ) )
 
     def _read_configs(self):
         # read in configurations.
@@ -1332,9 +1332,10 @@ class sr_GlobalState:
 
         attempts = 0
         attempts_max = 5
+        now=time.time()
         while attempts < attempts_max:
             for pid in self.procs:
-                if not self.procs[pid]['claimed']:
+                if (not self.procs[pid]['claimed']) and ( (now-self.procs[pid]['create_time']) > 50 ) :
                     print("pid: %s-%s does not match any configured instance, sending it TERM" % (
                         pid, self.procs[pid]['cmdline'][0:5]))
                     os.kill(pid, signal.SIGTERM)
