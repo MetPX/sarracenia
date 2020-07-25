@@ -341,6 +341,7 @@ class sr_GlobalState:
 
 
     def _read_state_dir( self, dir1 ):
+
         # read in state files
         if not os.path.isdir(dir1):
            return
@@ -349,10 +350,9 @@ class sr_GlobalState:
         for c in self.components:
             if os.path.isdir(c):
                 os.chdir(c)
-                self.states[c] = {}
+                if not c in self.states:
+                    self.states[c] = {}
                 for cfg in os.listdir():
-                    if not cfg in self.states[c]:
-                        continue
                     if os.path.isdir(cfg):
                         os.chdir(cfg)
                         self.states[c][cfg] = {}
