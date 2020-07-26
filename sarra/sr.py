@@ -99,7 +99,7 @@ class sr_GlobalState:
 
         os.makedirs(os.path.dirname(lfn), exist_ok=True)
 
-        if c in [ 'post', 'shovel', 'watch', 'winnow' ]:
+        if c in [ 'poll', 'post', 'shovel', 'watch', 'winnow' ]:
            component_path = os.path.dirname(component_path) + os.sep + 'instance.py'
            cmd = [sys.executable, component_path, '--no', "%d" % i ]
            logger.error( 'sys.argv is: %s, len: %d' % ( sys.argv, len(sys.argv) ) )
@@ -155,7 +155,7 @@ class sr_GlobalState:
                 self.procs[p['pid']]['claimed'] = True
                 self.auditors += 1
             else:
-                self.procs[p['pid']]['claimed'] =   (p['name'][3:] == 'post') or ( 'foreground' in p['cmdline'] )
+                self.procs[p['pid']]['claimed'] =   (p['name'][-4:] == 'post') or ( 'foreground' in p['cmdline'] )
 
     def read_proc_file(self,File="procs.json"):
         """
@@ -201,7 +201,6 @@ class sr_GlobalState:
         #self.admin_cfg = copy.deepcopy( self.default_cfg )
         #if os.path.exists( "admin.conf" ):
         #    self.admin_cfg.parse_file("admin.conf")
-        print( 'scanning %s' % self.user_config_dir )
         os.chdir(self.user_config_dir)
 
         for c in self.components:
@@ -236,7 +235,7 @@ class sr_GlobalState:
                         cfgbody.fill_missing_options(c,cfg)
                         self.configs[c][cbase]['options'] = cfgbody
                         # ensure there is a known value of instances to run.
-                        if c in ['post', 'cpost']:
+                        if c in ['poll', 'post', 'cpost']:
                             if hasattr(cfgbody,'sleep') and cfgbody.sleep not in ['-', '0']:
                                 numi = 1
                         elif hasattr(cfgbody, 'instances' ):
@@ -1039,7 +1038,7 @@ class sr_GlobalState:
 
             component_path = self._find_component_path(c) 
 
-            if c in [ 'post', 'shovel', 'watch', 'winnow' ]:
+            if c in [ 'poll', 'post', 'shovel', 'watch', 'winnow' ]:
                component_path = os.path.dirname(component_path) + os.sep + 'instance.py'
                cmd = [sys.executable, component_path, '--no', "0" ]
                if sys.argv[0].find('python') >= 0:
