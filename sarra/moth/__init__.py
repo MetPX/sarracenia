@@ -165,7 +165,7 @@ class Moth():
        """
        for sc in Moth.__subclasses__() :
             purl = sc.url_proto(self)
-            if self.broker.scheme[0:4] == purl :
+            if (self.broker is not None) and ( self.broker.scheme[0:4] == purl ):
                 sc.__init__(self,broker,self.props)
                 return
             protos.append(purl) 
