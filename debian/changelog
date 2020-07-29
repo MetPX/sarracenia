@@ -1,3 +1,14 @@
+metpx-sarracenia (2.20.07) unstable; urgency=medium
+
+  * bugfix #347 sr command not honouring statehost setting.
+  * fixed: sr status/sanity, mis-identifies sr_post and sr_cpost intances as strays.
+  * fixed: sr audit killing instances that had not had time to write their .pid files.
+  * fixed: tests would only fail on raspberry pis... but was real failure mode.
+  * bugfix #341 sr broken on ubuntu 16.04
+  * added file_amheadalert plugin.
+
+ -- Peter Silva <peter@fractal>  Wed, 29 Jul 2020 00:48:30 -0400
+
 metpx-sarracenia (2.20.05) unstable; urgency=medium
 
   * sr command now 200x faster ( #174, #315, #180, #187 )
