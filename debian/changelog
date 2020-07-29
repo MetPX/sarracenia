@@ -1,4 +1,4 @@
-metpx-sarracenia (2.20.07) unstable; urgency=medium
+metpx-sarracenia (2.20.07) stable; urgency=medium
 
   * bugfix #347 sr command not honouring statehost setting.
   * fixed: sr status/sanity, mis-identifies sr_post and sr_cpost intances as strays.
@@ -7,7 +7,7 @@ metpx-sarracenia (2.20.07) unstable; urgency=medium
   * bugfix #341 sr broken on ubuntu 16.04
   * added file_amheadalert plugin.
 
- -- Peter Silva <peter@fractal>  Wed, 29 Jul 2020 00:48:30 -0400
+ -- Peter Silva <peter@bsqt.homeip.net>  Wed, 29 Jul 2020 00:48:30 -0400
 
 metpx-sarracenia (2.20.05) unstable; urgency=medium
 
@@ -17,7 +17,7 @@ metpx-sarracenia (2.20.05) unstable; urgency=medium
   * in some situations, log file directory not created (noticed on Windows.)
   * more unit testing.
 
- -- peter <peter@fractal>  Mon, 18 May 2020 20:52:45 -0400
+ -- peter <peter@bsqt.homeip.net>  Mon, 18 May 2020 20:52:45 -0400
 
 metpx-sarracenia (2.20.04b3) unstable; urgency=medium
 
