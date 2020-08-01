@@ -435,7 +435,8 @@ class Sftp(Protocol):
         if hasattr(self, 'file_index'): fil = ' '.join(opart2[self.file_index:])
         else: fil = ' '.join(opart2[8:])
         # next line is for backwards compatibility only
-        if not self.o.ls_file_index in [-1,len(opart2)-1] : fil =  ' '.join(opart2[self.o.ls_file_index:])
+        # FIXME: 2020/08/01 caused error, so removed during v3 port.
+        #if not self.o.ls_file_index in [-1,len(opart2)-1] : fil =  ' '.join(opart2[self.o.ls_file_index:])
         line = ' '.join(opart2)
 
         self.entries[fil] = line
