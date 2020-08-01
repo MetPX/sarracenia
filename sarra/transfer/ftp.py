@@ -338,7 +338,7 @@ class Ftp(Protocol):
 
     # line_callback: entries[filename] = 'stripped_file_description'
     def line_callback(self,iline):
-        logger.debug("sr_ftp line_callback %s" % iline)
+        #logger.debug("sr_ftp line_callback %s" % iline)
 
         alarm_cancel()
 

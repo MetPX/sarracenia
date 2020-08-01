@@ -35,13 +35,13 @@ import logging, paramiko, os,sys,time
 from   paramiko import *
 from   stat     import *
 
-import logging
-
-logger = logging.getLogger( __name__ )
-
 from sarra.transfer import Protocol,Transport
 from sarra.transfer import alarm_cancel,alarm_set,alarm_raise
 
+
+import logging
+
+logger = logging.getLogger( __name__ )
 
 
 #============================================================
@@ -89,6 +89,7 @@ class Sftp(Protocol):
         # sftp command times out after 20 secs
         # this setting is different from the computed timeout (protocol)
 
+        self.connected = False
         self.ssh_config  = None
 
         try :
@@ -99,12 +100,12 @@ class Sftp(Protocol):
                    self.ssh_config.parse(fp)
                    fp.close()
         except:
-                self.logger.error("sr_sftp/__init__: unable to load ssh config %s" % ssh_config)
-                self.logger.debug('Exception details: ', exc_info=True)
+                logger.error("sr_sftp/__init__: unable to load ssh config %s" % ssh_config)
+                logger.debug('Exception details: ', exc_info=True)
 
     # cd
     def cd(self, path):
-        self.logger.debug("sr_sftp cd %s" % path)
+        logger.debug("sr_sftp cd %s" % path)
         alarm_set(self.o.timeout)
         self.sftp.chdir(self.originalDir)
         self.sftp.chdir(path)
@@ -113,7 +114,7 @@ class Sftp(Protocol):
 
     # cd forced
     def cd_forced(self,perm,path) :
-        self.logger.debug("sr_sftp cd_forced %d %s" % (perm,path))
+        logger.debug("sr_sftp cd_forced %d %s" % (perm,path))
 
         # try to go directly to path
 
@@ -148,7 +149,7 @@ class Sftp(Protocol):
             alarm_cancel()
 
     def check_is_connected(self):
-        self.logger.debug("sr_sftp check_is_connected")
+        logger.debug("sr_sftp check_is_connected")
 
         if self.sftp == None  : return False
         if not self.connected : return False
@@ -175,14 +176,14 @@ class Sftp(Protocol):
 
     # chmod
     def chmod(self,perm,path):
-        self.logger.debug("sr_sftp chmod %s %s" % ( "{0:o}".format(perm),path))
+        logger.debug("sr_sftp chmod %s %s" % ( "{0:o}".format(perm),path))
         alarm_set(self.o.timeout)
         self.sftp.chmod(path,perm)
         alarm_cancel()
 
     # close
     def close(self):
-        self.logger.debug("sr_sftp close")
+        logger.debug("sr_sftp close")
 
         old_sftp = self.sftp
         old_ssh  = self.ssh
@@ -198,7 +199,8 @@ class Sftp(Protocol):
 
     # connect...
     def connect(self):
-        self.logger.debug("sr_sftp connect %s" % self.o.destination)
+
+        logger.debug("sr_sftp connect %s" % self.o.destination)
 
         if self.connected: self.close()
 
@@ -210,8 +212,8 @@ class Sftp(Protocol):
         alarm_set(self.o.timeout)
         try:
 
-                logger = logging.getLogger('paramiko')
-                logger.setLevel(logging.CRITICAL)
+                sublogger = logging.getLogger('paramiko')
+                sublogger.setLevel(logging.CRITICAL)
                 self.ssh = paramiko.SSHClient()
                 # FIXME this should be an option... for security reasons... not forced
                 self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -228,7 +230,7 @@ class Sftp(Protocol):
 
                 sftp = self.ssh.open_sftp()
                 if self.o.timeout != None :
-                   self.logger.debug("sr_sftp connect setting timeout %f" % self.o.timeout)
+                   logger.debug("sr_sftp connect setting timeout %f" % self.o.timeout)
                    channel = sftp.get_channel()
                    channel.settimeout(self.o.timeout)
 
@@ -247,15 +249,15 @@ class Sftp(Protocol):
                 return True
 
         except:
-            self.logger.error("sr_sftp/connect: unable to connect to %s (user:%s)" % (self.host, self.user))
-            self.logger.debug('Exception details: ', exc_info=True)
+            logger.error("sr_sftp/connect: unable to connect to %s (user:%s)" % (self.host, self.user))
+            logger.debug('Exception details: ', exc_info=True)
 
         alarm_cancel()
         return False
 
     # credentials...
     def credentials(self):
-        self.logger.debug("sr_sftp credentials %s" % self.destination)
+        logger.debug("sr_sftp credentials %s" % self.destination)
 
         try:
                 ok, details = self.o.credentials.get(self.destination)
@@ -274,13 +276,13 @@ class Sftp(Protocol):
 
                 if self.port == None  : self.port     = 22
 
-                self.logger.debug("h u:p s = %s:%d %s:%s %s"%(self.host,self.port,self.user,self.password,self.ssh_keyfile))
+                logger.debug("h u:p s = %s:%d %s:%s %s"%(self.host,self.port,self.user,self.password,self.ssh_keyfile))
 
                 if self.ssh_config  == None : return True
 
                 if self.user        == None or \
                  ( self.ssh_keyfile == None and self.password == None):
-                   self.logger.debug("check in ssh_config")
+                   logger.debug("check in ssh_config")
                    for key,value in self.ssh_config.lookup(self.host).items() :
                        if   key == "hostname":
                             self.host = value
@@ -291,19 +293,19 @@ class Sftp(Protocol):
                        elif key == "identityfile":
                             self.ssh_keyfile = os.path.expanduser(value[0])
 
-                self.logger.debug("h u:p s = %s:%d %s:%s %s"%(self.host,self.port,self.user,self.password,self.ssh_keyfile))
+                logger.debug("h u:p s = %s:%d %s:%s %s"%(self.host,self.port,self.user,self.password,self.ssh_keyfile))
                 return True
 
         except:
-                self.logger.error("sr_sftp/credentials: unable to get credentials for %s" % self.destination)
-                self.logger.debug('Exception details: ', exc_info=True)
+                logger.error("sr_sftp/credentials: unable to get credentials for %s" % self.destination)
+                logger.debug('Exception details: ', exc_info=True)
 
         return False
 
     # delete
     # MG sneak rmdir here in case 'R' message implies a directory (remote mirroring)
     def delete(self, path):
-        self.logger.debug("sr_sftp rm %s" % path)
+        logger.debug("sr_sftp rm %s" % path)
 
         alarm_set(self.o.timeout)
         # check if the file is there... if not we are done,no error
@@ -315,26 +317,26 @@ class Sftp(Protocol):
 
         # proceed with file/link removal
         if not S_ISDIR(s.st_mode) :
-           self.logger.debug("sr_sftp remove %s" % path)
+           logger.debug("sr_sftp remove %s" % path)
            self.sftp.remove(path)
 
         # proceed with directory removal
         else:
-           self.logger.debug("sr_sftp rmdir %s" % path)
+           logger.debug("sr_sftp rmdir %s" % path)
            self.sftp.rmdir(path)
 
         alarm_cancel()
 
     # symlink
     def symlink(self, link, path):
-        self.logger.debug("sr_sftp symlink %s %s" % (link, path) )
+        logger.debug("sr_sftp symlink %s %s" % (link, path) )
         alarm_set(self.o.timeout)
         self.sftp.symlink(link, path)
         alarm_cancel()
 
     # get 
     def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0 ) :
-        self.logger.debug("sr_sftp get %s %s %d %d %d" % (remote_file,local_file,remote_offset,local_offset,length))
+        logger.debug("sr_sftp get %s %s %d %d %d" % (remote_file,local_file,remote_offset,local_offset,length))
 
         # read : remote file open, seek if needed
 
@@ -363,7 +365,7 @@ class Sftp(Protocol):
 
     # init
     def init(self):
-        self.logger.debug("sr_sftp init")
+        logger.debug("sr_sftp init")
         Protocol.init(self)
         self.connected   = False 
         self.sftp        = None
@@ -374,9 +376,9 @@ class Sftp(Protocol):
 
     # init_file_index
     def init_file_index(self):
-        self.logger.debug("sr_sftp init_file_index")
+        logger.debug("sr_sftp init_file_index")
         dir_fils = self.sftp.listdir()
-        self.logger.debug("sr_sftp listdir(): %s" % dir_fils)
+        logger.debug("sr_sftp listdir(): %s" % dir_fils)
         if dir_fils:
             dir_attr = self.sftp.listdir_attr()
             alarm_cancel()
@@ -391,18 +393,18 @@ class Sftp(Protocol):
 
     # load_file_index
     def load_file_index(self):
-        self.logger.debug("sr_sftp load_file_index")
+        logger.debug("sr_sftp load_file_index")
         alarm_cancel()
         try:
             with open(self.file_index_cache,'r') as fp:
                 index = int(fp.read())
                 self.file_index = index
         except:
-            self.logger.error("load_file_index: Unable to determine file index from %s" % self.file_index_cache)
+            logger.error("load_file_index: Unable to determine file index from %s" % self.file_index_cache)
 
     # ls
     def ls(self):
-        self.logger.debug("sr_sftp ls")
+        logger.debug("sr_sftp ls")
         self.entries  = {}
         # timeout is at least 30 secs, say we wait for max 5 mins
         alarm_set( self.o.timeout )
@@ -412,12 +414,12 @@ class Sftp(Protocol):
             attr = dir_attr[index]
             line = attr.__str__()
             self.line_callback(line)
-        #self.logger.debug("sr_sftp ls = %s" % self.entries )
+        #logger.debug("sr_sftp ls = %s" % self.entries )
         return self.entries
 
     # line_callback: ls[filename] = 'stripped_file_description'
     def line_callback(self,iline):
-        #self.logger.debug("sr_sftp line_callback %s" % iline)
+        #logger.debug("sr_sftp line_callback %s" % iline)
 
         oline  = iline
         oline  = oline.strip('\n')
@@ -459,14 +461,14 @@ class Sftp(Protocol):
 
     # mkdir
     def mkdir(self, remote_dir):
-        self.logger.debug("sr_sftp mkdir %s" % remote_dir)
+        logger.debug("sr_sftp mkdir %s" % remote_dir)
         alarm_set(self.o.timeout)
         self.sftp.mkdir(remote_dir,self.o.chmod_dir)
         alarm_cancel()
 
     # put
     def put(self, local_file, remote_file, local_offset=0, remote_offset=0, length=0 ):
-        self.logger.debug("sr_sftp put %s %s %d %d %d" % (local_file,remote_file,local_offset,remote_offset,length))
+        logger.debug("sr_sftp put %s %s %d %d %d" % (local_file,remote_file,local_offset,remote_offset,length))
 
         # simple file
 
@@ -506,7 +508,7 @@ class Sftp(Protocol):
 
     # rename
     def rename(self,remote_old,remote_new) :
-        self.logger.debug("sr_sftp rename %s %s" % (remote_old,remote_new))
+        logger.debug("sr_sftp rename %s %s" % (remote_old,remote_new))
         try    : self.delete(remote_new)
         except : pass
         alarm_set(self.o.timeout)
@@ -515,26 +517,26 @@ class Sftp(Protocol):
 
     # rmdir
     def rmdir(self,path) :
-        self.logger.debug("sr_sftp rmdir %s " % path)
+        logger.debug("sr_sftp rmdir %s " % path)
         alarm_set(self.o.timeout)
         self.sftp.rmdir(path)
         alarm_cancel()
 
     # utime
     def utime(self,path,tup) :
-        self.logger.debug("sr_sftp utime %s %s " % (path,tup))
+        logger.debug("sr_sftp utime %s %s " % (path,tup))
         alarm_set(self.o.timeout)
         self.sftp.utime(path,tup)
         alarm_cancel()
 
     # write_file_index
     def write_file_index(self):
-        self.logger.debug("sr_sftp write_file_index")
+        logger.debug("sr_sftp write_file_index")
         try:
             with open(self.file_index_cache,'w') as fp:
                 fp.write(str(self.file_index))
         except:
-            self.logger.warning("Unable to write file_index to cache file %s" % self.file_index_cache)
+            logger.warning("Unable to write file_index to cache file %s" % self.file_index_cache)
 
 #============================================================
 #

@@ -81,7 +81,8 @@ size_options = [ 'blocksize', 'bytes_per_second', 'inline_max' ]
 """
 convert_to_v3 = {
 
-  'plugin msg_fdelay' : [ 'import', 'sarra.plugin.msg.fdelay.FDelay' ]
+  'plugin msg_fdelay' : [ 'import', 'sarra.plugin.msg.fdelay.FDelay' ],
+  'on_line line_log'  : [ 'import', 'sarra.plugin.line_log' ]
 
 }
 
@@ -1537,6 +1538,8 @@ def one_config( component, config ):
 
     if component in [ 'post' ]:
        cfg.override( sarra.flow.post.default_options )
+    elif component in [ 'poll' ]:
+       cfg.override( sarra.flow.poll.default_options )
     elif component in [ 'watch' ]:
        cfg.override( sarra.flow.watch.default_options )
     

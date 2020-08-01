@@ -10,7 +10,7 @@ import copy
 from sarra.flow import Flow
 import logging
 
-logger = logging.getLogger( '__name__' )
+logger = logging.getLogger( __name__ )
 
 from sarra.plugin.gather import msg_init
 
@@ -58,7 +58,7 @@ class Poll(Flow):
     def __init__( self ):
 
         logger.info('polling!')
-        #self.plugins['load'].append('sarra.plugin.gather.remote.Remote')
+        self.plugins['load'].append('sarra.plugin.line_mode.Line_Mode')
         self.plugins['load'].append('sarra.plugin.post.message.Message')
         Poll.assimilate(self)
 
@@ -79,7 +79,7 @@ class Poll(Flow):
             if self.details.url.password :
                 self.o.post_baseUrl = self.o.post_baseUrl.replace(':'+self.details.url.password,'')
 
-        self.dest = sarra.transfer.Protocol( self.details.url.scheme, options )
+        self.dest = sarra.transfer.Protocol( self.details.url.scheme, self.o )
 
         if self.dest is None: 
             logger.critical("unsupported polling protocol")
@@ -148,12 +148,9 @@ class Poll(Flow):
     def gather(self):
 
         if self.dest != None :
-           msgs = self.post_new_urls()
-           return msgs
+           self.worklist.incoming.extend( self.post_new_urls() )
+           logger.error( 'post_new_urls returned: %s' % len(self.worklist.incoming) )
 
-        logger.error("Service unavailable %s" % scheme)
-
-        return []
 
     def load_ls_file(self,path):
         lsold = {}
@@ -191,19 +188,20 @@ class Poll(Flow):
 
             for f in ls :
                 matched = False
-                self.line = ls[f]
+                line = ls[f]
 
-                #if self.on_line_list : 
-                #    for plugin in self.on_line_list :
-                #        ok = plugin(self)
-                #        if not ok: break
-                #    if not ok: continue
+                if 'on_line' in self.plugins : 
+                    for plugin in self.plugins['on_line'] :
+                        line = plugin(line)
+                        if (line is None) or (line == ""): break
+                    if (line is None) or (line == ""): continue
       
-                if self.line[0] == 'd' :
+                if line[0] == 'd' :
                    d = f.strip(os.sep)
-                   new_dir[d] = self.line
+                   new_dir[d] = line
                    continue
 
+                new_ls[f] = line.strip('\n')                 
             return True, new_ls, new_dir
         except:
             logger.warning("dest.lsdir: Could not ls directory")
@@ -296,6 +294,12 @@ class Poll(Flow):
 
     def poll_file_post(self,ssiz,destDir,remote_file):
 
+        FileOption = None
+        for mask in self.pulllst :
+            pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
+            if mask_regexp.match(remote_file) and accepting :
+               FileOption = maskFileOption
+
         path = destDir + '/'+ remote_file
 
 
@@ -338,7 +342,7 @@ class Poll(Flow):
         #ok = self.post(self, self.o.post_exchange,self.o.post_baseUrl,self.o.post_relPath,self.o.to_clusters, \
         #               self.partstr, self.sumstr,this_rename)
 
-        return msg
+        return [ msg ]
 
 
     def poll_list_post(self, destDir, desclst, filelst ):
@@ -351,7 +355,6 @@ class Poll(Flow):
             ssiz = desc.split()[4]
 
             msgs.extend( self.poll_file_post(ssiz,destDir,remote_file) )
-
         return msgs
 
 
@@ -402,6 +405,7 @@ class Poll(Flow):
 
             if currentDir == '' : currentDir = destDir
             msgs.extend( self.poll_directory( currentDir, lsPath ) )
+            logger.error( 'poll_directory returned: %s' % len(msgs) )
 
         # close connection
 

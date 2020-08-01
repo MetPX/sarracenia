@@ -4,7 +4,7 @@ import copy
 from sarra.flow import Flow
 import logging
 
-logger = logging.getLogger( '__name__' )
+logger = logging.getLogger( __name__ )
 
 
 default_options = { 
