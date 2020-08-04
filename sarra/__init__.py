@@ -28,6 +28,11 @@
 __version__ = "3.00.00"
 
 
+import logging
+
+logger = logging.getLogger( __name__ )
+
+
 import calendar
 import datetime
 import time

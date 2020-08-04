@@ -29,7 +29,7 @@ from random import randint
 #from sarra.sr_util import * 
 from sarra.sr_credentials  import *
 
-from sarra import durationToSeconds
+from sarra import durationToSeconds,chunksize_from_str
 import sarra.flow
 import sarra.flow.shovel
 import sarra.flow.winnow
