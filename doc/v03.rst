@@ -98,6 +98,9 @@ Changes planned to address pain points
   just refer to self.o for the options/settings they need. (self.o clearly separates options
   from working data.)
 
+* command-line parsing using python standard argParse library.  Means that keywords no longer work
+  with a single -.  Settling on standard use of -- for word based options, and - for abbrevs.
+  examples:  Good: --config, and -c, BAD: -config --c .
 
 
 

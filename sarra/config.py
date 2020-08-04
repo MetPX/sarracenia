@@ -1448,6 +1448,7 @@ class Config:
         #parser.add_argument('--clientid', help='like an AMQP queue name, identifies a group of subscribers')
         #parser.add_argument('--component', choices=Config.components, nargs='?', \
         #          help='which component to look for a configuration for' )
+        parser.add_argument('--config', '-c', nargs='?', help=' specifical configuration to select ')
         parser.add_argument('--dangerWillRobinson', action='store_true', default=False, help='Confirm you want to do something dangerous')
         parser.add_argument('--debug', action='store_true', default=self.debug, help='pring debugging output (very verbose)')
         #parser.add_argument('--dir_prefix', help='local sub-directory to put data in')
@@ -1484,15 +1485,21 @@ class Config:
         parser.add_argument('--subtopic', nargs=1, action=Config.addBinding, help='server-side filtering: MQTT subtopic, wilcards # to match rest, + to match one topic' )
 
         if isPost:
-            parser.add_argument( 'path', nargs='+', help='files to post' )
+            parser.add_argument('--path', '-p', action='append', nargs='?', help='path to post or watch')
+            parser.add_argument( 'path', nargs='*', action='extend', help='files to post' )
         else:
             parser.add_argument('action', nargs='?', choices=Config.actions, help='action to take on the specified configurations' )
             parser.add_argument( 'configurations', nargs='*', help='configurations to operate on' )
 
         args = parser.parse_args()
+
+        if hasattr(args,'config') and ( args.config is not None ):
+           args.configurations = [ args.config ]
+
         #FIXME need to apply _varsub
 
         self.merge(args)
+       
 
 
 def default_config():
@@ -1511,7 +1518,7 @@ def default_config():
     return cfg
 
 
-def one_config( component, config ):
+def one_config( component, config, isPost=False ):
 
     """
       single call return a fully parsed single configuration for a single component to run.
@@ -1528,7 +1535,7 @@ def one_config( component, config ):
 
     """
     default_cfg = default_config( )
-    default_cfg.override(  { 'program_name':component, 'directory': os.getcwd(), 'accept_unmatched':True } )
+    default_cfg.override(  { 'program_name':component, 'directory': os.getcwd(), 'accept_unmatched':True, 'no':0 } )
 
     #logger.error( 'default' )
     #print( 'default' )
@@ -1560,7 +1567,7 @@ def one_config( component, config ):
     #cfg.dump()     
     os.chdir(store_pwd)
 
-    cfg.parse_args()
+    cfg.parse_args(isPost)
 
     #logger.error( 'after args' )
     #print( 'after args' )
@@ -1570,9 +1577,13 @@ def one_config( component, config ):
 
     if component in [ 'post', 'watch' ]:
        cfg.postpath=cfg.configurations[1:]
-       if hasattr(cfg,'path'):
-           cfg.postpath.append( cfg.path )
-
+       if hasattr(cfg,'path') and (cfg is not None ):
+           if type(cfg.path) is list :
+               cfg.postpath.extend( cfg.path )
+           else:
+               cfg.postpath.append( cfg.path )
+           logger.error( 'path is : %s' % cfg.path )
+           logger.error( 'postpath is : %s' % cfg.postpath )
     #pp = pprint.PrettyPrinter(depth=6) 
     #pp.pprint(cfg)
 
