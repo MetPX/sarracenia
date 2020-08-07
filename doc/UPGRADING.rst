@@ -36,10 +36,24 @@ Installation Instructions
 git
 ---
 
+2.20.07
+-------
+
+fix for sr.py being brokern on ubuntu 16.04  (latest stable release.)
+
+
+2.20.05
+-------
+
+sr.py broken on ubuntu 16.04  
+2.20.04b
+--------
+
+fixed problem where sr sanity would kill "foreground" processes (any processes not running as daemons.)
+
+
 2.20.02b3
 ---------
-
-Latest stable version.
 
 
 2.20.02b1
@@ -54,7 +68,7 @@ Latest stable version.
 ---------
 
 **BUG**:  new sr implementation broke python 3.4 compatibility when managing processes
-          with sr.py
+          with sr.py  (sr.py broken on windows until 2.20.05)
 
 
 2.19.09b1
