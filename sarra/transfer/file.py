@@ -64,11 +64,14 @@ class File(Protocol):
 
     @classmethod
     def assimilate(cls,obj):
-        obj.__class__ = Ftp
+        obj.__class__ = File
 
     def __init__(self) :
         logger.debug("sr_file __init__")
         File.assimilate(self)
+
+    def registered_as(self):
+        return [ 'file' ]
 
     # cd
     def cd(self, path):
@@ -100,6 +103,9 @@ class File(Protocol):
         logger.debug("sr_file rm %s" % path)
         os.unlink(path)
 
+    def getcwd(self):
+        return os.getcwd()
+ 
     # ls
     def ls(self):
         logger.debug("sr_file ls")

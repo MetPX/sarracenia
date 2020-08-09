@@ -9,6 +9,9 @@ import sarra.plugin
 import sarra.plugin.integrity
 import time
 import types
+import urllib.parse
+
+from sarra import timestr2flt
 
 # for v2 subscriber routines...
 import json,os,sys,time
@@ -28,11 +31,14 @@ logger = logging.getLogger( __name__ )
 
 default_options = {  
   'accept_unmatched' : False,
+  'bytes_per_second' : None,
   'download'     : False,
   'housekeeping' : 30,     
   'log_reject'     : False,
   'logFormat'    : '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
   'logLevel'     : 'info',
+  'preserve_mode': True,
+  'preserve_time': True,
          'sleep' : 0.1,   
   'topic_prefix' : 'v02.post',
            'vip' : None
@@ -53,7 +59,7 @@ class Flow:
           worklist.incoming --> new messages to continue processing
           worklist.ok       --> successfully processed
           worklist.rejected --> messages to not be further processed.
-          worklist.failed    --> messages for which processing failed.
+          worklist.failed   --> messages for which processing failed.
 
       Initially all messages are placed in incoming.
       if a plugin decides:
@@ -121,16 +127,14 @@ class Flow:
        # override? or merge... hmm...
 
        self.plugins = {}
-       self.plugins['load'] = []
-       self.plugins['post'] = []
+       for entry_point in sarra.plugin.entry_points:
+           self.plugins[ entry_point ] = []
 
        # FIXME: open new worklist
        self.worklist = types.SimpleNamespace()
        self.worklist.ok = []
        self.worklist.incoming = []
        self.worklist.rejected = []
-
-       #FIXME: load retry from disk?
        self.worklist.failed = []
 
 
@@ -398,6 +402,8 @@ class Flow:
         """
            after a file has been written, restore permissions and ownership if necessary.
         """
+        path = msg['new_dir'] + os.path.sep + msg['new_file']
+
         if self.o.preserve_mode and 'mode' in msg :
              try   : mode = int( msg['mode'], base=8)
              except: mode = 0
@@ -427,6 +433,7 @@ class Flow:
         try:
             logger.debug( "data inlined with message, no need to download" )
             path = msg['new_dir'] + os.path.sep + msg['new_file']
+            #path = msg['new_relPath']
             f = os.fdopen(os.open( path, os.O_RDWR | os.O_CREAT), 'rb+')
             if msg[ 'content' ][ 'encoding' ] == 'base64':
                 data = b64decode( msg[ 'content' ]['value'] ) 
@@ -451,7 +458,16 @@ class Flow:
             for p in self.plugins['on_data']:
                 data = p(data)
             data_algo.update(data)
+
+            #FIXME: If data is changed by plugins, need to update content header.
+            #       current code will reproduce the upstream message without mofification.
+            #       need to think about whether that is OK or not.
+
             msg['data_checksum'] = { 'method': algo_method, 'value': data_algo.get_value()  }
+
+            msg['_DeleteOnPost'].extend( [ 'onfly_checksum', 'data_checksum' ] )
+
+
             
             f.write( data )
             f.truncate()
@@ -461,13 +477,19 @@ class Flow:
 
             return True
 
-        except:
+        except Exception as ex :
             logger.info("inlined data corrupt, try downloading.")
             logger.debug('Exception details:', exc_info=True)
         return False
 
     def do_download(self):
+        """
+           do download work for self.worklist.incoming, placing files:
+                successfully downloaded in worklist.ok
+                temporary failures in worklist.failed
+                permanent failures (or files not to be downloaded) in worklist.rejected
 
+        """
         
         for msg in self.worklist.incoming:
             if 'content' in msg.keys():
@@ -476,9 +498,31 @@ class Flow:
                 else:
                     self.worklist.rejected.append(msg)
             else:
-                logger.info('skipping: %s'  % msg )
-                self.worklist.rejected.append(msg)
+                parsed_url = urllib.parse.urlparse( msg['baseUrl'] )
 
+                if True: #try: 
+                    #link = sarra.transfer.Protocol( parsed_url.scheme, self.o )
+                    link = sarra.transfer.Transport( parsed_url.scheme, self.o)
+
+                    if link is None:
+                         logger.error(" no downloader defined for %s protocol/scheme dropping" % parsed_url.scheme ) 
+                         self.worklist.failed.append(msg)
+                         continue
+                    path = msg['new_dir'] + os.path.sep + msg['new_file']
+                    ok = link.download( msg, self.o )
+                    if ok:
+                        logger.info("downloaded ok" )
+                        self.worklist.ok.append(msg)
+                    else:
+                        self.worklist.failed.append(msg)
+
+                else: #except Exception as ex:
+                    logger.error("do_download: Could not download" )
+                    self.worklist.failed.append(msg)
+                     
+
+
+        self.worklist.incoming=[]        
 
     # v2 subscribe routines start here
 

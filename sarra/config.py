@@ -40,13 +40,14 @@ import sarra.plugin.integrity
 
 default_options = {
 
-  'realpath_post' : False,
-  'documentRoot' : None,
   'baseDir' : None,
+  'delete' : False,
+  'documentRoot' : None,
+  'inflight' : None,
   'post_documentRoot' : None,
   'post_baseDir' : None,
-  'post_baseUrl' : None
-
+  'post_baseUrl' : None,
+  'realpath_post' : False
 
 }
 
@@ -61,9 +62,7 @@ flag_options = [ 'bind_queue', 'cache_stat', 'declare_exchange', \
 ]
 
 #all the duration options.
-duration_options = [ 'timeout', 'expire', 'heartbeat', 'inflight', 'message_ttl', \
-   'retry_ttl', 'sanity_log_dead', 'sleep', 'timeout' 
-]
+duration_options = [ 'timeout', 'expire', 'heartbeat', 'message_ttl', 'retry_ttl', 'sanity_log_dead', 'sleep', 'timeout' ]
 
 #size options
 size_options = [ 'blocksize', 'bytes_per_second', 'inline_max' ]
@@ -758,6 +757,14 @@ class Config:
                self._parse_v2plugin(line[0],line[1])
            elif line[0] in [ 'no-import' ]:
                self._parse_v3unplugin(line[1])
+           elif line[0] in [ 'inflight', 'lock' ]:
+               if isnumeric(line[1][:-1]):
+                   setattr(self, line[0], durationToSeconds(line[1]) )
+               else:
+                   if line[1].lower() in [ 'none', 'off', 'false' ]:
+                       setattr(self, line[0], None )
+                   else:
+                       setattr(self, line[0], line[1] )
            elif line[0] in duration_options:
                if len(line) == 1:
                    logger.error( '%s is a duration option requiring a decimal number of seconds value' % line[0] ) 

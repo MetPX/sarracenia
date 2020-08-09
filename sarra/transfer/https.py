@@ -65,11 +65,15 @@ class Https(Protocol):
 
     @classmethod
     def assimilate(cls,obj):
-         obj.__class__ = Ftp
+         obj.__class__ = Https
 
     def __init__(self) :
         logger.debug("sr_http __init__")
         Https.assimilate(self)
+        self.init()
+
+    def registered_as(self):
+        return [ 'http', 'https' ]
 
     # cd
     def cd(self, path):
@@ -99,6 +103,8 @@ class Https(Protocol):
         if self.connected: self.close()
 
         self.connected   = False
+        self.destination = self.o.destination
+        self.timeout = self.o.timeout
 
         if not self.credentials() : return False
 
@@ -296,14 +302,3 @@ class Https(Protocol):
         alarm_cancel()
         return False
 
-#============================================================
-#
-# http_transport inherited from Transport
-#
-#============================================================
-
-class http_transport(Transport):
-    def __init__(self) :
-        Transport.__init__(self)
-        self.pclass = sr_http
-        self.scheme = 'http'

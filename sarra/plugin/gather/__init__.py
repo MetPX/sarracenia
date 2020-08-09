@@ -44,8 +44,9 @@ def msg_init(path, o, lstat=None):
     else:
         subtopic=''
     msg['topic'] = o.post_topic_prefix + '.' + subtopic
+    msg[ 'local_offset' ] = 0
 
-    msg[ '_deleteOnPost' ] = [ 'post_relpath', 'new_dir', 'new_file', 'exchange' ]
+    msg[ '_deleteOnPost' ] = [ 'exchange', 'local_offset', 'new_dir', 'new_file', 'post_relpath' ]
 
     # notice
     msg[ 'pubTime' ]  = v3timeflt2str(time.time())

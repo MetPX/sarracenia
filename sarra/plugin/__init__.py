@@ -39,7 +39,7 @@ worklist given to on_plugins...
     worklist.incoming --> new messages to continue processing
     worklist.ok       --> successfully processed
     worklist.rejected --> messages to not be further processed.
-    worklist.retry    --> messages for which processing failed.
+    worklist.failed    --> messages for which processing failed.
 
 
 Initially all messages are placed in incoming.
@@ -60,7 +60,6 @@ entry_points = [ 'ack', 'do_download', 'do_get', 'do_poll', 'do_put', 'do_send',
    'gather', 'on_messages', 'on_data', 'on_files', 'on_housekeeping', 'on_html_page', 
    'on_line', 'on_part', 'on_posts', 'on_report', 'on_start', 'on_stop', 'post' ]
 
-
 class Plugin:
     """
     FIXME: document the API signatures for all the entry points. 
@@ -76,6 +75,7 @@ class Plugin:
         logger.info( 'intializing %s' % self.name )
         pass
 
+# FIXME:
 #    @abstractmethod
 #    def name(self):
 #        """
@@ -153,9 +153,9 @@ class Plugin:
 #        pass
 #
 #    @abstractmethod
-#    def on_data(self): 
+#    def on_data(self,data): 
 #        """
-#          Task: 
+#          Task:  return data transformed in some way.
 #        """
 #        pass
 #
@@ -185,16 +185,19 @@ class Plugin:
 #        pass
 #
 #    @abstractmethod
-#    def on_html_page(self): 
+#    def on_html_page(self,page): 
 #        """
-#          Task: 
+#          Task: modify an html page.
 #        """
 #        pass
 #
 #    @abstractmethod
-#    def on_line(self): 
+#    def on_line(self,line): 
 #        """
-#          Task: 
+#          used in FTP polls, because servers have different formats, modify to canonical use.
+#           
+#          Task: return modified line. 
+#           
 #        """
 #        pass
 #

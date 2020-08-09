@@ -89,6 +89,7 @@ class Sftp(Protocol):
         # sftp command times out after 20 secs
         # this setting is different from the computed timeout (protocol)
 
+        self.init()
         self.connected = False
         self.ssh_config  = None
 
@@ -102,6 +103,9 @@ class Sftp(Protocol):
         except:
                 logger.error("sr_sftp/__init__: unable to load ssh config %s" % ssh_config)
                 logger.debug('Exception details: ', exc_info=True)
+
+    def registered_as(self):
+        return [ 'sftp' , 'scp', 'ssh', 'fish' ]
 
     # cd
     def cd(self, path):
@@ -539,14 +543,3 @@ class Sftp(Protocol):
         except:
             logger.warning("Unable to write file_index to cache file %s" % self.file_index_cache)
 
-#============================================================
-#
-# wrapping of downloads/sends using sr_sftp in sftp_transport
-#
-#============================================================
-
-class sftp_transport(Transport):
-    def __init__(self) :
-        Transport.__init__(self)
-        self.pclass = sr_sftp
-        self.scheme = 'sftp'

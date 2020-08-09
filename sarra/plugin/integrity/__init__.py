@@ -53,6 +53,10 @@ class Integrity:
         sc.__init__(self)
    
 
+    @abstractmethod
+    def get_method(self):
+        return type(self).__name__.lower()
+
 #   @abstractmethod
 #   def get_value(self):
 #       """

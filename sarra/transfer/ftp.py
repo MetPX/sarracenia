@@ -69,9 +69,12 @@ class Ftp(Protocol):
 
     def __init__(self) :
         logger.debug("sr_ftp __init__")
+        self.init()        
         Ftp.assimilate(self)
-        
  
+    def registered_as(self):
+        return [ 'ftp' ]
+
     # cd
     def cd(self, path):
         logger.debug("sr_ftp cd %s" % path)

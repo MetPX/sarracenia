@@ -162,6 +162,12 @@ class V2Wrapper(Plugin):
                 that is kind of blown away for each message...
                 parent is the config/subscriber in both cases.
                 so v2 state variables are always stored in parent.
+
+           FIXME V2 Do_* not done.
+           this is good for on_* plugins.  noticed a wrinkle for do_* plugins, where a 'registered_as' routine is needed.
+           and do_* are registered "pre protocol" (that is, for each protocol they claim via registered_as)
+           This is not taken care of yet.
+
         """
         global logger
  

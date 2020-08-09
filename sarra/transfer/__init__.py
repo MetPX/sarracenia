@@ -49,7 +49,7 @@ logger = logging.getLogger( __name__ )
 
 from sarra.sr_xattr import *
 
-from sarra import nowflt
+from sarra import nowflt,timestr2flt
 
 
 #============================================================
@@ -121,14 +121,21 @@ class Protocol():
 
         self.o = options 
   
+        sc = None
+        # 0:4 is to ignore s in https and use the same protocol for both.
+        # FIXME: might want to add 'reverse' to __subclasses__, so plugins are checked first.
         for sc in Protocol.__subclasses__():
-            if proto[0:4] == sc.__name__.lower():
-               break
+
+            if (hasattr(sc,'registered_as') and (proto in sc.registered_as(self))) :
+                # old version or (str(proto[0:4]) == sc.__name__.lower()[0:4]):
+                logger.debug("HOHO found!")
+                self.init()
+                sc.__init__(self) 
+                break
 
         if sc is None: return None
+        logger.debug("HOHO found! .. %s " % ( sc.__name__.lower() ) )
 
-        self.init()
-        sc.__init__(self) 
 
     # init
     def init(self):
@@ -217,11 +224,11 @@ class Protocol():
 
     def __on_data__(self, chunk):
 
-        if not self.o.on_data_list:
+        if 'on_data' not in self.o.plugins:
            return chunk
 
         new_chunk = chunk
-        for plugin in self.o.on_data_list :
+        for plugin in self.o.plugins['on_data'] :
            new_chunk = plugin(self,new_chunk)
 
         if self.data_sumalgo  : self.data_sumalgo.update(new_chunk)
@@ -312,7 +319,7 @@ class Protocol():
 
         # warn if length mismatch without transformation.
 
-        if (not self.o.on_data_list) and length != 0 and rw_length != length :
+        if (not 'on_data' in self.o.plugins) and length != 0 and rw_length != length :
            logger.error("util/writelocal mismatched file length writing %s. Message said to expect %d bytes.  Got %d bytes." % (local_file,length,rw_length))
 
         return rw_length
@@ -348,12 +355,13 @@ class Protocol():
     # set_sumalgo
     def set_sumalgo(self, sumalgo):
         logger.debug("sr_proto set_sumalgo %s" % sumalgo)
-        self.sumalgo = sumalgo
-        self.data_sumalgo = sumalgo
+        self.sumalgo = sarra.plugin.integrity.Integrity( sumalgo )
+        self.data_sumalgo = sarra.plugin.integrity.Integrity( sumalgo )
 
     def get_sumstr(self):
         if self.sumalgo:
-            return "{},{}".format(self.sumalgo.registered_as(), self.sumalgo.get_value())
+            #return { 'method':type(self.sumalgo).__name__, 'value':self.sumalgo.get_value() }
+            return { 'method':self.sumalgo.get_method(), 'value':self.sumalgo.get_value() }
         else:
             return None
 
@@ -398,11 +406,15 @@ class Protocol():
 
 class Transport():
 
-    def __init__(self) :
+    def __init__(self, scheme, options) :
+        """
+            scheme as per URL standard, the string identifying a protocol before the first colon.
+
+        """
+        self.o = options
+        self.scheme = scheme
         self.cdir   = None
-        self.pclass = None
         self.proto  = None
-        self.scheme = None
 
     def close(self) :
         logger.debug("%s_transport close" % self.scheme)
@@ -420,7 +432,7 @@ class Transport():
 
         logger.debug("%s_transport download" % self.scheme)
 
-        token       = msg['relpath'].split('/')
+        token       = msg['relPath'].split('/')
         cdir        = '/'.join(token[:-1])
         remote_file = token[-1]
         urlstr      = msg['baseUrl'] + '/' + msg['relPath']
@@ -435,37 +447,43 @@ class Transport():
         if curdir != new_dir:
            os.chdir(new_dir)
 
+        logger.info("FIXME new_dir=%s, new_file=%s" % (new_dir, new_file) )
+
         try :
                 options.destination = msg['baseUrl']
 
                 proto = self.proto
                 if not proto or not proto.check_is_connected() :
                    logger.debug("%s_transport download connects" % self.scheme)
-                   proto = self.pclass(self.o)
+                   proto = sarra.transfer.Protocol(self.scheme,self.o)
+                   logger.debug( "HOHO proto %s " % type(proto) )
                    ok = proto.connect()
                    if not ok : return False
                    self.proto = proto
+                   logger.debug('connected')
 
                 #=================================
                 # if parts, check that the protol supports it
                 #=================================
 
-                #if not hasattr(proto,'seek') and msg.partflg == 'i':
+                #if not hasattr(proto,'seek') and ('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' ):
                 #   logger.error("%s, inplace part file not supported" % self.scheme)
                 #   return False
                 
                 cwd = None
                 if hasattr(proto,'getcwd') : cwd = proto.getcwd()
+
+                logger.debug( " proto %s " % type(proto) )
                 if cwd != cdir :
                    logger.debug("%s_transport download cd to %s" % (self.scheme,cdir))
                    proto.cd(cdir)
     
                 remote_offset = 0
-                if  msg.partflg == 'i': remote_offset = msg['offset']
+                if  ('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' ): remote_offset = msg['offset']
     
                 block_length = msg['size']
                 str_range = ''
-                if msg.partflg == 'i' :
+                if ('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' ) :
                    block_length=msg['blocks']['size']
                    str_range = 'bytes=%d-%d'%(remote_offset,remote_offset+block_length-1)
     
@@ -479,19 +497,19 @@ class Transport():
 
                 proto.set_sumalgo(msg['integrity']['method'])
 
-                if options.inflight == None or msg['partflg'] == 'i' :
-                   self.get(remote_file,new_file,remote_offset,msg['local_offset'],block_length)
+                if options.inflight == None or (('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' )):
+                   self.get(msg, remote_file,new_file,remote_offset,msg['local_offset'],block_length)
 
                 elif type(options.inflight) == str :
                    if options.inflight == '.' :
                        new_lock = '.' + new_file
-                       self.get(remote_file,new_lock,remote_offset,msg['local_offset'],block_length)
+                       self.get(msg, remote_file,new_lock,remote_offset,msg['local_offset'],block_length)
                        if os.path.isfile(new_file) : os.remove(new_file)
                        os.rename(new_lock, new_file)
                     
                    elif options.inflight[0] == '.' :
                        new_lock  = new_file + options.inflight
-                       self.get(remote_file,new_lock,remote_offset,msg['local_offset'],block_length)
+                       self.get(msg, remote_file,new_lock,remote_offset,msg['local_offset'],block_length)
                        if os.path.isfile(new_file) : os.remove(new_file)
                        os.rename(new_lock, new_file)
 
@@ -501,20 +519,20 @@ class Transport():
                               os.chmod(options.inflight,options.chmod_dir)
                        except:pass
                        new_lock  = options.inflight + new_file
-                       self.get(remote_file,new_lock,remote_offset,msg['local_offset'],block_length)
+                       self.get(msg, remote_file,new_lock,remote_offset,msg['local_offset'],block_length)
                        if os.path.isfile(new_file) : os.remove(new_file)
                        os.rename(new_lock, new_file)
                 else:
                     logger.error('inflight setting: %s, not for remote.' % options.inflight )
 
-                logger.debug('proto.checksum={}, msg.sumstr={}'.format(proto.checksum, msg['sumstr']))
+                logger.debug('proto.checksum={}, msg.sumstr={}'.format(proto.checksum, msg['integrity']))
                 msg['onfly_checksum'] = proto.get_sumstr()
                 msg['data_checksum'] = proto.data_checksum
-                msg['_DeleteOnPost'].extend( [ 'onfly_checksum', 'data_checksum' ] )
+                msg['_deleteOnPost'].extend( [ 'onfly_checksum', 'data_checksum' ] )
 
                 # fix message if no partflg (means file size unknown until now)
-                if msg['partflg'] == None:
-                   msg.set_parts(partflg='1',chunksize=proto.fpos)
+                if not 'blocks' in msg : 
+                    msg['size'] = proto.fpos 
     
                 # fix permission 
                 self.set_local_file_attributes(new_file,msg)
@@ -540,56 +558,27 @@ class Transport():
         return True
 
     # generalized get...
-    def get( self, remote_file, local_file, remote_offset, local_offset, length ):
-        msg = self.o.msg
+    def get( self, msg, remote_file, local_file, remote_offset, local_offset, length ):
 
-        ok = None
-        if self.scheme in self.o.do_gets :
-           logger.debug("using registered do_get for %s" % self.scheme)
-           do_get = self.o.do_gets[self.scheme]
-           new_file     = msg.new_file
-           msg.new_file = local_file
-           ok = do_get(self.o)
-           msg.new_file = new_file
-           if ok:
-              return
-           elif ok is False:
-              raise Exception('do_get returned')
-           else:
-              logger.debug("sr_util/get ok is None executing this do_get %s" % do_get)
+        # removed v2 plugin support for do_get from here. (I doubt it worked anyways.)
         self.proto.get(remote_file, local_file, remote_offset, local_offset, length)
 
     # generalized put...
-    def put(self, local_file, remote_file, local_offset=0, remote_offset=0, length=0 ):
-        msg = self.o.msg
+    def put(self, msg, local_file, remote_file, local_offset=0, remote_offset=0, length=0 ):
 
-        ok = None
-        if self.scheme in self.o.do_puts :
-           logger.debug("using registered do_put for %s" % self.scheme)
-           new_file     = msg.new_file
-           msg.new_file = remote_file
-           do_put = self.o.do_puts[self.scheme]
-           ok = do_put(self.o)
-           msg.new_file = new_file
-           if ok:
-              return
-           elif ok is False:
-              raise Exception('do_put returned')
-           else:
-              logger.debug("sr_util/put ok is None executing this do_put %s" % do_put)
+        # removed v2 plugin support for do_put from here. (I doubt it worked anyways.)
         self.proto.put(local_file, remote_file, local_offset, remote_offset, length)
 
     # generalized send...
-    def send( self, options ):
+    def send( self, msg, options ):
         self.o = options
-        msg         = options.msg
-        logger.debug("%s_transport send %s %s" % (self.scheme,msg.new_dir, msg.new_file) )
+        logger.debug("%s_transport send %s %s" % (self.scheme,msg['new_dir'], msg['new_file'] ) )
 
-        local_path = msg.relpath
+        local_path = msg['relPath']
         local_dir  = os.path.dirname( local_path).replace('\\','/')
         local_file = os.path.basename(local_path).replace('\\','/')
-        new_dir    = msg.new_dir.replace('\\','/')
-        new_file   = msg.new_file.replace('\\','/')
+        new_dir    = msg['new_dir'].replace('\\','/')
+        new_file   = msg['new_file'].replace('\\','/')
         new_lock   = None
 
         try:    curdir = os.getcwd()
@@ -603,7 +592,7 @@ class Transport():
                 proto = self.proto
                 if proto == None or not proto.check_is_connected() :
                    logger.debug("%s_transport send connects" % self.scheme)
-                   proto = self.pclass(options)
+                   proto = sarra.transfer.Protocol(self.scheme,options)
                    ok = proto.connect()
                    if not ok : return False
                    self.proto = proto
@@ -613,7 +602,7 @@ class Transport():
                 # if parts, check that the protol supports it
                 #=================================
 
-                if not hasattr(proto,'seek') and msg.partflg == 'i':
+                if not hasattr(proto,'seek') and ('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' ):
                    logger.error("%s, inplace part file not supported" % self.scheme)
                    return False
 
@@ -679,25 +668,25 @@ class Transport():
                    return False
 
                 offset = 0
-                if  msg.partflg == 'i': offset = msg.offset
+                if  ('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' ): offset = msg.offset
 
                 new_offset = msg.local_offset
     
                 str_range = ''
-                if msg.partflg == 'i' :
+                if ('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' ) :
                    str_range = 'bytes=%d-%d'%(offset,offset+msg.length-1)
     
                 #upload file
     
-                if inflight == None or msg.partflg == 'i' :
-                   self.put(local_file, new_file, offset, new_offset, msg.length)
+                if inflight == None or (('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' )) :
+                   self.put(msg, local_file, new_file, offset, new_offset, msg.length)
                 elif inflight == '.' :
                    new_lock = '.'  + new_file
-                   self.put(local_file, new_lock )
+                   self.put(msg, local_file, new_lock )
                    proto.rename(new_lock, new_file)
                 elif inflight[0] == '.' :
                    new_lock = new_file + inflight
-                   self.put(local_file, new_lock )
+                   self.put(msg, local_file, new_lock )
                    proto.rename(new_lock, new_file)
                 elif options.inflight[-1] == '/' :
                    try :
@@ -705,11 +694,11 @@ class Transport():
                           proto.cd_forced(775,new_dir)
                    except:pass
                    new_lock  = options.inflight + new_file
-                   self.put(local_file,new_lock)
+                   self.put(msg, local_file,new_lock)
                    proto.rename(new_lock, new_file)
                 elif inflight == 'umask' :
                    proto.umask()
-                   self.put(local_file, new_file)
+                   self.put(msg, local_file, new_file)
 
                 # fix permission 
 
@@ -729,7 +718,7 @@ class Transport():
                 try    : self.close()
                 except : pass
 
-                logger.error("Delivery failed %s" % msg.new_dir+'/'+msg.new_file)
+                logger.error("Delivery failed %s" % msg['new_dir']+'/'+msg['new_file'])
                 logger.debug('Exception details: ', exc_info=True)
 
                 return False
@@ -741,14 +730,14 @@ class Transport():
 
         # if the file is not partitioned, the the onfly_checksum is for the whole file.
         # cache it here, along with the mtime.
-        if ( msg.partstr[0:2] == '1,' ) : 
+        if ( not 'blocks' in msg ) : 
            if 'onfly_checksum' in msg:
                sumstr = msg['onfly_checksum']
            else:
-               sumstr = msg['sumstr']
+               sumstr = msg['integrity']
 
            x = sr_xattr( local_file )
-           x.set( 'sum' , sumstr )
+           x.set( 'integrity' , sumstr )
 
            if self.o.preserve_time and 'mtime' in msg and msg['mtime'] :
                x.set( 'mtime' , msg['mtime'] )
