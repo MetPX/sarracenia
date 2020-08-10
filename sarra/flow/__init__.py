@@ -322,6 +322,7 @@ class Flow:
 
     def set_new(self,m, maskDir, maskFileOption, mirror, strip, pstrip, flatten):
         """
+          Add new_ fields.. indicating what the destination of a transfer is.
         """
         m['new_dir'] = maskDir
         m['new_file'] = os.path.basename(m['relPath'])
@@ -405,26 +406,6 @@ class Flow:
         logger.info('unimplemented')
 
 
-    def restoreFileMeta(self,msg):
-        """
-           after a file has been written, restore permissions and ownership if necessary.
-        """
-        path = msg['new_dir'] + os.path.sep + msg['new_file']
-
-        if self.o.preserve_mode and 'mode' in msg :
-             try   : mode = int( msg['mode'], base=8)
-             except: mode = 0
-             if mode > 0 : os.chmod( path, mode )
-  
-        if mode == 0 and  self.o.chmod !=0 :
-             os.chmod( path, self.o.chmod )
-  
-        if self.o.preserve_time and 'mtime' in msg and msg['mtime'] :
-            mtime = timestr2flt( msg[ 'mtime' ] )
-            atime = mtime
-            if 'atime' in msg and msg['atime'] :
-                 atime  =  timestr2flt( msg[ 'atime' ] )
-            os.utime( path, (atime, mtime))
 
     def write_inline_file(self,msg):
         """
@@ -480,7 +461,7 @@ class Flow:
             f.truncate()
             f.close()
 
-            self.restoreFileMeta(msg)
+            self.set_local_file_attributes( self, msg['new_dir'] + os.path.sep + msg['new_file'], msg)
 
             return True
 
@@ -855,6 +836,9 @@ class Flow:
 
     # set_local_file_attributes
     def set_local_file_attributes(self,local_file, msg) :
+        """
+           after a file has been written, restore permissions and ownership if necessary.
+        """
         #logger.debug("sr_transport set_local_file_attributes %s" % local_file)
 
         # if the file is not partitioned, the the onfly_checksum is for the whole file.
