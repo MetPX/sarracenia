@@ -35,7 +35,7 @@ import logging, paramiko, os,sys,time
 from   paramiko import *
 from   stat     import *
 
-from sarra.transfer import Protocol,Transport
+from sarra.transfer import Protocol
 from sarra.transfer import alarm_cancel,alarm_set,alarm_raise
 
 

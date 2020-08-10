@@ -102,7 +102,6 @@ class sr_GlobalState:
         if c in [ 'poll', 'post', 'report', 'shovel', 'subscribe', 'watch', 'winnow' ]:
            component_path = os.path.dirname(component_path) + os.sep + 'instance.py'
            cmd = [sys.executable, component_path, '--no', "%d" % i ]
-           logger.error( 'sys.argv is: %s, len: %d' % ( sys.argv, len(sys.argv) ) )
 
            # would like to forward things like --debug...
            for arg in sys.argv[1:-1]:

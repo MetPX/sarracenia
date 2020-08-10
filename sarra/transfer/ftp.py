@@ -36,7 +36,7 @@ import logging
 
 logger = logging.getLogger( __name__ )
 
-from sarra.transfer import Protocol,Transport
+from sarra.transfer import Protocol
 from sarra.transfer import alarm_cancel,alarm_set,alarm_raise
 
 #============================================================
@@ -446,15 +446,3 @@ class Ftp(Protocol):
                 fp.write(str(self.file_index))
         except:
             logger.warning("Unable to write file_index to cache file %s" % self.file_index_cache)
-
-#============================================================
-#
-# ftp_transport inherited from transport
-#
-#============================================================
-
-class ftp_transport(Transport):
-    def __init__(self) :
-        Transport.__init__(self)
-        self.pclass = sr_ftp
-        self.scheme = 'ftp'

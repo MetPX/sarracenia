@@ -32,7 +32,7 @@
 #
 #
 
-from sarra.transfer import Protocol,Transport
+from sarra.transfer import Protocol
 
 import os, stat, sys, time
 

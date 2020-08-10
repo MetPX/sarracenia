@@ -13,6 +13,9 @@ import urllib.parse
 
 from sarra import timestr2flt
 
+# from sr_util...
+from sarra.sr_xattr import *
+
 # for v2 subscriber routines...
 import json,os,sys,time
 
@@ -160,6 +163,10 @@ class Flow:
 
        self.loadPlugins( self.plugins['load'] )
 
+       # transport stuff.. for download, get, put, etc...
+       self.scheme = None
+       self.cdir   = None
+       self.proto  = None
     
     def loadPlugins(self, plugins_to_load):
 
@@ -501,15 +508,10 @@ class Flow:
                 parsed_url = urllib.parse.urlparse( msg['baseUrl'] )
 
                 if True: #try: 
-                    #link = sarra.transfer.Protocol( parsed_url.scheme, self.o )
-                    link = sarra.transfer.Transport( parsed_url.scheme, self.o)
+                    self.scheme = parsed_url.scheme
 
-                    if link is None:
-                         logger.error(" no downloader defined for %s protocol/scheme dropping" % parsed_url.scheme ) 
-                         self.worklist.failed.append(msg)
-                         continue
                     path = msg['new_dir'] + os.path.sep + msg['new_file']
-                    ok = link.download( msg, self.o )
+                    ok = self.download( msg, self.o )
                     if ok:
                         logger.info("downloaded ok" )
                         self.worklist.ok.append(msg)
@@ -524,9 +526,411 @@ class Flow:
 
         self.worklist.incoming=[]        
 
+    # v2 sr_util.py ... generic sr_transport imported here...
+
+    """
+            scheme as per URL standard, the string identifying a protocol before the first colon.
+
+    """
+
+    #def close(self) :
+    #    logger.debug("%s_transport close" % self.scheme)
+
+    #    try    : self.proto.close()
+    #    except : pass
+
+    #    self.cdir  = None
+    #    self.proto = None
+
+    # generalized download...
+    def download( self, msg, options ):
+
+        self.o = options
+
+        logger.debug("%s_transport download" % self.scheme)
+
+        token       = msg['relPath'].split('/')
+        cdir        = '/'.join(token[:-1])
+        remote_file = token[-1]
+        urlstr      = msg['baseUrl'] + '/' + msg['relPath']
+        new_lock    = ''
+
+        new_dir     = msg['new_dir']
+        new_file    = msg['new_file']
+
+        try:    curdir = os.getcwd()
+        except: curdir = None
+
+        if curdir != new_dir:
+            # make sure directory exists, create it if not
+            if not os.path.isdir(new_dir):
+                try: 
+                   os.makedirs(new_dir,0o775,True)
+                except Exception as ex:
+                   logger.warning( "making %s: %s" % ( new_dir, ex ) )
+                   logger.debug('Exception details:', exc_info=True)
+            os.chdir(new_dir)
+
+        logger.info("FIXME new_dir=%s, new_file=%s" % (new_dir, new_file) )
+
+        try :
+                options.destination = msg['baseUrl']
+
+                if (self.proto is None) or not self.proto.check_is_connected() :
+                   logger.debug("%s_transport download connects" % self.scheme)
+                   self.proto = sarra.transfer.Protocol(self.scheme,self.o)
+                   logger.debug( "HOHO proto %s " % type(self.proto) )
+                   ok = self.proto.connect()
+                   if not ok : 
+                       self.proto = None
+                       return False
+                   logger.debug('connected')
+
+                #=================================
+                # if parts, check that the protol supports it
+                #=================================
+
+                #if not hasattr(proto,'seek') and ('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' ):
+                #   logger.error("%s, inplace part file not supported" % self.scheme)
+                #   return False
+                
+                cwd = None
+                if hasattr(self.proto,'getcwd') : cwd = self.proto.getcwd()
+
+                logger.debug( " proto %s " % type(self.proto) )
+                if cwd != cdir :
+                   logger.debug("%s_transport download cd to %s" % (self.scheme,cdir))
+                   self.proto.cd(cdir)
+    
+                remote_offset = 0
+                if  ('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' ): remote_offset = msg['offset']
+    
+                block_length = msg['size']
+                str_range = ''
+                if ('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' ) :
+                   block_length=msg['blocks']['size']
+                   str_range = 'bytes=%d-%d'%(remote_offset,remote_offset+block_length-1)
+    
+                #download file
+    
+                logger.debug('Beginning fetch of %s %s into %s %d-%d' % 
+                    (urlstr,str_range,new_file,msg['local_offset'],msg['local_offset']+block_length-1))
+    
+                # FIXME  locking for i parts in temporary file ... should stay lock
+                # and file_reassemble... take into account the locking
+
+                self.proto.set_sumalgo(msg['integrity']['method'])
+
+                if options.inflight == None or (('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' )):
+                   self.get(msg, remote_file,new_file,remote_offset,msg['local_offset'],block_length)
+
+                elif type(options.inflight) == str :
+                   if options.inflight == '.' :
+                       new_lock = '.' + new_file
+                       self.get(msg, remote_file,new_lock,remote_offset,msg['local_offset'],block_length)
+                       if os.path.isfile(new_file) : os.remove(new_file)
+                       os.rename(new_lock, new_file)
+                    
+                   elif options.inflight[0] == '.' :
+                       new_lock  = new_file + options.inflight
+                       self.get(msg, remote_file,new_lock,remote_offset,msg['local_offset'],block_length)
+                       if os.path.isfile(new_file) : os.remove(new_file)
+                       os.rename(new_lock, new_file)
+
+                   elif options.inflight[-1] == '/' :
+                       try :  
+                              os.mkdir(options.inflight)
+                              os.chmod(options.inflight,options.chmod_dir)
+                       except:pass
+                       new_lock  = options.inflight + new_file
+                       self.get(msg, remote_file,new_lock,remote_offset,msg['local_offset'],block_length)
+                       if os.path.isfile(new_file) : os.remove(new_file)
+                       os.rename(new_lock, new_file)
+                else:
+                    logger.error('inflight setting: %s, not for remote.' % options.inflight )
+
+                logger.debug('proto.checksum={}, msg.sumstr={}'.format(self.proto.checksum, msg['integrity']))
+                msg['onfly_checksum'] = self.proto.get_sumstr()
+                msg['data_checksum'] = self.proto.data_checksum
+                msg['_deleteOnPost'].extend( [ 'onfly_checksum', 'data_checksum' ] )
+
+                # fix message if no partflg (means file size unknown until now)
+                if not 'blocks' in msg : 
+                    msg['size'] = self.proto.fpos 
+    
+                # fix permission 
+                self.set_local_file_attributes(new_file,msg)
+
+                if options.delete and hasattr(self.proto,'delete') :
+                   try   :
+                           self.proto.delete(remote_file)
+                           logger.debug ('file deleted on remote site %s' % remote_file)
+                   except:
+                           logger.error('unable to delete remote file %s' % remote_file)
+                           logger.debug('Exception details: ', exc_info=True)
+
+        except:
+                #closing on problem
+                try: 
+                    self.proto.close()
+                    self.cdir  = None
+                    self.proto = None
+                except : pass
+    
+                logger.error("Download failed 3 %s" % urlstr)
+                logger.debug('Exception details: ', exc_info=True)
+                if os.path.isfile(new_lock) :
+                    os.remove(new_lock)
+                return False
+        return True
+
+    # generalized get...
+    def get( self, msg, remote_file, local_file, remote_offset, local_offset, length ):
+
+        # removed v2 plugin support for do_get from here. (I doubt it worked anyways.)
+        self.proto.get(remote_file, local_file, remote_offset, local_offset, length)
+
+    # generalized put...
+    def put(self, msg, local_file, remote_file, local_offset=0, remote_offset=0, length=0 ):
+
+        # removed v2 plugin support for do_put from here. (I doubt it worked anyways.)
+        self.proto.put(local_file, remote_file, local_offset, remote_offset, length)
+
+    # generalized send...
+    def send( self, msg, options ):
+        self.o = options
+        logger.debug("%s_transport send %s %s" % (self.scheme,msg['new_dir'], msg['new_file'] ) )
+
+        local_path = msg['relPath']
+        local_dir  = os.path.dirname( local_path).replace('\\','/')
+        local_file = os.path.basename(local_path).replace('\\','/')
+        new_dir    = msg['new_dir'].replace('\\','/')
+        new_file   = msg['new_file'].replace('\\','/')
+        new_lock   = None
+
+        try:    curdir = os.getcwd()
+        except: curdir = None
+
+        if curdir != local_dir:
+           os.chdir(local_dir)
+
+        try :
+
+                if (self.proto is None) or not self.proto.check_is_connected() :
+                   logger.debug("%s_transport send connects" % self.scheme)
+                   self.proto = sarra.transfer.Protocol(self.scheme,options)
+                   ok = self.proto.connect()
+                   if not ok : return False
+                   self.cdir = None
+
+                #=================================
+                # if parts, check that the protol supports it
+                #=================================
+
+                if not hasattr(proto,'seek') and ('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' ):
+                   logger.error("%s, inplace part file not supported" % self.scheme)
+                   return False
+
+                #=================================
+                # if umask, check that the protocol supports it ... 
+                #=================================
+
+                inflight = options.inflight
+                if not hasattr(proto,'umask') and options.inflight == 'umask' :
+                   logger.warning("%s, umask not supported" % self.scheme)
+                   inflight = None
+
+                #=================================
+                # if renaming used, check that the protocol supports it ... 
+                #=================================
+
+                if not hasattr(proto,'rename') and options.inflight.startswith('.') :
+                   logger.warning("%s, rename not supported" % self.scheme)
+                   inflight = None
+
+                #=================================
+                # remote set to new_dir
+                #=================================
+                
+                cwd = None
+                if hasattr(proto,'getcwd') : cwd = proto.getcwd()
+                if cwd != new_dir :
+                   logger.debug("%s_transport send cd to %s" % (self.scheme,new_dir))
+                   proto.cd_forced(775,new_dir)
+
+                #=================================
+                # delete event
+                #=================================
+
+                if msg.sumflg == 'R' :
+                   if hasattr(proto,'delete') :
+                      logger.debug("message is to remove %s" % new_file)
+                      proto.delete(new_file)
+                      return True
+                   logger.error("%s, delete not supported" % self.scheme)
+                   return False
+
+                #=================================
+                # link event
+                #=================================
+
+                if msg.sumflg == 'L' :
+                   if hasattr(proto,'symlink') :
+                      logger.debug("message is to link %s to: %s" % ( new_file, msg.headers['link'] ))
+                      proto.symlink(msg.headers['link'],new_file)
+                      return True
+                   logger.error("%s, symlink not supported" % self.scheme)
+                   return False
+
+                #=================================
+                # send event
+                #=================================
+
+                # the file does not exist... warn, sleep and return false for the next attempt
+                if not os.path.exists(local_file):
+                   logger.warning("product collision or base_dir not set, file %s does not exist" % local_file)
+                   time.sleep(0.01)
+                   return False
+
+                offset = 0
+                if  ('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' ): offset = msg.offset
+
+                new_offset = msg.local_offset
+    
+                str_range = ''
+                if ('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' ) :
+                   str_range = 'bytes=%d-%d'%(offset,offset+msg.length-1)
+    
+                #upload file
+    
+                if inflight == None or (('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' )) :
+                   self.put(msg, local_file, new_file, offset, new_offset, msg.length)
+                elif inflight == '.' :
+                   new_lock = '.'  + new_file
+                   self.put(msg, local_file, new_lock )
+                   self.proto.rename(new_lock, new_file)
+                elif inflight[0] == '.' :
+                   new_lock = new_file + inflight
+                   self.self.put(msg, local_file, new_lock )
+                   proto.rename(new_lock, new_file)
+                elif options.inflight[-1] == '/' :
+                   try :
+                          self.proto.cd_forced(775,new_dir+'/'+options.inflight)
+                          self.proto.cd_forced(775,new_dir)
+                   except:pass
+                   new_lock  = options.inflight + new_file
+                   self.put(msg, local_file,new_lock)
+                   self.proto.rename(new_lock, new_file)
+                elif inflight == 'umask' :
+                   self.proto.umask()
+                   self.put(msg, local_file, new_file)
+
+                # fix permission 
+
+                self.set_remote_file_attributes(proto,new_file,msg)
+    
+                logger.info('Sent: %s %s into %s/%s %d-%d' % 
+                    (local_path,str_range,new_dir,new_file,offset,offset+msg.length-1))
+
+        except Exception as err:
+
+                #removing lock if left over
+                if new_lock != None and hasattr(proto,'delete') :
+                   try   : self.proto.delete(new_lock)
+                   except: pass
+
+                #closing on problem
+                try    : 
+                    self.proto.close()
+                    self.cdir  = None
+                    self.proto = None
+                    
+                except : pass
+
+                logger.error("Delivery failed %s" % msg['new_dir']+'/'+msg['new_file'])
+                logger.debug('Exception details: ', exc_info=True)
+
+                return False
+        return True
+
+    # set_local_file_attributes
+    def set_local_file_attributes(self,local_file, msg) :
+        #logger.debug("sr_transport set_local_file_attributes %s" % local_file)
+
+        # if the file is not partitioned, the the onfly_checksum is for the whole file.
+        # cache it here, along with the mtime.
+        if ( not 'blocks' in msg ) : 
+           if 'onfly_checksum' in msg:
+               sumstr = msg['onfly_checksum']
+           else:
+               sumstr = msg['integrity']
+
+           x = sr_xattr( local_file )
+           x.set( 'integrity' , sumstr )
+
+           if self.o.preserve_time and 'mtime' in msg and msg['mtime'] :
+               x.set( 'mtime' , msg['mtime'] )
+           else:
+               st = os.stat(local_file)
+               mtime = timeflt2str( st.st_mtime )
+               x.set( 'mtime' , mtime )
+           x.persist()
+
+        mode = 0
+        if self.o.preserve_mode and 'mode' in msg :
+           try: 
+               mode = int( msg['mode'], base=8)
+           except: 
+               mode = 0
+           if mode > 0 : 
+               os.chmod( local_file, mode )
+
+        if mode == 0 and  self.o.chmod !=0 : 
+           os.chmod( local_file, self.o.chmod )
+
+        if self.o.preserve_time and 'mtime' in msg and msg['mtime'] :
+           mtime = timestr2flt( msg[ 'mtime' ] )
+           atime = mtime
+           if 'atime' in msg and msg['atime'] :
+               atime  =  timestr2flt( msg[ 'atime' ] )
+           os.utime( local_file, (atime, mtime))
+
+    # set_remote_file_attributes
+    def set_remote_file_attributes(self, proto, remote_file, msg) :
+        #logger.debug("sr_transport set_remote_file_attributes %s" % remote_file)
+
+        if hasattr(proto,'chmod') :
+           mode = 0
+           if self.o.preserve_mode and 'mode' in msg :
+              try   : mode = int( msg['mode'], base=8)
+              except: mode = 0
+              if mode > 0 :
+                 try   : proto.chmod( mode, remote_file )
+                 except: pass
+
+           if mode == 0 and  self.o.chmod !=0 : 
+              try   : proto.chmod( self.o.chmod, remote_file )
+              except: pass
+
+        if hasattr(proto,'chmod') :
+           if self.o.preserve_time and 'mtime' in msg and msg['mtime'] :
+              mtime = timestr2flt( msg[ 'mtime' ] )
+              atime = mtime
+              if 'atime' in msg and msg['atime'] :
+                  atime  =  timestr2flt( msg[ 'atime' ] )
+              try   : proto.utime( remote_file, (atime, mtime))
+              except: pass
+
+
+    # v2 sr_util sr_transport stuff. end.
+
     # v2 subscribe routines start here
 
     def __do_download__(self,msg):
+        """
+            FIXME: This routine should be deleted. It is just here for memory purposes.  
+            I think it is completely replaced by do_download above...
+        """
 
         logger.debug("downloading/copying %s (scheme: %s) into %s " % \
                          (msg.urlstr, msg.url.scheme, msg['new_file']))
@@ -593,10 +997,6 @@ class Flow:
 
         return False
 
-
-    # =============
-    # get_source_from_exchange
-    # =============
 
     def get_source_from_exchange(self,exchange):
         #logger.debug("%s get_source_from_exchange %s" % (self.program_name,exchange))
