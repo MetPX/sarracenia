@@ -455,8 +455,6 @@ class Flow:
 
             msg['_DeleteOnPost'].extend( [ 'onfly_checksum', 'data_checksum' ] )
 
-
-            
             f.write( data )
             f.truncate()
             f.close()
@@ -603,18 +601,18 @@ class Flow:
                 self.proto.set_sumalgo(msg['integrity']['method'])
 
                 if options.inflight == None or (('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' )):
-                   self.get(msg, remote_file,new_file,remote_offset,msg['local_offset'],block_length)
+                   self.proto.get(remote_file,new_file,remote_offset,msg['local_offset'],block_length)
 
                 elif type(options.inflight) == str :
                    if options.inflight == '.' :
                        new_lock = '.' + new_file
-                       self.get(msg, remote_file,new_lock,remote_offset,msg['local_offset'],block_length)
+                       self.proto.get(remote_file,new_lock,remote_offset,msg['local_offset'],block_length)
                        if os.path.isfile(new_file) : os.remove(new_file)
                        os.rename(new_lock, new_file)
                     
                    elif options.inflight[0] == '.' :
                        new_lock  = new_file + options.inflight
-                       self.get(msg, remote_file,new_lock,remote_offset,msg['local_offset'],block_length)
+                       self.proto.get(remote_file,new_lock,remote_offset,msg['local_offset'],block_length)
                        if os.path.isfile(new_file) : os.remove(new_file)
                        os.rename(new_lock, new_file)
 
@@ -624,7 +622,7 @@ class Flow:
                               os.chmod(options.inflight,options.chmod_dir)
                        except:pass
                        new_lock  = options.inflight + new_file
-                       self.get(msg, remote_file,new_lock,remote_offset,msg['local_offset'],block_length)
+                       self.proto.get(remote_file,new_lock,remote_offset,msg['local_offset'],block_length)
                        if os.path.isfile(new_file) : os.remove(new_file)
                        os.rename(new_lock, new_file)
                 else:
@@ -663,19 +661,8 @@ class Flow:
                 if os.path.isfile(new_lock) :
                     os.remove(new_lock)
                 return False
+        logger.info('download returning True')
         return True
-
-    # generalized get...
-    def get( self, msg, remote_file, local_file, remote_offset, local_offset, length ):
-
-        # removed v2 plugin support for do_get from here. (I doubt it worked anyways.)
-        self.proto.get(remote_file, local_file, remote_offset, local_offset, length)
-
-    # generalized put...
-    def put(self, msg, local_file, remote_file, local_offset=0, remote_offset=0, length=0 ):
-
-        # removed v2 plugin support for do_put from here. (I doubt it worked anyways.)
-        self.proto.put(local_file, remote_file, local_offset, remote_offset, length)
 
     # generalized send...
     def send( self, msg, options ):
@@ -785,10 +772,10 @@ class Flow:
                 #upload file
     
                 if inflight == None or (('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' )) :
-                   self.put(msg, local_file, new_file, offset, new_offset, msg.length)
+                   self.put(local_file, new_file, offset, new_offset, msg.length)
                 elif inflight == '.' :
                    new_lock = '.'  + new_file
-                   self.put(msg, local_file, new_lock )
+                   self.put(local_file, new_lock )
                    self.proto.rename(new_lock, new_file)
                 elif inflight[0] == '.' :
                    new_lock = new_file + inflight
@@ -800,11 +787,11 @@ class Flow:
                           self.proto.cd_forced(775,new_dir)
                    except:pass
                    new_lock  = options.inflight + new_file
-                   self.put(msg, local_file,new_lock)
+                   self.put(local_file,new_lock)
                    self.proto.rename(new_lock, new_file)
                 elif inflight == 'umask' :
                    self.proto.umask()
-                   self.put(msg, local_file, new_file)
+                   self.put(local_file, new_file)
 
                 # fix permission 
 
