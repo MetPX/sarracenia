@@ -610,12 +610,6 @@ class Flow:
                        if os.path.isfile(new_file) : os.remove(new_file)
                        os.rename(new_lock, new_file)
                     
-                   elif options.inflight[0] == '.' :
-                       new_lock  = new_file + options.inflight
-                       self.proto.get(remote_file,new_lock,remote_offset,msg['local_offset'],block_length)
-                       if os.path.isfile(new_file) : os.remove(new_file)
-                       os.rename(new_lock, new_file)
-
                    elif options.inflight[-1] == '/' :
                        try :  
                               os.mkdir(options.inflight)
@@ -625,6 +619,13 @@ class Flow:
                        self.proto.get(remote_file,new_lock,remote_offset,msg['local_offset'],block_length)
                        if os.path.isfile(new_file) : os.remove(new_file)
                        os.rename(new_lock, new_file)
+
+                   elif options.inflight[0] == '.' :
+                       new_lock  = new_file + options.inflight
+                       self.proto.get(remote_file,new_lock,remote_offset,msg['local_offset'],block_length)
+                       if os.path.isfile(new_file) : os.remove(new_file)
+                       os.rename(new_lock, new_file)
+
                 else:
                     logger.error('inflight setting: %s, not for remote.' % options.inflight )
 
