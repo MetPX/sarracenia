@@ -175,7 +175,7 @@ class Flow:
             plugin = sarra.plugin.load_library( c, self.o )
             logger.info( 'plugin loading: %s an instance of: %s' % ( c, plugin ) )
             for entry_point in sarra.plugin.entry_points:
-                 if hasattr( plugin, entry_point ):
+                if hasattr( plugin, entry_point ):
                     fn = getattr( plugin, entry_point )
                     if callable(fn):
                         logger.info( 'registering %s/%s' % (c, entry_point))
@@ -183,6 +183,26 @@ class Flow:
                            self.plugins[entry_point].append(fn)
                         else:
                            self.plugins[entry_point] = [ fn ]
+
+ 
+            if not ( hasattr(plugin,'registered_as') and callable( geattr( plugin, 'registered_as' ) ) ):
+                continue
+
+            schemes = plugin.registered_as()
+            for schemed_entry_point in sarra.plugin.schemed_entry_points:
+                if not hasattr(plugin, schemed_entry_point ) :
+                    continue
+
+                fn = getattr( plugin, schemed_entry_point) 
+                if not callable( fn ):
+                    continue
+
+                if not entry_point in self.plugins:
+                    self.plugins[entry_point] = {}
+                
+                for s in schemes:
+                    self.plugins[entry_point][s] = fn
+                     
         logger.info( 'plugins initialized')
  
     def _runPluginsWorklist(self,entry_point):
@@ -669,14 +689,22 @@ class Flow:
     # generalized get...
     def get( self, msg, remote_file, local_file, remote_offset, local_offset, length ):
 
-        # removed v2 plugin support for do_get from here. (I doubt it worked anyways.)
-        self.proto.get(remote_file, local_file, remote_offset, local_offset, length)
+        if (hasattr(self,'plugins') and ( 'do_get' in self.plugins )) and \
+            ( msg['scheme'] in self.plugins['do_get'] ):
+            self.plugins[entry_point]['do_get']( msg, remote_file, local_file, remote_offset, local_offset, length )
+            return
+        else:
+            self.proto.get(remote_file, local_file, remote_offset, local_offset, length)
 
     # generalized put...
     def put(self, msg, local_file, remote_file, local_offset=0, remote_offset=0, length=0 ):
 
-        # removed v2 plugin support for do_put from here. (I doubt it worked anyways.)
-        self.proto.put(local_file, remote_file, local_offset, remote_offset, length)
+        if (hasattr(self,'plugins') and ( 'do_put' in self.plugins )) and \
+            ( msg['scheme'] in self.plugins['do_put'] ):
+            self.plugins[entry_point]['do_put']( msg, local_file, remote_file, local_offset, remote_offset, length )
+            return
+        else:
+            self.proto.put(local_file, remote_file, local_offset, remote_offset, length)
 
     # generalized send...
     def send( self, msg, options ):

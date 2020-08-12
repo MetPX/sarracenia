@@ -332,6 +332,17 @@ breaking changes:
 
 * plugins that access internals of sr_retry need to be rewritten, as the class is now plugin/retry.py.
 
+* do_download and do_send were 1st pass at *schemed* plugins, I think they should be deprecated/replaced
+  by do_get and do_put. unclear whether there is a need for these anymore (download and send plugins are
+  at wrong level of abstraction)
+
+* do_download, do_send, do_get, do_put are *schemed* downloads... that is, rather than stacking so that
+  all are called, they are registered for particular protocols.  in v2, for example accel_* plugins would
+  register the "download" scheme. an on_message entry point would alter the scheme so that the do_* routine
+  would be invoked. In v2, the calling signature for all plugins is the same (self, parent) but for
+  these do_get and do_put cases, that is quite counter productive. so instead have a calling signature
+  identical to built-in protocol get/put... src_file, dst_file, src_offset, dst_offset, len )
+
 Features
 --------
 

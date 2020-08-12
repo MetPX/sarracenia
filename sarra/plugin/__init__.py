@@ -56,10 +56,11 @@ Do not remove from all lists, only move messages between them.
 
 """
 
-entry_points = [ 'ack', 'do_download', 'do_get', 'do_poll', 'do_put', 'do_send',
+entry_points = [ 'ack', 'do_poll', 
    'gather', 'on_messages', 'on_data', 'on_files', 'on_housekeeping', 'on_html_page', 
    'on_line', 'on_part', 'on_posts', 'on_report', 'on_start', 'on_stop', 'post' ]
 
+schemed_entry_points = [ 'do_get', 'do_put'  ]
 class Plugin:
     """
     FIXME: document the API signatures for all the entry points. 
@@ -84,12 +85,21 @@ class Plugin:
 #        return __name__
 #
 #    @abstractmethod
+#    def registered_as(self):
+#        """
+#          for schemed downloads, return the scheme this plugin provides.
+#          for example, an accel_wget will in on_message, change url scheme from http/https -> download/downloads.
+#          the do_get accellerate will need to be registered for download/downloads
+#        """
+#        return [ "registration", "registrations" ]
+#
+#    @abstractmethod
 #    def on_files(self,worklist):
 #        """
 #          Task: operate on worklist.ok (files which have arrived.)
 #        """
 #        pass
-
+#
 #    @abstractmethod
 #    def gather(self):
 #        """
@@ -114,8 +124,9 @@ class Plugin:
 #        pass
 #
 #    @abstractmethod
-#    def do_download(self,worklist): 
+#    def do_download(self,msg):  
 #        """
+#          FIXME: Deprecated, replaced by do_get?
 #          Task: operate on worklist.incoming to do corresponding file transfers
 #                moving messages to worklist.ok on success, worklist.failed otherwise.
 #                do not delete any messages, only move between worklists, because acknowledgements have not happenned yet.
@@ -123,7 +134,7 @@ class Plugin:
 #        pass
 #
 #    @abstractmethod
-#    def do_get(self,worklist): 
+#    def do_get(self, msg, remote_file, local_file, remote_offset, local_offset, length ): 
 #        """
 #          Task: operate on worklist.incoming to do corresponding file transfers
 #                moving messages to worklist.ok on success, worklist.failed otherwise.
@@ -139,15 +150,18 @@ class Plugin:
 #        pass
 #
 #    @abstractmethod
-#    def do_put(self): 
+#    def do_put(self, msg, local_file, remote_file, local_offset=0, remote_offset=0, length=0 ): 
 #        """
+#          schemed method.
 #          Task: 
+#             
 #        """
 #        pass
 #
 #    @abstractmethod
 #    def do_send(self):
 #        """
+#          FIXME: Deprecated, replaced by do_put?
 #          Task: 
 #        """
 #        pass
