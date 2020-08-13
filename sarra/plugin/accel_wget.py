@@ -48,7 +48,7 @@ class ACCEL_WGET(Plugin):
       declare_option( 'accel_wget_protocol', 'str' )
 
 
-   def on_start(self,self.o):
+   def on_start(self):
 
       if not hasattr(self.o,'accel_wget_command'):
           self.o.download_accel_wget_command= [ '/usr/bin/wget' ]

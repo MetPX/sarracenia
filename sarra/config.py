@@ -86,15 +86,15 @@ def declare_option( self, option, kind,  ):
 
     """
 
-    if typ is 'str':
+    if   typ == 'str':
        str_options.append(option)
-    elif typ is 'duration':
+    elif typ == 'duration':
        duration_options.append(option)
-    elif typ is 'size':
+    elif typ == 'size':
        size_options.append(option)
-    elif typ is 'list':
+    elif typ == 'list':
        list_options.append(option)
-    elif typ is 'flag':
+    elif typ == 'flag':
        flag_options.append(option)
           
    #    logger.info('v2plugin option: %s declared' % option)
