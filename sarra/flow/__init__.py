@@ -623,33 +623,30 @@ class Flow:
                 self.proto.set_sumalgo(msg['integrity']['method'])
 
                 if options.inflight == None or (('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' )):
-                   self.get(msg, remote_file,new_file,remote_offset,msg['local_offset'],block_length)
-
+                   new_lock=new_file
                 elif type(options.inflight) == str :
                    if options.inflight == '.' :
                        new_lock = '.' + new_file
-                       self.get(msg, remote_file,new_lock,remote_offset,msg['local_offset'],block_length)
-                       if os.path.isfile(new_file) : os.remove(new_file)
-                       os.rename(new_lock, new_file)
-                    
                    elif options.inflight[-1] == '/' :
-                       try :  
-                              os.mkdir(options.inflight)
-                              os.chmod(options.inflight,options.chmod_dir)
+                       try:  
+                          os.mkdir(options.inflight)
+                          os.chmod(options.inflight,options.chmod_dir)
                        except:pass
                        new_lock  = options.inflight + new_file
-                       self.get(msg, remote_file,new_lock,remote_offset,msg['local_offset'],block_length)
-                       if os.path.isfile(new_file) : os.remove(new_file)
-                       os.rename(new_lock, new_file)
-
                    elif options.inflight[0] == '.' :
                        new_lock  = new_file + options.inflight
-                       self.proto.get(remote_file,new_lock,remote_offset,msg['local_offset'],block_length)
-                       if os.path.isfile(new_file) : os.remove(new_file)
-                       os.rename(new_lock, new_file)
-
                 else:
                     logger.error('inflight setting: %s, not for remote.' % options.inflight )
+
+                len_written = self.get( msg, remote_file, new_lock, remote_offset, msg['local_offset'], block_length)
+
+                if ( len_written == block_length ):
+                       if ( new_lock != new_file ):
+                           if os.path.isfile(new_file) : 
+                               os.remove(new_file)
+                           os.rename(new_lock, new_file)
+                else:
+                    logger.error('incomplete download only %d of expected %d bytes for %s' % (len_written, block_length, new_lock) )
 
                 logger.debug('proto.checksum={}, msg.sumstr={}'.format(self.proto.checksum, msg['integrity']))
                 msg['onfly_checksum'] = self.proto.get_sumstr()
@@ -671,6 +668,9 @@ class Flow:
                            logger.error('unable to delete remote file %s' % remote_file)
                            logger.debug('Exception details: ', exc_info=True)
 
+                if ( len_written != block_length ):
+                    return False
+
         except:
                 #closing on problem
                 try: 
@@ -689,22 +689,23 @@ class Flow:
     # generalized get...
     def get( self, msg, remote_file, local_file, remote_offset, local_offset, length ):
 
-        if (hasattr(self,'plugins') and ( 'do_get' in self.plugins )) and \
-            ( msg['scheme'] in self.plugins['do_get'] ):
-            self.plugins[entry_point]['do_get']( msg, remote_file, local_file, remote_offset, local_offset, length )
-            return
+        scheme = urllib.parse.urlparse( msg['baseUrl'] ).scheme
+        if ((hasattr(self,'plugins') and ( 'do_get' in self.plugins )) and \
+            scheme in self.plugins['do_get'] ):
+            return self.plugins['do_get'][scheme]( msg, remote_file, local_file, remote_offset, local_offset, length )
         else:
-            self.proto.get(remote_file, local_file, remote_offset, local_offset, length)
+            return self.proto.get(remote_file, local_file, remote_offset, local_offset, length)
 
     # generalized put...
     def put(self, msg, local_file, remote_file, local_offset=0, remote_offset=0, length=0 ):
 
+        scheme = urllib.parse.urlparse( msg['baseUrl'] ).scheme
         if (hasattr(self,'plugins') and ( 'do_put' in self.plugins )) and \
-            ( msg['scheme'] in self.plugins['do_put'] ):
-            self.plugins[entry_point]['do_put']( msg, local_file, remote_file, local_offset, remote_offset, length )
-            return
+            ( scheme in self.plugins['do_put'] ):
+            return self.plugins['do_put'][scheme]( msg, local_file, remote_file, local_offset, remote_offset, length )
         else:
-            self.proto.put(local_file, remote_file, local_offset, remote_offset, length)
+            return self.proto.put(local_file, remote_file, local_offset, remote_offset, length)
+
 
     # generalized send...
     def send( self, msg, options ):

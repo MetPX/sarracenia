@@ -149,7 +149,7 @@ class Https(Protocol):
 
         rw_length = self.read_writelocal(remote_file, self.http, local_file, local_offset, length)
 
-        return True
+        return rw_length
 
     # init
     def init(self):

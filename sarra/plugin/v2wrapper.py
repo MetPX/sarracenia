@@ -198,12 +198,16 @@ class V2Wrapper(Plugin):
         for ep in sarra.config.Config.v2entry_points:
              self.v2plugins[ep] = []
         
+        unsupported_v2_events =  [ 'do_download', 'do_get', 'do_put', 'do_send' ]
         for e in o.v2plugins:
             logger.info('resolving: %s' % e)
             for v in o.v2plugins[e]:
+                if e in unsupported_v2_events:
+                     logger.error('v2 plugin conversion required, %s too different in v3' % e )
+                     continue
                 self.add( e, v )
  
-        #propage options back to self.o for on_timing calls.
+        #propagate options back to self.o for on_timing calls.
         for v2o in self.o.v2plugin_options:
             setattr( self.o, v2o, getattr(self,v2o ) )
 

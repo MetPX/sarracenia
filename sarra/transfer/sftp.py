@@ -360,6 +360,8 @@ class Sftp(Protocol):
         rfp.close()
         alarm_cancel()
 
+        return rw_length
+
     # getcwd
     def getcwd(self):
         alarm_set(self.o.timeout)
@@ -505,6 +507,8 @@ class Sftp(Protocol):
         alarm_set(self.o.timeout)
         self.fpos = remote_offset + rw_length
         if length != 0 : rfp.truncate(self.fpos)
+
+        return rw_length
 
         # close
 

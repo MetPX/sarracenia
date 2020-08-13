@@ -51,6 +51,8 @@ default_options = {
 
 }
 
+count_options = [ 'exchange_split', 'post_exchange_split', 'instances' ]
+
 # all the boolean settings.
 flag_options = [ 'bind_queue', 'cache_stat', 'declare_exchange', \
     'declare_queue', 'delete', 'discard', 'dry_run', 'durable', 'exchange_split', 'realpath_filter', \
@@ -61,11 +63,49 @@ flag_options = [ 'bind_queue', 'cache_stat', 'declare_exchange', \
     'statehost', 'use_amqplib', 'use_pika', 'users_flag' 
 ]
 
-#all the duration options.
 duration_options = [ 'timeout', 'expire', 'heartbeat', 'message_ttl', 'retry_ttl', 'sanity_log_dead', 'sleep', 'timeout' ]
 
-#size options
+list_options = []
+
 size_options = [ 'blocksize', 'bytes_per_second', 'inline_max' ]
+
+str_options = [ 'directory', 'topic_prefix', 'events', 'feeder', 'path', 'post_exchange', 'post_exchange_split', 'post_topic_prefix' ]
+
+def declare_option( self, option, kind,  ):
+    """
+       options can be declared in any plugin. There are various *kind* of options, where the declared type modifies the parsing.
+       
+       'duration'   a floating point number indicating a quantity of seconds (0.001 is 1 milisecond)
+                    modified by a unit suffix ( m-minute, h-hour, w-week ) 
+
+       'count'      integer count type. 
+       'size'       integer size. Suffixes k, m, and g for kilo, mega, and giga (base 2) multipliers.
+       'flag'       boolean (True/False) option.
+       'str'        an arbitrary string value, as will all of the above types, each succeeding occurrence overrides the previous one.
+       'list'       a list of string values, each succeeding occurrence catenates to the total.
+
+    """
+
+    if typ is 'str':
+       str_options.append(option)
+    elif typ is 'duration':
+       duration_options.append(option)
+    elif typ is 'size':
+       size_options.append(option)
+    elif typ is 'list':
+       list_options.append(option)
+    elif typ is 'flag':
+       flag_options.append(option)
+          
+   #    logger.info('v2plugin option: %s declared' % option)
+
+   #    self.v2plugin_options.append(option)
+
+   #    #if not hasattr(self,option): return
+
+   #    logger.info('value type is: %s' % type(getattr(self,option)) )
+   #    if type(getattr(self,option)) is not list:
+   #        setattr(self,option, [ getattr(self,option) ] )
 
 
 """
@@ -523,17 +563,6 @@ class Config:
    
        return ( arguments[0], self.directory, fn, regex, option.lower() in ['accept','get'], self.mirror, self.strip, self.pstrip, self.flatten )
 
-   #def declare_option(self,option):
-   #    logger.info('v2plugin option: %s declared' % option)
-
-   #    self.v2plugin_options.append(option)
-
-   #    #if not hasattr(self,option): return
-
-   #    logger.info('value type is: %s' % type(getattr(self,option)) )
-   #    if type(getattr(self,option)) is not list:
-   #        setattr(self,option, [ getattr(self,option) ] )
-
 
    def dump(self):
        """ print out what the configuration looks like.
@@ -733,6 +762,7 @@ class Config:
                logger.info('Converting \"%s\" to v3: \"%s\"' % ( l.strip(), line ) )
    
            line = list( map( lambda x : self._varsub(x), line ) )
+           # FIXME... I think synonym check should happen here, but no time to check right now.
 
            if line[0] in [ 'accept', 'reject', 'get' ]:
                self.masks.append( self._build_mask( line[0], line[1:] ) )
@@ -780,6 +810,16 @@ class Config:
                    setattr(self, line[0], True )
                else:
                    setattr(self, line[0], isTrue(line[1]) )
+           elif line[0] in count_options:
+               setattr( self, line[0], int(line[1]) )
+           elif line[0] in list_options:
+               if not hasattr(self,line[0]):
+                   setattr( self, line[0], [ ' '.join(line[1:]) ] )
+               else:
+                   setattr( self, line[0], getattr(self,line[0]).append( ' '.join(line[1:]) ) )
+
+           elif line[0] in str_options:
+               setattr( self, line[0], ' '.join(line[1:]) )
            else:
                k=line[0]
                if k in Config.synonyms:
@@ -787,14 +827,24 @@ class Config:
                if len(line) == 1: 
                    v = True
                else:
+                   #FIXME: with _options lists for all types and addition of declare, this is probably now dead code.
+                   logger.info('FIXME: zombie is alive? %s' % line )
                    v =  ' '.join(line[1:])
                    if hasattr(self,k) and k not in [ 'strip' ]:
                       if type(getattr(self,k)) is float:
                           v = float(v)
-                      if type(getattr(self,k)) is int:
+                      elif type(getattr(self,k)) is int:
                           # the only integers that have units are durations.
                           # integers without units will come out unchanged.
                           v = durationToSeconds(v)
+                      elif type(getattr(self,k)) is str:
+                          setattr( self, k, [ getattr(self, k) , v ]  )
+                          continue
+                      elif type(getattr(self,k)) is list:
+                          setattr( self, k, getattr(self,k).append( v ) )
+                          continue
+                   else:
+                       logger.warn('undeclared option: %s' % k )
 
                setattr( self, k, v )
 
@@ -1329,6 +1379,7 @@ class Config:
         # add relPath
 
         if len(token) > 1 :
+           logger.info('FIXME new_dir=%s, token: %s' % (new_dir, token ) )
            new_dir = new_dir + '/' + '/'.join(token[:-1])
 
         if '$' in new_dir :

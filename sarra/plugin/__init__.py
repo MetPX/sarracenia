@@ -127,6 +127,7 @@ class Plugin:
 #    def do_download(self,msg):  
 #        """
 #          FIXME: Deprecated, replaced by do_get?
+#                
 #          Task: operate on worklist.incoming to do corresponding file transfers
 #                moving messages to worklist.ok on success, worklist.failed otherwise.
 #                do not delete any messages, only move between worklists, because acknowledgements have not happenned yet.
@@ -136,9 +137,13 @@ class Plugin:
 #    @abstractmethod
 #    def do_get(self, msg, remote_file, local_file, remote_offset, local_offset, length ): 
 #        """
-#          Task: operate on worklist.incoming to do corresponding file transfers
-#                moving messages to worklist.ok on success, worklist.failed otherwise.
-#                do not delete any messages, only move between worklists, because acknowledgements have not happenned yet.
+#          schemed method. (that is, installed based on registered_as() value.
+#
+#          Task: do a single file transfer. The local_file is not the final file name, but one constructed
+#                based on the inflight option.
+#
+#                Return value is the number of bytes transferred.
+#                If the return value is different from the length, then that is some kind of error.
 #        """
 #        pass
 #
@@ -153,7 +158,12 @@ class Plugin:
 #    def do_put(self, msg, local_file, remote_file, local_offset=0, remote_offset=0, length=0 ): 
 #        """
 #          schemed method.
-#          Task: 
+#
+#          Task: do a single file transfer. The local_file is not the final file name, but one constructed
+#                based on the inflight option.
+#
+#                Return value is the number of bytes transferred.
+#                If the return value is different from the length, then that is some kind of error.
 #             
 #        """
 #        pass

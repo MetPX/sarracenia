@@ -193,6 +193,7 @@ class AMQP(Moth):
                     logger.info('getSetup ... 1. binding')
                     for tup in self.props['bindings'] :          
                         prefix, exchange, values = tup
+                        logger.info( 'um..: pfx: %s, exchange: %s, values: %s' % ( prefix, exchange, values ) )
                         topic= prefix + '.' + values[0]
                         logger.info('binding %s with %s to %s (as: %s)' % \
                             ( self.props['queue_name'], topic, exchange, broker_str ) )

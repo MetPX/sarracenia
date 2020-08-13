@@ -287,6 +287,7 @@ class Ftp(Protocol):
         # close
         self.local_write_close(dst)
 
+        return rw_length
 
     # getcwd
     def getcwd(self):
@@ -416,6 +417,8 @@ class Ftp(Protocol):
 
         # close 
         self.local_read_close(src)
+
+        return rw_length
 
     # rename
     def rename(self,remote_old,remote_new) :
