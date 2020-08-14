@@ -340,6 +340,9 @@ class sr_proto():
         self.sumalgo = sumalgo
         self.data_sumalgo = sumalgo
 
+    def set_path(self,path):
+        self.sumalgo.set_path(path)
+
     def get_sumstr(self):
         if self.sumalgo:
             return "{},{}".format(self.sumalgo.registered_as(), self.sumalgo.get_value())
@@ -468,35 +471,43 @@ class sr_transport():
                 proto.set_sumalgo(msg.sumalgo)
 
                 if parent.inflight == None or msg.partflg == 'i' :
+                   proto.set_path(new_file)
                    self.get(remote_file,new_file,remote_offset,msg.local_offset,msg.length)
+                   msg.onfly_checksum = proto.get_sumstr()
 
                 elif type(parent.inflight) == str :
                    if parent.inflight == '.' :
                        new_lock = '.' + new_file
+                       proto.set_path(new_lock)
                        self.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length)
                        if os.path.isfile(new_file) : os.remove(new_file)
+                       msg.onfly_checksum = proto.get_sumstr()
                        os.rename(new_lock, new_file)
                     
-                   elif parent.inflight[0] == '.' :
-                       new_lock  = new_file + parent.inflight
-                       self.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length)
-                       if os.path.isfile(new_file) : os.remove(new_file)
-                       os.rename(new_lock, new_file)
-
                    elif parent.inflight[-1] == '/' :
                        try :  
                               os.mkdir(parent.inflight)
                               os.chmod(parent.inflight,parent.chmod_dir)
                        except:pass
                        new_lock  = parent.inflight + new_file
+                       proto.set_path(new_lock)
                        self.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length)
                        if os.path.isfile(new_file) : os.remove(new_file)
+                       msg.onfly_checksum = proto.get_sumstr()
                        os.rename(new_lock, new_file)
+
+                   elif parent.inflight[0] == '.' :
+                       new_lock  = new_file + parent.inflight
+                       proto.set_path(new_lock)
+                       self.get(remote_file,new_lock,remote_offset,msg.local_offset,msg.length)
+                       if os.path.isfile(new_file) : os.remove(new_file)
+                       msg.onfly_checksum = proto.get_sumstr()
+                       os.rename(new_lock, new_file)
+
                 else:
                     self.logger.error('inflight setting: %s, not for remote.' % parent.inflight )
 
                 self.logger.debug('proto.checksum={}, msg.sumstr={}'.format(proto.checksum, msg.sumstr))
-                msg.onfly_checksum = proto.get_sumstr()
                 msg.data_checksum = proto.data_checksum
 
                 # fix message if no partflg (means file size unknown until now)
