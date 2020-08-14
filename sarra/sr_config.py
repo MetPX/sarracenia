@@ -989,8 +989,6 @@ class sr_config:
         else:
             eval( 'self.' + opname + '_list.append(self.' + opname + ')' )
 
-        # following gives backward compatibility with existing plugins that don't follow new naming convention.
-
         return True
 
     def find_file_in_dir(self,d,name,recursive=False):

@@ -6,6 +6,15 @@ lists all changes between versions.
 
 **git repo**
 
+**2.20.08**
+   * fix for plugins breaking  onfly_checksum calculation.
+   * fix to allow onflight hidden directories to be used (/ takes priority over .)
+
+**2.20.07**
+   * #341 fix sr command corrected to work on 16.04
+   * some sr_audit fixes for timing on low powered machinges (e.g. cloud vm's and raspberry pi)
+   * sr sanity avoid killing sr_cpost foreground processes.
+
 **2.20.05**
 
    * sr command now 200x faster ( #174, #315, #180, #187 )
