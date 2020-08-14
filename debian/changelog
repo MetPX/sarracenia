@@ -1,3 +1,8 @@
+metpx-sarracenia (2.20.08) stable; urgency=medium
+
+  * fix for plugin crashing (onfly_checksum issue)
+  * ability to inflight .hoho/ (use hidden directory)
+
 metpx-sarracenia (2.20.07) stable; urgency=medium
 
   * bugfix #347 sr command not honouring statehost setting.
