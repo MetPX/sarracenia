@@ -1,3 +1,6 @@
+metpx-sarracenia (2.20.08p1) stable; urgency=medium
+
+  * 2nd fix for plugin crashing (onfly_checksum issue)
 metpx-sarracenia (2.20.08) stable; urgency=medium
 
   * fix for plugin crashing (onfly_checksum issue)

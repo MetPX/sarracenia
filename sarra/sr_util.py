@@ -341,7 +341,8 @@ class sr_proto():
         self.data_sumalgo = sumalgo
 
     def set_path(self,path):
-        self.sumalgo.set_path(path)
+        if self.sumalgo:
+            self.sumalgo.set_path(path)
 
     def get_sumstr(self):
         if self.sumalgo:
