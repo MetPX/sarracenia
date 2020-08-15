@@ -3,10 +3,14 @@ metpx-sarracenia (2.20.08p1) stable; urgency=medium
   * 2nd fix for plugin crashing (onfly_checksum issue)
   * fix for sr to stop tagging 'status' invocations as strays.
 
+ -- Peter Silva <peter@bsqt.homeip.net>  Fri, 14 Aug 2020 16:48:30 -0400
+
 metpx-sarracenia (2.20.08) stable; urgency=medium
 
   * fix for plugin crashing (onfly_checksum issue)
   * ability to inflight .hoho/ (use hidden directory)
+
+ -- Peter Silva <peter@bsqt.homeip.net>  Fri, 14 Jul 2020 12:48:30 -0400
 
 metpx-sarracenia (2.20.07) stable; urgency=medium
 
