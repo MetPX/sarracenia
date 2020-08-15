@@ -1002,8 +1002,9 @@ The current set up is that there are three main branches:
 * v2_stable ... generally this branch gets code via merges from master, after the pre-release has been tested on a
   as many systems as possible. used to build the stable: `MetPX <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx>`_
 
-* v3_wip ... The version 3 work in progress branch is a next generation version of sarracenia in development.
+* v3_wip ... The `version 3 <v03.rst>`_ work in progress branch is a next generation version of sarracenia in development.
   It is quite different and currently not usable at all. Do not try it, unless specifically invited. IT DOES NOT WORK.
+  
 
 Repositories
 ------------

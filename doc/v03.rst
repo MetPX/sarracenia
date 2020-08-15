@@ -216,11 +216,22 @@ Known Problems
   python logging objects were. Need to use them in the normal way.
   new modules are built that way...
 
+  In new modules, use the logging.getLogger( __name__ ) convention, but
+  often the name does not match the actual source file...  why?
+  e.g. a log message from config.py parsing shows up like::
+
+     2020-08-13 ...  [INFO] sarra.sr_credentials parse_file ... msg text...
+
+  why is it labelled sr_credentials? no idea. 
+
+
 * this weird try/except thing for importing modules... tried removing
   it but it broke parsing of checksums... sigh... have to spend time
   on specifically that problem. On new modules ( sarra.config, 
   sarra.tmpc.*, sr.py ) using normal imports. likely need to
   refactor how checksum plugin mechanism works then try again.
+
+  totally refactored now. Integrity class is normal.
 
 
 Concrete Plan
@@ -355,7 +366,7 @@ Features
 
 * use the sarra. prefix (already present) to replace sr\_ prefix on modules.
 
-* API access to flows.
+* API access to flows. (so can build entirely new programs in python by subclassing.)
 
 * sr ability to select multiple components and configurations to operate on.
 
@@ -368,4 +379,4 @@ Features
 
 * gather (inlet? sources of messages) are now plugins.
 
-
+* added typing to options settings, so plugins can declare: size, duration, string, or list.
