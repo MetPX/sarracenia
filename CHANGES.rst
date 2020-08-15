@@ -6,6 +6,10 @@ lists all changes between versions.
 
 **git repo**
 
+**2.20.08post1**
+   * 2nd fix for a different plugin breaking in a different way with onfly_checksum.
+   * sr stop labelling 'status' invocations as missing instances.
+
 **2.20.08**
    * fix for plugins breaking  onfly_checksum calculation.
    * fix to allow onflight hidden directories to be used (/ takes priority over .)
