@@ -988,6 +988,45 @@ the tests in their own development environment. If it passes in the local develo
 environment one can approve a merge in spite of Travis' complaints.  
 
 
+Main Branches
+-------------
+
+There is a long running discussion about `Which Version is stable <https://github.com/MetPX/sarracenia/issues/139>`_
+The current set up is that there are three main branches:
+
+* master  ... the master branch is used to build `Daily <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily>`_
+  and `Pre-Release <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-pre-release>`_ repositories on launchpad.net.
+  
+* v2_stable ... generally this branch gets code via merges from master, after the pre-release has been tested on a
+  as many systems as possible. used to build the stable: `MetPX <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx>`_ 
+  
+* v3_wip ... The version 3 work in progress branch is a next generation version of sarracenia in development. 
+  It is quite different and currently not usable at all. Do not try it, unless specifically invited. IT DOES NOT WORK.
+
+Repositories
+------------
+
+For Ubuntu operating systems, the launchpad.net site is the best way to provide packages that are fully integrated
+( built against current patch levels of all dependencies (software components that Sarracenia relies
+on to provide full functionality.)) Ideally, when running a server, a one should use one of the repositories,
+and allow automated patching to upgrade them as needed.
+
+Repositories:
+
+* Daily https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily (living on the edge... )
+  automated daily build from *master* branch.
+
+* Pre-Release https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-pre-release (for newest features.)
+  from *master* branch. Developers manually trigger builds here when it seems appropriate (testing out
+  code that is ready for release.)
+
+* Release https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx (for maximum stability)
+  from *v2_stable* branch.  After testing in systems subscribed to pre-releases, Developers
+  merge from master branch into v2_stable one, and manually trigger a build.
+
+for more discussion see `Which Version is stable <https://github.com/MetPX/sarracenia/issues/139>`_
+
+
 Building a Release
 ------------------
 
@@ -1019,11 +1058,13 @@ Where:
 - **YY** is the last two digits of the year of the initial release in the series.
 - **MM** is a TWO digit month number i.e. for April: 04.
 - **segment** is what would be used within a series.
-  from pep0440:
-  X.YaN   # Alpha release
-  X.YbN   # Beta release
-  X.YrcN  # Release Candidate
-  X.Y     # Final release
+  from `pep0440 <https://www.python.org/dev/peps/pep-0440/>`_ ::
+
+    X.YaN   # Alpha release
+    X.YbN   # Beta release
+    X.YrcN  # Release Candidate
+    X.Y     # Final release
+    X.ypostN #ack! patched release.
 
 Example:
 
@@ -1084,7 +1125,9 @@ Assuming pypi upload credentials are in place, uploading a new release used to b
 
 Note that the CHANGES.rst file is in restructured text and is parsed by pypi.python.org
 on upload.  
+
 .. Note::
+
    When uploading pre-release packages (alpha,beta, or RC) PYpi does not serve those to users by default.
    For seamless upgrade, early testers need to do supply the ``--pre`` switch to pip::
 
@@ -1105,6 +1148,7 @@ Automated Build
 * Ensure the code mirror is updated by checking the **Import details** by checking `this page for sarracenia <https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/+git/trunk>`_
 * if the code is out of date, do **Import Now** , and wait a few minutes while it is updated.
 * once the repository is upto date, proceed with the build request.
+* NOTE: **for some repositories, the builds are based on the master branch, for the MetPX repository, it is based on v2_stable.**
 * Go to the `sarracenia release <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/sarracenia-release>`_ recipe
 * Click on the **Request build(s)** button to create a new release
 * for Sarrac, follow the procedure `here <https://github.com/MetPX/sarrac#release-process>`_
