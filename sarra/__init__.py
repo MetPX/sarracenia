@@ -121,7 +121,7 @@ def durationToSeconds(str_value):
    return duration
 
 def chunksize_from_str(str_value):
-    logger.debug("sr_config chunksize_from_str %s" % str_value)
+    #logger.debug("sr_config chunksize_from_str %s" % str_value)
     factor = 1
     if str_value[-1] in 'bB'   : str_value = str_value[:-1]
     if str_value[-1] in 'kK'   : factor = 1024

@@ -57,6 +57,18 @@ class Integrity:
     def get_method(self):
         return type(self).__name__.lower()
 
+    @abstractmethod
+    def update_file(self,path):
+       """
+         read the entire file, check sum it. 
+         this is kind of last resort as it cost an extra file read.
+         It is better to call update( as the file is being read for other reasons.
+       """
+       self.set_path(path)
+       with open(path,'rb') as f:
+           for data in iter(partial(f.read, 1024*1024), b''):
+             self.update(data)
+
 #   @abstractmethod
 #   def get_value(self):
 #       """

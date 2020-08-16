@@ -10,7 +10,10 @@ import time
 import types
 import urllib
 
+import sarra
+import sarra.config 
 from sarra.plugin import Plugin
+
 
 from sarra.sr_util import nowflt,timestr2flt,timev2tov3str
 
@@ -218,11 +221,12 @@ class V2Wrapper(Plugin):
 
         logger.info('v2wrapper init done')
 
-
     def declare_option(self,option):
         logger.info('v2plugin option: %s declared' % option)
 
         self.state_vars.append(option)
+
+        sarra.config.declare_plugin_option( option, 'list' )
         if not hasattr(self,option): return
 
         logger.info('value type is: %s' % type(getattr(self,option)) )

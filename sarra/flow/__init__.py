@@ -11,7 +11,7 @@ import time
 import types
 import urllib.parse
 
-from sarra import timestr2flt
+from sarra import timestr2flt,timeflt2str
 
 # from sr_util...
 from sarra.sr_xattr import *
@@ -185,7 +185,7 @@ class Flow:
                            self.plugins[entry_point] = [ fn ]
 
  
-            if not ( hasattr(plugin,'registered_as') and callable( geattr( plugin, 'registered_as' ) ) ):
+            if not ( hasattr(plugin,'registered_as') and callable( getattr( plugin, 'registered_as' ) ) ):
                 continue
 
             schemes = plugin.registered_as()
@@ -197,13 +197,14 @@ class Flow:
                 if not callable( fn ):
                     continue
 
-                if not entry_point in self.plugins:
-                    self.plugins[entry_point] = {}
-                
                 for s in schemes:
-                    self.plugins[entry_point][s] = fn
+                    if not s in self.plugins:
+                        self.plugins[s] = {}
+                
+                    self.plugins[s][schemed_entry_point] = fn
                      
         logger.info( 'plugins initialized')
+        self.o.check_undeclared_options()
  
     def _runPluginsWorklist(self,entry_point):
 
@@ -638,6 +639,7 @@ class Flow:
                 else:
                     logger.error('inflight setting: %s, not for remote.' % options.inflight )
 
+                self.proto.set_path( new_lock )
                 len_written = self.get( msg, remote_file, new_lock, remote_offset, msg['local_offset'], block_length)
 
                 if ( len_written == block_length ):
@@ -692,7 +694,7 @@ class Flow:
         scheme = urllib.parse.urlparse( msg['baseUrl'] ).scheme
         if ((hasattr(self,'plugins') and ( 'do_get' in self.plugins )) and \
             scheme in self.plugins['do_get'] ):
-            return self.plugins['do_get'][scheme]( msg, remote_file, local_file, remote_offset, local_offset, length )
+            return self.plugins[scheme]['do_get']( msg, remote_file, local_file, remote_offset, local_offset, length )
         else:
             return self.proto.get(remote_file, local_file, remote_offset, local_offset, length)
 
@@ -702,7 +704,7 @@ class Flow:
         scheme = urllib.parse.urlparse( msg['baseUrl'] ).scheme
         if (hasattr(self,'plugins') and ( 'do_put' in self.plugins )) and \
             ( scheme in self.plugins['do_put'] ):
-            return self.plugins['do_put'][scheme]( msg, local_file, remote_file, local_offset, remote_offset, length )
+            return self.plugins[scheme]['do_put']( msg, local_file, remote_file, local_offset, remote_offset, length )
         else:
             return self.proto.put(local_file, remote_file, local_offset, remote_offset, length)
 

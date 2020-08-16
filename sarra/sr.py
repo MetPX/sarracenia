@@ -1002,7 +1002,6 @@ class sr_GlobalState:
 
             self.run_command([ editor, cfgfile] )
 
-
     def enable(self):
 
         # declare exchanges first.

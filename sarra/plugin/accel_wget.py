@@ -87,6 +87,7 @@ class ACCEL_WGET(Plugin):
       """
       msg['baseUrl'] = msg['baseUrl'].replace("download","http", 1 )
       os.chdir( msg['new_dir'] )
+
       cmd = self.o.download_accel_wget_command[0].split() + [ msg['baseUrl'] + os.sep + msg['relPath'] ]
       logger.debug("wget do_download in %s invoking: %s " % ( msg['new_dir'], cmd ) )
 

@@ -358,6 +358,12 @@ class Protocol():
         self.sumalgo = sarra.plugin.integrity.Integrity( sumalgo )
         self.data_sumalgo = sarra.plugin.integrity.Integrity( sumalgo )
 
+    def set_path(self, path):
+        if self.sumalgo:
+            self.sumalgo.set_path( path )
+        if self.data_sumalgo:
+            self.data_sumalgo.set_path( path )
+
     def get_sumstr(self):
         if self.sumalgo:
             #return { 'method':type(self.sumalgo).__name__, 'value':self.sumalgo.get_value() }

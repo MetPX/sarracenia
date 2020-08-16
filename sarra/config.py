@@ -16,6 +16,9 @@ import argparse
 import copy
 import inspect
 import logging
+
+logger = logging.getLogger( __name__ )
+
 import os
 import pathlib
 import pprint
@@ -51,10 +54,10 @@ default_options = {
 
 }
 
-count_options = [ 'exchange_split', 'post_exchange_split', 'instances' ]
+count_options = [ 'exchange_split', 'instances', 'post_exchange_split', 'prefetch' ]
 
 # all the boolean settings.
-flag_options = [ 'bind_queue', 'cache_stat', 'declare_exchange', \
+flag_options = [ 'bind_queue', 'cache_stat', 'declare_exchange', 'debug', \
     'declare_queue', 'delete', 'discard', 'dry_run', 'durable', 'exchange_split', 'realpath_filter', \
     'follow_symlinks', 'force_polling', 'inline', 'inplace', 'log_reject', 'pipe', 'restore', \
     'report_daemons', 'mirror', 'notify_only', 'overwrite', 'post_on_start', 'poll_without_vip', \
@@ -63,50 +66,15 @@ flag_options = [ 'bind_queue', 'cache_stat', 'declare_exchange', \
     'statehost', 'use_amqplib', 'use_pika', 'users_flag' 
 ]
 
-duration_options = [ 'timeout', 'expire', 'heartbeat', 'message_ttl', 'retry_ttl', 'sanity_log_dead', 'sleep', 'timeout' ]
+duration_options = [ 'timeout', 'expire', 'housekeeping', 'message_ttl', 'retry_ttl', 'sanity_log_dead', 'sleep', 'timeout' ]
 
 list_options = []
 
-size_options = [ 'blocksize', 'bytes_per_second', 'inline_max' ]
+size_options = [ 'blocksize', 'bufsize', 'bytes_per_second', 'inline_max' ]
 
-str_options = [ 'directory', 'topic_prefix', 'events', 'feeder', 'path', 'post_exchange', 'post_exchange_split', 'post_topic_prefix' ]
-
-def declare_option( self, option, kind,  ):
-    """
-       options can be declared in any plugin. There are various *kind* of options, where the declared type modifies the parsing.
-       
-       'duration'   a floating point number indicating a quantity of seconds (0.001 is 1 milisecond)
-                    modified by a unit suffix ( m-minute, h-hour, w-week ) 
-
-       'count'      integer count type. 
-       'size'       integer size. Suffixes k, m, and g for kilo, mega, and giga (base 2) multipliers.
-       'flag'       boolean (True/False) option.
-       'str'        an arbitrary string value, as will all of the above types, each succeeding occurrence overrides the previous one.
-       'list'       a list of string values, each succeeding occurrence catenates to the total.
-
-    """
-
-    if   typ == 'str':
-       str_options.append(option)
-    elif typ == 'duration':
-       duration_options.append(option)
-    elif typ == 'size':
-       size_options.append(option)
-    elif typ == 'list':
-       list_options.append(option)
-    elif typ == 'flag':
-       flag_options.append(option)
-          
-   #    logger.info('v2plugin option: %s declared' % option)
-
-   #    self.v2plugin_options.append(option)
-
-   #    #if not hasattr(self,option): return
-
-   #    logger.info('value type is: %s' % type(getattr(self,option)) )
-   #    if type(getattr(self,option)) is not list:
-   #        setattr(self,option, [ getattr(self,option) ] )
-
+str_options = [ 'admin', 'broker', 'destination', 'directory', 'exchange', 'exchange_suffix', 'events', 'feeder', 'path', \
+    'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange', 'post_exchange_suffix', 'post_topic_prefix', 
+    'report_exchange', 'strip', 'suppress_duplicates', 'suppress_duplicates_basis', 'topic_prefix'  ]
 
 """
    for backward compatibility, 
@@ -121,9 +89,50 @@ def declare_option( self, option, kind,  ):
 convert_to_v3 = {
 
   'plugin msg_fdelay' : [ 'import', 'sarra.plugin.msg.fdelay.FDelay' ],
-  'on_line line_log'  : [ 'import', 'sarra.plugin.line_log' ]
+  'on_line line_log'  : [ 'import', 'sarra.plugin.line_log' ],
+  'plugin accel_wget' : [ 'import', 'sarra.plugin.accel_wget.ACCEL_WGET' ],
+  'plugin accel_scp' : [ 'import', 'sarra.plugin.accel_scp.ACCEL_SCP' ],
 
 }
+
+def declare_plugin_option( option, kind ):
+    """
+       options can be declared in any plugin. There are various *kind* of options, where the declared type modifies the parsing.
+       
+       'count'      integer count type. 
+       'duration'   a floating point number indicating a quantity of seconds (0.001 is 1 milisecond)
+                    modified by a unit suffix ( m-minute, h-hour, w-week ) 
+       'flag'       boolean (True/False) option.
+       'list'       a list of string values, each succeeding occurrence catenates to the total.
+                    all v2 plugin options are declared of type list.
+       'size'       integer size. Suffixes k, m, and g for kilo, mega, and giga (base 2) multipliers.
+       'str'        an arbitrary string value, as will all of the above types, each succeeding occurrence overrides the previous one.
+
+    """
+
+    if kind == 'count':
+       count_options.append(option)
+    elif kind == 'duration':
+       duration_options.append(option)
+    elif kind == 'flag':
+       flag_options.append(option)
+    elif kind == 'list':
+       list_options.append(option)
+    elif kind == 'size':
+       size_options.append(option)
+    elif kind == 'str':
+       str_options.append(option)
+
+   #    logger.info('v2plugin option: %s declared' % option)
+
+   #    self.v2plugin_options.append(option)
+
+   #    #if not hasattr(self,option): return
+
+   #    logger.info('value type is: %s' % type(getattr(self,option)) )
+   #    if type(getattr(self,option)) is not list:
+   #        setattr(self,option, [ getattr(self,option) ] )
+
 
 
 """
@@ -457,6 +466,7 @@ class Config:
        self.timeout = 300
        self.tls_rigour = 'normal'
        self.topic_prefix = 'v02.post'
+       self.undeclared = []
        self.users = {}
        self.vip = None
 
@@ -575,6 +585,8 @@ class Config:
            v=getattr(self,k)
            if type(v) == urllib.parse.ParseResult:
               v = v.scheme + '://' + v.username + '@' + v.hostname
+           elif type(v) is str:
+              v = "'%s'" % v
            ks = str(k)
            vs = str(v)
            if len(vs) > 100:
@@ -757,96 +769,105 @@ class Config:
            if (len(line) < 1) or (line[0].startswith('#')):
                continue
 
+           # strip whitespace, so it is just 1 space, not multiple, not tabs
+           l = re.sub(r'^([^\s]*)\s+', r'\1 ', l )
+
            if l.strip() in convert_to_v3:
                line=convert_to_v3[l.strip()]
                logger.info('Converting \"%s\" to v3: \"%s\"' % ( l.strip(), line ) )
+
+           k=line[0]
+           if k in Config.synonyms:
+               k=Config.synonyms[k]
+           if len(line) == 1: 
+               v = True
    
            line = list( map( lambda x : self._varsub(x), line ) )
            # FIXME... I think synonym check should happen here, but no time to check right now.
 
-           if line[0] in [ 'accept', 'reject', 'get' ]:
-               self.masks.append( self._build_mask( line[0], line[1:] ) )
-           elif line[0] in [ 'declare' ]:
+           if k in [ 'accept', 'reject', 'get' ]:
+               self.masks.append( self._build_mask( k, line[1:] ) )
+           elif k in [ 'declare' ]:
                self._parse_declare( line[1:] )
-           elif line[0] in [ 'include', 'config' ]:
+           elif k in [ 'include', 'config' ]:
                try:
                    self.parse_file( line[1] )
                except:
                    print( "failed to parse: %s" % line[1] )
-           elif line[0] in [ 'subtopic' ]:
+           elif k in [ 'subtopic' ]:
                self._parse_binding( line[1] )
-           elif line[0] in [ 'import' ]:
+           elif k in [ 'import' ]:
                self.plugins.append( line[1] )
-           elif line[0] in [ 'set', 'setting', 's' ]:
-               self._parse_setting(line[1], line[2:])
-           elif line[0] in [ 'sum'  ]:
+           elif k in [ 'set', 'setting', 's' ]:
+               self._parse_setting(k, line[2:])
+           elif k in [ 'sum'  ]:
                self._parse_sum(line[1])
-           elif line[0] in Config.v2entry_points:
-               if line[1] in self.plugins:
+           elif k in Config.v2entry_points:
+               if k in self.plugins:
                    self.plugins.remove( line[1] )
                self._parse_v2plugin(line[0],line[1])
-           elif line[0] in [ 'no-import' ]:
+           elif k in [ 'no-import' ]:
                self._parse_v3unplugin(line[1])
-           elif line[0] in [ 'inflight', 'lock' ]:
+           elif k in [ 'inflight', 'lock' ]:
                if isnumeric(line[1][:-1]):
-                   setattr(self, line[0], durationToSeconds(line[1]) )
+                   setattr(self, k, durationToSeconds(line[1]) )
                else:
                    if line[1].lower() in [ 'none', 'off', 'false' ]:
-                       setattr(self, line[0], None )
+                       setattr(self, k, None )
                    else:
-                       setattr(self, line[0], line[1] )
-           elif line[0] in duration_options:
+                       setattr(self, k, line[1] )
+           elif k in [ 'strip' ]:
+                  if line[1].isdigit() :
+                      self.strip = int(line[1]) 
+                      self.pstrip = None
+                  else:
+                      self.pstrip = line[1]
+                      self.strip = 0
+           elif k in duration_options:
                if len(line) == 1:
                    logger.error( '%s is a duration option requiring a decimal number of seconds value' % line[0] ) 
                    continue
-               setattr(self, line[0], durationToSeconds(line[1]) )
-           elif line[0] in size_options:
+               setattr(self, k, durationToSeconds( line[1]) )
+           elif k in size_options:
                if len(line) == 1:
                    logger.error( '%s is a size option requiring a integer number of bytes (or multiple) value' % line[0] ) 
                    continue
                setattr(self, line[0], chunksize_from_str(line[1]) )
-           elif line[0] in flag_options:
+           elif k in flag_options:
                if len(line) == 1:
-                   setattr(self, line[0], True )
+                   setattr(self, k, True )
                else:
-                   setattr(self, line[0], isTrue(line[1]) )
-           elif line[0] in count_options:
-               setattr( self, line[0], int(line[1]) )
-           elif line[0] in list_options:
+                   setattr(self, k, isTrue(line[1]) )
+           elif k in count_options:
+               setattr( self, k, int(line[1]) )
+           elif k in list_options:
                if not hasattr(self,line[0]):
-                   setattr( self, line[0], [ ' '.join(line[1:]) ] )
+                   setattr( self, k, [ ' '.join(line[1:]) ] )
                else:
-                   setattr( self, line[0], getattr(self,line[0]).append( ' '.join(line[1:]) ) )
-
-           elif line[0] in str_options:
-               setattr( self, line[0], ' '.join(line[1:]) )
+                   setattr( self, k, getattr(self,line[0]).append( ' '.join(line[1:]) ) )
+           elif k in str_options :
+               setattr( self, k, ' '.join(line[1:]) )
            else:
-               k=line[0]
-               if k in Config.synonyms:
-                  k=Config.synonyms[k]
-               if len(line) == 1: 
-                   v = True
+               #FIXME: with _options lists for all types and addition of declare, this is probably now dead code.
+               #logger.info('FIXME: zombie is alive? %s' % line )
+               v =  ' '.join(line[1:])
+               if hasattr(self,k):
+                  if type(getattr(self,k)) is float:
+                      setattr( self, k, float(v) )
+                  elif type(getattr(self,k)) is int:
+                      # the only integers that have units are durations.
+                      # integers without units will come out unchanged.
+                      setattr( self, k, durationToSeconds(v) )
+                  elif type(getattr(self,k)) is str:
+                      setattr( self, k, [ getattr(self, k) , v ]  )
+                  elif type(getattr(self,k)) is list:
+                      setattr( self, k, getattr(self,k).append( v ) )
                else:
-                   #FIXME: with _options lists for all types and addition of declare, this is probably now dead code.
-                   logger.info('FIXME: zombie is alive? %s' % line )
-                   v =  ' '.join(line[1:])
-                   if hasattr(self,k) and k not in [ 'strip' ]:
-                      if type(getattr(self,k)) is float:
-                          v = float(v)
-                      elif type(getattr(self,k)) is int:
-                          # the only integers that have units are durations.
-                          # integers without units will come out unchanged.
-                          v = durationToSeconds(v)
-                      elif type(getattr(self,k)) is str:
-                          setattr( self, k, [ getattr(self, k) , v ]  )
-                          continue
-                      elif type(getattr(self,k)) is list:
-                          setattr( self, k, getattr(self,k).append( v ) )
-                          continue
-                   else:
-                       logger.warn('undeclared option: %s' % k )
+                  # FIXME: 
+                  setattr( self, k, v )
+                  self.undeclared.append( k )
+                  #logger.info('setting v2 option: %s = %s' % (k,v) )
 
-               setattr( self, k, v )
 
   
    def fill_missing_options(self,component,config):
@@ -878,6 +899,10 @@ class Config:
                bytes_ps *= 1024
            setattr(self,'bytes_per_second', bytes_ps )
             
+       for d in count_options:
+           if hasattr(self,d) and ( type(getattr(self,d)) is str):
+              setattr(self,d, int(getattr(self,d)))
+
        for d in size_options:
            if hasattr(self,d) and ( type(getattr(self,d)) is str):
               setattr(self,d, chunksize_from_str(getattr(self,d)))
@@ -1003,6 +1028,16 @@ class Config:
               logger.warning("use post_baseDir instead of documentRoot")
 
 
+   def check_undeclared_options(self):
+
+       logger.debug("start")
+       alloptions = str_options + flag_options + list_options + count_options + size_options + duration_options 
+
+       # FIXME: confused about this...  commenting out for now...
+       for u in self.undeclared:
+           if u not in alloptions:
+              logger.error("undeclared option: %s" % u )
+       logger.debug("done")
 
    """
       2020/05/26 FIXME here begins sheer terror.
@@ -1423,7 +1458,7 @@ class Config:
 
         msg['new_file'] = filename
 
-        msg['_deleteOnPost'].extend( [ 'new_dir', 'new_file', 'new_relPath' ] )
+        msg['_deleteOnPost'].extend( [ 'new_dir', 'new_file', 'new_relPath', 'new_baseUrl' ] )
         if self.post_broker and self.post_baseUrl:
             msg['new_baseUrl'] = self.post_baseUrl
 

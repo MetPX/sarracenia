@@ -366,6 +366,7 @@ class AMQP(Moth):
         topic = topic.replace('#','%23')
         topic = topic.replace('#','%23')
 
+        logger.error("FIXME: topic: %s" % topic )
         if len(topic) >= 255: # ensure topic is <= 255 characters
             logger.error("message topic too long, truncating")
             mxlen=amqp_ss_maxlen
