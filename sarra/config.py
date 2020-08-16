@@ -88,10 +88,14 @@ str_options = [ 'admin', 'broker', 'destination', 'directory', 'exchange', 'exch
 """
 convert_to_v3 = {
 
-  'plugin msg_fdelay' : [ 'import', 'sarra.plugin.msg.fdelay.FDelay' ],
-  'on_line line_log'  : [ 'import', 'sarra.plugin.line_log' ],
-  'plugin accel_wget' : [ 'import', 'sarra.plugin.accel_wget.ACCEL_WGET' ],
-  'plugin accel_scp' : [ 'import', 'sarra.plugin.accel_scp.ACCEL_SCP' ],
+  'plugin' : { 
+      'msg_fdelay' : [ 'import', 'sarra.plugin.msg.fdelay.FDelay' ],
+      'accel_wget' : [ 'import', 'sarra.plugin.accel_wget.ACCEL_WGET' ],
+      'accel_scp'  : [ 'import', 'sarra.plugin.accel_scp.ACCEL_SCP' ],
+  },
+  'on_line' : { 
+      'line_log'  : [ 'import', 'sarra.plugin.line_log' ]
+  }
 
 }
 
@@ -769,20 +773,23 @@ class Config:
            if (len(line) < 1) or (line[0].startswith('#')):
                continue
 
-           # strip whitespace, so it is just 1 space, not multiple, not tabs
-           l = re.sub(r'^([^\s]*)\s+', r'\1 ', l )
-
-           if l.strip() in convert_to_v3:
-               line=convert_to_v3[l.strip()]
-               logger.info('Converting \"%s\" to v3: \"%s\"' % ( l.strip(), line ) )
-
            k=line[0]
            if k in Config.synonyms:
                k=Config.synonyms[k]
-           if len(line) == 1: 
-               v = True
+
+           if ( k in convert_to_v3 ) and ( len(line) > 1 ):
+               v = line[1].replace('.py','',1)
+               if ( v in convert_to_v3[k] ):
+                   line=convert_to_v3[k][v]
+                   logger.info('Converting \"%s\" to v3: \"%s\"' % ( l, line ) )
    
            line = list( map( lambda x : self._varsub(x), line ) )
+           k=line[0]
+           if len(line) == 1: 
+               v = True
+           else:
+               v=line[1]
+
            # FIXME... I think synonym check should happen here, but no time to check right now.
 
            if k in [ 'accept', 'reject', 'get' ]:
@@ -791,57 +798,57 @@ class Config:
                self._parse_declare( line[1:] )
            elif k in [ 'include', 'config' ]:
                try:
-                   self.parse_file( line[1] )
+                   self.parse_file( v )
                except:
-                   print( "failed to parse: %s" % line[1] )
+                   print( "failed to parse: %s" % v )
            elif k in [ 'subtopic' ]:
-               self._parse_binding( line[1] )
+               self._parse_binding( v )
            elif k in [ 'import' ]:
-               self.plugins.append( line[1] )
+               self.plugins.append( v )
            elif k in [ 'set', 'setting', 's' ]:
                self._parse_setting(k, line[2:])
            elif k in [ 'sum'  ]:
-               self._parse_sum(line[1])
+               self._parse_sum(v)
            elif k in Config.v2entry_points:
                if k in self.plugins:
-                   self.plugins.remove( line[1] )
-               self._parse_v2plugin(line[0],line[1])
+                   self.plugins.remove( v )
+               self._parse_v2plugin(k,v)
            elif k in [ 'no-import' ]:
-               self._parse_v3unplugin(line[1])
+               self._parse_v3unplugin(v)
            elif k in [ 'inflight', 'lock' ]:
-               if isnumeric(line[1][:-1]):
-                   setattr(self, k, durationToSeconds(line[1]) )
+               if isnumeric(v[:-1]):
+                   setattr(self, k, durationToSeconds(v) )
                else:
                    if line[1].lower() in [ 'none', 'off', 'false' ]:
                        setattr(self, k, None )
                    else:
-                       setattr(self, k, line[1] )
+                       setattr(self, k, v )
            elif k in [ 'strip' ]:
-                  if line[1].isdigit() :
-                      self.strip = int(line[1]) 
+                  if v.isdigit() :
+                      self.strip = int(v) 
                       self.pstrip = None
                   else:
-                      self.pstrip = line[1]
+                      self.pstrip = v
                       self.strip = 0
            elif k in duration_options:
                if len(line) == 1:
                    logger.error( '%s is a duration option requiring a decimal number of seconds value' % line[0] ) 
                    continue
-               setattr(self, k, durationToSeconds( line[1]) )
+               setattr(self, k, durationToSeconds( v ) )
            elif k in size_options:
                if len(line) == 1:
                    logger.error( '%s is a size option requiring a integer number of bytes (or multiple) value' % line[0] ) 
                    continue
-               setattr(self, line[0], chunksize_from_str(line[1]) )
+               setattr(self, k, chunksize_from_str(v) )
            elif k in flag_options:
                if len(line) == 1:
                    setattr(self, k, True )
                else:
-                   setattr(self, k, isTrue(line[1]) )
+                   setattr(self, k, isTrue(v) )
            elif k in count_options:
-               setattr( self, k, int(line[1]) )
+               setattr( self, k, int(v) )
            elif k in list_options:
-               if not hasattr(self,line[0]):
+               if not hasattr(self,k):
                    setattr( self, k, [ ' '.join(line[1:]) ] )
                else:
                    setattr( self, k, getattr(self,line[0]).append( ' '.join(line[1:]) ) )
