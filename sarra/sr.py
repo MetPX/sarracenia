@@ -119,7 +119,7 @@ class sr_GlobalState:
             else:  # C components
                 cmd = [component_path, 'start', cfg]
 
-        print( "launching +%s+  re-directed to: %s" % ( cmd, lfn ), flush=True )
+        #print( "launching +%s+  re-directed to: %s" % ( cmd, lfn ), flush=True )
 
         try:
             with open(lfn, "a") as lf:
