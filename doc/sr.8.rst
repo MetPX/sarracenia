@@ -16,7 +16,7 @@ sr Sarracenia Management CLI
 SYNOPSIS
 ========
 
-**sr** declare|dump|setup|start|stop|restart|status 
+**sr** declare|dump|list|show|setup|start|stop|restart|status 
 
 DESCRIPTION
 ===========
@@ -107,6 +107,141 @@ one can use dump to get more detail::
         pclean_f90 : {'status': 'partial', 'instances': 5}
         pclean_f90 : {'instance_pids': {4: 4417, 3: 4415, 2: 4412, 1: 4404, 5: 4420}, 'queue_name': 'q_tfeed.sr_shovel.pclean_f90', 'instances_expected': 5, 'has_state': False, 'missing_instances': [2]}
 
+
+*list* shows the user the configuration files present::
+
+    fractal% sr list
+    User Configurations: (from: /home/peter/.config/sarra )
+    cpost/pelle_dd1_f04.conf         cpost/pelle_dd2_f05.conf         cpost/veille_f34.conf            
+    cpump/xvan_f14.conf              cpump/xvan_f15.conf              poll/f62.conf                    
+    post/shim_f63.conf               post/t_dd1_f00.conf              post/t_dd2_f00.conf              
+    post/test2_f61.conf              sarra/download_f20.conf          sender/tsource2send_f50.conf     
+    shovel/rabbitmqtt_f22.conf       subscribe/amqp_f30.conf          subscribe/cclean_f91.conf        
+    subscribe/cdnld_f21.conf         subscribe/cfile_f44.conf         subscribe/cp_f61.conf            
+    subscribe/ftp_f70.conf           subscribe/q_f71.conf             subscribe/rabbitmqtt_f31.conf    
+    subscribe/u_sftp_f60.conf        watch/f40.conf                   admin.conf                       
+    credentials.conf                 default.conf                     
+    logs are in: /home/peter/.cache/sarra/log
+    
+The last line says which directory the log files are in.
+
+Also *list examples* shows included configuration templates available as starting points with the *add* command::
+    
+    fractal% sr list examples
+    Sample Configurations: (from: /home/peter/Sarracenia/v03_wip/sarra/examples )
+    cpump/cno_trouble_f00.inc        poll/aws-nexrad.conf             poll/pollingest.conf             
+    poll/pollnoaa.conf               poll/pollsoapshc.conf            poll/pollusgs.conf               
+    poll/pulse.conf                  post/WMO_mesh_post.conf          sarra/wmo_mesh.conf              
+    sender/ec2collab.conf            sender/pitcher_push.conf         shovel/no_trouble_f00.inc        
+    subscribe/WMO_Sketch_2mqtt.conf  subscribe/WMO_Sketch_2v3.conf    subscribe/WMO_mesh_CMC.conf      
+    subscribe/WMO_mesh_Peer.conf     subscribe/aws-nexrad.conf        subscribe/dd_2mqtt.conf          
+    subscribe/dd_all.conf            subscribe/dd_amis.conf           subscribe/dd_aqhi.conf           
+    subscribe/dd_cacn_bulletins.conf subscribe/dd_citypage.conf       subscribe/dd_cmml.conf           
+    subscribe/dd_gdps.conf           subscribe/dd_ping.conf           subscribe/dd_radar.conf          
+    subscribe/dd_rdps.conf           subscribe/dd_swob.conf           subscribe/ddc_cap-xml.conf       
+    subscribe/ddc_normal.conf        subscribe/downloademail.conf     subscribe/ec_ninjo-a.conf        
+    subscribe/hpfx_amis.conf         subscribe/local_sub.conf         subscribe/pitcher_pull.conf      
+    subscribe/sci2ec.conf            subscribe/subnoaa.conf           subscribe/subsoapshc.conf        
+    subscribe/subusgs.conf           watch/master.conf                watch/pitcher_client.conf        
+    watch/pitcher_server.conf        watch/sci2ec.conf                
+    fractal% 
+
+**show**
+
+View all configuration settings (the result of all parsing... what the flow components actually see)::
+
+    fractal% $PYTHONPATH/sarra/sr.py --debug show subscribe/q_f71
+    
+    Config of subscribe/q_f71: 
+    _Config__admin=amqp://bunnymaster@localhost
+    _Config__broker=amqp://tsource@localhost
+    _Config__post_broker=None
+    accept_unmatch=True
+    accept_unmatched=False
+    auto_delete=False
+    baseDir=None
+    batch=100
+    bind=True
+    bindings=[('v03.post', 'xs_tsource_poll', '#')]
+    bufsize=1048576
+    bytes_per_second=None
+    bytes_ps=0
+    cfg_run_dir='/home/peter/.cache/sarra/subscribe/q_f71'
+    chmod=0
+    chmod_dir=509
+    chmod_log=384
+    config='q_f71'
+    currentDir='/home/peter/.cache/sarra/log'
+    debug=False
+    declare=True
+    declared_exchanges=['xpublic', 'xcvan01']
+    delete=False
+    destfn_script=None
+    directory='//home/peter/sarra_devdocroot/recd_by_srpoll_test1'
+    documentRoot=None
+    download=False
+    durable=True
+    env=environ({'SHELL': '/bin/bash', 'SESSION_MANAGER': 'local/fractal:@/tmp...'
+    exchange='xs_tsource_poll'
+    exchange_suffix='poll'
+    expire=3600.0
+    feeder='amqp://tfeed@localhost/'
+    file_total_interval='0'
+    filename=None
+    flatten='/'
+    hostdir='fractal'
+    hostname='fractal'
+    housekeeping=30
+    inflight=None
+    inline=False
+    inline_encoding='guess'
+    inline_max=4096
+    instances=1
+    logFormat='%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s'
+    logLevel='info'
+    log_reject=True
+    lr_backupCount=5
+    lr_interval=1
+    lr_when='midnight'
+    masks=[('.*', '//home/peter/sarra_devdocroot/recd_by_srpoll_test1', None, re...'
+    message_strategy={'reset': True, 'stubborn': True, 'failure_duration': '5m'}
+    message_ttl=0
+    mirror=True
+    msg_total_interval='0'
+    plugins=['sarra.plugin.accel_scp.ACCEL_SCP']
+    post_baseDir=None
+    post_baseUrl=None
+    post_documentRoot=None
+    post_exchanges=[]
+    prefetch=25
+    preserve_mode=True
+    preserve_time=True
+    program_name='subscribe'
+    pstrip='.*sent_by_tsource2send/'
+    queue_filename='/home/peter/.cache/sarra/subscribe/q_f71/sr_subscribe.q_f71.tsource.qname'
+    queue_name='q_tsource.sr_subscribe.q_f71.68760401.09509451'
+    randid='b486'
+    realpath_post=False
+    report_daemons=False
+    reset=False
+    resolved_qname='q_tsource.sr_subscribe.q_f71.68760401.09509451'
+    settings={}
+    sleep=0.1
+    statehost=False
+    strip=0
+    subtopic=None
+    suppress_duplicates=0
+    suppress_duplicates_basis='data'
+    timeout=300
+    tls_rigour='normal'
+    topic_prefix='v03.post'
+    undeclared=['msg_total_interval', 'file_total_interval']
+    users={'tsub': 'subscriber', 'tsource': 'source', 'anonymous': 'subscriber',...'
+    v2plugin_options=[]
+    v2plugins={'plugin': ['msg_total_save', 'file_total_save']}
+    vhost='/'
+    vip=None
+    
 
 **start**
 

@@ -90,6 +90,8 @@ Changes planned to address pain points
   * worklist.ok -- messages which have been successfully processed.
   * worklist.retry   -- messages for which processing was attempted, but it failed.
 
+  could add others... significant number of applications for something like *deferred*
+
 * acknowledgements done more pro-actively.
 
 * add scoping mechanism to define plugin properties.
@@ -149,7 +151,8 @@ the two versions, is clear:
 +--------------------------+---------------------------+
 |                          | transfer/__init__.py      |
 | sr_util.py/sr_proto      |  * transfer.Protocol      |
-| sr_util.py/sr_transport  |  * transfer.Transport     |
+|                          |                           |
+| sr_util.py/sr_transport  | flow/__init__.py          |
 |                          |                           |
 | sr_file.py               | transfer/file.py          |
 |                          |                           |
@@ -162,9 +165,10 @@ the two versions, is clear:
 +--------------------------+---------------------------+
 | plugins/                 | plugin/                   |
 +--------------------------+---------------------------+
-| overall flow             | flow/__init__             |
+| overall flow             | flow/__init__.py          |
 +--------------------------+---------------------------+
 | sr_subscribe.py          | flow/subscribe.py         |
+|                          | flow/__init__.py          |
 |                          |                           |
 | sr_shovel.py             | flow/shovel.py            |
 |                          |                           |
@@ -251,6 +255,24 @@ away. (This later became the Moth module.)
 Progress
 --------
 
+The method of testing is to make modifications, and check them against the 
+sr_insects v03_wip branch.  In general, an un-modified sr_insects tests should
+work, but since the logs change, there is logic being added on that branch
+to parse v2 and v3 versions in the same way.  Thus the v03_wip branch tests
+are compatible with both stable and work-in-progress versions.
+
+To get each component working, practice with individual unit tests, and then
+get to static-flow tests.  Can also do flakey_broker. The work is only going
+that far as all the components are converted.  Once full conversion is achieved,
+then will look at dynamic_flow.
+
+Purpose is not a finished product, but a product with sufficient and 
+appropriate structure so that tasks can be delegated with reasonable hope of success.
+
+
+Done
+~~~~
+
 The functionality of sr_amqp.py is completely reproduced in TMPC/amqp.py 
 (but not yet used, except by sr.py.) All the important logic is preserved, 
 but it is transcribed into new classes. Should have identical 
@@ -265,17 +287,20 @@ will not break everything, plugin-wise... thinking about having defaults
 distributed to the classes that use the settings, and having something
 that brings them together, instead of one massive config thing.
 renamed to config.py (aka: sarra.config) and exercising it with
-sr.py 
+sr.py.  It is now a complete replacement.
 
 Thinking about replacing sr_consumer with a new class that implements the
 General Algorithm describe in `Concepts <Concepts.rst#the-general-algorithm>`
 this happenned and became the Flow Module, and *the General Algorithm* got 
-renamed *the Flow Algorithm*
+renamed *the Flow Algorithm*. yes, that is now flow/ class hierarchy.
+The main logic is in __init__, and actual components are sub-classes.
 
 Thinking about just removing the sr\_ prefix from classes for replacements,
 since they are in sarra directory anyways. so have an internal class 
 sarra/instances, sarra/sarra <- replace consumer... This happenned
-and became a place holder for progress.
+and became a place holder for progress, meaning that files with sr_
+prefix in the name, that are not entry-points, indicate v2 code that
+has not yet been retired/replaced.
 
 Added configuration selection to sr.py (e.g. subscribe/\*) and 
 *setup*, and *cleanup* options. 
@@ -309,24 +334,139 @@ Now working on sr_poll, which will take a while because it involve refactoring: 
 sr_ftp, sr_sftp into the transfer module
 
 
+in Flux
+~~~~~~~
+
+Started on sr_subscribe, which, in the old version, is a base class for all other components,
+but in v3 is just the first component that actually downloads data. So encountering all
+issues with data download, and plugins that do interesting things.
+
+plugin compatiblity under review... decided to re-write the accel_* plugins for v3, and
+change the API because the v2 one has fundamental deficiencies:
+
+* the do_get api deals with failure by raising an exception... there is no checking
+  of return codes on built-in routines...  It is possiby taken care of by try/except, 
+  but would prefer for a normal program flow to be able to trace and
+  report when an i/o failure happens (keep try/except to as small a scale as we can.)
+
+* there is a highly... idiosyncratic nature of the do_get, for example in the v2 accel_scp,
+  where it calls do_get, and then decides not to run and falls through to the built-in 
+  one. This logic is rarely helpful, difficult to explain, and confusing to diagnose
+  in practice.
+
+re-implemented to have conventional return value as the number of bytes transferred,
+and if they differ, that signals an issue.
+
+Have re-written accel_wget, and accel_scp to the new api... working through static-flow
+to test them. There is also logic to spot v2 invocations of them, and replace with v3
+in the configuration.
 
 
 
-FIXME
------
+TODO
+~~~~
 
-FIXME are things left to the side that need to be seen to.
+* many use cases of sr_subscribe. this part is hairy.
 
-* changed behaviour of 'sr list' , 'sr list examples' needs to be documented.
+* sr_sarra should be straightforward once sr_subscribe is done.
+  might be zero effort.
 
-* new command 'sr show' needs to be documented. 
+* sr_sender send logic will then need to be exercised.
+  last really hairy code.
+
+* End of hard part, 
+
+* likely run code lint thing to fix indentation and PEP style.
+
+* cleanup entry points: sr_audit, sr_tailf, sr_log2save, 
+
+* all non entry_point sr_*.py files can be removed.
+  remove sum sub-directory. sr_util.py
+
+* migrate sr_credentials.py to sarra/credentials.py.
+
+* migrate sr_xattr.py to sarra/xattr.py
+
+* test with dynamic-flow.
+
+* Adjust Programmer's guide to reflect new API.
+
+* update documentation... change everything to use sr3 entry point?
+  (See transition point below.)
+
+
+Not Baked/Thinking
+~~~~~~~~~~~~~~~~~~
+
+Structural code things that are not settled, may change.
+Probably need to be settled before having anyone else dive in.
 
 * scopable properties for internal classes, like they exist for plugins.
+
+* perhaps move the whole plugin thing up a level (get rid of directory)
+  so Plugin becomes a class instantiated in sarra/__init__.py... puts
+  plugins and built-in code on a more even level... for example how
+  do plugin transfer protocols work?  thinking...
 
 * took the code required to implement set_newMessageFields verbatim from v2.
   It is pretty hairy... perhaps turn into a plugin, to get it out of the 
   main code?  Don't think it will ever go away.  It is fairly ugly, but 
   very useful and heavily used in existing configs. probably OK. 
+
+* tables thinking about *onfly* and *data* checksums... think about how
+  they need to interact with do_get/do_put plugins, and how they need
+  to be validated. (do we flag an error if onfly does not match? etc...)
+  philosophically to be examined.
+
+* until all components are ported, will not try to fix dynamic_flow. 
+
+* As you get stuff working, see if we can work backward to fix
+  v2wrapper to get back compatibility, say for do_* routines and such.
+
+* consider transition, life with both versions... should sr.py --> sr3.py ?
+  should we have a separate debian package with transition entry points
+  (sr_subscribe and friends only included in compat package, and all)
+  interactivity natively only happens through sr3?
+
+* changing recovery model, so that all retry/logic is in main loop,
+  and moth just returns immediately.  Point being could have multiple
+  gathers for multiple upstreams, and get messages from whichever is
+  live...
+  also end up with a single loop that way... cleaner.
+
+* think about API by sub-classing flow... and having it auto-integrate
+  with sr entry point... hmm... likely look at this when updating
+  Programmer's Guide.
+
+
+
+FIXME/Deferred
+~~~~~~~~~~~~~~
+
+The point of the main v3 work is to get a re-factor done to the point where
+the code is understandable to new coders, so that tasks can be assigned.
+This section includes a mix of tasks that can hopefully be assigned, 
+
+FIXME are things left to the side that need to be seen to.
+
+
+* **RELEASE BLOCKER** hairy.
+  sr_watch does not batch things in prefetch lumps. It just dumps an entire tree.
+  This will need to be re-wored before release into an iterator style approach.
+  so if you start in a tree with a million files, it will scan the entire million
+  and present them as a single in memory worklist.  This will have performance
+  problems.  want to incrementally proceed though lists one 'prefetch' batch
+  at a time.
+
+* logging using __name__ sometimes ends up claiming to be from the wrong file.
+  example::  
+
+    2020-08-16 01:31:52,628 [INFO] sarra.sr_credentials set_newMessageFields FIXME new_dir=/home/peter/sarra_devdocroot/download
+
+  set_newMessageFields is in config.py not sr_credentials... why it is doing that?
+  Likely wait until all legacy code is replaced before tackling this.
+  if this doesn't get fixed, then make it a bug report.
+
 
 Incompatibilities
 -----------------
@@ -354,6 +494,7 @@ breaking changes:
   these do_get and do_put cases, that is quite counter productive. so instead have a calling signature
   identical to built-in protocol get/put... src_file, dst_file, src_offset, dst_offset, len )
 
+
 Features
 --------
 
@@ -369,6 +510,10 @@ Features
 * API access to flows. (so can build entirely new programs in python by subclassing.)
 
 * sr ability to select multiple components and configurations to operate on.
+
+* sr list examples is now used to display examples separate from the installed ones.
+
+* sr show is now used to display the parsed configuration.
 
 * messages are acknowledged more quickly, should help with throughput.
 
