@@ -24,7 +24,6 @@ class Report(Flow):
 
      def __init__( self ):
 
-         logger.error('hoho... report!')
          self.plugins['load'].append('sarra.plugin.gather.message.Message')
          self.plugins['load'].append('sarra.plugin.post.message.Message')
          Report.assimilate(self)

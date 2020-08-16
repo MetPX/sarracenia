@@ -175,11 +175,11 @@ class V2Wrapper(Plugin):
         global logger
  
         logging.basicConfig( format=o.logFormat, level=getattr(logging, o.logLevel.upper()) )
-        logger.info('logging: fmt=%s, level=%s' % ( o.logFormat, o.logLevel ) )
+        #logger.info('logging: fmt=%s, level=%s' % ( o.logFormat, o.logLevel ) )
  
         # FIXME, insert parent fields for v2 plugins to use here.
         self.logger=logger
-        logger.info('v2wrapper init start')
+        #logger.info('v2wrapper init start')
 
         self.state_vars=[]
 
@@ -203,7 +203,7 @@ class V2Wrapper(Plugin):
         
         unsupported_v2_events =  [ 'do_download', 'do_get', 'do_put', 'do_send' ]
         for e in o.v2plugins:
-            logger.info('resolving: %s' % e)
+            #logger.info('resolving: %s' % e)
             for v in o.v2plugins[e]:
                 if e in unsupported_v2_events:
                      logger.error('v2 plugin conversion required, %s too different in v3' % e )
@@ -219,10 +219,10 @@ class V2Wrapper(Plugin):
         self.o.instance = self.o.no
         self.o.logger = self.logger
 
-        logger.info('v2wrapper init done')
+        #logger.info('v2wrapper init done')
 
     def declare_option(self,option):
-        logger.info('v2plugin option: %s declared' % option)
+        #logger.info('v2plugin option: %s declared' % option)
 
         self.state_vars.append(option)
 
@@ -244,13 +244,11 @@ class V2Wrapper(Plugin):
              return True
 
         ok,script = sarra.config.config_path('plugins',path,mandatory=True,ctype='py')
-        if ok:
-            logger.info("installing %s %s" % (opname, script ) )
-        else:
+        if not ok:
             logger.error("installing %s %s failed: not found " % (opname, path) )
             return False
 
-        logger.info('installing: %s %s' % ( opname, path ) )
+        #logger.info('installing: %s %s' % ( opname, path ) )
 
         c1=copy.deepcopy(vars(self))
 
@@ -275,7 +273,7 @@ class V2Wrapper(Plugin):
             pcv = eval( 'vars('+ self.v2plugin +')' )
             for when in sarra.config.Config.v2entry_points:
                 if when in pcv:
-                    logger.info("v2 registering %s from %s" % ( when, path ) )
+                    #logger.info("v2 registering %s from %s" % ( when, path ) )
                 
                     # 2020/05/22. I think the commented exec can be removed.
                     #FIXME: this breaks things horrible in v3. I do not see the usefulness even in v2.
@@ -294,7 +292,7 @@ class V2Wrapper(Plugin):
   
         c2=vars(self)
         c12diff = list( set(c2) - set(c1) ) 
-        logger.error('init added: +%s+ to %s' % (c12diff, self.state_vars) )
+        #logger.error('init added: +%s+ to %s' % (c12diff, self.state_vars) )
         if len(c12diff) > 0 :
             self.state_vars.extend(c12diff)
 

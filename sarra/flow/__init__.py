@@ -106,13 +106,13 @@ class Flow:
 
        subclass=None
        subclass_names=[]
-       logger.debug( 'flow.__subclasses__() returns: %s' % Flow.__subclasses__() )
+       #logger.debug( 'flow.__subclasses__() returns: %s' % Flow.__subclasses__() )
        for sc in Flow.__subclasses__() :
            subclass_names.append(sc.name(self))
            if self.o.program_name == sc.name(self):
               subclass=sc
 
-       logger.info( 'valid flows: %s' % subclass_names )
+       #logger.info( 'valid flows: %s' % subclass_names )
        if subclass is None:
            logger.critical( 'unknown flow. valid choices: %s' % subclass_names )
            return
@@ -125,7 +125,7 @@ class Flow:
        #     setattr( self.o, a, getattr(cfg,a) )
 
        logging.basicConfig( format=self.o.logFormat, level=getattr(logging, self.o.logLevel.upper()) ) 
-       logger.debug( '%s logLevel set to: %s ' % ( me, self.o.logLevel ) )
+       #logger.debug( '%s logLevel set to: %s ' % ( me, self.o.logLevel ) )
    
        # override? or merge... hmm...
 
@@ -170,15 +170,15 @@ class Flow:
     
     def loadPlugins(self, plugins_to_load):
 
-        logger.info( 'plugins to load: %s' % ( plugins_to_load ) )
+        #logger.info( 'plugins to load: %s' % ( plugins_to_load ) )
         for c in plugins_to_load: 
             plugin = sarra.plugin.load_library( c, self.o )
-            logger.info( 'plugin loading: %s an instance of: %s' % ( c, plugin ) )
+            #logger.info( 'plugin loading: %s an instance of: %s' % ( c, plugin ) )
             for entry_point in sarra.plugin.entry_points:
                 if hasattr( plugin, entry_point ):
                     fn = getattr( plugin, entry_point )
                     if callable(fn):
-                        logger.info( 'registering %s/%s' % (c, entry_point))
+                        #logger.info( 'registering %s/%s' % (c, entry_point))
                         if entry_point in self.plugins:
                            self.plugins[entry_point].append(fn)
                         else:
@@ -203,7 +203,7 @@ class Flow:
                 
                     self.plugins[s][schemed_entry_point] = fn
                      
-        logger.info( 'plugins initialized')
+        #logger.info( 'plugins initialized')
         self.o.check_undeclared_options()
  
     def _runPluginsWorklist(self,entry_point):
@@ -424,7 +424,8 @@ class Flow:
     def report( self ):
         # post reports
         # apply on_report plugins
-        logger.info('unimplemented')
+        #logger.info('unimplemented')
+        pass
 
 
 

@@ -73,7 +73,7 @@ class Plugin:
 
         logging.basicConfig( format=self.o.logFormat, level=getattr(logging, self.o.logLevel.upper()) )
 
-        logger.info( 'intializing %s' % self.name )
+        #logger.info( 'intializing %s' % self.name )
         pass
 
 # FIXME:
@@ -258,7 +258,7 @@ class Plugin:
 
 def load_library(factory_path,options):
 
-    logger.info( 'load_plugin: %s' % factory_path )
+    #logger.debug( 'load_plugin: %s' % factory_path )
     packagename, classname = factory_path.rsplit('.', 1)
     module = importlib.import_module(packagename)
     class_ = getattr(module, classname)

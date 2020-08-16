@@ -108,7 +108,7 @@ class AMQP(Moth):
 
         logging.basicConfig( format=self.props['logFormat'], level=getattr(logging, self.props['logLevel'].upper()) )
 
-        logger.debug( '%s logLevel set to: %s ' % ( me, self.props['logLevel'] ) )
+        #logger.debug( '%s logLevel set to: %s ' % ( me, self.props['logLevel'] ) )
         if self.is_subscriber: #build_consumer
            self.__getSetup()
            return

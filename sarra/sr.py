@@ -738,7 +738,7 @@ class sr_GlobalState:
           put all the ones that do not match in leftovers.
         """
            
-        logging.debug( 'starting match_patterns with: %s' % patterns ) 
+        #logging.debug( 'starting match_patterns with: %s' % patterns ) 
         self.filtered_configurations=[]
         self.leftovers=[]
         leftover_matches={}
@@ -805,8 +805,8 @@ class sr_GlobalState:
                           self.filtered_configurations.append(fcc)
 
 
-        logging.debug( 'match_patterns result filtered_configurations: %s' % self.filtered_configurations ) 
-        logging.debug( 'match_patterns result leftovers: %s' % self.leftovers ) 
+        #logging.debug( 'match_patterns result filtered_configurations: %s' % self.filtered_configurations ) 
+        #logging.debug( 'match_patterns result leftovers: %s' % self.leftovers ) 
 
     # FIXME: this should be in config.py
     @property

@@ -41,7 +41,6 @@ class Post(Flow):
 
      def __init__( self ):
 
-         logger.info('polling!')
          self.plugins['load'].append('sarra.plugin.gather.file.File')
          self.plugins['load'].append('sarra.plugin.post.message.Message')
          Post.assimilate(self)

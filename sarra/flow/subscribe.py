@@ -24,8 +24,6 @@ class Subscribe(Flow):
 
     def __init__( self ):
 
-        logger.error('hoho... shoveling! options: %s ' % self.o )
-        self.o.dump()
         self.plugins['load'].append('sarra.plugin.gather.message.Message')
 
         if hasattr(self.o,'post_exchange'):

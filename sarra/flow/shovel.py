@@ -24,7 +24,6 @@ class Shovel(Flow):
 
      def __init__( self ):
 
-         logger.error('hoho... shoveling!')
          self.plugins['load'].append('sarra.plugin.gather.message.Message')
          self.plugins['load'].append('sarra.plugin.post.message.Message')
          Shovel.assimilate(self)

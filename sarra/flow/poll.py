@@ -57,7 +57,6 @@ class Poll(Flow):
 
     def __init__( self ):
 
-        logger.info('polling!')
         self.plugins['load'].append('sarra.plugin.line_mode.Line_Mode')
         self.plugins['load'].append('sarra.plugin.post.message.Message')
         Poll.assimilate(self)

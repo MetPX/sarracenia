@@ -781,7 +781,7 @@ class Config:
                v = line[1].replace('.py','',1)
                if ( v in convert_to_v3[k] ):
                    line=convert_to_v3[k][v]
-                   logger.info('Converting \"%s\" to v3: \"%s\"' % ( l, line ) )
+                   #logger.info('Converting \"%s\" to v3: \"%s\"' % ( l, line ) )
    
            line = list( map( lambda x : self._varsub(x), line ) )
            k=line[0]
