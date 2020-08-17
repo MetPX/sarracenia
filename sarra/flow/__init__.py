@@ -440,57 +440,67 @@ class Flow:
                 os.makedirs(msg['new_dir'],0o775,True)
             except Exception as ex:
                 logger.warning( "making %s: %s" % ( newdir, ex ) )
+
+        logger.debug( "data inlined with message, no need to download" )
+        path = msg['new_dir'] + os.path.sep + msg['new_file']
+        #path = msg['new_relPath']
+
         try:
-            logger.debug( "data inlined with message, no need to download" )
-            path = msg['new_dir'] + os.path.sep + msg['new_file']
-            #path = msg['new_relPath']
             f = os.fdopen(os.open( path, os.O_RDWR | os.O_CREAT), 'rb+')
-            if msg[ 'content' ][ 'encoding' ] == 'base64':
-                data = b64decode( msg[ 'content' ]['value'] ) 
-            else:
-                data = msg[ 'content' ]['value'].encode('utf-8')
+        except Exception as ex:
+            logger.warning( "could not open %s to write: %s" % ( path, ex ) )
+            return False
+   
+        if msg[ 'content' ][ 'encoding' ] == 'base64':
+            data = b64decode( msg[ 'content' ]['value'] ) 
+        else:
+            data = msg[ 'content' ]['value'].encode('utf-8')
 
-            if msg['integrity']['method'] == 'cod':
-                algo_method = msg['integrity']['value']
-            else:
-                algo_method = msg['integrity']['method']
+        if msg['integrity']['method'] == 'cod':
+            algo_method = msg['integrity']['value']
+        else:
+            algo_method = msg['integrity']['method']
 
-            onfly_algo = sarra.plugin.integrity.Integrity( algo_method )
-            data_algo = sarra.plugin.integrity.Integrity( algo_method )
-            onfly_algo.set_path(path)
-            data_algo.set_path(path)
+        onfly_algo = sarra.plugin.integrity.Integrity( algo_method )
+        data_algo = sarra.plugin.integrity.Integrity( algo_method )
+        onfly_algo.set_path(path)
+        data_algo.set_path(path)
             
-            onfly_algo.update(data)
-            #msg.onfly_checksum = "{},{}".format(onfly_algo.registered_as(), onfly_algo.get_value())
+        onfly_algo.update(data)
+        #msg.onfly_checksum = "{},{}".format(onfly_algo.registered_as(), onfly_algo.get_value())
 
-            msg['onfly_checksum'] = { 'method': algo_method, 'value': onfly_algo.get_value()  }
+        msg['onfly_checksum'] = { 'method': algo_method, 'value': onfly_algo.get_value()  }
 
+        try:
             for p in self.plugins['on_data']:
                 data = p(data)
-            data_algo.update(data)
 
-            #FIXME: If data is changed by plugins, need to update content header.
-            #       current code will reproduce the upstream message without mofification.
-            #       need to think about whether that is OK or not.
+        except Exception as ex:
+            logger.warning( "plugin failed: %s" % ( p, ex ) )
+            return False
+   
+        data_algo.update(data)
 
-            msg['data_checksum'] = { 'method': algo_method, 'value': data_algo.get_value()  }
+        #FIXME: If data is changed by plugins, need to update content header.
+        #       current code will reproduce the upstream message without mofification.
+        #       need to think about whether that is OK or not.
 
-            msg['_DeleteOnPost'].extend( [ 'onfly_checksum', 'data_checksum' ] )
+        msg['data_checksum'] = { 'method': algo_method, 'value': data_algo.get_value()  }
 
+        msg['_deleteOnPost'].extend( [ 'onfly_checksum', 'data_checksum' ] )
 
-            
+        try:
             f.write( data )
             f.truncate()
             f.close()
+            self.set_local_file_attributes( path, msg)
 
-            self.set_local_file_attributes( self, msg['new_dir'] + os.path.sep + msg['new_file'], msg)
+        except Exception as ex:
+            logger.warning( "failed writing and finalizing: %s" % ( path, ex ) )
+            return False
+   
+        return True
 
-            return True
-
-        except Exception as ex :
-            logger.info("inlined data corrupt, try downloading.")
-            logger.debug('Exception details:', exc_info=True)
-        return False
 
     def do_download(self):
         """
@@ -502,6 +512,8 @@ class Flow:
         """
         
         for msg in self.worklist.incoming:
+
+            # FIXME: decision of whether to download, goes here.
             if 'content' in msg.keys():
                 if self.write_inline_file(msg):
                     self.worklist.ok.append(msg)

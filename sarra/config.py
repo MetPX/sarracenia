@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#s!/usr/bin/env python3
 
 #
 # This file is part of Sarracenia.
@@ -72,7 +72,7 @@ list_options = []
 
 size_options = [ 'blocksize', 'bufsize', 'bytes_per_second', 'inline_max' ]
 
-str_options = [ 'admin', 'broker', 'destination', 'directory', 'exchange', 'exchange_suffix', 'events', 'feeder', 'path', \
+str_options = [ 'admin', 'broker', 'destination', 'directory', 'exchange', 'exchange_suffix', 'events', 'feeder', 'path', 
     'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange', 'post_exchange_suffix', 'post_topic_prefix', 
     'report_exchange', 'strip', 'suppress_duplicates', 'suppress_duplicates_basis', 'topic_prefix'  ]
 
@@ -784,7 +784,6 @@ class Config:
                    #logger.info('Converting \"%s\" to v3: \"%s\"' % ( l, line ) )
    
            line = list( map( lambda x : self._varsub(x), line ) )
-           k=line[0]
            if len(line) == 1: 
                v = True
            else:
@@ -853,7 +852,8 @@ class Config:
                else:
                    setattr( self, k, getattr(self,line[0]).append( ' '.join(line[1:]) ) )
            elif k in str_options :
-               setattr( self, k, ' '.join(line[1:]) )
+               v = ' '.join(line[1:])
+               setattr( self, k, v )
            else:
                #FIXME: with _options lists for all types and addition of declare, this is probably now dead code.
                #logger.info('FIXME: zombie is alive? %s' % line )
