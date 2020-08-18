@@ -27,8 +27,11 @@
 import os
 import logging
 
+import functools
 
 from abc import ABCMeta, abstractmethod
+
+from base64 import b64encode
 
 
 logger = logging.getLogger( __name__ )
@@ -37,18 +40,10 @@ class Integrity:
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def __init__(self,method):
-        #default established
-        method=None
-        default='sha512'
+    def __init__(self,method='sha512'):
         for sc in Integrity.__subclasses__():
             if method == sc.__name__.lower():
                break
-            if 'sha512' == sc.__name__.lower():
-               default_sc = sc
-
-        if method is None:
-           sc = default_sc
 
         sc.__init__(self)
    
@@ -66,14 +61,16 @@ class Integrity:
        """
        self.set_path(path)
        with open(path,'rb') as f:
-           for data in iter(partial(f.read, 1024*1024), b''):
+           for data in iter(functools.partial(f.read, 1024*1024), b''):
              self.update(data)
 
-#   @abstractmethod
-#   def get_value(self):
-#       """
-#       return the current value of the checksum calculation.
-#       """
+    @abstractmethod
+    def get_value(self):
+        """
+        return the current value of the checksum calculation.
+        """
+        return b64encode(self.filehash.digest()).decode('utf-8')
+
 #
 #   @abstractmethod
 #   def registered_as(self):
@@ -92,18 +89,6 @@ class Integrity:
 #       """
 #       update the checksum based on the given bytes from the file (sequential access assumed.)
 #       """
-
-##sum_dir = os.path.dirname( os.path.abspath( __file__ ) )
-#print( 'path: %s' % sum_dir )
-#sums = os.listdir( sum_dir )
-#for s in os.listdir( sum_dir ):
-#   if not s[-3:] == '.py':
-#       continue
-#   if s == '__init__.py':
-#       continue
-#
-#   sc='sarra.plugin.integrity.' + s[:-3]
-#   exec( 'import ' + sc )
 
 import sarra.plugin.integrity.arbitrary
 import sarra.plugin.integrity.md5name

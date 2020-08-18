@@ -3,7 +3,6 @@
 from hashlib import md5
 
 from sarra.plugin.integrity import Integrity
-from base64 import b64decode, b64encode
 
 class Md5(Integrity):
       """
@@ -22,9 +21,6 @@ class Md5(Integrity):
             v2name.
           """
           return 'd'
-
-      def get_value(self):
-          return b64encode(self.filehash.digest()).decode('utf-8')
 
       def set_path(self,path):
           self.filehash = md5()

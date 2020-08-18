@@ -3,8 +3,6 @@
 from hashlib import sha512
 
 from sarra.plugin.integrity import Integrity
-from base64 import b64decode, b64encode
-
 
 # ===================================
 # checksum_s class
@@ -20,9 +18,6 @@ class Sha512(Integrity):
 
       def __init__(self):
          Sha512.assimilate(self)
-
-      def get_value(self):
-          return b64encode(self.filehash.digest()).decode('utf-8')
 
       def registered_as():
           return 's'

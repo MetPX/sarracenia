@@ -47,6 +47,7 @@ default_options = {
   'delete' : False,
   'documentRoot' : None,
   'inflight' : None,
+  'notify_only' : False,
   'post_documentRoot' : None,
   'post_baseDir' : None,
   'post_baseUrl' : None,

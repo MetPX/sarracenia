@@ -7,6 +7,8 @@ import os
 # v3 plugin architecture...
 import sarra.plugin
 import sarra.plugin.integrity
+
+import stat
 import time
 import types
 import urllib.parse
@@ -34,6 +36,7 @@ logger = logging.getLogger( __name__ )
 
 default_options = {  
   'accept_unmatched' : False,
+  'attempts' : 3,
   'bytes_per_second' : None,
   'download'     : False,
   'housekeeping' : 30,     
@@ -340,14 +343,16 @@ class Flow:
 
                last_time = now
 
-
-    def set_new(self,m, maskDir, maskFileOption, mirror, strip, pstrip, flatten):
-        """
+    """
+    def set_new(self, m, maskDir, maskFileOption, mirror, strip, pstrip, flatten):
+        ""
           Add new_ fields.. indicating what the destination of a transfer is.
-        """
+        ""
         m['new_dir'] = maskDir
         m['new_file'] = os.path.basename(m['relPath'])
+
         m['_deleteOnPost'].extend( [ 'new_dir', 'new_file' ] )
+    """
  
 
     def filter(self):
@@ -501,6 +506,109 @@ class Flow:
    
         return True
 
+    def compute_local_checksum(self):
+
+        if supports_extended_attributes:
+            try:
+                x = sr_xattr( msg['new_path'] )
+                s = x.get( 'integrity' )
+           
+                if s:
+                   msg['local_integrity'] = x.get( 'integrity' )
+                   msg['_deleteOnPost'].extend( [ 'local_checksum' ] )
+                   return
+
+            except:
+                pass
+
+        local_integrity = sarra.plugin.integrity.Integrity( msg['integrity']['method'] )
+        local_integrity.update_file( msg['new_path'] )
+        msg['local_integrity'] = { 'method':  msg['integrity']['method'], 'value': local_integrity.get_value()  }
+        msg['_deleteOnPost'].extend( [ 'local_integrity' ] )
+
+
+    def file_should_be_downloaded(self,msg):
+        """
+          determine whether a comparison of local_file and message metadata indicates that it is new enough
+          that writing the file locally is warranted.
+
+          return True to say downloading is warranted.
+
+             False if the file in the message represents the same or an older version that what is corrently on disk.
+
+          origin: refactor & translation of v2: content_should_not_be downloaded
+        """
+        # FIXME... 
+        if not os.path.isfile(msg['new_path']):
+            return True
+
+        # assert 
+
+        lstat = os.stat( msg['new_path'] )
+        fsiz  = lstat[stat.ST_SIZE]
+
+        # FIXME... local_offset... offset within the local file... partitioned... who knows?
+        #   part of partitioning deferral.
+        #end   = self.local_offset + self.length
+        end = msg['size']
+
+        # compare sizes... if (sr_subscribe is downloading partitions into taget file) and (target_file isn't fully done)
+        # This check prevents random halting of subscriber (inplace on) if the messages come in non-sequential order
+        # target_file is the same as new_file unless the file is partitioned.
+        # FIXME If the file is partitioned, then it is the new_file with a partition suffix.
+        #if ('self.target_file == msg['new_file'] ) and ( fsiz != msg['size'] ):
+
+        if ( fsiz != msg['size'] ):
+            logger.debug("%s file size different, so cannot be the same" % (fname ) )
+            return True
+
+       # compare dates...
+
+        if 'mtime' in msg:
+            new_mtime = timestr2flt(msg[ 'mtime' ])
+            old_mtime=0.0
+
+            if self.o.preserve_time :
+               old_mtime = lstat.st_mtime
+            elif supports_extended_attributes:
+               try:
+                   x = sr_xattr( msg['new_path'] )
+                   old_mtime = timestr2flt(x.get( 'mtime' ))
+               except:
+                   pass
+
+            if new_mtime <= old_mtime:
+               logger.debug("%s new version not newer" % ( msg['new_path'] ) )
+               if self.o.log_reject:
+                   logger.info("rejected: mtime not newer %s " % ( msg['new_path'] ) )
+               return False
+            else:
+               logger.debug("{} new version is {} newer (new: {} vs old: {} )".format( msg['new_path'], new_mtime-old_mtime, new_mtime, old_mtime ))
+
+        if msg['integrity']['method']  in [ 'random', 'md5name', 'cod'] :
+            logger.debug("content_match %s sum 0/n/z never matches" % (msg['new_path'] ) )
+            return True
+
+        if end > fsiz :
+           logger.debug("content_match file not big enough... considered different")
+           return True
+
+        try   : self.compute_local_checksum(msg)
+        except:
+                logger.debug("something went wrong when computing local checksum... considered different")
+                return True
+
+        logger.debug( "checksum in message: %s vs. local: %s" % ( self.local_checksum, self.checksum ) )
+
+        if msg['local_integrity'] == msg['integrity']:
+            if self.o.log_reject:
+                 logger.info( "rejected: same checksum %s " % (fname ) )
+            return False
+        else:
+            return True
+
+
+
 
     def do_download(self):
         """
@@ -511,9 +619,53 @@ class Flow:
 
         """
         
+        if self.o.notify_only:
+           self.worklist.ok = self.worklist.incoming
+           self.worklist.incoming = []
+           return
+
         for msg in self.worklist.incoming:
 
+            new_path = msg['new_dir'] + os.path.sep + msg['new_file']
+
+            # establish new_inflight_path which is the file to download into initially.
+            if self.o.inflight == None or (('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' )):
+               new_inflight_path= msg['new_file']
+            elif type(self.o.inflight) == str :
+               if self.o.inflight == '.' :
+                   new_inflight_path = '.' + new_file
+               elif self.o.inflight[-1] == '/' :
+                   if not os.path.isdir(self.o.inflight):
+                       try:  
+                          os.mkdir(self.o.inflight)
+                          os.chmod(self.o.inflight,self.o.chmod_dir)
+                       except:pass
+                   new_inflight_path  = self.o.inflight + new_file
+               elif self.o.inflight[0] == '.' :
+                   new_inflight_path  = new_file + self.o.inflight
+            else:
+                #inflight is interval: minimum the age of the source file, as per message.
+                logger.error('interval inflight setting: %s, not for remote.' % self.o.inflight )
+                # FIXME... what to do?                
+                self.worklist.rejected.append(msg)
+                continue
+
+            msg[ 'new_inflight_path' ] = new_inflight_path
+            msg[ 'new_path' ] = new_path
+            msg['_deleteOnPost'].extend( [ 'new_path', 'new_inflight_path' ] )
+            # assert new_inflight_path is set.
+
+            if os.path.exists(msg['new_inflight_path']):
+                 logger.warning('inflight file already exists. race condition, deferring transfer of %s' % msg['new_path'] )
+                 self.worklist.failed.append(msg)
+                 continue
+
             # FIXME: decision of whether to download, goes here.
+            if not self.file_should_be_downloaded(msg):
+                self.worklist.rejected.append(msg)
+                continue
+
+            # am downloading content.
             if 'content' in msg.keys():
                 if self.write_inline_file(msg):
                     self.worklist.ok.append(msg)
@@ -525,12 +677,18 @@ class Flow:
                 if True: #try: 
                     self.scheme = parsed_url.scheme
 
-                    path = msg['new_dir'] + os.path.sep + msg['new_file']
-                    ok = self.download( msg, self.o )
+
+                    i=1
+                    while i <= self.o.attempts :
+                        ok = self.download( msg, self.o )
+                        i = i+1
+                        if not ok:
+                           logger.warning("downloading again, attempt %d" % i)
                     if ok:
-                        logger.info("downloaded ok" )
+                        logger.info("downloaded ok: %s" % new_path )
                         self.worklist.ok.append(msg)
                     else:
+                        logger.warning("gave up downloading for now" )
                         self.worklist.failed.append(msg)
 
                 else: #except Exception as ex:
@@ -568,7 +726,7 @@ class Flow:
         cdir        = '/'.join(token[:-1])
         remote_file = token[-1]
         urlstr      = msg['baseUrl'] + '/' + msg['relPath']
-        new_lock    = ''
+        new_inflight_path    = ''
 
         new_dir     = msg['new_dir']
         new_file    = msg['new_file']
@@ -637,31 +795,31 @@ class Flow:
                 self.proto.set_sumalgo(msg['integrity']['method'])
 
                 if options.inflight == None or (('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' )):
-                   new_lock=new_file
+                   new_inflight_path=new_file
                 elif type(options.inflight) == str :
                    if options.inflight == '.' :
-                       new_lock = '.' + new_file
+                       new_inflight_path = '.' + new_file
                    elif options.inflight[-1] == '/' :
                        try:  
                           os.mkdir(options.inflight)
                           os.chmod(options.inflight,options.chmod_dir)
                        except:pass
-                       new_lock  = options.inflight + new_file
+                       new_inflight_path  = options.inflight + new_file
                    elif options.inflight[0] == '.' :
-                       new_lock  = new_file + options.inflight
+                       new_inflight_path  = new_file + options.inflight
                 else:
                     logger.error('inflight setting: %s, not for remote.' % options.inflight )
 
-                self.proto.set_path( new_lock )
-                len_written = self.get( msg, remote_file, new_lock, remote_offset, msg['local_offset'], block_length)
+                self.proto.set_path( new_inflight_path )
+                len_written = self.get( msg, remote_file, new_inflight_path, remote_offset, msg['local_offset'], block_length)
 
                 if ( len_written == block_length ):
-                       if ( new_lock != new_file ):
+                       if ( new_inflight_path != new_file ):
                            if os.path.isfile(new_file) : 
                                os.remove(new_file)
-                           os.rename(new_lock, new_file)
+                           os.rename(new_inflight_path, new_file)
                 else:
-                    logger.error('incomplete download only %d of expected %d bytes for %s' % (len_written, block_length, new_lock) )
+                    logger.error('incomplete download only %d of expected %d bytes for %s' % (len_written, block_length, new_inflight_path) )
 
                 logger.debug('proto.checksum={}, msg.sumstr={}'.format(self.proto.checksum, msg['integrity']))
                 msg['onfly_checksum'] = self.proto.get_sumstr()
@@ -696,8 +854,8 @@ class Flow:
     
                 logger.error("Download failed 3 %s" % urlstr)
                 logger.debug('Exception details: ', exc_info=True)
-                if os.path.isfile(new_lock) :
-                    os.remove(new_lock)
+                if os.path.isfile(new_inflight_path) :
+                    os.remove(new_inflight_path)
                 return False
         return True
 
@@ -732,7 +890,7 @@ class Flow:
         local_file = os.path.basename(local_path).replace('\\','/')
         new_dir    = msg['new_dir'].replace('\\','/')
         new_file   = msg['new_file'].replace('\\','/')
-        new_lock   = None
+        new_inflight_path   = None
 
         try:    curdir = os.getcwd()
         except: curdir = None
@@ -832,21 +990,21 @@ class Flow:
                 if inflight == None or (('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' )) :
                    self.put(msg, local_file, new_file, offset, new_offset, msg.length)
                 elif inflight == '.' :
-                   new_lock = '.'  + new_file
-                   self.put(msg, local_file, new_lock )
-                   self.proto.rename(new_lock, new_file)
+                   new_inflight_path = '.'  + new_file
+                   self.put(msg, local_file, new_inflight_path )
+                   self.proto.rename(new_inflight_path, new_file)
                 elif inflight[0] == '.' :
-                   new_lock = new_file + inflight
-                   self.self.put(msg, local_file, new_lock )
-                   proto.rename(new_lock, new_file)
+                   new_inflight_path = new_file + inflight
+                   self.self.put(msg, local_file, new_inflight_path )
+                   proto.rename(new_inflight_path, new_file)
                 elif options.inflight[-1] == '/' :
                    try :
                           self.proto.cd_forced(775,new_dir+'/'+options.inflight)
                           self.proto.cd_forced(775,new_dir)
                    except:pass
-                   new_lock  = options.inflight + new_file
-                   self.put(msg, local_file,new_lock)
-                   self.proto.rename(new_lock, new_file)
+                   new_inflight_path  = options.inflight + new_file
+                   self.put(msg, local_file,new_inflight_path)
+                   self.proto.rename(new_inflight_path, new_file)
                 elif inflight == 'umask' :
                    self.proto.umask()
                    self.put(msg, local_file, new_file)
@@ -861,8 +1019,8 @@ class Flow:
         except Exception as err:
 
                 #removing lock if left over
-                if new_lock != None and hasattr(proto,'delete') :
-                   try   : self.proto.delete(new_lock)
+                if new_inflight_path != None and hasattr(proto,'delete') :
+                   try   : self.proto.delete(new_inflight_path)
                    except: pass
 
                 #closing on problem
