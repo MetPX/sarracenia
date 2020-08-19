@@ -343,18 +343,6 @@ class Flow:
 
                last_time = now
 
-    """
-    def set_new(self, m, maskDir, maskFileOption, mirror, strip, pstrip, flatten):
-        ""
-          Add new_ fields.. indicating what the destination of a transfer is.
-        ""
-        m['new_dir'] = maskDir
-        m['new_file'] = os.path.basename(m['relPath'])
-
-        m['_deleteOnPost'].extend( [ 'new_dir', 'new_file' ] )
-    """
- 
-
     def filter(self):
 
         logger.debug('start')
@@ -674,46 +662,25 @@ class Flow:
             else:
                 parsed_url = urllib.parse.urlparse( msg['baseUrl'] )
 
-                if True: #try: 
-                    self.scheme = parsed_url.scheme
+                self.scheme = parsed_url.scheme
 
-
-                    i=1
-                    while i <= self.o.attempts :
-                        ok = self.download( msg, self.o )
-                        i = i+1
-                        if not ok:
-                           logger.warning("downloading again, attempt %d" % i)
-                    if ok:
-                        logger.info("downloaded ok: %s" % new_path )
-                        self.worklist.ok.append(msg)
-                    else:
-                        logger.warning("gave up downloading for now" )
-                        self.worklist.failed.append(msg)
-
-                else: #except Exception as ex:
-                    logger.error("do_download: Could not download" )
+                i=1
+                while i <= self.o.attempts :
+                    ok = self.download( msg, self.o )
+                    i = i+1
+                    if not ok:
+                       logger.warning("downloading again, attempt %d" % i)
+                if ok:
+                    logger.info("downloaded ok: %s" % new_path )
+                    self.worklist.ok.append(msg)
+                else:
+                    logger.warning("gave up downloading for now" )
                     self.worklist.failed.append(msg)
-                     
 
 
         self.worklist.incoming=[]        
 
     # v2 sr_util.py ... generic sr_transport imported here...
-
-    """
-            scheme as per URL standard, the string identifying a protocol before the first colon.
-
-    """
-
-    #def close(self) :
-    #    logger.debug("%s_transport close" % self.scheme)
-
-    #    try    : self.proto.close()
-    #    except : pass
-
-    #    self.cdir  = None
-    #    self.proto = None
 
     # generalized download...
     def download( self, msg, options ):
@@ -1112,98 +1079,6 @@ class Flow:
     # v2 sr_util sr_transport stuff. end.
 
     # v2 subscribe routines start here
-
-    def __do_download__(self,msg):
-        """
-            FIXME: This routine should be deleted. It is just here for memory purposes.  
-            I think it is completely replaced by do_download above...
-        """
-
-        logger.debug("downloading/copying %s (scheme: %s) into %s " % \
-                         (msg.urlstr, msg.url.scheme, msg['new_file']))
-
-         
-
-        # try registered do_download first... might overload defaults
-
-        scheme = msg.url.scheme 
-        try:
-                if   scheme in self.do_downloads :
-                     logger.debug("using registered do_download for %s" % scheme)
-                     do_download = self.do_downloads[scheme]
-                     ok = do_download(self)
-                     # if ok == None  it means that the scheme was one
-                     # of the supported python one (http[s],sftp,ftp[s])
-                     # and the plugin decided to go with the python defaults
-                     if ok != None : return ok
-        except:
-                logger.debug('Exception details:', exc_info=True)
-
-        # try supported hardcoded download
-
-        try :
-                if   scheme in ['http','https'] :
-                     if not hasattr(self,'http_link') :
-                        self.http_link = http_transport()
-                     ok = self.http_link.download(self)
-                     return ok
-
-                elif scheme in ['ftp','ftps'] :
-                     if not hasattr(self,'ftp_link') :
-                        self.ftp_link = ftp_transport()
-                     ok = self.ftp_link.download(self)
-                     return ok
-
-                elif scheme == 'sftp' :
-                     try    : from sr_sftp       import sftp_transport
-                     except : from sarra.sr_sftp import sftp_transport
-                     if not hasattr(self,'sftp_link') :
-                        self.sftp_link = sftp_transport()
-                     ok = self.sftp_link.download(self)
-                     return ok
-
-                elif scheme == 'file' :
-                     ok = file_process(self)
-                     return ok
-
-                # user defined download scripts
-                # if many are configured, this one is the last one in config
-
-                elif self.do_download :
-                     ok = self.do_download(self)
-                     return ok
-
-        except :
-                logger.error("%s/__do_download__: Could not download" % self.program_name)
-                logger.debug('Exception details: ', exc_info=True)
-                if self.reportback:
-                   msg.report_publish(503,"Unable to process")
-
-        if self.reportback: 
-            msg.report_publish(503,"Service unavailable %s" % scheme)
-
-        return False
-
-
-    def get_source_from_exchange(self,exchange):
-        #logger.debug("%s get_source_from_exchange %s" % (self.program_name,exchange))
-
-        source = None
-        if len(exchange) < 4 or not exchange.startswith('xs_') : return source
-
-        # check if source is a valid declared source user
-
-        len_u   = 0
-        try:
-                # look for user with role source
-                for u in self.users :
-                    if self.users[u] != 'source' : continue
-                    if exchange[3:].startswith(u) and len(u) > len_u :
-                       source = u
-                       len_u  = len(u)
-        except: pass
-
-        return source
 
     #=================================
     # determine a file from a relpath
