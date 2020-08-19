@@ -661,19 +661,19 @@ class Flow:
                     self.worklist.rejected.append(msg)
             else:
                 parsed_url = urllib.parse.urlparse( msg['baseUrl'] )
-
                 self.scheme = parsed_url.scheme
 
                 i=1
                 while i <= self.o.attempts :
                     ok = self.download( msg, self.o )
                     i = i+1
-                    if not ok:
-                       logger.warning("downloading again, attempt %d" % i)
-                if ok:
-                    logger.info("downloaded ok: %s" % new_path )
-                    self.worklist.ok.append(msg)
-                else:
+                    if ok: 
+                        logger.info("downloaded ok: %s" % new_path )
+                        self.worklist.ok.append(msg)
+                        break
+                    logger.warning("downloading again, attempt %d" % i)
+                       
+                if not ok:
                     logger.warning("gave up downloading for now" )
                     self.worklist.failed.append(msg)
 
