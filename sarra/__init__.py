@@ -133,3 +133,43 @@ def chunksize_from_str(str_value):
 
     return chunksize
 
+known_report_codes = {
+    201: "Download successful. (variations: Downloaded, Inserted, Published, Copied, or Linked)", 
+    203: "Non-Authoritative Information: transformed during download.", 
+    205: "Reset Content: truncated. File is shorter than originally expected (changed length during transfer) This only arises during multi-part transfers.", 
+    205: "Reset Content: checksum recalculated on receipt.", 
+    304: "Not modified (Checksum validated, unchanged, so no download resulted.)", 
+    307: "Insertion deferred (writing to temporary part file for the moment.)", 
+    417: "Expectation Failed: invalid message (corrupt headers)", 
+    499: "Failure: Not Copied. SFTP/FTP/HTTP download problem", 
+    503: "Service unavailable. delete (File removal not currently supported.)", 
+    503: "Unable to process: Service unavailable", 
+    503: "Unsupported transport protocol specified in posting." 
+}
+
+
+def msg_set_report( msg, code, text=None ):
+    """
+      set message fields to indicate result of action so reports can be generated.
+
+      set is supposed to indicate final message dispositions, so in the case
+      of putting a message on worklist.failed... no report is generated, since
+      it will be retried later.  FIXME: should we publish an interim failure report?
+
+    """
+    
+    if code in known_report_codes:
+        if text is None:
+           text = known_report_codes[code]
+    else:
+        logger.warning('unknown report code supplied: %d:%s' % ( code, text ) )
+        if text is None:
+           text = 'unknown disposition'
+    
+    if not 'report' in msg:
+        msg['report'] =  code
+        msg['message'] =  text
+        msg['_deleteOnPost'].extend( [ 'report', 'message' ] ) 
+    else:
+        msg['report'] = code
+        msg['message'] += text

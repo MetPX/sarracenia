@@ -13,7 +13,7 @@ import time
 import types
 import urllib.parse
 
-from sarra import timestr2flt,timeflt2str
+from sarra import timestr2flt,timeflt2str,msg_set_report
 
 # from sr_util...
 from sarra.sr_xattr import *
@@ -380,6 +380,7 @@ class Flow:
                     filtered_worklist.append(m)
                 elif self.o.log_reject:
                     logger.info( "reject: unmatched pattern=%s" % (url) )
+                    msg_set_report( m,  304, "not modified (filter)" )
                     self.worklist.rejected.append(m)
                 
         self.worklist.incoming=filtered_worklist
@@ -494,7 +495,7 @@ class Flow:
    
         return True
 
-    def compute_local_checksum(self):
+    def compute_local_checksum(self,msg):
 
         if supports_extended_attributes:
             try:
@@ -596,6 +597,67 @@ class Flow:
             return True
 
 
+    def removeOneItem(self,msg):
+        """
+          process an unlink event, returning boolean success.
+        """
+
+        logger.debug("message is to remove %s" % msg['new_file'])
+
+        if not 'delete' in self.o.events and not 'newname' in msg :
+              logger.info("message to remove %s ignored (events setting)" % msg['new_file'])
+              return True
+
+        path = msg['new_dir'] + '/' + msg['new_file']
+
+        ok=True
+        try :
+               if os.path.isfile(path) : os.unlink(path)
+               if os.path.islink(path) : os.unlink(path)
+               if os.path.isdir (path) : os.rmdir (path)
+               logger.info("removed %s" % path)
+        except:
+               logger.error("sr_subscribe/doit_download: could not remove %s." % path)
+               logger.debug('Exception details: ', exc_info=True)
+               ok=False
+
+        return ok
+
+
+    def link1file(self,msg):
+        """        
+          perform a symbolic link of a single file, based on a message, returning boolean success
+
+          imported from v2/subscribe/doit_download "link event, try to link the local product given by message"
+        """
+        logger.debug("message is to link %s to %s" % ( msg['new_file'], msg[ 'link' ] ) )
+        if not 'link' in self.o.events:
+            logger.info("message to link %s to %s ignored (events setting)" %  \
+                                            ( msg['new_file'], msg[ 'link' ] ) )
+            return False
+
+        if not os.path.isdir(msg['new_dir']):
+            try:
+                os.makedirs(msg['new_dir'],0o775,True)
+            except Exception as ex:
+                logger.warning( "making %s: %s" % ( msg['new_dir'], ex ) )
+                logger.debug('Exception details:', exc_info=True)
+
+        ok = True
+        try :
+           path = msg['new_dir'] + '/' + msg['new_file']
+
+           if os.path.isfile(path) : os.unlink(path)
+           if os.path.islink(path) : os.unlink(path)
+           if os.path.isdir (path) : os.rmdir (path)
+           os.symlink( msg[ 'link' ], path )
+           logger.info("%s symlinked to %s " % (msg['new_file'], msg[ 'link' ]) )
+        except:
+           ok = False
+           logger.error("symlink of %s %s failed." % (msg['new_file'], msg[ 'link' ]) )
+           logger.debug('Exception details:', exc_info=True)
+
+        return ok
 
 
     def do_download(self):
@@ -614,6 +676,30 @@ class Flow:
 
         for msg in self.worklist.incoming:
 
+            if 'event' in msg:
+               if 'delete' in msg['event']:
+                   if self.removeOneItem( m ):
+                      msg_set_report( m, 201, 'removed')
+                      self.worklist.ok.append(m)
+                   else:
+                      #FIXME: should this really be queued for retry? or just permanently failed?
+                      # in rejected to avoid retry, but wondering if failed and deferred 
+                      # should be separate lists in worklist...
+                      msg_set_report( m,  500, "remove failed" )
+                      self.worklist.rejected.append(m)
+                   continue
+
+               elif 'link' in msg['event']:
+                   if self.link1file( m ):
+                      msg_set_report( m, 201, 'linked')
+                      self.worklist.ok.append(m)
+                   else:
+                      # as above...
+                      msg_set_report( m,  500, "symlink failed" )
+                      self.worklist.rejected.append(m)
+                   continue
+
+            
             new_path = msg['new_dir'] + os.path.sep + msg['new_file']
 
             # establish new_inflight_path which is the file to download into initially.
@@ -635,6 +721,7 @@ class Flow:
                 #inflight is interval: minimum the age of the source file, as per message.
                 logger.error('interval inflight setting: %s, not for remote.' % self.o.inflight )
                 # FIXME... what to do?                
+                msg_set_report( msg, 503, "invalid reception settings." )
                 self.worklist.rejected.append(msg)
                 continue
 
@@ -644,20 +731,24 @@ class Flow:
             # assert new_inflight_path is set.
 
             if os.path.exists(msg['new_inflight_path']):
+                 #FIXME: if mtime > 5 minutes, perhaps rm it, and continue? what if transfer crashed?
                  logger.warning('inflight file already exists. race condition, deferring transfer of %s' % msg['new_path'] )
                  self.worklist.failed.append(msg)
                  continue
 
             # FIXME: decision of whether to download, goes here.
             if not self.file_should_be_downloaded(msg):
+                msg_set_report( msg, 304, "Not modified 3 - (compared to local file)" )
                 self.worklist.rejected.append(msg)
                 continue
 
             # am downloading content.
             if 'content' in msg.keys():
                 if self.write_inline_file(msg):
+                    msg_set_report( msg, 201, "Download successful (inline content)" )
                     self.worklist.ok.append(msg)
                 else:
+                    msg_set_report( msg, 503, "failed to write inline content" )
                     self.worklist.rejected.append(msg)
             else:
                 parsed_url = urllib.parse.urlparse( msg['baseUrl'] )
@@ -669,6 +760,7 @@ class Flow:
                     i = i+1
                     if ok: 
                         logger.info("downloaded ok: %s" % new_path )
+                        msg_set_report( msg, 201, "Download successful" )
                         self.worklist.ok.append(msg)
                         break
                     logger.warning("downloading again, attempt %d" % i)
@@ -710,8 +802,6 @@ class Flow:
                    logger.warning( "making %s: %s" % ( new_dir, ex ) )
                    logger.debug('Exception details:', exc_info=True)
             os.chdir(new_dir)
-
-        logger.info("FIXME new_dir=%s, new_file=%s" % (new_dir, new_file) )
 
         try :
                 options.destination = msg['baseUrl']

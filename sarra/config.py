@@ -1422,7 +1422,6 @@ class Config:
         # add relPath
 
         if len(token) > 1 :
-           logger.info('FIXME new_dir=%s, token: %s' % (new_dir, token ) )
            new_dir = new_dir + '/' + '/'.join(token[:-1])
 
         if '$' in new_dir :

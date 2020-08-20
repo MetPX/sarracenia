@@ -25,6 +25,7 @@ import urllib.parse
 
 import logging
 
+from sarra import msg_set_report
 
 logger = logging.getLogger( __name__ )
 
@@ -199,6 +200,7 @@ class NoDupe(Plugin):
             else:
                if self.o.log_reject:
                    logger.info("rejected %s" % m['relPath'] )
+               msg_set_report(304,'Not modified 1 (cache check)')
                worklist.rejected.append(m)
 
         worklist.incoming=new_incoming
