@@ -200,7 +200,7 @@ class NoDupe(Plugin):
             else:
                if self.o.log_reject:
                    logger.info("rejected %s" % m['relPath'] )
-               msg_set_report(304,'Not modified 1 (cache check)')
+               msg_set_report(m, 304,'Not modified 1 (cache check)')
                worklist.rejected.append(m)
 
         worklist.incoming=new_incoming

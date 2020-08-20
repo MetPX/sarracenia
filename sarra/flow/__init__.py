@@ -676,27 +676,32 @@ class Flow:
 
         for msg in self.worklist.incoming:
 
+            if ('newname' in msg ) or ( 'oldname' in msg ):
+               logger.warning('rename logic not yet implemented')
+               msg_set_report( m, 503, 'rename unimplemented')
+               self.worklist.rejected.append(m)
+               continue
             if 'event' in msg:
                if 'delete' in msg['event']:
-                   if self.removeOneItem( m ):
-                      msg_set_report( m, 201, 'removed')
-                      self.worklist.ok.append(m)
+                   if self.removeOneItem( msg ):
+                      msg_set_report( msg, 201, 'removed')
+                      self.worklist.ok.append(msg)
                    else:
                       #FIXME: should this really be queued for retry? or just permanently failed?
                       # in rejected to avoid retry, but wondering if failed and deferred 
                       # should be separate lists in worklist...
-                      msg_set_report( m,  500, "remove failed" )
-                      self.worklist.rejected.append(m)
+                      msg_set_report( msg,  500, "remove failed" )
+                      self.worklist.rejected.append(msg)
                    continue
 
                elif 'link' in msg['event']:
-                   if self.link1file( m ):
-                      msg_set_report( m, 201, 'linked')
-                      self.worklist.ok.append(m)
+                   if self.link1file( msg ):
+                      msg_set_report( msg, 201, 'linked')
+                      self.worklist.ok.append(msg)
                    else:
                       # as above...
-                      msg_set_report( m,  500, "symlink failed" )
-                      self.worklist.rejected.append(m)
+                      msg_set_report( msg,  500, "symlink failed" )
+                      self.worklist.rejected.append(msg)
                    continue
 
             
