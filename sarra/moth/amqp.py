@@ -63,7 +63,22 @@ def _msgRawToDict( raw_msg ):
     if raw_msg is not None:
         if raw_msg.properties['content_type'] == 'application/json':
             msg = json.loads( raw_msg.body )
-            if ('size' in msg): 
+
+            """
+              observed Sarracenia v2.20.08p1 and earlier have 'parts' header in v03 messages.
+              bug, or implementation did not keep up. Applying Postel's Robustness principle: normalizing messages.
+            """
+            if ( 'parts' in msg ): # bug in v2 code makes v03 messages with parts header.
+                 ( m, s, c, n ) = msg['parts'].split(',')
+                 if m == '1':
+                     msg['size'] = int(s)
+                 else: 
+                     if m == 'i' : m='inplace'
+                     elif m == 'p' : m='partitioned'
+                     msg['blocks'] = { 'method':m, 'size':int(s), 'count':int(c), 'number':int(n) }
+
+                 del msg['parts']
+            elif ('size' in msg): 
                  if (type(msg['size']) is str):
                      msg['size'] = int(msg['size']) 
         else:

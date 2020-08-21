@@ -28,7 +28,6 @@ class Message:
 
          assign everything, except topic... because the topic is stored outside the body in v02.
         """
-        # FIXME: new_baseurl, new_relpath, new_path ... ?
 
         self.pubtime=h['pubTime'].replace("T","")
         self.baseurl=h['baseUrl']
@@ -338,6 +337,8 @@ class V2Wrapper(Plugin):
         self.msg=Message(m)
         self.msg.topic = m['topic']
         self.o.msg = self.msg
+        if hasattr( self.msg, 'partstr' ) :
+            self.o.partstr = self.msg.partstr
 
         varsb4=copy.deepcopy(vars(self.msg))
 

@@ -761,14 +761,17 @@ class Flow:
 
                 i=1
                 while i <= self.o.attempts :
+
+                    if i > 1 :
+                        logger.warning("downloading again, attempt %d" % i)
+
                     ok = self.download( msg, self.o )
-                    i = i+1
                     if ok: 
                         logger.info("downloaded ok: %s" % new_path )
                         msg_set_report( msg, 201, "Download successful" )
                         self.worklist.ok.append(msg)
                         break
-                    logger.warning("downloading again, attempt %d" % i)
+                    i = i+1
                        
                 if not ok:
                     logger.warning("gave up downloading for now" )
