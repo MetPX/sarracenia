@@ -25,5 +25,8 @@ class Report(Flow):
      def __init__( self ):
 
          self.plugins['load'].append('sarra.plugin.gather.message.Message')
-         self.plugins['load'].append('sarra.plugin.post.message.Message')
+
+         if hasattr(self.o,'post_exchange'):
+             self.plugins['load'].append('sarra.plugin.post.message.Message')
+
          Report.assimilate(self)
