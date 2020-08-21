@@ -68,6 +68,7 @@ class File(Protocol):
 
     def __init__(self) :
         logger.debug("sr_file __init__")
+        self.cwd = None
         File.assimilate(self)
 
     def registered_as(self):
@@ -75,9 +76,13 @@ class File(Protocol):
 
     # cd
     def cd(self, path):
-        logger.debug("sr_file cd %s" % path)
+        logger.error("sr_file cd %s" % path)
         os.chdir(path)
+        self.cwd = path
         self.path = path
+
+    def check_is_connected(self):
+        return True
 
     # chmod
     def chmod(self,perm,path):
@@ -102,6 +107,31 @@ class File(Protocol):
     def delete(self, path):
         logger.debug("sr_file rm %s" % path)
         os.unlink(path)
+
+    # get
+    def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0 ):
+
+        # open local file
+        if remote_file[0] != os.sep:
+            remote_path = self.cwd + os.sep + remote_file
+        else:
+            remote_path = remote_file
+
+        logger.debug( "get %s %s %d" % (remote_path,local_file,local_offset))
+
+        src = self.local_read_open(remote_path, remote_offset)
+        dst = self.local_write_open(local_file, local_offset)
+
+        # initialize sumalgo
+        if self.sumalgo : self.sumalgo.set_path(remote_file)
+
+        # download
+        rw_length = self.read_write( src, dst, length )
+
+        # close
+        self.local_write_close(dst)
+
+        return rw_length
 
     def getcwd(self):
         return os.getcwd()

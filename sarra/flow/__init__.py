@@ -604,7 +604,8 @@ class Flow:
 
         logger.debug("message is to remove %s" % msg['new_file'])
 
-        if not 'delete' in self.o.events and not 'newname' in msg :
+        
+        if (msg['integrity']['method'] != 'remove' ) and not ('delete' in self.o.events or 'newname' in msg ):
               logger.info("message to remove %s ignored (events setting)" % msg['new_file'])
               return True
 
@@ -681,8 +682,8 @@ class Flow:
                msg_set_report( m, 503, 'rename unimplemented')
                self.worklist.rejected.append(m)
                continue
-            if 'event' in msg:
-               if 'delete' in msg['event']:
+
+            if ( msg['integrity']['method'] == 'remove'  ) or (( 'event' in msg ) and ('delete' in msg['event'] )):
                    if self.removeOneItem( msg ):
                       msg_set_report( msg, 201, 'removed')
                       self.worklist.ok.append(msg)
@@ -694,7 +695,7 @@ class Flow:
                       self.worklist.rejected.append(msg)
                    continue
 
-               elif 'link' in msg['event']:
+            if ( 'event' in msg ) and ( 'link' in msg['event'] ):
                    if self.link1file( msg ):
                       msg_set_report( msg, 201, 'linked')
                       self.worklist.ok.append(msg)
@@ -736,10 +737,12 @@ class Flow:
             # assert new_inflight_path is set.
 
             if os.path.exists(msg['new_inflight_path']):
-                 #FIXME: if mtime > 5 minutes, perhaps rm it, and continue? what if transfer crashed?
-                 logger.warning('inflight file already exists. race condition, deferring transfer of %s' % msg['new_path'] )
-                 self.worklist.failed.append(msg)
-                 continue
+                if self.o.inflight:
+                    #FIXME: if mtime > 5 minutes, perhaps rm it, and continue? what if transfer crashed?
+                    logger.warning('inflight file already exists. race condition, deferring transfer of %s' % msg['new_path'] )
+                    self.worklist.failed.append(msg)
+                    continue
+                # overwriting existing file.
 
             # FIXME: decision of whether to download, goes here.
             if not self.file_should_be_downloaded(msg):
@@ -801,6 +804,7 @@ class Flow:
         try:    curdir = os.getcwd()
         except: curdir = None
 
+        logger.error( 'FIXME: new_dir=%s  cdir=%s' % ( new_dir, cdir ) ) 
         if curdir != new_dir:
             # make sure directory exists, create it if not
             if not os.path.isdir(new_dir):
@@ -811,7 +815,7 @@ class Flow:
                    logger.debug('Exception details:', exc_info=True)
             os.chdir(new_dir)
 
-        try :
+        if True: #try :
                 options.destination = msg['baseUrl']
 
                 if (self.proto is None) or not self.proto.check_is_connected() :
@@ -909,7 +913,7 @@ class Flow:
                 if ( len_written != block_length ):
                     return False
 
-        except:
+        else: #except:
                 #closing on problem
                 try: 
                     self.proto.close()

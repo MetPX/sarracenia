@@ -71,9 +71,13 @@ def alarm_raise(n, f):
 
 # alarm_set
 def alarm_set(time):
+    """
+       FIXME: replace with set itimer for > 1 second resolution... currently rouding to nearest second. 
+    """
+
     if sys.platform != 'win32' :
         signal.signal(signal.SIGALRM, alarm_raise)
-        signal.alarm(time)
+        signal.alarm(int(time+0.5))
 
 
 # =========================================
@@ -165,7 +169,7 @@ class Protocol():
 
     # local_read_open
     def local_read_open(self, local_file, local_offset=0 ):
-        #logger.debug("sr_proto local_read_open")
+        logger.error("sr_proto local_read_open getcwd=%s self.cwd=%s" % (os.getcwd(),self.cwd) )
 
         self.checksum = None
 

@@ -51,7 +51,8 @@ default_options = {
   'post_documentRoot' : None,
   'post_baseDir' : None,
   'post_baseUrl' : None,
-  'realpath_post' : False
+  'realpath_post' : False,
+  'report_back' : False
 
 }
 
@@ -63,7 +64,7 @@ flag_options = [ 'bind_queue', 'cache_stat', 'declare_exchange', 'debug', \
     'follow_symlinks', 'force_polling', 'inline', 'inplace', 'log_reject', 'pipe', 'restore', \
     'report_daemons', 'mirror', 'notify_only', 'overwrite', 'post_on_start', 'poll_without_vip', \
     'preserve_mode', 'preserve_time', 'pump_flag', 'randomize', 'realpath_post', 'reconnect', \
-    'reportback', 'reset', 'retry_mode', 'save', 'set_passwords', 'source_from_exchange', \
+    'report_back', 'reset', 'retry_mode', 'save', 'set_passwords', 'source_from_exchange', \
     'statehost', 'use_amqplib', 'use_pika', 'users_flag' 
 ]
 
@@ -390,6 +391,7 @@ class Config:
    synonyms = { 
      'accept_unmatch': 'accept_unmatched',
      'basedir' : 'baseDir',
+     'base_dir' : 'baseDir',
      'baseurl' : 'baseUrl',
      'cache' : 'suppress_duplicates', 
      'document_root' : 'documentRoot',

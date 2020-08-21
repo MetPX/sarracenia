@@ -81,8 +81,10 @@ class Message:
                 sv = encode( decode( h[ "integrity" ][ "value" ].encode('utf-8'), "base64" ), 'hex' ).decode( 'utf-8' )
             h[ "sum" ] = sa + ',' + sv
             self.sumflg = sa
+            self.sumstr = h[ "sum" ]
         else:
             self.sumstr = None
+            self.sumflg = None
 
         self.headers=h
         self.hdrstr=str(h)
@@ -146,7 +148,7 @@ def v02tov03message( body, headers, topic ):
                 msg['blocks']['remainder'] = int(remainder)
                 msg['blocks']['number'] = int(current_block)
             else:
-                msg['size'] = chunksz
+                msg['size'] = int(chunksz)
             del msg['parts']
 
      

@@ -394,6 +394,9 @@ TODO
 * update documentation... change everything to use sr3 entry point?
   (See transition point below.)
 
+* get partitioned file transfers working again.
+
+* alarm_set truncates to integers... hmm.. use setitimer instead? 
 
 Not Baked/Thinking
 ~~~~~~~~~~~~~~~~~~
