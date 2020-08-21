@@ -63,6 +63,8 @@ class Message:
 
         if 'parts' in h:
             self.partstr = h['parts']
+        else:
+            self.partstr = None
 
         if 'integrity' in h:
             sum_algo_v3tov2 = { "arbitrary":"a", "md5":"d", "sha512":"s", 
@@ -79,6 +81,8 @@ class Message:
                 sv = encode( decode( h[ "integrity" ][ "value" ].encode('utf-8'), "base64" ), 'hex' ).decode( 'utf-8' )
             h[ "sum" ] = sa + ',' + sv
             self.sumflg = sa
+        else:
+            self.sumstr = None
 
         self.headers=h
         self.hdrstr=str(h)
@@ -337,8 +341,8 @@ class V2Wrapper(Plugin):
         self.msg=Message(m)
         self.msg.topic = m['topic']
         self.o.msg = self.msg
-        if hasattr( self.msg, 'partstr' ) :
-            self.o.partstr = self.msg.partstr
+        self.o.partstr = self.msg.partstr
+        self.o.sumstr = self.msg.sumstr
 
         varsb4=copy.deepcopy(vars(self.msg))
 
