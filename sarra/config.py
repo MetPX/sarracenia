@@ -96,7 +96,7 @@ convert_to_v3 = {
       'accel_scp'  : [ 'import', 'sarra.plugin.accel_scp.ACCEL_SCP' ],
   },
   'on_message' : { 
-      'msg_delete'  : [ 'import', 'sarra.plugin.msg.delete.DeleteFlowFiles' ]
+      'msg_delete'  : [ 'import', 'sarra.plugin.msg.deleteflowfiles.DeleteFlowFiles' ]
   },
   'on_line' : { 
       'line_log'  : [ 'import', 'sarra.plugin.line_log' ]
