@@ -50,6 +50,7 @@ the maximum length of a "short string", as per AMQP protocol, in bytes.
 amqp_ss_maxlen = 255
 
 default_options = { 'queue_name':None, 
+               'batch': 25, 
                'exchange': None, 'topic_prefix':'v03.post', 'subtopic' : None,  
                'durable':True, 'expire': 300, 'message_ttl':0, 
                'logLevel':'info',
@@ -310,7 +311,7 @@ class AMQP(Moth):
         if m is not None:
             fetched=1
             ml.append(m)
-            while fetched < self.props['prefetch']:
+            while fetched < self.props['batch']:
                 m=self.getNewMessage()
                 if m is None:
                     break

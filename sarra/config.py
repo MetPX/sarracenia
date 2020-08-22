@@ -56,7 +56,7 @@ default_options = {
 
 }
 
-count_options = [ 'exchange_split', 'instances', 'post_exchange_split', 'prefetch' ]
+count_options = [ 'batch', 'exchange_split', 'instances', 'post_exchange_split', 'prefetch' ]
 
 # all the boolean settings.
 flag_options = [ 'bind_queue', 'cache_stat', 'declare_exchange', 'debug', \
@@ -94,6 +94,9 @@ convert_to_v3 = {
       'msg_fdelay' : [ 'import', 'sarra.plugin.msg.fdelay.FDelay' ],
       'accel_wget' : [ 'import', 'sarra.plugin.accel_wget.ACCEL_WGET' ],
       'accel_scp'  : [ 'import', 'sarra.plugin.accel_scp.ACCEL_SCP' ],
+  },
+  'on_message' : { 
+      'msg_delete'  : [ 'import', 'sarra.plugin.msg.delete.DeleteFlowFiles' ]
   },
   'on_line' : { 
       'line_log'  : [ 'import', 'sarra.plugin.line_log' ]

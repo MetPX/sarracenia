@@ -89,7 +89,12 @@ class Sftp(Protocol):
         # sftp command times out after 20 secs
         # this setting is different from the computed timeout (protocol)
 
-        self.init()
+        self.connected   = False 
+        self.sftp        = None
+        self.ssh         = None
+        self.seek        = True
+
+        self.batch       = 0
         self.connected = False
         self.ssh_config  = None
 
@@ -368,17 +373,6 @@ class Sftp(Protocol):
         cwd =  self.sftp.getcwd()
         alarm_cancel()
         return cwd
-
-    # init
-    def init(self):
-        logger.debug("sr_sftp init")
-        Protocol.init(self)
-        self.connected   = False 
-        self.sftp        = None
-        self.ssh         = None
-        self.seek        = True
-
-        self.batch       = 0
 
     # init_file_index
     def init_file_index(self):

@@ -37,6 +37,7 @@ logger = logging.getLogger( __name__ )
 default_options = {  
   'accept_unmatched' : False,
   'attempts' : 3,
+  'batch': 100,
   'bytes_per_second' : None,
   'download'     : False,
   'housekeeping' : 30,     

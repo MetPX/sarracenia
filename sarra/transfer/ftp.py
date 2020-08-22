@@ -69,7 +69,10 @@ class Ftp(Protocol):
 
     def __init__(self) :
         logger.debug("sr_ftp __init__")
-        self.init()        
+        self.connected   = False 
+        self.ftp         = None
+        self.details     = None
+        self.batch       = 0
         Ftp.assimilate(self)
  
     def registered_as(self):
@@ -295,17 +298,6 @@ class Ftp(Protocol):
         pwd = self.ftp.pwd()
         alarm_cancel()
         return pwd
-
-    # init
-    def init(self):
-        logger.debug("sr_ftp init")
-        Protocol.init(self)
-
-        self.connected   = False 
-        self.ftp         = None
-        self.details     = None
-
-        self.batch       = 0
 
     # init_file_index
     def init_file_index(self):
