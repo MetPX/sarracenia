@@ -350,9 +350,19 @@ class Flow:
         filtered_worklist = []
         for m in self.worklist.incoming:
             #logger.warning('message: %s ' % m)
+
+            if 'oldname' in m :
+                url = m['baseUrl'] + os.sep + m['relPath']
+                oldname_matched=False
+                for mask in self.o.masks:
+                    pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
+                    if mask_regexp.match( url ):
+                        oldname_matched=accepting
+                        break
+
             url = m['baseUrl'] + os.sep + m['relPath']
 
-            # apply masks, reject.
+            # apply masks for accept/reject options.
             matched=False
             for mask in self.o.masks:
                 #logger.info('filter - checking: %s' % str(mask) )
@@ -361,18 +371,33 @@ class Flow:
                 if mask_regexp.match( url ):
                     matched=True
                     if not accepting:
-                        if self.o.log_reject:
+                        if ( 'oldname' in m ) and oldname_matched:
+                            # deletion rename case... need to accept with an extra field...
+                            m['renameUnlink'] = True
+                            m['_deleteOnPost' ].append( 'renameUnlink' )
+                            logger.debug( "rename deletion 1 %s" % (m['oldname']) )
+                        elif self.o.log_reject:
                             logger.info( "reject: mask=%s strip=%s url=%s" % (str(mask), strip, url) ) 
                             self.worklist.rejected.append(m)
                             break
+
                     # FIXME... missing dir mapping with mirror, strip, etc...
                     self.o.set_newMessageFields(m, url, pattern, maskDir, maskFileOption, mirror, strip, pstrip, flatten )
 
                     filtered_worklist.append(m)
-                    logger.debug( "isMatchingPattern: accepted mask=%s strip=%s" % (str(mask), strip) )
+                    logger.debug( "accepted mask=%s strip=%s" % (str(mask), strip) )
                     break
 
             if not matched:
+                if ( 'oldname' in m ) and oldname_matched:
+                    m['renameUnlink'] = True
+                    m['_deleteOnPost' ].append( 'renameUnlink' )
+                    logger.debug( "rename deletion 2 %s" % (m['oldname']) )
+                    filtered_worklist.append(m)
+                    self.o.set_newMessageFields(m, url, None, self.o.currentDir, self.o.filename, 
+                       self.o.mirror, self.o.strip, self.o.pstrip, self.o.flatten )
+                    continue
+
                 if self.o.accept_unmatched:
                     logger.debug( "accept: unmatched pattern=%s" % (url) )
                     # FIXME... missing dir mapping with mirror, strip, etc...
@@ -598,19 +623,13 @@ class Flow:
             return True
 
 
-    def removeOneItem(self,msg):
+    def removeOneItem(self,path):
         """
           process an unlink event, returning boolean success.
         """
 
-        logger.debug("message is to remove %s" % msg['new_file'])
+        logger.debug("message is to remove %s" %  path )
 
-        
-        if (msg['integrity']['method'] != 'remove' ) and not ('delete' in self.o.events or 'newname' in msg ):
-              logger.info("message to remove %s ignored (events setting)" % msg['new_file'])
-              return True
-
-        path = msg['new_dir'] + '/' + msg['new_file']
 
         ok=True
         try :
@@ -625,6 +644,23 @@ class Flow:
 
         return ok
 
+    def renameOneItem(self,old,path):
+        """
+            for messages with an oldname, it is to rename a file.
+        """
+        ok=True
+        try :
+            if os.path.isfile(path) : os.unlink(path)
+            if os.path.islink(path) : os.unlink(path)
+            if os.path.isdir (path) : os.rmdir (path)
+            os.rename( old , path )
+            logger.info("renamed %s -> %s" % (old, path) )
+        except:
+            logger.error("sr_subscribe/doit_download: could not rename %s to %s " % ( msg['oldname'] , path ) )
+            logger.debug('Exception details: ', exc_info=True)
+            ok=False
+        return ok
+   
 
     def link1file(self,msg):
         """        
@@ -678,14 +714,27 @@ class Flow:
 
         for msg in self.worklist.incoming:
 
-            if ('newname' in msg ) or ( 'oldname' in msg ):
-               logger.warning('rename logic not yet implemented')
-               msg_set_report( m, 503, 'rename unimplemented')
-               self.worklist.rejected.append(m)
-               continue
+            if 'newname' in msg:
+                """
+                  revamped rename algorithm requires only 1 message, ignore newname.
+                """
+                self.worklist.ok.append(msg)
+                continue
 
-            if ( msg['integrity']['method'] == 'remove'  ) or (( 'event' in msg ) and ('delete' in msg['event'] )):
-                   if self.removeOneItem( msg ):
+            new_path = msg['new_dir'] + os.path.sep + msg['new_file']
+
+            if 'oldname' in msg :
+                if 'renameUnlink' in msg :
+                    self.removeOneItem( msg['oldname'] )
+                    self.worklist.ok.append(msg)
+                else:
+                    # actual rename...
+                    ok = self.renameOneItem( msg['oldname'], new_path )
+                    # if rename succeeds, fall through to download object to find if the file renamed
+                    # actually matches the one advertised, and potentially download it.
+                    # if rename fails, recover by falling through to download the data anyways. 
+            elif ( msg['integrity']['method'] == 'remove'  ) or (( 'event' in msg ) and ('delete' in msg['event'] )):
+                   if self.removeOneItem( new_path ):
                       msg_set_report( msg, 201, 'removed')
                       self.worklist.ok.append(msg)
                    else:
@@ -705,9 +754,6 @@ class Flow:
                       msg_set_report( msg,  500, "symlink failed" )
                       self.worklist.rejected.append(msg)
                    continue
-
-            
-            new_path = msg['new_dir'] + os.path.sep + msg['new_file']
 
             # establish new_inflight_path which is the file to download into initially.
             if self.o.inflight == None or (('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' )):
