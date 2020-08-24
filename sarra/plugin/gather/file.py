@@ -62,7 +62,7 @@ class File(Plugin):
     also should likely switch from listdir to scandir
     """
     def on_add(self, event, src, dst):
-        logger.debug("%s %s %s" % ( event, src, dst ) )
+        #logger.debug("on_add %s %s %s" % ( event, src, dst ) )
         self.new_events['%s %s'%(src,dst)] = ( event, src, dst )
 
     def on_created(self, event):

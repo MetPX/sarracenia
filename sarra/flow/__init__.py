@@ -304,12 +304,15 @@ class Flow:
 
                # need to acknowledge here, because posting will delete message-id
                self.ack(self.worklist.ok)
+
+               self.ack(self.worklist.rejected)
+               self.worklist.rejected=[]
                self.ack(self.worklist.failed)
 
                self.post()
 
                self.report()
-         
+
                self.worklist.ok=[]
                self.worklist.failed=[]
 
@@ -573,7 +576,7 @@ class Flow:
         #if ('self.target_file == msg['new_file'] ) and ( fsiz != msg['size'] ):
 
         if ( fsiz != msg['size'] ):
-            logger.debug("%s file size different, so cannot be the same" % (fname ) )
+            logger.debug("%s file size different, so cannot be the same" % ( msg['new_path'] ) )
             return True
 
        # compare dates...
@@ -592,7 +595,6 @@ class Flow:
                    pass
 
             if new_mtime <= old_mtime:
-               logger.debug("%s new version not newer" % ( msg['new_path'] ) )
                if self.o.log_reject:
                    logger.info("rejected: mtime not newer %s " % ( msg['new_path'] ) )
                return False

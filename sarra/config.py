@@ -48,6 +48,7 @@ default_options = {
   'documentRoot' : None,
   'inflight' : None,
   'notify_only' : False,
+  'overwrite' : True,
   'post_documentRoot' : None,
   'post_baseDir' : None,
   'post_baseUrl' : None,

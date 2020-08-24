@@ -112,7 +112,7 @@ class File(Protocol):
     def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0 ):
 
         # open local file
-        if remote_file[0] != os.sep:
+        if ( remote_file[0] != os.sep ) and self.cwd :
             remote_path = self.cwd + os.sep + remote_file
         else:
             remote_path = remote_file
