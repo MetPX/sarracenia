@@ -385,9 +385,29 @@ a given routine should be called.
 |                   |                                                    |
 |                   | Rest is taken of by Sarracenia                     |
 |                   |                                                    |
+|                   |                                                    |
 +-------------------+----------------------------------------------------+
-|                   | undocumented variant of do_download.               |
-| do_get            | not actually sure how it works. FIXME.             |
+|                   |                                                    |
+|                   | Do a transfer based on scheme *registered_as*      |
+| do_get            |                                                    |
+| do_put            | arguments: self, msg                               |
+|                   |    remote_file, the remote path to download.       |
+|                   |    local_file, the name of the file to open.       |
+|                   |    remote_offset, where to lseek to start i/o      |
+|                   |    local_offset, where to lseek to start i/o       |
+|                   |    length, number of bytes to transfer             |
+|                   |                                                    |
+|                   | for do_put, reverse order local and remote.        |
+|                   |                                                    |
+|                   | returns: number of bytes transferred.              |
+|                   |    if it does not match length, an error (?)       |
+|                   |                                                    |
+|                   | msg is a dictionary that includes baseURL to       |
+|                   | provide the beginning of the download resource.    |
+|                   |                                                    |
+|                   |                                                    |
+|                   |                                                    |
+|                   |                                                    |
 |                   |                                                    |
 +-------------------+----------------------------------------------------+
 |                   | called by sr_poll, meant select files to be posted |
@@ -397,10 +417,6 @@ a given routine should be called.
 |                   |                                                    |
 |                   | Example:                                           |
 |                   | FIXME: the GPFS poll script should be here.        |
-|                   |                                                    |
-+-------------------+----------------------------------------------------+
-|                   | undocumented new api to work with do_get.          |
-| do_put            | FIXME.                                             |
 |                   |                                                    |
 +-------------------+----------------------------------------------------+
 |                   | FIXME not properly implemented at this time.       |

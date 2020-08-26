@@ -441,6 +441,9 @@ Probably need to be settled before having anyone else dive in.
   with sr entry point... hmm... likely look at this when updating
   Programmer's Guide.
 
+* more worklists? rename failed -> retry or deferred.  Add a new failed
+  where failed represents a permanent failure. and the other represents
+  to be retried later.
 
 
 FIXME/Deferred
@@ -470,6 +473,9 @@ FIXME are things left to the side that need to be seen to.
   Likely wait until all legacy code is replaced before tackling this.
   if this doesn't get fixed, then make it a bug report.
 
+* try out jsonfile for building messages to post. can build json incrementally,
+  so you do not need to delete the _deleteOnPost elements (can just skip over them)
+
 
 Incompatibilities
 -----------------
@@ -485,6 +491,7 @@ breaking changes:
   makes more sense that way anyways.
 
 * plugins that access internals of sr_retry need to be rewritten, as the class is now plugin/retry.py.
+  the way to queue something for retry in current plugins is to append them to the failed queue.
 
 * do_download and do_send were 1st pass at *schemed* plugins, I think they should be deprecated/replaced
   by do_get and do_put. unclear whether there is a need for these anymore (download and send plugins are

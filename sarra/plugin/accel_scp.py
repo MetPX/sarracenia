@@ -89,6 +89,9 @@ class ACCEL_SCP(Plugin):
               sz, self.o.accel_scp_threshold, m['baseUrl'], m['new_file'] ) )
 
    def do_get(self, msg, remote_file, local_file, remote_offset, local_offset, length ):
+       """
+         FIXME: should return actual length, not expected length... how to tell scp to do that?
+       """
 
        msg    = self.o.msg
 
@@ -105,20 +108,20 @@ class ACCEL_SCP(Plugin):
        arg2  = msg[ 'new_dir' ] + os.sep + msg[ 'new_file' ]
        # strangely not requiered for arg2 : arg2  = arg2.replace(' ','\ ')
 
-       # if the source file contains a : ... let python do it
-       if ':' in arg2 : return None
-
        cmd  = self.o.download_accel_scp_command[0].split() + [ arg1, arg2 ]
        logger.info("accel_scp :  %s" % ' '.join(cmd))
 
        p = subprocess.Popen(cmd)
        p.wait()
        if p.returncode != 0:  # Failed!
-          return False 
-       return True
+          return 0 
+       return length
 
 
    def do_put(self, msg, local_file, remote_file, local_offset, remote_offset, length ):
+       """
+         FIXME: should return actual length, not expected length... how to tell scp to do that?
+       """
 
        if not self.check_surpass_threshold(self.o): return None
        msg['baseUrl'] = msg['baseUrl'].replace("acscp","sftp", 1 )
@@ -132,17 +135,15 @@ class ACCEL_SCP(Plugin):
        arg2  = netloc + ':' + msg['new_dir'] + os.sep + msg['new_file']
        arg2  = arg2.replace(' ','\ ')
 
-       # if the target file contains a : ... let python do it
-       if ':' in arg1 : return None
-
        cmd  = self.o.download_accel_scp_command[0].split() + [ arg1, arg2 ]
        logger.info("accel_scp :  %s" % ' '.join(cmd))
 
        p = subprocess.Popen(cmd)
        p.wait()
        if p.returncode != 0:  # Failed!
-          return False 
-       return True
+          return 0 
+       return length
+
 
    def registered_as(self) :
        return self.registered_list

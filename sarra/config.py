@@ -829,6 +829,14 @@ class Config:
                        setattr(self, k, None )
                    else:
                        setattr(self, k, v )
+           """
+              2020/08/26 - PAS
+              strip in config file gets translated into two separate attributes: strip and pstrip.
+                strip is the numeric variety (0-n) and if the supplied option in a regex pattern, 
+                then instead pstrip is set, and strip is set to 0.
+
+              I don't know why it is done this way... just documenting/conforming to existing state.
+           """
            elif k in [ 'strip' ]:
                   if v.isdigit() :
                       self.strip = int(v) 

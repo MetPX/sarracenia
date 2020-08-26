@@ -391,6 +391,10 @@ class AMQP(Moth):
             topic = topic.encode("utf8")[0:mxlen].decode("utf8")
 
         if '_deleteOnPost' in body:
+            # FIXME: need to delete because building entire JSON object at once.
+            # makes this routine alter the message. Ideally, would use incremental
+            # method to build json and _deleteOnPost would be a guide of what to skip.
+            # library for that is jsonfile, but not present in repos so far.
             for k in body['_deleteOnPost']:
                if k in body:
                    del body[k]
