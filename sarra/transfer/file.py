@@ -76,8 +76,13 @@ class File(Protocol):
 
     # cd
     def cd(self, path):
+        """
+           proto classes are used for remote sessions, so this 
+           cd is for REMOTE directory... when file remote as a protocol it is for the source.
+           should not change the "local" working directory when downloading.
+        """
         logger.error("sr_file cd %s" % path)
-        os.chdir(path)
+        #os.chdir(path)
         self.cwd = path
         self.path = path
 
@@ -117,7 +122,7 @@ class File(Protocol):
         else:
             remote_path = remote_file
 
-        logger.debug( "get %s %s %d" % (remote_path,local_file,local_offset))
+        logger.error( "get %s %s (cwd: %s) %d" % (remote_path,local_file,os.getcwd(), local_offset))
 
         src = self.local_read_open(remote_path, remote_offset)
         dst = self.local_write_open(local_file, local_offset)

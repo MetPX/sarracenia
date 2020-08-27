@@ -121,7 +121,7 @@ class NoDupe(Plugin):
            self.count += 1
            return True
 
-        logger.debug("sum already in NoDupe cache: key={}".format(key))
+        #logger.debug("sum already in NoDupe cache: key={}".format(key))
         kdict   = self.cache_dict[key]
         present = value in kdict
         kdict[value] = now
@@ -131,7 +131,7 @@ class NoDupe(Plugin):
         self.count += 1
 
         if present:
-           logger.debug("updated time of old NoDupe entry: value={}".format(value))
+           #logger.debug("updated time of old NoDupe entry: value={}".format(value))
            self.cache_hit = value
            return False
         else:
@@ -188,7 +188,7 @@ class NoDupe(Plugin):
            else:
                partstr = msg['blocks']
 
-        logger.debug("NoDupe calling check( %s, %s, %s )" % ( sumstr, relpath, partstr ) )
+        #logger.debug("NoDupe calling check( %s, %s, %s )" % ( sumstr, relpath, partstr ) )
         return self.check(sumstr,relpath,partstr)
 
     def on_messages(self, worklist ):

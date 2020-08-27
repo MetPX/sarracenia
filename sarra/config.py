@@ -829,21 +829,21 @@ class Config:
                        setattr(self, k, None )
                    else:
                        setattr(self, k, v )
-           """
-              2020/08/26 - PAS
-              strip in config file gets translated into two separate attributes: strip and pstrip.
-                strip is the numeric variety (0-n) and if the supplied option in a regex pattern, 
-                then instead pstrip is set, and strip is set to 0.
-
-              I don't know why it is done this way... just documenting/conforming to existing state.
-           """
            elif k in [ 'strip' ]:
-                  if v.isdigit() :
-                      self.strip = int(v) 
-                      self.pstrip = None
-                  else:
-                      self.pstrip = v
-                      self.strip = 0
+               """
+               2020/08/26 - PAS
+               strip in config file gets translated into two separate attributes: strip and pstrip.
+                 strip is the numeric variety (0-n) and if the supplied option in a regex pattern, 
+                 then instead pstrip is set, and strip is set to 0.
+
+               I don't know why it is done this way... just documenting/conforming to existing state.
+               """
+               if v.isdigit() :
+                   self.strip = int(v) 
+                   self.pstrip = None
+               else:
+                   self.pstrip = v
+                   self.strip = 0
            elif k in duration_options:
                if len(line) == 1:
                    logger.error( '%s is a duration option requiring a decimal number of seconds value' % line[0] ) 
@@ -1454,7 +1454,11 @@ class Config:
 
         # reset relPath from new_dir
 
-        relPath = new_dir + '/' + filename
+        if 'new_dir' not in msg:
+            msg['new_dir'] = os.path.normpath(new_dir)
+
+        relPath = msg['new_dir'] + '/' + filename
+
         if self.post_baseDir :
            relPath = relPath.replace(self.post_baseDir, '')
 
@@ -1467,11 +1471,12 @@ class Config:
         #        Everywhere else // or /../ are corrected.
         #        but if the number of / starting the path > 2  ... it will result into 1 /
 
-        msg['new_dir'] = os.path.normpath(new_dir)
+
         msg['new_relPath'] = os.path.normpath(relPath)
 
         if sys.platform == 'win32':
-            msg['new_dir'] = msg['new_dir'].replace('\\', '/')
+            if 'new_dir' not in msg:
+                msg['new_dir'] = msg['new_dir'].replace('\\', '/')
             msg['new_relPath'] = msg['new_relPath'].replace('\\', '/')
             if re.match('[A-Z]:', self.currentDir, flags=re.IGNORECASE):
                 msg['new_dir'] = msg['new_dir'].lstrip('/')

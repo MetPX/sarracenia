@@ -388,7 +388,7 @@ class Flow:
                     self.o.set_newMessageFields(m, url, pattern, maskDir, maskFileOption, mirror, strip, pstrip, flatten )
 
                     filtered_worklist.append(m)
-                    logger.debug( "accepted mask=%s strip=%s" % (str(mask), strip) )
+                    #logger.debug( "accepted mask=%s strip=%s" % (str(mask), strip) )
                     break
 
             if not matched:
@@ -437,7 +437,21 @@ class Flow:
     @abstractmethod 
     def post( self ):
 
-        logger.debug( 'on_post starting for %d messages' % len(self.worklist.ok) )
+        logger.info( 'on_post starting for %d messages' % len(self.worklist.ok) )
+        logger.info( 'post_baseDir=%s' % self.o.post_baseDir )
+        for m in self.worklist.ok:
+
+            if 'new_baseUrl' in m:
+                m['baseUrl'] = m[ 'new_baseUrl' ]
+
+            if 'new_relPath' in m:
+                m['relPath'] = m[ 'new_relPath' ]
+
+            if self.o.topic_prefix != self.o.post_topic_prefix:
+                 m['topic'] = m['topic'].replace( self.o.topic_prefix, self.o.post_topic_prefix )
+
+            if self.o.post_baseDir :
+                 m['relPath'].replace( self.o.post_baseDir, '', 1 )
 
         self._runPluginsWorklist('on_posts')
         for p in self.plugins["post"]:
@@ -860,7 +874,7 @@ class Flow:
         try:    curdir = os.getcwd()
         except: curdir = None
 
-        logger.error( 'FIXME: new_dir=%s  cdir=%s' % ( new_dir, cdir ) ) 
+        logger.error( 'FIXME: new_dir=%s  curdir=%s cdir=%s' % ( new_dir, curdir, cdir ) ) 
         if curdir != new_dir:
             # make sure directory exists, create it if not
             if not os.path.isdir(new_dir):
@@ -870,6 +884,7 @@ class Flow:
                    logger.warning( "making %s: %s" % ( new_dir, ex ) )
                    logger.debug('Exception details:', exc_info=True)
             os.chdir(new_dir)
+        logger.error( 'FIXME2: new_dir=%s  os.getcwd()=%s cdir=%s' % ( new_dir, os.getcwd(), cdir ) ) 
 
         if True: #try :
                 options.destination = msg['baseUrl']

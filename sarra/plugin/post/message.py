@@ -35,8 +35,8 @@ class Message(Plugin):
         for m in worklist.ok:
              # FIXME: outlet = url, outlet=json.
              logger.info( 'message: %s' % m )
-             if self.o.topic_prefix != self.o.post_topic_prefix:
-                 m['topic'] = m['topic'].replace( self.o.topic_prefix, self.o.post_topic_prefix )
+             #if self.o.topic_prefix != self.o.post_topic_prefix:
+             #    m['topic'] = m['topic'].replace( self.o.topic_prefix, self.o.post_topic_prefix )
              self.poster.putNewMessage(m)
 
         worklist.ok=[]
