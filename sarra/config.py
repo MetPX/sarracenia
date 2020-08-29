@@ -591,9 +591,9 @@ class Config:
    def dump(self):
        """ print out what the configuration looks like.
        """
-       #term = shutil.get_terminal_size((80,20))
-       #mxcolumns=term.columns
-       mxcolumns=5
+       term = shutil.get_terminal_size((80,20))
+       mxcolumns=term.columns
+       #logger.error('mxcolumns: %d' % mxcolumns )
        column=0
        for k in sorted( self.__dict__.keys()):
            v=getattr(self,k)
@@ -603,16 +603,20 @@ class Config:
               v = "'%s'" % v
            ks = str(k)
            vs = str(v)
-           if len(vs) > 100:
-                vs = vs[0:70] + '...\''
+           if len(vs) >= (mxcolumns/2):
+                #if vs[0] == '/':
+                vs = '"...' + vs[-int(mxcolumns/2):] + '"'
+                #else:
+                #    vs = vs[0:int(mxcolumns/2)] + '...\''
+
            last_column=column
            column += len(ks) + len(vs) + 3
-           #if column >= mxcolumns:
-           #    print(',')
-           #    column=len(ks) + len(vs) + 1
-           #elif last_column > 0:
-           #    print(', ', end='')
-           print( ks+'='+vs)
+           if column >= mxcolumns:
+               print(',')
+               column=len(ks) + len(vs) + 1
+           elif last_column > 0:
+               print(', ', end='')
+           print( ks+'='+vs, end='')
        print('')
 
    def dictify(self):
