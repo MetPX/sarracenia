@@ -79,8 +79,11 @@ class Flow:
     it is necessary to put rejected messages in the appropriate worklist
     so they can be acknowledged as received.
 
-    filter 
-
+    plugins  -- dict of modular functionality metadata.
+         "load" - list of (v3) plugins to load.
+         time    - one of the invocation times of plugins. examples:
+                   "on_start", "on_messages", etc...
+                 contains routines to run at each *time*
      
     """
     __metaclass__ = ABCMeta
@@ -176,7 +179,9 @@ class Flow:
 
         #logger.info( 'plugins to load: %s' % ( plugins_to_load ) )
         for c in plugins_to_load: 
+
             plugin = sarra.plugin.load_library( c, self.o )
+
             #logger.info( 'plugin loading: %s an instance of: %s' % ( c, plugin ) )
             for entry_point in sarra.plugin.entry_points:
                 if hasattr( plugin, entry_point ):
@@ -291,7 +296,8 @@ class Flow:
                self.gather()
                self.ackWorklist( 'A gathered' )
 
-               if ( len(self.worklist.incoming) == 0 ):
+               last_gather_len=len(self.worklist.incoming)
+               if ( last_gather_len == 0 ):
                    spamming=True
                else:
                    current_sleep = self.o.sleep
@@ -316,7 +322,7 @@ class Flow:
                self.worklist.ok=[]
                self.worklist.failed=[]
 
-           if self.o.sleep < 0 :
+           if (last_gather_len==0) and ( self.o.sleep < 0 ):
                 self.close()
                 break
 

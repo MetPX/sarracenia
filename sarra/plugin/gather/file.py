@@ -230,7 +230,7 @@ class File(Plugin):
 
         xattr.set('mtime', msg['mtime'])
 
-        logger.debug("sum set by compute_sumstr")
+        #logger.debug("sum set by compute_sumstr")
 
         if sumflg[:4] == 'cod,' and len(sumflg) > 2:
             sumstr = sumflg
@@ -708,21 +708,44 @@ class File(Plugin):
             return []
 
     def on_start(self):
+        self.queued_messages = []
         self.primed = False
 
     def gather(self):
         """
            from sr_post.py/run 
+
+           FIXME: really bad performance with large trees. it does scans an entire tree
+           before emitting any messages.  need to re-factor with iterator style so produce
+           result in batch sized chunks incrementally.
         """
         logger.info("%s run partflg=%s, sum=%s, suppress_duplicates=%s basis=%s pbd=%s" % \
               ( self.o.program_name, self.o.partflg, self.o.sumflg, self.o.suppress_duplicates, 
                 self.o.suppress_duplicates_basis, self.o.post_baseDir ))
-        logger.info("%s realpath_post=%s follow_links=%s force_polling=%s"  % \
-              ( self.o.program_name, self.o.realpath_post, self.o.follow_symlinks, self.o.force_polling ) )
+        logger.info("%s realpath_post=%s follow_links=%s force_polling=%s batch=%s"  % \
+              ( self.o.program_name, self.o.realpath_post, self.o.follow_symlinks, \
+                self.o.force_polling, self.o.batch ) )
+
+        logger.info("%s len(self.queued_messages)=%d" % \
+             ( self.o.program_name, len(self.queued_messages) ) )
 
         pbd = self.o.post_baseDir
 
-        messages = []
+        
+        
+        if len(self.queued_messages) > self.o.batch:
+            messages = self.queued_messages[0:self.o.batch]
+            self.queued_messages = self.queued_messages[self.o.batch:]
+            return messages 
+
+        elif len(self.queued_messages) > 0:
+            messages = self.queued_messages
+            self.queued_messages=[] 
+
+            if self.o.sleep < 0:
+                return messages
+        else:
+            messages = []
 
         if self.primed:
            return self.wakeup()
@@ -744,6 +767,11 @@ class File(Plugin):
                 messages.extend( self.post1file(d,os.stat(d)) )
             else:
                  logger.error("could not post %s (exists %s)" % (d,os.path.exists(d)) )
+
+        if len(messages) > self.o.batch:
+            self.queued_messages=messages[self.o.batch:]
+            logger.info("len(queued_messages)=%d" % len(self.queued_messages) )
+            messages=messages[0:self.o.batch]
 
         self.primed = True
         return messages 
