@@ -596,6 +596,8 @@ class Config:
        #logger.error('mxcolumns: %d' % mxcolumns )
        column=0
        for k in sorted( self.__dict__.keys()):
+           if k in [ 'env' ]:
+               continue
            v=getattr(self,k)
            if type(v) == urllib.parse.ParseResult:
               v = v.scheme + '://' + v.username + '@' + v.hostname

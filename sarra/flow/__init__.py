@@ -282,7 +282,12 @@ class Flow:
         if self.o.sleep > 0:
             last_time = nowflt()
    
-        #logger.info(" all v3 plugins: %s" % self.plugins )
+        logger.info("options:")
+        self.o.dump()
+        logger.info(" all v3 plugins: %s" % self.plugins['load'] )
+        #for t in self.plugins:
+        #    logger.info("%s : %s" % ( t, self.plugins[t] ) )
+
         self._runPluginsTime('on_start')
         spamming=True
 
