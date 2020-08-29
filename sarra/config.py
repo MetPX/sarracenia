@@ -43,9 +43,11 @@ import sarra.plugin.integrity
 
 default_options = {
 
+  'accept_unmatched': True, 
   'baseDir' : None,
   'delete' : False,
   'documentRoot' : None,
+  'download' : False, 
   'inflight' : None,
   'notify_only' : False,
   'overwrite' : True,
@@ -53,7 +55,8 @@ default_options = {
   'post_baseDir' : None,
   'post_baseUrl' : None,
   'realpath_post' : False,
-  'report_back' : False
+  'report_back' : False,
+  'suppress_duplicates': 0
 
 }
 
@@ -1351,6 +1354,15 @@ class Config:
          mirror, strip, pstrip, flatten ):
 
         
+
+        if not self.download:
+            #msg['new_baseUrl'] = msg['baseUrl']
+            #msg['new_relPath'] = msg['relPath']
+            #msg['new_dir'] = os.path.dirname( msg['relPath'] )
+            #msg['new_file'] = os.path.basename( msg['relPath'] )
+            return
+
+        msg['_deleteOnPost'].extend( [ 'new_dir', 'new_file', 'new_relPath', 'new_baseUrl' ] )
         self.currentDir = maskDir
 
         logger.debug("newMsgFields: strip=%s, mirror=%s flatten=%s pbd=%s msg[\'relPath\']=%s" %  \
@@ -1484,7 +1496,6 @@ class Config:
 
         msg['new_file'] = filename
 
-        msg['_deleteOnPost'].extend( [ 'new_dir', 'new_file', 'new_relPath', 'new_baseUrl' ] )
         if self.post_broker and self.post_baseUrl:
             msg['new_baseUrl'] = self.post_baseUrl
 
@@ -1666,6 +1677,8 @@ def one_config( component, config, isPost=False ):
        cfg.override( sarra.flow.post.default_options )
     elif component in [ 'poll' ]:
        cfg.override( sarra.flow.poll.default_options )
+    elif component in [ 'subscribe' ]:
+       cfg.override( sarra.flow.subscribe.default_options )
     elif component in [ 'watch' ]:
        cfg.override( sarra.flow.watch.default_options )
     

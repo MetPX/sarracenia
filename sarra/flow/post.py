@@ -11,7 +11,6 @@ default_options = {
     'accept_unmatched': True, 
     'blocksize': 1,
     'bufsize' : 1024*1024,
-    'download' : False, 
     'events': 'create|delete|link|modify',
     'follow_symlinks': False,
     'force_polling': False,

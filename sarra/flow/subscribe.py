@@ -7,9 +7,8 @@ import logging
 logger = logging.getLogger( __name__ )
 
 default_options = { 
-    'download' : False, 
     'accept_unmatched': True, 
-    'suppress_duplicates': 0
+    'download': True
 }
 
 class Subscribe(Flow):
@@ -34,10 +33,12 @@ class Subscribe(Flow):
 
     def do( self ):
 
-        self.do_download()
+        if self.o.download:
+            self.do_download()
+        else:
+            # mark all remaining messages as done.
+            self.worklist.ok = self.worklist.incoming
+            self.worklist.incoming = []
 
-        # mark all remaining messages as done.
-        #self.worklist.ok = self.worklist.incoming
-        #self.worklist.incoming = []
         logger.info('processing %d messages worked!' % len(self.worklist.ok) )
 

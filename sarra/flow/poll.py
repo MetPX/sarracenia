@@ -27,7 +27,6 @@ default_options = {
     'bufsize' : 1024*1024,
     'chmod' : 0o400,
     'destination': None,
-    'download' : False, 
     'events': 'create|delete|link|modify',
     'follow_symlinks': False,
     'force_polling': False,
