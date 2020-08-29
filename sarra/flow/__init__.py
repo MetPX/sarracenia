@@ -489,7 +489,7 @@ class Flow:
             except Exception as ex:
                 logger.warning( "making %s: %s" % ( newdir, ex ) )
 
-        logger.debug( "data inlined with message, no need to download" )
+        logger.info( "data inlined with message, no need to download" )
         path = msg['new_dir'] + os.path.sep + msg['new_file']
         #path = msg['new_relPath']
 
