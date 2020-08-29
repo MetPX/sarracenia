@@ -9,9 +9,6 @@ import sarra.moth
 import copy
 from sarra.flow import Flow
 import logging
-
-logger = logging.getLogger( __name__ )
-
 from sarra.plugin.gather import msg_init
 
 import sarra.config 
@@ -20,6 +17,7 @@ import os,sys,time
 
 import sarra.transfer
 
+logger = logging.getLogger( __name__ )
 
 default_options = { 
     'accept_unmatched': False, 

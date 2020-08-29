@@ -1,5 +1,10 @@
 #!/usr/bin/python3
 
+import logging
+
+logger = logging.getLogger( __name__ )
+
+
 class DeleteFlowFiles(object): 
     """
        delete files for messages in two directories.

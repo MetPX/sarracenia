@@ -37,9 +37,6 @@ import calendar,datetime
 from hashlib import md5
 from hashlib import sha512
 import logging
-
-logger = logging.getLogger( __name__ )
-
 import os
 import random
 import signal
@@ -49,11 +46,10 @@ import time
 import urllib
 import urllib.parse
 
-
 from sarra.sr_xattr import *
-
 from sarra import nowflt,timestr2flt
 
+logger = logging.getLogger( __name__ )
 
 #============================================================
 # sigalarm

@@ -7,10 +7,10 @@
 
 import logging
 
-logger = logging.getLogger( __name__ )
-
 import sarra.moth
 from sarra.plugin import Plugin
+
+logger = logging.getLogger( __name__ )
 
 class Message(Plugin):
     """

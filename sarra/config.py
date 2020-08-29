@@ -17,7 +17,6 @@ import copy
 import inspect
 import logging
 
-logger = logging.getLogger( __name__ )
 
 import os
 import pathlib
@@ -107,6 +106,8 @@ convert_to_v3 = {
   }
 
 }
+
+logger = logging.getLogger( __name__ )
 
 def declare_plugin_option( option, kind ):
     """
@@ -797,7 +798,8 @@ class Config:
                v = line[1].replace('.py','',1)
                if ( v in convert_to_v3[k] ):
                    line=convert_to_v3[k][v]
-                   #logger.info('Converting \"%s\" to v3: \"%s\"' % ( l, line ) )
+                   k = line[0]
+                   logger.info('Converting \"%s\" to v3: \"%s\"' % ( l, line ) )
    
            line = list( map( lambda x : self._varsub(x), line ) )
            if len(line) == 1: 
