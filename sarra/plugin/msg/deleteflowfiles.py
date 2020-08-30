@@ -1,9 +1,10 @@
 #!/usr/bin/python3
 
+
 import logging
+import os
 
 logger = logging.getLogger( __name__ )
-
 
 class DeleteFlowFiles(object): 
     """
@@ -16,7 +17,7 @@ class DeleteFlowFiles(object):
 
         for m in worklist.incoming:
 
-            f = "%s%s%s" % (m['new_dir'], os.sep, msg['new_file'])
+            f = "%s%s%s" % (m['new_dir'], os.sep, m['new_file'])
             logger.info("msg_delete: %s" % f)
             try:
                 os.unlink(f)

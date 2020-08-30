@@ -885,7 +885,6 @@ class Flow:
         try:    curdir = os.getcwd()
         except: curdir = None
 
-        logger.error( 'FIXME: new_dir=%s  curdir=%s cdir=%s' % ( new_dir, curdir, cdir ) ) 
         if curdir != new_dir:
             # make sure directory exists, create it if not
             if not os.path.isdir(new_dir):
@@ -895,7 +894,6 @@ class Flow:
                    logger.warning( "making %s: %s" % ( new_dir, ex ) )
                    logger.debug('Exception details:', exc_info=True)
             os.chdir(new_dir)
-        logger.error( 'FIXME2: new_dir=%s  os.getcwd()=%s cdir=%s' % ( new_dir, os.getcwd(), cdir ) ) 
 
         if True: #try :
                 options.destination = msg['baseUrl']

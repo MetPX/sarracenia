@@ -799,7 +799,7 @@ class Config:
                if ( v in convert_to_v3[k] ):
                    line=convert_to_v3[k][v]
                    k = line[0]
-                   logger.info('Converting \"%s\" to v3: \"%s\"' % ( l, line ) )
+                   logger.debug('Converting \"%s\" to v3: \"%s\"' % ( l, line ) )
    
            line = list( map( lambda x : self._varsub(x), line ) )
            if len(line) == 1: 
@@ -1722,8 +1722,8 @@ def one_config( component, config, isPost=False ):
                cfg.postpath.extend( cfg.path )
            else:
                cfg.postpath.append( cfg.path )
-           logger.error( 'path is : %s' % cfg.path )
-           logger.error( 'postpath is : %s' % cfg.postpath )
+           logger.debug( 'path is : %s' % cfg.path )
+           logger.debug( 'postpath is : %s' % cfg.postpath )
     #pp = pprint.PrettyPrinter(depth=6) 
     #pp.pprint(cfg)
 

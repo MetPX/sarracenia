@@ -169,7 +169,7 @@ class Protocol():
 
     # local_read_open
     def local_read_open(self, local_file, local_offset=0 ):
-        logger.error("sr_proto local_read_open getcwd=%s self.cwd=%s" % (os.getcwd(),self.cwd) )
+        logger.debug("sr_proto local_read_open getcwd=%s self.cwd=%s" % (os.getcwd(),self.cwd) )
 
         self.checksum = None
 

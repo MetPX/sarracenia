@@ -145,7 +145,7 @@ class Poll(Flow):
 
         if self.dest != None :
            self.worklist.incoming.extend( self.post_new_urls() )
-           logger.error( 'post_new_urls returned: %s' % len(self.worklist.incoming) )
+           logger.debug( 'post_new_urls returned: %s' % len(self.worklist.incoming) )
 
 
     def load_ls_file(self,path):
@@ -401,7 +401,7 @@ class Poll(Flow):
 
             if currentDir == '' : currentDir = destDir
             msgs.extend( self.poll_directory( currentDir, lsPath ) )
-            logger.error( 'poll_directory returned: %s' % len(msgs) )
+            logger.debug( 'poll_directory returned: %s' % len(msgs) )
 
         # close connection
 
