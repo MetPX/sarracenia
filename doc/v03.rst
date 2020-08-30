@@ -333,13 +333,19 @@ Completed an initial version of the sr_post component now (in v3: plugin.gather.
 Now working on sr_poll, which will take a while because it involve refactoring: sr_file, sr_http,
 sr_ftp, sr_sftp into the transfer module
 
+Mostly done sr_subscribe, which, in the old version, is a base class for all other components,
+but in v3 is just the first component that actually downloads data. So encountering all
+issues with data download, and plugins that do interesting things. Mostly done, but 
+plugins not quite working.
+
+sr_sarra was straightforward once sr_subscribe was done.  
+
+re-implemented get plugin to have conventional return value as the number of bytes 
+transferred, and if they differ, that signals an issue.
+
 
 in Flux
 ~~~~~~~
-
-Started on sr_subscribe, which, in the old version, is a base class for all other components,
-but in v3 is just the first component that actually downloads data. So encountering all
-issues with data download, and plugins that do interesting things.
 
 plugin compatiblity under review... decided to re-write the accel_* plugins for v3, and
 change the API because the v2 one has fundamental deficiencies:
@@ -354,8 +360,6 @@ change the API because the v2 one has fundamental deficiencies:
   one. This logic is rarely helpful, difficult to explain, and confusing to diagnose
   in practice.
 
-re-implemented to have conventional return value as the number of bytes transferred,
-and if they differ, that signals an issue.
 
 Have re-written accel_wget, and accel_scp to the new api... working through static-flow
 to test them. There is also logic to spot v2 invocations of them, and replace with v3
@@ -365,11 +369,6 @@ in the configuration.
 
 TODO
 ~~~~
-
-* many use cases of sr_subscribe. this part is hairy.
-
-* sr_sarra should be straightforward once sr_subscribe is done.
-  might be zero effort.
 
 * sr_sender send logic will then need to be exercised.
   last really hairy code.

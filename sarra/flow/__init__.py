@@ -639,11 +639,11 @@ class Flow:
                 logger.debug("something went wrong when computing local checksum... considered different")
                 return True
 
-        logger.debug( "checksum in message: %s vs. local: %s" % ( self.local_checksum, self.checksum ) )
+        logger.debug( "checksum in message: %s vs. local: %s" % ( msg['integrity'], msg['local_integrity']) )
 
         if msg['local_integrity'] == msg['integrity']:
             if self.o.log_reject:
-                 logger.info( "rejected: same checksum %s " % (fname ) )
+                 logger.info( "rejected: same checksum %s " % (msg['new_path'] ) )
             return False
         else:
             return True
@@ -1262,6 +1262,7 @@ class Flow:
 import sarra.flow.poll
 import sarra.flow.post
 import sarra.flow.report
+import sarra.flow.sarra
 import sarra.flow.shovel
 import sarra.flow.subscribe
 import sarra.flow.watch

@@ -33,9 +33,13 @@ from sarra.sr_credentials  import *
 
 from sarra import durationToSeconds,chunksize_from_str
 import sarra.flow
-import sarra.flow.shovel
-import sarra.flow.winnow
-import sarra.flow.post
+#import sarra.flow.winnow
+#import sarra.flow.shovel
+#import sarra.flow.winnow
+#import sarra.flow.post
+
+from sarra.flow.sarra import default_options as sarradefopts
+
 import sarra.moth
 import sarra.moth.amqp
 import sarra.plugin.integrity
@@ -1685,6 +1689,8 @@ def one_config( component, config, isPost=False ):
        cfg.override( sarra.flow.post.default_options )
     elif component in [ 'poll' ]:
        cfg.override( sarra.flow.poll.default_options )
+    elif component in [ 'sarra' ]:
+       cfg.override( sarradefopts )
     elif component in [ 'subscribe' ]:
        cfg.override( sarra.flow.subscribe.default_options )
     elif component in [ 'watch' ]:

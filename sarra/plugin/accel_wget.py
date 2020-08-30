@@ -35,17 +35,18 @@ import logging
 
 logger = logging.getLogger( __name__ )
 
+import sarra
 from sarra.plugin import Plugin
-from sarra.config import declare_option
+from sarra.config import declare_plugin_option
 
 class ACCEL_WGET(Plugin):
    def __init__(self,options):
 
       self.o = options
 
-      declare_option( 'accel_wget_command' , 'str' )
-      declare_option( 'accel_wget_threshold', 'size' )
-      declare_option( 'accel_wget_protocol', 'str' )
+      declare_plugin_option( 'accel_wget_command' , 'str' )
+      declare_plugin_option( 'accel_wget_threshold', 'size' )
+      declare_plugin_option( 'accel_wget_protocol', 'str' )
 
 
    def on_start(self):
@@ -60,8 +61,11 @@ class ACCEL_WGET(Plugin):
           self.o.accel_wget_protocol = [ "https", "http" ]
           
       if type(self.o.accel_wget_threshold) is list:
-          self.o.accel_wget_threshold = self.o.chunksize_from_str( self.o.accel_wget_threshold[0] )
+          self.o.accel_wget_threshold = sarra.chunksize_from_str( self.o.accel_wget_threshold[0] )
+      elif type(self.o.accel_wget_threshold) is str:
+          self.o.accel_wget_threshold = sarra.chunksize_from_str( self.o.accel_wget_threshold )
 
+      logger.info("accel threshold set to: %d" % self.o.accel_wget_threshold )
       return True
 
    def on_messages(self, worklist):
