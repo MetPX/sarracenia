@@ -9,6 +9,9 @@ class MQTT(Moth):
     def __init__( self, broker ):
         """
 
+          in AMQP: topic separator is dot (.) in MQTT, the topic separator is slash (/)
+          have exchange arguments use protocol specific separator or mapped one?
+
         """
         logger.error("__init__ MQTT TMPC using paho client library: not implemented.")
 

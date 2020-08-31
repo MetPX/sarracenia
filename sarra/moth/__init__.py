@@ -34,12 +34,12 @@
   usage:
      c= Moth( broker, True, '5m', { 'batch':1 } )
 
-     c.newMessages()()
+     c.newMessages()
        - if there are new messages from a publisher, return them, otherwise return
          an empty list []].
        
-     p=Moth( broker, True, '5m', { 'batch':1 } )
-     p.post_new_message()
+     p=Moth( broker, True, '5m', { 'batch':1 }, True )
+     p.putNewMessage()
 
      p.close()
        - tear down connection.     
