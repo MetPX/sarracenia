@@ -99,7 +99,7 @@ class sr_GlobalState:
 
         os.makedirs(os.path.dirname(lfn), exist_ok=True)
 
-        if c in [ 'poll', 'post', 'report', 'sarra', 'shovel', 'subscribe', 'watch', 'winnow' ]:
+        if c in [ 'poll', 'post', 'report', 'sarra', 'sender', 'shovel', 'subscribe', 'watch', 'winnow' ]:
            component_path = os.path.dirname(component_path) + os.sep + 'instance.py'
            cmd = [sys.executable, component_path, '--no', "%d" % i ]
 
@@ -825,7 +825,7 @@ class sr_GlobalState:
            side effect: changes current working directory FIXME?
         """
 
-        self.directory = os.getcwd()
+        self.invoking_directory = os.getcwd()
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
         self.package_lib_dir = os.path.dirname(inspect.getfile(sarra.config.Config)) 
         self.appauthor = 'science.gc.ca'
@@ -872,7 +872,7 @@ class sr_GlobalState:
         self._find_missing_instances()
         #print('analysis - Done. ', flush=True)
         self._match_patterns(config_fnmatches)
-        os.chdir(self.directory)
+        os.chdir(self.invoking_directory)
 
     def _start_missing(self):
         for instance in self.missing:

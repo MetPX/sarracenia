@@ -70,13 +70,13 @@ def _msgRawToDict( raw_msg ):
               bug, or implementation did not keep up. Applying Postel's Robustness principle: normalizing messages.
             """
             if ( 'parts' in msg ): # bug in v2 code makes v03 messages with parts header.
-                 ( m, s, c, n ) = msg['parts'].split(',')
+                 ( m, s, c, r, n  ) = msg['parts'].split(',')
                  if m == '1':
                      msg['size'] = int(s)
                  else: 
                      if m == 'i' : m='inplace'
                      elif m == 'p' : m='partitioned'
-                     msg['blocks'] = { 'method':m, 'size':int(s), 'count':int(c), 'number':int(n) }
+                     msg['blocks'] = { 'method':m, 'size':int(s), 'count':int(c), 'remainder': int(r), 'number':int(n) }
 
                  del msg['parts']
             elif ('size' in msg): 

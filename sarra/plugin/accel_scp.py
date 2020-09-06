@@ -85,8 +85,8 @@ class ACCEL_SCP(Plugin):
           if sz > self.o.accel_scp_threshold :
               m['baseUrl'] = m['baseUrl'].replace('sftp',"acscp", 1 )
 
-          logger.debug("wget sz: %d, threshold: %d download: %s to %s, " % ( \
-              sz, self.o.accel_scp_threshold, m['baseUrl'], m['new_file'] ) )
+          logger.debug("transfer sz: %d, threshold: %d download: %s to %s / %s, " % ( \
+              sz, self.o.accel_scp_threshold, m['baseUrl'], m['new_dir'], m['new_file'] ) )
 
    def do_get(self, msg, remote_file, local_file, remote_offset, local_offset, length ):
        """

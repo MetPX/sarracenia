@@ -481,10 +481,11 @@ class Sftp(Protocol):
 
         # parts
         else:
-           try   : self.sftp.stat(remote_file)
+           try:
+               self.sftp.stat(remote_file)
            except: 
-                   rfp = self.sftp.file(remote_file,'wb',self.o.bufsize)
-                   rfp.close()
+               rfp = self.sftp.file(remote_file,'wb',self.o.bufsize)
+               rfp.close()
 
            rfp = self.sftp.file(remote_file,'r+b',self.o.bufsize)
            rfp.settimeout(1.0*self.o.timeout)
@@ -501,13 +502,11 @@ class Sftp(Protocol):
         alarm_set(self.o.timeout)
         self.fpos = remote_offset + rw_length
         if length != 0 : rfp.truncate(self.fpos)
+        rfp.close()
+        alarm_cancel()
 
         return rw_length
 
-        # close
-
-        rfp.close()
-        alarm_cancel()
 
     # rename
     def rename(self,remote_old,remote_new) :

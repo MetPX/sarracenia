@@ -158,6 +158,10 @@ class Flow:
        
        # FIXME: open retry
 
+       # transport stuff.. for download, get, put, etc...
+       self.scheme = None
+       self.cdir   = None
+       self.proto  = None
 
        if hasattr( self.o, 'plugins'):
            self.plugins['load'].extend( self.o.plugins )
@@ -170,10 +174,6 @@ class Flow:
 
        self.loadPlugins( self.plugins['load'] )
 
-       # transport stuff.. for download, get, put, etc...
-       self.scheme = None
-       self.cdir   = None
-       self.proto  = None
     
     def loadPlugins(self, plugins_to_load):
 
@@ -408,7 +408,7 @@ class Flow:
                     m['_deleteOnPost' ].append( 'renameUnlink' )
                     logger.debug( "rename deletion 2 %s" % (m['oldname']) )
                     filtered_worklist.append(m)
-                    self.o.set_newMessageFields(m, url, None, self.o.currentDir, self.o.filename, 
+                    self.o.set_newMessageFields(m, url, None, None, self.o.filename, 
                        self.o.mirror, self.o.strip, self.o.pstrip, self.o.flatten )
                     continue
 
@@ -1031,6 +1031,7 @@ class Flow:
     # generalized send...
     def send( self, msg, options ):
         self.o = options
+        logger.debug("%s_transport destination: %s " % (self.scheme, self.o.destination ) )
         logger.debug("%s_transport send %s %s" % (self.scheme,msg['new_dir'], msg['new_file'] ) )
 
         local_path = msg['relPath']
@@ -1059,7 +1060,7 @@ class Flow:
                 # if parts, check that the protol supports it
                 #=================================
 
-                if not hasattr(proto,'seek') and ('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' ):
+                if not hasattr(self.proto,'seek') and ('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' ):
                    logger.error("%s, inplace part file not supported" % self.scheme)
                    return False
 
@@ -1068,7 +1069,7 @@ class Flow:
                 #=================================
 
                 inflight = options.inflight
-                if not hasattr(proto,'umask') and options.inflight == 'umask' :
+                if not hasattr(self.proto,'umask') and options.inflight == 'umask' :
                    logger.warning("%s, umask not supported" % self.scheme)
                    inflight = None
 
@@ -1076,7 +1077,7 @@ class Flow:
                 # if renaming used, check that the protocol supports it ... 
                 #=================================
 
-                if not hasattr(proto,'rename') and options.inflight.startswith('.') :
+                if not hasattr(self.proto,'rename') and options.inflight.startswith('.') :
                    logger.warning("%s, rename not supported" % self.scheme)
                    inflight = None
 
@@ -1085,19 +1086,20 @@ class Flow:
                 #=================================
                 
                 cwd = None
-                if hasattr(proto,'getcwd') : cwd = proto.getcwd()
+                if hasattr(self.proto,'getcwd') : cwd = self.proto.getcwd()
+
                 if cwd != new_dir :
                    logger.debug("%s_transport send cd to %s" % (self.scheme,new_dir))
-                   proto.cd_forced(775,new_dir)
+                   self.proto.cd_forced(775,new_dir)
 
                 #=================================
                 # delete event
                 #=================================
 
-                if msg.sumflg == 'R' :
-                   if hasattr(proto,'delete') :
+                if msg['integrity']['method'] == 'remove' :
+                   if hasattr(self.proto,'delete') :
                       logger.debug("message is to remove %s" % new_file)
-                      proto.delete(new_file)
+                      self.proto.delete(new_file)
                       return True
                    logger.error("%s, delete not supported" % self.scheme)
                    return False
@@ -1106,10 +1108,10 @@ class Flow:
                 # link event
                 #=================================
 
-                if msg.sumflg == 'L' :
-                   if hasattr(proto,'symlink') :
+                if 'link' in msg:
+                   if hasattr(self.proto,'symlink') :
                       logger.debug("message is to link %s to: %s" % ( new_file, msg.headers['link'] ))
-                      proto.symlink(msg.headers['link'],new_file)
+                      self.proto.symlink(msg.headers['link'],new_file)
                       return True
                    logger.error("%s, symlink not supported" % self.scheme)
                    return False
@@ -1127,23 +1129,23 @@ class Flow:
                 offset = 0
                 if  ('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' ): offset = msg.offset
 
-                new_offset = msg.local_offset
+                new_offset = msg['local_offset']
     
                 str_range = ''
                 if ('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' ) :
-                   str_range = 'bytes=%d-%d'%(offset,offset+msg.length-1)
+                   str_range = 'bytes=%d-%d'%(offset,offset+msg['size']-1)
     
                 #upload file
     
                 if inflight == None or (('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' )) :
-                   self.put(msg, local_file, new_file, offset, new_offset, msg.length)
+                   self.put(msg, local_file, new_file, offset, new_offset, msg['size'])
                 elif inflight == '.' :
                    new_inflight_path = '.'  + new_file
                    self.put(msg, local_file, new_inflight_path )
                    self.proto.rename(new_inflight_path, new_file)
                 elif inflight[0] == '.' :
                    new_inflight_path = new_file + inflight
-                   self.self.put(msg, local_file, new_inflight_path )
+                   self.put(msg, local_file, new_inflight_path )
                    proto.rename(new_inflight_path, new_file)
                 elif options.inflight[-1] == '/' :
                    try :
@@ -1159,15 +1161,17 @@ class Flow:
 
                 # fix permission 
 
-                self.set_remote_file_attributes(proto,new_file,msg)
+                self.set_remote_file_attributes( self.proto, new_file,msg )
     
                 logger.info('Sent: %s %s into %s/%s %d-%d' % 
-                    (local_path,str_range,new_dir,new_file,offset,offset+msg.length-1))
+                    (local_path,str_range,new_dir,new_file,offset,offset+msg['size']-1))
+
+                return True 
 
         except Exception as err:
 
                 #removing lock if left over
-                if new_inflight_path != None and hasattr(proto,'delete') :
+                if new_inflight_path != None and hasattr(self.proto,'delete') :
                    try   : self.proto.delete(new_inflight_path)
                    except: pass
 
@@ -1183,7 +1187,6 @@ class Flow:
                 logger.debug('Exception details: ', exc_info=True)
 
                 return False
-        return True
 
     # set_local_file_attributes
     def set_local_file_attributes(self,local_file, msg) :
@@ -1258,11 +1261,64 @@ class Flow:
 
 
     # v2 sr_util sr_transport stuff. end.
+  
+    # imported from v2: sr_sender/doit_send
+
+    def do_send(self):
+        """
+        """
+        if self.o.notify_only:
+           self.worklist.ok = self.worklist.incoming
+           self.worklist.incoming = []
+           return
+
+        logger.error("FIXME: incoming: %s" % len(self.worklist.incoming) ) 
+        j=0
+        for msg in self.worklist.incoming:
+
+            logger.error("FIXME: i=%d" % j )
+            j += 1 
+            #=================================
+            # check message for local file
+            #=================================
+
+            if msg['baseUrl'] != 'file:/' :
+               logger.error("protocol should be 'file:' message ignored")
+               self.worklist.rejected.append(msg)
+               continue
+
+            #=================================
+            # proceed to send :  has to work
+            #=================================
+    
+            # N attempts to send
+    
+            i  = 1
+            while i <= self.o.attempts:
+                if i != 1:
+                    logger.warning("sending again, attempt %d" % i)
+    
+                ok = self.send( msg, self.o )
+                logger.info("ok: %s" % ok )
+                if ok : 
+                    self.worklist.ok.append(msg)
+                    break
+
+                i = i + 1
+            if not ok:
+                self.worklist.failed.append(msg)    
+
+
+
+
+
+
 
 import sarra.flow.poll
 import sarra.flow.post
 import sarra.flow.report
 import sarra.flow.sarra
+import sarra.flow.sender
 import sarra.flow.shovel
 import sarra.flow.subscribe
 import sarra.flow.watch

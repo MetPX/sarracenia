@@ -169,7 +169,7 @@ class Protocol():
 
     # local_read_open
     def local_read_open(self, local_file, local_offset=0 ):
-        logger.debug("sr_proto local_read_open getcwd=%s self.cwd=%s" % (os.getcwd(),self.cwd) )
+        logger.debug("sr_proto local_read_open getcwd=%s self.cwd=%s" % (os.getcwd(),self.getcwd()) )
 
         self.checksum = None
 
@@ -241,7 +241,7 @@ class Protocol():
 
     # read_write
     def read_write(self, src, dst, length=0):
-        #logger.debug("sr_proto read_write")
+        logger.debug("sr_proto read_write")
 
         # reset speed
 
@@ -254,6 +254,7 @@ class Protocol():
 
         if length == 0 :
            while True :
+                 logger.debug("FIXME: reading a chunk")
                  if self.o.timeout: alarm_set(self.o.timeout)
                  chunk = src.read(self.o.bufsize)
                  if chunk :
@@ -330,7 +331,7 @@ class Protocol():
 
     # readlocal_write
     def readlocal_write(self, local_file, local_offset=0, length=0, dst=None ):
-        #logger.debug("sr_proto readlocal_write")
+        logger.debug("sr_proto readlocal_write")
 
         # open
         src = self.local_read_open(local_file, local_offset)
@@ -345,8 +346,9 @@ class Protocol():
 
         # warn if length mismatch without transformation.
 
-        if (not self.o.on_data_list) and length != 0 and rw_length != length :
-           logger.error("util/readlocal mismatched file length reading %s. Message announced it as %d bytes, but read %d bytes " % (local_file,length,rw_length))
+        # FIXME: 2020/09 - commented out for now... unsure about this.
+        #if (not self.o.on_data_list) and length != 0 and rw_length != length :
+        #   logger.error("util/readlocal mismatched file length reading %s. Message announced it as %d bytes, but read %d bytes " % (local_file,length,rw_length))
 
         return rw_length
 

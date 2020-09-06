@@ -103,7 +103,8 @@ convert_to_v3 = {
       'accel_scp'  : [ 'import', 'sarra.plugin.accel_scp.ACCEL_SCP' ],
   },
   'on_message' : { 
-      'msg_delete'  : [ 'import', 'sarra.plugin.msg.deleteflowfiles.DeleteFlowFiles' ]
+      'msg_delete'  : [ 'import', 'sarra.plugin.msg.deleteflowfiles.DeleteFlowFiles' ],
+      'msg_rawlog'  : [ 'import', 'sarra.plugin.msg.log.Log' ]
   },
   'on_line' : { 
       'line_log'  : [ 'import', 'sarra.plugin.line_log' ]
@@ -392,7 +393,7 @@ class Config:
    v2entry_points = [ 'do_download', 'do_get', 'do_poll', 'do_put', 'do_send',
        'on_message', 'on_data', 'on_file', 'on_heartbeat', 'on_housekeeping', 'on_html_page', 'on_line',  
        'on_part', 'on_post', 'on_report', 'on_start', 'on_stop', 'on_watch', 'plugin' ]
-   components =  [ 'audit', 'cpost', 'cpump', 'poll', 'post', 'sarra', 'sender', 'shovel', 'subscribe', 'watch', 'winnow' ]
+   components =  [ 'audit', 'cpost', 'cpump', 'poll', 'post', 'sarra', 'sender', 'shovel', 'subscribe', 'sender', 'watch', 'winnow' ]
 
    actions = [ 'add', 'cleanup', 'devsnap', 'dump', 'edit', 'declare', 'disable', 'edit', 'enable', 'foreground', 'list', 'remove', 'restart', 'sanity', 'setup', 'show', 'start', 'stop', 'status' ]
 
@@ -610,11 +611,9 @@ class Config:
               v = "'%s'" % v
            ks = str(k)
            vs = str(v)
-           if len(vs) >= (mxcolumns/2):
-                #if vs[0] == '/':
-                vs = '"...' + vs[-int(mxcolumns/2):] + '"'
-                #else:
-                #    vs = vs[0:int(mxcolumns/2)] + '...\''
+
+           if (not self.debug) and (len(vs) >= (mxcolumns/2)):
+               vs = '"...' + vs[-int(mxcolumns/2):] + '"'
 
            last_column=column
            column += len(ks) + len(vs) + 3
@@ -912,7 +911,6 @@ class Config:
          There are default options that apply only if they are not overridden... 
        """ 
        
-  
        if hasattr(self,'suppress_duplicates'): 
            if (type(self.suppress_duplicates) is str):
                if isTrue(self.suppress_duplicates):
@@ -1129,7 +1127,7 @@ class Config:
         # if destDir does not start with a substitution $ and
         # if destDir does not start with a / ... it does not need one
 
-        if destDir[0] != '$' and destDir[0] != '/' :
+        if ( len(destDir) > 0 ) and ( destDir[0] != '$' ) and ( destDir[0] != '/' ):
             if ndestDir[0] == '/' : ndestDir = ndestDir[1:]
 
         return ndestDir
@@ -1368,17 +1366,15 @@ class Config:
         
 
         if not self.download:
-            #msg['new_baseUrl'] = msg['baseUrl']
-            #msg['new_relPath'] = msg['relPath']
-            #msg['new_dir'] = os.path.dirname( msg['relPath'] )
-            #msg['new_file'] = os.path.basename( msg['relPath'] )
             return
 
         msg['_deleteOnPost'].extend( [ 'new_dir', 'new_file', 'new_relPath', 'new_baseUrl' ] )
-        self.currentDir = maskDir
 
-        logger.debug("newMsgFields: strip=%s, mirror=%s flatten=%s pbd=%s msg[\'relPath\']=%s" %  \
-             ( strip, mirror, flatten, self.post_baseDir, msg['relPath'] ) )
+        #logger.debug( "entering base_dir=%s" % ( self.baseDir ) )
+        #if 'new_dir' in msg:
+        #    logger.debug( "new_dir=%s" % ( msg['new_dir'] ) )
+        #logger.debug( "strip=%s, mirror=%s flatten=%s maskDir=%s pbd=%s msg[\'relPath\']=%s" %  \
+        #     ( strip, mirror, flatten, maskDir, self.post_baseDir, msg['relPath'] ) )
 
         # relative path by default mirror 
 
@@ -1412,7 +1408,6 @@ class Config:
         # strip using a pattern
 
         elif pstrip != None :
-           logger.debug( 'newMsgFields:  pattern stripping active: %s' % pstrip )
 
            #MG FIXME Peter's wish to have replacement in pstrip (ex.:${SOURCE}...)
            try:    relstrip = re.sub(pstrip,'',relPath,1)
@@ -1454,8 +1449,11 @@ class Config:
 
         # uses current dir
 
-        new_dir = ''
-        if self.currentDir : new_dir = self.currentDir
+        #if self.currentDir : new_dir = self.currentDir
+        if maskDir:
+            new_dir = maskDir
+        else:
+            new_dir = ''
 
         # add relPath
 
@@ -1474,10 +1472,10 @@ class Config:
         # when sr_sender did not derived from sr_subscribe it was always called
         new_dir = self.sundew_dirPattern(pattern, urlstr, tfname, new_dir)
 
-        logger.debug( "newMsgFields: new_dir = %s" % new_dir )
-
         # reset relPath from new_dir
 
+        # FIXME: 2020/09/05 - PAS ... normpath will put back slashes in on Windows.
+        # normpath thing is probably wrong... not sure why it is here...
         if 'new_dir' not in msg:
             msg['new_dir'] = os.path.normpath(new_dir)
 
@@ -1510,6 +1508,13 @@ class Config:
 
         if self.post_broker and self.post_baseUrl:
             msg['new_baseUrl'] = self.post_baseUrl
+
+        if 'new_relPath' in msg:
+            msg['topic'] = self.post_topic_prefix + '.' + '.'.join( msg[ 'new_relPath' ].split('/'))[1:-1] 
+
+        #logger.debug( "leaving with: new_dir=%s new_relpath=%s new_baseUrl=%s " % \
+        #   ( msg['new_dir'], msg['new_relPath'], msg['new_baseUrl'] ) )
+
 
    """
        2020/05/26 PAS... FIXME: end of sheer terror. 
@@ -1647,7 +1652,7 @@ class Config:
 def default_config():
 
     cfg = Config()
-    cfg.currentDir = os.getcwd()
+    cfg.currentDir = None
     cfg.override( default_options )
     cfg.override( sarra.moth.default_options )
     cfg.override( sarra.moth.amqp.default_options )
@@ -1677,12 +1682,14 @@ def one_config( component, config, isPost=False ):
 
     """
     default_cfg = default_config( )
-    default_cfg.override(  { 'program_name':component, 'directory': os.getcwd(), 'accept_unmatched':True, 'no':0 } )
+    #default_cfg.override(  { 'program_name':component, 'directory': os.getcwd(), 'accept_unmatched':True, 'no':0 } )
+    default_cfg.override(  { 'program_name':component, 'accept_unmatched':True, 'no':0 } )
 
     #logger.error( 'default' )
     #print( 'default' )
     #default_cfg.dump()     
 
+    
     cfg = copy.deepcopy(default_cfg)
 
     if component in [ 'post' ]:
@@ -1691,6 +1698,8 @@ def one_config( component, config, isPost=False ):
        cfg.override( sarra.flow.poll.default_options )
     elif component in [ 'sarra' ]:
        cfg.override( sarradefopts )
+    elif component in [ 'sender' ]:
+       cfg.override( sarra.flow.sender.default_options )
     elif component in [ 'subscribe' ]:
        cfg.override( sarra.flow.subscribe.default_options )
     elif component in [ 'watch' ]:

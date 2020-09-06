@@ -32,12 +32,17 @@ class Message:
         self.pubtime=h['pubTime'].replace("T","")
         self.baseurl=h['baseUrl']
         self.relpath=h['relPath']
+
         if 'new_dir' in h:
             self.new_dir=h['new_dir']
             self.new_file=h['new_file']
 
+        if 'new_relPath' in h:
+            self.new_relpath=h['new_relPath']
+
         self.urlstr= self.baseurl + self.relpath
         self.url = urllib.parse.urlparse(self.urlstr)
+
 
         self.notice=self.pubtime + ' ' + h["baseUrl" ] + ' ' + h["relPath"].replace( ' ','%20').replace('#','%23')
 
@@ -216,27 +221,32 @@ class V2Wrapper(Plugin):
                 self.add( e, v )
  
         #propagate options back to self.o for on_timing calls.
-        for v2o in self.o.v2plugin_options:
-            setattr( self.o, v2o, getattr(self,v2o ) )
+        #for v2o in self.o.v2plugin_options:
+        #    setattr( self.o, v2o, getattr(self,v2o )  )
 
         # backward compat...
         self.o.user_cache_dir = self.o.cfg_run_dir
         self.o.instance = self.o.no
         self.o.logger = self.logger
+        if hasattr(self.o, 'post_baseDir' ):
+            self.o.post_base_dir = self.o.post_baseDir
 
         #logger.info('v2wrapper init done')
 
     def declare_option(self,option):
-        #logger.info('v2plugin option: %s declared' % option)
+        logger.info('v2plugin option: %s declared' % option)
 
         self.state_vars.append(option)
 
         sarra.config.declare_plugin_option( option, 'list' )
-        if not hasattr(self,option): return
+        if not hasattr(self.o,option): 
+            logger.info('value of %s not set' % option )
+            return
 
-        logger.info('value type is: %s' % type(getattr(self,option)) )
-        if type(getattr(self,option)) is not list:
-            setattr(self,option, [ getattr(self,option) ] )
+        logger.info('value type is: %s' % type(getattr(self.o,option)) )
+        if type(getattr(self.o,option)) is not list:
+            setattr(self.o, option, [ getattr(self.o,option) ] )
+        logger.info('value type is: %s' % type(getattr(self.o,option)) )
 
 
     def add(self, opname, path):
@@ -311,8 +321,8 @@ class V2Wrapper(Plugin):
 
         outgoing=[]
         for m in worklist.incoming:
-            mm = copy.deepcopy(m)
-            if self.run_entry('on_message', mm):
+            #mm = copy.deepcopy(m)
+            if self.run_entry('on_message', m):
                outgoing.append(m)
             else:
                worklist.rejected.append(m)
@@ -336,6 +346,28 @@ class V2Wrapper(Plugin):
     def on_stop(self):
         self.on_time('on_stop')
 
+    def restoreMsg(self,m,v2msg):
+
+        for h in [ 'oldname', 'newname', 'link' ]:
+            if ( h in v2msg.headers) and ( (h not in m) or ( v2msg.headers[ h ] != m[ h ])):
+                m[ h ] = v2msg.headers[ h ]
+
+        for h in [ 'new_file', 'new_dir' ]:
+           if hasattr(v2msg,h):
+              if (h in m) and ( getattr(v2msg,h) != m[h] ) :
+                   m[ h ] = getattr(v2msg, h )
+                  
+        if v2msg.baseurl != m[ 'baseUrl' ]:
+            m['baseUrl' ] = v2msg.baseurl
+
+        if hasattr( v2msg, 'new_relpath') and ( v2msg.new_relpath != m[ 'new_relPath' ] ):
+            m['new_relPath' ] = v2msg.new_relpath
+
+        if hasattr( v2msg, 'post_base_dir') and ( v2msg.post_base_dir != m[ 'new_baseDir' ]):
+            m['post_baseDir' ] = v2msg.post_base_dir
+
+
+
     def run_entry(self,ep,m):
         """
            run plugins for a given entry point.
@@ -358,6 +390,8 @@ class V2Wrapper(Plugin):
              if not ok: break
 
         vars_after=vars(self.msg)
+
+        self.restoreMsg(m,self.msg)
 
         diff=list( set(vars_after) - set(varsb4) )
         if len(diff) > 0:
