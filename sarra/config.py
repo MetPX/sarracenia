@@ -29,14 +29,11 @@ import time
 from random import randint
 
 #from sarra.sr_util import * 
+import sarra
 from sarra.sr_credentials  import *
 
 from sarra import durationToSeconds,chunksize_from_str
 import sarra.flow
-#import sarra.flow.winnow
-#import sarra.flow.shovel
-#import sarra.flow.winnow
-#import sarra.flow.post
 
 from sarra.flow.sarra import default_options as sarradefopts
 
@@ -1569,7 +1566,7 @@ class Config:
         """
          
         parser=argparse.ArgumentParser( \
-             description='Subscribe to one peer, and post what is downloaded' ,\
+             description='version: %s\nSarracenia flexible tree copy entry point' % sarra.__version__ ,\
              formatter_class=argparse.ArgumentDefaultsHelpFormatter )
         
         parser.add_argument('--accept_unmatched', default=self.accept_unmatched, type=bool, nargs='?', help='default selection, if nothing matches' )
@@ -1607,6 +1604,7 @@ class Config:
            as currently coded, just a single value that over-writes previous setting, so only binding to a single exchange is possible.
         """
         
+        #parser.add_argument('--help', '-h',  type=bool, help='print help')
         parser.add_argument('--inline', dest='inline', default=self.inline, action='store_true', help='include file data in the message')
         parser.add_argument('--inline_encoding', choices=[ 'text', 'binary', 'guess'], default=self.inline_encoding, help='encode payload in base64 (for binary) or text (utf-8)')
         parser.add_argument('--inline_max', type=int, default=self.inline_max, help='maximum message size to inline')
@@ -1630,6 +1628,7 @@ class Config:
         #FIXME: select/accept/reject in parser not implemented.
         parser.add_argument('--select', nargs=1, action='append', help='client-side filtering: accept/reject <regexp>' )
         parser.add_argument('--subtopic', nargs=1, action=Config.addBinding, help='server-side filtering: MQTT subtopic, wilcards # to match rest, + to match one topic' )
+        parser.add_argument('--version', '-v', action='version', version='%s' % sarra.__version__, help='server-side filtering: MQTT subtopic, wilcards # to match rest, + to match one topic' )
 
         if isPost:
             parser.add_argument('--path', '-p', action='append', nargs='?', help='path to post or watch')
@@ -1639,6 +1638,9 @@ class Config:
             parser.add_argument( 'configurations', nargs='*', help='configurations to operate on' )
 
         args = parser.parse_args()
+
+        if hasattr(args,'help'):
+           args.print_usage()
 
         if hasattr(args,'config') and ( args.config is not None ):
            args.configurations = [ args.config ]
