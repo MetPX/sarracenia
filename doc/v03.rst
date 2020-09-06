@@ -343,6 +343,13 @@ sr_sarra was straightforward once sr_subscribe was done.
 re-implemented get plugin to have conventional return value as the number of bytes 
 transferred, and if they differ, that signals an issue.
 
+sr_sender send now done, involved a lot more thinking about how to set new_ fields
+in messages. but once that was done, was able to remove both the sender and sr_subscribe
+(the parent class of most components) and allowed removal of sr_cache, sr_consumer, sr_file,
+sr_ftp, sr_http, sr_message, sr_retry, and sr_sftp.
+
+That's the end of the most difficult part.  
+
 
 in Flux
 ~~~~~~~
@@ -370,10 +377,8 @@ in the configuration.
 TODO
 ~~~~
 
-* sr_sender send logic will then need to be exercised.
-  last really hairy code.
 
-* End of hard part, 
+* sr_audit ? what to do.
 
 * likely run code lint thing to fix indentation and PEP style.
 
