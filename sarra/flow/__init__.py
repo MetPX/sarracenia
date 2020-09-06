@@ -1272,12 +1272,8 @@ class Flow:
            self.worklist.incoming = []
            return
 
-        logger.error("FIXME: incoming: %s" % len(self.worklist.incoming) ) 
-        j=0
         for msg in self.worklist.incoming:
 
-            logger.error("FIXME: i=%d" % j )
-            j += 1 
             #=================================
             # check message for local file
             #=================================
@@ -1307,11 +1303,6 @@ class Flow:
                 i = i + 1
             if not ok:
                 self.worklist.failed.append(msg)    
-
-
-
-
-
 
 
 import sarra.flow.poll
