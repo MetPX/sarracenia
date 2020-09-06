@@ -182,17 +182,20 @@ class Retry(Plugin):
           and try processing that again.
         """
 
-        if len(worklist.incoming) > 0:
-            return
+        qty = (self.o.batch/2) - len(worklist.incoming)
+ 
+        while qty > 0:
+            ( ok, m ) = self.get_retry()
 
-        ( ok, m ) = self.get_retry()
-        logger.debug("loading from retry: %s " % (m) )
-        if m is not None:
-             worklist.incoming.append(m)
+            if m is None:
+                 break
 
-        return
-           
-     
+            logger.debug("loading from retry: qty=%d ... %s " % (qty,m) )
+            worklist.incoming.append(m)
+            qty -= 1
+ 
+        return True
+            
     def init(self):
 
         # retry messages
