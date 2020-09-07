@@ -35,7 +35,6 @@ import logging
 import os
 import subprocess
 
-logger = logging.getLogger( __name__ )
 
 import sarra 
 #from sarra import chunksize_from_str
@@ -43,6 +42,7 @@ import sarra
 from sarra.plugin import Plugin
 from sarra.config import declare_plugin_option
 
+logger = logging.getLogger( __name__ )
 
 class ACCEL_SCP(Plugin):
    def __init__( self, options ):

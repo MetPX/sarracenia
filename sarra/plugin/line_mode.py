@@ -21,12 +21,10 @@ sample line from sftp server:
 """
 
 import logging
+from sarra.plugin import Plugin
 
 
 logger = logging.getLogger( __name__ )
-
-from sarra.plugin import Plugin
-
 
 class Line_Mode(Plugin): 
 

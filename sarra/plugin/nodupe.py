@@ -27,7 +27,6 @@ import logging
 
 from sarra import msg_set_report
 
-logger = logging.getLogger( __name__ )
 
 
 #============================================================
@@ -46,6 +45,7 @@ from sarra import nowflt
 
 from sarra.plugin import Plugin
 
+logger = logging.getLogger( __name__ )
 
 class NoDupe(Plugin):
     """

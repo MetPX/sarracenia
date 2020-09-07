@@ -22,12 +22,13 @@ from sarra import nowflt,timestr2flt
 import logging
 
 
-logger = logging.getLogger( __name__ )
 
 
 from sarra.plugin import Plugin
 
 # class sarra/retry
+
+logger = logging.getLogger( __name__ )
 
 class Retry(Plugin):
     """

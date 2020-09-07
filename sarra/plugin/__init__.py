@@ -16,7 +16,6 @@ from abc import ABCMeta, abstractmethod
 
 
 
-logger = logging.getLogger( __name__ )
 
 """
 1st draft of a v03 plugin method.
@@ -55,6 +54,8 @@ Do not remove from all lists, only move messages between them.
    so they can be acknowledged as received.
 
 """
+
+logger = logging.getLogger( __name__ )
 
 entry_points = [ 'ack', 'do_poll', 
    'gather', 'on_messages', 'on_data', 'on_files', 'on_housekeeping', 'on_html_page', 

@@ -33,13 +33,14 @@ See end of file for performance considerations.
 
 import logging
 
-logger = logging.getLogger( __name__ )
-
 import sarra
 from sarra.plugin import Plugin
 from sarra.config import declare_plugin_option
+import sarra.transfer.sftp
 
-class ACCEL_WGET(Plugin):
+logger = logging.getLogger( __name__ )
+
+class ACCEL_WGET(Plugin,sarra.transfer.sftp.Sftp):
    def __init__(self,options):
 
       self.o = options
