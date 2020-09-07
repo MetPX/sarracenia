@@ -187,6 +187,11 @@ v2->v3 instance variables::
 
     self.user_cache_dir --> self.o.cfg_run_dir
 
+Changes needed in v2 plugins::
+
+    from sarra.sr_util import --> from sarra import 
+
+
 
 Dictionaries or Members for Properties?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -351,6 +356,34 @@ sr_ftp, sr_http, sr_message, sr_retry, and sr_sftp.
 That's the end of the most difficult part.  
 
 
+Worries Addressed
+~~~~~~~~~~~~~~~~~
+
+This section containts issues that were taken care of.  They were a bother for a while,
+so noting down what the solution was.
+
+* logging using __name__ sometimes ends up claiming to be from the wrong file.
+  example::  
+
+    2020-08-16 01:31:52,628 [INFO] sarra.sr_credentials set_newMessageFields FIXME new_dir=/home/peter/sarra_devdocroot/download
+
+  set_newMessageFields is in config.py not sr_credentials... why it is doing that?
+  Likely wait until all legacy code is replaced before tackling this.
+  if this doesn't get fixed, then make it a bug report.
+
+  fixed: note... the problem was that the logger declaration must be AFTER all 
+  imports.  Concretely::
+
+    logger = logging.getLogger( __name__ )
+
+  must be placed after all imports.
+
+* sr_audit ? what to do. Removed.
+
+* all non entry_point sr_*.py files can be removed.
+  remove sum sub-directory. sr_util.py
+
+
 in Flux
 ~~~~~~~
 
@@ -378,14 +411,9 @@ TODO
 ~~~~
 
 
-* sr_audit ? what to do.
-
 * likely run code lint thing to fix indentation and PEP style.
 
 * cleanup entry points: sr_audit, sr_tailf, sr_log2save, 
-
-* all non entry_point sr_*.py files can be removed.
-  remove sum sub-directory. sr_util.py
 
 * migrate sr_credentials.py to sarra/credentials.py.
 
@@ -461,21 +489,17 @@ FIXME are things left to the side that need to be seen to.
 
 
 * **RELEASE BLOCKER** hairy.
-  sr_watch does not batch things in prefetch lumps. It just dumps an entire tree.
+  sr_watch does not batch things. It just dumps an entire tree.
   This will need to be re-wored before release into an iterator style approach.
   so if you start in a tree with a million files, it will scan the entire million
   and present them as a single in memory worklist.  This will have performance
   problems.  want to incrementally proceed though lists one 'prefetch' batch
   at a time.
 
-* logging using __name__ sometimes ends up claiming to be from the wrong file.
-  example::  
+  There is an interim fix to pretend it does batching properly, but the memory
+  impact and delay to producing the first file is still there, but at least
+  returns one batch at a time.
 
-    2020-08-16 01:31:52,628 [INFO] sarra.sr_credentials set_newMessageFields FIXME new_dir=/home/peter/sarra_devdocroot/download
-
-  set_newMessageFields is in config.py not sr_credentials... why it is doing that?
-  Likely wait until all legacy code is replaced before tackling this.
-  if this doesn't get fixed, then make it a bug report.
 
 * try out jsonfile for building messages to post. can build json incrementally,
   so you do not need to delete the _deleteOnPost elements (can just skip over them)

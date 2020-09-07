@@ -5,7 +5,7 @@
   by invoking parent.cache.save() it will only write out the values that are still relevant.
 
 """
-from sarra.sr_util import nowflt
+from sarra import nowflt
 
 
 class Hb_Cache(object):

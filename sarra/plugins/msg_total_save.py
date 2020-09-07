@@ -20,7 +20,7 @@
 
 import os,stat,time
 
-from sarra.sr_util import timestr2flt, timeflt2str, nowflt
+from sarra import timestr2flt, timeflt2str, nowflt
 
 
 class Msg_Total(object):
@@ -72,7 +72,7 @@ class Msg_Total(object):
         import calendar
         import humanize
         import datetime
-        from sarra.sr_util import timestr2flt
+        from sarra import timestr2flt
 
         if (parent.msg_total_msgcount == 0): 
             logger.info("msg_total: 0 messages received: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"  )

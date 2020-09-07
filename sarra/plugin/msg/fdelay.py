@@ -14,7 +14,7 @@
 import logging
 
 from sarra.plugin import Plugin
-from sarra.sr_util import timestr2flt, nowflt
+from sarra import timestr2flt, nowflt
 
 logger = logging.getLogger( __name__ )
 

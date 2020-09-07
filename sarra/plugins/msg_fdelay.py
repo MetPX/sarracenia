@@ -9,7 +9,7 @@
   every message will be at least 30 seconds old before it is forwarded by this plugin.
 
 """
-from sarra.sr_util import timestr2flt, nowstr, nowflt
+from sarra import timestr2flt, nowstr, nowflt
 
 
 class Msg_FDelay(object):

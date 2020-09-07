@@ -20,7 +20,7 @@
 
 import os,stat,time
 
-from sarra.sr_util import nowflt
+from sarra import nowflt
 
 
 class Post_Total(object):
@@ -72,7 +72,7 @@ class Post_Total(object):
         import calendar
         import humanize
         import datetime
-        from sarra.sr_util import timestr2flt
+        from sarra import timestr2flt
 
         if parent.post_total_msgcount == 0:
             logger.info("post_total: 0 messages posted: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"  )

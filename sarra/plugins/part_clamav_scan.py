@@ -23,7 +23,7 @@
 
 import os,stat,time
 
-from sarra.sr_util import nowflt
+from sarra import nowflt
 
 
 class PartClamAvScan(object):

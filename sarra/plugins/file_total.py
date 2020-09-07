@@ -17,7 +17,7 @@
      requires python3-humanize module.
 
 """
-from sarra.sr_util import nowflt
+from sarra import nowflt
 
 
 class File_Total(object):
@@ -66,7 +66,7 @@ class File_Total(object):
 
         import humanize
         import datetime
-        from sarra.sr_util import timestr2flt
+        from sarra import timestr2flt
 
         if ( parent.file_total_bytecount==0 ) :
             logger.info("file_total: 0 files received: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"  )

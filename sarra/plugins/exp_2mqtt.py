@@ -39,7 +39,7 @@ Options:
 
 import paho.mqtt.client as mqtt
 
-from sarra.sr_util import nowflt
+from sarra import nowflt
 
 
 class EXP_2MQTT(object): 
@@ -100,7 +100,7 @@ class EXP_2MQTT(object):
    def on_message(self,parent):
 
       import os.path,json
-      from sarra.sr_util import timev2tov3str
+      from sarra import timev2tov3str
       import paho.mqtt.client as mqtt
       from codecs import decode,encode
 

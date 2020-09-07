@@ -3,7 +3,7 @@
 import os,stat,time
 from hashlib import md5
 
-from sarra.sr_util import timeflt2str, timestr2flt, nowflt
+from sarra import timeflt2str, timestr2flt, nowflt
 
 """
    Confirm that files downloaded are the ones announced, by comparing the 

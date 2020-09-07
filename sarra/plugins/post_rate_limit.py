@@ -16,7 +16,7 @@
 
 import time
 
-from sarra.sr_util import nowflt
+from sarra import nowflt
 
 
 class Post_Rate_Limit(object):

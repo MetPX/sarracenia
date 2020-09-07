@@ -28,9 +28,9 @@ what shows up in sr_poll log:
  
 """
 try:
-    from sr_util import timestr2flt
+    from sarra import timestr2flt
 except:
-    from sarra.sr_util import timestr2flt, timeflt2str
+    from sarra import timestr2flt, timeflt2str
 
 
 class POLL_SCRIPT(object):

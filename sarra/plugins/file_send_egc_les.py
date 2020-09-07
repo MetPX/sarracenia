@@ -33,7 +33,7 @@ The EGC code (i.e: egc ocean,c1,c2,c3,c4,c5) in the subject field to represent t
 
 import logging, telnetlib, sys, os, stat, time
 
-from sarra.sr_util import nowflt
+from sarra import nowflt
 
 try: from sr_credentials import *
 except: from sarra.sr_credentials import *

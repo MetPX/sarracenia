@@ -8,29 +8,31 @@
 # Documentation: https://github.com/MetPX/sarracenia
 #
 
-import json,os,random,sys,time
-
-from sys import platform as _platform
-
 from base64 import b64decode, b64encode
+from collections import *
+import json
+import logging
 from mimetypes import guess_type
-
+import os
+import random
 from random import choice
 
-from collections import *
+from sarra import *
+from sarra.plugin import Plugin
+from sarra.plugin.gather import msg_init
+import sarra.plugin.integrity
+from sarra.sr_xattr import *
+
+import stat
+from sys import platform as _platform
+import sys
+import time
+
 
 from watchdog.observers         import Observer
 from watchdog.observers.polling import PollingObserver
 from watchdog.events            import PatternMatchingEventHandler
 
-from sarra.sr_xattr import *
-from sarra.sr_util      import *
-from sarra.plugin import Plugin
-from sarra.plugin.gather import msg_init
-
-import sarra.plugin.integrity
-
-import logging
 
 logger = logging.getLogger( __name__ )
 
@@ -213,7 +215,7 @@ class File(Plugin):
         return [ msg ]
 
     def compute_sumstr(self, path, msg):
-        xattr = sr_xattr(path)
+        xattr = sarra.sr_xattr.sr_xattr(path)
         
         if self.o.randomize:
             methods = ['random', 'md5', 'md5name', 'sha512', 'cod,md5', 'cod,sha512' ]

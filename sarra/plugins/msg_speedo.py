@@ -20,7 +20,7 @@
 
 import os,stat,time
 
-from sarra.sr_util import timestr2flt, nowflt
+from sarra import timestr2flt, nowflt
 
 
 class Msg_Speedo(object):

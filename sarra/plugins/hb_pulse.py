@@ -18,7 +18,7 @@
   so maybe this is never a problem?  would be a problem if flows are extremely uneven (high for short periods.)
 
 """
-from sarra.sr_util import nowflt
+from sarra import nowflt
 
 
 class Hb_Pulse(object):

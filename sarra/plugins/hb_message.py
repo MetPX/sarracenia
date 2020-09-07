@@ -4,7 +4,7 @@
 default on_heartbeat handler that gives messages info
 
 """
-from sarra.sr_util import nowflt
+from sarra import nowflt
 
 
 class Hb_Message(object):

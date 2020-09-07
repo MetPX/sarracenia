@@ -2,7 +2,7 @@
 """ msg_pclean_f90 module: file propagation test for Sarracenia components (in flow test)
 """
 from sarra.plugins.msg_pclean import Msg_Pclean
-from sarra.sr_util import nowflt, timestr2flt
+from sarra import nowflt, timestr2flt
 
 
 class Msg_Pclean_F90(Msg_Pclean):

@@ -24,7 +24,7 @@
 
 import os,stat,time
 
-from sarra.sr_util import timeflt2str, timestr2flt, nowflt
+from sarra import timeflt2str, timestr2flt, nowflt
 
 
 class Msg_Total(object):

@@ -20,7 +20,7 @@
 
 import os,stat,time
 
-from sarra.sr_util import timestr2flt, timeflt2str, nowflt
+from sarra import timestr2flt, timeflt2str, nowflt
 
 
 class File_Total(object):
@@ -71,7 +71,7 @@ class File_Total(object):
         import calendar
         import humanize
         import datetime
-        from sarra.sr_util import timestr2flt
+        from sarra import timestr2flt
 
         if ( parent.file_total_bytecount==0 ) :
             logger.info("file_total: 0 files received: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"  )

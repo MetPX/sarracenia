@@ -12,7 +12,7 @@
 
 import os,stat,time
 
-from sarra.sr_util import nowflt, timestr2flt
+from sarra import nowflt, timestr2flt
 
 
 class File_Age(object):
