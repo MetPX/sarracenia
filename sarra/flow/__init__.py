@@ -15,7 +15,6 @@ import urllib.parse
 
 from sarra import timestr2flt,timeflt2str,msg_set_report
 
-# from sr_util...
 from sarra.sr_xattr import *
 
 # for v2 subscriber routines...

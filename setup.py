@@ -35,7 +35,6 @@ setup(
     package_data={ 'sarra': [ 'examples/*/*' ] },
     entry_points={
         "console_scripts":[
-              "sr_audit=sarra.sr_audit:main",
               "sr=sarra.sr:main",
               "sr1=sarra.sr1:main",
               "sr_report=sarra.sr_report:main",

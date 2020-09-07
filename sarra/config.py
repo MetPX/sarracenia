@@ -28,7 +28,6 @@ import time
 
 from random import randint
 
-#from sarra.sr_util import * 
 import sarra
 from sarra.sr_credentials  import *
 
