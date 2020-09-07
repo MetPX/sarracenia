@@ -46,7 +46,7 @@ import time
 import urllib
 import urllib.parse
 
-from sarra.sr_xattr import *
+#from sarra.sr_xattr import *
 from sarra import nowflt,timestr2flt
 
 logger = logging.getLogger( __name__ )

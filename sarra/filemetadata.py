@@ -28,30 +28,6 @@
 #
 #
 
-"""
-  This class implements storing metadata *with* a file.
-
-  on unlix/linux/mac systems, we use extended attributes,
-  where we apply a *user.sr_* prefix to the attribute names to avoid clashes.
-
-  on Windows NT, create an "sr_.json" Alternate Data Stream  to store them.
-
-  API:
-
-  All values are utf-8, hence readable by some subset of humans. 
-  not bytes.  no binary, go away...
-
-  x = sr_attr( path )  <- read metadata from file.
-  x.list()  <- list all extant extended attributes.
-   sample return value: [ 'sum', 'mtime' ]
-  x.get('sum') <- look at one value.
-     returns None if missing.
-  x.set('sum', 'hoho') <- set one value.
-     fails silently (fall-back gracefully.)
-  x.persist() <- write metadata back to file, if necessary.
-
-"""
-
 
 try:
     import xattr
@@ -82,7 +58,31 @@ def disable_xattr():
      global xattr_disabled
      xattr_disabled=True
 
-class sr_xattr:
+class FileMetadata:
+   """
+      This class implements storing metadata *with* a file.
+
+      on unlix/linux/mac systems, we use extended attributes,
+      where we apply a *user.sr_* prefix to the attribute names to avoid clashes.
+    
+      on Windows NT, create an "sr_.json" Alternate Data Stream  to store them.
+
+      API:
+    
+      All values are utf-8, hence readable by some subset of humans. 
+      not bytes.  no binary, go away...
+
+      x = sr_attr( path )  <- read metadata from file.
+      x.list()  <- list all extant extended attributes.
+       sample return value: [ 'sum', 'mtime' ]
+      x.get('sum') <- look at one value.
+         returns None if missing.
+      x.set('sum', 'hoho') <- set one value.
+         fails silently (fall-back gracefully.)
+      x.persist() <- write metadata back to file, if necessary.
+
+   """
+
 
    def __init__(self,path):
 

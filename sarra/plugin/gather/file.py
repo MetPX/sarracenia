@@ -21,7 +21,7 @@ from sarra import *
 from sarra.plugin import Plugin
 from sarra.plugin.gather import msg_init
 import sarra.plugin.integrity
-from sarra.sr_xattr import *
+import sarra.filemetadata
 
 import stat
 from sys import platform as _platform
@@ -215,7 +215,7 @@ class File(Plugin):
         return [ msg ]
 
     def compute_sumstr(self, path, msg):
-        xattr = sarra.sr_xattr.sr_xattr(path)
+        xattr = sarra.filemetadata.FileMetadata(path)
         
         if self.o.randomize:
             methods = ['random', 'md5', 'md5name', 'sha512', 'cod,md5', 'cod,sha512' ]

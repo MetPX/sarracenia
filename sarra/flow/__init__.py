@@ -15,7 +15,7 @@ import urllib.parse
 
 from sarra import timestr2flt,timeflt2str,msg_set_report
 
-from sarra.sr_xattr import *
+import sarra.filemetadata
 
 # for v2 subscriber routines...
 import json,os,sys,time
@@ -550,9 +550,9 @@ class Flow:
 
     def compute_local_checksum(self,msg):
 
-        if supports_extended_attributes:
+        if sarra.filemetadata.supports_extended_attributes:
             try:
-                x = sr_xattr( msg['new_path'] )
+                x = sarra.filemetadata.FileMetadata( msg['new_path'] )
                 s = x.get( 'integrity' )
            
                 if s:
@@ -611,9 +611,9 @@ class Flow:
 
             if self.o.preserve_time :
                old_mtime = lstat.st_mtime
-            elif supports_extended_attributes:
+            elif sarra.filemetadata.supports_extended_attributes:
                try:
-                   x = sr_xattr( msg['new_path'] )
+                   x = sarra.filemetadata.FileMetadata( msg['new_path'] )
                    old_mtime = timestr2flt(x.get( 'mtime' ))
                except:
                    pass
@@ -1202,7 +1202,7 @@ class Flow:
            else:
                sumstr = msg['integrity']
 
-           x = sr_xattr( local_file )
+           x = sarra.filemetadata.FileMetadata( local_file )
            x.set( 'integrity' , sumstr )
 
            if self.o.preserve_time and 'mtime' in msg and msg['mtime'] :
