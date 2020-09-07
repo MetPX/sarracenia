@@ -167,16 +167,25 @@ the two versions, is clear:
 +--------------------------+---------------------------+
 | overall flow             | flow/__init__.py          |
 +--------------------------+---------------------------+
+|                          |                           |
+| sr_poll.py               | flow/poll.py              |
+|                          |                           |
+| sr_post.py               | flow/post.py              |
+|                          |                           |
 | sr_subscribe.py          | flow/subscribe.py         |
-|                          | flow/__init__.py          |
 |                          |                           |
 | sr_shovel.py             | flow/shovel.py            |
-|                          |                           |
-| sr_winnow.py             | flow/winnow.py            |
 |                          |                           |
 | sr_report.py             | flow/report.py            |
 |                          |                           |
 | sr_sarra.py              | flow/sarra.py             |
+|                          |                           |
+| sr_sender.py             | flow/sender.py            |
+|                          |                           |
+| sr_watch.py              | flow/watch.py             |
+|                          |                           |
+| sr_winnow.py             | flow/winnow.py            |
+|                          |                           |
 +--------------------------+---------------------------+
 
 
@@ -351,7 +360,7 @@ transferred, and if they differ, that signals an issue.
 sr_sender send now done, involved a lot more thinking about how to set new_ fields
 in messages. but once that was done, was able to remove both the sender and sr_subscribe
 (the parent class of most components) and allowed removal of sr_cache, sr_consumer, sr_file,
-sr_ftp, sr_http, sr_message, sr_retry, and sr_sftp.
+sr_ftp, sr_http, sr_message, sr_retry, and sr_sftp, sum/*, sr_util.
 
 That's the end of the most difficult part.  
 
