@@ -44,6 +44,9 @@ import time
 
 import sarra.config
 import sarra.moth
+import sarra.rabbitmq_admin
+
+import urllib.parse
 
 logger = logging.getLogger( __name__ )
 
@@ -833,6 +836,8 @@ class sr_GlobalState:
         self.appname = os.getenv( 'SR_DEV_APPNAME' )
         self.hostname = socket.getfqdn()
         self.hostdir = self.hostname.split('.')[0]
+        self.users = opt.users
+        self.declared_users = opt.declared_users
 
         if self.appname is None:
             self.appname = 'sarra'
@@ -932,6 +937,27 @@ class sr_GlobalState:
                 logger.error("did not find anything to copy for: %s" % l ) 
 
     def declare(self):
+
+        if self.users:
+            for h in self.brokers:
+                print('h: %s' % h )
+                if 'admin' in self.brokers[h]:
+                    with open( self.user_config_dir + os.sep + 'credentials.conf', 'r' ) as config_file:
+                        for cfl in config_file.readlines():
+                            u_urlstr=cfl.split()[0]
+                            try:
+                                u_url=urllib.parse.urlparse( u_urlstr )
+                            except:
+                                continue 
+                            if not u_url.username:
+                                continue
+                            if u_url.username in self.default_cfg.declared_users:
+                                print( 'u_url : user:%s, pw:%s, role: %s' % \
+                                    (u_url.username, u_url.password, self.default_cfg.declared_users[u_url.username]))
+                                sarra.rabbitmq_admin.add_user( \
+                                    self.brokers[h]['admin'], \
+                                    self.default_cfg.declared_users[u_url.username],
+                                    u_url.username, u_url.password, False )
 
         # declare exchanges first.
         for f in self.filtered_configurations:
@@ -1442,7 +1468,12 @@ class sr_GlobalState:
         print('\n\nbroker summaries:\n\n')
         for h in self.brokers:
             if 'admin' in self.brokers[h]:
-                a='admin: %s' % self.brokers[h]['admin']
+                admin_url = self.brokers[h]['admin']
+                admin_urlstr = "%s://%s@%s" % ( admin_url.scheme, \
+                   admin_url.username, admin_url.hostname)
+                if admin_url.port :
+                   admin_urlstr += ":" + str(admin_url.port) 
+                a='admin: %s' % admin_urlstr 
             else:
                 a=''
             print('\nbroker: %s  %s' % (h,a) )
@@ -1565,6 +1596,7 @@ def main():
 
     cfg = sarra.config.Config( { 'accept_unmatched':True,  'exchange':'xpublic',
        'inline':False, 'inline_encoding':'auto', 'inline_max':4096, 'subtopic':None } )
+
     cfg.parse_args()
 
     #FIXME... hmm... so... 

@@ -69,7 +69,7 @@ flag_options = [ 'bind_queue', 'cache_stat', 'declare_exchange', 'debug', \
     'report_daemons', 'mirror', 'notify_only', 'overwrite', 'post_on_start', 'poll_without_vip', \
     'preserve_mode', 'preserve_time', 'pump_flag', 'randomize', 'realpath_post', 'reconnect', \
     'report_back', 'reset', 'retry_mode', 'save', 'set_passwords', 'source_from_exchange', \
-    'statehost', 'use_amqplib', 'use_pika', 'users_flag' 
+    'statehost', 'use_amqplib', 'use_pika', 'users' 
 ]
 
 duration_options = [ 'timeout', 'expire', 'housekeeping', 'message_ttl', 'retry_ttl', 'sanity_log_dead', 'sleep', 'timeout' ]
@@ -392,7 +392,7 @@ class Config:
        'on_part', 'on_post', 'on_report', 'on_start', 'on_stop', 'on_watch', 'plugin' ]
    components =  [ 'audit', 'cpost', 'cpump', 'poll', 'post', 'sarra', 'sender', 'shovel', 'subscribe', 'sender', 'watch', 'winnow' ]
 
-   actions = [ 'add', 'cleanup', 'devsnap', 'dump', 'edit', 'declare', 'disable', 'edit', 'enable', 'foreground', 'list', 'remove', 'restart', 'sanity', 'setup', 'show', 'start', 'stop', 'status' ]
+   actions = [ 'add', 'cleanup', 'devsnap', 'declare', 'disable', 'dump', 'edit', 'enable', 'foreground', 'list', 'remove', 'restart', 'sanity', 'setup', 'show', 'start', 'stop', 'status' ]
 
    # lookup in dictionary, respond with canonical version.
    appdir_stuff = { 'appauthor':'science.gc.ca', 'appname':'sarra' }
@@ -484,7 +484,8 @@ class Config:
        self.tls_rigour = 'normal'
        self.topic_prefix = 'v02.post'
        self.undeclared = []
-       self.users = {}
+       self.declared_users = {}
+       self.users = False
        self.vip = None
 
 
@@ -734,7 +735,7 @@ class Config:
        elif words[0] in [ 'option', 'o' ]:
            self._parse_option(words[1],words[2:])
        elif words[0] in [ 'source' , 'subscriber', 'subscribe' ]:
-           self.users[words[1]] = words[0] 
+           self.declared_users[words[1]] = words[0] 
        elif words[0] in [ 'exchange' ]:
            self.declared_exchanges.append( words[1] ) 
 
@@ -1628,6 +1629,7 @@ class Config:
         #FIXME: select/accept/reject in parser not implemented.
         parser.add_argument('--select', nargs=1, action='append', help='client-side filtering: accept/reject <regexp>' )
         parser.add_argument('--subtopic', nargs=1, action=Config.addBinding, help='server-side filtering: MQTT subtopic, wilcards # to match rest, + to match one topic' )
+        parser.add_argument('--users', default=False, action='store_true', help='only for declare... declare users?')
         parser.add_argument('--version', '-v', action='version', version='%s' % sarra.__version__, help='server-side filtering: MQTT subtopic, wilcards # to match rest, + to match one topic' )
 
         if isPost:

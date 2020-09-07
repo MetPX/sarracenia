@@ -33,26 +33,29 @@ represents a configuration, other times a process)
 
 Call the corresponding function for each configuration::
 
+  fractal% sr declare
+  declare: 2020-09-06 23:22:18,043 [INFO] root declare looking at cpost/pelle_dd1_f04 
+  2020-09-06 23:22:18,048 [INFO] sarra.moth.amqp __putSetup exchange declared: xcvan00 (as: amqp://tfeed@localhost/) 
+  2020-09-06 23:22:18,049 [INFO] sarra.moth.amqp __putSetup exchange declared: xcvan01 (as: amqp://tfeed@localhost/) 
+  2020-09-06 23:22:18,049 [INFO] root declare looking at cpost/veille_f34 
+  2020-09-06 23:22:18,053 [INFO] sarra.moth.amqp __putSetup exchange declared: xcpublic (as: amqp://tfeed@localhost/) 
+  2020-09-06 23:22:18,053 [INFO] root declare looking at cpost/pelle_dd2_f05 
+  ...
+  2020-09-06 23:22:18,106 [INFO] root declare looking at cpost/pelle_dd2_f05 
+  2020-09-06 23:22:18,106 [INFO] root declare looking at cpump/xvan_f14 
+  2020-09-06 23:22:18,110 [INFO] sarra.moth.amqp __getSetup queue declared q_tfeed.sr_cpump.xvan_f14.23011811.49631644 (as: amqp://tfeed@localhost/) 
+  2020-09-06 23:22:18,110 [INFO] sarra.moth.amqp __getSetup um..: pfx: v03.post, exchange: xcvan00, values: #
+  2020-09-06 23:22:18,110 [INFO] sarra.moth.amqp __getSetup binding q_tfeed.sr_cpump.xvan_f14.23011811.49631644 with v03.post.# to xcvan00 (as: amqp://tfeed@localhost/)
+  2020-09-06 23:22:18,111 [INFO] root declare looking at cpump/xvan_f15 
+  2020-09-06 23:22:18,115 [INFO] sarra.moth.amqp __getSetup queue declared q_tfeed.sr_cpump.xvan_f15.50074940.98161482 (as: amqp://tfeed@localhost/) 
 
-  blacklab% sr declare
-  gathering global state: procs, configs, state files, logs, analysis - Done. 
-  declare...
-  ...............................Done
-  
-  2019-08-25 11:58:19,383 [INFO] sr_poll pulse declare
-  2019-08-25 11:58:19,383 [INFO] Using amqp module (AMQP 0-9-1)
-  2019-08-25 11:58:19,440 [INFO] declaring exchange xpublic (bunnymaster@localhost)
-  
-  2019-08-25 11:58:19,500 [INFO] sr_poll f62 declare
-  2019-08-25 11:58:19,500 [INFO] Using amqp module (AMQP 0-9-1)
-  2019-08-25 11:58:19,537 [INFO] declaring exchange xs_tsource_poll (tsource@localhost)
-  
+Declares the queues and exchanges related to each configuration.
+One can also invoke it with --users, so that it will declare users as well as exchanges and queues::
+
+  fractal% sr --users declare
+  2020-09-06 23:28:56,211 [INFO] sarra.rabbitmq_admin add_user permission user 'ender' role source  configure='^q_ender.*|^xs_ender.*' write='^q_ender.*|^xs_ender.*' read='^q_ender.*|^x[lrs]_ender.*|^x.*public$' 
   ...
 
-  blacklab% 
-
-The points represent the launching of the processes to run the operation for one configuration.
-The outputs are the results after they complete.
 
 **dump**
 

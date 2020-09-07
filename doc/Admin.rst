@@ -483,29 +483,34 @@ in the file  .config/sarra/admin.conf ::
 
 Now to configure the pump execute the following::
 
- *sr_audit --users foreground*
+ *sr --users declare*
 
 Sample run::
 
-  sarra@boule:~/.config/sarra$ sr_audit foreground --debug --users 
-  2016-03-28 00:41:25,380 [INFO] sr_audit start
-  2016-03-28 00:41:25,380 [INFO] sr_audit run
-  2016-03-28 00:41:25,380 [INFO] sr_audit waking up
-  2016-03-28 00:41:25,673 [INFO] adding user feeder
-  2016-03-28 00:41:25,787 [INFO] permission user 'feeder' role feeder  configure='.*' write='.*' read='.*'
-  2016-03-28 00:41:25,897 [INFO] adding user peter
-  2016-03-28 00:41:26,018 [INFO] permission user 'peter' role source  configure='^q_peter.*' write='^q_peter.*|^xs_peter_.*|^xs_peter_.*' read='^q_peter_.*|^xl_peter$|^.*xpublic$'
-  2016-03-28 00:41:26,136 [INFO] adding user anonymous
-  2016-03-28 00:41:26,247 [INFO] permission user 'anonymous' role source  configure='^q_anonymous.*' write='^q_anonymous.*|^xs_anonymous$' read='^q_anonymous.*|^xpublic$'
-  2016-03-28 00:41:26,497 [INFO] adding exchange 'xreport'
-  2016-03-28 00:41:26,610 [INFO] adding exchange 'xpublic'
-  2016-03-28 00:41:26,730 [INFO] adding exchange 'xs_peter'
-  2016-03-28 00:41:26,854 [INFO] adding exchange 'xl_peter'
-  2016-03-28 00:41:26,963 [INFO] adding exchange 'xs_anonymous'
-  sarra@boule:~/.config/sarra$
+  fractal% sr --users declare
+  2020-09-06 23:28:56,211 [INFO] sarra.rabbitmq_admin add_user permission user 'ender' role source  configure='^q_ender.*|^xs_ender.*' write='^q_ender.*|^xs_ender.*' read='^q_ender.*|^x[lrs]_ender.*|^x.*public$' 
+  ...
+  020-09-06 23:32:50,903 [INFO] root declare looking at cpost/pelle_dd1_f04 
+  2020-09-06 23:32:50,907 [INFO] sarra.moth.amqp __putSetup exchange declared: xcvan00 (as: amqp://tfeed@localhost/) 
+  2020-09-06 23:32:50,908 [INFO] sarra.moth.amqp __putSetup exchange declared: xcvan01 (as: amqp://tfeed@localhost/) 
+  2020-09-06 23:32:50,908 [INFO] root declare looking at cpost/veille_f34 
+  2020-09-06 23:32:50,912 [INFO] sarra.moth.amqp __putSetup exchange declared: xcpublic (as: amqp://tfeed@localhost/) 
+  2020-09-06 23:32:50,912 [INFO] root declare looking at cpost/pelle_dd2_f05 
+  2020-09-06 23:32:50,916 [INFO] sarra.moth.amqp __putSetup exchange declared: xcvan00 (as: amqp://tfeed@localhost/) 
+  ...
+  020-09-06 23:32:50,973 [INFO] root declare looking at post/shim_f63 
+  2020-09-06 23:32:50,973 [INFO] root declare looking at post/test2_f61 
+  2020-09-06 23:32:50,973 [INFO] root declare looking at report/tsarra_f20 
+  2020-09-06 23:32:50,978 [INFO] sarra.moth.amqp __getSetup queue declared q_tfeed.sr_report.tsarra_f20.76069129.80068939 (as: amqp://tfeed@localhost/) 
+  2020-09-06 23:32:50,978 [INFO] sarra.moth.amqp __getSetup binding q_tfeed.sr_report.tsarra_f20.76069129.80068939 with v02.post.# to xsarra (as: amqp://tfeed@localhost/)
+  2020-09-06 23:32:50,978 [INFO] root declare looking at sarra/download_f20 
+  2020-09-06 23:32:50,982 [INFO] sarra.moth.amqp __getSetup queue declared q_tfeed.sr_sarra.download_f20.01191787.94585787 (as: amqp://tfeed@localhost/) 
+  2020-09-06 23:32:50,982 [INFO] sarra.moth.amqp __getSetup binding q_tfeed.sr_sarra.download_f20.01191787.94585787 with v03.post.# to xsarra (as: amqp://tfeed@localhost/)
+  2020-09-06 23:32:50,982 [INFO] root declare looking at sender/tsource2send_f50 
+  2020-09-06 23:32:50,987 [INFO] sarra.moth.amqp __getSetup queue declared q_tsource.sr_sender.tsource2send_f50.60675197.29220410 (as: amqp://tsource@localhost/) 
+  
 
-
-The *sr_audit* program:
+The *sr* program:
 
 - uses the *admin* account from .config/sarra/admin.conf to authenticate to broker.
 - creates exchanges *xpublic* and *xreport* if they don't exist.
@@ -592,13 +597,14 @@ To add Alice using sr_audit, one would add the following to ~/.config/sarra/admi
 then add an appropriate amqp entry in ~/.config/sarra/credentials.conf to set the password,
 then run::
 
-  sr_audit --users foreground
+  sr --users declare
 
 To remove users, just remove *declare source Alice* from the admin.conf file, and run::
 
-  sr_audit --users foreground
+  # FIXME: functionality not present.
 
-again.
+again. To delete users, one can use the existing rabbitmq management interfaces directly.
+The creation is automated because the read/write/configure patterns are cumbersome to do manually.
 
 
 First Subscribe

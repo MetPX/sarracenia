@@ -448,7 +448,7 @@ Install a minimal localhost broker and configure rabbitmq test users::
     sudo wget http://localhost:15672/cli/rabbitmqadmin
     sudo chmod 755 rabbitmqadmin
 
-    sr_audit --users foreground
+    sr --users declare
 
 .. Note::
 
