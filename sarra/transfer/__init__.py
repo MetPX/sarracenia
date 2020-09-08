@@ -83,9 +83,9 @@ def alarm_set(time):
 # sr_proto : one place for throttle, onfly checksum, buffer io timeout
 # =========================================
 
-class Protocol():
+class Transfer():
     """
-    v2: sarra.sr_proto -> v3: sarra.transfer.Protocol
+    v2: sarra.sr_proto -> v3: sarra.transfer
     ============================================================
      protocol in sarracenia supports/uses :
     
@@ -127,7 +127,7 @@ class Protocol():
         sc = None
         # 0:4 is to ignore s in https and use the same protocol for both.
         # FIXME: might want to add 'reverse' to __subclasses__, so plugins are checked first.
-        for sc in Protocol.__subclasses__():
+        for sc in Transfer.__subclasses__():
 
             if (hasattr(sc,'registered_as') and (proto in sc.registered_as(self))) :
                 # old version or (str(proto[0:4]) == sc.__name__.lower()[0:4]):

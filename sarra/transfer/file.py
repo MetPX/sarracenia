@@ -32,7 +32,7 @@
 #
 #
 
-from sarra.transfer import Protocol
+from sarra.transfer import Transfer
 
 import os, stat, sys, time
 
@@ -60,7 +60,7 @@ logger = logging.getLogger( __name__ )
 #     opt   options.bytes_per_second
 #     opt   options.bufsize
 
-class File(Protocol):
+class File(Transfer):
 
     @classmethod
     def assimilate(cls,obj):

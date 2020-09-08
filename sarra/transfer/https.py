@@ -38,7 +38,7 @@ import ssl
 import sys
 import urllib.request, urllib.error
 
-from sarra.transfer import Protocol
+from sarra.transfer import Transfer
 from sarra.transfer import alarm_cancel,alarm_set,alarm_raise
 
 
@@ -59,7 +59,7 @@ logger = logging.getLogger( __name__ )
 #
 # credentials()
 
-class Https(Protocol):
+class Https(Transfer):
 
     @classmethod
     def assimilate(cls,obj):
@@ -151,7 +151,7 @@ class Https(Protocol):
 
     # init
     def init(self):
-        Protocol.init(self)
+        Transfer.init(self)
         logger.debug("sr_http init")
         self.connected   = False
         self.http        = None

@@ -33,7 +33,7 @@
 
 import ftplib,os,sys,time
 import logging
-from sarra.transfer import Protocol
+from sarra.transfer import Transfer
 from sarra.transfer import alarm_cancel,alarm_set,alarm_raise
 
 logger = logging.getLogger( __name__ )
@@ -59,7 +59,7 @@ logger = logging.getLogger( __name__ )
 # FTP : no remote file seek... so 'I' part impossible
 #
 
-class Ftp(Protocol):
+class Ftp(Transfer):
  
     @classmethod
     def assimilate(cls,obj):

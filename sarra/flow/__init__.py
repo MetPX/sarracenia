@@ -899,7 +899,7 @@ class Flow:
 
                 if (self.proto is None) or not self.proto.check_is_connected() :
                    logger.debug("%s_transport download connects" % self.scheme)
-                   self.proto = sarra.transfer.Protocol(self.scheme,self.o)
+                   self.proto = sarra.transfer.Transfer(self.scheme,self.o)
                    logger.debug( "HOHO proto %s " % type(self.proto) )
                    ok = self.proto.connect()
                    if not ok : 
@@ -1050,7 +1050,7 @@ class Flow:
 
                 if (self.proto is None) or not self.proto.check_is_connected() :
                    logger.debug("%s_transport send connects" % self.scheme)
-                   self.proto = sarra.transfer.Protocol(self.scheme,options)
+                   self.proto = sarra.transfer.Transfer(self.scheme,options)
                    ok = self.proto.connect()
                    if not ok : return False
                    self.cdir = None

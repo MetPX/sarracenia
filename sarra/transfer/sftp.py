@@ -35,7 +35,7 @@ import logging, paramiko, os,sys,time
 from   paramiko import *
 from   stat     import *
 
-from sarra.transfer import Protocol
+from sarra.transfer import Transfer
 from sarra.transfer import alarm_cancel,alarm_set,alarm_raise
 
 
@@ -74,7 +74,7 @@ logger = logging.getLogger( __name__ )
 #     opt   options.kbytes_ps
 #     opt   options.bufsize
 
-class Sftp(Protocol):
+class Sftp(Transfer):
 
 
     @classmethod
