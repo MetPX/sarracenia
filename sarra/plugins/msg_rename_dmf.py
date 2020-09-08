@@ -1,5 +1,4 @@
 import sys, os, os.path, time, stat
-
 """
  unlikely to be useful to others, except as example.
 
@@ -9,21 +8,21 @@ import sys, os, os.path, time, stat
 
 """
 
+
 class Renamer(object):
+    def __init__(self):
+        pass
 
-      def __init__(self) :
-          pass
+    def on_message(self, parent):
+        import time
 
-      def on_message(self,parent):
-          import time
+        datestr = time.strftime(':%Y%m%d%H%M%S', time.localtime())
 
-          datestr = time.strftime(':%Y%m%d%H%M%S',time.localtime())
+        parent.msg.new_file += datestr
+        parent.msg.headers['rename'] += datestr
 
-          parent.msg.new_file        += datestr
-          parent.msg.headers['rename'] += datestr
+        return True
 
-          return True
 
-renamer=Renamer()
-self.on_message=renamer.on_message
-
+renamer = Renamer()
+self.on_message = renamer.on_message

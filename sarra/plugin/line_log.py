@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
 
   the default on_line handler for sr_poll. Verifies file are ok to download.
@@ -24,17 +23,15 @@ sample line from sftp server:
 import logging
 from sarra.plugin import Plugin
 
-logger = logging.getLogger( '__name__' )
+logger = logging.getLogger('__name__')
 
-class Line_Log(Plugin): 
 
-    def __init__(self, options ):
-        logger.debug("line_log initialized " )
+class Line_Log(Plugin):
+    def __init__(self, options):
+        logger.debug("line_log initialized ")
         self.o = options
-          
-    def on_line(self,line):
 
-        logger.info("line_log: reading: %s" %  ( line ) )
+    def on_line(self, line):
+
+        logger.info("line_log: reading: %s" % (line))
         return line
-
-

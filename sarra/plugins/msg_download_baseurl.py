@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 """
 Downloads files sourced from the baseurl of the poster, and saves them in the 
 directory specified in the config. Created to use with the poll_nexrad.py 
@@ -14,26 +13,27 @@ usage:
 	
 """
 
-import logging,urllib.request,os
+import logging, urllib.request, os
+
 
 class BaseURLDownloader(object):
+    def __init__(self, parent):
+        parent.logger.debug("msg_download_baseurl initialized")
 
-	def __init__(self, parent):
-		parent.logger.debug("msg_download_baseurl initialized")
+    def on_message(self, parent):
+        import logging, urllib.request, os
 
-	def on_message(self, parent):
-		import logging,urllib.request,os
+        logger = parent.logger
 
-		logger = parent.logger
-		
-		# if mirror is set to True, comment these two lines out	
-		keypath, key = os.path.split(parent.new_dir+parent.msg.new_file)
-		if not os.path.exists(keypath): os.makedirs(keypath)
+        # if mirror is set to True, comment these two lines out
+        keypath, key = os.path.split(parent.new_dir + parent.msg.new_file)
+        if not os.path.exists(keypath): os.makedirs(keypath)
 
-		with open(keypath+'/'+key, 'wb') as f:
-			with urllib.request.urlopen(parent.msg.baseurl) as k:
-				f.write(k.read())
-				return True
+        with open(keypath + '/' + key, 'wb') as f:
+            with urllib.request.urlopen(parent.msg.baseurl) as k:
+                f.write(k.read())
+                return True
+
 
 baseurldownloader = BaseURLDownloader(self)
 self.on_message = baseurldownloader.on_message

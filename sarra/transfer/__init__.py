@@ -20,9 +20,9 @@
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; version 2 of the License.
 #
-#  This program is distributed in the hope that it will be useful, 
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
@@ -31,9 +31,8 @@
 #
 #
 
-
 from abc import ABCMeta, abstractmethod
-import calendar,datetime
+import calendar, datetime
 from hashlib import md5
 from hashlib import sha512
 import logging
@@ -47,26 +46,30 @@ import urllib
 import urllib.parse
 
 #from sarra.sr_xattr import *
-from sarra import nowflt,timestr2flt
+from sarra import nowflt, timestr2flt
 
-logger = logging.getLogger( __name__ )
+logger = logging.getLogger(__name__)
 
 #============================================================
 # sigalarm
 #============================================================
 
+
 class TimeoutException(Exception):
     """timeout exception"""
     pass
 
+
 # alarm_cancel
 def alarm_cancel():
-    if sys.platform != 'win32' :
+    if sys.platform != 'win32':
         signal.alarm(0)
+
 
 # alarm_raise
 def alarm_raise(n, f):
     raise TimeoutException("signal alarm timed out")
+
 
 # alarm_set
 def alarm_set(time):
@@ -74,14 +77,15 @@ def alarm_set(time):
        FIXME: replace with set itimer for > 1 second resolution... currently rouding to nearest second. 
     """
 
-    if sys.platform != 'win32' :
+    if sys.platform != 'win32':
         signal.signal(signal.SIGALRM, alarm_raise)
-        signal.alarm(int(time+0.5))
+        signal.alarm(int(time + 0.5))
 
 
 # =========================================
 # sr_proto : one place for throttle, onfly checksum, buffer io timeout
 # =========================================
+
 
 class Transfer():
     """
@@ -118,70 +122,71 @@ class Transfer():
          opt   options.bufsize
 
     """
-
-    def __init__(self, proto, options) :
+    def __init__(self, proto, options):
         #options.logger.debug("sr_proto __init__")
 
-        self.o = options 
-  
+        self.o = options
+
         sc = None
         # 0:4 is to ignore s in https and use the same protocol for both.
         # FIXME: might want to add 'reverse' to __subclasses__, so plugins are checked first.
         for sc in Transfer.__subclasses__():
 
-            if (hasattr(sc,'registered_as') and (proto in sc.registered_as(self))) :
+            if (hasattr(sc, 'registered_as')
+                    and (proto in sc.registered_as(self))):
                 # old version or (str(proto[0:4]) == sc.__name__.lower()[0:4]):
                 logger.debug("HOHO found!")
                 self.init()
-                sc.__init__(self) 
+                sc.__init__(self)
                 break
 
         if sc is None: return None
-        logger.debug("HOHO found! .. %s " % ( sc.__name__.lower() ) )
-
+        logger.debug("HOHO found! .. %s " % (sc.__name__.lower()))
 
     # init
     @abstractmethod
     def init(self):
         #logger.debug("sr_proto init")
 
-        self.sumalgo   = None
-        self.checksum  = None
-        self.data_sumalgo   = None
+        self.sumalgo = None
+        self.checksum = None
+        self.data_sumalgo = None
         self.data_checksum = None
-        self.fpos      = 0
+        self.fpos = 0
 
-        self.tbytes    = 0
-        self.tbegin    = nowflt()
+        self.tbytes = 0
+        self.tbegin = nowflt()
 
         logger.debug("timeout %d" % self.o.timeout)
 
     # local_read_close
-    def local_read_close(self, src ):
+    def local_read_close(self, src):
         #logger.debug("sr_proto local_read_close")
 
         src.close()
 
         # finalize checksum
 
-        if self.sumalgo : self.checksum = self.sumalgo.get_value()
-        if self.data_sumalgo : self.data_checksum = self.data_sumalgo.get_value()
+        if self.sumalgo: self.checksum = self.sumalgo.get_value()
+        if self.data_sumalgo:
+            self.data_checksum = self.data_sumalgo.get_value()
 
     # local_read_open
-    def local_read_open(self, local_file, local_offset=0 ):
-        logger.debug("sr_proto local_read_open getcwd=%s self.cwd=%s" % (os.getcwd(),self.getcwd()) )
+    def local_read_open(self, local_file, local_offset=0):
+        logger.debug("sr_proto local_read_open getcwd=%s self.cwd=%s" %
+                     (os.getcwd(), self.getcwd()))
 
         self.checksum = None
 
         # local_file opening and seeking if needed
 
-        src = open(local_file,'rb')
-        if local_offset != 0 : src.seek(local_offset,0)
+        src = open(local_file, 'rb')
+        if local_offset != 0: src.seek(local_offset, 0)
 
         # initialize sumalgo
 
-        if self.sumalgo : self.sumalgo.set_path(local_file)
-        if self.data_sumalgo : self.data_sumalgo.set_path(local_file)
+        if self.sumalgo: self.sumalgo.set_path(local_file)
+        if self.data_sumalgo: self.data_sumalgo.set_path(local_file)
 
         return src
 
@@ -201,8 +206,9 @@ class Transfer():
 
         # finalize checksum
 
-        if self.sumalgo : self.checksum = self.sumalgo.get_value()
-        if self.data_sumalgo : self.data_checksum = self.data_sumalgo.get_value()
+        if self.sumalgo: self.checksum = self.sumalgo.get_value()
+        if self.data_sumalgo:
+            self.data_checksum = self.data_sumalgo.get_value()
 
     # local_write_open
     def local_write_open(self, local_file, local_offset=0):
@@ -211,33 +217,32 @@ class Transfer():
         # reset ckecksum, fpos
 
         self.checksum = None
-        self.fpos     = 0
+        self.fpos = 0
 
         # local_file has to exists
 
-        if not os.path.isfile(local_file) :
-           dst = open(local_file,'w')
-           dst.close()
+        if not os.path.isfile(local_file):
+            dst = open(local_file, 'w')
+            dst.close()
 
         # local_file opening and seeking if needed
 
-        dst = open(local_file,'r+b')
-        if local_offset != 0 : dst.seek(local_offset,0)
+        dst = open(local_file, 'r+b')
+        if local_offset != 0: dst.seek(local_offset, 0)
 
         return dst
 
     def __on_data__(self, chunk):
 
         if 'on_data' not in self.o.plugins:
-           return chunk
+            return chunk
 
         new_chunk = chunk
-        for plugin in self.o.plugins['on_data'] :
-           new_chunk = plugin(self,new_chunk)
+        for plugin in self.o.plugins['on_data']:
+            new_chunk = plugin(self, new_chunk)
 
-        if self.data_sumalgo  : self.data_sumalgo.update(new_chunk)
+        if self.data_sumalgo: self.data_sumalgo.update(new_chunk)
         return new_chunk
-        
 
     # read_write
     def read_write(self, src, dst, length=0):
@@ -245,66 +250,70 @@ class Transfer():
 
         # reset speed
 
-        rw_length     = 0
-        self.tbytes   = 0.0
-        self.tbegin   = nowflt()
-
+        rw_length = 0
+        self.tbytes = 0.0
+        self.tbegin = nowflt()
 
         # length = 0, transfer entire remote file to local file
 
-        if length == 0 :
-           while True :
-                 logger.debug("FIXME: reading a chunk")
-                 if self.o.timeout: alarm_set(self.o.timeout)
-                 chunk = src.read(self.o.bufsize)
-                 if chunk :
+        if length == 0:
+            while True:
+                logger.debug("FIXME: reading a chunk")
+                if self.o.timeout: alarm_set(self.o.timeout)
+                chunk = src.read(self.o.bufsize)
+                if chunk:
                     new_chunk = self.__on_data__(chunk)
                     dst.write(new_chunk)
                     rw_length += len(chunk)
-                 alarm_cancel()
-                 if not chunk : break
-                 if self.sumalgo  : self.sumalgo.update(chunk)
-                 if self.o.bytes_per_second: self.throttle(chunk)
-           return rw_length
+                alarm_cancel()
+                if not chunk: break
+                if self.sumalgo: self.sumalgo.update(chunk)
+                if self.o.bytes_per_second: self.throttle(chunk)
+            return rw_length
 
         # exact length to be transfered
 
-        nc = int(length/self.o.bufsize)
-        r  = length%self.o.bufsize
+        nc = int(length / self.o.bufsize)
+        r = length % self.o.bufsize
 
         # read/write bufsize "nc" times
 
-        i  = 0
-        while i < nc :
-              if self.o.timeout : alarm_set(self.o.timeout)
-              chunk = src.read(self.o.bufsize)
-              if chunk :
-                 new_chunk = self.__on_data__(chunk)
-                 rw_length += len(new_chunk)
-                 dst.write(new_chunk)
-              alarm_cancel()
-              if not chunk : break
-              if self.sumalgo  : self.sumalgo.update(chunk)
-              if self.o.bytes_per_second: self.throttle(chunk)
-              i = i + 1
+        i = 0
+        while i < nc:
+            if self.o.timeout: alarm_set(self.o.timeout)
+            chunk = src.read(self.o.bufsize)
+            if chunk:
+                new_chunk = self.__on_data__(chunk)
+                rw_length += len(new_chunk)
+                dst.write(new_chunk)
+            alarm_cancel()
+            if not chunk: break
+            if self.sumalgo: self.sumalgo.update(chunk)
+            if self.o.bytes_per_second: self.throttle(chunk)
+            i = i + 1
 
         # remaining
 
-        if r > 0 :
-           if self.o.timeout : alarm_set(self.o.timeout)
-           chunk = src.read(r)
-           if chunk :
-              new_chunk = self.__on_data__(chunk)
-              rw_length += len(new_chunk)
-              dst.write(new_chunk)
-           alarm_cancel()
-           if self.sumalgo  : self.sumalgo.update(chunk)
-           if self.o.bytes_per_second: self.throttle(chunk)
+        if r > 0:
+            if self.o.timeout: alarm_set(self.o.timeout)
+            chunk = src.read(r)
+            if chunk:
+                new_chunk = self.__on_data__(chunk)
+                rw_length += len(new_chunk)
+                dst.write(new_chunk)
+            alarm_cancel()
+            if self.sumalgo: self.sumalgo.update(chunk)
+            if self.o.bytes_per_second: self.throttle(chunk)
 
         return rw_length
 
     # read_writelocal
-    def read_writelocal(self, src_path, src, local_file, local_offset=0, length=0):
+    def read_writelocal(self,
+                        src_path,
+                        src,
+                        local_file,
+                        local_offset=0,
+                        length=0):
         #logger.debug("sr_proto read_writelocal")
 
         # open
@@ -312,25 +321,28 @@ class Transfer():
 
         # initialize sumalgo
 
-        if self.sumalgo : self.sumalgo.set_path(src_path)
-        if self.data_sumalgo : self.data_sumalgo.set_path(src_path)
+        if self.sumalgo: self.sumalgo.set_path(src_path)
+        if self.data_sumalgo: self.data_sumalgo.set_path(src_path)
 
         # copy source to destination
 
-        rw_length = self.read_write( src, dst, length)
+        rw_length = self.read_write(src, dst, length)
 
         # close
-        self.local_write_close( dst )
+        self.local_write_close(dst)
 
         # warn if length mismatch without transformation.
 
-        if (not 'on_data' in self.o.plugins) and length != 0 and rw_length != length :
-           logger.error("util/writelocal mismatched file length writing %s. Message said to expect %d bytes.  Got %d bytes." % (local_file,length,rw_length))
+        if (not 'on_data' in self.o.plugins
+            ) and length != 0 and rw_length != length:
+            logger.error(
+                "util/writelocal mismatched file length writing %s. Message said to expect %d bytes.  Got %d bytes."
+                % (local_file, length, rw_length))
 
         return rw_length
 
     # readlocal_write
-    def readlocal_write(self, local_file, local_offset=0, length=0, dst=None ):
+    def readlocal_write(self, local_file, local_offset=0, length=0, dst=None):
         logger.debug("sr_proto readlocal_write")
 
         # open
@@ -338,7 +350,7 @@ class Transfer():
 
         # copy source to destination
 
-        rw_length = self.read_write( src, dst, length )
+        rw_length = self.read_write(src, dst, length)
 
         # close
 
@@ -361,42 +373,45 @@ class Transfer():
     # set_sumalgo
     def set_sumalgo(self, sumalgo):
         logger.debug("sr_proto set_sumalgo %s" % sumalgo)
-        self.sumalgo = sarra.plugin.integrity.Integrity( sumalgo )
-        self.data_sumalgo = sarra.plugin.integrity.Integrity( sumalgo )
+        self.sumalgo = sarra.plugin.integrity.Integrity(sumalgo)
+        self.data_sumalgo = sarra.plugin.integrity.Integrity(sumalgo)
 
     def set_path(self, path):
         if self.sumalgo:
-            self.sumalgo.set_path( path )
+            self.sumalgo.set_path(path)
         if self.data_sumalgo:
-            self.data_sumalgo.set_path( path )
+            self.data_sumalgo.set_path(path)
 
     def get_sumstr(self):
         if self.sumalgo:
             #return { 'method':type(self.sumalgo).__name__, 'value':self.sumalgo.get_value() }
-            return { 'method':self.sumalgo.get_method(), 'value':self.sumalgo.get_value() }
+            return {
+                'method': self.sumalgo.get_method(),
+                'value': self.sumalgo.get_value()
+            }
         else:
             return None
 
     # throttle
-    def throttle(self,buf) :
+    def throttle(self, buf):
         logger.debug("sr_proto throttle")
         self.tbytes = self.tbytes + len(buf)
-        span  = self.tbytes / self.o.bytes_per_second
+        span = self.tbytes / self.o.bytes_per_second
         rspan = nowflt() - self.tbegin
-        if span > rspan :
-           stime = span-rspan
-           if stime > 10 :
-               logger.debug("sr_proto throttle sleeping for %g" % stime )
-           time.sleep(stime)
+        if span > rspan:
+            stime = span - rspan
+            if stime > 10:
+                logger.debug("sr_proto throttle sleeping for %g" % stime)
+            time.sleep(stime)
 
     # write_chunk
-    def write_chunk(self,chunk):
-        if self.chunk_iow : self.chunk_iow.write(chunk)
+    def write_chunk(self, chunk):
+        if self.chunk_iow: self.chunk_iow.write(chunk)
         self.rw_length += len(chunk)
         alarm_cancel()
-        if self.sumalgo  : self.sumalgo.update(chunk)
+        if self.sumalgo: self.sumalgo.update(chunk)
         if self.o.bytes_per_second: self.throttle(chunk)
-        if self.o.timeout   : alarm_set(self.o.timeout)
+        if self.o.timeout: alarm_set(self.o.timeout)
 
     # write_chunk_end
     def write_chunk_end(self):
@@ -405,12 +420,13 @@ class Transfer():
         return self.rw_length
 
     # write_chunk_init
-    def write_chunk_init(self,proto):
+    def write_chunk_init(self, proto):
         self.chunk_iow = proto
-        self.tbytes    = 0.0
-        self.tbegin    = nowflt()
+        self.tbytes = 0.0
+        self.tbegin = nowflt()
         self.rw_length = 0
-        if self.o.timeout : alarm_set(self.o.timeout)
+        if self.o.timeout: alarm_set(self.o.timeout)
+
 
 import sarra.transfer.ftp
 import sarra.transfer.sftp

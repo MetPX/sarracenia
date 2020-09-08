@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
 
   the default on_line handler for sr_poll. Verifies file are ok to download.
@@ -23,43 +22,42 @@ sample line from sftp server:
 import logging
 from sarra.plugin import Plugin
 
+logger = logging.getLogger(__name__)
 
-logger = logging.getLogger( __name__ )
 
-class Line_Mode(Plugin): 
-
+class Line_Mode(Plugin):
     def __init__(self, options):
 
         self.o = options
 
-        if not hasattr(options,'chmod'):
-           self.o.chmod = 0o4
+        if not hasattr(options, 'chmod'):
+            self.o.chmod = 0o4
 
-        logger.debug("line_mode initialized mask (from chmod setting) is: %03o " % self.o.chmod )
-          
-    def modstr2num( self, m ):
-        mode=0
-        if ( m[0] == 'r' ) : mode += 4
-        if ( m[1] == 'w' ) : mode += 2
-        if ( m[2] == 'x' ) : mode += 1
+        logger.debug(
+            "line_mode initialized mask (from chmod setting) is: %03o " %
+            self.o.chmod)
+
+    def modstr2num(self, m):
+        mode = 0
+        if (m[0] == 'r'): mode += 4
+        if (m[1] == 'w'): mode += 2
+        if (m[2] == 'x'): mode += 1
         return mode
 
-    def on_line(self,line):
+    def on_line(self, line):
 
         parts = line.split()
 
         modstr = parts[0]
 
-        mode=0
+        mode = 0
         mode += self.modstr2num(modstr[1:4]) << 6
         mode += self.modstr2num(modstr[4:7]) << 3
-        mode += self.modstr2num(modstr[7:10]) 
-        
+        mode += self.modstr2num(modstr[7:10])
+
         #logger.info("line_mode: %s mode: %03o" %  ( line, mode ) )
 
-        if ( ( mode & self.o.chmod ) == self.o.chmod ): 
+        if ((mode & self.o.chmod) == self.o.chmod):
             return line
         else:
             return None
-
-

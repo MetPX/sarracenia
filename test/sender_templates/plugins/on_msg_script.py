@@ -1,22 +1,22 @@
 #!/usr/bin/python3
 
+
 class ParseAndRetrieve(object):
+    def __init__(self, parent):
+        pass
 
-	def __init__(self, parent):
-		pass
-		
-	def perform(self, parent):
+    def perform(self, parent):
 
-		import subprocess
+        import subprocess
 
-		path = parent.msg.headers["flow"]
+        path = parent.msg.headers["flow"]
 
-		on_msg_file = "%s/on_msg_file.txt" %(path)
+        on_msg_file = "%s/on_msg_file.txt" % (path)
 
-		subprocess.call(["touch", on_msg_file])
+        subprocess.call(["touch", on_msg_file])
 
-		return True
+        return True
 
 
 configFile = ParseAndRetrieve(self)
-self.on_message=configFile.perform
+self.on_message = configFile.perform

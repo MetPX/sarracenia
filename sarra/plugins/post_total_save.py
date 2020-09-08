@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 """
   post_total
   
@@ -18,15 +17,13 @@
 
 """
 
-import os,stat,time
+import os, stat, time
 
 from sarra import nowflt
 
 
 class Post_Total(object):
-
-
-    def __init__(self,parent):
+    def __init__(self, parent):
         """
            set defaults for options.  can be overridden in config file.
         """
@@ -37,37 +34,36 @@ class Post_Total(object):
         parent.declare_option('post_total_interval')
         parent.declare_option('post_total_maxlag')
 
-
-        if hasattr(parent,'post_total_maxlag'):
+        if hasattr(parent, 'post_total_maxlag'):
             if type(parent.post_total_maxlag) is list:
-                parent.post_total_maxlag=int(parent.post_total_maxlag[0])
+                parent.post_total_maxlag = int(parent.post_total_maxlag[0])
         else:
-            parent.post_total_maxlag=60
+            parent.post_total_maxlag = 60
 
-        logger.debug("speedo init: 2 " )
+        logger.debug("speedo init: 2 ")
 
-        if hasattr(parent,'post_total_interval'):
+        if hasattr(parent, 'post_total_interval'):
             if type(parent.post_total_interval) is list:
-                parent.post_total_interval=int(parent.post_total_interval[0])
+                parent.post_total_interval = int(parent.post_total_interval[0])
         else:
-            parent.post_total_interval=5
+            parent.post_total_interval = 5
 
-        now=nowflt()
+        now = nowflt()
 
         parent.post_total_last = now
         parent.post_total_start = now
-        parent.post_total_msgcount=0
-        parent.post_total_bytecount=0
-        parent.post_total_lag=0
+        parent.post_total_msgcount = 0
+        parent.post_total_bytecount = 0
+        parent.post_total_lag = 0
         logger.debug( "post_total: initialized, interval=%d, maxlag=%d" % \
-             ( parent.post_total_interval, parent.post_total_maxlag ) ) 
+             ( parent.post_total_interval, parent.post_total_maxlag ) )
 
-        parent.post_total_cache_file  = parent.user_cache_dir + os.sep
+        parent.post_total_cache_file = parent.user_cache_dir + os.sep
         parent.post_total_cache_file += 'post_total_plugin_%.4d.vars' % parent.instance
-          
-    def on_post(self,parent):
+
+    def on_post(self, parent):
         logger = parent.logger
-        msg    = parent.msg
+        msg = parent.msg
 
         import calendar
         import humanize
@@ -75,50 +71,53 @@ class Post_Total(object):
         from sarra import timestr2flt
 
         if parent.post_total_msgcount == 0:
-            logger.info("post_total: 0 messages posted: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"  )
+            logger.info(
+                "post_total: 0 messages posted: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"
+            )
 
-        msgtime=timestr2flt(msg.pubtime)
-        now=nowflt()
+        msgtime = timestr2flt(msg.pubtime)
+        now = nowflt()
 
         parent.post_total_msgcount = parent.post_total_msgcount + 1
 
-        lag=now-msgtime
+        lag = now - msgtime
         parent.post_total_lag = parent.post_total_lag + lag
 
         #(method,psize,ptot,prem,pno) = msg.partstr.split(',')
         #parent.post_total_bytecount = parent.post_total_bytecount + int(psize)
-        
-        #not time to report yet.
-        if parent.post_total_interval > now-parent.post_total_last :
-           return True
 
-        logger.info("post_total: %3d messages posted: %5.2g msg/s, lag: %4.2g s" % ( 
-            parent.post_total_msgcount,
-	    parent.post_total_msgcount/(now-parent.post_total_start),
-            parent.post_total_lag/parent.post_total_msgcount ))
+        #not time to report yet.
+        if parent.post_total_interval > now - parent.post_total_last:
+            return True
+
+        logger.info(
+            "post_total: %3d messages posted: %5.2g msg/s, lag: %4.2g s" %
+            (parent.post_total_msgcount, parent.post_total_msgcount /
+             (now - parent.post_total_start),
+             parent.post_total_lag / parent.post_total_msgcount))
         # Set the maximum age, in seconds, of a message to retrieve.
 
-        if lag > parent.post_total_maxlag :
-           logger.warn("total: Excessive lag! Messages posted %s " % 
-               humanize.naturaltime(datetime.timedelta(seconds=lag)))
+        if lag > parent.post_total_maxlag:
+            logger.warn("total: Excessive lag! Messages posted %s " %
+                        humanize.naturaltime(datetime.timedelta(seconds=lag)))
 
         parent.post_total_last = now
 
         return True
 
     # restoring accounting variables
-    def on_start(self,parent):
+    def on_start(self, parent):
 
-        parent.post_total_cache_file  = parent.user_cache_dir + os.sep
+        parent.post_total_cache_file = parent.user_cache_dir + os.sep
         parent.post_total_cache_file += 'post_total_plugin_%.4d.vars' % parent.instance
 
-        if not os.path.isfile(parent.post_total_cache_file) : return True
+        if not os.path.isfile(parent.post_total_cache_file): return True
 
-        fp=open(parent.post_total_cache_file,'r')
+        fp = open(parent.post_total_cache_file, 'r')
         line = fp.read(8192)
         fp.close()
 
-        line  = line.strip('\n')
+        line = line.strip('\n')
         words = line.split()
 
         if len(words) > 4:
@@ -128,24 +127,25 @@ class Post_Total(object):
             parent.post_total_bytecount = int(words[3])
             parent.post_total_lag = float(words[4])
         else:
-            parent.logger.error("missing cached variables in file: {}".format(parent.post_total_cache_file))
+            parent.logger.error("missing cached variables in file: {}".format(
+                parent.post_total_cache_file))
             return False
         return True
 
     # saving accounting variables
-    def on_stop(self,parent):
+    def on_stop(self, parent):
 
-        line  = '%f ' % parent.post_total_last
+        line = '%f ' % parent.post_total_last
         line += '%f ' % parent.post_total_start
         line += '%d ' % parent.post_total_msgcount
         line += '%d ' % parent.post_total_bytecount
-        line += '%f\n'% parent.post_total_lag
+        line += '%f\n' % parent.post_total_lag
 
-        fp=open(parent.post_total_cache_file,'w')
+        fp = open(parent.post_total_cache_file, 'w')
         fp.write(line)
         fp.close()
 
         return True
 
-self.plugin='Post_Total'
 
+self.plugin = 'Post_Total'

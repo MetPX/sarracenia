@@ -8,24 +8,24 @@ from sarra.plugin.integrity import Integrity
 # checksum_s class
 # ===================================
 
+
 class Sha512(Integrity):
-      """
+    """
       The SHA512 algorithm to checksum the entire file, which is called 's'.
       """
-      @classmethod
-      def assimilate(cls,obj):
-         obj.__class__ = Sha512
+    @classmethod
+    def assimilate(cls, obj):
+        obj.__class__ = Sha512
 
-      def __init__(self):
-         Sha512.assimilate(self)
+    def __init__(self):
+        Sha512.assimilate(self)
 
-      def registered_as():
-          return 's'
+    def registered_as():
+        return 's'
 
-      def set_path(self,path):
-          self.filehash = sha512()
+    def set_path(self, path):
+        self.filehash = sha512()
 
-      def update(self,chunk):
-          if type(chunk) == bytes : self.filehash.update(chunk)
-          else                    : self.filehash.update(bytes(chunk,'utf-8'))
-
+    def update(self, chunk):
+        if type(chunk) == bytes: self.filehash.update(chunk)
+        else: self.filehash.update(bytes(chunk, 'utf-8'))

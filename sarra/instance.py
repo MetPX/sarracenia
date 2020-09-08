@@ -17,29 +17,29 @@ import sys
 import time
 
 import appdirs
-import sarra.config 
+import sarra.config
 from sarra.flow import Flow
 
-from urllib.parse import urlparse,urlunparse
+from urllib.parse import urlparse, urlunparse
 
-class RedirectedTimedRotatingFileHandler( logging.handlers.TimedRotatingFileHandler ):
 
+class RedirectedTimedRotatingFileHandler(
+        logging.handlers.TimedRotatingFileHandler):
     def doRollover(self):
         super().doRollover()
 
-        if sys.platform != 'win32' :
-            os.dup2( self.stream.fileno(), 1 )
-            os.dup2( self.stream.fileno(), 2 )
-        
+        if sys.platform != 'win32':
+            os.dup2(self.stream.fileno(), 1)
+            os.dup2(self.stream.fileno(), 2)
+
 
 class instance:
-
     def __init__(self):
         self.running_instance = None
         original_sigint = signal.getsignal(signal.SIGINT)
 
     def stop_signal(self, signum, stack):
-        logging.info('signal %d received' % signum )
+        logging.info('signal %d received' % signum)
         self.running_instance.please_stop()
 
     def start(self):
@@ -56,70 +56,76 @@ class instance:
     
         """
         logger = logging.getLogger()
-        logging.basicConfig(format='%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s', level=logging.INFO )
-         
+        logging.basicConfig(
+            format=
+            '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
+            level=logging.INFO)
+
         # FIXME: honour SR_ variable for moving preferences...
-        default_cfg_dir = appdirs.user_config_dir( 
-            sarra.config.Config.appdir_stuff['appname'], 
-            sarra.config.Config.appdir_stuff['appauthor']  )
-        
+        default_cfg_dir = appdirs.user_config_dir(
+            sarra.config.Config.appdir_stuff['appname'],
+            sarra.config.Config.appdir_stuff['appauthor'])
+
         cfg_preparse=sarra.config.Config( \
-            { 
+            {
                'accept_unmatched':False, 'exchange':None, 'inline':False, 'inline_encoding':'guess'
             } )
-         
-        cfg_preparse.parse_file( default_cfg_dir + os.sep + "default.conf")
+
+        cfg_preparse.parse_file(default_cfg_dir + os.sep + "default.conf")
         cfg_preparse.parse_args()
 
-
         #cfg_preparse.dump()
-         
-        if cfg_preparse.action not in [ 'foreground', 'start' ]:
-            logger.error( 'action must be one of: foreground or start' )
+
+        if cfg_preparse.action not in ['foreground', 'start']:
+            logger.error('action must be one of: foreground or start')
             return
-    
+
         if cfg_preparse.debug:
-             logLevel = logging.DEBUG
-        elif hasattr(cfg_preparse,'logLevel'):
-            logLevel =  getattr(logging, cfg_preparse.logLevel.upper() )
+            logLevel = logging.DEBUG
+        elif hasattr(cfg_preparse, 'logLevel'):
+            logLevel = getattr(logging, cfg_preparse.logLevel.upper())
         else:
             logLevel = logging.INFO
-         
+
         logger.setLevel(logLevel)
 
-        if not hasattr(cfg_preparse,'no') and not (cfg_preparse.action == 'foreground'):
+        if not hasattr(cfg_preparse,
+                       'no') and not (cfg_preparse.action == 'foreground'):
             logger.critical('need an instance number to run.')
             return
-         
+
         if (len(cfg_preparse.configurations) > 1 ) and \
            ( cfg_preparse.configurations[0].split(os.sep)[0] != 'post' ):
-            logger.critical("can only run one configuration in an instance" ) 
+            logger.critical("can only run one configuration in an instance")
             return
-         
+
         # FIXME: do we put explicit error handling here for bad input?
         #        probably worth exploring.
         #
-        lr_when=cfg_preparse.lr_when
-        if ( type(cfg_preparse.lr_interval) == str ) and ( cfg_preparse.lr_interval[-1] in 'mMhHdD' ):
+        lr_when = cfg_preparse.lr_when
+        if (type(cfg_preparse.lr_interval) == str) and (
+                cfg_preparse.lr_interval[-1] in 'mMhHdD'):
             lr_when = cfg_preparse.lr_interval[-1]
-            lr_interval= int( float(cfg_preparse.lr_interval[:-1]))
+            lr_interval = int(float(cfg_preparse.lr_interval[:-1]))
         else:
-            lr_interval= int( float(cfg_preparse.lr_interval) )
-    
-        if type(cfg_preparse.lr_backupCount) == str :
-           lr_backupCount= int( float(cfg_preparse.lr_backupCount))
-        else: 
-           lr_backupCount= cfg_preparse.lr_backupCount
-    
-        if ( 'audit' == cfg_preparse.configurations[0] ):
-           config=None
-           component='audit'
+            lr_interval = int(float(cfg_preparse.lr_interval))
+
+        if type(cfg_preparse.lr_backupCount) == str:
+            lr_backupCount = int(float(cfg_preparse.lr_backupCount))
+        else:
+            lr_backupCount = cfg_preparse.lr_backupCount
+
+        if ('audit' == cfg_preparse.configurations[0]):
+            config = None
+            component = 'audit'
         elif (not os.sep in cfg_preparse.configurations[0]):
-            logger.critical("configuration should be of the form component%sconfiguration" % os.sep )
+            logger.critical(
+                "configuration should be of the form component%sconfiguration"
+                % os.sep)
             return
         else:
-           component, config = cfg_preparse.configurations[0].split(os.sep) 
-         
+            component, config = cfg_preparse.configurations[0].split(os.sep)
+
         # init logs here. need to know instance number and configuration and component before here.
         if cfg_preparse.action == 'start':
             if cfg_preparse.statehost:
@@ -127,11 +133,12 @@ class instance:
             else:
                 hostdir = None
 
-            logfilename = sarra.config.get_log_filename( hostdir, component, config, cfg_preparse.no )
+            logfilename = sarra.config.get_log_filename(
+                hostdir, component, config, cfg_preparse.no)
 
             #print('logfilename= %s' % logfilename )
             os.makedirs(os.path.dirname(logfilename), exist_ok=True)
-    
+
             log_format = '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s'
             if logging.getLogger().hasHandlers():
                 for h in logging.getLogger().handlers:
@@ -139,57 +146,62 @@ class instance:
                     logging.getLogger().removeHandler(h)
             logger = logging.getLogger()
             logger.setLevel(logLevel)
-    
-            handler = RedirectedTimedRotatingFileHandler(logfilename, 
-                when=lr_when, interval=lr_interval, backupCount=lr_backupCount)
+
+            handler = RedirectedTimedRotatingFileHandler(
+                logfilename,
+                when=lr_when,
+                interval=lr_interval,
+                backupCount=lr_backupCount)
             handler.setFormatter(logging.Formatter(log_format))
-    
-            logger.addHandler(handler) 
-    
+
+            logger.addHandler(handler)
+
             if hasattr(cfg_preparse, 'chmod_log'):
                 if type(cfg_preparse.chmod) == str:
-                    mode = int( cfg_preparse.chmod_log, base=8 )
+                    mode = int(cfg_preparse.chmod_log, base=8)
                 else:
                     mode = cfg_preparse.chmod_log
-                os.chmod(logfilename, mode )
+                os.chmod(logfilename, mode)
 
             # FIXME: https://docs.python.org/3/library/contextlib.html portable redirection...
-            if sys.platform != 'win32' :
-                os.dup2( handler.stream.fileno(), 1 )
-                os.dup2( handler.stream.fileno(), 2 )
-    
+            if sys.platform != 'win32':
+                os.dup2(handler.stream.fileno(), 1)
+                os.dup2(handler.stream.fileno(), 2)
+
         else:
             logger.setLevel(logLevel)
-    
+
         signal.signal(signal.SIGTERM, self.stop_signal)
         signal.signal(signal.SIGINT, self.stop_signal)
-     
+
         if cfg_preparse.statehost:
             hostdir = cfg_preparse.hostdir
         else:
             hostdir = None
-         
-        pidfilename = sarra.config.get_pid_filename( hostdir, component, config, cfg_preparse.no )
-        if not os.path.isdir( os.path.dirname(pidfilename) ):
-              pathlib.Path(os.path.dirname(pidfilename)).mkdir(parents=True, exist_ok=True)
 
-        with open( pidfilename, 'w' ) as pfn:
-            pfn.write( '%d' % os.getpid() )
-         
+        pidfilename = sarra.config.get_pid_filename(hostdir, component, config,
+                                                    cfg_preparse.no)
+        if not os.path.isdir(os.path.dirname(pidfilename)):
+            pathlib.Path(os.path.dirname(pidfilename)).mkdir(parents=True,
+                                                             exist_ok=True)
+
+        with open(pidfilename, 'w') as pfn:
+            pfn.write('%d' % os.getpid())
+
         if cfg_preparse.action == 'audit':
             #FIXME: write down instance pid file. is pidfile correct for audit?
             logger.info('auditing...')
             self.running_instance = Audit()
         else:
-            cfg=sarra.config.one_config( component, config )
-            self.running_instance = Flow( cfg )                
+            cfg = sarra.config.one_config(component, config)
+            self.running_instance = Flow(cfg)
 
         self.running_instance.run()
 
         # run should never return...
-        sys.exit(0)  
-     
+        sys.exit(0)
+
+
 if __name__ == '__main__':
     i = instance()
     i.start()
-

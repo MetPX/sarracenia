@@ -42,99 +42,106 @@ import paho.mqtt.client as mqtt
 from sarra import nowflt
 
 
-class EXP_2MQTT(object): 
+class EXP_2MQTT(object):
 
-   import urllib.parse
+    import urllib.parse
 
-   def __init__(self,parent):
+    def __init__(self, parent):
 
-      parent.declare_option( 'exp_2mqtt_post_broker' )
+        parent.declare_option('exp_2mqtt_post_broker')
 
+    def on_start(self, parent):
 
-   def on_start(self,parent):
+        import paho.mqtt.client as mqtt
+        import time
 
-      import paho.mqtt.client as mqtt
-      import time
+        if not hasattr(parent, 'exp_2mqtt_post_broker'):
+            parent.exp_2mqtt_post_broker = ['mqtt://localhost']
 
-      if not hasattr(parent,'exp_2mqtt_post_broker'):
-         parent.exp_2mqtt_post_broker= [ 'mqtt://localhost' ]
- 
-      logger=parent.logger
+        logger = parent.logger
 
-      if parent.no < 1: # randomize broker used in foreground testing.
-         i = int( nowflt() % len(parent.exp_2mqtt_post_broker) )
-      else:
-         i = (parent.no-1) % len(parent.exp_2mqtt_post_broker)
+        if parent.no < 1:  # randomize broker used in foreground testing.
+            i = int(nowflt() % len(parent.exp_2mqtt_post_broker))
+        else:
+            i = (parent.no - 1) % len(parent.exp_2mqtt_post_broker)
 
-      logger.info( "using: %s parent.no=%d exp_2mqtt_broker=%s" % \
-           (parent.exp_2mqtt_post_broker[i], parent.no, parent.exp_2mqtt_post_broker) )
+        logger.info( "using: %s parent.no=%d exp_2mqtt_broker=%s" % \
+             (parent.exp_2mqtt_post_broker[i], parent.no, parent.exp_2mqtt_post_broker) )
 
-      ok, details = parent.credentials.get(parent.exp_2mqtt_post_broker[i])
-      if ok:
-           parent.mqtt_bs = details
-      else:
-           logger.error( "exp_2mqtt: post_broker credential lookup failed for %s" % parent.exp_2mqtt_post_broker )
-           return
+        ok, details = parent.credentials.get(parent.exp_2mqtt_post_broker[i])
+        if ok:
+            parent.mqtt_bs = details
+        else:
+            logger.error(
+                "exp_2mqtt: post_broker credential lookup failed for %s" %
+                parent.exp_2mqtt_post_broker)
+            return
 
-      if not hasattr(parent, 'post_exchange'):
-         logger.error("exp_2mqtt: defaulting post_exchange to xpublic")
-         parent.post_exchange='xpublic'
-         
-      u = parent.mqtt_bs.url
-      if u.port == None:
+        if not hasattr(parent, 'post_exchange'):
+            logger.error("exp_2mqtt: defaulting post_exchange to xpublic")
+            parent.post_exchange = 'xpublic'
+
+        u = parent.mqtt_bs.url
+        if u.port == None:
             port = 1883
-      else:
+        else:
             port = u.port
 
-      # https://www.iso.org/standard/69466.html - ISO standard v3.1.1 is most common.
-      parent.mqtt_client = mqtt.Client( protocol=mqtt.MQTTv311 )
+        # https://www.iso.org/standard/69466.html - ISO standard v3.1.1 is most common.
+        parent.mqtt_client = mqtt.Client(protocol=mqtt.MQTTv311)
 
-      if u.username != None:
-          logger.error("exp_2mqtt: authenticating as %s " % (u.username) )
-          parent.mqtt_client.username_pw_set( u.username, u.password )
+        if u.username != None:
+            logger.error("exp_2mqtt: authenticating as %s " % (u.username))
+            parent.mqtt_client.username_pw_set(u.username, u.password)
 
-      parent.mqtt_client.connect( u.hostname, port )
-      parent.mqtt_client.loop_start()
-      return True
+        parent.mqtt_client.connect(u.hostname, port)
+        parent.mqtt_client.loop_start()
+        return True
 
-   def on_message(self,parent):
+    def on_message(self, parent):
 
-      import os.path,json
-      from sarra import timev2tov3str
-      import paho.mqtt.client as mqtt
-      from codecs import decode,encode
+        import os.path, json
+        from sarra import timev2tov3str
+        import paho.mqtt.client as mqtt
+        from codecs import decode, encode
 
-      logger = parent.logger
-      msg    = parent.msg
+        logger = parent.logger
+        msg = parent.msg
 
-      mqtt_topic = parent.post_exchange + '/v03/post' + os.path.dirname(parent.msg.relpath)
+        mqtt_topic = parent.post_exchange + '/v03/post' + os.path.dirname(
+            parent.msg.relpath)
 
-      if parent.topic_prefix == 'v02' :
-          msg.headers[ "pubTime" ] = timev2tov3str( msg.pubtime )
-          msg.headers[ "atime" ] = timev2tov3str( msg.headers[ "atime" ] )
-          msg.headers[ "mtime" ] = timev2tov3str( msg.headers[ "mtime" ] )
-          msg.headers[ "baseUrl" ] = msg.baseurl
-          msg.headers[ "relPath" ] = msg.relpath
-      
-          sum_algo_map = { "d":"md5", "s":"sha512", "n":"md5name", "0":"zero" }
-          sm = sum_algo_map[ msg.headers["sum"][0] ]
-          sv = encode( decode( msg.headers["sum"][2:], 'hex'), 'base64' ).decode('utf-8').strip()
-          msg.headers[ "integrity" ] = { "method": sm, "value": sv }
-          del msg.headers[ "sum" ]
-          body = json.dumps( msg.headers )
-      else:
-          # in v03, no translation required.
-          body = parent.consumer.raw_msg.body
+        if parent.topic_prefix == 'v02':
+            msg.headers["pubTime"] = timev2tov3str(msg.pubtime)
+            msg.headers["atime"] = timev2tov3str(msg.headers["atime"])
+            msg.headers["mtime"] = timev2tov3str(msg.headers["mtime"])
+            msg.headers["baseUrl"] = msg.baseurl
+            msg.headers["relPath"] = msg.relpath
 
-      logger.info("exp_2mqtt publishing topic=%s, lag=%g body=%s" % ( mqtt_topic, msg.get_elapse(), body ))
-      info = parent.mqtt_client.publish(mqtt_topic,body,qos=1)
-      info.wait_for_publish()
-      return True
+            sum_algo_map = {
+                "d": "md5",
+                "s": "sha512",
+                "n": "md5name",
+                "0": "zero"
+            }
+            sm = sum_algo_map[msg.headers["sum"][0]]
+            sv = encode(decode(msg.headers["sum"][2:], 'hex'),
+                        'base64').decode('utf-8').strip()
+            msg.headers["integrity"] = {"method": sm, "value": sv}
+            del msg.headers["sum"]
+            body = json.dumps(msg.headers)
+        else:
+            # in v03, no translation required.
+            body = parent.consumer.raw_msg.body
+
+        logger.info("exp_2mqtt publishing topic=%s, lag=%g body=%s" %
+                    (mqtt_topic, msg.get_elapse(), body))
+        info = parent.mqtt_client.publish(mqtt_topic, body, qos=1)
+        info.wait_for_publish()
+        return True
 
 
-self.plugin='EXP_2MQTT'
-
-
+self.plugin = 'EXP_2MQTT'
 """
   {allow, all, subscribe, "xpublic/#" }
   {allow, {user, "tsource"}, publish, [ "xpublic/#" ] }.

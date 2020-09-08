@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 """
   msg_save converts a consuming component into one that writes the queue into a file.
 
@@ -25,34 +24,37 @@
 
 """
 
-class Msg_Save(object): 
 
-    def __init__(self,parent):
+class Msg_Save(object):
+    def __init__(self, parent):
 
-        if not hasattr( parent, "msg_save_file" ):
-            parent.logger.error("msg_save: setting msg_save_path setting is mandatory")
+        if not hasattr(parent, "msg_save_file"):
+            parent.logger.error(
+                "msg_save: setting msg_save_path setting is mandatory")
 
- 
-        parent.msg_save_file = open( parent.msg_save_file + parent.save_path[-10:], "a" )
-        
+        parent.msg_save_file = open(
+            parent.msg_save_file + parent.save_path[-10:], "a")
 
         parent.logger.debug("msg_save initialized")
-          
-    def on_message(self,parent):
-   
+
+    def on_message(self, parent):
+
         import json
 
         msg = parent.msg
 
-        parent.msg_save_file.write( json.dumps( [ msg.topic, msg.headers, msg.notice ] ) + '\n' ) 
+        parent.msg_save_file.write(
+            json.dumps([msg.topic, msg.headers, msg.notice]) + '\n')
 
         parent.msg_save_file.flush()
 
-        parent.logger.info( "msg_save saving msg with topic:%s (aborting further processing)" %  msg.topic )
+        parent.logger.info(
+            "msg_save saving msg with topic:%s (aborting further processing)" %
+            msg.topic)
 
         return False
+
 
 msg_save = Msg_Save(self)
 
 self.on_message = msg_save.on_message
-

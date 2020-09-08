@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 """
   Implements inter-pump routing by filtering destinations.  
 
@@ -18,24 +17,22 @@
 
 """
 
-import os,stat,time
-
-class ToCluster(object): 
+import os, stat, time
 
 
-    def __init__(self,parent):
+class ToCluster(object):
+    def __init__(self, parent):
 
-        if not hasattr(parent,'msg_to_clusters'):
-           parent.logger.info("msg_to_clusters setting mandatory")
-           return
+        if not hasattr(parent, 'msg_to_clusters'):
+            parent.logger.info("msg_to_clusters setting mandatory")
+            return
 
-        parent.logger.info("msg_to_clusters valid destinations: %s " % parent.msg_to_clusters )
+        parent.logger.info("msg_to_clusters valid destinations: %s " %
+                           parent.msg_to_clusters)
 
-          
-    def on_message(self,parent):
-        return ( parent.msg.headers[ 'to_clusters' ] in parent.msg_to_clusters ) 
+    def on_message(self, parent):
+        return (parent.msg.headers['to_clusters'] in parent.msg_to_clusters)
 
 
 tocluster = ToCluster(self)
 self.on_message = tocluster.on_message
-

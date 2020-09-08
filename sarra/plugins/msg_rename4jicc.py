@@ -1,5 +1,4 @@
 import sys, os, os.path, time, stat
-
 """
  This is a very specific script unlikely to be useful to other except as a code example.
 
@@ -14,29 +13,29 @@ import sys, os, os.path, time, stat
 
 
 class Renamer(object):
+    def __init__(self):
+        pass
 
-      def __init__(self) :
-          pass
+    def on_message(self, parent):
+        import time
 
-      def on_message(self,parent):
-          import time
+        if not 'ccstn.dat' in parent.msg.new_file: return True
 
-          if not 'ccstn.dat' in parent.msg.new_file : return True
+        # build new name
+        local_file = parent.msg.new_file
+        datestr = time.strftime('%Y%m%d%H%M', time.localtime())
+        local_file = local_file.replace('ccstn.dat',
+                                        'jicc.' + datestr + '.ccstn.dat')
 
-          # build new name
-          local_file = parent.msg.new_file
-          datestr    = time.strftime('%Y%m%d%H%M',time.localtime())
-          local_file = local_file.replace('ccstn.dat', 'jicc.' + datestr + '.ccstn.dat')
+        # set in message (and headers for logging)
+        parent.msg.new_file = local_file
 
-          # set in message (and headers for logging)
-          parent.msg.new_file          = local_file
+        # dont use this... new_file is where the file will be downloaded... so need to keep a rename in headers
+        #parent.msg.headers['rename'] = local_file
 
-          # dont use this... new_file is where the file will be downloaded... so need to keep a rename in headers
-          #parent.msg.headers['rename'] = local_file
+        # on garde tous les messages
+        return True
 
-          # on garde tous les messages
-          return True
 
-renamer=Renamer()
-self.on_message=renamer.on_message
-
+renamer = Renamer()
+self.on_message = renamer.on_message

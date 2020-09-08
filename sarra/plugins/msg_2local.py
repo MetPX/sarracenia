@@ -48,14 +48,14 @@
 """
 import re
 
-class Http2Local(object):
 
-    def __init__(self,parent) :
+class Http2Local(object):
+    def __init__(self, parent):
         if hasattr(parent, 'base_dir'):
-           parent.ldocroot = parent.base_dir 
+            parent.ldocroot = parent.base_dir
 
         if hasattr(parent, 'msg_2local_root'):
-           parent.ldocroot = parent.msg_2local_root[0]
+            parent.ldocroot = parent.msg_2local_root[0]
 
         parent.lurlre = re.compile("(http[s]{0,1}://[^/]+/)")
 
@@ -63,24 +63,24 @@ class Http2Local(object):
             parent.lurlre = re.compile(parent.msg_2local_url[0])
         pass
 
-    def on_message(self,parent):
+    def on_message(self, parent):
         import re
 
         l = parent.logger
         m = parent.msg
 
-        l.error( "input: urlstr: %s"  % m.urlstr )
+        l.error("input: urlstr: %s" % m.urlstr)
 
-        m.savedurl = parent.lurlre.match( m.urlstr ).group(1)
-        m.urlstr = 'file:/%s' % parent.lurlre.sub( parent.ldocroot + '/', m.urlstr )
+        m.savedurl = parent.lurlre.match(m.urlstr).group(1)
+        m.urlstr = 'file:/%s' % parent.lurlre.sub(parent.ldocroot + '/',
+                                                  m.urlstr)
 
-        l.error( "doc_root=%s " % ( parent.base_dir ) )
-        l.error( "output: urlstr: %s saved url: %s"  % (m.urlstr, m.savedurl) )
+        l.error("doc_root=%s " % (parent.base_dir))
+        l.error("output: urlstr: %s saved url: %s" % (m.urlstr, m.savedurl))
 
         return True
 
-http2local=Http2Local(self)
 
-self.on_message=http2local.on_message
+http2local = Http2Local(self)
 
-
+self.on_message = http2local.on_message

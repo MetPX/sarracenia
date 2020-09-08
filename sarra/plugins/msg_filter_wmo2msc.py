@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
 msg_filter_wmo2msc.py is an on_message plugin script to convert WMO bulletins on local disk
 to MSC internal format in an alternate tree.  It is analogous to Sundew's 'bulletin-file'.
@@ -81,50 +80,51 @@ import sys
 import os
 import re
 
+
 class Xwmo2msc(object):
+    def __init__(self, parent):
 
-    def __init__(self,parent):
-
-        parent.uniquify='hash'
-        if not hasattr(parent,'msg_filter_wmo2msc_replace_dir'):
-           parent.logger.error("msg_filter_wmo2msc_replace_dir setting is mandatory")
-           return
+        parent.uniquify = 'hash'
+        if not hasattr(parent, 'msg_filter_wmo2msc_replace_dir'):
+            parent.logger.error(
+                "msg_filter_wmo2msc_replace_dir setting is mandatory")
+            return
 
         ( parent.filter_olddir, parent.filter_newdir ) = \
                 parent.msg_filter_wmo2msc_replace_dir[0].split(',')
 
         parent.logger.info( "msg_filter_wmo2msc old-dir=%s, newdir=%s" \
                % ( parent.filter_olddir, parent.filter_newdir ) )
-        if hasattr(parent,'msg_filter_wmo2msc_uniquify'):
-           parent.logger.info('msg_filter_wmo2msc, override' )
-           parent.uniquify = parent.msg_filter_wmo2msc_uniquify[0]
+        if hasattr(parent, 'msg_filter_wmo2msc_uniquify'):
+            parent.logger.info('msg_filter_wmo2msc, override')
+            parent.uniquify = parent.msg_filter_wmo2msc_uniquify[0]
 
-        if hasattr(parent,'msg_filter_wmo2msc_bad_ahls'):
-            parent.bad_ahl= [ ]
+        if hasattr(parent, 'msg_filter_wmo2msc_bad_ahls'):
+            parent.bad_ahl = []
             for i in parent.msg_filter_wmo2msc_bad_ahls:
-               for j in i.split(','):
-                   parent.bad_ahl.append(j.replace('_',' '))
+                for j in i.split(','):
+                    parent.bad_ahl.append(j.replace('_', ' '))
         else:
-            parent.bad_ahl= [ 'SFUK45 EGRR' ]
+            parent.bad_ahl = ['SFUK45 EGRR']
 
-        parent.treeify=False
-        if hasattr(parent,'msg_filter_wmo2msc_tree'):
-           parent.treeify=parent.isTrue(parent.msg_filter_wmo2msc_tree[0])
+        parent.treeify = False
+        if hasattr(parent, 'msg_filter_wmo2msc_tree'):
+            parent.treeify = parent.isTrue(parent.msg_filter_wmo2msc_tree[0])
 
-        parent.convert2msc=False
+        parent.convert2msc = False
 
-        if hasattr(parent,'msg_filter_wmo2msc_convert'):
-           parent.convert2msc=parent.isTrue(parent.msg_filter_convert[0])
+        if hasattr(parent, 'msg_filter_wmo2msc_convert'):
+            parent.convert2msc = parent.isTrue(parent.msg_filter_convert[0])
 
-        if hasattr(parent,'msg_filter_use_symlink'):
-           parent.use_symlink=parent.isTrue(parent.msg_filter_use_symlink[0])
+        if hasattr(parent, 'msg_filter_use_symlink'):
+            parent.use_symlink = parent.isTrue(
+                parent.msg_filter_use_symlink[0])
 
-        self.trimre=re.compile(b" +\n")
+        self.trimre = re.compile(b" +\n")
         parent.logger.info('msg_filter_wmo2msc initialized, uniquify=%s bad_ahls=%s' % \
            ( parent.uniquify, parent.bad_ahl ) )
 
-
-    def replaceChar(self,oldchar,newchar):
+    def replaceChar(self, oldchar, newchar):
         """
            replace all occurrences of oldchar by newchar in the the message byte stream.
            started as a direct copy from sundew of routine with same name in bulletin.py
@@ -132,7 +132,8 @@ class Xwmo2msc(object):
            - sundew stored it as a series of lines, so replaceChar implementation changed.
 
         """
-        self.bintxt = self.bintxt.replace(bytearray(oldchar,'latin_1'),bytearray(newchar,'latin_1'))      
+        self.bintxt = self.bintxt.replace(bytearray(oldchar, 'latin_1'),
+                                          bytearray(newchar, 'latin_1'))
 
     def doSpecificProcessing(self):
         """doSpecificProcessing()
@@ -143,154 +144,160 @@ class Xwmo2msc(object):
            - encode/decode, and binary stuff came because of python3
         """
 
-        ahl2=self.bulletin[0][:2].decode('ascii')
-        ahl4=self.bulletin[0][:4].decode('ascii')
+        ahl2 = self.bulletin[0][:2].decode('ascii')
+        ahl4 = self.bulletin[0][:4].decode('ascii')
 
-        if ahl2 in ['SD','SO','WS','SR','SX','FO','WA','AC','FA','FB','FD']:
-            self.replaceChar('\x1e','')
+        if ahl2 in [
+                'SD', 'SO', 'WS', 'SR', 'SX', 'FO', 'WA', 'AC', 'FA', 'FB',
+                'FD'
+        ]:
+            self.replaceChar('\x1e', '')
 
-        if ahl2 in ['SR','SX']:
-            self.replaceChar('~','\n')
+        if ahl2 in ['SR', 'SX']:
+            self.replaceChar('~', '\n')
 
         if ahl2 in ['UK']:
-            self.replaceChar('\x01','')
+            self.replaceChar('\x01', '')
 
         if ahl4 in ['SICO']:
-            self.replaceChar('\x01','')
+            self.replaceChar('\x01', '')
 
-        if ahl2 in ['SO','SR']:
-            self.replaceChar('\x02','')
+        if ahl2 in ['SO', 'SR']:
+            self.replaceChar('\x02', '')
 
-        if ahl2 in ['SX','SR','SO']:
-            self.replaceChar('\x00','')
+        if ahl2 in ['SX', 'SR', 'SO']:
+            self.replaceChar('\x00', '')
 
         if ahl2 in ['SX']:
-            self.replaceChar('\x11','')
-            self.replaceChar('\x14','')
-            self.replaceChar('\x19','')
-            self.replaceChar('\x1f','')
+            self.replaceChar('\x11', '')
+            self.replaceChar('\x14', '')
+            self.replaceChar('\x19', '')
+            self.replaceChar('\x1f', '')
 
         if ahl2 in ['SR']:
-            self.replaceChar('\b','')
-            self.replaceChar('\t','')
-            self.replaceChar('\x1a','')
-            self.replaceChar('\x1b','')
-            self.replaceChar('\x12','')
+            self.replaceChar('\b', '')
+            self.replaceChar('\t', '')
+            self.replaceChar('\x1a', '')
+            self.replaceChar('\x1b', '')
+            self.replaceChar('\x12', '')
 
         if ahl2 in ['FX']:
-            self.replaceChar('\x10','')
-            self.replaceChar('\xf1','')
+            self.replaceChar('\x10', '')
+            self.replaceChar('\xf1', '')
 
         if ahl2 in ['WW']:
-            self.replaceChar('\xba','')
+            self.replaceChar('\xba', '')
 
         if ahl2 in ['US']:
-            self.replaceChar('\x18','')
+            self.replaceChar('\x18', '')
 
-        if ahl4 in ['SXUS','SXCN','SRCN']:
-            self.replaceChar('\x7f','?')
+        if ahl4 in ['SXUS', 'SXCN', 'SRCN']:
+            self.replaceChar('\x7f', '?')
 
         if ahl4 in ['SRCN']:
-            self.replaceChar('\x0e','')
-            self.replaceChar('\x11','')
-            self.replaceChar('\x16','')
-            self.replaceChar('\x19','')
-            self.replaceChar('\x1d','')
-            self.replaceChar('\x1f','')
+            self.replaceChar('\x0e', '')
+            self.replaceChar('\x11', '')
+            self.replaceChar('\x16', '')
+            self.replaceChar('\x19', '')
+            self.replaceChar('\x1d', '')
+            self.replaceChar('\x1f', '')
 
-        if ahl4 in ['SXVX','SRUS','SRMT']:
-            self.replaceChar('\x7f','')
+        if ahl4 in ['SXVX', 'SRUS', 'SRMT']:
+            self.replaceChar('\x7f', '')
 
-        self.replaceChar('\r','')
+        self.replaceChar('\r', '')
 
-
-        if ahl2 in ['SA','SM','SI','SO','UJ','US','FT']:
-            self.replaceChar('\x03','')
+        if ahl2 in ['SA', 'SM', 'SI', 'SO', 'UJ', 'US', 'FT']:
+            self.replaceChar('\x03', '')
 
         #trimming of trailing blanks.
-        lenb=len(self.bintxt)
-        self.bintxt = self.trimre.sub(b"\n",self.bintxt)
+        lenb = len(self.bintxt)
+        self.bintxt = self.trimre.sub(b"\n", self.bintxt)
         if len(self.bintxt) < lenb:
-           print('Trimmed %d trailing blanks!' % (lenb - len(self.bintxt)) )
+            print('Trimmed %d trailing blanks!' % (lenb - len(self.bintxt)))
 
-    def on_message(self,parent):
+    def on_message(self, parent):
         logger = parent.logger
-        msg    = parent.msg
+        msg = parent.msg
 
-        if msg.baseurl != 'file:' :
-            logger.error( 'filter_wmo2msc needs local files invalid url: %s ' % (msg.baseurl + msg.relpath) )
+        if msg.baseurl != 'file:':
+            logger.error('filter_wmo2msc needs local files invalid url: %s ' %
+                         (msg.baseurl + msg.relpath))
             return False
 
         input_file = msg.relpath
 
         # read once to get headers and type.
 
-        logger.debug( 'filter_wmo2msc reading file: %s' % (input_file) )
+        logger.debug('filter_wmo2msc reading file: %s' % (input_file))
 
-        with open( input_file, 'rb' ) as s:
-            self.bulletin = [ s.readline(), s.read(4) ]
-        
-        AHLfn = (self.bulletin[0].replace(b' ',b'_').strip()).decode('ascii')
+        with open(input_file, 'rb') as s:
+            self.bulletin = [s.readline(), s.read(4)]
+
+        AHLfn = (self.bulletin[0].replace(b' ', b'_').strip()).decode('ascii')
 
         if len(AHLfn) < 18:
-            logger.error( 'filter_wmo2msc: not a WMO bulletin, malformed header: (%s)' % (AHLfn) )
+            logger.error(
+                'filter_wmo2msc: not a WMO bulletin, malformed header: (%s)' %
+                (AHLfn))
             return False
 
         # read second time for the body in one string.
-        with open( input_file, 'rb' ) as s:
+        with open(input_file, 'rb') as s:
             self.bintxt = s.read()
 
-        logger.debug( 'filter_wmo2msc read twice: %s ' % (input_file) )
-        
+        logger.debug('filter_wmo2msc read twice: %s ' % (input_file))
+
         # Determine file format (fmt) and apply transformation.
-        if self.bulletin[1].lstrip()[:4] in [ 'BUFR', 'GRIB', '\211PNG' ]: 
-            fmt='wmo-binary'
-            self.replaceChar('\r','')
-        elif self.bulletin[0][:11] in [ 'SFUK45 EGRR' ]:
+        if self.bulletin[1].lstrip()[:4] in ['BUFR', 'GRIB', '\211PNG']:
+            fmt = 'wmo-binary'
+            self.replaceChar('\r', '')
+        elif self.bulletin[0][:11] in ['SFUK45 EGRR']:
             # This file is encoded in an indecipherably non-standard format.
-            fmt='unknown-binary'
+            fmt = 'unknown-binary'
 
             #self.replaceChar('\r','',2) replace only the first 2 carriage returns.
             self.bintxt = \
                 self.bintxt.replace( bytearray('\r','latin_1'), bytearray('','latin_1'), 2)
         else:
-            fmt='wmo-alphanumeric'
+            fmt = 'wmo-alphanumeric'
             if parent.convert2msc:
-                self.doSpecificProcessing()        
-        
+                self.doSpecificProcessing()
+
         # apply 'd' checksum (md5)
         import hashlib
         s = hashlib.md5()
         s.update(self.bintxt)
-        sumstr= ''.join( format(x, '02x') for x in s.digest() )
+        sumstr = ''.join(format(x, '02x') for x in s.digest())
 
         # Determine local file name.
-        if parent.uniquify in [ 'time' ]:
+        if parent.uniquify in ['time']:
             import time
             AHLfn += '_' + time.strftime( "%Y%m%d%H%M%S", time.gmtime(time.time()) ) + \
                      '_%05d' % random.randint(0,9999)
-        elif parent.uniquify in [ 'hash' ]:
+        elif parent.uniquify in ['hash']:
             #AHLfn += '_%s' % ''.join( format(x, '02x') for x in s.digest() )
             AHLfn += '_' + sumstr
 
-        if parent.treeify :
+        if parent.treeify:
             d = os.path.dirname(input_file)
-            logger.debug( 'filter_wmo2msc check %s start match: %s' % (d, parent.filter_olddir) )
-            d = d.replace( parent.filter_olddir, parent.filter_newdir )
-            logger.debug( 'filter_wmo2msc check %s after replace' % (d) )
-            if not os.path.isdir( d ):
-                os.makedirs( d, parent.chmod_dir, True ) 
+            logger.debug('filter_wmo2msc check %s start match: %s' %
+                         (d, parent.filter_olddir))
+            d = d.replace(parent.filter_olddir, parent.filter_newdir)
+            logger.debug('filter_wmo2msc check %s after replace' % (d))
+            if not os.path.isdir(d):
+                os.makedirs(d, parent.chmod_dir, True)
 
-            d = d + os.sep + self.bulletin[0][0:2].decode('ascii') 
-            d = d + os.sep + self.bulletin[0][7:11].decode('ascii') 
-            logger.debug( 'filter_wmo2msc check %s' % (d) )
-            if not os.path.isdir( d ):
-                os.makedirs( d, parent.chmod_dir, True ) 
+            d = d + os.sep + self.bulletin[0][0:2].decode('ascii')
+            d = d + os.sep + self.bulletin[0][7:11].decode('ascii')
+            logger.debug('filter_wmo2msc check %s' % (d))
+            if not os.path.isdir(d):
+                os.makedirs(d, parent.chmod_dir, True)
 
-            d = d + os.sep + self.bulletin[0][14:16].decode('ascii') 
-            logger.debug( 'filter_wmo2msc check %s' % (d) )
-            if not os.path.isdir( d ):
-                os.makedirs( d, parent.chmod_dir, True ) 
+            d = d + os.sep + self.bulletin[0][14:16].decode('ascii')
+            logger.debug('filter_wmo2msc check %s' % (d))
+            if not os.path.isdir(d):
+                os.makedirs(d, parent.chmod_dir, True)
 
             local_file = d + os.sep + AHLfn
         else:
@@ -299,38 +306,40 @@ class Xwmo2msc(object):
         # write the data.
         fileOK = False
 
-        if not parent.convert2msc :
-           try   :
-                   os.link(input_file,localfile)
-                   fileOK = True
-           except: pass
-        
-        if parent.convert2msc or not fileOK :
-           d = open( local_file, 'wb+') 
-           d.write(self.bintxt)
-           d.close()
+        if not parent.convert2msc:
+            try:
+                os.link(input_file, localfile)
+                fileOK = True
+            except:
+                pass
 
-        logger.debug( 'filter_wmo2msc %s -> %s (%s)' % (input_file, local_file, fmt) )
+        if parent.convert2msc or not fileOK:
+            d = open(local_file, 'wb+')
+            d.write(self.bintxt)
+            d.close()
+
+        logger.debug('filter_wmo2msc %s -> %s (%s)' %
+                     (input_file, local_file, fmt))
 
         # set how the file will be announced
 
-        basedir    =  parent.base_dir
-        if basedir == None : basedir = parent.post_base_dir
+        basedir = parent.base_dir
+        if basedir == None: basedir = parent.post_base_dir
 
         relpath = local_file
-        if basedir != None : relpath = local_file.replace(basedir,'')
+        if basedir != None: relpath = local_file.replace(basedir, '')
 
         baseurl = 'file:'
         # from msg_2local.py if used
-        if hasattr(msg,'savedurl')      : baseurl = msg.savedurl
+        if hasattr(msg, 'savedurl'): baseurl = msg.savedurl
         # from msg_2localfile.py if used
-        if hasattr(msg,'saved_baseurl') : baseurl = msg.saved_baseurl
+        if hasattr(msg, 'saved_baseurl'): baseurl = msg.saved_baseurl
 
-        relpath = relpath.replace('//','/')
-        logger.debug( 'filter_wmo2msc relpath %s' % relpath )
+        relpath = relpath.replace('//', '/')
+        logger.debug('filter_wmo2msc relpath %s' % relpath)
 
-        msg.set_topic(parent.topic_prefix,relpath)
-        msg.set_notice(baseurl,relpath)
+        msg.set_topic(parent.topic_prefix, relpath)
+        msg.set_notice(baseurl, relpath)
 
         return True
 
@@ -338,48 +347,44 @@ class Xwmo2msc(object):
 if __name__ != '__main__':
 
     # real activation as a do_download filtering script.
-    xwmo2msc  = Xwmo2msc(self)
+    xwmo2msc = Xwmo2msc(self)
     self.on_message = xwmo2msc.on_message
 
 else:
-    
+
     class TestLogger:
-        def silence(self,str):
+        def silence(self, str):
             pass
-    
+
         def __init__(self):
-            self.debug   = print
-            self.error   = print
-            self.info    = print
+            self.debug = print
+            self.error = print
+            self.info = print
             self.warning = print
-    
-    
+
     class TestMessage():
-    
-        def __init__(self,fname):
+        def __init__(self, fname):
             self.urlstr = "download://" + fname
             self.headers = {}
-    
+
     class TestParent(object):
-    
-        def __init__(self,fname):
-            self.msg= TestMessage(fname,'/tmp/dest/')
+        def __init__(self, fname):
+            self.msg = TestMessage(fname, '/tmp/dest/')
             self.msg.new_file = fname + os.sep + 'hoho'
-            self.logger=TestLogger()
+            self.logger = TestLogger()
             pass
-    
+
     if len(sys.argv) > 1:
-       l = sys.argv[1:] 
+        l = sys.argv[1:]
     else:
-       l = os.listdir()
-    
+        l = os.listdir()
+
     for f in l:
-    
+
         if f[0].isdigit():
-            testparent=TestParent( os.getcwd() + os.sep + f)
-            xwmo2msc  = Xwmo2msc(testparent)
+            testparent = TestParent(os.getcwd() + os.sep + f)
+            xwmo2msc = Xwmo2msc(testparent)
             xwmo2msc.on_message(testparent)
-    
 """
 
 SUPPLEMENTARY INFORMATION

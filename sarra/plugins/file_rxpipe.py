@@ -1,5 +1,5 @@
 class File_RxPipe(object):
-  """
+    """
     The File_RxPipe plugin takes names of all the files downloaded and feeds them to a named pipe.
     The pipe name is given by the 'file_rxpipe_name' setting in the configuration file.
 
@@ -27,34 +27,34 @@ class File_RxPipe(object):
    
 
   """
-
-  def __init__(self,parent):
+    def __init__(self, parent):
         parent.declare_option('file_rxpipe_name')
 
-        if not hasattr(parent,'file_rxpipe_name'):
+        if not hasattr(parent, 'file_rxpipe_name'):
             parent.logger.error("Missing file_rxpipe_name parameter")
-            return 
+            return
 
         self.rxpipe_open = False
 
-  def on_file(self, parent):
-  
-        ebo=1
+    def on_file(self, parent):
+
+        ebo = 1
         while True:
-           try:
-               if not self.rxpipe_open:
-                   self.rxpipe = open( parent.file_rxpipe_name[0], "w" )
-                   self.rxpipe_open = True
+            try:
+                if not self.rxpipe_open:
+                    self.rxpipe = open(parent.file_rxpipe_name[0], "w")
+                    self.rxpipe_open = True
 
-               self.rxpipe.write( parent.msg.new_file + "\n" )
-               self.rxpipe.flush()
-               return True
-           except:
-               if ebo < 64: ebo *= 2
-               parent.logger.warning(
-                   "write to pipe {} failed, sleep {} then retry".format(parent.file_rxpipe_name[0], ebo ) )
-               time.sleep(ebo)
+                self.rxpipe.write(parent.msg.new_file + "\n")
+                self.rxpipe.flush()
+                return True
+            except:
+                if ebo < 64: ebo *= 2
+                parent.logger.warning(
+                    "write to pipe {} failed, sleep {} then retry".format(
+                        parent.file_rxpipe_name[0], ebo))
+                time.sleep(ebo)
 
-file_rxpipe=File_RxPipe(self)
-self.on_file=file_rxpipe.on_file
 
+file_rxpipe = File_RxPipe(self)
+self.on_file = file_rxpipe.on_file

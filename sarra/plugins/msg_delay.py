@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 """
   This plugin delays processing of messages by *message_delay* seconds
 
@@ -21,8 +20,8 @@ class Msg_Delay(object):
             parent.msg_delay = int(parent.msg_delay[0])
         elif not hasattr(parent, 'msg_delay'):
             parent.msg_delay = 300
-          
-    def on_message(self,parent):
+
+    def on_message(self, parent):
         if not 'delay' in parent.msg.headers:
             parent.msg.headers['delay'] = nowstr()
 
@@ -31,10 +30,12 @@ class Msg_Delay(object):
         if 0 < elapsedtime < 1:
             parent.logger.debug("msg_delay received msg")
         else:
-            parent.logger.info("trying msg with {:.3f}s elapsed".format(elapsedtime))
+            parent.logger.info(
+                "trying msg with {:.3f}s elapsed".format(elapsedtime))
         if elapsedtime < parent.msg_delay:
             dbg_msg = "message not old enough, sleeping for {:.3f} seconds"
-            parent.logger.debug(dbg_msg.format(elapsedtime, parent.msg_delay - elapsedtime))
+            parent.logger.debug(
+                dbg_msg.format(elapsedtime, parent.msg_delay - elapsedtime))
             parent.consumer.sleep_now = parent.consumer.sleep_min
             parent.consumer.msg_to_retry()
             parent.msg.isRetry = False

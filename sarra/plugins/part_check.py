@@ -1,10 +1,9 @@
 #!/usr/bin/python3
 
-import os,stat,time
+import os, stat, time
 from hashlib import md5
 
 from sarra import timeflt2str, timestr2flt, nowflt
-
 """
    Confirm that files downloaded are the ones announced, by comparing the 
    checksums of computed as parts are downloaded with the corresponding 
@@ -28,40 +27,45 @@ from sarra import timeflt2str, timestr2flt, nowflt
 
 
 """
-class PartCheck(object): 
-      def __init__(self,parent):
-
-          if not hasattr(parent,'part_check_lag_threshold'):
-             parent.part_check_lag_threshold=300
-          else:
-             if type(parent.part_check_lag_threshold) is list:
-                 parent.part_check_lag_threshold = int(parent.part_check_lag_threshold[0])
-
-          return
-
-      def perform(self,parent):
-          logger = parent.logger
-          msg    = parent.msg
-
-          import calendar
 
 
-          then=timestr2flt(msg.pubtime)
-          now=nowflt()
-          lag= now-then
+class PartCheck(object):
+    def __init__(self, parent):
 
-          if msg.onfly_checksum != msg.checksum :
-             msg = "checksum differ - %s - %s  msg %s" % (msg.new_file, parent.onfly_checksum,msg.checksum)
-             if lag > parent.part_check_lag_threshold :
-                 logger.warning("part_check might just be referring to an older version of file, but " + msg)
-                 return True
-             else:
-                 logger.error( "part_check rejecting " + msg)
-                 return False
+        if not hasattr(parent, 'part_check_lag_threshold'):
+            parent.part_check_lag_threshold = 300
+        else:
+            if type(parent.part_check_lag_threshold) is list:
+                parent.part_check_lag_threshold = int(
+                    parent.part_check_lag_threshold[0])
 
-          logger.info("part_check Checksum matched for : %s" % msg.new_file )
-          return True
+        return
+
+    def perform(self, parent):
+        logger = parent.logger
+        msg = parent.msg
+
+        import calendar
+
+        then = timestr2flt(msg.pubtime)
+        now = nowflt()
+        lag = now - then
+
+        if msg.onfly_checksum != msg.checksum:
+            msg = "checksum differ - %s - %s  msg %s" % (
+                msg.new_file, parent.onfly_checksum, msg.checksum)
+            if lag > parent.part_check_lag_threshold:
+                logger.warning(
+                    "part_check might just be referring to an older version of file, but "
+                    + msg)
+                return True
+            else:
+                logger.error("part_check rejecting " + msg)
+                return False
+
+        logger.info("part_check Checksum matched for : %s" % msg.new_file)
+        return True
+
 
 partcheck = PartCheck(self)
 self.on_part = partcheck.perform
-

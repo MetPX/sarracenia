@@ -63,8 +63,11 @@ class SrCacheCase(TestCase):
         result = self.cache.check(self.key, self.path, self.part)
 
         # Evaluate internal state (attributes values)
-        self.assertIsNone(self.cache.cache_hit, ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_hit'))
-        self.assertTrue(result, ASSERT_INVALID_RETURNED_VALUE_FMT.format('sr_cache.check'))
+        self.assertIsNone(
+            self.cache.cache_hit,
+            ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_hit'))
+        self.assertTrue(
+            result, ASSERT_INVALID_RETURNED_VALUE_FMT.format('sr_cache.check'))
         expected = {self.key: self.cache_entry}
         assert_msg = ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict')
         self.assertDictEqual(expected, self.cache.cache_dict, assert_msg)
@@ -72,7 +75,11 @@ class SrCacheCase(TestCase):
         self.assertEqual(self.count + 1, self.cache.count, assert_msg)
 
         # Evaluate external calls
-        expected = [call.write(WRITE_LINE_FMT.format(self.key, nowflt.return_value, self.file, self.part))]
+        expected = [
+            call.write(
+                WRITE_LINE_FMT.format(self.key, nowflt.return_value, self.file,
+                                      self.part))
+        ]
         self.assertEqual(expected, fp.mock_calls, ASSERT_MOCK_CALLS)
 
     @patch('_io.TextIOWrapper')
@@ -88,15 +95,24 @@ class SrCacheCase(TestCase):
         result = self.cache.check(self.key, self.path, self.part)
 
         # Evaluate internal state (attributes values)
-        self.assertFalse(result, ASSERT_INVALID_RETURNED_VALUE_FMT.format('sr_cache.check'))
+        self.assertFalse(
+            result, ASSERT_INVALID_RETURNED_VALUE_FMT.format('sr_cache.check'))
         assert_msg = ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_hit')
-        self.assertEqual(self.cache_entry.popitem()[0], self.cache.cache_hit, assert_msg)
+        self.assertEqual(self.cache_entry.popitem()[0], self.cache.cache_hit,
+                         assert_msg)
         expected = {self.key: self.cache_entry}
-        self.assertDictEqual(expected, self.cache.cache_dict, ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict'))
-        self.assertEqual(self.count + 2, self.cache.count, ASSERT_INVALID_VALUE_FMT.format('sr_cache.count'))
+        self.assertDictEqual(
+            expected, self.cache.cache_dict,
+            ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict'))
+        self.assertEqual(self.count + 2, self.cache.count,
+                         ASSERT_INVALID_VALUE_FMT.format('sr_cache.count'))
 
         # Evaluate external calls
-        expected = [call.write(WRITE_LINE_FMT.format(self.key, nowflt.return_value, self.file, self.part))]
+        expected = [
+            call.write(
+                WRITE_LINE_FMT.format(self.key, nowflt.return_value, self.file,
+                                      self.part))
+        ]
         self.assertEqual(expected, fp.mock_calls, ASSERT_MOCK_CALLS)
 
     @patch('_io.TextIOWrapper')
@@ -113,14 +129,24 @@ class SrCacheCase(TestCase):
         result = self.cache.check(self.key, self.path, self.part)
 
         # Evaluate internal state (attributes values)
-        self.assertIsNone(self.cache.cache_hit, ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_hit'))
-        self.assertTrue(result, ASSERT_INVALID_RETURNED_VALUE_FMT.format('sr_cache.check'))
+        self.assertIsNone(
+            self.cache.cache_hit,
+            ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_hit'))
+        self.assertTrue(
+            result, ASSERT_INVALID_RETURNED_VALUE_FMT.format('sr_cache.check'))
         expected = {self.key: self.cache_entry}
-        self.assertDictEqual(expected, self.cache.cache_dict, ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict'))
-        self.assertEqual(self.count + 2, self.cache.count, ASSERT_INVALID_VALUE_FMT.format('sr_cache.count'))
+        self.assertDictEqual(
+            expected, self.cache.cache_dict,
+            ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict'))
+        self.assertEqual(self.count + 2, self.cache.count,
+                         ASSERT_INVALID_VALUE_FMT.format('sr_cache.count'))
 
         # Evaluate external calls
-        expected = [call.write(WRITE_LINE_FMT.format(self.key, nowflt.return_value, self.file, self.part))]
+        expected = [
+            call.write(
+                WRITE_LINE_FMT.format(self.key, nowflt.return_value, self.file,
+                                      self.part))
+        ]
         self.assertEqual(expected, fp.mock_calls, ASSERT_MOCK_CALLS)
 
     @patch('_io.TextIOWrapper')
@@ -137,14 +163,24 @@ class SrCacheCase(TestCase):
         result = self.cache.check(self.key, self.path, weird_part)
 
         # Evaluate internal state (attributes values)
-        self.assertTrue(result, ASSERT_INVALID_RETURNED_VALUE_FMT.format('sr_cache.check'))
-        self.assertIsNone(self.cache.cache_hit, ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_hit'))
+        self.assertTrue(
+            result, ASSERT_INVALID_RETURNED_VALUE_FMT.format('sr_cache.check'))
+        self.assertIsNone(
+            self.cache.cache_hit,
+            ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_hit'))
         expected = {self.key: self.cache_entry}
-        self.assertDictEqual(expected, self.cache.cache_dict, ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict'))
-        self.assertEqual(self.count + 2, self.cache.count, ASSERT_INVALID_VALUE_FMT.format('sr_cache.count'))
+        self.assertDictEqual(
+            expected, self.cache.cache_dict,
+            ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict'))
+        self.assertEqual(self.count + 2, self.cache.count,
+                         ASSERT_INVALID_VALUE_FMT.format('sr_cache.count'))
 
         # Evaluate external calls
-        expected = [call.write(WRITE_LINE_FMT.format(self.key, nowflt.return_value, self.file, weird_part))]
+        expected = [
+            call.write(
+                WRITE_LINE_FMT.format(self.key, nowflt.return_value, self.file,
+                                      weird_part))
+        ]
         self.assertEqual(expected, fp.mock_calls, ASSERT_MOCK_CALLS)
 
     @patch('_io.TextIOWrapper')
@@ -161,9 +197,11 @@ class SrCacheCase(TestCase):
         result = self.cache.check(self.key, self.path, different_part)
 
         # Evaluate internal state (attributes values)
-        self.assertFalse(result, ASSERT_INVALID_RETURNED_VALUE_FMT.format('sr_cache.check'))
+        self.assertFalse(
+            result, ASSERT_INVALID_RETURNED_VALUE_FMT.format('sr_cache.check'))
         assert_msg = ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_hit')
-        self.assertEqual(f'{self.file}*{different_part[:-5]}', self.cache.cache_hit[:-5], assert_msg)
+        self.assertEqual(f'{self.file}*{different_part[:-5]}',
+                         self.cache.cache_hit[:-5], assert_msg)
         expected = {self.key: self.cache_entry}
         assert_msg = ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict')
         self.assertDictEqual(expected, self.cache.cache_dict, assert_msg)
@@ -171,7 +209,11 @@ class SrCacheCase(TestCase):
         self.assertEqual(self.count + 2, self.cache.count, assert_msg)
 
         # Evaluate external calls
-        expected = [call.write(WRITE_LINE_FMT.format(self.key, nowflt.return_value, self.file, different_part))]
+        expected = [
+            call.write(
+                WRITE_LINE_FMT.format(self.key, nowflt.return_value, self.file,
+                                      different_part))
+        ]
         self.assertEqual(expected, fp.mock_calls, ASSERT_MOCK_CALLS)
 
     @patch('_io.TextIOWrapper')
@@ -188,13 +230,21 @@ class SrCacheCase(TestCase):
         result = self.cache.check(self.key, self.path, different_part)
 
         # Evaluate internal state (attributes values)
-        self.assertTrue(result, ASSERT_INVALID_RETURNED_VALUE_FMT.format('sr_cache.check'))
+        self.assertTrue(
+            result, ASSERT_INVALID_RETURNED_VALUE_FMT.format('sr_cache.check'))
         expected = {self.key: self.cache_entry}
-        self.assertDictEqual(expected, self.cache.cache_dict, ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict'))
-        self.assertEqual(self.count + 2, self.cache.count, ASSERT_INVALID_VALUE_FMT.format('sr_cache.count'))
+        self.assertDictEqual(
+            expected, self.cache.cache_dict,
+            ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict'))
+        self.assertEqual(self.count + 2, self.cache.count,
+                         ASSERT_INVALID_VALUE_FMT.format('sr_cache.count'))
 
         # Evaluate external calls
-        expected = [call.write(WRITE_LINE_FMT.format(self.key, nowflt.return_value, self.file, different_part))]
+        expected = [
+            call.write(
+                WRITE_LINE_FMT.format(self.key, nowflt.return_value, self.file,
+                                      different_part))
+        ]
         self.assertEqual(expected, fp.mock_calls, ASSERT_MOCK_CALLS)
 
     def test_check_msg(self):
@@ -209,7 +259,8 @@ class SrCacheCase(TestCase):
 
         # Evaluate results
         expected = [call(self.key, self.file, self.part)]
-        self.assertEqual(expected, self.cache.check.mock_calls, ASSERT_MOCK_CALLS)
+        self.assertEqual(expected, self.cache.check.mock_calls,
+                         ASSERT_MOCK_CALLS)
 
     def test_check_msg__cache_basis_path(self):
         # Prepare test
@@ -224,7 +275,8 @@ class SrCacheCase(TestCase):
 
         # Evaluate results
         expected = [call(self.key, self.path, self.part)]
-        self.assertEqual(expected, self.cache.check.mock_calls, ASSERT_MOCK_CALLS)
+        self.assertEqual(expected, self.cache.check.mock_calls,
+                         ASSERT_MOCK_CALLS)
 
     def test_check_msg__cache_basis_data(self):
         # Prepare test
@@ -239,7 +291,8 @@ class SrCacheCase(TestCase):
 
         # Evaluate results
         expected = [call(self.key, CacheBasis.data.name, self.part)]
-        self.assertEqual(expected, self.cache.check.mock_calls, ASSERT_MOCK_CALLS)
+        self.assertEqual(expected, self.cache.check.mock_calls,
+                         ASSERT_MOCK_CALLS)
 
     def test_check_msg__sum_L(self):
         # Prepare test
@@ -253,7 +306,8 @@ class SrCacheCase(TestCase):
 
         # Evaluate results
         expected = [call(self.key, self.file, self.file)]
-        self.assertEqual(expected, self.cache.check.mock_calls, ASSERT_MOCK_CALLS)
+        self.assertEqual(expected, self.cache.check.mock_calls,
+                         ASSERT_MOCK_CALLS)
 
     @patch('sarra.sr_cache.nowflt')
     def test_clean(self, nowflt):
@@ -264,14 +318,20 @@ class SrCacheCase(TestCase):
         self.then = self.now - 100
         self.then_key = KEY_FMT.format(self.key, 'expired')
         self.cache.cache_dict[self.key] = self.cache_entry
-        self.cache.cache_dict[self.then_key] = {ENTRY_KEY_FMT.format(self.file, self.part): self.then}
+        self.cache.cache_dict[self.then_key] = {
+            ENTRY_KEY_FMT.format(self.file, self.part): self.then
+        }
         # Execute test
         self.cache.clean()
 
         # Evaluate results
-        self.assertIn(self.key, self.cache.cache_dict, ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict'))
-        self.assertEqual(1, len(self.cache.cache_dict), ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict size'))
-        self.assertEqual(1, self.cache.count, ASSERT_INVALID_VALUE_FMT.format('sr_cache.count'))
+        self.assertIn(self.key, self.cache.cache_dict,
+                      ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict'))
+        self.assertEqual(
+            1, len(self.cache.cache_dict),
+            ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict size'))
+        self.assertEqual(1, self.cache.count,
+                         ASSERT_INVALID_VALUE_FMT.format('sr_cache.count'))
 
     @patch('_io.TextIOWrapper')
     @patch('sarra.sr_cache.nowflt')
@@ -284,12 +344,17 @@ class SrCacheCase(TestCase):
         self.then = self.now - 100
         self.then_key = KEY_FMT.format(self.key, 'expired')
         self.cache.cache_dict[self.key] = self.cache_entry
-        self.cache.cache_dict[self.then_key] = {ENTRY_KEY_FMT.format(self.file, self.part): self.then}
+        self.cache.cache_dict[self.then_key] = {
+            ENTRY_KEY_FMT.format(self.file, self.part): self.then
+        }
         # Execute test
         self.cache.clean(persist=True)
 
         # Evaluate results
-        expected = [call.write('{} {:f} {} {}\n'.format(self.key, self.now, self.file, self.part))]
+        expected = [
+            call.write('{} {:f} {} {}\n'.format(self.key, self.now, self.file,
+                                                self.part))
+        ]
         self.assertEqual(expected, fp.mock_calls, ASSERT_MOCK_CALLS)
 
     @patch('sarra.sr_cache.nowflt')
@@ -301,12 +366,16 @@ class SrCacheCase(TestCase):
         self.then = self.now - 100
         self.then_key = KEY_FMT.format(self.key, 'expired')
         self.cache.cache_dict[self.key] = self.cache_entry
-        self.cache.cache_dict[self.then_key] = {ENTRY_KEY_FMT.format(self.file, self.part): self.then}
+        self.cache.cache_dict[self.then_key] = {
+            ENTRY_KEY_FMT.format(self.file, self.part): self.then
+        }
         # Execute test
         self.cache.clean(delpath=self.file)
 
         # Evaluate results
-        self.assertEqual({}, self.cache.cache_dict, ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict'))
+        self.assertEqual(
+            {}, self.cache.cache_dict,
+            ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict'))
 
     @patch('sarra.sr_cache.nowflt')
     def test_clean__delpath__unmatched_cache_basis(self, nowflt):
@@ -317,12 +386,16 @@ class SrCacheCase(TestCase):
         self.then = self.now - 100
         self.then_key = KEY_FMT.format(self.key, 'expired')
         self.cache.cache_dict[self.key] = self.cache_entry
-        self.cache.cache_dict[self.then_key] = {ENTRY_KEY_FMT.format(self.file, self.part): self.then}
+        self.cache.cache_dict[self.then_key] = {
+            ENTRY_KEY_FMT.format(self.file, self.part): self.then
+        }
         # Execute test
         self.cache.clean(delpath=self.path)
 
         # Evaluate results
-        self.assertEqual(1, len(self.cache.cache_dict), ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict size'))
+        self.assertEqual(
+            1, len(self.cache.cache_dict),
+            ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict size'))
 
     def test_clean__cache_dict_empty(self):
         # Prepare test
@@ -330,7 +403,9 @@ class SrCacheCase(TestCase):
         self.cache.clean()
 
         # Evaluate results
-        self.assertEqual({}, self.cache.cache_dict, ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict'))
+        self.assertEqual(
+            {}, self.cache.cache_dict,
+            ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict'))
 
     @patch('sarra.sr_cache.nowflt')
     def test_clean__cache_dict__no_expired(self, nowflt):
@@ -341,15 +416,22 @@ class SrCacheCase(TestCase):
         self.then = self.now - 10
         self.then_key = KEY_FMT.format(self.key, 'not_expired')
         self.cache.cache_dict[self.key] = self.cache_entry
-        self.cache.cache_dict[self.then_key] = {ENTRY_KEY_FMT.format(self.file, self.part): self.then}
+        self.cache.cache_dict[self.then_key] = {
+            ENTRY_KEY_FMT.format(self.file, self.part): self.then
+        }
         # Execute test
         self.cache.clean()
 
         # Evaluate results
-        self.assertIn(self.key, self.cache.cache_dict, ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict'))
-        self.assertIn(self.then_key, self.cache.cache_dict, ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict'))
-        self.assertEqual(2, len(self.cache.cache_dict), ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict size'))
-        self.assertEqual(2, self.cache.count, ASSERT_INVALID_VALUE_FMT.format('sr_cache.count'))
+        self.assertIn(self.key, self.cache.cache_dict,
+                      ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict'))
+        self.assertIn(self.then_key, self.cache.cache_dict,
+                      ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict'))
+        self.assertEqual(
+            2, len(self.cache.cache_dict),
+            ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict size'))
+        self.assertEqual(2, self.cache.count,
+                         ASSERT_INVALID_VALUE_FMT.format('sr_cache.count'))
 
     @patch('_io.TextIOWrapper')
     def test_close(self, fp):
@@ -362,9 +444,13 @@ class SrCacheCase(TestCase):
         self.cache.close()
 
         # Evaluate internal state (attribute values)
-        self.assertIsNone(self.cache.fp, ASSERT_INVALID_VALUE_FMT.format('sr_cache.fp'))
-        self.assertDictEqual({}, self.cache.cache_dict, ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict'))
-        self.assertEqual(0, self.cache.count, ASSERT_INVALID_VALUE_FMT.format('sr_cache.count'))
+        self.assertIsNone(self.cache.fp,
+                          ASSERT_INVALID_VALUE_FMT.format('sr_cache.fp'))
+        self.assertDictEqual(
+            {}, self.cache.cache_dict,
+            ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict'))
+        self.assertEqual(0, self.cache.count,
+                         ASSERT_INVALID_VALUE_FMT.format('sr_cache.count'))
 
         # Evaluate external calls
         expected = [call.flush(), call.close()]
@@ -401,13 +487,16 @@ class SrCacheCase(TestCase):
         self.cache.delete_path(self.path)
 
         # Evaluate internal state (attribute values)
-        self.assertNotEqual(fisrt_fp, fp, ASSERT_INVALID_VALUE_FMT.format('sr_cache.fp'))
-        self.assertEqual(mocked_open(), self.cache.fp, ASSERT_INVALID_VALUE_FMT.format('sr_cache.fp'))
+        self.assertNotEqual(fisrt_fp, fp,
+                            ASSERT_INVALID_VALUE_FMT.format('sr_cache.fp'))
+        self.assertEqual(mocked_open(), self.cache.fp,
+                         ASSERT_INVALID_VALUE_FMT.format('sr_cache.fp'))
 
         # Evaluate external calls
         expected = [call.unlink(self.cache.cache_file)]
         self.assertIn(expected, mocked_os.mock_calls, ASSERT_MOCK_CALLS)
-        self.cache.clean.assert_called_once_with(persist=True, delpath=self.path)
+        self.cache.clean.assert_called_once_with(persist=True,
+                                                 delpath=self.path)
 
     @patch('sarra.sr_cache.os')
     @patch('builtins.open')
@@ -422,10 +511,15 @@ class SrCacheCase(TestCase):
         self.cache.free()
 
         # Evaluate internal state (attribute values)
-        self.assertNotEqual(fp, self.cache.fp, ASSERT_INVALID_VALUE_FMT.format('sr_cache.fp'))
-        self.assertEqual(mocked_open(), self.cache.fp, ASSERT_INVALID_VALUE_FMT.format('sr_cache.fp'))
-        self.assertEqual({}, self.cache.cache_dict, ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict'))
-        self.assertEqual(0, self.cache.count, ASSERT_INVALID_VALUE_FMT.format('sr_cache.count'))
+        self.assertNotEqual(fp, self.cache.fp,
+                            ASSERT_INVALID_VALUE_FMT.format('sr_cache.fp'))
+        self.assertEqual(mocked_open(), self.cache.fp,
+                         ASSERT_INVALID_VALUE_FMT.format('sr_cache.fp'))
+        self.assertEqual(
+            {}, self.cache.cache_dict,
+            ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict'))
+        self.assertEqual(0, self.cache.count,
+                         ASSERT_INVALID_VALUE_FMT.format('sr_cache.count'))
 
         # Evaluate external calls
         expected = [call.unlink(self.cache.cache_file)]
@@ -445,7 +539,8 @@ class SrCacheCase(TestCase):
         mocked_open.return_value = fp
         fp.readline.return_value = ''
         fp.readline.side_effect = [
-            WRITE_LINE_FMT.format(self.then_key, self.then, self.file, self.part),
+            WRITE_LINE_FMT.format(self.then_key, self.then, self.file,
+                                  self.part),
             WRITE_LINE_FMT.format(self.key, self.now, self.file, self.part),
             DEFAULT
         ]
@@ -455,11 +550,17 @@ class SrCacheCase(TestCase):
 
         # Evaluate results
         expected = {
-            self.key: {self.entry_key: float('{:f}'.format(self.now))},
-            self.then_key: {self.entry_key: float('{:f}'.format(self.then))}
+            self.key: {
+                self.entry_key: float('{:f}'.format(self.now))
+            },
+            self.then_key: {
+                self.entry_key: float('{:f}'.format(self.then))
+            }
         }
         # TODO add expire entry
-        self.assertEqual(expected, self.cache.cache_dict, ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict'))
+        self.assertEqual(
+            expected, self.cache.cache_dict,
+            ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_dict'))
 
     def test_open(self):
         # Prepare test
@@ -470,8 +571,11 @@ class SrCacheCase(TestCase):
         self.cache.open()
 
         # Evaluate results
-        self.dest_path = os.path.join(self.user_cache_dir, f'recent_files_{self.instance:03}.cache')
-        self.assertEqual(self.dest_path, self.cache.cache_file, ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_file'))
+        self.dest_path = os.path.join(
+            self.user_cache_dir, f'recent_files_{self.instance:03}.cache')
+        self.assertEqual(
+            self.dest_path, self.cache.cache_file,
+            ASSERT_INVALID_VALUE_FMT.format('sr_cache.cache_file'))
         self.cache.load.assert_called()
 
     @patch('sarra.sr_cache.os')
@@ -505,7 +609,9 @@ class SrCacheCase(TestCase):
 
         # Evaluate results
         self.cache.clean.assert_called()
-        self.assertEqual(self.now, self.cache.last_expire, ASSERT_INVALID_VALUE_FMT.format('sr_cache.last_expire'))
+        self.assertEqual(
+            self.now, self.cache.last_expire,
+            ASSERT_INVALID_VALUE_FMT.format('sr_cache.last_expire'))
 
 
 class CacheBasis(Enum):
@@ -520,7 +626,8 @@ def suite():
     :return: sr_cache test suite
     """
     sr_amqp_suite = unittest.TestSuite()
-    sr_amqp_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SrCacheCase))
+    sr_amqp_suite.addTests(
+        unittest.TestLoader().loadTestsFromTestCase(SrCacheCase))
     return sr_amqp_suite
 
 

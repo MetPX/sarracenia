@@ -17,9 +17,9 @@
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; version 2 of the License.
 #
-#  This program is distributed in the hope that it will be useful, 
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
@@ -28,22 +28,21 @@
 #
 #
 
-
 try:
     import xattr
-    supports_extended_attributes=True
+    supports_extended_attributes = True
 
 except:
-    supports_extended_attributes=False
-    
+    supports_extended_attributes = False
+
 import sys
 
-supports_alternate_data_streams=False
+supports_alternate_data_streams = False
 
 if sys.platform == 'win32':
     try:
         from sarra.pyads import ADS
-        supports_alternate_data_streams=True
+        supports_alternate_data_streams = True
 
     except:
         pass
@@ -52,14 +51,16 @@ import json
 
 STREAM_NAME = 'sr_.json'
 
-xattr_disabled=False
+xattr_disabled = False
+
 
 def disable_xattr():
-     global xattr_disabled
-     xattr_disabled=True
+    global xattr_disabled
+    xattr_disabled = True
+
 
 class FileMetadata:
-   """
+    """
       This class implements storing metadata *with* a file.
 
       on unlix/linux/mac systems, we use extended attributes,
@@ -82,83 +83,85 @@ class FileMetadata:
       x.persist() <- write metadata back to file, if necessary.
 
    """
+    def __init__(self, path):
 
+        global supports_alternate_data_streams
+        global supports_extended_attributes
 
-   def __init__(self,path):
+        self.path = path
+        self.x = {}
+        self.dirty = False
 
-       global supports_alternate_data_streams
-       global supports_extended_attributes
+        if xattr_disabled:
+            supports_alternate_data_streams = False
+            supports_extended_attributes = False
+            return
 
-       self.path = path
-       self.x = {}
-       self.dirty = False
+        if supports_alternate_data_streams:
+            self.ads = ADS(path)
+            s = list(self.ads)
+            if STREAM_NAME in s:
+                self.x = json.loads(
+                    self.ads.get_stream_content(STREAM_NAME).decode('utf-8'))
 
-       if xattr_disabled:
-           supports_alternate_data_streams=False
-           supports_extended_attributes=False
-           return
+        if supports_extended_attributes:
+            d = xattr.xattr(path)
+            for i in d:
+                if not i.startswith('user.sr_'):
+                    continue
+                k = i.replace('user.sr_', '')
+                v = d[i].decode('utf-8')
+                self.x[k] = v
 
-       if supports_alternate_data_streams:
-           self.ads = ADS(path)
-           s = list(self.ads)
-           if STREAM_NAME in s:
-              self.x = json.loads( self.ads.get_stream_content(STREAM_NAME).decode('utf-8')  )
+    def __del__(self):
+        self.persist()
 
-       if supports_extended_attributes:
-          d = xattr.xattr(path)
-          for i in d:
-              if not i.startswith('user.sr_'):
-                 continue
-              k= i.replace('user.sr_','') 
-              v= d[i].decode('utf-8')
-              self.x[k] = v
-
-   def __del__(self):
-       self.persist()
-
-   """
+    """
      return a dictionary of extended attributes.
 
    """
-   def list(self):
-       return self.x.keys()
 
-   def get(self,name):
-       if name in self.x.keys():
-           return self.x[ name ]
-       return None
+    def list(self):
+        return self.x.keys()
 
-   def set(self,name,value):
-       self.dirty = True
-       self.x[ name ] = value      
+    def get(self, name):
+        if name in self.x.keys():
+            return self.x[name]
+        return None
 
-   def persist(self):
+    def set(self, name, value):
+        self.dirty = True
+        self.x[name] = value
 
-       global supports_alternate_data_streams
-       global supports_extended_attributes
+    def persist(self):
 
-       if not self.dirty:
-          return
+        global supports_alternate_data_streams
+        global supports_extended_attributes
 
-       try: 
-           if supports_alternate_data_streams:
+        if not self.dirty:
+            return
 
-              #replace STREAM_NAME with json.dumps(self.x)
-              s = list(self.ads)
-              if STREAM_NAME in s: 
-                   self.ads.delete_stream(STREAM_NAME)
+        try:
+            if supports_alternate_data_streams:
 
-              self.ads.add_stream_from_string(STREAM_NAME,bytes(json.dumps(self.x,indent=4),'utf-8'))
+                #replace STREAM_NAME with json.dumps(self.x)
+                s = list(self.ads)
+                if STREAM_NAME in s:
+                    self.ads.delete_stream(STREAM_NAME)
 
-           if supports_extended_attributes:
-              #set the attributes in the list. encoding utf8...
-              for i in self.x:
-                  xattr.setxattr( self.path, 'user.sr_' + i, bytes( self.x[i], 'utf-8' ) )
-       except:
-          # not really sure what to do in the exception case...
-          # permission would be a normal thing and just silently fail...
-          # could also be on windows, but not on an NTFS file system.
-          # silent failure means it falls back to using other means.
-          pass
+                self.ads.add_stream_from_string(
+                    STREAM_NAME, bytes(json.dumps(self.x, indent=4), 'utf-8'))
 
-       self.dirty = False
+            if supports_extended_attributes:
+                #set the attributes in the list. encoding utf8...
+                for i in self.x:
+                    xattr.setxattr(self.path, 'user.sr_' + i,
+                                   bytes(self.x[i], 'utf-8'))
+        except:
+            # not really sure what to do in the exception case...
+            # permission would be a normal thing and just silently fail...
+            # could also be on windows, but not on an NTFS file system.
+            # silent failure means it falls back to using other means.
+            pass
+
+        self.dirty = False

@@ -1,4 +1,3 @@
-
 """
   Moth ... Messages Organized by Topic Headers
            (en français: Messages organisés par thème hierarchique. )
@@ -49,29 +48,30 @@
 import copy
 import logging
 
-logger = logging.getLogger( __name__ )
+logger = logging.getLogger(__name__)
 
-default_options = { 
-           'accept_unmatch':True,
-           'batch': 100, 
-           'bindings':[], 
-           'broker': None, 
-           'inline': False,
-           'inline_encoding': 'guess',
-           'inline_max': 4096,
-           'logFormat' : '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
-           'logLevel': 'info',
-           'message_strategy': { 
-                 'reset': True, 'stubborn' : True, 'failure_duration':'5m' 
-           }
+default_options = {
+    'accept_unmatch': True,
+    'batch': 100,
+    'bindings': [],
+    'broker': None,
+    'inline': False,
+    'inline_encoding': 'guess',
+    'inline_max': 4096,
+    'logFormat':
+    '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
+    'logLevel': 'info',
+    'message_strategy': {
+        'reset': True,
+        'stubborn': True,
+        'failure_duration': '5m'
+    }
 }
 
 
 class Moth():
-    
-
-    def __init__( self, broker, props=None, is_subscriber=True ):
-       """
+    def __init__(self, broker, props=None, is_subscriber=True):
+        """
        initialize a broker connection. Connections are unidirectional.
        either for subscribing or publishing.
 
@@ -140,37 +140,38 @@ class Moth():
 
        """
 
-       protos=[]
-       self.is_subscriber = is_subscriber
+        protos = []
+        self.is_subscriber = is_subscriber
 
-       self.props=copy.deepcopy(default_options)
-       if props is not None:
-           self.props.update(props)
+        self.props = copy.deepcopy(default_options)
+        if props is not None:
+            self.props.update(props)
 
-       self.broker = broker
+        self.broker = broker
 
-       me='sarra.moth.Moth'
+        me = 'sarra.moth.Moth'
 
-       # apply settings from props.
-       if 'settings' in self.props:
-           if me in self.props['settings']:
-               for s in self.props['settings'][me]:
-                   self.props[s] = self.props['settings'][me][s]
+        # apply settings from props.
+        if 'settings' in self.props:
+            if me in self.props['settings']:
+                for s in self.props['settings'][me]:
+                    self.props[s] = self.props['settings'][me][s]
 
-       logging.basicConfig( format=self.props['logFormat'], level=getattr(logging, self.props['logLevel'].upper()) )
-
-       """ relevant:
+        logging.basicConfig(format=self.props['logFormat'],
+                            level=getattr(logging,
+                                          self.props['logLevel'].upper()))
+        """ relevant:
          https://stackoverflow.com/questions/18020074/convert-a-baseclass-object-into-a-subclass-object-idiomatically
          assmimilate in the vein of the Borg: "You will be assimilated." Turns the caller into child class.
        """
-       for sc in Moth.__subclasses__() :
+        for sc in Moth.__subclasses__():
             purl = sc.url_proto(self)
-            if (self.broker is not None) and ( self.broker.scheme[0:4] == purl ):
-                sc.__init__(self,broker,self.props)
+            if (self.broker is not None) and (self.broker.scheme[0:4] == purl):
+                sc.__init__(self, broker, self.props)
                 return
-            protos.append(purl) 
+            protos.append(purl)
 
-       logger.critical( "unsupported broker URL. Pick one of: %s" % protos )
+        logger.critical("unsupported broker URL. Pick one of: %s" % protos)
 
     @property
     def default_options():
@@ -183,14 +184,14 @@ class Moth():
     def url_proto(self):
         return "undefined"
 
-    def getNewMessage( self ):
+    def getNewMessage(self):
         """
         If there is one new message available, return it. Otherwise return None. Do not block.
 
         """
         logger.error("cleanup unimplemented")
 
-    def getNewMessages( self ):
+    def getNewMessages(self):
         """
         If there are new messages available from the broker, return them, otherwise return None.
 
@@ -201,18 +202,17 @@ class Moth():
         """
         logger.error("getNewMessages unimplemented")
 
-    def ackMessage( self, m ):
+    def ackMessage(self, m):
         """
           tell broker that a given message has been received.
-        """ 
+        """
         logger.error("ackMessage unimplemented")
 
-    def putNewMessage( self, topic, body, headers, content_type ):
+    def putNewMessage(self, topic, body, headers, content_type):
         """
            publish a message as set up to the given topic.
         """
         logger.error("putNewMessage unimplemented")
-
 
     def close(self):
         """
@@ -225,6 +225,7 @@ class Moth():
           get rid of server-side resources associated with a client. (queues/id's, etc...)
         """
         logger.error("cleanup unimplemented")
+
 
 import importlib.util
 
@@ -239,6 +240,3 @@ if importlib.util.find_spec("proton"):
 
 if importlib.util.find_spec("paho"):
     import sarra.moth.pika
-
-
-

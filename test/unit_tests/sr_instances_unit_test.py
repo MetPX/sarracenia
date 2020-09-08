@@ -11,11 +11,12 @@ except:
 # MAIN
 # ===================================
 
+
 class test_instances(sr_instances):
     def __init__(self, args):
         super(test_instances, self).__init__(args=args)
 
-    def file_set_int(self,path,i):
+    def file_set_int(self, path, i):
         return True
 
     def start(self):
@@ -41,15 +42,17 @@ class test_instances(sr_instances):
 def main():
     if len(sys.argv) == 1:
         # Callback tests with various actions on subprocess sr_instances
-        actions = ('foreground', 'start', 'restart', 'reload', 'status', 'stop')
+        actions = ('foreground', 'start', 'restart', 'reload', 'status',
+                   'stop')
         for i, act in enumerate(actions):
             try:
                 subprocess.check_call([sys.argv[0], act])
             except subprocess.CalledProcessError as e:
                 if e.returncode > 0:
-                    print("Test 0%s: sr_instances.py %s did not worked" % (i+1, act))
+                    print("Test 0%s: sr_instances.py %s did not worked" %
+                          (i + 1, act))
                     raise e
-            print("Test 0%s: sr_instances.py %s worked" % (i+1, act))
+            print("Test 0%s: sr_instances.py %s worked" % (i + 1, act))
         print("sr_instances.py TEST PASSED")
     else:
         args = sys.argv[1:-1]
@@ -58,7 +61,6 @@ def main():
         this_test = test_instances(args)
         this_test.no = 1
         getattr(this_test, '%s_parent' % action)()
-
 
 
 # =========================================

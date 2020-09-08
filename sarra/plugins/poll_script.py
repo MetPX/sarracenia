@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 """
  poll_script: an sample do_poll option usage for sr_poll.
               run a script that produces a filename per line, post each one.
@@ -34,56 +33,61 @@ except:
 
 
 class POLL_SCRIPT(object):
+    def __init__(self, parent):
+        if not hasattr(parent, 'poll_script_command'):
+            parent.poll_script_command = [
+                '/usr/bin/find', '/tmp', '-type', 'f', '-print'
+            ]
+        else:
+            if ' ' in parent.poll_script_command[0]:
+                parent.poll_script_command = parent.poll_script_command[
+                    0].split(' ')
+        pass
 
+    def perform(self, parent):
+        import os
+        import subprocess
+        import urllib.parse
 
-   def __init__(self,parent):
-      if not hasattr(parent,'poll_script_command'):
-         parent.poll_script_command= [ '/usr/bin/find', '/tmp', '-type', 'f', '-print'  ]
-      else:
-         if ' ' in parent.poll_script_command[0]:
-             parent.poll_script_command = parent.poll_script_command[0].split(' ')
-      pass
-          
-   def perform(self,parent):
-      import os
-      import subprocess
-      import urllib.parse
+        logger = parent.logger
+        msg = parent.msg
 
-      logger = parent.logger
-      msg    = parent.msg
+        cmd = parent.poll_script_command
 
-      cmd = parent.poll_script_command
+        logger.debug("poll_script invoking: %s " % cmd)
 
-      logger.debug("poll_script invoking: %s " % cmd )
-      
-      # run the shell script, for loop processes each line of output as an absolute path to a file name.
-      proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-      proc.wait()
-      for line in proc.stdout:
-          fname = line.rstrip().decode("utf-8") 
-          logger.debug("poll_script fname is: %s " % fname )
+        # run the shell script, for loop processes each line of output as an absolute path to a file name.
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+        proc.wait()
+        for line in proc.stdout:
+            fname = line.rstrip().decode("utf-8")
+            logger.debug("poll_script fname is: %s " % fname)
 
-          msg.urlstr = parent.destination  + '/' + fname
-          logger.debug("poll_script urlstr is: %s " % msg.urlstr )
+            msg.urlstr = parent.destination + '/' + fname
+            logger.debug("poll_script urlstr is: %s " % msg.urlstr)
 
-          msg.url = urllib.parse.urlparse(msg.urlstr)
+            msg.url = urllib.parse.urlparse(msg.urlstr)
 
-          fst = os.stat(fname)
-          msg.partstr = '1,%s,1,0,0' % fst.st_size
-          msg.sumstr  = '0,0'
-          mtimestr = timeflt2str(fst.st_mtime)
-          atimestr = timeflt2str(fst.st_atime)
+            fst = os.stat(fname)
+            msg.partstr = '1,%s,1,0,0' % fst.st_size
+            msg.sumstr = '0,0'
+            mtimestr = timeflt2str(fst.st_mtime)
+            atimestr = timeflt2str(fst.st_atime)
 
-          logger.debug("poll_script exchange: %s url: %s to_cluster: %s partstr: %s " % (parent.exchange, msg.url,
-                                                                                         parent.to_clusters,
-                                                                                         msg.partstr) )
-          parent.post(parent.exchange,parent.destination,fname,parent.to_clusters, msg.partstr,msg.sumstr,
-                           mtime=mtimestr, atime=atimestr)
+            logger.debug(
+                "poll_script exchange: %s url: %s to_cluster: %s partstr: %s "
+                % (parent.exchange, msg.url, parent.to_clusters, msg.partstr))
+            parent.post(parent.exchange,
+                        parent.destination,
+                        fname,
+                        parent.to_clusters,
+                        msg.partstr,
+                        msg.sumstr,
+                        mtime=mtimestr,
+                        atime=atimestr)
 
-
-      return True 
+        return True
 
 
 poll_script = POLL_SCRIPT(self)
 self.do_poll = poll_script.perform
-

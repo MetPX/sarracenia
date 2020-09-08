@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 """
   file_total
   
@@ -21,9 +20,7 @@ from sarra import nowflt
 
 
 class File_Total(object):
-
-
-    def __init__(self,parent):
+    def __init__(self, parent):
         """
            set defaults for options.  can be overridden in config file.
         """
@@ -34,75 +31,82 @@ class File_Total(object):
         parent.declare_option('file_total_interval')
         parent.declare_option('file_total_maxlag')
 
-        if hasattr(parent,'file_total_maxlag'):
+        if hasattr(parent, 'file_total_maxlag'):
             if type(parent.file_total_maxlag) is list:
-                parent.file_total_maxlag=int(parent.file_total_maxlag[0])
+                parent.file_total_maxlag = int(parent.file_total_maxlag[0])
         else:
-            parent.file_total_maxlag=60
+            parent.file_total_maxlag = 60
 
-        logger.debug("speedo init: 2 " )
+        logger.debug("speedo init: 2 ")
 
-        if hasattr(parent,'file_total_interval'):
+        if hasattr(parent, 'file_total_interval'):
             if type(parent.file_total_interval) is list:
-                parent.file_total_interval=int(parent.file_total_interval[0])
+                parent.file_total_interval = int(parent.file_total_interval[0])
         else:
-            parent.file_total_interval=5
+            parent.file_total_interval = 5
 
-        now=nowflt()
+        now = nowflt()
 
         parent.file_total_last = now
         parent.file_total_start = now
-        parent.file_total_msgcount=0
-        parent.file_total_bytecount=0
-        parent.file_total_msgcount=0
-        parent.file_total_bytecount=0
-        parent.file_total_lag=0
+        parent.file_total_msgcount = 0
+        parent.file_total_bytecount = 0
+        parent.file_total_msgcount = 0
+        parent.file_total_bytecount = 0
+        parent.file_total_lag = 0
         logger.debug("file_total: initialized, interval=%d, maxlag=%d" % \
             ( parent.file_total_interval, parent.file_total_maxlag ) )
-          
-    def perform(self,parent):
+
+    def perform(self, parent):
         logger = parent.logger
-        msg    = parent.msg
+        msg = parent.msg
 
         import humanize
         import datetime
         from sarra import timestr2flt
 
-        if ( parent.file_total_bytecount==0 ) :
-            logger.info("file_total: 0 files received: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"  )
+        if (parent.file_total_bytecount == 0):
+            logger.info(
+                "file_total: 0 files received: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"
+            )
 
-        msgtime=timestr2flt(msg.pubtime)
-        now=nowflt()
+        msgtime = timestr2flt(msg.pubtime)
+        now = nowflt()
 
         parent.file_total_msgcount = parent.file_total_msgcount + 1
 
-        lag=now-msgtime
+        lag = now - msgtime
         parent.file_total_lag = parent.file_total_lag + lag
 
-        (method,psize,ptot,prem,pno) = msg.partstr.split(',')
+        (method, psize, ptot, prem, pno) = msg.partstr.split(',')
 
         parent.file_total_bytecount = parent.file_total_bytecount + int(psize)
-        
-        #not time to report yet.
-        if parent.file_total_interval > now-parent.file_total_last :
-           return True
 
-        logger.info("file_total: %3d files received: %5.2g msg/s, %s bytes/s, lag: %4.2g s" % ( 
-            parent.file_total_msgcount,
-	    parent.file_total_msgcount/(now-parent.file_total_start),
-	    humanize.naturalsize(parent.file_total_bytecount/(now-parent.file_total_start),binary=True,gnu=True),
-            parent.file_total_lag/parent.file_total_msgcount ))
+        #not time to report yet.
+        if parent.file_total_interval > now - parent.file_total_last:
+            return True
+
+        logger.info(
+            "file_total: %3d files received: %5.2g msg/s, %s bytes/s, lag: %4.2g s"
+            % (parent.file_total_msgcount, parent.file_total_msgcount /
+               (now - parent.file_total_start),
+               humanize.naturalsize(parent.file_total_bytecount /
+                                    (now - parent.file_total_start),
+                                    binary=True,
+                                    gnu=True),
+               parent.file_total_lag / parent.file_total_msgcount))
         # Set the maximum age, in seconds, of a message to retrieve.
 
-        if lag > parent.file_total_maxlag :
-           logger.warn("total: Excessive lag! downloading too slowly/late %s behind" % 
-               humanize.naturaltime(datetime.timedelta(seconds=lag)))
+        if lag > parent.file_total_maxlag:
+            logger.warn(
+                "total: Excessive lag! downloading too slowly/late %s behind" %
+                humanize.naturaltime(datetime.timedelta(seconds=lag)))
 
         parent.file_total_last = now
 
         return True
 
+
 file_total = File_Total(self)
 
 self.on_file = file_total.perform
-

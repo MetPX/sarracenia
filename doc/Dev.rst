@@ -15,12 +15,14 @@ Tools you Need
 To hack on the sarracenia source, you need:
 
 - python3. The application is developed in and depends on python versions > 3.
+- style: PEP8 except max line length is 119, enforced via yapf3 or other similar tool.
 - some python-amqp bindings (like python-amqplib for current implementations)
 - a bunch of other modules indicated in the dependencies (setup.py or debian/control)
-- paramiko. For SSH/SFTP support you need to install the python-paramiko package (which
-  works with python3 even though the documentation says it is for python2.)
+- paramiko. For SSH/SFTP support you need to install the python3-paramiko package
 - python3 pyftpdlib module, used to run an ftpserver on a high port during the flow test.
-- git. in order to download the source from the github repository.
+- git. in order to download the source from the github repository, and to prepare and submit
+  changes.
+- an account on github.com will help in submitting patches for consideration.
 - a dedicated rabbitmq broker, with administrative access, to run the sr_insects tests.
   The flow test creates and destroys exchanges and will disrupt any active flows on the broker.
 
@@ -44,7 +46,8 @@ Each new component sr\_whatever, should have relevant man pages implemented.
 The Guides should also be revised to reflect additions or changes:
 
 - `Install.rst <Install.rst>`_ (Installation)
-- `Dev.rst <Dev.rst>`_ (this guide for developers)
+- `Prog.rst <Prog.rst>`_ (a guide to writing plugins.)
+- `Dev.rst <Dev.rst>`_ (this guide for developers of Sarracenia itself.)
 - `Subscribers.rst <subscribers.rst>`_ (a guide for how to read data from a pump.)
 - `Source.rst <source.rst>`_ (a guide for those publishing data to a pump.)
 - `Admin.rst <Admin.rst>`_ (an Admininistrator´s Guide.)

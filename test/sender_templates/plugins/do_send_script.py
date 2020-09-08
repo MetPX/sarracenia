@@ -1,21 +1,22 @@
 #!/usr/bin/python3
 
+
 class ParseAndRetrieve(object):
+    def __init__(self, parent):
+        pass
 
-	def __init__(self, parent):
-		pass
-		
-	def perform(self, parent):
-		import subprocess
+    def perform(self, parent):
+        import subprocess
 
-		orig_file = parent.local_path
+        orig_file = parent.local_path
 
-		new_path = parent.msg.headers["flow"]
-		destination = new_path + "/" + parent.local_file
+        new_path = parent.msg.headers["flow"]
+        destination = new_path + "/" + parent.local_file
 
-		subprocess.call(["cp", orig_file, destination])
+        subprocess.call(["cp", orig_file, destination])
 
-		return True
+        return True
+
 
 configFile = ParseAndRetrieve(self)
-self.do_send=configFile.perform
+self.do_send = configFile.perform

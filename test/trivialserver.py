@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
 
   Trivial http server in python, only for testing, not deployment.

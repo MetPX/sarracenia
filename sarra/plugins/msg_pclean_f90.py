@@ -27,7 +27,8 @@ class Msg_Pclean_F90(Msg_Pclean):
 
         result = True
         msg_relpath = parent.msg.relpath
-        f20_path = msg_relpath.replace("{}/".format(self.all_fxx_dirs[1]), self.all_fxx_dirs[0])
+        f20_path = msg_relpath.replace("{}/".format(self.all_fxx_dirs[1]),
+                                       self.all_fxx_dirs[0])
         path_dict = self.build_path_dict(self.all_fxx_dirs[2:], msg_relpath)
         ext = self.get_extension(msg_relpath)
 
@@ -41,22 +42,29 @@ class Msg_Pclean_F90(Msg_Pclean):
                 parent.logger.debug("file missing={}".format(path))
                 result = False
                 break
-            elif ext not in self.test_extension_list and not filecmp.cmp(f20_path, path):
+            elif ext not in self.test_extension_list and not filecmp.cmp(
+                    f20_path, path):
                 # file differ check: f20 against others
-                parent.logger.warning("skipping, file differs from f20 file: {}".format(path))
+                parent.logger.warning(
+                    "skipping, file differs from f20 file: {}".format(path))
                 with open(f20_path, 'r', encoding='iso-8859-1') as f:
                     f20_lines = f.readlines()
                 with open(path, 'r', encoding='iso-8859-1') as f:
                     f_lines = f.readlines()
                 diff = Differ().compare(f20_lines, f_lines)
-                diff = [d for d in diff if d[0] != ' ']  # Diffs without context
+                diff = [d for d in diff
+                        if d[0] != ' ']  # Diffs without context
                 parent.logger.debug("diffs found:\n{}".format("".join(diff)))
 
         if ext not in self.test_extension_list:
             # prepare next f90 test
-            test_extension = random.choice(self.test_extension_list)  # pick one test identified by file extension
+            test_extension = random.choice(
+                self.test_extension_list
+            )  # pick one test identified by file extension
             src = msg_relpath  # src file is in f30 dir
-            dest = "{}{}".format(src, test_extension)  # format input file for extension test (next f90)
+            dest = "{}{}".format(
+                src, test_extension
+            )  # format input file for extension test (next f90)
 
             try:
                 if test_extension == '.slink':
@@ -66,17 +74,19 @@ class Msg_Pclean_F90(Msg_Pclean):
                 elif test_extension == '.moved':
                     os.rename(src, dest)
                 else:
-                    parent.logger.error("test '{}' is not supported".format(test_extension))
+                    parent.logger.error(
+                        "test '{}' is not supported".format(test_extension))
             except FileNotFoundError as err:
                 # src is not there
                 parent.logger.error("test failed: {}".format(err))
                 parent.logger.debug("Exception details:", exc_info=True)
-                result=False
+                result = False
             except FileExistsError as err:
                 # dest is already there
-                parent.logger.error('skipping, found a moving target {}'.format(err))
+                parent.logger.error(
+                    'skipping, found a moving target {}'.format(err))
                 parent.logger.debug("Exception details:", exc_info=True)
-                result=False
+                result = False
 
         if 'toolong' in parent.msg.headers:
             # cleanup

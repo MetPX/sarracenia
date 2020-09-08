@@ -10,20 +10,23 @@ import logging
 import sarra.moth
 from sarra.plugin import Plugin
 
-logger = logging.getLogger( __name__ )
+logger = logging.getLogger(__name__)
+
 
 class Message(Plugin):
     """
        gather messages from a message protocol source.
     """
-    def __init__( self, options ):
+    def __init__(self, options):
 
         self.o = options
 
-        if hasattr(self.o,'broker'):
+        if hasattr(self.o, 'broker'):
             od = sarra.moth.default_options
-            od.update( self.o.dictify() )
-            self.consumer = sarra.moth.Moth( self.o.broker, od, is_subscriber=True )
+            od.update(self.o.dictify())
+            self.consumer = sarra.moth.Moth(self.o.broker,
+                                            od,
+                                            is_subscriber=True)
 
     def gather(self):
         """
@@ -31,12 +34,12 @@ class Message(Plugin):
         """
         return self.consumer.newMessages()
 
-    def ack( self, mlist ):
-         for m in mlist:
-             # see plugin/retry.py
-             if not (('isRetry' in m) and m['isRetry']):
-                 self.consumer.ack( m )
+    def ack(self, mlist):
+        for m in mlist:
+            # see plugin/retry.py
+            if not (('isRetry' in m) and m['isRetry']):
+                self.consumer.ack(m)
 
-    def on_stop( self ):
+    def on_stop(self):
         self.consumer.close()
-        logger.info( 'closing' )
+        logger.info('closing')

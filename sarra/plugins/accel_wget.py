@@ -30,81 +30,85 @@ Instead of invoking wget, it will invoke the wget -p command. To the command wil
 See end of file for performance considerations.
 
 """
+
+
 class ACCEL_WGET(object):
-   def __init__(self,parent):
+    def __init__(self, parent):
 
-      parent.declare_option( 'accel_wget_command' )
-      parent.declare_option( 'accel_wget_threshold' )
-      parent.declare_option( 'accel_wget_protocol' )
+        parent.declare_option('accel_wget_command')
+        parent.declare_option('accel_wget_threshold')
+        parent.declare_option('accel_wget_protocol')
 
-   def on_start(self,parent):
+    def on_start(self, parent):
 
-      if not hasattr(parent,'accel_wget_command'):
-         parent.download_accel_wget_command= [ '/usr/bin/wget' ]
+        if not hasattr(parent, 'accel_wget_command'):
+            parent.download_accel_wget_command = ['/usr/bin/wget']
 
-      if not hasattr( parent, "accel_wget_threshold" ):
-             parent.accel_wget_threshold = [ "1M" ]
+        if not hasattr(parent, "accel_wget_threshold"):
+            parent.accel_wget_threshold = ["1M"]
 
-      if not hasattr( parent, "accel_wget_protocol" ):
-             parent.accel_wget_protocol = [ "https", "http" ]
-          
-      if type(parent.accel_wget_threshold) is list:
-          parent.accel_wget_threshold = parent.chunksize_from_str( parent.accel_wget_threshold[0] )
+        if not hasattr(parent, "accel_wget_protocol"):
+            parent.accel_wget_protocol = ["https", "http"]
 
-      return True
+        if type(parent.accel_wget_threshold) is list:
+            parent.accel_wget_threshold = parent.chunksize_from_str(
+                parent.accel_wget_threshold[0])
 
-   def on_message(self,parent):
-      import urllib.parse
+        return True
 
-      logger = parent.logger
-      msg    = parent.msg
+    def on_message(self, parent):
+        import urllib.parse
 
-      if msg.headers['sum'][0] == 'L' or msg.headers['sum'][0] == 'R' : return True
+        logger = parent.logger
+        msg = parent.msg
 
-      parts = msg.partstr.split(',')
-      if parts[0] == '1':
-          sz=int(parts[1])
-      else:
-          sz=int(parts[1])*int(parts[2])
+        if msg.headers['sum'][0] == 'L' or msg.headers['sum'][0] == 'R':
+            return True
 
-      logger.debug("wget sz: %d, threshold: %d download: %s to %s, " % ( \
-          sz, parent.accel_wget_threshold, parent.msg.urlstr, msg.new_file ) )
-      if sz >= parent.accel_wget_threshold :
-          for p in parent.accel_wget_protocol :
-              parent.msg.urlstr = msg.urlstr.replace(p,"download")
+        parts = msg.partstr.split(',')
+        if parts[0] == '1':
+            sz = int(parts[1])
+        else:
+            sz = int(parts[1]) * int(parts[2])
 
-          parent.msg.url = urllib.parse.urlparse(msg.urlstr)
-          logger.info("wget triggering alternate method for: %s to %s, " % (parent.msg.urlstr, msg.new_file))
+        logger.debug("wget sz: %d, threshold: %d download: %s to %s, " % ( \
+            sz, parent.accel_wget_threshold, parent.msg.urlstr, msg.new_file ) )
+        if sz >= parent.accel_wget_threshold:
+            for p in parent.accel_wget_protocol:
+                parent.msg.urlstr = msg.urlstr.replace(p, "download")
 
-      return True
+            parent.msg.url = urllib.parse.urlparse(msg.urlstr)
+            logger.info("wget triggering alternate method for: %s to %s, " %
+                        (parent.msg.urlstr, msg.new_file))
+
+        return True
+
+    def do_download(self, parent):
+        import os
+        import subprocess
+
+        logger = parent.logger
+        msg = parent.msg
+
+        msg.urlstr = msg.urlstr.replace("download:", "http:")
+        os.chdir(msg.new_dir)
+        cmd = parent.download_accel_wget_command[0].split() + [msg.urlstr]
+        logger.debug("wget do_download in %s invoking: %s " %
+                     (msg.new_dir, cmd))
+
+        p = subprocess.Popen(cmd)
+        p.wait()
+        if p.returncode != 0:  # Failed!
+            if parent.reportback:
+                msg.report_publish(499, 'wget download failed')
+            return False
+
+        if parent.reportback:
+            msg.report_publish(201, 'Downloaded')
+        return True
 
 
-   def do_download(self,parent):
-      import os
-      import subprocess
-
-      logger = parent.logger
-      msg    = parent.msg
-
-      msg.urlstr = msg.urlstr.replace("download:","http:")
-      os.chdir( msg.new_dir )
-      cmd = parent.download_accel_wget_command[0].split() + [ msg.urlstr ]
-      logger.debug("wget do_download in %s invoking: %s " % ( msg.new_dir, cmd ) )
-
-      p = subprocess.Popen(cmd)
-      p.wait()
-      if p.returncode != 0:  # Failed!
-         if parent.reportback:
-             msg.report_publish(499,'wget download failed')
-         return False 
-
-      if parent.reportback:
-         msg.report_publish(201,'Downloaded')
-      return True
-
-self.plugin='ACCEL_WGET'
-
-
+self.plugin = 'ACCEL_WGET'
 """
 Caveats:
 

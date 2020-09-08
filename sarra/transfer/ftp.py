@@ -21,9 +21,9 @@
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; version 2 of the License.
 #
-#  This program is distributed in the hope that it will be useful, 
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
@@ -31,12 +31,12 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 
-import ftplib,os,sys,time
+import ftplib, os, sys, time
 import logging
 from sarra.transfer import Transfer
-from sarra.transfer import alarm_cancel,alarm_set,alarm_raise
+from sarra.transfer import alarm_cancel, alarm_set, alarm_raise
 
-logger = logging.getLogger( __name__ )
+logger = logging.getLogger(__name__)
 
 #============================================================
 # ftp protocol in sarracenia supports/uses :
@@ -59,23 +59,22 @@ logger = logging.getLogger( __name__ )
 # FTP : no remote file seek... so 'I' part impossible
 #
 
+
 class Ftp(Transfer):
- 
     @classmethod
-    def assimilate(cls,obj):
-         obj.__class__ = Ftp
+    def assimilate(cls, obj):
+        obj.__class__ = Ftp
 
-
-    def __init__(self) :
+    def __init__(self):
         logger.debug("sr_ftp __init__")
-        self.connected   = False 
-        self.ftp         = None
-        self.details     = None
-        self.batch       = 0
+        self.connected = False
+        self.ftp = None
+        self.details = None
+        self.batch = 0
         Ftp.assimilate(self)
- 
+
     def registered_as(self):
-        return [ 'ftp' ]
+        return ['ftp']
 
     # cd
     def cd(self, path):
@@ -87,34 +86,36 @@ class Ftp(Transfer):
         self.pwd = path
         alarm_cancel()
 
-    def cd_forced(self,perm,path) :
-        logger.debug("sr_ftp cd_forced %d %s" % (perm,path))
+    def cd_forced(self, perm, path):
+        logger.debug("sr_ftp cd_forced %d %s" % (perm, path))
 
         # try to go directly to path
 
         alarm_set(self.o.timeout)
         self.ftp.cwd(self.originalDir)
-        try   :
-                self.ftp.cwd(path)
-                alarm_cancel()
-                return
-        except: pass
+        try:
+            self.ftp.cwd(path)
+            alarm_cancel()
+            return
+        except:
+            pass
         alarm_cancel()
 
         # need to create subdir
 
         subdirs = path.split("/")
-        if path[0:1] == "/" : subdirs[0] = "/" + subdirs[0]
+        if path[0:1] == "/": subdirs[0] = "/" + subdirs[0]
 
-        for d in subdirs :
-            if d == ''   : continue
+        for d in subdirs:
+            if d == '': continue
             # try to go directly to subdir
-            try   :
-                    alarm_set(self.o.timeout)
-                    self.ftp.cwd(d)
-                    alarm_cancel()
-                    continue
-            except: pass
+            try:
+                alarm_set(self.o.timeout)
+                self.ftp.cwd(d)
+                alarm_cancel()
+                continue
+            except:
+                pass
 
             # create
             alarm_set(self.o.timeout)
@@ -136,29 +137,30 @@ class Ftp(Transfer):
     def check_is_connected(self):
         logger.debug("sr_ftp check_is_connected")
 
-        if self.ftp == None  : return False
-        if not self.connected : return False
+        if self.ftp == None: return False
+        if not self.connected: return False
 
-        if self.destination != self.o.destination :
-           self.close()
-           return False
+        if self.destination != self.o.destination:
+            self.close()
+            return False
 
         self.batch = self.batch + 1
-        if self.batch > self.o.batch :
-           self.close()
-           return False
+        if self.batch > self.o.batch:
+            self.close()
+            return False
 
         # really connected
-        try    : cwd = self.getcwd()
-        except :
-                 self.close()
-                 return False
+        try:
+            cwd = self.getcwd()
+        except:
+            self.close()
+            return False
 
         return True
 
     # chmod
-    def chmod(self,perm,path):
-        logger.debug("sr_ftp chmod %s %s" % (str(perm),path))
+    def chmod(self, perm, path):
+        logger.debug("sr_ftp chmod %s %s" % (str(perm), path))
         alarm_set(self.o.timeout)
         self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(perm) + ' ' + path)
         alarm_cancel()
@@ -172,64 +174,68 @@ class Ftp(Transfer):
         self.init()
 
         try:
-                alarm_set(self.o.timeout)
-                old_ftp.quit()
-        except: pass
+            alarm_set(self.o.timeout)
+            old_ftp.quit()
+        except:
+            pass
         alarm_cancel()
 
     # connect...
     def connect(self):
         logger.debug("sr_ftp connect %s" % self.o.destination)
 
-        self.connected   = False
+        self.connected = False
         self.destination = self.o.destination
 
-        if not self.credentials() : return False
-
+        if not self.credentials(): return False
 
         # timeout alarm 100 secs to connect
         alarm_set(self.o.timeout)
         try:
-                expire  = -999
-                if self.o.timeout : expire = self.o.timeout
-                if self.port == '' or self.port == None : self.port = 21
+            expire = -999
+            if self.o.timeout: expire = self.o.timeout
+            if self.port == '' or self.port == None: self.port = 21
 
-                if not self.tls :
-                   ftp = ftplib.FTP()
-                   ftp.connect(self.host,self.port,timeout=expire)
-                   ftp.login(self.user, self.password)
-                else :
-                   # ftplib supports FTPS with TLS 
-                   ftp = ftplib.FTP_TLS(self.host,self.user,self.password,timeout=expire)
-                   if self.prot_p : ftp.prot_p()
-                   # needed only if prot_p then set back to prot_c
-                   #else          : ftp.prot_c()
+            if not self.tls:
+                ftp = ftplib.FTP()
+                ftp.connect(self.host, self.port, timeout=expire)
+                ftp.login(self.user, self.password)
+            else:
+                # ftplib supports FTPS with TLS
+                ftp = ftplib.FTP_TLS(self.host,
+                                     self.user,
+                                     self.password,
+                                     timeout=expire)
+                if self.prot_p: ftp.prot_p()
+                # needed only if prot_p then set back to prot_c
+                #else          : ftp.prot_c()
 
-                ftp.set_pasv(self.passive)
+            ftp.set_pasv(self.passive)
 
-                self.originalDir = '.'
+            self.originalDir = '.'
 
-                try:
-                    self.originalDir = ftp.pwd()
-                except:
-                    logger.warning("Unable to ftp.pwd")
-                    logger.debug('Exception details: ', exc_info=True)
+            try:
+                self.originalDir = ftp.pwd()
+            except:
+                logger.warning("Unable to ftp.pwd")
+                logger.debug('Exception details: ', exc_info=True)
 
-                self.pwd = self.originalDir
+            self.pwd = self.originalDir
 
-                self.connected = True
+            self.connected = True
 
-                self.ftp = ftp
+            self.ftp = ftp
 
-                self.file_index_cache = self.o.cfg_run_dir + os.sep + '.dest_file_index'
-                if os.path.isfile(self.file_index_cache): self.load_file_index()
-                else: self.init_file_index()
+            self.file_index_cache = self.o.cfg_run_dir + os.sep + '.dest_file_index'
+            if os.path.isfile(self.file_index_cache): self.load_file_index()
+            else: self.init_file_index()
 
-                #alarm_cancel()
-                return True
+            #alarm_cancel()
+            return True
 
         except:
-            logger.error("Unable to connect to %s (user:%s)" % ( self.host, self.user ) )
+            logger.error("Unable to connect to %s (user:%s)" %
+                         (self.host, self.user))
             logger.debug('Exception details: ', exc_info=True)
 
         alarm_cancel()
@@ -240,50 +246,63 @@ class Ftp(Transfer):
         logger.debug("sr_ftp credentials %s" % self.destination)
 
         try:
-                ok, details = self.o.credentials.get(self.destination)
-                if details  : url = details.url
+            ok, details = self.o.credentials.get(self.destination)
+            if details: url = details.url
 
-                self.host     = url.hostname
-                self.port     = url.port
-                self.user     = url.username
-                self.password = url.password
+            self.host = url.hostname
+            self.port = url.port
+            self.user = url.username
+            self.password = url.password
 
-                self.passive  = details.passive
-                self.binary   = details.binary
-                self.tls      = details.tls
-                self.prot_p   = details.prot_p
+            self.passive = details.passive
+            self.binary = details.binary
+            self.tls = details.tls
+            self.prot_p = details.prot_p
 
-                return True
+            return True
 
         except:
-                logger.error("sr_ftp/credentials: unable to get credentials for %s" % self.destination)
-                logger.debug('Exception details: ', exc_info=True)
+            logger.error(
+                "sr_ftp/credentials: unable to get credentials for %s" %
+                self.destination)
+            logger.debug('Exception details: ', exc_info=True)
 
         return False
 
     # delete
     def delete(self, path):
-        logger.debug( "sr_ftp rm %s" % path)
+        logger.debug("sr_ftp rm %s" % path)
         alarm_set(self.o.timeout)
         # if delete does not work (file not found) run pwd to see if connection is ok
-        try   : self.ftp.delete(path)
-        except: d = self.ftp.pwd()
+        try:
+            self.ftp.delete(path)
+        except:
+            d = self.ftp.pwd()
         alarm_cancel()
 
     # get
-    def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0 ):
-        logger.debug( "sr_ftp get %s %s %d" % (remote_file,local_file,local_offset))
+    def get(self,
+            remote_file,
+            local_file,
+            remote_offset=0,
+            local_offset=0,
+            length=0):
+        logger.debug("sr_ftp get %s %s %d" %
+                     (remote_file, local_file, local_offset))
 
         # open local file
         dst = self.local_write_open(local_file, local_offset)
 
         # initialize sumalgo
-        if self.sumalgo : self.sumalgo.set_path(remote_file)
+        if self.sumalgo: self.sumalgo.set_path(remote_file)
 
         # download
         self.write_chunk_init(dst)
-        if self.binary : self.ftp.retrbinary('RETR ' + remote_file, self.write_chunk, self.o.bufsize )
-        else           : self.ftp.retrlines ('RETR ' + remote_file, self.write_chunk )
+        if self.binary:
+            self.ftp.retrbinary('RETR ' + remote_file, self.write_chunk,
+                                self.o.bufsize)
+        else:
+            self.ftp.retrlines('RETR ' + remote_file, self.write_chunk)
         rw_length = self.write_chunk_end()
 
         # close
@@ -305,51 +324,55 @@ class Ftp(Transfer):
         logger.debug("sr_ftp nlst: %s" % self.init_nlst)
         self.init_nlst_index = 0
         if self.init_nlst:
-            self.ftp.retrlines('LIST', self.ls_file_index )
+            self.ftp.retrlines('LIST', self.ls_file_index)
         else:
             alarm_cancel()
-        if hasattr(self,'file_index'): self.write_file_index()
+        if hasattr(self, 'file_index'): self.write_file_index()
 
     # load_file_index
     def load_file_index(self):
         logger.debug("sr_ftp load_file_index")
         alarm_cancel()
         try:
-            with open(self.file_index_cache,'r') as fp:
+            with open(self.file_index_cache, 'r') as fp:
                 index = int(fp.read())
                 self.file_index = index
         except:
-            logger.error("load_file_index: Unable to determine file index from %s" % self.file_index_cache)
+            logger.error(
+                "load_file_index: Unable to determine file index from %s" %
+                self.file_index_cache)
 
     # ls
     def ls(self):
         logger.debug("sr_ftp ls")
         self.entries = {}
         alarm_set(self.o.timeout)
-        self.ftp.retrlines('LIST',self.line_callback )
+        self.ftp.retrlines('LIST', self.line_callback)
         alarm_cancel()
-        logger.debug("sr_ftp ls = %s" % self.entries )
+        logger.debug("sr_ftp ls = %s" % self.entries)
         return self.entries
 
     # line_callback: entries[filename] = 'stripped_file_description'
-    def line_callback(self,iline):
+    def line_callback(self, iline):
         #logger.debug("sr_ftp line_callback %s" % iline)
 
         alarm_cancel()
 
-        oline  = iline
-        oline  = oline.strip('\n')
-        oline  = oline.strip()
-        oline  = oline.replace('\t',' ')
+        oline = iline
+        oline = oline.strip('\n')
+        oline = oline.strip()
+        oline = oline.replace('\t', ' ')
         opart1 = oline.split(' ')
         opart2 = []
 
-        for p in opart1 :
-            if p == ''  : continue
+        for p in opart1:
+            if p == '': continue
             opart2.append(p)
         # else case is in the event of unlikely race condition
-        if hasattr(self, 'file_index'): fil = ' '.join(opart2[self.file_index:])
-        else: fil = ' '.join(opart2[8:])
+        if hasattr(self, 'file_index'):
+            fil = ' '.join(opart2[self.file_index:])
+        else:
+            fil = ' '.join(opart2[8:])
         # next line is for backwards compatibility only
         #if not self.ls_file_index in [-1,len(opart2)-1] : fil =  ' '.join(opart2[self.ls_file_index:])
         line = ' '.join(opart2)
@@ -359,7 +382,7 @@ class Ftp(Transfer):
         alarm_set(self.o.timeout)
 
     # ls_file_index
-    def ls_file_index(self,iline):
+    def ls_file_index(self, iline):
         logger.debug("sr_ftp ls_file_index")
 
         alarm_cancel()
@@ -367,12 +390,12 @@ class Ftp(Transfer):
         oline = iline
         oline = oline.strip('\n')
         oline = oline.strip()
-        oline = oline.replace('\t',' ')
+        oline = oline.replace('\t', ' ')
         opart1 = oline.split(' ')
         opart2 = []
 
-        for p in opart1 :
-            if p == ''  : continue
+        for p in opart1:
+            if p == '': continue
             opart2.append(p)
 
         try:
@@ -390,32 +413,41 @@ class Ftp(Transfer):
         self.ftp.mkd(remote_dir)
         alarm_cancel()
         alarm_set(self.o.timeout)
-        self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(self.o.chmod_dir) + ' ' + remote_dir)
+        self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(self.o.chmod_dir) +
+                         ' ' + remote_dir)
         alarm_cancel()
 
     # put
-    def put(self, local_file, remote_file, local_offset=0, remote_offset=0, length=0 ):
-        logger.debug("sr_ftp put %s %s" % (local_file,remote_file))
+    def put(self,
+            local_file,
+            remote_file,
+            local_offset=0,
+            remote_offset=0,
+            length=0):
+        logger.debug("sr_ftp put %s %s" % (local_file, remote_file))
 
-        # open 
+        # open
         src = self.local_read_open(local_file, local_offset)
 
         # upload
         self.write_chunk_init(None)
-        if self.binary : self.ftp.storbinary("STOR " + remote_file, src, self.o.bufsize, self.write_chunk)
-        else           : self.ftp.storlines ("STOR " + remote_file, src, self.write_chunk)
+        if self.binary:
+            self.ftp.storbinary("STOR " + remote_file, src, self.o.bufsize,
+                                self.write_chunk)
+        else:
+            self.ftp.storlines("STOR " + remote_file, src, self.write_chunk)
         rw_length = self.write_chunk_end()
 
-        # close 
+        # close
         self.local_read_close(src)
 
         return rw_length
 
     # rename
-    def rename(self,remote_old,remote_new) :
-        logger.debug("sr_ftp rename %s %s" % (remote_old,remote_new))
+    def rename(self, remote_old, remote_new):
+        logger.debug("sr_ftp rename %s %s" % (remote_old, remote_new))
         alarm_set(self.o.timeout)
-        self.ftp.rename(remote_old,remote_new)
+        self.ftp.rename(remote_old, remote_new)
         alarm_cancel()
 
     # rmdir
@@ -426,7 +458,7 @@ class Ftp(Transfer):
         alarm_cancel()
 
     # umask
-    def umask(self) :
+    def umask(self):
         logger.debug("sr_ftp umask")
         alarm_set(self.o.timeout)
         self.ftp.voidcmd('SITE UMASK 777')
@@ -436,7 +468,8 @@ class Ftp(Transfer):
     def write_file_index(self):
         logger.debug("sr_ftp write_file_index")
         try:
-            with open(self.file_index_cache,'w') as fp:
+            with open(self.file_index_cache, 'w') as fp:
                 fp.write(str(self.file_index))
         except:
-            logger.warning("Unable to write file_index to cache file %s" % self.file_index_cache)
+            logger.warning("Unable to write file_index to cache file %s" %
+                           self.file_index_cache)

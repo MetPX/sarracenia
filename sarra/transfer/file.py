@@ -21,9 +21,9 @@
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; version 2 of the License.
 #
-#  This program is distributed in the hope that it will be useful, 
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
@@ -38,7 +38,7 @@ import os, stat, sys, time
 
 import logging
 
-logger = logging.getLogger( __name__ )
+logger = logging.getLogger(__name__)
 
 #============================================================
 # file protocol in sarracenia supports/uses :
@@ -53,26 +53,26 @@ logger = logging.getLogger( __name__ )
 #
 # require   logger
 #           options.credentials
-#           options.destination 
-#           options.batch 
+#           options.destination
+#           options.batch
 #           options.chmod
 #           options.chmod_dir
 #     opt   options.bytes_per_second
 #     opt   options.bufsize
 
-class File(Transfer):
 
+class File(Transfer):
     @classmethod
-    def assimilate(cls,obj):
+    def assimilate(cls, obj):
         obj.__class__ = File
 
-    def __init__(self) :
+    def __init__(self):
         logger.debug("sr_file __init__")
         self.cwd = None
         File.assimilate(self)
 
     def registered_as(self):
-        return [ 'file' ]
+        return ['file']
 
     # cd
     def cd(self, path):
@@ -90,9 +90,9 @@ class File(Transfer):
         return True
 
     # chmod
-    def chmod(self,perm,path):
-        logger.debug("sr_file chmod %s %s" % ( "{0:o}".format(perm),path))
-        os.chmod(path,perm)
+    def chmod(self, perm, path):
+        logger.debug("sr_file chmod %s %s" % ("{0:o}".format(perm), path))
+        os.chmod(path, perm)
 
     # close
     def close(self):
@@ -103,8 +103,8 @@ class File(Transfer):
     def connect(self):
         logger.debug("sr_file connect %s" % self.o.destination)
 
-        self.recursive   = True
-        self.connected   = True
+        self.recursive = True
+        self.connected = True
 
         return True
 
@@ -114,10 +114,15 @@ class File(Transfer):
         os.unlink(path)
 
     # get
-    def get(self, remote_file, local_file, remote_offset=0, local_offset=0, length=0 ):
+    def get(self,
+            remote_file,
+            local_file,
+            remote_offset=0,
+            local_offset=0,
+            length=0):
 
         # open local file
-        if ( remote_file[0] != os.sep ) and self.cwd :
+        if (remote_file[0] != os.sep) and self.cwd:
             remote_path = self.cwd + os.sep + remote_file
         else:
             remote_path = remote_file
@@ -128,10 +133,10 @@ class File(Transfer):
         dst = self.local_write_open(local_file, local_offset)
 
         # initialize sumalgo
-        if self.sumalgo : self.sumalgo.set_path(remote_file)
+        if self.sumalgo: self.sumalgo.set_path(remote_file)
 
         # download
-        rw_length = self.read_write( src, dst, length )
+        rw_length = self.read_write(src, dst, length)
 
         # close
         self.local_write_close(dst)
@@ -140,44 +145,45 @@ class File(Transfer):
 
     def getcwd(self):
         return os.getcwd()
- 
+
     # ls
     def ls(self):
         logger.debug("sr_file ls")
-        self.entries  = {}
+        self.entries = {}
         self.root = self.path
         self.ls_python(self.path)
         return self.entries
 
-    def ls_python(self,dpath):
+    def ls_python(self, dpath):
         for x in os.listdir(dpath):
             dst = dpath + '/' + x
             if os.path.isdir(dst):
-               if self.recursive : self.ls_python(dst)
-               continue
-            relpath = dst.replace(self.root,'',1)
-            if relpath[0] == '/' : relpath = relpath[1:]
+                if self.recursive: self.ls_python(dst)
+                continue
+            relpath = dst.replace(self.root, '', 1)
+            if relpath[0] == '/': relpath = relpath[1:]
 
             lstat = os.stat(dst)
-            line  = stat.filemode(lstat.st_mode)
-            line += ' %d %d %d' % (lstat.st_nlink,lstat.st_uid,lstat.st_gid)
+            line = stat.filemode(lstat.st_mode)
+            line += ' %d %d %d' % (lstat.st_nlink, lstat.st_uid, lstat.st_gid)
             line += ' %d' % lstat.st_size
-            line += ' %s' % time.strftime("%b %d %H:%M", time.localtime(lstat.st_mtime))
+            line += ' %s' % time.strftime("%b %d %H:%M",
+                                          time.localtime(lstat.st_mtime))
             line += ' %s' % relpath
             self.entries[relpath] = line
-
 
 
 # file_insert
 # called by file_process (general file:// processing)
 
-def file_insert( options,msg ) :
+
+def file_insert(options, msg):
     logger.debug("file_insert")
 
-    fp = open(msg['relPath'],'rb')
-    if msg.partflg == 'i' : fp.seek(msg['offset'],0)
+    fp = open(msg['relPath'], 'rb')
+    if msg.partflg == 'i': fp.seek(msg['offset'], 0)
 
-    ok = file_write_length(fp, msg, options.bufsize, msg.filesize, options )
+    ok = file_write_length(fp, msg, options.bufsize, msg.filesize, options)
 
     fp.close()
 
@@ -189,76 +195,79 @@ def file_insert( options,msg ) :
 #
 # when inserting, anything that goes wrong means that
 # another process is working with this part_file
-# so errors are ignored silently 
+# so errors are ignored silently
 #
 # Returns True if the file has been fully assembled, otherwise False
 
-def file_insert_part(options,msg,part_file):
+
+def file_insert_part(options, msg, part_file):
     logger.debug("file_insert_part %s" % part_file)
     chk = msg.sumalgo
-    try :
-             # file disappeared ...
-             # probably inserted by another process in parallel
-             if not os.path.isfile(part_file):
-                logger.dedbug("file doesn't exist %s" % part_file)
-                return False
+    try:
+        # file disappeared ...
+        # probably inserted by another process in parallel
+        if not os.path.isfile(part_file):
+            logger.dedbug("file doesn't exist %s" % part_file)
+            return False
 
-             # file with wrong size
-             # probably being written now by another process in parallel
-             lstat    = os.stat(part_file)
-             fsiz     = lstat[stat.ST_SIZE] 
-             if fsiz != msg['length'] : 
-                logger.debug("file not complete yet %s %d %d" % (part_file,fsiz,msg['length']))
-                return False
+        # file with wrong size
+        # probably being written now by another process in parallel
+        lstat = os.stat(part_file)
+        fsiz = lstat[stat.ST_SIZE]
+        if fsiz != msg['length']:
+            logger.debug("file not complete yet %s %d %d" %
+                         (part_file, fsiz, msg['length']))
+            return False
 
-             # proceed with insertion
-             fp = open(part_file,'rb')
-             ft = open(msg['target_file'],'r+b')
-             ft.seek(msg['offset'],0)
+        # proceed with insertion
+        fp = open(part_file, 'rb')
+        ft = open(msg['target_file'], 'r+b')
+        ft.seek(msg['offset'], 0)
 
-             # no worry with length, read all of part_file
-             # compute onfly_checksum ...
-             bufsize = options.bufsize
-             if bufsize > msg['length'] : bufsize = msg['length']
-             if chk : chk.set_path(os.path.basename(msg['target_file']))
+        # no worry with length, read all of part_file
+        # compute onfly_checksum ...
+        bufsize = options.bufsize
+        if bufsize > msg['length']: bufsize = msg['length']
+        if chk: chk.set_path(os.path.basename(msg['target_file']))
 
-             i  = 0
-             while i < msg['length']:
-                   buf = fp.read(bufsize)
-                   if not buf: break
-                   ft.write(buf)
-                   if chk : chk.update(buf)
-                   i  += len(buf)
+        i = 0
+        while i < msg['length']:
+            buf = fp.read(bufsize)
+            if not buf: break
+            ft.write(buf)
+            if chk: chk.update(buf)
+            i += len(buf)
 
-             if ft.tell() >= msg.filesize:
-                 ft.truncate()
+        if ft.tell() >= msg.filesize:
+            ft.truncate()
 
-             ft.close() 
-             fp.close()
+        ft.close()
+        fp.close()
 
-             if i != msg['length'] :
-                logger.error("file_insert_part file currupted %s" % part_file)
-                logger.error("read up to  %d of %d " % (i,msg['length']) )
-                lstat   = os.stat(part_file)
-                fsiz    = lstat[stat.ST_SIZE] 
-                logger.error("part filesize  %d " % (fsiz) )
+        if i != msg['length']:
+            logger.error("file_insert_part file currupted %s" % part_file)
+            logger.error("read up to  %d of %d " % (i, msg['length']))
+            lstat = os.stat(part_file)
+            fsiz = lstat[stat.ST_SIZE]
+            logger.error("part filesize  %d " % (fsiz))
 
-             # set checksum in msg
-             if chk :
-                 msg.onfly_checksum = "{},{}".format(chk.registered_as(), chk.get_value())
+        # set checksum in msg
+        if chk:
+            msg.onfly_checksum = "{},{}".format(chk.registered_as(),
+                                                chk.get_value())
 
     # oops something went wrong
-    except :
-             logger.info("sr_file/file_insert_part: did not insert %s " % part_file)
-             logger.debug('Exception details: ', exc_info=True)
-             return False
+    except:
+        logger.info("sr_file/file_insert_part: did not insert %s " % part_file)
+        logger.debug('Exception details: ', exc_info=True)
+        return False
 
     # success: log insertion
 
     # publish now, if needed, that it is inserted
 
-    # FIXME: Need to figure out when/how to further post messages about the partitions 
-    #if msg.publisher : 
+    # FIXME: Need to figure out when/how to further post messages about the partitions
+    #if msg.publisher :
     #   msg.set_topic('v02.post',msg.target_relpath)
     #   if chk :
     #      if    msg.sumflg == 'z' :
@@ -266,28 +275,34 @@ def file_insert_part(options,msg,part_file):
     #      else: msg.set_sum(msg.sumflg,  msg.onfly_checksum)
     #
     #   options.__on_post__()
-    return True 
+    return True
 
 
 # file_link
 # called by file_process (general file:// processing)
 
-def file_link( msg ) :
 
-    try    : os.unlink(msg['new_file'])
-    except : pass
-    try    : os.link(msg['relPath'],msg['new_file'])
-    except : return False
+def file_link(msg):
+
+    try:
+        os.unlink(msg['new_file'])
+    except:
+        pass
+    try:
+        os.link(msg['relPath'], msg['new_file'])
+    except:
+        return False
 
     msg.compute_local_checksum()
     msg.onfly_checksum = "{},{}".format(msg.sumflg, msg.local_checksum)
 
-
     return True
+
 
 # file_process (general file:// processing)
 
-def file_process( options ) :
+
+def file_process(options):
     logger.debug("file_process")
 
     msg = options.msg
@@ -297,7 +312,7 @@ def file_process( options ) :
     # sequential commands in script
     # touch file.txt
     # mv file.txt newfile.txt
-    # under libsrshim generate 3 amqp messages : 
+    # under libsrshim generate 3 amqp messages :
     # 1- download/copy file.txt
     # 2- move message 1 :  remove file.txt with newname newfile.txt
     # 3- move message 2 :  download newfile.txt with oldname file.txt
@@ -309,289 +324,311 @@ def file_process( options ) :
     # In current version, returning that this message fails would put it under the retry process for ever and for nothing.
     # I decided for the moment to warn and to return success... it preserves old behavior without the 0 byte file generated
 
-    if not os.path.isfile(msg['relPath']): 
-       logger.warning("%s moved or removed since announced" % msg['relPath'])
-       return True
+    if not os.path.isfile(msg['relPath']):
+        logger.warning("%s moved or removed since announced" % msg['relPath'])
+        return True
 
-    try:    curdir = os.getcwd()
-    except: curdir = None
+    try:
+        curdir = os.getcwd()
+    except:
+        curdir = None
 
     if curdir != options.msg['new_dir']:
-       os.chdir(options.msg['new_dir'])
+        os.chdir(options.msg['new_dir'])
 
     # try link if no inserts
 
     if msg.partflg == '1' or \
        (msg.partflg == 'p' and  msg.in_partfile) :
-       ok = file_link(msg)
-       if ok :
-          if options.delete :
-              try: 
-                  os.unlink(msg['relPath'])
-              except: 
-                  logger.error("delete of link to %s failed"%(msg['relPath']))
-          return ok
+        ok = file_link(msg)
+        if ok:
+            if options.delete:
+                try:
+                    os.unlink(msg['relPath'])
+                except:
+                    logger.error("delete of link to %s failed" %
+                                 (msg['relPath']))
+            return ok
 
     # This part is for 2 reasons : insert part
     # or copy file if preceeding link did not work
-    try :
-             ok = file_insert(options,msg)
-             if options.delete :
-                if msg.partflg.startswith('i'):
-                   logger.info("delete unimplemented for in-place part files %s" %(msg['relPath']))
-                else:
-                   try:
-                       os.unlink(msg['relPath'])
-                   except:
-                       logger.error("delete of %s after copy failed"%(msg['relPath']))
+    try:
+        ok = file_insert(options, msg)
+        if options.delete:
+            if msg.partflg.startswith('i'):
+                logger.info("delete unimplemented for in-place part files %s" %
+                            (msg['relPath']))
+            else:
+                try:
+                    os.unlink(msg['relPath'])
+                except:
+                    logger.error("delete of %s after copy failed" %
+                                 (msg['relPath']))
 
-             if ok : return ok
+        if ok: return ok
 
-    except :
-             logger.error('sr_file/file_process error')
-             logger.debug('Exception details: ', exc_info=True)
+    except:
+        logger.error('sr_file/file_process error')
+        logger.debug('Exception details: ', exc_info=True)
 
-    logger.error("could not copy %s in %s"%(msg['relPath'],msg['new_file']))
+    logger.error("could not copy %s in %s" % (msg['relPath'], msg['new_file']))
 
     return False
+
 
 # file_reassemble : rebuiding file from parts
 # when ever a part file is processed (inserted or written in part_file)
 # this module is called to try inserting any part_file left
 
-def file_reassemble(msg,options):
+
+def file_reassemble(msg, options):
     logger.debug("file_reassemble")
 
-    if not hasattr(msg,'target_file') or msg['target_file'] == None : return False
-
-    try:    curdir = os.getcwd()
-    except: curdir = None
-
-    if curdir != options.msg['new_dir']:
-       os.chdir(options.msg['new_dir'])
-
-    # target file does not exit yet... check for first partition if it's fully downloaded then create target_file 
-
-    if not os.path.isfile(msg['target_file']): 
-      msg['blocks']['number'] = 0
-      #msg.set_parts('i',msg['blocks']['size'],msg['blocks']['count'],msg['blocks']['remainder'],msg['blocks']['number'])
-      msg.set_suffix()
-      part_file = msg['target_file'] + msg.suffix
-
-      if os.path.isfile(part_file):
-        lstat    = os.stat(part_file)
-        fsiz     = lstat[stat.ST_SIZE] 
-        if fsiz != msg['length'] : 
-          logger.debug("file not complete yet %s %d %d" % (part_file,fsiz,msg['length']))
-          return False
-
-        # Creating empty target file because part 0 is ready to get written
-        ftarget = open(msg['target_file'], 'wb')
-        ftarget.close()
-        logger.info('Created new target file: %s' %msg['target_file']) 
-      
-      else:
-        logger.debug('Waiting for partition 0 or target file to begin assembling...')
+    if not hasattr(msg, 'target_file') or msg['target_file'] == None:
         return False
 
+    try:
+        curdir = os.getcwd()
+    except:
+        curdir = None
+
+    if curdir != options.msg['new_dir']:
+        os.chdir(options.msg['new_dir'])
+
+    # target file does not exit yet... check for first partition if it's fully downloaded then create target_file
+
+    if not os.path.isfile(msg['target_file']):
+        msg['blocks']['number'] = 0
+        #msg.set_parts('i',msg['blocks']['size'],msg['blocks']['count'],msg['blocks']['remainder'],msg['blocks']['number'])
+        msg.set_suffix()
+        part_file = msg['target_file'] + msg.suffix
+
+        if os.path.isfile(part_file):
+            lstat = os.stat(part_file)
+            fsiz = lstat[stat.ST_SIZE]
+            if fsiz != msg['length']:
+                logger.debug("file not complete yet %s %d %d" %
+                             (part_file, fsiz, msg['length']))
+                return False
+
+            # Creating empty target file because part 0 is ready to get written
+            ftarget = open(msg['target_file'], 'wb')
+            ftarget.close()
+            logger.info('Created new target file: %s' % msg['target_file'])
+
+        else:
+            logger.debug(
+                'Waiting for partition 0 or target file to begin assembling...'
+            )
+            return False
 
     # check target file size and pick starting part from that
 
-    lstat   = os.stat(msg['target_file'])
-    fsiz    = lstat[stat.ST_SIZE] 
-    i       = int(fsiz /msg['blocks']['size']) 
+    lstat = os.stat(msg['target_file'])
+    fsiz = lstat[stat.ST_SIZE]
+    i = int(fsiz / msg['blocks']['size'])
 
     while i < msg['blocks']['count']:
 
-          # setting block i in message
-          current_block = i
-          msg['blocks']['number'] = i 
+        # setting block i in message
+        current_block = i
+        msg['blocks']['number'] = i
 
-          #msg.set_parts('i',msg['blocks']['size'],msg['blocks']['count'],msg['blocks']['remainder'],msg['blocks']['number'])
-          msg.set_suffix()
+        #msg.set_parts('i',msg['blocks']['size'],msg['blocks']['count'],msg['blocks']['remainder'],msg['blocks']['number'])
+        msg.set_suffix()
 
-          # set part file
+        # set part file
 
-          part_file = msg['target_file'] + msg.suffix
-          if not os.path.isfile(part_file) :
-             logger.debug("part file %s not found, stop insertion" % part_file) 
-             # break and not return because we want to check the lastchunk processing
-             break
+        part_file = msg['target_file'] + msg.suffix
+        if not os.path.isfile(part_file):
+            logger.debug("part file %s not found, stop insertion" % part_file)
+            # break and not return because we want to check the lastchunk processing
+            break
 
-          # check for insertion (size may have changed)
+        # check for insertion (size may have changed)
 
-          lstat   = os.stat(msg['target_file'])
-          fsiz    = lstat[stat.ST_SIZE] 
-          if msg['offset'] > fsiz :
-             logger.debug("part file %s not ready for insertion (fsiz %d, offset %d)" % (part_file,fsiz,msg['offset']))
-             return False
+        lstat = os.stat(msg['target_file'])
+        fsiz = lstat[stat.ST_SIZE]
+        if msg['offset'] > fsiz:
+            logger.debug(
+                "part file %s not ready for insertion (fsiz %d, offset %d)" %
+                (part_file, fsiz, msg['offset']))
+            return False
 
-          # insertion attempt... should work unless there is some race condition
-          ok = file_insert_part(options,msg,part_file)
-          if not ok : return False
+        # insertion attempt... should work unless there is some race condition
+        ok = file_insert_part(options, msg, part_file)
+        if not ok: return False
 
-          # verify the inserted portion
-          if (msg.sumstr != msg.onfly_checksum):
+        # verify the inserted portion
+        if (msg.sumstr != msg.onfly_checksum):
             # Retry once
             logger.warning('Insertion did not complete properly, retrying...')
-            #logger.warning('Partition\'s checksum: '+ msg.sumstr.split(',')[1]+ ' Inserted sum: '+msg.onfly_checksum)              
+            #logger.warning('Partition\'s checksum: '+ msg.sumstr.split(',')[1]+ ' Inserted sum: '+msg.onfly_checksum)
 
-            ok = file_insert_part(options,msg,part_file)
+            ok = file_insert_part(options, msg, part_file)
             if not ok: return False
 
-
-          # remove inserted part file
-          try    : 
+        # remove inserted part file
+        try:
             os.unlink(part_file)
-          except : 
-            logger.info('Unable to delete part file: %s' %part_file)
+        except:
+            logger.info('Unable to delete part file: %s' % part_file)
 
-
-          logger.info("Verified ingestion : block = %d of %d" % (i,msg['blocks']['count']))
-          i = i + 1
+        logger.info("Verified ingestion : block = %d of %d" %
+                    (i, msg['blocks']['count']))
+        i = i + 1
 
     # because of randomize need a better way to check if complete
-    lstat   = os.stat(msg['target_file'])
-    fsiz    = lstat[stat.ST_SIZE] 
+    lstat = os.stat(msg['target_file'])
+    fsiz = lstat[stat.ST_SIZE]
 
-    if (fsiz == msg.filesize): # Make sure target_relpath and new_baseurl are defined... 
-      file_truncate(options,msg)
+    if (fsiz == msg.filesize
+        ):  # Make sure target_relpath and new_baseurl are defined...
+        file_truncate(options, msg)
 
-      partstr = '1,%d,1,0,0' % fsiz
-      sumstr = compute_sumstr(options, msg['target_file'], fsiz, 0)
+        partstr = '1,%d,1,0,0' % fsiz
+        sumstr = compute_sumstr(options, msg['target_file'], fsiz, 0)
 
-      msg['new_file'] = msg['target_file']
-      msg.set_file(msg.target_relpath, sumstr) 
+        msg['new_file'] = msg['target_file']
+        msg.set_file(msg.target_relpath, sumstr)
 
-      msg.headers['parts'] = partstr
-      msg.headers['sum']   = sumstr
-      
-      # If sr_watch is reassembling through the plugin
-      if not hasattr(options, 'inplace') or not options.inplace:
-        for plugin in options.on_file_list:
-          ok = plugin(options) 
-          if not ok: return False 
-      return True
+        msg.headers['parts'] = partstr
+        msg.headers['sum'] = sumstr
+
+        # If sr_watch is reassembling through the plugin
+        if not hasattr(options, 'inplace') or not options.inplace:
+            for plugin in options.on_file_list:
+                ok = plugin(options)
+                if not ok: return False
+        return True
 
     return False
 
+
 # You can also find this function in sr_post but
 # they have both been slightly modified to fit their context
-def compute_sumstr(options, path, fsiz, i = 0):
-  sumstr = ''
-  sumflg = options.sumflg
+def compute_sumstr(options, path, fsiz, i=0):
+    sumstr = ''
+    sumflg = options.sumflg
 
-  if sumflg[:2] == 'z,' and len(sumflg) > 2 :
-     sumstr = sumflg
+    if sumflg[:2] == 'z,' and len(sumflg) > 2:
+        sumstr = sumflg
 
-  else:
+    else:
 
-     if not sumflg[0] in ['0','d','n','s','z' ]: sumflg = 'd'
+        if not sumflg[0] in ['0', 'd', 'n', 's', 'z']: sumflg = 'd'
 
-     options.set_sumalgo(sumflg)
-     sumalgo = options.sumalgo
-     sumalgo.set_path(path)
+        options.set_sumalgo(sumflg)
+        sumalgo = options.sumalgo
+        sumalgo.set_path(path)
 
-     # compute checksum
+        # compute checksum
 
-     if sumflg in ['d','s'] :
+        if sumflg in ['d', 's']:
 
-        fp = open(path,'rb')
-        fp.seek(i)
-        while i<fsiz :
-              buf = fp.read(options.bufsize)
-              if not buf: break
-              sumalgo.update(buf)
-              i  += len(buf)
-        fp.close()
+            fp = open(path, 'rb')
+            fp.seek(i)
+            while i < fsiz:
+                buf = fp.read(options.bufsize)
+                if not buf: break
+                sumalgo.update(buf)
+                i += len(buf)
+            fp.close()
 
-     # setting sumstr
+        # setting sumstr
 
-     checksum = sumalgo.get_value()
-     sumstr   = '%s,%s' % (sumflg,checksum)
-  return sumstr
-
+        checksum = sumalgo.get_value()
+        sumstr = '%s,%s' % (sumflg, checksum)
+    return sumstr
 
 
 # file_write_length
 # called by file_process->file_insert (general file:// processing)
 
-def file_write_length(req,msg,bufsize,filesize,options):
+
+def file_write_length(req, msg, bufsize, filesize, options):
     logger.debug("file_write_length")
 
     msg.onfly_checksum = None
 
     chk = msg.sumalgo
     logger.debug("file_write_length chk = %s" % chk)
-    if chk : chk.set_path(msg['new_file'])
+    if chk: chk.set_path(msg['new_file'])
 
     # file should exists
-    if not os.path.isfile(msg['new_file']) :
-       fp = open(msg['new_file'],'w')
-       fp.close()
+    if not os.path.isfile(msg['new_file']):
+        fp = open(msg['new_file'], 'w')
+        fp.close()
 
     # file open read/modify binary
-    fp = open(msg['new_file'],'r+b')
-    if msg.local_offset != 0 : fp.seek(msg.local_offset,0)
+    fp = open(msg['new_file'], 'r+b')
+    if msg.local_offset != 0: fp.seek(msg.local_offset, 0)
 
-    nc = int(msg['length']/bufsize)
-    r  =     msg['length']%bufsize
+    nc = int(msg['length'] / bufsize)
+    r = msg['length'] % bufsize
 
     # read/write bufsize "nc" times
-    i  = 0
-    while i < nc :
-          chunk = req.read(bufsize)
-          fp.write(chunk)
-          if chk : chk.update(chunk)
-          i = i + 1
+    i = 0
+    while i < nc:
+        chunk = req.read(bufsize)
+        fp.write(chunk)
+        if chk: chk.update(chunk)
+        i = i + 1
 
     # remaining
-    if r > 0 :
-       chunk = req.read(r)
-       fp.write(chunk)
-       if chk : chk.update(chunk)
+    if r > 0:
+        chunk = req.read(r)
+        fp.write(chunk)
+        if chk: chk.update(chunk)
 
     if fp.tell() >= msg.filesize:
-       fp.truncate()
+        fp.truncate()
 
     fp.close()
-  
-    h = options.msg.headers
-    if options.preserve_mode and 'mode' in h :
-       try   : mod = int( h['mode'], base=8)
-       except: mod = 0
-       if mod > 0 : os.chmod(msg['new_file'], mod )
 
-    if options.preserve_time and 'mtime' in h and h['mtime'] :
-        os.utime(msg['new_file'], times=( timestr2flt( h['atime']), timestr2flt( h[ 'mtime' ] )))
+    h = options.msg.headers
+    if options.preserve_mode and 'mode' in h:
+        try:
+            mod = int(h['mode'], base=8)
+        except:
+            mod = 0
+        if mod > 0: os.chmod(msg['new_file'], mod)
+
+    if options.preserve_time and 'mtime' in h and h['mtime']:
+        os.utime(msg['new_file'],
+                 times=(timestr2flt(h['atime']), timestr2flt(h['mtime'])))
 
     if chk:
-        msg.onfly_checksum = "{},{}".format(chk.registered_as(), chk.get_value())
+        msg.onfly_checksum = "{},{}".format(chk.registered_as(),
+                                            chk.get_value())
 
     return True
+
 
 # file_truncate
 # called under file_reassemble (itself and its file_insert_part)
 # when inserting lastchunk, file may need to be truncated
 
-def file_truncate(options,msg):
+
+def file_truncate(options, msg):
 
     # will do this when processing the last chunk
     # whenever that is
 
-    if (not options.randomize) and (not msg.lastchunk) : return
+    if (not options.randomize) and (not msg.lastchunk): return
 
-    try :
-        lstat   = os.stat(msg['target_file'])
-        fsiz    = lstat[stat.ST_SIZE] 
+    try:
+        lstat = os.stat(msg['target_file'])
+        fsiz = lstat[stat.ST_SIZE]
 
-        if fsiz > msg.filesize :
-            fp = open(msg['target_file'],'r+b')
+        if fsiz > msg.filesize:
+            fp = open(msg['target_file'], 'r+b')
             fp.truncate(msg.filesize)
             fp.close()
 
-        msg['topic'] = options.post_topic_prefix + '.' + '.'.join( msg[ 'relPath' ].split(os.sep)[1:-1]  )
+        msg['topic'] = options.post_topic_prefix + '.' + '.'.join(
+            msg['relPath'].split(os.sep)[1:-1])
         #msg.set_topic(options.post_topic_prefix,msg.target_relpath)
 
-    except : 
+    except:
         pass

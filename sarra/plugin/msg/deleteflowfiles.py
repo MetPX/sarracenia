@@ -1,19 +1,19 @@
 #!/usr/bin/python3
 
-
 import logging
 import os
 
-logger = logging.getLogger( __name__ )
+logger = logging.getLogger(__name__)
 
-class DeleteFlowFiles(object): 
+
+class DeleteFlowFiles(object):
     """
        delete files for messages in two directories.
     """
-    def __init__(self,parent):
+    def __init__(self, parent):
         logger.debug("msg_delete initialized")
-          
-    def on_messages(self,worklist):
+
+    def on_messages(self, worklist):
 
         for m in worklist.incoming:
 
@@ -27,5 +27,4 @@ class DeleteFlowFiles(object):
                 logger.error("could not unlink {}: {}".format(f, err))
                 logger.debug("Exception details:", exc_info=True)
                 worklist.failed.append(m)
-        worklist.incoming=[]
-
+        worklist.incoming = []

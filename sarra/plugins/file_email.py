@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 """
     File_Email: sr_sender plugin. Once a file is posted, the plugin matches the
     topic(what the filename begins with) to the file name and sends the appropriate emails.
@@ -17,7 +16,6 @@
 
 
 class File_Email(object):
-
     def __init__(self, parent):
         parent.declare_option('file_email_command')
         parent.declare_option('file_email_to')
@@ -53,7 +51,8 @@ class File_Email(object):
                 from email.message import EmailMessage
 
                 for recipient in emails:
-                    parent.logger.debug('sending file %s to %s' % (ipath, recipient))
+                    parent.logger.debug('sending file %s to %s' %
+                                        (ipath, recipient))
 
                     with open(ipath) as fp:
                         emsg = EmailMessage()
@@ -77,20 +76,21 @@ class File_Email(object):
                         if not email_relay:
                             raise AttributeError()
                     except AttributeError:
-                        parent.logger.error('file_email_relay config NOT defined, please define an SMTP (relay) server')
+                        parent.logger.error(
+                            'file_email_relay config NOT defined, please define an SMTP (relay) server'
+                        )
 
-                    parent.logger.debug("Using email relay server: " + email_relay)
+                    parent.logger.debug("Using email relay server: " +
+                                        email_relay)
                     s = smtplib.SMTP(email_relay)
                     s.send_message(emsg)
                     s.quit()
 
-                    parent.logger.info('sent file %s to %s' % (ipath, recipient))
+                    parent.logger.info('sent file %s to %s' %
+                                       (ipath, recipient))
 
         return True
 
 
 file_email = File_Email(self)
 self.do_send = file_email.do_send
-
-
-

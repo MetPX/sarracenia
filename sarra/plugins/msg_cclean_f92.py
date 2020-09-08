@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 """
   Msg_Cclean_F92
   
@@ -28,16 +27,20 @@ class Msg_Cclean_F92(object):
             ext = msg.headers['cclean_f91']
             msg.headers['cclean_f92'] = ext
         else:
-            msg_params = (msg.pubtime, msg.baseurl, msg.relpath, msg.topic, msg.get_elapse(), msg.hdrstr)
-            logger.info("msg_log received: %s %s%s topic=%s lag=%g %s" % msg_params)
-            logger.error("The message received is incorrect not from shovel clean_f91")
+            msg_params = (msg.pubtime, msg.baseurl, msg.relpath, msg.topic,
+                          msg.get_elapse(), msg.hdrstr)
+            logger.info("msg_log received: %s %s%s topic=%s lag=%g %s" %
+                        msg_params)
+            logger.error(
+                "The message received is incorrect not from shovel clean_f91")
             return False
 
         # build all 3 paths of a successful propagated path
         if relp[0] != '/':
             relp = '/' + relp
         self.subs_f21_path = relp  # subscribe cdlnd_f21
-        self.subs_f44_path = relp.replace('/cfr/', '/cfile/')  # subscribe cfile_f44
+        self.subs_f44_path = relp.replace('/cfr/',
+                                          '/cfile/')  # subscribe cfile_f44
 
         # removed count
         removed = 0

@@ -19,23 +19,27 @@ from ctypes import *
 import sys, os
 kernel32 = windll.kernel32
 
-LPSTR     = c_wchar_p
-DWORD     = c_ulong
-LONG      = c_ulong
-WCHAR     = c_wchar * 296
-LONGLONG  = c_longlong
+LPSTR = c_wchar_p
+DWORD = c_ulong
+LONG = c_ulong
+WCHAR = c_wchar * 296
+LONGLONG = c_longlong
+
 
 class LARGE_INTEGER_UNION(Structure):
     _fields_ = [
         ("LowPart", DWORD),
-        ("HighPart", LONG),]
+        ("HighPart", LONG),
+    ]
+
 
 class LARGE_INTEGER(Union):
     _fields_ = [
         ("large1", LARGE_INTEGER_UNION),
         ("large2", LARGE_INTEGER_UNION),
-        ("QuadPart",    LONGLONG),
+        ("QuadPart", LONGLONG),
     ]
+
 
 class WIN32_FIND_STREAM_DATA(Structure):
     _fields_ = [
@@ -49,6 +53,7 @@ class WIN32_FIND_STREAM_DATA(Structure):
     } WIN32_FIND_STREAM_DATA, *PWIN32_FIND_STREAM_DATA;
     '''
 
+
 class ADS():
     def __init__(self, filename):
         self.filename = filename
@@ -61,7 +66,8 @@ class ADS():
         findFirstStreamW = kernel32.FindFirstStreamW
         findFirstStreamW.restype = c_void_p
 
-        myhandler = kernel32.FindFirstStreamW (LPSTR(self.filename), 0, byref(file_infos), 0)
+        myhandler = kernel32.FindFirstStreamW(LPSTR(self.filename), 0,
+                                              byref(file_infos), 0)
         '''
         HANDLE WINAPI FindFirstStreamW(
           __in        LPCWSTR lpFileName,

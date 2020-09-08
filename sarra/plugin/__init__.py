@@ -6,17 +6,11 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, Shared Services Canada, 2020
 #
 
-
 import copy
 import importlib
 import logging
 
-
 from abc import ABCMeta, abstractmethod
-
-
-
-
 """
 1st draft of a v03 plugin method.
 
@@ -55,13 +49,17 @@ Do not remove from all lists, only move messages between them.
 
 """
 
-logger = logging.getLogger( __name__ )
+logger = logging.getLogger(__name__)
 
-entry_points = [ 'ack', 'do_poll', 
-   'gather', 'on_messages', 'on_data', 'on_files', 'on_housekeeping', 'on_html_page', 
-   'on_line', 'on_part', 'on_posts', 'on_report', 'on_start', 'on_stop', 'post' ]
+entry_points = [
+    'ack', 'do_poll', 'gather', 'on_messages', 'on_data', 'on_files',
+    'on_housekeeping', 'on_html_page', 'on_line', 'on_part', 'on_posts',
+    'on_report', 'on_start', 'on_stop', 'post'
+]
 
-schemed_entry_points = [ 'do_get', 'do_put'  ]
+schemed_entry_points = ['do_get', 'do_put']
+
+
 class Plugin:
     """
     FIXME: document the API signatures for all the entry points. 
@@ -72,10 +70,12 @@ class Plugin:
     def __init__(self, options):
         self.o = options
 
-        logging.basicConfig( format=self.o.logFormat, level=getattr(logging, self.o.logLevel.upper()) )
+        logging.basicConfig(format=self.o.logFormat,
+                            level=getattr(logging, self.o.logLevel.upper()))
 
         #logger.info( 'intializing %s' % self.name )
         pass
+
 
 # FIXME:
 #    @abstractmethod
@@ -111,7 +111,7 @@ class Plugin:
 #    @abstractmethod
 #    def ack(self,messagelist):
 #        """
-#          Task: acknowledge messages from a gather source. 
+#          Task: acknowledge messages from a gather source.
 #        """
 #        pass
 #
@@ -125,10 +125,10 @@ class Plugin:
 #        pass
 #
 #    @abstractmethod
-#    def do_download(self,msg):  
+#    def do_download(self,msg):
 #        """
 #          FIXME: Deprecated, replaced by do_get?
-#                
+#
 #          Task: operate on worklist.incoming to do corresponding file transfers
 #                moving messages to worklist.ok on success, worklist.failed otherwise.
 #                do not delete any messages, only move between worklists, because acknowledgements have not happenned yet.
@@ -136,7 +136,7 @@ class Plugin:
 #        pass
 #
 #    @abstractmethod
-#    def do_get(self, msg, remote_file, local_file, remote_offset, local_offset, length ): 
+#    def do_get(self, msg, remote_file, local_file, remote_offset, local_offset, length ):
 #        """
 #          schemed method. (that is, installed based on registered_as() value.
 #
@@ -149,14 +149,14 @@ class Plugin:
 #        pass
 #
 #    @abstractmethod
-#    def do_poll(self): 
+#    def do_poll(self):
 #        """
 #          Task: build worklist.incoming, a form of gather()
 #        """
 #        pass
 #
 #    @abstractmethod
-#    def do_put(self, msg, local_file, remote_file, local_offset=0, remote_offset=0, length=0 ): 
+#    def do_put(self, msg, local_file, remote_file, local_offset=0, remote_offset=0, length=0 ):
 #        """
 #          schemed method.
 #
@@ -165,7 +165,7 @@ class Plugin:
 #
 #                Return value is the number of bytes transferred.
 #                If the return value is different from the length, then that is some kind of error.
-#             
+#
 #        """
 #        pass
 #
@@ -173,19 +173,19 @@ class Plugin:
 #    def do_send(self):
 #        """
 #          FIXME: Deprecated, replaced by do_put?
-#          Task: 
+#          Task:
 #        """
 #        pass
 #
 #    @abstractmethod
-#    def on_data(self,data): 
+#    def on_data(self,data):
 #        """
 #          Task:  return data transformed in some way.
 #        """
 #        pass
 #
 #    @abstractmethod
-#    def on_posts(self,worklist): 
+#    def on_posts(self,worklist):
 #        """
 #          Task: operate on worklist.ok, and worklist.failed.
 #                this is just prior to posting, to make final adjustments.
@@ -195,7 +195,7 @@ class Plugin:
 #        pass
 #
 #    @abstractmethod
-#    def post(self,worklist): 
+#    def post(self,worklist):
 #        """
 #          Task: operate on worklist.ok, and worklist.failed. modifies them appropriately.
 #                message acknowledgement has already occurred before they are called.
@@ -205,74 +205,72 @@ class Plugin:
 #    @abstractmethod
 #    def on_housekeeping(self):
 #        """
-#          Task: 
+#          Task:
 #        """
 #        pass
 #
 #    @abstractmethod
-#    def on_html_page(self,page): 
+#    def on_html_page(self,page):
 #        """
 #          Task: modify an html page.
 #        """
 #        pass
 #
 #    @abstractmethod
-#    def on_line(self,line): 
+#    def on_line(self,line):
 #        """
 #          used in FTP polls, because servers have different formats, modify to canonical use.
-#           
-#          Task: return modified line. 
-#           
+#
+#          Task: return modified line.
+#
 #        """
 #        pass
 #
 #    @abstractmethod
-#    def on_part(self): 
+#    def on_part(self):
 #        """
-#          Task: 
-#        """
-#        pass
-#
-#    @abstractmethod
-#    def on_report(self): 
-#        """
-#          Task: 
+#          Task:
 #        """
 #        pass
 #
 #    @abstractmethod
-#    def on_start(self): 
+#    def on_report(self):
 #        """
-#          Task: 
+#          Task:
+#        """
+#        pass
+#
+#    @abstractmethod
+#    def on_start(self):
+#        """
+#          Task:
 #        """
 #        pass
 #
 #    @abstractmethod
 #    def on_stop(self):
 #        """
-#          Task: 
+#          Task:
 #        """
 #        pass
 #
 
 
-
-def load_library(factory_path,options):
+def load_library(factory_path, options):
 
     #logger.debug( 'load_plugin: %s' % factory_path )
     packagename, classname = factory_path.rsplit('.', 1)
     module = importlib.import_module(packagename)
     class_ = getattr(module, classname)
 
-    if hasattr(options,'settings'):
+    if hasattr(options, 'settings'):
         opt = copy.deepcopy(options)
         # strip off the class prefix.
         if factory_path in options.settings:
             for s in options.settings[factory_path]:
-                setattr(opt,s,options.settings[factory_path][s])
+                setattr(opt, s, options.settings[factory_path][s])
     else:
-        opt=options
+        opt = options
 
     plugin = class_(opt)
     return plugin
-

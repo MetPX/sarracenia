@@ -7,8 +7,6 @@
 # Sarracenia repository: https://github.com/MetPX/sarracenia
 # Documentation: https://github.com/MetPX/sarracenia
 #
-
-
 """
   Place holder... thought this was not needed, then there was a stack trace.
 

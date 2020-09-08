@@ -37,7 +37,6 @@ class SrSarraTestCase(unittest.TestCase):
         cls.orig_exit = os._exit
         os._exit = sys.exit
 
-
     @classmethod
     def tearDownClass(cls) -> None:
         """ Remove configs for sr_sarra tests
@@ -49,7 +48,8 @@ class SrSarraTestCase(unittest.TestCase):
         os._exit = cls.orig_exit
 
     def test_notify_only_exit(self):
-        self.assertTrue(self.sarra.notify_only, "notify_only option does not work properly")
+        self.assertTrue(self.sarra.notify_only,
+                        "notify_only option does not work properly")
 
 
 def suite():
@@ -58,7 +58,8 @@ def suite():
     :return: sr_sarra test suite
     """
     sr_sarra_suite = unittest.TestSuite()
-    sr_sarra_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SrSarraTestCase))
+    sr_sarra_suite.addTests(
+        unittest.TestLoader().loadTestsFromTestCase(SrSarraTestCase))
     return sr_sarra_suite
 
 

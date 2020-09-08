@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 """
  A sample on_part plugin to perform virus scanning, using the ClamAV engine.
 
@@ -21,46 +20,50 @@
  blame: PS
 """
 
-import os,stat,time
+import os, stat, time
 
 from sarra import nowflt
 
 
 class PartClamAvScan(object):
-
-    def __init__(self,parent):
+    def __init__(self, parent):
         import pyclamd
         self.av = pyclamd.ClamdAgnostic()
-        print( "clam_scan on_part plugin initialized" )
-  
-    def perform(self,parent):
+        print("clam_scan on_part plugin initialized")
+
+    def perform(self, parent):
         logger = parent.logger
-        msg    = parent.msg
+        msg = parent.msg
 
         # it is possible to optimize scanning by not  ... FIXME! this is not tested. not sure how PS!
-        if hasattr(parent,'part_clamav_maxblock'):
-            if parent.current_block > parent.part_clamav_maxblock[0] :
-               logger.info("part_clamav_scan scan skipped, too far into file %s" % (end-start,msg.new_file) )
-               return True  
+        if hasattr(parent, 'part_clamav_maxblock'):
+            if parent.current_block > parent.part_clamav_maxblock[0]:
+                logger.info(
+                    "part_clamav_scan scan skipped, too far into file %s" %
+                    (end - start, msg.new_file))
+                return True
 
         # scanner wants an absolute path name... dunno why.
-        if msg.new_file[0] != '/' : 
-             scanfn= os.getcwd() + '/' + msg.new_file
+        if msg.new_file[0] != '/':
+            scanfn = os.getcwd() + '/' + msg.new_file
         else:
-             scanfn= msg.new_file 
+            scanfn = msg.new_file
 
         # worried about how long the scan will take.
-        start=nowflt()
+        start = nowflt()
         virus_found = self.av.scan_file(scanfn)
-        end=nowflt()
+        end = nowflt()
 
         if virus_found:
-           logger.error("part_clamav_scan took %g not forwarding, virus detected in %s" % (end-start,msg.new_file) )
-           return False
-                   
-        logger.info("part_clamav_scan took %g seconds, no viruses in %s" % (end-start,msg.new_file) )
+            logger.error(
+                "part_clamav_scan took %g not forwarding, virus detected in %s"
+                % (end - start, msg.new_file))
+            return False
+
+        logger.info("part_clamav_scan took %g seconds, no viruses in %s" %
+                    (end - start, msg.new_file))
         return True
+
 
 partclamavscan = PartClamAvScan(self)
 self.on_part = partclamavscan.perform
-

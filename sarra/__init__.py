@@ -15,9 +15,9 @@
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; version 2 of the License.
 #
-#  This program is distributed in the hope that it will be useful, 
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
@@ -27,17 +27,13 @@
 #
 __version__ = "3.00.00"
 
-
 import logging
 
-logger = logging.getLogger( __name__ )
-
+logger = logging.getLogger(__name__)
 
 import calendar
 import datetime
 import time
-
-
 """
 
   Time conversion routines.  
@@ -65,6 +61,7 @@ numbers.
     
 """
 
+
 def nowflt():
     return timestr2flt(nowstr())
 
@@ -86,7 +83,8 @@ def v3timeflt2str(f):
 def timestr2flt(s):
     if s[8] == "T":
         s = s.replace('T', '')
-    dt_tuple = int(s[0:4]), int(s[4:6]), int(s[6:8]), int(s[8:10]), int(s[10:12]), int(s[12:14])
+    dt_tuple = int(s[0:4]), int(s[4:6]), int(s[6:8]), int(s[8:10]), int(
+        s[10:12]), int(s[12:14])
     t = datetime.datetime(*dt_tuple, tzinfo=datetime.timezone.utc)
     return calendar.timegm(t.timetuple()) + float('0' + s[14:])
 
@@ -97,58 +95,65 @@ def timev2tov3str(s):
     else:
         return s[0:8] + 'T' + s[8:]
 
+
 def durationToSeconds(str_value):
-   """
+    """
    this function converts duration to seconds.
    str_value should be a number followed by a unit [s,m,h,d,w] ex. 1w, 4d, 12h
    return 0.0 for invalid string.
    """
-   factor    = 1
+    factor = 1
 
-   if str_value[-1] in 'sS'   : factor *= 1
-   elif str_value[-1] in 'mM' : factor *= 60
-   elif str_value[-1] in 'hH' : factor *= 60 * 60
-   elif str_value[-1] in 'dD' : factor *= 60 * 60 * 24
-   elif str_value[-1] in 'wW' : factor *= 60 * 60 * 24 * 7
-   if str_value[-1].isalpha() : str_value = str_value[:-1]
+    if str_value[-1] in 'sS': factor *= 1
+    elif str_value[-1] in 'mM': factor *= 60
+    elif str_value[-1] in 'hH': factor *= 60 * 60
+    elif str_value[-1] in 'dD': factor *= 60 * 60 * 24
+    elif str_value[-1] in 'wW': factor *= 60 * 60 * 24 * 7
+    if str_value[-1].isalpha(): str_value = str_value[:-1]
 
-   try:
-       duration = float(str_value) * factor
-   except:
-       logger.error( "durationToSeconds, conversion failed for: %s" % str_value )
-       duration = 0.0
+    try:
+        duration = float(str_value) * factor
+    except:
+        logger.error("durationToSeconds, conversion failed for: %s" %
+                     str_value)
+        duration = 0.0
 
-   return duration
+    return duration
+
 
 def chunksize_from_str(str_value):
     #logger.debug("sr_config chunksize_from_str %s" % str_value)
     factor = 1
-    if str_value[-1] in 'bB'   : str_value = str_value[:-1]
-    if str_value[-1] in 'kK'   : factor = 1024
-    if str_value[-1] in 'mM'   : factor = 1024 * 1024
-    if str_value[-1] in 'gG'   : factor = 1024 * 1024 * 1024
-    if str_value[-1] in 'tT'   : factor = 1024 * 1024 * 1024 * 1024
-    if str_value[-1].isalpha() : str_value = str_value[:-1]
+    if str_value[-1] in 'bB': str_value = str_value[:-1]
+    if str_value[-1] in 'kK': factor = 1024
+    if str_value[-1] in 'mM': factor = 1024 * 1024
+    if str_value[-1] in 'gG': factor = 1024 * 1024 * 1024
+    if str_value[-1] in 'tT': factor = 1024 * 1024 * 1024 * 1024
+    if str_value[-1].isalpha(): str_value = str_value[:-1]
     chunksize = int(str_value) * factor
 
     return chunksize
 
+
 known_report_codes = {
-    201: "Download successful. (variations: Downloaded, Inserted, Published, Copied, or Linked)", 
-    203: "Non-Authoritative Information: transformed during download.", 
-    205: "Reset Content: truncated. File is shorter than originally expected (changed length during transfer) This only arises during multi-part transfers.", 
-    205: "Reset Content: checksum recalculated on receipt.", 
-    304: "Not modified (Checksum validated, unchanged, so no download resulted.)", 
-    307: "Insertion deferred (writing to temporary part file for the moment.)", 
-    417: "Expectation Failed: invalid message (corrupt headers)", 
-    499: "Failure: Not Copied. SFTP/FTP/HTTP download problem", 
-    503: "Service unavailable. delete (File removal not currently supported.)", 
-    503: "Unable to process: Service unavailable", 
-    503: "Unsupported transport protocol specified in posting." 
+    201:
+    "Download successful. (variations: Downloaded, Inserted, Published, Copied, or Linked)",
+    203: "Non-Authoritative Information: transformed during download.",
+    205:
+    "Reset Content: truncated. File is shorter than originally expected (changed length during transfer) This only arises during multi-part transfers.",
+    205: "Reset Content: checksum recalculated on receipt.",
+    304:
+    "Not modified (Checksum validated, unchanged, so no download resulted.)",
+    307: "Insertion deferred (writing to temporary part file for the moment.)",
+    417: "Expectation Failed: invalid message (corrupt headers)",
+    499: "Failure: Not Copied. SFTP/FTP/HTTP download problem",
+    503: "Service unavailable. delete (File removal not currently supported.)",
+    503: "Unable to process: Service unavailable",
+    503: "Unsupported transport protocol specified in posting."
 }
 
 
-def msg_set_report( msg, code, text=None ):
+def msg_set_report(msg, code, text=None):
     """
       set message fields to indicate result of action so reports can be generated.
 
@@ -157,19 +162,19 @@ def msg_set_report( msg, code, text=None ):
       it will be retried later.  FIXME: should we publish an interim failure report?
 
     """
-    
+
     if code in known_report_codes:
         if text is None:
-           text = known_report_codes[code]
+            text = known_report_codes[code]
     else:
-        logger.warning('unknown report code supplied: %d:%s' % ( code, text ) )
+        logger.warning('unknown report code supplied: %d:%s' % (code, text))
         if text is None:
-           text = 'unknown disposition'
-    
+            text = 'unknown disposition'
+
     if not 'report' in msg:
-        msg['report'] =  code
-        msg['message'] =  text
-        msg['_deleteOnPost'].extend( [ 'report', 'message' ] ) 
+        msg['report'] = code
+        msg['message'] = text
+        msg['_deleteOnPost'].extend(['report', 'message'])
     else:
         msg['report'] = code
         msg['message'] += text

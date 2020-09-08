@@ -13,9 +13,9 @@
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
 #
-#  This program is distributed in the hope that it will be useful, 
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
@@ -33,36 +33,35 @@ from abc import ABCMeta, abstractmethod
 
 from base64 import b64encode
 
+logger = logging.getLogger(__name__)
 
-logger = logging.getLogger( __name__ )
 
 class Integrity:
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def __init__(self,method='sha512'):
+    def __init__(self, method='sha512'):
         for sc in Integrity.__subclasses__():
             if method == sc.__name__.lower():
-               break
+                break
 
         sc.__init__(self)
-   
 
     @abstractmethod
     def get_method(self):
         return type(self).__name__.lower()
 
     @abstractmethod
-    def update_file(self,path):
-       """
+    def update_file(self, path):
+        """
          read the entire file, check sum it. 
          this is kind of last resort as it cost an extra file read.
          It is better to call update( as the file is being read for other reasons.
        """
-       self.set_path(path)
-       with open(path,'rb') as f:
-           for data in iter(functools.partial(f.read, 1024*1024), b''):
-             self.update(data)
+        self.set_path(path)
+        with open(path, 'rb') as f:
+            for data in iter(functools.partial(f.read, 1024 * 1024), b''):
+                self.update(data)
 
     @abstractmethod
     def get_value(self):
@@ -70,6 +69,7 @@ class Integrity:
         return the current value of the checksum calculation.
         """
         return b64encode(self.filehash.digest()).decode('utf-8')
+
 
 #
 #   @abstractmethod
@@ -97,5 +97,5 @@ import sarra.plugin.integrity.random
 import sarra.plugin.integrity.sha512
 
 known_methods = []
-for sc in Integrity.__subclasses__() :
-    known_methods.append( sc.__name__.lower() )
+for sc in Integrity.__subclasses__():
+    known_methods.append(sc.__name__.lower())

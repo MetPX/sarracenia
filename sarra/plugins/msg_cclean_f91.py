@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 """
   Msg_Cclean_F91
   
@@ -31,9 +30,11 @@ class Msg_Cclean_F91(object):
                 logger.warning("file (%s) not found" % self.subs_f44_path)
         else:
             if not os.path.isfile(self.subs_f21_path + ext):
-                logger.warning("file (%s) not found" % self.subs_f21_path + ext)
+                logger.warning("file (%s) not found" % self.subs_f21_path +
+                               ext)
             if not os.path.isfile(self.subs_f44_path + ext):
-                logger.warning("file (%s) not found" % self.subs_f44_path + ext)
+                logger.warning("file (%s) not found" % self.subs_f44_path +
+                               ext)
         logger.debug("propagated = %d" % propagated)
 
     def on_message(self, parent):
@@ -49,16 +50,20 @@ class Msg_Cclean_F91(object):
             msg.headers['cclean_f91'] = ext
 
         else:
-            msg_params = (msg.pubtime, msg.baseurl, msg.relpath, msg.topic, msg.get_elapse(), msg.hdrstr)
-            logger.info("msg_log received: %s %s%s topic=%s lag=%g %s" % msg_params)
-            logger.error("The message received is incorrect not from shovel cclean_f90")
+            msg_params = (msg.pubtime, msg.baseurl, msg.relpath, msg.topic,
+                          msg.get_elapse(), msg.hdrstr)
+            logger.info("msg_log received: %s %s%s topic=%s lag=%g %s" %
+                        msg_params)
+            logger.error(
+                "The message received is incorrect not from shovel cclean_f90")
             return False
 
         # build all 3 paths of a successfull propagated path
         if relp[0] != '/':
             relp = '/' + relp
         self.subs_f21_path = relp  # subscribe cdlnd_f21
-        self.subs_f44_path = relp.replace('/cfr/', '/cfile/')  # subscribe cfile_f44
+        self.subs_f44_path = relp.replace('/cfr/',
+                                          '/cfile/')  # subscribe cfile_f44
 
         # propagated count
         propagated = 0
@@ -84,7 +89,8 @@ class Msg_Cclean_F91(object):
         try:
             os.unlink(self.subs_f21_path + ext)
         except OSError:
-            logger.warning("file (%s) already deleted ?" % self.subs_f21_path + ext)
+            logger.warning("file (%s) already deleted ?" % self.subs_f21_path +
+                           ext)
 
         del msg.headers['cclean_f90']
         return True

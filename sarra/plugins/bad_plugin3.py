@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 """
   example of mis-formed plugin.
   Error: self.on_message improperly set.
@@ -14,17 +13,18 @@ b
 
 """
 
-class Bad_Plugin3(object): 
 
-    def __init__(self,parent):
+class Bad_Plugin3(object):
+    def __init__(self, parent):
         parent.logger.debug("log_all initialized")
-          
-    def on_message(self,parent):
+
+    def on_message(self, parent):
         msg = parent.msg
         parent.logger.info("log_all message accepted: %s %s%s topic=%s lag=%g %s" % \
            ( msg.pubtime, msg.baseurl, msg.relpath, msg.topic, msg.get_elapse(), msg.hdrstr ) )
         return True
-          
-bad_plugin3 = Bad_Plugin3(self)  
 
-self.on_message = None # <-- ERROR: should be bad_plugin3.<something> (usually *on_message*)
+
+bad_plugin3 = Bad_Plugin3(self)
+
+self.on_message = None  # <-- ERROR: should be bad_plugin3.<something> (usually *on_message*)

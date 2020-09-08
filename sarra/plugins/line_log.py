@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
 
   the default on_line handler for sr_poll. Verifies file are ok to download.
@@ -22,17 +21,16 @@ sample line from sftp server:
 """
 
 
-class Line_Log(object): 
+class Line_Log(object):
+    def __init__(self, parent):
+        parent.logger.debug("line_log initialized ")
 
-    def __init__(self,parent):
-        parent.logger.debug("line_log initialized " )
-          
-    def perform(self,parent):
+    def perform(self, parent):
 
-        parent.logger.info("line_log: reading: %s" %  ( parent.line ) )
+        parent.logger.info("line_log: reading: %s" % (parent.line))
         return True
+
 
 line_log = Line_Log(self)
 
 self.on_line = line_log.perform
-

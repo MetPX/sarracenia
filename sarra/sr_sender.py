@@ -14,9 +14,10 @@ from sarra.config import Config
 # invocation of individual components, however, all set up is now done through
 # central sr.py script.
 
-sys.argv[-1]= 'sender' + os.sep + sys.argv[-1]
-args=[ sys.executable, os.path.dirname(inspect.getfile(Config)) + os.sep + 'sr.py' ]
+sys.argv[-1] = 'sender' + os.sep + sys.argv[-1]
+args = [
+    sys.executable,
+    os.path.dirname(inspect.getfile(Config)) + os.sep + 'sr.py'
+]
 args.extend(sys.argv[1:])
-os.execvp( sys.executable, args)
-
-
+os.execvp(sys.executable, args)
