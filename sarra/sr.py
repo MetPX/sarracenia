@@ -701,7 +701,7 @@ class sr_GlobalState:
                 if hasattr(o, 'post_broker') and o.post_broker is not None:
                     host = self._init_broker_host(o.post_broker.netloc)
 
-                    o.broker = o.post_broker
+                    #o.broker = o.post_broker
                     if hasattr(o, 'post_exchange'):
                         o.exchange = o.post_exchange
                     if hasattr(o, 'post_exchange_split'):
