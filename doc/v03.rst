@@ -522,6 +522,17 @@ Incompatibilities
 There are not supposed to be any. This is a running list of things to fix or document.
 breaking changes:
 
+
+* in v3, use -- for full word options, like --config, or --broker.  In v2 you could use -config and -broker,
+  but that will end badly in v3.  In the old command line parser, -config, and --config were the same, which 
+  was idiosyncratic.  The new
+  command line option parser is built on ArgParse, and interprets a single - as prefix a single option where the
+  the subsequent letters are and argument.  Example
+
+  -config hoho.conf  -> in v2 refers to loading the hoho.conf file as a configuration.
+
+  in v3, it will be interpreted as -c (config) load the onfig.conf gile, and hoho.conf is part of some subsequent option.
+
 * loglevel none -> loglevel notset (now passing loglevel setting directly to python logging module, none isn't defined.)
 
 * log messages and output in interactive, will be completely different.

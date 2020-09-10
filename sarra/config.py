@@ -142,6 +142,7 @@ def declare_plugin_option(option, kind):
     elif kind == 'str':
         str_options.append(option)
 
+
 #    logger.info('v2plugin option: %s declared' % option)
 
 #    self.v2plugin_options.append(option)
@@ -1662,10 +1663,6 @@ class Config:
         parser.add_argument('--broker',
                             nargs='?',
                             help='amqp://user:pw@host of peer to subscribe to')
-        #parser.add_argument('--clean_session', type=bool, help='start a new session, or resume old one?')
-        #parser.add_argument('--clientid', help='like an AMQP queue name, identifies a group of subscribers')
-        #parser.add_argument('--component', choices=Config.components, nargs='?', \
-        #          help='which component to look for a configuration for' )
         parser.add_argument('--config',
                             '-c',
                             nargs='?',
@@ -1678,8 +1675,6 @@ class Config:
                             action='store_true',
                             default=self.debug,
                             help='pring debugging output (very verbose)')
-        #parser.add_argument('--dir_prefix', help='local sub-directory to put data in')
-        #parser.add_argument('--download', type=bool, help='should download data ?')
         parser.add_argument('--exchange',
                             nargs='?',
                             default=self.exchange,
@@ -1689,7 +1684,6 @@ class Config:
            as currently coded, just a single value that over-writes previous setting, so only binding to a single exchange is possible.
         """
 
-        #parser.add_argument('--help', '-h',  type=bool, help='print help')
         parser.add_argument('--inline',
                             dest='inline',
                             default=self.inline,
@@ -1711,10 +1705,6 @@ class Config:
 
         parser.set_defaults(bindings=[])
 
-        #parser.add_argument('--lag_warn', type=int, help='in seconds, warn if messages older than that')
-        #parser.add_argument('--lag_drop', type=int, help='in seconds, drop messages older than that')
-
-        # the web server address for the source of the locally published tree.
         parser.add_argument(
             '--logLevel',
             choices=[
