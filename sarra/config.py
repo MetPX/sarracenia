@@ -83,7 +83,7 @@ str_options = [
     'exchange_suffix', 'events', 'feeder', 'path', 'post_baseUrl',
     'post_baseDir', 'post_broker', 'post_exchange', 'post_exchange_suffix',
     'post_topic_prefix', 'report_exchange', 'strip', 'suppress_duplicates',
-    'suppress_duplicates_basis', 'topic_prefix'
+    'suppress_duplicates_basis', 'tls_rigour', 'topic_prefix'
 ]
 """
    for backward compatibility, 
@@ -995,7 +995,6 @@ class Config:
                 hostdir = None
             self.cfg_run_dir = os.path.join(get_user_cache_dir(hostdir),
                                             component, cfg)
-
         if self.broker is not None:
 
             self._resolve_exchange()

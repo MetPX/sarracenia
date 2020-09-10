@@ -67,6 +67,31 @@ class Https(Transfer):
     def __init__(self):
         logger.debug("sr_http __init__")
         Https.assimilate(self)
+
+        self.tlsctx = ssl.create_default_context()
+        if hasattr(self.o, 'tls_rigour'):
+            self.o.tls_rigour = self.o.tls_rigour.lower()
+            if self.o.tls_rigour == 'lax':
+                self.tlsctx = ssl.create_default_context()
+                self.tlsctx.check_hostname = False
+                self.tlsctx.verify_mode = ssl.CERT_NONE
+
+            elif self.o.tls_rigour == 'strict':
+                self.tlsctx = ssl.SSLContext(ssl.PROTOCOL_TLS)
+                self.tlsctx.options |= ssl.OP_NO_TLSv1
+                self.tlsctx.options |= ssl.OP_NO_TLSv1_1
+                self.tlsctx.check_hostname = True
+                self.tlsctx.verify_mode = ssl.CERT_REQUIRED
+                self.tlsctx.load_default_certs()
+                # TODO Find a way to reintroduce certificate revocation (CRL) in the future
+                #  self.tlsctx.verify_flags = ssl.VERIFY_CRL_CHECK_CHAIN
+                #  https://github.com/MetPX/sarracenia/issues/330
+            elif self.o.tls_rigour == 'normal':
+                pass
+            else:
+                self.logger.warning(
+                    "option tls_rigour must be one of:  lax, normal, strict")
+
         self.init()
 
     def registered_as(self):
@@ -173,6 +198,7 @@ class Https(Transfer):
         self.data = ''
         self.entries = {}
 
+
 # ls
 
     def ls(self):
@@ -254,7 +280,7 @@ class Https(Transfer):
                 #hctx = ssl.create_default_context()
                 #hctx.check_hostname = False
                 #hctx.verify_mode = ssl.CERT_NONE
-                ssl_handler = urllib.request.HTTPSHandler(0, self.o.tlsctx)
+                ssl_handler = urllib.request.HTTPSHandler(0, self.tlsctx)
 
                 # create "opener" (OpenerDirector instance)
                 opener = urllib.request.build_opener(auth_handler, ssl_handler)
@@ -277,7 +303,7 @@ class Https(Transfer):
             # https without user : create/use an ssl context
             ctx = None
             if self.user == None and self.urlstr.startswith('https'):
-                ctx = self.o.tlsctx
+                ctx = self.tlsctx
                 #ctx.check_hostname = False
                 #ctx.verify_mode = ssl.CERT_NONE
 
