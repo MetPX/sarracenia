@@ -392,8 +392,8 @@ class Flow:
                         elif self.o.log_reject:
                             logger.info("reject: mask=%s strip=%s url=%s" %
                                         (str(mask), strip, url))
-                            self.worklist.rejected.append(m)
-                            break
+                        self.worklist.rejected.append(m)
+                        break
 
                     # FIXME... missing dir mapping with mirror, strip, etc...
                     self.o.set_newMessageFields(m, url, pattern, maskDir,
