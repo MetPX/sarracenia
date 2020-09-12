@@ -1188,6 +1188,8 @@ class sr_GlobalState:
                 for x in self.brokers[h]['exchanges']:
                     xx = self.brokers[h]['exchanges'][x]
                     if qd[1] in xx:
+                        if 'admin' not in self.brokers[h]:
+                            continue
                         print(' remove %s from %s subscribers: %s ' %
                               (qd[1], x, xx))
                         xx.remove(qd[1])
