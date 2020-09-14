@@ -42,6 +42,7 @@ default_options = {
     'logFormat':
     '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
     'logLevel': 'info',
+    'mirror': True,
     'preserve_mode': True,
     'preserve_time': True,
     'sleep': 0.1,
@@ -908,7 +909,7 @@ class Flow:
         logger.debug("%s_transport download" % self.scheme)
 
         token = msg['relPath'].split('/')
-        cdir = '/'.join(token[:-1])
+        cdir = '/' + '/'.join(token[:-1])
         remote_file = token[-1]
         urlstr = msg['baseUrl'] + '/' + msg['relPath']
         new_inflight_path = ''
@@ -931,7 +932,7 @@ class Flow:
                     logger.debug('Exception details:', exc_info=True)
             os.chdir(new_dir)
 
-        if True:  #try :
+        try:
             options.destination = msg['baseUrl']
 
             if (self.proto is None) or not self.proto.check_is_connected():
@@ -1041,7 +1042,7 @@ class Flow:
             if (len_written != block_length):
                 return False
 
-        else:  #except:
+        except:
             #closing on problem
             try:
                 self.proto.close()
@@ -1098,7 +1099,11 @@ class Flow:
         logger.debug("%s_transport send %s %s" %
                      (self.scheme, msg['new_dir'], msg['new_file']))
 
-        local_path = msg['relPath']
+        if self.o.baseDir:
+            local_path = self.o.baseDir + '/' + msg['relPath']
+        else:
+            local_path = '/' + msg['relPath']
+
         local_dir = os.path.dirname(local_path).replace('\\', '/')
         local_file = os.path.basename(local_path).replace('\\', '/')
         new_dir = msg['new_dir'].replace('\\', '/')

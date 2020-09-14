@@ -554,6 +554,13 @@ breaking changes:
   these do_get and do_put cases, that is quite counter productive. so instead have a calling signature
   identical to built-in protocol get/put... src_file, dst_file, src_offset, dst_offset, len )
 
+* In v2, mirror default settings used to be False in all components except sr_sarra.
+  but the mirror setting was not honoured in shovel, and winnow (bug #358) 
+  this bug is corrected in v3, but then you notice that the default is wrong.
+ 
+  In v3, the default for mirror is changed to True for all flows except subscribe, which
+  is the least surprising behaviour given the default to False in v2.
+   
 
 Features
 --------

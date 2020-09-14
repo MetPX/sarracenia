@@ -5,7 +5,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-default_options = {'accept_unmatched': True, 'download': True}
+default_options = {'accept_unmatched': True, 'download': True, 'mirror': False}
 
 
 class Subscribe(Flow):

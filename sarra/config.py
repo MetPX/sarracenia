@@ -879,7 +879,10 @@ class Config:
                     self.strip = int(v)
                     self.pstrip = None
                 else:
-                    self.pstrip = v
+                    if v[0] == '/':
+                        self.pstrip = v[1:]
+                    else:
+                        self.pstrip = v
                     self.strip = 0
             elif k in duration_options:
                 if len(line) == 1:
@@ -1406,8 +1409,8 @@ class Config:
     def set_newMessageFields(self, msg, urlstr, pattern, maskDir,
                              maskFileOption, mirror, strip, pstrip, flatten):
 
-        if not self.download:
-            return
+        #if not self.download:
+        #    return
 
         msg['_deleteOnPost'].extend(
             ['new_dir', 'new_file', 'new_relPath', 'new_baseUrl'])
@@ -1415,8 +1418,8 @@ class Config:
         #logger.debug( "entering base_dir=%s" % ( self.baseDir ) )
         #if 'new_dir' in msg:
         #    logger.debug( "new_dir=%s" % ( msg['new_dir'] ) )
-        #logger.debug( "strip=%s, mirror=%s flatten=%s maskDir=%s pbd=%s msg[\'relPath\']=%s" %  \
-        #     ( strip, mirror, flatten, maskDir, self.post_baseDir, msg['relPath'] ) )
+        #logger.debug( "strip=%s, pstrip=%s, mirror=%s flatten=%s maskDir=%s pbd=%s msg[\'relPath\']=%s" %  \
+        #     ( strip, pstrip, mirror, flatten, maskDir, self.post_baseDir, msg['relPath'] ) )
 
         # relative path by default mirror
 
@@ -1524,23 +1527,26 @@ class Config:
         # FIXME: 2020/09/05 - PAS ... normpath will put back slashes in on Windows.
         # normpath thing is probably wrong... not sure why it is here...
         if 'new_dir' not in msg:
-            msg['new_dir'] = os.path.normpath(new_dir)
+            #msg['new_dir'] = os.path.normpath(new_dir)
+            msg['new_dir'] = new_dir
 
         relPath = msg['new_dir'] + '/' + filename
 
         if self.post_baseDir:
             relPath = relPath.replace(self.post_baseDir, '')
 
-        # set the results for the new file (downloading or sending)
+        if relPath[0] == '/':
+            relPath = relPath[1:]
 
-        msg['new_baseUrl'] = 'file:'
+        # set the results for the new file (downloading or sending)
 
         # final value
         # NOTE : normpath keeps '/a/b/c' and '//a/b/c' the same
         #        Everywhere else // or /../ are corrected.
         #        but if the number of / starting the path > 2  ... it will result into 1 /
 
-        msg['new_relPath'] = os.path.normpath(relPath)
+        #msg['new_relPath'] = os.path.normpath(relPath)
+        msg['new_relPath'] = relPath
 
         if sys.platform == 'win32':
             if 'new_dir' not in msg:
@@ -1554,13 +1560,15 @@ class Config:
 
         if self.post_broker and self.post_baseUrl:
             msg['new_baseUrl'] = self.post_baseUrl
+        else:
+            msg['new_baseUrl'] = msg['baseUrl']
 
         if 'new_relPath' in msg:
             msg['topic'] = self.post_topic_prefix + '.' + '.'.join(
                 msg['new_relPath'].split('/'))[1:-1]
 
-        #logger.debug( "leaving with: new_dir=%s new_relpath=%s new_baseUrl=%s " % \
-        #   ( msg['new_dir'], msg['new_relPath'], msg['new_baseUrl'] ) )
+        logger.debug( "leaving with: new_dir=%s new_relpath=%s new_baseUrl=%s " % \
+           ( msg['new_dir'], msg['new_relPath'], msg['new_baseUrl'] ) )
 
     """
        2020/05/26 PAS... FIXME: end of sheer terror. 
