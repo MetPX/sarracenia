@@ -87,7 +87,7 @@ def alarm_set(time):
 # =========================================
 
 
-class Transfer():
+class Transfer:
     """
     v2: sarra.sr_proto -> v3: sarra.transfer
     ============================================================
@@ -122,42 +122,32 @@ class Transfer():
          opt   options.bufsize
 
     """
-    def __init__(self, proto, options):
-        #options.logger.debug("sr_proto __init__")
+    class UnknownProtocolException(Exception): pass
+    _registry = {}
 
+    @classmethod
+    def __init_subclass__(cls, /, **kwargs):
+        proto = kwargs.pop('proto', None)
+        super().__init_subclass__(**kwargs)
+        for p in proto:
+            cls._registry[p] = cls
+
+    def __new__(cls, options):
+        subclass = Transfer._registry.get(options.settings['scheme'])
+        if subclass:
+            return object.__new__(subclass)
+        else:
+            raise Transfer.UnknownProtocolException(f"Unknown protocol provided proto={options.settings['scheme']}")
+
+    def __init__(self, options):
         self.o = options
-
-        sc = None
-        # 0:4 is to ignore s in https and use the same protocol for both.
-        # FIXME: might want to add 'reverse' to __subclasses__, so plugins are checked first.
-        for sc in Transfer.__subclasses__():
-
-            if (hasattr(sc, 'registered_as')
-                    and (proto in sc.registered_as(self))):
-                # old version or (str(proto[0:4]) == sc.__name__.lower()[0:4]):
-                logger.debug("HOHO found!")
-                self.init()
-                sc.__init__(self)
-                break
-
-        if sc is None: return None
-        logger.debug("HOHO found! .. %s " % (sc.__name__.lower()))
-
-    # init
-    @abstractmethod
-    def init(self):
-        #logger.debug("sr_proto init")
-
         self.sumalgo = None
         self.checksum = None
         self.data_sumalgo = None
         self.data_checksum = None
         self.fpos = 0
-
         self.tbytes = 0
         self.tbegin = nowflt()
-
-        logger.debug("timeout %d" % self.o.timeout)
 
     # local_read_close
     def local_read_close(self, src):

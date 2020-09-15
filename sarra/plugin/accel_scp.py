@@ -40,16 +40,15 @@ import sarra
 
 from sarra.plugin import Plugin
 from sarra.config import declare_plugin_option
+from sarra.transfer.sftp import Sftp
 
 logger = logging.getLogger(__name__)
 
 
-class ACCEL_SCP(Plugin):
+class ACCEL_SCP(Plugin, Sftp, proto=['scp']):
     def __init__(self, options):
-
-        self.o = options
-
-        self.registered_list = ['sftp']
+        super().__init__(options)
+        super(Plugin, self).__init__(options)
 
         declare_plugin_option('accel_scp_command', 'str')
         declare_plugin_option('accel_scp_threshold', 'size')
@@ -145,9 +144,6 @@ class ACCEL_SCP(Plugin):
         if p.returncode != 0:  # Failed!
             return 0
         return length
-
-    def registered_as(self):
-        return self.registered_list
 
 
 """

@@ -60,21 +60,14 @@ logger = logging.getLogger(__name__)
 #
 
 
-class Ftp(Transfer):
-    @classmethod
-    def assimilate(cls, obj):
-        obj.__class__ = Ftp
-
-    def __init__(self):
+class Ftp(Transfer, proto=['ftp']):
+    def __init__(self, options):
         logger.debug("sr_ftp __init__")
+        super().__init__(options)
         self.connected = False
         self.ftp = None
         self.details = None
         self.batch = 0
-        Ftp.assimilate(self)
-
-    def registered_as(self):
-        return ['ftp']
 
     # cd
     def cd(self, path):
@@ -171,7 +164,7 @@ class Ftp(Transfer):
 
         old_ftp = self.ftp
 
-        self.init()
+        self.__init__(self.o)
 
         try:
             alarm_set(self.o.timeout)

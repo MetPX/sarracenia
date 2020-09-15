@@ -64,7 +64,6 @@ class Plugin:
     """
     FIXME: document the API signatures for all the entry points. 
     """
-    __metaclass__ = ABCMeta
 
     @abstractmethod
     def __init__(self, options):
@@ -74,7 +73,6 @@ class Plugin:
                             level=getattr(logging, self.o.logLevel.upper()))
 
         #logger.info( 'intializing %s' % self.name )
-        pass
 
 
 # FIXME:
@@ -271,6 +269,7 @@ def load_library(factory_path, options):
                 setattr(opt, s, options.settings[factory_path][s])
     else:
         opt = options
-
+    opt.settings['scheme'] = packagename.split("_")[-1]  # TODO this is a hack remove that
     plugin = class_(opt)
+    del opt.settings['scheme']  # TODO this is a hack remove that
     return plugin

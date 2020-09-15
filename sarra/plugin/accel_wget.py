@@ -32,19 +32,23 @@ See end of file for performance considerations.
 """
 
 import logging
+import os
+import subprocess
+from pathlib import Path
 
 import sarra
 from sarra.plugin import Plugin
 from sarra.config import declare_plugin_option
 import sarra.transfer.sftp
+from sarra.transfer.https import Https
 
 logger = logging.getLogger(__name__)
 
 
-class ACCEL_WGET(Plugin, sarra.transfer.sftp.Sftp):
+class ACCEL_WGET(Plugin, Https, proto=['wget']):
     def __init__(self, options):
-
-        self.o = options
+        super().__init__(options)
+        super(Plugin, self).__init__(options)
 
         declare_plugin_option('accel_wget_command', 'str')
         declare_plugin_option('accel_wget_threshold', 'size')
@@ -68,7 +72,7 @@ class ACCEL_WGET(Plugin, sarra.transfer.sftp.Sftp):
             self.o.accel_wget_threshold = sarra.chunksize_from_str(
                 self.o.accel_wget_threshold)
 
-        logger.info("accel threshold set to: %d" % self.o.accel_wget_threshold)
+        logger.info(f"accel threshold set to: {self.o.accel_wget_threshold}")
         return True
 
     def on_messages(self, worklist):
@@ -82,7 +86,7 @@ class ACCEL_WGET(Plugin, sarra.transfer.sftp.Sftp):
                 sz = m['size']
 
             if sz > self.o.accel_wget_threshold:
-                m['baseUrl'] = m['baseUrl'].replace('http', "download", 1)
+                m['baseUrl'] = m['baseUrl'].replace('http', "wget", 1)
 
             logger.debug("wget sz: %d, threshold: %d download: %s to %s, " % ( \
                 sz, self.o.accel_wget_threshold, m['baseUrl'], m['new_file'] ) )
@@ -92,25 +96,25 @@ class ACCEL_WGET(Plugin, sarra.transfer.sftp.Sftp):
         """
         FIXME: this ignores offsets, so it does not work for partitioned files.
       """
-        msg['baseUrl'] = msg['baseUrl'].replace("download", "http", 1)
+        msg['baseUrl'] = msg['baseUrl'].replace("wget", "http", 1)
         os.chdir(msg['new_dir'])
 
-        cmd = self.o.download_accel_wget_command[0].split() + [
+        cmd = self.o.accel_wget_command.split() + [
             msg['baseUrl'] + os.sep + msg['relPath']
         ]
-        logger.debug("wget do_download in %s invoking: %s " %
-                     (msg['new_dir'], cmd))
+        logger.debug(f"new_dir={msg['new_dir']}, new_file={msg['new_file']}, rel_path={msg['relPath']}, cmd={cmd}")
 
         p = subprocess.Popen(cmd)
         p.wait()
-        if p.returncode != 0:  # Failed!
-            if self.o.reportback:
-                msg.report_publish(499, 'wget download failed')
-            return False
 
-        if self.o.reportback:
-            msg.report_publish(201, 'Downloaded')
-        return True
+        if p.returncode != 0:  # Failed!
+            if hasattr(self.o, 'reportback') and self.o.reportback:
+                msg.report_publish(499, 'wget download failed')
+            return 0
+
+        if hasattr(self.o, 'reportback') and self.o.reportback:
+            sarra.msg_set_report(msg, 201, 'Downloaded')
+        return Path(msg['new_dir'], msg['new_file']).stat().st_size
 
 
 """

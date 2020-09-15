@@ -6,6 +6,7 @@ import os
 # v3 plugin architecture...
 import sarra.plugin
 import sarra.plugin.integrity
+import sarra.transfer
 
 import stat
 import time
@@ -85,8 +86,6 @@ class Flow:
                  contains routines to run at each *time*
      
     """
-    __metaclass__ = ABCMeta
-
     def __init__(self, cfg=None):
         """
        The cfg is should be an sarra/config object.
@@ -936,7 +935,9 @@ class Flow:
 
             if (self.proto is None) or not self.proto.check_is_connected():
                 logger.debug("%s_transport download connects" % self.scheme)
-                self.proto = sarra.transfer.Transfer(self.scheme, self.o)
+                self.o.settings['scheme'] = self.scheme  # TODO this is a hack remove that
+                self.proto = sarra.transfer.Transfer(self.o)
+                del self.o.settings['scheme']  # TODO this is a hack remove that
                 logger.debug("HOHO proto %s " % type(self.proto))
                 ok = self.proto.connect()
                 if not ok:
@@ -1060,13 +1061,9 @@ class Flow:
     # generalized get...
     def get(self, msg, remote_file, local_file, remote_offset, local_offset,
             length):
-
-        scheme = urllib.parse.urlparse(msg['baseUrl']).scheme
-        if ((hasattr(self,'plugins') and ( 'do_get' in self.plugins )) and \
-            scheme in self.plugins['do_get'] ):
-            return self.plugins[scheme]['do_get'](msg, remote_file, local_file,
-                                                  remote_offset, local_offset,
-                                                  length)
+        if isinstance(self.proto, sarra.plugin.Plugin):
+            return self.proto.do_get(msg, remote_file, local_file, remote_offset,
+                                     local_offset, length)
         else:
             return self.proto.get(remote_file, local_file, remote_offset,
                                   local_offset, length)
@@ -1117,7 +1114,9 @@ class Flow:
 
             if (self.proto is None) or not self.proto.check_is_connected():
                 logger.debug("%s_transport send connects" % self.scheme)
-                self.proto = sarra.transfer.Transfer(self.scheme, options)
+                self.o.settings['scheme'] = self.scheme  # TODO this is a hack remove that
+                self.proto = sarra.transfer.Transfer(self.o)
+                del self.o.settings['scheme']  # TODO this is a hack remove that
                 ok = self.proto.connect()
                 if not ok: return False
                 self.cdir = None
@@ -1223,7 +1222,7 @@ class Flow:
             elif inflight[0] == '.':
                 new_inflight_path = new_file + inflight
                 self.put(msg, local_file, new_inflight_path)
-                proto.rename(new_inflight_path, new_file)
+                self.proto.rename(new_inflight_path, new_file)
             elif options.inflight[-1] == '/':
                 try:
                     self.proto.cd_forced(775, new_dir + '/' + options.inflight)
