@@ -13,13 +13,6 @@ class Md5name(Integrity):
         suitable when files with the same name should be considered the same,
         even if they contain different bytes.
       """
-    @classmethod
-    def assimilate(cls, obj):
-        obj.__class__ = Md5name
-
-    def __init__(self):
-        Md5name.assimilate(self)
-
     def registered_as():
         """
             v2name.

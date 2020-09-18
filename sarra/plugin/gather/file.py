@@ -250,7 +250,7 @@ class File(Plugin):
         if sumflg[:4] == 'cod,' and len(sumflg) > 2:
             sumstr = sumflg
         else:
-            sumalgo = sarra.plugin.integrity.Integrity(sumflg)
+            sumalgo = sarra.plugin.integrity.Integrity.factory(sumflg)
             sumalgo.set_path(path)
 
             # compute checksum
@@ -315,7 +315,7 @@ class File(Plugin):
 
             else:
                 sumflg = self.o.sumflg
-                sumalgo = sarra.plugin.integrity.Integrity(sumflg)
+                sumalgo = sarra.plugin.integrity.Integrity.factory(sumflg)
                 sumalgo.set_path(path)
 
             # compute block stuff

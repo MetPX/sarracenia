@@ -373,8 +373,8 @@ class Transfer():
     # set_sumalgo
     def set_sumalgo(self, sumalgo):
         logger.debug("sr_proto set_sumalgo %s" % sumalgo)
-        self.sumalgo = sarra.plugin.integrity.Integrity(sumalgo)
-        self.data_sumalgo = sarra.plugin.integrity.Integrity(sumalgo)
+        self.sumalgo = sarra.plugin.integrity.Integrity.factory(sumalgo)
+        self.data_sumalgo = sarra.plugin.integrity.Integrity.factory(sumalgo)
 
     def set_path(self, path):
         if self.sumalgo:
