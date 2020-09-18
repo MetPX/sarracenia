@@ -250,7 +250,7 @@ class File(Plugin):
         if sumflg[:4] == 'cod,' and len(sumflg) > 2:
             sumstr = sumflg
         else:
-            sumalgo = sarra.plugin.integrity.Integrity(sumflg)
+            sumalgo = sarra.plugin.integrity.Integrity.factory(sumflg)
             sumalgo.set_path(path)
 
             # compute checksum
@@ -315,7 +315,7 @@ class File(Plugin):
 
             else:
                 sumflg = self.o.sumflg
-                sumalgo = sarra.plugin.integrity.Integrity(sumflg)
+                sumalgo = sarra.plugin.integrity.Integrity.factory(sumflg)
                 sumalgo.set_path(path)
 
             # compute block stuff
@@ -686,8 +686,7 @@ class File(Plugin):
             logger.debug("Exception details:", exc_info=True)
 
         if os.access(d, os.R_OK | os.X_OK):
-            #try:
-            if True:
+            try:
                 ow = self.observer.schedule(self.watch_handler,
                                             d,
                                             recursive=True)
@@ -696,13 +695,14 @@ class File(Plugin):
                 logger.info(
                     "sr_watch priming watch (instance=%d) scheduled for: %s " %
                     (len(self.obs_watched), d))
-            #except:
-            #    logger.warning("sr_watch priming watch: %s failed, deferred." % d)
-            #    logger.debug('Exception details:', exc_info=True)
+            except:
+                logger.warning("sr_watch priming watch: %s failed, deferred." %
+                               d)
+                logger.debug('Exception details:', exc_info=True)
 
-            #    # add path created
-            #    self.on_add( 'create', p, None )
-            #    return True
+                # add path created
+                self.on_add('create', p, None)
+                return True
 
         else:
             logger.warning(

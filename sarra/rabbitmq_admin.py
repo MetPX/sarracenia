@@ -26,7 +26,7 @@ def exec_rabbitmqadmin(url, options, simulate=False):
        invoke rabbitmqadmin..
     """
 
-    if True:  # try :
+    try:
         command = rabbitmqadmin
         command += ' --host \'' + url.hostname
         command += '\' --user \'' + url.username
@@ -63,7 +63,7 @@ def exec_rabbitmqadmin(url, options, simulate=False):
                 if type(output) == bytes: output = output.decode("utf-8")
                 return rclass.returncode, output
             return rclass.returncode, None
-    else:  # except :
+    except:
         if sys.version_info.major < 3 or (sys.version_info.major == 3
                                           and sys.version_info.minor < 5):
             if logger: logger.error("trying run command %s %s" % command)

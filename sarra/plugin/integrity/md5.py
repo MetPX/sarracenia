@@ -10,13 +10,6 @@ class Md5(Integrity):
          use the (obsolete) Message Digest 5 (MD5) algorithm, applied on the content
          of a file, to generate an integrity signature.
       """
-    @classmethod
-    def assimilate(cls, obj):
-        obj.__class__ = Md5
-
-    def __init__(self):
-        Md5.assimilate(self)
-
     def registered_as():
         """
             v2name.

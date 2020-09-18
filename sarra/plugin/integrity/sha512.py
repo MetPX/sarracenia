@@ -13,13 +13,6 @@ class Sha512(Integrity):
     """
       The SHA512 algorithm to checksum the entire file, which is called 's'.
       """
-    @classmethod
-    def assimilate(cls, obj):
-        obj.__class__ = Sha512
-
-    def __init__(self):
-        Sha512.assimilate(self)
-
     def registered_as():
         return 's'
 

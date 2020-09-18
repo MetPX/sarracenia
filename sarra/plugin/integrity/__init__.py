@@ -29,7 +29,7 @@ import logging
 
 import functools
 
-from abc import ABCMeta, abstractmethod
+#from abc import ABCMeta, abstractmethod
 
 from base64 import b64encode
 
@@ -37,21 +37,22 @@ logger = logging.getLogger(__name__)
 
 
 class Integrity:
-    __metaclass__ = ABCMeta
+    #__metaclass__ = ABCMeta
 
-    @abstractmethod
-    def __init__(self, method='sha512'):
+    @staticmethod
+    def factory(method='sha512'):
+
+        found = False
         for sc in Integrity.__subclasses__():
-            if method == sc.__name__.lower():
+            Found = method == sc.__name__.lower()
+            if Found:
                 break
 
-        sc.__init__(self)
+        return sc() if Found else None
 
-    @abstractmethod
     def get_method(self):
         return type(self).__name__.lower()
 
-    @abstractmethod
     def update_file(self, path):
         """
          read the entire file, check sum it. 
@@ -63,7 +64,6 @@ class Integrity:
             for data in iter(functools.partial(f.read, 1024 * 1024), b''):
                 self.update(data)
 
-    @abstractmethod
     def get_value(self):
         """
         return the current value of the checksum calculation.
@@ -71,20 +71,18 @@ class Integrity:
         return b64encode(self.filehash.digest()).decode('utf-8')
 
 
+# required methods in subclasses:
 #
-#   @abstractmethod
 #   def registered_as(self):
 #       """
 #       return a one letter string identifying the algorithm.
 #       """
 #
-#   @abstractmethod
 #   def set_path(self,path):
 #       """
 #       start a checksum for the given path... initialize.
 #       """
 #
-#   @abstractmethod
 #   def update(self,chunk):
 #       """
 #       update the checksum based on the given bytes from the file (sequential access assumed.)

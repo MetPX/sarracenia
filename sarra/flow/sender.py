@@ -10,21 +10,14 @@ default_options = {'accept_unmatched': True, 'download': True}
 
 
 class Sender(Flow):
-    @classmethod
-    def assimilate(cls, obj):
-        obj.__class__ = Sender
+    def __init__(self, options):
 
-    def name(self):
-        return 'sender'
-
-    def __init__(self):
-
+        super().__init__(options)
         self.plugins['load'].append('sarra.plugin.gather.message.Message')
 
         if hasattr(self.o, 'post_exchange'):
             self.plugins['load'].append('sarra.plugin.post.message.Message')
 
-        Sender.assimilate(self)
         self.scheme = urllib.parse.urlparse(self.o.destination).scheme
 
     def do(self):

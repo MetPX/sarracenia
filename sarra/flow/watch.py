@@ -28,16 +28,9 @@ default_options = {
 
 
 class Watch(Flow):
-    @classmethod
-    def assimilate(cls, obj):
-        obj.__class__ = Watch
+    def __init__(self, options):
 
-    def name(self):
-        return 'watch'
-
-    def __init__(self):
-
+        super().__init__(options)
         logger.info('watching!')
         self.plugins['load'].append('sarra.plugin.gather.file.File')
         self.plugins['load'].append('sarra.plugin.post.message.Message')
-        Watch.assimilate(self)
