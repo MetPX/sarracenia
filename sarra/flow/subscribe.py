@@ -9,21 +9,13 @@ default_options = {'accept_unmatched': True, 'download': True, 'mirror': False}
 
 
 class Subscribe(Flow):
-    @classmethod
-    def assimilate(cls, obj):
-        obj.__class__ = Subscribe
+    def __init__(self, options):
 
-    def name(self):
-        return 'subscribe'
-
-    def __init__(self):
-
+        super().__init__(options)
         self.plugins['load'].append('sarra.plugin.gather.message.Message')
 
         if hasattr(self.o, 'post_exchange'):
             self.plugins['load'].append('sarra.plugin.post.message.Message')
-
-        Subscribe.assimilate(self)
 
     def do(self):
 

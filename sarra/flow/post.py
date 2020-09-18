@@ -28,15 +28,8 @@ default_options = {
 
 
 class Post(Flow):
-    @classmethod
-    def assimilate(cls, obj):
-        obj.__class__ = Post
+    def __init__(self, options):
 
-    def name(self):
-        return 'post'
-
-    def __init__(self):
-
+        super().__init__(options)
         self.plugins['load'].append('sarra.plugin.gather.file.File')
         self.plugins['load'].append('sarra.plugin.post.message.Message')
-        Post.assimilate(self)

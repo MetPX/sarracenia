@@ -25,8 +25,6 @@ from base64 import b64decode, b64encode
 from mimetypes import guess_type
 # end v2 subscriber
 
-from abc import ABCMeta, abstractmethod
-
 from sarra import nowflt
 
 logger = logging.getLogger(__name__)
@@ -86,7 +84,14 @@ class Flow:
                  contains routines to run at each *time*
      
     """
-    __metaclass__ = ABCMeta
+    @staticmethod
+    def factory(cfg):
+        subclass = None
+        for sc in Flow.__subclasses__():
+            if cfg.program_name == sc.__name__.lower():
+                subclass = sc
+
+        return subclass(cfg) if subclass else None
 
     def __init__(self, cfg=None):
         """
@@ -101,43 +106,13 @@ class Flow:
             '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
             level=logging.DEBUG)
 
-        #self.o = types.SimpleNamespace()
-        #
-        #for k in default_options:
-        #     setattr( self.o, k, default_options[k] )
-        #
-        #component = cfg.configurations[0].split(os.sep)[0]
-
         self.o = cfg
 
         if not hasattr(self.o, 'post_topic_prefix'):
             self.o.post_topic_prefix = self.o.topic_prefix
 
-        subclass = None
-        subclass_names = []
-        #logger.debug( 'flow.__subclasses__() returns: %s' % Flow.__subclasses__() )
-        for sc in Flow.__subclasses__():
-            subclass_names.append(sc.name(self))
-            if self.o.program_name == sc.name(self):
-                subclass = sc
-
-        #logger.info( 'valid flows: %s' % subclass_names )
-        if subclass is None:
-            logger.critical('unknown flow. valid choices: %s' % subclass_names)
-            return
-
-        #for k in subclass.default_options:
-        #     setattr( self.o, k, subclass.default_options[k] )
-        #alist = [ a for a in dir(cfg) if not a.startswith('__') ]
-        #for a in alist:
-        #     #logger.debug( 'self.o.%s = %s' % ( a, getattr(cfg,a) ) )
-        #     setattr( self.o, a, getattr(cfg,a) )
-
         logging.basicConfig(format=self.o.logFormat,
                             level=getattr(logging, self.o.logLevel.upper()))
-        #logger.debug( '%s logLevel set to: %s ' % ( me, self.o.logLevel ) )
-
-        # override? or merge... hmm...
 
         self.plugins = {}
         for entry_point in sarra.plugin.entry_points:
@@ -170,10 +145,6 @@ class Flow:
         # initialize plugins.
         if hasattr(self.o, 'v2plugins'):
             self.plugins['load'].append('sarra.plugin.v2wrapper.V2Wrapper')
-
-        subclass.__init__(self)
-
-        self.loadPlugins(self.plugins['load'])
 
     def loadPlugins(self, plugins_to_load):
 
@@ -245,7 +216,6 @@ class Flow:
     def please_stop(self):
         self._stop_requested = True
 
-    @abstractmethod
     def close(self):
 
         self._runPluginsTime('on_stop')
@@ -271,6 +241,7 @@ class Flow:
           check if stop_requested once in a while, but never return otherwise.
         """
 
+        self.loadPlugins(self.plugins['load'])
         logger.debug("working directory: %s" % os.getcwd())
 
         next_housekeeping = nowflt() + self.o.housekeeping
@@ -437,7 +408,6 @@ class Flow:
 
         logger.debug('done')
 
-    @abstractmethod
     def gather(self):
         self.worklist.incoming = []
         for p in self.plugins["gather"]:
@@ -445,7 +415,6 @@ class Flow:
             if len(new_incoming) > 0:
                 self.worklist.incoming.extend(new_incoming)
 
-    @abstractmethod
     def do(self):
 
         # mark all remaining messages as done.
@@ -453,7 +422,6 @@ class Flow:
         self.worklist.incoming = []
         logger.info('processing %d messages worked!' % len(self.worklist.ok))
 
-    @abstractmethod
     def post(self):
 
         logger.info('on_post starting for %d messages' % len(self.worklist.ok))
@@ -477,7 +445,6 @@ class Flow:
         for p in self.plugins["post"]:
             p(self.worklist)
 
-    @abstractmethod
     def report(self):
         # post reports
         # apply on_report plugins

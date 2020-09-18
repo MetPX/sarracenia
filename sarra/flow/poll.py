@@ -43,18 +43,11 @@ default_options = {
 
 
 class Poll(Flow):
-    @classmethod
-    def assimilate(cls, obj):
-        obj.__class__ = Poll
+    def __init__(self, options):
 
-    def name(self):
-        return 'poll'
-
-    def __init__(self):
-
+        super().__init__(options)
         self.plugins['load'].append('sarra.plugin.line_mode.Line_Mode')
         self.plugins['load'].append('sarra.plugin.post.message.Message')
-        Poll.assimilate(self)
 
         # check destination
 

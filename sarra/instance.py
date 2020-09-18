@@ -194,7 +194,7 @@ class instance:
             self.running_instance = Audit()
         else:
             cfg = sarra.config.one_config(component, config)
-            self.running_instance = Flow(cfg)
+            self.running_instance = Flow.factory(cfg)
 
         self.running_instance.run()
 

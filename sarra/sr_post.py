@@ -41,7 +41,7 @@ def main():
 
     cfg2 = sarra.config.one_config('post', cfg1.config, isPost=True)
 
-    post_flow = sarra.flow.Flow(cfg2)
+    post_flow = sarra.flow.Flow.factory(cfg2)
     post_flow.run()
 
 
