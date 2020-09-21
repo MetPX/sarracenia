@@ -70,9 +70,7 @@ class Poll(Flow):
                     ':' + self.details.url.password, '')
             if self.details.url.scheme:
                 self.scheme = self.details.url.scheme
-        self.o.settings['scheme'] = self.scheme  # TODO this is a hack remove that
-        self.dest = sarra.transfer.Transfer(self.o)
-        del self.o.settings['scheme']  # TODO this is a hack remove that
+        self.dest = sarra.transfer.Transfer(self.o, scheme=self.scheme)
 
         if self.dest is None:
             logger.critical("unsupported polling protocol")

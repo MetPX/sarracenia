@@ -165,25 +165,6 @@ class Flow:
                         else:
                             self.plugins[entry_point] = [fn]
 
-            if not (hasattr(plugin, 'registered_as')
-                    and callable(getattr(plugin, 'registered_as'))):
-                continue
-
-            schemes = plugin.registered_as()
-            for schemed_entry_point in sarra.plugin.schemed_entry_points:
-                if not hasattr(plugin, schemed_entry_point):
-                    continue
-
-                fn = getattr(plugin, schemed_entry_point)
-                if not callable(fn):
-                    continue
-
-                for s in schemes:
-                    if not s in self.plugins:
-                        self.plugins[s] = {}
-
-                    self.plugins[s][schemed_entry_point] = fn
-
         #logger.info( 'plugins initialized')
         self.o.check_undeclared_options()
 
@@ -905,9 +886,7 @@ class Flow:
 
             if (self.proto is None) or not self.proto.check_is_connected():
                 logger.debug("%s_transport download connects" % self.scheme)
-                self.o.settings['scheme'] = self.scheme  # TODO this is a hack remove that
-                self.proto = sarra.transfer.Transfer(self.o)
-                del self.o.settings['scheme']  # TODO this is a hack remove that
+                self.proto = sarra.transfer.Transfer(self.o, scheme=self.scheme)
                 logger.debug("HOHO proto %s " % type(self.proto))
                 ok = self.proto.connect()
                 if not ok:
@@ -1031,6 +1010,7 @@ class Flow:
     # generalized get...
     def get(self, msg, remote_file, local_file, remote_offset, local_offset,
             length):
+        logger.debug(f'self.proto={self.proto}, parents={self.proto.__class__.__bases__}')
         if isinstance(self.proto, sarra.plugin.Plugin):
             return self.proto.do_get(msg, remote_file, local_file, remote_offset,
                                      local_offset, length)
@@ -1039,23 +1019,15 @@ class Flow:
                                   local_offset, length)
 
     # generalized put...
-    def put(self,
-            msg,
-            local_file,
-            remote_file,
-            local_offset=0,
-            remote_offset=0,
-            length=0):
-
-        scheme = urllib.parse.urlparse(msg['baseUrl']).scheme
-        if (hasattr(self,'plugins') and ( 'do_put' in self.plugins )) and \
-            ( scheme in self.plugins['do_put'] ):
-            return self.plugins[scheme]['do_put'](msg, local_file, remote_file,
-                                                  local_offset, remote_offset,
-                                                  length)
+    def put(self, msg, local_file, remote_file, local_offset=0,
+            remote_offset=0, length=0):
+        logger.debug(f'self.proto={self.proto}, parents={self.proto.__class__.__bases__}')
+        if isinstance(self.proto, sarra.plugin.Plugin):
+            return self.proto.do_put(msg, local_file, remote_file,
+                                     local_offset, remote_offset, length)
         else:
-            return self.proto.put(local_file, remote_file, local_offset,
-                                  remote_offset, length)
+            return self.proto.put(local_file, remote_file,
+                                  local_offset, remote_offset, length)
 
     # generalized send...
     def send(self, msg, options):
@@ -1088,9 +1060,7 @@ class Flow:
 
             if (self.proto is None) or not self.proto.check_is_connected():
                 logger.debug("%s_transport send connects" % self.scheme)
-                self.o.settings['scheme'] = self.scheme  # TODO this is a hack remove that
-                self.proto = sarra.transfer.Transfer(self.o)
-                del self.o.settings['scheme']  # TODO this is a hack remove that
+                self.proto = sarra.transfer.Transfer(self.o, scheme=self.scheme)
                 ok = self.proto.connect()
                 if not ok: return False
                 self.cdir = None

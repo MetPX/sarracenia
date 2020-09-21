@@ -61,9 +61,9 @@ logger = logging.getLogger(__name__)
 #     opt   options.bufsize
 
 
-class File(Transfer, proto=['file']):
-    def __init__(self, options):
-        super(File, self).__init__(options)
+class File(Transfer, schemes=['file']):
+    def __init__(self, options, scheme='file'):
+        super(File, self).__init__(options, scheme=scheme)
         logger.debug("sr_file __init__")
         self.cwd = None
 

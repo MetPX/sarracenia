@@ -73,10 +73,10 @@ logger = logging.getLogger(__name__)
 #     opt   options.bufsize
 
 
-class Sftp(Transfer, proto=['sftp', 'scp', 'ssh', 'fish']):
-    def __init__(self, options):
+class Sftp(Transfer, schemes=['sftp', 'scp', 'ssh', 'fish']):
+    def __init__(self, options, scheme='sftp'):
         logger.debug("sr_sftp __init__")
-        super(Sftp, self).__init__(options)
+        super(Sftp, self).__init__(options, scheme=scheme)
 
         # sftp command times out after 20 secs
         # this setting is different from the computed timeout (protocol)

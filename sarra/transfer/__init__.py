@@ -86,8 +86,18 @@ def alarm_set(time):
 # sr_proto : one place for throttle, onfly checksum, buffer io timeout
 # =========================================
 
+class Singleton(type):
+    _instances = {}
 
-class Transfer:
+    def __call__(cls, *args, **kwargs):
+        logger.info(f'cls={cls}, args={args}, kwargs={kwargs}')
+        obj = super(Singleton, cls).__call__(*args, **kwargs)
+        if obj.__class__ not in cls._instances:
+            cls._instances[obj.__class__] = obj
+        return cls._instances[obj.__class__]
+
+
+class Transfer(metaclass=Singleton):
     """
     v2: sarra.sr_proto -> v3: sarra.transfer
     ============================================================
@@ -123,24 +133,37 @@ class Transfer:
 
     """
     class UnknownProtocolException(Exception): pass
-    _registry = {}
+    _classes = {}
 
     @classmethod
-    def __init_subclass__(cls, /, **kwargs):
-        proto = kwargs.pop('proto', None)
-        super().__init_subclass__(**kwargs)
-        for p in proto:
-            cls._registry[p] = cls
+    def __init_subclass__(cls, *args, **kwargs):
+        logger.debug(f'cls={cls}, args={args}, kwargs={kwargs}')
+        schemes = kwargs.pop('schemes')
+        super().__init_subclass__(*args, **kwargs)
+        for scheme in schemes:
+            cls._classes[scheme] = cls
 
-    def __new__(cls, options):
-        subclass = Transfer._registry.get(options.settings['scheme'])
-        if subclass:
-            return object.__new__(subclass)
+    def __new__(cls, *args, **kwargs):
+        logger.info(f'cls={cls}, args={args}, kwargs={kwargs}')
+        if cls != Transfer:
+            subclass = cls
+        elif kwargs.get('scheme') in Transfer._classes:
+            scheme = kwargs.pop('scheme')
+            subclass = Transfer._classes[scheme]
+        elif kwargs.get('scheme'):
+            raise Transfer.UnknownProtocolException(f"Unknown protocol from scheme={kwargs.get('scheme')}, "
+                                                    f"_classes={Transfer._classes}")
         else:
-            raise Transfer.UnknownProtocolException(f"Unknown protocol provided proto={options.settings['scheme']}")
+            # Fixme had to add this check because scheme needed to be a kwargs as it is used as an optional args
+            #  but it is in fact required if we want to choose the right implementation of a Transfer tool
+            #  based on the procotol (scheme)
+            raise TypeError(f"cannot initialize a Transfer class without a scheme")
+        return object.__new__(subclass)
 
-    def __init__(self, options):
+    def __init__(self, options, scheme=None):
+        logger.debug(f'self={self}, options={options}, scheme={scheme}')
         self.o = options
+        self.scheme = scheme
         self.sumalgo = None
         self.checksum = None
         self.data_sumalgo = None

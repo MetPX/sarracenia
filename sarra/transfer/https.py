@@ -59,10 +59,10 @@ logger = logging.getLogger(__name__)
 # credentials()
 
 
-class Https(Transfer, proto=['http', 'https']):
-    def __init__(self, options):
+class Https(Transfer, schemes=['http', 'https']):
+    def __init__(self, options, scheme='http'):
         logger.debug("Https __init__")
-        super().__init__(options)
+        super().__init__(options, scheme=scheme)
         self.connected = False
         self.http = None
         self.details = None
@@ -126,7 +126,6 @@ class Https(Transfer, proto=['http', 'https']):
 
         if self.connected: self.close()
 
-        self.connected = False
         self.destination = self.o.destination
         self.timeout = self.o.timeout
 

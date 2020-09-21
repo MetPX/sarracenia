@@ -68,12 +68,9 @@ class Plugin:
     @abstractmethod
     def __init__(self, options):
         self.o = options
-
         logging.basicConfig(format=self.o.logFormat,
                             level=getattr(logging, self.o.logLevel.upper()))
-
-        #logger.info( 'intializing %s' % self.name )
-
+        logger.debug(f'self.o={self.o}')
 
 # FIXME:
 #    @abstractmethod
@@ -255,21 +252,19 @@ class Plugin:
 
 
 def load_library(factory_path, options):
-
-    #logger.debug( 'load_plugin: %s' % factory_path )
+    logger.debug(f'factory_path={factory_path}, options={options}')
     packagename, classname = factory_path.rsplit('.', 1)
     module = importlib.import_module(packagename)
     class_ = getattr(module, classname)
 
     if hasattr(options, 'settings'):
-        opt = copy.deepcopy(options)
+        # opt = copy.deepcopy(options)
+        opt = options
         # strip off the class prefix.
         if factory_path in options.settings:
             for s in options.settings[factory_path]:
                 setattr(opt, s, options.settings[factory_path][s])
     else:
         opt = options
-    opt.settings['scheme'] = packagename.split("_")[-1]  # TODO this is a hack remove that
     plugin = class_(opt)
-    del opt.settings['scheme']  # TODO this is a hack remove that
     return plugin

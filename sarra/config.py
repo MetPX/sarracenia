@@ -810,7 +810,8 @@ class Config:
 
     def parse_file(self, cfg):
         """ add settings in file to self
-       """
+        """
+        logger.debug(f'cfg={cfg}')
         for l in open(cfg, "r").readlines():
             line = l.split()
             if (len(line) < 1) or (line[0].startswith('#')):
@@ -825,7 +826,7 @@ class Config:
                 if (v in convert_to_v3[k]):
                     line = convert_to_v3[k][v]
                     k = line[0]
-                    logger.debug('Converting \"%s\" to v3: \"%s\"' % (l, line))
+                    logger.debug('Converting \"%s\" to v3: \"%s\"' % (l.strip('\n'), line))
 
             line = list(map(lambda x: self._varsub(x), line))
             if len(line) == 1:
@@ -1839,6 +1840,7 @@ def one_config(component, config, isPost=False):
       appdir_stuff can be to override file locations for testing during development.
 
     """
+    logger.debug(f'component={component}, config={config}, isPost={isPost}')
     default_cfg = default_config()
     #default_cfg.override(  { 'program_name':component, 'directory': os.getcwd(), 'accept_unmatched':True, 'no':0 } )
     default_cfg.override({

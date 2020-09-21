@@ -60,10 +60,10 @@ logger = logging.getLogger(__name__)
 #
 
 
-class Ftp(Transfer, proto=['ftp']):
-    def __init__(self, options):
+class Ftp(Transfer, schemes=['ftp']):
+    def __init__(self, options, scheme='ftp'):
         logger.debug("sr_ftp __init__")
-        super().__init__(options)
+        super().__init__(options, scheme=scheme)
         self.connected = False
         self.ftp = None
         self.details = None

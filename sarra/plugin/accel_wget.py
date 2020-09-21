@@ -45,76 +45,68 @@ from sarra.transfer.https import Https
 logger = logging.getLogger(__name__)
 
 
-class ACCEL_WGET(Plugin, Https, proto=['wget']):
-    def __init__(self, options):
+class ACCEL_WGET(Plugin, Https, schemes=['http', 'https']):
+    def __init__(self, options, scheme='http'):
         super().__init__(options)
-        super(Plugin, self).__init__(options)
+        super(Plugin, self).__init__(options, scheme=scheme)
 
         declare_plugin_option('accel_wget_command', 'str')
         declare_plugin_option('accel_wget_threshold', 'size')
         declare_plugin_option('accel_wget_protocol', 'str')
 
     def on_start(self):
-
         if not hasattr(self.o, 'accel_wget_command'):
-            self.o.download_accel_wget_command = ['/usr/bin/wget']
-
+            self.o.accel_wget_command = '/usr/bin/wget'
         if not hasattr(self.o, "accel_wget_threshold"):
-            self.o.accel_wget_threshold = ["1M"]
-
+            self.o.accel_wget_threshold = 1024*1024
         if not hasattr(self.o, "accel_wget_protocol"):
-            self.o.accel_wget_protocol = ["https", "http"]
-
+            self.o.accel_wget_protocol = self.scheme
         if type(self.o.accel_wget_threshold) is list:
             self.o.accel_wget_threshold = sarra.chunksize_from_str(
-                self.o.accel_wget_threshold[0])
+                self.o.accel_wget_threshold)
         elif type(self.o.accel_wget_threshold) is str:
             self.o.accel_wget_threshold = sarra.chunksize_from_str(
                 self.o.accel_wget_threshold)
-
         logger.info(f"accel threshold set to: {self.o.accel_wget_threshold}")
         return True
 
     def on_messages(self, worklist):
-
         for m in worklist.incoming:
             if m['integrity']['method'] in ['link', 'remove']:
                 continue
-            if 'blocks' in m:
-                sz = m['blocks']['size']
-            else:
-                sz = m['size']
-
-            if sz > self.o.accel_wget_threshold:
-                m['baseUrl'] = m['baseUrl'].replace('http', "wget", 1)
-
-            logger.debug("wget sz: %d, threshold: %d download: %s to %s, " % ( \
-                sz, self.o.accel_wget_threshold, m['baseUrl'], m['new_file'] ) )
+            sz = m['blocks']['size'] if 'blocks' in m else m['size']
+            logger.debug("wget sz:%d, threshold: %d download: %s to %s, "
+                         % (sz, self.o.accel_wget_threshold, m['baseUrl'], m['new_file']))
 
     def do_get(self, msg, remote_file, local_file, remote_offset, local_offset,
                length):
         """
         FIXME: this ignores offsets, so it does not work for partitioned files.
       """
-        msg['baseUrl'] = msg['baseUrl'].replace("wget", "http", 1)
-        os.chdir(msg['new_dir'])
+        logger.debug(f'msg={msg}, remote_file={remote_file}, local_file={local_file}, '
+                     f'remove_offset={remote_offset}, local_offset={local_file}, length={length}')
 
-        cmd = self.o.accel_wget_command.split() + [
-            msg['baseUrl'] + os.sep + msg['relPath']
-        ]
-        logger.debug(f"new_dir={msg['new_dir']}, new_file={msg['new_file']}, rel_path={msg['relPath']}, cmd={cmd}")
+        sz = msg['blocks']['size'] if 'blocks' in msg else msg['size']
+        if sz < self.o.accel_wget_threshold:
+            return super().get(remote_file, local_file, remote_offset, local_offset, length)
+        else:
+            os.chdir(msg['new_dir'])
+            cmd = self.o.accel_wget_command.split() + [
+                msg['baseUrl'] + os.sep + msg['relPath']
+            ]
+            logger.debug(f"new_dir={msg['new_dir']}, new_file={msg['new_file']}, rel_path={msg['relPath']}, cmd={cmd}")
 
-        p = subprocess.Popen(cmd)
-        p.wait()
+            p = subprocess.Popen(cmd)
+            p.wait()
 
-        if p.returncode != 0:  # Failed!
+            if p.returncode != 0:  # Failed!
+                if hasattr(self.o, 'reportback') and self.o.reportback:
+                    msg.report_publish(499, 'wget download failed')
+                return 0
+
             if hasattr(self.o, 'reportback') and self.o.reportback:
-                msg.report_publish(499, 'wget download failed')
-            return 0
-
-        if hasattr(self.o, 'reportback') and self.o.reportback:
-            sarra.msg_set_report(msg, 201, 'Downloaded')
-        return Path(msg['new_dir'], msg['new_file']).stat().st_size
+                sarra.msg_set_report(msg, 201, 'Downloaded')
+            return Path(msg['new_dir'], msg['new_file']).stat().st_size
 
 
 """
