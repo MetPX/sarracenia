@@ -46,9 +46,10 @@ logger = logging.getLogger(__name__)
 
 
 class ACCEL_SCP(Plugin, Sftp, schemes=['scp', 'sftp']):
-    def __init__(self, options, scheme='scp'):
+    def __init__(self, options, **kwargs):
         super().__init__(options)
-        super(Plugin, self).__init__(options, scheme=scheme)
+        super(Plugin, self).__init__(options, **kwargs)
+        self.scheme = kwargs.get('scheme') if 'scheme' in kwargs else 'sftp'
 
         declare_plugin_option('accel_scp_command', 'str')
         declare_plugin_option('accel_scp_threshold', 'size')
@@ -61,7 +62,7 @@ class ACCEL_SCP(Plugin, Sftp, schemes=['scp', 'sftp']):
         if not hasattr(self.o, "accel_scp_threshold"):
             self.o.accel_scp_threshold = 10*1024*1024
         if not hasattr(self.o, "accel_scp_protocol"):
-            self.o.accel_scp_protocol = "sftp"
+            self.o.accel_scp_protocol = self.scheme
         if type(self.o.accel_scp_threshold) is list:
             self.o.accel_scp_threshold = sarra.chunksize_from_str(
                 self.o.accel_scp_threshold[0])

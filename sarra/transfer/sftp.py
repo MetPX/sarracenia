@@ -74,9 +74,9 @@ logger = logging.getLogger(__name__)
 
 
 class Sftp(Transfer, schemes=['sftp', 'scp', 'ssh', 'fish']):
-    def __init__(self, options, scheme='sftp'):
+    def __init__(self, options, **kwargs):
         logger.debug("sr_sftp __init__")
-        super(Sftp, self).__init__(options, scheme=scheme)
+        super(Sftp, self).__init__(options, **kwargs)
 
         # sftp command times out after 20 secs
         # this setting is different from the computed timeout (protocol)

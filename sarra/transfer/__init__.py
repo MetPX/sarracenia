@@ -31,22 +31,13 @@
 #
 #
 
-from abc import ABCMeta, abstractmethod
-import calendar, datetime
-from hashlib import md5
-from hashlib import sha512
 import logging
 import os
-import random
 import signal
-import stat
 import sys
 import time
-import urllib
-import urllib.parse
 
-#from sarra.sr_xattr import *
-from sarra import nowflt, timestr2flt
+from sarra import nowflt
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +81,7 @@ class Singleton(type):
     _instances = {}
 
     def __call__(cls, *args, **kwargs):
-        logger.info(f'cls={cls}, args={args}, kwargs={kwargs}')
+        logger.debug(f'cls={cls}, args={args}, kwargs={kwargs}')
         obj = super(Singleton, cls).__call__(*args, **kwargs)
         if obj.__class__ not in cls._instances:
             cls._instances[obj.__class__] = obj
@@ -144,7 +135,7 @@ class Transfer(metaclass=Singleton):
             cls._classes[scheme] = cls
 
     def __new__(cls, *args, **kwargs):
-        logger.info(f'cls={cls}, args={args}, kwargs={kwargs}')
+        logger.debug(f'cls={cls}, args={args}, kwargs={kwargs}')
         if cls != Transfer:
             subclass = cls
         elif kwargs.get('scheme') in Transfer._classes:
@@ -160,10 +151,9 @@ class Transfer(metaclass=Singleton):
             raise TypeError(f"cannot initialize a Transfer class without a scheme")
         return object.__new__(subclass)
 
-    def __init__(self, options, scheme=None):
-        logger.debug(f'self={self}, options={options}, scheme={scheme}')
+    def __init__(self, options, **kwargs):
+        logger.debug(f'self={self}, options={options}, kwargs={kwargs}')
         self.o = options
-        self.scheme = scheme
         self.sumalgo = None
         self.checksum = None
         self.data_sumalgo = None

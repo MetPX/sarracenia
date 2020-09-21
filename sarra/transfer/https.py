@@ -60,9 +60,9 @@ logger = logging.getLogger(__name__)
 
 
 class Https(Transfer, schemes=['http', 'https']):
-    def __init__(self, options, scheme='http'):
+    def __init__(self, options, **kwargs):
         logger.debug("Https __init__")
-        super().__init__(options, scheme=scheme)
+        super().__init__(options, **kwargs)
         self.connected = False
         self.http = None
         self.details = None

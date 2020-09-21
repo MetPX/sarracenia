@@ -62,8 +62,8 @@ logger = logging.getLogger(__name__)
 
 
 class File(Transfer, schemes=['file']):
-    def __init__(self, options, scheme='file'):
-        super(File, self).__init__(options, scheme=scheme)
+    def __init__(self, options, **kwargs):
+        super(File, self).__init__(options, **kwargs)
         logger.debug("sr_file __init__")
         self.cwd = None
 

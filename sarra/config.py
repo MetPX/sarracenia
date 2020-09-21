@@ -937,9 +937,9 @@ class Config:
                     #logger.info('setting v2 option: %s = %s' % (k,v) )
 
     def fill_missing_options(self, component, config):
-        """ 
-         There are default options that apply only if they are not overridden... 
-       """
+        """
+        There are default options that apply only if they are not overridden...
+        """
 
         if hasattr(self, 'suppress_duplicates'):
             if (type(self.suppress_duplicates) is str):

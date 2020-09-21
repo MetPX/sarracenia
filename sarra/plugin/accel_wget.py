@@ -30,25 +30,26 @@ Instead of invoking wget, it will invoke the wget -p command. To the command wil
 See end of file for performance considerations.
 
 """
-
 import logging
 import os
 import subprocess
 from pathlib import Path
 
 import sarra
+import sarra.transfer.sftp
+
 from sarra.plugin import Plugin
 from sarra.config import declare_plugin_option
-import sarra.transfer.sftp
 from sarra.transfer.https import Https
 
 logger = logging.getLogger(__name__)
 
 
 class ACCEL_WGET(Plugin, Https, schemes=['http', 'https']):
-    def __init__(self, options, scheme='http'):
+    def __init__(self, options, **kwargs):
         super().__init__(options)
-        super(Plugin, self).__init__(options, scheme=scheme)
+        super(Plugin, self).__init__(options, **kwargs)
+        self.scheme = kwargs.get('scheme') if 'scheme' in kwargs else 'http'
 
         declare_plugin_option('accel_wget_command', 'str')
         declare_plugin_option('accel_wget_threshold', 'size')
