@@ -60,7 +60,7 @@ class ACCEL_SCP(Plugin, Sftp, schemes=['scp', 'sftp']):
         if not hasattr(self.o, 'accel_scp_command'):
             self.o.accel_scp_command = '/usr/bin/scp'
         if not hasattr(self.o, "accel_scp_threshold"):
-            self.o.accel_scp_threshold = 10*1024*1024
+            self.o.accel_scp_threshold = ['10M']
         if not hasattr(self.o, "accel_scp_protocol"):
             self.o.accel_scp_protocol = self.scheme
         if type(self.o.accel_scp_threshold) is list:
@@ -97,7 +97,7 @@ class ACCEL_SCP(Plugin, Sftp, schemes=['scp', 'sftp']):
             arg2 = msg['new_dir'] + os.sep + msg['new_file']
             # strangely not requiered for arg2 : arg2  = arg2.replace(' ','\ ')
 
-            cmd = self.o.download_accel_scp_command[0].split() + [arg1, arg2]
+            cmd = self.o.accel_scp_command[0].split() + [arg1, arg2]
             logger.info("accel_scp :  %s" % ' '.join(cmd))
 
             p = subprocess.Popen(cmd)
@@ -139,7 +139,7 @@ class ACCEL_SCP(Plugin, Sftp, schemes=['scp', 'sftp']):
             arg2 = netloc + ':' + msg['new_dir'] + os.sep + msg['new_file']
             arg2 = arg2.replace(' ', '\ ')
 
-            cmd = self.o.download_accel_scp_command[0].split() + [arg1, arg2]
+            cmd = self.o.accel_scp_command[0].split() + [arg1, arg2]
             logger.info("accel_scp :  %s" % ' '.join(cmd))
 
             p = subprocess.Popen(cmd)
