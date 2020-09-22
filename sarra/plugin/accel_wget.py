@@ -59,13 +59,13 @@ class ACCEL_WGET(Plugin, Https, schemes=['http', 'https']):
         if not hasattr(self.o, 'accel_wget_command'):
             self.o.accel_wget_command = '/usr/bin/wget'
         if not hasattr(self.o, "accel_wget_threshold"):
-            self.o.accel_wget_threshold = 1024*1024
+            self.o.accel_wget_threshold = ['1M']
         if not hasattr(self.o, "accel_wget_protocol"):
             self.o.accel_wget_protocol = self.scheme
-        if type(self.o.accel_wget_threshold) is list:
+        if isinstance(self.o.accel_wget_threshold, list):
             self.o.accel_wget_threshold = sarra.chunksize_from_str(
-                self.o.accel_wget_threshold)
-        elif type(self.o.accel_wget_threshold) is str:
+                self.o.accel_wget_threshold[0])
+        elif isinstance(self.o.accel_wget_threshold, str):
             self.o.accel_wget_threshold = sarra.chunksize_from_str(
                 self.o.accel_wget_threshold)
         logger.info(f"accel threshold set to: {self.o.accel_wget_threshold}")
@@ -83,12 +83,11 @@ class ACCEL_WGET(Plugin, Https, schemes=['http', 'https']):
                length):
         """
         FIXME: this ignores offsets, so it does not work for partitioned files.
-      """
+        """
         logger.debug(f'msg={msg}, remote_file={remote_file}, local_file={local_file}, '
                      f'remove_offset={remote_offset}, local_offset={local_file}, length={length}')
 
-        sz = msg['blocks']['size'] if 'blocks' in msg else msg['size']
-        if sz < self.o.accel_wget_threshold:
+        if self.get_size(msg) < self.o.accel_wget_threshold:
             return super().get(remote_file, local_file, remote_offset, local_offset, length)
         else:
             os.chdir(msg['new_dir'])
@@ -108,6 +107,12 @@ class ACCEL_WGET(Plugin, Https, schemes=['http', 'https']):
             if hasattr(self.o, 'reportback') and self.o.reportback:
                 sarra.msg_set_report(msg, 201, 'Downloaded')
             return Path(msg['new_dir'], msg['new_file']).stat().st_size
+
+    def get_size(self, msg):
+        if 'blocks' in msg:
+            return msg['blocks']['size']
+        else:
+            return msg['size']
 
 
 """

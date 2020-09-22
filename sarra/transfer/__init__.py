@@ -124,7 +124,7 @@ class Transfer(metaclass=Singleton):
 
     """
     class UnknownProtocolException(Exception): pass
-    _classes = {}
+    _subclasses = {}
 
     @classmethod
     def __init_subclass__(cls, *args, **kwargs):
@@ -132,18 +132,18 @@ class Transfer(metaclass=Singleton):
         schemes = kwargs.pop('schemes')
         super().__init_subclass__(*args, **kwargs)
         for scheme in schemes:
-            cls._classes[scheme] = cls
+            Transfer._subclasses[scheme] = cls
 
     def __new__(cls, *args, **kwargs):
         logger.debug(f'cls={cls}, args={args}, kwargs={kwargs}')
         if cls != Transfer:
             subclass = cls
-        elif kwargs.get('scheme') in Transfer._classes:
+        elif kwargs.get('scheme') in Transfer._subclasses:
             scheme = kwargs.pop('scheme')
-            subclass = Transfer._classes[scheme]
+            subclass = Transfer._subclasses[scheme]
         elif kwargs.get('scheme'):
             raise Transfer.UnknownProtocolException(f"Unknown protocol from scheme={kwargs.get('scheme')}, "
-                                                    f"_classes={Transfer._classes}")
+                                                    f"_classes={Transfer._subclasses}")
         else:
             # Fixme had to add this check because scheme needed to be a kwargs as it is used as an optional args
             #  but it is in fact required if we want to choose the right implementation of a Transfer tool

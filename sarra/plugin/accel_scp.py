@@ -113,8 +113,10 @@ class ACCEL_SCP(Plugin, Sftp, schemes=['scp', 'sftp']):
             return Path(msg['new_dir'], msg['new_file']).stat().st_size
 
     def get_size(self, msg):
-        sz = msg['blocks']['size'] if 'blocks' in msg else msg['size']
-        return sz
+        if 'blocks' in msg:
+            return msg['blocks']['size']
+        else:
+            return msg['size']
 
     def do_put(self, msg, local_file, remote_file, local_offset, remote_offset,
                length):
