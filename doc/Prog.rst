@@ -10,7 +10,9 @@
 ---------------------
 
 .. warning::
-  **FIXME**: Missing sections are highlighted by **FIXME**.  What is here should be accurate!
+  **FIXME**: Missing sections are highlighted by **FIXME**.  
+  **FIXME**: NOT YET UPDATED for V3. bits here and there are.
+  **FIXME**: V3 not documented, but exists.
 
 .. Contents::
 
@@ -47,6 +49,12 @@ Examples of things that would be fun to do with plugins:
   subscribers with an on_message plugin to compare a file that has been locally
   uncompressed to an upstream file offered in compressed form.
 
+- add Bittorrent, S3, IPFS as transfer protocols (sub-classing Transfer)
+
+- add additional message protocols (sub-classing Moth)
+
+- additional checksums, subclassing Integrity.
+
 
 ------------
 Introduction
@@ -63,82 +71,59 @@ can process it.
 Often, the purpose of automated downloading is to have other code ingest
 the files and perform further processing. Rather than having a separate
 process look at a file in a directory, one can insert customized
-processing at various points.
+processing at various points in the flow.
 
 Examples are available using the list command::
 
-  blacklab% sr_subscribe list
-  
-  packaged plugins: ( /home/peter/src/sarracenia/sarra/plugins ) 
-        bad_plugin1.py       bad_plugin2.py       bad_plugin3.py                cp.py     destfn_sample.py 
-        download_cp.py       download_dd.py      download_scp.py     download_wget.py          file_age.py 
-         file_check.py          file_log.py       file_rxpipe.py        file_total.py           harness.py 
-           hb_cache.py            hb_log.py         hb_memory.py          hb_pulse.py         html_page.py 
-           line_log.py         line_mode.py               log.py         msg_2http.py        msg_2local.py 
-     msg_2localfile.py     msg_auditflow.py     msg_by_source.py       msg_by_user.py         msg_delay.py 
-         msg_delete.py      msg_download.py          msg_dump.py        msg_fdelay.py msg_filter_wmo2msc.py 
-   msg_from_cluster.py     msg_hour_tree.py           msg_log.py     msg_print_lag.py   msg_rename4jicc.py 
-     msg_rename_dmf.py msg_rename_whatfn.py       msg_renamer.py msg_replace_new_dir.py          msg_save.py 
-       msg_skip_old.py        msg_speedo.py msg_sundew_pxroute.py    msg_test_retry.py   msg_to_clusters.py 
-          msg_total.py        part_check.py  part_clamav_scan.py        poll_pulse.py       poll_script.py 
-     post_hour_tree.py          post_log.py    post_long_flow.py     post_override.py   post_rate_limit.py 
-         post_total.py         watch_log.py              wget.py 
-  
-  configuration examples: ( /home/peter/src/sarracenia/sarra/examples/subscribe ) 
-              all.conf     all_but_cap.conf            amis.conf            aqhi.conf             cap.conf 
-       cclean_f91.conf       cdnld_f21.conf       cfile_f44.conf        citypage.conf       clean_f90.conf 
-             cmml.conf cscn22_bulletins.conf         ftp_f70.conf            gdps.conf         ninjo-a.conf 
-            q_f71.conf           radar.conf            rdps.conf            swob.conf           t_f30.conf 
-       u_sftp_f60.conf 
-  user plugins: ( /home/peter/.config/sarra/plugins ) 
-          destfn_am.py         destfn_nz.py       msg_tarpush.py              wget.py 
-  
-  general: ( /home/peter/.config/sarra ) 
-            admin.conf     credentials.conf         default.conf
-  
-  user configurations: ( /home/peter/.config/sarra/subscribe )
-       cclean_f91.conf       cdnld_f21.conf       cfile_f44.conf       clean_f90.conf         ftp_f70.conf 
-            q_f71.conf           t_f30.conf      u_sftp_f60.conf 
-  
-  blacklab% 
+
+FIXME: missing command to list plugins
+
 
 The packages plugins are shown in the first grouping of available ones. Many of them have arguments which
-are documented by listing them. For example:
+are documented by listing them. In a configuration file, one might have the line::
+
+    flow_plugin sarra.plugin.msg.log.Log
+
+That line cause Sarracenia to look in the Python search path for a class like:
 
 .. code:: python
 
-  blacklab% sr_subscribe list msg_log.py
-  #!/usr/bin/python3
-  
-  """
-    the default on_msg handler for subscribers.  Prints a simple notice.
-  
-  """
-  
-  class Msg_Log(object):  # Mandatory: declare a class, with a capital letter in it.
-  
-      def __init__(self,parent):  # Mandatory: declare a constructor.
-          parent.logger.debug("msg_log initialized")
-            
-      def on_message(self,parent):  # Mandatory: Declare an function to be called when messages are accepted.
-          msg = parent.msg
-          parent.logger.info("msg_log received: %s %s%s topic=%s lag=%g %s" % \
-             tuple( msg.notice.split()[0:3] + [ msg.topic, msg.get_elapse(), msg.hdrstr ] ) )
-          return True
-  
-  msg_log = Msg_Log(self)   # Mandatory: Declare a variable of the class.
-  
-  self.on_message = msg_log.on_message # Mandatory: assign the function to the entry point.
+  blacklab% cat sarra/plugin/msg/log.py
+
+  from sarra.plugin import Plugin
+  import logging
+
+  logger = logging.getLogger(__name__)
+
+
+  class Log(Plugin):
+    def __init__(self, options):
+
+        # FIXME: should a logging module have a loglevel setting?
+        #        just put in a cookie cutter for now...
+        if hasattr(options, 'loglevel'):
+            logger.setLevel(getattr(logging, options.loglevel.upper()))
+        else:
+            logger.setLevel(logging.INFO)
+
+    def on_messages(self, worklist):
+
+        for msg in worklist.incoming:
+            logger.info("received: %s " % msg)
+
   
   blacklab% 
 
 
+FIXME: v2 stuff must be replaced:
 To modify it, copy it from the examples directory installed as part of the package to the editable preference one::
 
+  FIXME:
   blacklab% sr_subscribe add msg_log.py
 
 And then modify it for the purpose::
 
+  FIXME:
   blacklab% sr_subscribe edit msg_log.py
 
 The msg_log.py plugin above is a single entry one. For single entry point plugins, consult bad_plugins `1 <../sarra/plugins/bad_plugin1.py>`_, `2 <../sarra/plugins/bad_plugin2.py>`_, and `3 <../sarra/plugins/bad_plugin3.py>`_ 
@@ -163,11 +148,85 @@ One can also see which plugins are active in a configuration by looking at the m
    2018-01-08 01:21:34,764 [INFO]      on_part: 
    2018-01-08 01:21:34,764 [INFO]      on_file: File_Log 
    2018-01-08 01:21:34,764 [INFO]      on_post: Post_Log 
-   2018-01-08 01:21:34,764 [INFO]      on_heartbeat: Hb_Log Hb_Memory Hb_Pulse 
+   2018-01-08 01:21:34,764 [INFO]      on_housekeeping: Hb_Log Hb_Memory Hb_Pulse 
    .
    .
    .
    blacklab% 
+
+
+
+Why v3 API should be used whenever possible
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* uses importlib from python, much more standard way to register plugins.
+  now syntax errors will be picked up just like any other python module being imported,
+  with a reasonable error message.
+
+* no strange decoration at end of plugins (self.plugin = , etc... just plain python.)
+  Entirely standard python modules, just with known methods/functions
+
+* The strange choice of *parent* as a place for storing settings is puzzling to people.
+  *parent* instance variable becomes *options*,  *self.parent* becomes *self.o*
+
+* plural event callbacks replace singular ones.  on_messages replaces on_message
+
+* messages are just python dictionaries. fields defined by json.loads( v03 payload format )
+  messages only contain the actual fields, no settings or other things...
+  plain data.
+
+* callbacks move messages between worklists. A worklist is just a list of messages. There are four:
+
+  * worklist.incoming -- messages yet to be processed.
+  * worklist.rejected -- message which are not to be further processed.
+  * worklist.ok -- messages which have been successfully processed.
+  * worklist.retry   -- messages for which processing was attempted, but it failed.
+
+
+With this API, dealing with different numbers of input and output files becomes much
+more natural, when unpacking a tar file, messages for the unpacked files can be appended
+to the ok list, so they will be posted when the flow arrives there.
+Similarly a large number of small files may be bucketed together to make one
+large file. so rather than transferring all the incoming files to the list,
+only the resulting tar bucket will be placed in ok.
+
+The *import* mechanism described below provides a straightforward means
+of extending Sarracenia by creating children of the main classes 
+
+* moth (messages organized in topic hierarchies) for dealing with new message protocols.
+* transfer ... for adding new protocols for file transfers.
+* flow .. new components with different flow from the built-in ones.
+
+In v2, there was no equivalent extension mechanism, and adding protocols
+would have required re-working of core code.
+
+
+Importing extensions
+~~~~~~~~~~~~~~~~~~~~
+
+Developers can add additional Transfer protocols for messages or 
+data transport using the *import* directive to make the new class
+available::
+
+  import torr
+
+would be a reasonable name for a Transfer protocol to retrieve
+resources with bittorrent protocol. A skeleton of such a thing
+would look like this:: 
+
+
+  import logging
+
+  logger = logging.getLogger(__name__)
+
+  import sarra.transfer
+
+  class torr(sarra.transfer.Transfer):
+      pass
+
+  logger.warning("loading")
+
+
 
 
 --------------------
@@ -232,7 +291,7 @@ In the above message, logger.info is used, indicating an informative message.
 Another useful attribute available in parent is 'msg', which has all the attributes
 of the message being processed.  All of the headers from the message, as defined
 in the `sr_post(1) <sr_post.1.rst>` configuration file, are available to the plugin,
-such as the message checksum as *parent.msg.headers.sum*.  Consult the `Variables Available`_
+such as the message checksum as *msg['headers.sum*.  Consult the `Variables Available`_
 section for an exhaustive list.  Generally, it is best to output only debug log
 messages in the __init__ routine for a plugin, because it is executed every time an
 *sr status* command is run, which can rapidly become unwieldy. 
@@ -248,66 +307,57 @@ Variables in Messages
 plugins, receive parent as a parameter.  parameter.msg is the message
 being processed. variables variables most used:
 
-*parent.msg.exchange*  
+*msg['exchange']*  
   The exchange through which the message is being posted or consumed.
 
-*parent.msg.headers[ 'headername' ]*  
-  The (AMQP) headers set for a file, accessible as python dictionary strings.
-
-  Note that headers are limited by the AMQP protocol to 255 bytes, and will be truncated if
-  application code creates values longer than that.
-
-*parent.msg.isPulse*
-  If this is a Pulse message (not a post or a report.)
-
-*parent.msg.isRetry*
+*msg['isRetry']*
   If this is a subsequent attempt to send or download a message.
 
-*parent.msg.new_dir*
-  The directory which will contain *parent.msg.new_file*
+*msg['new_dir']*
+  The directory which will contain *msg['new_file']*
 
-*parent.msg.new_file*
-  A popular variable in on_file and on_part plugins is: *parent.msg.new_file*,
+*msg['new_file']*
+  A popular variable in on_file and on_part plugins is: *msg['new_file*,
   giving the file name the downloaded product has been written to.  When the
   same variable is modified in an on_message plugin, it changes the name of
   the file to be downloaded. Similarly another often used variable is 
   *parent.new_dir*, which operates on the directory to which the file
   will be downloaded.
 
-*parent.msg.pubtime*
+*msg['pubtime']*
   The time the message was originally inserted into the network (first field of a notice.)
 
-*parent.msg.baseurl*
+*msg['baseurl']*
   The root URL of the publication tree from which relative paths are constructed.
 
-*parent.msg.relpath*
+*msg['relpath']*
   The relative path from the baseURL of the file.
   concatenating the two gives the complete URL.
 
-*parent.msg.notice*
+*msg['notice']*
   The body of the message being processed. see `sr_post(7) <sr_post.7.rst>`_
   a space-separated tuple of: pubtime,baseurl,and relpath, 
   If parts here are modified, one must modify extracted fields for full effect.
 
-*parent.msg.partstr*
-  The partition string ( same as parent.msg.headers['parts'] )
+*msg['partstr']*
+  The partition string ( same as msg['headers['parts'] )
 
-*parent.msg.sumstr*
-  The checksum string ( same as parent.msg.headers['sum'] ) indicating the checksum
+*msg['sumstr']*
+  The checksum string ( same as msg['headers['sum'] ) indicating the checksum
   algorithm used, and the 
 
-*parent.msg.topic*
+*msg['topic']*
   the AMQP topic of the message.
 
-*parent.msg.url*
+*msg['url']*
   The equivalent url after it has been parsed with urlparse
   (see Python3 documentation of urlparse for detailed usage). This gives access
-  to, for example, *parent.msg.url.hostname* for the remote host from which a file is to be obtained,
-  or *parent.msg.url.username* for the account to use, parent.url.path gives the path on the
+  to, for example, *msg['url.hostname* for the remote host from which a file is to be obtained,
+  or *msg['url.username* for the account to use, parent.url.path gives the path on the
   remote host.
 
-*parent.msg.urlstr*
-  There is also parent.msg.urlstr which is the completed download URL of the file,
+*msg['urlstr']*
+  There is also msg['urlstr which is the completed download URL of the file,
 
 
 These are the variable which are most often of interest, but many other 
@@ -320,28 +370,32 @@ Accessing Options
 -----------------
 
 The settings resulting from parsing the configuration files are also readily available.
-Plugins can define their own options by calling parent.declare_option( 'name_of_option' ).
-Options so declared just become instance variables in parent.
+Plugins can define their own options by calling::
 
-All the built-in options are similarly processing.  If consult the `sr_subscribe(1) <sr_subscribe.1.rst>`_
+   FIXME: api incomplete.
+   Config.declare_plugin_option( 'name_of_option', kind, default?  )
+
+Options so declared just become instance variables in the options passed to init.
+By convention, plugins set self.o to contain the options passed at init time, so that 
+all the built-in options are similarly processing.  If consult the `sr_subscribe(1) <sr_subscribe.1.rst>`_
 manual page, and most of the options will have a corresponing instance variable.
 
 Some examples:
 
-*parent.base_dir*
+*self.o.baseDir*
   the base directory for where files are when consuming a post.
 
-*parent.caching*
+*self.o.caching*
   Numerical value indicating the caching lifetime (how old entries should be before they age out.)
   Value of 0 indicates caching is disabled.
 
-*parent.inflight*
+*self.o.inflight*
   The current setting of *inflight* (see `Delivery Completion <sr_subscribe.1.rst#Delivery%20Completion%20(inflight)>`_
 
-*parent.overwrite*
+*self.o.overwrite*
   setting which controls whether to files already downloaded should be overwritten unconditionally.
 
-*parent.discard*
+*self.o.discard*
   Whether files should be removed after they are downloaded.
 
 
@@ -368,10 +422,10 @@ a given routine should be called.
 |                   |                                                    |
 |                   | download msg.url -> msg.new_dir / msg.new_file     |
 |                   |                                                    |
-|                   | interpret parent.inflight                          |
-|                   | interpret parent.preserve_mode                     |
-|                   | interpret parent.preserve_ownership (if root)      |
-|                   | interpret parent.parts/partflg                     |
+|                   | interpret self.o.inflight                          |
+|                   | interpret self.o.preserve_mode                     |
+|                   | interpret self.o.preserve_ownership (if root)      |
+|                   | interpret self.o.parts/partflg                     |
 |                   |                                                    |
 |                   | plugin must interpret all of the above.            |
 |                   |                                                    |
@@ -446,7 +500,7 @@ a given routine should be called.
 |                   |                                                    |
 |                   |                                                    |
 +-------------------+----------------------------------------------------+
-|                   | change parent.msg.new_file to taste.               |
+|                   | change msg['new_file'] to taste.                   |
 | destfn_script     | called when renaming the file from inflight to     |
 |                   | permanent name.                                    |
 |                   |                                                    |
@@ -465,7 +519,7 @@ a given routine should be called.
 |                   |                                                    |
 +-------------------+----------------------------------------------------+
 |                   | when a part of a file is completely received.      |
-| on_part           | it is in parent.msg.new_dir / parent.msg.new_file  |
+| on_part           | it is in msg['new_dir'] / msg['new_file']          |
 |                   |                                                    |
 |                   | return False to stop further processing.           |
 |                   | return True to proceed                             |
@@ -476,7 +530,7 @@ a given routine should be called.
 |                   |                                                    |
 +-------------------+----------------------------------------------------+
 |                   | All fields of parent.msg ready to be posted.       |
-| on_post           | Can add parent.msg.headers[ ]                      |
+| on_post           | Can add headers to msg                             |
 |                   | return False to prevent posting.                   |
 |                   | return True to proceed                             |
 |                   |                                                    |
@@ -485,14 +539,14 @@ a given routine should be called.
 |                   |                                                    |
 |                   |                                                    |
 +-------------------+----------------------------------------------------+
-|                   | Called every heartbeat interval (several minutes)  |
+|                   | Called every housekeeping interval (minutes)       |
 |                   | used to clean cache, check for occasional issues.  |
 |                   | manage retry queues.                               |
-| on_heartbeat      |                                                    |
+| on_housekeeping   |                                                    |
 |                   | return False to abort further processing           |
 |                   | return True to proceed                             |
 |                   |                                                    |
-|                   | Examples:  hb_* in the examples directory          |
+|                   | Examples:  hk_* in the examples directory          |
 |                   |                                                    |
 |                   |                                                    |
 +-------------------+----------------------------------------------------+
@@ -621,7 +675,7 @@ provided with sarracenia::
           self.rxpipe = open( parent.file_rxpipe_name[0], "w" )
 
       def on_file(self, parent):
-          self.rxpipe.write( parent.msg.new_file + "\n" )
+          self.rxpipe.write( msg['new_file + "\n" )
           self.rxpipe.flush()
           return None
 
@@ -845,8 +899,8 @@ a plugin script can access it as *parent.xx*  (e.g. *parent.queue_name* )::
 No thought has yet been given to plugin compatibility across versions.  Unclear how much of
 this state will vary over time.  Similar to program configuration settings, all of the fields
 involved in processing individual messages are available in the parent.msg object.  A similar
-dump to the above is here (e.g of a Python scripts can use *parent.msg.partsr* ,
-and/or *parent.msg.header.parts*  in their code)::
+dump to the above is here (e.g of a Python scripts can use *msg['partsr* ,
+and/or *msg['header.parts*  in their code)::
 
 
  2016-01-14 17:13:01,649 [INFO] message =
@@ -1081,7 +1135,7 @@ local file is sufficient::
 on_message is a scripting hook, exactly like on_file, that allows
 specific processing to be done on receipt of a message.  A message will
 usually correspond to a file, but for large files, there will be one
-message per part. One can use the parent.msg.partstr to find out which part
+message per part. One can use the msg['partstr to find out which part
 you have (See `sr_post.1 <sr_post.1.rst>`_ for details on partstr encoding.
 
 Ensure the on_message plugin returns 'False' to prevent downloading.

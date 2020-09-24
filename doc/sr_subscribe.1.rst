@@ -316,15 +316,15 @@ Settings in an individual .conf file are read in after the default.conf
 file, and so can override defaults. Options specified on
 the command line override configuration files.
 
-plugin options
-~~~~~~~~~~~~~~
+flow_plugin options
+~~~~~~~~~~~~~~~~~~~
 
 Sarracenia makes extensive use of small python code snippets that customize
 processing called *plugins.* Plugins define and use additional settings.
 For the most pythonic experience one should use the *import* option.
 For example::
 
-  import sarra.lib.msg.log.Log
+  flow_plugin sarra.plugin.msg.log.Log
 
 The log.py file included in the package is like this::
 
@@ -340,9 +340,45 @@ The log.py file included in the package is like this::
             logger.info( "msg/log received: %s " % msg )
         return worklist
 
+It's a normal python class, declared as a child of the self.plugin.Plugin
+type.  The methods (function names) in the plugin describe when
+those routines will be called. For more details consult the 
+`Programmer's Guide <Prog.rst>`_
+
 To add special processing of messages, create a module in the python
-path, and have it include entry points. One can also use *no-import*
-to remove a library that is imported by default.
+path, and have it include entry points. 
+
+Importing Extensions
+~~~~~~~~~~~~~~~~~~~~
+
+The *import* option works in a way familiar to Python developers,
+Making them available for use by the Sarracenia core, or flow_plugins.
+Developers can add additional protocols for messages or 
+file transfer.  For example::
+
+  import torr
+
+would be a reasonable name for a Transfer protocol to retrieve
+resources with bittorrent protocol. A skeleton of such a thing
+would look like this:: 
+
+
+  import logging
+
+  logger = logging.getLogger(__name__)
+
+  import sarra.transfer
+
+  class torr(sarra.transfer.Transfer):
+      pass
+
+  logger.warning("loading")
+
+For more details on implementing extensions, consult the
+`Programmer's Guide <Prog.rst>`_
+
+Deprecated v2 plugins
+~~~~~~~~~~~~~~~~~~~~~
 
 There is and older (v2) style of plugins as well. That are usually 
 prefixed with the name of the plugin::
@@ -353,7 +389,30 @@ prefixed with the name of the plugin::
   on_message msg_to_clusters
 
 A setting 'msg_to_clusters' is needed by the *msg_to_clusters* plugin
-referenced in the *on_message*
+referenced in the *on_message* the v2 plugins are a little more
+cumbersome to write. They are included here for completeness, but
+people should use version 3 (either flow_plugins, or extensions
+discussed next) when possible.
+
+Reasons to use newer style plugins:
+
+* Support for running v2 plugins is accomplished using a flow_plugin
+  called v2wrapper. It performs a lot of processing to wrap up
+  the v3 data structures to look like v2 ones, and then has
+  to propagate the changes back. It's a bit expensive.
+
+* newer style extensions are ordinary python modules, unlike
+  v2 ones which require minor magic incantations.
+
+* when a v3 (flow_plugin or imported) module has a syntax error,
+  all the tools of the python interpreter apply, providing
+  a lot more feedback is given to the coder.
+
+* v3 api is strictly more powerful than v2 working on groups
+  of messages, rather than individual ones.
+
+Another reason is that 
+
 
 Environment Variables
 ~~~~~~~~~~~~~~~~~~~~~
@@ -365,22 +424,6 @@ of an environment variable, then they can be set in configuration files::
   declare env HTTP_PROXY=localhost
 
 
-Choosing an alternate client library 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Sarracenia now uses amqp_ module as its default AMQP client library which is provided by the installation.
-This library uses AMQP 0-9-1 standard and it replaces amqplib which uses AMQP 0-8. However, if the user
-need to use another client library, there is 2 options which are mutually exclusive (they cannot be used together):
-
-.. _amqp: https://pypi.org/project/amqp/
-
-- **use_amqplib [<boolean>]**
-- **use_pika [<boolean>]**
-
-In the cases where the user want to enable one option, he will first need to install the module in 
-his python environment, whether it's amqplib or pika.
-
-    
 LOGS and MONITORING
 -------------------
 
