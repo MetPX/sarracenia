@@ -396,10 +396,8 @@ class sr_GlobalState:
                                 self.states[c][cfg]['instances_expected'] = 0
                             elif self.configs[c][cfg]['instances'] == 0:
                                 self.states[c][cfg]['instances_expected'] = 0
-                        if c[0] == 'c':
-                            self.states[c][cfg]['instances_expected'] = 1
-                        else:
-                            self.states[c][cfg]['instances_expected'] = 0
+
+                        self.states[c][cfg]['instances_expected'] = 1
                         self.states[c][cfg]['has_state'] = False
                         self.states[c][cfg]['retry_queue'] = 0
 
@@ -768,7 +766,12 @@ class sr_GlobalState:
                             'instances_expected']:
                         # print( "%s/%s observed_instances: %s expected: %s" % \
                         #   ( c, cfg, observed_instances, self.states[c][cfg]['instances_expected'] ) )
-                        self.configs[c][cfg]['status'] = 'partial'
+                        if (c == 'post') and (
+                            ('sleep' not in self.states[c][cfg])
+                                or self.states[c][cfg]['sleep'] <= 0):
+                            self.configs[c][cfg]['status'] = 'stopped'
+                        else:
+                            self.configs[c][cfg]['status'] = 'partial'
                     elif observed_instances == 0:
                         self.configs[c][cfg]['status'] = 'stopped'
                     else:
@@ -1646,7 +1649,68 @@ class sr_GlobalState:
             print('\t\t%s : %s %d' % (c, cfg, i))
 
     def status(self):
-        """ Printing statuses for each component/configs found
+        """ v3 Printing prettier statuses for each component/configs found
+        """
+        print("%-40s %-10s %5s %5s %5s %5s" %
+              ("Component/Config", "State", "Run", "Miss", "Exp", "Retry"))
+        print("%-40s %-10s %5s %5s %5s %5s" %
+              ("----------------", "-----", "---", "----", "---", "-----"))
+        configs_running = 0
+        missing_state_files = 0
+
+        for c in sorted(self.configs):
+            for cfg in sorted(self.configs[c]):
+                f = c + os.sep + cfg
+                if f not in self.filtered_configurations:
+                    continue
+                if self.configs[c][cfg]['status'] == 'include':
+                    continue
+
+                if not (c in self.states and cfg in self.states[c]):
+                    continue
+
+                #find missing instances for this config.
+                m = sum(map(lambda x: c in x and cfg in x, self.missing))
+                if self.configs[c][cfg]['status'] != 'stopped':
+                    running = len(self.states[c][cfg]['instance_pids']) - m
+                    expected = self.states[c][cfg]['instances_expected']
+
+                    if len(self.states[c][cfg]['instance_pids']
+                           ) < self.states[c][cfg]['instances_expected']:
+                        missing_state_files += (
+                            self.states[c][cfg]['instances_expected'] -
+                            len(self.states[c][cfg]['instance_pids']))
+                    if running > 0:
+                        configs_running += 1
+                else:
+                    running = 0
+                    expected = 0
+                    m = 0
+
+                retry = self.states[c][cfg]['retry_queue']
+
+                print("%-40s %-10s %5d %5d %5d %5d" %
+                      (f, self.configs[c][cfg]['status'], running, m, expected,
+                       retry))
+        stray = 0
+        for pid in self.procs:
+            if not self.procs[pid]['claimed']:
+                stray += 1
+                bad = 1
+                print("pid: %s-%s is not a configured instance" %
+                      (pid, self.procs[pid]['cmdline']))
+
+        print('      total running configs: %3d ( processes: %d missing: %d stray: %d )' % \
+            (configs_running, len(self.procs), len(self.missing)+missing_state_files, stray))
+
+        # FIXME: does not seem to find any stray exchange (with no bindings...) hmm...
+        for h in self.brokers:
+            for x in self.exchange_summary[h]:
+                if self.exchange_summary[h][x] == 0:
+                    print("exchange with no bindings: %s-%s " % (h, x), end='')
+
+    def status2(self):
+        """ v2 Printing statuses for each component/configs found
 
         :return:
         """
@@ -1767,7 +1831,7 @@ def main():
 
     actions = [
         'declare', 'devsnap', 'dump', 'restart', 'sanity', 'setup', 'show',
-        'status', 'stop'
+        'status', 'status2', 'stop'
     ]
 
     cfg = sarra.config.Config({
@@ -1855,6 +1919,10 @@ def main():
     elif action == 'start':
         print('starting:', end='', flush=True)
         gs.start()
+
+    elif action == 'status2':
+        print('status: ')
+        sys.exit(gs.status2())
 
     elif action == 'status':
         print('status: ')

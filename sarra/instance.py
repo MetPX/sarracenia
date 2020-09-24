@@ -198,7 +198,8 @@ class instance:
 
         self.running_instance.run()
 
-        # run should never return...
+        if os.path.isfile(pidfilename):
+            os.unlink(pidfilename)
         sys.exit(0)
 
 
