@@ -991,7 +991,7 @@ class Flow:
             if (len_written != block_length):
                 return False
 
-        except:
+        except Exception as err:
             #closing on problem
             try:
                 self.proto.close()
@@ -1000,7 +1000,7 @@ class Flow:
             except:
                 pass
 
-            logger.error("Download failed 3 %s" % urlstr)
+            logger.error(f"Download failed 3 urlstr={urlstr}, err={err}")
             logger.debug('Exception details: ', exc_info=True)
             if os.path.isfile(new_inflight_path):
                 os.remove(new_inflight_path)

@@ -75,6 +75,9 @@ class Https(Transfer, schemes=['http', 'https']):
         self.data = ''
         self.entries = {}
 
+        # self.destination = self.o.destination
+        # self.timeout = self.o.timeout
+
         self.tlsctx = ssl.create_default_context()
         if hasattr(self.o, 'tls_rigour'):
             self.o.tls_rigour = self.o.tls_rigour.lower()

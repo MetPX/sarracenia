@@ -913,6 +913,8 @@ class Config:
                     setattr(self, k,
                             getattr(self, line[0]).append(' '.join(line[1:])))
             elif k in str_options:
+                if k == 'destination':
+                    logger.info(f'cfg={cfg}, line={line}')
                 v = ' '.join(line[1:])
                 setattr(self, k, v)
             else:
@@ -1409,7 +1411,9 @@ class Config:
 
     def set_newMessageFields(self, msg, urlstr, pattern, maskDir,
                              maskFileOption, mirror, strip, pstrip, flatten):
-
+        logger.debug(f"msg={msg}, urlstr={urlstr}, pattern={pattern}, "
+                     f"maskDir={maskDir}, maskFileOption={maskFileOption}, "
+                     f"mirror={mirror}, strip={strip}, pstrip={pstrip}, flatten={flatten}")
         #if not self.download:
         #    return
 
