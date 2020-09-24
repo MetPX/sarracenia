@@ -29,24 +29,14 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
-#
 
-from abc import ABCMeta, abstractmethod
-import calendar, datetime
-from hashlib import md5
-from hashlib import sha512
 import logging
 import os
-import random
 import signal
-import stat
 import sys
 import time
-import urllib
-import urllib.parse
 
-#from sarra.sr_xattr import *
-from sarra import nowflt, timestr2flt
+from sarra import nowflt
 
 logger = logging.getLogger(__name__)
 
@@ -131,10 +121,8 @@ class Transfer:
         self.data_sumalgo = None
         self.data_checksum = None
         self.fpos = 0
-
         self.tbytes = 0
         self.tbegin = nowflt()
-
         logger.debug("timeout %d" % self.o.timeout)
 
     # local_read_close
