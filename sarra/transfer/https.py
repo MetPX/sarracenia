@@ -60,13 +60,8 @@ logger = logging.getLogger(__name__)
 
 
 class Https(Transfer):
-    @classmethod
-    def assimilate(cls, obj):
-        obj.__class__ = Https
-
-    def __init__(self):
-        logger.debug("sr_http __init__")
-        Https.assimilate(self)
+    def __init__(self, proto, options):
+        super().__init__(proto, options)
 
         self.tlsctx = ssl.create_default_context()
         if hasattr(self.o, 'tls_rigour'):
@@ -92,10 +87,17 @@ class Https(Transfer):
                 self.logger.warning(
                     "option tls_rigour must be one of:  lax, normal, strict")
 
-        self.init()
+        self.connected = False
+        self.http = None
+        self.details = None
+        self.seek = True
 
-    def registered_as(self):
-        return ['http', 'https']
+        self.urlstr = ''
+        self.path = ''
+        self.cwd = ''
+
+        self.data = ''
+        self.entries = {}
 
     # cd
     def cd(self, path):
@@ -116,7 +118,7 @@ class Https(Transfer):
     # close
     def close(self):
         logger.debug("sr_http close")
-        self.init()
+        self.__init__(self.proto, self.o)
 
     # connect...
     def connect(self):
@@ -181,25 +183,6 @@ class Https(Transfer):
                                          local_offset, length)
 
         return rw_length
-
-    # init
-    def init(self):
-        Transfer.init(self)
-        logger.debug("sr_http init")
-        self.connected = False
-        self.http = None
-        self.details = None
-        self.seek = True
-
-        self.urlstr = ''
-        self.path = ''
-        self.cwd = ''
-
-        self.data = ''
-        self.entries = {}
-
-
-# ls
 
     def ls(self):
         logger.debug("sr_http ls")

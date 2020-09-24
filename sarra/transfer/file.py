@@ -62,17 +62,9 @@ logger = logging.getLogger(__name__)
 
 
 class File(Transfer):
-    @classmethod
-    def assimilate(cls, obj):
-        obj.__class__ = File
-
-    def __init__(self):
-        logger.debug("sr_file __init__")
+    def __init__(self, proto, options):
+        super().__init__(proto, options)
         self.cwd = None
-        File.assimilate(self)
-
-    def registered_as(self):
-        return ['file']
 
     # cd
     def cd(self, path):

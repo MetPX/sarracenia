@@ -61,20 +61,12 @@ logger = logging.getLogger(__name__)
 
 
 class Ftp(Transfer):
-    @classmethod
-    def assimilate(cls, obj):
-        obj.__class__ = Ftp
-
-    def __init__(self):
-        logger.debug("sr_ftp __init__")
+    def __init__(self, proto, options):
+        super().__init__(proto, options)
         self.connected = False
         self.ftp = None
         self.details = None
         self.batch = 0
-        Ftp.assimilate(self)
-
-    def registered_as(self):
-        return ['ftp']
 
     # cd
     def cd(self, path):

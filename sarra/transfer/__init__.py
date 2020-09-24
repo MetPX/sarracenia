@@ -87,7 +87,7 @@ def alarm_set(time):
 # =========================================
 
 
-class Transfer():
+class Transfer:
     """
     v2: sarra.sr_proto -> v3: sarra.transfer
     ============================================================
@@ -123,32 +123,9 @@ class Transfer():
 
     """
     def __init__(self, proto, options):
-        logger.debug("sr_proto __init__: subclasses=%s" %
-                     Transfer.__subclasses__())
-
+        logger.debug(f"proto={proto}, options={options}")
+        self.proto = proto
         self.o = options
-
-        sc = None
-        # 0:4 is to ignore s in https and use the same protocol for both.
-        # FIXME: might want to add 'reverse' to __subclasses__, so plugins are checked first.
-        for sc in Transfer.__subclasses__():
-
-            if (hasattr(sc, 'registered_as')
-                    and (proto in sc.registered_as(self))):
-                # old version or (str(proto[0:4]) == sc.__name__.lower()[0:4]):
-                logger.debug("HOHO found!")
-                self.init()
-                sc.__init__(self)
-                break
-
-        if sc is None: return None
-        logger.debug("HOHO found! .. %s " % (sc.__name__.lower()))
-
-    # init
-    @abstractmethod
-    def init(self):
-        #logger.debug("sr_proto init")
-
         self.sumalgo = None
         self.checksum = None
         self.data_sumalgo = None
