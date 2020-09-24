@@ -123,7 +123,8 @@ class Transfer():
 
     """
     def __init__(self, proto, options):
-        #options.logger.debug("sr_proto __init__")
+        logger.debug("sr_proto __init__: subclasses=%s" %
+                     Transfer.__subclasses__())
 
         self.o = options
 

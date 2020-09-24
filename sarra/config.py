@@ -97,17 +97,17 @@ str_options = [
 """
 convert_to_v3 = {
     'plugin': {
-        'msg_fdelay': ['import', 'sarra.plugin.msg.fdelay.FDelay'],
-        'accel_wget': ['import', 'sarra.plugin.accel_wget.ACCEL_WGET'],
-        'accel_scp': ['import', 'sarra.plugin.accel_scp.ACCEL_SCP'],
+        'msg_fdelay': ['flow_plugin', 'sarra.plugin.msg.fdelay.FDelay'],
+        'accel_wget': ['flow_plugin', 'sarra.plugin.accel_wget.ACCEL_WGET'],
+        'accel_scp': ['flow_plugin', 'sarra.plugin.accel_scp.ACCEL_SCP'],
     },
     'on_message': {
         'msg_delete':
-        ['import', 'sarra.plugin.msg.deleteflowfiles.DeleteFlowFiles'],
-        'msg_rawlog': ['import', 'sarra.plugin.msg.log.Log']
+        ['flow_plugin', 'sarra.plugin.msg.deleteflowfiles.DeleteFlowFiles'],
+        'msg_rawlog': ['flow_plugin', 'sarra.plugin.msg.log.Log']
     },
     'on_line': {
-        'line_log': ['import', 'sarra.plugin.line_log']
+        'line_log': ['flow_plugin', 'sarra.plugin.line_log']
     }
 }
 
@@ -482,6 +482,7 @@ class Config:
         self.destfn_script = None
         self.v2plugins = {}
         self.v2plugin_options = []
+        self.imports = []
         self.plugins = []
         self.exchange = None
         self.filename = None
@@ -847,6 +848,8 @@ class Config:
             elif k in ['subtopic']:
                 self._parse_binding(v)
             elif k in ['import']:
+                self.imports.append(v)
+            elif k in ['flow_plugin', 'fplugin', 'fp']:
                 self.plugins.append(v)
             elif k in ['set', 'setting', 's']:
                 self._parse_setting(k, line[2:])

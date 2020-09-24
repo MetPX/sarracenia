@@ -12,7 +12,15 @@ import logging
 
 from abc import ABCMeta, abstractmethod
 """
-1st draft of a v03 plugin method.
+1st draft of a v03 plugin method: flow_plugins
+
+sample call:
+
+flow_plugin sarra.plugin.name.Name
+
+will instantiate an object of that type whose appropriately name methods
+will be called at the right time.
+
 
 __init__ accepts options as an argument.
 
@@ -21,6 +29,8 @@ options is a dictionary of settings, used to override default behaviour
 a setting is declared:
 
 set sarra.plugin.msg.log.Log.level debug
+
+(the prefix for the setting matches the type hierarchy in flow_plugin)
 
 the plugin should get the setting:
 
@@ -38,14 +48,13 @@ worklist given to on_plugins...
 Initially all messages are placed in incoming.
 if a plugin decides:
 
-- a message is not relevant, it is moved to rejected.
-- all processing has been done, it moves it to ok.
-- an operation failed and it should be retried later, move to retry
+- a message is not relevant, it is moved to rejected. 
+- all processing has been done, it moves it to ok. 
+- an operation failed and it should be retried later, move to retry 
 
-if a
 Do not remove from all lists, only move messages between them.
    it is necessary to put rejected messages in the appropriate worklist
-   so they can be acknowledged as received.
+   so they can be acknowledged as received. Messages can only removed after ack.
 
 """
 

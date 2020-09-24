@@ -1,4 +1,5 @@
 import copy
+import importlib
 import logging
 import netifaces
 import os
@@ -148,6 +149,10 @@ class Flow:
 
     def loadPlugins(self, plugins_to_load):
 
+        logger.info('imports to load: %s' % (self.o.imports))
+        for m in self.o.imports:
+            importlib.import_module(m)
+
         #logger.info( 'plugins to load: %s' % ( plugins_to_load ) )
         for c in plugins_to_load:
 
@@ -242,6 +247,7 @@ class Flow:
         """
 
         self.loadPlugins(self.plugins['load'])
+
         logger.debug("working directory: %s" % os.getcwd())
 
         next_housekeeping = nowflt() + self.o.housekeeping
