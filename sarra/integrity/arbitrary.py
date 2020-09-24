@@ -1,4 +1,4 @@
-from sarra.plugin.integrity import Integrity
+from sarra.integrity import Integrity
 
 
 class Arbitrary(Integrity):

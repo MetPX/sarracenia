@@ -4,7 +4,7 @@ from hashlib import md5
 
 from base64 import b64decode
 
-from sarra.plugin.integrity import Integrity
+from sarra.integrity import Integrity
 
 
 class Md5name(Integrity):

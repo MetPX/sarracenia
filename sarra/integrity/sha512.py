@@ -2,7 +2,7 @@
 
 from hashlib import sha512
 
-from sarra.plugin.integrity import Integrity
+from sarra.integrity import Integrity
 
 # ===================================
 # checksum_s class

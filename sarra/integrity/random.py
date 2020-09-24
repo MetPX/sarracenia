@@ -2,7 +2,7 @@
 
 import random
 
-from sarra.plugin.integrity import Integrity
+from sarra.integrity import Integrity
 
 
 class Random(Integrity):
