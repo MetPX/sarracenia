@@ -77,6 +77,16 @@ def alarm_set(time):
 # =========================================
 
 
+def create(proto, options):
+    logger.debug(f'proto={proto}, options={options}')
+    if proto in Transfer.subclasses_registry:
+        subclass = Transfer.subclasses_registry[proto]
+    else:
+        raise Transfer.UnknownProtocolException(f"Unknown protocol from proto={proto}, "
+                                                f"registry={Transfer.subclasses_registry}")
+    return subclass(proto, options)
+
+
 class Transfer:
     """
     v2: sarra.sr_proto -> v3: sarra.transfer
@@ -112,6 +122,18 @@ class Transfer:
          opt   options.bufsize
 
     """
+    class UnknownProtocolException(Exception):
+        pass
+    subclasses_registry = {}
+
+    @classmethod
+    def __init_subclass__(cls, *args, **kwargs):
+        logger.debug(f'cls={cls}, args={args}, kwargs={kwargs}')
+        schemes = kwargs.pop('schemes')
+        super().__init_subclass__(*args, **kwargs)
+        for scheme in schemes:
+            cls.subclasses_registry[scheme] = cls
+
     def __init__(self, proto, options):
         logger.debug(f"proto={proto}, options={options}")
         self.proto = proto

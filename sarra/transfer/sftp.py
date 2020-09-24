@@ -73,9 +73,9 @@ logger = logging.getLogger(__name__)
 #     opt   options.bufsize
 
 
-class Sftp(Transfer):
+class Sftp(Transfer, schemes=['sftp', 'scp', 'ssh', 'fish']):
     def __init__(self, proto, options):
-        super().__init__(proto, options)
+        super(Sftp, self).__init__(proto, options)
 
         # sftp command times out after 20 secs
         # this setting is different from the computed timeout (protocol)
@@ -88,16 +88,16 @@ class Sftp(Transfer):
         self.connected = False
         self.ssh_config = None
 
+        ssh_config_fn = os.path.expanduser('~/.ssh/config')
         try:
             self.ssh_config = paramiko.SSHConfig()
-            ssh_config = os.path.expanduser('~/.ssh/config')
-            if os.path.isfile(ssh_config):
-                fp = open(ssh_config, 'r')
+            if os.path.isfile(ssh_config_fn):
+                fp = open(ssh_config_fn, 'r')
                 self.ssh_config.parse(fp)
                 fp.close()
         except:
             logger.error("sr_sftp/__init__: unable to load ssh config %s" %
-                         ssh_config)
+                         self.ssh_config)
             logger.debug('Exception details: ', exc_info=True)
 
     # cd
@@ -150,7 +150,7 @@ class Sftp(Transfer):
     def check_is_connected(self):
         logger.debug("sr_sftp check_is_connected")
 
-        if self.sftp == None: return False
+        if self.sftp is None: return False
         if not self.connected: return False
 
         if self.destination != self.o.destination:
@@ -187,7 +187,7 @@ class Sftp(Transfer):
         old_sftp = self.sftp
         old_ssh = self.ssh
 
-        self.init()
+        self.__init__(self.proto, self.o)
 
         alarm_set(self.o.timeout)
         try:
@@ -207,7 +207,6 @@ class Sftp(Transfer):
 
         if self.connected: self.close()
 
-        self.connected = False
         self.destination = self.o.destination
 
         if not self.credentials(): return False

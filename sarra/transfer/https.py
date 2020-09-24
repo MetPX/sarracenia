@@ -35,11 +35,11 @@
 import logging
 import os
 import ssl
-import sys
-import urllib.request, urllib.error
+import urllib.error
+import urllib.request
 
 from sarra.transfer import Transfer
-from sarra.transfer import alarm_cancel, alarm_set, alarm_raise
+from sarra.transfer import alarm_cancel, alarm_set
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ logger = logging.getLogger(__name__)
 # credentials()
 
 
-class Https(Transfer):
+class Https(Transfer, schemes=['http', 'https']):
     def __init__(self, proto, options):
         super().__init__(proto, options)
 
@@ -84,7 +84,7 @@ class Https(Transfer):
             elif self.o.tls_rigour == 'normal':
                 pass
             else:
-                self.logger.warning(
+                logger.warning(
                     "option tls_rigour must be one of:  lax, normal, strict")
 
         self.connected = False
@@ -126,7 +126,6 @@ class Https(Transfer):
 
         if self.connected: self.close()
 
-        self.connected = False
         self.destination = self.o.destination
         self.timeout = self.o.timeout
 

@@ -60,7 +60,7 @@ logger = logging.getLogger(__name__)
 #
 
 
-class Ftp(Transfer):
+class Ftp(Transfer, schemes=['ftp']):
     def __init__(self, proto, options):
         super().__init__(proto, options)
         self.connected = False
@@ -163,7 +163,7 @@ class Ftp(Transfer):
 
         old_ftp = self.ftp
 
-        self.init()
+        self.__init__(self.proto, self.o)
 
         try:
             alarm_set(self.o.timeout)

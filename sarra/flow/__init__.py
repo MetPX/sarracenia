@@ -910,7 +910,7 @@ class Flow:
 
             if (self.proto is None) or not self.proto.check_is_connected():
                 logger.debug("%s_transport download connects" % self.scheme)
-                self.proto = sarra.transfer.Transfer(self.scheme, self.o)
+                self.proto = sarra.transfer.create(self.scheme, self.o)
                 logger.debug("HOHO proto %s " % type(self.proto))
                 ok = self.proto.connect()
                 if not ok:
@@ -1055,11 +1055,9 @@ class Flow:
             length=0):
 
         scheme = urllib.parse.urlparse(msg['baseUrl']).scheme
-        if (hasattr(self,'plugins') and ( 'do_put' in self.plugins )) and \
-            ( scheme in self.plugins['do_put'] ):
-            return self.plugins[scheme]['do_put'](msg, local_file, remote_file,
-                                                  local_offset, remote_offset,
-                                                  length)
+        if hasattr(self.proto, 'do_put'):
+            return self.proto.do_put(msg, local_file, remote_file,
+                                     local_offset, remote_offset, length)
         else:
             return self.proto.put(local_file, remote_file, local_offset,
                                   remote_offset, length)
@@ -1095,7 +1093,7 @@ class Flow:
 
             if (self.proto is None) or not self.proto.check_is_connected():
                 logger.debug("%s_transport send connects" % self.scheme)
-                self.proto = sarra.transfer.Transfer(self.scheme, options)
+                self.proto = sarra.transfer.create(self.scheme, options)
                 ok = self.proto.connect()
                 if not ok: return False
                 self.cdir = None
@@ -1201,7 +1199,7 @@ class Flow:
             elif inflight[0] == '.':
                 new_inflight_path = new_file + inflight
                 self.put(msg, local_file, new_inflight_path)
-                proto.rename(new_inflight_path, new_file)
+                self.proto.rename(new_inflight_path, new_file)
             elif options.inflight[-1] == '/':
                 try:
                     self.proto.cd_forced(775, new_dir + '/' + options.inflight)
