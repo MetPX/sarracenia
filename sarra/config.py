@@ -416,7 +416,7 @@ class Config:
     actions = [
         'add', 'cleanup', 'devsnap', 'declare', 'disable', 'dump', 'edit',
         'enable', 'foreground', 'list', 'remove', 'restart', 'sanity', 'setup',
-        'show', 'start', 'stop', 'status', 'status2'
+        'show', 'start', 'stop', 'status', 'overview'
     ]
 
     # lookup in dictionary, respond with canonical version.

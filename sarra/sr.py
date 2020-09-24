@@ -1709,7 +1709,7 @@ class sr_GlobalState:
                 if self.exchange_summary[h][x] == 0:
                     print("exchange with no bindings: %s-%s " % (h, x), end='')
 
-    def status2(self):
+    def overview(self):
         """ v2 Printing statuses for each component/configs found
 
         :return:
@@ -1831,7 +1831,7 @@ def main():
 
     actions = [
         'declare', 'devsnap', 'dump', 'restart', 'sanity', 'setup', 'show',
-        'status', 'status2', 'stop'
+        'status', 'overview', 'stop'
     ]
 
     cfg = sarra.config.Config({
@@ -1920,9 +1920,9 @@ def main():
         print('starting:', end='', flush=True)
         gs.start()
 
-    elif action == 'status2':
+    elif action == 'overview':
         print('status: ')
-        sys.exit(gs.status2())
+        sys.exit(gs.overview())
 
     elif action == 'status':
         print('status: ')
