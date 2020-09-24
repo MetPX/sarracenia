@@ -1207,6 +1207,46 @@ class sr_GlobalState:
 
     print_column = 0
 
+    def walk_dir(f):
+        l = []
+        for root, dirs, filenames in os.walk(f):
+            if os.path.basename(root) == '__pycache__':
+                continue
+            for f in filenames:
+                if f in ['__init__.py']: continue
+                l.append(os.path.join(root, f))
+
+        return l
+
+    def print_configdir2(self, prefix, configdir, component):
+        """
+           pretty print for v3 plugins.
+        """
+        if not os.path.isdir(configdir) or (len(os.listdir(configdir)) == 0):
+            return
+
+        #print("%s: ( %s )" % (prefix,configdir))
+        term = shutil.get_terminal_size((80, 20))
+        columns = term.columns
+        count = 0
+        for confname in sorted(sr_GlobalState.walk_dir(configdir)):
+            confname = confname.replace(configdir + os.sep, '')
+            if confname[0] == '.' or confname[
+                    -1] == '~' or confname == '__init__.py':
+                continue
+            #if os.path.isdir(configdir + os.sep + confname): continue
+            if (((sr_GlobalState.print_column + 1) * 33) >= columns):
+                print('')
+                sr_GlobalState.print_column = 0
+            if (component != ''):
+                f = component + os.sep + confname
+            else:
+                f = confname
+
+            sr_GlobalState.print_column += 1
+            count += 1
+            print("%-32s " % f, end='')
+
     def print_configdir(self, prefix, configdir, component):
         """
           pretty print in columns a subdirectory of a configuration directory, respecting selections,
@@ -1245,20 +1285,30 @@ class sr_GlobalState:
         """
 
         if hasattr(self, 'leftovers') and (len(self.leftovers) > 0):
-            if ('examples' == self.leftovers[0]):
+            if self.leftovers[0] in ['examples', 'eg', 'ie']:
                 print('Sample Configurations: (from: %s )' %
                       (self.package_lib_dir + os.sep + 'examples'))
                 for c in sarra.config.Config.components:
-                    self.print_configdir(
+                    self.print_configdir2(
                         " of %s " % c,
                         os.path.normpath(self.package_lib_dir + os.sep +
                                          'examples' + os.sep + c), c)
-            elif ('plugins' == self.leftovers[0]):
+            elif self.leftovers[0] in ['flow_plugins', 'fplugin', 'fp']:
                 print('Provided plugins: ( %s ) ' % self.package_lib_dir)
-                self.print_configdir(
+                self.print_configdir2(
+                    " of plugins: ",
+                    os.path.normpath(self.package_lib_dir + os.sep + 'plugin'),
+                    'plugin')
+            elif self.leftovers[0] in ['v2plugins', 'v2p']:
+                print('Provided plugins: ( %s ) ' % self.package_lib_dir)
+                self.print_configdir2(
                     " of plugins: ",
                     os.path.normpath(self.package_lib_dir + os.sep +
                                      'plugins'), 'plugins')
+            else:
+                print(
+                    'Valid things to list: examples,eg,ie flow_plugins,fplugins,fp v2plugins,v2p'
+                )
         else:
             print('User Configurations: (from: %s )' % self.user_config_dir)
             for c in sarra.config.Config.components:
