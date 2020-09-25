@@ -77,16 +77,6 @@ def alarm_set(time):
 # =========================================
 
 
-def create(proto, options):
-    logger.debug(f'proto={proto}, options={options}')
-    if proto in Transfer.subclasses_registry:
-        subclass = Transfer.subclasses_registry[proto]
-    else:
-        raise Transfer.UnknownProtocolException(f"Unknown protocol from proto={proto}, "
-                                                f"registry={Transfer.subclasses_registry}")
-    return subclass(proto, options)
-
-
 class Transfer:
     """
     v2: sarra.sr_proto -> v3: sarra.transfer
@@ -420,3 +410,13 @@ import sarra.transfer.ftp
 import sarra.transfer.sftp
 import sarra.transfer.https
 import sarra.transfer.file
+
+
+def create(proto, options) -> Transfer:
+    logger.debug(f'proto={proto}, options={options}')
+    if proto in Transfer.subclasses_registry:
+        subclass = Transfer.subclasses_registry[proto]
+    else:
+        raise Transfer.UnknownProtocolException(f"Unknown protocol from proto={proto}, "
+                                                f"registry={Transfer.subclasses_registry}")
+    return subclass(proto, options)
