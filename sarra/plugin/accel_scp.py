@@ -49,7 +49,7 @@ class ACCEL_SCP(Sftp, schemes=['scp', 'sftp']):
     def __init__(self, proto, options):
         super().__init__(proto, options)
         init_plugin_option(self.o, 'accel_scp_command', 'str', '/usr/bin/scp')
-        init_plugin_option(self.o, 'accel_scp_threshold', 'size', '1K')
+        init_plugin_option(self.o, 'accel_scp_threshold', 'size', '10M')
         init_plugin_option(self.o, 'accel_scp_protocol', 'str', 'sftp')
 
     def do_get(self, msg, remote_file, local_file, remote_offset, local_offset,

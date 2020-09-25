@@ -125,7 +125,7 @@ class Transfer:
             cls.subclasses_registry[scheme] = cls
 
     def __init__(self, proto, options):
-        logger.debug(f"proto={proto}, options={options}")
+        logger.debug(f"self={self}, proto={proto}, options={options}")
         self.proto = proto
         self.o = options
         self.sumalgo = None

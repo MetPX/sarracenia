@@ -48,7 +48,7 @@ class ACCEL_WGET(Https, schemes=['http', 'https']):
     def __init__(self, proto, options):
         super().__init__(proto, options)
         init_plugin_option(self.o, 'accel_wget_command', 'str', '/usr/bin/wget')
-        init_plugin_option(self.o, 'accel_wget_threshold', 'size', '1K')
+        init_plugin_option(self.o, 'accel_wget_threshold', 'size', '1M')
         init_plugin_option(self.o, 'accel_wget_protocol', 'str', 'https')
 
     def do_get(self, msg, remote_file, local_file, remote_offset, local_offset,
