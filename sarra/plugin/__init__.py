@@ -273,7 +273,8 @@ def load_library(factory_path, options):
     class_ = getattr(module, classname)
 
     if hasattr(options, 'settings'):
-        opt = copy.deepcopy(options)
+        opt = options
+        # opt = copy.deepcopy(options)
         # strip off the class prefix.
         if factory_path in options.settings:
             for s in options.settings[factory_path]:

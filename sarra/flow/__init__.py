@@ -1032,11 +1032,9 @@ class Flow:
             length):
 
         scheme = urllib.parse.urlparse(msg['baseUrl']).scheme
-        if ((hasattr(self,'plugins') and ( 'do_get' in self.plugins )) and \
-            scheme in self.plugins['do_get'] ):
-            return self.plugins[scheme]['do_get'](msg, remote_file, local_file,
-                                                  remote_offset, local_offset,
-                                                  length)
+        if hasattr(self.proto, 'do_get'):
+            return self.proto.do_get(msg, remote_file, local_file,
+                                     remote_offset, local_offset, length)
         else:
             return self.proto.get(remote_file, local_file, remote_offset,
                                   local_offset, length)
