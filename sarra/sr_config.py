@@ -2842,7 +2842,7 @@ class sr_config:
         # check url and add credentials if needed from credential file
         ok, details = self.credentials.get(urlstr)
         if details == None :
-           self.logger.error("bad credential %s" % urlstr)
+           self.logger.error("bad credential %s (No details returned)" % urlstr)
            return False, urllib.parse.urlparse(urlstr)
         return True, details.url
 

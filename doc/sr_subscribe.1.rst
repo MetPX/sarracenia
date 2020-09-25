@@ -481,6 +481,8 @@ passwords and settings needed by components.  The format is one entry per line. 
 
 - **ftps://user7:De%3Aize@host  passive,binary,tls**
 - **ftps://user8:%2fdot8@host:2121  active,ascii,tls,prot_p**
+- **https://ladsweb.modaps.eosdis.nasa.gov/ bearer_token=89APCBF0-FEBE-11EA-A705-B0QR41911BF4**
+
 
 
 In other configuration files or on the command line, the url simply lacks the
