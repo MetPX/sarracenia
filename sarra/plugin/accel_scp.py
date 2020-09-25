@@ -30,7 +30,6 @@ Instead of invoking scp, it will invoke the scp -p command. To the command will 
 See end of file for performance considerations.
 
 """
-
 import logging
 import os
 import re
@@ -39,8 +38,8 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import sarra
+from sarra.config import init_plugin_option
 
-from sarra.config import declare_plugin_option
 from sarra.transfer.sftp import Sftp
 
 logger = logging.getLogger(__name__)
@@ -49,10 +48,9 @@ logger = logging.getLogger(__name__)
 class ACCEL_SCP(Sftp, schemes=['scp', 'sftp']):
     def __init__(self, proto, options):
         super().__init__(proto, options)
-
-        declare_plugin_option('accel_scp_command', 'str')
-        declare_plugin_option('accel_scp_threshold', 'size')
-        declare_plugin_option('accel_scp_protocol', 'str')
+        init_plugin_option(self.o, 'accel_scp_command', 'str', '/usr/bin/scp')
+        init_plugin_option(self.o, 'accel_scp_threshold', 'size', '1K')
+        init_plugin_option(self.o, 'accel_scp_protocol', 'str', 'sftp')
 
     def do_get(self, msg, remote_file, local_file, remote_offset, local_offset,
                length):
@@ -99,13 +97,10 @@ class ACCEL_SCP(Sftp, schemes=['scp', 'sftp']):
             return msg['size']
 
     def check_results(self, p, msg, fct, filename):
-        # FIXME for remote files (put) this is awkward to have to reconnect as the tool provided
-        #  the result of the command by itself. Maybe just parsing it would be more efficient
-        #  while being an accurate way of returning the size
         logger.debug(f'p={p}')
         if p.returncode != 0:
             if hasattr(self.o, 'reportback') and self.o.reportback:
-                msg.report_publish(499, 'wget download failed')
+                msg.report_publish(499, 'scp download failed')
         elif hasattr(self.o, 'reportback') and self.o.reportback:
             sarra.msg_set_report(msg, 201, 'Downloaded')
         try:

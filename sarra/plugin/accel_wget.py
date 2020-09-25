@@ -33,13 +33,12 @@ See end of file for performance considerations.
 
 import logging
 import os
-import re
 import subprocess
 from pathlib import Path
 from urllib.parse import urljoin
 
 import sarra
-from sarra.config import declare_plugin_option
+from sarra.config import init_plugin_option
 from sarra.transfer.https import Https
 
 logger = logging.getLogger(__name__)
@@ -48,10 +47,9 @@ logger = logging.getLogger(__name__)
 class ACCEL_WGET(Https, schemes=['http', 'https']):
     def __init__(self, proto, options):
         super().__init__(proto, options)
-
-        declare_plugin_option('accel_wget_command', 'str')
-        declare_plugin_option('accel_wget_threshold', 'size')
-        declare_plugin_option('accel_wget_protocol', 'str')
+        init_plugin_option(self.o, 'accel_wget_command', 'str', '/usr/bin/wget')
+        init_plugin_option(self.o, 'accel_wget_threshold', 'size', '1K')
+        init_plugin_option(self.o, 'accel_wget_protocol', 'str', 'https')
 
     def do_get(self, msg, remote_file, local_file, remote_offset, local_offset,
                length):
@@ -65,9 +63,8 @@ class ACCEL_WGET(Https, schemes=['http', 'https']):
             return super().get(remote_file, local_file, remote_offset, local_offset, length)
         else:
             os.chdir(msg['new_dir'])
-            cmd = self.o.accel_wget_command.split() + [
-                urljoin(msg['baseUrl'], msg['relPath'])
-            ]
+            remote = urljoin(msg['baseUrl'], msg['relPath'])
+            cmd = self.o.accel_wget_command.split() + [remote]
             logger.debug(f"new_dir={msg['new_dir']}, new_file={msg['new_file']}, "
                          f"rel_path={msg['relPath']}, cmd={cmd}")
             p = subprocess.Popen(cmd)
@@ -81,26 +78,15 @@ class ACCEL_WGET(Https, schemes=['http', 'https']):
             return msg['size']
 
     def check_results(self, p, msg, fct, filepath):
-        # FIXME for remote files (put) this is awkward to have to reconnect as the tool provided
-        #  the result of the command by itself. Maybe just parsing it would be more efficient
-        #  while being an accurate way of returning the size
-        logger.debug(f'p={vars(p)}')
         if p.returncode != 0:
             if hasattr(self.o, 'reportback') and self.o.reportback:
                 msg.report_publish(499, 'wget download failed')
         elif hasattr(self.o, 'reportback') and self.o.reportback:
             sarra.msg_set_report(msg, 201, 'Downloaded')
-        stderr = p.stderr.read().decode('utf-8')
-        l = logger.getChild('check_results')
-
-        m = re.match(r'.*\[([0-9]+)/[0-9]+\].*', stderr)
-        if m:
-            size = m.groups()[0]
-        else:
-            try:
-                size = fct(filepath).st_size
-            except FileNotFoundError as err:
-                size = 0
+        try:
+            size = fct(filepath).st_size
+        except FileNotFoundError as err:
+            size = 0
         return size
 
 

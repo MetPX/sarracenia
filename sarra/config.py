@@ -128,7 +128,6 @@ def declare_plugin_option(option, kind):
        'str'        an arbitrary string value, as will all of the above types, each succeeding occurrence overrides the previous one.
 
     """
-
     if kind == 'count':
         count_options.append(option)
     elif kind == 'duration':
@@ -141,6 +140,33 @@ def declare_plugin_option(option, kind):
         size_options.append(option)
     elif kind == 'str':
         str_options.append(option)
+
+
+def init_plugin_option(options, name, kind, default_value):
+    logger.debug(f'options={options}, name={name}, kind={kind}, value={default_value}')
+    declare_plugin_option(name, kind)
+    value = default_value
+    if kind == 'count':
+        value = adapt_value(options, name, default_value, int, int)
+    elif kind == 'duration':
+        value = adapt_value(options, name, default_value, sarra.durationToSeconds, int)
+    elif kind == 'flag':
+        value = adapt_value(options, name, default_value, isTrue, bool)
+    elif kind == 'list':
+        value = adapt_value(options, name, default_value, list, list)
+    elif kind == 'size':
+        value = adapt_value(options, name, default_value, sarra.chunksize_from_str, int)
+    logger.debug(f'value={value}, type={type(value)}')
+    setattr(options, name, value)
+
+
+def adapt_value(options, name, default_value, fct, t):
+    result = default_value
+    if not hasattr(options, name):
+        result = fct(default_value)
+    elif not isinstance(getattr(options, name), t):
+        result = fct(getattr(options, name))
+    return result
 
 
 #    logger.info('v2plugin option: %s declared' % option)
