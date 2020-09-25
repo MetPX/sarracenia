@@ -1,15 +1,12 @@
-import copy
 import importlib
 import logging
 import netifaces
-import os
 
 # v3 plugin architecture...
 import sarra.plugin
 import sarra.plugin.integrity
 
 import stat
-import time
 import types
 import urllib.parse
 
@@ -18,15 +15,14 @@ from sarra import timestr2flt, timeflt2str, msg_set_report
 import sarra.filemetadata
 
 # for v2 subscriber routines...
-import json, os, sys, time
+import os, time
 
-from sys import platform as _platform
 
-from base64 import b64decode, b64encode
-from mimetypes import guess_type
+from base64 import b64decode
 # end v2 subscriber
 
 from sarra import nowflt
+from sarra.transfer import create
 
 logger = logging.getLogger(__name__)
 
@@ -467,7 +463,7 @@ class Flow:
             try:
                 os.makedirs(msg['new_dir'], 0o775, True)
             except Exception as ex:
-                logger.warning("making %s: %s" % (newdir, ex))
+                logger.warning("making %s: %s" % (msg['new_dir'], ex))
 
         logger.info("data inlined with message, no need to download")
         path = msg['new_dir'] + os.path.sep + msg['new_file']
@@ -683,7 +679,7 @@ class Flow:
         except:
             logger.error(
                 "sr_subscribe/doit_download: could not rename %s to %s " %
-                (msg['oldname'], path))
+                (old, path))
             logger.debug('Exception details: ', exc_info=True)
             ok = False
         return ok
@@ -784,12 +780,12 @@ class Flow:
                 continue
 
             # establish new_inflight_path which is the file to download into initially.
-            if self.o.inflight == None or (
+            if self.o.inflight is None or (
                 ('blocks' in msg) and (msg['blocks']['method'] == 'inplace')):
                 new_inflight_path = msg['new_file']
             elif type(self.o.inflight) == str:
                 if self.o.inflight == '.':
-                    new_inflight_path = '.' + new_file
+                    new_inflight_path = '.' + msg['new_file']
                 elif self.o.inflight[-1] == '/':
                     if not os.path.isdir(self.o.inflight):
                         try:
@@ -797,9 +793,9 @@ class Flow:
                             os.chmod(self.o.inflight, self.o.chmod_dir)
                         except:
                             pass
-                    new_inflight_path = self.o.inflight + new_file
+                    new_inflight_path = self.o.inflight + msg['new_dir']
                 elif self.o.inflight[0] == '.':
-                    new_inflight_path = new_file + self.o.inflight
+                    new_inflight_path = msg['new_dir'] + self.o.inflight
             else:
                 #inflight is interval: minimum the age of the source file, as per message.
                 logger.error('interval inflight setting: %s, not for remote.' %
