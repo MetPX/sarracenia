@@ -30,124 +30,83 @@ Instead of invoking scp, it will invoke the scp -p command. To the command will 
 See end of file for performance considerations.
 
 """
-
 import logging
 import os
+import re
 import subprocess
+from pathlib import Path
+from urllib.parse import urlparse
 
 import sarra
-#from sarra import chunksize_from_str
+from sarra.config import init_plugin_option
 
-from sarra.plugin import Plugin
-from sarra.config import declare_plugin_option
+from sarra.transfer.sftp import Sftp
 
 logger = logging.getLogger(__name__)
 
 
-class ACCEL_SCP(Plugin):
-    def __init__(self, options):
-
-        self.o = options
-
-        self.registered_list = ['sftp']
-
-        declare_plugin_option('accel_scp_command', 'str')
-        declare_plugin_option('accel_scp_threshold', 'size')
-        declare_plugin_option('accel_scp_protocol', 'str')
-
-    def on_start(self):
-        logger.info("on_start accel_scp")
-
-        if not hasattr(self.o, 'accel_scp_command'):
-            self.o.download_accel_scp_command = ['/usr/bin/scp']
-
-        if not hasattr(self.o, "accel_scp_threshold"):
-            self.o.accel_scp_threshold = ["10M"]
-
-        if not hasattr(self.o, "accel_scp_protocol"):
-            self.o.accel_scp_protocol = ["sftp"]
-
-        if type(self.o.accel_scp_threshold) is list:
-            self.o.accel_scp_threshold = sarra.chunksize_from_str(
-                self.o.accel_scp_threshold[0])
-
-        return True
-
-    def on_messages(self, worklist):
-
-        for m in worklist.incoming:
-            if m['integrity']['method'] in ['link', 'remove']:
-                continue
-            if 'blocks' in m:
-                sz = m['blocks']['size']
-            else:
-                sz = m['size']
-
-            if sz > self.o.accel_scp_threshold:
-                m['baseUrl'] = m['baseUrl'].replace('sftp', "acscp", 1)
-
-            logger.debug("transfer sz: %d, threshold: %d download: %s to %s / %s, " % ( \
-                sz, self.o.accel_scp_threshold, m['baseUrl'], m['new_dir'], m['new_file'] ) )
+class SCP(Sftp, schemes=['scp', 'sftp']):
+    def __init__(self, proto, options):
+        super().__init__(proto, options)
+        init_plugin_option(self.o, 'accel_scp_command', 'str', '/usr/bin/scp')
+        init_plugin_option(self.o, 'accel_scp_threshold', 'size', '10M')
+        init_plugin_option(self.o, 'accel_scp_protocol', 'str', 'sftp')
 
     def do_get(self, msg, remote_file, local_file, remote_offset, local_offset,
                length):
         """
-         FIXME: should return actual length, not expected length... how to tell scp to do that?
-       """
+        """
+        logger.debug(f'msg={msg}, local_file={local_file}, remote_file={remote_file}, '
+                     f'local_offset={local_file}, remove_offset={remote_offset}, length={length}')
+        if self.get_size(msg) < self.o.accel_scp_threshold:
+            return super().get(remote_file, local_file, remote_offset, local_offset, length)
+        else:
+            netloc = urlparse(self.o.destination).netloc
+            remote = re.escape(f"{netloc}:{Path(msg['relPath'])}")  # Remote needs escape
+            local = str(Path(msg['new_dir'], msg['new_file']))
+            cmd = self.o.accel_scp_command.split() + [remote, local]
+            logger.info("accel_scp :  %s" % ' '.join(cmd))
 
-        msg = self.o.msg
-
-        if not self.check_surpass_threshold(self.o): return None
-
-        msg['baseUrl'] = msg['baseUrl'].replace("acscp", "sftp", 1)
-        netloc = msg['baseUrl'].replace("sftp", "", 1)
-
-        if netloc[-1] == '/': netloc = netloc[:-1]
-
-        arg1 = netloc + ':' + msg['relPath']
-        arg1 = arg1.replace(' ', '\ ')
-
-        arg2 = msg['new_dir'] + os.sep + msg['new_file']
-        # strangely not requiered for arg2 : arg2  = arg2.replace(' ','\ ')
-
-        cmd = self.o.download_accel_scp_command[0].split() + [arg1, arg2]
-        logger.info("accel_scp :  %s" % ' '.join(cmd))
-
-        p = subprocess.Popen(cmd)
-        p.wait()
-        if p.returncode != 0:  # Failed!
-            return 0
-        return length
+            p = subprocess.Popen(cmd)
+            p.wait()
+            return self.check_results(p, msg, os.stat, local)
 
     def do_put(self, msg, local_file, remote_file, local_offset, remote_offset,
                length):
         """
-         FIXME: should return actual length, not expected length... how to tell scp to do that?
-       """
+        """
+        logger.debug(f'msg={msg}, local_file={local_file}, remote_file={remote_file}, '
+                    f'local_offset={local_file}, remove_offset={remote_offset}, length={length}')
+        if self.get_size(msg) < self.o.accel_scp_threshold:
+            return super().put(local_file, remote_file, local_offset, remote_offset, length)
+        else:
+            netloc = urlparse(self.o.destination).netloc
+            local = str(Path('/', msg['relPath']).resolve())
+            remote = re.escape(f"{netloc}:{Path(msg['new_dir'], msg['new_file'])}")  # Remote needs escape
+            cmd = self.o.accel_scp_command.split() + [local, remote]
+            logger.info("accel_scp :  %s" % ' '.join(cmd))
 
-        if not self.check_surpass_threshold(self.o): return None
-        msg['baseUrl'] = msg['baseUrl'].replace("acscp", "sftp", 1)
+            p = subprocess.Popen(cmd)
+            p.wait()
+            return self.check_results(p, msg, self.sftp.stat, remote)
 
-        netloc = self.o.destination.replace("sftp://", '')
-        if netloc[-1] == '/': netloc = netloc[:-1]
+    def get_size(self, msg):
+        if 'blocks' in msg:
+            return msg['blocks']['size']
+        else:
+            return msg['size']
 
-        arg1 = msg['relPath']
-        # strangely not required for arg1 : arg1  = arg1.replace(' ','\ ')
-
-        arg2 = netloc + ':' + msg['new_dir'] + os.sep + msg['new_file']
-        arg2 = arg2.replace(' ', '\ ')
-
-        cmd = self.o.download_accel_scp_command[0].split() + [arg1, arg2]
-        logger.info("accel_scp :  %s" % ' '.join(cmd))
-
-        p = subprocess.Popen(cmd)
-        p.wait()
-        if p.returncode != 0:  # Failed!
+    def check_results(self, p, msg, fct, filename):
+        logger.debug(f'p={p}')
+        if p.returncode != 0:
+            if hasattr(self.o, 'reportback') and self.o.reportback:
+                msg.report_publish(499, 'scp download failed')
+        elif hasattr(self.o, 'reportback') and self.o.reportback:
+            sarra.msg_set_report(msg, 201, 'Downloaded')
+        try:
+            return fct(filename).st_size
+        except FileNotFoundError as err:
             return 0
-        return length
-
-    def registered_as(self):
-        return self.registered_list
 
 
 """
