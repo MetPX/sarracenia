@@ -107,11 +107,9 @@ class sr_http(sr_proto):
 
                 self.user = url.username if url.username != '' else None
                 self.password = url.password if url.password == '' else None
-                self.logger.debug("FIXME: details=%s " % (details ) )
 
                 self.bearer_token = details.bearer_token if hasattr(details, 'bearer_token' ) else None
 
-                self.logger.debug("from get() bearer_token=%s" % self.bearer_token )
                 return True
 
         except:

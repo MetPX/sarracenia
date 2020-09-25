@@ -108,7 +108,7 @@ class sr_credentials:
            return True, self.credentials[urlstr]
 
         # create url object if needed
-        self.logger.info("sr_credentials not found, making a new one. %s " % (urlstr))
+        self.logger.debug("sr_credentials no exact match, looking for partial. %s " % (urlstr))
 
         url = urllib.parse.urlparse(urlstr)
 
@@ -119,6 +119,7 @@ class sr_credentials:
                 'anonymous:anonymous@%s' % url.netloc, url.path, None, None, url.port ) )
             url = urllib.parse.urlparse(urlstr)
             if self.isValid(url) :
+                 self.logger.debug("sr_credentials using anonymous convention for %s " % (urlstr))
                  self.add(urlstr)
                  return False,self.credentials[urlstr]
 
@@ -299,7 +300,8 @@ class sr_credentials:
             # resolved : cache it and return
 
             self.credentials[urlstr] = details
-            #self.logger.debug("sr_credentials get resolved %s %s" % (urlstr,details))
+            # prints password in clear...
+            #self.logger.info("sr_credentials get resolved %s %s" % (urlstr,details))
             return True, details
 
         return False, None
