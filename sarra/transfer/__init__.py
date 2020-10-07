@@ -117,10 +117,8 @@ class Transfer:
     subclasses_registry = {}
 
     @classmethod
-    def __init_subclass__(cls, *args, **kwargs):
-        logger.debug(f'cls={cls}, args={args}, kwargs={kwargs}')
-        schemes = kwargs.pop('schemes')
-        super().__init_subclass__(*args, **kwargs)
+    def __init_subclass__(cls, schemes=None):
+        super().__init_subclass__()
         for scheme in schemes:
             cls.subclasses_registry[scheme] = cls
 

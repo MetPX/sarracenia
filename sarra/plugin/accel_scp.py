@@ -83,71 +83,11 @@ class ACCEL_SCP(Plugin):
             else:
                 sz = m['size']
 
-            if sz > self.o.accel_scp_threshold:
-                m['baseUrl'] = m['baseUrl'].replace('sftp', "acscp", 1)
+            # if sz > self.o.accel_scp_threshold:
+            #     m['baseUrl'] = m['baseUrl'].replace('sftp', "acscp", 1)
 
             logger.debug("transfer sz: %d, threshold: %d download: %s to %s / %s, " % ( \
                 sz, self.o.accel_scp_threshold, m['baseUrl'], m['new_dir'], m['new_file'] ) )
-
-    def do_get(self, msg, remote_file, local_file, remote_offset, local_offset,
-               length):
-        """
-         FIXME: should return actual length, not expected length... how to tell scp to do that?
-       """
-
-        msg = self.o.msg
-
-        if not self.check_surpass_threshold(self.o): return None
-
-        msg['baseUrl'] = msg['baseUrl'].replace("acscp", "sftp", 1)
-        netloc = msg['baseUrl'].replace("sftp", "", 1)
-
-        if netloc[-1] == '/': netloc = netloc[:-1]
-
-        arg1 = netloc + ':' + msg['relPath']
-        arg1 = arg1.replace(' ', '\ ')
-
-        arg2 = msg['new_dir'] + os.sep + msg['new_file']
-        # strangely not requiered for arg2 : arg2  = arg2.replace(' ','\ ')
-
-        cmd = self.o.download_accel_scp_command[0].split() + [arg1, arg2]
-        logger.info("accel_scp :  %s" % ' '.join(cmd))
-
-        p = subprocess.Popen(cmd)
-        p.wait()
-        if p.returncode != 0:  # Failed!
-            return 0
-        return length
-
-    def do_put(self, msg, local_file, remote_file, local_offset, remote_offset,
-               length):
-        """
-         FIXME: should return actual length, not expected length... how to tell scp to do that?
-       """
-
-        if not self.check_surpass_threshold(self.o): return None
-        msg['baseUrl'] = msg['baseUrl'].replace("acscp", "sftp", 1)
-
-        netloc = self.o.destination.replace("sftp://", '')
-        if netloc[-1] == '/': netloc = netloc[:-1]
-
-        arg1 = msg['relPath']
-        # strangely not required for arg1 : arg1  = arg1.replace(' ','\ ')
-
-        arg2 = netloc + ':' + msg['new_dir'] + os.sep + msg['new_file']
-        arg2 = arg2.replace(' ', '\ ')
-
-        cmd = self.o.download_accel_scp_command[0].split() + [arg1, arg2]
-        logger.info("accel_scp :  %s" % ' '.join(cmd))
-
-        p = subprocess.Popen(cmd)
-        p.wait()
-        if p.returncode != 0:  # Failed!
-            return 0
-        return length
-
-    def registered_as(self):
-        return self.registered_list
 
 
 """
