@@ -36,7 +36,7 @@ from sarra.flow.sarra import default_options as sarradefopts
 
 import sarra.moth
 import sarra.moth.amqp
-import sarra.plugin.integrity
+import sarra.integrity
 
 default_options = {
     'accept_unmatched': True,
@@ -442,7 +442,7 @@ class Config:
     actions = [
         'add', 'cleanup', 'devsnap', 'declare', 'disable', 'dump', 'edit',
         'enable', 'foreground', 'list', 'remove', 'restart', 'sanity', 'setup',
-        'show', 'start', 'stop', 'status', 'status2'
+        'show', 'start', 'stop', 'status', 'overview'
     ]
 
     # lookup in dictionary, respond with canonical version.
@@ -817,8 +817,7 @@ class Config:
         self.settings[opt_class][opt_var] = ' '.join(value)
 
     def _parse_sum(self, value):
-        if (value in sarra.plugin.integrity.known_methods) or (
-                value[0:4] == 'cod,'):
+        if (value in sarra.integrity.known_methods) or (value[0:4] == 'cod,'):
             self.sum = value
             return
 
@@ -828,7 +827,7 @@ class Config:
         else:
             self.sum = ''
 
-        for sc in sarra.plugin.integrity.Integrity.__subclasses__():
+        for sc in sarra.integrity.Integrity.__subclasses__():
             if hasattr(sc, 'registered_as') and (sc.registered_as == value):
                 self.sum += sc.__name__.lower()
                 return

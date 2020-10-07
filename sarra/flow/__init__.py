@@ -4,7 +4,7 @@ import netifaces
 
 # v3 plugin architecture...
 import sarra.plugin
-import sarra.plugin.integrity
+import sarra.integrity
 
 import stat
 import types
@@ -485,8 +485,8 @@ class Flow:
         else:
             algo_method = msg['integrity']['method']
 
-        onfly_algo = sarra.plugin.integrity.Integrity.factory(algo_method)
-        data_algo = sarra.plugin.integrity.Integrity.factory(algo_method)
+        onfly_algo = sarra.integrity.Integrity.factory(algo_method)
+        data_algo = sarra.integrity.Integrity.factory(algo_method)
         onfly_algo.set_path(path)
         data_algo.set_path(path)
 
@@ -546,7 +546,7 @@ class Flow:
             except:
                 pass
 
-        local_integrity = sarra.plugin.integrity.Integrity.factory(
+        local_integrity = sarra.integrity.Integrity.factory(
             msg['integrity']['method'])
         local_integrity.update_file(msg['new_path'])
         msg['local_integrity'] = {

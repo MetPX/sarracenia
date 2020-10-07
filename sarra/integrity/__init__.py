@@ -88,11 +88,11 @@ class Integrity:
 #       update the checksum based on the given bytes from the file (sequential access assumed.)
 #       """
 
-import sarra.plugin.integrity.arbitrary
-import sarra.plugin.integrity.md5name
-import sarra.plugin.integrity.md5
-import sarra.plugin.integrity.random
-import sarra.plugin.integrity.sha512
+import sarra.integrity.arbitrary
+import sarra.integrity.md5name
+import sarra.integrity.md5
+import sarra.integrity.random
+import sarra.integrity.sha512
 
 known_methods = []
 for sc in Integrity.__subclasses__():

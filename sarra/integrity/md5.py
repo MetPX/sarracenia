@@ -2,7 +2,7 @@
 
 from hashlib import md5
 
-from sarra.plugin.integrity import Integrity
+from sarra.integrity import Integrity
 
 
 class Md5(Integrity):

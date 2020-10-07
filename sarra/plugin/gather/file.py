@@ -20,7 +20,7 @@ from random import choice
 from sarra import *
 from sarra.plugin import Plugin
 from sarra.plugin.gather import msg_init
-import sarra.plugin.integrity
+import sarra.integrity
 import sarra.filemetadata
 
 import stat
@@ -250,7 +250,7 @@ class File(Plugin):
         if sumflg[:4] == 'cod,' and len(sumflg) > 2:
             sumstr = sumflg
         else:
-            sumalgo = sarra.plugin.integrity.Integrity.factory(sumflg)
+            sumalgo = sarra.integrity.Integrity.factory(sumflg)
             sumalgo.set_path(path)
 
             # compute checksum
@@ -315,7 +315,7 @@ class File(Plugin):
 
             else:
                 sumflg = self.o.sumflg
-                sumalgo = sarra.plugin.integrity.Integrity.factory(sumflg)
+                sumalgo = sarra.integrity.Integrity.factory(sumflg)
                 sumalgo.set_path(path)
 
             # compute block stuff
