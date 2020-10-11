@@ -116,12 +116,14 @@ class AMQP(Moth):
     # length of an AMQP short string (used for headers and many properties)
     amqp_ss_maxlen = 255
 
-    def __init__(self, broker, props):
+    def __init__(self, broker, props, is_subscriber):
         """
            connect to broker, depending on message_strategy stubborness, remain connected.
            
         """
-        AMQP.assimilate(self)
+        #AMQP.assimilate(self)
+
+        super().__init__(broker, props, is_subscriber)
 
         logging.basicConfig(
             format=
@@ -139,9 +141,9 @@ class AMQP(Moth):
             for s in self.props['settings'][me]:
                 self.props[s] = self.props['settings'][me][s]
 
-        logging.basicConfig(format=self.props['logFormat'],
-                            level=getattr(logging,
-                                          self.props['logLevel'].upper()))
+        #logging.basicConfig(format=self.props['logFormat'],
+        #                    level=getattr(logging,
+        #                                  self.props['logLevel'].upper()))
 
         #logger.debug( '%s logLevel set to: %s ' % ( me, self.props['logLevel'] ) )
         if self.is_subscriber:  #build_consumer

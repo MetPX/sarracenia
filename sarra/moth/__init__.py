@@ -70,6 +70,28 @@ default_options = {
 
 
 class Moth():
+    @staticmethod
+    def subFactory(broker, props):
+        logger.error("Moth.subclasses = %s" % Moth.__subclasses__())
+        for sc in Moth.__subclasses__():
+            logger.error('broker.scheme: %s vs %s' %
+                         (broker.scheme, sc.__name__.lower()))
+            if (broker.scheme == sc.__name__.lower()) or (
+                (broker.scheme[0:-1] == sc.__name__.lower()) and
+                (broker.scheme[-1] == 's')):
+                logger.error('matched!')
+                return sc(broker, props, True)
+        return None
+
+    @staticmethod
+    def pubFactory(broker, props):
+        for sc in Moth.__subclasses__():
+            if (broker.scheme == sc.__name__.lower()) or (
+                (broker.scheme[0:-1] == sc.__name__.lower()) and
+                (broker.scheme[-1] == 's')):
+                return sc(broker, props, False)
+        return None
+
     def __init__(self, broker, props=None, is_subscriber=True):
         """
        initialize a broker connection. Connections are unidirectional.
@@ -140,7 +162,7 @@ class Moth():
 
        """
 
-        protos = []
+        #protos = []
         self.is_subscriber = is_subscriber
 
         self.props = copy.deepcopy(default_options)
@@ -160,18 +182,18 @@ class Moth():
         logging.basicConfig(format=self.props['logFormat'],
                             level=getattr(logging,
                                           self.props['logLevel'].upper()))
-        """ relevant:
-         https://stackoverflow.com/questions/18020074/convert-a-baseclass-object-into-a-subclass-object-idiomatically
-         assmimilate in the vein of the Borg: "You will be assimilated." Turns the caller into child class.
-       """
-        for sc in Moth.__subclasses__():
-            purl = sc.url_proto(self)
-            if (self.broker is not None) and (self.broker.scheme[0:4] == purl):
-                sc.__init__(self, broker, self.props)
-                return
-            protos.append(purl)
+        #""" relevant:
+        # https://stackoverflow.com/questions/18020074/convert-a-baseclass-object-into-a-subclass-object-idiomatically
+        # assmimilate in the vein of the Borg: "You will be assimilated." Turns the caller into child class.
+        #"""
+        #for sc in Moth.__subclasses__():
+        #    purl = sc.url_proto(self)
+        #    if (self.broker is not None) and (self.broker.scheme[0:4] == purl):
+        #        sc.__init__(self, broker, self.props)
+        #        return
+        #    protos.append(purl)
 
-        logger.critical("unsupported broker URL. Pick one of: %s" % protos)
+        #logger.critical("unsupported broker URL. Pick one of: %s" % protos)
 
     @property
     def default_options():
@@ -190,8 +212,9 @@ class Moth():
 
         """
         logger.error("cleanup unimplemented")
+        return None
 
-    def getNewMessages(self):
+    def newMessages(self):
         """
         If there are new messages available from the broker, return them, otherwise return None.
 
@@ -201,6 +224,7 @@ class Moth():
         
         """
         logger.error("getNewMessages unimplemented")
+        return []
 
     def ackMessage(self, m):
         """
@@ -208,7 +232,7 @@ class Moth():
         """
         logger.error("ackMessage unimplemented")
 
-    def putNewMessage(self, topic, body, headers, content_type):
+    def putNewMessage(self, message, content_type='application/json'):
         """
            publish a message as set up to the given topic.
         """

@@ -27,9 +27,7 @@ class Message(FlowCB):
                 'broker': self.o.post_broker,
                 'exchange': self.o.post_exchange,
             })
-            self.poster = sarra.moth.Moth(self.o.post_broker,
-                                          props,
-                                          is_subscriber=False)
+            self.poster = sarra.moth.Moth.pubFactory(self.o.post_broker, props)
 
     def post(self, worklist):
 

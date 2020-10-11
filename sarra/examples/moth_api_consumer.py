@@ -20,9 +20,11 @@ options['bindings'] = [('v02.post', 'xpublic', '#')]
 options['queue_name'] = 'q_anonymous_' + socket.getfqdn(
 ) + '_SomethingHelpfulToYou'
 
+options['debug'] = True
+
 print('options: %s' % options)
 
-h = sarra.moth.Moth(broker, options)
+h = sarra.moth.Moth.subFactory(broker, options)
 
 while True:
     m = h.getNewMessage()

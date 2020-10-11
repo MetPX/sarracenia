@@ -1037,11 +1037,11 @@ class sr_GlobalState:
             if hasattr(
                     o,
                     'resolved_exchanges') and o.resolved_exchanges is not None:
-                xdc = sarra.moth.Moth(o.post_broker, {
-                    'broker': o.post_broker,
-                    'exchange': o.resolved_exchanges
-                },
-                                      is_subscriber=False)
+                xdc = sarra.moth.Moth.pubFactory(
+                    o.post_broker, {
+                        'broker': o.post_broker,
+                        'exchange': o.resolved_exchanges
+                    })
                 xdc.close()
 
         # then declare and bind queues....
@@ -1057,7 +1057,7 @@ class sr_GlobalState:
             od = o.dictify()
             if hasattr(o, 'resolved_qname'):
                 od['queue_name'] = o.resolved_qname
-                qdc = sarra.moth.Moth(o.broker, od)
+                qdc = sarra.moth.Moth.subFactory(o.broker, od)
                 qdc.close()
 
     def disable(self):
@@ -1173,13 +1173,13 @@ class sr_GlobalState:
 
             if hasattr(o, 'resolved_qname'):
                 #print('deleting: %s is: %s @ %s' % (f, o.resolved_qname, o.broker.hostname ))
-                qdc = sarra.moth.Moth(o.broker, {
-                    'declare': False,
-                    'bind': False,
-                    'broker': o.broker,
-                    'queue_name': o.resolved_qname
-                },
-                                      is_subscriber=True)
+                qdc = sarra.moth.Moth.subFactory(
+                    o.broker, {
+                        'declare': False,
+                        'bind': False,
+                        'broker': o.broker,
+                        'queue_name': o.resolved_qname
+                    })
                 qdc.getCleanUp()
                 qdc.close()
                 queues_to_delete.append((o.broker, o.resolved_qname))
@@ -1198,13 +1198,12 @@ class sr_GlobalState:
                         xx.remove(qd[1])
                         if len(xx) < 1:
                             print("no more queues, removing exchange %s" % x)
-                            qdc = sarra.moth.Moth(
+                            qdc = sarra.moth.Moth.pubFactory(
                                 o.post_broker, {
                                     'declare': False,
                                     'exchange': x,
                                     'broker': self.brokers[h]['admin'],
-                                },
-                                is_subscriber=False)
+                                })
                             qdc.putCleanUp()
                             qdc.close()
 

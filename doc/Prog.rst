@@ -253,20 +253,20 @@ would look like this::
 
 
 
---------------------
-Plugin Script Basics
---------------------
+----------------------
+Callback Script Basics
+----------------------
 
 An example of the v2 *plugin* format, one can use of file_noop.py in a configuration like so::
 
-  plugin file_noop
+  flow_callback file_noop
 
 The content of the file to be placed (on Linux) in ~/.config/sarra/plugins would be:
 .. code:: python
 
-  # MUST: declare a class with Upper case characters in it.
+  from sarra.flowcb import FlowCB
 
-  class File_Noop(object):
+  class File_Noop(FlowCB):
       def __init__(self,parent):
           parent.declare_option( 'file_string' )  # declare options to avoid 'unknown option' messages being logged.
 
@@ -278,10 +278,7 @@ The content of the file to be placed (on Linux) in ~/.config/sarra/plugins would
           parent.logger.info("file_noop: I have no effect but adding a log line with %s in it" % parent.file_string )
           return True
 
-  self.plugin = 'File_Noop'   # MUST: set the value of the plugin variable to the name of the class.
-
-
-See `Plugin Entry Points`_ for a full list of names of methods which are significant.
+See `Flow Callback Points`_ for a full list of names of methods which are significant.
 
 There is an initialization portion which runs when the component is started and
 a perform section which is to be invoked on the appropriate event.  Setting
@@ -425,8 +422,8 @@ Some examples:
 
 
 
-Plugin Entry Points
--------------------
+Flow Callback Points
+--------------------
 
 Sarracenia will interpret the names of functions as indicating times in processing when
 a given routine should be called.
@@ -687,7 +684,9 @@ of a file, those actions are not fixed but simply small scripts provided with th
 package and customizable by end users.  The rxpipe module is just an example
 provided with sarracenia::
 
-  class File_RxPipe(object):
+  from sarra.flowcb import FlowCB
+
+  class File_RxPipe(FlowCB):
 
       def __init__(self,parent):
           parent.declare_option( 'file_rxpipe_name' ):
@@ -703,7 +702,6 @@ provided with sarracenia::
           self.rxpipe.flush()
           return None
 
-  self.plugin = 'File_RxPipe'
 
 With this fragment of Python, when sr_subscribe is first called, it ensures that
 a pipe named npipe is opened in the specified directory by executing
@@ -1001,7 +999,9 @@ Attempting to run even the above trivial plugin::
 
 To do basic syntax work, one can add some debugging scaffolding.  Taking the above code just add::
 
-    class File_Noop(object):
+    from sarra.flowcb import FlowCB
+
+    class File_Noop(FlowCB):
           def __init__(self,parent):
               parent.declare_option( 'file_string' )
 
@@ -1015,13 +1015,6 @@ To do basic syntax work, one can add some debugging scaffolding.  Taking the abo
               logger.info("file_noop: I have no effect but adding a log line with %s in it" % parent.file_string )
 
               return True
-
-    # after > 2.18.4
-    self.plugin = 'File_Noop'
-    
-    # prior to sarra 2.18.4
-    #file_noop=File_Noop(self)
-    #self.on_file=file_noop.on_file
 
     ## DEBUGGING CODE START
 

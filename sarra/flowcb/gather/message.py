@@ -24,9 +24,7 @@ class Message(FlowCB):
         if hasattr(self.o, 'broker'):
             od = sarra.moth.default_options
             od.update(self.o.dictify())
-            self.consumer = sarra.moth.Moth(self.o.broker,
-                                            od,
-                                            is_subscriber=True)
+            self.consumer = sarra.moth.Moth.subFactory(self.o.broker, od)
 
     def gather(self):
         """
