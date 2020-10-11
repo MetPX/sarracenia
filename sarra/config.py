@@ -839,6 +839,9 @@ class Config:
                 self.masks.append(self._build_mask(k, line[1:]))
             elif k in ['declare']:
                 self._parse_declare(line[1:])
+            elif k in ['feeder']:
+                self.feeder = urllib.parse.urlparse(line[1])
+                self.declared_users[self.feeder.username] = 'feeder'
             elif k in ['include', 'config']:
                 try:
                     self.parse_file(v)

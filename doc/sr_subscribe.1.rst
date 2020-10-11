@@ -2233,15 +2233,15 @@ Administrative options are set using::
   sr_subscribe edit admin
 
 The *feeder* option specifies the account used by default system transfers for components such as
-sr_shovel, sr_sarra and sr_sender (when posting).
+sr_shovel, sr_sarra and sr_sender (when posting). 
 
 - **feeder    amqp{s}://<user>:<pw>@<post_brokerhost>[:port]/<vhost>**
 
 - **admin   <name>        (default: None)**
 
-When set, the admin option will cause sr start to start up the sr_audit daemon.
-FIXME: current versions, all users run sr_audit to notice dead subscribers.
-Most users are defined using the *declare* option.
+The admin user is used to do maintenance operations on the pump such as defining
+the other users. Most users are defined using the *declare* option. The feeder can also be declared in that
+way.
 
 - **declare <role> <name>   (no defaults)**
 
@@ -2268,6 +2268,14 @@ source
   Each source gets a xs_<user> exchange for injection of data posts, and, similar to a subscriber
   to send report messages about processing and receipt of data. Source may also have an xl_<user>
   exchange where, as per report routing configurations, report messages of consumers will be sent.
+
+feeder
+------
+  
+  A user permitted to write to any exchange. Sort of an administrative flow user, meant to pump
+  messages when no ordinary source or subscriber is appropriate to do so.  Is to be used in
+  preference to administrator accounts to run flows.
+
 
 User credentials are placed in the credentials files, and *sr_audit* will update
 the broker to accept what is specified in that file, as long as the admin password is
