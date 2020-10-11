@@ -48,7 +48,10 @@ logger = logging.getLogger(__name__)
 
 logger.setLevel(logging.INFO)
 
-import os, urllib, urllib.parse, sys, re
+import os
+import re
+import urllib, urllib.parse
+import sys
 
 # a class for credential details/options
 # add any other options here... and process in parse
@@ -62,6 +65,7 @@ class credential_details:
         self.binary = True
         self.tls = False
         self.prot_p = False
+        self.bearer_token = None
 
     def __str__(self):
         s = ''
@@ -71,6 +75,7 @@ class credential_details:
         s += " %s" % self.binary
         s += " %s" % self.tls
         s += " %s" % self.prot_p
+        s += " %s" % self.bearer_token
         return s
 
 
@@ -235,6 +240,8 @@ class sr_credentials:
                     details.tls = True
                 elif keyword == 'prot_p':
                     details.prot_p = True
+                elif keyword in ['bearer_token', 'bt']:
+                    details.bearer_token = parts[1].strip()
                 else:
                     logger.warning("bad credential option (%s)" % keyword)
 

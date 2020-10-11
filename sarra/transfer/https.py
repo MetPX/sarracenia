@@ -34,6 +34,7 @@
 
 import logging
 import os
+import sarra
 import ssl
 import sys
 import urllib.request, urllib.error
@@ -140,11 +141,10 @@ class Https(Transfer):
             ok, details = self.o.credentials.get(self.destination)
             if details: url = details.url
 
-            self.user = url.username
-            self.password = url.password
-
-            if url.username == '': self.user = None
-            if url.password == '': self.password = None
+            self.user = url.username if url.username != '' else None
+            self.password = url.password if url.password != '' else None
+            self.bearer_token = details.bearer_token if hasattr(
+                details, 'bearer_token') else None
 
             return True
 
@@ -261,8 +261,13 @@ class Https(Transfer):
 
         try:
             # when credentials are needed.
-            if self.user != None:
+            headers = {'user-agent': 'Sarracenia ' + sarra.__version__}
+            if self.bearer_token:
+                self.logger.debug('bearer_token: %s' % self.bearer_token)
+                headers['Authorization'] = 'Bearer ' + self.bearer_token
 
+            if self.user != None:
+                password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
                 # takeaway credentials info from urlstr
                 cred = self.user + '@'
                 self.urlstr = self.urlstr.replace(cred, '')
@@ -271,7 +276,6 @@ class Https(Transfer):
                     self.urlstr = self.urlstr.replace(cred, '')
 
                 # continue with authentication
-                password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
                 password_mgr.add_password(None, self.urlstr, self.user,
                                           self.password)
                 auth_handler = urllib.request.HTTPBasicAuthHandler(
@@ -292,7 +296,7 @@ class Https(Transfer):
                 urllib.request.install_opener(opener)
 
             # Now all calls to get the request use our opener.
-            self.req = urllib.request.Request(self.urlstr)
+            self.req = urllib.request.Request(self.urlstr, headers=headers)
 
             # set range in byte if needed
             if remote_offset != 0:
