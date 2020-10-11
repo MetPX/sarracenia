@@ -5,7 +5,7 @@ import netifaces
 import os
 
 # v3 plugin architecture...
-import sarra.plugin
+import sarra.flowcb
 import sarra.integrity
 
 import stat
@@ -116,7 +116,7 @@ class Flow:
                             level=getattr(logging, self.o.logLevel.upper()))
 
         self.plugins = {}
-        for entry_point in sarra.plugin.entry_points:
+        for entry_point in sarra.flowcb.entry_points:
             self.plugins[entry_point] = []
 
         # FIXME: open new worklist
@@ -126,12 +126,12 @@ class Flow:
         self.worklist.rejected = []
         self.worklist.failed = []
 
-        self.plugins['load'] = ['sarra.plugin.retry.Retry']
+        self.plugins['load'] = ['sarra.flowcb.retry.Retry']
 
         # open cache, get masks.
         if self.o.suppress_duplicates > 0:
             # prepend...
-            self.plugins['load'].append('sarra.plugin.nodupe.NoDupe')
+            self.plugins['load'].append('sarra.flowcb.nodupe.NoDupe')
 
         # FIXME: open retry
 
@@ -145,7 +145,7 @@ class Flow:
 
         # initialize plugins.
         if hasattr(self.o, 'v2plugins'):
-            self.plugins['load'].append('sarra.plugin.v2wrapper.V2Wrapper')
+            self.plugins['load'].append('sarra.flowcb.v2wrapper.V2Wrapper')
 
     def loadPlugins(self, plugins_to_load):
 
@@ -156,10 +156,10 @@ class Flow:
         #logger.info( 'plugins to load: %s' % ( plugins_to_load ) )
         for c in plugins_to_load:
 
-            plugin = sarra.plugin.load_library(c, self.o)
+            plugin = sarra.flowcb.load_library(c, self.o)
 
             #logger.info( 'plugin loading: %s an instance of: %s' % ( c, plugin ) )
-            for entry_point in sarra.plugin.entry_points:
+            for entry_point in sarra.flowcb.entry_points:
                 if hasattr(plugin, entry_point):
                     fn = getattr(plugin, entry_point)
                     if callable(fn):
@@ -174,7 +174,7 @@ class Flow:
                 continue
 
             schemes = plugin.registered_as()
-            for schemed_entry_point in sarra.plugin.schemed_entry_points:
+            for schemed_entry_point in sarra.flowcb.schemed_entry_points:
                 if not hasattr(plugin, schemed_entry_point):
                     continue
 

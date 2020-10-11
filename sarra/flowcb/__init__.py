@@ -12,11 +12,11 @@ import logging
 
 from abc import ABCMeta, abstractmethod
 """
-1st draft of a v03 plugin method: flow_plugins
+1st draft of a v03 plugin method: flow_callback
 
 sample call:
 
-flow_plugin sarra.plugin.name.Name
+flow_callback sarra.flowcb.name.Name
 
 will instantiate an object of that type whose appropriately name methods
 will be called at the right time.
@@ -28,9 +28,9 @@ options is a dictionary of settings, used to override default behaviour
 
 a setting is declared:
 
-set sarra.plugin.msg.log.Log.level debug
+set sarra.flowcb.msg.log.Log.level debug
 
-(the prefix for the setting matches the type hierarchy in flow_plugin)
+(the prefix for the setting matches the type hierarchy in flow_callback)
 
 the plugin should get the setting:
 
@@ -69,7 +69,7 @@ entry_points = [
 schemed_entry_points = ['do_get', 'do_put']
 
 
-class Plugin:
+class FlowCB:
     """
     FIXME: document the API signatures for all the entry points. 
     """

@@ -1296,7 +1296,7 @@ class sr_GlobalState:
                         " of %s " % c,
                         os.path.normpath(self.package_lib_dir + os.sep +
                                          'examples' + os.sep + c), c)
-            elif self.leftovers[0] in ['flow_plugins', 'fplugin', 'fp']:
+            elif self.leftovers[0] in ['flow_callback', 'flowcb', 'fcb']:
                 print('Provided plugins: ( %s ) ' % self.package_lib_dir)
                 self.print_configdir2(
                     " of plugins: ",
@@ -1310,7 +1310,7 @@ class sr_GlobalState:
                                      'plugins'), 'plugins')
             else:
                 print(
-                    'Valid things to list: examples,eg,ie flow_plugins,fplugins,fp v2plugins,v2p'
+                    'Valid things to list: examples,eg,ie flow_callback,flowcb,fcb v2plugins,v2p'
                 )
         else:
             print('User Configurations: (from: %s )' % self.user_config_dir)

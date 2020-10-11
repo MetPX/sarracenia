@@ -18,8 +18,8 @@ import random
 from random import choice
 
 from sarra import *
-from sarra.plugin import Plugin
-from sarra.plugin.gather import msg_init
+from sarra.flowcb import FlowCB
+from sarra.flowcb.gather import msg_init
 import sarra.integrity
 import sarra.filemetadata
 
@@ -44,7 +44,7 @@ class SimpleEventHandler(PatternMatchingEventHandler):
         super().__init__()
 
 
-class File(Plugin):
+class File(FlowCB):
     """
     read the file system, create messages for the files you find.
 

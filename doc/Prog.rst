@@ -32,8 +32,8 @@ are expected to be concise, and an elementary knowledge of Python should suffice
 build new plugins in a copy/paste manner, with many samples being available to read.  
 
 
-Plugin Script Ideas
--------------------
+Extension Ideas
+---------------
 
 Examples of things that would be fun to do with plugins:
 
@@ -79,24 +79,30 @@ Examples are available using the list command::
 FIXME: missing command to list plugins
 
 
-The packages plugins are shown in the first grouping of available ones. Many of them have arguments which
+Flow Callbacks
+~~~~~~~~~~~~~~
+
+The many ways to extend functionality, the most common one being adding callbacks
+to flow components. All of the Sarracenia components are implemented using
+the sarra.flow class.  There is a parent class sarra.flowcb to implement them.
+The package's plugins are shown in the first grouping of available ones. Many of them have arguments which
 are documented by listing them. In a configuration file, one might have the line::
 
-    flow_plugin sarra.plugin.msg.log.Log
+    flow_callback sarra.flowcb.msg.log.Log
 
 That line cause Sarracenia to look in the Python search path for a class like:
 
 .. code:: python
 
-  blacklab% cat sarra/plugin/msg/log.py
+  blacklab% cat sarra/flowcb/msg/log.py
 
-  from sarra.plugin import Plugin
+  from sarra.flowcb import FlowCB
   import logging
 
   logger = logging.getLogger(__name__)
 
 
-  class Log(Plugin):
+  class Log(FlowCB):
     def __init__(self, options):
 
         # FIXME: should a logging module have a loglevel setting?
@@ -154,6 +160,24 @@ One can also see which plugins are active in a configuration by looking at the m
    .
    blacklab% 
 
+
+
+Extending Classes
+~~~~~~~~~~~~~~~~~
+
+One can also add additional functionality to Sarracenia by creating new subclasses.
+
+sarra.moth - Messages Organized into Topic Hierarchies. (existing ones: rabbitmq-amqp)
+
+sarra.integrity - checksum algorithms ( existing ones: md5, sha512, arbitrary, random )
+
+sarra.transfer - additional transport protocols  (https, ftp, sftp )
+
+sarra.flow - creation of new components beyond the built-in ones. (post, sarra, shovel, etc...)
+ 
+One would start with the one of the existing classes, copy it somewhere else in the python path,
+and build your extension. These classes are added to Sarra using the *import* option
+in the configuration files.
 
 
 Why v3 API should be used whenever possible
@@ -233,7 +257,7 @@ would look like this::
 Plugin Script Basics
 --------------------
 
-An example of the *plugin* format, one can use of file_noop.py in a configuration like so::
+An example of the v2 *plugin* format, one can use of file_noop.py in a configuration like so::
 
   plugin file_noop
 

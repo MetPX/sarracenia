@@ -1,4 +1,4 @@
-#s!/usr/bin/env python3
+#!/usr/bin/env python3
 
 #
 # This file is part of Sarracenia.
@@ -97,17 +97,17 @@ str_options = [
 """
 convert_to_v3 = {
     'plugin': {
-        'msg_fdelay': ['flow_plugin', 'sarra.plugin.msg.fdelay.FDelay'],
-        'accel_wget': ['flow_plugin', 'sarra.plugin.accel_wget.ACCEL_WGET'],
-        'accel_scp': ['flow_plugin', 'sarra.plugin.accel_scp.ACCEL_SCP'],
+        'msg_fdelay': ['flow_callback', 'sarra.flowcb.msg.fdelay.FDelay'],
+        'accel_wget': ['flow_callback', 'sarra.flowcb.accel_wget.ACCEL_WGET'],
+        'accel_scp': ['flow_callback', 'sarra.flowcb.accel_scp.ACCEL_SCP'],
     },
     'on_message': {
         'msg_delete':
-        ['flow_plugin', 'sarra.plugin.msg.deleteflowfiles.DeleteFlowFiles'],
-        'msg_rawlog': ['flow_plugin', 'sarra.plugin.msg.log.Log']
+        ['flow_callback', 'sarra.flowcb.msg.deleteflowfiles.DeleteFlowFiles'],
+        'msg_rawlog': ['flow_callback', 'sarra.flowcb.msg.log.Log']
     },
     'on_line': {
-        'line_log': ['flow_plugin', 'sarra.plugin.line_log']
+        'line_log': ['flow_callback', 'sarra.flowcb.line_log']
     }
 }
 
@@ -769,13 +769,13 @@ class Config:
           v3 plugin accept options for specific modules.
     
           parsed from:
-          set sarra.plugins.log.msg.Log.level debug
+          set sarra.flowcb.log.msg.Log.level debug
 
           example:   
-          opt= sarra.plugins.log.msg.Log.level  value = debug
+          opt= sarra.flowcb.log.msg.Log.level  value = debug
 
           results in:
-          self.settings[ sarra.plugins.log.msg.Log ][level] = debug
+          self.settings[ sarra.flowcb.log.msg.Log ][level] = debug
 
           options should be fed to plugin class on instantiation.
           stripped of class... 
@@ -851,7 +851,7 @@ class Config:
                 self._parse_binding(v)
             elif k in ['import']:
                 self.imports.append(v)
-            elif k in ['flow_plugin', 'fplugin', 'fp']:
+            elif k in ['flow_callback', 'flowcb', 'fcb']:
                 self.plugins.append(v)
             elif k in ['set', 'setting', 's']:
                 self._parse_setting(k, line[2:])

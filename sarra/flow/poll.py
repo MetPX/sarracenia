@@ -8,7 +8,7 @@ import sarra.moth
 import copy
 from sarra.flow import Flow
 import logging
-from sarra.plugin.gather import msg_init
+from sarra.flowcb.gather import msg_init
 
 import sarra.config
 
@@ -46,8 +46,8 @@ class Poll(Flow):
     def __init__(self, options):
 
         super().__init__(options)
-        self.plugins['load'].append('sarra.plugin.line_mode.Line_Mode')
-        self.plugins['load'].append('sarra.plugin.post.message.Message')
+        self.plugins['load'].append('sarra.flowcb.line_mode.Line_Mode')
+        self.plugins['load'].append('sarra.flowcb.post.message.Message')
 
         # check destination
 

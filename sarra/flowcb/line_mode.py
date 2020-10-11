@@ -20,12 +20,12 @@ sample line from sftp server:
 """
 
 import logging
-from sarra.plugin import Plugin
+from sarra.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
 
 
-class Line_Mode(Plugin):
+class Line_Mode(FlowCB):
     def __init__(self, options):
 
         self.o = options

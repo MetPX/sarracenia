@@ -3,8 +3,8 @@
   This plugin delays processing of messages by *message_delay* seconds
 
 
-  sarra.plugin.msg.fdelay 30
-  import sarra.plugin.msg.fdelay.FDelay
+  sarra.flowcb.msg.fdelay 30
+  import sarra.flowcb.msg.fdelay.FDelay
 
 
   every message will be at least 30 seconds old before it is forwarded by this plugin.
@@ -13,13 +13,13 @@
 """
 import logging
 
-from sarra.plugin import Plugin
+from sarra.flowcb import FlowCB
 from sarra import timestr2flt, nowflt
 
 logger = logging.getLogger(__name__)
 
 
-class FDelay(Plugin):
+class FDelay(FlowCB):
     def __init__(self, options):
 
         self.o = options

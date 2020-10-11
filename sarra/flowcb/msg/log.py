@@ -1,10 +1,10 @@
-from sarra.plugin import Plugin
+from sarra.flowcb import FlowCB
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-class Log(Plugin):
+class Log(FlowCB):
     def __init__(self, options):
 
         # FIXME: should a logging module have a loglevel setting?

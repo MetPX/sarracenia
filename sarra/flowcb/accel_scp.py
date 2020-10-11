@@ -38,13 +38,13 @@ import subprocess
 import sarra
 #from sarra import chunksize_from_str
 
-from sarra.plugin import Plugin
+from sarra.flowcb import FlowCB
 from sarra.config import declare_plugin_option
 
 logger = logging.getLogger(__name__)
 
 
-class ACCEL_SCP(Plugin):
+class ACCEL_SCP(FlowCB):
     def __init__(self, options):
 
         self.o = options

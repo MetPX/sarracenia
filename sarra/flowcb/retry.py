@@ -20,14 +20,14 @@ from sarra import nowflt, timestr2flt
 
 import logging
 
-from sarra.plugin import Plugin
+from sarra.flowcb import FlowCB
 
 # class sarra/retry
 
 logger = logging.getLogger(__name__)
 
 
-class Retry(Plugin):
+class Retry(FlowCB):
     """
     Persist messages to a file so that processing can be attempted again later.
     For safety reasons, want to be writing to a file ASAP.

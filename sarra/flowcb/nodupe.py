@@ -40,12 +40,12 @@ from sarra import msg_set_report
 
 from sarra import nowflt
 
-from sarra.plugin import Plugin
+from sarra.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
 
 
-class NoDupe(Plugin):
+class NoDupe(FlowCB):
     """
 
        options:

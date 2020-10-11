@@ -11,7 +11,7 @@ import urllib
 
 import sarra
 import sarra.config
-from sarra.plugin import Plugin
+from sarra.flowcb import FlowCB
 
 from sarra import nowflt, timestr2flt, timev2tov3str
 
@@ -179,7 +179,7 @@ def v02tov03message(body, headers, topic):
     return msg
 
 
-class V2Wrapper(Plugin):
+class V2Wrapper(FlowCB):
     def __init__(self, o):
         """
            A wrapper class to run v02 plugins.

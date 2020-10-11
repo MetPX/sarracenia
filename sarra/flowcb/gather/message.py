@@ -8,12 +8,12 @@
 import logging
 
 import sarra.moth
-from sarra.plugin import Plugin
+from sarra.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
 
 
-class Message(Plugin):
+class Message(FlowCB):
     """
        gather messages from a message protocol source.
     """

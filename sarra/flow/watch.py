@@ -32,5 +32,5 @@ class Watch(Flow):
 
         super().__init__(options)
         logger.info('watching!')
-        self.plugins['load'].append('sarra.plugin.gather.file.File')
-        self.plugins['load'].append('sarra.plugin.post.message.Message')
+        self.plugins['load'].append('sarra.flowcb.gather.file.File')
+        self.plugins['load'].append('sarra.flowcb.post.message.Message')

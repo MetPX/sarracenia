@@ -34,7 +34,7 @@ from sarra import durationToSeconds
 
 from sarra.moth import Moth
 
-from sarra.plugin import v2wrapper
+from sarra.flowcb import v2wrapper
 
 import time
 

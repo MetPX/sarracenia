@@ -31,5 +31,5 @@ class Post(Flow):
     def __init__(self, options):
 
         super().__init__(options)
-        self.plugins['load'].append('sarra.plugin.gather.file.File')
-        self.plugins['load'].append('sarra.plugin.post.message.Message')
+        self.plugins['load'].append('sarra.flowcb.gather.file.File')
+        self.plugins['load'].append('sarra.flowcb.post.message.Message')
