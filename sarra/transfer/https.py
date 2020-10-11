@@ -61,13 +61,11 @@ logger = logging.getLogger(__name__)
 
 
 class Https(Transfer):
-    @classmethod
-    def assimilate(cls, obj):
-        obj.__class__ = Https
+    def __init__(self, proto, options):
 
-    def __init__(self):
+        super().__init__(proto, options)
+
         logger.debug("sr_http __init__")
-        Https.assimilate(self)
 
         self.tlsctx = ssl.create_default_context()
         if hasattr(self.o, 'tls_rigour'):
@@ -95,7 +93,7 @@ class Https(Transfer):
 
         self.init()
 
-    def registered_as(self):
+    def registered_as():
         return ['http', 'https']
 
     # cd

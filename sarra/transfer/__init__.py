@@ -122,6 +122,16 @@ class Transfer():
          opt   options.bufsize
 
     """
+    @staticmethod
+    def factory(proto, options):
+
+        Found = False
+        for sc in Transfer.__subclasses__():
+            if (hasattr(sc, 'registered_as')
+                    and (proto in sc.registered_as())):
+                return sc(proto, options)
+        return None
+
     def __init__(self, proto, options):
         logger.debug("sr_proto __init__: subclasses=%s" %
                      Transfer.__subclasses__())
@@ -131,18 +141,17 @@ class Transfer():
         sc = None
         # 0:4 is to ignore s in https and use the same protocol for both.
         # FIXME: might want to add 'reverse' to __subclasses__, so plugins are checked first.
-        for sc in Transfer.__subclasses__():
-
-            if (hasattr(sc, 'registered_as')
-                    and (proto in sc.registered_as(self))):
-                # old version or (str(proto[0:4]) == sc.__name__.lower()[0:4]):
-                logger.debug("HOHO found!")
-                self.init()
-                sc.__init__(self)
-                break
-
-        if sc is None: return None
-        logger.debug("HOHO found! .. %s " % (sc.__name__.lower()))
+        #for sc in Transfer.__subclasses__():
+        #
+        #   if (hasattr(sc, 'registered_as')
+        #           and (proto in sc.registered_as(self))):
+        #       # old version or (str(proto[0:4]) == sc.__name__.lower()[0:4]):
+        #       logger.debug("HOHO found!")
+        #       self.init()
+        #       sc.__init__(self)
+        #       break
+        # if sc is None: return None
+        self.init()
 
     # init
     @abstractmethod

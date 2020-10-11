@@ -69,7 +69,8 @@ class Poll(Flow):
                 self.o.post_baseUrl = self.o.post_baseUrl.replace(
                     ':' + self.details.url.password, '')
 
-        self.dest = sarra.transfer.Transfer(self.details.url.scheme, self.o)
+        self.dest = sarra.transfer.Transfer.factory(self.details.url.scheme,
+                                                    self.o)
 
         if self.dest is None:
             logger.critical("unsupported polling protocol")

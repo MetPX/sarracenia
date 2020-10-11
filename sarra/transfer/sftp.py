@@ -74,14 +74,11 @@ logger = logging.getLogger(__name__)
 
 
 class Sftp(Transfer):
-    @classmethod
-    def assimilate(cls, obj):
-        obj.__class__ = Sftp
+    def __init__(self, proto, options):
 
-    def __init__(self):
+        super().__init__(proto, options)
+
         logger.debug("sr_sftp __init__")
-
-        Sftp.assimilate(self)
 
         # sftp command times out after 20 secs
         # this setting is different from the computed timeout (protocol)
@@ -107,7 +104,7 @@ class Sftp(Transfer):
                          ssh_config)
             logger.debug('Exception details: ', exc_info=True)
 
-    def registered_as(self):
+    def registered_as():
         return ['sftp', 'scp', 'ssh', 'fish']
 
     # cd
