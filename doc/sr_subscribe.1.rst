@@ -324,11 +324,11 @@ processing called *plugins.* Plugins define and use additional settings.
 For the most pythonic experience one should use the *import* option.
 For example::
 
-  flow_plugin sarra.plugin.msg.log.Log
+  flow_plugin sarra.flowcb.msg.log.Log
 
 The log.py file included in the package is like this::
 
-  from sarra.plugin import Plugin
+  from sarra.flowcb import FlowCB
   import logging
 
   logger = logging.getLogger( __name__ ) 

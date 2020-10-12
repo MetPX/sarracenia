@@ -565,16 +565,22 @@ breaking changes:
 Features
 --------
 
-* sarra.plugin API is now vanilla python with no magic settings. just standard classes, using standard import mechanism.
-  debugging should be much simpler now as the interpreter will provide much better error messages on startup.
+* The all the components are now derived from the *flow* class, and run the general algorithm already
+  designed as the basis of v2, but never implemented as such.
 
-* properties/options for classes are now hierarchical, so can set debug to specific classes within app.
+* The plugin API is now vanilla python with no magic settings. just standard classes, using standard import mechanism.
+  debugging should be much simpler now as the interpreter will provide much better error messages on startup.
+  The v2 style plugins are now called *flow callbacks*, and there are a number of classes (integrity, moth, 
+  transfer, perhaps flow) that permit extension by straightforward sub-classing. This should make it much
+  easier to add additional protocols for transport and messages, as well checksum algorithms for new data types.
 
 * sarra.moth class abstracts away AMQP, so messaging protocol becomes pluggable.
 
 * use the sarra. prefix (already present) to replace sr\_ prefix on modules.
 
 * API access to flows. (so can build entirely new programs in python by subclassing.)
+
+* properties/options for classes are now hierarchical, so can set debug to specific classes within app.
 
 * sr ability to select multiple components and configurations to operate on.
 
@@ -584,7 +590,7 @@ Features
 
 * messages are acknowledged more quickly, should help with throughput.
 
-* plugin API are now based on groups of messages, rather than individual ones, allowing people
+* FlowCB plugin API are now based on groups of messages, rather than individual ones, allowing people
   to organize concurrent work.
 
 * integrity (checksums) are now plugins.
