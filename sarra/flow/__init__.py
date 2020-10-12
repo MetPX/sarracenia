@@ -87,12 +87,10 @@ class Flow:
     """
     @staticmethod
     def factory(cfg):
-        subclass = None
         for sc in Flow.__subclasses__():
             if cfg.program_name == sc.__name__.lower():
-                subclass = sc
-
-        return subclass(cfg) if subclass else None
+                return sc(cfg)
+        return None
 
     def __init__(self, cfg=None):
         """

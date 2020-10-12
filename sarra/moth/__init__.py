@@ -70,33 +70,16 @@ default_options = {
 
 
 class Moth():
-    @staticmethod
-    def subFactory(broker, props):
-        logger.error("Moth.subclasses = %s" % Moth.__subclasses__())
-        for sc in Moth.__subclasses__():
-            logger.error('broker.scheme: %s vs %s' %
-                         (broker.scheme, sc.__name__.lower()))
-            if (broker.scheme == sc.__name__.lower()) or (
-                (broker.scheme[0:-1] == sc.__name__.lower()) and
-                (broker.scheme[-1] == 's')):
-                logger.error('matched!')
-                return sc(broker, props, True)
-        return None
-
-    @staticmethod
-    def pubFactory(broker, props):
-        for sc in Moth.__subclasses__():
-            if (broker.scheme == sc.__name__.lower()) or (
-                (broker.scheme[0:-1] == sc.__name__.lower()) and
-                (broker.scheme[-1] == 's')):
-                return sc(broker, props, False)
-        return None
-
-    def __init__(self, broker, props=None, is_subscriber=True):
-        """
+    """
        initialize a broker connection. Connections are unidirectional.
-       either for subscribing or publishing.
+       either for subscribing (with subFactory) or publishing (with pubFactory.)
+       
+       the factories return objects subclassed to match the protocol required
+       by the broker argument.
 
+       arguments to the factories are:
+
+       broker ... the url of the broker to connect to.
        props is a dictionary or properties/parameters.
        supplied as overrides to the default properties listed above.
 
@@ -111,10 +94,6 @@ class Moth():
        AMQPv1.0 --> qpid-proton         --> amq1, amq1s
 
 
-       If is_subscriber=True, then this is a consuming instance.
-       expect calls to get* routines.
-
-       if is_subscriber=False, then expect/permit only calls to put*
 
        messaging_strategy:
         how to manage the connection. Covers whether to treat the connection
@@ -160,9 +139,37 @@ class Moth():
            'exchange' (only in AMQP... hmm...)
        
 
-       """
+    """
+    @staticmethod
+    def subFactory(broker, props):
+        logger.error("Moth.subclasses = %s" % Moth.__subclasses__())
+        for sc in Moth.__subclasses__():
+            logger.error('broker.scheme: %s vs %s' %
+                         (broker.scheme, sc.__name__.lower()))
+            if (broker.scheme == sc.__name__.lower()) or (
+                (broker.scheme[0:-1] == sc.__name__.lower()) and
+                (broker.scheme[-1] == 's')):
+                logger.error('matched!')
+                return sc(broker, props, True)
+        return None
 
-        #protos = []
+    @staticmethod
+    def pubFactory(broker, props):
+        for sc in Moth.__subclasses__():
+            if (broker.scheme == sc.__name__.lower()) or (
+                (broker.scheme[0:-1] == sc.__name__.lower()) and
+                (broker.scheme[-1] == 's')):
+                return sc(broker, props, False)
+        return None
+
+    def __init__(self, broker, props=None, is_subscriber=True):
+        """
+           If is_subscriber=True, then this is a consuming instance.
+           expect calls to get* routines.
+
+           if is_subscriber=False, then expect/permit only calls to put*
+        """
+
         self.is_subscriber = is_subscriber
 
         self.props = copy.deepcopy(default_options)
@@ -182,18 +189,6 @@ class Moth():
         logging.basicConfig(format=self.props['logFormat'],
                             level=getattr(logging,
                                           self.props['logLevel'].upper()))
-        #""" relevant:
-        # https://stackoverflow.com/questions/18020074/convert-a-baseclass-object-into-a-subclass-object-idiomatically
-        # assmimilate in the vein of the Borg: "You will be assimilated." Turns the caller into child class.
-        #"""
-        #for sc in Moth.__subclasses__():
-        #    purl = sc.url_proto(self)
-        #    if (self.broker is not None) and (self.broker.scheme[0:4] == purl):
-        #        sc.__init__(self, broker, self.props)
-        #        return
-        #    protos.append(purl)
-
-        #logger.critical("unsupported broker URL. Pick one of: %s" % protos)
 
     @property
     def default_options():
@@ -202,9 +197,6 @@ class Moth():
 
         """
         return Moth.__default_options
-
-    def url_proto(self):
-        return "undefined"
 
     def getNewMessage(self):
         """

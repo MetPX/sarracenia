@@ -14,6 +14,3 @@ class PIKA(Moth):
 
         logger.error(
             "__init__ AMQP 0.x (rabbitmq) using pika: not implemented ")
-
-    def url_proto(self):
-        return "pika"

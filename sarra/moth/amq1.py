@@ -15,6 +15,3 @@ class AMQ1(Moth):
         logger.error(
             "__init__ AMQP 1.0 Moth using qpid-proton library: not implemented"
         )
-
-    def url_proto(self):
-        return "amq1"

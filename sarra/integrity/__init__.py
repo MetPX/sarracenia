@@ -29,26 +29,19 @@ import logging
 
 import functools
 
-#from abc import ABCMeta, abstractmethod
-
 from base64 import b64encode
 
 logger = logging.getLogger(__name__)
 
 
 class Integrity:
-    #__metaclass__ = ABCMeta
-
     @staticmethod
     def factory(method='sha512'):
 
-        found = False
         for sc in Integrity.__subclasses__():
-            Found = method == sc.__name__.lower()
-            if Found:
-                break
-
-        return sc() if Found else None
+            if method == sc.__name__.lower():
+                return sc()
+        return None
 
     def get_method(self):
         return type(self).__name__.lower()

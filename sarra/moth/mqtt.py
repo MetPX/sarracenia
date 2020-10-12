@@ -16,6 +16,3 @@ class MQTT(Moth):
 
         logger.error(
             "__init__ MQTT TMPC using paho client library: not implemented.")
-
-    def url_proto(self):
-        return "mqtt"

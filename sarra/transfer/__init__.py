@@ -31,7 +31,6 @@
 #
 #
 
-from abc import ABCMeta, abstractmethod
 import calendar, datetime
 from hashlib import md5
 from hashlib import sha512
@@ -125,7 +124,6 @@ class Transfer():
     @staticmethod
     def factory(proto, options):
 
-        Found = False
         for sc in Transfer.__subclasses__():
             if (hasattr(sc, 'registered_as')
                     and (proto in sc.registered_as())):
@@ -135,39 +133,17 @@ class Transfer():
     def __init__(self, proto, options):
         logger.debug("sr_proto __init__: subclasses=%s" %
                      Transfer.__subclasses__())
-
         self.o = options
-
-        sc = None
-        # 0:4 is to ignore s in https and use the same protocol for both.
-        # FIXME: might want to add 'reverse' to __subclasses__, so plugins are checked first.
-        #for sc in Transfer.__subclasses__():
-        #
-        #   if (hasattr(sc, 'registered_as')
-        #           and (proto in sc.registered_as(self))):
-        #       # old version or (str(proto[0:4]) == sc.__name__.lower()[0:4]):
-        #       logger.debug("HOHO found!")
-        #       self.init()
-        #       sc.__init__(self)
-        #       break
-        # if sc is None: return None
         self.init()
 
-    # init
-    @abstractmethod
     def init(self):
-        #logger.debug("sr_proto init")
-
         self.sumalgo = None
         self.checksum = None
         self.data_sumalgo = None
         self.data_checksum = None
         self.fpos = 0
-
         self.tbytes = 0
         self.tbegin = nowflt()
-
-        logger.debug("timeout %d" % self.o.timeout)
 
     # local_read_close
     def local_read_close(self, src):

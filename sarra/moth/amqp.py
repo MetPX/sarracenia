@@ -121,7 +121,6 @@ class AMQP(Moth):
            connect to broker, depending on message_strategy stubborness, remain connected.
            
         """
-        #AMQP.assimilate(self)
 
         super().__init__(broker, props, is_subscriber)
 
@@ -141,11 +140,6 @@ class AMQP(Moth):
             for s in self.props['settings'][me]:
                 self.props[s] = self.props['settings'][me][s]
 
-        #logging.basicConfig(format=self.props['logFormat'],
-        #                    level=getattr(logging,
-        #                                  self.props['logLevel'].upper()))
-
-        #logger.debug( '%s logLevel set to: %s ' % ( me, self.props['logLevel'] ) )
         if self.is_subscriber:  #build_consumer
             self.__getSetup()
             return
@@ -316,16 +310,6 @@ class AMQP(Moth):
             logger.error("AMQP putCleanup failed to {} with {}".format(
                 self.props['broker'].hostname, err))
             logger.debug('Exception details: ', exc_info=True)
-
-    @classmethod
-    def assimilate(cls, obj):
-        """
-        Turn the calling object into 
-        """
-        obj.__class__ = AMQP
-
-    def url_proto(self):
-        return "amqp"
 
     def newMessages(self):
 
