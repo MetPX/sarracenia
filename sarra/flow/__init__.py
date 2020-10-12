@@ -60,7 +60,7 @@ class Flow:
 
       A flow processes worklists of messages
 
-      worklist given to plugins...
+      worklist given to callbacks...
 
           worklist.incoming --> new messages to continue processing
           worklist.ok       --> successfully processed
@@ -68,19 +68,19 @@ class Flow:
           worklist.failed   --> messages for which processing failed.
 
       Initially all messages are placed in incoming.
-      if a plugin decides:
+      if a callback decides:
       
       - a message is not relevant, it is moved to rejected.
       - all processing has been done, it moves it to ok.
       - an operation failed and it should be retried later, move to retry
 
-    plugins must not remove messages from all worklists, re-classify them.
+    callbacks must not remove messages from all worklists, re-classify them.
     it is necessary to put rejected messages in the appropriate worklist
     so they can be acknowledged as received.
 
     plugins  -- dict of modular functionality metadata.
-         "load" - list of (v3) plugins to load.
-         time    - one of the invocation times of plugins. examples:
+         "load" - list of (v3) flow_callbacks to load.
+         time    - one of the invocation times of callbacks. examples:
                    "on_start", "on_messages", etc...
                  contains routines to run at each *time*
      
@@ -189,7 +189,7 @@ class Flow:
         #logger.info( 'plugins initialized')
         self.o.check_undeclared_options()
 
-    def _runPluginsWorklist(self, entry_point):
+    def _runCallbacksWorklist(self, entry_point):
 
         if hasattr(self, 'plugins') and (entry_point in self.plugins):
             for p in self.plugins[entry_point]:
@@ -197,7 +197,7 @@ class Flow:
                 if len(self.worklist.incoming) == 0:
                     return
 
-    def _runPluginsTime(self, entry_point):
+    def _runCallbacksTime(self, entry_point):
         for p in self.plugins[entry_point]:
             p()
 
@@ -221,7 +221,7 @@ class Flow:
 
     def close(self):
 
-        self._runPluginsTime('on_stop')
+        self._runCallbacksTime('on_stop')
         logger.info('flow/close completed cleanly')
 
     def ack(self, mlist):
@@ -260,7 +260,7 @@ class Flow:
         #for t in self.plugins:
         #    logger.info("%s : %s" % ( t, self.plugins[t] ) )
 
-        self._runPluginsTime('on_start')
+        self._runCallbacksTime('on_start')
         spamming = True
 
         while True:
@@ -309,7 +309,7 @@ class Flow:
             now = nowflt()
             if now > next_housekeeping:
                 logger.info('on_housekeeping')
-                self._runPluginsTime('on_housekeeping')
+                self._runCallbacksTime('on_housekeeping')
                 next_housekeeping = now + self.o.housekeeping
 
             if current_sleep > 0:
@@ -408,7 +408,7 @@ class Flow:
 
         self.worklist.incoming = filtered_worklist
         # apply on_messages plugins.
-        self._runPluginsWorklist('on_messages')
+        self._runCallbacksWorklist('on_messages')
 
         logger.debug('done')
 
@@ -445,7 +445,7 @@ class Flow:
             if self.o.post_baseDir:
                 m['relPath'].replace(self.o.post_baseDir, '', 1)
 
-        self._runPluginsWorklist('on_posts')
+        self._runCallbacksWorklist('on_posts')
         for p in self.plugins["post"]:
             p(self.worklist)
 
