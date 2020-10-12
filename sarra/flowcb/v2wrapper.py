@@ -258,7 +258,7 @@ class V2Wrapper(FlowCB):
 
         self.state_vars.append(option)
 
-        sarra.config.declare_plugin_option(option, 'list')
+        sarra.config.add_option(option)
         if not hasattr(self.o, option):
             logger.info('value of %s not set' % option)
             return

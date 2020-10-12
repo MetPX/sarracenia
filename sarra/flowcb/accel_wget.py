@@ -35,31 +35,18 @@ import logging
 
 import sarra
 from sarra.flowcb import FlowCB
-from sarra.config import declare_plugin_option
+from sarra.config import add_option
 import sarra.transfer.sftp
 
 logger = logging.getLogger(__name__)
 
+add_option('accel_wget_command', 'str', '/usr/bin/wget')
+add_option(' accel_wget_threshold', 'size', '1M')
+add_option('accel_wget_protocol', 'list', ['http', 'https'])
+
 
 class ACCEL_WGET(FlowCB):
-    def __init__(self, options):
-
-        self.o = options
-
-        declare_plugin_option('accel_wget_command', 'str')
-        declare_plugin_option('accel_wget_threshold', 'size')
-        declare_plugin_option('accel_wget_protocol', 'str')
-
     def on_start(self):
-
-        if not hasattr(self.o, 'accel_wget_command'):
-            self.o.download_accel_wget_command = ['/usr/bin/wget']
-
-        if not hasattr(self.o, "accel_wget_threshold"):
-            self.o.accel_wget_threshold = ["1M"]
-
-        if not hasattr(self.o, "accel_wget_protocol"):
-            self.o.accel_wget_protocol = ["https", "http"]
 
         if type(self.o.accel_wget_threshold) is list:
             self.o.accel_wget_threshold = sarra.chunksize_from_str(

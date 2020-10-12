@@ -199,7 +199,8 @@ Why v3 API should be used whenever possible
   messages only contain the actual fields, no settings or other things...
   plain data.
 
-* callbacks move messages between worklists. A worklist is just a list of messages. There are four:
+* what used to be called plugins, are now only a type of plugins, called flow_callbacks.
+  They now move messages between worklists. A worklist is just a list of messages. There are four:
 
   * worklist.incoming -- messages yet to be processed.
   * worklist.rejected -- message which are not to be further processed.
@@ -222,7 +223,7 @@ of extending Sarracenia by creating children of the main classes
 * flow .. new components with different flow from the built-in ones.
 
 In v2, there was no equivalent extension mechanism, and adding protocols
-would have required re-working of core code.
+would have required re-working of core code in a custom way for every addition.
 
 
 Importing extensions
@@ -266,16 +267,13 @@ The content of the file to be placed (on Linux) in ~/.config/sarra/plugins would
 
   from sarra.flowcb import FlowCB
 
+  add_option( 'file_string' , default_value='hello world')  # declare options to avoid 'unknown option' messages being logged.
+
   class File_Noop(FlowCB):
       def __init__(self,parent):
-          parent.declare_option( 'file_string' )  # declare options to avoid 'unknown option' messages being logged.
-
-      def on_start(self,parent):
-          if not hasattr(parent,'file_string'):  # set default values here, if necessary.
-             parent.file_string='hello world'
 
       def on_file(self,parent):
-          parent.logger.info("file_noop: I have no effect but adding a log line with %s in it" % parent.file_string )
+          parent.logger.info("file_noop: I have no effect but adding a log line with %s in it" % self.o.file_string )
           return True
 
 See `Flow Callback Points`_ for a full list of names of methods which are significant.
@@ -394,7 +392,7 @@ The settings resulting from parsing the configuration files are also readily ava
 Plugins can define their own options by calling::
 
    FIXME: api incomplete.
-   Config.declare_plugin_option( 'name_of_option', kind, default?  )
+   Config.add_option( 'name_of_option', kind, default_value  )
 
 Options so declared just become instance variables in the options passed to init.
 By convention, plugins set self.o to contain the options passed at init time, so that 

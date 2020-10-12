@@ -114,7 +114,7 @@ convert_to_v3 = {
 logger = logging.getLogger(__name__)
 
 
-def declare_plugin_option(option, kind):
+def add_option(option, kind='list', default_value=None):
     """
        options can be declared in any plugin. There are various *kind* of options, where the declared type modifies the parsing.
        
@@ -142,6 +142,11 @@ def declare_plugin_option(option, kind):
     elif kind == 'str':
         str_options.append(option)
 
+    if kind == list and default_value == None:
+        default_options[option] = []
+    else:
+        default_options[option] = default_value
+
 
 #    logger.info('v2plugin option: %s declared' % option)
 
@@ -153,20 +158,9 @@ def declare_plugin_option(option, kind):
 #    if type(getattr(self,option)) is not list:
 #        setattr(self,option, [ getattr(self,option) ] )
 """
-   re-write of configuration parser.
-   
-   Still very incomplete, it does just enough to work with sr.py for now.
-   Not usable as a replacement for sr_config.py (yet!) 
-
    FIXME: respect appdir stuff using an environment variable.
    for not just hard coded as a class variable appdir_stuff
 
-   start with some helper functions.
-
-   then declare sarra.Config class
-
-   follow by the one_config entry point that allows a configuration to be read
-   in one call.
 """
 
 
