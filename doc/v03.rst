@@ -133,19 +133,19 @@ the two versions, is clear:
 |                          |                           |
 | sr_message.py            |                           |
 +--------------------------+---------------------------+
-| sr_checksum.py           | plugin/integrity/         |
+| sr_checksum.py           | integrity/                |
 |                          |      __init__.py          |
 | sum/*                    |      *                    |
 +--------------------------+---------------------------+
-| sr_cache.py              | plugin/nodupe.py          |
+| sr_cache.py              | flowcb/nodupe.py          |
 +--------------------------+---------------------------+
-| sr_retry.py              | plugin/retry.py           |
+| sr_retry.py              | flowcb/retry.py           |
 +--------------------------+---------------------------+
-| sr_post.py               | plugin/gather/file.py     |
+| sr_post.py               | flowcb/gather/file.py     |
 |                          |                           |
 |                          | flow/post.py              |
 +--------------------------+---------------------------+
-| sr_poll.py               | plugin/gather/remote.py   |
+| sr_poll.py               | flowcb/gather/remote.py   |
 |                          |                           |
 |                          | flow/poll.py              |
 +--------------------------+---------------------------+
@@ -163,7 +163,9 @@ the two versions, is clear:
 | sr_sftp.py               | transfer/sftp.py          |
 |                          |                           |
 +--------------------------+---------------------------+
-| plugins/                 | plugin/                   |
+| plugins/                 | flowcb/  (v3 ones)        |
+|                          |    plugins/ still there   |
+|                          |    for v2 ones.           |
 +--------------------------+---------------------------+
 | overall flow             | flow/__init__.py          |
 +--------------------------+---------------------------+
@@ -225,12 +227,13 @@ more idiomatic::
 
 What makes more sense... Does it make any practical difference?
 not sure... need to keep the members for places where
-plugins are called, but can use properties elsewhere, if desired.
+callbacks are called, but can use properties elsewhere, if desired.
+
 
 Known Problems
 --------------
 
-* passing of logs around is really odd. we didn't understand what 
+* passing of logs around is really odd. We didn't understand what 
   python logging objects were. Need to use them in the normal way.
   new modules are built that way...
 
@@ -269,8 +272,8 @@ away. (This later became the Moth module.)
 Progress
 --------
 
-The method of testing is to make modifications, and check them against the 
-sr_insects v03_wip branch.  In general, an un-modified sr_insects tests should
+The method of testing is to make modifications and check them against the 
+sr_insects v03_wip branch. In general, an un-modified sr_insects tests should
 work, but since the logs change, there is logic being added on that branch
 to parse v2 and v3 versions in the same way.  Thus the v03_wip branch tests
 are compatible with both stable and work-in-progress versions.
@@ -288,11 +291,10 @@ Done
 ~~~~
 
 The functionality of sr_amqp.py is completely reproduced in TMPC/amqp.py 
-(but not yet used, except by sr.py.) All the important logic is preserved, 
-but it is transcribed into new classes. Should have identical 
-failure recovery behaviour.  This is working in a demo form. To 
-reproduce, fire up sr_insects, run setup. and the configurations will 
-be installed.
+All the important logic is preserved, but it is transcribed into new classes. 
+Should have identical failure recovery behaviour. But it doesn't  we have
+static flow test passing, but the flakey broker, which tests such recovery,
+is currently broken.
 
 sr_cfg2.py is still a stub, it has a lot of features and options, but
 it isn't clear how to expand it to all of them. the thing about instances
@@ -303,9 +305,9 @@ that brings them together, instead of one massive config thing.
 renamed to config.py (aka: sarra.config) and exercising it with
 sr.py.  It is now a complete replacement.
 
-Thinking about replacing sr_consumer with a new class that implements the
+Replaced the sr_consumer class with a new class that implements the
 General Algorithm describe in `Concepts <Concepts.rst#the-general-algorithm>`
-this happenned and became the Flow Module, and *the General Algorithm* got 
+This happenned and became the Flow Module, and *the General Algorithm* got 
 renamed *the Flow Algorithm*. yes, that is now flow/ class hierarchy.
 The main logic is in __init__, and actual components are sub-classes.
 
@@ -319,7 +321,7 @@ has not yet been retired/replaced.
 Added configuration selection to sr.py (e.g. subscribe/\*) and 
 *setup*, and *cleanup* options. 
 
-add/remove/enable/disable/edit done.
+add/remove/enable/disable/edit (in sr.py) done.
 
 'log' dropped for now... (which log ?)
 
@@ -333,8 +335,8 @@ implemented import-based and group oriented v3 plugin framework. ( #213 )
 
 cache (now called noDupe) working.
 
-re-wrote how the v3 plugins work to use worklists, and then re-cast
-cache and v2plugins as plugins themselves.
+re-wrote how the v3 callbacks work to use worklists, and then re-cast
+cache and retry v2plugins as v3 callbacks themselves.
 
 renamed message queue abstract class from tmpc to moth
 (what does a Sarracenia eat?)
@@ -343,18 +345,18 @@ With shovel and winnow replaced by new implementations, it passes
 the dynamic flow test, including the Retry module ported to v3, and
 a number of v2 modules used as-is.
 
-Completed an initial version of the sr_post component now (in v3: plugin.gather.file.File)
+Completed an initial version of the sr_post component now (in v3: flowcb.gather.file.File)
 Now working on sr_poll, which will take a while because it involve refactoring: sr_file, sr_http,
 sr_ftp, sr_sftp into the transfer module
 
 Mostly done sr_subscribe, which, in the old version, is a base class for all other components,
 but in v3 is just the first component that actually downloads data. So encountering all
-issues with data download, and plugins that do interesting things. Mostly done, but 
-plugins not quite working.
+issues with data download, and flowcb that do interesting things. Mostly done, but 
+flowcb not quite working.
 
 sr_sarra was straightforward once sr_subscribe was done.  
 
-re-implemented get plugin to have conventional return value as the number of bytes 
+re-implemented Transfer get to have conventional return value as the number of bytes 
 transferred, and if they differ, that signals an issue.
 
 sr_sender send now done, involved a lot more thinking about how to set new_ fields
@@ -364,6 +366,9 @@ sr_ftp, sr_http, sr_message, sr_retry, and sr_sftp, sum/*, sr_util.
 
 That's the end of the most difficult part.  
 
+There was one commit to reformat the entire codebase to PEP style using yapf3.
+Now I have the yapf3 pre-commit hook that reformats changes so that the entire codebase
+remains yapf3 formatted.
 
 Worries Addressed
 ~~~~~~~~~~~~~~~~~
@@ -409,10 +414,10 @@ change the API because the v2 one has fundamental deficiencies:
   one. This logic is rarely helpful, difficult to explain, and confusing to diagnose
   in practice.
 
-
 Have re-written accel_wget, and accel_scp to the new api... working through static-flow
 to test them. There is also logic to spot v2 invocations of them, and replace with v3
-in the configuration.
+in the configuration. And the first attempt was quite convoluted... was not happy.
+2nd attempt also... working on a third one.
 
 
 
@@ -420,7 +425,6 @@ TODO
 ~~~~
 
 
-* likely run code lint thing to fix indentation and PEP style.
 
 * cleanup entry points: sr_audit, sr_tailf, sr_log2save, 
 
@@ -450,11 +454,13 @@ Probably need to be settled before having anyone else dive in.
 * perhaps move the whole plugin thing up a level (get rid of directory)
   so Plugin becomes a class instantiated in sarra/__init__.py... puts
   plugins and built-in code on a more even level... for example how
-  do plugin transfer protocols work?  thinking...
+  do plugin transfer protocols work?  thinking... This is sort of done
+  now: plugin became flowcb. Integrity is removed from the hierarchy.
+  Class extension is now a separate kind of plugin (via import)
 
 * took the code required to implement set_newMessageFields verbatim from v2.
   It is pretty hairy... perhaps turn into a plugin, to get it out of the 
-  main code?  Don't think it will ever go away.  It is fairly ugly, but 
+  main code? Don't think it will ever go away. It is fairly ugly, but 
   very useful and heavily used in existing configs. probably OK. 
 
 * tables thinking about *onfly* and *data* checksums... think about how
@@ -463,6 +469,8 @@ Probably need to be settled before having anyone else dive in.
   philosophically to be examined.
 
 * until all components are ported, will not try to fix dynamic_flow. 
+  all components are ported now. need to deal with schemed plugins
+  before trying dynamic flow.
 
 * As you get stuff working, see if we can work backward to fix
   v2wrapper to get back compatibility, say for do_* routines and such.
@@ -516,6 +524,50 @@ FIXME are things left to the side that need to be seen to.
   so you do not need to delete the _deleteOnPost elements (can just skip over them)
 
 
+Transition
+----------
+
+Do not know if straightforward (Replacement) upgrade is a good approach. Will it be possible to test sarra 
+sufficiently such that upgrades of entire pumps are possible? or will incremental (parallel) upgrades 
+be required?
+
+It depends on whether v3 will work as a drop-in replacement or not. There is some incompatibility
+we know will happen with do_* plugins. If that is sufficiently well documented and easily
+dealt with, then it might not be a problem. On the other hand, if there are subtle
+problems, then a parallel approach might be needed.
+
+What is easier for the analysts to deal with?
+
+Replacement
+~~~~~~~~~~~
+
+The package has the same name as v2 ones (metpx-sarracenia) differing only in version number.
+Installing the new replaces the old completely. This requires that the new version be equal
+or better than the old in all aspects, or that installation be confined to test machines
+until that point is reached.
+
+This takes longer to get initial installation, but has much clearer demarcation (you know
+when you are done.)
+
+
+Parallel
+~~~~~~~~
+
+Name the package metpx-sarra3 and have the python class directory be sarra3 (instead of sarra.)
+(also ~/.config/sarra3 and ~/.cache/sarra3 ) So one can copy configurations from old to
+new and run both versions in parallel. The central entry point would be sr3 (rather than
+sr), and to avoid confusion the other entry points (sr_subscribe etc...) would be omitted
+so that v2 code would work unchanged. Might require some tweaks to have the sr classes
+ignore instances from the other versions.
+
+This is similar to python2 to python3 transition. Allows deployment of v03 without having
+to convert entirely to it.  Allows running some components, and building maturity slowly
+while others are not ready.
+
+
+
+
+
 Incompatibilities
 -----------------
 
@@ -542,6 +594,7 @@ breaking changes:
 
 * plugins that access internals of sr_retry need to be rewritten, as the class is now plugin/retry.py.
   the way to queue something for retry in current plugins is to append them to the failed queue.
+  This is only an issue in the flow tests of sr_insects.
 
 * do_download and do_send were 1st pass at *schemed* plugins, I think they should be deprecated/replaced
   by do_get and do_put. unclear whether there is a need for these anymore (download and send plugins are
@@ -568,7 +621,7 @@ Features
 * The all the components are now derived from the *flow* class, and run the general algorithm already
   designed as the basis of v2, but never implemented as such.
 
-* The plugin API is now vanilla python with no magic settings. just standard classes, using standard import mechanism.
+* The extension API is now vanilla python with no magic settings. just standard classes, using standard import mechanism.
   debugging should be much simpler now as the interpreter will provide much better error messages on startup.
   The v2 style plugins are now called *flow callbacks*, and there are a number of classes (integrity, moth, 
   transfer, perhaps flow) that permit extension by straightforward sub-classing. This should make it much
@@ -590,7 +643,7 @@ Features
 
 * messages are acknowledged more quickly, should help with throughput.
 
-* FlowCB plugin API are now based on groups of messages, rather than individual ones, allowing people
+* FlowCB plugin entry_points are now based on groups of messages, rather than individual ones, allowing people
   to organize concurrent work.
 
 * integrity (checksums) are now plugins.
