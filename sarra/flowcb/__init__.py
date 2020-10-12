@@ -9,8 +9,6 @@
 import copy
 import importlib
 import logging
-
-from abc import ABCMeta, abstractmethod
 """
 1st draft of a v03 plugin method: flow_callback
 
@@ -73,28 +71,20 @@ class FlowCB:
     """
     FIXME: document the API signatures for all the entry points. 
     """
-    __metaclass__ = ABCMeta
-
-    @abstractmethod
     def __init__(self, options):
         self.o = options
 
         logging.basicConfig(format=self.o.logFormat,
                             level=getattr(logging, self.o.logLevel.upper()))
 
-        #logger.info( 'intializing %s' % self.name )
-        pass
-
 
 # FIXME:
-#    @abstractmethod
 #    def name(self):
 #        """
 #          Task: return the name of a plugin for reference purposes.
 #        """
 #        return __name__
 #
-#    @abstractmethod
 #    def registered_as(self):
 #        """
 #          for schemed downloads, return the scheme this plugin provides.
@@ -103,28 +93,24 @@ class FlowCB:
 #        """
 #        return [ "registration", "registrations" ]
 #
-#    @abstractmethod
 #    def on_files(self,worklist):
 #        """
 #          Task: operate on worklist.ok (files which have arrived.)
 #        """
 #        pass
 #
-#    @abstractmethod
 #    def gather(self):
 #        """
 #          Task: gather messages from a source... return a list of messages.
 #        """
 #        return []
 #
-#    @abstractmethod
 #    def ack(self,messagelist):
 #        """
 #          Task: acknowledge messages from a gather source.
 #        """
 #        pass
 #
-#    @abstractmethod
 #    def on_messages(self,worklist):
 #        """
 #          Task: operate on worklist.incoming to help decide which messages to process further.
@@ -133,7 +119,6 @@ class FlowCB:
 #        """
 #        pass
 #
-#    @abstractmethod
 #    def do_download(self,msg):
 #        """
 #          FIXME: Deprecated, replaced by do_get?
@@ -144,7 +129,6 @@ class FlowCB:
 #        """
 #        pass
 #
-#    @abstractmethod
 #    def do_get(self, msg, remote_file, local_file, remote_offset, local_offset, length ):
 #        """
 #          schemed method. (that is, installed based on registered_as() value.
@@ -157,14 +141,12 @@ class FlowCB:
 #        """
 #        pass
 #
-#    @abstractmethod
 #    def do_poll(self):
 #        """
 #          Task: build worklist.incoming, a form of gather()
 #        """
 #        pass
 #
-#    @abstractmethod
 #    def do_put(self, msg, local_file, remote_file, local_offset=0, remote_offset=0, length=0 ):
 #        """
 #          schemed method.
@@ -178,7 +160,6 @@ class FlowCB:
 #        """
 #        pass
 #
-#    @abstractmethod
 #    def do_send(self):
 #        """
 #          FIXME: Deprecated, replaced by do_put?
@@ -186,14 +167,12 @@ class FlowCB:
 #        """
 #        pass
 #
-#    @abstractmethod
 #    def on_data(self,data):
 #        """
 #          Task:  return data transformed in some way.
 #        """
 #        pass
 #
-#    @abstractmethod
 #    def on_posts(self,worklist):
 #        """
 #          Task: operate on worklist.ok, and worklist.failed.
@@ -203,7 +182,6 @@ class FlowCB:
 #        """
 #        pass
 #
-#    @abstractmethod
 #    def post(self,worklist):
 #        """
 #          Task: operate on worklist.ok, and worklist.failed. modifies them appropriately.
@@ -211,21 +189,18 @@ class FlowCB:
 #        """
 #        pass
 #
-#    @abstractmethod
 #    def on_housekeeping(self):
 #        """
 #          Task:
 #        """
 #        pass
 #
-#    @abstractmethod
 #    def on_html_page(self,page):
 #        """
 #          Task: modify an html page.
 #        """
 #        pass
 #
-#    @abstractmethod
 #    def on_line(self,line):
 #        """
 #          used in FTP polls, because servers have different formats, modify to canonical use.
@@ -235,28 +210,24 @@ class FlowCB:
 #        """
 #        pass
 #
-#    @abstractmethod
 #    def on_part(self):
 #        """
 #          Task:
 #        """
 #        pass
 #
-#    @abstractmethod
 #    def on_report(self):
 #        """
 #          Task:
 #        """
 #        pass
 #
-#    @abstractmethod
 #    def on_start(self):
 #        """
 #          Task:
 #        """
 #        pass
 #
-#    @abstractmethod
 #    def on_stop(self):
 #        """
 #          Task:
