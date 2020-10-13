@@ -55,6 +55,7 @@ default_options = {
     'batch': 100,
     'bindings': [],
     'broker': None,
+    'exchange': 'xpublic',
     'inline': False,
     'inline_encoding': 'guess',
     'inline_max': 4096,
@@ -142,14 +143,10 @@ class Moth():
     """
     @staticmethod
     def subFactory(broker, props):
-        logger.error("Moth.subclasses = %s" % Moth.__subclasses__())
         for sc in Moth.__subclasses__():
-            logger.error('broker.scheme: %s vs %s' %
-                         (broker.scheme, sc.__name__.lower()))
             if (broker.scheme == sc.__name__.lower()) or (
                 (broker.scheme[0:-1] == sc.__name__.lower()) and
                 (broker.scheme[-1] == 's')):
-                logger.error('matched!')
                 return sc(broker, props, True)
         return None
 

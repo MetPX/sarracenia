@@ -9,6 +9,7 @@
 import copy
 import importlib
 import logging
+import sys
 """
 1st draft of a v03 plugin method: flow_callback
 
@@ -238,7 +239,6 @@ class FlowCB:
 
 def load_library(factory_path, options):
 
-    #logger.debug( 'load_plugin: %s' % factory_path )
     packagename, classname = factory_path.rsplit('.', 1)
     module = importlib.import_module(packagename)
     class_ = getattr(module, classname)

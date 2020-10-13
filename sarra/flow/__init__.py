@@ -145,7 +145,7 @@ class Flow:
         if hasattr(self.o, 'v2plugins'):
             self.plugins['load'].append('sarra.flowcb.v2wrapper.V2Wrapper')
 
-    def loadPlugins(self, plugins_to_load):
+    def loadCallbacks(self, plugins_to_load):
 
         logger.info('imports to load: %s' % (self.o.imports))
         for m in self.o.imports:
@@ -194,8 +194,12 @@ class Flow:
         if hasattr(self, 'plugins') and (entry_point in self.plugins):
             for p in self.plugins[entry_point]:
                 p(self.worklist)
-                if len(self.worklist.incoming) == 0:
-                    return
+                if entry_point == 'on_messages':
+                    if len(self.worklist.incoming) == 0:
+                        return
+                elif entry_point == 'on_files':
+                    if len(self.worklist.ok) == 0:
+                        return
 
     def _runCallbacksTime(self, entry_point):
         for p in self.plugins[entry_point]:
@@ -244,7 +248,7 @@ class Flow:
           check if stop_requested once in a while, but never return otherwise.
         """
 
-        self.loadPlugins(self.plugins['load'])
+        self.loadCallbacks(self.plugins['load'])
 
         logger.debug("working directory: %s" % os.getcwd())
 
@@ -256,7 +260,7 @@ class Flow:
 
         logger.info("options:")
         self.o.dump()
-        logger.info(" all v3 plugins: %s" % self.plugins['load'])
+        logger.info("callbacks loaded: %s" % self.plugins['load'])
         #for t in self.plugins:
         #    logger.info("%s : %s" % ( t, self.plugins[t] ) )
 
@@ -291,6 +295,7 @@ class Flow:
                 self.ack(self.worklist.rejected)
                 self.worklist.rejected = []
                 self.ack(self.worklist.failed)
+                self._runCallbacksWorklist('on_files')
 
                 self.post()
 

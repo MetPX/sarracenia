@@ -10,7 +10,6 @@ import types
 import urllib
 
 import sarra
-import sarra.config
 from sarra.flowcb import FlowCB
 
 from sarra import nowflt, timestr2flt, timev2tov3str
@@ -258,7 +257,7 @@ class V2Wrapper(FlowCB):
 
         self.state_vars.append(option)
 
-        sarra.config.add_option(option)
+        self.o.add_option(option)
         if not hasattr(self.o, option):
             logger.info('value of %s not set' % option)
             return
@@ -348,11 +347,23 @@ class V2Wrapper(FlowCB):
 
         return True
 
+    def on_files(self, worklist):
+        ok_to_post = []
+        for m in worklist.ok:
+            if self.run_entry('on_file', m):
+                ok_to_post.append(m)
+            else:
+                #worklist.failed.append(m)
+                pass
+                # FIXME: what should we do on failure of on_file plugin?
+                #     download worked, but on_file failed... hmm...
+
+        worklist.ok = ok_to_post
+
     def on_messages(self, worklist):
 
         outgoing = []
         for m in worklist.incoming:
-            #mm = copy.deepcopy(m)
             if self.run_entry('on_message', m):
                 outgoing.append(m)
             else:

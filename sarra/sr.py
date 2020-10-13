@@ -1207,6 +1207,17 @@ class sr_GlobalState:
                             qdc.putCleanUp()
                             qdc.close()
 
+        self.user_cache_dir
+        for f in self.filtered_configurations:
+            cache_dir = self.user_cache_dir + os.sep + f.replace('/', os.sep)
+            for state_file in os.listdir(cache_dir):
+                if state_file[0] == '.':
+                    continue
+
+                asf = cache_dir + os.sep + state_file
+                print('removing state file: %s' % asf)
+                os.unlink(asf)
+
     print_column = 0
 
     def walk_dir(f):
@@ -1299,8 +1310,8 @@ class sr_GlobalState:
                 print('Provided plugins: ( %s ) ' % self.package_lib_dir)
                 self.print_configdir2(
                     " of plugins: ",
-                    os.path.normpath(self.package_lib_dir + os.sep + 'plugin'),
-                    'plugin')
+                    os.path.normpath(self.package_lib_dir + os.sep + 'flowcb'),
+                    'flowcb')
             elif self.leftovers[0] in ['v2plugins', 'v2p']:
                 print('Provided plugins: ( %s ) ' % self.package_lib_dir)
                 self.print_configdir2(

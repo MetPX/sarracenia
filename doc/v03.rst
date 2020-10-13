@@ -430,6 +430,8 @@ TODO
 
 * migrate sr_credentials.py to sarra/credentials.py.
 
+* fix flakey_broker test to pass.
+
 * migrate sr_xattr.py to sarra/xattr.py
 
 * test with dynamic-flow.
@@ -554,7 +556,8 @@ Parallel
 ~~~~~~~~
 
 Name the package metpx-sarra3 and have the python class directory be sarra3 (instead of sarra.)
-(also ~/.config/sarra3 and ~/.cache/sarra3 ) So one can copy configurations from old to
+(also ~/.config/sarra3 and ~/.cache/sarra3. likely the .cache files must be different because
+retry files have different formats? validate. ) So one can copy configurations from old to
 new and run both versions in parallel. The central entry point would be sr3 (rather than
 sr), and to avoid confusion the other entry points (sr_subscribe etc...) would be omitted
 so that v2 code would work unchanged. Might require some tweaks to have the sr classes
@@ -562,7 +565,9 @@ ignore instances from the other versions.
 
 This is similar to python2 to python3 transition. Allows deployment of v03 without having
 to convert entirely to it.  Allows running some components, and building maturity slowly
-while others are not ready.
+while others are not ready.  It facilitates A:B testing, running the same configuration
+with one version or the other without having the install or use a different machine,
+facilitating verification of compatibility.
 
 
 

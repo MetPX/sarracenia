@@ -27,7 +27,7 @@ Audience
 
 Readers of this manual should be comfortable with light scripting in Python version 3.
 Sarracenia includes a number of points where processing can be customized by
-small snippets of user provided code, known as plugins.  The plugins themselves
+small snippets of user provided code, known as plugins. The plugins themselves
 are expected to be concise, and an elementary knowledge of Python should suffice to
 build new plugins in a copy/paste manner, with many samples being available to read.  
 
@@ -75,8 +75,14 @@ processing at various points in the flow.
 
 Examples are available using the list command::
 
-
-FIXME: missing command to list plugins
+    fractal% sr list fcb
+    Provided plugins: ( /home/peter/Sarracenia/v03_wip/sarra ) 
+    flowcb/accel_scp.py              flowcb/accel_wget.py             flowcb/gather/file.py            flowcb/gather/message.py         
+    flowcb/line_log.py               flowcb/line_mode.py              flowcb/msg/deleteflowfiles.py    flowcb/msg/fdelay.py             
+    flowcb/msg/log.py                flowcb/nodupe.py                 flowcb/post/log.py               flowcb/post/message.py           
+    flowcb/retry.py                  flowcb/v2wrapper.py              
+    fractal%
+    fractal% fcbdir=/home/peter/Sarracenia/v03_wip/sarra
 
 
 Flow Callbacks
@@ -101,43 +107,18 @@ That line cause Sarracenia to look in the Python search path for a class like:
 
   logger = logging.getLogger(__name__)
 
-
   class Log(FlowCB):
-    def __init__(self, options):
-
-        # FIXME: should a logging module have a loglevel setting?
-        #        just put in a cookie cutter for now...
-        if hasattr(options, 'loglevel'):
-            logger.setLevel(getattr(logging, options.loglevel.upper()))
-        else:
-            logger.setLevel(logging.INFO)
-
     def on_messages(self, worklist):
-
         for msg in worklist.incoming:
             logger.info("received: %s " % msg)
 
-  
-  blacklab% 
+To modify it, copy it from the directory listed in the *list fcb* command to the editable preference one::
 
-
-FIXME: v2 stuff must be replaced:
-To modify it, copy it from the examples directory installed as part of the package to the editable preference one::
-
-  FIXME:
-  blacklab% sr_subscribe add msg_log.py
+  blacklab% cp $fcb_dir/msg_log.py ~/.config/sarra/plugins
 
 And then modify it for the purpose::
 
-  FIXME:
-  blacklab% sr_subscribe edit msg_log.py
-
-The msg_log.py plugin above is a single entry one. For single entry point plugins, consult bad_plugins `1 <../sarra/plugins/bad_plugin1.py>`_, `2 <../sarra/plugins/bad_plugin2.py>`_, and `3 <../sarra/plugins/bad_plugin3.py>`_ 
-to identify the mandatory elements. As one would imagine, all the plugins that begin with msg\_ are for *on_msg* events.
-Similarly, file\_ ones provide examples of *on_file*, etc... for the other types of single entry plugins.
-
-If a plugin doesn't have such a prefix, there is a second form of plugins called simply a *plugin*, where a group
-of routines implement an overall function.  Examine the `log.py <../sarra/plugins/log.py>`_ and `wget.py <../sarra/plugins/wget.py>`_ routines for examples of this format.
+  blacklab% vi ~/.config/sarra/plugins/log.py
 
 One can also see which plugins are active in a configuration by looking at the messages on startup::
 
@@ -148,13 +129,8 @@ One can also see which plugins are active in a configuration by looking at the m
    .
    .
 
-   2018-01-08 01:21:34,763 [INFO]  Plugins configured:
-   2018-01-08 01:21:34,763 [INFO]      do_download: 
-   2018-01-08 01:21:34,763 [INFO]      on_message: Msg_FDelay Msg_2LocalFile Msg_AuditFlow Msg_Delete 
-   2018-01-08 01:21:34,764 [INFO]      on_part: 
-   2018-01-08 01:21:34,764 [INFO]      on_file: File_Log 
-   2018-01-08 01:21:34,764 [INFO]      on_post: Post_Log 
-   2018-01-08 01:21:34,764 [INFO]      on_housekeeping: Hb_Log Hb_Memory Hb_Pulse 
+   2020-10-12 15:20:06,250 [INFO] sarra.flow run callbacks loaded: ['sarra.flowcb.retry.Retry', 'sarra.flowcb.msg.log.Log', 'file_noop.File_Noop', 'sarra.flowcb.v2wrapper.V2Wrapper', 'sarra.flowcb.gather.message.Message']
+2
    .
    .
    .
@@ -177,7 +153,8 @@ sarra.flow - creation of new components beyond the built-in ones. (post, sarra, 
  
 One would start with the one of the existing classes, copy it somewhere else in the python path,
 and build your extension. These classes are added to Sarra using the *import* option
-in the configuration files.
+in the configuration files. the __init__ files in the source directories are the good
+place to look for information about each class's API.
 
 
 Why v3 API should be used whenever possible
@@ -260,21 +237,29 @@ Callback Script Basics
 
 An example of the v2 *plugin* format, one can use of file_noop.py in a configuration like so::
 
-  flow_callback file_noop
+  flow_callback file_noop.file_Noop
 
 The content of the file to be placed (on Linux) in ~/.config/sarra/plugins would be:
 .. code:: python
 
+  import logging
   from sarra.flowcb import FlowCB
 
-  add_option( 'file_string' , default_value='hello world')  # declare options to avoid 'unknown option' messages being logged.
+  logger = logging.getLogger(__name__)
 
   class File_Noop(FlowCB):
-      def __init__(self,parent):
 
-      def on_file(self,parent):
-          parent.logger.info("file_noop: I have no effect but adding a log line with %s in it" % self.o.file_string )
-          return True
+      def __init__(self, options):
+
+          super().__init__(options) # usually a good idea, though not needed here.
+
+          # declare options to avoid 'unknown option' messages being logged.
+          options.add_option( option='file_string' , kind='str', default_value='hello world')  
+
+      def on_files(self,worklist):
+          logger.info("file_noop: received %d files. file_string is: %s " % (len(worklist.ok), self.o.file_string) )
+
+
 
 See `Flow Callback Points`_ for a full list of names of methods which are significant.
 
@@ -392,7 +377,7 @@ The settings resulting from parsing the configuration files are also readily ava
 Plugins can define their own options by calling::
 
    FIXME: api incomplete.
-   Config.add_option( 'name_of_option', kind, default_value  )
+   Config.add_option( option='name_of_option', kind, default_value  )
 
 Options so declared just become instance variables in the options passed to init.
 By convention, plugins set self.o to contain the options passed at init time, so that 
@@ -683,17 +668,17 @@ package and customizable by end users.  The rxpipe module is just an example
 provided with sarracenia::
 
   from sarra.flowcb import FlowCB
+  from sarra.config import add_option
+
+  add_option( option='file_rxpipe_name', kind='str' ):
 
   class File_RxPipe(FlowCB):
 
-      def __init__(self,parent):
-          parent.declare_option( 'file_rxpipe_name' ):
-
       def on_start(self,parent):
-          if not hasattr(parent,'file_rxpipe_name'):
+          if not hasattr(self.o,'file_rxpipe_name') and self.o.file_rxpipe_name:
               parent.logger.error("Missing file_rxpipe_name parameter")
               return
-          self.rxpipe = open( parent.file_rxpipe_name[0], "w" )
+          self.rxpipe = open( parent.file_rxpipe_name, "w" )
 
       def on_file(self, parent):
           self.rxpipe.write( msg['new_file + "\n" )

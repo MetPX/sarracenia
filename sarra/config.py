@@ -22,6 +22,7 @@ import pprint
 import re
 import shutil
 import socket
+import sys
 import time
 
 from random import randint
@@ -112,43 +113,6 @@ convert_to_v3 = {
 }
 
 logger = logging.getLogger(__name__)
-
-
-def add_option(option, kind='list', default_value=None):
-    """
-       options can be declared in any plugin. There are various *kind* of options, where the declared type modifies the parsing.
-       
-       'count'      integer count type. 
-       'duration'   a floating point number indicating a quantity of seconds (0.001 is 1 milisecond)
-                    modified by a unit suffix ( m-minute, h-hour, w-week ) 
-       'flag'       boolean (True/False) option.
-       'list'       a list of string values, each succeeding occurrence catenates to the total.
-                    all v2 plugin options are declared of type list.
-       'size'       integer size. Suffixes k, m, and g for kilo, mega, and giga (base 2) multipliers.
-       'str'        an arbitrary string value, as will all of the above types, each succeeding occurrence overrides the previous one.
-
-    """
-
-    if kind == 'count':
-        count_options.append(option)
-    elif kind == 'duration':
-        duration_options.append(option)
-    elif kind == 'flag':
-        flag_options.append(option)
-    elif kind == 'list':
-        list_options.append(option)
-    elif kind == 'size':
-        size_options.append(option)
-    elif kind == 'str':
-        str_options.append(option)
-
-    if kind == list and default_value == None:
-        default_options[option] = []
-    else:
-        default_options[option] = default_value
-
-
-#    logger.info('v2plugin option: %s declared' % option)
 
 #    self.v2plugin_options.append(option)
 
@@ -446,7 +410,6 @@ class Config:
     credentials = None
 
     def __init__(self, parent=None):
-
         self.bindings = []
         self.__admin = None
         self.__broker = None
@@ -612,6 +575,55 @@ class Config:
         return (arguments[0], self.directory, fn, regex,
                 option.lower() in ['accept', 'get'], self.mirror, self.strip,
                 self.pstrip, self.flatten)
+
+    def add_option(self, option, kind='list', default_value=None):
+        """
+           options can be declared in any plugin. There are various *kind* of options, where the declared type modifies the parsing.
+           
+           'count'      integer count type. 
+           'duration'   a floating point number indicating a quantity of seconds (0.001 is 1 milisecond)
+                        modified by a unit suffix ( m-minute, h-hour, w-week ) 
+           'flag'       boolean (True/False) option.
+           'list'       a list of string values, each succeeding occurrence catenates to the total.
+                        all v2 plugin options are declared of type list.
+           'size'       integer size. Suffixes k, m, and g for kilo, mega, and giga (base 2) multipliers.
+           'str'        an arbitrary string value, as will all of the above types, each succeeding occurrence overrides the previous one.
+    
+        """
+
+        if not hasattr(self, option):
+            setattr(self, option, default_value)
+
+        v = getattr(self, option)
+
+        if kind == 'count':
+            count_options.append(option)
+            if type(v) is not int:
+                setattr(self, option, int(v))
+        elif kind == 'duration':
+            duration_options.append(option)
+            if type(v) is not float:
+                setattr(self, option, float(v))
+        elif kind == 'flag':
+            flag_options.append(option)
+            if type(v) is not bool:
+                setattr(self, option, isTrue(v))
+        elif kind == 'list':
+            list_options.append(option)
+            if type(v) is not list:
+                setattr(self, option, [v])
+        elif kind == 'size':
+            size_options.append(option)
+            if type(v) is not int:
+                setattr(self, k, chunksize_from_str(v))
+
+        elif kind == 'str':
+            str_options.append(option)
+            if type(v) is not str:
+                setattr(self, k, str(v))
+
+
+#    logger.info('v2plugin option: %s declared' % option)
 
     def dump(self):
         """ print out what the configuration looks like.
@@ -932,7 +944,6 @@ class Config:
                     # FIXME:
                     setattr(self, k, v)
                     self.undeclared.append(k)
-                    #logger.info('setting v2 option: %s = %s' % (k,v) )
 
     def fill_missing_options(self, component, config):
         """ 
@@ -1903,3 +1914,10 @@ def one_config(component, config, isPost=False):
     #pp.pprint(cfg)
 
     return cfg
+
+
+# add directory to python front of search path for plugins.
+
+plugin_dir = get_user_config_dir() + os.sep + "plugins"
+if os.path.isdir(plugin_dir) and not plugin_dir in sys.path:
+    sys.path.insert(0, plugin_dir)
