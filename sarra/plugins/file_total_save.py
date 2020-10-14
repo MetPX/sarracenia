@@ -75,6 +75,9 @@ class File_Total(object):
                 "file_total: 0 files received: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"
             )
 
+        if not hasattr(msg, 'partstr') or msg.partstr is None:
+            return True
+
         msgtime = timestr2flt(msg.pubtime)
         now = nowflt()
 
