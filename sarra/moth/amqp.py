@@ -128,17 +128,17 @@ class AMQP(Moth):
             format=
             '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s')
 
-        self.props = copy.deepcopy(default_options)
-        self.props.update(props)
+        self.o = copy.deepcopy(default_options)
+        self.o.update(props)
 
         self.first_setup = True
 
         me = 'sarra.moth.amqp.AMQP'
 
-        if ('settings' in self.props) and (me in self.props['settings']):
-            logger.debug('props[%s] = %s ' % (me, self.props['settings'][me]))
-            for s in self.props['settings'][me]:
-                self.props[s] = self.props['settings'][me][s]
+        if ('settings' in self.o) and (me in self.o['settings']):
+            logger.debug('props[%s] = %s ' % (me, self.o['settings'][me]))
+            for s in self.o['settings'][me]:
+                self.o[s] = self.o['settings'][me][s]
 
         if self.is_subscriber:  #build_consumer
             self.__getSetup()
@@ -165,7 +165,7 @@ class AMQP(Moth):
         self.connection = amqp.Connection(host=host,
                                           userid=broker.username,
                                           password=broker.password,
-                                          virtual_host=self.props['vhost'],
+                                          virtual_host=self.o['vhost'],
                                           ssl=(broker.scheme[-1] == 's'))
         if hasattr(self.connection, 'connect'):
             # check for amqp 1.3.3 and 1.4.9 because connect doesn't exist in those older versions
@@ -189,46 +189,46 @@ class AMQP(Moth):
                 # from sr_consumer.build_connection...
                 self.__connect(self.broker)
 
-                #logger.info('getSetup connected to {}'.format(self.props['broker'].hostname) )
+                #logger.info('getSetup connected to {}'.format(self.o['broker'].hostname) )
 
-                if self.props['prefetch'] != 0:
-                    self.channel.basic_qos(0, self.props['prefetch'], True)
+                if self.o['prefetch'] != 0:
+                    self.channel.basic_qos(0, self.o['prefetch'], True)
 
                 #FIXME: test self.first_setup and props['reset']... delete queue...
                 broker_str = self.broker.geturl().replace(
                     ':' + self.broker.password + '@', '@')
 
                 # from Queue declare
-                if self.props['declare']:
+                if self.o['declare']:
 
                     args = {}
-                    if self.props['expire']:
-                        x = int(self.props['expire'] * 1000)
+                    if self.o['expire']:
+                        x = int(self.o['expire'] * 1000)
                         if x > 0: args['x-expires'] = x
-                    if self.props['message_ttl']:
-                        x = int(self.props['message_ttl'] * 1000)
+                    if self.o['message_ttl']:
+                        x = int(self.o['message_ttl'] * 1000)
                         if x > 0: args['x-message-ttl'] = x
 
                     #FIXME: conver expire, message_ttl to proper units.
                     qname, msg_count, consumer_count = self.channel.queue_declare(
-                        self.props['queue_name'],
+                        self.o['queue_name'],
                         passive=False,
-                        durable=self.props['durable'],
+                        durable=self.o['durable'],
                         exclusive=False,
-                        auto_delete=self.props['auto_delete'],
+                        auto_delete=self.o['auto_delete'],
                         nowait=False,
                         arguments=args)
                     logger.info('queue declared %s (as: %s) ' %
-                                (self.props['queue_name'], broker_str))
+                                (self.o['queue_name'], broker_str))
 
-                if self.props['bind']:
-                    for tup in self.props['bindings']:
+                if self.o['bind']:
+                    for tup in self.o['bindings']:
                         prefix, exchange, values = tup
                         topic = prefix + '.' + values[0]
                         logger.info('binding %s with %s to %s (as: %s)' % \
-                            ( self.props['queue_name'], topic, exchange, broker_str ) )
-                        self.channel.queue_bind(self.props['queue_name'],
-                                                exchange, topic)
+                            ( self.o['queue_name'], topic, exchange, broker_str ) )
+                        self.channel.queue_bind(self.o['queue_name'], exchange,
+                                                topic)
 
                 # Setup Successfully Complete!
                 logger.debug('getSetup ... Done!')
@@ -239,7 +239,7 @@ class AMQP(Moth):
                     self.broker.hostname, err))
                 logger.error('Exception details: ', exc_info=True)
 
-            if not self.props['message_strategy']['stubborn']: return
+            if not self.o['message_strategy']['stubborn']: return
 
             if ebo < 60: ebo *= 2
 
@@ -254,7 +254,7 @@ class AMQP(Moth):
             # tear the whole thing down, and start over.
             try:
                 # from sr_consumer.build_connection...
-                self.__connect(self.props['broker'])
+                self.__connect(self.o['broker'])
 
                 # transaction mode... confirms would be better...
                 self.channel.tx_select()
@@ -263,17 +263,17 @@ class AMQP(Moth):
 
                 #logger.debug('putSetup ... 1. connected to {}'.format(broker_str ) )
 
-                if self.props['declare']:
+                if self.o['declare']:
                     logger.debug('putSetup ... 1. declaring {}'.format(
-                        self.props['exchange']))
-                    if type(self.props['exchange']) is not list:
-                        self.props['exchange'] = [self.props['exchange']]
-                    for x in self.props['exchange']:
+                        self.o['exchange']))
+                    if type(self.o['exchange']) is not list:
+                        self.o['exchange'] = [self.o['exchange']]
+                    for x in self.o['exchange']:
                         self.channel.exchange_declare(
                             x,
                             'topic',
-                            auto_delete=self.props['auto_delete'],
-                            durable=self.props['durable'])
+                            auto_delete=self.o['auto_delete'],
+                            durable=self.o['durable'])
                         logger.info('exchange declared: %s (as: %s) ' %
                                     (x, broker_str))
 
@@ -283,10 +283,10 @@ class AMQP(Moth):
 
             except Exception as err:
                 logger.error("AMQP putSetup failed to {} with {}".format(
-                    self.props['broker'].hostname, err))
+                    self.o['broker'].hostname, err))
                 logger.debug('Exception details: ', exc_info=True)
 
-            if not self.props['message_strategy']['stubborn']: return
+            if not self.o['message_strategy']['stubborn']: return
 
             if ebo < 60: ebo *= 2
 
@@ -296,19 +296,19 @@ class AMQP(Moth):
     def putCleanUp(self):
 
         try:
-            self.channel.exchange_delete(self.props['exchange'])
+            self.channel.exchange_delete(self.o['exchange'])
         except Exception as err:
             logger.error("AMQP putCleanup failed on {} with {}".format(
-                self.props['broker'].hostname, err))
+                self.o['broker'].hostname, err))
             logger.debug('Exception details: ', exc_info=True)
 
     def getCleanUp(self):
 
         try:
-            self.channel.queue_delete(self.props['queue_name'])
+            self.channel.queue_delete(self.o['queue_name'])
         except Exception as err:
             logger.error("AMQP putCleanup failed to {} with {}".format(
-                self.props['broker'].hostname, err))
+                self.o['broker'].hostname, err))
             logger.debug('Exception details: ', exc_info=True)
 
     def newMessages(self):
@@ -322,7 +322,7 @@ class AMQP(Moth):
         if m is not None:
             fetched = 1
             ml.append(m)
-            while fetched < self.props['batch']:
+            while fetched < self.o['batch']:
                 m = self.getNewMessage()
                 if m is None:
                     break
@@ -341,20 +341,24 @@ class AMQP(Moth):
         ebo = 1
         while True:
             try:
-                raw_msg = self.channel.basic_get(self.props['queue_name'])
+                raw_msg = self.channel.basic_get(self.o['queue_name'])
 
                 if (raw_msg is None) and (self.connection.connected):
                     return None
                 else:
                     msg = _msgRawToDict(raw_msg)
+                    if hasattr(self.o, 'fixed_headers'):
+                        for k in self.o.fixed_headers:
+                            m[k] = self.o.fixed_headers[k]
+
                     logger.info("new msg: %s" % msg)
                     return msg
             except Exception as err:
                 logger.warning("moth.amqp.getNewMessage: failed %s: %s" %
-                               (self.props['queue_name'], err))
+                               (self.o['queue_name'], err))
                 logger.debug('Exception details: ', exc_info=True)
 
-            if not self.props['message_strategy']['stubborn']:
+            if not self.o['message_strategy']['stubborn']:
                 return None
 
             logger.warning('lost connection to broker')
@@ -417,28 +421,27 @@ class AMQP(Moth):
             del body['_deleteOnPost']
 
         if not exchange:
-            if (type(self.props['exchange']) is list):
-                if (len(self.props['exchange']) > 1):
-                    if 'post_exchange_split' in self.props:
-                        # FIXME: assert ( len(self.props['exchange']) == self.props['post_exchange_split'] )
+            if (type(self.o['exchange']) is list):
+                if (len(self.o['exchange']) > 1):
+                    if 'post_exchange_split' in self.o:
+                        # FIXME: assert ( len(self.o['exchange']) == self.o['post_exchange_split'] )
                         #        if that isn't true... then there is something wrong... should we check ?
                         idx = sum(
                             bytearray(body['integrity']['value'],
-                                      'ascii')) % len(self.props['exchange'])
-                        exchange = self.props['exchange'][idx]
+                                      'ascii')) % len(self.o['exchange'])
+                        exchange = self.o['exchange'][idx]
                     else:
                         logger.error(
                             'do not know which exchange to publish to: %s' %
-                            self.props['exchange'])
+                            self.o['exchange'])
                         return
                 else:
-                    exchange = self.props['exchange'][0]
+                    exchange = self.o['exchange'][0]
             else:
-                exchange = self.props['exchange']
+                exchange = self.o['exchange']
 
-        if self.props['message_ttl']:
-            ttl = "%d" * int(
-                durationToSeconds(self.props['message_ttl']) * 1000)
+        if self.o['message_ttl']:
+            ttl = "%d" * int(durationToSeconds(self.o['message_ttl']) * 1000)
         else:
             ttl = "0"
 
@@ -483,7 +486,7 @@ class AMQP(Moth):
                                (exchange, err))
                 logger.debug('Exception details: ', exc_info=True)
 
-            if not self.props['message_strategy']['stubborn']:
+            if not self.o['message_strategy']['stubborn']:
                 return None
 
             self.close()

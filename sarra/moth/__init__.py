@@ -169,23 +169,22 @@ class Moth():
 
         self.is_subscriber = is_subscriber
 
-        self.props = copy.deepcopy(default_options)
+        self.o = copy.deepcopy(default_options)
         if props is not None:
-            self.props.update(props)
+            self.o.update(props)
 
         self.broker = broker
 
         me = 'sarra.moth.Moth'
 
         # apply settings from props.
-        if 'settings' in self.props:
-            if me in self.props['settings']:
-                for s in self.props['settings'][me]:
-                    self.props[s] = self.props['settings'][me][s]
+        if 'settings' in self.o:
+            if me in self.o['settings']:
+                for s in self.o['settings'][me]:
+                    self.o[s] = self.o['settings'][me][s]
 
-        logging.basicConfig(format=self.props['logFormat'],
-                            level=getattr(logging,
-                                          self.props['logLevel'].upper()))
+        logging.basicConfig(format=self.o['logFormat'],
+                            level=getattr(logging, self.o['logLevel'].upper()))
 
     @property
     def default_options():

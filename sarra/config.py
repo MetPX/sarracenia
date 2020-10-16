@@ -81,7 +81,7 @@ size_options = ['blocksize', 'bufsize', 'bytes_per_second', 'inline_max']
 
 str_options = [
     'admin', 'broker', 'destination', 'directory', 'exchange',
-    'exchange_suffix', 'events', 'feeder', 'path', 'post_baseUrl',
+    'exchange_suffix', 'events', 'feeder', 'header', 'path', 'post_baseUrl',
     'post_baseDir', 'post_broker', 'post_exchange', 'post_exchange_suffix',
     'post_topic_prefix', 'report_exchange', 'strip', 'suppress_duplicates',
     'suppress_duplicates_basis', 'tls_rigour', 'topic_prefix'
@@ -443,6 +443,7 @@ class Config:
         self.plugins = []
         self.exchange = None
         self.filename = None
+        self.fixed_headers = {}
         self.flatten = '/'
         self.hostname = socket.getfqdn()
         self.hostdir = socket.getfqdn().split('.')[0]
@@ -848,6 +849,9 @@ class Config:
             elif k in ['feeder']:
                 self.feeder = urllib.parse.urlparse(line[1])
                 self.declared_users[self.feeder.username] = 'feeder'
+            elif k in ['header', 'h']:
+                (kk, vv) = line[1].split('=')
+                self.fixed_headers[kk] == vv
             elif k in ['include', 'config']:
                 try:
                     self.parse_file(v)

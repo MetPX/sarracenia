@@ -92,6 +92,10 @@ def msg_init(path, o, lstat=None):
     if hasattr(o, 'source') and (o.source is not None):
         msg['source'] = o.source
 
+    if hasattr(o, 'fixed_headers'):
+        for k in o.fixed_headers:
+            msg[k] = o.fixed_headers[k]
+
     if lstat is None: return msg
 
     if o.preserve_time:
