@@ -1701,6 +1701,10 @@ class Config:
                             default=self.exchange,
                             help='root of the topic tree to subscribe to')
         """
+        FIXME: header option not implemented in argparsing: should add to the fixed_header dictionary.
+          
+        """
+        """
         FIXME: in previous parser, exchange is a modifier for bindings, can have several different values for different subtopic bindings.
            as currently coded, just a single value that over-writes previous setting, so only binding to a single exchange is possible.
         """
