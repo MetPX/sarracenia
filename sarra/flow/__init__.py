@@ -136,7 +136,7 @@ class Flow:
         # transport stuff.. for download, get, put, etc...
         self.scheme = None
         self.cdir = None
-        self.proto = None
+        self.proto = {}
 
         if hasattr(self.o, 'plugins'):
             self.plugins['load'].extend(self.o.plugins)
@@ -180,11 +180,11 @@ class Flow:
                 if not callable(fn):
                     continue
 
-                for s in schemes:
-                    if not s in self.plugins:
-                        self.plugins[s] = {}
+                if not schemed_entry_point in self.plugins:
+                    self.plugins[schemed_entry_point] = {}
 
-                    self.plugins[s][schemed_entry_point] = fn
+                for s in schemes:
+                    self.plugins[schemed_entry_point][s] = fn
 
         #logger.info( 'plugins initialized')
         self.o.check_undeclared_options()
@@ -911,14 +911,16 @@ class Flow:
         try:
             options.destination = msg['baseUrl']
 
-            if (self.proto is None) or not self.proto.check_is_connected():
+            if (not (self.scheme in self.proto)) or \
+               (self.proto[self.scheme] is None) or self.proto[self.scheme].check_is_connected():
+
                 logger.debug("%s_transport download connects" % self.scheme)
-                self.proto = sarra.transfer.Transfer.factory(
+                self.proto[self.scheme] = sarra.transfer.Transfer.factory(
                     self.scheme, self.o)
                 logger.debug("HOHO proto %s " % type(self.proto))
-                ok = self.proto.connect()
+                ok = self.proto[self.scheme].connect()
                 if not ok:
-                    self.proto = None
+                    self.proto[self.scheme] = None
                     return False
                 logger.debug('connected')
 
@@ -931,13 +933,14 @@ class Flow:
             #   return False
 
             cwd = None
-            if hasattr(self.proto, 'getcwd'): cwd = self.proto.getcwd()
+            if hasattr(self.proto[self.scheme], 'getcwd'):
+                cwd = self.proto[self.scheme].getcwd()
 
-            logger.debug(" proto %s " % type(self.proto))
+            logger.debug(" proto %s " % type(self.proto[self.scheme]))
             if cwd != cdir:
                 logger.debug("%s_transport download cd to %s" %
                              (self.scheme, cdir))
-                self.proto.cd(cdir)
+                self.proto[self.scheme].cd(cdir)
 
             remote_offset = 0
             if ('blocks' in msg) and (msg['blocks']['method'] == 'inplace'):
@@ -959,7 +962,7 @@ class Flow:
             # FIXME  locking for i parts in temporary file ... should stay lock
             # and file_reassemble... take into account the locking
 
-            self.proto.set_sumalgo(msg['integrity']['method'])
+            self.proto[self.scheme].set_sumalgo(msg['integrity']['method'])
 
             if options.inflight == None or (
                 ('blocks' in msg) and (msg['blocks']['method'] == 'inplace')):
@@ -980,7 +983,7 @@ class Flow:
                 logger.error('inflight setting: %s, not for remote.' %
                              options.inflight)
 
-            self.proto.set_path(new_inflight_path)
+            self.proto[self.scheme].set_path(new_inflight_path)
             len_written = self.get(msg, remote_file, new_inflight_path,
                                    remote_offset, msg['local_offset'],
                                    block_length)
@@ -995,20 +998,20 @@ class Flow:
                     'incomplete download only %d of expected %d bytes for %s' %
                     (len_written, block_length, new_inflight_path))
 
-            msg['onfly_checksum'] = self.proto.get_sumstr()
-            msg['data_checksum'] = self.proto.data_checksum
+            msg['onfly_checksum'] = self.proto[self.scheme].get_sumstr()
+            msg['data_checksum'] = self.proto[self.scheme].data_checksum
             msg['_deleteOnPost'].extend(['onfly_checksum', 'data_checksum'])
 
             # fix message if no partflg (means file size unknown until now)
             if not 'blocks' in msg:
-                msg['size'] = self.proto.fpos
+                msg['size'] = self.proto[self.scheme].fpos
 
             # fix permission
             self.set_local_file_attributes(new_file, msg)
 
-            if options.delete and hasattr(self.proto, 'delete'):
+            if options.delete and hasattr(self.proto[self.scheme], 'delete'):
                 try:
-                    self.proto.delete(remote_file)
+                    self.proto[self.scheme].delete(remote_file)
                     logger.debug('file deleted on remote site %s' %
                                  remote_file)
                 except:
@@ -1022,9 +1025,9 @@ class Flow:
         except:
             #closing on problem
             try:
-                self.proto.close()
+                self.proto[self.scheme].close()
                 self.cdir = None
-                self.proto = None
+                self.proto[self.scheme] = None
             except:
                 pass
 
@@ -1046,8 +1049,8 @@ class Flow:
                                                   remote_offset, local_offset,
                                                   length)
         else:
-            return self.proto.get(remote_file, local_file, remote_offset,
-                                  local_offset, length)
+            return self.proto[scheme].get(remote_file, local_file,
+                                          remote_offset, local_offset, length)
 
     # generalized put...
     def put(self,
@@ -1065,8 +1068,8 @@ class Flow:
                                                   local_offset, remote_offset,
                                                   length)
         else:
-            return self.proto.put(local_file, remote_file, local_offset,
-                                  remote_offset, length)
+            return self.proto[scheme].put(local_file, remote_file,
+                                          local_offset, remote_offset, length)
 
     # generalized send...
     def send(self, msg, options):
@@ -1097,11 +1100,12 @@ class Flow:
 
         try:
 
-            if (self.proto is None) or not self.proto.check_is_connected():
+            if (self.proto[self.scheme] is
+                    None) or not self.proto[self.scheme].check_is_connected():
                 logger.debug("%s_transport send connects" % self.scheme)
-                self.proto = sarra.transfer.Transfer.factory(
+                self.proto[self.scheme] = sarra.transfer.Transfer.factory(
                     self.scheme, options)
-                ok = self.proto.connect()
+                ok = self.proto[self.scheme].connect()
                 if not ok: return False
                 self.cdir = None
 
@@ -1109,8 +1113,9 @@ class Flow:
             # if parts, check that the protol supports it
             #=================================
 
-            if not hasattr(self.proto, 'seek') and ('blocks' in msg) and (
-                    msg['blocks']['method'] == 'inplace'):
+            if not hasattr(self.proto[self.scheme],
+                           'seek') and ('blocks' in msg) and (
+                               msg['blocks']['method'] == 'inplace'):
                 logger.error("%s, inplace part file not supported" %
                              self.scheme)
                 return False
@@ -1120,7 +1125,7 @@ class Flow:
             #=================================
 
             inflight = options.inflight
-            if not hasattr(self.proto,
+            if not hasattr(self.proto[self.scheme],
                            'umask') and options.inflight == 'umask':
                 logger.warning("%s, umask not supported" % self.scheme)
                 inflight = None
@@ -1129,7 +1134,7 @@ class Flow:
             # if renaming used, check that the protocol supports it ...
             #=================================
 
-            if not hasattr(self.proto,
+            if not hasattr(self.proto[self.scheme],
                            'rename') and options.inflight.startswith('.'):
                 logger.warning("%s, rename not supported" % self.scheme)
                 inflight = None
@@ -1139,21 +1144,22 @@ class Flow:
             #=================================
 
             cwd = None
-            if hasattr(self.proto, 'getcwd'): cwd = self.proto.getcwd()
+            if hasattr(self.proto[self.scheme], 'getcwd'):
+                cwd = self.proto[self.scheme].getcwd()
 
             if cwd != new_dir:
                 logger.debug("%s_transport send cd to %s" %
                              (self.scheme, new_dir))
-                self.proto.cd_forced(775, new_dir)
+                self.proto[self.scheme].cd_forced(775, new_dir)
 
             #=================================
             # delete event
             #=================================
 
             if msg['integrity']['method'] == 'remove':
-                if hasattr(self.proto, 'delete'):
+                if hasattr(self.proto[self.scheme], 'delete'):
                     logger.debug("message is to remove %s" % new_file)
-                    self.proto.delete(new_file)
+                    self.proto[self.scheme].delete(new_file)
                     return True
                 logger.error("%s, delete not supported" % self.scheme)
                 return False
@@ -1163,10 +1169,11 @@ class Flow:
             #=================================
 
             if 'link' in msg:
-                if hasattr(self.proto, 'symlink'):
+                if hasattr(self.proto[self.scheme], 'symlink'):
                     logger.debug("message is to link %s to: %s" %
                                  (new_file, msg.headers['link']))
-                    self.proto.symlink(msg.headers['link'], new_file)
+                    self.proto[self.scheme].symlink(msg.headers['link'],
+                                                    new_file)
                     return True
                 logger.error("%s, symlink not supported" % self.scheme)
                 return False
@@ -1202,27 +1209,29 @@ class Flow:
             elif inflight == '.':
                 new_inflight_path = '.' + new_file
                 self.put(msg, local_file, new_inflight_path)
-                self.proto.rename(new_inflight_path, new_file)
+                self.proto[self.scheme].rename(new_inflight_path, new_file)
             elif inflight[0] == '.':
                 new_inflight_path = new_file + inflight
                 self.put(msg, local_file, new_inflight_path)
                 proto.rename(new_inflight_path, new_file)
             elif options.inflight[-1] == '/':
                 try:
-                    self.proto.cd_forced(775, new_dir + '/' + options.inflight)
-                    self.proto.cd_forced(775, new_dir)
+                    self.proto[self.scheme].cd_forced(
+                        775, new_dir + '/' + options.inflight)
+                    self.proto[self.scheme].cd_forced(775, new_dir)
                 except:
                     pass
                 new_inflight_path = options.inflight + new_file
                 self.put(msg, local_file, new_inflight_path)
-                self.proto.rename(new_inflight_path, new_file)
+                self.proto[self.scheme].rename(new_inflight_path, new_file)
             elif inflight == 'umask':
-                self.proto.umask()
+                self.proto[self.scheme].umask()
                 self.put(msg, local_file, new_file)
 
             # fix permission
 
-            self.set_remote_file_attributes(self.proto, new_file, msg)
+            self.set_remote_file_attributes(self.proto[self.scheme], new_file,
+                                            msg)
 
             logger.info('Sent: %s %s into %s/%s %d-%d' %
                         (local_path, str_range, new_dir, new_file, offset,
@@ -1233,17 +1242,18 @@ class Flow:
         except Exception as err:
 
             #removing lock if left over
-            if new_inflight_path != None and hasattr(self.proto, 'delete'):
+            if new_inflight_path != None and hasattr(self.proto[self.scheme],
+                                                     'delete'):
                 try:
-                    self.proto.delete(new_inflight_path)
+                    self.proto[self.scheme].delete(new_inflight_path)
                 except:
                     pass
 
             #closing on problem
             try:
-                self.proto.close()
+                self.proto[self.scheme].close()
                 self.cdir = None
-                self.proto = None
+                self.proto[self.scheme] = None
 
             except:
                 pass

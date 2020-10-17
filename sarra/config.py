@@ -616,12 +616,12 @@ class Config:
         elif kind == 'size':
             size_options.append(option)
             if type(v) is not int:
-                setattr(self, k, chunksize_from_str(v))
+                setattr(self, option, chunksize_from_str(v))
 
         elif kind == 'str':
             str_options.append(option)
             if type(v) is not str:
-                setattr(self, k, str(v))
+                setattr(self, option, str(v))
 
 
 #    logger.info('v2plugin option: %s declared' % option)

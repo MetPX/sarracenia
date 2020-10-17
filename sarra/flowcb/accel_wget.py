@@ -33,30 +33,18 @@ See end of file for performance considerations.
 
 import logging
 
-import sarra
 from sarra.flowcb import FlowCB
-from sarra.config import add_option
-import sarra.transfer.sftp
 
 logger = logging.getLogger(__name__)
 
-add_option('accel_wget_command', 'str', '/usr/bin/wget')
-add_option(' accel_wget_threshold', 'size', '1M')
-add_option('accel_wget_protocol', 'list', ['http', 'https'])
-
 
 class ACCEL_WGET(FlowCB):
-    def on_start(self):
+    def __init__(self, options):
 
-        if type(self.o.accel_wget_threshold) is list:
-            self.o.accel_wget_threshold = sarra.chunksize_from_str(
-                self.o.accel_wget_threshold[0])
-        elif type(self.o.accel_wget_threshold) is str:
-            self.o.accel_wget_threshold = sarra.chunksize_from_str(
-                self.o.accel_wget_threshold)
-
-        logger.info("accel threshold set to: %d" % self.o.accel_wget_threshold)
-        return True
+        self.o = options
+        self.o.add_option('accel_wget_command', 'str', '/usr/bin/wget')
+        self.o.add_option('accel_wget_threshold', 'size', '1M')
+        self.o.add_option('accel_wget_protocol', 'list', ['http', 'https'])
 
     def on_messages(self, worklist):
 
@@ -98,6 +86,9 @@ class ACCEL_WGET(FlowCB):
         if self.o.reportback:
             msg.report_publish(201, 'Downloaded')
         return True
+
+    def registered_as(self):
+        return ["download"]
 
 
 """
