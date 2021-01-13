@@ -1010,6 +1010,9 @@ class sr_GlobalState:
                             self.user_config_dir + os.sep + 'credentials.conf',
                             'r') as config_file:
                         for cfl in config_file.readlines():
+                            if not cfl.strip(): continue
+                            if cfl.lstrip()[0] == '#': continue
+                            print("len(cfl): %d, cfl: %s" % (len(cfl), cfl))
                             u_urlstr = cfl.split()[0]
                             try:
                                 u_url = urllib.parse.urlparse(u_urlstr)
