@@ -16,13 +16,21 @@ class PODAAC(object):
 		import os.path
 		from urllib.parse import urlparse
 		yesterday = datetime.now() - timedelta(days=1)
-		juliandateY = str(yesterday.timetuple().tm_yday)
-		juliandate = str(datetime.now().timetuple().tm_yday)
+		twodaysago = datetime.now() - timedelta(days=2)
+		threedaysago = datetime.now() - timedelta(days=3)
+		juliandate2days = str(twodaysago.timetuple().tm_yday).zfill(3)
+		juliandate3days = str(threedaysago.timetuple().tm_yday).zfill(3)
+		juliandateY = str(yesterday.timetuple().tm_yday).zfill(3)
+		juliandate = str(datetime.now().timetuple().tm_yday).zfill(3)
+		yearY3 = str(threedaysago.year)
+		yearY2 = str(twodaysago.year)
 		yearY = str(yesterday.year)
 		year = str(datetime.now().year)
 		logger = parent.logger
 		remote = []
 		for key in parent.podaac_key:
+			remote.append(key + yearY3 + "/" + juliandate3days + "/")
+			remote.append(key + yearY2 + "/" + juliandate2days + "/") 
 			remote.append(key + yearY + "/" + juliandateY + "/")
 			remote.append(key + year + "/" + juliandate + "/")
 
