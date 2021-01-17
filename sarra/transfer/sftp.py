@@ -31,7 +31,7 @@
 #
 #
 
-import logging, paramiko, os, sys, time
+import logging, paramiko, os, subprocess, sys, time
 from paramiko import *
 from stat import *
 
@@ -80,6 +80,7 @@ class Sftp(Transfer):
 
         logger.debug("sr_sftp __init__")
 
+        self.o.add_option("accel_scp_command", "str", "/usr/bin/scp")
         # sftp command times out after 20 secs
         # this setting is different from the computed timeout (protocol)
 
@@ -353,7 +354,9 @@ class Sftp(Transfer):
         alarm_cancel()
 
     # get
+
     def get(self,
+            msg,
             remote_file,
             local_file,
             remote_offset=0,
@@ -362,8 +365,6 @@ class Sftp(Transfer):
         logger.debug(
             "sr_sftp get %s %s %d %d %d" %
             (remote_file, local_file, remote_offset, local_offset, length))
-
-        # read : remote file open, seek if needed
 
         alarm_set(2 * self.o.timeout)
         rfp = self.sftp.file(remote_file, 'rb', self.o.bufsize)
@@ -384,10 +385,28 @@ class Sftp(Transfer):
 
         return rw_length
 
+    def getAccelerated(self, msg, remote_file, local_file, length):
+
+        base_url = msg['baseUrl'].replace('sftp://', '')
+        if base_url[-1] == '/':
+            base_url = base_url[0:-1]
+        arg1 = base_url + ':' + self.pwd + os.sep + remote_file
+        arg1 = arg1.replace(' ', '\ ')
+        arg2 = local_file
+
+        cmd = self.o.accel_scp_command.split() + [arg1, arg2]
+        logger.info("accel_sftp:  %s" % ' '.join(cmd))
+        p = subprocess.Popen(cmd)
+        p.wait()
+        if p.returncode != 0:
+            return -1
+        sz = os.stat(arg2).st_size
+        return sz
+
     # getcwd
     def getcwd(self):
         alarm_set(self.o.timeout)
-        cwd = self.sftp.getcwd()
+        cwd = self.sftp.getcwd() if self.sftp else None
         alarm_cancel()
         return cwd
 
@@ -490,6 +509,7 @@ class Sftp(Transfer):
 
     # put
     def put(self,
+            msg,
             local_file,
             remote_file,
             local_offset=0,

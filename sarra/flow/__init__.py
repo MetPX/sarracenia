@@ -31,6 +31,7 @@ from sarra import nowflt
 logger = logging.getLogger(__name__)
 
 default_options = {
+    'accel_threshold': 0,
     'accept_unmatched': False,
     'attempts': 3,
     'batch': 100,
@@ -912,7 +913,7 @@ class Flow:
             options.destination = msg['baseUrl']
 
             if (not (self.scheme in self.proto)) or \
-               (self.proto[self.scheme] is None) or self.proto[self.scheme].check_is_connected():
+               (self.proto[self.scheme] is None) or not self.proto[self.scheme].check_is_connected():
 
                 logger.debug("%s_transport download connects" % self.scheme)
                 self.proto[self.scheme] = sarra.transfer.Transfer.factory(
@@ -983,12 +984,26 @@ class Flow:
                 logger.error('inflight setting: %s, not for remote.' %
                              options.inflight)
 
-            self.proto[self.scheme].set_path(new_inflight_path)
-            len_written = self.get(msg, remote_file, new_inflight_path,
-                                   remote_offset, msg['local_offset'],
-                                   block_length)
+            logger.debug( "hasattr=%s, thresh=%d, len=%d, remote_off=%d, local_off=%d " % \
+                ( hasattr( self.proto[self.scheme], 'getAccelerated'),  \
+                self.o.accel_threshold, block_length, remote_offset,  msg['local_offset'] ) )
+
+            accelerated = hasattr( self.proto[self.scheme], 'getAccelerated') and \
+                (self.o.accel_threshold > 0 ) and (block_length > self.o.accel_threshold) and \
+                (remote_offset == 0) and ( msg['local_offset'] == 0)
+
+            if accelerated:
+                len_written = self.proto[self.scheme].getAccelerated(
+                    msg, remote_file, new_inflight_path, block_length)
+            else:
+                self.proto[self.scheme].set_path(new_inflight_path)
+                len_written = self.proto[self.scheme].get(
+                    msg, remote_file, new_inflight_path, remote_offset,
+                    msg['local_offset'], block_length)
 
             if (len_written == block_length):
+                if accelerated:
+                    self.proto[self.scheme].update_file(new_inflight_path)
                 if (new_inflight_path != new_file):
                     if os.path.isfile(new_file):
                         os.remove(new_file)
@@ -1038,39 +1053,6 @@ class Flow:
             return False
         return True
 
-    # generalized get...
-    def get(self, msg, remote_file, local_file, remote_offset, local_offset,
-            length):
-
-        scheme = urllib.parse.urlparse(msg['baseUrl']).scheme
-        if ((hasattr(self,'plugins') and ( 'do_get' in self.plugins )) and \
-            scheme in self.plugins['do_get'] ):
-            return self.plugins[scheme]['do_get'](msg, remote_file, local_file,
-                                                  remote_offset, local_offset,
-                                                  length)
-        else:
-            return self.proto[scheme].get(remote_file, local_file,
-                                          remote_offset, local_offset, length)
-
-    # generalized put...
-    def put(self,
-            msg,
-            local_file,
-            remote_file,
-            local_offset=0,
-            remote_offset=0,
-            length=0):
-
-        scheme = urllib.parse.urlparse(msg['baseUrl']).scheme
-        if (hasattr(self,'plugins') and ( 'do_put' in self.plugins )) and \
-            ( scheme in self.plugins['do_put'] ):
-            return self.plugins[scheme]['do_put'](msg, local_file, remote_file,
-                                                  local_offset, remote_offset,
-                                                  length)
-        else:
-            return self.proto[scheme].put(local_file, remote_file,
-                                          local_offset, remote_offset, length)
-
     # generalized send...
     def send(self, msg, options):
         self.o = options
@@ -1100,8 +1082,8 @@ class Flow:
 
         try:
 
-            if (self.proto[self.scheme] is
-                    None) or not self.proto[self.scheme].check_is_connected():
+            if (not (self.scheme in self.proto)) or \
+               (self.proto[self.scheme] is None) or not self.proto[self.scheme].check_is_connected():
                 logger.debug("%s_transport send connects" % self.scheme)
                 self.proto[self.scheme] = sarra.transfer.Transfer.factory(
                     self.scheme, options)
@@ -1204,15 +1186,15 @@ class Flow:
 
             if inflight == None or (('blocks' in msg) and
                                     (msg['blocks']['method'] == 'inplace')):
-                self.put(msg, local_file, new_file, offset, new_offset,
-                         msg['size'])
+                self.proto[self.scheme].put(msg, local_file, new_file, offset,
+                                            new_offset, msg['size'])
             elif inflight == '.':
                 new_inflight_path = '.' + new_file
-                self.put(msg, local_file, new_inflight_path)
+                self.proto[self.scheme].put(msg, local_file, new_inflight_path)
                 self.proto[self.scheme].rename(new_inflight_path, new_file)
             elif inflight[0] == '.':
                 new_inflight_path = new_file + inflight
-                self.put(msg, local_file, new_inflight_path)
+                self.proto[self.scheme].put(msg, local_file, new_inflight_path)
                 proto.rename(new_inflight_path, new_file)
             elif options.inflight[-1] == '/':
                 try:
@@ -1222,11 +1204,11 @@ class Flow:
                 except:
                     pass
                 new_inflight_path = options.inflight + new_file
-                self.put(msg, local_file, new_inflight_path)
+                self.proto[self.scheme].put(msg, local_file, new_inflight_path)
                 self.proto[self.scheme].rename(new_inflight_path, new_file)
             elif inflight == 'umask':
                 self.proto[self.scheme].umask()
-                self.put(msg, local_file, new_file)
+                self.proto[self.scheme].put(msg, local_file, new_file)
 
             # fix permission
 

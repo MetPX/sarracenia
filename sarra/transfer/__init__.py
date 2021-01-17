@@ -362,6 +362,12 @@ class Transfer():
         self.sumalgo = sarra.integrity.Integrity.factory(sumalgo)
         self.data_sumalgo = sarra.integrity.Integrity.factory(sumalgo)
 
+    def update_file(self, path):
+        if self.sumalgo:
+            self.sumalgo.update_file(path)
+        if self.data_sumalgo:
+            self.data_sumalgo.update_file(path)
+
     def set_path(self, path):
         if self.sumalgo:
             self.sumalgo.set_path(path)

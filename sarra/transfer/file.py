@@ -111,6 +111,7 @@ class File(Transfer):
 
     # get
     def get(self,
+            msg,
             remote_file,
             local_file,
             remote_offset=0,

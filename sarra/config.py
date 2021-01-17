@@ -95,12 +95,13 @@ str_options = [
    the fdelay ones makes in depth use of sr_replay function, and
    that has changed in v3 too much.
 
+        'accel_scp': ['flow_callback', 'sarra.flowcb.accel_scp.ACCEL_SCP'],
 """
 convert_to_v3 = {
     'plugin': {
         'msg_fdelay': ['flow_callback', 'sarra.flowcb.msg.fdelay.FDelay'],
-        'accel_wget': ['flow_callback', 'sarra.flowcb.accel_wget.ACCEL_WGET'],
-        'accel_scp': ['flow_callback', 'sarra.flowcb.accel_scp.ACCEL_SCP'],
+        'accel_wget': ['continue'],
+        'accel_scp': ['continue'],
     },
     'on_message': {
         'msg_delete':
@@ -382,6 +383,8 @@ class Config:
 
     # Correct name on the right, old name on the left.
     synonyms = {
+        'accel_scp_threshold': 'accel_threshold',
+        'accel_wget_threshold': 'accel_threshold',
         'accept_unmatch': 'accept_unmatched',
         'basedir': 'baseDir',
         'base_dir': 'baseDir',
@@ -833,6 +836,9 @@ class Config:
                     line = convert_to_v3[k][v]
                     k = line[0]
                     logger.debug('Converting \"%s\" to v3: \"%s\"' % (l, line))
+
+            if k == 'continue':
+                continue
 
             line = list(map(lambda x: self._varsub(x), line))
             if len(line) == 1:
@@ -1578,8 +1584,9 @@ class Config:
             msg['new_baseUrl'] = msg['baseUrl']
 
         if 'new_relPath' in msg:
+            offset = 1 if msg['new_relPath'][0] == '/' else 0
             msg['topic'] = self.post_topic_prefix + '.' + '.'.join(
-                msg['new_relPath'].split('/'))[1:-1]
+                msg['new_relPath'].split('/'))[offset:-1]
 
         logger.debug( "leaving with: new_dir=%s new_relpath=%s new_baseUrl=%s " % \
            ( msg['new_dir'], msg['new_relPath'], msg['new_baseUrl'] ) )

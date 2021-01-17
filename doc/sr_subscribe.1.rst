@@ -938,6 +938,30 @@ to the component to a small superset of what is relevant, and perform only a fin
 client side mechanisms, saving bandwidth and processing for all. More details on how
 to apply the directives follow:
 
+ACCELERATION
+------------
+
+Some protocols permit an binary downloader to be used in place of the default
+pure python code. There is overhead in spawning a binary downloader, and so
+for smaller files it is faster and/or more efficient to use built-in processing.
+
+accel_treshold <byte count> (default: 0- disabled.)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The accel_threshold indicates the minimum size of file being transferred for
+which a binary downloader will be launched.
+
+accel_wget_command <cmd> (default: /usr/bin/wget) 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The binary used to accellerate https downloads
+
+
+accel_scp_command <cmd> (default: /usr/bin/scp) 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The binary used to accellerate sftp/scp downloads.
+
 
 DELIVERY SPECIFICATIONS
 -----------------------
@@ -945,6 +969,7 @@ DELIVERY SPECIFICATIONS
 These options set what files the user wants and where it will be placed,
 and under which name.
 
+- **accel_threshold  <byte count> (default: 0)** 
 - **accept    <regexp pattern> (must be set)** 
 - **accept_unmatch   <boolean> (default: off)**
 - **attempts     <count>          (default: 3)**
@@ -978,6 +1003,8 @@ and under which name.
 - **timeout     <float>         (default: 0)**
 - **tls_rigour   <lax|medium|strict>  (default: medium)**
 - **xattr_disable  <boolean>  (default: off)**
+
+
 
 attempts <count> (default: 3)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

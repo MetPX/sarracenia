@@ -36,6 +36,7 @@ import logging
 import os
 import sarra
 import ssl
+import subprocess
 import sys
 import urllib.request, urllib.error
 
@@ -64,6 +65,8 @@ class Https(Transfer):
     def __init__(self, proto, options):
 
         super().__init__(proto, options)
+
+        self.o.add_option('accel_wget_command', 'str', '/usr/bin/wget')
 
         logger.debug("sr_http __init__")
 
@@ -156,6 +159,7 @@ class Https(Transfer):
 
     # get
     def get(self,
+            msg,
             remote_file,
             local_file,
             remote_offset=0,
@@ -180,9 +184,25 @@ class Https(Transfer):
 
         return rw_length
 
+    def getAccelerated(self, msg, remote_file, local_file, length):
+
+        arg1 = msg['baseUrl'] + '/' + msg['relPath']
+        arg1 = arg1.replace(' ', '\ ')
+        arg2 = local_file
+
+        cmd = self.o.accel_wget_command.split() + [arg1, '-O', arg2]
+        logger.info("accel_wget: %s" % ' '.join(cmd))
+        p = subprocess.Popen(cmd)
+        p.wait()
+        if p.returncode != 0:
+            return -1
+        # FIXME: length is not validated.
+        return length
+
     # init
     def init(self):
         Transfer.init(self)
+
         logger.debug("sr_http init")
         self.connected = False
         self.http = None

@@ -1012,7 +1012,6 @@ class sr_GlobalState:
                         for cfl in config_file.readlines():
                             if not cfl.strip(): continue
                             if cfl.lstrip()[0] == '#': continue
-                            print("len(cfl): %d, cfl: %s" % (len(cfl), cfl))
                             u_urlstr = cfl.split()[0]
                             try:
                                 u_url = urllib.parse.urlparse(u_urlstr)
@@ -1021,8 +1020,8 @@ class sr_GlobalState:
                             if not u_url.username:
                                 continue
                             if u_url.username in self.default_cfg.declared_users:
-                                print( 'u_url : user:%s, pw:%s, role: %s' % \
-                                    (u_url.username, u_url.password, self.default_cfg.declared_users[u_url.username]))
+                                #print( 'u_url : user:%s, pw:%s, role: %s' % \
+                                #    (u_url.username, u_url.password, self.default_cfg.declared_users[u_url.username]))
                                 sarra.rabbitmq_admin.add_user( \
                                     self.brokers[h]['admin'], \
                                     self.default_cfg.declared_users[u_url.username],

@@ -279,6 +279,7 @@ class Ftp(Transfer):
 
     # get
     def get(self,
+            msg,
             remote_file,
             local_file,
             remote_offset=0,
@@ -416,6 +417,7 @@ class Ftp(Transfer):
 
     # put
     def put(self,
+            msg,
             local_file,
             remote_file,
             local_offset=0,
