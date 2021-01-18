@@ -1003,7 +1003,7 @@ class Config:
                 self.logLevel = 'critical'
 
         if not hasattr(self, 'suppress_duplicates_basis'):
-            self.suppress_duplicates_basis = 'data'
+            self.suppress_duplicates_basis = 'path'
 
         # FIXME: note that v2 *user_cache_dir* is, v3 called:  cfg_run_dir
         if config[-5:] == '.conf':
