@@ -252,7 +252,7 @@ Known Problems
   sarra.tmpc.*, sr.py ) using normal imports. likely need to
   refactor how checksum plugin mechanism works then try again.
 
-  totally refactored now. Integrity class is normal.
+  totally refactored now. Integrity class is normal, and separate from flowcb.
 
 
 Concrete Plan
@@ -267,10 +267,6 @@ internalize implementation of all management stuff, declare etc...
 HMPC - Topic Message Protocol Client... a generalization of the message
 passing library with a simplified API.  abstracts the protocol differences
 away. (This later became the Moth module.)
-
-
-Progress
---------
 
 The method of testing is to make modifications and check them against the 
 sr_insects v03_wip branch. In general, an un-modified sr_insects tests should
@@ -288,7 +284,7 @@ appropriate structure so that tasks can be delegated with reasonable hope of suc
 
 
 Done
-~~~~
+----
 
 The functionality of sr_amqp.py is completely reproduced in TMPC/amqp.py 
 All the important logic is preserved, but it is transcribed into new classes. 
@@ -398,8 +394,8 @@ so noting down what the solution was.
   remove sum sub-directory. sr_util.py
 
 
-in Flux
-~~~~~~~
+Accel Overhaul
+~~~~~~~~~~~~~~
 
 plugin compatiblity under review... decided to re-write the accel_* plugins for v3, and
 change the API because the v2 one has fundamental deficiencies:
@@ -419,10 +415,14 @@ to test them. There is also logic to spot v2 invocations of them, and replace wi
 in the configuration. And the first attempt was quite convoluted... was not happy.
 2nd attempt also... working on a third one.
 
+Re-wrote again, just adding getAccelerated() to the Transfer API, so it is built-in
+instead of being a plugin.  Any Transfer class can specify an accelerator and it
+will be triggered by accel_threshold. https and sftp/scp accelerators are implemented.
+
 
 
 TODO
-~~~~
+----
 
 
 
@@ -446,7 +446,7 @@ TODO
 * alarm_set truncates to integers... hmm.. use setitimer instead? 
 
 Not Baked/Thinking
-~~~~~~~~~~~~~~~~~~
+------------------
 
 Structural code things that are not settled, may change.
 Probably need to be settled before having anyone else dive in.
@@ -498,7 +498,7 @@ Probably need to be settled before having anyone else dive in.
 
 
 FIXME/Deferred
-~~~~~~~~~~~~~~
+--------------
 
 The point of the main v3 work is to get a re-factor done to the point where
 the code is understandable to new coders, so that tasks can be assigned.
@@ -611,6 +611,7 @@ breaking changes:
   would be invoked. In v2, the calling signature for all plugins is the same (self, parent) but for
   these do_get and do_put cases, that is quite counter productive. so instead have a calling signature
   identical to built-in protocol get/put... src_file, dst_file, src_offset, dst_offset, len )
+  Resolution: just implement new Transfer classes, does not naturally fit in flowcb.
 
 * In v2, mirror default settings used to be False in all components except sr_sarra.
   but the mirror setting was not honoured in shovel, and winnow (bug #358) 
