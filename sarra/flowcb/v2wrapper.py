@@ -371,6 +371,17 @@ class V2Wrapper(FlowCB):
         # set incoming for future steps.
         worklist.incoming = outgoing
 
+    def on_posts(self, worklist):
+
+        outgoing = []
+        for m in worklist.ok:
+            if self.run_entry('on_post', m):
+                outgoing.append(m)
+            else:
+                worklist.rejected.append(m)
+        # set incoming for future steps.
+        worklist.ok = outgoing
+
     def on_time(self, time):
         """
            run plugins for a given entry point.

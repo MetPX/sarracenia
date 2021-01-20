@@ -21,6 +21,7 @@ from sarra import nowflt
 class Post_Rate_Limit(object):
     def __init__(self, parent):
 
+        parent.declare_option('post_rate_limit')
         if hasattr(parent, 'post_rate_limit'):
             if type(parent.post_rate_limit) is list:
                 parent.post_rate_limit = int(parent.post_rate_limit[0])

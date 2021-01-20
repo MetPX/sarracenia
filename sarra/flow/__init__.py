@@ -300,6 +300,9 @@ class Flow:
 
                 self.post()
 
+                self.ack(self.worklist.rejected)
+                self.worklist.rejected = []
+
                 self.report()
 
                 self.worklist.ok = []

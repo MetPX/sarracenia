@@ -182,7 +182,7 @@ class Retry(FlowCB):
             return False, None
 
         message['isRetry'] = True
-        if not '_retry_tag_' in message['_deleteOnPost']:
+        if not 'isRetry' in message['_deleteOnPost']:
             message['_deleteOnPost'].append('isRetry')
 
         return True, message
