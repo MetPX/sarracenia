@@ -1836,10 +1836,11 @@ def main():
         level=logging.DEBUG)
     logger.setLevel(logging.INFO)
 
-    if sys.argv[1] == '--debug':
-        logger.setLevel(logging.DEBUG)
-    else:
-        logger.setLevel(logging.INFO)
+    if len(sys.argv) > 1:
+        if sys.argv[1] == '--debug':
+            logger.setLevel(logging.DEBUG)
+        else:
+            logger.setLevel(logging.INFO)
 
     actions = [
         'declare', 'devsnap', 'dump', 'restart', 'sanity', 'setup', 'show',
@@ -1861,7 +1862,7 @@ def main():
     #cfg.fill_missing_options()
 
     if not hasattr(cfg, 'action'):
-        print('USAGE: %s (%s)' % (sys.argv[0], '|'.join(actions)))
+        print('USAGE: %s [ -h ] (%s)' % (sys.argv[0], '|'.join(actions)))
         return
 
     action = cfg.action
