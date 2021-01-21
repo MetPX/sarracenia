@@ -95,7 +95,7 @@ str_options = [
    the fdelay ones makes in depth use of sr_replay function, and
    that has changed in v3 too much.
 
-        'accel_scp': ['flow_callback', 'sarra.flowcb.accel_scp.ACCEL_SCP'],
+   accelerators and rate limiting are now built-in, no plugin required.
 """
 convert_to_v3 = {
     'plugin': {
@@ -110,6 +110,9 @@ convert_to_v3 = {
     },
     'on_line': {
         'line_log': ['flow_callback', 'sarra.flowcb.line_log']
+    },
+    'on_post': {
+        'post_rate_limit': ['continue']
     }
 }
 
@@ -408,7 +411,8 @@ class Config:
         'post_basedir': 'post_baseDir',
         'post_base_url': 'post_baseUrl',
         'post_baseurl': 'post_baseUrl',
-        'post_document_root': 'post_documentRoot'
+        'post_document_root': 'post_documentRoot',
+        'post_rate_limit': 'message_rate_max'
     }
     credentials = None
 

@@ -987,6 +987,8 @@ and under which name.
 - **inplace       <boolean>        (default: On)**
 - **kbytes_ps <count>               (default: 0)**
 - **inflight  <string>         (default: .tmp or NONE if post_broker set)** 
+- **message_rate_max <float>   (default: 0 == DISABLED)
+- **message_rate_min <float>   (default: 0 == DISABLED)
 - **mirror    <boolean>        (default: off)** 
 - **no_download|notify_only    <boolean>        (default: off)** 
 - **outlet    post|json|url    (default: post)** 
@@ -1360,6 +1362,22 @@ kbytes_ps <count> (default: 0)
 speed in kilobytes per second... ftp,ftps,or sftp)
 
 **FIXME**: kbytes_ps... only implemented by sender? or subscriber as well, data only, or messages also?
+
+message_rate_max <float> (default: 0)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+if **message_rate_max** is greater than zero, the flow attempts to respect this delivery
+speed in terms of messages per second. Note that the throttle is on messages obtained or generated 
+per second, prior to accept/reject filtering. the flow will sleep to limit the processing rate.
+
+
+message_rate_min <float> (default: 0)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+if **message_rate_min** is greater than zero, and the flow detected is lower than this rate,
+a warning message will be produced:
+
+
 
 preserve_time (default: on)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

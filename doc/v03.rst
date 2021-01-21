@@ -366,6 +366,10 @@ There was one commit to reformat the entire codebase to PEP style using yapf3.
 Now I have the yapf3 pre-commit hook that reformats changes so that the entire codebase
 remains yapf3 formatted.
 
+Also have written message rate limiting into core, so now have message_rate_min, and message_rate_max
+settings that replace/deprecate v2 post_rate_limit plugin.
+
+
 Worries Addressed
 ~~~~~~~~~~~~~~~~~
 

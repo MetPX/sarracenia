@@ -45,6 +45,8 @@ default_options = {
     'mirror': True,
     'preserve_mode': True,
     'preserve_time': True,
+    'message_rate_max': 0,
+    'message_rate_min': 0,
     'sleep': 0.1,
     'topic_prefix': 'v02.post',
     'vip': None
@@ -255,9 +257,12 @@ class Flow:
 
         next_housekeeping = nowflt() + self.o.housekeeping
 
+        current_rate = 0
+        total_messages = 0
+        start_time = nowflt()
+
         current_sleep = self.o.sleep
-        if self.o.sleep > 0:
-            last_time = nowflt()
+        last_time = start_time
 
         logger.info("options:")
         self.o.dump()
@@ -275,7 +280,11 @@ class Flow:
                 break
 
             if self.has_vip():
+
+                logger.info("current_rate (%g) vs. message_rate_max(%g)) " %
+                            (current_rate, self.o.message_rate_max))
                 self.gather()
+
                 self.ackWorklist('A gathered')
 
                 last_gather_len = len(self.worklist.incoming)
@@ -300,13 +309,16 @@ class Flow:
 
                 self.post()
 
-                self.ack(self.worklist.rejected)
-                self.worklist.rejected = []
-
                 self.report()
 
                 self.worklist.ok = []
                 self.worklist.failed = []
+
+            now = nowflt()
+            run_time = now - start_time
+            total_messages += last_gather_len
+            current_rate = total_messages / run_time
+            elapsed = now - last_time
 
             if (last_gather_len == 0) and (self.o.sleep < 0):
                 self.close()
@@ -315,26 +327,40 @@ class Flow:
             if spamming and (current_sleep < 5):
                 current_sleep *= 2
 
-            now = nowflt()
             if now > next_housekeeping:
                 logger.info('on_housekeeping')
                 self._runCallbacksTime('on_housekeeping')
                 next_housekeeping = now + self.o.housekeeping
 
-            if current_sleep > 0:
-                elapsed = now - last_time
+            if (self.o.message_rate_min > 0) and (current_rate <
+                                                  self.o.message_rate_min):
+                logger.warning("receiving below minimum message rate")
+
+            if (self.o.message_rate_max > 0) and (current_rate >=
+                                                  self.o.message_rate_max):
+                stime = 1 + 2 * ((current_rate - self.o.message_rate_max) /
+                                 self.o.message_rate_max)
+                logger.info(
+                    "current_rate/2 (%g) above message_rate_max(%g): throttling"
+                    % (current_rate, self.o.message_rate_max))
+            else:
+                stime = 0
+
+            if (current_sleep > 0):
                 if elapsed < current_sleep:
-                    stime = current_sleep - elapsed
+                    stime += current_sleep - elapsed
                     if stime > 60:  # if sleeping for a long time, debug output is good...
                         logger.debug(
                             "sleeping for more than 60 seconds: %g seconds. Elapsed since wakeup: %g Sleep setting: %g "
                             % (stime, elapsed, self.o.sleep))
                 else:
-                    #logger.debug( 'worked too long to sleep!')
+                    logger.debug('worked too long to sleep!')
                     last_time = now
                     continue
 
+            if (stime > 0):
                 try:
+                    logger.debug('sleeping for stime: %g seconds' % stime)
                     time.sleep(stime)
                 except:
                     logger.info("flow woken abnormally from sleep")
