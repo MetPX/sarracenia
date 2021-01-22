@@ -292,6 +292,7 @@ class Flow:
                     spamming = True
                 else:
                     current_sleep = self.o.sleep
+                    spamming = False
 
                 self.filter()
 
