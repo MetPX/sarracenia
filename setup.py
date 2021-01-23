@@ -6,7 +6,7 @@ import sys
 from setuptools import find_packages
 from distutils.core import setup
 
-import sarra
+import sarracenia
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -23,7 +23,7 @@ print("packages = %s" % packages)
 setup(
     name='metpx-sarracenia',
     python_requires='>3.4',
-    version=sarra.__version__,
+    version=sarracenia.__version__,
     description='Subscribe, Acquire, and Re-Advertise products.',
     long_description=(read('README.rst') + '\n\n' + read('CHANGES.rst') +
                       '\n\n' + read('AUTHORS.rst')),
@@ -32,18 +32,18 @@ setup(
     author='Shared Services Canada, Supercomputing, Data Interchange',
     author_email='Peter.Silva@canada.ca',
     packages=find_packages(),
-    package_data={'sarra': ['examples/*/*']},
+    package_data={'sarracenia': ['examples/*/*']},
     entry_points={
         "console_scripts": [
-            "sr=sarra.sr:main",
-            "sr_post=sarra.sr_post:main",
-            #             "sr_poll=sarra.sr_flow:main", "sr_report=sarra.sr_flow:main",
-            #              "sr_watch=sarra.sr_flow:main", "sr_winnow=sarra.sr_flow:main",
-            #              "sr_sarra=sarra.sr_flow:main", "sr_shovel=sarra.sr_flow:main",
-            #              "sr_sender=sarra.sr_flow:main",
-            #              "sr_subscribe=sarra.sr_flow:main",
-            #              "sr_log2save=sarra.sr_log2save:main",
-            #"sr_tailf=sarra.sr_tailf:main"
+            "sr=sarracenia.sr:main",
+            "sr_post=sarracenia.sr_post:main",
+            #             "sr_poll=sarracenia.sr_flow:main", "sr_report=sarracenia.sr_flow:main",
+            #              "sr_watch=sarracenia.sr_flow:main", "sr_winnow=sarracenia.sr_flow:main",
+            #              "sr_sarra=sarracenia.sr_flow:main", "sr_shovel=sarracenia.sr_flow:main",
+            #              "sr_sender=sarracenia.sr_flow:main",
+            #              "sr_subscribe=sarracenia.sr_flow:main",
+            #              "sr_log2save=sarracenia.sr_log2save:main",
+            #"sr_tailf=sarracenia.sr_tailf:main"
         ]
     },
     classifiers=[
