@@ -20,47 +20,49 @@ def read(*parts):
 packages = find_packages()
 print("packages = %s" % packages)
 
-setup(name='metpx-sarracenia',
-      python_requires='>3.4',
-      version=sarra.__version__,
-      description='Subscribe, Acquire, and Re-Advertise products.',
-      long_description=(read('README.rst') + '\n\n' + read('CHANGES.rst') +
-                        '\n\n' + read('AUTHORS.rst')),
-      url='https://github.com/MetPX/sarracenia',
-      license='GPLv2',
-      author='Shared Services Canada, Supercomputing, Data Interchange',
-      author_email='Peter.Silva@canada.ca',
-      packages=find_packages(),
-      package_data={'sarra': ['examples/*/*']},
-      entry_points={
-          "console_scripts": [
-              "sr=sarra.sr:main", "sr_report=sarra.sr_flow:main",
-              "sr_poll=sarra.sr_flow:main", "sr_post=sarra.sr_post:main",
-              "sr_watch=sarra.sr_flow:main", "sr_winnow=sarra.sr_flow:main",
-              "sr_sarra=sarra.sr_flow:main", "sr_shovel=sarra.sr_flow:main",
-              "sr_sender=sarra.sr_flow:main",
-              "sr_subscribe=sarra.sr_flow:main",
-              "sr_log2save=sarra.sr_log2save:main",
-              "sr_tailf=sarra.sr_tailf:main"
-          ]
-      },
-      classifiers=[
-          'Development Status :: 5 - Production/Stable',
-          'Environment :: Console',
-          'Intended Audience :: Developers',
-          'Intended Audience :: Science/Research',
-          'Intended Audience :: System Administrators',
-          'Natural Language :: English',
-          'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
-          'Operating System :: OS Independent',
-          'Programming Language :: Python :: 3',
-          'Programming Language :: Python :: 3.5',
-          'Programming Language :: Python :: 3.6',
-          'Programming Language :: Python :: 3.7',
-          'Topic :: Communications :: File Sharing',
-          'Topic :: System :: Logging',
-      ],
-      install_requires=[
-          "amqp", "appdirs", "watchdog", "netifaces", "humanize", "paramiko",
-          "psutil>=5.3.0"
-      ])
+setup(
+    name='metpx-sarracenia',
+    python_requires='>3.4',
+    version=sarra.__version__,
+    description='Subscribe, Acquire, and Re-Advertise products.',
+    long_description=(read('README.rst') + '\n\n' + read('CHANGES.rst') +
+                      '\n\n' + read('AUTHORS.rst')),
+    url='https://github.com/MetPX/sarracenia',
+    license='GPLv2',
+    author='Shared Services Canada, Supercomputing, Data Interchange',
+    author_email='Peter.Silva@canada.ca',
+    packages=find_packages(),
+    package_data={'sarra': ['examples/*/*']},
+    entry_points={
+        "console_scripts": [
+            "sr=sarra.sr:main",
+            "sr_post=sarra.sr_post:main",
+            #             "sr_poll=sarra.sr_flow:main", "sr_report=sarra.sr_flow:main",
+            #              "sr_watch=sarra.sr_flow:main", "sr_winnow=sarra.sr_flow:main",
+            #              "sr_sarra=sarra.sr_flow:main", "sr_shovel=sarra.sr_flow:main",
+            #              "sr_sender=sarra.sr_flow:main",
+            #              "sr_subscribe=sarra.sr_flow:main",
+            #              "sr_log2save=sarra.sr_log2save:main",
+            #"sr_tailf=sarra.sr_tailf:main"
+        ]
+    },
+    classifiers=[
+        'Development Status :: 5 - Production/Stable',
+        'Environment :: Console',
+        'Intended Audience :: Developers',
+        'Intended Audience :: Science/Research',
+        'Intended Audience :: System Administrators',
+        'Natural Language :: English',
+        'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Topic :: Communications :: File Sharing',
+        'Topic :: System :: Logging',
+    ],
+    install_requires=[
+        "amqp", "appdirs", "watchdog", "netifaces", "humanize", "paramiko",
+        "psutil>=5.3.0"
+    ])
