@@ -32,7 +32,7 @@ if [ "$1" ]; then
 else
     PYVERSION="`python3 -V| awk '{ print $2; }'`"
 fi
-VERSION=`grep __version__ sarra/__init__.py | cut -c15- | sed -e 's/"//g'`
+VERSION=`grep __version__ sarracenia/__init__.py | cut -c15- | sed -e 's/"//g'`
 
 sed 's/__version__/'$VERSION'/; s/__pyversion__/'$PYVERSION'/;' <win_installer.cfg.tem >win_installer.cfg
 # NSIS packaging
