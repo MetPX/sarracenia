@@ -34,13 +34,12 @@ setup(name='metpx-sarracenia',
       package_data={'sarra': ['examples/*/*']},
       entry_points={
           "console_scripts": [
-              "sr=sarra.sr:main", "sr1=sarra.sr1:main",
-              "sr_report=sarra.sr_report:main", "sr_poll=sarra.sr_poll:main",
-              "sr_post=sarra.sr_post:main", "sr_watch=sarra.sr_watch:main",
-              "sr_winnow=sarra.sr_winnow:main", "sr_sarra=sarra.sr_sarra:main",
-              "sr_shovel=sarra.sr_shovel:main",
-              "sr_sender=sarra.sr_sender:main",
-              "sr_subscribe=sarra.sr_subscribe:main",
+              "sr=sarra.sr:main", "sr_report=sarra.sr_flow:main",
+              "sr_poll=sarra.sr_flow:main", "sr_post=sarra.sr_post:main",
+              "sr_watch=sarra.sr_flow:main", "sr_winnow=sarra.sr_flow:main",
+              "sr_sarra=sarra.sr_flow:main", "sr_shovel=sarra.sr_flow:main",
+              "sr_sender=sarra.sr_flow:main",
+              "sr_subscribe=sarra.sr_flow:main",
               "sr_log2save=sarra.sr_log2save:main",
               "sr_tailf=sarra.sr_tailf:main"
           ]

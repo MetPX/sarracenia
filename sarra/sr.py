@@ -74,6 +74,17 @@ class sr_GlobalState:
         """
             return the string to be used to run a component in Popen.
         """
+        if c in [
+                'poll',
+                'report',
+                'sarra',
+                'sender',
+                'shovel',
+                'subscribe',
+                'watch',
+                'winnow',
+        ]:
+            c = 'flow'
         if c[0] != 'c':  # python components
             s = self.bin_dir + os.sep + 'sr_' + c
             if not os.path.exists(s):
