@@ -262,10 +262,8 @@ class V2Wrapper(FlowCB):
             logger.info('value of %s not set' % option)
             return
 
-        logger.info('value type is: %s' % type(getattr(self.o, option)))
         if type(getattr(self.o, option)) is not list:
             setattr(self.o, option, [getattr(self.o, option)])
-        logger.info('value type is: %s' % type(getattr(self.o, option)))
 
     def add(self, opname, path):
 
@@ -277,9 +275,9 @@ class V2Wrapper(FlowCB):
             return True
 
         ok, script = sarracenia.config.config_path('plugins',
-                                              path,
-                                              mandatory=True,
-                                              ctype='py')
+                                                   path,
+                                                   mandatory=True,
+                                                   ctype='py')
         if not ok:
             logger.error("installing %s %s failed: not found " %
                          (opname, path))

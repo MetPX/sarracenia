@@ -21,7 +21,7 @@ packages = find_packages()
 print("packages = %s" % packages)
 
 setup(
-    name='metpx-sarracenia',
+    name='metpx-sr3',
     python_requires='>3.4',
     version=sarracenia.__version__,
     description='Subscribe, Acquire, and Re-Advertise products.',
@@ -35,8 +35,8 @@ setup(
     package_data={'sarracenia': ['examples/*/*']},
     entry_points={
         "console_scripts": [
-            "sr=sarracenia.sr:main",
-            "sr_post=sarracenia.sr_post:main",
+            "sr3=sarracenia.sr:main",
+            "sr3_post=sarracenia.sr_post:main",
             #             "sr_poll=sarracenia.sr_flow:main", "sr_report=sarracenia.sr_flow:main",
             #              "sr_watch=sarracenia.sr_flow:main", "sr_winnow=sarracenia.sr_flow:main",
             #              "sr_sarra=sarracenia.sr_flow:main", "sr_shovel=sarracenia.sr_flow:main",

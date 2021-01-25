@@ -105,8 +105,10 @@ convert_to_v3 = {
         'accel_scp': ['continue'],
     },
     'on_message': {
-        'msg_delete':
-        ['flow_callback', 'sarracenia.flowcb.msg.deleteflowfiles.DeleteFlowFiles'],
+        'msg_delete': [
+            'flow_callback',
+            'sarracenia.flowcb.msg.deleteflowfiles.DeleteFlowFiles'
+        ],
         'msg_rawlog': ['flow_callback', 'sarracenia.flowcb.msg.log.Log']
     },
     'on_line': {
@@ -383,7 +385,7 @@ class Config:
     ]
 
     # lookup in dictionary, respond with canonical version.
-    appdir_stuff = {'appauthor': 'science.gc.ca', 'appname': 'sarra'}
+    appdir_stuff = {'appauthor': 'science.gc.ca', 'appname': 'sr3'}
 
     # Correct name on the right, old name on the left.
     synonyms = {
@@ -806,7 +808,8 @@ class Config:
         self.settings[opt_class][opt_var] = ' '.join(value)
 
     def _parse_sum(self, value):
-        if (value in sarracenia.integrity.known_methods) or (value[0:4] == 'cod,'):
+        if (value in sarracenia.integrity.known_methods) or (
+                value[0:4] == 'cod,'):
             self.sum = value
             return
 

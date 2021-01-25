@@ -1,59 +1,63 @@
-==============
- SR_Subscribe 
-==============
+=====
+ SR3 
+=====
 
------------------------------------------------
-Select and Conditionally Download Posted Files
------------------------------------------------
+-----------------
+sr Sarracenia CLI
+-----------------
 
-:Manual section: 1
+:Manual section: 1 
 :Date: @Date@
 :Version: @Version@
-:Manual group: Metpx-Sarracenia Suite
+:Manual group: MetPX-Sarracenia
+
 
 SYNOPSIS
 ========
 
- **sr_subscribe** foreground|start|stop|restart|reload|sanity|status configfile
-
- **sr_subscribe** cleanup|declare|edit|setup|disable|enable|list|add|remove configfile
-
+**sr3** add|cleanup|declare|disable|dump|enable|foreground|list|remove|restart|sanity|setup|show|start|stop|status|overview _configs_ 
 
 DESCRIPTION
 ===========
 
-[ `version francaise <fr/sr_subscribe.1.rst>`_ ]
+`Contents`_
+**sr3** is a command line tool to manage `Sarracenia <https://github.com/MetPX/sarracenia>`_ configurations, individually or in groups.
+For the current user, it reads on all of the configuration files, state files, and consults the process table to determine the 
+state of all components.  It then makes the change requested.
 
-.. contents::
+This man page is a reference, sort of a dictionary for the entire application, and may be a bit much to chew off at first.
+To more easily get started, have a look at the `Subscriber Guide <https://github.com/MetPX/sarracenia/blob/master/doc/subscriber.rst>`_
 
-Sr_subscribe is a program to download files from websites or file servers 
-that provide `sr_post(7) <sr_post.7.rst>`_ protocol notifications.  Such sites 
-publish messages for each file as soon as it is available.  Clients connect to a
+sr3 components are used to publish to and download files from websites or file servers 
+that provide `sr3_post(7) <sr3_post.7.rst>`_ protocol notifications. Such sites 
+publish messages for each file as soon as it is available. Clients connect to a
 *broker* (often the same as the server itself) and subscribe to the notifications.
 The *sr_post* notifications provide true push notices for web-accessible folders (WAF),
 and are far more efficient than either periodic polling of directories, or ATOM/RSS style 
 notifications. Sr_subscribe can be configured to post messages after they are downloaded,
 to make them available to consumers for further processing or transfers.
 
-**sr_subscribe** can also be used for purposes other than downloading, (such as for 
+**sr3** can also be used for purposes other than downloading, (such as for 
 supplying to an external program) specifying the -n (*notify_only*, or *no_download*) will
-suppress the download behaviour and only post the URL on standard output.  The standard
+suppress the download behaviour and only post the URL on standard output. The standard
 output can be piped to other processes in classic UNIX text filter style.  
 
-Sr_subscribe is very configurable and is the basis for other components of Sarracenia:
+**sr3** is very configurable and is the basis for other components of Sarracenia:
 
- - `sr_report(1) <sr_report.1.rst>`_ - process report messages.
- - `sr_sender(1) <sr_sender.1.rst>`_ - copy messages, only, not files.
- - `sr_winnow(8) <sr_winnow.8.rst>`_ - suppress duplicates.
- - `sr_shovel(8) <sr_shovel.8.rst>`_ - copy messages, only, not files.
- - `sr_sarra(8) <sr_sarra.8.rst>`_ -   Subscribe, Acquire, and Recursival ReAdvertise Ad nauseam.
+ - `poll`_ - poll a non-sarracenia web or file server to create messages for processing.
+ - `post|sr3_post|sr_cpost`_ - create messages for files for processing.
+ - `sarra`_ - download file from a remote server to the local one, and re-post them for others.
+ - `sender`_ - send files from a local server to a remote one.
+ - `shovel`_ - copy messages, only, not files.
+ - `watch`_ - create messages for each new file that arrives in a directory, or at a set path.
+ - `winnow`_ - copy messages, suppressing duplicates.
  
 All of these components accept the same options, with the same effects.
 There is also `sr_cpump(1) <sr_cpump.1.rst>`_ which is a C version that implements a
 subset of the options here, but where they are implemented, they have the same effect.
 
-The **sr_subscribe** command takes two arguments: an action start|stop|restart|reload|status, 
-followed by a configuration file. 
+The **sr3** command takes two arguments: an action start|stop|restart|reload|status, 
+followed by a list of configuration files
 
 When any component is invoked, an operation and a configuration file are specified. 
 The operation is one of:
@@ -112,6 +116,1165 @@ one can work on a particular configuration.  A *disabled* configuration will not
 started or restarted by the **start**,  
 **foreground**, or **restart** actions. It can be used to set aside a configuration
 temporarily. 
+
+
+Contents
+========
+
+.. contents::
+
+
+COMMANDS
+========
+
+**declare|setup**
+
+Call the corresponding function for each configuration::
+
+  fractal% sr3 declare
+  declare: 2020-09-06 23:22:18,043 [INFO] root declare looking at cpost/pelle_dd1_f04 
+  2020-09-06 23:22:18,048 [INFO] sarra.moth.amqp __putSetup exchange declared: xcvan00 (as: amqp://tfeed@localhost/) 
+  2020-09-06 23:22:18,049 [INFO] sarra.moth.amqp __putSetup exchange declared: xcvan01 (as: amqp://tfeed@localhost/) 
+  2020-09-06 23:22:18,049 [INFO] root declare looking at cpost/veille_f34 
+  2020-09-06 23:22:18,053 [INFO] sarra.moth.amqp __putSetup exchange declared: xcpublic (as: amqp://tfeed@localhost/) 
+  2020-09-06 23:22:18,053 [INFO] root declare looking at cpost/pelle_dd2_f05 
+  ...
+  2020-09-06 23:22:18,106 [INFO] root declare looking at cpost/pelle_dd2_f05 
+  2020-09-06 23:22:18,106 [INFO] root declare looking at cpump/xvan_f14 
+  2020-09-06 23:22:18,110 [INFO] sarra.moth.amqp __getSetup queue declared q_tfeed.sr_cpump.xvan_f14.23011811.49631644 (as: amqp://tfeed@localhost/) 
+  2020-09-06 23:22:18,110 [INFO] sarra.moth.amqp __getSetup um..: pfx: v03.post, exchange: xcvan00, values: #
+  2020-09-06 23:22:18,110 [INFO] sarra.moth.amqp __getSetup binding q_tfeed.sr_cpump.xvan_f14.23011811.49631644 with v03.post.# to xcvan00 (as: amqp://tfeed@localhost/)
+  2020-09-06 23:22:18,111 [INFO] root declare looking at cpump/xvan_f15 
+  2020-09-06 23:22:18,115 [INFO] sarra.moth.amqp __getSetup queue declared q_tfeed.sr_cpump.xvan_f15.50074940.98161482 (as: amqp://tfeed@localhost/) 
+
+Declares the queues and exchanges related to each configuration.
+One can also invoke it with --users, so that it will declare users as well as exchanges and queues::
+
+  fractal% sr3 --users declare
+  2020-09-06 23:28:56,211 [INFO] sarra.rabbitmq_admin add_user permission user 'ender' role source  configure='^q_ender.*|^xs_ender.*' write='^q_ender.*|^xs_ender.*' read='^q_ender.*|^x[lrs]_ender.*|^x.*public$' 
+  ...
+
+
+**dump**
+
+print the three data structure used by sr.  There are three lists:  
+
+* processes thought to be related to sr.
+
+* configurations present
+
+* contents of the state files.
+
+*dump** is used for debugging or to get more detail than provided by status:: 
+
+    Running Processes
+         4238: name:sr_poll.py cmdline:['/usr/bin/python3', '/home/peter/src/sarracenia/sarra/sr_poll.py', '--no', '1', 'start', 'pulse']
+         .
+         . 
+         .
+    Configs
+       cpost 
+           veille_f34 : {'status': 'running', 'instances': 1}
+
+    States
+       cpost
+           veille_f34 : {'instance_pids': {1: 4251}, 'queue_name': None, 'instances_expected': 0, 'has_state': False, 'missing_instances': []}
+
+    Missing
+       
+
+It is quite long, and so a bit too much information to look at in a raw state.
+Usually used in conjunction with linux filters, such as grep.
+for example::
+
+    blacklab% sr3 dump  | grep stopped
+        WMO_mesh_post : {'status': 'stopped', 'instances': 0}
+    	shim_f63 : {'status': 'stopped', 'instances': 0}
+    	test2_f61 : {'status': 'stopped', 'instances': 0}
+
+    blacklab% sr3 dump  | grep disabled
+        amqp_f30.conf : {'status': 'disabled', 'instances': 5}
+    blacklab%
+
+provides easy method to determine which configurations are in a particular state.
+Another example, if *sr status* reports sender/tsource2send_f50 as being partial, then 
+one can use dump to get more detail::
+
+    fractal% sr3 dump | grep sender/tsource2send_f50
+        49308: name:sr3_sender.py cmdline:['/usr/bin/python3', '/usr/lib/python3/dist-packages/sarracenia/instance.py', '--no', '1', 'start', 'sender/tsource2send_f50']
+        q_tsource.sr_sender.tsource2send_f50.58710892.12372870: ['sender/tsource2send_f50']
+    fractal% 
+
+
+*foreground* run a single instance of a single configuration as an interactive process logging to the current stderr/terminal output.
+    a configuration m
+
+*list* shows the user the configuration files present::
+
+    fractal% sr3 list
+    User Configurations: (from: /home/peter/.config/sarra )
+    cpost/pelle_dd1_f04.conf         cpost/pelle_dd2_f05.conf         cpost/veille_f34.conf            
+    cpump/xvan_f14.conf              cpump/xvan_f15.conf              poll/f62.conf                    
+    post/shim_f63.conf               post/t_dd1_f00.conf              post/t_dd2_f00.conf              
+    post/test2_f61.conf              sarra/download_f20.conf          sender/tsource2send_f50.conf     
+    shovel/rabbitmqtt_f22.conf       subscribe/amqp_f30.conf          subscribe/cclean_f91.conf        
+    subscribe/cdnld_f21.conf         subscribe/cfile_f44.conf         subscribe/cp_f61.conf            
+    subscribe/ftp_f70.conf           subscribe/q_f71.conf             subscribe/rabbitmqtt_f31.conf    
+    subscribe/u_sftp_f60.conf        watch/f40.conf                   admin.conf                       
+    credentials.conf                 default.conf                     
+    logs are in: /home/peter/.cache/sarra/log
+    
+The last line says which directory the log files are in.
+
+Also *list examples* shows included configuration templates available as starting points with the *add* command::
+    
+    fractal% sr3 list examples
+    Sample Configurations: (from: /home/peter/Sarracenia/v03_wip/sarra/examples )
+    cpump/cno_trouble_f00.inc        poll/aws-nexrad.conf             poll/pollingest.conf             
+    poll/pollnoaa.conf               poll/pollsoapshc.conf            poll/pollusgs.conf               
+    poll/pulse.conf                  post/WMO_mesh_post.conf          sarra/wmo_mesh.conf              
+    sender/ec2collab.conf            sender/pitcher_push.conf         shovel/no_trouble_f00.inc        
+    subscribe/WMO_Sketch_2mqtt.conf  subscribe/WMO_Sketch_2v3.conf    subscribe/WMO_mesh_CMC.conf      
+    subscribe/WMO_mesh_Peer.conf     subscribe/aws-nexrad.conf        subscribe/dd_2mqtt.conf          
+    subscribe/dd_all.conf            subscribe/dd_amis.conf           subscribe/dd_aqhi.conf           
+    subscribe/dd_cacn_bulletins.conf subscribe/dd_citypage.conf       subscribe/dd_cmml.conf           
+    subscribe/dd_gdps.conf           subscribe/dd_ping.conf           subscribe/dd_radar.conf          
+    subscribe/dd_rdps.conf           subscribe/dd_swob.conf           subscribe/ddc_cap-xml.conf       
+    subscribe/ddc_normal.conf        subscribe/downloademail.conf     subscribe/ec_ninjo-a.conf        
+    subscribe/hpfx_amis.conf         subscribe/local_sub.conf         subscribe/pitcher_pull.conf      
+    subscribe/sci2ec.conf            subscribe/subnoaa.conf           subscribe/subsoapshc.conf        
+    subscribe/subusgs.conf           watch/master.conf                watch/pitcher_client.conf        
+    watch/pitcher_server.conf        watch/sci2ec.conf                
+    fractal% 
+
+    fractal% sr3 add dd_all.conf
+    add: 2021-01-24 18:04:57,018 [INFO] sarracenia.sr add copying: /usr/lib/python3/dist-packages/sarracenia/examples/subscribe/dd_all.conf to /home/peter/.config/sr3/subscribe/dd_all.conf 
+    fractal% sr3 edit dd_all.conf
+
+The **add, remove, list, edit, enable & disable** actions are used to manage the list
+of configurations.  One can see all of the configurations available using the **list**
+action.   to view available plugins use **list plugins**.  Using the **edit** option,
+one can work on a particular configuration.  A *disabled* sets a configuration aside
+(by adding *.off* to the name) so that it will not be started or restarted by 
+the **start**, **foreground**, or **restart** actions. 
+
+**show**
+
+View all configuration settings (the result of all parsing... what the flow components actually see)::
+
+    fractal% sr3 --debug show subscribe/q_f71
+    
+    Config of subscribe/q_f71: 
+    _Config__admin=amqp://bunnymaster@localhost
+    _Config__broker=amqp://tsource@localhost
+    _Config__post_broker=None
+    accept_unmatch=True
+    accept_unmatched=False
+    auto_delete=False
+    baseDir=None
+    batch=100
+    bind=True
+    bindings=[('v03.post', 'xs_tsource_poll', '#')]
+    bufsize=1048576
+    bytes_per_second=None
+    bytes_ps=0
+    cfg_run_dir='/home/peter/.cache/sarra/subscribe/q_f71'
+    chmod=0
+    chmod_dir=509
+    chmod_log=384
+    config='q_f71'
+    currentDir='/home/peter/.cache/sarra/log'
+    debug=False
+    declare=True
+    declared_exchanges=['xpublic', 'xcvan01']
+    delete=False
+    destfn_script=None
+    directory='//home/peter/sarra_devdocroot/recd_by_srpoll_test1'
+    documentRoot=None
+    download=False
+    durable=True
+    env=environ({'SHELL': '/bin/bash', 'SESSION_MANAGER': 'local/fractal:@/tmp...'
+    exchange='xs_tsource_poll'
+    exchange_suffix='poll'
+    expire=3600.0
+    feeder='amqp://tfeed@localhost/'
+    file_total_interval='0'
+    filename=None
+    flatten='/'
+    hostdir='fractal'
+    hostname='fractal'
+    housekeeping=30
+    inflight=None
+    inline=False
+    inline_encoding='guess'
+    inline_max=4096
+    instances=1
+    logFormat='%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s'
+    logLevel='info'
+    log_reject=True
+    lr_backupCount=5
+    lr_interval=1
+    lr_when='midnight'
+    masks=[('.*', '//home/peter/sarra_devdocroot/recd_by_srpoll_test1', None, re...'
+    message_strategy={'reset': True, 'stubborn': True, 'failure_duration': '5m'}
+    message_ttl=0
+    mirror=True
+    msg_total_interval='0'
+    plugins=['sarra.plugin.accel_scp.ACCEL_SCP']
+    post_baseDir=None
+    post_baseUrl=None
+    post_documentRoot=None
+    post_exchanges=[]
+    prefetch=25
+    preserve_mode=True
+    preserve_time=True
+    program_name='subscribe'
+    pstrip='.*sent_by_tsource2send/'
+    queue_filename='/home/peter/.cache/sarra/subscribe/q_f71/sr_subscribe.q_f71.tsource.qname'
+    queue_name='q_tsource.sr_subscribe.q_f71.68760401.09509451'
+    randid='b486'
+    realpath_post=False
+    report_daemons=False
+    reset=False
+    resolved_qname='q_tsource.sr_subscribe.q_f71.68760401.09509451'
+    settings={}
+    sleep=0.1
+    statehost=False
+    strip=0
+    subtopic=None
+    suppress_duplicates=0
+    suppress_duplicates_basis='data'
+    timeout=300
+    tls_rigour='normal'
+    topic_prefix='v03.post'
+    undeclared=['msg_total_interval', 'file_total_interval']
+    users={'tsub': 'subscriber', 'tsource': 'source', 'anonymous': 'subscriber',...'
+    v2plugin_options=[]
+    v2plugins={'plugin': ['msg_total_save', 'file_total_save']}
+    vhost='/'
+    vip=None
+    
+
+**start**
+
+launch all configured components::
+
+  blacklab% sr3 start
+  gathering global state: procs, configs, state files, logs, analysis - Done. 
+  starting............................................................................................Done
+  blacklab% 
+
+
+**stop**
+
+stop all processes::
+
+  blacklab% sr3 stop
+  gathering global state: procs, configs, state files, logs, analysis - Done. 
+  stopping.............................................................................................Done
+  Waiting 1 sec. to check if 93 processes stopped (try: 0)
+  All stopped after try 0
+  blacklab% 
+
+
+**status**
+
+Sample OK status (sr is running)::
+
+    fractal% sr3 status
+    status: 
+    Component/Config                         State        Run  Miss   Exp Retry
+    ----------------                         -----        ---  ----   --- -----
+    cpost/pelle_dd1_f04                      stopped        0     0     0     0
+    cpost/pelle_dd2_f05                      stopped        0     0     0     0
+    cpost/veille_f34                         partial        0     1     1     0
+    cpump/xvan_f14                           partial        0     1     1     0
+    cpump/xvan_f15                           partial        0     1     1     0
+    poll/f62                                 running        1     0     1     0
+    post/shim_f63                            stopped        0     0     0     0
+    post/t_dd1_f00                           stopped        0     0     0     0
+    post/t_dd2_f00                           stopped        0     0     0     0
+    post/test2_f61                           stopped        0     0     0     0
+    report/tsarra_f20                        running        1     0     1     0
+    sarra/download_f20                       running        1     0     1     0
+    sender/tsource2send_f50                  running        1     0     1     0
+    shovel/rabbitmqtt_f22                    running        1     0     1     0
+    subscribe/amqp_f30                       running        1     0     1     0
+    subscribe/cclean_f91                     running        1     0     1     0
+    subscribe/cdnld_f21                      running        1     0     1     0
+    subscribe/cfile_f44                      running        1     0     1     0
+    subscribe/cp_f61                         running        1     0     1     0
+    subscribe/dd_all                         stopped        0     0     0     0
+    subscribe/ftp_f70                        running        1     0     1     0
+    subscribe/q_f71                          running        1     0     1     0
+    subscribe/rabbitmqtt_f31                 running        1     0     1     0
+    subscribe/u_sftp_f60                     running        1     0     1     0
+    watch/f40                                running        1     0     1     0
+          total running configs:  15 ( processes: 15 missing: 3 stray: 0 )
+    fractal% 
+
+The configurations are listed on the left. For each configuraion, the state
+will be:
+
+* stopped:  no processes are running.
+* running:  all processes are running. 
+* partial:  some processes are running.
+* disabled: configured not to run.
+
+The columns to the right give more information, detailing how many processes are Running, and Missing ones.
+The Expected entry lists how many processes should be running based on the configuration, and whether it is stopped
+or not.  The contents of the Run and Miss columns should always add up to what is in the Exp column.
+
+The last column is the number of messages stored in the local retry queue, indicating what channels are having
+processing difficulties::
+
+    fractal% sr3 stop report/tsarra_f20
+    Stopping: sending SIGTERM . ( 1 ) Done
+    Waiting 1 sec. to check if 15 processes stopped (try: 0)
+    Waiting 2 sec. to check if 15 processes stopped (try: 1)
+    All stopped after try 1
+    
+    fractal% sr3 disable report/tsarra_f20
+    2021-01-24 18:16:52,224 [INFO] root disable renaming at /home/peter/.config/sr3/report/tsarra_f20.conf to /home/peter/.config/sr3/report/tsarra_f20.off 
+    
+    fractal% sr3 status
+    status: 
+    Component/Config                         State        Run  Miss   Exp Retry
+    ----------------                         -----        ---  ----   --- -----
+    .
+    .
+    .
+    post/test2_f61                           stopped        0     0     0     0
+    report/tsarra_f20                        disabled       0     0     1     0
+    sarra/download_f20                       running        1     0     1     0
+    .
+    .
+    .
+          total running configs:  14 ( processes: 14 missing: 1 stray: 0 )
+    fractal% 
+
+
+COMPONENTS
+==========
+
+CPUMP|sr_cpump
+---------------
+
+*cpump** is an implementation of the `shovel`_ component in C.
+On an individual basis, it should be faster than a single python downloader,
+with some limitations.
+
+ - doesn't download data, only circulates posts. (shovel, not subscribe)
+ - runs as only a single instance (no multiple instances).
+ - does not support any plugins.
+ - does not support vip for high availability.
+ - different regular expression library: POSIX vs. python.
+ - does not support regex for the strip command (no non-greedy regex).
+
+It can therefore usually, but not always, act as a drop-in replacement for `shovel`_ and `winnow`_
+
+The C implementation may be easier to make available in specialized environments,
+such as High Performance Computing, as it has far fewer dependencies than the python version.
+It also uses far less memory for a given role.  Normally the python version
+is recommended, but there are some cases where use of the C implementation is sensible.
+
+**sr_cpump** connects to a *broker* (often the same as the posting broker)
+and subscribes to the notifications of interest. If _suppress_duplicates_ is active, 
+on reception of a post, it looks up the message's **integity** field in its cache.  If it is 
+found, the file has already come through, so the notification is ignored. If not, then 
+the file is new, and the **sum** is added to the cache and the notification is posted.
+
+
+
+POLL
+----
+
+**poll** is a component that connects to a remote server to
+check in various directories for some files. When a file is
+present, modified or created in the remote directory, the program will
+notify about the new product.
+
+The notification protocol is defined here `sr3_post(7) <sr3_post.7.rst>`_
+
+**poll** connects to a *broker*.  Every *sleep* seconds, it connects to
+a *destination* (sftp, ftp, ftps). For each of the *directory* defined, it lists
+the contents. When a file matches a pattern given by *accept*, **sr_poll** builds
+a notification for that product and sends it to the *broker*. The matching content
+of the *directory* is kept in a file for reference. Should a matching file be changed,
+or created at a later iteration, a new notification is sent.
+
+**sr_poll** can be used to acquire remote files in conjunction with an `sarra`_
+subscribed to the posted notifications, to download and repost them from a data pump.
+
+The destination option specify what is needed to connect to the remote server
+
+**destination protocol://<user>@<server>[:port]**
+
+::
+      (default: None and it is mandatory to set it )
+
+The *destination* should be set with the minimum required information...
+**sr_poll**  uses *destination* setting not only when polling, but also
+in the sr_post messages produced.
+
+For example, the user can set :
+
+**destination ftp://myself@myserver**
+
+And complete the needed information in the credentials file with the line  :
+
+**ftp://myself:mypassword@myserver:2121  passive,binary**
+
+POLLING SPECIFICATIONS
+~~~~~~~~~~~~~~~~~~~~~~
+
+These options set what files the user wants to be notified for and where
+ it will be placed, and under which name.
+
+- **filename  <option>         (optional)**
+- **directory <path>           (default: .)**
+- **accept    <regexp pattern> [rename=] (must be set)**
+- **reject    <regexp pattern> (optional)**
+- **chmod     <integer>        (default: 0o400)**
+- **poll_without_vip  <boolean> (default: True)**
+
+The option *filename* can be used to set a global rename to the products.
+Ex.:
+
+**filename  rename=/naefs/grib2/**
+
+For all posts created, the *rename* option would be set to '/naefs/grib2/filename'
+because I specified a directory (path that ends with /).
+
+The option *directory*  defines where to get the files on the server.
+Combined with  **accept** / **reject**  options, the user can select the
+files of interest and their directories of residence.
+
+The  **accept**  and  **reject**  options use regular expressions (regexp) to match URL.
+These options are processed sequentially.
+The URL of a file that matches a  **reject**  pattern is not published.
+Files matching an  **accept**  pattern are published.
+Again a *rename*  can be added to the *accept* option... matching products
+for that *accept* option would get renamed as described... unless the *accept* matches
+one file, the *rename* option should describe a directory into which the files
+will be placed (prepending instead of replacing the file name).
+
+The directory can have some patterns. These supported patterns concern date/time .
+They are fixed...
+
+**${YYYY}         current year**
+**${MM}           current month**
+**${JJJ}          current julian**
+**${YYYYMMDD}     current date**
+
+**${YYYY-1D}      current year   - 1 day**
+**${MM-1D}        current month  - 1 day**
+**${JJJ-1D}       current julian - 1 day**
+**${YYYYMMDD-1D}  current date   - 1 day**
+
+::
+
+  ex.   directory /mylocaldirectory/myradars
+        accept    .*RADAR.*
+
+        directory /mylocaldirectory/mygribs
+        reject    .*Reg.*
+        accept    .*GRIB.*
+
+        directory /mylocaldirectory/${YYYYMMDD}/mydailies
+        accept    .*observations.*
+
+The **chmod** option allows users to specify a linux-style numeric octal
+permission mask::
+
+  chmod 040
+
+means that a file will not be posted unless the group has read permission
+(on an ls output that looks like: ---r-----, like a chmod 040 <file> command).
+The **chmod** options specifies a mask, that is the permissions must be
+at least what is specified.
+
+As with all other components, the **vip** option can be used to indicate
+that a poll should be active on only a single node in a cluster. Note that
+as the poll will maintain state (such as the list of files that exist on the
+remote hosts), by default, the vip will only keep the component from posting,
+but the actual poll will still happen, which can involve a high an unnecessary
+load on the nodes that do not have the vip.
+
+To have the nodes which do not have the vip perform no work, for example
+if the corresponding sarra components have *delete* set, so that no state
+persistence is needed in the poll, set the **poll_without_vip** option
+to *False* (or *off*). This reduces overhead forty-fold in some measured
+cases.
+
+POSTING SPECIFICATIONS
+~~~~~~~~~~~~~~~~~~~~~~
+
+These options set what files the user wants to be notified for and where
+**sr_poll** polls the availability of file on a remote server by creating
+an announcment for it.  Subscribers use `sr_subscribe <sr_subscribe.1.rst>`_
+to consume the announcement and download the file (or **sr_sarra**).
+To make files available to subscribers, **sr_poll** sends the announcements to
+an AMQP server, also called a broker.  Format of argument to the *broker* option::
+
+       [amqp|amqps]://[user[:password]@]host[:port][/vhost]
+
+The announcement will have its url built from the *destination* option, with
+the product's path (*directory*/"matched file").  There is one post per file.
+The file's size is taken from the directory "ls"... but its checksum cannot
+be determined, so the "sum" header in the posting is set to "0,0."
+
+By default, sr_poll sends its post message to the broker with default exchange
+(the prefix *xs_* followed by the broker username). The *broker* is mandatory.
+It can be given incomplete if it is well defined in the credentials.conf file.
+
+Refer to `sr_post(1) <sr_post.1.rst>`_ - to understand the complete notification process.
+Refer to `sr_post(7) <sr_post.7.rst>`_ - to understand the complete notification format.
+
+Here it is important to say that :
+
+The *sum=0,0* is used because no checksum computation was performed. It is often
+desirable to use the *sum=z,s* to have downloaders calculate a useful checksum as
+they download for use by others.
+
+The *parts=1,fsiz,1,0,0* is used and the file's size is taken from the ls of the file.
+Under **sr_sarra** these fields could be reset.
+
+ADVANCED FEATURES
+~~~~~~~~~~~~~~~~~
+
+There are ways to insert scripts into the flow of messages and file downloads:
+Should you want to implement tasks in various part of the execution of the program:
+
+- **on_line      <script>        (default: line_mode)**
+- **do_poll      <script>        (default: None)**
+- **on_post      <script>        (default: None)**
+- **on_html_page <script>        (default: html_page)**
+
+The **on_line** plugin gives scripts that can read each line of an 'ls' on the polled
+site, to interpret it further. It returns True if the line should be further processed,
+or False to reject it.  By default, there is a line_mode plugin included with the package
+which implements the comparison of file permissions on the remote server against
+the **chmod** mask.
+
+If the poll fetches using the http protocol, the 'ls' like entries must be derived from
+an html page. The default plugin **html_page** provided with the package, gives an idea of
+how to parse such a page into a python directory manageable by **sr_poll**.
+
+A do_nothing.py script for **on_post** could be:
+
+class Transformer(object):
+      def __init__(self):
+          pass
+
+      def perform(self,parent):
+          logger = parent.logger
+
+          logger.info("I have no effect but adding this log line")
+
+          return True
+
+transformer  = Transformer()
+self.on_post = transformer.perform
+
+The only arguments the script receives is **parent**, which is an instance of
+the **sr_poll** class.
+
+The **do_poll** script could be written to support other protocols than
+ftp,ftps,sftp.  Again this script would be responsible to determine
+what to do under its protocol with the various options **destination**,
+**directory**, and should it determine to post a
+file, it would need to build its url, partstr, sumstr and  use
+
+**parent.poster.post(parent.exchange,url,parent.to_clusters, \**
+**                   partstr,sumstr,rename,remote_file)**
+
+to post the message, applying accept/reject clauses and triggering on_post processing.
+
+post|sr3_post|sr_cpost
+----------------------
+
+**sr3_post** posts the availability of a file by creating an announcement.
+In contrast to most other sarracenia components that act as daemons,
+sr_post is a one shot invocation which posts and exits.
+Subscribers use `subscribe`_
+
+To make files available to subscribers, **sr_post** sends the announcements
+to an AMQP server, also called a broker.
+
+This manual page is primarily concerned with the python implementation,
+but there is also an implementation in C, which works nearly identically.
+Differences:
+
+ - plugins are not supported in the C implementation.
+ - C implementation uses POSIX regular expressions, python3 grammar is slightly different.
+ - when the *sleep* option ( used only in the C implementation) is set to > 0,
+   it transforms sr_cpost into a daemon that works like `watch`_.
+
+Mandatory Settings
+~~~~~~~~~~~~~~~~~~
+
+The [*-pbu|--post_base_url url,url,...*] option specifies the location
+subscribers will download the file from.  There is usually one post per file.
+Format of argument to the *post_base_url* option::
+
+       [ftp|http|sftp]://[user[:password]@]host[:port]/
+       or
+       file:
+
+When several urls are given as a comma separated list to *post_base_url*, the
+url´s provided are used round-robin style, to provide a coarse form of load balancing.
+
+The [*-p|--path path1 path2 .. pathN*] option specifies the path of the files
+to be announced. There is usually one post per file.
+Format of argument to the *path* option::
+
+       /absolute_path_to_the/filename
+       or
+       relative_path_to_the/filename
+
+The *-pipe* option can be specified to have sr_post read path names from standard
+input as well.
+
+
+An example invocation of *sr_post*::
+
+ sr_post -pb amqp://broker.com -pbu sftp://stanley@mysftpserver.com/ -p /data/shared/products/foo 
+
+By default, sr_post reads the file /data/shared/products/foo and calculates its checksum.
+It then builds a post message, logs into broker.com as user 'guest' (default credentials)
+and sends the post  to defaults vhost '/' and default exchange. The default exchange
+is the prefix *xs_* followed by the broker username, hence defaulting to 'xs_guest'.
+A subscriber can download the file /data/shared/products/foo by authenticating as user stanley
+on mysftpserver.com using the sftp protocol to broker.com assuming he has proper credentials.
+The output of the command is as follows ::
+
+ [INFO] Published xs_guest v02.post.data.shared.products.foo '20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo' sum=d,82edc8eb735fd99598a1fe04541f558d parts=1,4574,1,0,0
+
+In MetPX-Sarracenia, each post is published under a certain topic.
+The log line starts with '[INFO]', followed by the **topic** of the
+post. Topics in *AMQP* are fields separated by dot. The complete topic starts with
+a topic_prefix (see option), version *V02*, an action *post*,
+followed by a subtopic (see option) here the default, the file path separated with dots
+*data.shared.products.foo*.
+
+The second field in the log line is the message notice.  It consists of a time
+stamp *20150813161959.854*, and the source URL of the file in the last 2 fields.
+
+The rest of the information is stored in AMQP message headers, consisting of key=value pairs.
+The *sum=d,82edc8eb735fd99598a1fe04541f558d* header gives file fingerprint (or checksum
+) information.  Here, *d* means md5 checksum performed on the data, and *82edc8eb735fd99598a1fe04541f558d*
+is the checksum value. The *parts=1,4574,1,0,0* state that the file is available in 1 part of 4574 bytes
+(the filesize.)  The remaining *1,0,0* is not used for transfers of files with only one part.
+
+Another example::
+
+ sr3_post -pb amqp://broker.com -pbd /data/web/public_data -pbu http://dd.weather.gc.ca/ -p bulletins/alphanumeric/SACN32_CWAO_123456
+
+By default, sr_post reads the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
+(concatenating the post_base_dir and relative path of the source url to obtain the local file path)
+and calculates its checksum. It then builds a post message, logs into broker.com as user 'guest'
+(default credentials) and sends the post to defaults vhost '/' and exchange 'xs_guest'.
+
+A subscriber can download the file http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 using http
+without authentication on dd.weather.gc.ca.
+
+SHIM LIBRARY USAGE
+~~~~~~~~~~~~~~~~~~
+
+Rather than invoking a sr_post to post each file to publish, one can have processes automatically
+post the files they right by having them use a shim library intercepting certain file i/o calls to libc
+and the kernel. To activate the shim library, in the shell environment add::
+
+  export SR_POST_CONFIG=shimpost.conf
+  export LD_PRELOAD="libsrshim.so.1"
+
+where *shimpost.conf* is an sr_cpost configuration file in
+the ~/.config/sarra/post/ directory. An sr_cpost configuration file is the same
+as an sr_post one, except that plugins are not supported.  With the shim
+library in place, whenever a file is written, the *accept/reject* clauses of
+the shimpost.conf file are consulted, and if accepted, the file is posted just
+as it would be by sr_post. If using with ssh, where one wants files which are
+scp'd to be posted, one needs to include the activation in the .bashrc and pass
+it the configuration to use::
+
+  expoert LC_SRSHIM=shimpost.conf
+
+Then in the ~/.bashrc on the server running the remote command::
+
+  if [ "$LC_SRSHIM" ]; then
+      export SR_POST_CONFIG=$LC_SRSHIM
+      export LD_PRELOAD="libsrshim.so.1"
+  fi
+       
+SSH will only pass environment variables that start with LC\_ (locale) so to get it
+passed with minimal effort, we use that prefix.
+
+
+Shim Usage Notes
+----------------
+
+This method of notification does require some user environment setup.
+The user environment needs to the LD_PRELOAD environment variable set
+prior to launch of the process. Complications that remain as we have
+been testing for two years since the shim library was first implemented:
+
+* if we want to notice files created by remote scp processes (which create non-login shells)
+  then the environment hook must be in .bashrc. and using an environment
+  variable that starts with *LC_* to have ssh transmit the configuration value without
+  having to modify sshd configuration in typical linux distributions.
+  ( full discussion: https://github.com/MetPX/sarrac/issues/66 )
+
+* code that has certain weaknesses, such as in FORTRAN a lack of IMPLICIT NONE
+  https://github.com/MetPX/sarracenia/issues/69 may crash when the shim library
+  is introduced. The correction needed in those cases has so far been to correct
+  the application, and not the library.
+  ( also: https://github.com/MetPX/sarrac/issues/12 )
+
+* codes using the *exec* call ot `tcl/tk <www.tcl.tk>`_, by default considers any
+  output to file descriptor 2 (standard error) as an error condition.
+  these messages can be labelled as INFO, or WARNING priority, but it will
+  cause the tcl caller to indicate a fatal error has occurred.  Adding
+  *-ignorestderr*  to invocations of *exec* avoids such unwarranted aborts.
+
+* Complex shell scripts can experience an inordinate performance impact.
+  Since *high performance shell scripts* is an oxymoron, the best solution,
+  performance-wise is to re-write the scripts in a more efficient scripting
+  language such as python  ( https://github.com/MetPX/sarrac/issues/15 )
+
+* Code bases that move large file hierarchies (e.g. *mv tree_with_thousands_of_files new_tree* )
+  will see a much higher cost for this operation, as it is implemented as
+  a renaming of each file in the tree, rather than a single operation on the root.
+  This is currently considered necessary because the accept/reject pattern matching
+  may result in a very different tree on the destination, rather than just the
+  same tree mirrored. See below for details.
+
+* *export SR_SHIMDEBUG=1* will get your more output than you want. use with care.
+
+
+**Rename Processing**
+
+It should be noted that file renaming is not as simple in the mirroring case as in the underlying
+operating system. While the operation is a single atomic one in an operating system, when
+using notifications, there are accept/reject cases that create four possible effects.
+
++---------------+---------------------------+
+|               |    old name is:           |
++---------------+--------------+------------+
+| New name is:  |  *Accepted*  | *Rejected* |
++---------------+--------------+------------+
+|  *Accepted*   |   rename     |   copy     |
++---------------+--------------+------------+
+|  *Rejected*   |   remove     |   nothing  |
++---------------+--------------+------------+
+
+When a file is moved, two notifications are created:
+
+*  One notification has the new name in the *relpath*, while containing and *oldname*
+   field pointing at the old name.  This will trigger activities in the top half of
+   the table, either a rename, using the oldname field, or a copy if it is not present
+
+   at the destination.
+
+*  A second notification with the oldname in *relpath* which will be accepted
+   again, but this time it has the *newname* field, and process the remove action.
+
+While the renaming of a directory at the root of a large tree is a cheap atomic operation
+in Linux/Unix, mirroring that operation requires creating a rename posting for each file
+in the tree, and thus is far more expensive.
+
+
+
+
+
+SARRA
+-----
+
+**sarra** is a program that Subscribes to file notifications,
+Acquires the files and ReAnnounces them at their new locations.
+The notification protocol is defined here `sr3_post(7) <sr3_post.7.rst>`_
+
+**sarra** connects to a *broker* (often the same as the remote file server
+itself) and subscribes to the notifications of interest. It uses the notification
+information to download the file on the local server it's running on.
+It then posts a notification for the downloaded files on a broker (usually on the local server).
+
+**sarra** can be used to acquire files from `sr3_post(1) <sr3_post.1.rst>`_
+or `watch`_  or to reproduce a web-accessible folders (WAF),
+that announce its products.
+
+The **sr_sarra** is an `sr_subscribe(1) <sr_subscribe.1.rst>`_  with the following presets::
+
+   mirror True
+
+Specific consuming requirements
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If the messages are posted directly from a source, the exchange used is 'xs_<brokerSourceUsername>'.
+To protect against malicious users, administrators should set *source_from_exchange* to **True**.
+Such messages may not contain a source nor an origin cluster fields
+or a malicious user may set the values incorrectly.
+
+
+- **source_from_exchange  <boolean> (default: False)**
+
+Upon reception, the program will set these values
+in the parent class (here cluster is the value of
+option **cluster** taken from default.conf):
+
+self.msg.headers['source']       = <brokerUser>
+self.msg.headers['from_cluster'] = cluster
+
+overriding any values present in the message.  This setting
+should always be used when ingesting data from a
+user exchange.
+
+
+SENDER
+------
+
+**sender** is a component derived from `subscribe`_
+used to send local files to a remote server using a file transfer protocol, primarily SFTP.
+**sender** is a standard consumer, using all the normal AMQP settings for brokers, exchanges,
+queues, and all the standard client side filtering with accept, reject, and on_message.
+
+Often, a broker will announce files using a remote protocol such as HTTP,
+but for the sender it is actually a local file.  In such cases, one will
+see a message: **ERROR: The file to send is not local.**
+An on_message plugin will convert the web url into a local file one::
+
+  base_dir /var/httpd/www
+  on_message msg_2localfile
+
+This on_message plugin is part of the default settings for senders, but one
+still needs to specify base_dir for it to function.
+
+If a **post_broker** is set, **sender** checks if the clustername given
+by the **to** option if found in one of the message's destination clusters.
+If not, the message is skipped.
+
+
+DESTINATION UNAVAILABLE
+~~~~~~~~~~~~~~~~~~~~~~~
+
+If the server to which the files are being sent is going to be unavailable for
+a prolonged period, and there is a large number of messages to send to it, then
+the queue will build up on the broker. As the performance of the entire broker
+is affected by large queues, one needs to minimize such queues.
+
+The *-save* and *-restore* options are used get the messages away from the broker
+when a very large a queue will certainly build up.
+The *-save* option copies the messages to a (per instance) disk file (in the same directory
+that stores state and pid files), as json encoded strings, one per line.
+When a queue is building up::
+
+   sr3 stop sender/<config> 
+   sr3 -save start sender/<config> 
+
+And run the sender in *save* mode (which continually writes incoming messages to disk)
+in the log, a line for each message written to disk::
+
+  2017-03-03 12:14:51,386 [INFO] sr_sender saving 2 message 
+       topic: v02.post.home.peter.sarra_devdocroot.sub.SASP34_LEMM_031630__LEDA_60215
+
+Continue in this mode until the absent server is again available.  At that point::
+
+   sr3 stop sender/<config> 
+   sr3 -restore start sender/<config> 
+
+While restoring from the disk file, messages like the following will appear in the log::
+
+  2017-03-03 12:15:02,969 [INFO] sr_sender restoring message 29 of 34: 
+    topic: v02.post.home.peter.sarra_devdocroot.sub.ON_02GD022_daily_hydrometric.csv
+
+
+After the last one::
+
+  2017-03-03 12:15:03,112 [INFO] sr_sender restore complete deleting save 
+    file: /home/peter/.cache/sarra/sender/tsource2send/sr_sender_tsource2send_0000.save 
+
+
+and the sr_sender will function normally thereafter.
+
+
+SETUP 1 : PUMP TO PUMP REPLICATION 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ - **mirror             <boolean>   (default: True)**
+ - **base_dir      <directory> (None)**
+
+ - **destination        <url>       (MANDATORY)**
+ - **do_send            <script>    (None)**
+ - **kbytes_ps          <int>       (default: 0)**
+ - **post_base_dir <directory> (default: '')**
+
+ - **to               <clustername> (default: <post_broker host>)**
+ - **on_post           <script>     (default: None)**
+ - **post_broker        amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
+ - **url                <url>       (default: destination)**
+
+For pump replication, **mirror** is set to True (default).
+
+**base_dir** supplies the directory path that, when combined with the relative
+one in the selected notification gives the absolute path of the file to be sent.
+The default is None which means that the path in the notification is the absolute one.
+
+The **destination** defines the protocol and server to be used to deliver the products.
+Its form is a partial url, for example:  **ftp://myuser@myhost**
+The program uses the file ~/.conf/sarra/credentials.conf to get the remaining details
+(password and connection options).  Supported protocol are ftp, ftps and sftp. Should the
+user need to implement another sending mechanism, he would provide the plugin script
+through option **do_send**.
+
+On the remote site, the **post_base_dir** serves the same purpose as the
+**base_dir** on this server.  The default is None which means that the delivered path
+is the absolute one.
+
+Now we are ready to send the product... for example, if the selected notification looks like this :
+
+**20150813161959.854 http://this.pump.com/ relative/path/to/IMPORTANT_product**
+
+**sr_sender**  performs the following pseudo-delivery:
+
+Sends local file [**base_dir**]/relative/path/to/IMPORTANT_product
+to    **destination**/[**post_base_dir**]/relative/path/to/IMPORTANT_product
+(**kbytes_ps** is greater than 0, the process attempts to respect
+this delivery speed... ftp,ftps,or sftp)
+
+At this point, a pump-to-pump setup needs to send the remote notification...
+(If the post_broker is not set, there will be no posting... just products replication)
+
+The selected notification contains all the right information
+(topic and header attributes) except for url field in the
+notice... in our example :  **http://this.pump.com/**
+
+By default, **sr_sender** puts the **destination** in that field.
+The user can overwrite this by specifying the option **post_base_url**. For example:
+
+**post_base_url http://remote.apache.com**
+
+The user can provide an **on_post** script. Just before the message is
+published on the **post_broker**  and **post_exchange**, the
+**on_post** script is called... with the **sr_sender** class instance as an argument.
+The script can perform whatever you want... if it returns False, the message will not
+be published. If True, the program will continue processing from there.
+
+
+DESTINATION SETUP 2 : METPX-SUNDEW LIKE DISSEMINATION
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In this type of usage, we would not usually repost... but if the
+**post_broker** and **post_exchange** (**url**,**on_post**) are set,
+the product will be announced (with its possibly new location and new name).
+Let's reintroduce the options in a different order
+with some new ones to ease explanation.
+
+
+ - **mirror             <boolean>   (default: True)**
+ - **base_dir      <directory> (None)**
+
+ - **destination        <url>       (MANDATORY)**
+ - **post_base_dir <directory> (default: '')**
+
+ - **directory          <path>      (MANDATORY)**
+ - **on_message            <script> (default: None)**
+ - **accept        <regexp pattern> (default: None)**
+ - **reject        <regexp pattern> (default: None)**
+
+There are 2 differences with the previous case :
+the **directory**, and the **filename** options.
+
+The **base_dir** is the same, and so are the
+**destination**  and the **post_base_dir** options.
+
+The **directory** option defines another "relative path" for the product
+at its destination.  It is tagged to the **accept** options defined after it.
+If another sequence of **directory**/**accept** follows in the configuration file,
+the second directory is tagged to the following accepts and so on.
+
+The  **accept/reject**  patterns apply to message notice url as above.
+Here is an example, here some ordered configuration options :
+
+::
+
+  directory /my/new/important_location
+
+  accept .*IMPORTANT.*
+
+  directory /my/new/location/for_others
+
+  accept .*
+
+If the notification selected is, as above, this :
+
+**20150813161959.854 http://this.pump.com/ relative/path/to/IMPORTANT_product**
+
+It was selected by the first **accept** option. The remote relative path becomes
+**/my/new/important_location** ... and **sr_sender**  performs the following pseudo-delivery:
+
+sends local file [**base_dir**]/relative/path/to/IMPORTANT_product
+to    **destination**/[**post_base_dir**]/my/new/important_location/IMPORTANT_product
+
+
+Usually this way of using **sr_sender** would not require posting of the product.
+But if **post_broker** and **post_exchange** are provided, and **url** , as above, is set to
+**http://remote.apache.com**,  then **sr_sender** would reconstruct :
+
+Topic: **v02.post.my.new.important_location.IMPORTANT_product**
+
+Notice: **20150813161959.854 http://remote.apache.com/ my/new/important_location/IMPORTANT_product**
+
+
+
+shovel
+------
+
+shovel copies messages on one broker (given by the *broker* option) to
+another (given by the *post_broker* option.) subject to filtering
+by (*exchange*, *subtopic*, and optionally, *accept*/*reject*.)
+
+The *topic_prefix* option must to be set to:
+
+ - **v02.post** to shovel `sr_post(7) <sr_post.7.rst>`_ messages
+ - **v02.log** to shovel `sr_report(7) <sr_report.7.rst>`_ messages
+
+shovel is an subscribe with the following presets::
+   
+   no-download True
+   suppress_duplicates off
+
+
+subscribe
+---------
+
+Subscribe is the normal downloading component, that will connect to a broker, download
+the configured files, and then forward the messages with an altered baseUrl.
+
+
+watch
+-----
+
+Watches a directory and publishes posts when files in the directory change
+( added, modified, or deleted). Its arguments are very similar to  `sr3_post <sr3_post.1.rst>`_.
+In the MetPX-Sarracenia suite, the main goal is to post the availability and readiness
+of one's files. Subscribers use  *sr_subscribe*  to consume the post and download the files.
+
+Posts are sent to an AMQP server, also called a broker, specified with the option [ *-pb|--post_broker broker_url* ].
+
+
+Mandatory Settings
+~~~~~~~~~~~~~~~~~~
+
+The [*-post_base_url|--pbu|--url url*] option specifies the protocol, credentials, host and port to which subscribers
+will connect to get the file.
+
+Format of argument to the *url* option::
+
+       [ftp|http|sftp]://[user[:password]@]host[:port]/
+       or
+       [ftp|http|sftp]://[user[:password]@]host[:port]/
+       or
+       file:
+
+
+The [*-p|--path path*] option tells *sr_watch* what to look for.
+If the *path* specifies a directory, *sr_watches* creates a post for any time
+a file in that directory is created, modified or deleted.
+If the *path* specifies a file,  *sr_watch*  watches only that file.
+In the announcement, it is specified with the *path* of the product.
+There is usually one post per file.
+
+
+An example of an execution of  *sr_watch*  checking a file::
+
+ sr3_watch -s sftp://stanley@mysftpserver.com/ -p /data/shared/products/foo -pb amqp://broker.com --action start
+
+Here,  *sr_watch*  checks events on the file /data/shared/products/foo.
+Default events settings reports if the file is modified or deleted.
+When the file gets modified,  *sr_watch*  reads the file /data/shared/products/foo
+and calculates its checksum.  It then builds a post message, logs into broker.com as user 'guest' (default credentials)
+and sends the post to defaults vhost '/' and post_exchange 'xs_stanley' (default exchange)
+
+A subscriber can download the file /data/shared/products/foo  by logging as user stanley
+on mysftpserver.com using the sftp protocol to  broker.com assuming he has proper credentials.
+
+The output of the command is as follows ::
+
+ [INFO] v02.post.data.shared.products.foo '20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo'
+       source=guest parts=1,256,1,0,0 sum=d,fc473c7a2801babbd3818260f50859de 
+
+In MetPX-Sarracenia, each post is published under a certain topic.
+After the '[INFO]' the next information gives the \fBtopic*  of the
+post. Topics in  *AMQP*  are fields separated by dot. In MetPX-Sarracenia
+it is made of a  *topic_prefix*  by default : version  *V02* , an action  *post* ,
+followed by the  *subtopic*  by default : the file path separated with dots, here, *data.shared.products.foo*
+
+After the topic hierarchy comes the body of the notification.  It consists of a time  *20150813161959.854* ,
+and the source url of the file in the last 2 fields.
+
+The remaining line gives informations that are placed in the amqp message header.
+Here it consists of  *source=guest* , which is the amqp user,  *parts=1,256,0,0,1* ,
+which suggests to download the file in 1 part of 256 bytes (the actual filesize), trailing 1,0,0
+gives the number of block, the remaining in bytes and the current
+block.  *sum=d,fc473c7a2801babbd3818260f50859de*  mentions checksum information,
+
+here,  *d*  means md5 checksum performed on the data, and  *fc473c7a2801babbd3818260f50859de*
+is the checksum value.  When the event on a file is a deletion, sum=R,0  R stands for remove.
+
+Another example watching a file::
+
+ sr3_watch -dr /data/web/public_data -s http://dd.weather.gc.ca/ -p bulletins/alphanumeric/SACN32_CWAO_123456 -pb amqp://broker.com --action start
+
+By default, sr_watch checks the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
+(concatenating the base_dir and relative path of the source url to obtain the local file path).
+If the file changes, it calculates its checksum. It then builds a post message, logs into broker.com as user 'guest'
+(default credentials) and sends the post to defaults vhost '/' and post_exchange 'sx_guest' (default post_exchange)
+
+A subscriber can download the file http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 using http
+without authentication on dd.weather.gc.ca.
+
+An example checking a directory::
+
+ sr3_watch -dr /data/web/public_data -pbu http://dd.weather.gc.ca/ -p bulletins/alphanumeric -pb amqp://broker.com -action start
+
+Here, sr_watch checks for file creation(modification) in /data/web/public_data/bulletins/alphanumeric
+(concatenating the base_dir and relative path of the source url to obtain the directory path).
+If the file SACN32_CWAO_123456 is being created in that directory, sr_watch calculates its checksum.
+It then builds a post message, logs into broker.com as user 'guest'
+
+A subscriber can download the created/modified file http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 using http
+without authentication on dd.weather.gc.ca.
+
+
+winnow
+------
+
+the **winnow** component subscribes to file notifications and reposts them, suppressing redundant 
+ones by comparing their fingerprints (or checksums).  The **Integrity** header stores a file's 
+fingerprint as described in the `sr3_post(7) <sr3_post.7.rst>`_ man page.
+
+**winnow** has the following options forced::
+
+   no-download True  
+   suppress_duplicates on
+   accept_unmatch True
+
+The suppress_duplicates lifetime can be adjusted, but it is always on.
+
+**winnow** connects to a *broker* (often the same as the posting broker)
+and subscribes to the notifications of interest. On reception of a notification,
+it looks up its **sum** in its cache.  If it is found, the file has already come through,
+so the notification is ignored. If not, then the file is new, and the **sum** is added
+to the cache and the notification is posted.
+
+**winnow** can be used to trim messages produced by  `post|sr3_post|sr_cpost`_, `poll`_ or `watch`_ etc... It is
+used when there are multiple sources of the same data, so that clients only download the
+source data once, from the first source that posted it.
+
+
+
+DESCRIPTION
+===========
 
 Documentation
 -------------
@@ -396,7 +1559,7 @@ discussed next) when possible.
 
 Reasons to use newer style plugins:
 
-* Support for running v2 plugins is accomplished using a flow_plugin
+* Support for running v2 plugins is accomplished using a flowcb
   called v2wrapper. It performs a lot of processing to wrap up
   the v3 data structures to look like v2 ones, and then has
   to propagate the changes back. It's a bit expensive.
@@ -406,12 +1569,12 @@ Reasons to use newer style plugins:
 
 * when a v3 (flow_plugin or imported) module has a syntax error,
   all the tools of the python interpreter apply, providing
-  a lot more feedback is given to the coder.
+  a lot more feedback is given to the coder. with v2, it just
+  says there is something wrong, much more difficult to debug.
 
-* v3 api is strictly more powerful than v2 working on groups
-  of messages, rather than individual ones.
+* v3 api is strictly more powerful than v2, as it works
+  on groups of messages, rather than individual ones.
 
-Another reason is that 
 
 
 Environment Variables
@@ -952,7 +2115,7 @@ The accel_threshold indicates the minimum size of file being transferred for
 which a binary downloader will be launched.
 
 accel_wget_command <cmd> (default: /usr/bin/wget) 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The binary used to accellerate https downloads
 
@@ -987,8 +2150,8 @@ and under which name.
 - **inplace       <boolean>        (default: On)**
 - **kbytes_ps <count>               (default: 0)**
 - **inflight  <string>         (default: .tmp or NONE if post_broker set)** 
-- **message_rate_max <float>   (default: 0 == DISABLED)
-- **message_rate_min <float>   (default: 0 == DISABLED)
+- **message_rate_max <float>   (default: 0 == DISABLED)**
+- **message_rate_min <float>   (default: 0 == DISABLED)**
 - **mirror    <boolean>        (default: off)** 
 - **no_download|notify_only    <boolean>        (default: off)** 
 - **outlet    post|json|url    (default: post)** 
@@ -1312,6 +2475,38 @@ heartbeat <count> (default: 300 seconds)
 
 The **heartbeat** option sets how often to execute periodic processing as determined by 
 the list of on_heartbeat plugins. By default, it prints a log message every heartbeat.
+
+shim_defer_posting_to_exit (EXPERIMENTAL)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  (option specific to libsrshim)
+  Postpones file posting until the process exits.
+  In cases where the same file is repeatedly opened and appended to, this
+  setting can avoid redundant posts.  (default: False)
+
+shim_post_minterval *interval* (EXPERIMENTAL)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  (option specific to libsrshim)
+  If a file is opened for writing and closed multiple times within the interval,
+  it will only be posted once. When a file is written to many times, particularly
+  in a shell script, it makes for many posts, and shell script affects performance.
+  subscribers will not be able to make copies quickly enough in any event, so
+  there is little benefit, in say, 100 posts of the same file in the same second.
+  It is wise set an upper limit on the frequency of posting a given file. (default: 5s)
+  Note: if a file is still open, or has been closed after its previous post, then
+  during process exit processing it will be posted again, even if the interval
+  is not respected, in order to provide the most accurate final post.
+
+
+shim_skip_parent_open_files (EXPERIMENTAL)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  (option specific to libsrshim)
+  The shim_skip_ppid_open_files option means that a process checks
+  whether the parent process has the same file open, and does not
+  post if that is the case. (default: True)
+
 
 suppress_duplicates <off|on|999[smhdw]> (default: off)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2374,45 +3569,43 @@ SEE ALSO
 
 **User Commands:**
 
-`sr_subscribe(1) <sr_subscribe.1.rst>`_ - Select and Conditionally Download Posted Files
+`sr3_subscribe(1) <sr3_subscribe.1.rst>`_ - Select and Conditionally Download Posted Files
 
-`sr_post(1) <sr_post.1.rst>`_ - post announcemensts of specific files.
+`sr3_post(1) <sr3_post.1.rst>`_ - post announcemensts of specific files.
 
-`sr_watch(1) <sr_watch.1.rst>`_ - post that loops, watching over directories.
+`sr3_watch(1) <sr3_watch.1.rst>`_ - post that loops, watching over directories.
 
-`sr_sender(1) <sr_sender.1.rst>`_ - subscribes to messages pointing at local files, and sends them to remote systems and reannounces them there.
-
-`sr_report(1) <sr_report.1.rst>`_ - process report messages.
+`sr3_sender(1) <sr3_sender.1.rst>`_ - subscribes to messages pointing at local files, and sends them to remote systems and reannounces them there.
 
 
 **Pump Adminisitrator Commands:**
 
-`sr(8) <sr.8.rst>`_ - overall manager (start|stop|status).
+`sr3_shovel(8) <sr3_shovel.8.rst>`_ - process messages (no downloading).
 
-`sr_shovel(8) <sr_shovel.8.rst>`_ - process messages (no downloading).
+`sr3_winnow(8) <sr3_winnow.8.rst>`_ - a shovel with cache on, to winnow wheat from chaff.
 
-`sr_winnow(8) <sr_winnow.8.rst>`_ - a shovel with cache on, to winnow wheat from chaff.
+`sr3_sarra(8) <sr3_sarra.8.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
-`sr_sarra(8) <sr_sarra.8.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
-
-`sr_audit(8) <sr_audit.8.rst>`_ - Monitoring daemon, audits running configurations, restarts missing instances.
-
-`sr_log2save(8) <sr_log2save.8.rst>`_ - Convert logfile lines to .save Format for reload/resend.
+`sr_log2save(8) <sr3_log2save.8.rst>`_ - Convert logfile lines to .save Format for reload/resend.
 
 
 **Formats:**
 
-`sr_post(7) <sr_post.7.rst>`_ - The v02 format of announcement messages.
+`sr3_postv2(7) <sr3_postv2.7.rst>`_ - The v02 format of announcement messages.
 
-`sr_postv3(7) <sr_postv3.7.rst>`_ - The v03 format of announcement messages.
-
-`sr_report(7) <sr_report.7.rst>`_ - The format of report messages.
-
-`sr_pulse(7) <sr_pulse.7.rst>`_ - The format of pulse messages.
+`sr3_post(7) <sr3_post.7.rst>`_ - The v03 format of announcement messages.
 
 **Home Page:**
 
 `https://github.com/MetPX/ <https://github.com/MetPX>`_ - sr_subscribe is a component of MetPX-Sarracenia, the AMQP based data pump.
+
+BUGS
+====
+
+sr3 looks in the configuration files for the *instance* option, and expects a number there.
+If *instances* comes from an include file, or is a variable value (not a raw number) sr
+will not use it properly.
+
 
 DEVELOPER ONLY OPTIONS
 ======================

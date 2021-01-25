@@ -22,7 +22,7 @@ override_dh_auto_build:
 	dh_auto_build
 
 override_dh_installinit:
-	dh_installinit --name=sarra  --no-start
+	dh_installinit --name=sr3  --no-start
 
 %:
 	dh $@ --with python3 --buildsystem=pybuild

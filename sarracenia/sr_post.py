@@ -19,12 +19,11 @@ def main():
     logging.basicConfig(
         format='%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
         level=logging.DEBUG)
+
     logger.setLevel(logging.INFO)
 
-    if sys.argv[1] == '--debug':
+    if (len(sys.argv) > 1) and (sys.argv[1] == '--debug'):
         logger.setLevel(logging.DEBUG)
-    else:
-        logger.setLevel(logging.INFO)
 
     cfg1 = sarracenia.config.default_config()
 

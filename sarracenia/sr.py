@@ -177,9 +177,9 @@ class sr_GlobalState:
                 return
             n = os.path.basename(p['cmdline'][1])
             if n == 'instance.py':
-                n = 'sr_' + p['cmdline'][-1].split('/')[0] + '.py'
+                n = 'sr3_' + p['cmdline'][-1].split('/')[0] + '.py'
             p['name'] = n
-        if p['name'].startswith('sr_') and (self.me == p['username']):
+        if p['name'].startswith('sr3_') and (self.me == p['username']):
             self.procs[p['pid']] = p
             if p['name'][3:8] == 'audit':
                 self.procs[p['pid']]['claimed'] = True
@@ -904,7 +904,7 @@ class sr_GlobalState:
         self.declared_users = opt.declared_users
 
         if self.appname is None:
-            self.appname = 'sarra'
+            self.appname = 'sr3'
         else:
             print(
                 'DEVELOPMENT using alternate application name: %s, bindir=%s' %
@@ -986,7 +986,8 @@ class sr_GlobalState:
             sp = l.split(os.sep)
             if (len(sp) == 1) or (
                 (len(sp) > 1) and
-                (sp[-2] not in sarracenia.config.Config.components + ['plugins'])):
+                (sp[-2] not in sarracenia.config.Config.components +
+                 ['plugins'])):
                 component = 'subscribe'
                 cfg = sp[-1]
             else:
