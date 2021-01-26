@@ -34,7 +34,7 @@ sr3 components are used to publish to and download files from websites or file s
 that provide `sr3_post(7) <sr3_post.7.rst>`_ protocol notifications. Such sites 
 publish messages for each file as soon as it is available. Clients connect to a
 *broker* (often the same as the server itself) and subscribe to the notifications.
-The *sr_post* notifications provide true push notices for web-accessible folders (WAF),
+The *sr3_post* notifications provide true push notices for web-accessible folders (WAF),
 and are far more efficient than either periodic polling of directories, or ATOM/RSS style 
 notifications. Sr_subscribe can be configured to post messages after they are downloaded,
 to make them available to consumers for further processing or transfers.
@@ -526,7 +526,7 @@ The destination option specify what is needed to connect to the remote server
 
 The *destination* should be set with the minimum required information...
 **sr_poll**  uses *destination* setting not only when polling, but also
-in the sr_post messages produced.
+in the sr3_post messages produced.
 
 For example, the user can set :
 
@@ -639,8 +639,8 @@ By default, sr_poll sends its post message to the broker with default exchange
 (the prefix *xs_* followed by the broker username). The *broker* is mandatory.
 It can be given incomplete if it is well defined in the credentials.conf file.
 
-Refer to `sr_post(1) <sr_post.1.rst>`_ - to understand the complete notification process.
-Refer to `sr_post(7) <sr_post.7.rst>`_ - to understand the complete notification format.
+Refer to `sr3_post(1) <sr3_post.1.rst>`_ - to understand the complete notification process.
+Refer to `sr3_post(7) <sr3_post.7.rst>`_ - to understand the complete notification format.
 
 Here it is important to say that :
 
@@ -707,10 +707,8 @@ post|sr3_post|sr_cpost
 
 **sr3_post** posts the availability of a file by creating an announcement.
 In contrast to most other sarracenia components that act as daemons,
-sr_post is a one shot invocation which posts and exits.
-Subscribers use `subscribe`_
-
-To make files available to subscribers, **sr_post** sends the announcements
+sr3_post is a one shot invocation which posts and exits.
+To make files available to subscribers, **sr3_post** sends the announcements
 to an AMQP server, also called a broker.
 
 This manual page is primarily concerned with the python implementation,
@@ -744,15 +742,15 @@ Format of argument to the *path* option::
        or
        relative_path_to_the/filename
 
-The *-pipe* option can be specified to have sr_post read path names from standard
+The *-pipe* option can be specified to have sr3_post read path names from standard
 input as well.
 
 
-An example invocation of *sr_post*::
+An example invocation of *sr3_post*::
 
- sr_post -pb amqp://broker.com -pbu sftp://stanley@mysftpserver.com/ -p /data/shared/products/foo 
+ sr3_post -pb amqp://broker.com -pbu sftp://stanley@mysftpserver.com/ -p /data/shared/products/foo 
 
-By default, sr_post reads the file /data/shared/products/foo and calculates its checksum.
+By default, sr3_post reads the file /data/shared/products/foo and calculates its checksum.
 It then builds a post message, logs into broker.com as user 'guest' (default credentials)
 and sends the post  to defaults vhost '/' and default exchange. The default exchange
 is the prefix *xs_* followed by the broker username, hence defaulting to 'xs_guest'.
@@ -782,7 +780,7 @@ Another example::
 
  sr3_post -pb amqp://broker.com -pbd /data/web/public_data -pbu http://dd.weather.gc.ca/ -p bulletins/alphanumeric/SACN32_CWAO_123456
 
-By default, sr_post reads the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
+By default, sr3_post reads the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
 (concatenating the post_base_dir and relative path of the source url to obtain the local file path)
 and calculates its checksum. It then builds a post message, logs into broker.com as user 'guest'
 (default credentials) and sends the post to defaults vhost '/' and exchange 'xs_guest'.
@@ -793,7 +791,7 @@ without authentication on dd.weather.gc.ca.
 SHIM LIBRARY USAGE
 ~~~~~~~~~~~~~~~~~~
 
-Rather than invoking a sr_post to post each file to publish, one can have processes automatically
+Rather than invoking a sr3_post to post each file to publish, one can have processes automatically
 post the files they right by having them use a shim library intercepting certain file i/o calls to libc
 and the kernel. To activate the shim library, in the shell environment add::
 
@@ -802,10 +800,10 @@ and the kernel. To activate the shim library, in the shell environment add::
 
 where *shimpost.conf* is an sr_cpost configuration file in
 the ~/.config/sarra/post/ directory. An sr_cpost configuration file is the same
-as an sr_post one, except that plugins are not supported.  With the shim
+as an sr3_post one, except that plugins are not supported.  With the shim
 library in place, whenever a file is written, the *accept/reject* clauses of
 the shimpost.conf file are consulted, and if accepted, the file is posted just
-as it would be by sr_post. If using with ssh, where one wants files which are
+as it would be by sr3_post. If using with ssh, where one wants files which are
 scp'd to be posted, one needs to include the activation in the .bashrc and pass
 it the configuration to use::
 
@@ -1146,10 +1144,9 @@ by (*exchange*, *subtopic*, and optionally, *accept*/*reject*.)
 
 The *topic_prefix* option must to be set to:
 
- - **v02.post** to shovel `sr_post(7) <sr_post.7.rst>`_ messages
- - **v02.log** to shovel `sr_report(7) <sr_report.7.rst>`_ messages
+ - **v02.post** to shovel `sr3_postv2(7) <sr3_postv2.7.rst>`_ messages
 
-shovel is an subscribe with the following presets::
+shovel is a flow with the following presets::
    
    no-download True
    suppress_duplicates off
@@ -1158,7 +1155,7 @@ shovel is an subscribe with the following presets::
 subscribe
 ---------
 
-Subscribe is the normal downloading component, that will connect to a broker, download
+Subscribe is the normal downloading flow component, that will connect to a broker, download
 the configured files, and then forward the messages with an altered baseUrl.
 
 
@@ -1741,7 +1738,7 @@ CONSUMER
 ========
 
 Most Metpx Sarracenia components loop on reception and consumption of sarracenia 
-AMQP messages.  Usually, the messages of interest are `sr_post(7) <sr_post.7.rst>`_ 
+AMQP messages.  Usually, the messages of interest are `sr3_post(7) <sr3_post.7.rst>`_ 
 messages, announcing the availability of a file by publishing its URL ( or a part 
 of a file ), but there are also `sr_report(7) <sr_report.7.rst>`_ messages which 
 can be processed using the same tools. AMQP messages are published to an exchange 
@@ -2222,7 +2219,7 @@ sub-directory of the destination into which the file should be written while in 
 Whether a prefix or suffix is specified, when the transfer is 
 complete, the file is renamed to its permanent name to allow further processing.
 
-When posting a file with sr_post, sr_cpost, or sr_watch, the  **inflight**  option 
+When posting a file with sr3_post, sr_cpost, or sr3_watch, the  **inflight**  option 
 can also be specified as a time interval, for example, 10 for 10 seconds.  
 When set to a time interval, file posting process ensures that it waits until 
 the file has not been modified in that interval. So a file will 
@@ -2231,7 +2228,7 @@ If you see the error message::
 
     inflight setting: 300, not for remote
 
-It is because the time interval setting is only supported by sr_post/sr_cpost/sr_watch.
+It is because the time interval setting is only supported by sr3_post/sr_cpost/sr3_watch.
 in looking at local files before generating a post, it is not used as say, a means
 of delaying sending files.
 
@@ -2663,7 +2660,7 @@ many protocols appropriate for different situations:
 | Method      | Description                           | Application                          |
 +=============+=======================================+======================================+
 |             |File sent with right name.             |Sending to Sarracenia, and            |
-|   NONE      |Send `sr_post(7) <sr_post.7.rst>`_     |post only when file is complete       |
+|   NONE      |Send `sr3_post(7) <sr3_post.7.rst>`_   |post only when file is complete       |
 |             |by AMQP after file is complete.        |                                      |
 |             |                                       |(Best when available)                 |
 |             | - fewer round trips (no renames)      | - Default on sr_sarra.               |
@@ -2888,7 +2885,7 @@ Another example, a user named Alice will have at least two exchanges:
 
   - xs_Alice the exhange where Alice posts her file notifications and report messages (via many tools).
   - xr_Alice the exchange where Alice reads her report messages from (via sr_report).
-  - Alice can create a new exchange by just posting to it (with sr_post or sr_cpost) if it meets the naming rules.
+  - Alice can create a new exchange by just posting to it (with sr3_post or sr_cpost) if it meets the naming rules.
 
 Usually an sr_sarra run by a pump administrator will read from an exchange such as xs_Alice_mydata, 
 retrieve the data corresponding to Alice´s *post* message, and make it available on the pump, 
@@ -3225,7 +3222,7 @@ configuration file specify an on_<event> option. The event can be one of:
 
 - on_line -- In **sr_poll** a line from the ls on the remote host is read in.
 
-- on_message -- when an sr_post(7) message has been received.  For example, a message has been received
+- on_message -- when an sr3_post(7) message has been received.  For example, a message has been received
   and additional criteria are being evaluated for download of the corresponding file.  If the on_msg
   script returns false, then it is not downloaded.  (See discard_when_lagging.py, for example,
   which decides that data that is too old is not worth downloading).

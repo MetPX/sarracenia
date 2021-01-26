@@ -95,38 +95,46 @@ staff, and the names are chosen to represent the origin of the data.
 
 You should be able to list the available configurations with *sr_subscribe list* ::
 
-  blacklab% sr_subscribe list 
-  
-  configuration examples: ( /usr/lib/python3/dist-packages/sarra/examples/subscribe ) 
-              all.conf     all_but_cap.conf            amis.conf            aqhi.conf 
-              cap.conf      cclean_f91.conf       cdnld_f21.conf       cfile_f44.conf 
-         citypage.conf           clean.conf       clean_f90.conf            cmml.conf 
-  cscn22_bulletins.conf         ftp_f70.conf            gdps.conf         ninjo-a.conf 
-            q_f71.conf           radar.conf            rdps.conf            swob.conf 
-            t_f30.conf      u_sftp_f60.conf 
-  
-  general: ( /home/peter/.config/sarra ) 
-            admin.conf     credentials.conf         default.conf
-  
-  user configurations: ( /home/peter/.config/sarra/subscribe )
-       cclean_f91.conf       cdnld_f21.conf       cfile_f44.conf       clean_f90.conf 
-          ftp_f70.conf           q_f71.conf           t_f30.conf      u_sftp_f60.conf 
-  
-  blacklab% 
+    fractal% sr3 list examples
+    Sample Configurations: (from: /usr/lib/python3/dist-packages/sarracenia/examples )
+    cpump/cno_trouble_f00.inc        poll/aws-nexrad.conf             poll/pollingest.conf             poll/pollnoaa.conf               poll/pollsoapshc.conf            
+    poll/pollusgs.conf               poll/pulse.conf                  post/WMO_mesh_post.conf          sarra/wmo_mesh.conf              sender/ec2collab.conf            
+    sender/pitcher_push.conf         shovel/no_trouble_f00.inc        subscribe/WMO_Sketch_2mqtt.conf  subscribe/WMO_Sketch_2v3.conf    subscribe/WMO_mesh_CMC.conf      
+    subscribe/WMO_mesh_Peer.conf     subscribe/aws-nexrad.conf        subscribe/dd_2mqtt.conf          subscribe/dd_all.conf            subscribe/dd_amis.conf           
+    subscribe/dd_aqhi.conf           subscribe/dd_cacn_bulletins.conf subscribe/dd_citypage.conf       subscribe/dd_cmml.conf           subscribe/dd_gdps.conf           
+    subscribe/dd_ping.conf           subscribe/dd_radar.conf          subscribe/dd_rdps.conf           subscribe/dd_swob.conf           subscribe/ddc_cap-xml.conf       
+    subscribe/ddc_normal.conf        subscribe/downloademail.conf     subscribe/ec_ninjo-a.conf        subscribe/hpfx_amis.conf         subscribe/local_sub.conf         
+    subscribe/pitcher_pull.conf      subscribe/sci2ec.conf            subscribe/subnoaa.conf           subscribe/subsoapshc.conf        subscribe/subusgs.conf           
+    sender/ec2collab.conf            sender/pitcher_push.conf         watch/master.conf                watch/pitcher_client.conf        watch/pitcher_server.conf        
+    watch/sci2ec.conf                
+    fractal% 
 
 
-Each section of the listing shows the contents of the directory shown in parentheses.  One can
-just edit the files in the directories directly, or modify them otherwise, as the list command is
-only for convenience.  There are four sections:
+Each section of the listing shows the contents of the directory shown in parentheses.  One can use an example
+as a starting point with *add*::
 
- * system plugins:  python routines one can call from subscriber configuration. 
- * user plugins:    user written python routines of the same type.
- * general:  configuration files that are referenced by other configuration files.
- * user configurations: these are the ones set by the user and most often of interest.
+    fractal% sr3 add subscribe/dd_amis.conf
+    add: 2021-01-26 01:13:54,047 [INFO] sarracenia.sr add copying: /usr/lib/python3/dist-packages/sarracenia/examples/subscribe/dd_amis.conf to /home/peter/.config/sr3/subscribe/dd_amis.conf 
+
+    fractal% 
+
+Now one can use the files in the .config directories directly::
+ 
+    fractal% sr3 list
+    User Configurations: (from: /home/peter/.config/sr3 )
+    subscribe/dd_amis.conf           admin.conf                       credentials.conf                 default.conf                     
+    logs are in: /home/peter/.cache/sr3/log
+
+
+    fractal% 
+
+
+, or modify them otherwise, as the list command is
+
 
 To view a particular configuration, give sr_subscribe list the file as an argument:: 
 
-    blacklab% sr_subscribe list dd_amis.conf
+    blacklab% sr3 list subscribe/dd_amis.conf
     # this is a feed of wmo bulletin (a set called AMIS in the old times)
     
     broker amqps://dd.weather.gc.ca/
@@ -143,6 +151,13 @@ To view a particular configuration, give sr_subscribe list the file as an argume
 
     blacklab% 
 
+It could also be deleted::
+
+    fractal% sr3 remove subscribe/dd_amis
+    2021-01-26 01:17:24,967 [INFO] root remove FIXME remove! ['subscribe/dd_amis']
+    2021-01-26 01:17:24,967 [INFO] root remove removing /home/peter/.config/sr3/subscribe/dd_amis.conf 
+    fractal% 
+
 
 A First Example
 ---------------
@@ -155,9 +170,10 @@ to find the tree of all the weather observations in SWOB format
 recently issued by any Environment Canada forecast office.
 
 
+FIXME: v03 edit is broken.
 First initialize the credentials storage file::
 
-  blacklab% sr_subscribe edit credentials.conf
+  blacklab% sr3 edit credentials.conf
 
   amqps://anonymous:anonymous@dd.weather.gc.ca
 
@@ -165,14 +181,14 @@ The *edit* command just calls up the user's configured editor
 on the file to be created in the right place.  To create
 a configuration to obtain the swob files::
 
-  blacklab% sr_subscribe edit swob.conf
+  blacklab% sr3 edit subscribe/swob.conf
 
   broker amqps://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
   accept .*
 
   blacklab% 
-  blacklab% sr_subscribe status swob
+  blacklab% sr3 status subscribe/swob
   2017-12-14 06:54:54,010 [INFO] sr_subscribe swob 0001 is stopped
   blacklab% 
 
@@ -192,14 +208,14 @@ to their URL.
 
 Now start up a subscriber (assume the config file was called dd_swob.conf)::
 
-  blacklab% sr_subscribe start dd_swob
+  blacklab% sr3 start subscribe/dd_swob
   2015-12-03 06:53:35,268 [INFO] user_config = 0 ../dd_swob.conf
   2015-12-03 06:53:35,269 [INFO] instances 1 
   2015-12-03 06:53:35,270 [INFO] sr subscribe dd swob 0001 started
 
 One can monitor activity with the *log* command::
 
-  blacklab% sr_subscribe log dd_swob
+  blacklab% sr3 log subscribe/dd_swob
   
   2015-12-03 06:53:35,635 [INFO] Binding queue q_anonymous.21096474.62787751 with key v02.post.observations.swob-ml.# to exchange xpublic on broker amqps://anonymous@dd.weather.gc.ca/
   2015-12-03 17:32:01,834 [INFO] user_config = 1 ../dd_swob.conf
@@ -215,14 +231,14 @@ One can monitor activity with the *log* command::
 The sr_subscribe will get the notification and download the file into the 
 current working directory. As the start up is normal, that means the 
 authentication information was good. Passwords are stored in 
-the ~/.config/sarra/credentials.conf file. The format is just a complete 
+the ~/.config/sr3/credentials.conf file. The format is just a complete 
 url on each line. An example of that would be::
   
   amqps://anonymous:anonymous@dd.weather.gc.ca/
 
 The password is located after the :, and before the @ in the URL as is standard
 practice. This credentials.conf file should be private (linux octal permissions: 0600).  
-Also, if a .conf file is placed in the ~/.config/sarra/subscribe directory, then 
+Also, if a .conf file is placed in the ~/.config/sr3/subscribe directory, then 
 sr_subscribe will find it without having to give the full path.
 
 A normal download looks like this::
@@ -265,7 +281,7 @@ Every configuration results in corresponding resources being declared on the bro
 When changing *subtopic* or *queue* settings, or when one expects to not use 
 a configuration for an extended period of time, it is best to::
 
-  sr_subscribe cleanup swob.conf
+  sr3 cleanup subscribe/swob.conf
 
 which will de-allocate the queue (and its bindings) on the server.
 
@@ -293,10 +309,10 @@ Working with Multiple Configurations
 -------------------------------------
 
 Place all configuration files, with the .conf suffix, in a standard 
-directory: ~/.config/sarra/subscribe/ For example, if there are two files in 
+directory: ~/.config/sr3/subscribe/ For example, if there are two files in 
 that directory: CMC.conf and NWS.conf, one could then run:: 
 
-  peter@idefix:~/test$ sr_subscribe start CMC.conf 
+  peter@idefix:~/test$ sr3 start subscribe/CMC.conf 
   2016-01-14 18:13:01,414 [INFO] installing script validate_content.py 
   2016-01-14 18:13:01,416 [INFO] installing script validate_content.py 
   2016-01-14 18:13:01,416 [INFO] sr_subscribe CMC 0001 starting
@@ -311,7 +327,7 @@ using the sr command to start/stop multiple configurations at once.
 The sr command will go through the default directories and start up 
 all the configurations it finds::
 
-  peter@idefix:~/test$ sr start
+  peter@idefix:~/test$ sr3 start
   2016-01-14 18:13:01,414 [INFO] installing script validate_content.py 
   2016-01-14 18:13:01,416 [INFO] installing script validate_content.py 
   2016-01-14 18:13:01,416 [INFO] sr_subscribe CMC 0001 starting
@@ -324,8 +340,8 @@ all the configurations it finds::
   2016-01-14 18:13:01,416 [INFO] sr_subscribe NWS 0003 starting
   peter@idefix:~/test$ 
 
-will start up some sr_subscribe processes as configured by CMC.conf and others 
-to match NWS.conf. Sr stop will also do what you would expect. As will sr status.  
+will start up some sr3 processes as configured by CMC.conf and others 
+to match NWS.conf. Sr3 stop will also do what you would expect. As will sr3 status.  
 Note that there are 5 sr_subscribe processes start with the CMC 
 configuration and 3 NWS ones. These are *instances* and share the same 
 download queue. 
@@ -430,7 +446,7 @@ back to sample configuration files:
 
 Note the following::
 
-  blacklab% sr_subscribe edit swob
+  blacklab% sr3 edit subscribe/swob
 
   broker amqps://anonymous@dd.weather.gc.ca
   accept .*/observations/swob-ml/.*
@@ -456,7 +472,7 @@ the *directory* option.
 If downloading a directory tree, and the intent is to mirror the tree, 
 then the option mirror should be set::
 
-  blacklab% sr_subscribe edit swob
+  blacklab% sr3 edit subscribe/swob
 
   broker amqps://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
@@ -473,7 +489,7 @@ The configuration file is read from top to bottom, so then sr_subscribe
 finds a ''directory'' option setting, only the ''accept'' clauses after
 it will cause files to be placed relative to that directory::
 
-  blacklab% sr_subscribe edit ddi_ninjo_part1.conf 
+  blacklab% sr3 edit subscribe/ddi_ninjo_part1.conf 
 
   broker amqps://ddi.cmc.ec.gc.ca/
   subtopic ec.ops.*.*.ninjo-a.#
@@ -645,13 +661,13 @@ sample output::
              q_f71.conf           radar.conf            rdps.conf            swob.conf 
              t_f30.conf      u_sftp_f60.conf 
    
-   user plugins: ( /home/peter/.config/sarra/plugins ) 
+   user plugins: ( /home/peter/.config/sr3/plugins ) 
            destfn_am.py         destfn_nz.py       msg_tarpush.py 
    
-   general: ( /home/peter/.config/sarra ) 
+   general: ( /home/peter/.config/sr3 ) 
              admin.conf     credentials.conf         default.conf
    
-   user configurations: ( /home/peter/.config/sarra/subscribe )
+   user configurations: ( /home/peter/.config/sr3/subscribe )
         cclean_f91.conf       cdnld_f21.conf       cfile_f44.conf       clean_f90.conf 
            ftp_f70.conf           q_f71.conf           t_f30.conf      u_sftp_f60.conf 
    
@@ -668,7 +684,7 @@ in the configuration file. Example::
 The *msg_total* plugin is invoked whenever a message is received, and the *msg_total_interval*
 option, used by that plugin, has been set to 5. To learn more: *sr_subscribe list msg_total.py*
 
-Plugins are all written in python, and users can create their own and place them in ~/.config/sarra/plugins. 
+Plugins are all written in python, and users can create their own and place them in ~/.config/sr3/plugins. 
 For information on creating new custom plugins, see The `Sarracenia Programming Guide <Prog.rst>`_  
 
 
@@ -679,7 +695,7 @@ To recap:
 * The beginning of the plugin describes its function and settings
 * Plugins can have option settings, just like built-in ones
 * To set them, place the options in the configuration file before the plugin call itself
-* To make your own new plugin: *sr_subscribe edit <plugin>.py*
+* To make your own new plugin: *sr3 edit subscribe/<plugin>.py*
 
 
 file_rxpipe
@@ -689,7 +705,7 @@ The file_rxpipe plugin for sr_subscribe makes all the instances write the names
 of files downloaded to a named pipe. Setting this up required two lines in 
 an sr_subscribe configuration file::
 
-  blacklab% sr_subscribe edit swob 
+  blacklab% sr3 edit subscribe/swob 
 
   broker amqps://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#

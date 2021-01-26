@@ -462,6 +462,7 @@ TODO
 
 * log is missing.
 
+* edit is missing.
 
 Not Baked/Thinking
 ------------------
@@ -530,6 +531,8 @@ FIXME are things left to the side that need to be seen to.
 
 * um... add the protocols.   mqtt and qpid-proton amqpv1
 
+* make sure stop actually works... seeing strays after tests... but changing too much 
+  to really know. need to check.
 
 Transition
 ----------
