@@ -37,13 +37,16 @@ setup(
         "console_scripts": [
             "sr3=sarracenia.sr:main",
             "sr3_post=sarracenia.sr_post:main",
-            #             "sr_poll=sarracenia.sr_flow:main", "sr_report=sarracenia.sr_flow:main",
-            #              "sr_watch=sarracenia.sr_flow:main", "sr_winnow=sarracenia.sr_flow:main",
-            #              "sr_sarra=sarracenia.sr_flow:main", "sr_shovel=sarracenia.sr_flow:main",
-            #              "sr_sender=sarracenia.sr_flow:main",
-            #              "sr_subscribe=sarracenia.sr_flow:main",
-            #              "sr_log2save=sarracenia.sr_log2save:main",
-            #"sr_tailf=sarracenia.sr_tailf:main"
+            #"sr3_poll=sarracenia.sr_flow:main",
+            #"sr3_report=sarracenia.sr_flow:main",
+            #"sr3_watch=sarracenia.sr_flow:main",
+            #"sr3_winnow=sarracenia.sr_flow:main",
+            #"sr3_sarra=sarracenia.sr_flow:main",
+            #"sr3_shovel=sarracenia.sr_flow:main",
+            #"sr3_sender=sarracenia.sr_flow:main",
+            #"sr3_subscribe=sarracenia.sr_flow:main",
+            #"sr3_log2save=sarracenia.sr_log2save:main",
+            #"sr3_tailf=sarracenia.sr_tailf:main"
         ]
     },
     classifiers=[

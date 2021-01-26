@@ -286,7 +286,7 @@ appropriate structure so that tasks can be delegated with reasonable hope of suc
 Done
 ----
 
-The functionality of sr_amqp.py is completely reproduced in TMPC/amqp.py 
+The functionality of sr_amqp.py is completely reproduced in moth/amqp.py 
 All the important logic is preserved, but it is transcribed into new classes. 
 Should have identical failure recovery behaviour. But it doesn't  we have
 static flow test passing, but the flakey broker, which tests such recovery,
@@ -423,31 +423,45 @@ Re-wrote again, just adding getAccelerated() to the Transfer API, so it is built
 instead of being a plugin.  Any Transfer class can specify an accelerator and it
 will be triggered by accel_threshold. https and sftp/scp accelerators are implemented.
 
+DoneTodo
+--------
+
+Items from the TODO list that have been addressed.
+
+* migrate sr_xattr.py to sarra/xattr.py (now called sarracenia/filemetadata.py)
+
+* fix flakey_broker test to pass.
+
+* update documentation... change everything to use sr3 entry point, yes done.
+  (See transition point below.)
+
+* consider transition, life with both versions... should sr.py --> sr3.py ? Yes. Done
+  should we have a separate debian package with transition entry points
+  (sr_subscribe and friends only included in compat package, and all)
+  interactivity natively only happens through sr3?
+  now called metpx-sr3
 
 
 TODO
 ----
 
 
-
 * cleanup entry points: sr_audit, sr_tailf, sr_log2save, 
 
-* migrate sr_credentials.py to sarra/credentials.py.
-
-* fix flakey_broker test to pass.
-
-* migrate sr_xattr.py to sarra/xattr.py
+* migrate sr_credentials.py to sarracenia/credentials.py.
 
 * test with dynamic-flow.
 
-* Adjust Programmer's guide to reflect new API.
-
-* update documentation... change everything to use sr3 entry point?
-  (See transition point below.)
+* Adjust Programmer's Guide to reflect new API.
 
 * get partitioned file transfers working again.
 
 * alarm_set truncates to integers... hmm.. use setitimer instead? 
+
+* outlet option is missing.
+
+* log is missing.
+
 
 Not Baked/Thinking
 ------------------
@@ -469,23 +483,6 @@ Probably need to be settled before having anyone else dive in.
   main code? Don't think it will ever go away. It is fairly ugly, but 
   very useful and heavily used in existing configs. probably OK. 
 
-* tables thinking about *onfly* and *data* checksums... think about how
-  they need to interact with do_get/do_put plugins, and how they need
-  to be validated. (do we flag an error if onfly does not match? etc...)
-  philosophically to be examined.
-
-* until all components are ported, will not try to fix dynamic_flow. 
-  all components are ported now. need to deal with schemed plugins
-  before trying dynamic flow.
-
-* As you get stuff working, see if we can work backward to fix
-  v2wrapper to get back compatibility, say for do_* routines and such.
-
-* consider transition, life with both versions... should sr.py --> sr3.py ?
-  should we have a separate debian package with transition entry points
-  (sr_subscribe and friends only included in compat package, and all)
-  interactivity natively only happens through sr3?
-
 * changing recovery model, so that all retry/logic is in main loop,
   and moth just returns immediately.  Point being could have multiple
   gathers for multiple upstreams, and get messages from whichever is
@@ -499,6 +496,9 @@ Probably need to be settled before having anyone else dive in.
 * more worklists? rename failed -> retry or deferred.  Add a new failed
   where failed represents a permanent failure. and the other represents
   to be retried later.
+
+* log could read all the log files, so it would work with multiple
+  instances.
 
 
 FIXME/Deferred
@@ -525,9 +525,10 @@ FIXME are things left to the side that need to be seen to.
 
 * **RELEASE BLOCKER** logs of sr_poll and sr_watch tend to get humungous way too quickly.
 
-
 * try out jsonfile for building messages to post. can build json incrementally,
   so you do not need to delete the _deleteOnPost elements (can just skip over them)
+
+* um... add the protocols.   mqtt and qpid-proton amqpv1
 
 
 Transition
@@ -560,7 +561,7 @@ Parallel
 ~~~~~~~~
 
 Name the package metpx-sarra3 and have the python class directory be sarra3 (instead of sarra.)
-(also ~/.config/sarra3 and ~/.cache/sarra3. likely the .cache files must be different because
+(also ~/.config/sr3 and ~/.cache/sr3. likely the .cache files must be different because
 retry files have different formats? validate. ) So one can copy configurations from old to
 new and run both versions in parallel. The central entry point would be sr3 (rather than
 sr), and to avoid confusion the other entry points (sr_subscribe etc...) would be omitted
@@ -568,12 +569,17 @@ so that v2 code would work unchanged. Might require some tweaks to have the sr c
 ignore instances from the other versions.
 
 This is similar to python2 to python3 transition. Allows deployment of v03 without having
-to convert entirely to it.  Allows running some components, and building maturity slowly
-while others are not ready.  It facilitates A:B testing, running the same configuration
+to convert entirely to it. Allows running some components, and building maturity slowly
+while others are not ready. It facilitates A:B testing, running the same configuration
 with one version or the other without having the install or use a different machine,
 facilitating verification of compatibility.
 
+Conclusion
+~~~~~~~~~~
 
+Have implemented Parallel model, with APPNAME=sr3 ( ~/.config/sr3, ~/.cache/sr3 )
+sr3\_ prefix replacing sr\_ for all commands, and changing the sarra Python class to
+the full sarracenia name to avoid clashing python classes.
 
 
 
@@ -628,7 +634,7 @@ breaking changes:
 Features
 --------
 
-* The all the components are now derived from the *flow* class, and run the general algorithm already
+* All the components are now derived from the *flow* class, and run the general algorithm already
   designed as the basis of v2, but never implemented as such.
 
 * The extension API is now vanilla python with no magic settings. just standard classes, using standard import mechanism.
@@ -639,7 +645,7 @@ Features
 
 * sarra.moth class abstracts away AMQP, so messaging protocol becomes pluggable.
 
-* use the sarra. prefix (already present) to replace sr\_ prefix on modules.
+* use the sarracenia. prefix (already present) to replace sr\_ prefix on modules.
 
 * API access to flows. (so can build entirely new programs in python by subclassing.)
 

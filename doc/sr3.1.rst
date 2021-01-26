@@ -2,9 +2,9 @@
  SR3 
 =====
 
------------------
-sr Sarracenia CLI
------------------
+------------------
+sr3 Sarracenia CLI
+------------------
 
 :Manual section: 1 
 :Date: @Date@
@@ -20,13 +20,15 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-`Contents`_
+
 **sr3** is a command line tool to manage `Sarracenia <https://github.com/MetPX/sarracenia>`_ configurations, individually or in groups.
 For the current user, it reads on all of the configuration files, state files, and consults the process table to determine the 
 state of all components.  It then makes the change requested.
 
 This man page is a reference, sort of a dictionary for the entire application, and may be a bit much to chew off at first.
-To more easily get started, have a look at the `Subscriber Guide <https://github.com/MetPX/sarracenia/blob/master/doc/subscriber.rst>`_
+If you already familiar in general with Sarracenia, and are looking for information about specific options or directives, 
+check the table of `Contents`_
+To more easily get started, have a look at `the Subscriber Guide on github <https://github.com/MetPX/sarracenia/blob/v03_wip/doc/subscriber.rst>`_
 
 sr3 components are used to publish to and download files from websites or file servers 
 that provide `sr3_post(7) <sr3_post.7.rst>`_ protocol notifications. Such sites 
@@ -44,6 +46,7 @@ output can be piped to other processes in classic UNIX text filter style.
 
 **sr3** is very configurable and is the basis for other components of Sarracenia:
 
+ - `cpump|sr_cpump`_ - copy messages from one pump another second one (a C implementation of shovel.)
  - `poll`_ - poll a non-sarracenia web or file server to create messages for processing.
  - `post|sr3_post|sr_cpost`_ - create messages for files for processing.
  - `sarra`_ - download file from a remote server to the local one, and re-post them for others.
@@ -165,7 +168,7 @@ print the three data structure used by sr.  There are three lists:
 
 * contents of the state files.
 
-*dump** is used for debugging or to get more detail than provided by status:: 
+**dump** is used for debugging or to get more detail than provided by status:: 
 
     Running Processes
          4238: name:sr_poll.py cmdline:['/usr/bin/python3', '/home/peter/src/sarracenia/sarra/sr_poll.py', '--no', '1', 'start', 'pulse']
@@ -206,10 +209,14 @@ one can use dump to get more detail::
     fractal% 
 
 
-*foreground* run a single instance of a single configuration as an interactive process logging to the current stderr/terminal output.
-    a configuration m
+**foreground** 
 
-*list* shows the user the configuration files present::
+run a single instance of a single configuration as an interactive process logging to the current stderr/terminal output.
+a configuration m
+
+**list** 
+
+shows the user the configuration files present::
 
     fractal% sr3 list
     User Configurations: (from: /home/peter/.config/sarra )
@@ -426,33 +433,37 @@ The Expected entry lists how many processes should be running based on the confi
 or not.  The contents of the Run and Miss columns should always add up to what is in the Exp column.
 
 The last column is the number of messages stored in the local retry queue, indicating what channels are having
-processing difficulties::
+processing difficulties. Here is an example of seeing that a single configuration is running, stopping it, 
+cleaning it out::
 
-    fractal% sr3 stop report/tsarra_f20
-    Stopping: sending SIGTERM . ( 1 ) Done
-    Waiting 1 sec. to check if 15 processes stopped (try: 0)
-    Waiting 2 sec. to check if 15 processes stopped (try: 1)
-    All stopped after try 1
+    fractal% sr3 status
+    status: 
+    Component/Config                         State        Run  Miss   Exp Retry
+    ----------------                         -----        ---  ----   --- -----
+    subscribe/dd_all                         running        5     0     1     0
+          total running configs:   1 ( processes: 5 missing: 0 stray: 0 )
+    fractal% sr3 stop subscribe/dd_all
+    Stopping: sending SIGTERM ..... ( 5 ) Done
+    Waiting 1 sec. to check if 5 processes stopped (try: 0)
+    Waiting 2 sec. to check if 3 processes stopped (try: 1)
+    pid: 818881-['/usr/bin/python3', '/usr/lib/python3/dist-packages/sarracenia/instance.py', '--no', '3', 'start'] does not match any configured instance, sending it TERM
+    Waiting 4 sec. to check if 3 processes stopped (try: 2)
+    All stopped after try 2
     
-    fractal% sr3 disable report/tsarra_f20
-    2021-01-24 18:16:52,224 [INFO] root disable renaming at /home/peter/.config/sr3/report/tsarra_f20.conf to /home/peter/.config/sr3/report/tsarra_f20.off 
+    fractal% sr3 cleanup subscribe/dd_all
+    cleanup: queues to delete: [(ParseResult(scheme='amqps', netloc='anonymous:anonymous@dd.weather.gc.ca', path='/', params='', query='', fragment=''), 'q_anonymous.sr_subscribe.dd_all.47257736.46056854')]
+    removing state file: /home/peter/.cache/sr3/subscribe/dd_all/sr_subscribe.dd_all.anonymous.qname
+    
+    fractal% sr3 remove subscribe/dd_all
+    2021-01-24 23:57:59,800 [INFO] root remove FIXME remove! ['subscribe/dd_all']
+    2021-01-24 23:57:59,800 [INFO] root remove removing /home/peter/.config/sr3/subscribe/dd_all.conf 
     
     fractal% sr3 status
     status: 
     Component/Config                         State        Run  Miss   Exp Retry
     ----------------                         -----        ---  ----   --- -----
-    .
-    .
-    .
-    post/test2_f61                           stopped        0     0     0     0
-    report/tsarra_f20                        disabled       0     0     1     0
-    sarra/download_f20                       running        1     0     1     0
-    .
-    .
-    .
-          total running configs:  14 ( processes: 14 missing: 1 stray: 0 )
-    fractal% 
-
+          total running configs:   0 ( processes: 0 missing: 0 stray: 0 )
+    
 
 COMPONENTS
 ==========
@@ -1185,6 +1196,7 @@ In the announcement, it is specified with the *path* of the product.
 There is usually one post per file.
 
 
+FIXME: in version 3 does it work at all without a configuration.
 An example of an execution of  *sr_watch*  checking a file::
 
  sr3_watch -s sftp://stanley@mysftpserver.com/ -p /data/shared/products/foo -pb amqp://broker.com --action start
@@ -1479,15 +1491,13 @@ Settings in an individual .conf file are read in after the default.conf
 file, and so can override defaults. Options specified on
 the command line override configuration files.
 
-flow_plugin options
-~~~~~~~~~~~~~~~~~~~
+flow_callback options
+~~~~~~~~~~~~~~~~~~~~~
 
 Sarracenia makes extensive use of small python code snippets that customize
-processing called *plugins.* Plugins define and use additional settings.
-For the most pythonic experience one should use the *import* option.
-For example::
+processing called *flow_callbacks* Flow_callbacks define and use additional settings.
 
-  flow_plugin sarra.flowcb.msg.log.Log
+  flow_callback sarra.flowcb.msg.log.Log
 
 The log.py file included in the package is like this::
 
@@ -1504,7 +1514,7 @@ The log.py file included in the package is like this::
         return worklist
 
 It's a normal python class, declared as a child of the self.plugin.Plugin
-type.  The methods (function names) in the plugin describe when
+type. The methods (function names) in the plugin describe when
 those routines will be called. For more details consult the 
 `Programmer's Guide <Prog.rst>`_
 
@@ -1515,7 +1525,7 @@ Importing Extensions
 ~~~~~~~~~~~~~~~~~~~~
 
 The *import* option works in a way familiar to Python developers,
-Making them available for use by the Sarracenia core, or flow_plugins.
+Making them available for use by the Sarracenia core, or flow_callbacks.
 Developers can add additional protocols for messages or 
 file transfer.  For example::
 
@@ -1554,7 +1564,7 @@ prefixed with the name of the plugin::
 A setting 'msg_to_clusters' is needed by the *msg_to_clusters* plugin
 referenced in the *on_message* the v2 plugins are a little more
 cumbersome to write. They are included here for completeness, but
-people should use version 3 (either flow_plugins, or extensions
+people should use version 3 (either flow_callbacks, or extensions
 discussed next) when possible.
 
 Reasons to use newer style plugins:
@@ -1567,7 +1577,7 @@ Reasons to use newer style plugins:
 * newer style extensions are ordinary python modules, unlike
   v2 ones which require minor magic incantations.
 
-* when a v3 (flow_plugin or imported) module has a syntax error,
+* when a v3 (flow_callback or imported) module has a syntax error,
   all the tools of the python interpreter apply, providing
   a lot more feedback is given to the coder. with v2, it just
   says there is something wrong, much more difficult to debug.
@@ -1590,11 +1600,11 @@ of an environment variable, then they can be set in configuration files::
 LOGS and MONITORING
 -------------------
 
-As sr_subscribe usually runs as a daemon (unless invoked in *foreground* mode) 
+As sr3 components usually run as a daemon (unless invoked in *foreground* mode) 
 one normally examines its log file to find out how processing is going.  When only
 a single instance is running, one can view the log of the running process like so::
 
-   sr_subscribe log *myconfig*
+   sr3 log subscribe/*myconfig*
 
 Where *myconfig* is the name of the running configuration. Log files 
 are placed as per the XDG Open Directory Specification. There will be a log file 
@@ -1611,7 +1621,7 @@ To begin with, one can select the logging level:
 - debug
    Setting option debug is identical to use  **loglevel debug**
 
-- loglevel ( default: info )
+- logLevel ( default: info )
    The level of logging as expressed by python's logging. Possible values are :  critical, error, info, warning, debug.
 
 - log_reject <True|False> ( default: False )
@@ -1626,20 +1636,19 @@ rejecting messages:
 * rejecting loop -- directories in a tree refer to each other causing the same directory to be scanned redundantly, perhaps in an infinite loop.
 
 
-
-One can also get finer grained control over logging by using plugins. For example, the default settings
-typically include *on_file file_log* which logs each file after it has been downloaded, but not
+One can also get finer grained control over logging by using flow_callbacks. For example, the default settings
+typically include which logs each file after it has been downloaded, but not
 when the message is received. To have a line in the log for each message received set::
 
-   on_message msg_rawlog
+   on_messages msg_rawlog
 
 There are similar plugins available for different parts of processing::
 
-   on_part part_log
+   on_parts part_log
 
-   on_file file_log (default)
+   on_files file_log (default)
 
-   on_post post_log
+   on_posts post_log
    
 or even, log everything::
 
@@ -3111,10 +3120,11 @@ PUMPING
 =======
 
 *This is of interest to administrators only*
+*FIXME: this is v2 functionality that is not active in v3, requires modernization*
 
 Sources of data need to indicate the clusters to which they would like data to be delivered.
 PUMPING is implemented by administrators, and refers copying data between pumps. Pumping is
-accomplished using on_message plugins which are provided with the package.
+accomplished using on_messages callbacks which are provided with the package.
 
 When messages are posted, if no destination is specified, the delivery is assumed to be 
 only the pump itself.  To specify the further destination pumps for a file, sources use 
