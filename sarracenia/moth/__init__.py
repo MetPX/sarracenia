@@ -47,6 +47,7 @@
 """
 import copy
 import logging
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -169,7 +170,15 @@ class Moth():
 
         self.is_subscriber = is_subscriber
 
-        self.o = copy.deepcopy(default_options)
+        if (sys.version_info.major == 3) and (sys.version_info.minor < 7):
+            self.o={}
+            for k in default_options: 
+                if k== 'masks':
+                    self.o[k] = default_options[k]
+                else:
+                    self.o[k] = copy.deepcopy(default_options[k])
+        else:
+            self.o = copy.deepcopy(default_options)
         if props is not None:
             self.o.update(props)
 

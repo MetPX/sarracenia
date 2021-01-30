@@ -482,6 +482,25 @@ class Config:
         self.users = False
         self.vip = None
 
+    
+    def __deepcopy__(self,memo):
+        """
+            code for this from here: https://stackoverflow.com/questions/1500718/how-to-override-the-copy-deepcopy-operations-for-a-python-object
+            Needed for python < 3.7ish? (ubuntu 18) found this bug: https://bugs.python.org/issue10076
+            deepcopy fails for objects with re's in them?
+            ok on ubuntu 20.04
+        """
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            if k == 'masks':
+                setattr(result, k, v)
+            else:
+                setattr(result, k, copy.deepcopy(v, memo))
+        return result
+
+
     def _validate_urlstr(self, urlstr):
         # check url and add credentials if needed from credential file
         ok, details = Config.credentials.get(urlstr)
