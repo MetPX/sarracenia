@@ -482,8 +482,7 @@ class Config:
         self.users = False
         self.vip = None
 
-    
-    def __deepcopy__(self,memo):
+    def __deepcopy__(self, memo):
         """
             code for this from here: https://stackoverflow.com/questions/1500718/how-to-override-the-copy-deepcopy-operations-for-a-python-object
             Needed for python < 3.7ish? (ubuntu 18) found this bug: https://bugs.python.org/issue10076
@@ -499,7 +498,6 @@ class Config:
             else:
                 setattr(result, k, copy.deepcopy(v, memo))
         return result
-
 
     def _validate_urlstr(self, urlstr):
         # check url and add credentials if needed from credential file
@@ -751,8 +749,11 @@ class Config:
 
     def _resolve_exchange(self):
         if not hasattr(self, 'exchange') or self.exchange is None:
-            if hasattr(self, 'post_broker') and self.post_broker is not None:
-                self.exchange = 'xs_%s' % self.post_broker.username
+            #if hasattr(self, 'post_broker') and self.post_broker is not None:
+            #    self.exchange = 'xs_%s' % self.post_broker.username
+            #else:
+            if self.broker.username == 'anonymous':
+                self.exchange = 'xpublic'
             else:
                 self.exchange = 'xs_%s' % self.broker.username
 
@@ -1072,7 +1073,7 @@ class Config:
                     self.queue_name = f.read()
                     f.close()
                 else:
-                    queue_name = 'q_' + self.broker.username + '.sr_' + component + '.' + cfg
+                    queue_name = 'q_' + self.broker.username + '_' + component + '.' + cfg
                     if hasattr(self, 'queue_suffix'):
                         queue_name += '.' + self.queue_suffix
                     queue_name += '.' + str(randint(0, 100000000)).zfill(8)
