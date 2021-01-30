@@ -75,14 +75,8 @@ class sr_GlobalState:
             return the string to be used to run a component in Popen.
         """
         if c in [
-                'poll',
-                'report',
-                'sarra',
-                'sender',
-                'shovel',
-                'subscribe',
-                'watch',
-                'winnow',
+                'poll', 'report', 'sarra', 'sender', 'shovel', 'subscribe',
+                'watch', 'winnow'
         ]:
             c = 'flow'
         if c[0] != 'c':  # python components
@@ -94,14 +88,14 @@ class sr_GlobalState:
                 return ''
             return s
         else:  # C components
-            return 'sr_' + c
+            return 'sr3_' + c
 
     def _launch_instance(self, component_path, c, cfg, i):
         """
           start up a instance process (always daemonish/background fire & forget type process.)
         """
         if cfg is None:
-            lfn = self.log_dir + os.sep + 'sr_' + c + "_%02d" % i + '.log'
+            lfn = self.log_dir + os.sep + c + "_%02d" % i + '.log'
         else:
             # FIXME: honouring statehost missing.
             if self.configs[c][cfg]['options'].statehost:
@@ -109,7 +103,7 @@ class sr_GlobalState:
             else:
                 lfn = self.user_cache_dir
 
-            lfn += os.sep + 'log' + os.sep + 'sr_' + c + '_' + cfg + "_%02d" % i + '.log'
+            lfn += os.sep + 'log' + os.sep + c + '_' + cfg + "_%02d" % i + '.log'
 
         os.makedirs(os.path.dirname(lfn), exist_ok=True)
 
@@ -143,7 +137,7 @@ class sr_GlobalState:
             else:  # C components
                 cmd = [component_path, 'start', cfg]
 
-        #print( "launching +%s+  re-directed to: %s" % ( cmd, lfn ), flush=True )
+        #print("launching +%s+  re-directed to: %s" % (cmd, lfn), flush=True)
 
         try:
             with open(lfn, "a") as lf:
@@ -558,10 +552,10 @@ class sr_GlobalState:
             # just patched to not crash for now.
             for lf in os.listdir():
                 lff = lf.split('_')
-                # print('looking at: %s' %lf )
-                if len(lff) > 3:
-                    c = lff[1]
-                    cfg = '_'.join(lff[2:-1])
+                if len(lff) > 2:
+                    c = lff[0]
+                    if c == 'sr': continue  # old log, just ignore.
+                    cfg = '_'.join(lff[1:-1])
 
                     suffix = lff[-1].split('.')
 
@@ -639,7 +633,7 @@ class sr_GlobalState:
             if self.states[c][cfg]['queue_name']:
                 return self.states[c][cfg]['queue_name']
 
-        n = 'q_' + o.broker.username + '.sr_' + c + '.' + cfg
+        n = 'q_' + o.broker.username + '.sr3_' + c + '.' + cfg
         n += '.' + str(random.randint(0, 100000000)).zfill(8)
         n += '.' + str(random.randint(0, 100000000)).zfill(8)
 
@@ -757,7 +751,7 @@ class sr_GlobalState:
 
             for cfg in self.configs[c]:
                 if cfg not in self.states[c]:
-                    # print('missing state for sr_%s/%s' % (c,cfg) )
+                    # print('missing state for %s/%s' % (c,cfg) )
                     continue
                 if (self.configs[c][cfg]['instances'] == 0):
                     self.states[c][cfg]['instances_expected'] = 0
@@ -964,10 +958,10 @@ class sr_GlobalState:
         sc_path = os.environ.get('SARRAC_LIB')
 
         try:
-            if sc_path and cmd_list[0].startswith("sr_cp"):
+            if sc_path and cmd_list[0].startswith("sr3_cp"):
                 subprocess.run([sc_path + os.sep + cmd_list[0]] + cmd_list[1:],
                                check=True)
-            elif sr_path and cmd_list[0].startswith("sr"):
+            elif sr_path and cmd_list[0].startswith("sr3"):
                 subprocess.run([sr_path + os.sep + cmd_list[0] + '.py'] +
                                cmd_list[1:],
                                check=True)

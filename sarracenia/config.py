@@ -178,7 +178,7 @@ def get_pid_filename(hostdir, component, configuration, no):
 
     piddir += configuration + os.sep
 
-    return piddir + os.sep + 'sr_' + component + '_' + configuration + '_%02d' % no + '.pid'
+    return piddir + os.sep + component + '_' + configuration + '_%02d' % no + '.pid'
 
 
 def get_log_filename(hostdir, component, configuration, no):
@@ -195,7 +195,7 @@ def get_log_filename(hostdir, component, configuration, no):
     if configuration[-5:] == '.conf':
         configuration = configuration[:-5]
 
-    return logdir + os.sep + 'sr_' + component + configuration + '_%02d' % no + '.log'
+    return logdir + os.sep + component + configuration + '_%02d' % no + '.log'
 
 
 def wget_config(urlstr, path, remote_config_url=False):
@@ -1038,7 +1038,7 @@ class Config:
                 queuefile += os.sep + self.hostdir
 
             queuefile += os.sep + component + os.sep + cfg
-            queuefile += os.sep + 'sr_' + component + '.' + cfg + '.' + self.broker.username
+            queuefile += os.sep + component + '.' + cfg + '.' + self.broker.username
 
             if hasattr(self, 'exchange_split') and hasattr(
                     self, 'no') and (self.no > 0):

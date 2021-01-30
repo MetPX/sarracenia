@@ -179,8 +179,8 @@ class instance:
         else:
             hostdir = None
 
-        pidfilename = sarracenia.config.get_pid_filename(hostdir, component, config,
-                                                    cfg_preparse.no)
+        pidfilename = sarracenia.config.get_pid_filename(
+            hostdir, component, config, cfg_preparse.no)
         if not os.path.isdir(os.path.dirname(pidfilename)):
             pathlib.Path(os.path.dirname(pidfilename)).mkdir(parents=True,
                                                              exist_ok=True)
