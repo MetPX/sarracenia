@@ -1104,7 +1104,7 @@ class sr_GlobalState:
             editor = os.environ.get('EDITOR')
 
             if not editor:
-                if _platform == 'win32':
+                if sys.platform == 'win32':
                     editor = 'notepad'
                 else:
                     editor = 'vi'
@@ -1112,6 +1112,21 @@ class sr_GlobalState:
                     'using %s. Set EDITOR variable pick another one.' % editor)
 
             self.run_command([editor, cfgfile])
+
+    def log(self):
+
+        for f in self.filtered_configurations:
+            (c, cfg) = f.split(os.sep)
+
+            if not 'options' in self.configs[c][cfg]:
+                continue
+
+            lfn = self.log_dir + os.sep + c + "_" + cfg + "_01" + '.log'
+
+            if sys.platform == 'win32':
+                self.run_command(['sr_tailf', lfn])
+            else:
+                self.run_command(['tail', '-f', lfn])
 
     def enable(self):
 
@@ -1854,8 +1869,8 @@ def main():
             logger.setLevel(logging.INFO)
 
     actions = [
-        'declare', 'devsnap', 'dump', 'restart', 'sanity', 'setup', 'show',
-        'status', 'overview', 'stop'
+        'declare', 'devsnap', 'dump', 'edit', 'log', 'restart', 'sanity',
+        'setup', 'show', 'status', 'overview', 'stop'
     ]
 
     cfg = sarracenia.config.Config({
@@ -1924,6 +1939,9 @@ def main():
 
     if action == 'list':
         gs.config_list()
+
+    if action == 'log':
+        gs.log()
 
     if action == 'remove':
         gs.remove()
