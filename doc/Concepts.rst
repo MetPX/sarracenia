@@ -495,14 +495,18 @@ share substantial code and differ only in default settings.
  | *gather* | Get information about an initial list of files              |
  |          |                                                             |
  |          | from: a queue, a directory, a polling script.               |
+ |          | output: worklist.incoming populated with messages.          |
+ |          |                                                             |
+ |          | Each message is a python dictionary.                        |
  +----------+-------------------------------------------------------------+
  | *Filter* | Reduce the list of files to act on.                         |
  |          |                                                             |
  |          | Apply accept/reject clauses                                 |
  |          |                                                             |
- |          | Check duplicate receipt cache                               |
+ |          | on_messages plugins.                                        |
+ |          | move messages from worklist.incoming to worklist.rejected.  |
+ |          | ones to run: flowcb/nodupe.py (runs duplicate suppresion.)  |
  |          |                                                             |
- |          | run on_msg scripts                                          |
  +----------+-------------------------------------------------------------+
  | *Do*     | process the message by downloading or sending               |
  |          |                                                             |

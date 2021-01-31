@@ -101,6 +101,10 @@ str_options = [
 convert_to_v3 = {
     'plugin': {
         'msg_fdelay': ['flow_callback', 'sarracenia.flowcb.msg.fdelay.FDelay'],
+        'msg_pclean_f90':
+        ['flow_callback', 'sarracenia.flowcb.msg.pclean_f90.PClean_F90'],
+        'msg_pclean_f92':
+        ['flow_callback', 'sarracenia.flowcb.msg.pclean_f92.PClean_F92'],
         'accel_wget': ['continue'],
         'accel_scp': ['continue'],
     },

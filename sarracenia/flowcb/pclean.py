@@ -2,8 +2,14 @@
 """ msg_pclean module: base module for propagation tests and cleanup for Sarracenia components (in flow test)
 """
 
+import logging
 
-class Msg_Pclean(object):
+from sarracenia.flowcb import FlowCB
+
+logger = logging.getLogger(__name__)
+
+
+class PClean(FlowCB):
     """ Base plugin class that is used in shovel pclean_f9x:
 
      - it checks if the propagation was ok.
@@ -15,7 +21,7 @@ class Msg_Pclean(object):
 
     The posted message contains a tag in the header for the test performed which is the extension used for the test
     """
-    def __init__(self, parent):
+    def __init__(self, options):
         self.test_extension_list = ['.slink', '.hlink', '.moved']
         self.ext_key = 'pclean_ext'
         self.all_fxx_dirs = [
@@ -58,11 +64,13 @@ class Msg_Pclean(object):
 
         return Path(relpath).suffix
 
-    def log_msg_details(self, parent):
-        parent.logger.error("message received is incorrect")
-        msg_params = (parent.msg.pubtime, parent.msg.baseurl,
-                      parent.msg.relpath, parent.msg.topic,
-                      parent.msg.get_elapse_pubtime(), parent.msg.hdrstr)
+    def log_msg_details(self, msg):
+        logger.error("message received is incorrect")
+        lag = nowflt() - timestr2flt(msg['pubTime'])
+
+        msg_params = (msg['pubTime'], msg['baseUrl'],
+                      msg['relPath'], msg['topic'],
+                      lag, msg.keys() )
         parent.logger.error(
             "msg_log received: {} {}{} topic={} lag={:.3f} {}".format(
                 *msg_params))

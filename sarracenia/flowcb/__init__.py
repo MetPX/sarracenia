@@ -41,7 +41,8 @@ worklist given to on_plugins...
     worklist.incoming --> new messages to continue processing
     worklist.ok       --> successfully processed
     worklist.rejected --> messages to not be further processed.
-    worklist.failed    --> messages for which processing failed.
+    worklist.failed   --> messages for which processing failed.
+                          failed messages will be retried.
 
 
 Initially all messages are placed in incoming.
