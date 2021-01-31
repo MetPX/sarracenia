@@ -65,8 +65,8 @@ class Message:
 
         if 'parts' in h:
             self.partstr = h['parts']
-        else:
-            self.partstr = None
+        #else:
+        #    self.partstr = None
 
         if 'integrity' in h:
             sum_algo_v3tov2 = {
@@ -428,7 +428,8 @@ class V2Wrapper(FlowCB):
         self.msg = Message(m)
         self.msg.topic = m['topic']
         self.o.msg = self.msg
-        self.o.partstr = self.msg.partstr
+        if hasattr(self.msg, 'partstr'):
+            self.o.partstr = self.msg.partstr
         self.o.sumstr = self.msg.sumstr
 
         varsb4 = copy.deepcopy(vars(self.msg))

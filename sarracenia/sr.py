@@ -331,6 +331,7 @@ class sr_GlobalState:
                     os.mkdir(other_c_dir)
                 self.states[c] = {}
                 for cfg in os.listdir():
+                    if cfg[0] == '.': continue
                     to = other_c_dir + os.sep + cfg
                     print('save_configs copying: %s %s' % (cfg, to))
                     shutil.copyfile(cfg, to)
@@ -357,11 +358,13 @@ class sr_GlobalState:
                     os.mkdir(other_c_dir)
                 self.states[c] = {}
                 for cfg in os.listdir():
+                    if cfg[0] == '.': continue
                     os.chdir(cfg)
                     other_cfg_dir = other_c_dir + os.sep + cfg
                     if not os.path.exists(other_cfg_dir):
                         os.mkdir(other_cfg_dir)
                     for f in os.listdir():
+                        if f[0] == '.': continue
                         to = other_cfg_dir + os.sep + f
                         print('save_states copying: %s %s' % (f, to))
                         shutil.copyfile(f, to)
@@ -466,6 +469,7 @@ class sr_GlobalState:
             if os.path.isdir(c):
                 os.chdir(c)
                 for cfg in os.listdir():
+                    if cfg[0] == '.': continue
                     if os.path.isdir(cfg):
                         os.chdir(cfg)
                         for filename in os.listdir():
@@ -551,6 +555,7 @@ class sr_GlobalState:
             # the additional _ breaks this logic, can't be bothered to fix it yet... to unusual a case to worry about.
             # just patched to not crash for now.
             for lf in os.listdir():
+                if lf[0] == '.': continue  # hidden, ignore.
                 lff = lf.split('_')
                 if len(lff) > 2:
                     c = lff[0]

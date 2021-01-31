@@ -146,7 +146,8 @@ class Flow:
 
         # initialize plugins.
         if hasattr(self.o, 'v2plugins'):
-            self.plugins['load'].append('sarracenia.flowcb.v2wrapper.V2Wrapper')
+            self.plugins['load'].append(
+                'sarracenia.flowcb.v2wrapper.V2Wrapper')
 
     def loadCallbacks(self, plugins_to_load):
 
@@ -725,7 +726,7 @@ class Flow:
         except:
             logger.error(
                 "sr_subscribe/doit_download: could not rename %s to %s " %
-                (msg['oldname'], path))
+                (old, path))
             logger.debug('Exception details: ', exc_info=True)
             ok = False
         return ok

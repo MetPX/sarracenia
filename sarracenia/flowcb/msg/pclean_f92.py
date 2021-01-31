@@ -14,7 +14,7 @@ from sarracenia import timestr2flt, nowflt
 logger = logging.getLogger(__name__)
 
 
-class Msg_Clean_F92(PClean):
+class PClean_F92(PClean):
     """ This plugin that manage the removal of every file
 
      - it fails if one removal failed
@@ -29,10 +29,10 @@ class Msg_Clean_F92(PClean):
 
         for msg in worklist.incoming:
             result = True
-            ext = self.get_extension(msg['relPath'])
+            ext = self.get_extension('/' + msg['relPath'])
 
             if ext in self.test_extension_list:
-                f20_path = msg['relPath'].replace(
+                f20_path = '/' + msg['relPath'].replace(
                     "{}/".format(self.all_fxx_dirs[1]), self.all_fxx_dirs[0])
                 f20_path = f20_path.replace(ext, '')
                 try:
@@ -43,7 +43,8 @@ class Msg_Clean_F92(PClean):
                     logger.debug("Exception details:", exc_info=True)
                     result = False
                 fxx_dirs = self.all_fxx_dirs[1:2] + self.all_fxx_dirs[6:]
-                path_dict = self.build_path_dict(fxx_dirs, msg['relPath'])
+                path_dict = self.build_path_dict(fxx_dirs,
+                                                 '/' + msg['relPath'])
                 for fxx_dir, path in path_dict.items():
                     try:
                         os.unlink(path)

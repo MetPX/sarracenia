@@ -10,6 +10,7 @@
 
 from base64 import b64decode, b64encode
 from collections import *
+from hashlib import sha512
 import json
 import logging
 from mimetypes import guess_type

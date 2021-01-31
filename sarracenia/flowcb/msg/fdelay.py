@@ -72,7 +72,7 @@ class FDelay(FlowCB):
             if '/cfr/' in m['new_dir']:
                 f = os.path.join(m['new_dir'], m['new_file'])
             else:
-                f = m['relPath']
+                f = '/' + m['relPath']
             if not os.path.exists(f):
                 logger.debug("did not find file {}".format(f))
                 worklist.failed.append(m)

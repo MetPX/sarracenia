@@ -34,11 +34,11 @@ class PClean_F90(PClean):
         for msg in worklist.incoming:
 
             result = True
-            f20_path = msg['relPath'].replace(
+            f20_path = '/' + msg['relPath'].replace(
                 "{}/".format(self.all_fxx_dirs[1]), self.all_fxx_dirs[0])
             path_dict = self.build_path_dict(self.all_fxx_dirs[2:],
-                                             msg['relPath'])
-            ext = self.get_extension(msg['relPath'])
+                                             '/' + msg['relPath'])
+            ext = self.get_extension('/' + msg['relPath'])
 
             for fxx_dir, path in path_dict.items():
                 # f90 test
@@ -70,7 +70,7 @@ class PClean_F90(PClean):
                 test_extension = random.choice(
                     self.test_extension_list
                 )  # pick one test identified by file extension
-                src = msg['relPath']  # src file is in f30 dir
+                src = '/' + msg['relPath']  # src file is in f30 dir
                 dest = "{}{}".format(
                     src, test_extension
                 )  # format input file for extension test (next f90)
