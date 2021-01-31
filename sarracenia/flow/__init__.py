@@ -539,6 +539,12 @@ class Flow:
             'value': onfly_algo.get_value()
         }
 
+        if len(data) != msg['size']:
+            logger.error(
+                "decoded data size (%d bytes) does not have expected size: (%d bytes)"
+                % (len(data), msg['size']))
+            return False
+
         try:
             for p in self.plugins['on_data']:
                 data = p(data)
@@ -804,7 +810,7 @@ class Flow:
                     # actually matches the one advertised, and potentially download it.
                     # if rename fails, recover by falling through to download the data anyways.
             elif (msg['integrity']['method'] == 'remove') or (
-                ('event' in msg) and ('delete' in msg['event'])):
+                ('events' in msg) and ('delete' in msg['events'])):
                 if self.removeOneItem(new_path):
                     msg_set_report(msg, 201, 'removed')
                     self.worklist.ok.append(msg)
@@ -816,14 +822,15 @@ class Flow:
                     self.worklist.rejected.append(msg)
                 continue
 
-            if ('event' in msg) and ('link' in msg['event']):
-                if self.link1file(msg):
-                    msg_set_report(msg, 201, 'linked')
-                    self.worklist.ok.append(msg)
-                else:
-                    # as above...
-                    msg_set_report(msg, 500, "symlink failed")
-                    self.worklist.rejected.append(msg)
+            if 'link' in msg.keys():
+                if ('events' in msg) and ('link' in msg['events']):
+                    if self.link1file(msg):
+                        msg_set_report(msg, 201, 'linked')
+                        self.worklist.ok.append(msg)
+                    else:
+                        # as above...
+                        msg_set_report(msg, 500, "symlink failed")
+                        self.worklist.rejected.append(msg)
                 continue
 
             # establish new_inflight_path which is the file to download into initially.
@@ -991,12 +998,14 @@ class Flow:
             if ('blocks' in msg) and (msg['blocks']['method'] == 'inplace'):
                 remote_offset = msg['offset']
 
-            block_length = msg['size']
-            str_range = ''
-            if ('blocks' in msg) and (msg['blocks']['method'] == 'inplace'):
-                block_length = msg['blocks']['size']
-                str_range = 'bytes=%d-%d' % (remote_offset,
-                                             remote_offset + block_length - 1)
+            if 'size' in msg:
+                block_length = msg['size']
+                str_range = ''
+                if ('blocks' in msg) and (
+                        msg['blocks']['method'] == 'inplace'):
+                    block_length = msg['blocks']['size']
+                    str_range = 'bytes=%d-%d' % (remote_offset, remote_offset +
+                                                 block_length - 1)
 
             #download file
 
@@ -1202,9 +1211,8 @@ class Flow:
             if 'link' in msg:
                 if hasattr(self.proto[self.scheme], 'symlink'):
                     logger.debug("message is to link %s to: %s" %
-                                 (new_file, msg.headers['link']))
-                    self.proto[self.scheme].symlink(msg.headers['link'],
-                                                    new_file)
+                                 (new_file, msg['link']))
+                    self.proto[self.scheme].symlink(msg['link'], new_file)
                     return True
                 logger.error("%s, symlink not supported" % self.scheme)
                 return False

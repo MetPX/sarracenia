@@ -63,6 +63,9 @@ class PClean_F90(PClean):
                     diff = Differ().compare(f20_lines, f_lines)
                     diff = [d for d in diff
                             if d[0] != ' ']  # Diffs without context
+                    logger.debug("a: len(%s) = %d" %
+                                 (f20_path, len(f20_lines)))
+                    logger.debug("b: len(%s) = %d" % (path, len(f_lines)))
                     logger.debug("diffs found:\n{}".format("".join(diff)))
 
             if ext not in self.test_extension_list:
