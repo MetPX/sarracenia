@@ -83,9 +83,9 @@ str_options = [
     'admin', 'broker', 'destination', 'directory', 'exchange',
     'exchange_suffix', 'events', 'feeder', 'header', 'logLevel', 'path',
     'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
-    'post_exchange_suffix', 'post_topic_prefix', 'report_exchange', 'strip',
-    'suppress_duplicates', 'suppress_duplicates_basis', 'tls_rigour',
-    'topic_prefix'
+    'post_exchange_suffix', 'post_topic_prefix', 'queue_name',
+    'report_exchange', 'strip', 'suppress_duplicates',
+    'suppress_duplicates_basis', 'tls_rigour', 'topic_prefix'
 ]
 """
    for backward compatibility, 
