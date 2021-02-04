@@ -1065,6 +1065,7 @@ class Flow:
                 logger.error(
                     'incomplete download only %d of expected %d bytes for %s' %
                     (len_written, block_length, new_inflight_path))
+                msg['size'] = len_written
 
             msg['onfly_checksum'] = self.proto[self.scheme].get_sumstr()
             msg['data_checksum'] = self.proto[self.scheme].data_checksum
@@ -1076,8 +1077,8 @@ class Flow:
                 msg['_deleteOnPost'].extend(['data_checksum'])
 
             # fix message if no partflg (means file size unknown until now)
-            if not 'blocks' in msg:
-                msg['size'] = self.proto[self.scheme].fpos
+            #if not 'blocks' in msg:
+            #    #msg['size'] = self.proto[self.scheme].fpos ... fpos not set when accelerated.
 
             # fix permission
             self.set_local_file_attributes(new_file, msg)
