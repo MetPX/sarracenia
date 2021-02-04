@@ -441,6 +441,18 @@ Items from the TODO list that have been addressed.
   interactivity natively only happens through sr3?
   now called metpx-sr3
 
+* log is added.
+
+* edit is added.
+
+* perhaps move the whole plugin thing up a level (get rid of directory)
+  so Plugin becomes a class instantiated in sarra/__init__.py... puts
+  plugins and built-in code on a more even level... for example how
+  do plugin transfer protocols work?  thinking... This is sort of done
+  now: plugin became flowcb. Integrity is removed from the hierarchy.
+  Class extension is now a separate kind of plugin (via import)
+
+
 
 TODO
 ----
@@ -460,11 +472,12 @@ TODO
 
 * outlet option is missing.
 
-* log is missing.
-
-* edit is missing.
-
 * vhost support needed.
+
+* add directories?
+
+* sr_poll active/passive bug #29
+
 
 Not Baked/Thinking
 ------------------
@@ -473,13 +486,8 @@ Structural code things that are not settled, may change.
 Probably need to be settled before having anyone else dive in.
 
 * scopable properties for internal classes, like they exist for plugins.
-
-* perhaps move the whole plugin thing up a level (get rid of directory)
-  so Plugin becomes a class instantiated in sarra/__init__.py... puts
-  plugins and built-in code on a more even level... for example how
-  do plugin transfer protocols work?  thinking... This is sort of done
-  now: plugin became flowcb. Integrity is removed from the hierarchy.
-  Class extension is now a separate kind of plugin (via import)
+  I think this is done.  Would have to document somewhere,
+  testing and demoing at the same time.
 
 * took the code required to implement set_newMessageFields verbatim from v2.
   It is pretty hairy... perhaps turn into a plugin, to get it out of the 
@@ -491,6 +499,10 @@ Probably need to be settled before having anyone else dive in.
   gathers for multiple upstreams, and get messages from whichever is
   live...
   also end up with a single loop that way... cleaner.
+
+* *gather* as a way of separating having multiple input brokers.
+  so could avoid needing a winnow, but just having a subscriber connect to 
+  multiple upstreams directly.
 
 * think about API by sub-classing flow... and having it auto-integrate
   with sr entry point... hmm... likely look at this when updating
@@ -672,3 +684,5 @@ Features
 * gather (inlet? sources of messages) are now plugins.
 
 * added typing to options settings, so plugins can declare: size, duration, string, or list.
+
+

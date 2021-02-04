@@ -56,7 +56,6 @@ Examples of things that would be fun to do with plugins:
 - additional checksums, subclassing Integrity.
 
 
-------------
 Introduction
 ------------
 
@@ -129,8 +128,7 @@ One can also see which plugins are active in a configuration by looking at the m
    .
    .
 
-   2020-10-12 15:20:06,250 [INFO] sarra.flow run callbacks loaded: ['sarra.flowcb.retry.Retry', 'sarra.flowcb.msg.log.Log', 'file_noop.File_Noop', 'sarra.flowcb.v2wrapper.V2Wrapper', 'sarra.flowcb.gather.message.Message']
-2
+   2020-10-12 15:20:06,250 [INFO] sarra.flow run callbacks loaded: ['sarra.flowcb.retry.Retry', 'sarra.flowcb.msg.log.Log', 'file_noop.File_Noop', 'sarra.flowcb.v2wrapper.V2Wrapper', 'sarra.flowcb.gather.message.Message'] 2
    .
    .
    .
@@ -1162,7 +1160,7 @@ Here is an example of implementing conditional use of a more efficient download 
 an on_message script that evaluates the condition to determine whether to invoke the custom downloader:
 
 
-.. include:: ../sarra/plugins/msg_download.py 
+.. include:: ../sarracenia/plugins/msg_download.py 
    :code:
 
 So one "invents" a new URL scheme that refers to the alternate downloader.   In this case, URLs which are
@@ -1173,7 +1171,7 @@ with an alternate method by having their URL altered.
 This on_message msg_download plugin needs to be coupled with the use of a do_download plugin. 
 When the alternate schema is encountered, the component will invoke that plugin. Example of that plugin:
 
-.. include:: ../sarra/plugins/download_wget.py
+.. include:: ../sarracenia/plugins/download_wget.py
    :code:
 
 
