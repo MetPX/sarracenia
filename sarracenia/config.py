@@ -1620,8 +1620,8 @@ class Config:
             msg['topic'] = self.post_topic_prefix + '.' + '.'.join(
                 msg['new_relPath'].split('/'))[offset:-1]
 
-        logger.debug( "leaving with: new_dir=%s new_relpath=%s new_baseUrl=%s " % \
-           ( msg['new_dir'], msg['new_relPath'], msg['new_baseUrl'] ) )
+        #logger.debug( "leaving with: new_dir=%s new_relpath=%s new_baseUrl=%s " % \
+        #   ( msg['new_dir'], msg['new_relPath'], msg['new_baseUrl'] ) )
 
     """
        2020/05/26 PAS... FIXME: end of sheer terror. 

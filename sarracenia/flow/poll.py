@@ -69,8 +69,8 @@ class Poll(Flow):
                 self.o.post_baseUrl = self.o.post_baseUrl.replace(
                     ':' + self.details.url.password, '')
 
-        self.dest = sarracenia.transfer.Transfer.factory(self.details.url.scheme,
-                                                    self.o)
+        self.dest = sarracenia.transfer.Transfer.factory(
+            self.details.url.scheme, self.o)
 
         if self.dest is None:
             logger.critical("unsupported polling protocol")
@@ -113,7 +113,7 @@ class Poll(Flow):
         desclst = {}
 
         for f in new_lst:
-            logger.debug("checking %s (%s)" % (f, ls[f]))
+            #logger.debug("checking %s (%s)" % (f, ls[f]))
 
             # keep a newer entry
             if not f in old_ls:
@@ -124,13 +124,13 @@ class Poll(Flow):
 
             # keep a modified entry
             if ls[f] != old_ls[f]:
-                logger.debug("IS DIFFERENT %s from (%s,%s)" %
-                             (f, old_ls[f], ls[f]))
+                #logger.debug("IS DIFFERENT %s from (%s,%s)" %
+                #             (f, old_ls[f], ls[f]))
                 filelst.append(f)
                 desclst[f] = ls[f]
                 continue
 
-            logger.debug("IS IDENTICAL %s" % f)
+            #logger.debug("IS IDENTICAL %s" % f)
 
         return filelst, desclst
 
@@ -138,8 +138,8 @@ class Poll(Flow):
 
         if self.dest != None:
             self.worklist.incoming.extend(self.post_new_urls())
-            logger.debug('post_new_urls returned: %s' %
-                         len(self.worklist.incoming))
+            #logger.debug('post_new_urls returned: %s' %
+            #             len(self.worklist.incoming))
 
     def load_ls_file(self, path):
         lsold = {}
@@ -200,7 +200,7 @@ class Poll(Flow):
         return False, {}, {}
 
     def poll_directory(self, pdir, lspath):
-        logger.debug("poll_directory %s %s" % (pdir, lspath))
+        #logger.debug("poll_directory %s %s" % (pdir, lspath))
         npost = 0
         msgs = []
 

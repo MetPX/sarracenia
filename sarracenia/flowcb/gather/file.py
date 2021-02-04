@@ -106,7 +106,7 @@ class File(FlowCB):
           check the self.o.inflight, compare fail age against it.
           return True if the file is old enough to be posted.
         """
-        logger.debug("path_inflight %s" % path)
+        #logger.debug("path_inflight %s" % path)
 
         if not isinstance(self.o.inflight, int):
             #logger.debug("ok inflight unused")
@@ -125,7 +125,7 @@ class File(FlowCB):
         return False
 
     def post_delete(self, path, key=None, value=None):
-        logger.debug("post_delete %s (%s,%s)" % (path, key, value))
+        #logger.debug("post_delete %s (%s,%s)" % (path, key, value))
 
         msg = msg_init(path, self.o, None)
 
@@ -154,7 +154,7 @@ class File(FlowCB):
         return [msg]
 
     def post_file(self, path, lstat, key=None, value=None):
-        logger.debug("post_file %s" % path)
+        #logger.debug("post_file %s" % path)
 
         # check if it is a part file
         if path.endswith('.' + self.o.part_ext):
@@ -556,7 +556,7 @@ class File(FlowCB):
 
         if os.path.isdir(src):
             dirs = list(map(lambda x: x[1][1], self.inl.items()))
-            logger.debug("skipping directory %s list: %s" % (src, dirs))
+            #logger.debug("skipping directory %s list: %s" % (src, dirs))
             return []
 
         # link ( os.path.exists = false, lstat = None )
