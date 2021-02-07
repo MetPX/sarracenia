@@ -12,6 +12,9 @@
 
 """
 import logging
+import os
+import stat
+
 
 from sarracenia.flowcb import FlowCB
 from sarracenia import timestr2flt, nowflt
@@ -42,9 +45,6 @@ class FDelay(FlowCB):
             self.o.fdelay = float(self.o.fdelay[0])
 
     def on_messages(self, worklist):
-        import os
-        import stat
-
         # Prepare msg delay test
         logger.info('FIXME: fdelay?')
         outgoing = []

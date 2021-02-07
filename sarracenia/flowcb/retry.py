@@ -135,7 +135,7 @@ class Retry(FlowCB):
         return msg
 
     def msgToJSON(self, message, done=False):
-        logger.debug('Encoding msg to json: message={}'.format(message))
+        #logger.debug('Encoding msg to json: message={}'.format(message))
 
         if done:
             message['_retry_tag_'] = 'done'
@@ -143,7 +143,7 @@ class Retry(FlowCB):
                 message['_deleteOnPost'].append('_retry_tag_')
 
         s = json.dumps(message, sort_keys=True) + '\n'
-        logger.debug('json version={}'.format(s))
+        #logger.debug('json version={}'.format(s))
 
         return s
 
@@ -172,7 +172,7 @@ class Retry(FlowCB):
             except:
                 pass
             self.retry_fp = None
-            logger.debug("MG DEBUG retry get return None")
+            #logger.debug("MG DEBUG retry get return None")
             return True, None
 
         # validation
@@ -366,8 +366,7 @@ class Retry(FlowCB):
 
             # state to heart
 
-            logger.debug("MG DEBUG has state %s" %
-                         os.path.isfile(self.state_path))
+            #logger.debug("MG DEBUG has state %s" % os.path.isfile(self.state_path))
 
             i = 0
             last = None
@@ -377,12 +376,12 @@ class Retry(FlowCB):
                 fp, message = self.msg_get_from_file(fp, self.state_work)
                 if not message: break
                 i = i + 1
-                logger.debug("DEBUG message %s" % message)
+                #logger.debug("DEBUG message %s" % message)
                 if self.in_cache(message): continue
                 valid = self.is_valid(message)
                 if not valid: continue
 
-                logger.debug("DEBUG flush retry to state %s" % message)
+                #logger.debug("DEBUG flush retry to state %s" % message)
                 self.heart_fp = self.msg_append_to_file(
                     self.heart_fp, self.heart_path, message)
                 N = N + 1
@@ -391,12 +390,11 @@ class Retry(FlowCB):
             except:
                 pass
 
-            logger.debug("MG DEBUG took %d out of the %d state" % (N, i))
+            #logger.debug("MG DEBUG took %d out of the %d state" % (N, i))
 
             # remaining of retry to heart
 
-            logger.debug("MG DEBUG has retry %s" %
-                         os.path.isfile(self.retry_path))
+            #logger.debug("MG DEBUG has retry %s" % os.path.isfile(self.retry_path))
 
             i = 0
             j = N
@@ -410,7 +408,7 @@ class Retry(FlowCB):
                 if self.in_cache(message): continue
                 if not self.is_valid(message): continue
 
-                logger.debug("MG DEBUG flush retry to state %s" % message)
+                #logger.debug("MG DEBUG flush retry to state %s" % message)
                 self.heart_fp = self.msg_append_to_file(
                     self.heart_fp, self.heart_path, message)
                 N = N + 1
@@ -419,11 +417,11 @@ class Retry(FlowCB):
             except:
                 pass
 
-            logger.debug("MG DEBUG took %d out of the %d retry" % (N - j, i))
+            #logger.debug("MG DEBUG took %d out of the %d retry" % (N - j, i))
 
             # new to heart
 
-            logger.debug("MG DEBUG has new %s" % os.path.isfile(self.new_path))
+            #logger.debug("MG DEBUG has new %s" % os.path.isfile(self.new_path))
 
             i = 0
             j = N
@@ -437,7 +435,7 @@ class Retry(FlowCB):
                 if self.in_cache(message): continue
                 if not self.is_valid(message): continue
 
-                logger.debug("MG DEBUG flush retry to state %s" % message)
+                #logger.debug("MG DEBUG flush retry to state %s" % message)
                 self.heart_fp = self.msg_append_to_file(
                     self.heart_fp, self.heart_path, message)
                 N = N + 1
@@ -446,7 +444,7 @@ class Retry(FlowCB):
             except:
                 pass
 
-            logger.debug("MG DEBUG took %d out of the %d new" % (N - j, i))
+            #logger.debug("MG DEBUG took %d out of the %d new" % (N - j, i))
 
             # close heart
 

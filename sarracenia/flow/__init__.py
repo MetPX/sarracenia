@@ -282,8 +282,8 @@ class Flow:
 
             if self.has_vip():
 
-                logger.info("current_rate (%g) vs. message_rate_max(%g)) " %
-                            (current_rate, self.o.message_rate_max))
+                #logger.info("current_rate (%g) vs. message_rate_max(%g)) " %
+                #            (current_rate, self.o.message_rate_max))
                 self.gather()
 
                 self.ackWorklist('A gathered')
@@ -371,7 +371,7 @@ class Flow:
 
     def filter(self):
 
-        logger.debug('start')
+        #logger.debug('start')
         filtered_worklist = []
         for m in self.worklist.incoming:
             #logger.warning('message: %s ' % m)
@@ -449,7 +449,7 @@ class Flow:
         # apply on_messages plugins.
         self._runCallbacksWorklist('on_messages')
 
-        logger.debug('done')
+        #logger.debug('done')
 
     def gather(self):
         self.worklist.incoming = []
@@ -467,8 +467,8 @@ class Flow:
 
     def post(self):
 
-        logger.info('on_post starting for %d messages' % len(self.worklist.ok))
-        logger.info('post_baseDir=%s' % self.o.post_baseDir)
+        #logger.info('on_post starting for %d messages' % len(self.worklist.ok))
+        #logger.info('post_baseDir=%s' % self.o.post_baseDir)
         for m in self.worklist.ok:
 
             if 'new_baseUrl' in m:
@@ -723,7 +723,14 @@ class Flow:
             for messages with an oldname, it is to rename a file.
         """
         ok = True
+        if not os.path.isfile(old): 
+            logger.info( "old file %s not found, if destination (%s) missing, then fallback to copy" % (old,path) )
+            # if the destination file exists, assume rename already happenned, 
+            # otherwis return false so that caller falls back to downloading/sending the file.
+            return os.path.isfile(path)
+
         try:
+   
             if os.path.isfile(path): os.unlink(path)
             if os.path.islink(path): os.unlink(path)
             if os.path.isdir(path): os.rmdir(path)
@@ -809,6 +816,11 @@ class Flow:
                     # if rename succeeds, fall through to download object to find if the file renamed
                     # actually matches the one advertised, and potentially download it.
                     # if rename fails, recover by falling through to download the data anyways.
+                    if ok:
+                         self.worklist.ok.append(msg)
+                         msg_set_report(msg, 201, 'renamed')
+                         continue
+                        
             elif (msg['integrity']['method'] == 'remove') or (
                 ('events' in msg) and ('delete' in msg['events'])):
                 if self.removeOneItem(new_path):
@@ -917,10 +929,12 @@ class Flow:
                         msg_set_report(msg, 201, "Download successful")
                         self.worklist.ok.append(msg)
                         break
+                    else:
+                        logger.info("warning downloaded attempt %d failed: %s" % new_path)
                     i = i + 1
 
                 if not ok:
-                    logger.warning("gave up downloading for now")
+                    logger.error("gave up downloading for now")
                     self.worklist.failed.append(msg)
                 # FIXME: file reassembly missing?
                 #if self.inplace : file_reassemble(self)
@@ -1105,7 +1119,6 @@ class Flow:
             except:
                 pass
 
-            logger.error("Download failed 3 %s" % urlstr)
             logger.debug('Exception details: ', exc_info=True)
             if os.path.isfile(new_inflight_path):
                 os.remove(new_inflight_path)
@@ -1242,8 +1255,9 @@ class Flow:
 
             #upload file
 
-            if inflight == None or (('blocks' in msg) and
-                                    (msg['blocks']['method'] == 'inplace')):
+            if inflight == None or (('blocks' in msg) and (msg['blocks']['method'] != 'inplace')):
+                self.proto[self.scheme].put(msg, local_file, new_file)
+            elif (('blocks' in msg) and (msg['blocks']['method'] == 'inplace')):
                 self.proto[self.scheme].put(msg, local_file, new_file, offset,
                                             new_offset, msg['size'])
             elif inflight == '.':
