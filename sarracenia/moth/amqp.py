@@ -224,7 +224,7 @@ class AMQP(Moth):
                 if self.o['bind']:
                     for tup in self.o['bindings']:
                         prefix, exchange, values = tup
-                        topic = prefix + '.' + values[0]
+                        topic = prefix + '.' + values
                         logger.info('binding %s with %s to %s (as: %s)' % \
                             ( self.o['queue_name'], topic, exchange, broker_str ) )
                         self.channel.queue_bind(self.o['queue_name'], exchange,
@@ -329,7 +329,6 @@ class AMQP(Moth):
                 ml.append(m)
                 fetched += 1
 
-        logger.debug("got (%d) done." % len(ml))
         return ml
 
     def getNewMessage(self):
@@ -351,7 +350,7 @@ class AMQP(Moth):
                         for k in self.o.fixed_headers:
                             m[k] = self.o.fixed_headers[k]
 
-                    logger.info("new msg: %s" % msg)
+                    logger.debug("new msg: %s" % msg)
                     return msg
             except Exception as err:
                 logger.warning("moth.amqp.getNewMessage: failed %s: %s" %
@@ -367,7 +366,7 @@ class AMQP(Moth):
 
             if ebo < 60: ebo *= 2
 
-            logger.info("Sleeping {} seconds ...".format(ebo))
+            logger.debug("Sleeping {} seconds ...".format(ebo))
             time.sleep(ebo)
 
     def ack(self, m):
@@ -384,7 +383,12 @@ class AMQP(Moth):
                 m['relPath'])
             return
 
-        self.channel.basic_ack(m['delivery_tag'])
+        try:
+            self.channel.basic_ack(m['delivery_tag'])
+        except Exception as err:
+            logger.warning("failed for tag: %s: %s" % (m['delivery_tag'], err))
+            logger.debug('Exception details: ', exc_info=True)
+
 
     def putNewMessage(self,
                       body,

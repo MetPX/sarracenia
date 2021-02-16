@@ -57,7 +57,8 @@ default_options = {
 }
 
 count_options = [
-    'batch', 'exchange_split', 'instances', 'post_exchange_split', 'prefetch'
+    'batch', 'exchange_split', 'instances', 'post_exchange_split', 'prefetch',
+    'message_count_max', 'message_rate_max', 'message_rate_min'
 ]
 
 # all the boolean settings.
@@ -1880,6 +1881,22 @@ def default_config():
 
     return cfg
 
+def no_file_config():
+    """
+      initialize a config that will not use Sarracenia configuration files at all.
+      meant for use by people writing independent programs to start up instances
+      with python API calls.
+
+    """
+    cfg = Config()
+    cfg.currentDir = None
+    cfg.override(default_options)
+    cfg.override(sarracenia.moth.default_options)
+    cfg.override(sarracenia.moth.amqp.default_options)
+    cfg.override(sarracenia.flow.default_options)
+    cfg.cfg_run_dir = '.'
+    cfg.retry_path = '.'
+    return cfg
 
 def one_config(component, config, isPost=False):
     """

@@ -126,6 +126,10 @@ class File(Transfer):
 
         #logger.debug( "get %s %s (cwd: %s) %d" % (remote_path,local_file,os.getcwd(), local_offset))
 
+        if not os.path.exists( remote_path ):
+           logger.warning( "file to read not found %s" % (remote_path) )
+           return 0
+
         src = self.local_read_open(remote_path, remote_offset)
         dst = self.local_write_open(local_file, local_offset)
 

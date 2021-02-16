@@ -110,7 +110,7 @@ class NoDupe(FlowCB):
         value = '%s*%s' % (relpath, part)
 
         if key not in self.cache_dict:
-            logger.debug("adding a new entry in NoDupe cache")
+            #logger.debug("adding a new entry in NoDupe cache")
             kdict = {}
             kdict[value] = now
             self.cache_dict[key] = kdict

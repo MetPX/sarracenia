@@ -35,6 +35,22 @@ logger = logging.getLogger(__name__)
 
 
 class Integrity:
+    """
+        A class for algorithms to get a fingerprint for a file being announced.
+        Appropriate fingerprinting algorithms vary according to file type.
+ 
+        required methods in subclasses:
+      
+        def registered_as(self):
+            return a one letter string identifying the algorithm (mostly for v2.)
+            in v3, the registration comes from the integrity sub-class name in lower case.
+    
+        def set_path(self,path):
+            start a checksum for the given path... initialize.
+    
+        def update(self,chunk):
+            update the checksum based on the given bytes from the file (sequential access assumed.)
+        """
     @staticmethod
     def factory(method='sha512'):
 
@@ -64,22 +80,6 @@ class Integrity:
         return b64encode(self.filehash.digest()).decode('utf-8')
 
 
-# required methods in subclasses:
-#
-#   def registered_as(self):
-#       """
-#       return a one letter string identifying the algorithm.
-#       """
-#
-#   def set_path(self,path):
-#       """
-#       start a checksum for the given path... initialize.
-#       """
-#
-#   def update(self,chunk):
-#       """
-#       update the checksum based on the given bytes from the file (sequential access assumed.)
-#       """
 
 import sarracenia.integrity.arbitrary
 import sarracenia.integrity.md5name

@@ -31,11 +31,8 @@ class Message(FlowCB):
 
     def post(self, worklist):
 
-        logger.debug('on_post starting for %d messages' % len(worklist.ok))
-
         for m in worklist.ok:
             # FIXME: outlet = url, outlet=json.
-            logger.info('message: %s' % m)
             #if self.o.topic_prefix != self.o.post_topic_prefix:
             #    m['topic'] = m['topic'].replace( self.o.topic_prefix, self.o.post_topic_prefix )
             self.poster.putNewMessage(m)

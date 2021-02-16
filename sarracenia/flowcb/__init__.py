@@ -72,170 +72,78 @@ schemed_entry_points = ['do_get', 'do_put']
 class FlowCB:
     """
     FIXME: document the API signatures for all the entry points. 
+
+    def name(self):
+          Task: return the name of a plugin for reference purposes.
+        return __name__
+
+    def registered_as(self):
+          for schemed downloads, return the scheme this plugin provides.
+          for example, an accel_wget will in on_message, change url scheme from http/https -> download/downloads.
+          the do_get accellerate will need to be registered for download/downloads
+
+        return [ "registration", "registrations" ]
+
+    def on_files(self,worklist):
+          Task: operate on worklist.ok (files which have arrived.)
+
+    def gather(self):
+          Task: gather messages from a source... return a list of messages.
+        return []
+
+    def ack(self,messagelist):
+          Task: acknowledge messages from a gather source.
+
+    def on_messages(self,worklist):
+          Task: operate on worklist.incoming to help decide which messages to process further.
+                and move messages to worklist.rejected to prevent further processing.
+                do not delete any messages, only move between worklists, because acknowledgements have not happenned yet.
+
+    def do_poll(self):
+          Task: build worklist.incoming, a form of gather()
+
+    def on_data(self,data):
+          Task:  return data transformed in some way.
+
+          return new_data
+
+    def on_posts(self,worklist):
+          Task: operate on worklist.ok, and worklist.failed.
+                this is just prior to posting, to make final adjustments.
+                all messages are already aknowledged, so deleting messages from worklists here is fine.
+                if you delete a message from the worklist.ok, it will not be posted.
+
+    def post(self,worklist):
+          Task: operate on worklist.ok, and worklist.failed. modifies them appropriately.
+                message acknowledgement has already occurred before they are called.
+
+    def on_housekeeping(self):
+          do periodic processing.
+
+    def on_html_page(self,page):
+          Task: modify an html page.
+
+    def on_line(self,line):
+          used in FTP polls, because servers have different formats, modify to canonical use.
+
+          Task: return modified line.
+
+
+    def on_start(self):
+          After the connection is established with the broker and things are instantiated, but
+          before any message transfer occurs.
+
+    def on_stop(self):
+        pass
+
     """
+
     def __init__(self, options):
         self.o = options
 
         logging.basicConfig(format=self.o.logFormat,
                             level=getattr(logging, self.o.logLevel.upper()))
 
-
-# FIXME:
-#    def name(self):
-#        """
-#          Task: return the name of a plugin for reference purposes.
-#        """
-#        return __name__
-#
-#    def registered_as(self):
-#        """
-#          for schemed downloads, return the scheme this plugin provides.
-#          for example, an accel_wget will in on_message, change url scheme from http/https -> download/downloads.
-#          the do_get accellerate will need to be registered for download/downloads
-#        """
-#        return [ "registration", "registrations" ]
-#
-#    def on_files(self,worklist):
-#        """
-#          Task: operate on worklist.ok (files which have arrived.)
-#        """
-#        pass
-#
-#    def gather(self):
-#        """
-#          Task: gather messages from a source... return a list of messages.
-#        """
-#        return []
-#
-#    def ack(self,messagelist):
-#        """
-#          Task: acknowledge messages from a gather source.
-#        """
-#        pass
-#
-#    def on_messages(self,worklist):
-#        """
-#          Task: operate on worklist.incoming to help decide which messages to process further.
-#                and move messages to worklist.rejected to prevent further processing.
-#                do not delete any messages, only move between worklists, because acknowledgements have not happenned yet.
-#        """
-#        pass
-#
-#    def do_download(self,msg):
-#        """
-#          FIXME: Deprecated, replaced by do_get?
-#
-#          Task: operate on worklist.incoming to do corresponding file transfers
-#                moving messages to worklist.ok on success, worklist.failed otherwise.
-#                do not delete any messages, only move between worklists, because acknowledgements have not happenned yet.
-#        """
-#        pass
-#
-#    def do_get(self, msg, remote_file, local_file, remote_offset, local_offset, length ):
-#        """
-#          schemed method. (that is, installed based on registered_as() value.
-#
-#          Task: do a single file transfer. The local_file is not the final file name, but one constructed
-#                based on the inflight option.
-#
-#                Return value is the number of bytes transferred.
-#                If the return value is different from the length, then that is some kind of error.
-#        """
-#        pass
-#
-#    def do_poll(self):
-#        """
-#          Task: build worklist.incoming, a form of gather()
-#        """
-#        pass
-#
-#    def do_put(self, msg, local_file, remote_file, local_offset=0, remote_offset=0, length=0 ):
-#        """
-#          schemed method.
-#
-#          Task: do a single file transfer. The local_file is not the final file name, but one constructed
-#                based on the inflight option.
-#
-#                Return value is the number of bytes transferred.
-#                If the return value is different from the length, then that is some kind of error.
-#
-#        """
-#        pass
-#
-#    def do_send(self):
-#        """
-#          FIXME: Deprecated, replaced by do_put?
-#          Task:
-#        """
-#        pass
-#
-#    def on_data(self,data):
-#        """
-#          Task:  return data transformed in some way.
-#        """
-#        pass
-#
-#    def on_posts(self,worklist):
-#        """
-#          Task: operate on worklist.ok, and worklist.failed.
-#                this is just prior to posting, to make final adjustments.
-#                all messages are already aknowledged, so deleting messages from worklists here is fine.
-#                if you delete a message from the worklist.ok, it will not be posted.
-#        """
-#        pass
-#
-#    def post(self,worklist):
-#        """
-#          Task: operate on worklist.ok, and worklist.failed. modifies them appropriately.
-#                message acknowledgement has already occurred before they are called.
-#        """
-#        pass
-#
-#    def on_housekeeping(self):
-#        """
-#          Task:
-#        """
-#        pass
-#
-#    def on_html_page(self,page):
-#        """
-#          Task: modify an html page.
-#        """
-#        pass
-#
-#    def on_line(self,line):
-#        """
-#          used in FTP polls, because servers have different formats, modify to canonical use.
-#
-#          Task: return modified line.
-#
-#        """
-#        pass
-#
-#    def on_part(self):
-#        """
-#          Task:
-#        """
-#        pass
-#
-#    def on_report(self):
-#        """
-#          Task:
-#        """
-#        pass
-#
-#    def on_start(self):
-#        """
-#          Task:
-#        """
-#        pass
-#
-#    def on_stop(self):
-#        """
-#          Task:
-#        """
-#        pass
-#
 
 
 def load_library(factory_path, options):

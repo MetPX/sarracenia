@@ -208,7 +208,7 @@ class Moth():
         If there is one new message available, return it. Otherwise return None. Do not block.
 
         """
-        logger.error("cleanup unimplemented")
+        logger.error("getNewMessage unimplemented")
         return None
 
     def newMessages(self):
@@ -220,7 +220,7 @@ class Moth():
         On failure, this routine blocks, and loops reconnecting to broker, until interaction with broker is successful.
         
         """
-        logger.error("getNewMessages unimplemented")
+        logger.error("NewMessages unimplemented")
         return []
 
     def ackMessage(self, m):
@@ -245,7 +245,12 @@ class Moth():
         """
           get rid of server-side resources associated with a client. (queues/id's, etc...)
         """
-        logger.error("cleanup unimplemented")
+        if self.is_subscriber:  
+            self.getCleanUp()
+        else:  
+            self.putCleanUp()
+
+
 
 
 import importlib.util

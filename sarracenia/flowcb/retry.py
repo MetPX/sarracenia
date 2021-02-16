@@ -497,6 +497,9 @@ class Retry(FlowCB):
         """
          worklist.failed should be put on the retry list.
         """
+        if len(worklist.failed) == 0:
+            return
+
         logger.debug("adding %d to retry _list" % len(worklist.failed))
 
         for m in worklist.failed:

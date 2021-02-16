@@ -218,7 +218,11 @@ class V2Wrapper(FlowCB):
 
         self.user_cache_dir = sarracenia.config.get_user_cache_dir(hostdir)
 
-        self.instance = o.no
+        if hasattr(o,'no') :
+            self.instance = o.no
+        else:
+            self.instance = 0
+
         self.o = o
 
         self.v2plugins = {}
@@ -245,7 +249,7 @@ class V2Wrapper(FlowCB):
 
         # backward compat...
         self.o.user_cache_dir = self.o.cfg_run_dir
-        self.o.instance = self.o.no
+        self.o.instance = self.instance
         self.o.logger = self.logger
         if hasattr(self.o, 'post_baseDir'):
             self.o.post_base_dir = self.o.post_baseDir

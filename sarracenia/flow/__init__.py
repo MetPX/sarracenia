@@ -45,6 +45,7 @@ default_options = {
     'mirror': True,
     'preserve_mode': True,
     'preserve_time': True,
+    'message_count_max': 0,
     'message_rate_max': 0,
     'message_rate_min': 0,
     'sleep': 0.1,
@@ -56,7 +57,12 @@ default_options = {
 class Flow:
     """
     Implement the General Algorithm from the Concepts Guide.
-    just pure program logic all the start, status, stop, log & instance management taken care of elsewhere.
+
+    The constructor/factory accept a configuration (sarracenia.config.Config class) with all the 
+    settings in it.
+
+    This class takes care of starting up, running with callbacks, and clean shutdown.
+
       need to know whether to sleep between passes  
       o.sleep - an interval (floating point number of seconds)
       o.housekeeping - 
@@ -237,7 +243,7 @@ class Flow:
             for p in self.plugins["ack"]:
                 p(mlist)
 
-    def ackWorklist(self, desc):
+    def ackOKandRejected(self, desc):
         logger.debug('%s incoming: %d, ok: %d, rejected: %d, failed: %d' %
                      (desc, len(self.worklist.incoming), len(self.worklist.ok),
                       len(self.worklist.rejected), len(self.worklist.failed)))
@@ -286,7 +292,7 @@ class Flow:
                 #            (current_rate, self.o.message_rate_max))
                 self.gather()
 
-                self.ackWorklist('A gathered')
+                self.ackOKandRejected('A gathered')
 
                 last_gather_len = len(self.worklist.incoming)
                 if (last_gather_len == 0):
@@ -297,7 +303,7 @@ class Flow:
 
                 self.filter()
 
-                self.ackWorklist('B filtered')
+                self.ackOKandRejected('B filtered')
 
                 self.do()
 
@@ -319,6 +325,14 @@ class Flow:
             now = nowflt()
             run_time = now - start_time
             total_messages += last_gather_len
+
+            logger.warn( "message_count_max: %d, total_messages: %d last_gather_len: %d" % 
+              ( self.o.message_count_max, total_messages, last_gather_len ) )
+
+            if (self.o.message_count_max > 0) and (total_messages >= self.o.message_count_max):
+                self.close()
+                break
+
             current_rate = total_messages / run_time
             elapsed = now - last_time
 
@@ -697,12 +711,12 @@ class Flow:
         else:
             return True
 
-    def removeOneItem(self, path):
+    def removeOneFile(self, path):
         """
           process an unlink event, returning boolean success.
         """
 
-        logger.debug("message is to remove %s" % path)
+        logger.debug("path to remove: %s" % path)
 
         ok = True
         try:
@@ -711,8 +725,7 @@ class Flow:
             if os.path.isdir(path): os.rmdir(path)
             logger.info("removed %s" % path)
         except:
-            logger.error("sr_subscribe/doit_download: could not remove %s." %
-                         path)
+            logger.error("could not remove %s." % path)
             logger.debug('Exception details: ', exc_info=True)
             ok = False
 
@@ -808,7 +821,7 @@ class Flow:
 
             if 'oldname' in msg:
                 if 'renameUnlink' in msg:
-                    self.removeOneItem(msg['oldname'])
+                    self.removeOneFile(msg['oldname'])
                     self.worklist.ok.append(msg)
                 else:
                     # actual rename...
@@ -823,7 +836,7 @@ class Flow:
                         
             elif (msg['integrity']['method'] == 'remove') or (
                 ('events' in msg) and ('delete' in msg['events'])):
-                if self.removeOneItem(new_path):
+                if self.removeOneFile(new_path):
                     msg_set_report(msg, 201, 'removed')
                     self.worklist.ok.append(msg)
                 else:
@@ -930,7 +943,7 @@ class Flow:
                         self.worklist.ok.append(msg)
                         break
                     else:
-                        logger.info("warning downloaded attempt %d failed: %s" % new_path)
+                        logger.info("warning downloaded attempt %d failed: %s" % ( i, new_path) )
                     i = i + 1
 
                 if not ok:

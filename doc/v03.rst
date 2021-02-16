@@ -457,6 +457,9 @@ Items from the TODO list that have been addressed.
 TODO
 ----
 
+* change default topic_prefix to v03
+
+* remove *post* from v03 topic trees.
 
 * cleanup entry points: sr_audit, sr_tailf, sr_log2save, 
 
@@ -478,6 +481,7 @@ TODO
 
 * sr_poll active/passive bug #29
 
+* log incoherency between 'info' and logging.INFO prevents proper log control.
 
 Not Baked/Thinking
 ------------------
