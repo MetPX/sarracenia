@@ -22,9 +22,6 @@
     :alt: Build Status
     :target: https://travis-ci.com/MetPX/sarracenia
 
-https://mybinder.org/v2/gh/MetPX/sarracenia/v03_wip?filepath=doc%2Fjupyter%2Fmoth_api_demo.ipynb
-
-
 +-------------------------------------------------------+-----------------------------------------------------------------+
 | [ `Guides <doc/sr_subscribe.1.rst#documentation>`_ ]  |  [ `Orientation <doc/fr/sr_subscribe.1.rst#documentation>`_ ]   |
 | [ `Manual Pages <doc/sr_subscribe.1.rst#see-also>`_ ] |  [ `Référence <doc/fr/sr_subscribe.1.rst#aussi-voir>`_ ]        |
