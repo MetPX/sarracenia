@@ -1637,6 +1637,8 @@ One can also get finer grained control over logging by using flow_callbacks. For
 typically include which logs each file after it has been downloaded, but not
 when the message is received. To have a line in the log for each message received set::
 
+FIXME: v2 example, wrong for v3
+
    on_messages msg_rawlog
 
 There are similar plugins available for different parts of processing::
@@ -3113,77 +3115,25 @@ and the remote_config_url line will be prepended to it, so that it will continue
 to self-update in future.
 
 
-PUMPING
-=======
 
-*This is of interest to administrators only*
-*FIXME: this is v2 functionality that is not active in v3, requires modernization*
+CALLBACK SCRIPTS
+================
 
-Sources of data need to indicate the clusters to which they would like data to be delivered.
-PUMPING is implemented by administrators, and refers copying data between pumps. Pumping is
-accomplished using on_messages callbacks which are provided with the package.
-
-When messages are posted, if no destination is specified, the delivery is assumed to be 
-only the pump itself.  To specify the further destination pumps for a file, sources use 
-the *to* option on the post.  This option sets the to_clusters field for interpretation 
-by administrators.
-
-Data pumps, when ingesting data from other pumps (using shovel, subscribe or sarra components)
-should include the *msg_to_clusters* plugin and specify the clusters which are reachable from
-the local pump, which should have the data copied to the local pump, for further dissemination.
-Sample settings::
-
-  msg_to_clusters DDI
-  msg_to_clusters DD
-
-  on_message msg_to_clusters
-
-Given this example, the local pump (called DDI) would select messages destined for the DD or DDI clusters,
-and reject those for DDSR, which isn't in the list.  This implies that the DD pump may flow
-messages to the DD pump.
-
-The above takes care of forward routing of messages and data-to-data consumers.  Once consumers
-obtain data, they generate reports, and those reports need to propagate in the opposite direction,
-not necessarily by the same route, back to the sources.  Report routing is done using the *from_cluster*
-header.  Again, this defaults to the pump where the data is injected, but may be overridden by
-administrator action.
-
-Administrators configure report routing shovels using the msg_from_cluster plugin. Example::
-
-  msg_from_cluster DDI
-  msg_from_cluster DD
-
-  on_message msg_from_cluster
-
-so that report routing shovels will obtain messages from downstream consumers and make
-them available to upstream sources.
-
-
-PLUGIN SCRIPTS
-==============
-
-One can override or add functionality with python plugins scripts.
+One can override or add functionality with python flowcb scripts.
 Sarracenia comes with a variety of example plugins, and uses some to implement base functionality,
 such as logging (implemented by default use of msg_log, file_log, post_log plugins).
 
 Users can place their own scripts in the script sub-directory
 of their config directory tree ( on Linux, the ~/.config/sarra/plugins). 
 
-There are three varieties of scripts:  do\_* and on\_*.  Do\_* scripts are used
+There are three varieties of scripts:  and on\_*.  Do\_* scripts are used
 to implement functions, adding or replacing built-in functionality, for example, to implement
 additional transfer protocols.
 
-- do_download - to implement additional download protocols.
-
-- do_get  - under ftp/ftps/http/sftp implement the get file part of the download process
-
 - do_poll - to implement additional polling protocols and processes.
 
-- do_put  - under ftp/ftps/http/sftp implement the put file part of the send process
 
-- do_send - to implement additional sending protocols and processes.
-
-These transfer protocol scripts should be declared using the **plugin** option.
+These transfer protocol scripts should be declared using the **import** option.
 Aside the targetted built-in function(s), a module **registered_as** that defines
 a list of protocols that these functions provide.  Example :
 
@@ -3242,6 +3192,7 @@ configuration file specify an on_<event> option. The event can be one of:
   It could be used to put a file in one of the watch directory and have it published when needed.
 
 
+FIXME: v2
 The simplest example of a plugin: A do_nothing.py script for **on_file**::
 
   class Transformer(object): 

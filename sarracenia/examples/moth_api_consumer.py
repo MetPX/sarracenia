@@ -3,13 +3,12 @@ import sarracenia.moth.amqp
 
 import time
 import socket
-from urllib.parse import urlparse, urlunparse
+from urllib.parse import urlparse
 
 options = sarracenia.moth.default_options
 options.update(sarracenia.moth.amqp.default_options)
 
 broker = urlparse('amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
-options['broker'] = broker
 
 # binding tuple:  consists of prefix, exchange, rest.
 # effect is to bind from queue using prefix/rest to exchange.
@@ -20,17 +19,19 @@ options['bindings'] = [('v02.post', 'xpublic', '#')]
 options['queue_name'] = 'q_anonymous_' + socket.getfqdn(
 ) + '_SomethingHelpfulToYou'
 
-options['debug'] = True
-
 print('options: %s' % options)
 
 h = sarracenia.moth.Moth.subFactory(broker, options)
 
-while True:
+count=0
+while count < 5:
     m = h.getNewMessage()
     if m is not None:
         print("message: %s" % m)
         h.ack(m)
     time.sleep(0.1)
+    count += 1
 
+print(' got %d messages' % count )
+h.cleanup()
 h.close()
