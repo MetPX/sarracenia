@@ -503,20 +503,20 @@ share substantial code and differ only in default settings.
  |          |                                                             |
  |          | Apply accept/reject clauses                                 |
  |          |                                                             |
- |          | on_messages plugins.                                        |
+ |          | on_filter callbacks                                         |
  |          | move messages from worklist.incoming to worklist.rejected.  |
  |          | ones to run: flowcb/nodupe.py (runs duplicate suppresion.)  |
  |          |                                                             |
  +----------+-------------------------------------------------------------+
- | *Do*     | process the message by downloading or sending               |
+ | *action* | process the message by downloading or sending               |
  |          |                                                             |
- |          | run do_send,do_download                                     |
+ |          | run transfer (download or send.)                            |
  |          |                                                             |
- |          | run on_part,on_file (download only)                         |
+ |          | run on_action                                               |
  +----------+-------------------------------------------------------------+
- | *Post*   | run on_post scripts                                         |
  |          |                                                             |
- +----------+-------------------------------------------------------------+
+ |          | run on_post                                                 |
+ |          |                                                             |
  | *Outlet* | Post announcement of file downloads/sent to post_broker     |
  |          | or otherwise dispose of task (to file, or retry... or)      |
  +----------+-------------------------------------------------------------+
@@ -567,8 +567,7 @@ The components just have different default settings:
  |                        | Outlet=yes               |
  |                        |   Message?, File?        |
  +------------------------+--------------------------+
- | *sr_sender*            | Gather=??                |
- |                        |   Message?, File?        |
+ | *sr_sender*            | Gather=gather.message    |
  |                        |                          |
  |   Send files from a    | Filter                   |
  |   pump. If remote is   |                          |
@@ -616,10 +615,10 @@ Post, Notice, Notification, Advertisement, Announcement
 
 
 Report messages
-  These are AMQP messages (in `sr_report(7) <sr_report.7.rst>`_ format) built 
-  by consumers of messages, to indicate what a given pump or subscriber decided
-  to do with a message. They conceptually flow in the opposite direction of 
-  notifications in a network, to get back to the source.
+  These are AMQP messages (in `sr_post(7) <sr_post.7.rst>`_ format, with _report_ 
+  field included) built by consumers of messages, to indicate what a given pump 
+  or subscriber decided to do with a message. They conceptually flow in the 
+  opposite direction of notifications in a network, to get back to the source.
 
 
 Pump or broker
