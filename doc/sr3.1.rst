@@ -758,7 +758,7 @@ A subscriber can download the file /data/shared/products/foo by authenticating a
 on mysftpserver.com using the sftp protocol to broker.com assuming he has proper credentials.
 The output of the command is as follows ::
 
- [INFO] Published xs_guest v02.post.data.shared.products.foo '20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo' sum=d,82edc8eb735fd99598a1fe04541f558d parts=1,4574,1,0,0
+ [INFO] Published xs_guest v03.post.data.shared.products.foo '20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo' sum=d,82edc8eb735fd99598a1fe04541f558d parts=1,4574,1,0,0
 
 In MetPX-Sarracenia, each post is published under a certain topic.
 The log line starts with '[INFO]', followed by the **topic** of the
@@ -984,7 +984,7 @@ And run the sender in *save* mode (which continually writes incoming messages to
 in the log, a line for each message written to disk::
 
   2017-03-03 12:14:51,386 [INFO] sr_sender saving 2 message 
-       topic: v02.post.home.peter.sarra_devdocroot.sub.SASP34_LEMM_031630__LEDA_60215
+       topic: v03.post.home.peter.sarra_devdocroot.sub.SASP34_LEMM_031630__LEDA_60215
 
 Continue in this mode until the absent server is again available.  At that point::
 
@@ -994,7 +994,7 @@ Continue in this mode until the absent server is again available.  At that point
 While restoring from the disk file, messages like the following will appear in the log::
 
   2017-03-03 12:15:02,969 [INFO] sr_sender restoring message 29 of 34: 
-    topic: v02.post.home.peter.sarra_devdocroot.sub.ON_02GD022_daily_hydrometric.csv
+    topic: v03.post.home.peter.sarra_devdocroot.sub.ON_02GD022_daily_hydrometric.csv
 
 
 After the last one::
@@ -1129,7 +1129,7 @@ Usually this way of using **sr_sender** would not require posting of the product
 But if **post_broker** and **post_exchange** are provided, and **url** , as above, is set to
 **http://remote.apache.com**,  then **sr_sender** would reconstruct :
 
-Topic: **v02.post.my.new.important_location.IMPORTANT_product**
+Topic: **v03.post.my.new.important_location.IMPORTANT_product**
 
 Notice: **20150813161959.854 http://remote.apache.com/ my/new/important_location/IMPORTANT_product**
 
@@ -1144,7 +1144,7 @@ by (*exchange*, *subtopic*, and optionally, *accept*/*reject*.)
 
 The *topic_prefix* option must to be set to:
 
- - **v02.post** to shovel `sr3_postv2(7) <sr3_postv2.7.rst>`_ messages
+ - **v03.post** to shovel `sr3_postv2(7) <sr3_postv2.7.rst>`_ messages
 
 shovel is a flow with the following presets::
    
@@ -1209,7 +1209,7 @@ on mysftpserver.com using the sftp protocol to  broker.com assuming he has prope
 
 The output of the command is as follows ::
 
- [INFO] v02.post.data.shared.products.foo '20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo'
+ [INFO] v03.post.data.shared.products.foo '20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo'
        source=guest parts=1,256,1,0,0 sum=d,fc473c7a2801babbd3818260f50859de 
 
 In MetPX-Sarracenia, each post is published under a certain topic.
@@ -1941,7 +1941,7 @@ These options define which messages (URL notifications) the program receives:
 
  - **exchange      <name>         (default: xpublic)** 
  - **exchange_suffix      <name>  (default: None)** 
- - **topic_prefix  <amqp pattern> (default: v02.post -- developer option)** 
+ - **topic_prefix  <amqp pattern> (default: v03.post -- developer option)** 
  - **subtopic      <amqp pattern> (no default, must appear after exchange)** 
 
 exchange <name> (default: xpublic) and exchange_suffix
@@ -2415,7 +2415,7 @@ posting to a broker. The valid argument values are:
 
   **post_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
   **post_exchange     <name>         (MANDATORY)**
-  **post_topic_prefix <string>       (default: "v02.post")**
+  **post_topic_prefix <string>       (default: "v03.post")**
   **on_post           <script>       (default: None)**
 
   The **post_broker** defaults to the input broker if not provided.
@@ -3025,7 +3025,7 @@ the next hop broker, the user sets these options :
  - **[--blocksize <value>]            (default: 0 (auto))**
  - **[--outlet <post|json|url>]       (default: post)**
  - **[-pbd|--post_base_dir <path>]    (optional)**
- - **[-ptp|--post_topic_prefix <pfx>] (default: 'v02.post')**
+ - **[-ptp|--post_topic_prefix <pfx>] (default: 'v03.post')**
  - **post_exchange     <name>         (default: xpublic)**
  - **post_exchange_split   <number>   (default: 0)**
  - **post_base_url          <url>     (MANDATORY)**
@@ -3311,7 +3311,7 @@ When a queue is building up::
 And run the sender in *save* mode (which continually writes incoming messages to disk)
 in the log, a line for each message written to disk::
 
-  2017-03-03 12:14:51,386 [INFO] sr_sender saving 2 message topic: v02.post.home.peter.sarra_devdocroot.sub.SASP34_LEMM_031630__LEDA_60215
+  2017-03-03 12:14:51,386 [INFO] sr_sender saving 2 message topic: v03.post.home.peter.sarra_devdocroot.sub.SASP34_LEMM_031630__LEDA_60215
 
 Continue in this mode until the absent server is again available.  At that point::
 
@@ -3320,7 +3320,7 @@ Continue in this mode until the absent server is again available.  At that point
 
 While restoring from the disk file, messages like the following will appear in the log::
 
-  2017-03-03 12:15:02,969 [INFO] sr_sender restoring message 29 of 34: topic: v02.post.home.peter.sarra_devdocroot.sub.ON_02GD022_daily_hydrometric.csv
+  2017-03-03 12:15:02,969 [INFO] sr_sender restoring message 29 of 34: topic: v03.post.home.peter.sarra_devdocroot.sub.ON_02GD022_daily_hydrometric.csv
 
 
 After the last one::
@@ -3342,7 +3342,7 @@ around::
 
   % more ~/tools/save.conf
   broker amqp://tfeed@localhost/
-  topic_prefix v02.post
+  topic_prefix v03.post
   exchange xpublic
 
   post_rate_limit 50
@@ -3360,16 +3360,16 @@ and save them to disk::
   2017-03-18 13:07:27,786 [INFO] sr_sarra run
   2017-03-18 13:07:27,786 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
   2017-03-18 13:07:27,788 [WARNING] non standard queue name q_tsub.sr_subscribe.t.99524171.43129428
-  2017-03-18 13:07:27,788 [INFO] Binding queue q_tsub.sr_subscribe.t.99524171.43129428 with key v02.post.# from exchange xpublic on broker amqp://tfeed@localhost/
+  2017-03-18 13:07:27,788 [INFO] Binding queue q_tsub.sr_subscribe.t.99524171.43129428 with key v03.post.# from exchange xpublic on broker amqp://tfeed@localhost/
   2017-03-18 13:07:27,790 [INFO] report_back to tfeed@localhost, exchange: xreport
   2017-03-18 13:07:27,792 [INFO] sr_shovel saving to /home/peter/.cache/sarra/shovel/save/sr_shovel_save_0000.save for future restore
-  2017-03-18 13:07:27,794 [INFO] sr_shovel saving 1 message topic: v02.post.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml
-  2017-03-18 13:07:27,795 [INFO] sr_shovel saving 2 message topic: v02.post.hydrometric.doc.hydrometric_StationList.csv
+  2017-03-18 13:07:27,794 [INFO] sr_shovel saving 1 message topic: v03.post.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml
+  2017-03-18 13:07:27,795 [INFO] sr_shovel saving 2 message topic: v03.post.hydrometric.doc.hydrometric_StationList.csv
           .
           .
           .
-  2017-03-18 13:07:27,901 [INFO] sr_shovel saving 188 message topic: v02.post.hydrometric.csv.ON.hourly.ON_hourly_hydrometric.csv
-  2017-03-18 13:07:27,902 [INFO] sr_shovel saving 189 message topic: v02.post.hydrometric.csv.BC.hourly.BC_hourly_hydrometric.csv
+  2017-03-18 13:07:27,901 [INFO] sr_shovel saving 188 message topic: v03.post.hydrometric.csv.ON.hourly.ON_hourly_hydrometric.csv
+  2017-03-18 13:07:27,902 [INFO] sr_shovel saving 189 message topic: v03.post.hydrometric.csv.BC.hourly.BC_hourly_hydrometric.csv
 
   ^C2017-03-18 13:11:27,261 [INFO] signal stop
   2017-03-18 13:11:27,261 [INFO] sr_shovel stop
@@ -3392,11 +3392,11 @@ saved to a file into the same queue::
   2017-03-18 13:15:33,610 [INFO] sr_shovel start
   2017-03-18 13:15:33,611 [INFO] sr_sarra run
   2017-03-18 13:15:33,611 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
-  2017-03-18 13:15:33,613 [INFO] Binding queue q_tfeed.sr_shovel.save with key v02.post.# from exchange xpublic on broker amqp://tfeed@localhost/
+  2017-03-18 13:15:33,613 [INFO] Binding queue q_tfeed.sr_shovel.save with key v03.post.# from exchange xpublic on broker amqp://tfeed@localhost/
   2017-03-18 13:15:33,615 [INFO] report_back to tfeed@localhost, exchange: xreport
   2017-03-18 13:15:33,618 [INFO] sr_shovel restoring 189 messages from save /home/peter/.cache/sarra/shovel/save/sr_shovel_save_0000.save 
-  2017-03-18 13:15:33,620 [INFO] sr_shovel restoring message 1 of 189: topic: v02.post.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml
-  2017-03-18 13:15:33,620 [INFO] msg_log received: 20170318165818.878 http://localhost:8000/ observations/swob-ml/20170318/CPSL/2017-03-18-1600-CPSL-AUTO-swob.xml topic=v02.post.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml lag=1034.74 sundew_extension=DMS:WXO_RENAMED_SWOB:MSC:XML::20170318165818 source=metpx mtime=20170318165818.878 sum=d,66f7249bd5cd68b89a5ad480f4ea1196 to_clusters=DD,DDI.CMC,DDI.EDM,DDI.CMC,CMC,SCIENCE,EDM parts=1,5354,1,0,0 toolong=1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ß from_cluster=DD atime=20170318165818.878 filename=2017-03-18-1600-CPSL-AUTO-swob.xml 
+  2017-03-18 13:15:33,620 [INFO] sr_shovel restoring message 1 of 189: topic: v03.post.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml
+  2017-03-18 13:15:33,620 [INFO] msg_log received: 20170318165818.878 http://localhost:8000/ observations/swob-ml/20170318/CPSL/2017-03-18-1600-CPSL-AUTO-swob.xml topic=v03.post.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml lag=1034.74 sundew_extension=DMS:WXO_RENAMED_SWOB:MSC:XML::20170318165818 source=metpx mtime=20170318165818.878 sum=d,66f7249bd5cd68b89a5ad480f4ea1196 to_clusters=DD,DDI.CMC,DDI.EDM,DDI.CMC,CMC,SCIENCE,EDM parts=1,5354,1,0,0 toolong=1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ß from_cluster=DD atime=20170318165818.878 filename=2017-03-18-1600-CPSL-AUTO-swob.xml 
      .
      .
      .
@@ -3527,31 +3527,16 @@ SEE ALSO
 
 **User Commands:**
 
-`sr3_subscribe(1) <sr3_subscribe.1.rst>`_ - Select and Conditionally Download Posted Files
-
 `sr3_post(1) <sr3_post.1.rst>`_ - post announcemensts of specific files.
-
-`sr3_watch(1) <sr3_watch.1.rst>`_ - post that loops, watching over directories.
-
-`sr3_sender(1) <sr3_sender.1.rst>`_ - subscribes to messages pointing at local files, and sends them to remote systems and reannounces them there.
-
-
-**Pump Adminisitrator Commands:**
-
-`sr3_shovel(8) <sr3_shovel.8.rst>`_ - process messages (no downloading).
-
-`sr3_winnow(8) <sr3_winnow.8.rst>`_ - a shovel with cache on, to winnow wheat from chaff.
-
-`sr3_sarra(8) <sr3_sarra.8.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
 `sr_log2save(8) <sr3_log2save.8.rst>`_ - Convert logfile lines to .save Format for reload/resend.
 
 
 **Formats:**
 
-`sr3_postv2(7) <sr3_postv2.7.rst>`_ - The v02 format of announcement messages.
-
 `sr3_post(7) <sr3_post.7.rst>`_ - The v03 format of announcement messages.
+
+`sr3_postv2(7) <sr3_postv2.7.rst>`_ - The v02 format of announcement messages.
 
 **Home Page:**
 
