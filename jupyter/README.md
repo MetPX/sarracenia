@@ -5,14 +5,14 @@ from a Sarracenia data pump.
 
 ## Command Line Interface
 
-With the Command Line interface, One can manage fleets of instances and configurations.
-
-An instance is a process that runs a Sarracenia.flow whose configuration is set using
-the sr3 configuration file tree and language, placing logs in a standard location, 
+An introduction to the command Line interface, used to manage fleets of instances and configurations.
+The sr3 configuration file tree and language, places logs in a standard location, 
 and where the starting, monitoring and stopping instances is done using sr3.  
 
-This command line tools is used to manage hundreds of processes collaborating in 
-webs to implement complete applications.
+Demonstration: [CLI_introduction.ipynb](CLI_introduction.ipynb)
+
+
+## Customization with Callbacks
 
 What is a flow? it is the following steps:
 
@@ -22,9 +22,7 @@ What is a flow? it is the following steps:
 * outlet ( post message to a new pump for other flows to use, or write it to a file, or nothing. )
 
 
-FIXME: missing notebook. Planned.
 
-## Customization with Callbacks
 
 FIXME: missing notebook. Planned.
 The Sarracenia.flowcb or flow_callback class allows developers to implement custom processes
