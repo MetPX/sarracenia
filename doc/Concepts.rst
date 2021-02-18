@@ -40,16 +40,124 @@ This isn´t a limitation, it is just what is used and tested. Implementations of
 the pump on Windows should work, they just are not tested.
 
 
+The Flow Algorithm
+~~~~~~~~~~~~~~~~~~
+
+All of the components (post, subscribe, sarra, sender, shovel, watch, winnow)
+share substantial code and differ only in default settings.  The Flow
+algorithm is:
+
+* Gather a list of messages
+* Filter them with accept/reject clauses
+* Work on the accepted messages.
+* Post the work accomplished for the next flow.
+
+in more detail:
+
+.. table:: **Table 1: The Algorithm for All Components**
+ :align: center
+
+ +----------+-------------------------------------------------------------+
+ |          |                                                             |
+ |  PHASE   |                 DESCRIPTION                                 |
+ |          |                                                             |
+ +----------+-------------------------------------------------------------+
+ | *gather* | Get information about an initial list of files              |
+ |          |                                                             |
+ |          | from: a queue, a directory, a polling script.               |
+ |          | output: worklist.incoming populated with messages.          |
+ |          |                                                             |
+ |          | Each message is a python dictionary.                        |
+ +----------+-------------------------------------------------------------+
+ | *Filter* | Reduce the list of files to act on.                         |
+ |          |                                                             |
+ |          | Apply accept/reject clauses                                 |
+ |          |                                                             |
+ |          | on_filter callbacks                                         |
+ |          | move messages from worklist.incoming to worklist.rejected.  |
+ |          | ones to run: flowcb/nodupe.py (runs duplicate suppresion.)  |
+ |          |                                                             |
+ +----------+-------------------------------------------------------------+
+ | *work*   | process the message by downloading or sending               |
+ |          |                                                             |
+ |          | run transfer (download or send.)                            |
+ |          |                                                             |
+ |          | run on_work                                                 |
+ +----------+-------------------------------------------------------------+
+ |          | run on_post                                                 |
+ |          |                                                             |
+ | *post*   | Post announcement of file downloads/sent to post_broker     |
+ |          | or otherwise dispose of task (to file, or retry... or)      |
+ +----------+-------------------------------------------------------------+
+
+The main components of the python implementation of Sarracenia all implement the same 
+algorithm described above. The algorithm has various points where custom processing
+can be inserted flow_callbacks, or deriving classes from flow, integrity, or transfer
+classes.
+
+The components just have different default settings:
+
+.. table:: **Table 2: How Each Component Uses the Flow Algorithm**
+ :align: center
+
+ +------------------------+--------------------------+
+ | Component              | Use of the algorithm     |
+ +------------------------+--------------------------+
+ | *sr_subscribe*         | Gather=gather.message    |
+ |                        |                          |
+ |   Download file from a | Filter                   |
+ |   pump. If the local   |                          |
+ |   host is a pump,      | Do=Download              |
+ |   post the downloaded  |                          |
+ |   file.                | Outlet=optional          |
+ +------------------------+--------------------------+
+ | *sr_poll*              | Gather=gather.remote     |
+ |                        |                          |
+ |   Find files on other  | Filter                   |
+ |   servers to post to   |                          |
+ |   a pump.              | Do=nil                   |
+ |                        |                          |
+ |                        | Outlet=yes               |
+ |                        |   Message?, File?        |
+ +------------------------+--------------------------+
+ | *sr_shovel/sr_winnow*  | Gather=gather.message    |
+ |                        |                          |
+ |   Move posts or        | Filter (shovel cache=off)|
+ |   reports around.      |                          |
+ |                        | Do=nil                   |
+ |                        |                          |
+ |                        | Outlet=yes               |
+ +------------------------+--------------------------+
+ | *sr_post/watch*        | Gather=gather.file       |
+ |                        |                          |
+ |   Find file on a       | Filter                   |
+ |   local server to      |                          |
+ |   post                 | Do=nil                   |
+ |                        |                          |
+ |                        | Outlet=yes               |
+ |                        |   Message?, File?        |
+ +------------------------+--------------------------+
+ | *sr_sender*            | Gather=gather.message    |
+ |                        |                          |
+ |   Send files from a    | Filter                   |
+ |   pump. If remote is   |                          |
+ |   also a pump, post    | Do=sendfile              |
+ |   the sent file there. |                          |
+ |                        | Outlet=optional          |
+ +------------------------+--------------------------+
+
+Components are easily composed using AMQP brokers, which create elegant networks
+of communicating sequential processes (in the `Hoare <http://dl.acm.org/citation.cfm?doid=359576.359585>`_ sense).
+
 Mapping AMQP Concepts to Sarracenia
 -----------------------------------
 
-One thing that is safe to say is that one needs to understand a bit about AMQP to work
-with Sarracenia. AMQP is a vast and interesting topic in its own right. No attempt is
+It is helpful to understand a bit about AMQP to work with Sarracenia. 
+AMQP is a vast and interesting topic in its own right. No attempt is
 made to explain all of it here. This section just provides a little context, and introduces
 only background concepts needed to understand and/or use Sarracenia. For more information
 on AMQP itself, a set of links is maintained at the 
 `Metpx web site <https://github.com/MetPX/sarracenia/blob/master/doc/sarra.rst#amqp>`_ 
-but a search engine will also reveal a wealth of material.
 
 .. image:: AMQP4Sarra.svg
     :scale: 50%
@@ -477,106 +585,6 @@ auditable script that must be run on a regular basis. If all acquisition is done
 the files will belong to the pump administrator, and privileged access is not required for this either.
 
 
-
-The Flow Algorithm
-------------------
-
-All of the components that subscribe (subscribe, sarra, sender, shovel, winnow)
-share substantial code and differ only in default settings.  
-
-.. table:: **Table 1: The Algorithm for All Components**
- :align: center
-
- +----------+-------------------------------------------------------------+
- |          |                                                             |
- |  PHASE   |                 DESCRIPTION                                 |
- |          |                                                             |
- +----------+-------------------------------------------------------------+
- | *gather* | Get information about an initial list of files              |
- |          |                                                             |
- |          | from: a queue, a directory, a polling script.               |
- |          | output: worklist.incoming populated with messages.          |
- |          |                                                             |
- |          | Each message is a python dictionary.                        |
- +----------+-------------------------------------------------------------+
- | *Filter* | Reduce the list of files to act on.                         |
- |          |                                                             |
- |          | Apply accept/reject clauses                                 |
- |          |                                                             |
- |          | on_filter callbacks                                         |
- |          | move messages from worklist.incoming to worklist.rejected.  |
- |          | ones to run: flowcb/nodupe.py (runs duplicate suppresion.)  |
- |          |                                                             |
- +----------+-------------------------------------------------------------+
- | *work*   | process the message by downloading or sending               |
- |          |                                                             |
- |          | run transfer (download or send.)                            |
- |          |                                                             |
- |          | run on_work                                                 |
- +----------+-------------------------------------------------------------+
- |          | run on_post                                                 |
- |          |                                                             |
- | *post*   | Post announcement of file downloads/sent to post_broker     |
- |          | or otherwise dispose of task (to file, or retry... or)      |
- +----------+-------------------------------------------------------------+
-
-The main components of the python implementation of Sarracenia all implement the same 
-algorithm described above. The algorithm has various points where custom processing
-can be inserted using small python scripts called on_*, do_*.
-
-The components just have different default settings:
-
-.. table:: **Table 2: How Each Component Uses the Flow Algorithm**
- :align: center
-
- +------------------------+--------------------------+
- | Component              | Use of the algorithm     |
- +------------------------+--------------------------+
- | *sr_subscribe*         | Gather=gather.message    |
- |                        |                          |
- |   Download file from a | Filter                   |
- |   pump. If the local   |                          |
- |   host is a pump,      | Do=Download              |
- |   post the downloaded  |                          |
- |   file.                | Outlet=optional          |
- +------------------------+--------------------------+
- | *sr_poll*              | Gather=gather.remote     |
- |                        |                          |
- |   Find files on other  | Filter                   |
- |   servers to post to   |                          |
- |   a pump.              | Do=nil                   |
- |                        |                          |
- |                        | Outlet=yes               |
- |                        |   Message?, File?        |
- +------------------------+--------------------------+
- | *sr_shovel/sr_winnow*  | Gather=gather.message    |
- |                        |                          |
- |   Move posts or        | Filter (shovel cache=off)|
- |   reports around.      |                          |
- |                        | Do=nil                   |
- |                        |                          |
- |                        | Outlet=yes               |
- +------------------------+--------------------------+
- | *sr_post/watch*        | Gather=gather.file       |
- |                        |                          |
- |   Find file on a       | Filter                   |
- |   local server to      |                          |
- |   post                 | Do=nil                   |
- |                        |                          |
- |                        | Outlet=yes               |
- |                        |   Message?, File?        |
- +------------------------+--------------------------+
- | *sr_sender*            | Gather=gather.message    |
- |                        |                          |
- |   Send files from a    | Filter                   |
- |   pump. If remote is   |                          |
- |   also a pump, post    | Do=sendfile              |
- |   the sent file there. |                          |
- |                        | Outlet=optional          |
- +------------------------+--------------------------+
-
-Components are easily composed using AMQP brokers, which create elegant networks
-of communicating sequential processes (in the `Hoare <http://dl.acm.org/citation.cfm?doid=359576.359585>`_ sense).
 
 Glossary
 --------
