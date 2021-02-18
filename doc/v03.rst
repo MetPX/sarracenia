@@ -77,7 +77,11 @@ Changes planned to address pain points
 * The strange choice of *parent* as a place for storing settings is puzzling to people.
   *parent* instance variable becomes *options*,  *self.parent* becomes *self.o*
    
-* plural event callbacks replace singular ones.  on_messages replaces on_message
+* plural event callbacks replace singular ones:
+
+  *  on_filter(self,worklist) replaces on_message(self,parent)
+  *  on_work(self,worklist) replaces on_part/on_file(self,parent)
+
 
 * messages are just python dictionaries. fields defined by json.loads( v03 payload format )
   messages only contain the actual fields, no settings or other things...
@@ -482,6 +486,9 @@ TODO
 * sr_poll active/passive bug #29
 
 * log incoherency between 'info' and logging.INFO prevents proper log control.
+
+* realpath_filter is used by CMOI. Seems to be disappeared in v3. It's there in the C version.
+
 
 Not Baked/Thinking
 ------------------

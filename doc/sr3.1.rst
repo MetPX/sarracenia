@@ -1505,7 +1505,7 @@ The log.py file included in the package is like this::
 
   class Log(Plugin):
 
-    def on_messages(self,worklist):
+    def on_filter(self,worklist):
         for msg in worklist:
             logger.info( "msg/log received: %s " % msg )
         return worklist
@@ -1637,22 +1637,16 @@ One can also get finer grained control over logging by using flow_callbacks. For
 typically include which logs each file after it has been downloaded, but not
 when the message is received. To have a line in the log for each message received set::
 
-FIXME: v2 example, wrong for v3
+   FIXME: v2 example, wrong for v3
 
-   on_messages msg_rawlog
+   on_filter msg_rawlog
 
 There are similar plugins available for different parts of processing::
 
-   on_parts part_log
-
-   on_files file_log (default)
+   on_work file_log (default)
 
    on_posts post_log
    
-or even, log everything::
-
-   plugin log
-
 etc... One can also modify the provided plugins, or write new ones to completely change the logging.
 
 At the end of the day (at midnight), these logs are rotated automatically by 

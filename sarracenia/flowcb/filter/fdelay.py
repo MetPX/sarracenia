@@ -44,7 +44,7 @@ class FDelay(FlowCB):
         if type(self.o.fdelay) not in [int, float]:
             self.o.fdelay = float(self.o.fdelay[0])
 
-    def on_messages(self, worklist):
+    def on_filter(self, worklist):
         # Prepare msg delay test
         logger.info('FIXME: fdelay?')
         outgoing = []

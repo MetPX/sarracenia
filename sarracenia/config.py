@@ -101,20 +101,20 @@ str_options = [
 """
 convert_to_v3 = {
     'plugin': {
-        'msg_fdelay': ['flow_callback', 'sarracenia.flowcb.msg.fdelay.FDelay'],
+        'msg_fdelay': ['flow_callback', 'sarracenia.flowcb.filter.fdelay.FDelay'],
         'msg_pclean_f90':
-        ['flow_callback', 'sarracenia.flowcb.msg.pclean_f90.PClean_F90'],
+        ['flow_callback', 'sarracenia.flowcb.filter.pclean_f90.PClean_F90'],
         'msg_pclean_f92':
-        ['flow_callback', 'sarracenia.flowcb.msg.pclean_f92.PClean_F92'],
+        ['flow_callback', 'sarracenia.flowcb.filter.pclean_f92.PClean_F92'],
         'accel_wget': ['continue'],
         'accel_scp': ['continue'],
     },
     'on_message': {
         'msg_delete': [
             'flow_callback',
-            'sarracenia.flowcb.msg.deleteflowfiles.DeleteFlowFiles'
+            'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles'
         ],
-        'msg_rawlog': ['flow_callback', 'sarracenia.flowcb.msg.log.Log']
+        'msg_rawlog': ['flow_callback', 'sarracenia.flowcb.filter.log.Log']
     },
     'on_line': {
         'line_log': ['flow_callback', 'sarracenia.flowcb.line_log']
@@ -811,13 +811,13 @@ class Config:
           v3 plugin accept options for specific modules.
     
           parsed from:
-          set sarracenia.flowcb.log.msg.Log.level debug
+          set sarracenia.flowcb.log.filter.Log.level debug
 
           example:   
-          opt= sarracenia.flowcb.log.msg.Log.level  value = debug
+          opt= sarracenia.flowcb.log.filter.Log.level  value = debug
 
           results in:
-          self.settings[ sarracenia.flowcb.log.msg.Log ][level] = debug
+          self.settings[ sarracenia.flowcb.log.filter.Log ][level] = debug
 
           options should be fed to plugin class on instantiation.
           stripped of class... 

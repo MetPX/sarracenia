@@ -508,16 +508,15 @@ share substantial code and differ only in default settings.
  |          | ones to run: flowcb/nodupe.py (runs duplicate suppresion.)  |
  |          |                                                             |
  +----------+-------------------------------------------------------------+
- | *action* | process the message by downloading or sending               |
+ | *work*   | process the message by downloading or sending               |
  |          |                                                             |
  |          | run transfer (download or send.)                            |
  |          |                                                             |
- |          | run on_action                                               |
+ |          | run on_work                                                 |
  +----------+-------------------------------------------------------------+
- |          |                                                             |
  |          | run on_post                                                 |
  |          |                                                             |
- | *Outlet* | Post announcement of file downloads/sent to post_broker     |
+ | *post*   | Post announcement of file downloads/sent to post_broker     |
  |          | or otherwise dispose of task (to file, or retry... or)      |
  +----------+-------------------------------------------------------------+
 

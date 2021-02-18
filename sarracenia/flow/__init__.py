@@ -90,7 +90,7 @@ class Flow:
     plugins  -- dict of modular functionality metadata.
          "load" - list of (v3) flow_callbacks to load.
          time    - one of the invocation times of callbacks. examples:
-                   "on_start", "on_messages", etc...
+                   "on_start", "on_filter", etc...
                  contains routines to run at each *time*
      
     """
@@ -204,10 +204,10 @@ class Flow:
         if hasattr(self, 'plugins') and (entry_point in self.plugins):
             for p in self.plugins[entry_point]:
                 p(self.worklist)
-                if entry_point == 'on_messages':
+                if entry_point == 'on_filter':
                     if len(self.worklist.incoming) == 0:
                         return
-                elif entry_point == 'on_files':
+                elif entry_point == 'on_work':
                     if len(self.worklist.ok) == 0:
                         return
 
@@ -313,7 +313,7 @@ class Flow:
                 self.ack(self.worklist.rejected)
                 self.worklist.rejected = []
                 self.ack(self.worklist.failed)
-                self._runCallbacksWorklist('on_files')
+                self._runCallbacksWorklist('on_work')
 
                 self.post()
 
@@ -460,8 +460,8 @@ class Flow:
                     self.worklist.rejected.append(m)
 
         self.worklist.incoming = filtered_worklist
-        # apply on_messages plugins.
-        self._runCallbacksWorklist('on_messages')
+        # apply on_filter plugins.
+        self._runCallbacksWorklist('on_filter')
 
         #logger.debug('done')
 

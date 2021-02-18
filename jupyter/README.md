@@ -3,6 +3,18 @@
 A collection of demonstrations of the various API's for subscribing to continuous data flows
 from a Sarracenia data pump.
 
+Setting up a local environment:
+
+    python3 -m venv sarracenia
+    cd sarracenia
+    . bin/activate  # yes, that is a period
+    git clone https://github.com/MetPX/sarracenia.git
+    cd sarracenia
+    git checkout v03_wip
+    cd jupyter
+    pip install -r requirements.txt
+    jupyter notebook --ip=0.0.0.0 --port=8000
+
 ## Command Line Interface
 
 An introduction to the command Line interface, used to manage fleets of instances and configurations.
@@ -18,8 +30,8 @@ What is a flow? it is the following steps:
 
 * gather (obtain new messages from a data pump, a remote polling source or a local directory.)
 * filter ( apply accept/reject masks, then on_filter processing. )
-* do ( do a download (most flows) or send, or whatever )
-* outlet ( post message to a new pump for other flows to use, or write it to a file, or nothing. )
+* work ( do a download (most flows) or send, or whatever )
+* post ( post message to a new pump for other flows to use, or write it to a file, or nothing. )
 
 
 

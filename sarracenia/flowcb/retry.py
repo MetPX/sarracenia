@@ -187,7 +187,7 @@ class Retry(FlowCB):
 
         return True, message
 
-    def on_messages(self, worklist):
+    def on_filter(self, worklist):
         """
           if there are no new messages, then get one from the retry list,
           and try processing that again.

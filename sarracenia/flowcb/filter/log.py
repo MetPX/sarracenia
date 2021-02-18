@@ -14,7 +14,7 @@ class Log(FlowCB):
         else:
             logger.setLevel(logging.INFO)
 
-    def on_messages(self, worklist):
+    def on_filter(self, worklist):
 
         for msg in worklist.incoming:
             logger.info("received: %s " % msg)

@@ -759,15 +759,14 @@ class File(FlowCB):
            before emitting any messages.  need to re-factor with iterator style so produce
            result in batch sized chunks incrementally.
         """
-        logger.info("%s run partflg=%s, sum=%s, suppress_duplicates=%s basis=%s pbd=%s" % \
-              ( self.o.program_name, self.o.partflg, self.o.sumflg, self.o.suppress_duplicates,
-                self.o.suppress_duplicates_basis, self.o.post_baseDir ))
-        logger.info("%s realpath_post=%s follow_links=%s force_polling=%s batch=%s"  % \
-              ( self.o.program_name, self.o.realpath_post, self.o.follow_symlinks, \
-                self.o.force_polling, self.o.batch ) )
-
-        logger.info("%s len(self.queued_messages)=%d" % \
-             ( self.o.program_name, len(self.queued_messages) ) )
+        #logger.debug("%s run partflg=%s, sum=%s, suppress_duplicates=%s basis=%s pbd=%s" % \
+        #      ( self.o.program_name, self.o.partflg, self.o.sumflg, self.o.suppress_duplicates,
+        #        self.o.suppress_duplicates_basis, self.o.post_baseDir ))
+        #logger.debug("%s realpath_post=%s follow_links=%s force_polling=%s batch=%s"  % \
+        #      ( self.o.program_name, self.o.realpath_post, self.o.follow_symlinks, \
+        #        self.o.force_polling, self.o.batch ) )
+        #logger.info("%s len(self.queued_messages)=%d" % \
+        #     ( self.o.program_name, len(self.queued_messages) ) )
 
         pbd = self.o.post_baseDir
 

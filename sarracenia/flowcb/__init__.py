@@ -27,7 +27,7 @@ options is a dictionary of settings, used to override default behaviour
 
 a setting is declared:
 
-set sarracenia.flowcb.msg.log.Log.level debug
+set sarracenia.flowcb.filter.log.Log.level debug
 
 (the prefix for the setting matches the type hierarchy in flow_callback)
 
@@ -61,8 +61,8 @@ Do not remove from all lists, only move messages between them.
 logger = logging.getLogger(__name__)
 
 entry_points = [
-    'ack', 'do_poll', 'gather', 'on_messages', 'on_data', 'on_files',
-    'on_housekeeping', 'on_html_page', 'on_line', 'on_part', 'on_posts',
+    'ack', 'do_poll', 'gather', 'on_filter', 'on_data', 'on_work',
+    'on_housekeeping', 'on_html_page', 'on_line', 'on_posts',
     'on_report', 'on_start', 'on_stop', 'post'
 ]
 
@@ -74,67 +74,67 @@ class FlowCB:
     FIXME: document the API signatures for all the entry points. 
 
     def name(self):
-          Task: return the name of a plugin for reference purposes.
+        Task: return the name of a plugin for reference purposes.
         return __name__
 
     def registered_as(self):
-          for schemed downloads, return the scheme this plugin provides.
-          for example, an accel_wget will in on_message, change url scheme from http/https -> download/downloads.
-          the do_get accellerate will need to be registered for download/downloads
+        for schemed downloads, return the scheme this plugin provides.
+        for example, an accel_wget will in on_message, change url scheme from http/https -> download/downloads.
+        the do_get accellerate will need to be registered for download/downloads
 
         return [ "registration", "registrations" ]
 
-    def on_files(self,worklist):
-          Task: operate on worklist.ok (files which have arrived.)
-
-    def gather(self):
-          Task: gather messages from a source... return a list of messages.
-        return []
+    def on_work(self,worklist):
+        Task: operate on worklist.ok (files which have arrived.)
 
     def ack(self,messagelist):
-          Task: acknowledge messages from a gather source.
+        Task: acknowledge messages from a gather source.
 
-    def on_messages(self,worklist):
-          Task: operate on worklist.incoming to help decide which messages to process further.
-                and move messages to worklist.rejected to prevent further processing.
-                do not delete any messages, only move between worklists, because acknowledgements have not happenned yet.
+    def gather(self):
+        Task: gather messages from a source... return a list of messages.
+        return []
+
+    def on_filter(self,worklist):
+         Task: just after messages go through accept/reject masks,
+               operate on worklist.incoming to help decide which messages to process further.
+               and move messages to worklist.rejected to prevent further processing.
+               do not delete any messages, only move between worklists.
 
     def do_poll(self):
-          Task: build worklist.incoming, a form of gather()
+        Task: build worklist.incoming, a form of gather()
 
     def on_data(self,data):
-          Task:  return data transformed in some way.
+        Task:  return data transformed in some way.
 
-          return new_data
+        return new_data
 
     def on_posts(self,worklist):
-          Task: operate on worklist.ok, and worklist.failed.
-                this is just prior to posting, to make final adjustments.
-                all messages are already aknowledged, so deleting messages from worklists here is fine.
-                if you delete a message from the worklist.ok, it will not be posted.
+         Task: operate on worklist.ok, and worklist.failed.
+               this is just prior to posting, to make final adjustments.
+               all messages are already aknowledged, so deleting messages from worklists here is fine.
+               if you delete a message from the worklist.ok, it will not be posted.
 
     def post(self,worklist):
-          Task: operate on worklist.ok, and worklist.failed. modifies them appropriately.
-                message acknowledgement has already occurred before they are called.
+         Task: operate on worklist.ok, and worklist.failed. modifies them appropriately.
+               message acknowledgement has already occurred before they are called.
 
     def on_housekeeping(self):
-          do periodic processing.
+         do periodic processing.
 
     def on_html_page(self,page):
-          Task: modify an html page.
+         Task: modify an html page.
 
     def on_line(self,line):
-          used in FTP polls, because servers have different formats, modify to canonical use.
+         used in FTP polls, because servers have different formats, modify to canonical use.
 
-          Task: return modified line.
-
+         Task: return modified line.
 
     def on_start(self):
-          After the connection is established with the broker and things are instantiated, but
-          before any message transfer occurs.
+         After the connection is established with the broker and things are instantiated, but
+         before any message transfer occurs.
 
     def on_stop(self):
-        pass
+
 
     """
 

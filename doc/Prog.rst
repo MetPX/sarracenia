@@ -107,7 +107,7 @@ That line cause Sarracenia to look in the Python search path for a class like:
   logger = logging.getLogger(__name__)
 
   class Log(FlowCB):
-    def on_messages(self, worklist):
+    def on_filter(self, worklist):
         for msg in worklist.incoming:
             logger.info("received: %s " % msg)
 
@@ -168,7 +168,7 @@ Why v3 API should be used whenever possible
 * The strange choice of *parent* as a place for storing settings is puzzling to people.
   *parent* instance variable becomes *options*,  *self.parent* becomes *self.o*
 
-* plural event callbacks replace singular ones.  on_messages replaces on_message
+* plural event callbacks replace singular ones.  on_filter replaces on_message
 
 * messages are just python dictionaries. fields defined by json.loads( v03 payload format )
   messages only contain the actual fields, no settings or other things...
@@ -254,7 +254,7 @@ The content of the file to be placed (on Linux) in ~/.config/sarra/plugins would
           # declare options to avoid 'unknown option' messages being logged.
           options.add_option( option='file_string' , kind='str', default_value='hello world')  
 
-      def on_files(self,worklist):
+      def on_work(self,worklist):
           logger.info("file_noop: received %d files. file_string is: %s " % (len(worklist.ok), self.o.file_string) )
 
 
@@ -412,60 +412,6 @@ a given routine should be called.
 +-------------------+----------------------------------------------------+
 |  Name             | When/Why it is Called                              |
 +===================+====================================================+
-|                   | current:                                           |
-|                   | Context: subscribers downloading files             |
-|                   | arguments: self, parent                            |
-|                   |                                                    |
-|                   | Available:                                         |
-|                   | msg = parent.msg                                   |
-|                   |                                                    |
-|                   |                                                    |
-| do_download       | What the code needs to do:                         |
-|                   |                                                    |
-|                   | download msg.url -> msg.new_dir / msg.new_file     |
-|                   |                                                    |
-|                   | interpret self.o.inflight                          |
-|                   | interpret self.o.preserve_mode                     |
-|                   | interpret self.o.preserve_ownership (if root)      |
-|                   | interpret self.o.parts/partflg                     |
-|                   |                                                    |
-|                   | plugin must interpret all of the above.            |
-|                   |                                                    |
-|                   | example: smc_download_cp.py [#]_                   |
-|                   |                                                    |
-|                   |                                                    |
-|                   | Proposed: This should be much simpler  [#]_        |
-|                   |                                                    |
-|                   | cwd is msg.new_dir so all it needs to do is:       |
-|                   | download msg.url -> msg.new_inflight_file          |
-|                   |                                                    |
-|                   | Rest is taken of by Sarracenia                     |
-|                   |                                                    |
-|                   |                                                    |
-+-------------------+----------------------------------------------------+
-|                   |                                                    |
-|                   | Do a transfer based on scheme *registered_as*      |
-| do_get            |                                                    |
-| do_put            | arguments: self, msg                               |
-|                   |    remote_file, the remote path to download.       |
-|                   |    local_file, the name of the file to open.       |
-|                   |    remote_offset, where to lseek to start i/o      |
-|                   |    local_offset, where to lseek to start i/o       |
-|                   |    length, number of bytes to transfer             |
-|                   |                                                    |
-|                   | for do_put, reverse order local and remote.        |
-|                   |                                                    |
-|                   | returns: number of bytes transferred.              |
-|                   |    if it does not match length, an error (?)       |
-|                   |                                                    |
-|                   | msg is a dictionary that includes baseURL to       |
-|                   | provide the beginning of the download resource.    |
-|                   |                                                    |
-|                   |                                                    |
-|                   |                                                    |
-|                   |                                                    |
-|                   |                                                    |
-+-------------------+----------------------------------------------------+
 |                   | called by sr_poll, meant select files to be posted |
 | do_poll           | For local files, use parent.post1file(self,stat)   |
 |                   | Where stat is the return tuple from an os.lstat()  |
@@ -475,13 +421,9 @@ a given routine should be called.
 |                   | FIXME: the GPFS poll script should be here.        |
 |                   |                                                    |
 +-------------------+----------------------------------------------------+
-|                   | FIXME not properly implemented at this time.       |
-| do_task           | eventually allows replacing of action after        |
-|                   | a message has been received.                       |
-+-------------------+----------------------------------------------------+
 |                   | very freqently used.                               |
 |                   | examine parent.msg for finer grained filtering.    |
-| on_message        | Return False to stop further processing of message.|
+| on_filter         | Return False to stop further processing of message.|
 |                   | return True to proceed                             |
 |                   |                                                    |
 |                   | Examples: msg_* in the examples directory          |
@@ -493,52 +435,17 @@ a given routine should be called.
 |                   | downloaders based on file size (built-in for small |
 |                   | ones, binary downloaders for large files.)         |
 |                   |                                                    |
-|                   | msg_http_to_https.py - change url to use SSL       |
-|                   |                                                    |
-|                   |                                                    |
-|                   |                                                    |
-|                   |                                                    |
-|                   |                                                    |
-|                   |                                                    |
 |                   |                                                    |
 +-------------------+----------------------------------------------------+
 |                   | change msg['new_file'] to taste.                   |
 | destfn_script     | called when renaming the file from inflight to     |
 |                   | permanent name.                                    |
 |                   |                                                    |
-|                   | Examples: destfn_* in the examples directory       |
-|                   |                                                    |
 +-------------------+----------------------------------------------------+
-|                   | when a file is completely received (rather than    |
-| on_file           | just a part of it.)                                |
-|                   |                                                    |
+|                   | When a transfer has been completed.                |
+| on_work           |                                                    |
 |                   | return False to stop further processing.           |
 |                   | return True to proceed                             |
-|                   |                                                    |
-|                   | Examples:  file_* in the examples directory        |
-|                   |                                                    |
-|                   |                                                    |
-|                   |                                                    |
-+-------------------+----------------------------------------------------+
-|                   | when a part of a file is completely received.      |
-| on_part           | it is in msg['new_dir'] / msg['new_file']          |
-|                   |                                                    |
-|                   | return False to stop further processing.           |
-|                   | return True to proceed                             |
-|                   |                                                    |
-|                   | Examples:  part_* [#]_ in the examples directory   |
-|                   | part_clamav_scan returns False when a virus is     |
-|                   | detected, so the downloaded file is not posted.    |
-|                   |                                                    |
-+-------------------+----------------------------------------------------+
-|                   | All fields of parent.msg ready to be posted.       |
-| on_post           | Can add headers to msg                             |
-|                   | return False to prevent posting.                   |
-|                   | return True to proceed                             |
-|                   |                                                    |
-|                   | examples: post_* in the examples                   |
-|                   | (sr_subscriber list)                               |
-|                   |                                                    |
 |                   |                                                    |
 +-------------------+----------------------------------------------------+
 |                   | Called every housekeeping interval (minutes)       |
@@ -547,8 +454,6 @@ a given routine should be called.
 | on_housekeeping   |                                                    |
 |                   | return False to abort further processing           |
 |                   | return True to proceed                             |
-|                   |                                                    |
-|                   | Examples:  hk_* in the examples directory          |
 |                   |                                                    |
 |                   |                                                    |
 +-------------------+----------------------------------------------------+
@@ -571,23 +476,6 @@ a given routine should be called.
 |                   | return True to proceed                             |
 |                   |                                                    |
 |                   | Examples:  line_* in the examples directory        |
-|                   |                                                    |
-+-------------------+----------------------------------------------------+
-|                   | invoked whenever a watch interval (sleep) expires  |
-|                   | this happens very often.                           |
-| on_watch          |                                                    |
-|                   | return False to abort further processing           |
-|                   | return True to proceed                             |
-|                   |                                                    |
-|                   | Examples: watch_* in the examples directory        |
-|                   |                                                    |
-+-------------------+----------------------------------------------------+
-|                   | like on_post, but for reports.                     |
-| on_report         |                                                    |
-|                   | return False to abort further processing           |
-|                   | return True to proceed                             |
-|                   |                                                    |
-|                   | Examples: report_* in the examples directory       |
 |                   |                                                    |
 +-------------------+----------------------------------------------------+
 |                   | when a componente (e.g. sr_subscribe) is started.  |
