@@ -1,6 +1,7 @@
-metpx-sarracenia (2.21.02) UNRELEASED; urgency=medium
+metpx-sarracenia (2.21.02) stable; urgency=medium
 
   * bugfix for sender with inflight=None, 
+  * bugfix #360 bearer token support.
 
  -- Peter Silva <peter@fractal>  Thu, 04 Feb 2021 23:26:13 -0500
 
