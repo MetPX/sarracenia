@@ -62,8 +62,7 @@ class FDelay(FlowCB):
                 logger.debug(
                     dbg_msg.format(elapsedtime, self.o.fdelay - elapsedtime))
                 m['isRetry'] = False
-                if not 'isRetry' in m['_deleteOnPost']:
-                    m['_deleteOnPost'].append('isRetry')
+                m['_deleteOnPost'] |= set(['isRetry'])
                 worklist.failed.append(m)
                 logger.debug('marked failed 1')
                 continue
@@ -87,8 +86,7 @@ class FDelay(FlowCB):
                 logger.debug(
                     dbg_msg.format(elapsedtime, self.o.fdelay - elapsedtime))
                 m['isRetry'] = False
-                if not 'isRetry' in m['_deleteOnPost']:
-                    m['_deleteOnPost'].append('isRetry')
+                m['_deleteOnPost'] |= set(['isRetry'])
                 worklist.failed.append(m)
                 logger.debug('marked failed 3')
                 continue

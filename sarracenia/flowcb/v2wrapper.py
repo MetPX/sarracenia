@@ -125,8 +125,7 @@ class Message:
 def v02tov03message(body, headers, topic):
     msg = headers
     msg['topic'] = topic
-    if not '_deleteOnPost' in headers:
-        msg['_deleteOnPost'] = ['topic']
+    msg['_deleteOnPost'] |= set(['topic'])
 
     pubTime, baseUrl, relPath = body.split(' ')[0:3]
     msg['pubTime'] = timev2tov3str(pubTime)

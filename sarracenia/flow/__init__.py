@@ -414,7 +414,7 @@ class Flow:
                             # deletion rename case... need to accept with an extra field...
                             if not 'renameUnlink' in m:
                                 m['renameUnlink'] = True
-                                m['_deleteOnPost'].append('renameUnlink')
+                                m['_deleteOnPost'] |= set(['renameUnlink'])
                             logger.debug("rename deletion 1 %s" %
                                          (m['oldname']))
                         elif self.o.log_reject:
@@ -436,7 +436,7 @@ class Flow:
                 if ('oldname' in m) and oldname_matched:
                     if not 'renameUnlink' in m:
                         m['renameUnlink'] = True
-                        m['_deleteOnPost'].append('renameUnlink')
+                        m['_deleteOnPost'] |= set(['renameUnlink'])
                     logger.debug("rename deletion 2 %s" % (m['oldname']))
                     filtered_worklist.append(m)
                     self.o.set_newMessageFields(m, url, None, None,
@@ -578,11 +578,9 @@ class Flow:
             'value': data_algo.get_value()
         }
 
-        if not 'onfly_checksum' in msg['_deleteOnPost']:
-            msg['_deleteOnPost'].extend(['onfly_checksum'])
+        msg['_deleteOnPost'] |= set(['onfly_checksum'])
 
-        if not 'data_checksum' in msg['_deleteOnPost']:
-            msg['_deleteOnPost'].extend(['data_checksum'])
+        msg['_deleteOnPost'] |= set(['data_checksum'])
 
         try:
             f.write(data)
@@ -605,8 +603,7 @@ class Flow:
 
                 if s:
                     msg['local_integrity'] = x.get('integrity')
-                    if not 'local_integrity' in msg['_deleteOnPost']:
-                        msg['_deleteOnPost'].extend(['local_integrity'])
+                    msg['_deleteOnPost'] |= set(['local_integrity'])
                     return
 
             except:
@@ -619,8 +616,7 @@ class Flow:
             'method': msg['integrity']['method'],
             'value': local_integrity.get_value()
         }
-        if not 'local_integrity' in msg['_deleteOnPost']:
-            msg['_deleteOnPost'].extend(['local_integrity'])
+        msg['_deleteOnPost'] |= set(['local_integrity'])
 
     def file_should_be_downloaded(self, msg):
         """
@@ -887,11 +883,9 @@ class Flow:
             msg['new_inflight_path'] = new_inflight_path
             msg['new_path'] = new_path
 
-            if not 'new_path' in msg['_deleteOnPost']:
-                msg['_deleteOnPost'].extend(['new_path'])
+            msg['_deleteOnPost'] |= set(['new_path'])
 
-            if not 'new_inflight_path' in msg['_deleteOnPost']:
-                msg['_deleteOnPost'].extend(['new_inflight_path'])
+            msg['_deleteOnPost'] |= set(['new_inflight_path'])
             # assert new_inflight_path is set.
 
             if os.path.exists(msg['new_inflight_path']):
@@ -1097,11 +1091,9 @@ class Flow:
             msg['onfly_checksum'] = self.proto[self.scheme].get_sumstr()
             msg['data_checksum'] = self.proto[self.scheme].data_checksum
 
-            if not 'onfly_checksum' in msg['_deleteOnPost']:
-                msg['_deleteOnPost'].extend(['onfly_checksum'])
+            msg['_deleteOnPost'] |= set(['onfly_checksum'])
 
-            if not 'data_checksum' in msg['_deleteOnPost']:
-                msg['_deleteOnPost'].extend(['data_checksum'])
+            msg['_deleteOnPost'] |= set(['data_checksum'])
 
             # fix message if no partflg (means file size unknown until now)
             #if not 'blocks' in msg:

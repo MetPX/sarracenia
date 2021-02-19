@@ -103,9 +103,7 @@ def _msgRawToDict(raw_msg):
         msg['topic'] = raw_msg.delivery_info['routing_key']
         msg['delivery_tag'] = raw_msg.delivery_info['delivery_tag']
         msg['local_offset'] = 0
-        msg['_deleteOnPost'] = [
-            'delivery_tag', 'exchange', 'local_offset', 'topic'
-        ]
+        msg['_deleteOnPost'] = set( [ 'delivery_tag', 'exchange', 'local_offset', 'topic' ] )
     else:
         msg = None
     return msg

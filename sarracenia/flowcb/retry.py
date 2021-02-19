@@ -139,8 +139,7 @@ class Retry(FlowCB):
 
         if done:
             message['_retry_tag_'] = 'done'
-            if not '_retry_tag_' in message['_deleteOnPost']:
-                message['_deleteOnPost'].append('_retry_tag_')
+            message['_deleteOnPost'] |= set(['_retry_tag_'])
 
         s = json.dumps(message, sort_keys=True) + '\n'
         #logger.debug('json version={}'.format(s))
@@ -182,8 +181,7 @@ class Retry(FlowCB):
             return False, None
 
         message['isRetry'] = True
-        if not 'isRetry' in message['_deleteOnPost']:
-            message['_deleteOnPost'].append('isRetry')
+        message['_deleteOnPost'] |= set(['isRetry'])
 
         return True, message
 

@@ -1465,8 +1465,7 @@ class Config:
         #if not self.download:
         #    return
 
-        msg['_deleteOnPost'].extend(
-            ['new_dir', 'new_file', 'new_relPath', 'new_baseUrl'])
+        msg['_deleteOnPost'] |= set( ['new_dir', 'new_file', 'new_relPath', 'new_baseUrl'] )
 
         #logger.debug( "entering base_dir=%s" % ( self.baseDir ) )
         #if 'new_dir' in msg:

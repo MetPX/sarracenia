@@ -174,7 +174,7 @@ def msg_set_report(msg, code, text=None):
     if not 'report' in msg:
         msg['report'] = code
         msg['message'] = text
-        msg['_deleteOnPost'].extend(['report', 'message'])
+        msg['_deleteOnPost'] |= set(['report', 'message'])
     else:
         msg['report'] = code
         msg['message'] += text
