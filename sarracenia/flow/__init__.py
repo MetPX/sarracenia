@@ -326,9 +326,6 @@ class Flow:
             run_time = now - start_time
             total_messages += last_gather_len
 
-            logger.warn( "message_count_max: %d, total_messages: %d last_gather_len: %d" % 
-              ( self.o.message_count_max, total_messages, last_gather_len ) )
-
             if (self.o.message_count_max > 0) and (total_messages >= self.o.message_count_max):
                 self.close()
                 break
@@ -498,7 +495,7 @@ class Flow:
             if self.o.post_baseDir:
                 m['relPath'].replace(self.o.post_baseDir, '', 1)
 
-        self._runCallbacksWorklist('on_posts')
+        #self._runCallbacksWorklist('on_posts')
         for p in self.plugins["post"]:
             p(self.worklist)
 

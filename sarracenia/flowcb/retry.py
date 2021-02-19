@@ -127,6 +127,8 @@ class Retry(FlowCB):
     def msgFromJSON(self, line):
         try:
             msg = json.loads(line)
+            if '_deleteOnPost' in msg:
+                msg['_deleteOnPost'] = set( msg['_deleteOnPost'] )
         except ValueError:
             logger.error("corrupted line in retry file: %s " % line)
             logger.debug("Error information: ", exc_info=True)
@@ -141,6 +143,8 @@ class Retry(FlowCB):
             message['_retry_tag_'] = 'done'
             message['_deleteOnPost'] |= set(['_retry_tag_'])
 
+        if '_deleteOnPost' in message:
+            message['_deleteOnPost'] = list( message['_deleteOnPost'] )
         s = json.dumps(message, sort_keys=True) + '\n'
         #logger.debug('json version={}'.format(s))
 
@@ -491,7 +495,7 @@ class Retry(FlowCB):
         elapse = nowflt() - now
         logger.info("sr_retry on_housekeeping elapse %f" % elapse)
 
-    def on_posts(self, worklist):
+    def on_work(self, worklist):
         """
          worklist.failed should be put on the retry list.
         """

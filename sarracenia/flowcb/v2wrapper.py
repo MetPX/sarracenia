@@ -125,6 +125,8 @@ class Message:
 def v02tov03message(body, headers, topic):
     msg = headers
     msg['topic'] = topic
+    if not '_deleteOnPost' in msg:
+        msg['_deleteOnPost'] = set()
     msg['_deleteOnPost'] |= set(['topic'])
 
     pubTime, baseUrl, relPath = body.split(' ')[0:3]
@@ -361,6 +363,16 @@ class V2Wrapper(FlowCB):
 
         worklist.ok = ok_to_post
 
+        outgoing = []
+        for m in worklist.ok:
+            if self.run_entry('on_post', m):
+                outgoing.append(m)
+            else:
+                worklist.rejected.append(m)
+        # set incoming for future steps.
+        worklist.ok = outgoing
+
+
     def on_filter(self, worklist):
 
         outgoing = []
@@ -371,17 +383,6 @@ class V2Wrapper(FlowCB):
                 worklist.rejected.append(m)
         # set incoming for future steps.
         worklist.incoming = outgoing
-
-    def on_posts(self, worklist):
-
-        outgoing = []
-        for m in worklist.ok:
-            if self.run_entry('on_post', m):
-                outgoing.append(m)
-            else:
-                worklist.rejected.append(m)
-        # set incoming for future steps.
-        worklist.ok = outgoing
 
     def on_time(self, time):
         """

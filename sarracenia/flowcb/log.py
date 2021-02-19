@@ -15,6 +15,11 @@ class Log(FlowCB):
             logger.setLevel(logging.INFO)
 
     def on_filter(self, worklist):
+        for msg in worklist.incoming:
+            logger.info("accepted: %s " % msg)
 
+    def on_work(self, worklist):
         for msg in worklist.ok:
-            logger.info("published: %s " % msg)
+            logger.info("worked successfully: %s " % msg)
+
+

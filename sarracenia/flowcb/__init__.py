@@ -62,7 +62,7 @@ logger = logging.getLogger(__name__)
 
 entry_points = [
     'ack', 'do_poll', 'gather', 'on_filter', 'on_data', 'on_work',
-    'on_housekeeping', 'on_html_page', 'on_line', 'on_posts',
+    'on_housekeeping', 'on_html_page', 'on_line', 
     'on_report', 'on_start', 'on_stop', 'post'
 ]
 
@@ -83,9 +83,6 @@ class FlowCB:
         the do_get accellerate will need to be registered for download/downloads
 
         return [ "registration", "registrations" ]
-
-    def on_work(self,worklist):
-        Task: operate on worklist.ok (files which have arrived.)
 
     def ack(self,messagelist):
         Task: acknowledge messages from a gather source.
@@ -108,11 +105,8 @@ class FlowCB:
 
         return new_data
 
-    def on_posts(self,worklist):
-         Task: operate on worklist.ok, and worklist.failed.
-               this is just prior to posting, to make final adjustments.
-               all messages are already aknowledged, so deleting messages from worklists here is fine.
-               if you delete a message from the worklist.ok, it will not be posted.
+    def on_work(self,worklist):
+        Task: operate on worklist.ok (files which have arrived.)
 
     def post(self,worklist):
          Task: operate on worklist.ok, and worklist.failed. modifies them appropriately.
