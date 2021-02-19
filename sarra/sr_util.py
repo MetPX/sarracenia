@@ -697,7 +697,9 @@ class sr_transport():
     
                 #upload file
     
-                if inflight == None or msg.partflg == 'i' :
+                if inflight == None and msg.partflg != 'i' :
+                   self.put(local_file, new_file)
+                elif msg.partflg == 'i' :
                    self.put(local_file, new_file, offset, new_offset, msg.length)
                 elif inflight == '.' :
                    new_lock = '.'  + new_file
