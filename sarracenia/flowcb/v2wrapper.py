@@ -204,6 +204,9 @@ class V2Wrapper(FlowCB):
 
         logging.basicConfig(format=o.logFormat,
                             level=getattr(logging, o.logLevel.upper()))
+
+        logger.setLevel( getattr(logging, o.logLevel.upper()))
+
         #logger.info('logging: fmt=%s, level=%s' % ( o.logFormat, o.logLevel ) )
 
         # FIXME, insert parent fields for v2 plugins to use here.

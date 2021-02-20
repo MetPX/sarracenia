@@ -903,7 +903,7 @@ class Config:
             elif k in ['flow_callback', 'flowcb', 'fcb']:
                 self.plugins.append(v)
             elif k in ['set', 'setting', 's']:
-                self._parse_setting(k, line[2:])
+                self._parse_setting(line[1], line[2:])
             elif k in ['sum']:
                 self._parse_sum(v)
             elif k in Config.v2entry_points:

@@ -99,6 +99,9 @@ class Flow:
         for sc in Flow.__subclasses__():
             if cfg.program_name == sc.__name__.lower():
                 return sc(cfg)
+
+        if cfg.program_name == 'flow':
+            return Flow(cfg)
         return None
 
     def __init__(self, cfg=None):
@@ -116,11 +119,17 @@ class Flow:
 
         self.o = cfg
 
+        if 'sarracenia.flow.Flow.logLevel' in self.o.settings:
+            logger.setLevel( getattr(logging, self.o.settings['sarracenia.flow.Flow.logLevel'].upper() ) )
+        else:
+            logger.setLevel( getattr(logging, self.o.logLevel.upper() ))
+
         if not hasattr(self.o, 'post_topic_prefix'):
             self.o.post_topic_prefix = self.o.topic_prefix
 
         logging.basicConfig(format=self.o.logFormat,
                             level=getattr(logging, self.o.logLevel.upper()))
+
 
         self.plugins = {}
         for entry_point in sarracenia.flowcb.entry_points:

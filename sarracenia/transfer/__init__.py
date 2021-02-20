@@ -131,9 +131,16 @@ class Transfer():
         return None
 
     def __init__(self, proto, options):
-        logger.debug("sr_proto __init__: subclasses=%s" %
-                     Transfer.__subclasses__())
+
         self.o = options
+        if 'sarracenia.transfer.Transfer.logLevel' in self.o.settings:
+            ll = self.o.settings[sarracenia.transfer.Transfer.logLevel]
+        else:
+            ll = self.o.logLevel
+
+        logger.setLevel( getattr( logging, ll.upper() ))
+
+        logger.debug("class=%s , subclasses=%s" % ( type(self).__name__, Transfer.__subclasses__()))
         self.init()
 
     def init(self):

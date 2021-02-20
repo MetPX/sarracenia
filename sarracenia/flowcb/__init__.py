@@ -138,6 +138,7 @@ class FlowCB:
         logging.basicConfig(format=self.o.logFormat,
                             level=getattr(logging, self.o.logLevel.upper()))
 
+        logger.setLevel(getattr(logging, self.o.logLevel.upper()))
 
 
 def load_library(factory_path, options):

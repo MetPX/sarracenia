@@ -33,6 +33,8 @@ class Line_Mode(FlowCB):
         if not hasattr(options, 'chmod'):
             self.o.chmod = 0o4
 
+        logger.setLevel( getattr( logging, options.logLevel.upper() ) )
+
         logger.debug(
             "line_mode initialized mask (from chmod setting) is: %03o " %
             self.o.chmod)

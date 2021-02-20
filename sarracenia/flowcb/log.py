@@ -7,10 +7,10 @@ logger = logging.getLogger(__name__)
 class Log(FlowCB):
     def __init__(self, options):
 
-        # FIXME: should a logging module have a loglevel setting?
+        # FIXME: should a logging module have a logLevel setting?
         #        just put in a cookie cutter for now...
-        if hasattr(options, 'loglevel'):
-            logger.setLevel(getattr(logging, options.loglevel.upper()))
+        if hasattr(options, 'logLevel'):
+            logger.setLevel(getattr(logging, options.logLevel.upper()))
         else:
             logger.setLevel(logging.INFO)
 

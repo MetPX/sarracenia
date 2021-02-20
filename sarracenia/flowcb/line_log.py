@@ -30,6 +30,7 @@ class Line_Log(FlowCB):
     def __init__(self, options):
         logger.debug("line_log initialized ")
         self.o = options
+        logger.setLevel( getattr( logging, option.logLevel.upper() ) )
 
     def on_line(self, line):
 

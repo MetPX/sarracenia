@@ -66,8 +66,9 @@ class Retry(FlowCB):
         if not hasattr(self.o, 'retry_ttl'):
             self.o.retry_ttl = None
 
-        logging.basicConfig(format=self.o.logFormat,
-                            level=getattr(logging, self.o.logLevel.upper()))
+        #logging.basicConfig(format=self.o.logFormat,
+        #                    level=getattr(logging, self.o.logLevel.upper()))
+        logger.setLevel(getattr( logging, self.o.logLevel.upper()))
 
         logger.debug('logLevel=%s' % self.o.logLevel)
 

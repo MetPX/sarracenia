@@ -86,6 +86,8 @@ class File(FlowCB):
         """
 
         self.o = options
+        
+        logger.setLevel( getattr( logging, self.o.logLevel.upper() ) )
 
         logger.debug("%s used to be overwrite_defaults" % self.o.program_name)
 
