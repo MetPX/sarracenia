@@ -483,7 +483,7 @@ class Flow:
         # mark all remaining messages as done.
         self.worklist.ok = self.worklist.incoming
         self.worklist.incoming = []
-        logger.info('processing %d messages worked!' % len(self.worklist.ok))
+        logger.debug('processing %d messages worked!' % len(self.worklist.ok))
 
     def post(self):
 

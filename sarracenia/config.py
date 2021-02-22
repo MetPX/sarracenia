@@ -623,7 +623,6 @@ class Config:
            'str'        an arbitrary string value, as will all of the above types, each succeeding occurrence overrides the previous one.
     
         """
-
         if not hasattr(self, option):
             setattr(self, option, default_value)
 
@@ -655,8 +654,7 @@ class Config:
             if type(v) is not str:
                 setattr(self, option, str(v))
 
-
-#    logger.info('v2plugin option: %s declared' % option)
+        logger.debug('%s declared as type:%s value:%s' % (option, type(getattr(self,option)), v))
 
     def dump(self):
         """ print out what the configuration looks like.
@@ -982,7 +980,9 @@ class Config:
                     elif type(getattr(self, k)) is str:
                         setattr(self, k, [getattr(self, k), v])
                     elif type(getattr(self, k)) is list:
-                        setattr(self, k, getattr(self, k).append(v))
+                        newv=getattr(self,k)
+                        newv.append(v)
+                        setattr(self, k, newv)
                 else:
                     # FIXME:
                     setattr(self, k, v)
@@ -1152,9 +1152,7 @@ class Config:
 
     def check_undeclared_options(self):
 
-        logger.debug("start")
         alloptions = str_options + flag_options + list_options + count_options + size_options + duration_options
-
         # FIXME: confused about this...  commenting out for now...
         for u in self.undeclared:
             if u not in alloptions:

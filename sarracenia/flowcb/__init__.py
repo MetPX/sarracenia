@@ -143,7 +143,12 @@ class FlowCB:
 
 def load_library(factory_path, options):
 
+    if not '.' in factory_path:
+       logger.error('flow_callback <file>.<Class> no dot... missing something from: %s' % factory_path )
+       return None
+
     packagename, classname = factory_path.rsplit('.', 1)
+
     module = importlib.import_module(packagename)
     class_ = getattr(module, classname)
 

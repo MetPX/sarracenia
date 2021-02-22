@@ -26,4 +26,4 @@ class Sarra(Flow):
             self.worklist.ok = self.worklist.incoming
             self.worklist.incoming = []
 
-        logger.info('processing %d messages worked!' % len(self.worklist.ok))
+        logger.debug('processing %d messages worked!' % len(self.worklist.ok))
