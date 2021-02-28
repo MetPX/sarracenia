@@ -63,7 +63,7 @@ count_options = [
 
 # all the boolean settings.
 flag_options = [ 'bind_queue', 'cache_stat', 'declare_exchange', 'debug', \
-    'declare_queue', 'delete', 'discard', 'dry_run', 'durable', 'exchange_split', 'realpath_filter', \
+    'declare_queue', 'delete', 'discard', 'download', 'dry_run', 'durable', 'exchange_split', 'realpath_filter', \
     'follow_symlinks', 'force_polling', 'inline', 'inplace', 'log_reject', 'pipe', 'restore', \
     'report_daemons', 'mirror', 'notify_only', 'overwrite', 'post_on_start', 'poll_without_vip', \
     'preserve_mode', 'preserve_time', 'pump_flag', 'randomize', 'realpath_post', 'reconnect', \
@@ -109,6 +109,7 @@ convert_to_v3 = {
         'accel_wget': ['continue'],
         'accel_scp': ['continue'],
     },
+    'no_download': [ 'download', 'False' ],
     'on_message': {
         'msg_delete': [
             'flow_callback',
@@ -861,12 +862,17 @@ class Config:
             if k in Config.synonyms:
                 k = Config.synonyms[k]
 
-            if (k in convert_to_v3) and (len(line) > 1):
-                v = line[1].replace('.py', '', 1)
-                if (v in convert_to_v3[k]):
-                    line = convert_to_v3[k][v]
-                    k = line[0]
-                    logger.debug('Converting \"%s\" to v3: \"%s\"' % (l, line))
+            if (k in convert_to_v3): 
+                if (len(line) > 1):
+                    v = line[1].replace('.py', '', 1)
+                    if (v in convert_to_v3[k]):
+                        line = convert_to_v3[k][v]
+                        k = line[0]
+                        logger.debug('Converting \"%s\" to v3: \"%s\"' % (l, line))
+                else:
+                    line = convert_to_v3[k]
+                    k=line[0]
+                    v=line[1] 
 
             if k == 'continue':
                 continue

@@ -104,8 +104,12 @@ def _msgRawToDict(raw_msg):
         msg['delivery_tag'] = raw_msg.delivery_info['delivery_tag']
         msg['local_offset'] = 0
         msg['_deleteOnPost'] = set( [ 'delivery_tag', 'exchange', 'local_offset', 'topic' ] )
+        if not msg_validate(msg): 
+            logger.error('message discarded')
+            msg=None
     else:
         msg = None
+
     return msg
 
 

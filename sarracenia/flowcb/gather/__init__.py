@@ -9,9 +9,14 @@
 #
 
 import os.path
+import logging
 import stat
 import time
 from sarracenia import v3timeflt2str
+
+logger = logging.getLogger(__name__)
+
+
 """
   This file was originally a place holder... thought this was not needed, then there was a stack trace.
   and setup.py gets leaves the directory out if not present.
@@ -20,6 +25,47 @@ from sarracenia import v3timeflt2str
 
 """
 
+def msg_dumps(msg):
+
+   maximum_field_length=120
+
+   if msg is None: return ""
+
+   s="{ "
+   for k in sorted(msg.keys()):
+      if type(msg[k]) is dict:
+         v="{ " 
+         for kk in sorted(msg[k].keys()):
+            v+= " '%s':'%s'," % ( kk, msg[k][kk] )
+         v=v[:-1]+" }"
+      else:
+         v="%s" % msg[k]
+
+      if len(v) > maximum_field_length: 
+        v=v[0:maximum_field_length-4] + '...'
+        if v[0] == '{':
+          v += '}'
+
+      s += " '%s':'%s'," % (k, v )
+
+   s=s[:-1]+" }"
+   return s
+
+def msg_validate(msg):
+    """
+    return True if message format seems ok, return True, else return False, log some reasons.
+    """
+    if not type(msg) is dict:
+        return False
+
+    res=True
+    for required_key in [ 'pubTime', 'baseUrl', 'relPath', 'integrity' ]:
+        if not required_key in msg:
+           logger.error('missing key: %s' % required_key )
+           res=False
+    if not res:
+        logger.error('malformed message: %s', msg )
+    return res
 
 def msg_init(path, o, lstat=None):
 
@@ -46,7 +92,7 @@ def msg_init(path, o, lstat=None):
     msg['topic'] = o.post_topic_prefix + '.' + subtopic
     msg['local_offset'] = 0
 
-    msg['_deleteOnPost'] = set ( [ 'exchange', 'local_offset', 'new_dir', 'new_file', 'post_relpath' ] )
+    msg['_deleteOnPost'] = set ( [ 'exchange', 'local_offset', 'new_dir', 'new_file', 'post_relpath', 'topic' ] )
 
     # notice
     msg['pubTime'] = v3timeflt2str(time.time())

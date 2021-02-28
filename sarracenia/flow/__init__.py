@@ -890,8 +890,8 @@ class Flow:
             msg['new_path'] = new_path
 
             msg['_deleteOnPost'] |= set(['new_path'])
-
             msg['_deleteOnPost'] |= set(['new_inflight_path'])
+
             # assert new_inflight_path is set.
 
             if os.path.exists(msg['new_inflight_path']):

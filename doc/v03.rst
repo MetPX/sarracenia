@@ -456,12 +456,17 @@ Items from the TODO list that have been addressed.
   now: plugin became flowcb. Integrity is removed from the hierarchy.
   Class extension is now a separate kind of plugin (via import)
 
+* change default topic_prefix to v03.post done 2021/02
+
+* Adjust Programmer's Guide to reflect new API. done 2021/02
+
+* log incoherency between 'info' and logging.INFO prevents proper log control.
+  FIXED 2021/02.
 
 
 TODO
 ----
 
-* change default topic_prefix to v03
 
 * remove *post* from v03 topic trees.
 
@@ -470,8 +475,6 @@ TODO
 * migrate sr_credentials.py to sarracenia/credentials.py.
 
 * test with dynamic-flow.
-
-* Adjust Programmer's Guide to reflect new API.
 
 * get partitioned file transfers working again.
 
@@ -485,9 +488,10 @@ TODO
 
 * sr_poll active/passive bug #29
 
-* log incoherency between 'info' and logging.INFO prevents proper log control.
-
 * realpath_filter is used by CMOI. Seems to be disappeared in v3. It's there in the C version.
+
+* port rest of v02 plugins to v03 equivalents and add mappings in config.py,
+  so that we have barely any v2's left.
 
 
 Not Baked/Thinking

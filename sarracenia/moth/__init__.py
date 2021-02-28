@@ -179,6 +179,7 @@ class Moth():
                     self.o[k] = copy.deepcopy(default_options[k])
         else:
             self.o = copy.deepcopy(default_options)
+
         if props is not None:
             self.o.update(props)
 
@@ -202,7 +203,7 @@ class Moth():
 
         """
         return Moth.__default_options
-
+    
     def getNewMessage(self):
         """
         If there is one new message available, return it. Otherwise return None. Do not block.
