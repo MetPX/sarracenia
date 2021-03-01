@@ -86,13 +86,13 @@ def msg_init(path, o, lstat=None):
     # topic
     words = post_relPath.strip('/').split('/')
     if len(words) > 1:
-        subtopic = '.'.join(words[:-1]).replace('..', '.')
+        subtopic = words[:-1]
     else:
-        subtopic = ''
-    msg['topic'] = o.post_topic_prefix + '.' + subtopic
+        subtopic = []
+    msg['subtopic'] = subtopic
     msg['local_offset'] = 0
 
-    msg['_deleteOnPost'] = set ( [ 'exchange', 'local_offset', 'new_dir', 'new_file', 'post_relpath', 'topic' ] )
+    msg['_deleteOnPost'] = set ( [ 'exchange', 'local_offset', 'new_dir', 'new_file', 'post_relpath', 'subtopic' ] )
 
     # notice
     msg['pubTime'] = v3timeflt2str(time.time())

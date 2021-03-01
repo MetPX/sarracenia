@@ -49,7 +49,7 @@ default_options = {
     'message_rate_max': 0,
     'message_rate_min': 0,
     'sleep': 0.1,
-    'topic_prefix': 'v02.post',
+    'topic_prefix': [ 'v02', 'post' ],
     'vip': None
 }
 
@@ -496,10 +496,6 @@ class Flow:
 
             if 'new_relPath' in m:
                 m['relPath'] = m['new_relPath']
-
-            if self.o.topic_prefix != self.o.post_topic_prefix:
-                m['topic'] = m['topic'].replace(self.o.topic_prefix,
-                                                self.o.post_topic_prefix)
 
             if self.o.post_baseDir:
                 m['relPath'].replace(self.o.post_baseDir, '', 1)

@@ -15,7 +15,7 @@ default_options = {
    'mqtt_v5': False,
    'prefetch': 25,
    'qos' : 1,
-   'topic_prefix' : 'v03/post',
+   'topic_prefix' : [ 'v03', 'post' ]
 }
 
 """
@@ -50,7 +50,7 @@ class MQTT(Moth):
         self.o.update(default_options)
         self.o.update(options)
 
-        logger.setLevel(getattr(logging, options['logLevel'].upper()))
+        logger.setLevel(getattr(logging, self.o['logLevel'].upper()))
         logger.info('options: %s' % sorted(self.o) )
 
         if self.o['mqtt_v5']:
@@ -74,7 +74,7 @@ class MQTT(Moth):
         # FIXME: enhancement could subscribe accepts multiple (subj, qos) tuples so, could do this in one RTT.
         for binding_tuple in client.o['bindings']:
             prefix, exchange, subtopic = binding_tuple
-            subj = exchange + '/' + prefix + '/' + subtopic
+            subj = '/'.join( [exchange] + prefix + subtopic )
             res = client.subscribe( subj , qos=client.o['qos'] )
             logger.info( "subscribed to: %s, result: %s" % (subj, mqtt.error_string(res)) )
 
@@ -180,13 +180,16 @@ class MQTT(Moth):
             logger.error('Exception details: ', exc_info=True)
             return
 
-        message['topic'] = msg.topic
-        if not message['topic'].startswith('v03'):
-            message['topic'] = msg.topic.split('/')[1:]
-            message['exchange'] = msg.topic.split('/')[0]
+        subtopic=msg.topic.split('/')
+         
+        if subtopic[0] != client.o['topic_prefix'][0]:
+            message['exchange'] = subtopic[0]
+            message['subtopic'] = subtopic[1+len(client.o['topic_prefix']):]
+        else:
+            message['subtopic'] = subtopic[len(client.o['topic_prefix']):]
 
         message['message-id'] = msg.mid
-        message['_deleteOnPost'] = set( [ 'exchange', 'topic', 'message-id' ] )
+        message['_deleteOnPost'] = set( [ 'exchange', 'subtopic', 'message-id' ] )
 
         logger.info( "Message received: %s" % message )
         if msg_validate( message ):
@@ -228,10 +231,6 @@ class MQTT(Moth):
            return None
 
         #body = copy.deepcopy(bd)
-        logger.info('msgtopic: %s' % body['topic'] )
-        topic = body['topic'].replace('.','/')
-        topic = topic.replace('#', '%23')
-        logger.info('topic: %s' % topic )
   
         if '_deleteOnPost' in body:
             # FIXME: need to delete because building entire JSON object at once.
@@ -239,6 +238,7 @@ class MQTT(Moth):
             # method to build json and _deleteOnPost would be a guide of what to skip.
             # library for that is jsonfile, but not present in repos so far.
             for k in body['_deleteOnPost']:
+                if k == 'subtopic' : continue
                 if k in body:
                     del body[k]
             del body['_deleteOnPost']
@@ -265,8 +265,12 @@ class MQTT(Moth):
                   exchange = self.o['exchange']
   
         # FIXME: might 
-        topic= exchange + '/' + self.o['topic_prefix'] + '/' + topic
+        topic= '/'.join( [ exchange ] + self.o['topic_prefix'] + body['subtopic']  )
+        topic = topic.replace('#', '%23')
         logger.info('topic: %s' % topic )
+
+        del body['subtopic']
+
         while True:
             try:
                 info = self.post_client.publish( topic=topic, payload=json.dumps(body), qos=1 )

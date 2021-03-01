@@ -1380,8 +1380,6 @@ class sr_GlobalState:
 
     def remove(self):
 
-        logging.info('FIXME remove! %s' % self.filtered_configurations)
-
         if len(self.filtered_configurations) == 0:
             logging.error("No configuration matched")
             return

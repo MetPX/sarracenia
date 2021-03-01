@@ -125,7 +125,7 @@ class Moth():
 
 
        both:
-           'topic_prefix' : 'v03.post'
+           'topic_prefix' : [ 'v03'. 'post' ]
 
        for get:
            'batch'  : 100  # how many messages to get at once

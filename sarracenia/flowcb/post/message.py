@@ -26,15 +26,14 @@ class Message(FlowCB):
             props.update({
                 'broker': self.o.post_broker,
                 'exchange': self.o.post_exchange,
+                'topic_prefix': self.o.post_topic_prefix,
+                'exchange_split': self.o.post_exchange_split,
             })
             self.poster = sarracenia.moth.Moth.pubFactory(self.o.post_broker, props)
 
     def post(self, worklist):
 
         for m in worklist.ok:
-            # FIXME: outlet = url, outlet=json.
-            #if self.o.topic_prefix != self.o.post_topic_prefix:
-            #    m['topic'] = m['topic'].replace( self.o.topic_prefix, self.o.post_topic_prefix )
             self.poster.putNewMessage(m)
 
         worklist.ok = []

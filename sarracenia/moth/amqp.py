@@ -31,10 +31,10 @@ import json
 import logging
 
 from sarracenia import durationToSeconds
-
+from sarracenia.flowcb import v2wrapper
+from sarracenia.flowcb.gather import msg_validate
 from sarracenia.moth import Moth
 
-from sarracenia.flowcb import v2wrapper
 
 import time
 
@@ -51,8 +51,8 @@ default_options = {
     'queue_name': None,
     'batch': 25,
     'exchange': None,
-    'topic_prefix': 'v03.post',
-    'subtopic': None,
+    'topic_prefix': [ 'v03', 'post' ],
+    'subtopic': [],
     'durable': True,
     'expire': 300,
     'message_ttl': 0,
@@ -66,54 +66,55 @@ default_options = {
 }
 
 
-def _msgRawToDict(raw_msg):
-    if raw_msg is not None:
-        if raw_msg.properties['content_type'] == 'application/json':
-            msg = json.loads(raw_msg.body)
-            """
-              observed Sarracenia v2.20.08p1 and earlier have 'parts' header in v03 messages.
-              bug, or implementation did not keep up. Applying Postel's Robustness principle: normalizing messages.
-            """
-            if ('parts' in msg
-                ):  # bug in v2 code makes v03 messages with parts header.
-                (m, s, c, r, n) = msg['parts'].split(',')
-                if m == '1':
-                    msg['size'] = int(s)
-                else:
-                    if m == 'i': m = 'inplace'
-                    elif m == 'p': m = 'partitioned'
-                    msg['blocks'] = {
-                        'method': m,
-                        'size': int(s),
-                        'count': int(c),
-                        'remainder': int(r),
-                        'number': int(n)
-                    }
-
-                del msg['parts']
-            elif ('size' in msg):
-                if (type(msg['size']) is str):
-                    msg['size'] = int(msg['size'])
-        else:
-            msg = v2wrapper.v02tov03message(
-                raw_msg.body, raw_msg.headers,
-                raw_msg.delivery_info['routing_key'])
-
-        msg['exchange'] = raw_msg.delivery_info['exchange']
-        msg['topic'] = raw_msg.delivery_info['routing_key']
-        msg['delivery_tag'] = raw_msg.delivery_info['delivery_tag']
-        msg['local_offset'] = 0
-        msg['_deleteOnPost'] = set( [ 'delivery_tag', 'exchange', 'local_offset', 'topic' ] )
-        if not msg_validate(msg): 
-            logger.error('message discarded')
-            msg=None
-    else:
-        msg = None
-
-    return msg
-
-
 class AMQP(Moth):
+
+    def _msgRawToDict(self, raw_msg):
+        if raw_msg is not None:
+            if raw_msg.properties['content_type'] == 'application/json':
+                msg = json.loads(raw_msg.body)
+                """
+                  observed Sarracenia v2.20.08p1 and earlier have 'parts' header in v03 messages.
+                  bug, or implementation did not keep up. Applying Postel's Robustness principle: normalizing messages.
+                """
+                if ('parts' in msg
+                    ):  # bug in v2 code makes v03 messages with parts header.
+                    (m, s, c, r, n) = msg['parts'].split(',')
+                    if m == '1':
+                        msg['size'] = int(s)
+                    else:
+                        if m == 'i': m = 'inplace'
+                        elif m == 'p': m = 'partitioned'
+                        msg['blocks'] = {
+                            'method': m,
+                            'size': int(s),
+                            'count': int(c),
+                            'remainder': int(r),
+                            'number': int(n)
+                        }
+    
+                    del msg['parts']
+                elif ('size' in msg):
+                    if (type(msg['size']) is str):
+                        msg['size'] = int(msg['size'])
+            else:
+                msg = v2wrapper.v02tov03message(
+                    raw_msg.body, raw_msg.headers,
+                    raw_msg.delivery_info['routing_key'])
+    
+            msg['exchange'] = raw_msg.delivery_info['exchange']
+            msg['subtopic'] = raw_msg.delivery_info['routing_key'].split('.')[len(self.o['topic_prefix']):]
+            msg['delivery_tag'] = raw_msg.delivery_info['delivery_tag']
+            msg['local_offset'] = 0
+            msg['_deleteOnPost'] = set( [ 'delivery_tag', 'exchange', 'local_offset', 'subtopic' ] )
+            if not msg_validate(msg): 
+                logger.error('message discarded')
+                msg=None
+        else:
+            msg = None
+    
+        return msg
+
+
 
     # length of an AMQP short string (used for headers and many properties)
     amqp_ss_maxlen = 255
@@ -225,8 +226,8 @@ class AMQP(Moth):
 
                 if self.o['bind']:
                     for tup in self.o['bindings']:
-                        prefix, exchange, values = tup
-                        topic = prefix + '.' + values
+                        exchange, prefix, subtopic = tup
+                        topic = '.'.join( prefix + subtopic )
                         logger.info('binding %s with %s to %s (as: %s)' % \
                             ( self.o['queue_name'], topic, exchange, broker_str ) )
                         self.channel.queue_bind(self.o['queue_name'], exchange,
@@ -347,7 +348,7 @@ class AMQP(Moth):
                 if (raw_msg is None) and (self.connection.connected):
                     return None
                 else:
-                    msg = _msgRawToDict(raw_msg)
+                    msg = self._msgRawToDict(raw_msg)
                     if hasattr(self.o, 'fixed_headers'):
                         for k in self.o.fixed_headers:
                             m[k] = self.o.fixed_headers[k]
@@ -405,8 +406,7 @@ class AMQP(Moth):
             return None
 
         #body = copy.deepcopy(bd)
-        topic = body['topic']
-        topic = topic.replace('#', '%23')
+        topic = '.'.join( self.o['topic_prefix'] + body['subtopic'] )
         topic = topic.replace('#', '%23')
 
         if len(topic) >= 255:  # ensure topic is <= 255 characters
@@ -429,7 +429,7 @@ class AMQP(Moth):
         if not exchange:
             if (type(self.o['exchange']) is list):
                 if (len(self.o['exchange']) > 1):
-                    if 'post_exchange_split' in self.o:
+                    if 'exchange_split' in self.o:
                         # FIXME: assert ( len(self.o['exchange']) == self.o['post_exchange_split'] )
                         #        if that isn't true... then there is something wrong... should we check ?
                         idx = sum(

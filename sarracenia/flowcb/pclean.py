@@ -69,7 +69,7 @@ class PClean(FlowCB):
         lag = nowflt() - timestr2flt(msg['pubTime'])
 
         msg_params = (msg['pubTime'], msg['baseUrl'],
-                      msg['relPath'], msg['topic'],
+                      msg['relPath'], msg['subtopic'],
                       lag, msg.keys() )
         parent.logger.error(
             "msg_log received: {} {}{} topic={} lag={:.3f} {}".format(
