@@ -122,9 +122,9 @@ class Message:
         pass
 
 
-def v02tov03message(body, headers, topic):
+def v02tov03message(body, headers, topic, topic_prefix):
     msg = headers
-    msg['subtopic'] = topic.split('.')[2:]
+    msg['subtopic'] = topic.split('.')[len(topic_prefix):]
     if not '_deleteOnPost' in msg:
         msg['_deleteOnPost'] = set()
     msg['_deleteOnPost'] |= set(['subtopic'])

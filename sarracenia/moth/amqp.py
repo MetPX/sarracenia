@@ -70,7 +70,7 @@ class AMQP(Moth):
 
     def _msgRawToDict(self, raw_msg):
         if raw_msg is not None:
-            if raw_msg.properties['content_type'] == 'application/json':
+            if raw_msg.properties['content_type'] == 'application/json': # used as key to indicate version 3.
                 msg = json.loads(raw_msg.body)
                 """
                   observed Sarracenia v2.20.08p1 and earlier have 'parts' header in v03 messages.
@@ -99,7 +99,8 @@ class AMQP(Moth):
             else:
                 msg = v2wrapper.v02tov03message(
                     raw_msg.body, raw_msg.headers,
-                    raw_msg.delivery_info['routing_key'])
+                    raw_msg.delivery_info['routing_key'],
+                     self.o['topic_prefix'] )
     
             msg['exchange'] = raw_msg.delivery_info['exchange']
             msg['subtopic'] = raw_msg.delivery_info['routing_key'].split('.')[len(self.o['topic_prefix']):]
