@@ -49,7 +49,7 @@ default_options = {
     'message_rate_max': 0,
     'message_rate_min': 0,
     'sleep': 0.1,
-    'topic_prefix': [ 'v02', 'post' ],
+    'topic_prefix': [ 'v03' ],
     'vip': None
 }
 

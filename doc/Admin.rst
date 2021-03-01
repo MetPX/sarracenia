@@ -505,7 +505,7 @@ Sample run::
   2020-09-06 23:32:50,978 [INFO] sarra.moth.amqp __getSetup binding q_tfeed.sr_report.tsarra_f20.76069129.80068939 with v02.post.# to xsarra (as: amqp://tfeed@localhost/)
   2020-09-06 23:32:50,978 [INFO] root declare looking at sarra/download_f20 
   2020-09-06 23:32:50,982 [INFO] sarra.moth.amqp __getSetup queue declared q_tfeed.sr_sarra.download_f20.01191787.94585787 (as: amqp://tfeed@localhost/) 
-  2020-09-06 23:32:50,982 [INFO] sarra.moth.amqp __getSetup binding q_tfeed.sr_sarra.download_f20.01191787.94585787 with v03.post.# to xsarra (as: amqp://tfeed@localhost/)
+  2020-09-06 23:32:50,982 [INFO] sarra.moth.amqp __getSetup binding q_tfeed.sr_sarra.download_f20.01191787.94585787 with v03.# to xsarra (as: amqp://tfeed@localhost/)
   2020-09-06 23:32:50,982 [INFO] root declare looking at sender/tsource2send_f50 
   2020-09-06 23:32:50,987 [INFO] sarra.moth.amqp __getSetup queue declared q_tsource.sr_sender.tsource2send_f50.60675197.29220410 (as: amqp://tsource@localhost/) 
   
@@ -1146,7 +1146,7 @@ It is now possible to enable MQTT in Sarracenia through the RabbitMQ MQTT plugin
    # posting to rabbitmqtt exchange
    post_broker amqp://${afeeder}@${abroker}
    post_exchange xmqtt_public
-   post_topic_prefix  v03.post.${from_exchange}
+   post_topic_prefix  v03.${from_exchange}
    report_back False
    
   or consume from rabbitmqtt exchange::
@@ -1154,7 +1154,7 @@ It is now possible to enable MQTT in Sarracenia through the RabbitMQ MQTT plugin
    # Here is a minimal subscribe/mysub.conf
    broker amqp://${asub}@${abroker}/
    exchange xmqtt_public
-   topic_prefix v03.post.${from_exchange}
+   topic_prefix v03.${from_exchange}
    
    # Print out all msg received
    accept .*

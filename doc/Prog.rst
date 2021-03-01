@@ -215,7 +215,7 @@ Use the _sr3_ _show_ command to view all active settings resulting from a config
     Config of sarra/download_f20: 
     _Config__admin=amqp://bunnymaster@localhost, _Config__broker=amqp://tfeed@localhost, _Config__post_broker=amqp://tfeed@localhost, accel_threshold=100.0,
     accept_unmatch=True, accept_unmatched=False, announce_list=['https://tracker1.com', 'https://tracker2.com', 'https://tracker3.com'], attempts=3,
-    auto_delete=False, baseDir=None, batch=1, bind=True, bindings=[('v03.post', 'xsarra', '#')], bufsize=1048576, bytes_per_second=None, bytes_ps=0,
+    auto_delete=False, baseDir=None, batch=1, bind=True, bindings=[('v03', 'xsarra', '#')], bufsize=1048576, bytes_per_second=None, bytes_ps=0,
     cfg_run_dir='/home/peter/.cache/sr3/sarra/download_f20', chmod=0, chmod_dir=509, chmod_log=384, config='download_f20', currentDir=None, debug=False,
     declare=True, declared_exchanges=['xpublic', 'xcvan01'], declared_users="...rce', 'anonymous': 'subscriber', 'ender': 'source', 'eggmeister': 'subscriber'}",
     delete=False, destfn_script=None, directory='/home/peter/sarra_devdocroot', documentRoot=None, download=False, durable=True, exchange=['xflow_public'],
@@ -229,7 +229,7 @@ Use the _sr3_ _show_ command to view all active settings resulting from a config
     pstrip=False, queue_filename='/home/peter/.cache/sr3/sarra/download_f20/sarra.download_f20.tfeed.qname',
     queue_name='q_tfeed_sarra.download_f20.65966332.70396990', randid='52f9', realpath_post=False, report_back=False, report_daemons=False, reset=False,
     resolved_exchanges=['xflow_public'], resolved_qname='q_tfeed_sarra.download_f20.65966332.70396990', settings={}, sleep=0.1, statehost=False, strip=0,
-    subtopic=None, suppress_duplicates=0, suppress_duplicates_basis='path', timeout=300, tls_rigour='normal', topic_prefix='v03.post',
+    subtopic=None, suppress_duplicates=0, suppress_duplicates_basis='path', timeout=300, tls_rigour='normal', topic_prefix='v03',
     undeclared=['announce_list'], users=False, v2plugin_options=[], v2plugins={}, vhost='/', vip=None
     
     fractal% 
@@ -350,10 +350,10 @@ self is the message being processed. variables variables most used:
   If parts here are modified, one must modify extracted fields for full effect.
 
 *msg['integrity']*
-  The checksum string.
+  The checksum structure, a python dictionary with 'method' and 'value' fields.
 
-*msg['topic']*
-  the AMQP topic of the message.
+*msg['subtopic']*
+  list of strings (with the topic prefix stripped off)
 
 *msg['url']*
   The equivalent url after it has been parsed with urlparse

@@ -36,11 +36,11 @@ See `Changes from v02`_ for more details.
 
 To generate messages in v03 format, use following setting::
 
-  post_topic_prefix v03.post
+  post_topic_prefix v03
 
 To select messages to consume in that format::
 
-  topic_prefix v03.post
+  topic_prefix v03
 
 
 
@@ -204,7 +204,7 @@ These two fields define the protocol that is in use for the rest of the message.
 The message type for post messages is "post".  After the fixed topic prefix, 
 the remaining sub-topics are the path elements of the file on the web server.  
 For example, if a file is placed on http://www.example.com/a/b/c/d/foo.txt, 
-then the complete topic of the message will be:  *v03.post.a.b.c.d*
+then the complete topic of the message will be:  *v03.a.b.c.d*
 AMQP fields are limited to 255 characters, and the characters in the field are utf8 
 encoded, so actual length limit may be less than that. 
 
@@ -236,9 +236,9 @@ MQTT has no similar concept, there is simply one hierarchy, so when mapping, pla
 name at the root of the topic hierarchy to achieve the same effect::
 
   AMQP:   Exchange: <exchange name> 
-             topic: v03.post.<directory>...
+             topic: v03.<directory>...
 
-  MQTT:   topic: <exchange name>/v03/post/<directory>...
+  MQTT:   topic: <exchange name>/v03/<directory>...
 
 
 
@@ -431,7 +431,7 @@ v03::
  Each name should be unique within all exchanging rabbitmq clusters. It is used to do the transit
  of the products and their notices through the exchanging clusters.
 
-**"topic": v03.post.<relpath without filename>** ( RESERVED )
+**"topic": v03.<relpath without filename>** ( RESERVED )
  The topic header is not present in the JSON payload of the message. It is instead stored
  in a protocol specific header (AMQP HEADER.) when an application reads the AMQP header
  into memory, it will typically add this to the in-memory structure.
@@ -561,8 +561,8 @@ EXAMPLE
 
 :: 
 
- AMQP TOPIC: v03.post.NRDPS.GIF
- MQTT TOPIC: exchange/v03/post/NRDPS/GIF/
+ AMQP TOPIC: v03.NRDPS.GIF
+ MQTT TOPIC: exchange/v03/NRDPS/GIF/
  Body: { "pubTime": "201506011357.345", "baseUrl": "sftp://afsiext@cmcdataserver", "relPath": "/data/NRPDS/outputs/NRDPS_HiRes_000.gif",
     "rename": "NRDPS/GIF/", "parts":"p,457,1,0,0", "integrity" : { "method":"md5", "value":"<md5sum-base64>" }, "source": "ec_cmc" }
 
@@ -605,8 +605,8 @@ on mysftpserver.com using the sftp protocol to  broker.com assuming he has prope
 
 The output of the command is as follows ::
 
-  AMQP Topic: v03.post.20150813.data.shared.products
-  MQTT Topic: <exchange>/v03/post/20150813/data/shared/products
+  AMQP Topic: v03.20150813.data.shared.products
+  MQTT Topic: <exchange>/v03/20150813/data/shared/products
   Body: { "pubTime":"20150813T161959.854", "baseUrl":"sftp://stanley@mysftpserver.com/", 
           "relPath": "/data/shared/products/foo", "parts":"1,256,1,0,0", 
           "sum": "d,25d231ec0ae3c569ba27ab7a74dd72ce", "source":"guest" } 

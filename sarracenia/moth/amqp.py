@@ -51,7 +51,7 @@ default_options = {
     'queue_name': None,
     'batch': 25,
     'exchange': None,
-    'topic_prefix': [ 'v03', 'post' ],
+    'topic_prefix': [ 'v03' ],
     'subtopic': [],
     'durable': True,
     'expire': 300,

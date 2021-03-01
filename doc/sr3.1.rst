@@ -145,8 +145,8 @@ Call the corresponding function for each configuration::
   2020-09-06 23:22:18,106 [INFO] root declare looking at cpost/pelle_dd2_f05 
   2020-09-06 23:22:18,106 [INFO] root declare looking at cpump/xvan_f14 
   2020-09-06 23:22:18,110 [INFO] sarra.moth.amqp __getSetup queue declared q_tfeed.sr_cpump.xvan_f14.23011811.49631644 (as: amqp://tfeed@localhost/) 
-  2020-09-06 23:22:18,110 [INFO] sarra.moth.amqp __getSetup um..: pfx: v03.post, exchange: xcvan00, values: #
-  2020-09-06 23:22:18,110 [INFO] sarra.moth.amqp __getSetup binding q_tfeed.sr_cpump.xvan_f14.23011811.49631644 with v03.post.# to xcvan00 (as: amqp://tfeed@localhost/)
+  2020-09-06 23:22:18,110 [INFO] sarra.moth.amqp __getSetup um..: pfx: v03, exchange: xcvan00, values: #
+  2020-09-06 23:22:18,110 [INFO] sarra.moth.amqp __getSetup binding q_tfeed.sr_cpump.xvan_f14.23011811.49631644 with v03.# to xcvan00 (as: amqp://tfeed@localhost/)
   2020-09-06 23:22:18,111 [INFO] root declare looking at cpump/xvan_f15 
   2020-09-06 23:22:18,115 [INFO] sarra.moth.amqp __getSetup queue declared q_tfeed.sr_cpump.xvan_f15.50074940.98161482 (as: amqp://tfeed@localhost/) 
 
@@ -281,7 +281,7 @@ View all configuration settings (the result of all parsing... what the flow comp
     baseDir=None
     batch=100
     bind=True
-    bindings=[('v03.post', 'xs_tsource_poll', '#')]
+    bindings=[('v03', 'xs_tsource_poll', '#')]
     bufsize=1048576
     bytes_per_second=None
     bytes_ps=0
@@ -353,7 +353,7 @@ View all configuration settings (the result of all parsing... what the flow comp
     suppress_duplicates_basis='data'
     timeout=300
     tls_rigour='normal'
-    topic_prefix='v03.post'
+    topic_prefix='v03'
     undeclared=['msg_total_interval', 'file_total_interval']
     users={'tsub': 'subscriber', 'tsource': 'source', 'anonymous': 'subscriber',...'
     v2plugin_options=[]
@@ -758,12 +758,12 @@ A subscriber can download the file /data/shared/products/foo by authenticating a
 on mysftpserver.com using the sftp protocol to broker.com assuming he has proper credentials.
 The output of the command is as follows ::
 
- [INFO] Published xs_guest v03.post.data.shared.products.foo '20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo' sum=d,82edc8eb735fd99598a1fe04541f558d parts=1,4574,1,0,0
+ [INFO] Published xs_guest v03.data.shared.products.foo '20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo' sum=d,82edc8eb735fd99598a1fe04541f558d parts=1,4574,1,0,0
 
 In MetPX-Sarracenia, each post is published under a certain topic.
 The log line starts with '[INFO]', followed by the **topic** of the
 post. Topics in *AMQP* are fields separated by dot. The complete topic starts with
-a topic_prefix (see option), version *V02*, an action *post*,
+a topic_prefix (see option), version *V02*, 
 followed by a subtopic (see option) here the default, the file path separated with dots
 *data.shared.products.foo*.
 
@@ -984,7 +984,7 @@ And run the sender in *save* mode (which continually writes incoming messages to
 in the log, a line for each message written to disk::
 
   2017-03-03 12:14:51,386 [INFO] sr_sender saving 2 message 
-       topic: v03.post.home.peter.sarra_devdocroot.sub.SASP34_LEMM_031630__LEDA_60215
+       topic: v03.home.peter.sarra_devdocroot.sub.SASP34_LEMM_031630__LEDA_60215
 
 Continue in this mode until the absent server is again available.  At that point::
 
@@ -994,7 +994,7 @@ Continue in this mode until the absent server is again available.  At that point
 While restoring from the disk file, messages like the following will appear in the log::
 
   2017-03-03 12:15:02,969 [INFO] sr_sender restoring message 29 of 34: 
-    topic: v03.post.home.peter.sarra_devdocroot.sub.ON_02GD022_daily_hydrometric.csv
+    topic: v03.home.peter.sarra_devdocroot.sub.ON_02GD022_daily_hydrometric.csv
 
 
 After the last one::
@@ -1129,7 +1129,7 @@ Usually this way of using **sr_sender** would not require posting of the product
 But if **post_broker** and **post_exchange** are provided, and **url** , as above, is set to
 **http://remote.apache.com**,  then **sr_sender** would reconstruct :
 
-Topic: **v03.post.my.new.important_location.IMPORTANT_product**
+Topic: **v03.my.new.important_location.IMPORTANT_product**
 
 Notice: **20150813161959.854 http://remote.apache.com/ my/new/important_location/IMPORTANT_product**
 
@@ -1144,7 +1144,7 @@ by (*exchange*, *subtopic*, and optionally, *accept*/*reject*.)
 
 The *topic_prefix* option must to be set to:
 
- - **v03.post** to shovel `sr3_postv2(7) <sr3_postv2.7.rst>`_ messages
+ - **v03** to shovel `sr3_postv2(7) <sr3_postv2.7.rst>`_ messages
 
 shovel is a flow with the following presets::
    
@@ -1209,13 +1209,13 @@ on mysftpserver.com using the sftp protocol to  broker.com assuming he has prope
 
 The output of the command is as follows ::
 
- [INFO] v03.post.data.shared.products.foo '20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo'
+ [INFO] v03.data.shared.products.foo '20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo'
        source=guest parts=1,256,1,0,0 sum=d,fc473c7a2801babbd3818260f50859de 
 
 In MetPX-Sarracenia, each post is published under a certain topic.
 After the '[INFO]' the next information gives the \fBtopic*  of the
 post. Topics in  *AMQP*  are fields separated by dot. In MetPX-Sarracenia
-it is made of a  *topic_prefix*  by default : version  *V02* , an action  *post* ,
+it is made of a  *topic_prefix*  by default : version  *V02* , 
 followed by the  *subtopic*  by default : the file path separated with dots, here, *data.shared.products.foo*
 
 After the topic hierarchy comes the body of the notification.  It consists of a time  *20150813161959.854* ,
@@ -1935,7 +1935,7 @@ These options define which messages (URL notifications) the program receives:
 
  - **exchange      <name>         (default: xpublic)** 
  - **exchange_suffix      <name>  (default: None)** 
- - **topic_prefix  <amqp pattern> (default: v03.post -- developer option)** 
+ - **topic_prefix  <amqp pattern> (default: v03 -- developer option)** 
  - **subtopic      <amqp pattern> (no default, must appear after exchange)** 
 
 exchange <name> (default: xpublic) and exchange_suffix
@@ -2409,7 +2409,7 @@ posting to a broker. The valid argument values are:
 
   **post_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
   **post_exchange     <name>         (MANDATORY)**
-  **post_topic_prefix <string>       (default: "v03.post")**
+  **post_topic_prefix <string>       (default: "v03")**
   **on_post           <script>       (default: None)**
 
   The **post_broker** defaults to the input broker if not provided.
@@ -3019,7 +3019,7 @@ the next hop broker, the user sets these options :
  - **[--blocksize <value>]            (default: 0 (auto))**
  - **[--outlet <post|json|url>]       (default: post)**
  - **[-pbd|--post_base_dir <path>]    (optional)**
- - **[-ptp|--post_topic_prefix <pfx>] (default: 'v03.post')**
+ - **[-ptp|--post_topic_prefix <pfx>] (default: 'v03')**
  - **post_exchange     <name>         (default: xpublic)**
  - **post_exchange_split   <number>   (default: 0)**
  - **post_base_url          <url>     (MANDATORY)**
@@ -3305,7 +3305,7 @@ When a queue is building up::
 And run the sender in *save* mode (which continually writes incoming messages to disk)
 in the log, a line for each message written to disk::
 
-  2017-03-03 12:14:51,386 [INFO] sr_sender saving 2 message topic: v03.post.home.peter.sarra_devdocroot.sub.SASP34_LEMM_031630__LEDA_60215
+  2017-03-03 12:14:51,386 [INFO] sr_sender saving 2 message topic: v03.home.peter.sarra_devdocroot.sub.SASP34_LEMM_031630__LEDA_60215
 
 Continue in this mode until the absent server is again available.  At that point::
 
@@ -3314,7 +3314,7 @@ Continue in this mode until the absent server is again available.  At that point
 
 While restoring from the disk file, messages like the following will appear in the log::
 
-  2017-03-03 12:15:02,969 [INFO] sr_sender restoring message 29 of 34: topic: v03.post.home.peter.sarra_devdocroot.sub.ON_02GD022_daily_hydrometric.csv
+  2017-03-03 12:15:02,969 [INFO] sr_sender restoring message 29 of 34: topic: v03.home.peter.sarra_devdocroot.sub.ON_02GD022_daily_hydrometric.csv
 
 
 After the last one::
@@ -3336,7 +3336,7 @@ around::
 
   % more ~/tools/save.conf
   broker amqp://tfeed@localhost/
-  topic_prefix v03.post
+  topic_prefix v03
   exchange xpublic
 
   post_rate_limit 50
@@ -3354,16 +3354,16 @@ and save them to disk::
   2017-03-18 13:07:27,786 [INFO] sr_sarra run
   2017-03-18 13:07:27,786 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
   2017-03-18 13:07:27,788 [WARNING] non standard queue name q_tsub.sr_subscribe.t.99524171.43129428
-  2017-03-18 13:07:27,788 [INFO] Binding queue q_tsub.sr_subscribe.t.99524171.43129428 with key v03.post.# from exchange xpublic on broker amqp://tfeed@localhost/
+  2017-03-18 13:07:27,788 [INFO] Binding queue q_tsub.sr_subscribe.t.99524171.43129428 with key v03.# from exchange xpublic on broker amqp://tfeed@localhost/
   2017-03-18 13:07:27,790 [INFO] report_back to tfeed@localhost, exchange: xreport
   2017-03-18 13:07:27,792 [INFO] sr_shovel saving to /home/peter/.cache/sarra/shovel/save/sr_shovel_save_0000.save for future restore
-  2017-03-18 13:07:27,794 [INFO] sr_shovel saving 1 message topic: v03.post.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml
-  2017-03-18 13:07:27,795 [INFO] sr_shovel saving 2 message topic: v03.post.hydrometric.doc.hydrometric_StationList.csv
+  2017-03-18 13:07:27,794 [INFO] sr_shovel saving 1 message topic: v03.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml
+  2017-03-18 13:07:27,795 [INFO] sr_shovel saving 2 message topic: v03.hydrometric.doc.hydrometric_StationList.csv
           .
           .
           .
-  2017-03-18 13:07:27,901 [INFO] sr_shovel saving 188 message topic: v03.post.hydrometric.csv.ON.hourly.ON_hourly_hydrometric.csv
-  2017-03-18 13:07:27,902 [INFO] sr_shovel saving 189 message topic: v03.post.hydrometric.csv.BC.hourly.BC_hourly_hydrometric.csv
+  2017-03-18 13:07:27,901 [INFO] sr_shovel saving 188 message topic: v03.hydrometric.csv.ON.hourly.ON_hourly_hydrometric.csv
+  2017-03-18 13:07:27,902 [INFO] sr_shovel saving 189 message topic: v03.hydrometric.csv.BC.hourly.BC_hourly_hydrometric.csv
 
   ^C2017-03-18 13:11:27,261 [INFO] signal stop
   2017-03-18 13:11:27,261 [INFO] sr_shovel stop
@@ -3386,11 +3386,11 @@ saved to a file into the same queue::
   2017-03-18 13:15:33,610 [INFO] sr_shovel start
   2017-03-18 13:15:33,611 [INFO] sr_sarra run
   2017-03-18 13:15:33,611 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
-  2017-03-18 13:15:33,613 [INFO] Binding queue q_tfeed.sr_shovel.save with key v03.post.# from exchange xpublic on broker amqp://tfeed@localhost/
+  2017-03-18 13:15:33,613 [INFO] Binding queue q_tfeed.sr_shovel.save with key v03.# from exchange xpublic on broker amqp://tfeed@localhost/
   2017-03-18 13:15:33,615 [INFO] report_back to tfeed@localhost, exchange: xreport
   2017-03-18 13:15:33,618 [INFO] sr_shovel restoring 189 messages from save /home/peter/.cache/sarra/shovel/save/sr_shovel_save_0000.save 
-  2017-03-18 13:15:33,620 [INFO] sr_shovel restoring message 1 of 189: topic: v03.post.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml
-  2017-03-18 13:15:33,620 [INFO] msg_log received: 20170318165818.878 http://localhost:8000/ observations/swob-ml/20170318/CPSL/2017-03-18-1600-CPSL-AUTO-swob.xml topic=v03.post.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml lag=1034.74 sundew_extension=DMS:WXO_RENAMED_SWOB:MSC:XML::20170318165818 source=metpx mtime=20170318165818.878 sum=d,66f7249bd5cd68b89a5ad480f4ea1196 to_clusters=DD,DDI.CMC,DDI.EDM,DDI.CMC,CMC,SCIENCE,EDM parts=1,5354,1,0,0 toolong=1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ß from_cluster=DD atime=20170318165818.878 filename=2017-03-18-1600-CPSL-AUTO-swob.xml 
+  2017-03-18 13:15:33,620 [INFO] sr_shovel restoring message 1 of 189: topic: v03.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml
+  2017-03-18 13:15:33,620 [INFO] msg_log received: 20170318165818.878 http://localhost:8000/ observations/swob-ml/20170318/CPSL/2017-03-18-1600-CPSL-AUTO-swob.xml topic=v03.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml lag=1034.74 sundew_extension=DMS:WXO_RENAMED_SWOB:MSC:XML::20170318165818 source=metpx mtime=20170318165818.878 sum=d,66f7249bd5cd68b89a5ad480f4ea1196 to_clusters=DD,DDI.CMC,DDI.EDM,DDI.CMC,CMC,SCIENCE,EDM parts=1,5354,1,0,0 toolong=1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ß from_cluster=DD atime=20170318165818.878 filename=2017-03-18-1600-CPSL-AUTO-swob.xml 
      .
      .
      .

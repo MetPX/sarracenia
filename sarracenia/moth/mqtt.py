@@ -15,7 +15,7 @@ default_options = {
    'mqtt_v5': False,
    'prefetch': 25,
    'qos' : 1,
-   'topic_prefix' : [ 'v03', 'post' ]
+   'topic_prefix' : [ 'v03' ]
 }
 
 """
@@ -158,6 +158,7 @@ class MQTT(Moth):
                 if self.post_client.is_connected(): 
                     self.post_client.loop_start()
                     return
+
             except Exception as err:
                 logger.error("failed to {} with {}".format( self.broker.hostname, err))
                 logger.error('Exception details: ', exc_info=True)

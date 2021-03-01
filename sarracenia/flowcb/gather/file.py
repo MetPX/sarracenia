@@ -93,7 +93,7 @@ class File(FlowCB):
 
         self.obs_watched = []
         self.watch_handler = None
-        self.post_topic_prefix = [ "v02", "post" ]
+        self.post_topic_prefix = [ "v03" ]
 
         self.inl = OrderedDict()
         self.new_events = OrderedDict()
