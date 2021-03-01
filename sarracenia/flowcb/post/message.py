@@ -27,8 +27,11 @@ class Message(FlowCB):
                 'broker': self.o.post_broker,
                 'exchange': self.o.post_exchange,
                 'topic_prefix': self.o.post_topic_prefix,
-                'exchange_split': self.o.post_exchange_split,
             })
+            if hasattr( self.o, 'post_exchange_split' ):
+                props.update({
+                    'exchange_split': self.o.post_exchange_split,
+                })
             self.poster = sarracenia.moth.Moth.pubFactory(self.o.post_broker, props)
 
     def post(self, worklist):
