@@ -1,7 +1,7 @@
 import copy
 import json
 import logging
-import paho.mqtt.client as mqtt
+import paho.mqtt.client as paho-mqtt
 from sarracenia.moth import Moth
 from sarracenia.flowcb.gather import msg_validate
 import time
@@ -18,10 +18,6 @@ default_options = {
    'topic_prefix' : [ 'v03' ]
 }
 
-"""
-   MQTT v5, they added "reason codes, and there are a whole bunch.. they aren't there in mqttv3...
-   so faking it?
-"""
 
 class MQTT(Moth):
     """
@@ -32,9 +28,7 @@ class MQTT(Moth):
            whatever is queued... this is not good for reliability.  Don't know if this is a protocol
            problem, or just a defect in the paho library.
 
-      This is just a stub for now, proof of concept. things not checked:
-
-      * 
+       no support for SSL yet... kind of a proof of concept so far. 
     """
     def __init__(self, broker, options, is_subscriber):
         """
@@ -54,9 +48,9 @@ class MQTT(Moth):
         logger.info('options: %s' % sorted(self.o) )
 
         if self.o['mqtt_v5']:
-            self.proto_version=mqtt.MQTTv5
+            self.proto_version=paho-mqtt.MQTTv5
         else:
-            self.proto_version=mqtt.MQTTv311
+            self.proto_version=paho-mqtt.MQTTv311
 
         ebo=1
         if is_subscriber:
@@ -66,9 +60,9 @@ class MQTT(Moth):
         
 
     def __sub_on_connect(client, userdata, flags, rc):
-        logger.info( mqtt.connack_string(rc) )
+        logger.info( paho-mqtt.connack_string(rc) )
 
-        if rc != mqtt.MQTT_ERR_SUCCESS:
+        if rc != paho-mqtt.MQTT_ERR_SUCCESS:
             client.connection_in_progress=False
 
         # FIXME: enhancement could subscribe accepts multiple (subj, qos) tuples so, could do this in one RTT.
@@ -76,12 +70,12 @@ class MQTT(Moth):
             prefix, exchange, subtopic = binding_tuple
             subj = '/'.join( [exchange] + prefix + subtopic )
             res = client.subscribe( subj , qos=client.o['qos'] )
-            logger.info( "subscribed to: %s, result: %s" % (subj, mqtt.error_string(res)) )
+            logger.info( "subscribed to: %s, result: %s" % (subj, paho-mqtt.error_string(res)) )
 
     def __pub_on_connect(client, userdata, flags, rc):
 
-        logger.info( mqtt.connack_string(rc) )
-        if rc != mqtt.MQTT_ERR_SUCCESS:
+        logger.info( paho-mqtt.connack_string(rc) )
+        if rc != paho-mqtt.MQTT_ERR_SUCCESS:
             client.connection_in_progress=False
 
 
@@ -92,7 +86,7 @@ class MQTT(Moth):
         ebo = 1
         while True:
             try: 
-                self.client = mqtt.Client( clean_session=options['clean_session'], client_id=options['queue_name'], protocol=self.proto_version )
+                self.client = paho-mqtt.Client( clean_session=options['clean_session'], client_id=options['queue_name'], protocol=self.proto_version )
                 self.client.o = options
                 self.client.new_messages = []
                 self.client.connected=False
@@ -138,7 +132,7 @@ class MQTT(Moth):
         ebo=1
         while True:
             try:
-                self.post_client = mqtt.Client( protocol=self.proto_version) 
+                self.post_client = paho-mqtt.Client( protocol=self.proto_version) 
                 self.post_client.on_connect = MQTT.__pub_on_connect
                 #dunno if this is a good idea.
                 #self.post_client.max_queued_messages_set(options['prefetch'])
@@ -275,7 +269,7 @@ class MQTT(Moth):
         while True:
             try:
                 info = self.post_client.publish( topic=topic, payload=json.dumps(body), qos=1 )
-                if info.rc == mqtt.MQTT_ERR_SUCCESS: 
+                if info.rc == paho-mqtt.MQTT_ERR_SUCCESS: 
                     return #success...
 
             except Exception as ex:

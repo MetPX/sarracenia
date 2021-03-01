@@ -495,6 +495,7 @@ TODO
 * port rest of v02 plugins to v03 equivalents and add mappings in config.py,
   so that we have barely any v2's left.
 
+* add SSL support to moth/mqtt.py
 
 Not Baked/Thinking
 ------------------
