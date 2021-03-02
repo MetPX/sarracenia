@@ -68,7 +68,8 @@ default_options = {
         'stubborn': True,
         'failure_duration': '5m'
     },
-    'topicPrefix' : [ 'v03' ]
+    'topicPrefix' : [ 'v03' ],
+    'tls_rigour'  : 'normal'
 }
 
 

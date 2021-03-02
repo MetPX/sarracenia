@@ -3,7 +3,8 @@ import json
 import logging
 import paho.mqtt.client 
 from sarracenia.moth import Moth
-from sarracenia.flowcb.gather import msg_validate
+from sarracenia.flowcb.gather import msg_validate,msg_dumps
+import ssl
 import time
 
 
@@ -44,8 +45,9 @@ class MQTT(Moth):
         self.o.update(default_options)
         self.o.update(options)
 
+        
         logger.setLevel(getattr(logging, self.o['logLevel'].upper()))
-        logger.info('options: %s' % sorted(self.o) )
+        
 
         if self.o['mqtt_v5']:
             self.proto_version=paho.mqtt.client.MQTTv5
@@ -64,10 +66,11 @@ class MQTT(Moth):
 
         if rc != paho.mqtt.client.MQTT_ERR_SUCCESS:
             client.connection_in_progress=False
+            return
 
         # FIXME: enhancement could subscribe accepts multiple (subj, qos) tuples so, could do this in one RTT.
         for binding_tuple in client.o['bindings']:
-            prefix, exchange, subtopic = binding_tuple
+            exchange, prefix, subtopic = binding_tuple
             subj = '/'.join( [exchange] + prefix + subtopic )
             res = client.subscribe( subj , qos=client.o['qos'] )
             logger.info( "subscribed to: %s, result: %s" % (subj, paho.mqtt.client.error_string(res)) )
@@ -78,6 +81,40 @@ class MQTT(Moth):
         if rc != paho.mqtt.client.MQTT_ERR_SUCCESS:
             client.connection_in_progress=False
 
+    def __sslSetup(self):
+        """
+          initializse SSL context, return port number for connection.
+        """
+        if self.broker.scheme[-1] == 's' :
+            port=8883
+            logger.info('tls_rigour: %s' % self.o['tls_rigour'] )
+            self.o['tls_rigour'] = self.o['tls_rigour'].lower()
+            if self.o['tls_rigour'] == 'lax':
+                    self.tlsctx = ssl.create_default_context()
+                    self.tlsctx.check_hostname = False
+                    self.tlsctx.verify_mode = ssl.CERT_NONE
+     
+            elif self.o['tls_rigour'] == 'strict':
+                    self.tlsctx = ssl.SSLContext(ssl.PROTOCOL_TLS)
+                    self.tlsctx.options |= ssl.OP_NO_TLSv1
+                    self.tlsctx.options |= ssl.OP_NO_TLSv1_1
+                    self.tlsctx.check_hostname = True
+                    self.tlsctx.verify_mode = ssl.CERT_REQUIRED
+                    self.tlsctx.load_default_certs()
+                    # TODO Find a way to reintroduce certificate revocation (CRL) in the future
+                    #  self.tlsctx.verify_flags = ssl.VERIFY_CRL_CHECK_CHAIN
+                    #  https://github.com/MetPX/sarracenia/issues/330
+            elif self.o['tls_rigour'] == 'normal':
+                self.tlsctx = ssl.create_default_context()
+            else:
+                self.logger.warning( "option tls_rigour must be one of:  lax, normal, strict")
+            self.client.tls_set_context(self.tlsctx)
+        else:
+            port=1883
+
+        if self.broker.port:
+           port =  self.broker.port 
+        return port
 
     def __getSetup(self, options):
         """
@@ -101,8 +138,9 @@ class MQTT(Moth):
                     logger.info("paho library without auto_ack support" )
 
                 self.client.username_pw_set( self.broker.username, self.broker.password )
+
                 self.client.connection_in_progress=True        
-                self.client.connect( self.broker.hostname )
+                self.client.connect( self.broker.hostname, port=self.__sslSetup() )
 
                 count=1
                 while not self.client.is_connected() and (count < 5):
@@ -132,25 +170,25 @@ class MQTT(Moth):
         ebo=1
         while True:
             try:
-                self.post_client = paho.mqtt.client.Client( protocol=self.proto_version) 
-                self.post_client.on_connect = MQTT.__pub_on_connect
+                self.client = paho.mqtt.client.Client( protocol=self.proto_version) 
+                self.client.on_connect = MQTT.__pub_on_connect
                 #dunno if this is a good idea.
-                #self.post_client.max_queued_messages_set(options['prefetch'])
-                self.post_client.username_pw_set( self.broker.username, self.broker.password )
-                res = self.post_client.connect( options['broker'].hostname )
+                #self.client.max_queued_messages_set(options['prefetch'])
+                self.client.username_pw_set( self.broker.username, self.broker.password )
+                res = self.client.connect( options['broker'].hostname, port=self.__sslSetup()  )
                 logger.info( 'connecting to %s, res=%s' % (options['broker'].hostname, res ) )
-                self.post_client.connection_in_progress=True        
+                self.client.connection_in_progress=True        
                 count=1
-                while not self.post_client.is_connected() and (count < 5):
+                while not self.client.is_connected() and (count < 5):
                     logger.info("connecting loop" )
-                    self.post_client.loop(1)
-                    if not self.post_client.connection_in_progress:
+                    self.client.loop(1)
+                    if not self.client.connection_in_progress:
                         break
                     count += 1
                     time.sleep(1)
          
-                if self.post_client.is_connected(): 
-                    self.post_client.loop_start()
+                if self.client.is_connected(): 
+                    self.client.loop_start()
                     return
 
             except Exception as err:
@@ -268,7 +306,7 @@ class MQTT(Moth):
 
         while True:
             try:
-                info = self.post_client.publish( topic=topic, payload=json.dumps(body), qos=1 )
+                info = self.client.publish( topic=topic, payload=json.dumps(body), qos=1 )
                 if info.rc == paho.mqtt.client.MQTT_ERR_SUCCESS: 
                     return #success...
 

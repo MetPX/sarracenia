@@ -23,6 +23,7 @@ class Message(FlowCB):
 
         if hasattr(self.o, 'post_broker'):
             props = sarracenia.moth.default_options
+            props.update(self.o.dictify())
             props.update({
                 'broker': self.o.post_broker,
                 'exchange': self.o.post_exchange,

@@ -39,7 +39,10 @@ def msg_dumps(msg):
             v+= " '%s':'%s'," % ( kk, msg[k][kk] )
          v=v[:-1]+" }"
       else:
-         v="%s" % msg[k]
+         try:
+             v="%s" % msg[k]
+         except:
+             v="unprintable"
 
       if len(v) > maximum_field_length: 
         v=v[0:maximum_field_length-4] + '...'
