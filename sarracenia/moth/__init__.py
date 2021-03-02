@@ -67,7 +67,8 @@ default_options = {
         'reset': True,
         'stubborn': True,
         'failure_duration': '5m'
-    }
+    },
+    'topicPrefix' : [ 'v03' ]
 }
 
 
@@ -125,7 +126,7 @@ class Moth():
 
 
        both:
-           'topic_prefix' : [ 'v03' ]
+           'topicPrefix' : [ 'v03' ]
 
        for get:
            'batch'  : 100  # how many messages to get at once

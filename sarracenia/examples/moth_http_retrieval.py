@@ -11,7 +11,7 @@ broker = urlparse('amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
 
 options = sarracenia.moth.default_options
 options.update(sarracenia.moth.amqp.default_options)
-options['topic_prefix'] = [ 'v02', 'post' ]
+options['topicPrefix'] = [ 'v02', 'post' ]
 options['bindings'] = [( 'xpublic', ['v02', 'post'] , ['*', 'WXO-DD', 'observations', 'swob-ml', '#'] )]
 options['queue_name'] = 'q_anonymous_' + socket.getfqdn() + '_SomethingHelpfulToYou'
 

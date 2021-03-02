@@ -421,7 +421,9 @@ class Config:
         'post_base_url': 'post_baseUrl',
         'post_baseurl': 'post_baseUrl',
         'post_document_root': 'post_documentRoot',
-        'post_rate_limit': 'message_rate_max'
+        'post_rate_limit': 'message_rate_max',
+        'post_topic_prefix' : 'post_topicPrefix',
+        'topic_prefix' : 'topicPrefix'
     }
     credentials = None
 
@@ -475,6 +477,7 @@ class Config:
         self.instances = 1
         self.mirror = False
         self.post_exchanges = []
+	#self.post_topicPrefix = None
         self.pstrip = False
         self.randid = "%04x" % randint(0, 65536)
         self.statehost = False
@@ -482,7 +485,7 @@ class Config:
         self.strip = 0
         self.timeout = 300
         self.tls_rigour = 'normal'
-        self.topic_prefix = [ 'v03', 'post' ]
+        self.topicPrefix = [ 'v03', 'post' ]
         self.undeclared = []
         self.declared_users = {}
         self.users = False
@@ -771,7 +774,7 @@ class Config:
     def _parse_binding(self, subtopic_string):
         """
          FIXME: see original parse, with substitions for url encoding.
-                also should sqwawk about error if no exchange or topic_prefix defined.
+                also should sqwawk about error if no exchange or topicPrefix defined.
                 also None to reset to empty, not done.
        """
         self._resolve_exchange()
@@ -786,8 +789,8 @@ class Config:
             else:
                 subtopic = subtopic_string.split('/')
             
-        if hasattr(self, 'exchange') and hasattr(self, 'topic_prefix'):
-            self.bindings.append((self.exchange, self.topic_prefix, subtopic))
+        if hasattr(self, 'exchange') and hasattr(self, 'topicPrefix'):
+            self.bindings.append((self.exchange, self.topicPrefix, subtopic))
 
     def _parse_v2plugin(self, entryPoint, value):
         """
@@ -913,16 +916,16 @@ class Config:
                     print("failed to parse: %s" % v)
             elif k in ['subtopic']:
                 self._parse_binding(v)
-            elif k in ['topic_prefix']:
+            elif k in ['topicPrefix']:
                 if (not self.broker) or self.broker.scheme[0:3] == 'amq':
-                    self.topic_prefix = v.split('.')
+                    self.topicPrefix = v.split('.')
                 else:
-                    self.topic_prefix = v.split('/')
-            elif k in ['post_topic_prefix']:
+                    self.topicPrefix = v.split('/')
+            elif k in ['post_topicPrefix']:
                 if (not self.post_broker) or self.post_broker.scheme[0:3] == 'amq':
-                    self.post_topic_prefix = v.split('.')
+                    self.post_topicPrefix = v.split('.')
                 else:
-                    self.post_topic_prefix = v.split('/')
+                    self.post_topicPrefix = v.split('/')
             elif k in ['import']:
                 self.imports.append(v)
             elif k in ['flow_callback', 'flowcb', 'fcb']:
@@ -1071,6 +1074,9 @@ class Config:
         else:
             cfg = config
 
+        if not hasattr(self, 'post_topicPrefix'):
+           self.post_topicPrefix = self.topicPrefix
+
         if not hasattr(self, 'cfg_run_dir'):
             if self.statehost:
                 hostdir = self.hostdir
@@ -1148,7 +1154,7 @@ class Config:
                 self.post_exchange = [self.post_exchange]
 
         if (self.bindings == [] and hasattr(self, 'exchange')):
-            self.bindings = [(self.exchange, self.topic_prefix, [ '#' ])]
+            self.bindings = [(self.exchange, self.topicPrefix, [ '#' ])]
 
         if hasattr(self, 'documentRoot') and (self.documentRoot is not None):
             path = os.path.abspath(self.documentRoot)
@@ -1670,18 +1676,18 @@ class Config:
                 raise 'exchange needed before subtopic'
                 return
 
-            if not hasattr(namespace, 'topic_prefix'):
-                raise 'topic_prefix needed before subtopic'
+            if not hasattr(namespace, 'topicPrefix'):
+                raise 'topicPrefix needed before subtopic'
                 return
 
-            if type(namespace.topic_prefix) is str:
+            if type(namespace.topicPrefix) is str:
                if namespace.broker.scheme[0:3] == 'amq':
-                   topic_prefix = namespace.topic_prefix.split('.')
+                   topicPrefix = namespace.topicPrefix.split('.')
                else:
-                   topic_prefix = namespace.topic_prefix.split('/')
+                   topicPrefix = namespace.topicPrefix.split('/')
 
             namespace.bindings.append(
-                (namespace.exchange, topic_prefix, values))
+                (namespace.exchange, topicPrefix, values))
 
     def parse_args(self, isPost=False):
         """
@@ -1833,15 +1839,15 @@ class Config:
             nargs='?',
             help='split output into different exchanges 00,01,...')
         parser.add_argument(
-            '--post_topic_prefix',
+            '--post_topicPrefix',
             nargs='?',
             help=
             'allows simultaneous use of multiple versions and types of messages'
         )
         parser.add_argument(
-            '--topic_prefix',
+            '--topicPrefix',
             nargs='?',
-            default=self.topic_prefix,
+            default=self.topicPrefix,
             help=
             'allows simultaneous use of multiple versions and types of messages'
         )

@@ -628,7 +628,7 @@ def file_truncate(options, msg):
             fp.close()
 
         msg['subtopic'] =  msg['relPath'].split(os.sep)[1:-1]
-        #msg.set_topic(options.post_topic_prefix,msg.target_relpath)
+        #msg.set_topic(options.post_topicPrefix,msg.target_relpath)
 
     except:
         pass

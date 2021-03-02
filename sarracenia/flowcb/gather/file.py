@@ -93,7 +93,7 @@ class File(FlowCB):
 
         self.obs_watched = []
         self.watch_handler = None
-        self.post_topic_prefix = [ "v03" ]
+        self.post_topicPrefix = [ "v03" ]
 
         self.inl = OrderedDict()
         self.new_events = OrderedDict()
@@ -187,7 +187,7 @@ class File(FlowCB):
         #sumstr = { "method": "notImplemented", value: "bad" }
 
         # complete message
-        if ( self.o.post_topic_prefix[0] == 'v03') and self.o.inline and fsiz < self.o.inline_max:
+        if ( self.o.post_topicPrefix[0] == 'v03') and self.o.inline and fsiz < self.o.inline_max:
 
             if self.o.inline_encoding == 'guess':
                 e = guess_type(path)[0]

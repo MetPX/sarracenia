@@ -1,7 +1,7 @@
 import copy
 import json
 import logging
-import paho.mqtt.client as paho-mqtt
+import paho.mqtt.client 
 from sarracenia.moth import Moth
 from sarracenia.flowcb.gather import msg_validate
 import time
@@ -15,7 +15,7 @@ default_options = {
    'mqtt_v5': False,
    'prefetch': 25,
    'qos' : 1,
-   'topic_prefix' : [ 'v03' ]
+   'topicPrefix' : [ 'v03' ]
 }
 
 
@@ -48,9 +48,9 @@ class MQTT(Moth):
         logger.info('options: %s' % sorted(self.o) )
 
         if self.o['mqtt_v5']:
-            self.proto_version=paho-mqtt.MQTTv5
+            self.proto_version=paho.mqtt.client.MQTTv5
         else:
-            self.proto_version=paho-mqtt.MQTTv311
+            self.proto_version=paho.mqtt.client.MQTTv311
 
         ebo=1
         if is_subscriber:
@@ -60,9 +60,9 @@ class MQTT(Moth):
         
 
     def __sub_on_connect(client, userdata, flags, rc):
-        logger.info( paho-mqtt.connack_string(rc) )
+        logger.info( paho.mqtt.client.connack_string(rc) )
 
-        if rc != paho-mqtt.MQTT_ERR_SUCCESS:
+        if rc != paho.mqtt.client.MQTT_ERR_SUCCESS:
             client.connection_in_progress=False
 
         # FIXME: enhancement could subscribe accepts multiple (subj, qos) tuples so, could do this in one RTT.
@@ -70,12 +70,12 @@ class MQTT(Moth):
             prefix, exchange, subtopic = binding_tuple
             subj = '/'.join( [exchange] + prefix + subtopic )
             res = client.subscribe( subj , qos=client.o['qos'] )
-            logger.info( "subscribed to: %s, result: %s" % (subj, paho-mqtt.error_string(res)) )
+            logger.info( "subscribed to: %s, result: %s" % (subj, paho.mqtt.client.error_string(res)) )
 
     def __pub_on_connect(client, userdata, flags, rc):
 
-        logger.info( paho-mqtt.connack_string(rc) )
-        if rc != paho-mqtt.MQTT_ERR_SUCCESS:
+        logger.info( paho.mqtt.client.connack_string(rc) )
+        if rc != paho.mqtt.client.MQTT_ERR_SUCCESS:
             client.connection_in_progress=False
 
 
@@ -86,7 +86,7 @@ class MQTT(Moth):
         ebo = 1
         while True:
             try: 
-                self.client = paho-mqtt.Client( clean_session=options['clean_session'], client_id=options['queue_name'], protocol=self.proto_version )
+                self.client = paho.mqtt.client.Client( clean_session=options['clean_session'], client_id=options['queue_name'], protocol=self.proto_version )
                 self.client.o = options
                 self.client.new_messages = []
                 self.client.connected=False
@@ -132,7 +132,7 @@ class MQTT(Moth):
         ebo=1
         while True:
             try:
-                self.post_client = paho-mqtt.Client( protocol=self.proto_version) 
+                self.post_client = paho.mqtt.client.Client( protocol=self.proto_version) 
                 self.post_client.on_connect = MQTT.__pub_on_connect
                 #dunno if this is a good idea.
                 #self.post_client.max_queued_messages_set(options['prefetch'])
@@ -177,11 +177,11 @@ class MQTT(Moth):
 
         subtopic=msg.topic.split('/')
          
-        if subtopic[0] != client.o['topic_prefix'][0]:
+        if subtopic[0] != client.o['topicPrefix'][0]:
             message['exchange'] = subtopic[0]
-            message['subtopic'] = subtopic[1+len(client.o['topic_prefix']):]
+            message['subtopic'] = subtopic[1+len(client.o['topicPrefix']):]
         else:
-            message['subtopic'] = subtopic[len(client.o['topic_prefix']):]
+            message['subtopic'] = subtopic[len(client.o['topicPrefix']):]
 
         message['message-id'] = msg.mid
         message['_deleteOnPost'] = set( [ 'exchange', 'subtopic', 'message-id' ] )
@@ -260,7 +260,7 @@ class MQTT(Moth):
                   exchange = self.o['exchange']
   
         # FIXME: might 
-        topic= '/'.join( [ exchange ] + self.o['topic_prefix'] + body['subtopic']  )
+        topic= '/'.join( [ exchange ] + self.o['topicPrefix'] + body['subtopic']  )
         topic = topic.replace('#', '%23')
         logger.info('topic: %s' % topic )
 
@@ -269,7 +269,7 @@ class MQTT(Moth):
         while True:
             try:
                 info = self.post_client.publish( topic=topic, payload=json.dumps(body), qos=1 )
-                if info.rc == paho-mqtt.MQTT_ERR_SUCCESS: 
+                if info.rc == paho.mqtt.client.MQTT_ERR_SUCCESS: 
                     return #success...
 
             except Exception as ex:

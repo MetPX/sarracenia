@@ -12,7 +12,7 @@ broker = urlparse('amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
 
 # binding tuple:  consists of prefix, exchange, rest.
 # effect is to bind from queue using prefix/rest to exchange.
-options['topic_prefix'] = [ 'v02', 'post' ]
+options['topicPrefix'] = [ 'v02', 'post' ]
 options['bindings'] = [ ('xpublic', [ 'v02', 'post'] , [ '#' ] )]
 
 # Note: queue name must start with q_<username> because server is configured to deny anything else.

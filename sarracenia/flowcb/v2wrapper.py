@@ -122,9 +122,9 @@ class Message:
         pass
 
 
-def v02tov03message(body, headers, topic, topic_prefix):
+def v02tov03message(body, headers, topic, topicPrefix):
     msg = headers
-    msg['subtopic'] = topic.split('.')[len(topic_prefix):]
+    msg['subtopic'] = topic.split('.')[len(topicPrefix):]
     if not '_deleteOnPost' in msg:
         msg['_deleteOnPost'] = set()
     msg['_deleteOnPost'] |= set(['subtopic'])
@@ -433,7 +433,7 @@ class V2Wrapper(FlowCB):
            run plugins for a given entry point.
         """
         self.msg = Message(m)
-        self.msg.topic = '.'.join( self.o.topic_prefix + m['subtopic'] )
+        self.msg.topic = '.'.join( self.o.topicPrefix + m['subtopic'] )
         self.o.msg = self.msg
         if hasattr(self.msg, 'partstr'):
             self.o.partstr = self.msg.partstr

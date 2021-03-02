@@ -51,7 +51,7 @@ default_options = {
     'queue_name': None,
     'batch': 25,
     'exchange': None,
-    'topic_prefix': [ 'v03' ],
+    'topicPrefix': [ 'v03' ],
     'subtopic': [],
     'durable': True,
     'expire': 300,
@@ -100,10 +100,10 @@ class AMQP(Moth):
                 msg = v2wrapper.v02tov03message(
                     raw_msg.body, raw_msg.headers,
                     raw_msg.delivery_info['routing_key'],
-                     self.o['topic_prefix'] )
+                     self.o['topicPrefix'] )
     
             msg['exchange'] = raw_msg.delivery_info['exchange']
-            msg['subtopic'] = raw_msg.delivery_info['routing_key'].split('.')[len(self.o['topic_prefix']):]
+            msg['subtopic'] = raw_msg.delivery_info['routing_key'].split('.')[len(self.o['topicPrefix']):]
             msg['delivery_tag'] = raw_msg.delivery_info['delivery_tag']
             msg['local_offset'] = 0
             msg['_deleteOnPost'] = set( [ 'delivery_tag', 'exchange', 'local_offset', 'subtopic' ] )
@@ -407,7 +407,7 @@ class AMQP(Moth):
             return None
 
         #body = copy.deepcopy(bd)
-        topic = '.'.join( self.o['topic_prefix'] + body['subtopic'] )
+        topic = '.'.join( self.o['topicPrefix'] + body['subtopic'] )
         topic = topic.replace('#', '%23')
 
         if len(topic) >= 255:  # ensure topic is <= 255 characters

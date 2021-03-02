@@ -26,7 +26,7 @@ class Message(FlowCB):
             props.update({
                 'broker': self.o.post_broker,
                 'exchange': self.o.post_exchange,
-                'topic_prefix': self.o.post_topic_prefix,
+                'topicPrefix': self.o.post_topicPrefix,
             })
             if hasattr( self.o, 'post_exchange_split' ):
                 props.update({
