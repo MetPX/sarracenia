@@ -81,9 +81,11 @@ class MQTT(Moth):
         if rc != paho.mqtt.client.MQTT_ERR_SUCCESS:
             client.connection_in_progress=False
 
-    def __sslSetup(self):
+    def __sslClientSetup(self):
         """
-          initializse SSL context, return port number for connection.
+          Initializse self.client SSL context, must be called after self.client is instantiated.
+          return port number for connection.
+      
         """
         if self.broker.scheme[-1] == 's' :
             port=8883
@@ -118,7 +120,7 @@ class MQTT(Moth):
 
     def __getSetup(self, options):
         """
-           establish a connection to consume messages with.  
+           Establish a connection to consume messages with.  
         """
         ebo = 1
         while True:
@@ -140,7 +142,7 @@ class MQTT(Moth):
                 self.client.username_pw_set( self.broker.username, self.broker.password )
 
                 self.client.connection_in_progress=True        
-                self.client.connect( self.broker.hostname, port=self.__sslSetup() )
+                self.client.connect( self.broker.hostname, port=self.__sslClientSetup() )
 
                 count=1
                 while not self.client.is_connected() and (count < 5):
@@ -175,7 +177,7 @@ class MQTT(Moth):
                 #dunno if this is a good idea.
                 #self.client.max_queued_messages_set(options['prefetch'])
                 self.client.username_pw_set( self.broker.username, self.broker.password )
-                res = self.client.connect( options['broker'].hostname, port=self.__sslSetup()  )
+                res = self.client.connect( options['broker'].hostname, port=self.__sslClientSetup()  )
                 logger.info( 'connecting to %s, res=%s' % (options['broker'].hostname, res ) )
                 self.client.connection_in_progress=True        
                 count=1
