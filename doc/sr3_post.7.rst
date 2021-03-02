@@ -36,11 +36,11 @@ See `Changes from v02`_ for more details.
 
 To generate messages in v03 format, use following setting::
 
-  post_topic_prefix v03
+  post_topicPrefix v03
 
 To select messages to consume in that format::
 
-  topic_prefix v03
+  topicPrefix v03
 
 
 

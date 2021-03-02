@@ -460,6 +460,8 @@ Items from the TODO list that have been addressed.
 
 * change default topic_prefix to v03 done 2021/03
 
+* change topic_prefix to topicPrefix done 2021/03
+
 * Adjust Programmer's Guide to reflect new API. done 2021/02
 
 * log incoherency between 'info' and logging.INFO prevents proper log control.

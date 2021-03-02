@@ -775,7 +775,7 @@ Sample configuration file::
 
   broker amqp://tfeed@localhost/
   exchange xs_anonymous
-  topic_prefix v02.report
+  topicPrefix v02.report
   subtopic #
   accept_unmatch True
   on_message None
@@ -800,7 +800,7 @@ Sample::
   
   broker amqp://tfeed@localhost/
   exchange xreport
-  topic_prefix v02.report
+  topicPrefix v02.report
   subtopic #
   accept_unmatch True
   msg_by_source tsource2
@@ -1146,7 +1146,7 @@ It is now possible to enable MQTT in Sarracenia through the RabbitMQ MQTT plugin
    # posting to rabbitmqtt exchange
    post_broker amqp://${afeeder}@${abroker}
    post_exchange xmqtt_public
-   post_topic_prefix  v03.${from_exchange}
+   post_topicPrefix  v03.${from_exchange}
    report_back False
    
   or consume from rabbitmqtt exchange::
@@ -1154,13 +1154,13 @@ It is now possible to enable MQTT in Sarracenia through the RabbitMQ MQTT plugin
    # Here is a minimal subscribe/mysub.conf
    broker amqp://${asub}@${abroker}/
    exchange xmqtt_public
-   topic_prefix v03.${from_exchange}
+   topicPrefix v03.${from_exchange}
    
    # Print out all msg received
    accept .*
    on_message msg_rawlog
    no_download
-  Note that we use *xmqtt_public* as the (post\_)exchange which is defined as the *rabbitmq_mqtt.exchange* in the rabbitmq.config file. We also append the source exchange to the (post\_)topic_prefix, which will map the source exchange and could be useful if we map multiple exchanges to mqtt.
+  Note that we use *xmqtt_public* as the (post\_)exchange which is defined as the *rabbitmq_mqtt.exchange* in the rabbitmq.config file. We also append the source exchange to the (post\_)topicPrefix, which will map the source exchange and could be useful if we map multiple exchanges to mqtt.
 
 * Start and test your configuration::
 

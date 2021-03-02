@@ -86,7 +86,7 @@ The output of the command is as follows ::
 In MetPX-Sarracenia, each post is published under a certain topic.
 The log line starts with '[INFO]', followed by the **topic** of the
 post. Topics in *AMQP* are fields separated by dot. The complete topic starts with
-a topic_prefix (see option), version *V02*, an action *post*,
+a topicPrefix (see option), version *V02*, an action *post*,
 followed by a subtopic (see option) here the default, the file path separated with dots
 *data.shared.products.foo*.
 
@@ -349,13 +349,13 @@ the following shim\_ options.
   This is awful.
 
 
-[-tp|--topic_prefix <key>]
+[-tp|--topicPrefix <key>]
 --------------------------
 
   *Not usually used*
-  By default, the topic is made of the default topic_prefix : version *V02*, an action *post*,
+  By default, the topic is made of the default topicPrefix : version *V02*, an action *post*,
   followed by the default subtopic: the file path separated with dots (dot being the topic separator for amqp).
-  You can overwrite the topic_prefix by setting this option.
+  You can overwrite the topicPrefix by setting this option.
 
 
 

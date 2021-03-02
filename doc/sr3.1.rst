@@ -353,7 +353,7 @@ View all configuration settings (the result of all parsing... what the flow comp
     suppress_duplicates_basis='data'
     timeout=300
     tls_rigour='normal'
-    topic_prefix='v03'
+    topicPrefix='v03'
     undeclared=['msg_total_interval', 'file_total_interval']
     users={'tsub': 'subscriber', 'tsource': 'source', 'anonymous': 'subscriber',...'
     v2plugin_options=[]
@@ -763,7 +763,7 @@ The output of the command is as follows ::
 In MetPX-Sarracenia, each post is published under a certain topic.
 The log line starts with '[INFO]', followed by the **topic** of the
 post. Topics in *AMQP* are fields separated by dot. The complete topic starts with
-a topic_prefix (see option), version *V02*, 
+a topicPrefix (see option), version *V02*, 
 followed by a subtopic (see option) here the default, the file path separated with dots
 *data.shared.products.foo*.
 
@@ -1142,7 +1142,7 @@ shovel copies messages on one broker (given by the *broker* option) to
 another (given by the *post_broker* option.) subject to filtering
 by (*exchange*, *subtopic*, and optionally, *accept*/*reject*.)
 
-The *topic_prefix* option must to be set to:
+The *topicPrefix* option must to be set to:
 
  - **v03** to shovel `sr3_postv2(7) <sr3_postv2.7.rst>`_ messages
 
@@ -1215,7 +1215,7 @@ The output of the command is as follows ::
 In MetPX-Sarracenia, each post is published under a certain topic.
 After the '[INFO]' the next information gives the \fBtopic*  of the
 post. Topics in  *AMQP*  are fields separated by dot. In MetPX-Sarracenia
-it is made of a  *topic_prefix*  by default : version  *V02* , 
+it is made of a  *topicPrefix*  by default : version  *v02* , 
 followed by the  *subtopic*  by default : the file path separated with dots, here, *data.shared.products.foo*
 
 After the topic hierarchy comes the body of the notification.  It consists of a time  *20150813161959.854* ,
@@ -1928,14 +1928,14 @@ Users almost always need to set these options. Once a queue exists
 on the broker, it must be bound to an exchange. Bindings define which
 messages (URL notifications) the program receives. The root of the topic
 tree is fixed to indicate the protocol version and type of the
-message (but developers can override it with the **topic_prefix**
+message (but developers can override it with the **topicPrefix**
 option.)
 
 These options define which messages (URL notifications) the program receives:
 
  - **exchange      <name>         (default: xpublic)** 
  - **exchange_suffix      <name>  (default: None)** 
- - **topic_prefix  <amqp pattern> (default: v03 -- developer option)** 
+ - **topicPrefix  <amqp pattern> (default: v03 -- developer option)** 
  - **subtopic      <amqp pattern> (no default, must appear after exchange)** 
 
 exchange <name> (default: xpublic) and exchange_suffix
@@ -1947,7 +1947,7 @@ that always begin with *xs_<username>*, so to save having to specify that each
 time, one can just set *exchange_suffix kk* which will result in the exchange
 being set to *xs_<username>_kk* (overriding the *xpublic* default). 
 These settings must appear in the configuration file before the corresponding 
-*topic_prefix* and *subtopic* settings.
+*topicPrefix* and *subtopic* settings.
 
 subtopic <amqp pattern> (default: #)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1966,7 +1966,7 @@ It is best practice to use server side filtering to reduce the number of announc
 to the client to a small superset of what is relevant, and perform only a fine-tuning with the 
 client side mechanisms, saving bandwidth and processing for all.
 
-topic_prefix is primarily of interest during protocol version transitions, 
+topicPrefix is primarily of interest during protocol version transitions, 
 where one wishes to specify a non-default protocol version of messages to 
 subscribe to. 
 
@@ -2409,7 +2409,7 @@ posting to a broker. The valid argument values are:
 
   **post_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
   **post_exchange     <name>         (MANDATORY)**
-  **post_topic_prefix <string>       (default: "v03")**
+  **post_topicPrefix <string>       (default: "v03")**
   **on_post           <script>       (default: None)**
 
   The **post_broker** defaults to the input broker if not provided.
@@ -3019,7 +3019,7 @@ the next hop broker, the user sets these options :
  - **[--blocksize <value>]            (default: 0 (auto))**
  - **[--outlet <post|json|url>]       (default: post)**
  - **[-pbd|--post_base_dir <path>]    (optional)**
- - **[-ptp|--post_topic_prefix <pfx>] (default: 'v03')**
+ - **[-ptp|--post_topicPrefix <pfx>] (default: 'v03')**
  - **post_exchange     <name>         (default: xpublic)**
  - **post_exchange_split   <number>   (default: 0)**
  - **post_base_url          <url>     (MANDATORY)**
@@ -3336,7 +3336,7 @@ around::
 
   % more ~/tools/save.conf
   broker amqp://tfeed@localhost/
-  topic_prefix v03
+  topicPrefix v03
   exchange xpublic
 
   post_rate_limit 50
