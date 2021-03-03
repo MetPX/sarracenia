@@ -25,7 +25,7 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 #
-__version__ = "3.00.002"
+__version__ = "3.00.003"
 
 import logging
 

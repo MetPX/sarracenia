@@ -29,7 +29,6 @@ class MQTT(Moth):
            whatever is queued... this is not good for reliability.  Don't know if this is a protocol
            problem, or just a defect in the paho library.
 
-       no support for SSL yet... kind of a proof of concept so far. 
     """
     def __init__(self, broker, options, is_subscriber):
         """
@@ -137,7 +136,7 @@ class MQTT(Moth):
                     self.client.auto_ack( False )
                     logger.info("Switching off auto_ack for higher reliability. Using explicit acknowledgements." )
                 else:
-                    logger.info("paho library without auto_ack support" )
+                    logger.info("paho library without auto_ack support. Loses data every crash or restart." )
 
                 self.client.username_pw_set( self.broker.username, self.broker.password )
 
