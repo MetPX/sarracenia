@@ -32,7 +32,7 @@
 #
 #
 
-import os, urllib.request, urllib.error, ssl, sys
+import os, sarra, ssl, urllib.request, urllib.error, ssl, sys
 
 try :
          from sr_util            import *
@@ -105,11 +105,10 @@ class sr_http(sr_proto):
                 ok, details = self.parent.credentials.get(self.destination)
                 if details  : url = details.url
 
-                self.user        = url.username
-                self.password    = url.password
+                self.user = url.username if url.username != '' else None
+                self.password = url.password if url.password == '' else None
 
-                if url.username == '' : self.user     = None
-                if url.password == '' : self.password = None
+                self.bearer_token = details.bearer_token if hasattr(details, 'bearer_token' ) else None
 
                 return True
 
@@ -215,9 +214,15 @@ class sr_http(sr_proto):
 
         try:
                 # when credentials are needed.
-                if self.user != None :                          
+                headers = { 'user-agent': 'Sarracenia ' + sarra.__version__ }
+                if self.bearer_token :
+                    self.logger.debug('bearer_token: %s' % self.bearer_token )
+                    headers[ 'Authorization' ] = 'Bearer ' + self.bearer_token
 
+                if self.user != None :                          
+                   password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
                    # takeaway credentials info from urlstr
+
                    cred        = self.user + '@'
                    self.urlstr = self.urlstr.replace(cred,'')
                    if self.password != None :                          
@@ -225,7 +230,6 @@ class sr_http(sr_proto):
                       self.urlstr = self.urlstr.replace(cred,'')
 
                    # continue with authentication
-                   password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
                    password_mgr.add_password(None, self.urlstr,self.user,self.password)
                    auth_handler = urllib.request.HTTPBasicAuthHandler(password_mgr)
             
@@ -244,7 +248,7 @@ class sr_http(sr_proto):
                    urllib.request.install_opener(opener)
 
                 # Now all calls to get the request use our opener.
-                self.req = urllib.request.Request(self.urlstr)
+                self.req = urllib.request.Request(self.urlstr, headers=headers)
 
                 # set range in byte if needed
                 if remote_offset != 0 :

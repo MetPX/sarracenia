@@ -43,7 +43,10 @@
 # (passive true and binary true are credentials default and may be omitted)
 #
 
-import os,urllib,urllib.parse,sys,re
+import os
+import re
+import urllib,urllib.parse
+import sys
 
 # a class for credential details/options
 # add any other options here... and process in parse
@@ -56,6 +59,8 @@ class credential_details:
           self.binary      = True
           self.tls         = False
           self.prot_p      = False
+          self.bearer_token= None
+
       def __str__(self):
           s  = ''
           s += self.url.geturl()
@@ -64,6 +69,7 @@ class credential_details:
           s += " %s" % self.binary
           s += " %s" % self.tls
           s += " %s" % self.prot_p
+          s += " %s" % self.bearer_token
           return s
 
 # class credentials
@@ -75,7 +81,7 @@ class sr_credentials:
         self.credentials = {}
         self.pwre=re.compile(':[^/:]*@')
         
-        self.logger.debug("sr_credentials __init__")
+        #self.logger.debug("sr_credentials __init__")
 
     def add(self,urlstr,details=None):
 
@@ -86,16 +92,23 @@ class sr_credentials:
 
         self.credentials[urlstr] = details
 
+    def dump(self):
+
+        for u in self.credentials:
+            print( "%s %s" % ( u, self.credentials[u] ) )
+
     def get(self, urlstr ):
         #self.logger.debug("sr_credentials get %s" % urlstr)
 
+        #self.dump()
         # already cached
 
         if self.has(urlstr) :
-           #self.logger.debug("sr_credentials get in cache %s %s" % (urlstr,self.credentials[urlstr]))
+           self.logger.debug("sr_credentials get in cache %s %s" % (urlstr,self.credentials[urlstr]))
            return True, self.credentials[urlstr]
 
         # create url object if needed
+        self.logger.debug("sr_credentials no exact match, looking for partial. %s " % (urlstr))
 
         url = urllib.parse.urlparse(urlstr)
 
@@ -106,6 +119,7 @@ class sr_credentials:
                 'anonymous:anonymous@%s' % url.netloc, url.path, None, None, url.port ) )
             url = urllib.parse.urlparse(urlstr)
             if self.isValid(url) :
+                 self.logger.debug("sr_credentials using anonymous convention for %s " % (urlstr))
                  self.add(urlstr)
                  return False,self.credentials[urlstr]
 
@@ -190,6 +204,8 @@ class sr_credentials:
                 details     = credential_details()
                 details.url = url
         
+                #self.logger.debug("FIXME 1: url=%s" %  url )
+
                 # no option
                 if len(parts) == 1 :
                    if not self.isValid(url,details) :
@@ -214,9 +230,10 @@ class sr_credentials:
                     elif  keyword == 'active'      : details.passive     = False
                     elif  keyword == 'binary'      : details.binary      = True
                     elif  keyword == 'ascii'       : details.binary      = False
-                    elif  keyword == 'ssl'         : details.tls         = False
-                    elif  keyword == 'tls'         : details.tls         = True
+                    elif  keyword in [ 'ssl', 'tls' ]: details.tls         = True
                     elif  keyword == 'prot_p'      : details.prot_p      = True
+                    elif  keyword in [ 'bearer_token', 'bt' ] : 
+                        details.bearer_token = parts[1].strip()
                     else: self.logger.warning("bad credential option (%s)" % keyword)
         
                 # need to check validity
@@ -283,7 +300,8 @@ class sr_credentials:
             # resolved : cache it and return
 
             self.credentials[urlstr] = details
-            #self.logger.debug("sr_credentials get resolved %s %s" % (urlstr,details))
+            # prints password in clear...
+            #self.logger.info("sr_credentials get resolved %s %s" % (urlstr,details))
             return True, details
 
         return False, None
