@@ -15,6 +15,7 @@ default_options = {
    'batch' : 25,
    'clean_session': False,
    'mqtt_v5': False,
+   'no': 0,
    'prefetch': 25,
    'qos' : 1,
    'topicPrefix' : [ 'v03' ]
@@ -24,6 +25,26 @@ default_options = {
 class MQTT(Moth):
     """
        Message Queue Telemetry Transport support.
+           talks to an MQTT broker.  Tested with mosquitto. defaults to MQTTv5
+
+       Concept mapping from AMQP:
+
+           Only supports v03 messages since mqtt3.1 has no headers.
+
+
+           AMQP -> MQTT topic hierarcy mapping: 
+           exchange: xpublic,  topic prefix:   v03 subtopic:   /my/favourite/directory
+           results in :   xpublic/v03/my/favourite/directory
+
+           AMQP queue -> MQTT group-id (client-id should map to  queue+instance, I think.)
+
+       deviation from standard: group-id lengths are not checked, neither are client-id's.
+           Sarracenia routinely generates such ids with 40 to 50 characters in them.
+           the MQTTv3.1 standard specifies a maximum length of 23 characters, as the minimum
+           a compliant broker must support.  
+           https://www.eclipse.org/lists/mosquitto-dev/msg00433.html#:~:text=It%20is%2065535%20bytes.,the%20limit%20in%20mqtt%20v3.
+           Both mosquitto and EMQ supports 65535 chars for that field even in v3.1, so enforcing limit seems counter-productive.
+
        problems with MQTT:
            lack of explicit acknowledgements (in paho library) means ack's happen without the
            application being able to process the messages... potential for message loss of
@@ -33,7 +54,13 @@ class MQTT(Moth):
            made a pull request: https://github.com/eclipse/paho.mqtt.python/pull/554 
            Implemented support for the modification here. Seems to work fine (not thoroughly tested yet.)
 
-       
+      There is additionally a vulnerability/inefficiency resulting from async message reception:
+           when a new message arrive the loop thread started by the paho library will append
+           it to the new_messages data structure (protected by a mutex.)
+           if the application crashes, the new_messages have not been ack'd to the sender... so it is
+           likely that you will just get them later... could use for a shelf for new_messages,
+           and sync it once in while... probably not worth it.
+ 
     """
     def __init__(self, broker, options, is_subscriber):
         """
@@ -65,7 +92,7 @@ class MQTT(Moth):
             self.__putSetup(self.o)
         
 
-    def __sub_on_connect(client, userdata, flags, rc):
+    def __sub_on_connect(client, userdata, flags, rc, properties=None):
         logger.info( paho.mqtt.client.connack_string(rc) )
 
         if rc != paho.mqtt.client.MQTT_ERR_SUCCESS:
@@ -73,17 +100,22 @@ class MQTT(Moth):
             return
 
         # FIXME: enhancement could subscribe accepts multiple (subj, qos) tuples so, could do this in one RTT.
-        for binding_tuple in client.o['bindings']:
+        for binding_tuple in userdata.o['bindings']:
             exchange, prefix, subtopic = binding_tuple
             logger.info( "tuple: %s %s %s" % ( exchange, prefix, subtopic ) )
-            subj = '/'.join( [exchange] + prefix + subtopic )
-            res = client.subscribe( subj , qos=client.o['qos'] )
+            if userdata.o['mqtt_v5']:
+                subj = '/'.join( ['$share', userdata.o['queue_name'], exchange] + prefix + subtopic )
+            else:
+                logger.warning('mqtt < 5 has no sharing, only 1 instance per client-id/queue')
+                subj = '/'.join( [exchange] + prefix + subtopic )
+
+            (res, mid) = client.subscribe( subj , qos=userdata.o['qos'] )
             logger.info( "subscribed to: %s, result: %s" % (subj, paho.mqtt.client.error_string(res)) )
             if res != 0:
                  client.connection_in_progress=False
                
 
-    def __pub_on_connect(client, userdata, flags, rc):
+    def __pub_on_connect(client, userdata, flags, rc, properties=None):
 
         logger.info( paho.mqtt.client.connack_string(rc) )
         if rc != paho.mqtt.client.MQTT_ERR_SUCCESS:
@@ -134,9 +166,20 @@ class MQTT(Moth):
         while True:
             try: 
                 self.new_message_mutex = threading.Lock()
-                self.client = paho.mqtt.client.Client( clean_session=options['clean_session'], \
-                    userdata=self, client_id=options['queue_name'], protocol=self.proto_version )
-                self.client.o = options
+
+                if options['mqtt_v5'] :
+                    cid = options['queue_name'] + '%02d' % options['no']
+                    self.client = paho.mqtt.client.Client( userdata=self, \
+                        client_id=cid, protocol=paho.mqtt.client.MQTTv5 )
+                else:
+                    if options['no'] > 1:
+                        logger.error('only 1 instance with mqttv3. Use *mqtt_v5 on* for multiple instances.')
+                        return
+
+                    self.client = paho.mqtt.client.Client( clean_session=options['clean_session'], \
+                        userdata=self, client_id=options['queue_name'], protocol=paho.mqtt.client.MQTTv311)
+
+                #self.client.o = options
                 self.new_message_mutex.acquire()
                 self.client.new_messages = []
                 self.new_message_mutex.release()
@@ -235,11 +278,11 @@ class MQTT(Moth):
 
         subtopic=msg.topic.split('/')
          
-        if subtopic[0] != client.o['topicPrefix'][0]:
+        if subtopic[0] != userdata.o['topicPrefix'][0]:
             message['exchange'] = subtopic[0]
-            message['subtopic'] = subtopic[1+len(client.o['topicPrefix']):]
+            message['subtopic'] = subtopic[1+len(userdata.o['topicPrefix']):]
         else:
-            message['subtopic'] = subtopic[len(client.o['topicPrefix']):]
+            message['subtopic'] = subtopic[len(userdata.o['topicPrefix']):]
 
         message['message-id'] = msg.mid
         message['local_offset'] = 0

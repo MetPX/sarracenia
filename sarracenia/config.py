@@ -57,7 +57,7 @@ default_options = {
 }
 
 count_options = [
-    'batch', 'exchange_split', 'instances', 'post_exchange_split', 'prefetch',
+    'batch', 'exchange_split', 'instances', 'no', 'post_exchange_split', 'prefetch',
     'message_count_max', 'message_rate_max', 'message_rate_min'
 ]
 
