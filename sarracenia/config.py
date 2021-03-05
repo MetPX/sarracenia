@@ -917,15 +917,16 @@ class Config:
             elif k in ['subtopic']:
                 self._parse_binding(v)
             elif k in ['topicPrefix']:
-                if (not self.broker) or self.broker.scheme[0:3] == 'amq':
-                    self.topicPrefix = v.split('.')
-                else:
+                if '/' in v :
                     self.topicPrefix = v.split('/')
-            elif k in ['post_topicPrefix']:
-                if (not self.post_broker) or self.post_broker.scheme[0:3] == 'amq':
-                    self.post_topicPrefix = v.split('.')
                 else:
+                    self.topicPrefix = v.split('.')
+            elif k in ['post_topicPrefix']:
+                #if (not self.post_broker) or self.post_broker.scheme[0:3] == 'amq':
+                if '/' in v :
                     self.post_topicPrefix = v.split('/')
+                else:
+                    self.post_topicPrefix = v.split('.')
             elif k in ['import']:
                 self.imports.append(v)
             elif k in ['flow_callback', 'flowcb', 'fcb']:
