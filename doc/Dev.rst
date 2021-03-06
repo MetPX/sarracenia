@@ -409,6 +409,7 @@ Install a minimal localhost broker and configure rabbitmq test users::
     mkdir ~/.config/sarra
     cat > ~/.config/sarra/default.conf << EOF
     declare env FLOWBROKER=localhost
+    declare env MQP=amqp
     declare env SFTPUSER=${USER}
     declare env TESTDOCROOT=${HOME}/sarra_devdocroot
     declare env SR_CONFIG_EXAMPLES=${HOME}/git/sarracenia/sarra/examples

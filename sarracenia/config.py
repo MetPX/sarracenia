@@ -1393,6 +1393,9 @@ class Config:
 
     def set_dir_pattern(self, cdir):
 
+        if not '$' in cdir:
+            return cdir
+
         new_dir = cdir
 
         if '${BD}' in cdir and self.baseDir != None:
@@ -1594,8 +1597,7 @@ class Config:
         if len(token) > 1:
             new_dir = new_dir + '/' + '/'.join(token[:-1])
 
-        if '$' in new_dir:
-            new_dir = self.set_dir_pattern(new_dir)
+        new_dir = self.set_dir_pattern(new_dir)
 
         # resolution of sundew's dirPattern
 
@@ -1617,7 +1619,7 @@ class Config:
         relPath = msg['new_dir'] + '/' + filename
 
         if self.post_baseDir:
-            relPath = relPath.replace(self.post_baseDir, '')
+            relPath = relPath.replace(self.set_dir_pattern(self.post_baseDir), '')
 
         if relPath[0] == '/':
             relPath = relPath[1:]
@@ -1643,7 +1645,7 @@ class Config:
         msg['new_file'] = filename
 
         if self.post_broker and self.post_baseUrl:
-            msg['new_baseUrl'] = self.post_baseUrl
+            msg['new_baseUrl'] = self.set_dir_pattern( self.post_baseUrl )
         else:
             msg['new_baseUrl'] = msg['baseUrl']
 
