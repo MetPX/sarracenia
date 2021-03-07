@@ -1338,13 +1338,13 @@ class sr_GlobalState:
                         os.path.normpath(self.package_lib_dir + os.sep +
                                          'examples' + os.sep + c), c)
             elif self.leftovers[0] in ['flow_callback', 'flowcb', 'fcb']:
-                print('Provided plugins: ( %s ) ' % self.package_lib_dir)
+                print('Provided callback classes: ( %s ) ' % self.package_lib_dir)
                 self.print_configdir2(
-                    " of plugins: ",
+                    " of callback classes: ",
                     os.path.normpath(self.package_lib_dir + os.sep + 'flowcb'),
                     'flowcb')
             elif self.leftovers[0] in ['v2plugins', 'v2p']:
-                print('Provided plugins: ( %s ) ' % self.package_lib_dir)
+                print('Provided v2 plugins: ( %s ) ' % self.package_lib_dir)
                 self.print_configdir2(
                     " of plugins: ",
                     os.path.normpath(self.package_lib_dir + os.sep +

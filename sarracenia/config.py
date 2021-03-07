@@ -931,6 +931,8 @@ class Config:
                 self.imports.append(v)
             elif k in ['flow_callback', 'flowcb', 'fcb']:
                 self.plugins.append(v)
+            elif k in ['flow_callback_prepend', 'flowcb_prepend', 'fcbp']:
+                self.plugins = [ v ] + self.plugins
             elif k in ['set', 'setting', 's']:
                 self._parse_setting(line[1], line[2:])
             elif k in ['sum']:

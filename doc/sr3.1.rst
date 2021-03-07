@@ -672,35 +672,6 @@ If the poll fetches using the http protocol, the 'ls' like entries must be deriv
 an html page. The default plugin **html_page** provided with the package, gives an idea of
 how to parse such a page into a python directory manageable by **sr_poll**.
 
-A do_nothing.py script for **on_post** could be:
-
-class Transformer(object):
-      def __init__(self):
-          pass
-
-      def perform(self,parent):
-          logger = parent.logger
-
-          logger.info("I have no effect but adding this log line")
-
-          return True
-
-transformer  = Transformer()
-self.on_post = transformer.perform
-
-The only arguments the script receives is **parent**, which is an instance of
-the **sr_poll** class.
-
-The **do_poll** script could be written to support other protocols than
-ftp,ftps,sftp.  Again this script would be responsible to determine
-what to do under its protocol with the various options **destination**,
-**directory**, and should it determine to post a
-file, it would need to build its url, partstr, sumstr and  use
-
-**parent.poster.post(parent.exchange,url,parent.to_clusters, \**
-**                   partstr,sumstr,rename,remote_file)**
-
-to post the message, applying accept/reject clauses and triggering on_post processing.
 
 post|sr3_post|sr_cpost
 ----------------------
@@ -916,6 +887,7 @@ The **sr_sarra** is an `sr_subscribe(1) <sr_subscribe.1.rst>`_  with the followi
 
    mirror True
 
+
 Specific consuming requirements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -927,14 +899,13 @@ or a malicious user may set the values incorrectly.
 
 - **source_from_exchange  <boolean> (default: False)**
 
-Upon reception, the program will set these values
-in the parent class (here cluster is the value of
-option **cluster** taken from default.conf):
+Upon reception, the program will set these values in the parent class (here 
+cluster is the value of option **cluster** taken from default.conf):
 
-self.msg.headers['source']       = <brokerUser>
-self.msg.headers['from_cluster'] = cluster
+msg['source']       = <brokerUser>
+msg['from_cluster'] = cluster
 
-overriding any values present in the message.  This setting
+overriding any values present in the message. This setting
 should always be used when ingesting data from a
 user exchange.
 
@@ -1494,8 +1465,10 @@ flow_callback options
 Sarracenia makes extensive use of small python code snippets that customize
 processing called *flow_callbacks* Flow_callbacks define and use additional settings.
 
-  flow_callback sarra.flowcb.msg.log.Log
+  flow_callback sarracenia.flowcb.msg.log.Log
 
+The module refers to the sarracenia/flowcb/msg/log.py file in the installed package.
+In that file, the Log class is the one searched for entry points.
 The log.py file included in the package is like this::
 
   from sarra.flowcb import FlowCB
@@ -1506,12 +1479,12 @@ The log.py file included in the package is like this::
   class Log(Plugin):
 
     def on_filter(self,worklist):
-        for msg in worklist:
+        for msg in worklist.incoming:
             logger.info( "msg/log received: %s " % msg )
         return worklist
 
-It's a normal python class, declared as a child of the self.plugin.Plugin
-type. The methods (function names) in the plugin describe when
+It's a normal python class, declared as a child of the sarracenia.flowcb.FlowCB
+class. The methods (function names) in the plugin describe when
 those routines will be called. For more details consult the 
 `Programmer's Guide <Prog.rst>`_
 
@@ -3108,177 +3081,127 @@ If either the remote file is newer, or there is no local file, it will be downlo
 and the remote_config_url line will be prepended to it, so that it will continue 
 to self-update in future.
 
+Extensions
+==========
 
+One can override or add functionality with python scripting.
 
-CALLBACK SCRIPTS
-================
-
-One can override or add functionality with python flowcb scripts.
 Sarracenia comes with a variety of example plugins, and uses some to implement base functionality,
-such as logging (implemented by default use of msg_log, file_log, post_log plugins).
+such as logging (implemented by default use of msg_log, file_log, post_log plugins)::
+  
+  fractal% sr3 list fcb
+  Provided callback classes: ( /home/peter/Sarracenia/sr3/sarracenia ) 
+  flowcb/filter/deleteflowfiles.py flowcb/filter/fdelay.py          flowcb/filter/pclean_f90.py      flowcb/filter/pclean_f92.py
+  flowcb/gather/file.py            flowcb/gather/message.py         flowcb/line_log.py               flowcb/line_mode.py 
+  flowcb/log.py                    flowcb/nodupe.py                 flowcb/pclean.py                 flowcb/post/message.py
+  flowcb/retry.py                  flowcb/sample.py                 flowcb/script.py                 flowcb/v2wrapper.py
+  flowcb/work/rxpipe.py            
+  fractal% 
 
-Users can place their own scripts in the script sub-directory
-of their config directory tree ( on Linux, the ~/.config/sarra/plugins). 
+Users can place their own scripts in the script sub-directory of their config directory 
+tree ( on Linux, the ~/.config/sarra/plugins).  
 
-There are three varieties of scripts:  and on\_*.  Do\_* scripts are used
-to implement functions, adding or replacing built-in functionality, for example, to implement
-additional transfer protocols.
+flow_callback and flow_callback_prepend <class>
+-----------------------------------------------
 
-- do_poll - to implement additional polling protocols and processes.
+The flow_callback directive takes a class to load can scan for entry points as an argument::
+
+    flow_callback sarracenia.flowcb.log.Log
+   
+With this directive in a configuration file, the Log class found in installed package will be used.
+That module logs messages *on_filter* (after messages have passed through the accept/reject masks.)
+and the *on_work* (after the file has been downloaded or sent). Here is the source code 
+for that callback class::
+
+  import json
+  import logging
+  from sarracenia.flowcb import FlowCB
+  from sarracenia.flowcb.gather import msg_dumps
+
+  logger = logging.getLogger(__name__)
 
 
-These transfer protocol scripts should be declared using the **import** option.
+  class Log(FlowCB):
+    def __init__(self, options):
+
+        # FIXME: should a logging module have a logLevel setting?
+        #        just put in a cookie cutter for now...
+        if hasattr(options, 'logLevel'):
+            logger.setLevel(getattr(logging, options.logLevel.upper()))
+        else:
+            logger.setLevel(logging.INFO)
+
+    def on_filter(self, worklist):
+        for msg in worklist.incoming:
+            logger.info("accepted: %s " % msg_dumps(msg) )
+
+    def on_work(self, worklist):
+        for msg in worklist.ok:
+            logger.info("worked successfully: %s " % msg_dumps(msg) )
+
+If you have multiple callbacks configured, they will be called in the same order they are 
+configuration file. components in sr3 are often differentiated by the callbacks configured.
+For example, a *watch* is a flow with sarracenia.flowcb.gather.file.File class that
+is used to scan directories. A Common need when a data source is not easily accessed
+with python scripts is to use the script callback::
+
+   flow_callback_prepend sarracenia.flowcb.script.Script
+
+   script_gather get_weird_data.sh
+
+Using the *_prepend* variant of the *flow_callback* option, will have the Script callback
+class's entry point, before the File callback... So A script will be executed, and then
+the directory will be checked for new files.  Here is part of the Script callback class::
+    
+    import logging
+    from sarracenia.flowcb import FlowCB
+    from sarracenia.flowcb.gather import msg_dumps
+    import subprocess
+    
+    logger = logging.getLogger(__name__)
+    
+    
+    class Script(FlowCB):
+    
+       .
+       .
+       .
+    
+        def run_script( self, script ):
+            try: 
+                subprocess.run( self.o.script_gather, check=True )
+            except Exception as err:
+                logging.error("subprocess.run failed err={}".format(err))
+                logging.debug("Exception details:", exc_info=True)
+    
+    
+        def gather(self ):
+            if hasattr( self.o, 'script_gather') and self.o.script_gather is not None :
+                self.run_script( self.o.script_gather )
+            return []
+    
+     
+Integrity
+---------
+
+One can use the *import* directive to add new checksum algorithms by sub-classing
+sarracenia.integrity.Integrity.
+
+Transfer 
+--------
+
+One can add support for additional methods of downloading data by sub-classing
+sarracenia.transfer.Transfer.
+
+Transfer protocol scripts should be declared using the **import** option.
 Aside the targetted built-in function(s), a module **registered_as** that defines
 a list of protocols that these functions provide.  Example :
 
 def registered_as(self) :
        return ['ftp','ftps']
 
-In the example above, if function **do_download** was provided in that plugin
-then for any download of a message with an ftp or ftps url, it is that function that would be called.
 
-
-On\_* plugins are used more often. They allow actions to be inserted to augment the default
-processing for various specialized use cases. The scripts are invoked by having a given
-configuration file specify an on_<event> option. The event can be one of:
-
-- plugin -- declare a set of plugins to achieve a collective function.
-
-- on_data -- when the reception of a block of data has occured, trigger a transformation
-  action.  As this entry point is for content transformation, the api adds the content
-  of the block as an additional argument, and rather than returning True or Fale,
-  it returns the transformed data. This isn't particularly efficient, so should only be used
-  to transform small files, but it provides a way of reducing overall i/o by transforming
-  during transfer. It is imcompatible with binary transfer plugins (do_download, do_send )
-  When active, the checksum of downloaded data will be set according to the transformed
-  content, rather than the original.
-
-- on_file -- When the reception of a file has been completed, trigger followup action.
-  The **on_file** option defaults to file_log, which writes a downloading status message.
-
-- on_heartbeat -- trigger periodic followup action (every *heartbeat* seconds.)
-  defaults to heatbeat_cache, and heartbeat_log.  heartbeat_cache cleans the cache periodically,
-  and heartbeat_log prints a log message ( helpful in detecting the difference between problems
-  and inactivity. ) 
-
-- on_html_page -- In **sr_poll**, turns an html page into a python dictionary used to keep in mind
-  the files already published. The package provide a working example under plugins/html_page.py.
-
-- on_line -- In **sr_poll** a line from the ls on the remote host is read in.
-
-- on_message -- when an sr3_post(7) message has been received.  For example, a message has been received
-  and additional criteria are being evaluated for download of the corresponding file.  If the on_msg
-  script returns false, then it is not downloaded.  (See discard_when_lagging.py, for example,
-  which decides that data that is too old is not worth downloading).
-
-- on_part -- Large file transfers are split into parts.  Each part is transferred separately.
-  When a completed part is received, one can specify additional processing.
-
-- on_post -- when a data source (or sarra) is about to post a message, permit customized
-  adjustments of the post. on_part also defaults to post_log, which prints a message
-  whenever a file is to be posted.
-
-- on_start -- runs on startup, for when a plugin needs to recover state.
-
-- on_stop -- runs on startup, for when a plugin needs to save state.
-
-- on_watch -- when the gathering of **sr_watch** events starts, on_watch plugin is invoked.
-  It could be used to put a file in one of the watch directory and have it published when needed.
-
-
-FIXME: v2
-The simplest example of a plugin: A do_nothing.py script for **on_file**::
-
-  class Transformer(object): 
-      def __init__(self):
-          pass
-
-      def on_file(self,parent):
-          logger = parent.logger
-
-          logger.info("I have no effect but adding this log line")
-
-          return True
-
-  self.plugin = 'Transformer'
-
-The last line of the script is specific to the kind of plugin being
-written, and must be modified to correspond (on_file or an on_file, on_message 
-for an on_message, etc...) the plugin's stack. For example, one can have 
-multiple *on_message* plugins specified, and they will be invoked in the order 
-given in the configuration file.  Should one of these scripts return False, 
-the processing of the message/file will stop there.  Processing will only 
-continue if all configured plugins return True.  One can specify *on_message None* to 
-reset the list to no plugins (removes msg_log, so it suppresses logging of message receipt).
-
-The only argument the script receives is **parent**, which is a data
-structure containing all the settings, as **parent.<setting>**, and
-the content of the message itself as **parent.msg** and the headers
-are available as **parent.msg[ <header> ]**.  The path to write a file
-to is available as there is also **parent.msg.new_dir** / **parent.msg.new_file**
-
-There are also registered plugins used to add or overwrite built-in 
-transfer protocol scripts. They should be declared using the **plugin** option.
-They must register the protocol (url scheme) that they intend to provide services for.
-The script for transfer protocols are :
-
-- do_download - to implement additional download protocols.
-
-- do_get  - under ftp/ftps/http/sftp implement the get part of the download process
-
-- do_poll - to implement additional polling protocols and processes.
-
-- do_put  - under ftp/ftps/http/sftp implement the put part of the send process
-
-- do_send - to implement additional sending protocols and processes.
-
-The registration is done with a module named **registered_as** . It defines
-a list of protocols that the provided module supports.
-
-The simplest example of a plugin: A do_nothing.py script for **on_file**::
-
-  class Transformer(object): 
-      def __init__(self):
-          pass
-
-      def on_put(self,parent):
-          msg = parent.msg
-
-          if ':' in msg.relpath : return None
-
-          netloc = parent.destination.replace("sftp://",'')
-          if netloc[-1] == '/' : netloc = netloc[:-1]
-
-          cmd = '/usr/bin/scp ' + msg.relpath + ' ' +  netloc + ':' + msg.new_dir + os.sep + msg.new_file
-
-          status, answer = subprocess.getstatusoutput(cmd)
-
-          if status == 0 : return True
-
-          return False
-
-      def registered_as(self) :
-          return ['sftp']
-
-  self.plugin = 'Transformer'
-
-
-This plugin registers for sftp. A sender with such a plugin would put the product using scp.
-It would be confusing for scp to have the source path with a ':' in the filename... Here the
-case is handled by returning None and letting python sending the file over. The **parent**
-argument holds all the needed program information.
-Some other available variables::
-
-  parent.msg.new_file     :  name of the file to write
-  parent.msg.new_dir      :  name of the directory in which to write the file
-  parent.msg.local_offset :  offset position in the local file
-  parent.msg.offset       :  offset position of the remote file
-  parent.msg.length       :  length of file or part
-  parent.msg.in_partfile  :  T/F file temporary in part file
-  parent.msg.local_url    :  url for reannouncement
-
-
-See the `Programming Guide <Prog.rst>`_ for more information on plugin development.
+See the `Programming Guide <Prog.rst>`_ for more information on Extension development.
 
 
 Queue Save/Restore

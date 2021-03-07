@@ -156,6 +156,8 @@ One can also see which plugins are active in a configuration by looking at the m
    .
    blacklab% 
 
+Use of the *flow_callback_prepend* option will have the the class loaded at the beginning of the list, rather than
+at the end.
 
 Settings
 --------
@@ -253,6 +255,11 @@ One would start with the one of the existing classes, copy it somewhere else in 
 and build your extension. These classes are added to Sarra using the *import* option
 in the configuration files. the __init__ files in the source directories are the good
 place to look for information about each class's API.
+
+
+The Simplest Flow_Callback
+--------------------------
+
 
 
 Sample Extensions
