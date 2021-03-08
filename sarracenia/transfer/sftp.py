@@ -385,7 +385,7 @@ class Sftp(Transfer):
 
         return rw_length
 
-    def getAccelerated(self, msg, remote_file, local_file, length):
+    def getAccelerated(self, msg, remote_file, local_file, length=0):
 
         base_url = msg['baseUrl'].replace('sftp://', '')
         if base_url[-1] == '/':
@@ -554,6 +554,25 @@ class Sftp(Transfer):
         alarm_cancel()
 
         return rw_length
+
+    def putAccelerated(self, msg, local_file, remote_file, length=0):
+
+        dest_baseUrl = self.o.destination.replace('sftp://', '')
+        if dest_baseUrl[-1] == '/':
+            dest_baseUrl = dest_baseUrl[0:-1]
+        arg2 = dest_baseUrl + ':' + msg['new_dir'] + os.sep + remote_file
+        arg2 = arg2.replace(' ', '\ ')
+        arg1 = local_file
+
+        cmd = self.o.accel_scp_command.split() + [arg1, arg2]
+        logger.info("accel_sftp:  %s" % ' '.join(cmd))
+        p = subprocess.Popen(cmd)
+        p.wait()
+        if p.returncode != 0:
+            return -1
+        # FIXME: faking success... not sure how to check really.
+        sz = int(msg['size'])
+        return sz
 
     # rename
     def rename(self, remote_old, remote_new):

@@ -95,17 +95,21 @@ class Transfer():
      connect
      close
     
-     if a source    : get    (remote,local)
-                      ls     ()
-                      cd     (dir)
-                      delete (path)
+     if downloading : 
+         get    ( msg, remote_file, local_file, remote_offset=0, local_offset=0, length=0 )
+         getAccellerated( msg, remote_file, local_file, length ) 
+         ls     ()
+         cd     (dir)
+         delete (path)
     
-     if a sender    : put    (local,remote)
-                      cd     (dir)
-                      mkdir  (dir)
-                      umask  ()
-                      chmod  (perm)
-                      rename (old,new)
+     if a sending    : 
+         put    ( msg, remote_file, local_file, remote_offset=0, local_offset=0, length=0 )
+         putAccelerated ( msg, remote_file, local_file, length=0 )
+         cd     (dir)
+         mkdir  (dir)
+         umask  ()
+         chmod  (perm)
+         rename (old,new)
     
      SFTP : supports remote file seek... so 'I' part possible
     

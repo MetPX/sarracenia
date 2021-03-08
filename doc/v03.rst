@@ -467,6 +467,8 @@ Items from the TODO list that have been addressed.
 * log incoherency between 'info' and logging.INFO prevents proper log control.
   FIXED 2021/02.
 
+* add SSL support to moth/mqtt.py
+
 
 TODO
 ----
@@ -497,7 +499,8 @@ TODO
 * port rest of v02 plugins to v03 equivalents and add mappings in config.py,
   so that we have barely any v2's left.
 
-* add SSL support to moth/mqtt.py
+* missing accelerators:  sftp.putAcc, ftp.putAc, ftp.getAc, file.getAc, file.putAc
+
 
 Not Baked/Thinking
 ------------------

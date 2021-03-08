@@ -1252,9 +1252,18 @@ class Flow:
 
             offset = 0
             if ('blocks' in msg) and (msg['blocks']['method'] == 'inplace'):
-                offset = msg.offset
+                offset = msg['offset']
 
             new_offset = msg['local_offset']
+
+            if 'size' in msg:
+                block_length = msg['size']
+                str_range = ''
+                if ('blocks' in msg) and (
+                        msg['blocks']['method'] == 'inplace'):
+                    block_length = msg['blocks']['size']
+                    str_range = 'bytes=%d-%d' % (remote_offset, remote_offset +
+                                                 block_length - 1)
 
             str_range = ''
             if ('blocks' in msg) and (msg['blocks']['method'] == 'inplace'):
@@ -1262,18 +1271,36 @@ class Flow:
 
             #upload file
 
+            logger.debug( "hasattr=%s, thresh=%d, len=%d, remote_off=%d, local_off=%d " % \
+                ( hasattr( self.proto[self.scheme], 'putAccelerated'),  \
+                self.o.accel_threshold, block_length, new_offset,  msg['local_offset'] ) )
+
+            accelerated = hasattr( self.proto[self.scheme], 'putAccelerated') and \
+                (self.o.accel_threshold > 0 ) and (block_length > self.o.accel_threshold) and \
+                (new_offset == 0) and ( msg['local_offset'] == 0)
+
+
             if inflight == None or (('blocks' in msg) and (msg['blocks']['method'] != 'inplace')):
-                self.proto[self.scheme].put(msg, local_file, new_file)
+                if accelerated:
+                    len_written = self.proto[self.scheme].putAccelerated( msg, local_file, new_file)
+                else:
+                    len_written = self.proto[self.scheme].put(msg, local_file, new_file)
             elif (('blocks' in msg) and (msg['blocks']['method'] == 'inplace')):
                 self.proto[self.scheme].put(msg, local_file, new_file, offset,
                                             new_offset, msg['size'])
             elif inflight == '.':
                 new_inflight_path = '.' + new_file
-                self.proto[self.scheme].put(msg, local_file, new_inflight_path)
+                if accelerated:
+                    len_written = self.proto[self.scheme].putAccelerated( msg, local_file, new_inflight_path)
+                else:
+                    len_written = self.proto[self.scheme].put(msg, local_file, new_inflight_path)
                 self.proto[self.scheme].rename(new_inflight_path, new_file)
             elif inflight[0] == '.':
                 new_inflight_path = new_file + inflight
-                self.proto[self.scheme].put(msg, local_file, new_inflight_path)
+                if accelerated:
+                    len_written = self.proto[self.scheme].putAccelerated( msg, local_file, new_inflight_path)
+                else:
+                    len_written = self.proto[self.scheme].put(msg, local_file, new_inflight_path)
                 proto.rename(new_inflight_path, new_file)
             elif options.inflight[-1] == '/':
                 try:
@@ -1283,10 +1310,17 @@ class Flow:
                 except:
                     pass
                 new_inflight_path = options.inflight + new_file
-                self.proto[self.scheme].put(msg, local_file, new_inflight_path)
+                if accelerated:
+                    len_written = self.proto[self.scheme].putAccelerated( msg, local_file, new_inflight_path)
+                else:
+                    len_written = self.proto[self.scheme].put(msg, local_file, new_inflight_path)
                 self.proto[self.scheme].rename(new_inflight_path, new_file)
             elif inflight == 'umask':
                 self.proto[self.scheme].umask()
+                if accelerated:
+                    len_written = self.proto[self.scheme].putAccelerated( msg, local_file, new_file)
+                else:
+                    len_written = self.proto[self.scheme].put(msg, local_file, new_file)
                 self.proto[self.scheme].put(msg, local_file, new_file)
 
             # fix permission
