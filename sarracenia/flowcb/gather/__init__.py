@@ -26,6 +26,12 @@ logger = logging.getLogger(__name__)
 """
 
 def msg_dumps(msg):
+   """
+       print a message in a compact but relatively compact way.
+       msg is a python dictionary. if there is a field longer than maximum_field_length, 
+       truncate.
+
+   """
 
    maximum_field_length=120
 
@@ -71,6 +77,18 @@ def msg_validate(msg):
     return res
 
 def msg_init(path, o, lstat=None):
+    """
+        return an message suitable for placement on a worklist.
+        A message is a python dictionary with a certain set of fields in it.
+        The message returned will have the necessary fields for processing and posting. 
+
+        The message is built for a file is based on the given path, options (o), and lstat (output of os.stat)
+         
+        The lstat record is used to build 'atime', 'mtime' and 'mode' fields if 
+        preserve_time and preserve_mode options are set.
+
+        if no lstat record is supplied, then those fields will not be set.
+    """
 
     msg = {}
     msg['new_dir'] = os.path.dirname(path)
