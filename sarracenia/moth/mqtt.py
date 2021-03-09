@@ -76,9 +76,7 @@ class MQTT(Moth):
         self.o.update(default_options)
         self.o.update(options)
 
-        
         logger.setLevel(getattr(logging, self.o['logLevel'].upper()))
-        
 
         if self.o['mqtt_v5']:
             self.proto_version=paho.mqtt.client.MQTTv5
@@ -90,6 +88,8 @@ class MQTT(Moth):
             self.__getSetup(self.o) 
         else:
             self.__putSetup(self.o)
+
+        logger.info("note: mqtt support is newish, not very well tested")
         
 
     def __sub_on_connect(client, userdata, flags, rc, properties=None):
