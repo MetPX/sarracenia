@@ -469,6 +469,8 @@ Items from the TODO list that have been addressed.
 
 * add SSL support to moth/mqtt.py
 
+* missing accelerators:  sftp.putAcc, ftp.putAc, ftp.getAc, file.getAc, 
+
 
 TODO
 ----
@@ -499,7 +501,6 @@ TODO
 * port rest of v02 plugins to v03 equivalents and add mappings in config.py,
   so that we have barely any v2's left.
 
-* missing accelerators:  sftp.putAcc, ftp.putAc, ftp.getAc, file.getAc, file.putAc
 
 
 Not Baked/Thinking

@@ -2089,16 +2089,30 @@ accel_treshold <byte count> (default: 0- disabled.)
 The accel_threshold indicates the minimum size of file being transferred for
 which a binary downloader will be launched.
 
-accel_wget_command <cmd> (default: /usr/bin/wget) 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+accel_xx_command 
+~~~~~~~~~~~~~~~~
 
-The binary used to accellerate https downloads
+Can specify alternate binaries for downloaders to tune for specific cases.
 
++-----------------------------------+--------------------------------+
+|  Option                           |  Defaul value                  |
++-----------------------------------+--------------------------------+
+|  accel_wget_command               |  /usr/bin/wget %s -O %d        |
++-----------------------------------+--------------------------------+
+|  accel_scp_command                |  /usr/bin/scp %s %d            |
++-----------------------------------+--------------------------------+
+|  accel_cp_command                 |  /usr/bin/cp  %s %d            |
++-----------------------------------+--------------------------------+
+|  accel_ftpget_command             |  /usr/bin/ncftpget %s %d       |
++-----------------------------------+--------------------------------+
+|  accel_ftpput_command             |  /usr/bin/ncftpput %s %d       |
++-----------------------------------+--------------------------------+
 
-accel_scp_command <cmd> (default: /usr/bin/scp) 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+use the %s to stand-in for the name of the source file, and %d for the
+file being written.  An example setting to override with::
 
-The binary used to accellerate sftp/scp downloads.
+   accel_cp_command dd if=%s of=%d bs=4096k
+
 
 
 DELIVERY SPECIFICATIONS

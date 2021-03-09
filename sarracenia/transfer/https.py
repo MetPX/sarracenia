@@ -66,7 +66,7 @@ class Https(Transfer):
 
         super().__init__(proto, options)
 
-        self.o.add_option('accel_wget_command', 'str', '/usr/bin/wget')
+        self.o.add_option('accel_wget_command', 'str', '/usr/bin/wget %s -O %d')
 
         logger.debug("sr_http __init__")
 
@@ -190,7 +190,8 @@ class Https(Transfer):
         arg1 = arg1.replace(' ', '\ ')
         arg2 = local_file
 
-        cmd = self.o.accel_wget_command.split() + [arg1, '-O', arg2]
+        cmd = self.o.accel_wget_command.replace( '%s', arg1 )
+        cmd = cmd.replace( '%d', arg2 ).split()
         logger.info("accel_wget: %s" % ' '.join(cmd))
         p = subprocess.Popen(cmd)
         p.wait()

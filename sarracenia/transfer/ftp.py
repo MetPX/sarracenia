@@ -31,7 +31,7 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 
-import ftplib, os, sys, time
+import ftplib, os, subprocess, sys, time
 import logging
 from sarracenia.transfer import Transfer
 from sarracenia.transfer import alarm_cancel, alarm_set, alarm_raise
@@ -64,6 +64,10 @@ class Ftp(Transfer):
     def __init__(self, proto, options):
 
         super().__init__(proto, options)
+
+        self.o.add_option('accel_ftpput_command', 'str', '/usr/bin/ncftpput %s %d')
+        self.o.add_option('accel_ftpget_command', 'str', '/usr/bin/ncftpget %s %d')
+
         logger.debug("sr_ftp __init__")
         self.connected = False
         self.ftp = None
@@ -308,6 +312,26 @@ class Ftp(Transfer):
 
         return rw_length
 
+    def getAccelerated(self, msg, remote_file, local_file, length=0):
+
+        base_url = msg['baseUrl']
+        if base_url[-1] == '/':
+            base_url = base_url[0:-1]
+        arg1 = base_url + self.pwd + os.sep + remote_file
+        arg1 = arg1.replace(' ', '\ ')
+        arg2 = local_file
+
+        cmd = self.o.accel_ftpget_command.replace( '%s', arg1 )
+        cmd = cmd.replace( '%d', arg2 ).split()
+
+        logger.info("accel_ftp:  %s" % ' '.join(cmd))
+        p = subprocess.Popen(cmd)
+        p.wait()
+        if p.returncode != 0:
+            return -1
+        sz = os.stat(arg2).st_size
+        return sz
+
     # getcwd
     def getcwd(self):
         alarm_set(self.o.timeout)
@@ -441,6 +465,28 @@ class Ftp(Transfer):
         self.local_read_close(src)
 
         return rw_length
+
+    def putAccelerated(self, msg, local_file, remote_file, length=0):
+
+        dest_baseUrl = self.o.destination
+        if dest_baseUrl[-1] == '/':
+            dest_baseUrl = dest_baseUrl[0:-1]
+        arg2 = dest_baseUrl + msg['new_dir'] + os.sep + remote_file
+        arg2 = arg2.replace(' ', '\ ')
+        arg1 = local_file
+
+        cmd = self.o.accel_ftpput_command.replace( '%s', arg1)
+        cmd = cmd.replace('%d', arg2).split()
+
+        logger.info("accel_ftp:  %s" % ' '.join(cmd))
+        p = subprocess.Popen(cmd)
+        p.wait()
+        if p.returncode != 0:
+            return -1
+        # FIXME: faking success... not sure how to check really.
+        sz = int(msg['size'])
+        return sz
+
 
     # rename
     def rename(self, remote_old, remote_new):

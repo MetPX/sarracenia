@@ -34,7 +34,7 @@
 
 from sarracenia.transfer import Transfer
 
-import os, stat, sys, time
+import os, stat, subprocess, sys, time
 
 import logging
 
@@ -64,6 +64,8 @@ logger = logging.getLogger(__name__)
 class File(Transfer):
     def __init__(self, proto, options):
         super().__init__(proto, options)
+
+        self.o.add_option("accel_cp_command", "str", "/usr/bin/cp %s %d")
         logger.debug("sr_file __init__")
         self.cwd = None
 
@@ -143,6 +145,27 @@ class File(Transfer):
         self.local_write_close(dst)
 
         return rw_length
+
+    def getAccelerated(self, msg, remote_file, local_file, length=0):
+
+        base_url = msg['baseUrl'].replace('file:', '')
+        if base_url[-1] == '/':
+            base_url = base_url[0:-1]
+        arg1 = base_url + self.cwd + os.sep + remote_file
+        arg1 = arg1.replace(' ', '\ ')
+        arg2 = local_file
+
+        cmd = self.o.accel_cp_command.replace( '%s', arg1 ) 
+        cmd = cmd.replace( '%d', arg2 ).split()
+
+        logger.info("accel_cp:  %s" % ' '.join(cmd))
+        p = subprocess.Popen(cmd)
+        p.wait()
+        if p.returncode != 0:
+            return -1
+        sz = os.stat(arg2).st_size
+        return sz
+
 
     def getcwd(self):
         return os.getcwd()
