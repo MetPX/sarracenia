@@ -471,6 +471,8 @@ Items from the TODO list that have been addressed.
 
 * missing accelerators:  sftp.putAcc, ftp.putAc, ftp.getAc, file.getAc, 
 
+* migrate sr_credentials.py to sarracenia/credentials.py.
+
 
 TODO
 ----
@@ -479,8 +481,6 @@ TODO
 * remove *post* from v03 topic trees.
 
 * cleanup entry points: sr_audit, sr_tailf, sr_log2save, 
-
-* migrate sr_credentials.py to sarracenia/credentials.py.
 
 * test with dynamic-flow.
 

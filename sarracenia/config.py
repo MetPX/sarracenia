@@ -24,13 +24,13 @@ import shutil
 import socket
 import sys
 import time
+import urllib, urllib.parse
 
 from random import randint
 
 import sarracenia
-from sarracenia.sr_credentials import *
-
 from sarracenia import durationToSeconds, chunksize_from_str
+import sarracenia.credentials
 import sarracenia.flow
 
 from sarracenia.flow.sarra import default_options as sarradefopts
@@ -434,7 +434,7 @@ class Config:
         self.__post_broker = None
 
         if Config.credentials is None:
-            Config.credentials = sr_credentials()
+            Config.credentials = sarracenia.credentials.Credentials()
             Config.credentials.read(get_user_config_dir() + os.sep +
                                     "credentials.conf")
         # FIXME... Linux only for now, no appdirs

@@ -8,7 +8,7 @@
 # Sarracenia repository: https://github.com/MetPX/sarracenia
 # Documentation: https://github.com/MetPX/sarracenia
 #
-# sr_credentials.py : python3 utility tool to configure all protocol credentials
+# credentials.py : python3 utility tool to configure all protocol credentials
 #
 #
 # Code contributed by:
@@ -82,7 +82,7 @@ class credential_details:
 # class credentials
 
 
-class sr_credentials:
+class Credentials:
     def __init__(self, Unused_logger=None):
         """
            logger argument no longer used... left there for API compat with old calls.
@@ -90,7 +90,7 @@ class sr_credentials:
         self.credentials = {}
         self.pwre = re.compile(':[^/:]*@')
 
-        logger.debug("sr_credentials __init__")
+        logger.debug("__init__")
 
     def add(self, urlstr, details=None):
 
@@ -102,12 +102,12 @@ class sr_credentials:
         self.credentials[urlstr] = details
 
     def get(self, urlstr):
-        #logger.debug("sr_credentials get %s" % urlstr)
+        #logger.debug("Credentials get %s" % urlstr)
 
         # already cached
 
         if self.has(urlstr):
-            #logger.debug("sr_credentials get in cache %s %s" % (urlstr,self.credentials[urlstr]))
+            #logger.debug("Credentials get in cache %s %s" % (urlstr,self.credentials[urlstr]))
             return True, self.credentials[urlstr]
 
         # create url object if needed
@@ -139,7 +139,7 @@ class sr_credentials:
         return False, self.credentials[urlstr]
 
     def has(self, urlstr):
-        logger.debug("sr_credentials has %s" % urlstr)
+        logger.debug("has %s" % urlstr)
         return urlstr in self.credentials
 
     def isTrue(self, S):
@@ -190,7 +190,7 @@ class sr_credentials:
         return True
 
     def parse(self, line):
-        #logger.debug("sr_credentials parse %s" % self.pwre.sub(':<secret!>@', line, count=1) )
+        #logger.debug("parse %s" % self.pwre.sub(':<secret!>@', line, count=1) )
 
         try:
             sline = line.strip()
@@ -255,11 +255,11 @@ class sr_credentials:
             self.add(urlstr, details)
 
         except:
-            logger.error("sr_credentials/parse %s" % line)
+            logger.error("credentials/parse %s" % line)
             logger.debug('Exception details: ', exc_info=True)
 
     def read(self, path):
-        logger.debug("sr_credentials read")
+        logger.debug("read")
 
         # read in provided credentials (not mandatory)
         try:
@@ -270,9 +270,9 @@ class sr_credentials:
                 for line in lines:
                     self.parse(line)
         except:
-            logger.error("sr_credentials/read path = %s" % path)
+            logger.error("credentials/read path = %s" % path)
             logger.debug('Exception details: ', exc_info=True)
-        #logger.debug("credentials = %s\n" % self.credentials)
+        #logger.debug("Credentials = %s\n" % self.credentials)
 
     def resolve(self, urlstr, url=None):
 
@@ -309,7 +309,7 @@ class sr_credentials:
             # resolved : cache it and return
 
             self.credentials[urlstr] = details
-            #logger.debug("sr_credentials get resolved %s %s" % (urlstr,details))
+            #logger.debug("Credentials get resolved %s %s" % (urlstr,details))
             return True, details
 
         return False, None

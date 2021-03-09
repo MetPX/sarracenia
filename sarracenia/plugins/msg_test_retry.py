@@ -8,11 +8,6 @@
 
 import random
 
-try:
-    from sr_credentials import *
-except:
-    from sarracenia.sr_credentials import *
-
 
 class Msg_test_retry():
     def __init__(self, parent):

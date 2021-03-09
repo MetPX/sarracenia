@@ -25,11 +25,6 @@ usage:
 """
 
 import poplib, imaplib, datetime, logging, email
-try:
-    from sr_credentials import *
-except:
-    from sarracenia.sr_credentials import *
-
 
 class Fetcher(object):
     def __init__(self, parent):

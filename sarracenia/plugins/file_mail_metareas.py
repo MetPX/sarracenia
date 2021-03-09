@@ -32,10 +32,6 @@ The EGC code (i.e: egc ocean,c1,c2,c3,c4,c5) in the subject field to represent t
 
 import logging, subprocess, sys, os, os.path, string
 from stat import ST_SIZE
-try:
-    from sr_credentials import *
-except:
-    from sarracenia.sr_credentials import *
 
 
 class MetMailer(object):

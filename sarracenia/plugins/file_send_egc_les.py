@@ -34,10 +34,6 @@ import logging, telnetlib, sys, os, stat, time
 
 from sarracenia import nowflt
 
-try:
-    from sr_credentials import *
-except:
-    from sarracenia.sr_credentials import *
 
 
 class LESSender(object):
