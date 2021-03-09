@@ -16,6 +16,10 @@ class Log(FlowCB):
         else:
             logger.setLevel(logging.INFO)
 
+    def gather(self):
+        logger.info("gathering")
+        return []
+
     def on_filter(self, worklist):
         for msg in worklist.incoming:
             logger.info("accepted: %s " % msg_dumps(msg) )
@@ -25,3 +29,15 @@ class Log(FlowCB):
             logger.info("worked successfully: %s " % msg_dumps(msg) )
 
 
+    def on_stop(self):
+        logger.info("stopping")
+
+    def on_start(self):
+        logger.info("starting")
+
+    def on_housekeeping(self):
+        logger.info("housekeeping")
+
+    def post(self, worklist):
+        for msg in worklist.ok:
+            logger.info("posting %s" % msg )
