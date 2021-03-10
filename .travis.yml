@@ -26,8 +26,7 @@ matrix:
 
 branches:
   only:
-  - master
-  - issue187
+  - main
 
 install:
 - travis/install.sh
