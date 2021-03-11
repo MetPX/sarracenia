@@ -233,8 +233,10 @@ class sr_sftp(sr_proto):
                 self.sftp        = sftp
 
                 self.file_index_cache = self.user_cache_dir + os.sep + '.dest_file_index'
-                if os.path.isfile(self.file_index_cache): self.load_file_index()
-                else: self.init_file_index()
+                # Prevent sr_senders from unnecessarily creating/loading a file index
+                if self.parent.program_name == 'sr_poll':
+                   if os.path.isfile(self.file_index_cache): self.load_file_index()
+                   else: self.init_file_index()
 
                 #alarm_cancel()
                 return True

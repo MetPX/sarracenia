@@ -1,9 +1,15 @@
+metpx-sarracenia (2.21.03) stable; urgency=medium
+
+  * bugfix #367, stop sftp from doing ls from initializing sender. (from Tyson)
+
+ -- Peter Silva <peter@bsqt.homeip.net>  Tue, 09 Mar 2021 23:58:57 -0500
+
 metpx-sarracenia (2.21.02) stable; urgency=medium
 
   * bugfix for sender with inflight=None, 
   * bugfix #360 bearer token support.
 
- -- Peter Silva <peter@fractal>  Thu, 04 Feb 2021 23:26:13 -0500
+ -- Peter Silva <peter@bsqt.homeip.net>  Thu, 04 Feb 2021 23:26:13 -0500
 
 metpx-sarracenia (2.20.08p1) stable; urgency=medium
 

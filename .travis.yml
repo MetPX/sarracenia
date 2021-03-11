@@ -1,6 +1,7 @@
 dist: bionic
 services: rabbitmq
 language: python
+arch: arm64-graviton2
 
 matrix:
   include:
@@ -26,8 +27,7 @@ matrix:
 
 branches:
   only:
-  - master
-  - issue187
+  - main
 
 install:
 - travis/install.sh
