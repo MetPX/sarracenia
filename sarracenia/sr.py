@@ -1056,7 +1056,8 @@ class sr_GlobalState:
                 xdc = sarracenia.moth.Moth.pubFactory(
                     o.post_broker, {
                         'broker': o.post_broker,
-                        'exchange': o.resolved_exchanges
+                        'exchange': o.resolved_exchanges,
+                        'message_strategy': { 'stubborn':True }
                     })
                 xdc.close()
 
@@ -1209,7 +1210,8 @@ class sr_GlobalState:
                         'declare': False,
                         'bind': False,
                         'broker': o.broker,
-                        'queue_name': o.resolved_qname
+                        'queue_name': o.resolved_qname,
+                        'message_strategy': { 'stubborn':True }
                     })
                 qdc.getCleanUp()
                 qdc.close()
@@ -1234,6 +1236,7 @@ class sr_GlobalState:
                                     'declare': False,
                                     'exchange': x,
                                     'broker': self.brokers[h]['admin'],
+                                    'message_strategy': { 'stubborn':True }
                                 })
                             qdc.putCleanUp()
                             qdc.close()

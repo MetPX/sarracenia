@@ -278,7 +278,7 @@ class AMQP(Moth):
                             'topic',
                             auto_delete=self.o['auto_delete'],
                             durable=self.o['durable'])
-                        logger.info('exchange declared: %s (as: %s) ' %
+                        logger.info('exchange declared: %s (as: %s)' %
                                     (x, broker_str))
 
                 # Setup Successfully Complete!

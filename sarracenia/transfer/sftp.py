@@ -253,6 +253,7 @@ class Sftp(Transfer):
             self.connected = True
             self.sftp = sftp
 
+            # FIXME #367 index cache init should only happen when polling, not sender.
             self.file_index_cache = self.o.cfg_run_dir + os.sep + '.dest_file_index'
             if os.path.isfile(self.file_index_cache): self.load_file_index()
             else: self.init_file_index()

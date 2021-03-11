@@ -501,6 +501,12 @@ TODO
 * port rest of v02 plugins to v03 equivalents and add mappings in config.py,
   so that we have barely any v2's left.
 
+* transfer/sftp.py remove file_index from implementation ( #367 ) depend on NoDupe.py
+
+* poll, remove listing files from implementation, just use NoDupe.py Tune nodupe for cases.
+  we will just keep using v2 for old polls, and write new polls in v3, so don't worry about
+  compat. They can never be vaguely similar... true/False? 
+
 
 
 Not Baked/Thinking
