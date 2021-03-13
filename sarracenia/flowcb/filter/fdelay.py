@@ -42,13 +42,17 @@ class FDelay(FlowCB):
             self.o.fdelay = self.o.fdelay[0]
 
         if type(self.o.fdelay) not in [int, float]:
-            self.o.fdelay = float(self.o.fdelay[0])
+            self.o.fdelay = float(self.o.fdelay)
 
     def on_filter(self, worklist):
         # Prepare msg delay test
-        logger.info('FIXME: fdelay?')
+        logger.info('FIXME: fdelay? setting: %f ' % self.o.fdelay )
         outgoing = []
         for m in worklist.incoming:
+            # Test msg delay
+            elapsedtime = nowflt() - timestr2flt(m['pubTime'])
+
+            logger.info('FIXME: message[pubTime]=%s elapsed: %f ' % (m['pubTime'], elapsedtime ) )
             if m['integrity']['method'] == 'remove':
                 # 'remove' msg will be removed by itself
                 worklist.rejected.append(m)
