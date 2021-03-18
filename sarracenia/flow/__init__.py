@@ -397,7 +397,7 @@ class Flow:
             #logger.warning('message: %s ' % m)
 
             if 'oldname' in m:
-                url = self.o.set_dir_pattern(m['baseUrl']) + os.sep + m['relPath']
+                url = self.o.set_dir_pattern(m['baseUrl']) + os.sep + m['oldname']
                 oldname_matched = False
                 for mask in self.o.masks:
                     pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
@@ -460,8 +460,9 @@ class Flow:
                                                 self.o.strip, self.o.pstrip,
                                                 self.o.flatten)
                     filtered_worklist.append(m)
-                elif self.o.log_reject:
-                    logger.info("reject: unmatched pattern=%s" % (url))
+                else:
+                    if self.o.log_reject:
+                        logger.info("reject: unmatched pattern=%s" % (url))
                     msg_set_report(m, 304, "not modified (filter)")
                     self.worklist.rejected.append(m)
 
@@ -735,7 +736,7 @@ class Flow:
         """
         ok = True
         if not os.path.isfile(old): 
-            logger.info( "old file %s not found, if destination (%s) missing, then fallback to copy" % (old,path) )
+            logger.info( "old file %s not found, if destination (%s) missing, then fall back to copy" % (old,path) )
             # if the destination file exists, assume rename already happenned, 
             # otherwis return false so that caller falls back to downloading/sending the file.
             return os.path.isfile(path)
@@ -823,6 +824,7 @@ class Flow:
                     self.worklist.ok.append(msg)
                 else:
                     # actual rename...
+                    logger.info( 'renaming. oldname: %s' % msg['oldname'] )
                     ok = self.renameOneItem(msg['oldname'], new_path)
                     # if rename succeeds, fall through to download object to find if the file renamed
                     # actually matches the one advertised, and potentially download it.
@@ -1481,7 +1483,7 @@ class Flow:
                 i = i + 1
             if not ok:
                 self.worklist.failed.append(msg)
-
+        self.worklist.incoming= []
 
 import sarracenia.flow.poll
 import sarracenia.flow.post

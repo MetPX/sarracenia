@@ -471,21 +471,23 @@ class AMQP(Moth):
                                         content_type='text/plain',
                                         application_headers=v2m.headers,
                                         expire=ttl)
+            body=v2m.notice
+            headers=v2m.headers
         else:  #assume v03
 
             raw_body = json.dumps(body)
+            headers=None
             AMQP_Message = amqp.Message(raw_body,
                                         content_type='application/json',
-                                        application_headers=None,
+                                        application_headers=headers,
                                         expire=ttl)
-
         ebo = 1
         while True:
             try:
                 self.channel.basic_publish(AMQP_Message, exchange, topic)
                 self.channel.tx_commit()
-                logger.info("published {} to {} under: {} ".format(
-                    body, exchange, topic))
+                logger.info("published body: {} headers: {} to {} under: {} ".format(
+                    body, headers, exchange, topic))
                 return  # no failure == success :-)
 
             except Exception as err:

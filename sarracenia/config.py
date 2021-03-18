@@ -81,7 +81,7 @@ list_options = []
 size_options = ['blocksize', 'bufsize', 'bytes_per_second', 'inline_max']
 
 str_options = [
-    'admin', 'broker', 'destination', 'directory', 'exchange',
+    'admin', 'baseDir', 'broker', 'destination', 'directory', 'exchange',
     'exchange_suffix', 'events', 'feeder', 'header', 'logLevel', 'path',
     'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
     'post_exchange_suffix', 'queue_name',
@@ -1499,16 +1499,7 @@ class Config:
     def set_newMessageFields(self, msg, urlstr, pattern, maskDir,
                              maskFileOption, mirror, strip, pstrip, flatten):
 
-        #if not self.download:
-        #    return
-
         msg['_deleteOnPost'] |= set( ['new_dir', 'new_file', 'new_relPath', 'new_baseUrl'] )
-
-        #logger.debug( "entering base_dir=%s" % ( self.baseDir ) )
-        #if 'new_dir' in msg:
-        #    logger.debug( "new_dir=%s" % ( msg['new_dir'] ) )
-        #logger.debug( "strip=%s, pstrip=%s, mirror=%s flatten=%s maskDir=%s pbd=%s msg[\'relPath\']=%s" %  \
-        #     ( strip, pstrip, mirror, flatten, maskDir, self.post_baseDir, msg['relPath'] ) )
 
         # relative path by default mirror
 
@@ -1593,6 +1584,19 @@ class Config:
             new_dir = maskDir
         else:
             new_dir = ''
+
+        if self.baseDir:
+            if new_dir :
+                d=new_dir
+            elif self.post_baseDir:
+                d=self.post_baseDir
+            else:
+                d=None
+
+            if d:
+                for f in [ 'link', 'oldname', 'newname' ]:
+                    if f in msg:
+                        msg[f] = msg[f].replace( self.baseDir, d )
 
         # add relPath
 

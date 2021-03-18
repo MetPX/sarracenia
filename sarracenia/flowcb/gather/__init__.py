@@ -33,7 +33,7 @@ def msg_dumps(msg):
 
    """
 
-   maximum_field_length=120
+   maximum_field_length=255
 
    if msg is None: return ""
 
