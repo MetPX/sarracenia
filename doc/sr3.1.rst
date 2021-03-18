@@ -694,15 +694,15 @@ Differences:
 Mandatory Settings
 ~~~~~~~~~~~~~~~~~~
 
-The [*-pbu|--post_base_url url,url,...*] option specifies the location
+The [*-pbu|--post_baseUrl url,url,...*] option specifies the location
 subscribers will download the file from.  There is usually one post per file.
-Format of argument to the *post_base_url* option::
+Format of argument to the *post_baseUrl* option::
 
        [ftp|http|sftp]://[user[:password]@]host[:port]/
        or
        file:
 
-When several urls are given as a comma separated list to *post_base_url*, the
+When several urls are given as a comma separated list to *post_baseUrl*, the
 url´s provided are used round-robin style, to provide a coarse form of load balancing.
 
 The [*-p|--path path1 path2 .. pathN*] option specifies the path of the files
@@ -752,7 +752,7 @@ Another example::
  sr3_post -pb amqp://broker.com -pbd /data/web/public_data -pbu http://dd.weather.gc.ca/ -p bulletins/alphanumeric/SACN32_CWAO_123456
 
 By default, sr3_post reads the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
-(concatenating the post_base_dir and relative path of the source url to obtain the local file path)
+(concatenating the post_baseDir and relative path of the source url to obtain the local file path)
 and calculates its checksum. It then builds a post message, logs into broker.com as user 'guest'
 (default credentials) and sends the post to defaults vhost '/' and exchange 'xs_guest'.
 
@@ -923,11 +923,11 @@ but for the sender it is actually a local file.  In such cases, one will
 see a message: **ERROR: The file to send is not local.**
 An on_message plugin will convert the web url into a local file one::
 
-  base_dir /var/httpd/www
+  baseDir /var/httpd/www
   on_message msg_2localfile
 
 This on_message plugin is part of the default settings for senders, but one
-still needs to specify base_dir for it to function.
+still needs to specify baseDir for it to function.
 
 If a **post_broker** is set, **sender** checks if the clustername given
 by the **to** option if found in one of the message's destination clusters.
@@ -981,12 +981,12 @@ SETUP 1 : PUMP TO PUMP REPLICATION
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
  - **mirror             <boolean>   (default: True)**
- - **base_dir      <directory> (None)**
+ - **baseDir      <directory> (None)**
 
  - **destination        <url>       (MANDATORY)**
  - **do_send            <script>    (None)**
  - **kbytes_ps          <int>       (default: 0)**
- - **post_base_dir <directory> (default: '')**
+ - **post_baseDir <directory> (default: '')**
 
  - **to               <clustername> (default: <post_broker host>)**
  - **on_post           <script>     (default: None)**
@@ -995,9 +995,14 @@ SETUP 1 : PUMP TO PUMP REPLICATION
 
 For pump replication, **mirror** is set to True (default).
 
-**base_dir** supplies the directory path that, when combined with the relative
+**baseDir** supplies the directory path that, when combined with the relative
 one in the selected notification gives the absolute path of the file to be sent.
 The default is None which means that the path in the notification is the absolute one.
+
+In a subscriber, the baseDir represents the prefix to the relative path on the upstream
+server, and is used as a pattern to be replaced in the currently selected base directory
+(from a *baseDir* or *directory* option) in the message fields: 'link', 'oldname', 'newname'
+which are used when mirroring symbolic links, or files that are renamed.
 
 The **destination** defines the protocol and server to be used to deliver the products.
 Its form is a partial url, for example:  **ftp://myuser@myhost**
@@ -1006,8 +1011,8 @@ The program uses the file ~/.conf/sarra/credentials.conf to get the remaining de
 user need to implement another sending mechanism, he would provide the plugin script
 through option **do_send**.
 
-On the remote site, the **post_base_dir** serves the same purpose as the
-**base_dir** on this server.  The default is None which means that the delivered path
+On the remote site, the **post_baseDir** serves the same purpose as the
+**baseDir** on this server.  The default is None which means that the delivered path
 is the absolute one.
 
 Now we are ready to send the product... for example, if the selected notification looks like this :
@@ -1016,8 +1021,8 @@ Now we are ready to send the product... for example, if the selected notificatio
 
 **sr_sender**  performs the following pseudo-delivery:
 
-Sends local file [**base_dir**]/relative/path/to/IMPORTANT_product
-to    **destination**/[**post_base_dir**]/relative/path/to/IMPORTANT_product
+Sends local file [**baseDir**]/relative/path/to/IMPORTANT_product
+to    **destination**/[**post_baseDir**]/relative/path/to/IMPORTANT_product
 (**kbytes_ps** is greater than 0, the process attempts to respect
 this delivery speed... ftp,ftps,or sftp)
 
@@ -1029,9 +1034,9 @@ The selected notification contains all the right information
 notice... in our example :  **http://this.pump.com/**
 
 By default, **sr_sender** puts the **destination** in that field.
-The user can overwrite this by specifying the option **post_base_url**. For example:
+The user can overwrite this by specifying the option **post_baseUrl**. For example:
 
-**post_base_url http://remote.apache.com**
+**post_baseUrl http://remote.apache.com**
 
 The user can provide an **on_post** script. Just before the message is
 published on the **post_broker**  and **post_exchange**, the
@@ -1051,10 +1056,10 @@ with some new ones to ease explanation.
 
 
  - **mirror             <boolean>   (default: True)**
- - **base_dir      <directory> (None)**
+ - **baseDir      <directory> (None)**
 
  - **destination        <url>       (MANDATORY)**
- - **post_base_dir <directory> (default: '')**
+ - **post_baseDir <directory> (default: '')**
 
  - **directory          <path>      (MANDATORY)**
  - **on_message            <script> (default: None)**
@@ -1064,8 +1069,8 @@ with some new ones to ease explanation.
 There are 2 differences with the previous case :
 the **directory**, and the **filename** options.
 
-The **base_dir** is the same, and so are the
-**destination**  and the **post_base_dir** options.
+The **baseDir** is the same, and so are the
+**destination**  and the **post_baseDir** options.
 
 The **directory** option defines another "relative path" for the product
 at its destination.  It is tagged to the **accept** options defined after it.
@@ -1092,8 +1097,8 @@ If the notification selected is, as above, this :
 It was selected by the first **accept** option. The remote relative path becomes
 **/my/new/important_location** ... and **sr_sender**  performs the following pseudo-delivery:
 
-sends local file [**base_dir**]/relative/path/to/IMPORTANT_product
-to    **destination**/[**post_base_dir**]/my/new/important_location/IMPORTANT_product
+sends local file [**baseDir**]/relative/path/to/IMPORTANT_product
+to    **destination**/[**post_baseDir**]/my/new/important_location/IMPORTANT_product
 
 
 Usually this way of using **sr_sender** would not require posting of the product.
@@ -1144,7 +1149,7 @@ Posts are sent to an AMQP server, also called a broker, specified with the optio
 Mandatory Settings
 ~~~~~~~~~~~~~~~~~~
 
-The [*-post_base_url|--pbu|--url url*] option specifies the protocol, credentials, host and port to which subscribers
+The [*-post_baseUrl|--pbu|--url url*] option specifies the protocol, credentials, host and port to which subscribers
 will connect to get the file.
 
 Format of argument to the *url* option::
@@ -1206,7 +1211,7 @@ Another example watching a file::
  sr3_watch -dr /data/web/public_data -s http://dd.weather.gc.ca/ -p bulletins/alphanumeric/SACN32_CWAO_123456 -pb amqp://broker.com --action start
 
 By default, sr_watch checks the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
-(concatenating the base_dir and relative path of the source url to obtain the local file path).
+(concatenating the baseDir and relative path of the source url to obtain the local file path).
 If the file changes, it calculates its checksum. It then builds a post message, logs into broker.com as user 'guest'
 (default credentials) and sends the post to defaults vhost '/' and post_exchange 'sx_guest' (default post_exchange)
 
@@ -1218,7 +1223,7 @@ An example checking a directory::
  sr3_watch -dr /data/web/public_data -pbu http://dd.weather.gc.ca/ -p bulletins/alphanumeric -pb amqp://broker.com -action start
 
 Here, sr_watch checks for file creation(modification) in /data/web/public_data/bulletins/alphanumeric
-(concatenating the base_dir and relative path of the source url to obtain the directory path).
+(concatenating the baseDir and relative path of the source url to obtain the directory path).
 If the file SACN32_CWAO_123456 is being created in that directory, sr_watch calculates its checksum.
 It then builds a post message, logs into broker.com as user 'guest'
 
@@ -2131,7 +2136,7 @@ and under which name.
 - **delete    <boolean>>       (default: off)**
 - **directory <path>           (default: .)** 
 - **discard   <boolean>        (default: off)**
-- **base_dir <path>       (default: /)**
+- **baseDir <path>       (default: /)**
 - **flatten   <string>         (default: '/')** 
 - **heartbeat <count>                 (default: 300 seconds)**
 - **inline   <boolean>         (default: False)**
@@ -2348,10 +2353,10 @@ Refer to *source_from_exchange* for a common example of usage.  Note that any sa
 built-in value takes precedence over a variable of the same name in the environment.
 Note that flatten settings can be changed between directory options.
 
-base_dir <path> (default: /)
+baseDir <path> (default: /)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**base_dir** supplies the directory path that, when combined with the relative
+**baseDir** supplies the directory path that, when combined with the relative
 one in the selected notification gives the absolute path of the file to be sent.
 The default is None which means that the path in the notification is the absolute one.
 
@@ -3005,11 +3010,11 @@ the next hop broker, the user sets these options :
 
  - **[--blocksize <value>]            (default: 0 (auto))**
  - **[--outlet <post|json|url>]       (default: post)**
- - **[-pbd|--post_base_dir <path>]    (optional)**
+ - **[-pbd|--post_baseDir <path>]    (optional)**
  - **[-ptp|--post_topicPrefix <pfx>] (default: 'v03')**
  - **post_exchange     <name>         (default: xpublic)**
  - **post_exchange_split   <number>   (default: 0)**
- - **post_base_url          <url>     (MANDATORY)**
+ - **post_baseUrl          <url>     (MANDATORY)**
  - **on_post           <script>       (default: None)**
 
 
@@ -3031,21 +3036,21 @@ optimized by only sending parts which have changed.
 The *outlet* option allows the final output to be other than a post.  
 See `sr_cpump(1) <sr_cpump.1.rst>`_ for details.
 
-[-pbd|--post_base_dir <path>] (optional)
+[-pbd|--post_baseDir <path>] (optional)
 ----------------------------------------
 
-The *post_base_dir* option supplies the directory path that, when combined (or found) 
+The *post_baseDir* option supplies the directory path that, when combined (or found) 
 in the given *path*, gives the local absolute path to the data file to be posted.
-The *post_base_dir* part of the path will be removed from the posted announcement.
+The *post_baseDir* part of the path will be removed from the posted announcement.
 For sftp urls it can be appropriate to specify a path relative to a user account.
 Example of that usage would be:  -pbd ~user  -url sftp:user@host
-For file: url's, base_dir is usually not appropriate.  To post an absolute path,
+For file: url's, baseDir is usually not appropriate.  To post an absolute path,
 omit the -pbd setting, and just specify the complete path as an argument.
 
-post_url <url> (MANDATORY)
+post_baseUrl <url> (MANDATORY)
 --------------------------
 
-The **post_base_url** option sets how to get the file... it defines the protocol,
+The **post_baseUrl** option sets how to get the file... it defines the protocol,
 host, port, and optionally, the user. It is best practice to not include 
 passwords in urls.
 
