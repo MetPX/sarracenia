@@ -167,7 +167,7 @@ class sr_GlobalState:
         self.procs = {}
         self.me = getpass.getuser()
         if sys.platform == 'win32':
-            self.me = os.environ['userdomain'] + '\\\\' + self.me
+            self.me = os.environ['userdomain'] + '\\' + self.me
         self.auditors = 0
         for proc in psutil.process_iter( ):
             self._filter_sr_proc(proc.as_dict( ['pid','cmdline','name', 'username', 'create_time' ] ))
