@@ -7,6 +7,7 @@ mkdir pynsist_pkgs
 cd pynsist_pkgs/
 
 # Ensure to download only windows binaries
+pip3 download pynacl==1.3.0 --only-binary=:all: --platform win_amd64
 pip3 download amqp --only-binary=:all: --platform win_amd64
 pip3 download appdirs --only-binary=:all: --platform win_amd64
 pip3 download netifaces --only-binary=:all: --platform win_amd64
