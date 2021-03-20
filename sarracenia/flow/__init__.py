@@ -37,6 +37,7 @@ default_options = {
     'batch': 100,
     'bytes_per_second': None,
     'download': False,
+    'events': 'create|delete|link|modify',
     'housekeeping': 30,
     'log_reject': False,
     'logFormat':
@@ -764,10 +765,12 @@ class Flow:
         """
         logger.debug("message is to link %s to %s" %
                      (msg['new_file'], msg['link']))
-        if not 'link' in self.o.events:
-            logger.info("message to link %s to %s ignored (events setting)" %  \
-                                            ( msg['new_file'], msg[ 'link' ] ) )
-            return False
+
+        # redundant, check is done in caller.
+        #if not 'link' in self.o.events:
+        #    logger.info("message to link %s to %s ignored (events setting)" %  \
+        #                                    ( msg['new_file'], msg[ 'link' ] ) )
+        #    return False
 
         if not os.path.isdir(msg['new_dir']):
             try:
@@ -817,6 +820,7 @@ class Flow:
                 continue
 
             new_path = msg['new_dir'] + os.path.sep + msg['new_file']
+            logger.info('FIXME: integrity[method] is %s' % msg['integrity']['method'] )
 
             if 'oldname' in msg:
                 if 'renameUnlink' in msg:
@@ -834,8 +838,8 @@ class Flow:
                          msg_set_report(msg, 201, 'renamed')
                          continue
                         
-            elif (msg['integrity']['method'] == 'remove') or (
-                ('events' in msg) and ('delete' in msg['events'])):
+            elif (msg['integrity']['method'] == 'remove') and ('delete' in self.o.events):
+                logger.info('FIXME: should try to remove %s' % new_path )
                 if self.removeOneFile(new_path):
                     msg_set_report(msg, 201, 'removed')
                     self.worklist.ok.append(msg)
@@ -847,15 +851,15 @@ class Flow:
                     self.worklist.rejected.append(msg)
                 continue
 
-            if 'link' in msg.keys():
-                if ('events' in msg) and ('link' in msg['events']):
-                    if self.link1file(msg):
-                        msg_set_report(msg, 201, 'linked')
-                        self.worklist.ok.append(msg)
-                    else:
-                        # as above...
-                        msg_set_report(msg, 500, "symlink failed")
-                        self.worklist.rejected.append(msg)
+            if 'link' in msg.keys() and ( 'link' in self.o.events ):
+                logger.info('looking at a link')
+                if self.link1file(msg):
+                    msg_set_report(msg, 201, 'linked')
+                    self.worklist.ok.append(msg)
+                else:
+                    # as above...
+                    msg_set_report(msg, 500, "symlink failed")
+                    self.worklist.rejected.append(msg)
                 continue
 
             # establish new_inflight_path which is the file to download into initially.

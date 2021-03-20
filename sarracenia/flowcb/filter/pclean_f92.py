@@ -30,12 +30,14 @@ class PClean_F92(PClean):
         for msg in worklist.incoming:
             result = True
             ext = self.get_extension('/' + msg['relPath'])
+            logger.info("ext: %s in %s ?" % (ext, self.test_extension_list) )
 
             if ext in self.test_extension_list:
                 f20_path = '/' + msg['relPath'].replace(
                     "{}/".format(self.all_fxx_dirs[1]), self.all_fxx_dirs[0])
                 f20_path = f20_path.replace(ext, '')
                 try:
+                    logger.info("removing: %s" % f20_path )
                     os.unlink(f20_path)
                 except FileNotFoundError as err:
                     logger.error("could not unlink in {}: {}".format(
@@ -47,6 +49,7 @@ class PClean_F92(PClean):
                                                  '/' + msg['relPath'])
                 for fxx_dir, path in path_dict.items():
                     try:
+                        logger.info("removing 2: %s" % path )
                         os.unlink(path)
                         if ext != '.moved':
                             os.unlink(path.replace(ext, ''))
