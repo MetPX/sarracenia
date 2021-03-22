@@ -77,8 +77,8 @@ class Retry(FlowCB):
 
     def add_msg_to_state_file(self, message, done=False):
 
-        logger.debug("DEBUG add to state file %s %s %s" %
-                     (os.path.basename(self.state_path), message, done))
+        #logger.debug("DEBUG add to state file %s %s %s" %
+        #             (os.path.basename(self.state_path), message, done))
         self.state_fp = self.msg_append_to_file(self.state_fp, self.state_path,
                                                 message, done)
         # performance issue... only do before close
@@ -187,6 +187,9 @@ class Retry(FlowCB):
 
         message['isRetry'] = True
         message['_deleteOnPost'] |= set(['isRetry'])
+        if 'ack_id' in message:
+           del message['ack_id']
+           message['_deleteOnPost'].delete('ack_id')
 
         return True, message
 
@@ -204,7 +207,7 @@ class Retry(FlowCB):
             if m is None:
                 break
 
-            logger.debug("loading from retry: qty=%d ... %s " % (qty, m))
+            #logger.debug("loading from retry: qty=%d ... %s " % (qty, m))
             worklist.incoming.append(m)
             qty -= 1
 

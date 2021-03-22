@@ -284,9 +284,9 @@ class MQTT(Moth):
         else:
             message['subtopic'] = subtopic[len(userdata.o['topicPrefix']):]
 
-        message['message-id'] = msg.mid
+        message['ack_id'] = msg.mid
         message['local_offset'] = 0
-        message['_deleteOnPost'] = set( [ 'exchange', 'local_offset', 'message-id', 'subtopic' ] )
+        message['_deleteOnPost'] = set( [ 'exchange', 'local_offset', 'ack_id', 'subtopic' ] )
 
         logger.info( "Message received: %s" % message )
         if msg_validate( message ):
@@ -332,8 +332,10 @@ class MQTT(Moth):
             return None
     
     def ack(self, m):
-        if hasattr(self.client,'ack'):
-            self.client.ack(m['message-id'])
+        if hasattr(self.client,'ack') and ('ack_id' in m):
+            self.client.ack(m['ack_id'])
+            del m['ack_id']
+            m['_deleteOnPost'].remove('ack_id')
 
     def putNewMessage(self, body, content_type='application/json', exchange=None):
         """

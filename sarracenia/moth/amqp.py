@@ -67,6 +67,13 @@ default_options = {
 
 
 class AMQP(Moth):
+    """
+       implementation of the Moth API for the amqp library, which is built to talk to rabbitmq brokers in 0.8 and 0.9
+       AMQP dialects.
+
+       to allow acknowledgements we map: AMQP' 'delivery_tag' to the 'ack_id'
+
+    """
 
     def _msgRawToDict(self, raw_msg):
         if raw_msg is not None:
@@ -104,9 +111,9 @@ class AMQP(Moth):
     
             msg['exchange'] = raw_msg.delivery_info['exchange']
             msg['subtopic'] = raw_msg.delivery_info['routing_key'].split('.')[len(self.o['topicPrefix']):]
-            msg['delivery_tag'] = raw_msg.delivery_info['delivery_tag']
+            msg['ack_id'] = raw_msg.delivery_info['delivery_tag']
             msg['local_offset'] = 0
-            msg['_deleteOnPost'] = set( [ 'delivery_tag', 'exchange', 'local_offset', 'subtopic' ] )
+            msg['_deleteOnPost'] = set( [ 'ack_id', 'exchange', 'local_offset', 'subtopic' ] )
             if not msg_validate(msg): 
                 logger.error('message discarded')
                 msg=None
@@ -381,16 +388,19 @@ class AMQP(Moth):
             logger.error("getting from a publisher")
             return
 
-        if not 'delivery_tag' in m:
+        if not 'ack_id' in m:
             logger.warning(
                 "cannot acknowledge message without a delivery_tag: %s " %
                 m['relPath'])
             return
 
         try:
-            self.channel.basic_ack(m['delivery_tag'])
+            self.channel.basic_ack(m['ack_id'])
+            del m['ack_id']
+            m['_deleteOnPost'].remove('ack_id') 
+
         except Exception as err:
-            logger.warning("failed for tag: %s: %s" % (m['delivery_tag'], err))
+            logger.warning("failed for tag: %s: %s" % (m['ack_id'], err))
             logger.debug('Exception details: ', exc_info=True)
 
 

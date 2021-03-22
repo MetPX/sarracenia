@@ -1,50 +1,3 @@
-"""
-  Moth ... Messages Organized by Topic Headers
-           (en français: Messages organisés par thème hierarchique. )
-
-  A multi-protocol library for use by hierarchical message passing implementations,
-  (messages which have a 'topic' header that is used for routing by brokers.)
- 
-       - regardless of protocol, the message format returned should be the same.
-       - the message is turned into a python dictionary, corresponding to key-value pairs
-         in the message body, and properties.
-       - topic is special key that may end up in the message body, or some sort of property
-         or metadata.
-       - There is a special dict item:  "_DeleteOnPost"
-         to identify keys which are added only for local use.
-         they will be removed from the message when publishing.
-         examples:  topic (sent outside body), message-id (used for acknowledgements.)
-                    new_basedir, new_... (settings...)
-
-  intent is to be specialized for topic based data distribution (MQTT style.)
-  API to allow pass-through of protocol specific properties, but apply templates for genericity.
-
-  Target protocols (and corresponding libraries.)
-
-  Things to specify:
-  	broker
-	topicPrefix
-        subTopic  
-        id   (queue for amqp, id for mqtt)
-
-  this library knows nothing about Sarracenia, the only code used from sarracenia is to interpret
-  duration properties, from the root sarra/__init__.py
-  
-  usage:
-     c= Moth( broker, True, '5m', { 'batch':1 } )
-
-     c.newMessages()
-       - if there are new messages from a publisher, return them, otherwise return
-         an empty list []].
-       
-     p=Moth( broker, True, '5m', { 'batch':1 }, True )
-     p.putNewMessage()
-
-     p.close()
-       - tear down connection.     
-
-
-"""
 import copy
 import logging
 import sys
@@ -70,11 +23,62 @@ default_options = {
     },
     'topicPrefix' : [ 'v03' ],
     'tls_rigour'  : 'normal'
-}
+    }
 
 
 class Moth():
     """
+        Moth ... Messages Organized by Topic Headers
+           (en français: Messages organisés par thème hierarchique. )
+
+        A multi-protocol library for use by hierarchical message passing implementations,
+        (messages which have a 'topic' header that is used for routing by brokers.)
+ 
+       - regardless of protocol, the message format returned should be the same.
+       - the message is turned into a python dictionary, corresponding to key-value pairs
+         in the message body, and properties.
+       - topic is special key that may end up in the message body, or some sort of property
+         or metadata.
+       - the protocol should support acknowledgement under user control. Such control indicated
+         by the presence of an entry_point called "ack". The entry point accepts "ack_id" as
+         a message identifier to be passed to the broker.  Whatever protocol symbol is used
+         by the protocol, it is passed through this message property.  Examples:
+         in rabbitmq/amqp ack takes a "delivery_tag" as an argument, in MQTT, it takes a "message-id"
+         so when receiving an AMQP message, the m['ack_id'] is assigned the delivery_tag from the message. 
+       - There is a special dict item:  "_DeleteOnPost",  
+         to identify keys which are added only for local use.
+         they will be removed from the message when publishing.
+         examples:  topic (sent outside body), message-id (used for acknowledgements.)
+                    new_basedir, ack_id, new_... (settings...)
+
+     intent is to be specialized for topic based data distribution (MQTT style.)
+     API to allow pass-through of protocol specific properties, but apply templates for genericity.
+
+     Target protocols (and corresponding libraries.): AMQP, MQTT, ?
+
+     Things to specify:
+  	broker
+	topicPrefix
+        subTopic  
+        id   (queue for amqp, id for mqtt)
+
+  this library knows nothing about Sarracenia, the only code used from sarracenia is to interpret
+  duration properties, from the root sarra/__init__.py
+  
+  usage:
+     c= Moth( broker, True, '5m', { 'batch':1 } )
+
+     c.newMessages()
+       - if there are new messages from a publisher, return them, otherwise return
+         an empty list []].
+       
+     p=Moth( broker, True, '5m', { 'batch':1 }, True )
+     p.putNewMessage()
+
+     p.close()
+       - tear down connection.     
+  
+
        initialize a broker connection. Connections are unidirectional.
        either for subscribing (with subFactory) or publishing (with pubFactory.)
        
@@ -226,11 +230,13 @@ class Moth():
         logger.error("NewMessages unimplemented")
         return []
 
-    def ackMessage(self, m):
+    def ack(self, message ):
         """
           tell broker that a given message has been received.
+
+          ack uses the 'ack_id' property to send an acknowledgement back to the broker.
         """
-        logger.error("ackMessage unimplemented")
+        logger.error("ack unimplemented")
 
     def putNewMessage(self, message, content_type='application/json'):
         """
