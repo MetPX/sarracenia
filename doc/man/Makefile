@@ -4,7 +4,7 @@ RST2MAN = rst2man
 RST2HTML = rst2html
 MAKE = make
 
-VERSION = $(shell grep __version__ ../../sarra/__init__.py | sed -e 's/"//g' | cut -c15-)
+VERSION = $(shell grep __version__ ../../sarracenia/__init__.py | sed -e 's/"//g' | cut -c15-)
 DATE = $(shell date "+%B %Y")
 
 MAN1SOURCES = $(wildcard ../*.1.rst)

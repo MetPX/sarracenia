@@ -3048,7 +3048,7 @@ For file: url's, baseDir is usually not appropriate.  To post an absolute path,
 omit the -pbd setting, and just specify the complete path as an argument.
 
 post_baseUrl <url> (MANDATORY)
---------------------------
+------------------------------
 
 The **post_baseUrl** option sets how to get the file... it defines the protocol,
 host, port, and optionally, the user. It is best practice to not include 

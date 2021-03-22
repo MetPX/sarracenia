@@ -406,7 +406,7 @@ Then in the ~/.bashrc on the server running the remote command::
       export LD_PRELOAD="libsrshim.so.1"
   fi
        
-SSH will only pass environment variables that start with LC_ (locale) so to get it 
+SSH will only pass environment variables that start with LC\_ (locale) so to get it 
 passed with minimal effort, we use that prefix.
 
 Shim Usage Tips
