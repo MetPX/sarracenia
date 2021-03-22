@@ -27,7 +27,7 @@ class PClean_F90(PClean):
     """
     def on_filter(self, worklist):
 
-        logger.info("len(worklist.incoming) = %d" % len(worklist.incoming))
+        logger.info("start len(worklist.incoming) = %d" % len(worklist.incoming))
 
         outgoing = []
 
@@ -39,9 +39,12 @@ class PClean_F90(PClean):
             path_dict = self.build_path_dict(self.all_fxx_dirs[2:],
                                              '/' + msg['relPath'])
             ext = self.get_extension('/' + msg['relPath'])
+            logger.info( 'looking at: %s' % msg['relPath'] )
+            logger.info( 'path_dict: %s' % path_dict )
 
             for fxx_dir, path in path_dict.items():
                 # f90 test
+                logger.info( 'for looping: %s' % path )
                 if not os.path.exists(path):
                     # propagation check to all path except f20 which is the origin
                     err_msg = "file not in folder {} with {:.3f}s elapsed"
@@ -53,7 +56,7 @@ class PClean_F90(PClean):
                 elif ext not in self.test_extension_list and not filecmp.cmp(
                         f20_path, path):
                     # file differ check: f20 against others
-                    logger.warning(
+                    logger.error(
                         "skipping, file differs from f20 file: {}".format(
                             path))
                     with open(f20_path, 'r', encoding='iso-8859-1') as f:
@@ -63,10 +66,10 @@ class PClean_F90(PClean):
                     diff = Differ().compare(f20_lines, f_lines)
                     diff = [d for d in diff
                             if d[0] != ' ']  # Diffs without context
-                    logger.debug("a: len(%s) = %d" %
+                    logger.info("a: len(%s) = %d" %
                                  (f20_path, len(f20_lines)))
-                    logger.debug("b: len(%s) = %d" % (path, len(f_lines)))
-                    logger.debug("diffs found:\n{}".format("".join(diff)))
+                    logger.info("b: len(%s) = %d" % (path, len(f_lines)))
+                    logger.info("diffs found:\n{}".format("".join(diff)))
 
             if ext not in self.test_extension_list:
                 # prepare next f90 test
@@ -81,10 +84,13 @@ class PClean_F90(PClean):
                 try:
                     if test_extension == '.slink':
                         os.symlink(src, dest)
+                        logger.info('symlinked %s %s' % (src, dest) )
                     elif test_extension == '.hlink':
                         os.link(src, dest)
+                        logger.info('hlinked %s %s' % (src, dest) )
                     elif test_extension == '.moved':
                         os.rename(src, dest)
+                        logger.info('moved %s %s' % (src, dest) )
                     else:
                         logger.error("test '{}' is not supported".format(
                             test_extension))
@@ -99,6 +105,8 @@ class PClean_F90(PClean):
                         'skipping, found a moving target {}'.format(err))
                     logger.debug("Exception details:", exc_info=True)
                     result = False
+            else:
+                logger.info('ext not in test_extenion_list')
 
             if 'toolong' in msg:
                 # cleanup
@@ -110,5 +118,5 @@ class PClean_F90(PClean):
                 worklist.rejected.append(msg)
 
         worklist.incoming = outgoing
-        logger.info("len(worklist.incoming) = %d" % len(worklist.incoming))
-        logger.info("len(worklist.rejected) = %d" % len(worklist.rejected))
+        logger.info("end len(worklist.incoming) = %d" % len(worklist.incoming))
+        logger.info("end len(worklist.rejected) = %d" % len(worklist.rejected))

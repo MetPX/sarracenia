@@ -195,8 +195,7 @@ class Retry(FlowCB):
 
     def on_filter(self, worklist):
         """
-          if there are no new messages, then get one from the retry list,
-          and try processing that again.
+          if there are only a few new messages, then get some from the retry list.
         """
 
         qty = (self.o.batch / 2) - len(worklist.incoming)
