@@ -71,7 +71,9 @@ class instance:
                'accept_unmatched':False, 'exchange':None, 'inline':False, 'inline_encoding':'guess'
             } )
 
-        cfg_preparse.parse_file(default_cfg_dir + os.sep + "default.conf")
+        defconfig = default_cfg_dir + os.sep + "default.conf"
+        if os.path.exists( defconfig ):
+            cfg_preparse.parse_file(defconfig)
         cfg_preparse.parse_args()
 
         #cfg_preparse.dump()

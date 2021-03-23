@@ -1125,7 +1125,7 @@ class sr_GlobalState:
                     editor = 'notepad'
                 else:
                     editor = 'vi'
-                self.logger.info(
+                logger.info(
                     'using %s. Set EDITOR variable pick another one.' % editor)
 
             self.run_command([editor, cfgfile])
