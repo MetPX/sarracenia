@@ -639,7 +639,7 @@ class Config:
         elif kind == 'duration':
             duration_options.append(option)
             if type(v) is not float:
-                setattr(self, option, float(v))
+                setattr(self, option, durationToSeconds(v))
         elif kind == 'flag':
             flag_options.append(option)
             if type(v) is not bool:
@@ -1644,7 +1644,7 @@ class Config:
             if 'new_dir' not in msg:
                 msg['new_dir'] = msg['new_dir'].replace('\\', '/')
             msg['new_relPath'] = msg['new_relPath'].replace('\\', '/')
-            if re.match('[A-Z]:', self.currentDir, flags=re.IGNORECASE):
+            if re.match('[A-Z]:', str(self.currentDir), flags=re.IGNORECASE):
                 msg['new_dir'] = msg['new_dir'].lstrip('/')
                 msg['new_relPath'] = msg['new_relPath'].lstrip('/')
 
@@ -2003,7 +2003,11 @@ def one_config(component, config, isPost=False):
     else:
         fname = config
 
-    cfg.parse_file(fname)
+    if os.path.exists(fname):
+         cfg.parse_file(fname)
+    else:
+         logger.error('config %s not found' % fname )
+         return None
 
     #logger.error( 'after file' )
     #print( 'after file' )
