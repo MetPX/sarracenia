@@ -166,6 +166,7 @@ class sr_GlobalState:
 
     def _filter_sr_proc(self, p):
 
+        #print( 'sr0? name=%s, pid=%s, cmdline=%s' % ( p['name'], p['pid'], p['cmdline'] ) )
         if self.me != p['username'] :
             return
 
@@ -175,12 +176,13 @@ class sr_GlobalState:
                 return
             n = os.path.basename(p['cmdline'][1])
             if n == 'instance.py':
-                n = 'sr3_' + p['cmdline'][-1].split('/')[0] + '.py'
+                n = 'sr3_' + p['cmdline'][-1].split(os.sep)[0] + '.py'
             p['name'] = n
-
-        if p['name'][0:2] != 'sr':
+        
+        if p['name'][0:2] != 'sr' :
             return
 
+        #print( 'sr? name=%s, pid=%s, cmdline=%s' % ( p['name'], p['pid'], p['cmdline'] ) )
         if ( sys.platform == 'win32') and ( p['name'][-4:].lower() == '.exe' ):
             # on windows, it seems to fork .exe and then there is a -script.py which is the right pid
             # .e.g sr_subscribe.exe -> sr_subscribe-script.py ... If you kill the -script, the .exe goes away.

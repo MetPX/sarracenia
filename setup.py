@@ -46,7 +46,7 @@ setup(
             #"sr3_sender=sarracenia.sr_flow:main",
             #"sr3_subscribe=sarracenia.sr_flow:main",
             #"sr3_log2save=sarracenia.sr_log2save:main",
-            #"sr3_tailf=sarracenia.sr_tailf:main"
+            "sr3_tailf=sarracenia.sr_tailf:main"
         ]
     },
     classifiers=[
