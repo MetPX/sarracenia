@@ -128,6 +128,10 @@ class sr_GlobalState:
                 f.write(pj +'\n')
             
     def _filter_sr_proc(self,p):
+        
+        if self.me != p['username'] :
+            return
+
         # process name 'python3' is not helpful, so overwrite...
         if 'python' in p['name']:
             if len(p['cmdline']) < 2:
@@ -135,7 +139,17 @@ class sr_GlobalState:
             n = os.path.basename(p['cmdline'][1])
             p['name'] = n
 
-        if p['name'].startswith('sr_') and (self.me == p['username']):
+        if p['name'][0:2] != 'sr':
+            return
+
+        if ( sys.platform == 'win32') and ( p['name'][-4:].lower() == '.exe' ):
+            # on windows, it seems to fork .exe and then there is a -script.py which is the right pid
+            # .e.g sr_subscribe.exe -> sr_subscribe-script.py ... If you kill the -script, the .exe goes away.
+            return
+
+        #print( 'pname=%s, self.me=%s, pid=%s, cmdline=%s ' % \
+        #        ( p['name'], p['username'], p['pid'], p['cmdline'] ) )
+        if p['name'].startswith('sr_'): 
             self.procs[p['pid']] = p
 
             if p['name'][3:8] == 'audit':
@@ -156,7 +170,7 @@ class sr_GlobalState:
         with open(File,'r') as f:
            self.me = f.readline().rstrip()
            for pj in f.readlines():
-               p = json.loads(pj)       
+               p = json.loads(pj)
                self._filter_sr_proc(p)
                pcount += 1 
                if pcount % 100 == 0 : print( '.', end='', flush=True )
