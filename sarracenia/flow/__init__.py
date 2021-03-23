@@ -820,7 +820,6 @@ class Flow:
                 continue
 
             new_path = msg['new_dir'] + os.path.sep + msg['new_file']
-            logger.info('FIXME: integrity[method] is %s' % msg['integrity']['method'] )
 
             if 'oldname' in msg:
                 if 'renameUnlink' in msg:
