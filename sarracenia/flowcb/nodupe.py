@@ -89,14 +89,14 @@ class NoDupe(FlowCB):
         count = self.count
         self.save()
 
-        now = nowflt()
+        self.now = nowflt()
         new_count = self.count
 
         logger.info(
             "was %d, but since %5.2f sec, increased up to %d, now saved %d entries"
-            % (self.last_count, now - self.last_time, count, new_count))
+            % (self.last_count, self.now - self.last_time, count, new_count))
 
-        self.last_time = now
+        self.last_time = self.now
         self.last_count = new_count
 
     def check(self, key, path, part):
@@ -104,7 +104,6 @@ class NoDupe(FlowCB):
         self.cache_hit = None
 
         # set time and value
-        now = nowflt()
         relpath = self.__get_relpath(path)
         qpath = urllib.parse.quote(relpath)
         value = '%s*%s' % (relpath, part)
@@ -112,19 +111,19 @@ class NoDupe(FlowCB):
         if key not in self.cache_dict:
             #logger.debug("adding a new entry in NoDupe cache")
             kdict = {}
-            kdict[value] = now
+            kdict[value] = self.now
             self.cache_dict[key] = kdict
-            self.fp.write("%s %f %s %s\n" % (key, now, qpath, part))
+            self.fp.write("%s %f %s %s\n" % (key, self.now, qpath, part))
             self.count += 1
             return True
 
         #logger.debug("sum already in NoDupe cache: key={}".format(key))
         kdict = self.cache_dict[key]
         present = value in kdict
-        kdict[value] = now
+        kdict[value] = self.now
 
         # differ or newer, write to file
-        self.fp.write("%s %f %s %s\n" % (key, now, qpath, part))
+        self.fp.write("%s %f %s %s\n" % (key, self.now, qpath, part))
         self.count += 1
 
         if present:
@@ -186,12 +185,13 @@ class NoDupe(FlowCB):
             else:
                 partstr = msg['blocks']
 
-        #logger.debug("NoDupe calling check( %s, %s, %s )" % ( sumstr, relpath, partstr ) )
+        logger.debug("NoDupe calling check( %s, %s, %s )" % ( sumstr, relpath, partstr ) )
         return self.check(sumstr, relpath, partstr)
 
     def on_filter(self, worklist):
 
         new_incoming = []
+        self.now = nowflt()
         for m in worklist.incoming:
             if self.check_message(m):
                 new_incoming.append(m)
@@ -396,12 +396,3 @@ class NoDupe(FlowCB):
             logger.warning("did not clean: cache_file={}, err={}".format(
                 self.cache_file, err))
             logger.debug('Exception details:', exc_info=True)
-
-    def check_expire(self):
-        logger.debug("NoDupe check_expire")
-        now = nowflt()
-
-        elapse = now - self.last_expire
-        if elapse > self.o.time_to_live:
-            self.last_expire = now
-            self.clean()
