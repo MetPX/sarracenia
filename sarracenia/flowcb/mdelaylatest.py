@@ -30,7 +30,7 @@ class MDelayLatest(FlowCB):
                             level=getattr(logging, self.o.logLevel.upper()))
 
         logger.debug('hoho! FIXME init')
-        options.declare_option('mdelay', 'duration', 30 )
+        options.add_option('mdelay', 'duration', 30 )
 
 
     def on_filter(self, worklist):
