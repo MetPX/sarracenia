@@ -788,9 +788,18 @@ class File(FlowCB):
         if self.primed:
             return self.wakeup()
 
+        cwd = os.getcwd()
+
         for d in self.o.postpath:
             logger.debug("postpath = %s" % d)
-            if pbd and not d.startswith(pbd): d = pbd + '/' + d
+
+            if d[0] != os.sep: # relative path.
+               if d[0] == '.': d=d[1:]
+               if d[0] == os.sep :
+                   d = cwd + d
+               else:
+                   c = cwd + os.sep + d
+            #if pbd and not d.startswith(pbd): d = cwd + '/' + d
 
             if self.o.sleep > 0:
                 messages.extend(self.watch_dir(d))
