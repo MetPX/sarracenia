@@ -24,6 +24,7 @@ class PClean(FlowCB):
     def __init__(self, options):
         self.test_extension_list = ['.slink', '.hlink', '.moved']
         self.ext_key = 'pclean_ext'
+        self.ext_count = 0
         self.all_fxx_dirs = [
             '',  # sarra f20
             'downloaded_by_sub_amqp',  # subscribe amqp f30

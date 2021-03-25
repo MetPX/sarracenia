@@ -73,9 +73,9 @@ class PClean_F90(PClean):
 
             if ext not in self.test_extension_list:
                 # prepare next f90 test
-                test_extension = random.choice(
-                    self.test_extension_list
-                )  # pick one test identified by file extension
+                test_extension = self.test_extension_list[ self.ext_count % len(self.test_extension_list) ]
+                self.ext_count += 1
+                # pick one test identified by file extension
                 src = '/' + msg['relPath']  # src file is in f30 dir
                 dest = "{}{}".format(
                     src, test_extension
