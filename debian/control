@@ -10,9 +10,9 @@ Vcs-Git: https://github.com/MetPX/sarracenia
 Package: metpx-sr3
 Architecture: all 
 Depends: ${misc:Depends}, ${python3:Depends}, python3-pkg-resources
-Recommends: python3-paramiko
+Recommends: ncftp, wget
 Suggests: rabbitmq-server
-Homepage: https://github.com/MetPX/sarracenia
+Homepage: https://github.com/MetPX/sarracenia/tree/v03_wip
 Description: v3 Directory mirroring in real-time for users, file servers and web sites.
  Part of the Meteorological Product Exchanger project, Sarracenia publishes
  advertisement messages to an AMQP broker containing URLS of files in real-time.
