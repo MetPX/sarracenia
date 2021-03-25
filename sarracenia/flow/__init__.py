@@ -827,7 +827,6 @@ class Flow:
                     self.worklist.ok.append(msg)
                 else:
                     # actual rename...
-                    logger.info( 'renaming. oldname: %s' % msg['oldname'] )
                     ok = self.renameOneItem(msg['oldname'], new_path)
                     # if rename succeeds, fall through to download object to find if the file renamed
                     # actually matches the one advertised, and potentially download it.
@@ -838,7 +837,6 @@ class Flow:
                          continue
                         
             elif (msg['integrity']['method'] == 'remove') and ('delete' in self.o.events):
-                logger.info('FIXME: should try to remove %s' % new_path )
                 if self.removeOneFile(new_path):
                     msg_set_report(msg, 201, 'removed')
                     self.worklist.ok.append(msg)
@@ -851,7 +849,6 @@ class Flow:
                 continue
 
             if 'link' in msg.keys() and ( 'link' in self.o.events ):
-                logger.info('looking at a link')
                 if self.link1file(msg):
                     msg_set_report(msg, 201, 'linked')
                     self.worklist.ok.append(msg)

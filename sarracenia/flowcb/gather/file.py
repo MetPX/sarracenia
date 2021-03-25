@@ -791,10 +791,11 @@ class File(FlowCB):
         cwd = os.getcwd()
 
         for d in self.o.postpath:
-            logger.debug("postpath = %s" % d)
 
             # convert relative path to absolute.
-            if d[0] != os.sep: c = cwd + os.sep + d
+            if d[0] != os.sep: d = cwd + os.sep + d
+
+            logger.debug("postpath = %s" % d)
 
             if self.o.sleep > 0:
                 messages.extend(self.watch_dir(d))
