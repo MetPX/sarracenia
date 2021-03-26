@@ -16,17 +16,17 @@
 #
 
 [Unit]
-Description=Sarracenia File Copy Service
+Description=Sarracenia V3 File Copy Service
 After=network.target
 
 [Service]
 Type=forking
-ExecStart=/usr/bin/sr start
+ExecStart=/usr/bin/sr3 start
 User=%i
 Group=users
 
-ExecReload=/usr/bin/sr reload
-ExecStop=/usr/bin/sr stop
+ExecReload=/usr/bin/sr3 reload
+ExecStop=/usr/bin/sr3 stop
 
 [Install]
 WantedBy=multi-user.target

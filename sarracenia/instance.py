@@ -196,6 +196,10 @@ class instance:
             self.running_instance = Audit()
         else:
             cfg = sarracenia.config.one_config(component, config)
+            for n in cfg.env_declared:
+                 os.environ[n]=cfg.env[n]
+                 os.putenv(n,cfg.env[n])
+
             self.running_instance = Flow.factory(cfg)
 
         self.running_instance.run()

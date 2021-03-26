@@ -283,8 +283,9 @@ Additional fields:
 v02: **parts=<method>,<bsz>,<blktot>,<brem>,<bno>**
 
 v03::
-     "size":<sz> , 
 
+     "size":<sz> , 
+                  
      "blocks" : 
      { 
             "method": "inplace" or "partitioned", 

@@ -455,6 +455,7 @@ class Config:
         self.debug = False
         self.declared_exchanges = []
         self.destfn_script = None
+        self.env_declared = []  # list of variable that are "declared env"'d 
         self.v2plugins = {}
         self.v2plugin_options = []
         self.imports = []
@@ -812,6 +813,7 @@ class Config:
         if words[0] in ['env', 'envvar', 'var', 'value']:
             name, value = words[1].split('=')
             self.env[name] = value
+            self.env_declared.append(name)
         elif words[0] in ['option', 'o']:
             self._parse_option(words[1], words[2:])
         elif words[0] in ['source', 'subscriber', 'subscribe']:

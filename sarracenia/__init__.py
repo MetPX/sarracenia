@@ -104,6 +104,7 @@ def durationToSeconds(str_value):
    """
     factor = 1
 
+    if type(str_value) in [int,float]: return str_value
     if str_value[-1] in 'sS': factor *= 1
     elif str_value[-1] in 'mM': factor *= 60
     elif str_value[-1] in 'hH': factor *= 60 * 60
