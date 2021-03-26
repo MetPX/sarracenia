@@ -214,12 +214,6 @@ class Flow:
         if hasattr(self, 'plugins') and (entry_point in self.plugins):
             for p in self.plugins[entry_point]:
                 p(self.worklist)
-                if entry_point == 'on_filter':
-                    if len(self.worklist.incoming) == 0:
-                        return
-                elif entry_point == 'on_work':
-                    if len(self.worklist.ok) == 0:
-                        return
 
     def _runCallbacksTime(self, entry_point):
         for p in self.plugins[entry_point]:
