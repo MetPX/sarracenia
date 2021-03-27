@@ -30,6 +30,7 @@ goals of opportunity:
   * Assume ubuntu >= 18.04 remove old cruft.
   * Assume systemd, remove sysv integration.
   * have options adopt camelCase where possible.
+  * fully async, multi-sources and sinks.
  
 V02 Plugin Pain Points
 ----------------------
@@ -234,8 +235,8 @@ not sure... need to keep the members for places where
 callbacks are called, but can use properties elsewhere, if desired.
 
 
-Known Problems
---------------
+Known Problems (Solved in v3)
+-----------------------------
 
 * passing of logs around is really odd. We didn't understand what 
   python logging objects were. Need to use them in the normal way.
@@ -275,12 +276,12 @@ away. (This later became the Moth module.)
 The method of testing is to make modifications and check them against the 
 sr_insects v03_wip branch. In general, an un-modified sr_insects tests should
 work, but since the logs change, there is logic being added on that branch
-to parse v2 and v3 versions in the same way.  Thus the v03_wip branch tests
+to parse v2 and v3 versions in the same way. Thus the v03_wip branch tests
 are compatible with both stable and work-in-progress versions.
 
 To get each component working, practice with individual unit tests, and then
 get to static-flow tests.  Can also do flakey_broker. The work is only going
-that far as all the components are converted.  Once full conversion is achieved,
+that far as all the components are converted. Once full conversion is achieved,
 then will look at dynamic_flow.
 
 Purpose is not a finished product, but a product with sufficient and 
@@ -377,7 +378,7 @@ settings that replace/deprecate v2 post_rate_limit plugin.
 Worries Addressed
 ~~~~~~~~~~~~~~~~~
 
-This section containts issues that were taken care of.  They were a bother for a while,
+This section contains issues that were taken care of.  They were a bother for a while,
 so noting down what the solution was.
 
 * logging using __name__ sometimes ends up claiming to be from the wrong file.
@@ -506,6 +507,10 @@ TODO
 * poll, remove listing files from implementation, just use NoDupe.py Tune nodupe for cases.
   we will just keep using v2 for old polls, and write new polls in v3, so don't worry about
   compat. They can never be vaguely similar... true/False? 
+
+* full async mode for MQP's. requires publish_retry functionality.
+
+* once full async mode available, allow multiple gathers and publishes.
 
 
 
