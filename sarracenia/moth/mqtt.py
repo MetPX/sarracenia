@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 default_options = {
    'batch' : 25,
    'clean_session': False,
-   'mqtt_v5': False,
    'no': 0,
    'prefetch': 25,
    'qos' : 1,
@@ -25,7 +24,7 @@ default_options = {
 class MQTT(Moth):
     """
        Message Queue Telemetry Transport support.
-           talks to an MQTT broker.  Tested with mosquitto. defaults to MQTTv5
+           talks to an MQTT broker.  Tested with mosquitto. requires MQTTv5
 
        Concept mapping from AMQP:
 
@@ -54,6 +53,16 @@ class MQTT(Moth):
            made a pull request: https://github.com/eclipse/paho.mqtt.python/pull/554 
            Implemented support for the modification here. Seems to work fine (not thoroughly tested yet.)
 
+      Why v5 only:
+
+           No shared subscriptions prior to v5. Used extensively. had originally written library with v3
+           support just restricting instance=1, but then I read about the re-transmission strategy:
+
+           In MQTT < 5, in QoS==1, one is supposed to resend messages until you get an ack. some implementations
+           do it every 20 seconds.  So in a case where you have, say 5 minutes of queueing, each message will be 
+           sent 300/20 -> 15 times...  an unhelpful packet storm.
+
+
       There is additionally a vulnerability/inefficiency resulting from async message reception:
            when a new message arrive the loop thread started by the paho library will append
            it to the new_messages data structure (protected by a mutex.)
@@ -78,10 +87,7 @@ class MQTT(Moth):
 
         logger.setLevel(getattr(logging, self.o['logLevel'].upper()))
 
-        if self.o['mqtt_v5']:
-            self.proto_version=paho.mqtt.client.MQTTv5
-        else:
-            self.proto_version=paho.mqtt.client.MQTTv311
+        self.proto_version=paho.mqtt.client.MQTTv5
 
         ebo=1
         if is_subscriber:
@@ -106,11 +112,7 @@ class MQTT(Moth):
         for binding_tuple in userdata.o['bindings']:
             exchange, prefix, subtopic = binding_tuple
             logger.info( "tuple: %s %s %s" % ( exchange, prefix, subtopic ) )
-            if userdata.o['mqtt_v5']:
-                subj = '/'.join( ['$share', userdata.o['queue_name'], exchange] + prefix + subtopic )
-            else:
-                logger.warning('mqtt < 5 has no sharing, only 1 instance per client-id/queue')
-                subj = '/'.join( [exchange] + prefix + subtopic )
+            subj = '/'.join( ['$share', userdata.o['queue_name'], exchange] + prefix + subtopic )
 
             (res, mid) = client.subscribe( subj , qos=userdata.o['qos'] )
             logger.info( "subscribed to: %s, result: %s" % (subj, paho.mqtt.client.error_string(res)) )
@@ -175,16 +177,8 @@ class MQTT(Moth):
                      cid = None
                      cs=True
 
-                if options['mqtt_v5'] :
-                    self.client = paho.mqtt.client.Client( userdata=self, \
+                self.client = paho.mqtt.client.Client( userdata=self, \
                         client_id=cid, protocol=paho.mqtt.client.MQTTv5 )
-                else:
-                    if options['no'] > 1:
-                        logger.error('only 1 instance with mqttv3. Use *mqtt_v5 on* for multiple instances.')
-                        return
-
-                    self.client = paho.mqtt.client.Client( clean_session=cs, \
-                        userdata=self, client_id=cid, protocol=paho.mqtt.client.MQTTv311)
 
                 #self.client.o = options
                 self.new_message_mutex.acquire()
