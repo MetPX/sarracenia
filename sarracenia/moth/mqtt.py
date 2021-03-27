@@ -92,6 +92,9 @@ class MQTT(Moth):
         logger.info("note: mqtt support is newish, not very well tested")
         
 
+    def __sub_on_disconnect(client, userdata, rc):
+        logger.info( paho.mqtt.client.connack_string(rc) )
+
     def __sub_on_connect(client, userdata, flags, rc, properties=None):
         logger.info( paho.mqtt.client.connack_string(rc) )
 
@@ -111,15 +114,12 @@ class MQTT(Moth):
 
             (res, mid) = client.subscribe( subj , qos=userdata.o['qos'] )
             logger.info( "subscribed to: %s, result: %s" % (subj, paho.mqtt.client.error_string(res)) )
-            if res != 0:
-                 client.connection_in_progress=False
-               
+
+    def __pub_on_disconnect(client, userdata, rc ):
+        logger.info( paho.mqtt.client.connack_string(rc) )
 
     def __pub_on_connect(client, userdata, flags, rc, properties=None):
-
         logger.info( paho.mqtt.client.connack_string(rc) )
-        if rc != paho.mqtt.client.MQTT_ERR_SUCCESS:
-            client.connection_in_progress=False
 
     def __sslClientSetup(self):
         """
@@ -167,8 +167,15 @@ class MQTT(Moth):
             try: 
                 self.new_message_mutex = threading.Lock()
 
+                cs=options['clean_session']
+                if ('queue_name' in options ) and ( 'no' in options ):
+                     cid = options['queue_name'] + '%02d' % options['no']
+                else:
+                     #cid = ''.join(random.choice(string.ascii_lowercase) for i in range(10))
+                     cid = None
+                     cs=True
+
                 if options['mqtt_v5'] :
-                    cid = options['queue_name'] + '%02d' % options['no']
                     self.client = paho.mqtt.client.Client( userdata=self, \
                         client_id=cid, protocol=paho.mqtt.client.MQTTv5 )
                 else:
@@ -176,8 +183,8 @@ class MQTT(Moth):
                         logger.error('only 1 instance with mqttv3. Use *mqtt_v5 on* for multiple instances.')
                         return
 
-                    self.client = paho.mqtt.client.Client( clean_session=options['clean_session'], \
-                        userdata=self, client_id=options['queue_name'], protocol=paho.mqtt.client.MQTTv311)
+                    self.client = paho.mqtt.client.Client( clean_session=cs, \
+                        userdata=self, client_id=cid, protocol=paho.mqtt.client.MQTTv311)
 
                 #self.client.o = options
                 self.new_message_mutex.acquire()
@@ -185,6 +192,7 @@ class MQTT(Moth):
                 self.new_message_mutex.release()
                 self.client.connected=False
                 self.client.on_connect = MQTT.__sub_on_connect
+                self.client.on_disconnect = MQTT.__sub_on_disconnect
                 self.client.on_message = MQTT.__on_message
                 # defaults to 20... kind of a mix of "batch" and prefetch... 
                 self.client.max_inflight_messages_set(options['batch']+options['prefetch'])
@@ -195,22 +203,9 @@ class MQTT(Moth):
                     logger.info("paho library without auto_ack support. Loses data every crash or restart." )
 
                 self.client.username_pw_set( self.broker.username, self.broker.password )
-
-                self.client.connection_in_progress=True        
                 self.client.connect( self.broker.hostname, port=self.__sslClientSetup() )
-
-                count=1
-                while not self.client.is_connected() and (count < 5):
-                     logger.debug("connecting loop" )
-                     self.client.loop(1)
-                     if not self.client.connection_in_progress:
-                         break
-                     count += 1
-                     time.sleep(0.1)
- 
-                if self.client.is_connected(): 
-                    self.client.loop_start()
-                    return
+                self.client.loop_start()
+                return
 
                 
             except Exception as err:
@@ -230,24 +225,15 @@ class MQTT(Moth):
             try:
                 self.client = paho.mqtt.client.Client( protocol=self.proto_version, userdata=self) 
                 self.client.on_connect = MQTT.__pub_on_connect
+                self.client.on_disconnect = MQTT.__pub_on_disconnect
                 #dunno if this is a good idea.
                 #self.client.max_queued_messages_set(options['prefetch'])
                 self.client.username_pw_set( self.broker.username, self.broker.password )
                 res = self.client.connect( options['broker'].hostname, port=self.__sslClientSetup()  )
                 logger.info( 'connecting to %s, res=%s' % (options['broker'].hostname, res ) )
-                self.client.connection_in_progress=True        
-                count=1
-                while not self.client.is_connected() and (count < 5):
-                    logger.info("connecting loop" )
-                    self.client.loop(1)
-                    if not self.client.connection_in_progress:
-                        break
-                    count += 1
-                    time.sleep(0.1)
-         
-                if self.client.is_connected(): 
-                    self.client.loop_start()
-                    return
+
+                self.client.loop_start()
+                return
 
             except Exception as err:
                 logger.error("failed to {} with {}".format( self.broker.hostname, err))
@@ -297,9 +283,11 @@ class MQTT(Moth):
             logger.info( "Message dropped as invalid" )
 
     def putCleanUp(self):
+        self.client.loop_stop()
         pass
 
     def getCleanUp(self):         
+        self.client.loop_stop()
         pass
 
     def newMessages(self):
@@ -309,7 +297,6 @@ class MQTT(Moth):
            FIXME: hate the locking... too fine grained, especially in on_message... just a 1st shot.
 
         """
-        logger.info( 'batch: %d' % self.o['batch'] )
         self.new_message_mutex.acquire()
         if len(self.client.new_messages) > self.o['batch'] :
             ml=self.client.new_messages[0:self.o['batch']]
@@ -343,7 +330,11 @@ class MQTT(Moth):
         """
         if self.is_subscriber:  #build_consumer
            logger.error("publishing from a consumer")
-           return None
+           return False
+ 
+        if not self.client.is_connected():
+           logger.error("no connection to publish to broker with")
+           return False
 
         #body = copy.deepcopy(bd)
   
@@ -393,14 +384,11 @@ class MQTT(Moth):
                     logger.info("published {} to {} under: {} ".format(
                          body, exchange, topic))
  
-                    return #success...
+                    return True #success...
 
             except Exception as ex:
                 logger.error('Exception details: ', exc_info=True)
 
-            self.close()
-            self.__putSetup()
-            
   
   
     def close(self):
