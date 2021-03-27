@@ -414,7 +414,7 @@ class AMQP(Moth):
 
         if self.is_subscriber:  #build_consumer
             logger.error("publishing from a consumer")
-            return None
+            return False
 
         #body = copy.deepcopy(bd)
         topic = '.'.join( self.o['topicPrefix'] + body['subtopic'] )
@@ -451,7 +451,7 @@ class AMQP(Moth):
                         logger.error(
                             'do not know which exchange to publish to: %s' %
                             self.o['exchange'])
-                        return
+                        return False
                 else:
                     exchange = self.o['exchange'][0]
             else:
@@ -476,7 +476,7 @@ class AMQP(Moth):
             for k in v2m.headers:
                 if len(v2m.headers[k]) >= amqp_ss_maxlen:
                     logger.error("message header %s too long, dropping" % k)
-                    return
+                    return False
             AMQP_Message = amqp.Message(v2m.notice,
                                         content_type='text/plain',
                                         application_headers=v2m.headers,
@@ -498,7 +498,7 @@ class AMQP(Moth):
                 self.channel.tx_commit()
                 logger.info("published body: {} headers: {} to {} under: {} ".format(
                     body, headers, exchange, topic))
-                return  # no failure == success :-)
+                return True  # no failure == success :-)
 
             except Exception as err:
                 logger.warning("moth.amqp.putNewMessage: failed %s: %s" %
@@ -506,7 +506,7 @@ class AMQP(Moth):
                 logger.debug('Exception details: ', exc_info=True)
 
             if not self.o['message_strategy']['stubborn']:
-                return None
+                return False
 
             self.close()
             self.__putSetup()

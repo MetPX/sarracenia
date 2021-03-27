@@ -241,8 +241,12 @@ class Moth():
     def putNewMessage(self, message, content_type='application/json'):
         """
            publish a message as set up to the given topic.
+
+           return True is succeeded, False otherwise.
         """
         logger.error("putNewMessage unimplemented")
+        return False
+
 
     def close(self):
         """
