@@ -626,7 +626,7 @@ These options set what files the user wants to be notified for and where
 an announcment for it.  Subscribers use `sr_subscribe <sr_subscribe.1.rst>`_
 to consume the announcement and download the file (or **sr_sarra**).
 To make files available to subscribers, **sr_poll** sends the announcements to
-an AMQP server, also called a broker.  Format of argument to the *broker* option::
+an AMQP or MQTT server, also called a broker.  Format of argument to the *broker* option::
 
        [amqp|amqps]://[user[:password]@]host[:port][/vhost]
 
@@ -680,7 +680,7 @@ post|sr3_post|sr_cpost
 In contrast to most other sarracenia components that act as daemons,
 sr3_post is a one shot invocation which posts and exits.
 To make files available to subscribers, **sr3_post** sends the announcements
-to an AMQP server, also called a broker.
+to an AMQP or MQTT server, also called a broker.
 
 This manual page is primarily concerned with the python implementation,
 but there is also an implementation in C, which works nearly identically.
@@ -733,10 +733,11 @@ The output of the command is as follows ::
 
 In MetPX-Sarracenia, each post is published under a certain topic.
 The log line starts with '[INFO]', followed by the **topic** of the
-post. Topics in *AMQP* are fields separated by dot. The complete topic starts with
-a topicPrefix (see option), version *V02*, 
+post. Topics in *AMQP* are fields separated by dot. Note that MQTT topics use
+a slash (/) as the topic separator.  The complete topic starts with
+a topicPrefix (see option), version *v03*, 
 followed by a subtopic (see option) here the default, the file path separated with dots
-*data.shared.products.foo*.
+*data.shared.products.foo*. 
 
 The second field in the log line is the message notice.  It consists of a time
 stamp *20150813161959.854*, and the source URL of the file in the last 2 fields.
@@ -1191,7 +1192,7 @@ The output of the command is as follows ::
 In MetPX-Sarracenia, each post is published under a certain topic.
 After the '[INFO]' the next information gives the \fBtopic*  of the
 post. Topics in  *AMQP*  are fields separated by dot. In MetPX-Sarracenia
-it is made of a  *topicPrefix*  by default : version  *v02* , 
+it is made of a  *topicPrefix*  by default : version  *v03* , 
 followed by the  *subtopic*  by default : the file path separated with dots, here, *data.shared.products.foo*
 
 After the topic hierarchy comes the body of the notification.  It consists of a time  *20150813161959.854* ,
@@ -1737,11 +1738,11 @@ sarracenia programs.
 Setting the Broker 
 ------------------
 
-**broker amqp{s}://<user>:<password>@<brokerhost>[:port]/<vhost>**
+**broker [amqp|mqtt]{s}://<user>:<password>@<brokerhost>[:port]/<vhost>**
 
-An AMQP URI is used to configure a connection to a message pump (aka AMQP broker.)
-Some sarracenia components set a reasonable default for that option. 
-You provide the normal user,host,port of connections. In most configuration files,
+A URI is used to configure a connection to a message pump, either
+an MQTT or an AMQP broker. Some Sarracenia components set a reasonable default for 
+that option.  provide the normal user,host,port of connections. In most configuration files,
 the password is missing. The password is normally only included in the credentials.conf file.
 
 Sarracenia work has not used vhosts, so **vhost** should almost always be **/**.
@@ -1752,7 +1753,7 @@ for more info on the AMQP URI format: ( https://www.rabbitmq.com/uri-spec.html )
 either in the default.conf or each specific configuration file.
 The broker option tell each component which broker to contact.
 
-**broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
+**broker [amqp|mqtt]{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
 ::
       (default: None and it is mandatory to set it ) 
@@ -3656,31 +3657,52 @@ These settings pertain to previous versions of the client, and have been superce
 HISTORY
 =======
 
-Dd_subscribe was initially developed for  **dd.weather.gc.ca**, an Environment Canada website 
+Sarracenia is part of the MetPX (Meteorological Product Exchanger.) project.
+The initial prototypes leveraged MetPX Sundew, Sarracenia's ancestor. Sundew
+plugins were developed to create announcements for files delivered by Sundew,
+and Dd_subscribe was initially developed for **dd.weather.gc.ca**, an Environment Canada website 
 where a wide variety of meteorological products are made available to the public. It is from
-the name of this site that the sarracenia suite takes the dd\_ prefix for its tools.  The initial
-version was deployed in 2013 on an experimental basis.  The following year, support of checksums
-was added, and in the fall of 2015, the feeds were updated to v02.  dd_subscribe still works,
-but it uses the deprecated settings described above.  It is implemented in python2, whereas
-the sarracenia toolkit is in python3.
+the name of this site that the sarracenia suite takes the dd\_ prefix for its tools. The initial
+version was deployed in 2013 on an experimental basis. The following year, support of checksums
+was added, and in the fall of 2015, the feeds were updated to v02. dd_subscribe still works,
+but it uses the deprecated settings described above. It is implemented in python2, whereas
+the Sarracenia toolkit is in python3.
 
-In 2007, when the MetPX was originally open sourced, the staff responsible were part of
-Environment Canada.  In honour of the Species At Risk Act (SARA), to highlight the plight
+In 2007, when MetPX was originally open sourced, the staff responsible were part of
+Environment Canada. In honour of the Species At Risk Act (SARA), to highlight the plight
 of disappearing species which are not furry (the furry ones get all the attention) and
 because search engines will find references to names which are more unusual more easily, 
 the original MetPX WMO switch was named after a carnivorous plant on the Species At
-Risk Registry:  The *Thread-leaved Sundew*.  
+Risk Registry: The *Thread-leaved Sundew*.  
 
 The organization behind MetPX have since moved to Shared Services Canada, but when
 it came time to name a new module, we kept with a theme of carnivorous plants, and 
-chose another one indigenous to some parts of Canada: *Sarracenia*,  a variety
+chose another one indigenous to some parts of Canada: *Sarracenia*, a variety
 of insectivorous pitcher plants. We like plants that eat meat!  
+
+Sarracenia was initially called v2, as in the second data pumping architecture
+in the MetPX project, (v1 being Sundew.) Over the years a number of limitations
+with the existing implementation became clear:  
+
+* The poor support for python developers.
+* the odd plugin logic, with very poor error reporting.
+* The inability to process groups of messages.
+* The inability to add other queueing protocols (limited to rabbitmq/AMQP.)
+
+
+in 2020, Development began on v03.
+
+V03 is a deep refactor of Sarracenia, brining support for MQTT in addition to AMQP,
+and pluggable organization that makes it easy to add other message queueing protocols.
+whereas v02 was an application that one could add snippets of python code to customize
+to a certain degree, V03 is a set of python APIs with used to implement a CLI. It
+can be used by application programmers in a much more piecemeal/lego-style way.
 
 
 dd_subscribe Renaming
 ---------------------
 
-The new module (MetPX-Sarracenia) has many components, is used for more than 
+The new project (MetPX-Sarracenia) has many components, is used for more than 
 distribution, and more than one website, and causes confusion for sysadmins thinking
 it is associated with the dd(1) command (to convert and copy files).  So, we switched
 all the components to use the sr\_ prefix.

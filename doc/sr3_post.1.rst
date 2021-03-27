@@ -101,12 +101,13 @@ is the checksum value. The *parts=1,4574,1,0,0* state that the file is available
 
 Another example::
 
- sr_post -pb amqp://broker.com -pbd /data/web/public_data -pbu http://dd.weather.gc.ca/ -p bulletins/alphanumeric/SACN32_CWAO_123456
+ sr_post -pb mqtt://broker.com -pbd /data/web/public_data -pbu http://dd.weather.gc.ca/ -p bulletins/alphanumeric/SACN32_CWAO_123456
 
 By default, sr_post reads the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
 (concatenating the post_base_dir and relative path of the source url to obtain the local file path)
 and calculates its checksum. It then builds a post message, logs into broker.com as user 'guest'
-(default credentials) and sends the post to defaults vhost '/' and exchange 'xs_guest'.
+(default credentials) and sends the post to defaults vhost '/' and exchange 'xs_guest', resulting
+in publication to the MQTT broker under the topic: *xs_guest/v03/bulletins/alphanumeric/SACN32_CWAO_123456*
 
 A subscriber can download the file http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 using http
 without authentication on dd.weather.gc.ca.

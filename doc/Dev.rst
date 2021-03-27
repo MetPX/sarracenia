@@ -960,6 +960,19 @@ So, in this case, the results are still good in spite of not quite being
 able to terminate. If there was a significant problem, the cumulation
 would indicate it.
 
+Flow tests with MQTT
+~~~~~~~~~~~~~~~~~~~~
+
+Flow tests can be run where certain components use the MQTT protocol, instead of AMQP.
+
+FIXME: steps missing, more clarity required.
+
+* MQTT broker is installed
+* the bunnymaster tsource, tfeed, tsub users defined and given passwords (broker dependent.)
+* for each user: an mqtt://user:pw@brokerhost  url's line is added to ~/.config/sr3/credentials.conf
+* edit the variable MQP in ~/.config/sr3/default.conf, MQP is used by the flow tests.
+
+Most components will use MQTT instead of amqp and can be run normally.
 
 Commits to the Master Branch
 ----------------------------

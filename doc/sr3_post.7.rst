@@ -868,6 +868,11 @@ Standards
    binding.  The 1.0 feature set is below the minimum needed to support 
    Sarracenia's pub-sub architecture.
 
+ * MQTT refers to `MQTT v5.0 <https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.pdf>`_ 
+   and `MQTT v3.1.1 <http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html>`_,
+   MQTT v5 has important extension: shared subscriptions (heavily used in Sarracenia.)
+   so v5 is highly recommended. v3.1 support is only for legacy support reasons.
+
  * JSON is defined by `IETF RFC 7159 <https://www.rfc-editor.org/info/rfc7159>`_.
    JSON standard includes mandatory use of UNICODE character set (ISO 10646)
    JSON default character set is UTF-8, but allows multiple character 
@@ -880,11 +885,6 @@ Standards
 
  * URL encoding, as per IETF RFC 1738, is used to escape unsafe characters 
    where appropriate.
-
- * MQTT refers to `MQTT v3.1.1 <http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html>`_,
-   the most widely implemented version at this time. Yes, v5 has user properties
-   with 64K long strings, and has been standardized in 2017, but implementations 
-   are (at the beginning of 2019) not plentiful. 
 
 
 FURTHER READING
