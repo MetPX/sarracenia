@@ -3642,16 +3642,7 @@ DEPRECATED SETTINGS
 
 These settings pertain to previous versions of the client, and have been superceded.
 
-- **host          <broker host>  (unsupported)** 
-- **amqp-user     <broker user>  (unsupported)** 
-- **amqp-password <broker pass>  (unsupported)** 
-- **http-user     <url    user>  (now in credentials.conf)** 
-- **http-password <url    pass>  (now in credentials.conf)** 
-- **topic         <amqp pattern> (deprecated)** 
-- **exchange_type <type>         (default: topic)** 
-- **exchange_key  <amqp pattern> (deprecated)** 
 - **lock      <locktext>         (renamed to inflight)** 
-
 
 
 HISTORY
@@ -3660,13 +3651,12 @@ HISTORY
 Sarracenia is part of the MetPX (Meteorological Product Exchanger.) project.
 The initial prototypes leveraged MetPX Sundew, Sarracenia's ancestor. Sundew
 plugins were developed to create announcements for files delivered by Sundew,
-and Dd_subscribe was initially developed for **dd.weather.gc.ca**, an Environment Canada website 
-where a wide variety of meteorological products are made available to the public. It is from
-the name of this site that the sarracenia suite takes the dd\_ prefix for its tools. The initial
-version was deployed in 2013 on an experimental basis. The following year, support of checksums
-was added, and in the fall of 2015, the feeds were updated to v02. dd_subscribe still works,
-but it uses the deprecated settings described above. It is implemented in python2, whereas
-the Sarracenia toolkit is in python3.
+and Dd_subscribe was initially developed as a download client for **dd.weather.gc.ca**, an 
+Environment Canada website where a wide variety of meteorological products are made 
+available to the public. It is from the name of this site that the sarracenia 
+suite takes the dd\_ prefix for its tools. The initial version was deployed in 
+2013 on an experimental basis. The following year, support of checksums
+was added, and in the fall of 2015, the feeds were updated to v02. 
 
 In 2007, when MetPX was originally open sourced, the staff responsible were part of
 Environment Canada. In honour of the Species At Risk Act (SARA), to highlight the plight
@@ -3675,7 +3665,7 @@ because search engines will find references to names which are more unusual more
 the original MetPX WMO switch was named after a carnivorous plant on the Species At
 Risk Registry: The *Thread-leaved Sundew*.  
 
-The organization behind MetPX have since moved to Shared Services Canada, but when
+The organization behind MetPX has since moved to Shared Services Canada, but when
 it came time to name a new module, we kept with a theme of carnivorous plants, and 
 chose another one indigenous to some parts of Canada: *Sarracenia*, a variety
 of insectivorous pitcher plants. We like plants that eat meat!  
@@ -3689,10 +3679,9 @@ with the existing implementation became clear:
 * The inability to process groups of messages.
 * The inability to add other queueing protocols (limited to rabbitmq/AMQP.)
 
-
 in 2020, Development began on v03.
 
-V03 is a deep refactor of Sarracenia, brining support for MQTT in addition to AMQP,
+V03 is a deep refactor of Sarracenia, bringing support for MQTT in addition to AMQP,
 and pluggable organization that makes it easy to add other message queueing protocols.
 whereas v02 was an application that one could add snippets of python code to customize
 to a certain degree, V03 is a set of python APIs with used to implement a CLI. It

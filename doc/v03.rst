@@ -475,6 +475,54 @@ Items from the TODO list that have been addressed.
 * migrate sr_credentials.py to sarracenia/credentials.py.
 
 
+After Parity: True Improvements
+-------------------------------
+
+* start re-writing some plugins, like unidata stuff to see how hard it is
+  new interface should be a lot easier, but road testing is needed.
+
+* MQTT Support (Done!)
+
+* Consider replacing manual queues in moth with more pythoning Queue.
+  How to decide.
+
+* Replace sarracenia.flowcb.retry (transliteration of v2) with more pythonic. 
+  write an alternate module for each implementation.
+  Would want to implement multiple options and examine performance
+  in high load situation. Options:
+   * Queue + sequential file writing
+   * persist-queue (single task like today.)
+   * persist-queue (shared among all instances?)
+
+* use this to implement cache sharing (copying of cache from processes with 
+  vip to those without.) General feature makes switchovers much cleaner.
+  peer_broker, peer_exchange.
+
+  advertise  shovel/config/recently_received/ and have non vip holders subscribe...
+
+  or permit substitution with memcached?
+  Make a peerqueue wrapper class, wait... just have peers subscribe to peer output.
+
+
+* True Async: Single timing loop for entire app. Requires a retry_queue for posting.
+  * requires a place to store failed/deferred posts (a second retry queue.)
+  * changing events to have "after_post" processing of to append to outbound retry queue.
+  * Do we have logic, like  outbound winnow, where as long as published once, ok?
+  * MQTT reception is already async, just need to fix transmit.
+
+* Multi-source (requires async):
+  * allow >1 broker and post_broker to be specified, gather from all brokers, post to all brokers.
+
+* re-write poll, 
+
+  * remove listing files from implementation, just use NoDupe.py Tune nodupe for cases.
+    we will just keep using v2 for old polls, and write new polls in v3, so don't worry about
+    compat. They can never be vaguely similar... true/False? 
+
+  * add walk to the Transfer protocols.  just call walk from a flowcb/gather/remote.py
+
+  * use cache-sharing to avoid multiple polls. or just remove filtering in poll, use winnow?
+
 TODO
 ----
 
