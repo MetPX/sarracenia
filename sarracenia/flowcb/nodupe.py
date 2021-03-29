@@ -188,7 +188,7 @@ class NoDupe(FlowCB):
         logger.debug("NoDupe calling check( %s, %s, %s )" % ( sumstr, relpath, partstr ) )
         return self.check(sumstr, relpath, partstr)
 
-    def on_filter(self, worklist):
+    def after_accept(self, worklist):
 
         new_incoming = []
         self.now = nowflt()

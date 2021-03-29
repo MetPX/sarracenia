@@ -73,7 +73,7 @@ in more detail:
  |          |                                                             |
  |          | Apply accept/reject clauses                                 |
  |          |                                                             |
- |          | on_filter callbacks                                         |
+ |          | after_accept callbacks                                      |
  |          | move messages from worklist.incoming to worklist.rejected.  |
  |          | ones to run: flowcb/nodupe.py (runs duplicate suppresion.)  |
  |          |                                                             |
@@ -82,7 +82,7 @@ in more detail:
  |          |                                                             |
  |          | run transfer (download or send.)                            |
  |          |                                                             |
- |          | run on_work                                                 |
+ |          | run after_work                                              |
  +----------+-------------------------------------------------------------+
  |          | run on_post                                                 |
  |          |                                                             |

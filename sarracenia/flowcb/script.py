@@ -65,11 +65,11 @@ class Script(FlowCB):
             self.run_script( self.o.script_gather )
         return []
 
-    def on_filter(self, worklist):
+    def after_accept(self, worklist):
         if hasattr( self.o, 'script_filter') and self.o.script_filter is not None :
             self.run_script( self.o.script_filter )
 
-    def on_work(self, worklist):
+    def after_work(self, worklist):
         if hasattr( self.o, 'script_work') and self.o.script_work is not None :
             self.run_script( self.o.script_work )
 

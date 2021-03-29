@@ -91,7 +91,7 @@ class Flow:
     plugins  -- dict of modular functionality metadata.
          "load" - list of (v3) flow_callbacks to load.
          time    - one of the invocation times of callbacks. examples:
-                   "on_start", "on_filter", etc...
+                   "on_start", "after_accept", etc...
                  contains routines to run at each *time*
      
     """
@@ -317,7 +317,7 @@ class Flow:
                 self.ack(self.worklist.rejected)
                 self.worklist.rejected = []
                 self.ack(self.worklist.failed)
-                self._runCallbacksWorklist('on_work')
+                self._runCallbacksWorklist('after_work')
 
                 self.post()
 
@@ -462,8 +462,8 @@ class Flow:
                     self.worklist.rejected.append(m)
 
         self.worklist.incoming = filtered_worklist
-        # apply on_filter plugins.
-        self._runCallbacksWorklist('on_filter')
+        # apply after_accept plugins.
+        self._runCallbacksWorklist('after_accept')
 
         #logger.debug('done')
 

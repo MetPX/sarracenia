@@ -20,11 +20,11 @@ class Log(FlowCB):
         logger.info("gathering")
         return []
 
-    def on_filter(self, worklist):
+    def after_accept(self, worklist):
         for msg in worklist.incoming:
             logger.info("accepted: %s " % msg_dumps(msg) )
 
-    def on_work(self, worklist):
+    def after_work(self, worklist):
         for msg in worklist.ok:
             logger.info("worked successfully: %s " % msg_dumps(msg) )
 

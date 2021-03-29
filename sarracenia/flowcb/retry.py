@@ -193,7 +193,7 @@ class Retry(FlowCB):
 
         return True, message
 
-    def on_filter(self, worklist):
+    def after_accept(self, worklist):
         """
           if there are only a few new messages, then get some from the retry list.
         """
@@ -498,7 +498,7 @@ class Retry(FlowCB):
         elapse = nowflt() - now
         logger.info("sr_retry on_housekeeping elapse %f" % elapse)
 
-    def on_work(self, worklist):
+    def after_work(self, worklist):
         """
          worklist.failed should be put on the retry list.
         """

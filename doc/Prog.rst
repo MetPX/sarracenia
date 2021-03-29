@@ -83,7 +83,7 @@ The worklist data structure is a set of lists of messages.  There are four:
   * worklist.ok -- messages which have been successfully processed. (usually by work.)
   * worklist.failed   -- messages for which processing was attempted, but it failed. 
 
-The worklist is passed to the *on_filter* and *on_work* plugins as detailed in the next section.
+The worklist is passed to the *after_accept* and *after_work* plugins as detailed in the next section.
 
 The Flow Algorithm
 ~~~~~~~~~~~~~~~~~~
@@ -96,7 +96,7 @@ algorithm is:
   places new messages in _worklist.incoming_
 
 * Filter them with accept/reject clauses, rejected messages are moved to _worklist.rejected_ .
-  on_filter callbacks further manipulate the worklists after initial accept/reject filtering.
+  after_accept callbacks further manipulate the worklists after initial accept/reject filtering.
 
 * Work on the remaining incoming messages, by doing the download, send or other work that creates new files.
   when work for a message succeeds, the message is moved to the _worklist.ok_ .
@@ -128,11 +128,11 @@ That line cause Sarracenia to look in the Python search path for a class like:
   logger = logging.getLogger(__name__)
 
   class Log(FlowCB):
-    def on_filter(self, worklist):
+    def after_accept(self, worklist):
         for msg in worklist.incoming:
             logger.info("received: %s " % msg)
 
-    def on_work(self, worklist):
+    def after_work(self, worklist):
         for msg in worklist.ok:
             logger.info("worked successfully: %s " % msg)
 
@@ -375,7 +375,7 @@ self is the message being processed. variables variables most used:
 
 These are the message fields which are most often of interest, but many other 
 can be viewed by just turning on the logging flowcb, which will print all available fields
-to both on_filter and on_work callbacks.
+to both after_accept and after_work callbacks.
 
 
 Accessing Options
@@ -424,7 +424,7 @@ a given routine should be called.
 +===================+====================================================+
 |                   | very freqently used.                               |
 |                   | examine parent.msg for finer grained filtering.    |
-| on_filter         | Return False to stop further processing of message.|
+| after_accept      | Return False to stop further processing of message.|
 |                   | return True to proceed                             |
 |                   |                                                    |
 |                   | Examples: msg_* in the examples directory          |
@@ -444,7 +444,7 @@ a given routine should be called.
 |                   |                                                    |
 +-------------------+----------------------------------------------------+
 |                   | When a transfer has been completed.                |
-| on_work           |                                                    |
+| after_work           |                                                    |
 |                   | return False to stop further processing.           |
 |                   | return True to proceed                             |
 |                   |                                                    |
@@ -550,7 +550,7 @@ completely avoided.
 Advanced File Reception
 -----------------------
 
-The *on_work* entry point in a *sarracenia.flowcb* class is an action to perform 
+The *after_work* entry point in a *sarracenia.flowcb* class is an action to perform 
 after receipt of a file (or after sending, in a sender.) The RxPipe module is an example
 provided with sarracenia::
 
@@ -574,7 +574,7 @@ provided with sarracenia::
               return
           self.rxpipe = open( self.o.rxpipe_name, "w" )
 
-      def on_work(self, worklist):
+      def after_work(self, worklist):
 
           for msg in worklist.ok:
               self.rxpipe.write( msg['new_dir'] + os.sep + msg['new_file'] + '\n' )
@@ -651,7 +651,7 @@ Why v3 API should be used whenever possible
 * The strange choice of *parent* as a place for storing settings is puzzling to people.
   *parent* instance variable becomes *options*,  *self.parent* becomes *self.o*
 
-* plural event callbacks replace singular ones.  on_filter replaces on_message
+* plural event callbacks replace singular ones.  after_accept replaces on_message
 
 * messages are just python dictionaries. fields defined by json.loads( v03 payload format )
   messages only contain the actual fields, no settings or other things...
@@ -701,11 +701,11 @@ local file is sufficient::
   accept .*
   
 There should be two files in the PYTHONPATH somewhere containing 
-classes derived from FlowCB with on_filter routines declared.
+classes derived from FlowCB with after_accept routines declared.
 The processing in those routines will be done on receipt of a batch
 of messages.  A message will correspond to a file.
 
-the on_filter routins accept a worklist as an argument.  
+the after_accept routins accept a worklist as an argument.  
 
 
 .. warning::

@@ -80,8 +80,8 @@ Changes planned to address pain points
    
 * plural event callbacks replace singular ones:
 
-  *  on_filter(self,worklist) replaces on_message(self,parent)
-  *  on_work(self,worklist) replaces on_part/on_file(self,parent)
+  *  after_accept(self,worklist) replaces on_message(self,parent)
+  *  after_work(self,worklist) replaces on_part/on_file(self,parent)
 
 
 * messages are just python dictionaries. fields defined by json.loads( v03 payload format )

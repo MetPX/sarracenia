@@ -13,7 +13,7 @@ class DeleteFlowFiles(object):
     def __init__(self, parent):
         logger.debug("msg_delete initialized")
 
-    def on_filter(self, worklist):
+    def after_accept(self, worklist):
 
         for m in worklist.incoming:
 

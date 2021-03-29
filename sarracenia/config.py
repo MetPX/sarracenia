@@ -120,7 +120,7 @@ convert_to_v3 = {
     'on_line': {
         'line_log': ['flow_callback', 'sarracenia.flowcb.line_log']
     },
-    'on_post': {
+    'before_post': {
         'post_rate_limit': ['continue']
     }
 }
@@ -416,6 +416,7 @@ class Config:
         'loglevel': 'logLevel',
         'logdays': 'lr_backupCount',
         'logrotate_interval': 'lr_interval',
+        'on_post' : 'before_post',
         'post_base_dir': 'post_baseDir',
         'post_basedir': 'post_baseDir',
         'post_base_url': 'post_baseUrl',

@@ -19,7 +19,7 @@ class PClean_F92(PClean):
 
      - it fails if one removal failed
     """
-    def on_filter(self, worklist):
+    def after_accept(self, worklist):
         import os
 
         logger.info("start len(worklist.incoming) = %d" %

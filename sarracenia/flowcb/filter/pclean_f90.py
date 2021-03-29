@@ -25,7 +25,7 @@ class PClean_F90(PClean):
     When a product is not fully propagated, the error is reported and the test is considered as a
     failure. It also checks if the file differs from original
     """
-    def on_filter(self, worklist):
+    def after_accept(self, worklist):
 
         logger.info("start len(worklist.incoming) = %d" % len(worklist.incoming))
 

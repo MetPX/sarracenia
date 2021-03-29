@@ -20,7 +20,7 @@ class RxPipe(FlowCB):
               return
           self.rxpipe = open( self.o.rxpipe_name, "w" )
 
-      def on_work(self, worklist):
+      def after_work(self, worklist):
 
           for msg in worklist.ok:
               self.rxpipe.write( msg['new_dir'] + os.sep + msg['new_file'] + '\n' )

@@ -61,7 +61,7 @@ Do not remove from all lists, only move messages between them.
 logger = logging.getLogger(__name__)
 
 entry_points = [
-    'ack', 'do_poll', 'gather', 'on_filter', 'on_data', 'on_work',
+    'ack', 'do_poll', 'gather', 'after_accept', 'on_data', 'after_work',
     'on_housekeeping', 'on_html_page', 'on_line', 
     'on_report', 'on_start', 'on_stop', 'post'
 ]
@@ -91,7 +91,7 @@ class FlowCB:
         Task: gather messages from a source... return a list of messages.
         return []
 
-    def on_filter(self,worklist):
+    def after_accept(self,worklist):
          Task: just after messages go through accept/reject masks,
                operate on worklist.incoming to help decide which messages to process further.
                and move messages to worklist.rejected to prevent further processing.
@@ -105,7 +105,7 @@ class FlowCB:
 
         return new_data
 
-    def on_work(self,worklist):
+    def after_work(self,worklist):
         Task: operate on worklist.ok (files which have arrived.)
 
     def post(self,worklist):

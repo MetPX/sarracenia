@@ -353,7 +353,7 @@ class V2Wrapper(FlowCB):
 
         return True
 
-    def on_work(self, worklist):
+    def after_work(self, worklist):
         ok_to_post = []
         for m in worklist.ok:
             if self.run_entry('on_file', m):
@@ -376,7 +376,7 @@ class V2Wrapper(FlowCB):
         worklist.ok = outgoing
 
 
-    def on_filter(self, worklist):
+    def after_accept(self, worklist):
 
         outgoing = []
         for m in worklist.incoming:

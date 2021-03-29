@@ -1484,7 +1484,7 @@ The log.py file included in the package is like this::
 
   class Log(Plugin):
 
-    def on_filter(self,worklist):
+    def after_accept(self,worklist):
         for msg in worklist.incoming:
             logger.info( "msg/log received: %s " % msg )
         return worklist
@@ -1618,11 +1618,11 @@ when the message is received. To have a line in the log for each message receive
 
    FIXME: v2 example, wrong for v3
 
-   on_filter msg_rawlog
+   after_accept msg_rawlog
 
 There are similar plugins available for different parts of processing::
 
-   on_work file_log (default)
+   after_work file_log (default)
 
    on_posts post_log
    
@@ -3129,8 +3129,8 @@ The flow_callback directive takes a class to load can scan for entry points as a
     flow_callback sarracenia.flowcb.log.Log
    
 With this directive in a configuration file, the Log class found in installed package will be used.
-That module logs messages *on_filter* (after messages have passed through the accept/reject masks.)
-and the *on_work* (after the file has been downloaded or sent). Here is the source code 
+That module logs messages *after_accept* (after messages have passed through the accept/reject masks.)
+and the *after_work* (after the file has been downloaded or sent). Here is the source code 
 for that callback class::
 
   import json
@@ -3151,11 +3151,11 @@ for that callback class::
         else:
             logger.setLevel(logging.INFO)
 
-    def on_filter(self, worklist):
+    def after_accept(self, worklist):
         for msg in worklist.incoming:
             logger.info("accepted: %s " % msg_dumps(msg) )
 
-    def on_work(self, worklist):
+    def after_work(self, worklist):
         for msg in worklist.ok:
             logger.info("worked successfully: %s " % msg_dumps(msg) )
 

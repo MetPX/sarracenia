@@ -33,7 +33,7 @@ class MDelayLatest(FlowCB):
         options.add_option('mdelay', 'duration', 30 )
 
 
-    def on_filter(self, worklist):
+    def after_accept(self, worklist):
         # Prepare msg delay test
         logger.info('FIXME: mdelay?')
         logger.info(self.o.mdelay)
