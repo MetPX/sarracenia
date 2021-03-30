@@ -904,6 +904,14 @@ class Config:
 
             if k in ['accept', 'reject', 'get']:
                 self.masks.append(self._build_mask(k, line[1:]))
+            elif k in [ 'callback', 'cb' ]:
+                vv = v.split('.')
+                v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
+                self.plugins.append(v)
+            elif k in [ 'callback_prepend', 'cbp' ]:
+                vv = v.split('.')
+                v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
+                self.plugins = [ v ] + self.plugins
             elif k in ['declare']:
                 self._parse_declare(line[1:])
             elif k in ['feeder']:

@@ -1469,9 +1469,9 @@ flow_callback options
 ~~~~~~~~~~~~~~~~~~~~~
 
 Sarracenia makes extensive use of small python code snippets that customize
-processing called *flow_callbacks* Flow_callbacks define and use additional settings.
+processing called *flow_callbacks* Flow_callbacks define and use additional settings::
 
-  flow_callback sarracenia.flowcb.msg.log.Log
+  flow_callback sarracenia.flowcb.log.Log
 
 The module refers to the sarracenia/flowcb/msg/log.py file in the installed package.
 In that file, the Log class is the one searched for entry points.
@@ -1496,6 +1496,24 @@ those routines will be called. For more details consult the
 
 To add special processing of messages, create a module in the python
 path, and have it include entry points. 
+
+There is also *flow_callbacks_prepend* which adds a flow_callback class to the front
+of the list (which determines relative execution order among flow_callback classes.)
+
+   
+callback options
+~~~~~~~~~~~~~~~~
+
+callbacks that are delivered with metpx-sr3 follow the following convention:
+
+* they are placed in the sarracenia/flowcb  directory tree.
+* the name of the primary class is the same as the name of file containing it.
+
+so we provide the following syntactic sugar::
+
+  callback log    (is equivalent to *flow_callback sarracenia.flowcb.log.Log* )
+
+There is similarly a *callback_prepend* to fill in.  
 
 Importing Extensions
 ~~~~~~~~~~~~~~~~~~~~
