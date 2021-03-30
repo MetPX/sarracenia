@@ -54,8 +54,8 @@ class Retry(FlowCB):
     list of entries to add to the retry list.  
       
 
-    One must remove the *delivery_tag* of messages placed on the retry list,
-    as reception from the source has already been acknowledged.
+    Note that the "ack_id" field of messages is removed from messages when they
+    are retrieved from the list, as reception from the source has already been acknowledged.
     """
     def __init__(self, options):
 
