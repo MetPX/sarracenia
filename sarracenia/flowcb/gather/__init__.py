@@ -168,6 +168,6 @@ def msg_init(path, o, lstat=None):
         msg['atime'] = v3timeflt2str(lstat.st_atime)
 
     if o.preserve_mode:
-        msg['mode'] = "%o" % (lstat[stat.ST_MODE] & 0o7777)
+        msg['mode'] = "%o" % (lstat.st_mode & 0o7777)
 
     return msg
