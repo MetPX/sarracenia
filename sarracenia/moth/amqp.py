@@ -388,11 +388,9 @@ class AMQP(Moth):
             logger.error("getting from a publisher")
             return
 
-        if not 'ack_id' in m:
-            logger.warning(
-                "cannot acknowledge message without a delivery_tag: %s " %
-                m['relPath'])
-            return
+        # silent success. retry messages will not have an ack_id, and so will not require acknowledgement.
+        if not 'ack_id' in m: 
+            return 
 
         try:
             self.channel.basic_ack(m['ack_id'])

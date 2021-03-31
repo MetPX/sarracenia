@@ -56,7 +56,7 @@ class FDelay(FlowCB):
             if m['integrity']['method'] == 'remove':
                 # 'remove' msg will be removed by itself
                 worklist.rejected.append(m)
-                logger.debug('marked rejected 0')
+                logger.debug('marked rejected 0 (file removal)')
                 continue
 
             # Test msg delay
@@ -68,7 +68,7 @@ class FDelay(FlowCB):
                 m['isRetry'] = False
                 m['_deleteOnPost'] |= set(['isRetry'])
                 worklist.failed.append(m)
-                logger.debug('marked failed 1')
+                logger.debug('marked failed 1 (message not old enough)')
                 continue
 
             # Prepare file delay test
@@ -79,7 +79,7 @@ class FDelay(FlowCB):
             if not os.path.exists(f):
                 logger.debug("did not find file {}".format(f))
                 worklist.failed.append(m)
-                logger.debug('marked failed 2')
+                logger.debug('marked failed 2 (file not found)')
                 continue
 
             # Test file delay
@@ -92,7 +92,7 @@ class FDelay(FlowCB):
                 m['isRetry'] = False
                 m['_deleteOnPost'] |= set(['isRetry'])
                 worklist.failed.append(m)
-                logger.debug('marked failed 3')
+                logger.debug('marked failed 3 file not old enough')
                 continue
 
             logger.debug('appending to outgoing')
