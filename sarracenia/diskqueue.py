@@ -6,9 +6,10 @@
 #
 # more info: https://github.com/MetPX/sarracenia
 #
-# Code contributed by:
+# Code originally contributed by:
 #  Michel Grenier - Shared Services Canada
 #  first shot     : Wed Jan 10 16:06:16 UTC 2018
+#  re-factored beyond recognition by PSilva 2021. Don't blame Michel 
 #
 
 import os, sys, time
@@ -44,7 +45,7 @@ class DiskQueue():
           - a dictionary indexed by some sort of key to prevent duplicate messages
             being stored in it.
 
-    retry_path = ~/.cache/sr3/<component>/<config>/instance_name.retry
+    retry_path = ~/.cache/sr3/<component>/<config>/diskqueue_<name>
     with various suffixes:
 
     .new  -- messages added to the retry list are appended to this file.
@@ -227,7 +228,7 @@ class DiskQueue():
             
             # validation
 
-            if not self.needs_queueing(message):
+            if self.is_expired(message):
                 #logger.error("MG invalid %s" % message)
                 continue
 
@@ -238,7 +239,6 @@ class DiskQueue():
                message['_deleteOnPost'].delete('ack_id')
 
             ml.append(message)
-            logger.info('FIXME appended to message list, length: %d' % len(ml) )
             count +=1
         return ml
 
@@ -259,9 +259,6 @@ class DiskQueue():
         self.retry_cache[cache_key] = True
         return False
 
-    def is_done(self, message):
-        return ('_retry_tag_' in message) and (message['_retry_tag_'] == 'done')
-
     def is_expired(self, message):
         # no expiry
         if self.o.retry_ttl is None: return False
@@ -272,24 +269,17 @@ class DiskQueue():
         msg_age = nowflt() - msg_time
 
         # expired ?
+        return  msg_age > (self.o.retry_ttl / 1000)
 
-        expired = msg_age > (self.o.retry_ttl / 1000)
+    def needs_requeuing(self, message):
 
-        logger.debug("DEBUG message is %d seconds old, retry_ttl is %d" % (msg_age, self.o.retry_ttl ) )
-
-        return expired
-
-    def needs_queueing(self, message):
-        # validation
+        if self.in_cache(message):
+            logger.info("discarding duplicate message (in %s cache) %s" % (self.name, message) )
+            return False
 
         # log is info... it is good to log a retry message that expires
         if self.is_expired(message):
-            logger.info("expired message skipped %s" % message)
-            return False
-
-        # log is debug... the retry message was processed
-        if self.is_done(message):
-            logger.debug("done message skipped %s" % message)
+            logger.info("discarding expired message in (%s): %s" % (self.name, message) )
             return False
 
         return True
@@ -375,14 +365,7 @@ class DiskQueue():
                 fp, message = self.msg_get_from_file(fp, self.state_work)
                 if not message: break
                 i = i + 1
-                if self.in_cache(message):
-                    logger.debug("skipping message (in cache) %s" % message)
-                    continue
-                if not self.needs_queueing(message):
-                    logger.debug("skipping message (not needed) %s" % message)
-                    continue
-
-                logger.debug("DEBUG flush retry to %s:  %s" % (self.housekeeping_path, message) )
+                if not self.needs_requeuing(message): continue
                 self.housekeeping_fp.write(self.msgToJSON(message))
                 N = N + 1
 
@@ -406,8 +389,7 @@ class DiskQueue():
                 if not message: break
                 i = i + 1
                 logger.debug("DEBUG message %s" % message)
-                if self.in_cache(message): continue
-                if not self.needs_queueing(message): continue
+                if not self.needs_requeuing(message): continue
 
                 #logger.debug("MG DEBUG flush retry to state %s" % message)
                 self.housekeeping_fp.write(self.msgToJSON(message))
@@ -432,8 +414,7 @@ class DiskQueue():
                 if not message: break
                 i = i + 1
 
-                if self.in_cache(message): continue
-                if not self.needs_queueing(message): continue
+                if not self.needs_requeuing(message): continue
 
                 #logger.debug("MG DEBUG flush retry to state %s" % message)
                 self.housekeeping_fp.write(self.msgToJSON(message))

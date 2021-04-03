@@ -58,13 +58,13 @@ class Retry(FlowCB):
         """
   
         qty = (self.o.batch / 2) - len(worklist.incoming)
-        logger.info('qty: %d len(worklist.incoming) %d' % ( qty, len(worklist.incoming) ) )
+        #logger.info('qty: %d len(worklist.incoming) %d' % ( qty, len(worklist.incoming) ) )
 
         if qty <= 0: return
 
         mlist = self.download_retry.get(qty)
 
-        logger.debug("loading from %s: qty=%d ... got: %d " % (self.download_retry_name, qty, len(mlist)))
+        #logger.debug("loading from %s: qty=%d ... got: %d " % (self.download_retry_name, qty, len(mlist)))
         if len(mlist) > 0:
             worklist.incoming.extend(mlist)
 
@@ -76,7 +76,7 @@ class Retry(FlowCB):
         if len(worklist.failed) == 0:
             return
 
-        logger.debug("putting %d messages into %s" % (len(worklist.failed),self.download_retry_name) )
+        #logger.debug("putting %d messages into %s" % (len(worklist.failed),self.download_retry_name) )
 
         self.download_retry.put(worklist.failed)
         worklist.failed = []
@@ -87,7 +87,7 @@ class Retry(FlowCB):
 
         mlist = self.post_retry.get(qty)
 
-        logger.debug("loading from %s: qty=%d ... got: %d " % (self.post_retry_name, qty, len(mlist)))
+        #logger.debug("loading from %s: qty=%d ... got: %d " % (self.post_retry_name, qty, len(mlist)))
         if len(mlist) > 0:
             worklist.ok.extend(mlist)
 
