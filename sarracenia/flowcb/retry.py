@@ -39,10 +39,10 @@ class Retry(FlowCB):
 
         self.o = options
 
-        self.download_retry_name =  'download_retry_%02d' % options.no
+        self.download_retry_name =  'work_retry_%02d' % options.no
         self.download_retry = DiskQueue( options, self.download_retry_name )
-        #self.post_retry_name =  'post_retry_%03d' % options.no
-        #self.post_retry = DiskQueue( options, self.post_retry_name )
+        self.post_retry_name =  'post_retry_%03d' % options.no
+        self.post_retry = DiskQueue( options, self.post_retry_name )
 
         logger.setLevel(getattr( logging, self.o.logLevel.upper()))
         logger.debug('logLevel=%s' % self.o.logLevel)
@@ -50,7 +50,7 @@ class Retry(FlowCB):
    
     def cleanup(self):
         self.download_retry.cleanup()
-        #self.post_retry.cleanup()
+        self.post_retry.cleanup()
 
     def after_accept(self, worklist):
         """
@@ -85,24 +85,24 @@ class Retry(FlowCB):
         qty = (self.o.batch / 2) - len(worklist.ok)
         if qty <= 0: return
 
-        #mlist = self.post_retry.get(qty)
+        mlist = self.post_retry.get(qty)
 
-        #logger.debug("loading from %s: qty=%d ... got: %d " % (self.post_retry_name, qty, len(mlist)))
-        #if len(mlist) > 0:
-        #    worklist.ok.extend(mlist)
+        logger.debug("loading from %s: qty=%d ... got: %d " % (self.post_retry_name, qty, len(mlist)))
+        if len(mlist) > 0:
+            worklist.ok.extend(mlist)
 
 
     def after_post(self, worklist):
-        #self.post_retry(worklist.failed)
-        #worklist.failed=[]
+        self.post_retry.put(worklist.failed)
+        worklist.failed=[]
         pass
 
     def on_housekeeping(self):
         logger.info("on_housekeeping")
 
         self.download_retry.on_housekeeping()
-        #self.post_retry.on_housekeeping()
+        self.post_retry.on_housekeeping()
 
     def on_stop(self):
         self.download_retry.close()
-        #self.post_retry.close()
+        self.post_retry.close()
