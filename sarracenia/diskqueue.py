@@ -131,16 +131,15 @@ class DiskQueue():
 
 
     def add_msg_to_state_file(self, message, done=False):
-
         logger.debug("DEBUG add to state file %s %s" %
                      (os.path.basename(self.state_path), message))
-        self.state_fp = self.msg_append_to_file(self.state_fp, self.state_path,
+        self.msg_append_to_file(self.state_fp, self.state_path,
                                                 message, done)
 
     def add_msg_to_new_file(self, message):
         logger.debug("DEBUG add to new file %s %s" %
                      (os.path.basename(self.new_path), message))
-        self.new_fp = self.msg_append_to_file(self.new_fp, self.new_path,
+        self.msg_append_to_file(self.new_fp, self.new_path,
                                               message)
         # performance issue... only do before close
         #os.fsync(self.new_fp)
@@ -318,7 +317,6 @@ class DiskQueue():
         except:
             logger.error("failed to serialize message to JSON: %s" % message)
             logger.debug('Exception details:', exc_info=True)
-        return fp
 
     def msg_get_from_file(self, fp, path):
         if fp is None:
@@ -407,7 +405,7 @@ class DiskQueue():
                     continue
 
                 logger.debug("DEBUG flush retry to %s:  %s" % (self.housekeeping_path, message) )
-                self.housekeeping_fp = self.msg_append_to_file(
+                self.msg_append_to_file(
                     self.housekeeping_fp, self.housekeeping_path, message)
                 N = N + 1
 
@@ -435,7 +433,7 @@ class DiskQueue():
                 if not self.needs_queueing(message): continue
 
                 #logger.debug("MG DEBUG flush retry to state %s" % message)
-                self.housekeeping_fp = self.msg_append_to_file(
+                self.msg_append_to_file(
                     self.housekeeping_fp, self.housekeeping_path, message)
                 N = N + 1
             try:
@@ -462,7 +460,7 @@ class DiskQueue():
                 if not self.needs_queueing(message): continue
 
                 #logger.debug("MG DEBUG flush retry to state %s" % message)
-                self.housekeeping_fp = self.msg_append_to_file(
+                self.msg_append_to_file(
                     self.housekeeping_fp, self.housekeeping_path, message)
                 N = N + 1
             try:
