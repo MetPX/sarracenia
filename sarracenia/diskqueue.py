@@ -11,8 +11,10 @@
 #  first shot     : Wed Jan 10 16:06:16 UTC 2018
 #
 
-import os, json, sys, time
+import os, sys, time
 from _codecs import decode, encode
+
+import jsonpickle
 
 from sarracenia import nowflt, timestr2flt
 
@@ -60,6 +62,7 @@ class DiskQueue():
 
     FIXME: PAS 2021/04/01 bet: 
          could probably re-factor this to behave identically with a lot less code.
+         04/02... did some... but still lots of stuff hanging around.
 
     FIXME:  would be fun to look at performance of this thing and compare it to
         python persistent queue.  the differences:
@@ -187,9 +190,7 @@ class DiskQueue():
 
     def msgFromJSON(self, line):
         try:
-            msg = json.loads(line)
-            if '_deleteOnPost' in msg:
-                msg['_deleteOnPost'] = set( msg['_deleteOnPost'] )
+            msg = jsonpickle.decode(line)
         except ValueError:
             logger.error("corrupted line in retry file: %s " % line)
             logger.debug("Error information: ", exc_info=True)
@@ -198,14 +199,7 @@ class DiskQueue():
         return msg
 
     def msgToJSON(self, message):
-        #logger.debug('Encoding msg to json: message={}'.format(message))
-
-        if '_deleteOnPost' in message:
-            message['_deleteOnPost'] = list( message['_deleteOnPost'] )
-        s = json.dumps(message, sort_keys=True) + '\n'
-        #logger.debug('json version={}'.format(s))
-
-        return s
+        return jsonpickle.encode(message) + '\n'
 
     def get(self, maximum_messages_to_get=1):
         """
@@ -255,7 +249,7 @@ class DiskQueue():
 
         """
         urlstr = message['baseUrl'] + '/' + message['relPath']
-        sumstr = json.dumps(message['integrity'])
+        sumstr = jsonpickle.encode(message['integrity'])
         cache_key = urlstr + ' ' + sumstr
 
         if 'parts' in message:
