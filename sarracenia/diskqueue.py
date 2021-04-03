@@ -62,7 +62,7 @@ class DiskQueue():
          could probably re-factor this to behave identically with a lot less code.
 
     FIXME:  would be fun to look at performance of this thing and compare it to
-        python persisten queue.  the differences:
+        python persistent queue.  the differences:
 
         This class does no locking (presumed single threading.) 
         This class doesn't implement in-memory queue... it is entirely on disk...
@@ -130,30 +130,27 @@ class DiskQueue():
             if retry_age > new_age: os.unlink(self.new_path)
 
 
-    def add_msg_to_state_file(self, message, done=False):
-        logger.debug("DEBUG add to state file %s %s" %
-                     (os.path.basename(self.state_path), message))
-        self.msg_append_to_file(self.state_fp, self.state_path,
-                                                message, done)
-
-    def add_msg_to_new_file(self, message):
-        logger.debug("DEBUG add to new file %s %s" %
-                     (os.path.basename(self.new_path), message))
-        self.msg_append_to_file(self.new_fp, self.new_path,
-                                              message)
-        # performance issue... only do before close
-        #os.fsync(self.new_fp)
-
     def put(self,message_list):
         """
           add messages to the end of the queue.
         """
 
+        if self.new_fp is None:
+            self.new_fp = open(self.new_path, 'a')
+        if self.state_fp is None:
+            self.state_fp = open(self.state_path, 'a')
+
         for message in message_list:
             if ('isRetry' in message) and message['isRetry']:
-                self.add_msg_to_new_file(message)
+                logger.debug("DEBUG add to new file %s %s" %
+                     (os.path.basename(self.new_path), message))
+                self.new_fp.write(self.msgToJSON(message))
             else:
-                self.add_msg_to_state_file(message)
+                logger.debug("DEBUG add to state file %s %s" %
+                     (os.path.basename(self.state_path), message))
+                self.state_fp.write(self.msgToJSON(message))
+        self.new_fp.flush()
+        self.state_fp.flush()
 
     def cleanup(self):
 
@@ -200,12 +197,8 @@ class DiskQueue():
 
         return msg
 
-    def msgToJSON(self, message, done=False):
+    def msgToJSON(self, message):
         #logger.debug('Encoding msg to json: message={}'.format(message))
-
-        if done:
-            message['_retry_tag_'] = 'done'
-            message['_deleteOnPost'] |= set(['_retry_tag_'])
 
         if '_deleteOnPost' in message:
             message['_deleteOnPost'] = list( message['_deleteOnPost'] )
@@ -307,17 +300,6 @@ class DiskQueue():
 
         return True
 
-    def msg_append_to_file(self, fp, path, message, done=False):
-        if fp is None:
-            fp = open(path, 'a')
-
-        try:
-            fp.write(self.msgToJSON(message, done))
-            fp.flush()
-        except:
-            logger.error("failed to serialize message to JSON: %s" % message)
-            logger.debug('Exception details:', exc_info=True)
-
     def msg_get_from_file(self, fp, path):
         if fp is None:
             if not os.path.isfile(path): return None, None
@@ -393,6 +375,8 @@ class DiskQueue():
             last = None
 
             fp = None
+            self.housekeeping_fp=open( self.housekeeping_path, 'a')
+
             while True:
                 fp, message = self.msg_get_from_file(fp, self.state_work)
                 if not message: break
@@ -405,8 +389,7 @@ class DiskQueue():
                     continue
 
                 logger.debug("DEBUG flush retry to %s:  %s" % (self.housekeeping_path, message) )
-                self.msg_append_to_file(
-                    self.housekeeping_fp, self.housekeeping_path, message)
+                self.housekeeping_fp.write(self.msgToJSON(message))
                 N = N + 1
 
             try:
@@ -433,8 +416,7 @@ class DiskQueue():
                 if not self.needs_queueing(message): continue
 
                 #logger.debug("MG DEBUG flush retry to state %s" % message)
-                self.msg_append_to_file(
-                    self.housekeeping_fp, self.housekeeping_path, message)
+                self.housekeeping_fp.write(self.msgToJSON(message))
                 N = N + 1
             try:
                 fp.close()
@@ -460,8 +442,7 @@ class DiskQueue():
                 if not self.needs_queueing(message): continue
 
                 #logger.debug("MG DEBUG flush retry to state %s" % message)
-                self.msg_append_to_file(
-                    self.housekeeping_fp, self.housekeeping_path, message)
+                self.housekeeping_fp.write(self.msgToJSON(message))
                 N = N + 1
             try:
                 fp.close()
@@ -470,14 +451,9 @@ class DiskQueue():
 
             logger.debug("MG DEBUG took %d out of the %d new" % (N - j, i))
 
-            # close housekeeping
+            self.housekeeping_fp.close()
 
-            try:
-                close(self.housekeeping_fp)
-            except:
-                pass
-
-        except:
+        except Exception as Err:
             logger.error("something went wrong")
             logger.debug('Exception details: ', exc_info=True)
 
