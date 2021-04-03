@@ -49,13 +49,11 @@ class DiskQueue():
     with various suffixes:
 
     .new  -- messages added to the retry list are appended to this file.
-
-    .state.work --
-
-    .state
             
     whenever a message is added to the retry_cache, it is appended to a cumulative
     list of entries to add to the retry list.  
+
+    every housekeeping interval, the two files are consolidated.
 
     note that the *ack_id* of messages retreived from the retry list, is removed.
     files must be acked around the time they are placed on the retry_list.
@@ -99,23 +97,14 @@ class DiskQueue():
 
         # retry messages
 
-        self.retry_work = self.queue_file + '.work'
-        self.retry_fp = None
+        self.queue_fp = None
 
         # newer retries
 
         self.new_path = self.queue_file + '.new'
-        self.new_work = self.new_path + '.work'
         self.new_fp = None
 
-        # state retry messages
-
-        self.state_path = self.queue_file + '.state'
-        self.state_work = self.state_path + '.work'
-        self.state_fp = None
-
         # working file at housekeeping
-
         self.housekeeping_path = self.queue_file + '.hk'
         self.housekeeping_fp = None
 
@@ -124,10 +113,6 @@ class DiskQueue():
         if not os.path.isfile(self.queue_file): return
 
         retry_age = os.stat(self.queue_file).st_mtime
-
-        if os.path.isfile(self.state_path):
-            state_age = os.stat(self.state_path).st_mtime
-            if retry_age > state_age: os.unlink(self.state_path)
 
         if os.path.isfile(self.new_path):
             new_age = os.stat(self.new_path).st_mtime
@@ -141,29 +126,17 @@ class DiskQueue():
 
         if self.new_fp is None:
             self.new_fp = open(self.new_path, 'a')
-        if self.state_fp is None:
-            self.state_fp = open(self.state_path, 'a')
 
         for message in message_list:
-            if ('isRetry' in message) and message['isRetry']:
-                logger.debug("DEBUG add to new file %s %s" %
-                     (os.path.basename(self.new_path), message))
-                self.new_fp.write(self.msgToJSON(message))
-            else:
-                logger.debug("DEBUG add to state file %s %s" %
-                     (os.path.basename(self.state_path), message))
-                self.state_fp.write(self.msgToJSON(message))
+            logger.debug("DEBUG add to new file %s %s" %
+                 (os.path.basename(self.new_path), message))
+            self.new_fp.write(self.msgToJSON(message))
         self.new_fp.flush()
-        self.state_fp.flush()
 
     def cleanup(self):
 
         if os.path.exists(self.queue_file):
             os.unlink(self.queue_file)
-
-        if hasattr(self.o, 'retry_work'):
-            if os.path.exists(self.o.retry_work):
-                os.unlink(self.o.retry_work)
 
     def close(self):
         try:
@@ -176,18 +149,12 @@ class DiskQueue():
         except:
             pass
         try:
-            self.retry_fp.close()
-        except:
-            pass
-        try:
-            os.fsync(self.state_fp)
-            self.state_fp.close()
+            self.queue_fp.close()
         except:
             pass
         self.housekeeping_fp = None
         self.new_fp = None
-        self.retry_fp = None
-        self.state_fp = None
+        self.queue_fp = None
 
     def msgFromJSON(self, line):
         try:
@@ -211,7 +178,7 @@ class DiskQueue():
         ml=[]
         count=0
         while count < maximum_messages_to_get : 
-            self.retry_fp, message = self.msg_get_from_file( self.retry_fp, self.queue_file)
+            self.queue_fp, message = self.msg_get_from_file( self.queue_fp, self.queue_file)
 
             # FIXME MG as discussed with Peter
             # no housekeeping in get ...
@@ -222,18 +189,15 @@ class DiskQueue():
                     os.unlink(self.queue_file)
                 except:
                     pass
-                self.retry_fp = None
+                self.queue_fp = None
                 #logger.debug("MG DEBUG retry get return None")
                 break
             
-            # validation
-
             if self.is_expired(message):
                 #logger.error("MG invalid %s" % message)
                 continue
 
             message['isRetry'] = True
-            message['_deleteOnPost'] |= set(['isRetry'])
             if 'ack_id' in message:
                del message['ack_id']
                message['_deleteOnPost'].delete('ack_id')
@@ -305,11 +269,24 @@ class DiskQueue():
         return fp, msg
 
     def on_housekeeping(self):
+        """
+
+           read rest of queue_file (from current point of unretried ones.)
+                 - check if message is duplicate or expired.
+                 - write to .hk
+
+           read .new file, 
+                 - check if message is duplicate or expired.
+                 - writing to .hk (housekeeping)
+
+           remove .new
+           rename housekeeping to queue for next period.
+        """
         logger.info("%s on_housekeeping" % self.name)
 
         # finish retry before reshuffling all retries entries
 
-        if os.path.isfile(self.queue_file) and self.retry_fp != None:
+        if os.path.isfile(self.queue_file) and self.queue_fp != None:
             logger.info("have not finished retry list. Resuming retries with %s" % self.queue_file )
             return
 
@@ -328,41 +305,17 @@ class DiskQueue():
             fp = open(self.housekeeping_path, 'w')
             fp.close()
 
-            # rename to working file to avoid corruption
-
-            if not os.path.isfile(self.retry_work):
-                if os.path.isfile(self.queue_file):
-                    os.rename(self.queue_file, self.retry_work)
-                else:
-                    fp = open(self.retry_work, 'w')
-                    fp.close()
-
-            if not os.path.isfile(self.state_work):
-                if os.path.isfile(self.state_path):
-                    os.rename(self.state_path, self.state_work)
-                else:
-                    fp = open(self.state_work, 'w')
-                    fp.close()
-
-            if not os.path.isfile(self.new_work):
-                if os.path.isfile(self.new_path):
-                    os.rename(self.new_path, self.new_work)
-                else:
-                    fp = open(self.new_work, 'w')
-                    fp.close()
-
-            # state to housekeeping
-
-            #logger.debug("MG DEBUG has state %s" % os.path.isfile(self.state_path))
-
             i = 0
             last = None
 
-            fp = None
+            fp = self.queue_fp
             self.housekeeping_fp=open( self.housekeeping_path, 'a')
 
+            logger.debug("FIXME DEBUG has queue %s" % os.path.isfile(self.queue_file))
+
+            # remaining of retry to housekeeping
             while True:
-                fp, message = self.msg_get_from_file(fp, self.state_work)
+                fp, message = self.msg_get_from_file(fp, self.queue_file)
                 if not message: break
                 i = i + 1
                 if not self.needs_requeuing(message): continue
@@ -374,18 +327,13 @@ class DiskQueue():
             except:
                 pass
 
-            logger.debug("FIXME DEBUG kept %d out of the %d state" % (N, i))
-
-            # remaining of retry to housekeeping
-
-            logger.debug("FIXME DEBUG has retry %s" % os.path.isfile(self.queue_file))
-
             i = 0
             j = N
 
             fp = None
+            # append new to housekeeping.
             while True:
-                fp, message = self.msg_get_from_file(fp, self.retry_work)
+                fp, message = self.msg_get_from_file(fp, self.new_path)
                 if not message: break
                 i = i + 1
                 logger.debug("DEBUG message %s" % message)
@@ -400,31 +348,6 @@ class DiskQueue():
                 pass
 
             logger.debug("FIXME DEBUG took %d out of the %d retry" % (N - j, i))
-
-            # new to housekeeping
-
-            logger.debug("FIXME DEBUG has new %s" % os.path.isfile(self.new_path))
-
-            i = 0
-            j = N
-
-            fp = None
-            while True:
-                fp, message = self.msg_get_from_file(fp, self.new_work)
-                if not message: break
-                i = i + 1
-
-                if not self.needs_requeuing(message): continue
-
-                #logger.debug("MG DEBUG flush retry to state %s" % message)
-                self.housekeeping_fp.write(self.msgToJSON(message))
-                N = N + 1
-            try:
-                fp.close()
-            except:
-                pass
-
-            logger.debug("MG DEBUG took %d out of the %d new" % (N - j, i))
 
             self.housekeeping_fp.close()
 
@@ -452,19 +375,10 @@ class DiskQueue():
 
         # cleanup
         try:
-            os.unlink(self.state_work)
-        except:
-            pass
-        try:
-            os.unlink(self.retry_work)
-        except:
-            pass
-        try:
-            os.unlink(self.new_work)
+            os.unlink(self.new_path)
         except:
             pass
 
-        self.last_body = None
         elapse = nowflt() - now
         logger.info("on_housekeeping elapse %f" % elapse)
 
