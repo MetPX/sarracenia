@@ -59,19 +59,17 @@ class DiskQueue():
     files must be acked around the time they are placed on the retry_list.
     as reception from the source has already been acknowledged.
 
-    FIXME: PAS 2021/04/01 bet: 
-         could probably re-factor this to behave identically with a lot less code.
-         04/02... did some... but still lots of stuff hanging around.
-
     FIXME:  would be fun to look at performance of this thing and compare it to
         python persistent queue.  the differences:
 
         This class does no locking (presumed single threading.) 
+             could add locks... and they would be coarser grained than stuff in persistentqueue
+             this should be faster than persisten queue, but who knows what magic they did.
         This class doesn't implement in-memory queue... it is entirely on disk...
         saves memory, optimal for large queues.  
+           probably good, since retries should be slow...
 
         not sure what will run better.
-
    
     """
     def __init__(self, options, name):
@@ -230,7 +228,7 @@ class DiskQueue():
 
         # compute message age
         msg_time = timestr2flt(message['pubTime'])
-        msg_age = nowflt() - msg_time
+        msg_age = self.now - msg_time
 
         # expired ?
         return  msg_age > (self.o.retry_ttl / 1000)
@@ -290,7 +288,7 @@ class DiskQueue():
             logger.info("have not finished retry list. Resuming retries with %s" % self.queue_file )
             return
 
-        now = nowflt()
+        self.now = nowflt()
         self.retry_cache = {}
         N = 0
 
@@ -379,7 +377,7 @@ class DiskQueue():
         except:
             pass
 
-        elapse = nowflt() - now
+        elapse = nowflt() - self.now
         logger.info("on_housekeeping elapse %f" % elapse)
 
 
