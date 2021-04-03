@@ -66,8 +66,8 @@ writing plugins is a lot harder than it should be.
 * making changes to messages is a bit complicated, because they evolved over different message formats.
 
 
-Changes planned to address pain points
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Changes Done to Address Pain Points
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * use importlib from python, much more standard way to register plugins.
   now syntax errors will be picked up just like any other python module being imported,
@@ -97,7 +97,8 @@ Changes planned to address pain points
 
   could add others... significant number of applications for something like *deferred*
 
-* acknowledgements done more pro-actively.
+* acknowledgements done more pro-actively, as soon as a message is processed
+  (for rejected or failed messages, this is much sooner than in v2.)
 
 * add scoping mechanism to define plugin properties.
 
@@ -145,6 +146,8 @@ the two versions, is clear:
 | sr_cache.py              | flowcb/nodupe.py          |
 +--------------------------+---------------------------+
 | sr_retry.py              | flowcb/retry.py           |
+|                          |                           |
+|                          | diskqueue.py              |
 +--------------------------+---------------------------+
 | sr_post.py               | flowcb/gather/file.py     |
 |                          |                           |
@@ -175,23 +178,23 @@ the two versions, is clear:
 | overall flow             | flow/__init__.py          |
 +--------------------------+---------------------------+
 |                          |                           |
-| sr_poll.py               | flow/poll.py              |
+| sr_poll.py               | sr_flow.py                |
 |                          |                           |
-| sr_post.py               | flow/post.py              |
+| sr_post.py               |                           |
 |                          |                           |
-| sr_subscribe.py          | flow/subscribe.py         |
+| sr_subscribe.py          |                           |
 |                          |                           |
-| sr_shovel.py             | flow/shovel.py            |
+| sr_shovel.py             |                           |
 |                          |                           |
-| sr_report.py             | flow/report.py            |
+| sr_report.py             |                           |
 |                          |                           |
-| sr_sarra.py              | flow/sarra.py             |
+| sr_sarra.py              |                           |
 |                          |                           |
-| sr_sender.py             | flow/sender.py            |
+| sr_sender.py             |                           |
 |                          |                           |
-| sr_watch.py              | flow/watch.py             |
+| sr_watch.py              |                           |
 |                          |                           |
-| sr_winnow.py             | flow/winnow.py            |
+| sr_winnow.py             |                           |
 |                          |                           |
 +--------------------------+---------------------------+
 
@@ -363,7 +366,7 @@ transferred, and if they differ, that signals an issue.
 sr_sender send now done, involved a lot more thinking about how to set new_ fields
 in messages. but once that was done, was able to remove both the sender and sr_subscribe
 (the parent class of most components) and allowed removal of sr_cache, sr_consumer, sr_file,
-sr_ftp, sr_http, sr_message, sr_retry, and sr_sftp, sum/*, sr_util.
+sr_ftp, sr_http, sr_message, sr_retry, and sr_sftp, sum/\*, sr_util.
 
 That's the end of the most difficult part.  
 
@@ -503,11 +506,10 @@ After Parity: True Improvements
   or permit substitution with memcached?
   Make a peerqueue wrapper class, wait... just have peers subscribe to peer output.
 
-
 * True Async: Single timing loop for entire app. Requires a retry_queue for posting.
   * requires a place to store failed/deferred posts (a second retry queue.)
   * changing events to have "after_post" processing of to append to outbound retry queue.
-  * Do we have logic, like  outbound winnow, where as long as published once, ok?
+  * Do we have logic, like outbound winnow, where as long as published once, ok?
   * MQTT reception is already async, just need to fix transmit.
 
 * Multi-source (requires async):
@@ -704,7 +706,7 @@ breaking changes:
 
 * log messages and output in interactive, will be completely different.
 
-* dropping on_watch plugins. afaict, no-one uses them.  The way v03 works it would be an on_message for a watch.
+* dropping on_watch plugins. afaict, no-one uses them.  The way v03 works it would be an after_accept for a watch.
   makes more sense that way anyways.
 
 * plugins that access internals of sr_retry need to be rewritten, as the class is now plugin/retry.py.
@@ -730,6 +732,17 @@ breaking changes:
   In v3, the default for mirror is changed to True for all flows except subscribe, which
   is the least surprising behaviour given the default to False in v2.
    
+* in v2, download does not check the length of a file while it is downloading.
+  in v3, it does. as an example, when using sftp as a poll, ls will list the size of a symbolic link.
+  When it downloads, it gets the actual file, and not the symlink, so the size is different.
+
+  Example from flow test::
+
+       2021-04-03 10:13:07,310 [ERROR] sarracenia.transfer read_writelocal util/writelocal mismatched file length writing FCAS31_KWBC_031412___39224.slink. Message said to expect 135 bytes.  Got 114 bytes.
+
+  the file is 114 bytes, by the link path is 135 bytes... 
+  both v2 and v3 download the file correctly, but v3 produces this error message.
+  Thinking about this one...  is it a bug in poll? 
 
 Features
 --------
