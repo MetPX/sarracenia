@@ -37,7 +37,7 @@ default_options = {
     'sumflg': 'cod,md5',
     'post_on_start': False,
     'sleep': -1,
-    'suppress_duplicates': 0
+    'nodupe_ttl': 0
 }
 
 

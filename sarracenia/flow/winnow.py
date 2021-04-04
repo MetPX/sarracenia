@@ -5,7 +5,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-default_options = {'accept_unmatched': True, 'suppress_duplicates': 300}
+default_options = {'accept_unmatched': True, 'nodupe_ttl': 300}
 
 
 class Winnow(Flow):

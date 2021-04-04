@@ -8,9 +8,9 @@
 # Sarracenia repository: https://github.com/MetPX/sarracenia
 # Documentation: https://github.com/MetPX/sarracenia
 #
-# duplicate_suppression.py : python3 program that generalise suppress_duplicates for sr
-#            programs, it is used as a time based buffer that prevents, when activated,
-#            identical files (of some kinds) from being processed more than once.
+# nodupe.py : python3 program that generalise duplicate suppression for sr
+#             programs, it is used as a time based buffer that prevents, when activated,
+#             identical files (of some kinds) from being processed more than once.
 #
 # Code contributed by:
 #  Michel Grenier - Shared Services Canada
@@ -50,8 +50,15 @@ class NoDupe(FlowCB):
 
        options:
 
-       suppress_duplicates - duration in seconds (floating point.)
-       basis - 'data', 'path', 'name'
+       nodupe_ttl - duration in seconds (floating point.)
+                    The time horizon of the receiption cache.
+                    how long to remember files, so they are marked as duplicates.
+
+       nodupe_basis - 'data', 'path', 'name'
+                    What sort of entries to compare for duplicate.
+                    data - files with the same content, but different names will be compared.
+                    name - files with the same name in different directories will be compared.
+                    path - only files with the same relPath will be compared.
 
     """
     def __init__(self, options):
@@ -62,14 +69,14 @@ class NoDupe(FlowCB):
         logging.basicConfig(format=self.o.logFormat,
                             level=getattr(logging, self.o.logLevel.upper()))
 
-        if hasattr(options, 'suppress_duplicates'):
-            self.o.time_to_live = options.suppress_duplicates
+        if hasattr(options, 'nodupe_ttl'):
+            self.o.nodupe_ttl = options.nodupe_ttl
 
-        if hasattr(options, 'suppress_duplicates_basis'):
-            self.o.basis = options.suppress_duplicates_basis
+        if hasattr(options, 'nodupe_basis'):
+            self.o.nodupe_basis = options.nodupe_basis
 
         logger.info( 'time_to_live=%d, basis=%s, log_reject=%s' % \
-           ( self.o.time_to_live, self.o.basis, self.o.log_reject ) )
+           ( self.o.nodupe_ttl, self.o.nodupe_basis, self.o.log_reject ) )
 
         self.cache_dict = {}
         self.cache_file = None
@@ -211,16 +218,16 @@ class NoDupe(FlowCB):
         self.close()
 
     def __get_relpath(self, path):
-        if self.o.basis == 'name':
+        if self.o.nodupe_basis == 'name':
             result = path.split('/')[-1]
-        elif self.o.basis == 'path':
+        elif self.o.nodupe_basis == 'path':
             result = path
-        elif self.o.basis == 'data':
+        elif self.o.nodupe_basis == 'data':
             result = "data"
         else:
             raise ValueError(
                 "invalid choice for NoDupe basis valid ones:{}".format(
-                    self.o.basis))
+                    self.o.nodupe_basis))
         return result
 
     def clean(self, persist=False, delpath=None):
@@ -246,7 +253,7 @@ class NoDupe(FlowCB):
                 # expired or keep
                 t = kdict[value]
                 ttl = now - t
-                if ttl > self.o.time_to_live: continue
+                if ttl > self.o.nodupe_ttl: continue
 
                 parts = value.split('*')
                 path = parts[0]
@@ -349,7 +356,7 @@ class NoDupe(FlowCB):
                 # skip expired entry
 
                 ttl = now - ctime
-                if ttl > self.o.time_to_live: continue
+                if ttl > self.o.nodupe_ttl: continue
 
             except Exception as err:
                 err_msg_fmt = "load corrupted: lineno={}, cache_file={}, err={}"

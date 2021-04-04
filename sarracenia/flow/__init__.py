@@ -146,7 +146,7 @@ class Flow:
         self.plugins['load'] = ['sarracenia.flowcb.retry.Retry']
 
         # open cache, get masks.
-        if self.o.suppress_duplicates > 0:
+        if self.o.nodupe_ttl > 0:
             # prepend...
             self.plugins['load'].append('sarracenia.flowcb.nodupe.NoDupe')
 

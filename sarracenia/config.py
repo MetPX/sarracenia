@@ -53,7 +53,7 @@ default_options = {
     'post_baseUrl': None,
     'realpath_post': False,
     'report_back': False,
-    'suppress_duplicates': 0
+    'nodupe_ttl': 0
 }
 
 count_options = [
@@ -85,8 +85,8 @@ str_options = [
     'exchange_suffix', 'events', 'feeder', 'header', 'logLevel', 'path',
     'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
     'post_exchange_suffix', 'queue_name',
-    'report_exchange', 'strip', 'suppress_duplicates',
-    'suppress_duplicates_basis', 'tls_rigour'
+    'report_exchange', 'strip', 'nodupe_ttl',
+    'nodupe_basis', 'tls_rigour'
 ]
 """
    for backward compatibility, 
@@ -401,11 +401,11 @@ class Config:
         'basedir': 'baseDir',
         'base_dir': 'baseDir',
         'baseurl': 'baseUrl',
-        'cache': 'suppress_duplicates',
+        'cache': 'nodupe_ttl',
         'document_root': 'documentRoot',
-        'no_duplicates': 'suppress_duplicates',
-        'caching': 'suppress_duplicates',
-        'cache_basis': 'suppress_duplicates_basis',
+        'no_duplicates': 'nodupe_ttl',
+        'caching': 'nodupe_ttl',
+        'cache_basis': 'nodupe_basis',
         'instance': 'instances',
         'chmod': 'default_mode',
         'chmod_dir': 'default_dir_mode',
@@ -424,6 +424,8 @@ class Config:
         'post_document_root': 'post_documentRoot',
         'post_rate_limit': 'message_rate_max',
         'post_topic_prefix' : 'post_topicPrefix',
+        'suppress_duplicates' : 'nodupe_ttl',
+        'suppress_duplicates_basis' : 'nodupe_basis', 
         'topic_prefix' : 'topicPrefix'
     }
     credentials = None
@@ -1037,15 +1039,15 @@ class Config:
          There are default options that apply only if they are not overridden... 
        """
 
-        if hasattr(self, 'suppress_duplicates'):
-            if (type(self.suppress_duplicates) is str):
-                if isTrue(self.suppress_duplicates):
-                    self.suppress_duplicates = 300
+        if hasattr(self, 'nodupe_ttl'):
+            if (type(self.nodupe_ttl) is str):
+                if isTrue(self.nodupe_ttl):
+                    self.nodupe_ttl = 300
                 else:
-                    self.suppress_duplicates = durationToSeconds(
-                        self.suppress_duplicates)
+                    self.nodupe_ttl = durationToSeconds(
+                        self.nodupe_ttl)
         else:
-            self.suppress_duplicates = 0
+            self.nodupe_ttl = 0
 
         if self.debug:
             self.logLevel = 'debug'
@@ -1079,8 +1081,8 @@ class Config:
             if self.logLevel == 'none':
                 self.logLevel = 'critical'
 
-        if not hasattr(self, 'suppress_duplicates_basis'):
-            self.suppress_duplicates_basis = 'path'
+        if not hasattr(self, 'nodupe_basis'):
+            self.nodupe_basis = 'path'
 
         # FIXME: note that v2 *user_cache_dir* is, v3 called:  cfg_run_dir
         if config[-5:] == '.conf':
