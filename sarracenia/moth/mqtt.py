@@ -248,6 +248,8 @@ class MQTT(Moth):
              no locking needed, except to increment list index.... later.
         """
        
+        userdata.new_message_mutex.acquire()
+
         try:
             message = json.loads(msg.payload.decode('utf-8'))
         except Exception as ex:
@@ -270,11 +272,10 @@ class MQTT(Moth):
 
         logger.info( "Message received: %s" % message )
         if msg_validate( message ):
-            userdata.new_message_mutex.acquire()
             client.new_messages.append( message )
-            userdata.new_message_mutex.release()
         else:
             logger.info( "Message dropped as invalid" )
+        userdata.new_message_mutex.release()
 
     def putCleanUp(self):
         self.client.loop_stop()
