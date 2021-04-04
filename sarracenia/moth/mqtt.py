@@ -12,6 +12,7 @@ import time
 logger = logging.getLogger(__name__)
 
 default_options = {
+   'auto_ack': True,
    'batch' : 25,
    'clean_session': False,
    'no': 0,
@@ -190,11 +191,14 @@ class MQTT(Moth):
                 self.client.on_message = MQTT.__on_message
                 # defaults to 20... kind of a mix of "batch" and prefetch... 
                 self.client.max_inflight_messages_set(options['batch']+options['prefetch'])
-                if hasattr( self.client, 'auto_ack' ):
+
+                if hasattr( self.client, 'auto_ack' ): # FIXME breaking this...
                     self.client.auto_ack( False )
                     logger.info("Switching off auto_ack for higher reliability. Using explicit acknowledgements." )
+                    self.auto_ack=False
                 else:
                     logger.info("paho library without auto_ack support. Loses data every crash or restart." )
+                    self.auto_ack=True
 
                 self.client.username_pw_set( self.broker.username, self.broker.password )
                 self.client.connect( self.broker.hostname, port=self.__sslClientSetup() )
@@ -249,32 +253,8 @@ class MQTT(Moth):
         """
        
         userdata.new_message_mutex.acquire()
-
-        try:
-            message = json.loads(msg.payload.decode('utf-8'))
-        except Exception as ex:
-            logger.error( "ignored malformed message: %s" % msg.payload.decode('utf-8') )
-            logger.error("decode error" % err)
-            logger.error('Exception details: ', exc_info=True)
-            return
-
-        subtopic=msg.topic.split('/')
-         
-        if subtopic[0] != userdata.o['topicPrefix'][0]:
-            message['exchange'] = subtopic[0]
-            message['subtopic'] = subtopic[1+len(userdata.o['topicPrefix']):]
-        else:
-            message['subtopic'] = subtopic[len(userdata.o['topicPrefix']):]
-
-        message['ack_id'] = msg.mid
-        message['local_offset'] = 0
-        message['_deleteOnPost'] = set( [ 'exchange', 'local_offset', 'ack_id', 'subtopic' ] )
-
-        logger.info( "Message received: %s" % message )
-        if msg_validate( message ):
-            client.new_messages.append( message )
-        else:
-            logger.info( "Message dropped as invalid" )
+        logger.info( "Message received: %s" % msg )
+        client.new_messages.append( msg )
         userdata.new_message_mutex.release()
 
     def putCleanUp(self):
@@ -285,6 +265,34 @@ class MQTT(Moth):
         self.client.loop_stop()
         pass
 
+    def _msgDecode(self, mqttMessage ):
+        """
+           decode MQTT message (protocol specific thingamabob) into sr3 one (python dictionary)
+        """
+        try:
+            message = json.loads(mqttMessage.payload.decode('utf-8'))
+        except Exception as ex:
+            logger.error( "ignored malformed message: %s" % mqttMessage.payload.decode('utf-8') )
+            logger.error("decode error" % err)
+            logger.error('Exception details: ', exc_info=True)
+            return None
+
+        subtopic=mqttMessage.topic.split('/')
+         
+        if subtopic[0] != self.o['topicPrefix'][0]:
+            message['exchange'] = subtopic[0]
+            message['subtopic'] = subtopic[1+len(self.o['topicPrefix']):]
+        else:
+            message['subtopic'] = subtopic[len(self.o['topicPrefix']):]
+        message['ack_id'] = mqttMessage.mid
+        message['local_offset'] = 0
+        message['_deleteOnPost'] = set( [ 'exchange', 'local_offset', 'ack_id', 'subtopic' ] )
+
+        if msg_validate( message ):
+           return message
+        else:
+           return None
+
     def newMessages(self):
         """
            return new messages.
@@ -293,28 +301,32 @@ class MQTT(Moth):
 
         """
         self.new_message_mutex.acquire()
+
         if len(self.client.new_messages) > self.o['batch'] :
-            ml=self.client.new_messages[0:self.o['batch']]
+            mqttml=self.client.new_messages[0:self.o['batch']]
             self.client.new_messages=self.client.new_messages[self.o['batch']:]
         else:
-            ml=self.client.new_messages
+            mqttml=self.client.new_messages
             self.client.new_messages=[]
         self.new_message_mutex.release()
+
+        ml = list(filter( None, map( self._msgDecode, mqttml ) ))
         return ml
 
     def getNewMessage(self):
 
+        self.new_message_mutex.acquire()
+
         if len(self.client.new_messages) > 0: 
-            self.new_message_mutex.acquire()
             m=self.client.new_messages[0]
             self.client.new_messages=self.client.new_messages[1:]
-            self.new_message_mutex.release()
-            return m
         else:
-            return None
+            m=None
+        self.new_message_mutex.release()
+        return self._msgDecode(m)
     
     def ack(self, m):
-        if hasattr(self.client,'ack') and ('ack_id' in m):
+        if (not self.auto_ack) and ('ack_id' in m):
             self.client.ack(m['ack_id'])
             del m['ack_id']
             m['_deleteOnPost'].remove('ack_id')
