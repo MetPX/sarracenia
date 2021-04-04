@@ -23,11 +23,11 @@
     :target: https://travis-ci.com/MetPX/sarracenia
 
 +-------------------------------------------------------+-----------------------------------------------------------------+
-| [ `Guides <doc/sr_subscribe.1.rst#documentation>`_ ]  |  [ `Orientation <doc/fr/sr_subscribe.1.rst#documentation>`_ ]   |
-| [ `Manual Pages <doc/sr_subscribe.1.rst#see-also>`_ ] |  [ `Référence <doc/fr/sr_subscribe.1.rst#aussi-voir>`_ ]        |
+| [ `Guides <doc/sr3.1.rst#documentation>`_ ]           |  [ `Orientation <doc/fr/sr3.1.rst#documentation>`_ ]            |
+| [ `Manual Pages <doc/sr3.1.rst#see-also>`_ ]          |  [ `Référence <doc/fr/sr3.1.rst#aussi-voir>`_ ]                 |
 +-------------------------------------------------------+-----------------------------------------------------------------+
 |                                                       |                                                                 |
-|MetPX-Sarracenia is a data duplication                 |MetPX-Sarracenia est un engin de copie et de                     |
+|MetPX-sr3 (Sarracenia v3) is a data duplication        |MetPX-sr3 (Sarracenia v3) est un engin de copie et de            |
 |or distribution pump that leverages                    |distribution de données qui utilise des                          |
 |existing standard technologies (web                    |technologies standards (tel que les services                     |
 |servers and the `AMQP <http://www.amqp.org>`_          |web et le courtier de messages AMQP) afin                        |
