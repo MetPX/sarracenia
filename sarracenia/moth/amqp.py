@@ -54,8 +54,6 @@ default_options = {
     'topicPrefix': [ 'v03' ],
     'subtopic': [],
     'durable': True,
-    'expire': 300,
-    'message_ttl': 0,
     'logLevel': 'info',
     'prefetch': 25,
     'auto_delete': False,

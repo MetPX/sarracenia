@@ -10,6 +10,7 @@ default_options = {
     'bindings': [],
     'broker': None,
     'exchange': 'xpublic',
+    'expire': 300,
     'inline': False,
     'inline_encoding': 'guess',
     'inline_max': 4096,
@@ -21,6 +22,7 @@ default_options = {
         'stubborn': True,
         'failure_duration': '5m'
     },
+    'message_ttl': 0,
     'topicPrefix' : [ 'v03' ],
     'tls_rigour'  : 'normal'
     }

@@ -1,7 +1,13 @@
+
+import collections
 import copy
 import json
 import logging
+
+from paho.mqtt.properties import Properties
+from paho.mqtt.packettypes import PacketTypes
 import paho.mqtt.client 
+
 from sarracenia.moth import Moth
 from sarracenia.flowcb.gather import msg_validate,msg_dumps
 import ssl
@@ -66,9 +72,9 @@ class MQTT(Moth):
 
       There is additionally a vulnerability/inefficiency resulting from async message reception:
            when a new message arrive the loop thread started by the paho library will append
-           it to the new_messages data structure (protected by a mutex.)
-           if the application crashes, the new_messages have not been ack'd to the sender... so it is
-           likely that you will just get them later... could use for a shelf for new_messages,
+           it to the received_messages data structure (protected by a mutex.)
+           if the application crashes, the received_messages have not been ack'd to the sender... so it is
+           likely that you will just get them later... could use for a shelf for received_messages,
            and sync it once in while... probably not worth it.
  
     """
@@ -101,12 +107,18 @@ class MQTT(Moth):
 
     def __sub_on_disconnect(client, userdata, rc):
         logger.info( paho.mqtt.client.connack_string(rc) )
+        if hasattr(userdata,'pending_messages'):
+            lost=len(userdata.pending_messages)
+            if lost > 0:
+                logger.error( 'message loss! cannot confirm %d messages were published: mids=%s' % (lost, userdata.pending_messages )  )
 
     def __sub_on_connect(client, userdata, flags, rc, properties=None):
-        logger.info( paho.mqtt.client.connack_string(rc) )
+        logger.info( "rc=%s, flags=%s" % ( paho.mqtt.client.connack_string(rc), flags ) )
+
+        if flags['session present'] != 1:
+            logger.error( 'failed to find existing session, no recovery of inflight messages from previous connection' )
 
         if rc != paho.mqtt.client.MQTT_ERR_SUCCESS:
-            client.connection_in_progress=False
             return
 
         # FIXME: enhancement could subscribe accepts multiple (subj, qos) tuples so, could do this in one RTT.
@@ -116,13 +128,27 @@ class MQTT(Moth):
             subj = '/'.join( ['$share', userdata.o['queue_name'], exchange] + prefix + subtopic )
 
             (res, mid) = client.subscribe( subj , qos=userdata.o['qos'] )
-            logger.info( "subscribed to: %s, result: %s" % (subj, paho.mqtt.client.error_string(res)) )
+            logger.info( "subscribed to: %s, mid=%d qos=%s result: %s" % (subj, mid, \
+                userdata.o['qos'], paho.mqtt.client.error_string(res)) )
+
+        client.subscribe_in_progress=True
+
+    def __sub_on_subscribe(client, userdata, mid, granted_qos, properties=None):
+        logger.info( "subscribe completed mid={} granted_qos={}".format( mid, list( map( lambda x: x.getName(), granted_qos ))) )
 
     def __pub_on_disconnect(client, userdata, rc ):
+        
         logger.info( paho.mqtt.client.connack_string(rc) )
 
     def __pub_on_connect(client, userdata, flags, rc, properties=None):
         logger.info( paho.mqtt.client.connack_string(rc) )
+
+    def __pub_on_publish(client, userdata, mid):
+        logger.info( 'complete. mid={}'.format(mid) )
+        userdata.pending_messages_mutex.acquire()
+        userdata.pending_messages.remove(mid)
+        userdata.pending_messages_mutex.release()
+
 
     def __sslClientSetup(self):
         """
@@ -161,6 +187,23 @@ class MQTT(Moth):
            port =  self.broker.port 
         return port
 
+    def __clientSetup(self, options, cid):
+
+        client = paho.mqtt.client.Client( userdata=self, \
+            client_id=cid, protocol=paho.mqtt.client.MQTTv5 )
+
+        #self.client.o = options
+        client.connected=False
+        client.on_connect = MQTT.__sub_on_connect
+        client.on_disconnect = MQTT.__sub_on_disconnect
+        client.on_message = MQTT.__sub_on_message
+        client.on_subscribe = MQTT.__sub_on_subscribe
+        client.subscribe_in_progress=True
+        # defaults to 20... kind of a mix of "batch" and prefetch... 
+        client.max_inflight_messages_set(options['batch']+options['prefetch'])
+        client.username_pw_set( self.broker.username, self.broker.password )
+        return client
+
     def __getSetup(self, options):
         """
            Establish a connection to consume messages with.  
@@ -178,19 +221,26 @@ class MQTT(Moth):
                      cid = None
                      cs=True
 
-                self.client = paho.mqtt.client.Client( userdata=self, \
-                        client_id=cid, protocol=paho.mqtt.client.MQTTv5 )
+                props=Properties(PacketTypes.CONNECT)
+                props.SessionExpiryInterval=int(self.o['expire'])
 
-                #self.client.o = options
+                if ( not ('no' in options) or options['no'] == 0 ) and 'instances' in options: 
+                    logger.info('declare sessions for instances')
+                    for i in range(1,options['instances']+1):
+                        icid= options['queue_name'] + '%02d' % i 
+                        decl_client = self.__clientSetup( options, icid )
+                        decl_client.connect( self.broker.hostname, port=self.__sslClientSetup(), \
+                           clean_start=False, properties=props )
+                        while not decl_client.is_connected():
+                            decl_client.loop(1)
+                        decl_client.disconnect()
+                        decl_client.loop_stop()
+                        logger.info('instance declaration for %02d done' % i )
+
+                self.client = self.__clientSetup( options, cid )
                 self.new_message_mutex.acquire()
-                self.client.new_messages = []
+                self.client.received_messages=[]
                 self.new_message_mutex.release()
-                self.client.connected=False
-                self.client.on_connect = MQTT.__sub_on_connect
-                self.client.on_disconnect = MQTT.__sub_on_disconnect
-                self.client.on_message = MQTT.__on_message
-                # defaults to 20... kind of a mix of "batch" and prefetch... 
-                self.client.max_inflight_messages_set(options['batch']+options['prefetch'])
 
                 if hasattr( self.client, 'auto_ack' ): # FIXME breaking this...
                     self.client.auto_ack( False )
@@ -200,8 +250,8 @@ class MQTT(Moth):
                     logger.info("paho library without auto_ack support. Loses data every crash or restart." )
                     self.auto_ack=True
 
-                self.client.username_pw_set( self.broker.username, self.broker.password )
-                self.client.connect( self.broker.hostname, port=self.__sslClientSetup() )
+                self.client.connect_async( self.broker.hostname, port=self.__sslClientSetup(), \
+                       clean_start=False, properties=props )
                 self.client.loop_start()
                 return
 
@@ -221,9 +271,14 @@ class MQTT(Moth):
         ebo=1
         while True:
             try:
+
+                self.pending_messages_mutex= threading.Lock()
+                self.pending_messages=collections.deque()
+
                 self.client = paho.mqtt.client.Client( protocol=self.proto_version, userdata=self) 
                 self.client.on_connect = MQTT.__pub_on_connect
                 self.client.on_disconnect = MQTT.__pub_on_disconnect
+                self.client.on_publish = MQTT.__pub_on_publish
                 #dunno if this is a good idea.
                 #self.client.max_queued_messages_set(options['prefetch'])
                 self.client.username_pw_set( self.broker.username, self.broker.password )
@@ -241,7 +296,7 @@ class MQTT(Moth):
             time.sleep(ebo)
                
         
-    def __on_message(client, userdata, msg):
+    def __sub_on_message(client, userdata, msg):
         """
           callback to append messages received to new queue.
           MQTT only supports v03 messages, so always assumed to be JSON encoded.
@@ -253,15 +308,32 @@ class MQTT(Moth):
         """
        
         userdata.new_message_mutex.acquire()
-        logger.info( "Message received: %s" % msg )
-        client.new_messages.append( msg )
+        #logger.info( "Message received: %s" % msg )
+        client.received_messages.append( msg )
         userdata.new_message_mutex.release()
 
     def putCleanUp(self):
+        self.client.disconnect()
         self.client.loop_stop()
         pass
 
     def getCleanUp(self):         
+
+        if ( not ('no' in self.o) or self.o['no'] == 0 ) and 'instances' in self.o: 
+            props=Properties(PacketTypes.CONNECT)
+            props.SessionExpiryInterval=1
+            logger.info('cleanup sessions for instances')
+            for i in range(1,self.o['instances']+1):
+                icid= self.o['queue_name'] + '%02d' % i 
+                myclient = self.__clientSetup( options, icid )
+                myclient.connect( self.broker.hostname, port=self.__sslClientSetup(), \
+                   myclean_start=True, properties=props )
+                while not self.client.is_connected():
+                    myclient.loop(1)
+                myclient.disconnect()
+                logger.info('instance deletion for %02d done' % i )
+
+        self.client.disconnect()
         self.client.loop_stop()
         pass
 
@@ -288,6 +360,7 @@ class MQTT(Moth):
         message['local_offset'] = 0
         message['_deleteOnPost'] = set( [ 'exchange', 'local_offset', 'ack_id', 'subtopic' ] )
 
+        logger.info( 'message=%s id=%d decoded as: %s' % ( mqttMessage, mqttMessage.mid, message ) )
         if msg_validate( message ):
            return message
         else:
@@ -302,12 +375,12 @@ class MQTT(Moth):
         """
         self.new_message_mutex.acquire()
 
-        if len(self.client.new_messages) > self.o['batch'] :
-            mqttml=self.client.new_messages[0:self.o['batch']]
-            self.client.new_messages=self.client.new_messages[self.o['batch']:]
+        if len(self.client.received_messages) > self.o['batch'] :
+            mqttml=self.client.received_messages[0:self.o['batch']]
+            self.client.received_messages=self.client.received_messages[self.o['batch']:]
         else:
-            mqttml=self.client.new_messages
-            self.client.new_messages=[]
+            mqttml=self.client.received_messages
+            self.client.received_messages=[]
         self.new_message_mutex.release()
 
         ml = list(filter( None, map( self._msgDecode, mqttml ) ))
@@ -317,9 +390,9 @@ class MQTT(Moth):
 
         self.new_message_mutex.acquire()
 
-        if len(self.client.new_messages) > 0: 
-            m=self.client.new_messages[0]
-            self.client.new_messages=self.client.new_messages[1:]
+        if len(self.client.received_messages) > 0: 
+            m=self.client.received_messages[0]
+            self.client.received_messages=self.client.received_messages[1:]
         else:
             m=None
         self.new_message_mutex.release()
@@ -344,7 +417,7 @@ class MQTT(Moth):
            return False
 
         #body = copy.deepcopy(bd)
-  
+
         if '_deleteOnPost' in body:
             # FIXME: need to delete because building entire JSON object at once.
             # makes this routine alter the message. Ideally, would use incremental
@@ -388,9 +461,12 @@ class MQTT(Moth):
             try:
                 info = self.client.publish( topic=topic, payload=json.dumps(body), qos=1 )
                 if info.rc == paho.mqtt.client.MQTT_ERR_SUCCESS: 
-                    logger.info("published {} to {} under: {} ".format(
-                         body, exchange, topic))
+                    logger.info("published mid={} {} to {} under: {} ".format(
+                         info.mid, body, exchange, topic))
  
+                    self.pending_messages_mutex.acquire()
+                    self.pending_messages.append(info.mid)
+                    self.pending_messages_mutex.release()
                     return True #success...
 
             except Exception as ex:
@@ -399,5 +475,13 @@ class MQTT(Moth):
   
   
     def close(self):
+        logger.info('closing')
         if self.client.is_connected():
+            if self.is_subscriber and self.client.subscribe_in_progress:
+                time.sleep(0.1) 
+
+            while len(self.pending_messages) > 0:
+                logger.info('waiting for last messages to publish')
+                time.sleep(0.1)    
+
             self.client.disconnect()
