@@ -111,6 +111,8 @@ class MQTT(Moth):
             lost=len(userdata.pending_messages)
             if lost > 0:
                 logger.error( 'message loss! cannot confirm %d messages were published: mids=%s' % (lost, userdata.pending_messages )  )
+            else:
+                logger.info('clean. no published messages lost.')
 
     def __sub_on_connect(client, userdata, flags, rc, properties=None):
         logger.info( "rc=%s, flags=%s" % ( paho.mqtt.client.connack_string(rc), flags ) )
@@ -272,6 +274,11 @@ class MQTT(Moth):
         while True:
             try:
 
+                props=Properties(PacketTypes.CONNECT)
+                if self.o['message_ttl']:
+                    logger.warning('FIXME: setting Message expiry to: %s' % self.o['message_ttl'] )
+                    props.MessageExpiryInterval=int(self.o['message_ttl'])
+
                 self.pending_messages_mutex= threading.Lock()
                 self.pending_messages=collections.deque()
 
@@ -282,7 +289,7 @@ class MQTT(Moth):
                 #dunno if this is a good idea.
                 #self.client.max_queued_messages_set(options['prefetch'])
                 self.client.username_pw_set( self.broker.username, self.broker.password )
-                res = self.client.connect( options['broker'].hostname, port=self.__sslClientSetup()  )
+                res = self.client.connect( options['broker'].hostname, port=self.__sslClientSetup(), properties=props  )
                 logger.info( 'connecting to %s, res=%s' % (options['broker'].hostname, res ) )
 
                 self.client.loop_start()
@@ -480,8 +487,9 @@ class MQTT(Moth):
             if self.is_subscriber and self.client.subscribe_in_progress:
                 time.sleep(0.1) 
 
-            while len(self.pending_messages) > 0:
-                logger.info('waiting for last messages to publish')
-                time.sleep(0.1)    
-
+            if hasattr(self,'pending_messages'):
+                while len(self.pending_messages) > 0:
+                    logger.info('waiting for last messages to publish')
+                    time.sleep(0.1)    
+                logger.info('no more pending messages')
             self.client.disconnect()
