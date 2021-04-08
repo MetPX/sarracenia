@@ -98,6 +98,11 @@ class MQTT(Moth):
 
         ebo=1
         if is_subscriber:
+            # https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Receive_Maximum
+            # if you reach receiveMaximum it provides back pressure to mosquitto, but the broker does not queue for you anymore
+            # so you get message loss. sigh...
+            #if not 'receiveMaximum' in self.o:
+            #     self.o['receiveMaximum'] = int( min( self.o['batch'] + self.o['prefetch'], 65535 ))
             self.__getSetup(self.o) 
         else:
             self.__putSetup(self.o)
@@ -227,6 +232,7 @@ class MQTT(Moth):
 
                 props=Properties(PacketTypes.CONNECT)
                 props.SessionExpiryInterval=int(self.o['expire'])
+                #props.ReceiveMaximum=int(self.o['receiveMaximum'])
 
                 if ( not ('no' in options) or options['no'] == 0 ) and 'instances' in options: 
                     logger.info('declare sessions for instances')
@@ -280,7 +286,7 @@ class MQTT(Moth):
             try:
 
                 props=Properties(PacketTypes.CONNECT)
-                if self.o['message_ttl']:
+                if self.o['message_ttl'] > 0:
                     props.MessageExpiryInterval=int(self.o['message_ttl'])
 
                 self.pending_messages_mutex= threading.Lock()
@@ -291,7 +297,7 @@ class MQTT(Moth):
                 self.client.on_disconnect = MQTT.__pub_on_disconnect
                 self.client.on_publish = MQTT.__pub_on_publish
                 #dunno if this is a good idea.
-                #self.client.max_queued_messages_set(options['prefetch'])
+                self.client.max_queued_messages_set(options['prefetch'])
                 self.client.username_pw_set( self.broker.username, self.broker.password )
                 res = self.client.connect( options['broker'].hostname, port=self.__sslClientSetup(), properties=props  )
                 logger.info( 'connecting to %s, res=%s' % (options['broker'].hostname, res ) )
@@ -470,10 +476,14 @@ class MQTT(Moth):
         logger.info('topic: %s' % topic )
 
         del body['subtopic']
+        props=Properties(PacketTypes.PUBLISH)
+        # https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901111
+        props.PayloadFormatIndicator = 1 # designates UTF-8
+        props.ContentType = 'application/json'
 
         while True:
             try:
-                info = self.client.publish( topic=topic, payload=json.dumps(body), qos=1 )
+                info = self.client.publish( topic=topic, payload=json.dumps(body), qos=1, properties=props) 
                 if info.rc == paho.mqtt.client.MQTT_ERR_SUCCESS: 
                     logger.info("published mid={} {} to {} under: {} ".format(
                          info.mid, body, exchange, topic))

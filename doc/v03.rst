@@ -600,6 +600,7 @@ Probably need to be settled before having anyone else dive in.
 * log could read all the log files, so it would work with multiple
   instances.
 
+* `MQTT issues <mqtt_issues.rst>`_
 
 FIXME/Deferred
 --------------
