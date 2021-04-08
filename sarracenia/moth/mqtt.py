@@ -114,6 +114,9 @@ class MQTT(Moth):
             else:
                 logger.info('clean. no published messages lost.')
 
+    def __mgt_on_connect(client, userdata, flags, rc, properties=None):
+        logger.info( "management connection succeeded: rc=%s, flags=%s" % ( paho.mqtt.client.connack_string(rc), flags ) )
+
     def __sub_on_connect(client, userdata, flags, rc, properties=None):
         logger.info( "rc=%s, flags=%s" % ( paho.mqtt.client.connack_string(rc), flags ) )
 
@@ -139,7 +142,6 @@ class MQTT(Moth):
         logger.info( "subscribe completed mid={} granted_qos={}".format( mid, list( map( lambda x: x.getName(), granted_qos ))) )
 
     def __pub_on_disconnect(client, userdata, rc ):
-        
         logger.info( paho.mqtt.client.connack_string(rc) )
 
     def __pub_on_connect(client, userdata, flags, rc, properties=None):
@@ -237,19 +239,22 @@ class MQTT(Moth):
                             decl_client.loop(1)
                         decl_client.disconnect()
                         decl_client.loop_stop()
-                        logger.info('instance declaration for %02d done' % i )
+                        logger.info('instance declaration for %s done' % icid )
 
-                self.client = self.__clientSetup( options, cid )
-                self.new_message_mutex.acquire()
-                self.client.received_messages=[]
-                self.new_message_mutex.release()
+                    self.client = self.__clientSetup( options, cid )
+                    self.client.on_connect = MQTT.__mgt_on_connect
+                else:
+                    self.client = self.__clientSetup( options, cid )
+                    self.new_message_mutex.acquire()
+                    self.client.received_messages=[]
+                    self.new_message_mutex.release()
 
                 if hasattr( self.client, 'auto_ack' ): # FIXME breaking this...
                     self.client.auto_ack( False )
-                    logger.info("Switching off auto_ack for higher reliability. Using explicit acknowledgements." )
+                    logger.debug("Switching off auto_ack for higher reliability. Using explicit acknowledgements." )
                     self.auto_ack=False
                 else:
-                    logger.info("paho library without auto_ack support. Loses data every crash or restart." )
+                    logger.warning("paho library without auto_ack support. Loses data every crash or restart." )
                     self.auto_ack=True
 
                 self.client.connect_async( self.broker.hostname, port=self.__sslClientSetup(), \
@@ -276,7 +281,6 @@ class MQTT(Moth):
 
                 props=Properties(PacketTypes.CONNECT)
                 if self.o['message_ttl']:
-                    logger.warning('FIXME: setting Message expiry to: %s' % self.o['message_ttl'] )
                     props.MessageExpiryInterval=int(self.o['message_ttl'])
 
                 self.pending_messages_mutex= threading.Lock()
@@ -314,8 +318,10 @@ class MQTT(Moth):
              no locking needed, except to increment list index.... later.
         """
        
+        #dm = userdata._msgDecode(msg)
+        #if dm:
+        logger.info( "Message received: %d, %s %s" % (msg.mid, msg.topic, msg.payload.decode('utf-8')) )
         userdata.new_message_mutex.acquire()
-        #logger.info( "Message received: %s" % msg )
         client.received_messages.append( msg )
         userdata.new_message_mutex.release()
 
@@ -336,7 +342,7 @@ class MQTT(Moth):
                 myclient.connect( self.broker.hostname, port=self.__sslClientSetup(), \
                    myclean_start=True, properties=props )
                 while not self.client.is_connected():
-                    myclient.loop(1)
+                    myclient.loop(0.1)
                 myclient.disconnect()
                 logger.info('instance deletion for %02d done' % i )
 
@@ -367,7 +373,6 @@ class MQTT(Moth):
         message['local_offset'] = 0
         message['_deleteOnPost'] = set( [ 'exchange', 'local_offset', 'ack_id', 'subtopic' ] )
 
-        logger.info( 'message=%s id=%d decoded as: %s' % ( mqttMessage, mqttMessage.mid, message ) )
         if msg_validate( message ):
            return message
         else:
@@ -388,6 +393,7 @@ class MQTT(Moth):
         else:
             mqttml=self.client.received_messages
             self.client.received_messages=[]
+
         self.new_message_mutex.release()
 
         ml = list(filter( None, map( self._msgDecode, mqttml ) ))
@@ -403,6 +409,7 @@ class MQTT(Moth):
         else:
             m=None
         self.new_message_mutex.release()
+
         return self._msgDecode(m)
     
     def ack(self, m):
