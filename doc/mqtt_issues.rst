@@ -38,21 +38,5 @@ things are going poorly and the broker would send less data there.
 Methods:
 
 1. v5: Receive Maximum ... limit the number of messages in flight between broker and client.
-   with mosquitto, reaching this value means drop messages for that client... 
-   that's ok when there are multiple client sharing a subscription, and those messages go to
-   other clients (to be verified.)
-   not good when the share has only one client in it (or all the clients are backed up.)
-
-2. disconnect.  just disconnect, and it should queue while you are gone... seems sad
-   to have to do that.
-
-Ideas?
-
-
-If you don't provide backpressure, then:
-
-1) you need to persist messages on receipt, and a node that is stuck will build
-   and acknowledge receipt of an every increasing number of messages, and will fall further
-   and further behind, providing no feedback for the broker doling out messages in a shared subscription.
-
+   implemented. works.
 
