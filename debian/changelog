@@ -1,6 +1,7 @@
-metpx-sr3 (3.00.005exp) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.006exp) UNRELEASED; urgency=medium
 
   * forked off from v2.
+  * has MQTT support.
   * just incrementing minor release as dev. 
   * non-stable releases for now.
   * ALPHA: breaking changes still happening.
