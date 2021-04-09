@@ -99,10 +99,8 @@ class MQTT(Moth):
         ebo=1
         if is_subscriber:
             # https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Receive_Maximum
-            # if you reach receiveMaximum it provides back pressure to mosquitto, but the broker does not queue for you anymore
-            # so you get message loss. sigh...
-            #if not 'receiveMaximum' in self.o:
-            #     self.o['receiveMaximum'] = int( min( self.o['batch'] + self.o['prefetch'], 65535 ))
+            if not 'receiveMaximum' in self.o:
+                 self.o['receiveMaximum'] = int( min( self.o['batch'] + self.o['prefetch'], 65535 ))
             self.__getSetup(self.o) 
         else:
             self.__putSetup(self.o)
@@ -236,7 +234,7 @@ class MQTT(Moth):
 
                 props=Properties(PacketTypes.CONNECT)
                 props.SessionExpiryInterval=int(self.o['expire'])
-                #props.ReceiveMaximum=int(self.o['receiveMaximum'])
+                props.ReceiveMaximum=int(self.o['receiveMaximum'])
 
                 if ( not ('no' in options) or options['no'] == 0 ) and 'instances' in options: 
                     logger.info('declare sessions for instances')
