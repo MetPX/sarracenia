@@ -153,11 +153,15 @@ class MQTT(Moth):
         logger.info( paho.mqtt.client.connack_string(rc) )
 
     def __pub_on_publish(client, userdata, mid):
-        logger.info( 'complete. mid={}'.format(mid) )
         userdata.pending_messages_mutex.acquire()
-        userdata.pending_messages.remove(mid)
-        userdata.pending_messages_mutex.release()
 
+        if mid in userdata.pending_messages:
+            logger.info( 'publish complete. mid={}'.format(mid) )
+            userdata.pending_messages.remove(mid)
+        else:
+            logger.error('BUG: ack for message we do not know we published. mid={}'.format(mid) )
+
+        userdata.pending_messages_mutex.release()
 
     def __sslClientSetup(self):
         """
@@ -420,6 +424,7 @@ class MQTT(Moth):
     
     def ack(self, m):
         if (not self.auto_ack) and ('ack_id' in m):
+            logger.info('mid=%d' % m['ack_id'] )
             self.client.ack(m['ack_id'])
             del m['ack_id']
             m['_deleteOnPost'].remove('ack_id')
@@ -473,7 +478,6 @@ class MQTT(Moth):
         # FIXME: might 
         topic= '/'.join( [ exchange ] + self.o['topicPrefix'] + body['subtopic']  )
         topic = topic.replace('#', '%23')
-        logger.info('topic: %s' % topic )
 
         del body['subtopic']
         props=Properties(PacketTypes.PUBLISH)
@@ -485,12 +489,11 @@ class MQTT(Moth):
             try:
                 info = self.client.publish( topic=topic, payload=json.dumps(body), qos=1, properties=props) 
                 if info.rc == paho.mqtt.client.MQTT_ERR_SUCCESS: 
-                    logger.info("published mid={} {} to {} under: {} ".format(
-                         info.mid, body, exchange, topic))
- 
                     self.pending_messages_mutex.acquire()
                     self.pending_messages.append(info.mid)
                     self.pending_messages_mutex.release()
+
+                    logger.info("published mid={} {} to under: {} ".format(info.mid, body, topic))
                     return True #success...
 
             except Exception as ex:
