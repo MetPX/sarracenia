@@ -67,5 +67,5 @@ setup(
     ],
     install_requires=[
         "amqp", "appdirs", "watchdog", "netifaces", "humanize", "jsonpickle",
-        "paho-mqtt", "paramiko", "psutil>=5.3.0"
+        "paho-mqtt>=1.5.1", "paramiko", "psutil>=5.3.0"
     ])
