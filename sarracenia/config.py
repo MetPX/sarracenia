@@ -784,7 +784,7 @@ class Config:
         self._resolve_exchange()
 
         if type(subtopic_string) is str:
-            if not hasattr(self, 'broker'):
+            if not hasattr(self, 'broker') or self.broker is None:
                 logger.error( 'broker needed before subtopic' )
                 return
 
