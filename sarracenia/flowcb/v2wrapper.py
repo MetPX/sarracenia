@@ -293,7 +293,8 @@ class V2Wrapper(FlowCB):
 
         #logger.info('installing: %s %s' % ( opname, path ) )
 
-        c1 = copy.deepcopy(vars(self))
+        
+        c1 = set(vars(self))
 
         try:
             with open(script) as f:
@@ -341,8 +342,8 @@ class V2Wrapper(FlowCB):
             eval('self.v2plugins["' + opname + '"].append( self.' + opname +
                  ')')
 
-        c2 = vars(self)
-        c12diff = list(set(c2) - set(c1))
+        c2 = set(vars(self))
+        c12diff = list(c2 - c1)
         #logger.error('init added: +%s+ to %s' % (c12diff, self.state_vars) )
         if len(c12diff) > 0:
             self.state_vars.extend(c12diff)
@@ -439,7 +440,7 @@ class V2Wrapper(FlowCB):
             self.o.partstr = self.msg.partstr
         self.o.sumstr = self.msg.sumstr
 
-        varsb4 = copy.deepcopy(vars(self.msg))
+        varsb4 = set(vars(self.msg))
 
         for opt in self.state_vars:
             if hasattr(self.o, opt):
@@ -450,11 +451,11 @@ class V2Wrapper(FlowCB):
             ok = plugin(self.o)
             if not ok: break
 
-        vars_after = vars(self.msg)
+        vars_after = set(vars(self.msg))
 
         self.restoreMsg(m, self.msg)
 
-        diff = list(set(vars_after) - set(varsb4))
+        diff = list(vars_after - varsb4)
         if len(diff) > 0:
             self.state_vars.extend(diff)
 
