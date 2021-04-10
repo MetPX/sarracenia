@@ -470,7 +470,7 @@ class AMQP(Moth):
                     del v2m.headers[h]
 
             for k in v2m.headers:
-                if len(v2m.headers[k]) >= amqp_ss_maxlen:
+                if (type(v2m.headers[k]) is str) and (len(v2m.headers[k]) >= amqp_ss_maxlen):
                     logger.error("message header %s too long, dropping" % k)
                     return False
             AMQP_Message = amqp.Message(v2m.notice,
