@@ -253,9 +253,10 @@ class MQTT(Moth):
                     self.client.on_connect = MQTT.__mgt_on_connect
                 else:
                     self.client = self.__clientSetup( options, cid )
-                    self.new_message_mutex.acquire()
-                    self.client.received_messages=[]
-                    self.new_message_mutex.release()
+
+                self.new_message_mutex.acquire()
+                self.client.received_messages=[]
+                self.new_message_mutex.release()
 
                 if hasattr( self.client, 'auto_ack' ): # FIXME breaking this...
                     self.client.auto_ack( False )
