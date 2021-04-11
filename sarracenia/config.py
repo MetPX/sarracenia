@@ -897,6 +897,7 @@ class Config:
                 continue
 
             line = list(map(lambda x: self._varsub(x), line))
+
             if len(line) == 1:
                 v = True
             else:
@@ -1834,7 +1835,8 @@ class Config:
             type=int,
             help='number of processes to run per configuration')
 
-        parser.set_defaults(bindings=[])
+        if hasattr(self, 'bindings'):
+            parser.set_defaults(bindings=self.bindings)
 
         parser.add_argument(
             '--logLevel',

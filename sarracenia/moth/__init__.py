@@ -5,7 +5,7 @@ import sys
 logger = logging.getLogger(__name__)
 
 default_options = {
-    'accept_unmatch': True,
+    'accept_unmatched': True,
     'batch': 100,
     'bindings': [],
     'broker': None,

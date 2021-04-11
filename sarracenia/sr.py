@@ -1421,7 +1421,7 @@ class sr_GlobalState:
 
             if ('instance_pids' in self.states[c][cfg]) and len(
                     self.states[c][cfg]['instance_pids']) > 0:
-                logging.error("cannot remove %f while it is running! ")
+                logging.error("cannot remove %s/%s while it is running! " % ( c, cfg ) )
                 continue
 
             cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'

@@ -50,7 +50,7 @@ default_options = {
     'message_rate_max': 0,
     'message_rate_min': 0,
     'sleep': 0.1,
-    'topic_prefix': [ 'v03' ],
+    'topicPrefix': [ 'v03' ],
     'vip': None
 }
 
@@ -125,8 +125,8 @@ class Flow:
         else:
             logger.setLevel( getattr(logging, self.o.logLevel.upper() ))
 
-        if not hasattr(self.o, 'post_topic_prefix'):
-            self.o.post_topic_prefix = self.o.topic_prefix
+        if not hasattr(self.o, 'post_topicPrefix'):
+            self.o.post_topicPrefix = self.o.topicPrefix
 
         logging.basicConfig(format=self.o.logFormat,
                             level=getattr(logging, self.o.logLevel.upper()))
@@ -282,6 +282,7 @@ class Flow:
         #    logger.info("%s : %s" % ( t, self.plugins[t] ) )
 
         self._runCallbacksTime('on_start')
+
         spamming = True
 
         while True:
