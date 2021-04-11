@@ -115,6 +115,7 @@ convert_to_v3 = {
             'flow_callback',
             'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles'
         ],
+        'msg_log': ['flow_callback', 'sarracenia.flowcb.log.Log'],
         'msg_rawlog': ['flow_callback', 'sarracenia.flowcb.log.Log']
     },
     'on_line': {
