@@ -12,7 +12,7 @@ class Msg_Clean_F92(Msg_Pclean):
     def on_message(self, parent):
         import os
 
-        parent.logger.info("msg_pclean_f92.py on_message")
+        parent.logger.info("msg_pclean_f92.py on_message %s" % parent.msg.relpath )
 
         result = True
         msg_relpath = parent.msg.relpath
@@ -24,6 +24,7 @@ class Msg_Clean_F92(Msg_Pclean):
             f20_path = f20_path.replace(ext, '')
             try:
                 os.unlink(f20_path)
+                parent.logger.info("unlinked 1 {}".format(f20_path))
             except FileNotFoundError as err:
                 parent.logger.error("could not unlink in {}: {}".format(f20_path, err))
                 parent.logger.debug("Exception details:", exc_info=True)
@@ -33,8 +34,10 @@ class Msg_Clean_F92(Msg_Pclean):
             for fxx_dir, path in path_dict.items():
                 try:
                     os.unlink(path)
+                    parent.logger.info("unlinked 2 {}".format(path))
                     if ext != '.moved':
                         os.unlink(path.replace(ext, ''))
+                        parent.logger.info("unlinked 3 {}".format(path.replace(ext,'')))
                 except OSError as err:
                     parent.logger.error("could not unlink in {}: {}".format(fxx_dir, err))
                     parent.logger.debug("Exception details:", exc_info=True)
