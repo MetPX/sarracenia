@@ -1,3 +1,9 @@
+metpx-sarracenia (2.21.03post2) stable; urgency=medium
+
+  *bugfix running on windows... again for #47, but not resolving #47 
+
+ -- Peter Silva <peter@fractal>  Tue, 23 Mar 2021 13:33:39 -0400
+
 metpx-sarracenia (2.21.03p1) stable; urgency=medium
 
   * bugfix... problem reported in #47, but not resolving #47.
