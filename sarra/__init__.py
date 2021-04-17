@@ -25,4 +25,8 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 #
+<<<<<<< HEAD
 __version__ = "2.21.03post2"
+=======
+__version__ = "2.21.04"
+>>>>>>> v2_stable

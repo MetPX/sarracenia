@@ -106,7 +106,7 @@ class sr_http(sr_proto):
                 if details  : url = details.url
 
                 self.user = url.username if url.username != '' else None
-                self.password = url.password if url.password == '' else None
+                self.password = url.password if url.password != '' else None
 
                 self.bearer_token = details.bearer_token if hasattr(details, 'bearer_token' ) else None
 

@@ -36,6 +36,16 @@ Installation Instructions
 git
 ---
 
+2.21.04
+-------
+
+fixes regression, from previous release.
+
+2.21.03
+-------
+
+*BUG* does not retrieve from web sites with passwords (https BASIC authentication broken)
+
 2.20.07
 -------
 
