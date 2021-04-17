@@ -783,3 +783,16 @@ Features
 * added typing to options settings, so plugins can declare: size, duration, string, or list.
 
 
+Coverage Failures in Flow Tests
+===============================
+
+This section lists some areas of poor coverage in the flow test, that became evident
+when other testing done.
+
+* product selection (subtopics)  The subtopic selection logic was not working properly
+  (we were getting far too many messages) but issue was masked by client side selection.
+
+* HTTP with BASIC authentication (was broken in last v2 release.)
+
+* shim library commands other than the one or two tested.
+
