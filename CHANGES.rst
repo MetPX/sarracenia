@@ -6,6 +6,15 @@ lists all changes between versions.
 
 **git repo**
 
+**2.21.04**
+
+  * bugfix for regression, failure to use BASIC authentication on https sites. 
+  * bugfix running on windows... again for #47, but not resolving #47 
+  * bugfix #367, stop sftp from doing ls from initializing sender. (for IRIDIUM, from Tyson)
+  * bugfix... process management in windows. (#47 is about something else, but reported there.)
+  * bugfix for sender with inflight=None, 
+  * bugfix #360 bearer token support (for some noaa sites.)
+
 **2.20.08post1**
    * 2nd fix for a different plugin breaking in a different way with onfly_checksum.
    * sr stop labelling 'status' invocations as missing instances.
