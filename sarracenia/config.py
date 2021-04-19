@@ -1670,9 +1670,9 @@ class Config:
         else:
             msg['new_baseUrl'] = msg['baseUrl']
 
-        if 'new_relPath' in msg:
-            offset = 1 if msg['new_relPath'][0] == '/' else 0
-            msg['subtopic'] = msg['new_relPath'].split('/')[offset:-1]
+        #if 'new_relPath' in msg:
+        #    offset = 1 if msg['new_relPath'][0] == '/' else 0
+        #    msg['subtopic'] = msg['new_relPath'].split('/')[offset:-1]
 
         #logger.debug( "leaving with: new_dir=%s new_relpath=%s new_baseUrl=%s " % \
         #   ( msg['new_dir'], msg['new_relPath'], msg['new_baseUrl'] ) )
