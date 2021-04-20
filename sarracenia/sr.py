@@ -799,7 +799,10 @@ class sr_GlobalState:
                                 or self.states[c][cfg]['sleep'] <= 0):
                             self.configs[c][cfg]['status'] = 'stopped'
                         else:
-                            self.configs[c][cfg]['status'] = 'partial'
+                            if observed_instances > 0:
+                                self.configs[c][cfg]['status'] = 'partial'
+                            else:
+                                self.configs[c][cfg]['status'] = 'stopped'
                     elif observed_instances == 0:
                         self.configs[c][cfg]['status'] = 'stopped'
                     else:
