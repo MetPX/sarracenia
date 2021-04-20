@@ -1185,8 +1185,8 @@ class sr_GlobalState:
             component_path = self._find_component_path(c)
 
             if c in [
-                    'poll', 'post', 'report', 'sarra', 'shovel', 'subscribe',
-                    'watch', 'winnow'
+                    'poll', 'post', 'report', 'sarra', 'sender', 'shovel', 
+                    'subscribe', 'watch', 'winnow'
             ]:
                 component_path = os.path.dirname(
                     component_path) + os.sep + 'instance.py'
