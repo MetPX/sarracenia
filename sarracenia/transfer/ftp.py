@@ -199,6 +199,7 @@ class Ftp(Transfer):
 
             if not self.tls:
                 ftp = ftplib.FTP()
+                ftp.encoding='utf-8'
                 ftp.connect(self.host, self.port, timeout=expire)
                 ftp.login(self.user, self.password)
             else:
@@ -207,6 +208,7 @@ class Ftp(Transfer):
                                      self.user,
                                      self.password,
                                      timeout=expire)
+                ftp.encoding='utf-8'
                 if self.prot_p: ftp.prot_p()
                 # needed only if prot_p then set back to prot_c
                 #else          : ftp.prot_c()
