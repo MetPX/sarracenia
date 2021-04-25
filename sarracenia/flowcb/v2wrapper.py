@@ -412,17 +412,22 @@ class V2Wrapper(FlowCB):
                                          (v2msg.headers[h] != m[h])):
                 m[h] = v2msg.headers[h]
 
-        for h in ['new_file', 'new_dir']:
-            if hasattr(v2msg, h):
-                if (h in m) and (getattr(v2msg, h) != m[h]):
-                    m[h] = getattr(v2msg, h)
+        #for h in ['new_file', 'new_dir']:
+        #    if hasattr(v2msg, h):
+        #        if (h in m) and (getattr(v2msg, h) != m[h]):
+        #            m[h] = getattr(v2msg, h)
+        if v2msg.new_dir != m['new_dir'] :
+           m['new_dir'] = v2msg.new_dir
+           relpath = m['new_dir'] + '/' + v2msg.new_file
+           if self.o.post_baseDir: relpath=relpath.replace( self.o.post_baseDir, '', 1 )
+           m['new_relPath'] = relpath
 
         if v2msg.baseurl != m['baseUrl']:
             m['baseUrl'] = v2msg.baseurl
-
-        if hasattr(v2msg,
-                   'new_relpath') and (v2msg.new_relpath != m['new_relPath']):
-            m['new_relPath'] = v2msg.new_relpath
+ 
+        if hasattr(v2msg,'new_file'):
+            if ( 'new_file' not in m ) or ( m['new_file'] != v2msg.new_file ):
+                m['new_file'] = v2msg.new_file
 
         if hasattr(
                 v2msg,

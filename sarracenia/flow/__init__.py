@@ -315,6 +315,22 @@ class Flow:
                 # need to acknowledge here, because posting will delete message-id
                 self.ack(self.worklist.ok)
 
+                # adjust message after action is done, but before 'after_work' so adjustment is possible.
+                for m in self.worklist.ok:
+
+                    if ('new_baseUrl' in m) and (m['baseUrl'] != m['new_baseUrl'] ):
+                        m['baseUrl'] = m['new_baseUrl']
+
+                    if ('new_relPath' in m ) and ( m['relPath'] != m['new_relPath'] ) :
+                        m['relPath'] = m['new_relPath']
+                        if m['new_relPath'][0] == os.sep :
+                            m['subtopic'] = m['new_relPath'].split(os.sep)[1:-1]
+                        else:
+                            m['subtopic'] = m['new_relPath'].split(os.sep)[:-1]
+
+                    if self.o.post_baseDir:
+                        m['relPath'] = m['relPath'].replace(self.o.post_baseDir, '', 1)
+
                 self.ack(self.worklist.rejected)
                 self.worklist.rejected = []
                 self.ack(self.worklist.failed)
@@ -486,16 +502,6 @@ class Flow:
 
         #logger.info('on_post starting for %d messages' % len(self.worklist.ok))
         #logger.info('post_baseDir=%s' % self.o.post_baseDir)
-        for m in self.worklist.ok:
-
-            if 'new_baseUrl' in m:
-                m['baseUrl'] = m['new_baseUrl']
-
-            if 'new_relPath' in m:
-                m['relPath'] = m['new_relPath']
-
-            if self.o.post_baseDir:
-                m['relPath'].replace(self.o.post_baseDir, '', 1)
 
         #self._runCallbacksWorklist('on_posts')
         for p in self.plugins["post"]:
