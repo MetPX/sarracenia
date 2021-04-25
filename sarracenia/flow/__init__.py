@@ -1459,7 +1459,7 @@ class Flow:
             # check message for local file
             #=================================
 
-            if msg['baseUrl'] != 'file:/':
+            if msg['baseUrl'] != 'file:/' and not hasattr(self.o,'baseDir'):
                 logger.error("protocol should be 'file:' message ignored")
                 self.worklist.rejected.append(msg)
                 continue
