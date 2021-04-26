@@ -277,6 +277,8 @@ class Flow:
 
         logger.info("options:")
         self.o.dump()
+
+
         logger.info("callbacks loaded: %s" % self.plugins['load'])
         #for t in self.plugins:
         #    logger.info("%s : %s" % ( t, self.plugins[t] ) )
@@ -1459,10 +1461,13 @@ class Flow:
             # check message for local file
             #=================================
 
-            if msg['baseUrl'] != 'file:/' and not hasattr(self.o,'baseDir'):
-                logger.error("protocol should be 'file:' message ignored")
-                self.worklist.rejected.append(msg)
-                continue
+            if msg['baseUrl'] != 'file:/':
+                if hasattr(self.o,'baseDir'):
+                    msg['baseUrl'] = 'file:/' + self.o.baseDir 
+                else:
+                    logger.error("protocol should be 'file:' message ignored")
+                    self.worklist.rejected.append(msg)
+                    continue
 
             #=================================
             # proceed to send :  has to work
