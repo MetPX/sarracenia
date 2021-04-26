@@ -171,7 +171,7 @@ class Https(Transfer):
 
         # open self.http
 
-        url = self.destination + '/' + self.path + '/' + remote_file
+        url = self.destination + '/' + urllib.parse.quote( self.path + '/' + remote_file )
 
         ok = self.__open__(url, remote_offset, length)
 
@@ -227,7 +227,7 @@ class Https(Transfer):
 
         self.entries = {}
 
-        url = self.destination + '/' + self.path
+        url = self.destination + '/' + urllib.parse.quote( self.path )
 
         ok = self.__open__(url)
 
@@ -357,7 +357,7 @@ class Https(Transfer):
             alarm_cancel()
             raise
         except:
-            logger.warning("sr_http/__open__: unable to open %s" % self.urlstr)
+            logger.warning("unable to open %s" % self.urlstr)
             logger.debug('Exception details: ', exc_info=True)
             alarm_cancel()
             raise
