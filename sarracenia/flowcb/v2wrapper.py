@@ -412,10 +412,6 @@ class V2Wrapper(FlowCB):
                                          (v2msg.headers[h] != m[h])):
                 m[h] = v2msg.headers[h]
 
-        #for h in ['new_file', 'new_dir']:
-        #    if hasattr(v2msg, h):
-        #        if (h in m) and (getattr(v2msg, h) != m[h]):
-        #            m[h] = getattr(v2msg, h)
         if v2msg.new_dir != m['new_dir'] :
            m['new_dir'] = v2msg.new_dir
            relpath = m['new_dir'] + '/' + v2msg.new_file

@@ -1200,6 +1200,16 @@ class Config:
             elif self.documentRoot is not None:
                 self.post_baseDir = self.documentRoot
                 logger.warning("use post_baseDir instead of documentRoot")
+            elif self.baseDir is not None:
+                self.post_baseDir = self.baseDir
+                logger.info("defaulting post_baseDir to same as postDir")
+
+
+        if self.message_count_max > 0:
+            if self.batch > self.message_count_max:
+               self.batch = self.message_count_max
+               logger.info( 'overriding batch for consistency with message_count_max: %d' % self.batch )
+
 
     def check_undeclared_options(self):
 
@@ -1619,7 +1629,6 @@ class Config:
             new_dir = new_dir + '/' + '/'.join(token[:-1])
 
         new_dir = self.set_dir_pattern(new_dir)
-
         # resolution of sundew's dirPattern
 
         tfname = filename
