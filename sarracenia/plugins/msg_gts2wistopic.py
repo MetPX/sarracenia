@@ -28,9 +28,9 @@ class msg_GTS2WISTopic(object):
         # 0123245678901
         td=tpfx[2]+"T"+msg.pubtime[8:10]
         t='.'.join(tpfx[0:2])+'.'+td
-        parent.logger.info(" tpfxs %s pubtime=%s " % ( tpfx, msg.pubtime ) )
+        #parent.logger.info(" tpfxs %s pubtime=%s " % ( tpfx, msg.pubtime ) )
 
-        parent.logger.info( "before: msg.topic=%s, msg.newname=%s, msg.new_dir=%s t=%s" % ( msg.topic, msg.new_file, msg.new_dir, t) )
+        #parent.logger.info( "before: msg.topic=%s, msg.newname=%s, msg.new_dir=%s t=%s" % ( msg.topic, msg.new_file, msg.new_dir, t) )
         try: 
             d = parent.topic_builder.mapAHLtoTopic(msg.new_file)
             #parent.logger.info(" remove %s from %s " % ( os.path.dirname(msg.relpath), msg.new_dir ) )
@@ -43,7 +43,7 @@ class msg_GTS2WISTopic(object):
             parent.logger.error( "topic_builder", exc_info=True )
             return False
  
-        parent.logger.info( "after: topic=%s newdir=%s" % ( msg.topic, msg.new_dir) )
+        #parent.logger.info( "after: topic=%s newdir=%s" % ( msg.topic, msg.new_dir) )
         
         
         return True

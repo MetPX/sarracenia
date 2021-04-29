@@ -2163,6 +2163,7 @@ and under which name.
 - **inplace       <boolean>        (default: On)**
 - **kbytes_ps <count>               (default: 0)**
 - **inflight  <string>         (default: .tmp or NONE if post_broker set)** 
+- **message_count_max <count> (default: 0 == DISABLED)**
 - **message_rate_max <float>   (default: 0 == DISABLED)**
 - **message_rate_min <float>   (default: 0 == DISABLED)**
 - **mirror    <boolean>        (default: off)** 
@@ -2570,6 +2571,12 @@ kbytes_ps <count> (default: 0)
 speed in kilobytes per second... ftp,ftps,or sftp)
 
 **FIXME**: kbytes_ps... only implemented by sender? or subscriber as well, data only, or messages also?
+
+message_count_max <count> (default: 0)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If **message_count_max** is greater than zero, the flow will exit after processing the given
+number of messages.  This is normally used only for debugging.
 
 message_rate_max <float> (default: 0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

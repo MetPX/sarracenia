@@ -1235,7 +1235,6 @@ class sr_GlobalState:
                 qdc.close()
                 queues_to_delete.append((o.broker, o.resolved_qname))
 
-        print('queues to delete: %s' % queues_to_delete)
         for h in self.brokers:
             for qd in queues_to_delete:
                 if qd[0].hostname != h: continue
