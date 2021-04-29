@@ -795,6 +795,8 @@ when other testing done.
 
 * names changed (transformed) during download DONE ( transform_flow )
 
+* default directory on accept_unmatch was wrong... DONE ( added to sender in transform_flow )
+
 * HTTP with BASIC authentication (was broken in last v2 release.)
 
 * shim library commands other than the one or two tested.

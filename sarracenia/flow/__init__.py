@@ -407,6 +407,14 @@ class Flow:
 
         #logger.debug('start')
         filtered_worklist = []
+
+        if hasattr(self.o,'directory'):
+             default_accept_directory=self.o.directory
+        elif hasattr(self.o, 'post_baseDir'):
+             default_accept_directory=self.o.post_baseDir
+        elif hasattr(self.o, 'baseDir'):
+             default_accept_directory=self.o.baseDir
+
         for m in self.worklist.incoming:
             #logger.warning('message: %s ' % m)
 
@@ -459,7 +467,7 @@ class Flow:
                         m['_deleteOnPost'] |= set(['renameUnlink'])
                     logger.debug("rename deletion 2 %s" % (m['oldname']))
                     filtered_worklist.append(m)
-                    self.o.set_newMessageFields(m, url, None, None,
+                    self.o.set_newMessageFields(m, url, None, default_accept_directory,
                                                 self.o.filename, self.o.mirror,
                                                 self.o.strip, self.o.pstrip,
                                                 self.o.flatten)
@@ -469,7 +477,7 @@ class Flow:
                     logger.debug("accept: unmatched pattern=%s" % (url))
                     # FIXME... missing dir mapping with mirror, strip, etc...
                     self.o.set_newMessageFields(m, url, None,
-                                                self.o.currentDir,
+                                                default_accept_directory,
                                                 self.o.filename, self.o.mirror,
                                                 self.o.strip, self.o.pstrip,
                                                 self.o.flatten)
