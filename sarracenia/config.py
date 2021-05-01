@@ -1128,7 +1128,9 @@ class Config:
                     f = open(queuefile, 'r')
                     self.queue_name = f.read()
                     f.close()
-                else:
+
+                # if the queuefile is corrupt, then will need to guess anyways.
+                if ( self.queue_name is None ) or ( self.queue_name == '' ):
                     queue_name = 'q_' + self.broker.username + '_' + component + '.' + cfg
                     if hasattr(self, 'queue_suffix'):
                         queue_name += '.' + self.queue_suffix
