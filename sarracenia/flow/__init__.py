@@ -419,7 +419,7 @@ class Flow:
             #logger.warning('message: %s ' % m)
 
             if 'oldname' in m:
-                url = self.o.set_dir_pattern(m['baseUrl']) + os.sep + m['oldname']
+                url = self.o.set_dir_pattern(m['baseUrl'],m) + os.sep + m['oldname']
                 oldname_matched = False
                 for mask in self.o.masks:
                     pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
@@ -427,7 +427,7 @@ class Flow:
                         oldname_matched = accepting
                         break
 
-            url = self.o.set_dir_pattern(m['baseUrl']) + os.sep + m['relPath']
+            url = self.o.set_dir_pattern(m['baseUrl'],m) + os.sep + m['relPath']
 
             # apply masks for accept/reject options.
             matched = False

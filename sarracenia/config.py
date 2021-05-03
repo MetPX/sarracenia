@@ -42,6 +42,7 @@ import sarracenia.integrity
 default_options = {
     'accept_unmatched': True,
     'baseDir': None,
+    'baseUrl_relPath': False,
     'delete': False,
     'documentRoot': None,
     'download': False,
@@ -62,7 +63,7 @@ count_options = [
 ]
 
 # all the boolean settings.
-flag_options = [ 'bind_queue', 'cache_stat', 'declare_exchange', 'debug', \
+flag_options = [ 'baseUrl_relPath', 'bind_queue', 'cache_stat', 'declare_exchange', 'debug', \
     'declare_queue', 'delete', 'discard', 'download', 'dry_run', 'durable', 'exchange_split', 'realpath_filter', \
     'follow_symlinks', 'force_polling', 'inline', 'inplace', 'log_reject', 'pipe', 'restore', \
     'report_daemons', 'mirror', 'notify_only', 'overwrite', 'post_on_start', 'poll_without_vip', \
@@ -1420,7 +1421,7 @@ class Config:
 
         return defval
 
-    def set_dir_pattern(self, cdir):
+    def set_dir_pattern(self, cdir, message=None ):
 
         if not '$' in cdir:
             return cdir
@@ -1429,6 +1430,10 @@ class Config:
 
         if '${BD}' in cdir and self.baseDir != None:
             new_dir = new_dir.replace('${BD}', self.baseDir)
+
+        if ( '${BRP}' in cdir ) and ( 'baseUrl' in message ):
+            u = urllib.parse.urlparse( message['baseUrl'] )
+            new_dir = new_dir.replace('${BRP}', u.path )
 
         if '${PBD}' in cdir and self.post_baseDir != None:
             new_dir = new_dir.replace('${PBD}', self.post_baseDir)
@@ -1531,6 +1536,10 @@ class Config:
         # relative path by default mirror
 
         relPath = '%s' % msg['relPath']
+ 
+        if self.baseUrl_relPath :
+            u = urllib.parse.urlparse( msg['baseUrl'] )
+            relPath = u.path[1:] + '/' + relPath
 
         # case S=0  sr_post -> sr_suscribe... rename in headers
         # FIXME: 255 char limit on headers, rename will break!
@@ -1544,12 +1553,6 @@ class Config:
         # cannot have both (see setting of option strip in sr_config)
 
         if strip > 0:
-            #MG folling code was a fix...
-            #   if strip is a number of directories
-            #   add 1 to strip not to count '/'
-            #   impact to current configs avoided by commenting out
-
-            #if relPath[0] == '/' : strip = strip + 1
             try:
                 token = token[strip:]
 
@@ -1630,7 +1633,7 @@ class Config:
         if len(token) > 1:
             new_dir = new_dir + '/' + '/'.join(token[:-1])
 
-        new_dir = self.set_dir_pattern(new_dir)
+        new_dir = self.set_dir_pattern(new_dir, msg)
         # resolution of sundew's dirPattern
 
         tfname = filename
@@ -1651,7 +1654,7 @@ class Config:
         relPath = msg['new_dir'] + '/' + filename
 
         if self.post_baseDir:
-            relPath = relPath.replace(self.set_dir_pattern(self.post_baseDir), '')
+            relPath = relPath.replace(self.set_dir_pattern(self.post_baseDir,msg), '')
 
         if relPath[0] == '/':
             relPath = relPath[1:]
@@ -1677,7 +1680,7 @@ class Config:
         msg['new_file'] = filename
 
         if self.post_broker and self.post_baseUrl:
-            msg['new_baseUrl'] = self.set_dir_pattern( self.post_baseUrl )
+            msg['new_baseUrl'] = self.set_dir_pattern( self.post_baseUrl, msg )
         else:
             msg['new_baseUrl'] = msg['baseUrl']
 

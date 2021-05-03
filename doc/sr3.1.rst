@@ -2062,6 +2062,7 @@ accept, reject and accept_unmatch
 - **accept    <regexp pattern> (optional)**
 - **reject    <regexp pattern> (optional)**
 - **accept_unmatch   <boolean> (default: False)**
+- **baseUrl_relPath   <boolean> (default: False)**
 
 The  **accept**  and  **reject**  options process regular expressions (regexp).
 The regexp is applied to the the message's URL for a match.
@@ -2099,6 +2100,11 @@ It is best practice to use server side filtering to reduce the number of announc
 to the component to a small superset of what is relevant, and perform only a fine-tuning with the
 client side mechanisms, saving bandwidth and processing for all. More details on how
 to apply the directives follow:
+
+Normally the relative path (appended to the base directory) for files which are downloaded
+will be set according to the relPath header included in the message.  if *baseUrl_relPath*
+is set, however, the message's relPath will be prepended with the sub-directories from
+the message's baseUrl field.
 
 ACCELERATION
 ------------
@@ -2360,6 +2366,7 @@ option, with the use of *${..}* notation::
 
    SOURCE   - the amqp user that injected data (taken from the message.)
    BD       - the base directory
+   BRP      - the baseUrl path.
    PBD      - the post base dir
    YYYYMMDD - the current daily timestamp.
    HH       - the current hourly timestamp.
