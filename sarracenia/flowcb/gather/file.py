@@ -187,34 +187,40 @@ class File(FlowCB):
         #sumstr = { "method": "notImplemented", value: "bad" }
 
         # complete message
-        if ( self.o.post_topicPrefix[0] == 'v03') and self.o.inline and fsiz < self.o.inline_max:
+        if ( self.o.post_topicPrefix[0] == 'v03') and self.o.inline: 
+            if fsiz < self.o.inline_max:
 
-            if self.o.inline_encoding == 'guess':
-                e = guess_type(path)[0]
-                binary = not e or not ('text' in e)
-            else:
-                binary = (self.o.inline_encoding == 'text')
-
-            f = open(path, 'rb')
-            d = f.read()
-            f.close()
-
-            if binary:
-                msg["content"] = {
-                    "encoding": "base64",
-                    "value": b64encode(d).decode('utf-8')
-                }
-            else:
-                try:
-                    msg["content"] = {
-                        "encoding": "utf-8",
-                        "value": d.decode('utf-8')
-                    }
-                except:
+                if self.o.inline_encoding == 'guess':
+                    e = guess_type(path)[0]
+                    binary = not e or not ('text' in e)
+                else:
+                    binary = (self.o.inline_encoding == 'text')
+    
+                f = open(path, 'rb')
+                d = f.read()
+                f.close()
+    
+                if binary:
                     msg["content"] = {
                         "encoding": "base64",
                         "value": b64encode(d).decode('utf-8')
                     }
+                else:
+                    try:
+                        msg["content"] = {
+                            "encoding": "utf-8",
+                            "value": d.decode('utf-8')
+                        }
+                    except:
+                        msg["content"] = {
+                            "encoding": "base64",
+                            "value": b64encode(d).decode('utf-8')
+                        }
+            else:
+               if self.o.inline_only:
+                   logger.error('skipping file %s too large (%d bytes > %d bytes max)) for inlining' % \
+                      ( path, fsiz, self.o.inline_max )  )
+                   return []
 
         msg['integrity'] = sumstr
 

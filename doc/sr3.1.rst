@@ -313,6 +313,7 @@ View all configuration settings (the result of all parsing... what the flow comp
     housekeeping=30
     inflight=None
     inline=False
+    inline_only=False
     inline_encoding='guess'
     inline_max=4096
     instances=1
@@ -2166,6 +2167,7 @@ and under which name.
 - **heartbeat <count>                 (default: 300 seconds)**
 - **inline   <boolean>         (default: False)**
 - **inline_max   <counts>         (default: 1024)**
+- **inline_only   <boolean>       (default: False)**
 - **inplace       <boolean>        (default: On)**
 - **kbytes_ps <count>               (default: 0)**
 - **inflight  <string>         (default: .tmp or NONE if post_broker set)** 
@@ -2399,8 +2401,10 @@ When posting messages, The **inline** option is used to have the file content
 included in the post. This can be efficient when sending small files over high
 latency links, a number of round trips can be saved by avoiding the retrieval
 of the data using the URL.  One should only inline relatively small files,
-so when **inline** is active, only files smaller than **in_line_max** bytes
+so when **inline** is active, only files smaller than **inline_max** bytes
 (default: 1024) will actually have their content included in the post messages.
+If **inline_only** is set, and a file is larger than inline_max, the file
+will not be posted.
 
 
 inplace <boolean> (default: On)

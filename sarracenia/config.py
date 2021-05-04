@@ -47,6 +47,8 @@ default_options = {
     'documentRoot': None,
     'download': False,
     'inflight': None,
+    'inline': False,
+    'inline_only': False,
     'notify_only': False,
     'overwrite': True,
     'post_documentRoot': None,
@@ -65,7 +67,7 @@ count_options = [
 # all the boolean settings.
 flag_options = [ 'baseUrl_relPath', 'bind_queue', 'cache_stat', 'declare_exchange', 'debug', \
     'declare_queue', 'delete', 'discard', 'download', 'dry_run', 'durable', 'exchange_split', 'realpath_filter', \
-    'follow_symlinks', 'force_polling', 'inline', 'inplace', 'log_reject', 'pipe', 'restore', \
+    'follow_symlinks', 'force_polling', 'inline', 'inline_only', 'inplace', 'log_reject', 'pipe', 'restore', \
     'report_daemons', 'mirror', 'notify_only', 'overwrite', 'post_on_start', 'poll_without_vip', \
     'preserve_mode', 'preserve_time', 'pump_flag', 'randomize', 'realpath_post', 'reconnect', \
     'report_back', 'reset', 'retry_mode', 'save', 'set_passwords', 'source_from_exchange', \
@@ -1205,7 +1207,7 @@ class Config:
                 logger.warning("use post_baseDir instead of documentRoot")
             elif self.baseDir is not None:
                 self.post_baseDir = self.baseDir
-                logger.info("defaulting post_baseDir to same as postDir")
+                logger.info("defaulting post_baseDir to same as baseDir")
 
 
         if self.message_count_max > 0:
