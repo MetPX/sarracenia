@@ -477,6 +477,12 @@ Items from the TODO list that have been addressed.
 
 * migrate sr_credentials.py to sarracenia/credentials.py.
 
+* remove *post* from v03 topic trees. Done!
+
+* cleanup entry points: sr_audit, sr_tailf, sr_log2save, 
+
+* test with dynamic-flow.
+
 
 After Parity: True Improvements
 -------------------------------
@@ -486,7 +492,7 @@ After Parity: True Improvements
 
 * MQTT Support (Done!)
 
-* Consider replacing manual queues in moth with more pythoning Queue.
+* Consider replacing manual queues in moth with more pythonic Queue.
   How to decide.
 
 * Replace sarracenia.flowcb.retry (transliteration of v2) with more pythonic. 
@@ -514,6 +520,7 @@ After Parity: True Improvements
 
 * Multi-source (requires async):
   * allow >1 broker and post_broker to be specified, gather from all brokers, post to all brokers.
+    effect of true async.
 
 * re-write poll, 
 
@@ -525,15 +532,13 @@ After Parity: True Improvements
 
   * use cache-sharing to avoid multiple polls. or just remove filtering in poll, use winnow?
 
+* log could read all the log files, so it would work with multiple
+  instances.
+
+* figure out an AsyncAPI implementation for subscription at least.
+
 TODO
 ----
-
-
-* remove *post* from v03 topic trees.
-
-* cleanup entry points: sr_audit, sr_tailf, sr_log2save, 
-
-* test with dynamic-flow.
 
 * get partitioned file transfers working again.
 
@@ -557,10 +562,13 @@ TODO
 * poll, remove listing files from implementation, just use NoDupe.py Tune nodupe for cases.
   we will just keep using v2 for old polls, and write new polls in v3, so don't worry about
   compat. They can never be vaguely similar... true/False? 
+  (equivalent to re-write poll above.)
 
 * full async mode for MQP's. requires publish_retry functionality.
+  (again in future plans above.)
 
 * once full async mode available, allow multiple gathers and publishes.
+  (again in future plans above.)
 
 
 
@@ -584,10 +592,12 @@ Probably need to be settled before having anyone else dive in.
   gathers for multiple upstreams, and get messages from whichever is
   live...
   also end up with a single loop that way... cleaner.
+  likely equivalent to async mode mentioned above.
 
 * *gather* as a way of separating having multiple input brokers.
   so could avoid needing a winnow, but just having a subscriber connect to 
   multiple upstreams directly.
+  likely equivalent to async, and multi-gather.
 
 * think about API by sub-classing flow... and having it auto-integrate
   with sr entry point... hmm... likely look at this when updating
@@ -597,10 +607,8 @@ Probably need to be settled before having anyone else dive in.
   where failed represents a permanent failure. and the other represents
   to be retried later.
 
-* log could read all the log files, so it would work with multiple
-  instances.
-
 * `MQTT issues <mqtt_issues.rst>`_
+
 
 FIXME/Deferred
 --------------
@@ -801,3 +809,4 @@ when other testing done.
 
 * shim library commands other than the one or two tested.
 
+* file partitioning.
