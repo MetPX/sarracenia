@@ -8,7 +8,17 @@
 sudo apt-key adv --keyserver "hkps.pool.sks-keyservers.net" --recv-keys "0x6B73A36E6026DFCA"
 sudo add-apt-repository -y ppa:ssc-hpc-chp-spc/metpx-daily
 sudo apt-get update
-sudo apt -y install rabbitmq-server erlang-nox sarrac librabbitmq4 libsarrac libsarrac-dev git
+sudo apt -y install rabbitmq-server erlang-nox sarrac librabbitmq4 libsarrac libsarrac-dev git python3-pip
+
+# to be able to build v3 packages:
+# assume on v03_wip branch... (git checkout v03_wip)
+#sudo apt -y install devscripts
+# needs to be run from root dir of cloned rep.
+#sudo apt -y build-dep .
+#debuild -us -c
+#dpkg -i ../the_package_built_by_debuild.deb
+#missing deps result...
+#sudo apt install -f 
 
 pip3 install -U pip
 pip3 install -e .
@@ -23,13 +33,15 @@ ssh -oStrictHostKeyChecking=no localhost "echo"
 echo
 
 # Setup basic configs
-mkdir -p ~/.config/sarra
+mkdir -p ~/.config/sarra ~/.config/sr3
 
 cat > ~/.config/sarra/default.conf << EOF
 declare env FLOWBROKER=localhost
 declare env SFTPUSER=${USER}
 declare env TESTDOCROOT=${HOME}/sarra_devdocroot
 EOF
+cp ~/.config/sarra/default.conf ~/.config/sr3
+
 
 ADMIN_PASSWORD=$(openssl rand -hex 6)
 OTHER_PASSWORD=$(openssl rand -hex 6)
@@ -45,6 +57,7 @@ amqps://anonymous:anonymous@dd2.weather.gc.ca
 amqps://anonymous:anonymous@hpfx.collab.science.gc.ca
 ftp://anonymous:anonymous@localhost:2121/
 EOF
+cp ~/.config/sarra/credentials.conf ~/.config/sr3
 
 cat > ~/.config/sarra/admin.conf << EOF
 cluster localhost
@@ -54,6 +67,7 @@ declare source tsource
 declare subscriber tsub
 declare subscriber anonymous
 EOF
+cp ~/.config/sarra/admin.conf ~/.config/sr3
 
 echo
 
