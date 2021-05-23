@@ -9,14 +9,15 @@ sudo apt-key adv --keyserver "hkps.pool.sks-keyservers.net" --recv-keys "0x6B73A
 sudo add-apt-repository -y ppa:ssc-hpc-chp-spc/metpx-daily
 sudo apt-get update
 sudo apt -y install rabbitmq-server erlang-nox sarrac librabbitmq4 libsarrac libsarrac-dev git python3-pip
+sudo apt -y install metpx-sr3c
 
 # to be able to build v3 packages:
 # assume on v03_wip branch... (git checkout v03_wip)
 #sudo apt -y install devscripts
 # needs to be run from root dir of cloned rep.
 #sudo apt -y build-dep .
-#debuild -us -c
-#dpkg -i ../the_package_built_by_debuild.deb
+#debuild -us -uc
+#dpkg -i ../metpx-sr*.deb
 #missing deps result...
 #sudo apt install -f 
 
@@ -39,6 +40,7 @@ cat > ~/.config/sarra/default.conf << EOF
 declare env FLOWBROKER=localhost
 declare env SFTPUSER=${USER}
 declare env TESTDOCROOT=${HOME}/sarra_devdocroot
+declare env MQP=amqp
 EOF
 cp ~/.config/sarra/default.conf ~/.config/sr3
 
@@ -99,5 +101,5 @@ echo
 # Configure users
 sr_audit --users foreground
 echo "dir: +${PWD}+"
-git clone https://github.com/MetPX/sr_insects
+git clone -b v03_wip https://github.com/MetPX/sr_insects
 
