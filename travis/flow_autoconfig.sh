@@ -19,7 +19,7 @@ sudo apt -y install metpx-sr3c
 #debuild -us -uc
 #dpkg -i ../metpx-sr*.deb
 #missing deps result...
-#sudo apt install -f 
+#sudo apt -y install -f 
 
 pip3 install -U pip
 pip3 install -e .
@@ -101,5 +101,5 @@ echo
 # Configure users
 sr_audit --users foreground
 echo "dir: +${PWD}+"
-git clone -b v03_wip https://github.com/MetPX/sr_insects
+git clone -b v03 https://github.com/MetPX/sr_insects
 
