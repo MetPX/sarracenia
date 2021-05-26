@@ -1,3 +1,10 @@
+metpx-sarracenia (2.21.05) UNRELEASED; urgency=medium
+
+  * hmm.. charset in ftp.. defaults to iso8859-1, changed to utf-8.
+    noticed caused some issues in newer tests that use accented characters. 
+
+ -- Peter Silva <peter@fractal>  Sat, 24 Apr 2021 12:52:19 -0400
+
 metpx-sarracenia (2.21.04) stable; urgency=medium
 
   * bugfix for regression, failure to use BASIC authentication on https sites. 
