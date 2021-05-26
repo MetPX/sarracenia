@@ -28,9 +28,9 @@ To hack on the sarracenia source, you need:
 
 after you have cloned the source code::
 
-    git clone https://github.com/MetPX/sarracenia sarracenia
-    git clone https://github.com/MetPX/sarrac sarrac
-    cd sarracenia
+    git clone -b v03_wip https://github.com/MetPX/sarracenia sr3
+    git clone -b v03 https://github.com/MetPX/sarrac sr3c
+    cd sr3
 
 The rest of the Guide assumes you are there.
 
@@ -65,13 +65,15 @@ for Francophones.)
 Where to Put Options 
 ~~~~~~~~~~~~~~~~~~~~
 
-Most options are documented in sr_subscribe(1), which is kind of a *parent* to all other consuming components.
-Any options used by multiple components should be documented there. Options which are unique to a
-single component should be documented in the man page for that component.
+Most options are documented in sr_subscribe(1), which is kind of a *parent* to 
+all other consuming components. Any options used by multiple components should
+be documented there. Options which are unique to a single component should be
+documented in the man page for that component.
 
-Where the default value for an option varies among components, each component's man page should indicate 
-the option's default for that component. Sr_sarra, sr_winnow, sr_shovel, and sr_report components which
-only exist because they use the base sr_subscribe with different defaults. There is no code difference
+Where the default value for an option varies among components, each component's
+man page should indicate the option's default for that component. Sr_sarra, 
+sr_winnow, sr_shovel, and sr_report components which only exist because they
+use the base sr_subscribe with different defaults. There is no code difference
 between them.
 
 
@@ -119,6 +121,25 @@ during development.
       Changing the default requires the removal and recreation of the resource.
       This has a major impact on processes...
 
+Local Installation
+~~~~~~~~~~~~~~~~~~
+
+There are many different ways to install python packages on a computer. Different developers
+will prefer different methods, and all the methods need to be tested prior to each release.
+
+* **Wheel** when people are running different operating systems (non-ubuntu, non-debian) people will be installing wheels, typically that have been uploaded to pypi.python.org.  On the other hand, it is a bit of a pain/noise to upload every development version, so we only upload releases, so testing of wheels is done by building local wheels. Need to build a new wheel every time a change is made.
+
+* **pip install (not -e)** would pull a wheel down from pypi.python.org. Generally not used during development of Sarracenia itself.
+
+* **pip install -e** ... lets you edit the source code of the installed package, ideal for debugging problems, because it allows live changes to the application without having to go through building and installing a new package.
+
+* **apt install** install debian package from repositories, similarly to pip install (not -e), normally dev snapshots are not uploaded to repositories, so while this would be the normal way for users of ubuntu servers, it is not available during development of the package itself.
+
+* **dpkg -i** builds a debian package for local installation. This is how packages are tested prior to upload to repositories.  It can also be used to support development (have to run dpkg -i for each package change.)
+
+The sr_insects tests invokes the version of metpx-sarracenia that is installed on the system,
+and not what is in the development tree.  It is necessary to install the package on 
+the system in order to have it run the sr_insects tests.
 
 Python Wheel
 ~~~~~~~~~~~~
@@ -128,6 +149,21 @@ For testing and development::
     python3 setup.py bdist_wheel
 
 Should build a wheel in the dist sub-directory.
+then as root install that new package::
+
+       pip3 install --upgrade ...<path>/dist/metpx*.whl
+
+Local Pip install
+~~~~~~~~~~~~~~~~~
+
+For testing and development::
+
+   pip3 install -e .
+   export PATH=${HOME}/.local/bin
+
+Using the local python package installer (PIP) to create a locally editable version.
+The above will install the package in ~/.local/bin... so need to ensure the path includes
+that directory.
 
 
 Debian/Ubuntu
@@ -141,6 +177,9 @@ This process builds a local .deb in the parent directory using standard debian m
     sudo apt-get install devscripts
     debuild -uc -us
     sudo dpkg -i ../<the package just built>
+
+which accomplishes the same thing using debian packaging.
+The options are detailed below:
 
 
 Committing Code
@@ -171,7 +210,7 @@ is more complicated than the previous one.
 
 There is a separate git repository containing the more complex tests https://github.com/MetPX/sr_insects
 
-A typical development workflow will be::
+A typical development workflow will be (Do not try this, it is just an overview of later steps)::
 
    git branch issueXXX
    git checkout issueXXX
@@ -183,7 +222,7 @@ A typical development workflow will be::
    sudo dpkg -i ../*.deb
    cd ..
 
-   git clone https://github.com/MetPX/sr_insects
+   git clone -b v03_wip https://github.com/MetPX/sr_insects
    cd sr_insects
    for test in unit static_flow dynamic_flow; do
       cd $test
@@ -373,29 +412,6 @@ to verify functionality on a variety of python version.  Consulte::
 for the latest test results.
 
 
-Local Installation on Workstation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The sr_insects tests invokes the version of metpx-sarracenia that is installed on the system,
-and not what is in the development tree.  It is necessary to install the package on 
-the system in order to have it run the sr_insects tests.
-
-In your development tree ...    
-One can either create a wheel by running either::
-
-       python3 setup.py bdist_wheel
-
-which creates a wheel package under dist/metpx*.whl,
-then as root install that new package::
-
-       pip3 install --upgrade ...<path>/dist/metpx*.whl
-
-or one can use debian packaging::
-
-       debuild -us -uc
-       sudo dpkg -i ../python3-metpx-...
-
-which accomplishes the same thing using debian packaging.
 
 
 Install Servers on Workstation
@@ -465,9 +481,18 @@ Install a minimal localhost broker and configure rabbitmq test users::
     No passwords or key files should be stored in the source tree, as part of a self-test
     suite.
 
-
 Setup Flow Test Environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Did the set up above work? the flow tests use sftp transfers to localhost, so need to confirm
+that ssh to localhost works::
+
+   ssh localhost ls
+
+This should run and complete.  If it prompts for a password, the flow tests will not work.
+check that the broker is working::
+
+   systemctl status rabbitmq-server
 
 One part of the flow test runs an sftp server, and uses sftp client functions.
 Need the following package for that::
@@ -484,7 +509,10 @@ The setup script starts a trivial web server, and ftp server, and a daemon that 
 It also tests the C components, which need to have been already installed as well 
 and defines some fixed test clients that will be used during self-tests::
 
-    cd sarracenia/test
+    cd 
+    git clone -b v03_wip https://github.com/MetPX/sr_insects
+    cd sr_insects
+    cd static_flow
     . ./flow_setup.sh
     
     blacklab% ./flow_setup.sh
@@ -571,9 +599,8 @@ As it runs the setup, it also executes all existing unit_tests.
 Only proceed to the flow_check tests if all the tests in flow_setup.sh pass.
 
 
-
-Run Dynamic Flow Test
-~~~~~~~~~~~~~~~~~~~~~
+Run Flow Test
+~~~~~~~~~~~~~
 
 The flow_check.sh script reads the log files of all the components started, and compares the number
 of messages, looking for a correspondence within +- 10%   It takes a few minutes for the
@@ -649,9 +676,10 @@ memory usage over time, and the housekeeping functions of on_heartbeat processin
 Flow Cleanup
 ~~~~~~~~~~~~
 
-When done testing, run the ./flow_cleanup.sh script, which will kill the running servers and daemons, and 
-delete all configuration files installed for the flow test, all queues, exchanges, and logs.  This also 
-needs to be done between each run of the flow test::
+When done testing, run the ./flow_cleanup.sh script, which will kill the
+running servers and daemons, and delete all configuration files installed for
+the flow test, all queues, exchanges, and logs. This also needs to be done
+between each run of the flow test::
   
   blacklab% ./flow_cleanup.sh
   Stopping sr...
@@ -754,12 +782,16 @@ needs to be done between each run of the flow test::
   Removing document root ( /home/peter/sarra_devdocroot )...
   Done!
 
+If the static_flow test works, then re-run the other tests: flakey_broker, 
+transform_flow, and dynamic_flow.
 
-Flow Test Length
-~~~~~~~~~~~~~~~~
+Dynamic Flow Test Length
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-The flow_test length defaults to 1000 files being flowed through the test cases.  when in rapid
-development, one can supply an argument to shorten that::
+While most tests have a fixed duration, the dynamic flow test queries a remote
+server and can run for any length desired. The dynamic flow_test length defaults
+to 1000 files being flowed through the test cases. When in rapid development, 
+one can supply an argument to shorten that::
 
   ./flow_test 200
 

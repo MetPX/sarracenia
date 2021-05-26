@@ -9,21 +9,10 @@ sudo apt-key adv --keyserver "hkps.pool.sks-keyservers.net" --recv-keys "0x6B73A
 sudo add-apt-repository -y ppa:ssc-hpc-chp-spc/metpx-daily
 sudo apt-get update
 sudo apt -y install rabbitmq-server erlang-nox sarrac librabbitmq4 libsarrac libsarrac-dev git python3-pip
-sudo apt -y install metpx-sr3c
-
-# to be able to build v3 packages:
-# assume on v03_wip branch... (git checkout v03_wip)
-#sudo apt -y install devscripts
-# needs to be run from root dir of cloned rep.
-#sudo apt -y build-dep .
-#debuild -us -uc
-#dpkg -i ../metpx-sr*.deb
-#missing deps result...
-#sudo apt -y install -f 
 
 pip3 install -U pip
 pip3 install -e .
-pip3 install pyftpdlib paramiko 
+pip3 install pyftpdlib paramiko net-tools
 echo
 
 # Setup autossh login
@@ -101,5 +90,5 @@ echo
 # Configure users
 sr_audit --users foreground
 echo "dir: +${PWD}+"
-git clone -b v03 https://github.com/MetPX/sr_insects
+git clone -b v03_wip https://github.com/MetPX/sr_insects
 
