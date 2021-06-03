@@ -210,7 +210,8 @@ is more complicated than the previous one.
 
 There is a separate git repository containing the more complex tests https://github.com/MetPX/sr_insects
 
-A typical development workflow will be (Do not try this, it is just an overview of later steps)::
+A typical development workflow will be (Do not try this, this is just an overview of the steps that will be 
+explained in detail in following sections)::
 
    git branch issueXXX
    git checkout issueXXX
@@ -224,7 +225,9 @@ A typical development workflow will be (Do not try this, it is just an overview 
 
    git clone -b v03_wip https://github.com/MetPX/sr_insects
    cd sr_insects
-   for test in unit static_flow dynamic_flow; do
+   sr3 status  # make sure there are no components configured before you start.
+               # test results will likely be skewed otherwise.
+   for test in unit static_flow flakey_browser transform_flow dynamic_flow; do
       cd $test
       ./flow_setup.sh  # *starts the flows*
       ./flow_limit.sh  # *stops the flows after some period (default: 1000) *
@@ -235,6 +238,7 @@ A typical development workflow will be (Do not try this, it is just an overview 
 
    #assuming all the tests pass.
    git commit -a  # on the branch...
+
 
 Unit
 ~~~~
@@ -781,6 +785,12 @@ between each run of the flow test::
   rm: cannot remove '/home/peter/.cache/sarra/log/sr_audit_f00.log': No such file or directory
   Removing document root ( /home/peter/sarra_devdocroot )...
   Done!
+
+After the flow_cleanup.sh, to check that a test has completed, use::
+
+   sr status 
+
+which should show that there are no active configurations.
 
 If the static_flow test works, then re-run the other tests: flakey_broker, 
 transform_flow, and dynamic_flow.
