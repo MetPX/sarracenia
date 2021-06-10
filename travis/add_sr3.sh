@@ -9,6 +9,11 @@ sudo apt -y install metpx-sr3c
 sudo apt -y install devscripts
 # needs to be run from root dir of cloned rep.
 sudo apt -y build-dep .
+
+# 18.04 paho-mqtt  library is too old, need >=1.5
+sudo apt remove python3-paho-mqtt
+sudo apt install python3-pip
+sudo pip3 install paho-mqtt
 debuild -us -uc
 sudo dpkg -i ../metpx-sr*.deb
 #missing deps result...
