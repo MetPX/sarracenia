@@ -10,7 +10,7 @@ sudo apt -y install devscripts
 # needs to be run from root dir of cloned rep.
 sudo apt -y build-dep .
 debuild -us -uc
-dpkg -i ../metpx-sr*.deb
+sudo dpkg -i ../metpx-sr*.deb
 #missing deps result...
 sudo apt -y install -f 
 
