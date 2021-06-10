@@ -141,9 +141,37 @@ The sr_insects tests invokes the version of metpx-sarracenia that is installed o
 and not what is in the development tree.  It is necessary to install the package on 
 the system in order to have it run the sr_insects tests.
 
+Prepare a Vanilla VM
+~~~~~~~~~~~~~~~~~~~~
+
+This section describes creating a test environment for use in a virtual machine. One way to build
+a virtual machine is to use multipass (https://multipass.run) Assuming it is installed, one can
+create a vm with::
+
+ multipass launch --name flow
+ multipass shell flow
+
+This will provide a shell in an initialized VM.  To configure it::
+
+  git clone -b v03_wip https://github.com/MetPX/sarracenia sr3
+  cd sr3
+
+There are scripts that automate the installation of necessary environment to be able to run tests::
+
+  travis/flow_autoconfig.sh
+  travis/add_sr3.sh
+
+You should be able to see an empty configuration::
+
+  sr3 status
+
+sr3c and sr3 are now installed, and should be ready to run a flow test from the sr_insects module.
+
+
 Python Wheel
 ~~~~~~~~~~~~
 
+For local installation on a computer, using a python wheel.
 For testing and development::
 
     python3 setup.py bdist_wheel
@@ -156,6 +184,7 @@ then as root install that new package::
 Local Pip install
 ~~~~~~~~~~~~~~~~~
 
+For local installation on a computer, using a pip
 For testing and development::
 
    pip3 install -e .
@@ -169,6 +198,7 @@ that directory.
 Debian/Ubuntu
 ~~~~~~~~~~~~~
 
+For local installation on a computer, using a debian package.
 This process builds a local .deb in the parent directory using standard debian mechanisms.
 - Check the **build-depends** line in *debian/control* for dependencies that might be needed to build from source.
 - The following steps will build sarracenia but not sign the changes or the source package::
@@ -421,6 +451,11 @@ for the latest test results.
 Install Servers on Workstation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+To prepare a computer to run the flow test, one must install some server 
+software and configurations. This same work is done by travis/flow_autoconfig.sh
+which is run in `Prepare a Vanilla VM`_ but if you need to configure it 
+manually, below is the process.
+
 Install a minimal localhost broker and configure rabbitmq test users::
 
     sudo apt-get install rabbitmq-server
@@ -488,7 +523,7 @@ Install a minimal localhost broker and configure rabbitmq test users::
 Setup Flow Test Environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Did the set up above work? the flow tests use sftp transfers to localhost, so need to confirm
+Once the server environment is established, the flow tests use sftp transfers to localhost, so need to confirm
 that ssh to localhost works::
 
    ssh localhost ls
@@ -597,7 +632,6 @@ and defines some fixed test clients that will be used during self-tests::
     OK: sr start was successful
     Overall PASSED 4/4 checks passed!
     blacklab% 
-
 
 As it runs the setup, it also executes all existing unit_tests.
 Only proceed to the flow_check tests if all the tests in flow_setup.sh pass.
