@@ -165,8 +165,10 @@ You should be able to see an empty configuration::
 
   sr3 status
 
-sr3c and sr3 are now installed, and should be ready to run a flow test from the sr_insects module.
+sr3c and sr3 are now installed, and should be ready to run a flow test from the sr_insects module, which
+has also been cloned:
 
+  cd ../sr_insects
 
 Python Wheel
 ~~~~~~~~~~~~
