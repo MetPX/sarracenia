@@ -56,18 +56,23 @@ class MDelayLatest(FlowCB):
                   if m1['relPath'] == m2['relPath']:
                        logger.info('REPLACED')
                        new_ok_delay.append(m1)
+                       worklist.rejected.append(m2)
                        wait = True
                        break
                   else:
                        new_ok_delay.append(m2)
-                       new_incoming.add(m1)
+                       #new_incoming.append(m1)
              self.ok_delay=new_ok_delay
 
              # If it's new, put it in delay list too.
+             # else if replacing a message in delay, do nothing
+             # else put it back to incoming
              if not wait and elapsedtime < self.o.mdelay:
                   self.ok_delay.append(m1)
+             elif wait:
+                 pass
              else:
-                  new_incoming.add(m1)
+                  new_incoming.append(m1)
 
         worklist.incoming=new_incoming
 
@@ -83,6 +88,6 @@ class MDelayLatest(FlowCB):
                   logger.info('OK')
                   worklist.incoming.append(m1)
              else:
-                  new_ok_delay.add(m1)
+                  new_ok_delay.append(m1)
         self.ok_delay=new_ok_delay
 
