@@ -144,11 +144,15 @@ class sr_poll(sr_post):
             self.pulls[maskDir].append(mask)
 
 
-    def _compare_file_dates(self, date, date_limit):
+    def _file_date_exceed_limit(self, date, date_limit):
         """comments:
-           FIXME:files with future dates -> could they be > date_limit
-           Fn description:
-            french dates
+            This method compares today's date to the file's date by creating a date time object
+            Three formats are acceptd so far, more can be added if needed (format on https://strftime.org/ )
+            Files with future dates are processed as long as the (future date - todays date) is < date_limit.
+            FIXME: french input like Fev will not work - only Feb is accepted for the month
+            If year is not provided, this means that the file is < 6 months old, so depending on todays date,
+                assign appropriate year (for jan-jun -> assign prev year, for jul-dec assign current year)
+            Note: is it possible for a file to be more than 6 months old and have the format Mo Day TIME ? (problematic)
         """
         current_date = datetime.datetime.now()
         try:
@@ -157,18 +161,24 @@ class sr_poll(sr_post):
                 file_date = date_temp.replace(year=(current_date.year - 1))
             else:
                 file_date = date_temp.replace(year=current_date.year)
+            self.logger.info("File date is: " + str(file_date) +
+                             " > File is " + str(abs((file_date - current_date).days))+" days old")
             return abs((file_date - current_date).days) < date_limit
-        except ValueError as e:
+        except Exception as e:
             try:
                 date_temp = datetime.datetime.strptime(date, '%b %d %H:%M')
                 if date_temp.month - current_date.month >= 6:
                     file_date = date_temp.replace(year=(current_date.year - 1))
                 else:
                     file_date = date_temp.replace(year=current_date.year)
+                self.logger.info("File date is: " + str(file_date) +
+                                 " > File is " + str(abs((file_date - current_date).days))+" days old")
                 return abs((file_date - current_date).days) < date_limit
             except Exception as e:
                 try:
                     file_date = datetime.datetime.strptime(date, '%b %d %Y')
+                    self.logger.info("File date is: " + str(file_date) +
+                                     " > File is " + str(abs((file_date - current_date).days)) + " days old")
                     return abs((file_date - current_date).days) < date_limit
                 except Exception as e:
                     warning_msg = str(e)
@@ -195,42 +205,37 @@ class sr_poll(sr_post):
         desclst = {}
 
         for f in new_lst:
-
             # self.logger.debug("checking %s (%s)" % (f,ls[f]))
-
             try:
                 str1 = ls[f]
-                #ls[f] format controlled by online plugin
-                #line-mode
                 str2 = str1.split()
-                #random format for the date. online plugin.
                 #specify input for this routine.
+                # ls[f] format controlled by online plugin (line_mode.py)
+                # this format could change depending on plugin
+                # line_mode.py format "-rwxrwxr-x 1 1000 1000 8123 24 Mar 22:54 2017-03-25-0254-CL2D-AUTO-minute-swob.xml"
                 date = str2[5] + " " + str2[6] + " " + str2[7]
-                self.logger.warning("CLEAS DEBUG: this file should be processed")
-                if self._compare_file_dates(date, 60):
-                    self.logger.warning("CLEAS DEBUG: this file should be processed")
+
+                if self._file_date_exceed_limit(date, 60):
+                    self.logger.info("File should be processed")
                     # execute rest of code
+                    # keep a newer entry
+                    if not f in old_ls:
+                        # self.logger.debug("IS NEW %s" % f)
+                        filelst.append(f)
+                        desclst[f] = ls[f]
+                        continue
+
+                    # keep a modified entry
+                    if ls[f] != old_ls[f]:
+                        # self.logger.debug("IS DIFFERENT %s from (%s,%s)" % (f,old_ls[f],ls[f]))
+                        filelst.append(f)
+                        desclst[f] = ls[f]
+                        continue
                 else:
-                    self.logger.warning("CLEAS DEBUG: this file should be skiped")
+                    self.logger.info("File should be skiped")
                     # ignore rest of code and re iterate
             except:
                 pass
-
-
-            # keep a newer entry
-            if not f in old_ls:
-                # self.logger.debug("IS NEW %s" % f)
-                filelst.append(f)
-                desclst[f] = ls[f]
-                continue
-
-            # keep a modified entry
-            if ls[f] != old_ls[f]:
-                # self.logger.debug("IS DIFFERENT %s from (%s,%s)" % (f,old_ls[f],ls[f]))
-                filelst.append(f)
-                desclst[f] = ls[f]
-                continue
-
             # self.logger.debug("IS IDENTICAL %s" % f)
 
         return filelst, desclst
