@@ -195,7 +195,7 @@ class sr_GlobalState:
                 self.auditors += 1
             else:
                 self.procs[p['pid']]['claimed'] =   (p['name'][-4:] == 'post') or \
-                    any( item in [ 'declare', 'foreground', 'sanity', 'setup', 'status' ] for item in  p['cmdline'] )
+                    any( item in [ 'declare', 'edit', 'foreground', 'sanity', 'setup', 'status' ] for item in  p['cmdline'] )
 
     def read_proc_file(self, File="procs.json"):
         """
