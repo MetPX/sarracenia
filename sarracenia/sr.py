@@ -1690,7 +1690,7 @@ class sr_GlobalState:
                     admin_urlstr += ":" + str(admin_url.port)
                 a = 'admin: %s' % admin_urlstr
             else:
-                a = ''
+                a = 'admin: none'
             print('\nbroker: %s  %s' % (h, a))
             print('\nexchanges: ', end='')
             for x in self.exchange_summary[h]:
