@@ -691,13 +691,13 @@ class sr_GlobalState:
                     if type(o.admin) == str:
                         o.admin = urllib.parse(o.admin)
                     host = self._init_broker_host(o.admin.netloc)
+                    self.brokers[host]['admin'] = o.admin
                     if hasattr(o, 'declared_exchanges'):
                         for x in o.declared_exchanges:
                             if not x in self.brokers[host]['exchanges']:
                                 self.brokers[host]['exchanges'][x] = [
                                     'declared'
                                 ]
-                                self.brokers[host]['admin'] = o.admin
                             else:
                                 if not 'declared' in self.brokers[host][
                                         'exchanges'][x]:
