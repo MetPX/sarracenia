@@ -1097,6 +1097,9 @@ class Flow:
                     if os.path.isfile(new_file):
                         os.remove(new_file)
                     os.rename(new_inflight_path, new_file)
+            elif len_written < 0:
+                logger.error( "failed to download %s" % new_file )
+                return False
             else:
                 logger.error(
                     'incomplete download only %d of expected %d bytes for %s' %
