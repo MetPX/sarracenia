@@ -347,7 +347,6 @@ class sr_GlobalState:
                 other_c_dir = other_config_dir + os.sep + c
                 if not os.path.exists(other_c_dir):
                     os.mkdir(other_c_dir)
-                self.states[c] = {}
                 for cfg in os.listdir():
                     if cfg[0] == '.': continue
                     to = other_c_dir + os.sep + cfg
@@ -374,7 +373,6 @@ class sr_GlobalState:
                 other_c_dir = other_cache_dir + os.sep + c
                 if not os.path.exists(other_c_dir):
                     os.mkdir(other_c_dir)
-                self.states[c] = {}
                 for cfg in os.listdir():
                     if cfg[0] == '.': continue
                     os.chdir(cfg)
@@ -406,8 +404,6 @@ class sr_GlobalState:
         for c in self.components:
             if os.path.isdir(c):
                 os.chdir(c)
-                if not c in self.states:
-                    self.states[c] = {}
                 for cfg in os.listdir():
                     if os.path.isdir(cfg):
                         os.chdir(cfg)
@@ -473,6 +469,9 @@ class sr_GlobalState:
 
     def _read_states(self):
         self.states = {}
+        for c in self.components:
+            self.states[c] = {}
+
         self._read_state_dir(self.user_cache_dir)
         self._read_state_dir(self.user_cache_dir + os.sep + self.hostdir)
 
