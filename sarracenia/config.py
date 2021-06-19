@@ -28,6 +28,22 @@ import urllib, urllib.parse
 
 from random import randint
 
+if sys.version_info[0] >= 3 and sys.version_info[1] < 8:
+    """
+        'extend' action not included in argparse prior to python 3.8
+        https://stackoverflow.com/questions/41152799/argparse-flatten-the-result-of-action-append
+    """
+ 
+    class ExtendAction(argparse.Action):
+
+        def __call__(self, parser, namespace, values, option_string=None):
+            items = getattr(namespace, self.dest) or []
+            items.extend(values)
+            setattr(namespace, self.dest, items)
+
+
+
+
 import sarracenia
 from sarracenia import durationToSeconds, chunksize_from_str
 import sarracenia.credentials
@@ -1761,6 +1777,9 @@ class Config:
              description='version: %s\nSarracenia flexible tree copy entry point' % sarracenia.__version__ ,\
              formatter_class=argparse.ArgumentDefaultsHelpFormatter )
 
+        if sys.version_info[0] >= 3 and sys.version_info[1] < 8:
+            parser.register('action', 'extend', ExtendAction)
+        
         parser.add_argument('--accept_unmatched',
                             default=self.accept_unmatched,
                             type=bool,
