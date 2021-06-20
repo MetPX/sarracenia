@@ -16,9 +16,11 @@ pip3 install pyftpdlib paramiko net-tools
 echo
 
 # Setup autossh login
-rm ~/.ssh/id_rsa
-ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
+if [ ! -f ~/.ssh/id_rsa ]; then
+    ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
+fi
 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+
 ssh -oStrictHostKeyChecking=no localhost "echo"
 echo
 
