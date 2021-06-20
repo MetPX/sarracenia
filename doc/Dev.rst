@@ -148,7 +148,7 @@ This section describes creating a test environment for use in a virtual machine.
 a virtual machine is to use multipass (https://multipass.run) Assuming it is installed, one can
 create a vm with::
 
- multipass launch --name flow
+ multipass -m 4G launch --name flow
  multipass shell flow
 
 This will provide a shell in an initialized VM.  To configure it::
