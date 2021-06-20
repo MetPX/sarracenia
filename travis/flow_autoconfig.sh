@@ -19,13 +19,16 @@ echo
 ssh-keygen -t rsa -N "" -f ~/.ssh/id_flow
 cat ~/.ssh/id_flow.pub >> ~/.ssh/authorized_keys
 
-cat >>~/.ssh/config <<EOT
-Host localhost
-   IdentitiesOnly Yes
-   StrictHostKeyChecking No
-   IdentityFile ${HOME}/.ssh/id_flow
-EOT
+#cat >>~/.ssh/config <<EOT
+#Host localhost
+#   IdentitiesOnly Yes
+#   StrictHostKeyChecking No
+#   IdentityFile ${HOME}/.ssh/id_flow
+#EOT
 
+if [ ! -f ~/.ssh/id_rsa ]; then
+   cp ~/.ssh/id_flow ~/.ssh/id_rsa
+fi
 
 
 # Setup basic configs
