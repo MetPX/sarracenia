@@ -4,6 +4,9 @@
 # Install and configure dependencies
 sudo apt -y install metpx-sr3c
 
+# recommends don't seem to be showing up... FIXM.. should be a way to explicitly install recommends.
+sudo apt install wget ncftp
+
 # to be able to build v3 packages:
 # assume on v03_wip branch... (git checkout v03_wip)
 sudo apt -y install devscripts
@@ -11,6 +14,7 @@ sudo apt -y install devscripts
 sudo apt -y build-dep .
 
 # 18.04 paho-mqtt  library is too old, need >=1.5
+
 sudo apt remove python3-paho-mqtt
 sudo apt install python3-pip
 sudo pip3 install paho-mqtt
