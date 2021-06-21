@@ -154,6 +154,7 @@ class sr_poll(sr_post):
                 assign appropriate year (for jan-jun -> assign prev year, for jul-dec assign current year)
             Note: is it possible for a file to be more than 6 months old and have the format Mo Day TIME ? (problematic)
         """
+        date_limit=int(date_limit)
         current_date = datetime.datetime.now()
         try:
             date_temp = datetime.datetime.strptime(date, '%d %b %H:%M')
@@ -214,8 +215,7 @@ class sr_poll(sr_post):
                 # this format could change depending on plugin
                 # line_mode.py format "-rwxrwxr-x 1 1000 1000 8123 24 Mar 22:54 2017-03-25-0254-CL2D-AUTO-minute-swob.xml"
                 date = str2[5] + " " + str2[6] + " " + str2[7]
-
-                if self._file_date_exceed_limit(date, 60):
+                if self._file_date_exceed_limit(date, self.file_date_limit):
                     self.logger.info("File should be processed")
                     # execute rest of code
                     # keep a newer entry
@@ -232,7 +232,7 @@ class sr_poll(sr_post):
                         desclst[f] = ls[f]
                         continue
                 else:
-                    self.logger.info("File should be skiped")
+                    self.logger.info("File should be skipped")
                     # ignore rest of code and re iterate
             except:
                 pass
