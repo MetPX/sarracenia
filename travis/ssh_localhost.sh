@@ -22,4 +22,3 @@ else
   echo "ssh to localhost already works. yay!"
 fi
 
-

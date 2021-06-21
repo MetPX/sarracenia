@@ -149,6 +149,21 @@ a virtual machine is to use multipass (https://multipass.run) Assuming it is ins
 create a vm with::
 
  multipass -m 4G launch --name flow
+
+need to have ssh localhost work in the multipass container.  Can do that by copying multipass
+private key into the container::
+
+ fractal% multipass list                                                         
+ Name                    State             IPv4             Image
+ primary                 Stopped           --               Ubuntu 20.04 LTS
+ flow                    Running           10.23.119.56     Ubuntu 20.04 LTS
+ keen-crow               Running           10.23.119.5      Ubuntu 20.04 LTS
+ fractal% 
+
+ fractal% sudo scp -i /var/snap/multipass/common/data/multipassd/ssh-keys/id_rsa /var/snap/multipass/common/data/multipassd/ssh-keys/id_rsa ubuntu@10.23.119.56:/home/ubuntu/.ssh/id_rsa                                                                                    100% 1704     2.7MB/s   00:00    
+ fractal% 
+
+
  multipass shell flow
 
 This will provide a shell in an initialized VM.  To configure it::
