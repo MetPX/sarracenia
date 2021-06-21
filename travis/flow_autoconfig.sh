@@ -13,12 +13,6 @@ sudo apt -y install rabbitmq-server erlang-nox sarrac librabbitmq4 libsarrac lib
 pip3 install -U pip
 pip3 install -e .
 pip3 install pyftpdlib paramiko net-tools
-echo
-
-if [ ! -f ~/.ssh/id_rsa ]; then
-   cp ~/.ssh/id_flow ~/.ssh/id_rsa
-fi
-
 
 # Setup basic configs
 mkdir -p ~/.config/sarra ~/.config/sr3
