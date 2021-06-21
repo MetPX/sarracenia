@@ -160,14 +160,20 @@ private key into the container::
  keen-crow               Running           10.23.119.5      Ubuntu 20.04 LTS
  fractal% 
 
- fractal% sudo scp -i /var/snap/multipass/common/data/multipassd/ssh-keys/id_rsa /var/snap/multipass/common/data/multipassd/ssh-keys/id_rsa ubuntu@10.23.119.56:/home/ubuntu/.ssh/id_rsa                                                                                    100% 1704     2.7MB/s   00:00    
- fractal% 
+Weird issues with ssh keys not being interpreted properly by paramiko, work around
+( https://stackoverflow.com/questions/54612609/paramiko-not-a-valid-rsa-private-key-file )
+::
 
+ fractal% sudo cat /var/snap/multipass/common/data/multipassd/ssh-keys/id_rsa | sed 's/BEGIN .*PRIVATE/BEGIN RSA PRIVATE/;s/END .*PRIVATE/END RSA PRIVATE/' >id_rsa_container
+ scp -i id_rsa_container id_rsa_container ubuntu@10.23.119.175:/home/ubuntu/.ssh/id_rsa
+                                                                   100% 1704     2.7MB/s   00:00    
 
+ 
  multipass shell flow
 
 This will provide a shell in an initialized VM.  To configure it::
 
+ 
   git clone -b v03_wip https://github.com/MetPX/sarracenia sr3
   cd sr3
 
