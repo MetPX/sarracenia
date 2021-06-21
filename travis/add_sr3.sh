@@ -5,7 +5,7 @@
 sudo apt -y install metpx-sr3c
 
 # recommends don't seem to be showing up... FIXM.. should be a way to explicitly install recommends.
-sudo apt install wget ncftp
+sudo apt -y install wget ncftp
 
 # to be able to build v3 packages:
 # assume on v03_wip branch... (git checkout v03_wip)
