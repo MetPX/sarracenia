@@ -194,8 +194,8 @@ has also been cloned:
 Python Wheel
 ~~~~~~~~~~~~
 
-For local installation on a computer, using a python wheel.
-For testing and development::
+If you have not used add_sr3.sh (which builds a debian package), then one can use this procedure
+for local installation on a computer with a python wheel for testing and development::
 
     python3 setup.py bdist_wheel
 
