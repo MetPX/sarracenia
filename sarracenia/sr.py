@@ -1467,6 +1467,13 @@ class sr_GlobalState:
             (outs, errs) = p.communicate()
             print(outs.decode('utf8'))
 
+    def _kill( pid, sig ):
+        try:
+           os.kill(pid, sig)
+        except Exception as ex:
+           logger.warning('sending kill signal to pid:%s failed: %s' % ( pid, ex.reason))
+ 
+
     def sanity(self):
         """ Run sanity by finding and starting missing instances
 
@@ -1488,7 +1495,7 @@ class sr_GlobalState:
                 print(
                     "pid: %s-%s does not match any configured instance, sending it TERM"
                     % (pid, self.procs[pid]['cmdline'][0:5]))
-                os.kill(pid, signal.SIGTERM)
+                _kill(pid, signal.SIGTERM)
 
     def start(self):
         """ Starting all components
@@ -1539,7 +1546,7 @@ class sr_GlobalState:
         if ('audit' in self.filtered_configurations) and self.auditors > 0:
             for p in self.procs:
                 if 'audit' in self.procs[p]['name']:
-                    os.kill(p, signal.SIGTERM)
+                    _kill(p, signal.SIGTERM)
                     print('.', end='', flush=True)
                     pcount += 1
 
@@ -1553,7 +1560,7 @@ class sr_GlobalState:
                     # print( "for %s/%s - %s os.kill( %s, SIGTERM )" % \
                     #    ( c, cfg, i, self.states[c][cfg]['instance_pids'][i] ) )
                     if self.states[c][cfg]['instance_pids'][i] in self.procs:
-                        os.kill(self.states[c][cfg]['instance_pids'][i],
+                        _kill(self.states[c][cfg]['instance_pids'][i],
                                 signal.SIGTERM)
                         print('.', end='', flush=True)
                         pcount += 1
@@ -1570,7 +1577,7 @@ class sr_GlobalState:
                     print(
                         "pid: %s-%s does not match any configured instance, sending it TERM"
                         % (pid, self.procs[pid]['cmdline'][0:5]))
-                    os.kill(pid, signal.SIGTERM)
+                    _kill(pid, signal.SIGTERM)
 
             ttw = 1 << attempts
             print(
@@ -1600,7 +1607,7 @@ class sr_GlobalState:
         if ('audit' in self.filtered_configurations) and self.auditors > 0:
             for p in self.procs:
                 if 'audit' in p['name']:
-                    os.kill(p, signal.SIGKILL)
+                    _kill(p, signal.SIGKILL)
 
         for f in self.filtered_configurations:
             if f == 'audit': continue
@@ -1608,9 +1615,9 @@ class sr_GlobalState:
             if self.configs[c][cfg]['status'] in ['running', 'partial']:
                 for i in self.states[c][cfg]['instance_pids']:
                     if self.states[c][cfg]['instance_pids'][i] in self.procs:
-                        print("os.kill( %s, SIGKILL )" %
+                        print("_kill( %s, SIGKILL )" %
                               self.states[c][cfg]['instance_pids'][i])
-                        os.kill(self.states[c][cfg]['instance_pids'][i],
+                        _kill(self.states[c][cfg]['instance_pids'][i],
                                 signal.SIGKILL)
                         print('.', end='')
 
@@ -1619,7 +1626,7 @@ class sr_GlobalState:
                 print(
                     "pid: %s-%s does not match any configured instance, would kill"
                     % (pid, self.procs[pid]['cmdline']))
-                os.kill(pid, signal.SIGKILL)
+                _kill(pid, signal.SIGKILL)
 
         print('Done')
         print('Waiting again...')
