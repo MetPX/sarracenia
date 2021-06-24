@@ -218,6 +218,9 @@ The above will install the package in ~/.local/bin... so need to ensure the path
 that directory.
 
 
+
+
+
 Debian/Ubuntu
 ~~~~~~~~~~~~~
 
@@ -1336,14 +1339,80 @@ Example::
 Building an RPM
 +++++++++++++++
 
+This process is currently a bit clumsy, but it can provide usable RPM packages.
+Example of creating a multipass image for fedora to build with::
+
+  fractal% multipass launch -m 8g --name fed34 https://mirror.csclub.uwaterloo.ca/fedora/linux/releases/34/Cloud/x86_64/images/Fedora-Cloud-Base-34-1.2.x86_64.raw.xz
+  Launched: fed34                                                                 
+  fractal%
+
+Based on https://www.redhat.com/sysadmin/create-rpm-package ...  install build-dependencies::
+
+  sudo dnf install -y rpmdevtools rpmlint git
+  git clone -b v03_wip https://github.com/MetPX/sarracenia sr3
+
 One can build a very limited sort of rpm package on an rpm based distro by
 using the python distutils::
 
    python3 setup.py bdist_rpm
 
-Unfortunately, it doesn't add proper dependencies, so one must install those 
-manually. So it will help if you must use .rpm's for compliance reasons, but
-it isn't really properly done.  `Help Wanted  <https://github.com/MetPX/sarracenia/issues57>`_
+This will fail trying to open a non-existent CHANGES.txt... a strange incompatibility. So 
+
+  **comment out the two lines in setup.py used to set the long_description**, 
+
+these lines::
+   #long_description=(read('README.rst') + '\n\n' + read('CHANGES.rst') +
+   #                   '\n\n' + read('AUTHORS.rst')),
+ 
+and then the rpm build will complete. Unfortunately, it doesn't add proper dependencies, so 
+one can install those manually.  
+
+A way of addressing the dependency problem  is to decode the options from the debian/control::
+
+   [ubuntu@fed34 sr3]$ grep Recommends debian/control | sed 's/Recommends: //;s/ //g'
+   ncftp,wget
+   [ubuntu@fed34 sr3]$ 
+
+and repeat with the setup.py file...  (note: setup.py does not want spaces around versions for 
+python packages, but bdist_rpm option requires them, so fix that... )::
+
+   [ubuntu@fed34 sr3]$  tail -4 setup.py |  egrep -v '\[' | egrep -v ']' | tr '\n' ' ' | sed 's/ *//g;s/>=/ >= /g'
+   "amqp","appdirs","watchdog","netifaces","humanize","jsonpickle","paho-mqtt >= 1.5.1","paramiko","psutil >= 5.3.0"[ubuntu@fed34 sr3]$ 
+   [ubuntu@fed34 sr3]$ 
+
+then copy/paste the dependencies into the rpm building line::
+
+   python3 setup.py bdist_rpm --requires=ncftp,wget,"amqp","appdirs","watchdog","netifaces","humanize","jsonpickle","paho-mqtt >= 1.5.1","paramiko","psutil >= 5.3.0"
+
+One can check if the dependencies are there like so::
+  
+  [ubuntu@fed34 sr3]$ rpm -qp dist/metpx-sr3-3.0.6-1.noarch.rpm --requires
+  /usr/bin/python3
+  ncftp
+  python3-amqp
+  python3-appdirs
+  python3-humanize
+  python3-jsonpickle
+  python3-netifaces
+  python3-paho-mqtt >= 1.5.1 
+  python3-paramiko
+  python3-psutil >= 5.3.0
+  python3-watchdog
+  rpmlib(CompressedFileNames) <= 3.0.4-1
+  rpmlib(FileDigests) <= 4.6.0-1
+  rpmlib(PartialHardlinkSets) <= 4.0.4-1
+  rpmlib(PayloadFilesHavePrefix) <= 4.0-1
+  rpmlib(PayloadIsZstd) <= 5.4.18-1
+  wget
+  [ubuntu@fed34 sr3]$
+
+You can see all of the prefixed python3 dependencies required, as well as the recommended binary accellerator packages
+are listed. Then if you install with dnf install, it will pull them all in.  Unfortunately, this method does not allow
+the specification of version of the python dependencies which are stripped out. on Fedora 34, this is not a problem,
+as all versions are new enough.  Such a package should install well.
+
+a bit inelegant, and not sure if it will work with older versions:
+`Help Wanted  <https://github.com/MetPX/sarracenia/issues57>`_
 
 
 github
