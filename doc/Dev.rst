@@ -1376,13 +1376,13 @@ A way of addressing the dependency problem  is to decode the options from the de
 and repeat with the setup.py file...  (note: setup.py does not want spaces around versions for 
 python packages, but bdist_rpm option requires them, so fix that... )::
 
-   [ubuntu@fed34 sr3]$  tail -4 setup.py |  egrep -v '\[' | egrep -v ']' | tr '\n' ' ' | sed 's/ *//g;s/>=/ >= /g'
-   "amqp","appdirs","watchdog","netifaces","humanize","jsonpickle","paho-mqtt >= 1.5.1","paramiko","psutil >= 5.3.0"[ubuntu@fed34 sr3]$ 
+   [ubuntu@fed34 sr3]$ tail -4 setup.py |  egrep -v '\[' | egrep -v ']' | tr '\n' ' ' | sed 's/ *//g;s/>=/ >= /g;s/^"/"python3-/;s/,"/,"python3-/g'
+   "python3-amqp","python3-appdirs","python3-watchdog","python3-netifaces","python3-humanize","python3-jsonpickle","python3-paho-mqtt >= 1.5.1","python3-paramiko","python3-psutil >= 5.3.0"
    [ubuntu@fed34 sr3]$ 
 
 then copy/paste the dependencies into the rpm building line::
 
-   python3 setup.py bdist_rpm --requires=ncftp,wget,"amqp","appdirs","watchdog","netifaces","humanize","jsonpickle","paho-mqtt >= 1.5.1","paramiko","psutil >= 5.3.0"
+   python3 setup.py bdist_rpm --requires=ncftp,wget,"python3-amqp","python3-appdirs","python3-watchdog","python3-netifaces","python3-humanize","python3-jsonpickle","python3-paho-mqtt >= 1.5.1","python3-paramiko","python3-psutil >= 5.3.0"
 
 One can check if the dependencies are there like so::
   
