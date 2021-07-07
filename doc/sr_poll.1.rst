@@ -93,7 +93,7 @@ These options set what files the user wants to be notified for and where
 - **reject    <regexp pattern> (optional)**
 - **chmod     <integer>        (default: 0o400)**
 - **poll_without_vip  <boolean> (default: True)**
-- **file_time_limit <integer>   (default 3600)**
+- **file_time_limit <integer>   (default 60d)**
 
 The option *filename* can be used to set a global rename to the products.
 Ex.:
