@@ -96,7 +96,7 @@ notifié et où il doit être notifié il sera placé, et sous quel nom.
 - **reject    <patron regexp> (optionnel)**
 - **chmod     <integer>        (défaut: 0o400)**
 - **poll_without_vip <on|off>  (défaut: on)**
-- **file_time_limit <integer> (défaut: 3600)**
+- **file_time_limit <integer> (défaut: 60d)**
 
 L'option *filename* peut être utilisée pour définir un renommage global des produits.
 Ex.. :
