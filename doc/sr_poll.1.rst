@@ -93,6 +93,7 @@ These options set what files the user wants to be notified for and where
 - **reject    <regexp pattern> (optional)**
 - **chmod     <integer>        (default: 0o400)**
 - **poll_without_vip  <boolean> (default: True)**
+- **file_time_limit <integer>   (default 3600)**
 
 The option *filename* can be used to set a global rename to the products.
 Ex.:
@@ -163,6 +164,7 @@ persistence is needed in the poll, set the **poll_without_vip** option
 to *False* (or *off*). This reduces overhead forty-fold in some measured 
 cases.  
 
+By default, files that are more than 2 months are not posted. However, this can be modified to any specified time limit in the configurations by using the option *file_time_limit <integer>*. By default, seconds are used, but one can specify hours, days or weeks with 1, 1h, 1d, 1w respectively. 
 
 POSTING SPECIFICATIONS
 ----------------------

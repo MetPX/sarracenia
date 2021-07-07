@@ -115,21 +115,19 @@ class sr_sender(sr_subscribe):
            # verify post_base_url (not mandatory...)
            if self.post_base_url == None :
               self.post_base_url = self.destination
-
            # overwrite inflight to be None when posting to a broker.
            if self.inflight == 'unspecified':
               self.inflight=None
         else:
            if self.inflight == 'unspecified':
               self.inflight='.tmp'
-           
-        # check destination
 
+        # check destination
         self.details = None
         if self.destination != None :
            ok, self.details = self.credentials.get(self.destination)
 
-        if self.destination == None or self.details == None :
+        if self.destination == None or self.details == None:
            self.logger.error("destination option incorrect or missing\n")
            sys.exit(1)
 
@@ -208,6 +206,8 @@ class sr_sender(sr_subscribe):
 
                 elif self.do_send :
                      ok = self.do_send(self)
+                     print("do_send is being called")
+                     print(ok)
                      return ok
 
         except :
@@ -343,7 +343,6 @@ class sr_sender(sr_subscribe):
 def main():
 
     args,action,config,old = startup_args(sys.argv)
-
     sender = sr_sender(config,args,action)
     sender.exec_action(action,old)
 

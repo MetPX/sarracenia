@@ -147,8 +147,8 @@ class sr_GlobalState:
             # .e.g sr_subscribe.exe -> sr_subscribe-script.py ... If you kill the -script, the .exe goes away.
             return
 
-        #print( 'pname=%s, self.me=%s, pid=%s, cmdline=%s ' % \
-        #        ( p['name'], p['username'], p['pid'], p['cmdline'] ) )
+        print( 'pname=%s, self.me=%s, pid=%s, cmdline=%s ' % \
+              ( p['name'], p['username'], p['pid'], p['cmdline'] ) )
         if p['name'].startswith('sr_'): 
             self.procs[p['pid']] = p
 
@@ -156,8 +156,8 @@ class sr_GlobalState:
                 self.procs[p['pid']]['claimed'] = True
                 self.auditors += 1
             else:
-                self.procs[p['pid']]['claimed'] =  (p['name'][-4:] == 'post') or \
-                    ( 'foreground' in p['cmdline'] ) or ( 'status' in p['cmdline'] )
+                self.procs[p['pid']]['claimed'] = (p['name'][-4:] == 'post') or \
+                    any(item in ['declare', 'foreground', 'edit', 'sanity', 'setup', 'status'] for item in p['cmdline'])
 
     def read_proc_file(self,File="procs.json"):
         """
