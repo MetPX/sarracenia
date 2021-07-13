@@ -77,19 +77,16 @@ except :
 class sr_sender(sr_subscribe):
 
     def check(self):
-
         self.sleep_connect_try_interval_min=0.01
         self.sleep_connect_try_interval_max=30
         self.sleep_connect_try_interval=self.sleep_connect_try_interval_min
 
-        self.connected     = False 
-
+        self.connected     = False
         if self.config_name == None : return
 
         self.check_consumer_options()
 
         # posting... discard not permitted
-
         if self.post_broker != None :
 
            if self.post_exchange == None and self.post_exchange_suffix :
@@ -113,6 +110,7 @@ class sr_sender(sr_subscribe):
                  self.logger.warning("use post_base_dir instead of defaulting to document_root")
 
            # verify post_base_url (not mandatory...)
+
            if self.post_base_url == None :
               self.post_base_url = self.destination
            # overwrite inflight to be None when posting to a broker.
@@ -127,7 +125,9 @@ class sr_sender(sr_subscribe):
         if self.destination != None :
            ok, self.details = self.credentials.get(self.destination)
 
-        if self.destination == None or self.details == None:
+        #if self.destination == None or self.details == None:
+        # destination is not required if a do_send is provided
+        if self.do_send is None and (self.destination is None or self.details is None):
            self.logger.error("destination option incorrect or missing\n")
            sys.exit(1)
 
@@ -164,12 +164,14 @@ class sr_sender(sr_subscribe):
     # =============
 
     def __do_send__(self):
-
         self.logger.debug("sending/copying %s to %s " % ( self.msg.relpath, self.msg.new_dir ) )
 
         # try registered do_send first... might overload defaults
 
-        scheme = self.details.url.scheme 
+        # if the  destination is None, so will the details.url.scheme.
+        # with scheme = None and destination = None, you go straight to do_send()
+        scheme = None
+        if self.destination is not None: scheme = self.details.url.scheme
         try:
                 if   scheme in self.do_sends :
                      self.logger.debug("using registered do_send for %s" % scheme)
@@ -182,9 +184,7 @@ class sr_sender(sr_subscribe):
         except:
                 self.logger.debug('Exception details:', exc_info=True)
 
-
         # try supported hardcoded send
-
         try : 
                 if   scheme in ['ftp','ftps']  :
                      if not hasattr(self,'ftp_link') :
@@ -224,7 +224,6 @@ class sr_sender(sr_subscribe):
         return False
 
     def overwrite_defaults(self):
-
         # a destination must be provided
 
         self.destination    = None
@@ -276,7 +275,8 @@ class sr_sender(sr_subscribe):
         # impossible to send
         #=================================
 
-        if self.destination[:3] == 'ftp' :
+        # checking the destination was provided first since it is now optional in this script
+        if self.destination is not None and self.destination[:3] == 'ftp' :
             # 'i' cannot be supported by ftp/ftps
             # we cannot offset in the remote file to inject data
             #
@@ -307,7 +307,6 @@ class sr_sender(sr_subscribe):
         while i <= self.attempts:
               if i != 1:
                   self.logger.warning("sending again, attempt %d" % i)
-
               ok = self.__do_send__()
               if ok : break
               # dont force on retry 
