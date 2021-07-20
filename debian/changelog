@@ -1,4 +1,6 @@
-metpx-sarracenia (2.21.05) UNRELEASED; urgency=medium
+metpx-sarracenia (2.21.07) UNRELEASED; urgency=medium
+
+  * bugfix #366 polling of old files when date format on remote server changes.
 
   * hmm.. charset in ftp.. defaults to iso8859-1, changed to utf-8.
     noticed caused some issues in newer tests that use accented characters. 
