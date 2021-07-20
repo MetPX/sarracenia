@@ -205,7 +205,7 @@ class sr_consumer:
 
            self.logger.debug("sr_consumer, path being matched: %s " % ( urlstr )  ) 
 
-           if not self.parent.isMatchingPattern(self.msg.urlstr,self.accept_unmatch) :
+           if not self.parent.isMatchingPattern(urlstr,self.accept_unmatch) :
               self.logger.debug("Rejected by accept/reject options")
               return False,self.msg
 
