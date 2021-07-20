@@ -1,7 +1,7 @@
 metpx-sarracenia (2.21.07) UNRELEASED; urgency=medium
 
   * bugfix #366 polling of old files when date format on remote server changes.
-
+  * bugfix #371 sr_audit should not kill 'edit' sessions as strays.
   * hmm.. charset in ftp.. defaults to iso8859-1, changed to utf-8.
     noticed caused some issues in newer tests that use accented characters. 
 
