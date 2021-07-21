@@ -141,10 +141,61 @@ The sr_insects tests invokes the version of metpx-sarracenia that is installed o
 and not what is in the development tree.  It is necessary to install the package on 
 the system in order to have it run the sr_insects tests.
 
+Prepare a Vanilla VM
+~~~~~~~~~~~~~~~~~~~~
+
+This section describes creating a test environment for use in a virtual machine. One way to build
+a virtual machine is to use multipass (https://multipass.run) Assuming it is installed, one can
+create a vm with::
+
+ multipass -m 4G launch --name flow
+
+need to have ssh localhost work in the multipass container.  Can do that by copying multipass
+private key into the container::
+
+ fractal% multipass list                                                         
+ Name                    State             IPv4             Image
+ primary                 Stopped           --               Ubuntu 20.04 LTS
+ flow                    Running           10.23.119.56     Ubuntu 20.04 LTS
+ keen-crow               Running           10.23.119.5      Ubuntu 20.04 LTS
+ fractal% 
+
+Weird issues with ssh keys not being interpreted properly by paramiko, work around
+( https://stackoverflow.com/questions/54612609/paramiko-not-a-valid-rsa-private-key-file )
+::
+
+ fractal% sudo cat /var/snap/multipass/common/data/multipassd/ssh-keys/id_rsa | sed 's/BEGIN .*PRIVATE/BEGIN RSA PRIVATE/;s/END .*PRIVATE/END RSA PRIVATE/' >id_rsa_container
+ scp -i id_rsa_container id_rsa_container ubuntu@10.23.119.175:/home/ubuntu/.ssh/id_rsa
+                                                                   100% 1704     2.7MB/s   00:00    
+
+ 
+ multipass shell flow
+
+This will provide a shell in an initialized VM.  To configure it::
+
+ 
+  git clone -b v03_wip https://github.com/MetPX/sarracenia sr3
+  cd sr3
+
+There are scripts that automate the installation of necessary environment to be able to run tests::
+
+  travis/flow_autoconfig.sh
+  travis/add_sr3.sh
+
+You should be able to see an empty configuration::
+
+  sr3 status
+
+sr3c and sr3 are now installed, and should be ready to run a flow test from the sr_insects module, which
+has also been cloned:
+
+  cd ../sr_insects
+
 Python Wheel
 ~~~~~~~~~~~~
 
-For testing and development::
+If you have not used add_sr3.sh (which builds a debian package), then one can use this procedure
+for local installation on a computer with a python wheel for testing and development::
 
     python3 setup.py bdist_wheel
 
@@ -156,6 +207,7 @@ then as root install that new package::
 Local Pip install
 ~~~~~~~~~~~~~~~~~
 
+For local installation on a computer, using a pip
 For testing and development::
 
    pip3 install -e .
@@ -166,9 +218,13 @@ The above will install the package in ~/.local/bin... so need to ensure the path
 that directory.
 
 
+
+
+
 Debian/Ubuntu
 ~~~~~~~~~~~~~
 
+For local installation on a computer, using a debian package.
 This process builds a local .deb in the parent directory using standard debian mechanisms.
 - Check the **build-depends** line in *debian/control* for dependencies that might be needed to build from source.
 - The following steps will build sarracenia but not sign the changes or the source package::
@@ -210,7 +266,8 @@ is more complicated than the previous one.
 
 There is a separate git repository containing the more complex tests https://github.com/MetPX/sr_insects
 
-A typical development workflow will be (Do not try this, it is just an overview of later steps)::
+A typical development workflow will be (Do not try this, this is just an overview of the steps that will be 
+explained in detail in following sections)::
 
    git branch issueXXX
    git checkout issueXXX
@@ -224,7 +281,9 @@ A typical development workflow will be (Do not try this, it is just an overview 
 
    git clone -b v03_wip https://github.com/MetPX/sr_insects
    cd sr_insects
-   for test in unit static_flow dynamic_flow; do
+   sr3 status  # make sure there are no components configured before you start.
+               # test results will likely be skewed otherwise.
+   for test in unit static_flow flakey_browser transform_flow dynamic_flow; do
       cd $test
       ./flow_setup.sh  # *starts the flows*
       ./flow_limit.sh  # *stops the flows after some period (default: 1000) *
@@ -235,6 +294,7 @@ A typical development workflow will be (Do not try this, it is just an overview 
 
    #assuming all the tests pass.
    git commit -a  # on the branch...
+
 
 Unit
 ~~~~
@@ -417,6 +477,11 @@ for the latest test results.
 Install Servers on Workstation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+To prepare a computer to run the flow test, one must install some server 
+software and configurations. This same work is done by travis/flow_autoconfig.sh
+which is run in `Prepare a Vanilla VM`_ but if you need to configure it 
+manually, below is the process.
+
 Install a minimal localhost broker and configure rabbitmq test users::
 
     sudo apt-get install rabbitmq-server
@@ -484,7 +549,7 @@ Install a minimal localhost broker and configure rabbitmq test users::
 Setup Flow Test Environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Did the set up above work? the flow tests use sftp transfers to localhost, so need to confirm
+Once the server environment is established, the flow tests use sftp transfers to localhost, so need to confirm
 that ssh to localhost works::
 
    ssh localhost ls
@@ -593,7 +658,6 @@ and defines some fixed test clients that will be used during self-tests::
     OK: sr start was successful
     Overall PASSED 4/4 checks passed!
     blacklab% 
-
 
 As it runs the setup, it also executes all existing unit_tests.
 Only proceed to the flow_check tests if all the tests in flow_setup.sh pass.
@@ -781,6 +845,12 @@ between each run of the flow test::
   rm: cannot remove '/home/peter/.cache/sarra/log/sr_audit_f00.log': No such file or directory
   Removing document root ( /home/peter/sarra_devdocroot )...
   Done!
+
+After the flow_cleanup.sh, to check that a test has completed, use::
+
+   sr status 
+
+which should show that there are no active configurations.
 
 If the static_flow test works, then re-run the other tests: flakey_broker, 
 transform_flow, and dynamic_flow.
@@ -1269,14 +1339,80 @@ Example::
 Building an RPM
 +++++++++++++++
 
+This process is currently a bit clumsy, but it can provide usable RPM packages.
+Example of creating a multipass image for fedora to build with::
+
+  fractal% multipass launch -m 8g --name fed34 https://mirror.csclub.uwaterloo.ca/fedora/linux/releases/34/Cloud/x86_64/images/Fedora-Cloud-Base-34-1.2.x86_64.raw.xz
+  Launched: fed34                                                                 
+  fractal%
+
+Based on https://www.redhat.com/sysadmin/create-rpm-package ...  install build-dependencies::
+
+  sudo dnf install -y rpmdevtools rpmlint git
+  git clone -b v03_wip https://github.com/MetPX/sarracenia sr3
+
 One can build a very limited sort of rpm package on an rpm based distro by
 using the python distutils::
 
    python3 setup.py bdist_rpm
 
-Unfortunately, it doesn't add proper dependencies, so one must install those 
-manually. So it will help if you must use .rpm's for compliance reasons, but
-it isn't really properly done.  `Help Wanted  <https://github.com/MetPX/sarracenia/issues57>`_
+This will fail trying to open a non-existent CHANGES.txt... a strange incompatibility. So 
+
+  **comment out the two lines in setup.py used to set the long_description**, 
+
+these lines::
+   #long_description=(read('README.rst') + '\n\n' + read('CHANGES.rst') +
+   #                   '\n\n' + read('AUTHORS.rst')),
+ 
+and then the rpm build will complete. Unfortunately, it doesn't add proper dependencies, so 
+one can install those manually.  
+
+A way of addressing the dependency problem  is to decode the options from the debian/control::
+
+   [ubuntu@fed34 sr3]$ grep Recommends debian/control | sed 's/Recommends: //;s/ //g'
+   ncftp,wget
+   [ubuntu@fed34 sr3]$ 
+
+and repeat with the setup.py file...  (note: setup.py does not want spaces around versions for 
+python packages, but bdist_rpm option requires them, so fix that... )::
+
+   [ubuntu@fed34 sr3]$ tail -4 setup.py |  egrep -v '\[' | egrep -v ']' | tr '\n' ' ' | sed 's/ *//g;s/>=/ >= /g;s/^"/"python3-/;s/,"/,"python3-/g'
+   "python3-amqp","python3-appdirs","python3-watchdog","python3-netifaces","python3-humanize","python3-jsonpickle","python3-paho-mqtt >= 1.5.1","python3-paramiko","python3-psutil >= 5.3.0"
+   [ubuntu@fed34 sr3]$ 
+
+then copy/paste the dependencies into the rpm building line::
+
+   python3 setup.py bdist_rpm --requires=ncftp,wget,"python3-amqp","python3-appdirs","python3-watchdog","python3-netifaces","python3-humanize","python3-jsonpickle","python3-paho-mqtt >= 1.5.1","python3-paramiko","python3-psutil >= 5.3.0"
+
+One can check if the dependencies are there like so::
+  
+  [ubuntu@fed34 sr3]$ rpm -qp dist/metpx-sr3-3.0.6-1.noarch.rpm --requires
+  /usr/bin/python3
+  ncftp
+  python3-amqp
+  python3-appdirs
+  python3-humanize
+  python3-jsonpickle
+  python3-netifaces
+  python3-paho-mqtt >= 1.5.1 
+  python3-paramiko
+  python3-psutil >= 5.3.0
+  python3-watchdog
+  rpmlib(CompressedFileNames) <= 3.0.4-1
+  rpmlib(FileDigests) <= 4.6.0-1
+  rpmlib(PartialHardlinkSets) <= 4.0.4-1
+  rpmlib(PayloadFilesHavePrefix) <= 4.0-1
+  rpmlib(PayloadIsZstd) <= 5.4.18-1
+  wget
+  [ubuntu@fed34 sr3]$
+
+You can see all of the prefixed python3 dependencies required, as well as the recommended binary accellerator packages
+are listed. Then if you install with dnf install, it will pull them all in.  Unfortunately, this method does not allow
+the specification of version of the python dependencies which are stripped out. on Fedora 34, this is not a problem,
+as all versions are new enough.  Such a package should install well.
+
+a bit inelegant, and not sure if it will work with older versions:
+`Help Wanted  <https://github.com/MetPX/sarracenia/issues57>`_
 
 
 github

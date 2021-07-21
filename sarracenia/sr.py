@@ -56,6 +56,15 @@ def ageoffile(lf):
     """
     return 0
 
+def signal_pid( pid, sig ):
+    """
+        wrap os.kill in a try/except for cleaner error messages and avoid control jumping somewhere
+        unexpected.
+    """
+    try:
+       os.kill(pid, sig)
+    except Exception as ex:
+       logger.warning('sending kill signal to pid:%s failed: %s' % ( pid, ex))
 
 # noinspection PyArgumentList
 class sr_GlobalState:
@@ -195,7 +204,7 @@ class sr_GlobalState:
                 self.auditors += 1
             else:
                 self.procs[p['pid']]['claimed'] =   (p['name'][-4:] == 'post') or \
-                    any( item in [ 'declare', 'foreground', 'sanity', 'setup', 'status' ] for item in  p['cmdline'] )
+                    any( item in [ 'declare', 'edit', 'foreground', 'sanity', 'setup', 'status' ] for item in  p['cmdline'] )
 
     def read_proc_file(self, File="procs.json"):
         """
@@ -347,7 +356,6 @@ class sr_GlobalState:
                 other_c_dir = other_config_dir + os.sep + c
                 if not os.path.exists(other_c_dir):
                     os.mkdir(other_c_dir)
-                self.states[c] = {}
                 for cfg in os.listdir():
                     if cfg[0] == '.': continue
                     to = other_c_dir + os.sep + cfg
@@ -374,7 +382,6 @@ class sr_GlobalState:
                 other_c_dir = other_cache_dir + os.sep + c
                 if not os.path.exists(other_c_dir):
                     os.mkdir(other_c_dir)
-                self.states[c] = {}
                 for cfg in os.listdir():
                     if cfg[0] == '.': continue
                     os.chdir(cfg)
@@ -406,8 +413,6 @@ class sr_GlobalState:
         for c in self.components:
             if os.path.isdir(c):
                 os.chdir(c)
-                if not c in self.states:
-                    self.states[c] = {}
                 for cfg in os.listdir():
                     if os.path.isdir(cfg):
                         os.chdir(cfg)
@@ -473,6 +478,9 @@ class sr_GlobalState:
 
     def _read_states(self):
         self.states = {}
+        for c in self.components:
+            self.states[c] = {}
+
         self._read_state_dir(self.user_cache_dir)
         self._read_state_dir(self.user_cache_dir + os.sep + self.hostdir)
 
@@ -691,13 +699,13 @@ class sr_GlobalState:
                     if type(o.admin) == str:
                         o.admin = urllib.parse(o.admin)
                     host = self._init_broker_host(o.admin.netloc)
+                    self.brokers[host]['admin'] = o.admin
                     if hasattr(o, 'declared_exchanges'):
                         for x in o.declared_exchanges:
                             if not x in self.brokers[host]['exchanges']:
                                 self.brokers[host]['exchanges'][x] = [
                                     'declared'
                                 ]
-                                self.brokers[host]['admin'] = o.admin
                             else:
                                 if not 'declared' in self.brokers[host][
                                         'exchanges'][x]:
@@ -1468,6 +1476,8 @@ class sr_GlobalState:
             (outs, errs) = p.communicate()
             print(outs.decode('utf8'))
 
+ 
+
     def sanity(self):
         """ Run sanity by finding and starting missing instances
 
@@ -1489,7 +1499,7 @@ class sr_GlobalState:
                 print(
                     "pid: %s-%s does not match any configured instance, sending it TERM"
                     % (pid, self.procs[pid]['cmdline'][0:5]))
-                os.kill(pid, signal.SIGTERM)
+                signal_pid(pid, signal.SIGTERM)
 
     def start(self):
         """ Starting all components
@@ -1540,7 +1550,7 @@ class sr_GlobalState:
         if ('audit' in self.filtered_configurations) and self.auditors > 0:
             for p in self.procs:
                 if 'audit' in self.procs[p]['name']:
-                    os.kill(p, signal.SIGTERM)
+                    signal_pid(p, signal.SIGTERM)
                     print('.', end='', flush=True)
                     pcount += 1
 
@@ -1551,10 +1561,10 @@ class sr_GlobalState:
 
             if self.configs[c][cfg]['status'] in ['running', 'partial']:
                 for i in self.states[c][cfg]['instance_pids']:
-                    # print( "for %s/%s - %s os.kill( %s, SIGTERM )" % \
+                    # print( "for %s/%s - %s signal_pid( %s, SIGTERM )" % \
                     #    ( c, cfg, i, self.states[c][cfg]['instance_pids'][i] ) )
                     if self.states[c][cfg]['instance_pids'][i] in self.procs:
-                        os.kill(self.states[c][cfg]['instance_pids'][i],
+                        signal_pid(self.states[c][cfg]['instance_pids'][i],
                                 signal.SIGTERM)
                         print('.', end='', flush=True)
                         pcount += 1
@@ -1571,7 +1581,7 @@ class sr_GlobalState:
                     print(
                         "pid: %s-%s does not match any configured instance, sending it TERM"
                         % (pid, self.procs[pid]['cmdline'][0:5]))
-                    os.kill(pid, signal.SIGTERM)
+                    signal_pid(pid, signal.SIGTERM)
 
             ttw = 1 << attempts
             print(
@@ -1601,7 +1611,7 @@ class sr_GlobalState:
         if ('audit' in self.filtered_configurations) and self.auditors > 0:
             for p in self.procs:
                 if 'audit' in p['name']:
-                    os.kill(p, signal.SIGKILL)
+                    signal_pid(p, signal.SIGKILL)
 
         for f in self.filtered_configurations:
             if f == 'audit': continue
@@ -1609,9 +1619,9 @@ class sr_GlobalState:
             if self.configs[c][cfg]['status'] in ['running', 'partial']:
                 for i in self.states[c][cfg]['instance_pids']:
                     if self.states[c][cfg]['instance_pids'][i] in self.procs:
-                        print("os.kill( %s, SIGKILL )" %
+                        print("signal_pid( %s, SIGKILL )" %
                               self.states[c][cfg]['instance_pids'][i])
-                        os.kill(self.states[c][cfg]['instance_pids'][i],
+                        signal_pid(self.states[c][cfg]['instance_pids'][i],
                                 signal.SIGKILL)
                         print('.', end='')
 
@@ -1620,7 +1630,7 @@ class sr_GlobalState:
                 print(
                     "pid: %s-%s does not match any configured instance, would kill"
                     % (pid, self.procs[pid]['cmdline']))
-                os.kill(pid, signal.SIGKILL)
+                signal_pid(pid, signal.SIGKILL)
 
         print('Done')
         print('Waiting again...')
@@ -1690,7 +1700,7 @@ class sr_GlobalState:
                     admin_urlstr += ":" + str(admin_url.port)
                 a = 'admin: %s' % admin_urlstr
             else:
-                a = ''
+                a = 'admin: none'
             print('\nbroker: %s  %s' % (h, a))
             print('\nexchanges: ', end='')
             for x in self.exchange_summary[h]:
