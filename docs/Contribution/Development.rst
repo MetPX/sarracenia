@@ -341,7 +341,7 @@ execution of this script on a working system may lead to undesirable side effect
 
 The configuration one is trying to replicate:
 
-.. image:: Flow_test.svg
+.. image:: Development/Flow_test.svg
 
 
 Following table describes what each element of the dynamic flow test does, and the test coverage
@@ -456,7 +456,7 @@ Assumption: test environment is a Linux PC, either a laptop/desktop, or a server
 can start a browser. If working with the C implementation as well, there are also the following
 flows defined:
 
-.. image:: cFlow_test.svg
+.. image:: Development/cFlow_test.svg
 
    
 Running Flow Test

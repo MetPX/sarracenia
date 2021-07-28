@@ -16,11 +16,11 @@ From the Start Menu:
 ~~~~~~~~~~~~~~~~~~~~
 Click on Sarracenia (it will execute *sr.exe restart*):
 
-.. image:: start-menu-1.png
+.. image:: Windows/start-menu-1.png
 
 This will pop Sarracenia's Command Prompt, start Sarracenia processes as instructed by your configurations and show logging information.
 
-.. image:: sarra-prompt.png
+.. image:: Windows/sarra-prompt.png
 
 Keep this window alive until you are done with Sarracenia. Closing it or typing ctrl-c will kill all Sarracenia processes. You may also want to restart Sarracenia which will stop those processes cleanly.
 
@@ -30,11 +30,11 @@ Launch a Powershell |powershell| session and type this command at the prompt::
 
  sr restart
 
-.. |powershell| image:: powershell.png
+.. |powershell| image:: Windows/powershell.png
 
 This will start Sarracenia processes as instructed by your configurations and show logging information
 
-.. image:: sarra-psprompt.png 
+.. image:: Windows/sarra-psprompt.png 
 
 Keep this Powershell session alive until you are done with Sarracenia. To stop Sarracenia you may type::
 
@@ -56,42 +56,42 @@ From the Task Scheduler:
 ~~~~~~~~~~~~~~~~~~~~~~~~
 Open Server Manager > Tools > Task scheduler:
 
-.. image:: task-scheduler_start.png
+.. image:: Windows/task-scheduler_start.png
 
 Select *Create Basic Task* from the action panel:
 
-.. image:: create-basic-task.png
+.. image:: Windows/create-basic-task.png
 
 This will launch the *Create Basic Task Wizard* where you ...
 
  Fill the name:
 
- .. image:: cbtw_name.png
+ .. image:: Windows/cbtw_name.png
 
  Choose the trigger:
 
- .. image:: cbtw_trigger.png
+ .. image:: Windows/cbtw_trigger.png
 
  Choose the action:
  
- .. image:: cbtw_action.png
+ .. image:: Windows/cbtw_action.png
  
  Define the action:
  
- .. image:: cbtw_action_program.png
+ .. image:: Windows/cbtw_action_program.png
  
  Review the task and choose *Finish*:
  
- .. image:: cbtw_finish.png
+ .. image:: Windows/cbtw_finish.png
  
 Open the *Properties dialog* and choose *Run whether user is logged on or not* and *Run with highest privileges*:
  
-.. image:: ssp_general.png
+.. image:: Windows/ssp_general.png
 
 The task should now appear in your *Task Scheduler Library* with the status *Ready*.
 
-.. image:: ts_results.png
+.. image:: Windows/ts_results.png
 
 Then, you may run it immediately with the |run_action| button.
 
-.. |run_action| image:: run_action.png
+.. |run_action| image:: Windows/run_action.png

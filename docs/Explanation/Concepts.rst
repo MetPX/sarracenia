@@ -159,7 +159,7 @@ only background concepts needed to understand and/or use Sarracenia. For more in
 on AMQP itself, a set of links is maintained at the 
 `Metpx web site <https://github.com/MetPX/sarracenia/blob/master/doc/sarra.rst#amqp>`_ 
 
-.. image:: AMQP4Sarra.svg
+.. image:: Concepts/AMQP4Sarra.svg
     :scale: 50%
     :align: center
 
@@ -234,7 +234,7 @@ MetPX-Sarracenia is only a light wrapper/coating around AMQP.
 Flow Through Pumps
 ------------------
 
-.. image:: e-ddsr-components.jpg
+.. image:: Concepts/e-ddsr-components.jpg
     :scale: 100%
     :align: center
 
