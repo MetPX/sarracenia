@@ -23,7 +23,7 @@
     :target: https://travis-ci.com/MetPX/sarracenia
 
 +-------------------------------------------------------+-----------------------------------------------------------------+
-| [ `Guides <doc/sr3.1.rst#documentation>`_ ]           |  [ `Orientation <doc/fr/sr3.1.rst#documentation>`_ ]            |
+| [ `Guides <docs/Reference/sr3.1.rst#documentation>`_ ]|  [ `Orientation <docs/Reference/sr3.1.rst#documentation>`_ ]    |
 | [ `Manual Pages <doc/sr3.1.rst#see-also>`_ ]          |  [ `Référence <doc/fr/sr3.1.rst#aussi-voir>`_ ]                 |
 +-------------------------------------------------------+-----------------------------------------------------------------+
 |                                                       |                                                                 |
