@@ -16,6 +16,9 @@ import os, sys, time
 
 import sarracenia.transfer
 
+import datetime
+
+
 logger = logging.getLogger(__name__)
 
 default_options = {
@@ -94,7 +97,7 @@ class Poll(Flow):
         return False
 
 
-    def _file_date_exceed_limit(self, date, time_limit):
+    def _file_date_within_limit(self, date, time_limit):
         """comments:
             This method compares today's date to the file's date by creating a date time object
             Three formats are acceptd so far, more can be added if needed (format on https://strftime.org/ )
@@ -112,8 +115,7 @@ class Poll(Flow):
                 file_date = date_temp.replace(year=(current_date.year - 1))
             else:
                 file_date = date_temp.replace(year=current_date.year)
-            self.logger.info("File date is: " + str(file_date) +
-                             " > File is " + str(abs((file_date - current_date).seconds)) + " seconds old")
+            logger.debug("File date is: " + str(file_date) + " > File is " + str(abs((file_date - current_date).seconds)) + " seconds old")
             return abs((file_date - current_date).seconds) < time_limit
         except Exception as e:
             try:
@@ -122,22 +124,22 @@ class Poll(Flow):
                     file_date = date_temp.replace(year=(current_date.year - 1))
                 else:
                     file_date = date_temp.replace(year=current_date.year)
-                self.logger.info("File date is: " + str(file_date) +
-                                 " > File is " + str(abs((file_date - current_date).seconds)) + " seconds old")
+                logger.debug("File date is: " + str(file_date) + " > File is " + str(abs((file_date - current_date).seconds)) + " seconds old")
                 return abs((file_date - current_date).seconds) < time_limit
             except Exception as e:
                 try:
                     file_date = datetime.datetime.strptime(date, '%b %d %Y')
-                    self.logger.info("File date is: " + str(file_date) +
-                                     " > File is " + str(abs((file_date - current_date).seconds)) + " seconds old")
+                    logger.debug("File date is: " + str(file_date) + " > File is " + str(abs((file_date - current_date).seconds)) + " seconds old")
                     return abs((file_date - current_date).seconds) < time_limit
                 except Exception as e:
                     warning_msg = str(e)
                     print("%s" % warning_msg)
                     return False
 
+
     # find differences between current ls and last ls
-    # only the newer or modified files will be kept...
+    # only the newer or modified files will be kept and the ones withing a specific time limit, default 60d
+
 
     def differ_ls_file(self, ls, lspath):
 
@@ -155,7 +157,7 @@ class Poll(Flow):
         desclst = {}
 
         for f in new_lst:
-            # self.logger.debug("checking %s (%s)" % (f,ls[f]))
+            # logger.debug("checking %s (%s)" % (f, ls[f]))
             try:
                 str1 = ls[f]
                 str2 = str1.split()
@@ -164,28 +166,29 @@ class Poll(Flow):
                 # this format could change depending on plugin
                 # line_mode.py format "-rwxrwxr-x 1 1000 1000 8123 24 Mar 22:54 2017-03-25-0254-CL2D-AUTO-minute-swob.xml"
                 date = str2[5] + " " + str2[6] + " " + str2[7]
-                if self._file_date_exceed_limit(date, self.file_time_limit):
-                    self.logger.info("File should be processed")
+                if self._file_date_within_limit(date, self.o.file_time_limit):
+                    #logger.debug("File should be processed")
+
                     # execute rest of code
                     # keep a newer entry
                     if not f in old_ls:
-                        # self.logger.debug("IS NEW %s" % f)
+                        # logger.debug("IS NEW %s" % f)
                         filelst.append(f)
                         desclst[f] = ls[f]
                         continue
 
                     # keep a modified entry
                     if ls[f] != old_ls[f]:
-                        # self.logger.debug("IS DIFFERENT %s from (%s,%s)" % (f,old_ls[f],ls[f]))
+                        # logger.debug("IS DIFFERENT %s from (%s,%s)" %(f, old_ls[f], ls[f]))
                         filelst.append(f)
                         desclst[f] = ls[f]
                         continue
                 else:
-                    self.logger.info("File should be skipped")
                     # ignore rest of code and re iterate
+                    logger.debug("File should be skipped")
             except:
                 pass
-            # self.logger.debug("IS IDENTICAL %s" % f)
+            # logger.debug("IS IDENTICAL %s" % f)
 
         return filelst, desclst
 
