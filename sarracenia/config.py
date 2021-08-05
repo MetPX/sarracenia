@@ -1115,6 +1115,12 @@ class Config:
         if not hasattr(self, 'post_topicPrefix'):
            self.post_topicPrefix = self.topicPrefix
 
+        if not hasattr(self, 'retry_ttl' ):
+           self.retry_ttl = self.expire
+
+        if self.retry_ttl == 0:
+           self.retry_ttl = None
+
         if not hasattr(self, 'cfg_run_dir'):
             if self.statehost:
                 hostdir = self.hostdir
@@ -1240,7 +1246,13 @@ class Config:
         for u in self.undeclared:
             if u not in alloptions:
                 logger.error("undeclared option: %s" % u)
-        logger.debug("done")
+
+        no_defaults=set()
+        for u in alloptions:
+             if not hasattr(self,u):
+                no_defaults.add( u )
+
+        logger.debug("missing defaults: %s" % no_defaults)
 
     """
       2020/05/26 FIXME here begins sheer terror.

@@ -231,7 +231,7 @@ class DiskQueue():
         msg_age = self.now - msg_time
 
         # expired ?
-        return  msg_age > (self.o.retry_ttl / 1000)
+        return  msg_age > self.o.retry_ttl
 
     def needs_requeuing(self, message):
 
