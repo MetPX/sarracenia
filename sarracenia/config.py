@@ -435,6 +435,7 @@ class Config:
         'll': 'logLevel',
         'loglevel': 'logLevel',
         'logdays': 'lr_backupCount',
+        'logrotate': 'lr_backupCount',
         'logrotate_interval': 'lr_interval',
         'on_post' : 'before_post',
         'post_base_dir': 'post_baseDir',
