@@ -92,6 +92,7 @@ class DiskQueue():
         # initialize all retry path if retry_path is provided
         self.working_dir=os.path.dirname(self.o.pid_filename)
         self.queue_file= self.working_dir + os.sep + 'diskqueue_' + name
+        self.now = nowflt()
 
         # retry messages
 
