@@ -91,7 +91,7 @@ flag_options = [ 'baseUrl_relPath', 'bind_queue', 'cache_stat', 'declare_exchang
                 ]
 
 duration_options = [
-    'timeout', 'expire', 'housekeeping', 'message_ttl', 'retry_ttl',
+    'expire', 'file_time_limit', 'housekeeping', 'message_ttl', 'retry_ttl',
     'sanity_log_dead', 'sleep', 'timeout'
 ]
 
@@ -475,7 +475,7 @@ class Config:
         self.chmod_dir = 0o775
         self.chmod_log = 0o600
 
-        self.file_time_limit = self.duration_from_str("60d")
+        self.file_time_limit = durationToSeconds("60d")
         self.debug = False
         self.declared_exchanges = []
         self.destfn_script = None
@@ -986,8 +986,6 @@ class Config:
                         setattr(self, k, None)
                     else:
                         setattr(self, k, v)
-            elif k in ['file_time_limit']:
-                setattr(self, k, self.duration_from_str(v))
             elif k in ['strip']:
                 """
                2020/08/26 - PAS
