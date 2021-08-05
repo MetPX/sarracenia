@@ -549,7 +549,7 @@ These options set what files the user wants to be notified for and where
 - **reject    <regexp pattern> (optional)**
 - **chmod     <integer>        (default: 0o400)**
 - **poll_without_vip  <boolean> (default: True)**
-- **file_time_limit <integer>   (default 60d)**
+- **file_time_limit <duration>   (default 60d)**
 
 The option *filename* can be used to set a global rename to the products.
 Ex.:
@@ -622,7 +622,7 @@ cases.
 
 By default, files that are more than 2 months are not posted. However, this 
 can be modified to any specified time limit in the configurations by using 
-the option *file_time_limit <integer>*. By default, seconds are used, but 
+the option *file_time_limit <duration>*. By default, seconds are used, but 
 one can specify hours, days or weeks with 1, 1h, 1d, 1w respectively. 
 
 POSTING SPECIFICATIONS
@@ -1863,6 +1863,9 @@ are used, then the interval is in minutes, hours, days, or weeks. After the queu
 the contents are dropped, and so gaps in the download data flow can arise.  A value of
 1d (day) or 1w (week) can be appropriate to avoid data loss. It depends on how long
 the subscriber is expected to shutdown, and not suffer data loss.
+
+if no units are given, then a decimal number of seconds can be provided, such as
+to indicate 0.02 to specify a duration of 20 milliseconds.
 
 The **expire** setting must be overridden for operational use. 
 The default is set low because it defines how long resources on the broker will be assigned,
