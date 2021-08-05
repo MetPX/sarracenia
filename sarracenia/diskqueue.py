@@ -198,7 +198,7 @@ class DiskQueue():
             message['isRetry'] = True
             if 'ack_id' in message:
                del message['ack_id']
-               message['_deleteOnPost'].delete('ack_id')
+               message['_deleteOnPost'].remove('ack_id')
 
             ml.append(message)
             count +=1
