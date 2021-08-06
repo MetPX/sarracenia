@@ -78,7 +78,12 @@ class sr_cache():
         now   = nowflt()
         relpath = self.__get_relpath(path)
         qpath = urllib.parse.quote(relpath)
-        value = '%s*%s' % (relpath, part)
+
+        #override part, when using n because n should be same regardless of size.
+        if (key[0] == 'n' ) and (part[0] not in [ 'p', 'i' ]):
+             value = '%s' % (relpath)
+        else:
+             value = '%s*%s' % (relpath, part)
 
         if key not in self.cache_dict :
            self.logger.debug("adding a new entry in cache")
@@ -89,7 +94,7 @@ class sr_cache():
            self.count += 1
            return True
 
-        self.logger.debug("sum already in cache: key={}".format(key))
+        self.logger.debug("sum already in cache: key value={}".format(value))
         kdict   = self.cache_dict[key]
         present = value in kdict
         kdict[value] = now
@@ -195,7 +200,10 @@ class sr_cache():
                 parts = value.split('*')
                 path  = parts[0]
                 qpath = urllib.parse.quote(path)
-                part  = parts[1]
+                if len(parts) > 1:
+                    part  = parts[1]
+                else:
+                    part  = None
 
                 if qpath == qdelpath  : continue
 
@@ -285,7 +293,11 @@ class sr_cache():
                   qpath     = words[2]
                   path     = urllib.parse.unquote(qpath)
                   part     = words[3]
-                  value    = '%s*%s' % (path,part)
+                  
+                  if (key[0] == 'n' ) and (part[0] not in [ 'p', 'i' ]):
+                      value = '%s' % (relpath)
+                  else:
+                      value = '%s*%s' % (relpath, part)
 
                   # skip expired entry
 
