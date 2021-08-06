@@ -147,8 +147,8 @@ class sr_GlobalState:
             # .e.g sr_subscribe.exe -> sr_subscribe-script.py ... If you kill the -script, the .exe goes away.
             return
 
-        print( 'pname=%s, self.me=%s, pid=%s, cmdline=%s ' % \
-              ( p['name'], p['username'], p['pid'], p['cmdline'] ) )
+        #print( 'pname=%s, self.me=%s, pid=%s, cmdline=%s ' % \
+        #      ( p['name'], p['username'], p['pid'], p['cmdline'] ) )
         if p['name'].startswith('sr_'): 
             self.procs[p['pid']] = p
 
