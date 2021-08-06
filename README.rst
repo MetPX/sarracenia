@@ -75,7 +75,10 @@
 
 page web / homepage: http://github.com/MetPX/sarracenia
 
-Concepts: `Sarracenia in 10 Minutes Video (anglais seulement) <https://www.youtube.com/watch?v=G47DRwzwckk>`_
+**Videos:**
+
+- Concept Overview: `Sarracenia in 10 Minutes Video (anglais seulement) <https://www.youtube.com/watch?v=G47DRwzwckk>`_
+- v2 Installation Tutorial: `Sarracenia v2 Intro Guide <https://www.youtube.com/watch?v=XV5M4P0zKgg>`_
 
 Documentation *master* location: https://github.com/MetPX/sarracenia/blob/master/doc/sr_subscribe.1.rst#documentation
 
