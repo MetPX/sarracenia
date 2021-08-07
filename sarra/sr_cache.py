@@ -295,9 +295,9 @@ class sr_cache():
                   part     = words[3]
                   
                   if (key[0] == 'n' ) and (part[0] not in [ 'p', 'i' ]):
-                      value = '%s' % (relpath)
+                      value = '%s' % path
                   else:
-                      value = '%s*%s' % (relpath, part)
+                      value = '%s*%s' % (path, part)
 
                   # skip expired entry
 
