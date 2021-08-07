@@ -1153,10 +1153,6 @@ of one's files. Subscribers use  *sr_subscribe*  to consume the post and downloa
 
 Posts are sent to an AMQP server, also called a broker, specified with the option [ *-pb|--post_broker broker_url* ].
 
-
-Mandatory Settings
-~~~~~~~~~~~~~~~~~~
-
 The [*-post_baseUrl|--pbu|--url url*] option specifies the protocol, credentials, host and port to which subscribers
 will connect to get the file.
 
@@ -1237,6 +1233,14 @@ It then builds a post message, logs into broker.com as user 'guest'
 
 A subscriber can download the created/modified file http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 using http
 without authentication on dd.weather.gc.ca.
+
+
+[-pos|--post_on_start]
+~~~~~~~~~~~~~~~~~~~~~~
+
+When starting sr_watch, one can either have the program post all the files in the directories watched
+or not.
+
 
 
 winnow
