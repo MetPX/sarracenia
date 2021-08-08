@@ -38,11 +38,15 @@ def main():
 
     cfg1.parse_args(isPost=True)
 
-    cfg2 = sarracenia.config.one_config('post', cfg1.config, isPost=True)
+    if hasattr(cfg1,'config'):
+        cfg2 = sarracenia.config.one_config('post', cfg1.config, isPost=True)
+    else:
+        logger.critical('no posting configuration specified')
+        return
 
-    post_flow = sarracenia.flow.Flow.factory(cfg2)
-    post_flow.run()
-
+    if hasattr(cfg2,'program_name'):
+        post_flow = sarracenia.flow.Flow.factory(cfg2)
+        post_flow.run()
 
 if __name__ == "__main__":
     main()
