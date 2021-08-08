@@ -885,7 +885,7 @@ class Config:
             self.sum = ''
 
         for sc in sarracenia.integrity.Integrity.__subclasses__():
-            if hasattr(sc, 'registered_as') and (sc.registered_as == value):
+            if hasattr(sc, 'registered_as') and (sc.registered_as() == value):
                 self.sum += sc.__name__.lower()
                 return
         # FIXME this is an error return case, how to designate an invalid checksum?
