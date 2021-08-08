@@ -30,6 +30,7 @@ default_options = {
     'follow_symlinks': False,
     'force_polling': False,
     'inflight': None,
+    'integrity_method': 'cod,md5',
     'part_ext': 'Part',
     'partflg': '1',
     'post_baseDir': None,
@@ -37,11 +38,13 @@ default_options = {
     'preserve_time': True,
     'randomize': False,
     'rename': None,
-    'sumflg': 'cod,md5',
     'post_on_start': False,
     'sleep': -1,
     'nodupe_ttl': 0
 }
+
+
+#  'sumflg': 'cod,md5',
 
 
 class Poll(Flow):
@@ -362,8 +365,8 @@ class Poll(Flow):
 
         msg = msg_init(post_relPath, self.o, None)
 
-        if self.o.sumflg and (',' in self.o.sumflg):
-            m, v = self.o.sumflg.split(',')
+        if self.o.integrity_method and (',' in self.o.integrity_method):
+            m, v = self.o.integrity_method.split(',')
             msg['integrity'] = {'method': m, 'value': v}
 
         try:

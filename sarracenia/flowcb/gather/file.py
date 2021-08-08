@@ -234,36 +234,47 @@ class File(FlowCB):
         return [msg]
 
     def compute_sumstr(self, path, msg):
+        """
+           check extended attributes for a cached integrity sum calculation.
+           if present, and 
+                  the file mtime is not too new, and 
+                  the cached sum using the same method
+              then use the cached value.
+
+           otherwise, will need to use calculate a checksum.
+           the method of checksum calculation is from options.integrity_method.
+           
+        """
         xattr = sarracenia.filemetadata.FileMetadata(path)
 
         if self.o.randomize:
             methods = [
                 'random', 'md5', 'md5name', 'sha512', 'cod,md5', 'cod,sha512'
             ]
-            sumflg = choice(methods)
+            calc_method = choice(methods)
         elif 'integrity' in xattr.x and 'mtime' in xattr.x:
             if xattr.get('mtime') >= self.msg.headers['mtime']:
                 logger.debug("mtime remembered by xattr")
                 return xattr.get('integrity')
             else:
                 logger.debug("xattr sum too old")
-                sumflg = self.o.sumflg
+                calc_method = self.o.integrity_method
         else:
-            sumflg = self.o.sumflg
+            calc_method = self.o.integrity_method
 
         xattr.set('mtime', msg['mtime'])
 
         #logger.debug("sum set by compute_sumstr")
 
-        if sumflg[:4] == 'cod,' and len(sumflg) > 2:
-            sumstr = sumflg
+        if calc_method[:4] == 'cod,' and len(calc_method) > 2:
+            sumstr = calc_method
         else:
-            sumalgo = sarracenia.integrity.Integrity.factory(sumflg)
+            sumalgo = sarracenia.integrity.Integrity.factory(calc_method)
             sumalgo.set_path(path)
 
             # compute checksum
 
-            if sumflg in ['md5', 'sha512']:
+            if calc_method in ['md5', 'sha512']:
 
                 fp = open(path, 'rb')
                 i = 0
@@ -276,7 +287,7 @@ class File(FlowCB):
 
             # setting sumstr
             checksum = sumalgo.get_value()
-            sumstr = {'method': sumflg, 'value': checksum}
+            sumstr = {'method': calc_method, 'value': checksum}
 
         xattr.set('integrity', sumstr)
         xattr.persist()

@@ -65,6 +65,7 @@ default_options = {
     'inflight': None,
     'inline': False,
     'inline_only': False,
+    'integrity_method': 'sha512',
     'notify_only': False,
     'overwrite': True,
     'post_documentRoot': None,
@@ -875,21 +876,21 @@ class Config:
     def _parse_sum(self, value):
         if (value in sarracenia.integrity.known_methods) or (
                 value[0:4] == 'cod,'):
-            self.sum = value
+            self.integrity_method = value
             return
 
         if (value[0:2] == 'z,'):
             value = value[3:]
-            self.sum = 'cod,'
+            self.integrity_method = 'cod,'
         else:
-            self.sum = ''
+            self.integrity_method = ''
 
         for sc in sarracenia.integrity.Integrity.__subclasses__():
             if hasattr(sc, 'registered_as') and (sc.registered_as() == value):
-                self.sum += sc.__name__.lower()
+                self.integrity_method += sc.__name__.lower()
                 return
         # FIXME this is an error return case, how to designate an invalid checksum?
-        self.sum = 'invalid'
+        self.integrity_method = 'invalid'
 
     def parse_file(self, cfg):
         """ add settings in file to self

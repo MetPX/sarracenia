@@ -19,12 +19,12 @@ default_options = {
     'preserve_time': True,
     'randomize': False,
     'rename': None,
-    'sumflg': 'sha512',
     'post_on_start': False,
     'sleep': -1,
     'nodupe_ttl': 0
 }
 
+#'sumflg': 'sha512',
 
 class Post(Flow):
     def __init__(self, options):
