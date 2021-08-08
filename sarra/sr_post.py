@@ -581,12 +581,13 @@ class sr_post(sr_instances):
             algos = ['0', 'd', 'n', 's', 'z,d', 'z,s']
             sumflg = choice(algos)
         elif 'sum' in xattr.x and 'mtime' in xattr.x:
+            sumflg = self.sumflg
             if xattr.get('mtime') >= self.msg.headers['mtime']:
                 self.logger.debug("mtime remembered by xattr")
-                return xattr.get('sum')
-            else:
-                self.logger.debug("xattr sum too old")
-                sumflg = self.sumflg
+
+                attr_sum = xattr.get('sum')
+                if attr_sum == self.sumflg :
+                    return attr_sum
         else:
             sumflg = self.sumflg
 

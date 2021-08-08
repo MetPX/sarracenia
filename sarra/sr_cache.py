@@ -69,7 +69,11 @@ class sr_cache():
         self.count         = 0
 
     def check(self, key, path, part):
-        self.logger.debug("sr_cache check basis=%s" % self.cache_basis )
+
+        if part is None:
+             self.logger.debug("sr_cache check basis=%s part0=%s key0=%s" % (self.cache_basis, "None", key[0]) )
+        else:
+             self.logger.debug("sr_cache check basis=%s part0=%s key0=%s" % (self.cache_basis, part[0], key[0]) )
 
         # not found 
         self.cache_hit = None
@@ -79,6 +83,7 @@ class sr_cache():
         relpath = self.__get_relpath(path)
         qpath = urllib.parse.quote(relpath)
 
+     
         #override part, when using n because n should be same regardless of size.
         if (key[0] == 'n' ) and (part[0] not in [ 'p', 'i' ]):
              value = '%s' % (relpath)
