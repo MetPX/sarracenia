@@ -1,4 +1,4 @@
-metpx-sr3 (3.00.007exp) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.008exp) UNRELEASED; urgency=medium
 
   * forked off from v2.
   * has MQTT support.
