@@ -36,6 +36,18 @@ Installation Instructions
 git
 ---
 
+2.21.08
+-------
+
+
+BUG FIXED by this release:
+
+it looks like -n (checksum based on file name) was not working as intended... for a long time, as reported in
+( https://github.com/MetPX/sarracenia/issues/377 ) when multiple file versions had different sizes, they
+would not be identified as the same file for duplicate_suppression purposes, making the -n option quite
+ineffective. Searching through the changelog, it looks like this has been present for a long time. 
+
+
 2.21.04
 -------
 

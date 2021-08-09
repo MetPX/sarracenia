@@ -586,8 +586,12 @@ class sr_post(sr_instances):
                 self.logger.debug("mtime remembered by xattr")
 
                 attr_sum = xattr.get('sum')
-                if attr_sum[0] == self.sumflg :
+                if ( attr_sum[0] == self.sumflg ) :
                     return attr_sum
+
+                if hasattr(self.msg.headers,'sum') and ( attr_sum[0] == self.msg.headers['sum'][0] ) :
+                    return attr_sum
+
         else:
             sumflg = self.sumflg
 
