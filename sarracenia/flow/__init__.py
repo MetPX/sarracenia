@@ -616,11 +616,19 @@ class Flow:
                 x = sarracenia.filemetadata.FileMetadata(msg['new_path'])
                 s = x.get('integrity')
 
-                if s:
-                    msg['local_integrity'] = x.get('integrity')
-                    msg['_deleteOnPost'] |= set(['local_integrity'])
-                    return
+                if s :
+                    metadata_cached_mtime = x.get('mtime')
+                    if ( ( metadata_cached_mtime >= msg['mtime'] ) ) :
+                        # file has not been modified since checksum value was stored.
 
+                        if (( 'integrity' in msg ) and ( 'method' in msg['integrity']  ) and \
+                            ( msg['integrity']['method'] == s['method'] )) or  \
+                            ( s['method'] ==  self.o.integrity_method ) :
+                            # file 
+                            # cache good.
+                            msg['local_integrity'] = s
+                            msg['_deleteOnPost'] |= set(['local_integrity'])
+                            return
             except:
                 pass
 
