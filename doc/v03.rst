@@ -266,7 +266,7 @@ Known Problems (Solved in v3)
 Concrete Plan
 -------------
 
-replace sarra/sr_config with sarra/sr_cfg2. The new sr_cfg2 uses argparse 
+Replace sarra/sr_config with sarra/sr_cfg2. The new sr_cfg2 uses argparse 
 and a simpler model for config file parsing. This became config.py
 
 make sr.py accept operations on subsets, so it becomes the unique entry point.
@@ -300,7 +300,7 @@ Should have identical failure recovery behaviour. But it doesn't  we have
 static flow test passing, but the flakey broker, which tests such recovery,
 is currently broken.
 
-sr_cfg2.py is still a stub, it has a lot of features and options, but
+sr_cfg2.py was still a stub, it has a lot of features and options, but
 it isn't clear how to expand it to all of them. the thing about instances
 inheriting from configure... it is odd, but hard to see how changing that
 will not break everything, plugin-wise... thinking about having defaults
@@ -492,6 +492,8 @@ After Parity: True Improvements
 
 * MQTT Support (Done!)
 
+* AMQP 1.0 support (SWIM support for Aviation exchange.)
+
 * Consider replacing manual queues in moth with more pythonic Queue.
   How to decide.
 
@@ -535,12 +537,29 @@ After Parity: True Improvements
 * log could read all the log files, so it would work with multiple
   instances.
 
-* figure out an AsyncAPI implementation for subscription at least.
+
+BUGS in wip
+-----------
+
+* md5 sums in v2 packets seem to be wrong, they disagree with v2 implementation, and 
+  result from command line.
+
+* issue #377 checksum n, when the file size changes, not yet addressed.
+
+* added "missing defaults" message, examine list, and see if we should set them all.
+
+* broke v2 compatibility at some point in flow_tests, need to find out what happenned
+  and return v2 verification.
+
 
 TODO
 ----
 
+* figure out an AsyncAPI implementation for subscription at least.
+
 * get partitioned file transfers working again.
+
+* convert existing poll to poll0 ? old poll.
 
 * alarm_set truncates to integers... hmm.. use setitimer instead? 
 
@@ -767,7 +786,7 @@ Features
 
 * sarra.moth class abstracts away AMQP, so messaging protocol becomes pluggable.
 
-* use the sarracenia. prefix (already present) to replace sr\_ prefix on modules.
+* use the sarracenia/ prefix (already present) to replace sr\_ prefix on modules.
 
 * API access to flows. (so can build entirely new programs in python by subclassing.)
 
@@ -810,3 +829,7 @@ when other testing done.
 * shim library commands other than the one or two tested.
 
 * file partitioning.
+
+* md5sum behaviour (ie. content changes, but checksum remains the same.)
+
+
