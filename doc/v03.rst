@@ -589,6 +589,10 @@ TODO
 * once full async mode available, allow multiple gathers and publishes.
   (again in future plans above.)
 
+* #33 add hostname to default queue.
+
+* #348 add statehost to .cache directory tree.
+
 
 
 Not Baked/Thinking
