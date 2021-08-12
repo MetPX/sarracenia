@@ -544,9 +544,19 @@ BUGS in wip
 * md5 sums in v2 packets seem to be wrong, they disagree with v2 implementation, and 
   result from command line.
 
+* v03_wip flow tests are now broken for v2.  Do not know when that happenned.  Need to
+  keep things comparable.
+
 * issue #377 checksum n, when the file size changes, not yet addressed.
 
 * added "missing defaults" message, examine list, and see if we should set them all.
+  check_undeclared_options missing defaults: {'discard', 'exchange_split', 
+  'pipe', 'post_total_maxlag', 'exchange_suffix', 'destination', 'inplace', 
+  'report_exchange', 'post_exchange_split', 'set_passwords', 'declare_exchange', 
+  'sanity_log_dead', 'report_daemons', 'realpath_filter', 'reconnect', 
+  'post_exchange_suffix', 'save', 'pump_flag', 'cache_stat', 'declare_queue', 'restore', 
+  'bind_queue', 'dry_run', 'source_from_exchange', 'retry_mode', 'poll_without_vip', 'header'}
+
 
 * broke v2 compatibility at some point in flow_tests, need to find out what happenned
   and return v2 verification.
@@ -554,6 +564,8 @@ BUGS in wip
 
 TODO
 ----
+
+* #369 ... clean shutdown
 
 * figure out an AsyncAPI implementation for subscription at least.
 
@@ -737,6 +749,8 @@ breaking changes:
 * loglevel none -> loglevel notset (now passing loglevel setting directly to python logging module, none isn't defined.)
 
 * log messages and output in interactive, will be completely different.
+
+* dropped settings: use_amqplib, use_pika... replaced by separate per protocol implementation libraries. amqp uses the 'amqp' library which is neither of the above.
 
 * dropping on_watch plugins. afaict, no-one uses them.  The way v03 works it would be an after_accept for a watch.
   makes more sense that way anyways.
