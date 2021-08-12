@@ -36,6 +36,7 @@ default_options = {
     'attempts': 3,
     'batch': 100,
     'bytes_per_second': None,
+    'discard' : False,
     'download': False,
     'events': 'create|delete|link|modify',
     'housekeeping': 30,
