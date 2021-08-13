@@ -895,8 +895,13 @@ class Config:
     def parse_file(self, cfg):
         """ add settings in file to self
        """
+        lineno=0
         for l in open(cfg, "r").readlines():
+            lineno+=1
             line = l.split()
+
+            #print('FIXME parsing %s:%d %s' % (cfg, lineno, line ))
+
             if (len(line) < 1) or (line[0].startswith('#')):
                 continue
 
@@ -910,7 +915,7 @@ class Config:
                     if (v in convert_to_v3[k]):
                         line = convert_to_v3[k][v]
                         k = line[0]
-                        logger.debug('Converting \"%s\" to v3: \"%s\"' % (l, line))
+                        logger.debug('%s:%d Converting \"%s\" to v3: \"%s\"' % (cfg, lineno, l, line))
                 else:
                     line = convert_to_v3[k]
                     k=line[0]
@@ -928,6 +933,16 @@ class Config:
 
             # FIXME... I think synonym check should happen here, but no time to check right now.
 
+            if k in flag_options:
+                if len(line) == 1:
+                    setattr(self, k, True)
+                else:
+                    setattr(self, k, isTrue(v))
+                continue
+
+            if len(line) < 2:
+                logger.error('%s:%d %s missing argument(s) ' % ( cfg, lineno, k ) )
+                continue
             if k in ['accept', 'reject', 'get']:
                 self.masks.append(self._build_mask(k, line[1:]))
             elif k in [ 'callback', 'cb' ]:
@@ -1008,23 +1023,13 @@ class Config:
                     self.strip = 0
             elif k in duration_options:
                 if len(line) == 1:
-                    logger.error(
-                        '%s is a duration option requiring a decimal number of seconds value'
-                        % line[0])
+                    logger.error( 
+                        '%s:%d  %s is a duration option requiring a decimal number of seconds value'
+                        % ( cfg, lineno, line[0]) )
                     continue
                 setattr(self, k, durationToSeconds(v))
             elif k in size_options:
-                if len(line) == 1:
-                    logger.error(
-                        '%s is a size option requiring a integer number of bytes (or multiple) value'
-                        % line[0])
-                    continue
                 setattr(self, k, chunksize_from_str(v))
-            elif k in flag_options:
-                if len(line) == 1:
-                    setattr(self, k, True)
-                else:
-                    setattr(self, k, isTrue(v))
             elif k in count_options:
                 setattr(self, k, int(v))
             elif k in list_options:
