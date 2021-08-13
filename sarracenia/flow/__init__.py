@@ -997,13 +997,14 @@ class Flow:
 
         if curdir != new_dir:
             # make sure directory exists, create it if not
-            if not os.path.isdir(new_dir):
-                try:
+            try:
+                if not os.path.isdir(new_dir):
                     os.makedirs(new_dir, 0o775, True)
-                except Exception as ex:
-                    logger.warning("making %s: %s" % (new_dir, ex))
-                    logger.debug('Exception details:', exc_info=True)
-            os.chdir(new_dir)
+                os.chdir(new_dir)
+            except Exception as ex:
+                logger.warning("making %s: %s" % (new_dir, ex))
+                logger.debug('Exception details:', exc_info=True)
+                return False
 
         try:
             options.destination = msg['baseUrl']
