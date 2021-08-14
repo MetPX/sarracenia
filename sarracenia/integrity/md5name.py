@@ -26,7 +26,8 @@ class Md5name(Integrity):
 
     def set_path(self, path):
         self.filename = os.path.basename(path)
-        self.filehash = md5()
+        self.update( None )
          
     def update(self, chunk ):
+        self.filehash = md5()
         self.filehash.update( bytes(self.filename, 'utf-8') )
