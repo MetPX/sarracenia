@@ -534,7 +534,8 @@ class Flow:
             try:
                 os.makedirs(msg['new_dir'], 0o775, True)
             except Exception as ex:
-                logger.warning("making %s: %s" % (newdir, ex))
+                logger.error("failed to make directory %s: %s" % (newdir, ex))
+                return False
 
         logger.info("data inlined with message, no need to download")
         path = msg['new_dir'] + os.path.sep + msg['new_file']
@@ -1183,7 +1184,11 @@ class Flow:
             curdir = None
 
         if curdir != local_dir:
-            os.chdir(local_dir)
+            try: 
+                os.chdir(local_dir)
+            except Exception as ex:
+                logger.error("could chdir to %s to write: %s" % (local_dir, ex))
+                return False
 
         try:
 
