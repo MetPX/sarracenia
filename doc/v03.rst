@@ -541,14 +541,9 @@ After Parity: True Improvements
 BUGS in wip
 -----------
 
-* md5 sums in v2 packets seem to be wrong, they disagree with v2 implementation, and 
-  result from command line.
-
 * v03_wip flow tests are now broken for v2.  Do not know when that happenned.  Need to
   keep things comparable.  broke v2 compatibility at some point in flow_tests, need 
   to find out what happenned and return v2 verification.
-
-* issue #377 checksum n, when the file size changes, not yet addressed.
 
 * added "missing defaults" message, examine list, and see if we should set them all.
   check_undeclared_options missing defaults: {'discard', 'exchange_split', 
