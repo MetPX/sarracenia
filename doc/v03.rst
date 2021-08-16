@@ -538,12 +538,8 @@ After Parity: True Improvements
   instances.
 
 
-BUGS in wip
------------
-
-* v03_wip flow tests are now broken for v2.  Do not know when that happenned.  Need to
-  keep things comparable.  broke v2 compatibility at some point in flow_tests, need 
-  to find out what happenned and return v2 verification.
+TODO
+----
 
 * added "missing defaults" message, examine list, and see if we should set them all.
   check_undeclared_options missing defaults: {'discard', 'exchange_split', 
@@ -552,12 +548,6 @@ BUGS in wip
   'sanity_log_dead', 'report_daemons', 'realpath_filter', 'reconnect', 
   'post_exchange_suffix', 'save', 'pump_flag', 'cache_stat', 'declare_queue', 'restore', 
   'bind_queue', 'dry_run', 'source_from_exchange', 'retry_mode', 'poll_without_vip', 'header'}
-
-
-
-
-TODO
-----
 
 * #369 ... clean shutdown
 
@@ -781,8 +771,14 @@ breaking changes:
        2021-04-03 10:13:07,310 [ERROR] sarracenia.transfer read_writelocal util/writelocal mismatched file length writing FCAS31_KWBC_031412___39224.slink. Message said to expect 135 bytes.  Got 114 bytes.
 
   the file is 114 bytes, by the link path is 135 bytes... 
-  both v2 and v3 download the file correctly, but v3 produces this error message.
+  both v2 and v3 download the file and not the link, but v3 produces this error message.
   Thinking about this one...  is it a bug in poll? 
+
+* In v2, if you delete a file, and then re-create it, an event will be created.
+  In v3, if you do the same, the old entry will be in the nodupe cache, and the event will be suppressed.
+  I have noticed this difference, but not sure which version's behaviour is correct.
+  it could be fixed, if we decide the old behaviour is right.
+
 
 Features
 --------
