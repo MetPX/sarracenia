@@ -510,7 +510,7 @@ class sr_GlobalState:
                             # look for instances that should be running, but no pid file exists.
                             for i in range(1, int(self.configs[c][cfg]['instances'])+1 ):
                                 if not i in self.states[c][cfg]['instance_pids']:
-                                    if pid not in self.procs:
+                                    if i not in self.procs:
                                         missing.append([c,cfg,i])
                         os.chdir('..')
                 os.chdir('..')
@@ -582,7 +582,8 @@ class sr_GlobalState:
                 lff = lf.split('_')
                 if len(lff) > 2:
                     c = lff[0]
-                    if c == 'sr': continue  # old log, just ignore.
+                    if ( c == 'sr' ) or ( c not in self.components): 
+                        continue  # old or inapplicable log, ignore.
                     cfg = '_'.join(lff[1:-1])
 
                     suffix = lff[-1].split('.')
