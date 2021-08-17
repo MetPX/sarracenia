@@ -500,7 +500,6 @@ class sr_GlobalState:
             # just patched to not crash for now.
             for lf in os.listdir():
                 lff = lf.split('_')
-                # print('looking at: %s' %lf )
                 if len(lff) > 3:
                     c = lff[1]
                     cfg = '_'.join(lff[2:-1])

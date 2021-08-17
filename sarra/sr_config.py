@@ -1599,7 +1599,7 @@ class sr_config:
                         self.accept_unmatch = True
                         n = 1
                      else :
-                        self.accept_unmatch = self.isTrue(words[1])
+                        self.accept_unmatch = self.isTrue(words1)
                         n = 2
 
                 elif words0 in [ 'a', 'action' ]:
@@ -1621,7 +1621,7 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'batch' : # See: sr_config.7
-                     self.batch = int(words[1])
+                     self.batch = int(words1)
                      n = 2
 
                 elif words0 in ['base_dir','bd']: # See: sr_config.7  for sr_post.1,sarra,sender,watch
@@ -1646,7 +1646,7 @@ class sr_config:
                         self.bind_queue = True
                         n = 1
                      else :
-                        self.bind_queue = self.isTrue(words[1])
+                        self.bind_queue = self.isTrue(words1)
                         n = 2
 
                 elif words0 in ['broker','b'] : # See: sr_consumer.7 ++   fixme: everywhere, perhaps reduce
@@ -1659,7 +1659,7 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'blocksize' :   # See: sr_config.7
-                     self.blocksize = self.chunksize_from_str(words[1])
+                     self.blocksize = self.chunksize_from_str(words1)
                      if self.blocksize == 1:
                         self.parts   =  '1'
                         ok = self.validate_parts()
@@ -1667,7 +1667,7 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'bufsize' :   # See: sr_config.7
-                     self.bufsize = int(words[1])
+                     self.bufsize = int(words1)
                      n = 2
 
                 elif words0 in [ 'caching', 'cache', 'no_duplicates', 'noduplicates', 'nd', 'suppress_duplicates', 'sd' ] : # See: sr_post.1 sr_watch.1
@@ -1675,8 +1675,8 @@ class sr_config:
                         self.caching = 300
                         n = 1
                      else :
-                        if words[1].isalpha():
-                               self.caching = self.isTrue(words[1])
+                        if words1.isalpha():
+                               self.caching = self.isTrue(words1)
                                if self.caching : self.caching = 300
                         else :
                                # caching setting is in sec 
@@ -1704,19 +1704,19 @@ class sr_config:
                         self.cache_stat = True
                         n = 1
                      else :
-                        self.cache_stat = self.isTrue(words[1])
+                        self.cache_stat = self.isTrue(words1)
                         n = 2
 
                 elif words0 in [ 'chmod', 'default_mode', 'dm']:    # See: sr_config.7.rst
-                     self.chmod = int(words[1],8)
+                     self.chmod = int(words1,8)
                      n = 2
 
                 elif words0 in [ 'chmod_dir', 'default_dir_mode', 'ddm' ]:    # See: sr_config.7.rst
-                     self.chmod_dir = int(words[1],8)
+                     self.chmod_dir = int(words1,8)
                      n = 2
 
                 elif words0 in [ 'chmod_log', 'default_log_mode', 'dlm' ]:    
-                     self.chmod_log = int(words[1],8)
+                     self.chmod_log = int(words1,8)
                      n = 2
 
                 elif words0 in ['cluster','cl','from_cluster','fc']: # See: sr_config.7
@@ -1747,7 +1747,7 @@ class sr_config:
                      if (words1 is None) or words[0][0:1] == '-':
                         self.loglevel = logging.DEBUG
                         n = 1
-                     elif self.isTrue(words[1]):
+                     elif self.isTrue(words1):
                         self.loglevel = logging.DEBUG
                         n = 2
 
@@ -1756,7 +1756,7 @@ class sr_config:
                         self.declare_exchange = True
                         n = 1
                      else :
-                        self.declare_exchange = self.isTrue(words[1])
+                        self.declare_exchange = self.isTrue(words1)
                         n = 2
 
                 elif words0 in ['declare_queue','dq']: # See: sr_config.7
@@ -1764,7 +1764,7 @@ class sr_config:
                         self.declare_queue = True
                         n = 1
                      else :
-                        self.declare_queue = self.isTrue(words[1])
+                        self.declare_queue = self.isTrue(words1)
                         n = 2
 
                 elif words0 == 'delete': # See: sr_sarra.8
@@ -1772,7 +1772,7 @@ class sr_config:
                         self.delete = True
                         n = 1
                      else :
-                        self.delete = self.isTrue(words[1])
+                        self.delete = self.isTrue(words1)
                         n = 2
 
                 elif words0 == 'destfn_script': # See: sr_sender(1)
@@ -1805,7 +1805,7 @@ class sr_config:
                         self.discard = True
                         n = 1
                      else :
-                        self.discard = self.isTrue(words[1])
+                        self.discard = self.isTrue(words1)
                         n = 2
 
                 elif words0 in ['document_root','dr']: # See sr_post.1,sarra,sender,watch
@@ -1854,7 +1854,7 @@ class sr_config:
                         self.dry_run = True
                         n = 1
                      else :
-                        self.dry_run = self.isTrue(words[1])
+                        self.dry_run = self.isTrue(words1)
                         n = 2
 
                 elif words0 == 'durable'   : # See sr_config.7 ++
@@ -1862,38 +1862,38 @@ class sr_config:
                         self.durable = True
                         n = 1
                      else :
-                        self.durable = self.isTrue(words[1])
+                        self.durable = self.isTrue(words1)
                         n = 2
 
                 elif words0 in ['events','e']:  # See sr_watch.1
                      i = 0
-                     if 'deleted' in words[1]:
+                     if 'deleted' in words1:
                          self.logger.warning("deprecated Event spec: please change 'deleted' --> 'delete'")
-                         words[1] = words[1].replace("deleted","delete")
+                         words1 = words1.replace("deleted","delete")
 
-                     if 'created' in words[1]:
+                     if 'created' in words1:
                          self.logger.warning("deprecated Event spec: please change 'created' --> 'create'")
-                         words[1] = words[1].replace("created","create")
+                         words1 = words1.replace("created","create")
 
-                     if 'linked' in words[1]:
+                     if 'linked' in words1:
                          self.logger.warning("deprecated Event spec: please change 'linked' --> 'link'")
-                         words[1] = words[1].replace("linked","link")
+                         words1 = words1.replace("linked","link")
 
-                     if 'modified' in words[1]:
+                     if 'modified' in words1:
                          self.logger.warning("deprecated event spec: please change 'modified' --> 'modify'")
-                         words[1] = words[1].replace("modified","modify")
+                         words1 = words1.replace("modified","modify")
 
-                     if 'create'  in words[1] : i = i + 1
-                     if 'delete'  in words[1] : i = i + 1
-                     if 'link' in words[1] : i = i + 1
-                     if 'modify' in words[1] : i = i + 1
-                     if 'move'  in words[1] : i = i + 1
+                     if 'create'  in words1 : i = i + 1
+                     if 'delete'  in words1 : i = i + 1
+                     if 'link' in words1 : i = i + 1
+                     if 'modify' in words1 : i = i + 1
+                     if 'move'  in words1 : i = i + 1
                      
-                     if i < len(words[1].split(',')) :
-                        self.logger.error("events invalid (%s)" % words[1])
+                     if i < len(words1.split(',')) :
+                        self.logger.error("events invalid (%s)" % words1)
                         needexit = True
 
-                     self.events = words[1]
+                     self.events = words1
                      n = 2
 
                 elif words0 in ['exchange','ex'] : # See: sr_config.7 ++ everywhere fixme?
@@ -1905,7 +1905,7 @@ class sr_config:
                         self.exchange_split = True
                         n = 1
                      else :
-                        self.exchange_split = self.isTrue(words[1])
+                        self.exchange_split = self.isTrue(words1)
                         n = 2
 
                 elif words0 in ['exchange_suffix'] : # FIXME: sr_config.7 ++ everywhere fixme?
@@ -1919,11 +1919,11 @@ class sr_config:
                            # rabbitmq setting is in millisec / user in secs
                            self.expire = int(self.duration_from_str(words1,'ms'))
                            if self.expire < 300000 : 
-                              self.logger.warning("expire setting (%s) may cause problem...too low" % words[1])
+                              self.logger.warning("expire setting (%s) may cause problem...too low" % words1)
                      n = 2
 
                 elif words0 == 'filename': # See: sr_poll.1, sr_sender.1
-                     self.currentFileOption = words[1]
+                     self.currentFileOption = words1
                      n = 2
 
                 elif words0 in ['realpath_filter','fr']: # FIXME: MG new
@@ -1931,11 +1931,11 @@ class sr_config:
                         self.realpath_filter = True
                         n = 1
                      else :
-                        self.realpath_filter = self.isTrue(words[1])
+                        self.realpath_filter = self.isTrue(words1)
                         n = 2
 
                 elif words0 in [ 'flatten' ]: # See: sr_poll.1, sr_sender.1
-                     self.flatten = words[1]
+                     self.flatten = words1
                      n = 2
 
                 elif words0 in ['follow_symlinks','fs']: # See: sr_post.1, sr_watch.1
@@ -1943,7 +1943,7 @@ class sr_config:
                         self.follow_symlinks = True
                         n = 1
                      else :
-                        self.follow_symlinks = self.isTrue(words[1])
+                        self.follow_symlinks = self.isTrue(words1)
                         n = 2
 
                 elif words0 in ['force_polling','fp']: # See: sr_post.1, sr_watch.1
@@ -1951,7 +1951,7 @@ class sr_config:
                         self.force_polling = True
                         n = 1
                      else :
-                        self.force_polling = self.isTrue(words[1])
+                        self.force_polling = self.isTrue(words1)
                         n = 2
 
                 elif words0 in ['header']: # See: sr_config.7
@@ -1999,7 +1999,7 @@ class sr_config:
                      os._exit(0)
 
                 elif words0 in ['hostname']: # See: dd_subscribe (obsolete option...ok)
-                     self.hostname = words[1] 
+                     self.hostname = words1 
                      n = 2
 
                 elif words0 in ['inline','inl','content' ]: # See: sr_config.7
@@ -2007,7 +2007,7 @@ class sr_config:
                         self.inline = True
                         n = 1
                      else :
-                        self.inline = self.isTrue(words[1])
+                        self.inline = self.isTrue(words1)
                         n = 2
 
                 elif words0 in ['inline_encoding','inlenc','content_encoding' ]: # See: sr_config.7
@@ -2021,7 +2021,7 @@ class sr_config:
                      n = 2
 
                 elif words0 in ['inline_max','imx', 'content_max' ]: # See: sr_config.7
-                     self.inline_max = int(words[1])
+                     self.inline_max = int(words1)
                      n = 2
 
                 elif words0 in ['inplace','in','assemble']: # See: sr_sarra.8, sr_post.1, sr_watch.1
@@ -2029,33 +2029,33 @@ class sr_config:
                         self.inplace = True
                         n = 1
                      else :
-                        self.inplace = self.isTrue(words[1])
+                        self.inplace = self.isTrue(words1)
                         n = 2
 
                 elif words0 in ['instance', 'instances','i']: # See: sr_config.7
-                     self.nbr_instances = int(words[1])
+                     self.nbr_instances = int(words1)
                      n = 2
 
                 elif words0 == 'interface': # See: sr_poll, sr_winnow
                      self.logger.warning("deprecated *interface* option no longer has any effect, vip is enough." )
-                     self.interface = words[1]
+                     self.interface = words1
                      n = 2
 
                 elif words0 == 'kbytes_ps': # See: sr_sender 
-                     self.kbytes_ps = int(words[1])
+                     self.kbytes_ps = int(words1)
                      n = 2
 
                 elif words0 in ['lock','inflight']: # See: sr_config.7, sr_subscribe.1
                      if words0 in [ 'lock' ]: # FIXME: remove support in 2019.
                         self.logger.warning( "Deprecated option. Please use *inflight* instead of *lock*" )
 
-                     if words[1].lower() in [ 'none' ]: 
+                     if words1.lower() in [ 'none' ]: 
                          self.inflight=None
-                     elif words[1][0].isnumeric() :
+                     elif words1[0].isnumeric() :
                          self.inflight = self.duration_from_str(words1,'s')
                          if self.inflight <= 1 : self.inflight = None
                      else:
-                         self.inflight = words[1] 
+                         self.inflight = words1 
                      n = 2
 
                 elif words0 in [ 'log_reject' ]: # See: sr_sarra.8
@@ -2063,12 +2063,12 @@ class sr_config:
                         self.log_reject = True
                         n = 1
                      else :
-                        self.log_reject = self.isTrue(words[1])
+                        self.log_reject = self.isTrue(words1)
                         n = 2
 
                 elif words0 == 'ls_file_index': # FIX ME to document... position of file in ls
                                                 #        use when space in filename is expected
-                     self.ls_file_index = int(words[1])
+                     self.ls_file_index = int(words1)
                      n = 2
 
 
@@ -2077,7 +2077,7 @@ class sr_config:
                         self.pipe = True
                         n = 1
                      else :
-                        self.pipe = self.isTrue(words[1])
+                        self.pipe = self.isTrue(words1)
                         n = 2
 
                 elif words0 == 'restore' : # See: sr_config.7 
@@ -2086,7 +2086,7 @@ class sr_config:
                         self.restore = True
                         n = 1
                      else :
-                        self.restore = self.isTrue(words[1])
+                        self.restore = self.isTrue(words1)
                         n = 2
 
                 elif words0 in ['restore_to_queue', 'restore2queue', 'r2q', 'rq', 'post_queue']: 
@@ -2100,7 +2100,7 @@ class sr_config:
                         self.report_daemons = True
                         n = 1
                      else :
-                        self.report_daemons = self.isTrue(words[1])
+                        self.report_daemons = self.isTrue(words1)
                         n = 2
 
                 elif words0 in ['report_exchange', 'lx', 'le'] : # See: sr_config.7 ++ everywhere fixme?
@@ -2152,7 +2152,7 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'max_queue_size':  # See: sr_audit.8 (sr_config also)
-                     self.max_queue_size = int(words[1])
+                     self.max_queue_size = int(words1)
                      n = 2
 
                 elif words0 in [ 'message-ttl', 'message_ttl' ]:  # See: sr_consumer.7
@@ -2162,7 +2162,7 @@ class sr_config:
                            # rabbitmq setting is in millisec 
                            self.message_ttl = int(self.duration_from_str(words1,'ms'))
                            if self.message_ttl < 300000 :
-                              self.logger.warning("message_ttl setting (%s) may cause problem...too low" % words[1])
+                              self.logger.warning("message_ttl setting (%s) may cause problem...too low" % words1)
                      n = 2
 
                 elif words0 == 'mirror': # See: sr_config.7 
@@ -2170,7 +2170,7 @@ class sr_config:
                         self.mirror = True
                         n = 1
                      else :
-                        self.mirror = self.isTrue(words[1])
+                        self.mirror = self.isTrue(words1)
                         n = 2
 
                 elif words0 == 'move': # See: sr_post.1
@@ -2183,7 +2183,7 @@ class sr_config:
                 # there are N instances asked to start each one having its own number (no)
                 # -no 1,  -no 2, ...  -no N
                 elif words0 == 'no':
-                     self.no = int(words[1])
+                     self.no = int(words1)
                      n = 2
 
                 elif words0 in ['notify_only','n','no_download']:  # See: sr_subscribe.1
@@ -2191,7 +2191,7 @@ class sr_config:
                         self.notify_only = True
                         n = 1
                     else:
-                        self.notify_only = self.isTrue(words[1])
+                        self.notify_only = self.isTrue(words1)
                         n = 2
 
                 elif words0 == 'on_data': # See: sr_config.7, sr_sarra,shovel,subscribe
@@ -2279,11 +2279,11 @@ class sr_config:
                         self.overwrite = True
                         n = 1
                      else :
-                        self.overwrite = self.isTrue(words[1])
+                        self.overwrite = self.isTrue(words1)
                         n = 2
 
                 elif words0 == 'parts': # See: sr_poll.1, sr_watch.1
-                     self.parts   = words[1]
+                     self.parts   = words1
                      ok = self.validate_parts()
                      if not ok : needexit = True
                      n = 2
@@ -2374,7 +2374,7 @@ class sr_config:
                         self.post_on_start = True
                         n = 1
                      else :
-                        self.post_on_start = self.isTrue(words[1])
+                        self.post_on_start = self.isTrue(words1)
                         n = 2
 
                 elif words0 in ['post_topic_prefix', 'ptp' ]: # FIXME: sr_sarra,sender,shovel,winnow 
@@ -2394,7 +2394,7 @@ class sr_config:
                         self.poll_without_vip = True
                         n = 1
                      else :
-                        self.poll_without_vip = self.isTrue(words[1])
+                        self.poll_without_vip = self.isTrue(words1)
                         n = 2
 
                 elif words0 == 'prefetch': # See: sr_consumer.1  (Nbr of prefetch message when queue is shared)
@@ -2406,7 +2406,7 @@ class sr_config:
                         self.preserve_mode = True
                         n = 1
                      else :
-                        self.preserve_mode = self.isTrue(words[1])
+                        self.preserve_mode = self.isTrue(words1)
                         n = 2
 
                 elif words0 in ['preserve_time','pt'] : # See: sr_config.7
@@ -2414,7 +2414,7 @@ class sr_config:
                         self.preserve_time = True
                         n = 1
                      else :
-                        self.preserve_time = self.isTrue(words[1])
+                        self.preserve_time = self.isTrue(words1)
                         n = 2
 
                 elif words0 == 'pump':  # See: sr_audit.1  (give pump hints or setting errors)
@@ -2422,7 +2422,7 @@ class sr_config:
                         self.pump_flag = True
                         n = 1
                      else :
-                        self.pump_flag = self.isTrue(words[1])
+                        self.pump_flag = self.isTrue(words1)
                         n = 2
 
                 elif words0 in ['queue', 'queue_name','qn'] : # See:  sr_config.7, sender, shovel, sub, winnow too much?
@@ -2439,7 +2439,7 @@ class sr_config:
                         self.randomize = True
                         n = 1
                      else :
-                        self.randomize = self.isTrue(words[1])
+                        self.randomize = self.isTrue(words1)
                         n = 2
 
                 elif words0 in ['realpath_post','realpath','real']: # See: sr_post.1, sr_watch.1
@@ -2447,7 +2447,7 @@ class sr_config:
                         self.realpath_post = True
                         n = 1
                      else :
-                        self.realpath_post = self.isTrue(words[1])
+                        self.realpath_post = self.isTrue(words1)
                         n = 2
 
                 elif words0 in ['reconnect','rr']: # See: sr_post.1, sr_watch.1
@@ -2455,11 +2455,11 @@ class sr_config:
                         self.reconnect = True
                         n = 1
                      else :
-                        self.reconnect = self.isTrue(words[1])
+                        self.reconnect = self.isTrue(words1)
                         n = 2
 
                 elif words0 in ['remote_config_url']: # See: sr_config.7
-                     self.remote_config_url = words[1]
+                     self.remote_config_url = words1
                      n = 2
 
                 elif words0 in ['rename','rn']: # See: sr_poll, sarra, sender, sub, watch? 
@@ -2471,7 +2471,7 @@ class sr_config:
                         self.reportback = True
                         n = 1
                      else :
-                        self.reportback = self.isTrue(words[1])
+                        self.reportback = self.isTrue(words1)
                         n = 2
 
                 elif words0 in ['reset']:  # See: sr_consumer.1
@@ -2479,7 +2479,7 @@ class sr_config:
                         self.reset = True
                         n = 1
                      else :
-                        self.reset = self.isTrue(words[1])
+                        self.reset = self.isTrue(words1)
                         n = 2
 
                 elif words0 in [ 'retry', 'retry_mode']:  # See: sr_consumer.1
@@ -2487,7 +2487,7 @@ class sr_config:
                         self.retry_mode = True
                         n = 1
                      else :
-                        self.retry_mode = self.isTrue(words[1])
+                        self.retry_mode = self.isTrue(words1)
                         n = 2
 
                 elif words0 in ['retry_ttl']:  # FIXME to be documented
@@ -2498,7 +2498,7 @@ class sr_config:
                      n = 2
 
                 elif words0 in [ 'role', 'declare' ]:  # See: sr_audit.1
-                     item = words[1].lower()
+                     item = words1.lower()
                      if words0 in [ 'role' ]:
                         self.logger.warning("role option deprecated, please replace with 'declare'" )
 
@@ -2530,11 +2530,11 @@ class sr_config:
                         self.save = True
                         n = 1
                      else :
-                        self.save = self.isTrue(words[1])
+                        self.save = self.isTrue(words1)
                         n = 2
 
                 elif words0 in [ 'save_file', 'sf' ]: # FIXMEFIXME
-                     self.save_file = words[1]
+                     self.save_file = words1
                      n = 2
 
                 elif words0 in ['set_passwords']:  # See: sr_consumer.1
@@ -2542,7 +2542,7 @@ class sr_config:
                         self.set_passwords = True
                         n = 1
                      else :
-                        self.set_passwords = self.isTrue(words[1])
+                        self.set_passwords = self.isTrue(words1)
                         n = 2
 
                 elif words0 == 'sleep': # See: sr_audit.8 sr_poll.1
@@ -2552,7 +2552,7 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'source': # See: sr_post.1 sr_watch.1
-                     self.source = words[1]
+                     self.source = words1
                      n = 2
 
                 elif words0 in ['source_from_exchange','sfe']: # See: sr_sarra.8
@@ -2560,7 +2560,7 @@ class sr_config:
                         self.source_from_exchange = True
                         n = 1
                      else :
-                        self.source_from_exchange = self.isTrue(words[1])
+                        self.source_from_exchange = self.isTrue(words1)
                         n = 2
 
                 elif words0 == 'statehost':  # MG FIXME to be documented somewhere ???
@@ -2572,7 +2572,7 @@ class sr_config:
                         self.hostform = words1.lower()
                         n = 2
                      else:
-                        if not self.isTrue(words[1]):
+                        if not self.isTrue(words1):
                             self.statehost = False
                         n = 2
 
@@ -2612,7 +2612,7 @@ class sr_config:
                      n = 2
 
                 elif words0 == 'sum': # See: sr_config.7 
-                     self.sumflg = words[1]
+                     self.sumflg = words1
                      ok = self.validate_sum()
                      if not ok : 
                         self.logger.error("unknown checksum specified: %s, should be one of: %s or z" % ( self.sumflg, ', '.join(self.sumalgos.keys()) ) )
@@ -2675,7 +2675,7 @@ class sr_config:
                         self.use_amqplib = True
                         n = 1
                      elif not self.use_pika and amqplib_available:
-                        self.use_amqplib = self.isTrue(words[1])
+                        self.use_amqplib = self.isTrue(words1)
                         n = 2
                      else:
                         n = 2
@@ -2685,7 +2685,7 @@ class sr_config:
                         self.use_pika = True
                         n = 1
                      elif not self.use_amqplib and pika_available:
-                        self.use_pika = self.isTrue(words[1])
+                        self.use_pika = self.isTrue(words1)
                         n = 2
                      else:
                         n = 2
@@ -2695,11 +2695,11 @@ class sr_config:
                         self.users_flag = True
                         n = 1
                      else :
-                        self.users_flag = self.isTrue(words[1])
+                        self.users_flag = self.isTrue(words1)
                         n = 2
 
                 elif words0 == 'vip': # See: sr_poll.1, sr_winnow.1
-                     self.vip = words[1]
+                     self.vip = words1
                      n = 2
 
                 elif words0 in [ 'windows_run', 'wr'  ] : # See: sr_post.1 sr_watch.1
@@ -2717,7 +2717,7 @@ class sr_config:
                         xattr_disabled = True
                         n = 1
                      else :
-                        xattr_disabled = self.isTrue(words[1])
+                        xattr_disabled = self.isTrue(words1)
                         n = 2
                      if xattr_disabled:
                         self.logger.info("checksum caching in file attributes has been disabled")
