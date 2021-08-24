@@ -39,13 +39,31 @@ git
 2.21.08
 -------
 
+*CHANGES*: BUGFIXED by this release: https://github.com/MetPX/sarracenia/issues/374
 
-BUG FIXED by this release:
+sundew_extension was not appended to file name in patter match. This means patterns
+such as:
 
-it looks like -n (checksum based on file name) was not working as intended... for a long time, as reported in
-( https://github.com/MetPX/sarracenia/issues/377 ) when multiple file versions had different sizes, they
-would not be identified as the same file for duplicate_suppression purposes, making the -n option quite
-ineffective. Searching through the changelog, it looks like this has been present for a long time. 
+accept .*.txt$
+reject .*.txt
+
+may change behaviour, as if the sundew_extension attribute is included in the message,
+then it's value will be appended to the url which is evaluated by accept/reject clauses.
+
+
+*CHANGES*: BUG FIXED by this release: https://github.com/MetPX/sarracenia/issues/377
+
+it looks like -n (checksum based on file name) was not working as intended... 
+for a long time. When multiple file versions had different sizes, they would
+not be identified as the same file for duplicate_suppression purposes, making
+the -n option quite ineffective. Searching through the changelog, it looks like
+this has been present for a long time. 
+
+*CHANGES*: BUG FIXED by this release: https://github.com/MetPX/sarracenia/issues/386
+
+environment variables as arguments to numeric or truth value arguments are not
+honoured in versions older than this.
+
 
 
 2.21.04

@@ -1,5 +1,6 @@
 metpx-sarracenia (2.21.08) UNRELEASED; urgency=medium
 
+  * bugfix #386 not honouring environment variables.
   * bugfix #377 not interpreting sum n properly.
   * bugfix #374 not interpreting sundew_extension properly.
   * bugfix #366 polling of old files when date format on remote server changes.
