@@ -28,7 +28,7 @@ To hack on the sarracenia source, you need:
 
 after you have cloned the source code::
 
-    git clone -b v03_wip https://github.com/MetPX/sarracenia sr3
+    git clone -b v03_wip https://github.com/MetPX/sarracenia metpx-sr3
     git clone -b v03 https://github.com/MetPX/sarrac sr3c
     cd sr3
 
@@ -148,7 +148,7 @@ This section describes creating a test environment for use in a virtual machine.
 a virtual machine is to use multipass (https://multipass.run) Assuming it is installed, one can
 create a vm with::
 
- multipass launch -m 4G --name flow
+ multipass launch -m 4G -d 50G --name flow
 
 need to have ssh localhost work in the multipass container.  Can do that by copying multipass
 private key into the container::

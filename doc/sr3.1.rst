@@ -1488,7 +1488,7 @@ The module refers to the sarracenia/flowcb/msg/log.py file in the installed pack
 In that file, the Log class is the one searched for entry points.
 The log.py file included in the package is like this::
 
-  from sarra.flowcb import FlowCB
+  from sarracenia.flowcb import FlowCB
   import logging
 
   logger = logging.getLogger( __name__ ) 
@@ -1545,9 +1545,9 @@ would look like this::
 
   logger = logging.getLogger(__name__)
 
-  import sarra.transfer
+  import sarracenia.transfer
 
-  class torr(sarra.transfer.Transfer):
+  class torr(sarracenia.transfer.Transfer):
       pass
 
   logger.warning("loading")
