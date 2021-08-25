@@ -50,7 +50,8 @@ Run this command::
 
 Running Sarracenia without a Command Prompt
 -------------------------------------------
-Here is a case where someone (like a sysadmin) needs to run Sarracenia without a Command Prompt and ensure that the system starts at Windows startup. The obvious way of doing it would be from the Task Scheduler.
+Here is a case where someone (like a sysadmin) needs to run Sarracenia without a Command Prompt and ensure that the system starts at Windows startup.
+The obvious way of doing it would be from the Task Scheduler.
 
 From the Task Scheduler:
 ~~~~~~~~~~~~~~~~~~~~~~~~

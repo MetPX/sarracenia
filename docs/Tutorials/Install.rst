@@ -20,8 +20,8 @@ avialable from PyPI. In both cases, the other python packages (or dependencies) 
 will be installed by the package manager automatically.
 
 
-Ubuntu/Debian (apt/dpkg)
-~~~~~~~~~~~~~~~~~~~~~~~~
+Ubuntu/Debian (apt/dpkg) **Recommended**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 On Ubuntu 14.04/16.04/17.10/18.04 and derivatives of same::
 
@@ -37,54 +37,52 @@ Redhat/Suse distros (rpm based)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Python distutils on redhat package manager based distributions does not handle dependencies
-with the current packaging, so one needs to manually install them.  For example:
-On fedora 28::
+with the current packaging, so one needs to manually install them.
+For example, on fedora 28::
  
-  sudo dnf install python3-amqplib
-  sudo dnf install python3-appdirs
-  sudo dnf install python3-watchdog
-  sudo dnf install python3-netifaces
-  sudo dnf install python3-humanize
-  sudo dnf install python3-psutil
-  sudo dnf install python3-paramiko   # adds SFTP support.
+  $ sudo dnf install python3-amqplib
+  $ sudo dnf install python3-appdirs
+  $ sudo dnf install python3-watchdog
+  $ sudo dnf install python3-netifaces
+  $ sudo dnf install python3-humanize
+  $ sudo dnf install python3-psutil
+  $ sudo dnf install python3-paramiko   # adds SFTP support.
 
-  sudo dnf install python3-setuptools # needed to build rpm package.
+  $ sudo dnf install python3-setuptools # needed to build rpm package.
 
 
-Once the dependencies are in place, one can build an RPM file using setuptools::
+Once the dependencies are in place, one can build an RPM file using ``setuptools``::
 
-  git clone https://github.com/MetPX/sarracenia
-  cd sarracenia
+  $ git clone https://github.com/MetPX/sarracenia
+  $ cd sarracenia
 
-  python3 setup.py bdist_rpm
-  sudo rpm -i dist/*.noarch.rpm
+  $ python3 setup.py bdist_rpm
+  $ sudo rpm -i dist/*.noarch.rpm
 
-This procedured installs only the python application (not the C one.)
-No man pages or other documentation are installed either.
+This procedure installs only the python application (not the C one.)
+No man pages nor other documentation is installed either.
 
 
 PIP
 ~~~
 
-On other linux distributions where system packages are not available, the above procedures are not applicable.
-You may also want to use this procedures on Windows, depending if Python is already installed.
+On Windows or other linux distributions where system packages are not available, the above procedures are not applicable.
 There are also special cases, such as if using python in virtual env, where it is more practical to install
 the package using pip (python install package) from `<http://pypi.python.org/>`_.
 It is straightforward to do that::
 
-  sudo pip install paramiko
-  sudo pip install metpx-sarracenia
+  $ sudo pip install paramiko
+  $ sudo pip install metpx-sarracenia
 
 and to upgrade after the initial installation::
 
-  sudo pip uninstall metpx-sarracenia
-  sudo pip install metpx-sarracenia
+  $ sudo pip uninstall metpx-sarracenia
+  $ sudo pip install metpx-sarracenia
 
 
 NOTE:: 
 
-  On many systems where both pythons 2 and 3 are installed, you may need to specify
-  pip3 rather than pip.
+  On many systems where both pythons 2 and 3 are installed, you may need to specify pip3 rather than pip.
 
 
 Windows
@@ -93,14 +91,15 @@ Windows
 On Windows, there are 2 (other) possible options:
 
 **Without Python**
- Download Sarracenia installer file from `here <https://hpfx.collab.science.gc.ca/~pas037/Sarracenia_Releases>`_, execute it and 
- follow the instructions. Don't forget to add *Sarracenia's Python directory* to your *PATH*.
+ Download Sarracenia installer file from `here <https://hpfx.collab.science.gc.ca/~pas037/Sarracenia_Releases>`_,
+ execute it and follow the instructions.
+ Don't forget to add *Sarracenia's Python directory* to your *PATH*.
 
 **With Anaconda**
- Create your environment with the `file <../windows/sarracenia_env.yml>`_ suggested by this repository. Executing that command 
- from the Anaconda Prompt should install everything::
+ Create your environment with the `file <../windows/sarracenia_env.yml>`_ suggested by this repository.
+ Executing that command from the Anaconda Prompt should install everything::
 
-  conda env create -f sarracenia_env.yml
+  $ conda env create -f sarracenia_env.yml
 
 See `Windows user manual <windows/Windows.rst>`_ for more information on how to run Sarracenia on Windows.
 
@@ -114,31 +113,23 @@ from: `launchpad <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx/+
 Source
 ------
 
-Source code for each module is available https://github.com/MetPX::
+Source code for each module is available `<https://github.com/MetPX>`_::
 
- git clone https://github.com/MetPX/sarracenia sarracenia
- cd sarracenia
+  $ git clone https://github.com/MetPX/sarracenia sarracenia
+  $ cd sarracenia
 
 Development happens on the master branch.  One probably wants real release,
 so run git tag, and checkout the last one (the latest stable release)::
 
-  blacklab% git tag
-    
-  .
-  .
-  .
-  v2.18.04b2
-  v2.18.04b3
-  v2.18.04b4
-  v2.18.04b5
-  v2.18.05b1
-  v2.18.05b2
-  v2.18.05b3
-  v2.18.05b4
-
-  blacklab% git checkout v2.18.05b4
-  blacklab% python3 setup.py bdist_wheel
-  blacklab%  pip3 install dist/metpx_sarracenia-2.18.5b4-py3-none-any.whl
+  $ git tag
+    .
+    .
+    .
+    v2.18.05b3
+    v2.18.05b4
+  $ git checkout v2.18.05b4
+  $ python3 setup.py bdist_wheel
+  $ pip3 install dist/metpx_sarracenia-2.18.5b4-py3-none-any.whl
 
 
 
@@ -147,14 +138,14 @@ Sarrac
 
 The C client is available in prebuilt binaries in the launchpad repositories alongside the python packages::
 
-  sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx
-  sudo apt-get update
-  sudo apt-get install sarrac 
+  $ sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx
+  $ sudo apt-get update
+  $ sudo apt-get install sarrac 
 
 For any recent ubuntu version. The librabbitmq-0.8.0 has been backported in the PPA.
 sarrac's dependency. For other architectures or distributions, one can build from source::
 
-  git clone https://github.com/MetPX/sarrac 
+  $ git clone https://github.com/MetPX/sarrac 
 
 on any linux system, as long as librabbitmq dependency is satisfied. Note that the package does
 not build or run on non-linux systems.
@@ -169,13 +160,13 @@ the necessary dependencies.
 
 On Ubuntu 12.04::
 
-  apt-get install python3-dev
-  apt-get install python3-setuptools
-  easy_install3 pip==1.5.6
-  pip3 install paramiko==1.16.0
-  pip3 install metpx_sarracenia==<latest version>
+  $ apt-get install python3-dev
+  $ apt-get install python3-setuptools
+  $ easy_install3 pip==1.5.6
+  $ pip3 install paramiko==1.16.0
+  $ pip3 install metpx_sarracenia==<latest version>
 
-.. note::
+.. note:: 
    **Why the specific versions on older distributions?**
 
    pip > 1.5.6 does not support python < 3.2 which is the python in Ubuntu 12.04.

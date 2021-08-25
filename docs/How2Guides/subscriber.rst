@@ -55,14 +55,14 @@ the current date/time in the location of the subscriber::
 
   Index of /
 
-  Icon  Name                    Last modified      Size  Description
-  [PARENTDIR] Parent Directory                             -   
-  [DIR] 20151105/               2015-11-27 06:44    -   
-  [DIR] 20151106/               2015-11-27 06:44    -   
-  [DIR] 20151107/               2015-11-27 06:44    -   
-  [DIR] 20151108/               2015-11-27 06:44    -   
-  [DIR] 20151109/               2015-11-27 06:44    -   
-  [DIR] 20151110/               2015-11-27 06:44    -  
+  Name                    Last modified      Size  Description
+  Parent Directory                             -   
+  20151105/               2015-11-27 06:44    -   
+  20151106/               2015-11-27 06:44    -   
+  20151107/               2015-11-27 06:44    -   
+  20151108/               2015-11-27 06:44    -   
+  20151109/               2015-11-27 06:44    -   
+  20151110/               2015-11-27 06:44    -  
 
 A variable number of days are stored on each data pump, for those
 with an emphasis on real-time reliable delivery, the number of days
@@ -76,22 +76,22 @@ way to the visible ones::
 
   Index of /20151110
   
-  Icon  Name                    Last modified      Size  Description
-  [PARENTDIR] Parent Directory                             -   
-  [DIR] UNIDATA-UCAR/           2015-11-27 06:44    -   
-  [DIR] NOAAPORT/               2015-11-27 06:44    -   
-  [DIR] MSC-CMC/                2015-11-27 06:44    -   
-  [DIR] UKMET-RMDCN/            2015-11-27 06:44    -   
-  [DIR] UKMET-Internet/         2015-11-27 06:44    -   
-  [DIR] NWS-OPSNET/             2015-11-27 06:44    -  
+  Name                    Last modified      Size  Description
+  Parent Directory                             -   
+  UNIDATA-UCAR/           2015-11-27 06:44    -   
+  NOAAPORT/               2015-11-27 06:44    -   
+  MSC-CMC/                2015-11-27 06:44    -   
+  UKMET-RMDCN/            2015-11-27 06:44    -   
+  UKMET-Internet/         2015-11-27 06:44    -   
+  NWS-OPSNET/             2015-11-27 06:44    -  
   
 The data under each of these directories was obtained from the named
 source. In these examples, it is actually injected by DataInterchange
 staff, and the names are chosen to represent the origin of the data.
 
-You should be able to list the available configurations with *sr_subscribe list* ::
+To list the available configurations with *sr_subscribe list* ::
 
-    fractal% sr3 list examples
+  $ sr3 list examples
     Sample Configurations: (from: /usr/lib/python3/dist-packages/sarracenia/examples )
     cpump/cno_trouble_f00.inc        poll/aws-nexrad.conf             poll/pollingest.conf             poll/pollnoaa.conf               poll/pollsoapshc.conf            
     poll/pollusgs.conf               poll/pulse.conf                  post/WMO_mesh_post.conf          sarra/wmo_mesh.conf              sender/ec2collab.conf            
@@ -102,35 +102,27 @@ You should be able to list the available configurations with *sr_subscribe list*
     subscribe/ddc_normal.conf        subscribe/downloademail.conf     subscribe/ec_ninjo-a.conf        subscribe/hpfx_amis.conf         subscribe/local_sub.conf         
     subscribe/pitcher_pull.conf      subscribe/sci2ec.conf            subscribe/subnoaa.conf           subscribe/subsoapshc.conf        subscribe/subusgs.conf           
     sender/ec2collab.conf            sender/pitcher_push.conf         watch/master.conf                watch/pitcher_client.conf        watch/pitcher_server.conf        
-    watch/sci2ec.conf                
-    fractal% 
+    watch/sci2ec.conf
 
 
-Each section of the listing shows the contents of the directory shown in parentheses.  One can use an example
-as a starting point with *add*::
+Each section of the listing shows the contents of the directory shown in parentheses.
+To use an example as a starting point::
 
-    fractal% sr3 add subscribe/dd_amis.conf
+  $ sr3 add subscribe/dd_amis.conf
     add: 2021-01-26 01:13:54,047 [INFO] sarracenia.sr add copying: /usr/lib/python3/dist-packages/sarracenia/examples/subscribe/dd_amis.conf to /home/peter/.config/sr3/subscribe/dd_amis.conf 
 
-    fractal% 
 
-Now one can use the files in the .config directories directly::
+Now files in `.config/` can be used directly::
  
-    fractal% sr3 list
+  $ sr3 list
     User Configurations: (from: /home/peter/.config/sr3 )
     subscribe/dd_amis.conf           admin.conf                       credentials.conf                 default.conf                     
     logs are in: /home/peter/.cache/sr3/log
 
 
-    fractal% 
+To view a configuration, give it to `sr_subscribe list` as an argument:: 
 
-
-, or modify them otherwise, as the list command is
-
-
-To view a particular configuration, give sr_subscribe list the file as an argument:: 
-
-    blacklab% sr3 list subscribe/dd_amis.conf
+  $ sr3 list subscribe/dd_amis.conf
     # this is a feed of wmo bulletin (a set called AMIS in the old times)
     
     broker amqps://dd.weather.gc.ca/
@@ -145,129 +137,12 @@ To view a particular configuration, give sr_subscribe list the file as an argume
     
     accept .*
 
-    blacklab% 
 
-It could also be deleted::
+To delete a configuration::
 
-    fractal% sr3 remove subscribe/dd_amis
+  $ sr3 remove subscribe/dd_amis
     2021-01-26 01:17:24,967 [INFO] root remove FIXME remove! ['subscribe/dd_amis']
     2021-01-26 01:17:24,967 [INFO] root remove removing /home/peter/.config/sr3/subscribe/dd_amis.conf 
-    fractal% 
-
-
-A First Example
----------------
-
-The tree described above is the *conventional* one found on most data pumps, 
-but the original data pump, dd.weather.gc.ca, pre-dates the convention.
-Regardless of the tree, one can browse it to find the data of interest. 
-On dd.weather.gc.ca one can browse to http://dd.weather.gc.ca/observations/swob-ml/
-to find the tree of all the weather observations in SWOB format
-recently issued by any Environment Canada forecast office.
-
-
-FIXME: v03 edit is broken.
-First initialize the credentials storage file::
-
-  blacklab% sr3 edit credentials.conf
-
-  amqps://anonymous:anonymous@dd.weather.gc.ca
-
-The *edit* command just calls up the user's configured editor
-on the file to be created in the right place.  To create
-a configuration to obtain the swob files::
-
-  blacklab% sr3 edit subscribe/swob.conf
-
-  broker amqps://anonymous@dd.weather.gc.ca
-  subtopic observations.swob-ml.#
-  accept .*
-
-  blacklab% 
-  blacklab% sr3 status subscribe/swob
-  2017-12-14 06:54:54,010 [INFO] sr_subscribe swob 0001 is stopped
-  blacklab% 
-
-NOTE:
-
-  The above will write the files in the current working directory, and they will arrive quickly.
-  It might be better to make a dedicated directory and use the *directory* option to place the files there.
-  for example:  
-  mkdir /tmp/swob_downloads
-  *directory /tmp/swob_downloads*
-
-On the first line, *broker* indicates where to connect to get the
-stream of notifications. The term *broker* is taken from AMQP (http://www.amqp.org), 
-which is the protocol used to transfer the notifications.
-The notifications that will be received all have *topics* that correspond 
-to their URL.  
-
-Now start up a subscriber (assume the config file was called dd_swob.conf)::
-
-  blacklab% sr3 start subscribe/dd_swob
-  2015-12-03 06:53:35,268 [INFO] user_config = 0 ../dd_swob.conf
-  2015-12-03 06:53:35,269 [INFO] instances 1 
-  2015-12-03 06:53:35,270 [INFO] sr subscribe dd swob 0001 started
-
-One can monitor activity with the *log* command::
-
-  blacklab% sr3 log subscribe/dd_swob
-  
-  2015-12-03 06:53:35,635 [INFO] Binding queue q_anonymous.21096474.62787751 with key v02.post.observations.swob-ml.# to exchange xpublic on broker amqps://anonymous@dd.weather.gc.ca/
-  2015-12-03 17:32:01,834 [INFO] user_config = 1 ../dd_swob.conf
-  2015-12-03 17:32:01,835 [INFO] sr_subscribe start
-  2015-12-03 17:32:01,835 [INFO] sr_subscribe run
-  2015-12-03 17:32:01,835 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
-  2015-12-03 17:32:01,835 [INFO] AMQP  input :    exchange(xpublic) topic(v02.post.observations.swob-ml.#)
-  2015-12-03 17:32:01,835 [INFO] AMQP  output:    exchange(xs_anonymous) topic(v02.report.#)
-  
-  2015-12-03 17:32:08,191 [INFO] Binding queue q_anonymous.21096474.62787751 with key v02.post.observations.swob-ml.# to exchange xpublic on broker amqps://anonymous@dd.weather.gc.ca/
-  blacklab% 
-  
-The sr_subscribe will get the notification and download the file into the 
-current working directory. As the start up is normal, that means the 
-authentication information was good. Passwords are stored in 
-the ~/.config/sr3/credentials.conf file. The format is just a complete 
-url on each line. An example of that would be::
-  
-  amqps://anonymous:anonymous@dd.weather.gc.ca/
-
-The password is located after the :, and before the @ in the URL as is standard
-practice. This credentials.conf file should be private (linux octal permissions: 0600).  
-Also, if a .conf file is placed in the ~/.config/sr3/subscribe directory, then 
-sr_subscribe will find it without having to give the full path.
-
-A normal download looks like this::
-
-  2015-12-03 17:32:15,031 [INFO] Received topic   v02.post.observations.swob-ml.20151203.CMED
-  2015-12-03 17:32:15,031 [INFO] Received notice  20151203223214.699 http://dd2.weather.gc.ca/ \
-         observations/swob-ml/20151203/CMED/2015-12-03-2200-CMED-AUTO-swob.xml
-  2015-12-03 17:32:15,031 [INFO] Received headers {'filename': '2015-12-03-2200-CMED-AUTO-swob.xml', 'parts': '1,3738,1,0,0', \
-        'sum': 'd,157a9e98406e38a8252eaadf68c0ed60', 'source': 'metpx', 'to_clusters': 'DD,DDI.CMC,DDI.ED M', 'from_cluster': 'DD'}
-  2015-12-03 17:32:15,031 [INFO] downloading/copying into ./2015-12-03-2200-CMED-AUTO-swob.xml 
-
-Giving all the information contained in the notification.  Here is a failure::
-
-  2015-12-03 17:32:30,715 [INFO] Downloads: http://dd2.weather.gc.ca/observations/swob-ml/20151203/CXFB/2015-12-03-2200-CXFB-AUTO-swob.xml  into ./2015-12-03-2200-CXFB-AUTO-swob.xml 0-6791
-  2015-12-03 17:32:30,786 [ERROR] Download failed http://dd2.weather.gc.ca/observations/swob-ml/20151203/CXFB/2015-12-03-2200-CXFB-AUTO-swob.xml
-  2015-12-03 17:32:30,787 [ERROR] Server couldn't fulfill the request. Error code: 404, Not Found
-
-Note that this message is not always a failure, as sr_subscribe retries 
-a few times before giving up. In any event, after a few minutes, here is what 
-the current directory looks like::
-
-  blacklab% ls -al | tail
-  -rw-rw-rw-  1 peter peter   7875 Dec  3 17:36 2015-12-03-2236-CL3D-AUTO-minute-swob.xml
-  -rw-rw-rw-  1 peter peter   7868 Dec  3 17:37 2015-12-03-2236-CL3G-AUTO-minute-swob.xml
-  -rw-rw-rw-  1 peter peter   7022 Dec  3 17:37 2015-12-03-2236-CTRY-AUTO-minute-swob.xml
-  -rw-rw-rw-  1 peter peter   6876 Dec  3 17:37 2015-12-03-2236-CYPY-AUTO-swob.xml
-  -rw-rw-rw-  1 peter peter   6574 Dec  3 17:36 2015-12-03-2236-CYZP-AUTO-swob.xml
-  -rw-rw-rw-  1 peter peter   7871 Dec  3 17:37 2015-12-03-2237-CL3D-AUTO-minute-swob.xml
-  -rw-rw-rw-  1 peter peter   7873 Dec  3 17:37 2015-12-03-2237-CL3G-AUTO-minute-swob.xml
-  -rw-rw-rw-  1 peter peter   7037 Dec  3 17:37 2015-12-03-2237-CTBF-AUTO-minute-swob.xml
-  -rw-rw-rw-  1 peter peter   7022 Dec  3 17:37 2015-12-03-2237-CTRY-AUTO-minute-swob.xml
-  -rw-rw-rw-  1 peter peter 122140 Dec  3 17:38 sr_subscribe_dd_swob_0001.log
-  blacklab% 
 
 
 Server Side Resources Allocated for Subscribers
@@ -348,7 +223,7 @@ High Priority Delivery
 
 While the Sarracenia protocol does not provide explicit prioritization, the use
 of multiple queues provides similar benefits. Each configuration results
-in a queue declaraton on the server side. Group products at like priority into
+in a queue declaration on the server side. Group products at like priority into
 a queue by selecting them using a common configuration. The smaller the groupings,
 the lower the delay of processing. While all queues are processed at the same priority,
 data passes though shorter queues more quickly. One can summarize with:
@@ -442,7 +317,7 @@ back to sample configuration files:
 
 Note the following::
 
-  blacklab% sr3 edit subscribe/swob
+$ sr3 edit subscribe/swob
 
   broker amqps://anonymous@dd.weather.gc.ca
   accept .*/observations/swob-ml/.*
@@ -468,7 +343,7 @@ the *directory* option.
 If downloading a directory tree, and the intent is to mirror the tree, 
 then the option mirror should be set::
 
-  blacklab% sr3 edit subscribe/swob
+$ sr3 edit subscribe/swob
 
   broker amqps://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
@@ -485,7 +360,7 @@ The configuration file is read from top to bottom, so then sr_subscribe
 finds a ''directory'' option setting, only the ''accept'' clauses after
 it will cause files to be placed relative to that directory::
 
-  blacklab% sr3 edit subscribe/ddi_ninjo_part1.conf 
+$ sr3 edit subscribe/ddi_ninjo_part1.conf 
 
   broker amqps://ddi.cmc.ec.gc.ca/
   subtopic ec.ops.*.*.ninjo-a.#
@@ -631,7 +506,7 @@ can be used to change processing done by components. The list of pre-built plugi
 in a 'plugins' directory wherever the package is installed (viewable with *sr_subscribe list*)
 sample output::
 
-   blacklab% sr_subscribe list
+ $ sr_subscribe list
    
    packaged plugins: ( /usr/lib/python3/dist-packages/sarra/plugins ) 
             __pycache__     destfn_sample.py       download_cp.py       download_dd.py 
@@ -667,7 +542,7 @@ sample output::
         cclean_f91.conf       cdnld_f21.conf       cfile_f44.conf       clean_f90.conf 
            ftp_f70.conf           q_f71.conf           t_f30.conf      u_sftp_f60.conf 
    
-   blacklab% 
+ $ 
 
 For all plugins, the prefix indicates how the plugin is to be used: a file\_ plugin is
 to be used with *on_file*, *Msg\_* plugins are to be used with on_message, etc...
@@ -701,7 +576,7 @@ The file_rxpipe plugin for sr_subscribe makes all the instances write the names
 of files downloaded to a named pipe. Setting this up required two lines in 
 an sr_subscribe configuration file::
 
-  blacklab% sr3 edit subscribe/swob 
+$ sr3 edit subscribe/swob 
 
   broker amqps://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
@@ -745,7 +620,7 @@ configuration file::
 so that each file downloaded (or each part of the file if it is large),
 is to be AV scanned. Sample run::
 
-  blacklab% sr_subscribe --reset foreground ../dd_swob.conf 
+$ sr_subscribe --reset foreground ../dd_swob.conf 
   clam_scan on_part plugin initialized
   clam_scan on_part plugin initialized
   2016-05-07 18:01:15,007 [INFO] sr_subscribe start
@@ -774,7 +649,7 @@ result in::
   
 Gives lines in the log like so::
 
-  blacklab% sr_subscribe --reset foreground ../dd_swob.conf 
+$ sr_subscribe --reset foreground ../dd_swob.conf 
   2016-05-07 18:05:52,097 [INFO] sr_subscribe start
   2016-05-07 18:05:52,097 [INFO] sr_subscribe run
   2016-05-07 18:05:52,097 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
