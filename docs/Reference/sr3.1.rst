@@ -548,7 +548,7 @@ These options set what files the user wants to be notified for and where
 - **reject    <regexp pattern> (optional)**
 - **chmod     <integer>        (default: 0o400)**
 - **poll_without_vip  <boolean> (default: True)**
-- **file_time_limit <integer>   (default 60d)**
+- **file_time_limit <duration>   (default 60d)**
 
 The option *filename* can be used to set a global rename to the products.
 Ex.:
@@ -621,7 +621,7 @@ cases.
 
 By default, files that are more than 2 months are not posted. However, this 
 can be modified to any specified time limit in the configurations by using 
-the option *file_time_limit <integer>*. By default, seconds are used, but 
+the option *file_time_limit <duration>*. By default, seconds are used, but 
 one can specify hours, days or weeks with 1, 1h, 1d, 1w respectively. 
 
 POSTING SPECIFICATIONS
@@ -1152,10 +1152,6 @@ of one's files. Subscribers use  *sr_subscribe*  to consume the post and downloa
 
 Posts are sent to an AMQP server, also called a broker, specified with the option [ *-pb|--post_broker broker_url* ].
 
-
-Mandatory Settings
-~~~~~~~~~~~~~~~~~~
-
 The [*-post_baseUrl|--pbu|--url url*] option specifies the protocol, credentials, host and port to which subscribers
 will connect to get the file.
 
@@ -1236,6 +1232,14 @@ It then builds a post message, logs into broker.com as user 'guest'
 
 A subscriber can download the created/modified file http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 using http
 without authentication on dd.weather.gc.ca.
+
+
+[-pos|--post_on_start]
+~~~~~~~~~~~~~~~~~~~~~~
+
+When starting sr_watch, one can either have the program post all the files in the directories watched
+or not.
+
 
 
 winnow
@@ -1483,7 +1487,7 @@ The module refers to the sarracenia/flowcb/msg/log.py file in the installed pack
 In that file, the Log class is the one searched for entry points.
 The log.py file included in the package is like this::
 
-  from sarra.flowcb import FlowCB
+  from sarracenia.flowcb import FlowCB
   import logging
 
   logger = logging.getLogger( __name__ ) 
@@ -1540,9 +1544,9 @@ would look like this::
 
   logger = logging.getLogger(__name__)
 
-  import sarra.transfer
+  import sarracenia.transfer
 
-  class torr(sarra.transfer.Transfer):
+  class torr(sarracenia.transfer.Transfer):
       pass
 
   logger.warning("loading")
@@ -1862,6 +1866,9 @@ are used, then the interval is in minutes, hours, days, or weeks. After the queu
 the contents are dropped, and so gaps in the download data flow can arise.  A value of
 1d (day) or 1w (week) can be appropriate to avoid data loss. It depends on how long
 the subscriber is expected to shutdown, and not suffer data loss.
+
+if no units are given, then a decimal number of seconds can be provided, such as
+to indicate 0.02 to specify a duration of 20 milliseconds.
 
 The **expire** setting must be overridden for operational use. 
 The default is set low because it defines how long resources on the broker will be assigned,

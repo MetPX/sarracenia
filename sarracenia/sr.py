@@ -281,7 +281,6 @@ class sr_GlobalState:
 
                     self.configs[c][cbase] = {}
                     self.configs[c][cbase]['status'] = state
-
                     if state != 'unknown':
                         cfgbody = copy.deepcopy(self.default_cfg)
                         cfgbody.override({
@@ -419,16 +418,10 @@ class sr_GlobalState:
                         self.states[c][cfg] = {}
                         self.states[c][cfg]['instance_pids'] = {}
                         self.states[c][cfg]['queue_name'] = None
-                        if c == 'audit':
-                            self.states[c][cfg]['instances_expected'] = 1
-                        elif c in self.configs:
+                        if c in self.configs:
                             if cfg not in self.configs[c]:
                                 self.states[c][cfg]['status'] = 'removed'
-                                self.states[c][cfg]['instances_expected'] = 0
-                            elif self.configs[c][cfg]['instances'] == 0:
-                                self.states[c][cfg]['instances_expected'] = 0
 
-                        self.states[c][cfg]['instances_expected'] = 1
                         self.states[c][cfg]['has_state'] = False
                         self.states[c][cfg]['retry_queue'] = 0
 
@@ -453,11 +446,6 @@ class sr_GlobalState:
                                             i] = int(t)
                                 elif pathname[-6:] == '.qname':
                                     self.states[c][cfg]['queue_name'] = t
-                                elif pathname[-6:] == '.state' and (
-                                        pathname[-12:-6] != '.retry'):
-                                    if t.isdigit():
-                                        self.states[c][cfg][
-                                            'instances_expected'] = int(t)
                                 elif pathname[-12:] == '.retry.state':
                                     buffer = 2**16
                                     try:
@@ -496,9 +484,13 @@ class sr_GlobalState:
                 os.chdir(c)
                 for cfg in os.listdir():
                     if cfg[0] == '.': continue
+                    
+                    if cfg not in self.configs[c]: continue
+
                     if os.path.isdir(cfg):
                         os.chdir(cfg)
                         for filename in os.listdir():
+                            # look at pid files, find ones where process is missing.
                             if filename[-4:] == '.pid':
                                 i = int(filename[-6:-4])
                                 p = pathlib.Path(filename)
@@ -514,7 +506,12 @@ class sr_GlobalState:
                                         missing.append([c, cfg, i])
                                 else:
                                     missing.append([c, cfg, i])
-
+                        if ( len(self.states[c][cfg]['instance_pids']) > 0 ) or ( len(missing) > 0 ) :
+                            # look for instances that should be running, but no pid file exists.
+                            for i in range(1, int(self.configs[c][cfg]['instances'])+1 ):
+                                if not i in self.states[c][cfg]['instance_pids']:
+                                    if i not in self.procs:
+                                        missing.append([c,cfg,i])
                         os.chdir('..')
                 os.chdir('..')
 
@@ -585,7 +582,8 @@ class sr_GlobalState:
                 lff = lf.split('_')
                 if len(lff) > 2:
                     c = lff[0]
-                    if c == 'sr': continue  # old log, just ignore.
+                    if ( c == 'sr' ) or ( c not in self.components): 
+                        continue  # old or inapplicable log, ignore.
                     cfg = '_'.join(lff[1:-1])
 
                     suffix = lff[-1].split('.')
@@ -784,8 +782,6 @@ class sr_GlobalState:
                 if cfg not in self.states[c]:
                     # print('missing state for %s/%s' % (c,cfg) )
                     continue
-                if (self.configs[c][cfg]['instances'] == 0):
-                    self.states[c][cfg]['instances_expected'] = 0
                 if len(self.states[c][cfg]['instance_pids']) > 0:
                     self.states[c][cfg]['missing_instances'] = []
                     observed_instances = 0
@@ -798,10 +794,7 @@ class sr_GlobalState:
                             self.procs[self.states[c][cfg]['instance_pids']
                                        [i]]['claimed'] = True
 
-                    if observed_instances < self.states[c][cfg][
-                            'instances_expected']:
-                        # print( "%s/%s observed_instances: %s expected: %s" % \
-                        #   ( c, cfg, observed_instances, self.states[c][cfg]['instances_expected'] ) )
+                    if observed_instances < int(self.configs[c][cfg]['instances']):
                         if (c == 'post') and (
                             ('sleep' not in self.states[c][cfg])
                                 or self.states[c][cfg]['sleep'] <= 0):
@@ -809,6 +802,9 @@ class sr_GlobalState:
                         else:
                             if observed_instances > 0:
                                 self.configs[c][cfg]['status'] = 'partial'
+                                for i in range(1, int(self.configs[c][cfg]['instances'])+1 ):
+                                    if not i in self.states[c][cfg]['instance_pids']:
+                                         self.states[c][cfg]['missing_instances'].append(i)
                             else:
                                 self.configs[c][cfg]['status'] = 'stopped'
                     elif observed_instances == 0:
@@ -946,7 +942,7 @@ class sr_GlobalState:
                   self.appname)
 
         self.components = [
-            'audit', 'cpost', 'cpump', 'poll', 'post', 'report', 'sarra',
+            'cpost', 'cpump', 'poll', 'post', 'report', 'sarra',
             'sender', 'shovel', 'subscribe', 'watch', 'winnow'
         ]
         self.status_values = [
@@ -1725,7 +1721,6 @@ class sr_GlobalState:
         print("%-40s %-10s %5s %5s %5s %5s" %
               ("----------------", "-----", "---", "----", "---", "-----"))
         configs_running = 0
-        missing_state_files = 0
 
         for c in sorted(self.configs):
             for cfg in sorted(self.configs[c]):
@@ -1741,14 +1736,8 @@ class sr_GlobalState:
                 #find missing instances for this config.
                 m = sum(map(lambda x: c in x and cfg in x, self.missing))
                 if self.configs[c][cfg]['status'] != 'stopped':
-                    running = len(self.states[c][cfg]['instance_pids']) - m
-                    expected = self.states[c][cfg]['instances_expected']
-
-                    if len(self.states[c][cfg]['instance_pids']
-                           ) < self.states[c][cfg]['instances_expected']:
-                        missing_state_files += (
-                            self.states[c][cfg]['instances_expected'] -
-                            len(self.states[c][cfg]['instance_pids']))
+                    expected = self.configs[c][cfg]['instances']
+                    running = expected - m
                     if running > 0:
                         configs_running += 1
                 else:
@@ -1770,7 +1759,7 @@ class sr_GlobalState:
                       (pid, self.procs[pid]['cmdline']))
 
         print('      total running configs: %3d ( processes: %d missing: %d stray: %d )' % \
-            (configs_running, len(self.procs), len(self.missing)+missing_state_files, stray))
+            (configs_running, len(self.procs), len(self.missing), stray))
 
         # FIXME: does not seem to find any stray exchange (with no bindings...) hmm...
         for h in self.brokers:
@@ -1801,7 +1790,6 @@ class sr_GlobalState:
         print("%-10s %-10s %-6s %3d" %
               ('audit', 'running', audst, self.auditors))
         configs_running = 0
-        missing_state_files = 0
         for c in self.configs:
 
             status = {}
@@ -1827,17 +1815,10 @@ class sr_GlobalState:
                         self.missing))  #perhaps expensive, but I am lazy FIXME
                     sfx += '-i%d/%d' % ( \
                         len(self.states[c][cfg]['instance_pids']) - m, \
-                        self.states[c][cfg]['instances_expected'])
-                    if len(self.states[c][cfg]['instance_pids']
-                           ) < self.states[c][cfg]['instances_expected']:
-                        missing_state_files += (
-                            self.states[c][cfg]['instances_expected'] -
-                            len(self.states[c][cfg]['instance_pids']))
+                        self.configs[c][cfg]['instances'])
                 if self.states[c][cfg]['retry_queue'] > 0:
                     sfx += '-r%d' % self.states[c][cfg]['retry_queue']
                 status[self.configs[c][cfg]['status']].append(cfg + sfx)
-
-                #'-i(%d/%d)-r(%d)' % (len(self.states[c][cfg]['instance_pids']), self.states[c][cfg]['instances_expected'], self.states[c][cfg]['retry_queue'] ) )
 
             if (len(status['partial']) + len(status['running'])) < 1:
                 print('%-10s %-10s %-6s %3d %s' %
@@ -1871,7 +1852,7 @@ class sr_GlobalState:
                       (pid, self.procs[pid]['cmdline']))
 
         print('      total running configs: %3d ( processes: %d missing: %d stray: %d )' % \
-            (configs_running, len(self.procs), len(self.missing)+missing_state_files, stray))
+            (configs_running, len(self.procs), len(self.missing), stray))
 
         # FIXME: does not seem to find any stray exchange (with no bindings...) hmm...
         for h in self.brokers:

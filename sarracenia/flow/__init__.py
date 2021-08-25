@@ -36,6 +36,7 @@ default_options = {
     'attempts': 3,
     'batch': 100,
     'bytes_per_second': None,
+    'discard' : False,
     'download': False,
     'events': 'create|delete|link|modify',
     'housekeeping': 30,
@@ -533,7 +534,8 @@ class Flow:
             try:
                 os.makedirs(msg['new_dir'], 0o775, True)
             except Exception as ex:
-                logger.warning("making %s: %s" % (newdir, ex))
+                logger.error("failed to make directory %s: %s" % (newdir, ex))
+                return False
 
         logger.info("data inlined with message, no need to download")
         path = msg['new_dir'] + os.path.sep + msg['new_file']
@@ -616,11 +618,19 @@ class Flow:
                 x = sarracenia.filemetadata.FileMetadata(msg['new_path'])
                 s = x.get('integrity')
 
-                if s:
-                    msg['local_integrity'] = x.get('integrity')
-                    msg['_deleteOnPost'] |= set(['local_integrity'])
-                    return
+                if s :
+                    metadata_cached_mtime = x.get('mtime')
+                    if ( ( metadata_cached_mtime >= msg['mtime'] ) ) :
+                        # file has not been modified since checksum value was stored.
 
+                        if (( 'integrity' in msg ) and ( 'method' in msg['integrity']  ) and \
+                            ( msg['integrity']['method'] == s['method'] )) or  \
+                            ( s['method'] ==  self.o.integrity_method ) :
+                            # file 
+                            # cache good.
+                            msg['local_integrity'] = s
+                            msg['_deleteOnPost'] |= set(['local_integrity'])
+                            return
             except:
                 pass
 
@@ -988,13 +998,14 @@ class Flow:
 
         if curdir != new_dir:
             # make sure directory exists, create it if not
-            if not os.path.isdir(new_dir):
-                try:
+            try:
+                if not os.path.isdir(new_dir):
                     os.makedirs(new_dir, 0o775, True)
-                except Exception as ex:
-                    logger.warning("making %s: %s" % (new_dir, ex))
-                    logger.debug('Exception details:', exc_info=True)
-            os.chdir(new_dir)
+                os.chdir(new_dir)
+            except Exception as ex:
+                logger.warning("making %s: %s" % (new_dir, ex))
+                logger.debug('Exception details:', exc_info=True)
+                return False
 
         try:
             options.destination = msg['baseUrl']
@@ -1173,7 +1184,11 @@ class Flow:
             curdir = None
 
         if curdir != local_dir:
-            os.chdir(local_dir)
+            try: 
+                os.chdir(local_dir)
+            except Exception as ex:
+                logger.error("could chdir to %s to write: %s" % (local_dir, ex))
+                return False
 
         try:
 

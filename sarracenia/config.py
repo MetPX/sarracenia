@@ -65,6 +65,7 @@ default_options = {
     'inflight': None,
     'inline': False,
     'inline_only': False,
+    'integrity_method': 'sha512',
     'notify_only': False,
     'overwrite': True,
     'post_documentRoot': None,
@@ -87,11 +88,11 @@ flag_options = [ 'baseUrl_relPath', 'bind_queue', 'cache_stat', 'declare_exchang
     'report_daemons', 'mirror', 'notify_only', 'overwrite', 'post_on_start', 'poll_without_vip', \
     'preserve_mode', 'preserve_time', 'pump_flag', 'randomize', 'realpath_post', 'reconnect', \
     'report_back', 'reset', 'retry_mode', 'save', 'set_passwords', 'source_from_exchange', \
-    'statehost', 'use_amqplib', 'use_pika', 'users'
+    'statehost', 'users'
                 ]
 
 duration_options = [
-    'timeout', 'expire', 'housekeeping', 'message_ttl', 'retry_ttl',
+    'expire', 'file_time_limit', 'housekeeping', 'message_ttl', 'retry_ttl',
     'sanity_log_dead', 'sleep', 'timeout'
 ]
 
@@ -435,6 +436,7 @@ class Config:
         'll': 'logLevel',
         'loglevel': 'logLevel',
         'logdays': 'lr_backupCount',
+        'logrotate': 'lr_backupCount',
         'logrotate_interval': 'lr_interval',
         'on_post' : 'before_post',
         'post_base_dir': 'post_baseDir',
@@ -475,7 +477,7 @@ class Config:
         self.chmod_dir = 0o775
         self.chmod_log = 0o600
 
-        self.file_time_limit = self.duration_from_str("60d")
+        self.file_time_limit = durationToSeconds("60d")
         self.debug = False
         self.declared_exchanges = []
         self.destfn_script = None
@@ -874,27 +876,32 @@ class Config:
     def _parse_sum(self, value):
         if (value in sarracenia.integrity.known_methods) or (
                 value[0:4] == 'cod,'):
-            self.sum = value
+            self.integrity_method = value
             return
 
         if (value[0:2] == 'z,'):
             value = value[3:]
-            self.sum = 'cod,'
+            self.integrity_method = 'cod,'
         else:
-            self.sum = ''
+            self.integrity_method = ''
 
         for sc in sarracenia.integrity.Integrity.__subclasses__():
-            if hasattr(sc, 'registered_as') and (sc.registered_as == value):
-                self.sum += sc.__name__.lower()
+            if hasattr(sc, 'registered_as') and (sc.registered_as() == value):
+                self.integrity_method += sc.__name__.lower()
                 return
         # FIXME this is an error return case, how to designate an invalid checksum?
-        self.sum = 'invalid'
+        self.integrity_method = 'invalid'
 
     def parse_file(self, cfg):
         """ add settings in file to self
        """
+        lineno=0
         for l in open(cfg, "r").readlines():
+            lineno+=1
             line = l.split()
+
+            #print('FIXME parsing %s:%d %s' % (cfg, lineno, line ))
+
             if (len(line) < 1) or (line[0].startswith('#')):
                 continue
 
@@ -908,7 +915,7 @@ class Config:
                     if (v in convert_to_v3[k]):
                         line = convert_to_v3[k][v]
                         k = line[0]
-                        logger.debug('Converting \"%s\" to v3: \"%s\"' % (l, line))
+                        logger.debug('%s:%d Converting \"%s\" to v3: \"%s\"' % (cfg, lineno, l, line))
                 else:
                     line = convert_to_v3[k]
                     k=line[0]
@@ -926,6 +933,16 @@ class Config:
 
             # FIXME... I think synonym check should happen here, but no time to check right now.
 
+            if k in flag_options:
+                if len(line) == 1:
+                    setattr(self, k, True)
+                else:
+                    setattr(self, k, isTrue(v))
+                continue
+
+            if len(line) < 2:
+                logger.error('%s:%d %s missing argument(s) ' % ( cfg, lineno, k ) )
+                continue
             if k in ['accept', 'reject', 'get']:
                 self.masks.append(self._build_mask(k, line[1:]))
             elif k in [ 'callback', 'cb' ]:
@@ -986,8 +1003,6 @@ class Config:
                         setattr(self, k, None)
                     else:
                         setattr(self, k, v)
-            elif k in ['file_time_limit']:
-                setattr(self, k, self.duration_from_str(v))
             elif k in ['strip']:
                 """
                2020/08/26 - PAS
@@ -1008,23 +1023,13 @@ class Config:
                     self.strip = 0
             elif k in duration_options:
                 if len(line) == 1:
-                    logger.error(
-                        '%s is a duration option requiring a decimal number of seconds value'
-                        % line[0])
+                    logger.error( 
+                        '%s:%d  %s is a duration option requiring a decimal number of seconds value'
+                        % ( cfg, lineno, line[0]) )
                     continue
                 setattr(self, k, durationToSeconds(v))
             elif k in size_options:
-                if len(line) == 1:
-                    logger.error(
-                        '%s is a size option requiring a integer number of bytes (or multiple) value'
-                        % line[0])
-                    continue
                 setattr(self, k, chunksize_from_str(v))
-            elif k in flag_options:
-                if len(line) == 1:
-                    setattr(self, k, True)
-                else:
-                    setattr(self, k, isTrue(v))
             elif k in count_options:
                 setattr(self, k, int(v))
             elif k in list_options:
@@ -1116,6 +1121,12 @@ class Config:
 
         if not hasattr(self, 'post_topicPrefix'):
            self.post_topicPrefix = self.topicPrefix
+
+        if not hasattr(self, 'retry_ttl' ):
+           self.retry_ttl = self.expire
+
+        if self.retry_ttl == 0:
+           self.retry_ttl = None
 
         if not hasattr(self, 'cfg_run_dir'):
             if self.statehost:
@@ -1242,7 +1253,13 @@ class Config:
         for u in self.undeclared:
             if u not in alloptions:
                 logger.error("undeclared option: %s" % u)
-        logger.debug("done")
+
+        no_defaults=set()
+        for u in alloptions:
+             if not hasattr(self,u):
+                no_defaults.add( u )
+
+        logger.debug("missing defaults: %s" % no_defaults)
 
     """
       2020/05/26 FIXME here begins sheer terror.

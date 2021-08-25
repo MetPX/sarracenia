@@ -2,10 +2,15 @@
 
 from hashlib import md5
 
-from base64 import b64decode
+from base64 import b64encode
+
+import logging
 
 from sarracenia.integrity import Integrity
 
+import os
+
+logger = logging.getLogger(__name__)
 
 class Md5name(Integrity):
     """
@@ -20,8 +25,9 @@ class Md5name(Integrity):
         return 'n'
 
     def set_path(self, path):
-        filename = os.path.basename(path)
-        self.value = b64encode(md5(bytes(filename, 'utf-8'))).decode('utf-8')
-
-    def update_file(self, path):
-        self.set_path(path)
+        self.filename = os.path.basename(path)
+        self.update( None )
+         
+    def update(self, chunk ):
+        self.filehash = md5()
+        self.filehash.update( bytes(self.filename, 'utf-8') )

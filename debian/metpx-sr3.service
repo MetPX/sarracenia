@@ -11,12 +11,12 @@ After=network.target local-fs.target remote-fs.target
 
 [Service]
 Type=forking
-ExecStart=/usr/bin/sr start
+ExecStart=/usr/bin/sr3 start
 User=sarra
 Group=sarra
 
-ExecReload=/usr/bin/sr reload
-ExecStop=/usr/bin/sr stop
+ExecReload=/usr/bin/sr3 reload
+ExecStop=/usr/bin/sr3 stop
 
 [Install]
 WantedBy=multi-user.target

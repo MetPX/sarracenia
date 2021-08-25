@@ -186,7 +186,9 @@ class NoDupe(FlowCB):
             'value'].replace('\n', '')
         partstr = relpath
 
-        if msg['integrity']['method'] not in ['remove', 'link']:
+        if msg['integrity']['method'] in [ 'arbitrary', 'md5name', 'remove', 'link' ]:
+            partstr = 'None'
+        else:
             if 'size' in msg:
                 partstr = '1,' + str(msg['size'])
             else:

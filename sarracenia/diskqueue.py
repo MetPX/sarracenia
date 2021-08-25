@@ -92,6 +92,7 @@ class DiskQueue():
         # initialize all retry path if retry_path is provided
         self.working_dir=os.path.dirname(self.o.pid_filename)
         self.queue_file= self.working_dir + os.sep + 'diskqueue_' + name
+        self.now = nowflt()
 
         # retry messages
 
@@ -198,7 +199,7 @@ class DiskQueue():
             message['isRetry'] = True
             if 'ack_id' in message:
                del message['ack_id']
-               message['_deleteOnPost'].delete('ack_id')
+               message['_deleteOnPost'].remove('ack_id')
 
             ml.append(message)
             count +=1
@@ -231,7 +232,7 @@ class DiskQueue():
         msg_age = self.now - msg_time
 
         # expired ?
-        return  msg_age > (self.o.retry_ttl / 1000)
+        return  msg_age > self.o.retry_ttl
 
     def needs_requeuing(self, message):
 
