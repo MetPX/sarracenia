@@ -22,7 +22,7 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-**sr_cpump** is an alternate implementation of `sr_subscribe(7) <sr_subscribe.1.rst>`_ 
+**sr_cpump** is an alternate implementation of `sr_subscribe(7) <sr3.1.rst#subscribe>`_ 
 with some limitations.  
 
  - doesn't download data, only circulates posts.
@@ -34,11 +34,11 @@ with some limitations.
 
 It can therefore act as a drop-in replacement for:
 
-   `sr_report(1) <sr_report.1.rst>`_ - process report messages.
+   `sr_report(1) <sr3.1.rst#report>`_ - process report messages.
 
-   `sr_shovel(8) <sr_shovel.8.rst>`_ - process shovel messages.
+   `sr_shovel(8) <sr3.1.rst#shovel>`_ - process shovel messages.
 
-   `sr_winnow(8) <sr_winnow.8.rst>`_ - process winnow messages.
+   `sr_winnow(8) <sr3.1.rst#winnow>`_ - process winnow messages.
 
 The C implementation may be easier to make available in specialized environments, 
 such as High Performance Computing, as it has far fewer dependencies than the python version.
@@ -51,9 +51,9 @@ it looks up its **sum** in its cache.  If it is found, the file has already come
 so the notification is ignored. If not, then the file is new, and the **sum** is added 
 to the cache and the notification is posted.  
 
-**sr_cpump** can be used, like `sr_winnow(8) <sr_winnow.8.rst>`_,  to trim messages 
-from `sr_post(1) <sr_post.1.rst>`_, `sr_poll(1) <sr_poll.1.html>`_  
-or `sr_watch(1) <sr_watch.1.rst>`_  etc... It is used when there are multiple 
+**sr_cpump** can be used, like `sr_winnow(8) <sr3.1.rst#winnow>`_,  to trim messages 
+from `sr_post(1) <sr_post.1.rst>`_, `sr_poll(1) <sr3.1.rst#poll>`_  
+or `sr_watch(1) <sr3.1.rst#watch>`_  etc... It is used when there are multiple 
 sources of the same data, so that clients only download the source data once, from 
 the first source that posted it.
 
@@ -76,7 +76,7 @@ CONFIGURATION
 =============
 
 In general, the options for this component are described by 
-the `sr_subscribe(1) <sr_subscribe.1.rst>`_  page which should be read first.
+the `sr_subscribe(1) <sr3.1.rst#subscribe>`_  page which should be read first.
 It fully explains the option configuration language, and how to find
 the option settings.
 
@@ -102,16 +102,16 @@ implementation.
 SEE ALSO
 ========
 
-`sr_report(7) <sr_report.7.rst>`_ - the format of report messages.
+`sr_report(7) <sr3.1.rst#report>`_ - the format of report messages.
 
-`sr_report(1) <sr_report.1.rst>`_ - process report messages.
+`sr_report(1) <sr3.1.rst#report>`_ - process report messages.
 
 `sr_post(1) <sr_post.1.rst>`_ - post announcemensts of specific files.
 
 `sr_post(7) <sr_post.7.rst>`_ - the format of announcements.
 
-`sr_subscribe(1) <sr_subscribe.1.rst>`_ - the download client.
+`sr_subscribe(1) <sr3.1.rst#subscribe>`_ - the download client.
 
-`sr_watch(1) <sr_watch.1.rst>`_ - the directory watching daemon.
+`sr_watch(1) <sr3.1.rst#watch>`_ - the directory watching daemon.
 
-`dd_subscribe(1) <dd_subscribe.1.rst>`_ - the http-only download client.
+`dd_subscribe(1) <3.1.rst#dd_subscribe>`_ - the http-only download client.

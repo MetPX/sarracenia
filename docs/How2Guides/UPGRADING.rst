@@ -31,7 +31,7 @@ take the form:
 Installation Instructions
 -------------------------
 
-`Installation Guide <Install.rst>`_
+`Installation Guide <../Tutorials/Install.rst>`_
 
 git
 ---

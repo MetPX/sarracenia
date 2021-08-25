@@ -157,7 +157,7 @@ AMQP is a vast and interesting topic in its own right. No attempt is
 made to explain all of it here. This section just provides a little context, and introduces
 only background concepts needed to understand and/or use Sarracenia. For more information
 on AMQP itself, a set of links is maintained at the 
-`Metpx web site <https://github.com/MetPX/sarracenia/blob/master/doc/sarra.rst#amqp>`_ 
+`Metpx web site <sarra.rst#amqp>`_ 
 
 .. image:: Concepts/AMQP4Sarra.svg
     :scale: 50%
@@ -600,8 +600,8 @@ Source
   and how to download the files, and Sources have to say where they want the 
   data to go to.
 
-  Sources use programs like `sr_post.1 <sr_post.1.rst>`_, 
-  `sr_watch.1 <sr_watch.1.html>`_, and `sr_poll(1) <sr_poll.1.html>`_ to create 
+  Sources use programs like `sr_post.1 <../Reference/sr3.1.rst#post>`_, 
+  `sr_watch.1 <../Reference/sr3.1.rst#watch>`_, and `sr_poll(1) <../Reference/sr3.1.rst#poll>`_ to create 
   their advertisements.
 
 
@@ -609,20 +609,20 @@ Subscribers
   are those who examine advertisements about files that are available, and 
   download the files they are interested in.
 
-  Subscribers use `sr_subscribe(1) <sr_subscribe.1.rst>`_
+  Subscribers use `sr_subscribe(1) <../Reference/sr3.1.rst#subscribe>`_
 
 
 Post, Notice, Notification, Advertisement, Announcement
   These are AMQP messages build by sr_post, sr_poll, or sr_watch to let users
   know that a particular file is ready. The format of these AMQP messages is 
-  described by the `sr_post(7) <sr_post.7.rst>`_ manual page. All of these 
+  described by the `sr_post(7) <../Reference/sr3.1.rst#post>`_ manual page. All of these 
   words are used interchangeably. Advertisements at each step preserve the
   original source of the posting, so that report messages can be routed back 
   to the source.
 
 
 Report messages
-  These are AMQP messages (in `sr_post(7) <sr_post.7.rst>`_ format, with _report_ 
+  These are AMQP messages (in `sr_post(7) <../Reference/sr3.1.rst#post>`_ format, with _report_ 
   field included) built by consumers of messages, to indicate what a given pump 
   or subscriber decided to do with a message. They conceptually flow in the 
   opposite direction of notifications in a network, to get back to the source.

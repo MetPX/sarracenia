@@ -716,7 +716,7 @@ Probably need to be settled before having anyone else dive in.
   where failed represents a permanent failure. and the other represents
   to be retried later.
 
-* `MQTT issues <mqtt_issues.rst>`_
+* `MQTT issues <../../doc/mqtt_issues.rst>`_
 
 
 FIXME/Deferred

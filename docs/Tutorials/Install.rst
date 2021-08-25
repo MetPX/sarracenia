@@ -101,7 +101,7 @@ On Windows, there are 2 (other) possible options:
 
   $ conda env create -f sarracenia_env.yml
 
-See `Windows user manual <windows/Windows.rst>`_ for more information on how to run Sarracenia on Windows.
+See `Windows user manual <Windows.rst>`_ for more information on how to run Sarracenia on Windows.
 
 Packages
 ~~~~~~~~

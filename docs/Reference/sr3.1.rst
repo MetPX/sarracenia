@@ -28,7 +28,7 @@ state of all components.  It then makes the change requested.
 This man page is a reference, sort of a dictionary for the entire application, and may be a bit much to chew off at first.
 If you already familiar in general with Sarracenia, and are looking for information about specific options or directives, 
 check the table of `Contents`_
-To more easily get started, have a look at `the Subscriber Guide on github <https://github.com/MetPX/sarracenia/blob/v03_wip/doc/subscriber.rst>`_
+To more easily get started, have a look at `the Subscriber Guide on github <../How2Guides/subscriber.rst>`_
 
 sr3 components are used to publish to and download files from websites or file servers 
 that provide `sr3_post(7) <sr3_post.7.rst>`_ protocol notifications. Such sites 
@@ -56,10 +56,10 @@ output can be piped to other processes in classic UNIX text filter style.
  - `winnow`_ - copy messages, suppressing duplicates.
  
 All of these components accept the same options, with the same effects.
-There is also `sr_cpump(1) <sr_cpump.1.rst>`_ which is a C version that implements a
+There is also `sr_cpump(1) <sr3_cpump.1.rst>`_ which is a C version that implements a
 subset of the options here, but where they are implemented, they have the same effect.
 
-The **sr3** command takes two arguments: an action start|stop|restart|reload|status, 
+The **sr3** command takes two arguments: an action ``start|stop|restart|reload|status``, 
 followed by a list of configuration files
 
 When any component is invoked, an operation and a configuration file are specified. 
@@ -104,9 +104,11 @@ service (daemon or fleet of daemons whose number is controlled by the *instances
 If multiple configurations and components need to be run together, the entire fleet 
 can be similarly controlled using the `sr(8) <sr.8.rst>`_ command. 
 
+.. TODO: Where to find the new sr.8 docs... fix link above
+
 To have components run all the time, on Linux one can use `systemd <https://www.freedesktop.org/wiki/Software/systemd/>`_ integration,
-as described in the `Admin Guide <Admin.rst>`_ On Windows, one can configure a service,
-as described in the `Windows user manual <windows/Windows.rst>`_
+as described in the `Admin Guide <../How2Guides/Admin.rst>`_ On Windows, one can configure a service,
+as described in the `Windows user manual <../Tutorials/Windows.rst>`_
 
 The actions **cleanup**, **declare**, **setup** can be used to manage resources on
 the rabbitmq server. The resources are either queues or exchanges. **declare** creates
@@ -629,7 +631,7 @@ POSTING SPECIFICATIONS
 
 These options set what files the user wants to be notified for and where
 **sr_poll** polls the availability of file on a remote server by creating
-an announcment for it.  Subscribers use `sr_subscribe <sr3.1.rst>`_
+an announcment for it.  Subscribers use `sr_subscribe <#subscribe>`_
 to consume the announcement and download the file (or **sr_sarra**).
 To make files available to subscribers, **sr_poll** sends the announcements to
 an AMQP or MQTT server, also called a broker.  Format of argument to the *broker* option::
@@ -890,7 +892,7 @@ It then posts a notification for the downloaded files on a broker (usually on th
 or `watch`_  or to reproduce a web-accessible folders (WAF),
 that announce its products.
 
-The **sr_sarra** is an `sr_subscribe(1) <sr_subscribe.1.rst>`_  with the following presets::
+The **sr_sarra** is an `sr_subscribe(1) <#subscribe>`_  with the following presets::
 
    mirror True
 
@@ -1129,6 +1131,8 @@ The *topicPrefix* option must to be set to:
 
  - **v03** to shovel `sr3_postv2(7) <sr3_postv2.7.rst>`_ messages
 
+.. TODO: Above links to a potentially removed file..
+
 shovel is a flow with the following presets::
    
    no-download True
@@ -1281,25 +1285,25 @@ throughs and should start with them.
 
 Users:
 
-* `Installation <Install.rst>`_ - initial installation.
-* `Subscriber Guide <subscriber.rst>`_ - effective downloading from a pump (mostly on Linux)
-* `Windows User Guide <windows/Windows.rst>`_ - Windows specific variations.
-* `Source Guide <source.rst>`_ - effective uploading to a pump
-* `Programming Guide <Prog.rst>`_ - Programming custom plugins for workflow integration.
+* `Installation <../Tutorials/Install.rst>`_ - initial installation.
+* `Subscriber Guide <../How2Guides/subscriber.rst>`_ - effective downloading from a pump (mostly on Linux)
+* `Windows User Guide <../Tutorials/Windows.rst>`_ - Windows specific variations.
+* `Source Guide <../How2Guides/source.rst>`_ - effective uploading to a pump
+* `Programming Guide <../Explanation/SarraPluginDev.rst>`_ - Programming custom plugins for workflow integration.
 
 Administrators:
 
-* `Admin Guide <Admin.rst>`_ - Configuration of Pumps
-* `Upgrade Guide <UPGRADING.rst>`_ - MUST READ when upgrading pumps.
+* `Admin Guide <../How2Guides/Admin.rst>`_ - Configuration of Pumps
+* `Upgrade Guide <../How2Guides/UPGRADING.rst>`_ - MUST READ when upgrading pumps.
  
 Contributors:
 
-* `Developer Guide <Dev.rst>`_ - contributing to sarracenia development.
+* `Developer Guide <../Contribution/Development.rst>`_ - contributing to sarracenia development.
 
 Meta:
 
-* `Overview <sarra.rst>`_ - Introduction.
-* `Concepts <Concepts.rst>`_ - Concepts and Glossary
+* `Overview <../Explanation/sarra.rst>`_ - Introduction.
+* `Concepts <../Explanation/Concepts.rst>`_ - Concepts and Glossary
 
 There are also other manual pages available here: `See Also`_
 
@@ -1502,7 +1506,7 @@ The log.py file included in the package is like this::
 It's a normal python class, declared as a child of the sarracenia.flowcb.FlowCB
 class. The methods (function names) in the plugin describe when
 those routines will be called. For more details consult the 
-`Programmer's Guide <Prog.rst>`_
+`Programmer's Guide <../Explanation/SarraPluginDev.rst>`_
 
 To add special processing of messages, create a module in the python
 path, and have it include entry points. 
@@ -1552,7 +1556,7 @@ would look like this::
   logger.warning("loading")
 
 For more details on implementing extensions, consult the
-`Programmer's Guide <Prog.rst>`_
+`Programmer's Guide <../Explanation/SarraPluginDev.rst>`_
 
 Deprecated v2 plugins
 ~~~~~~~~~~~~~~~~~~~~~
@@ -1743,7 +1747,7 @@ CONSUMER
 Most Metpx Sarracenia components loop on reception and consumption of sarracenia 
 AMQP messages.  Usually, the messages of interest are `sr3_post(7) <sr3_post.7.rst>`_ 
 messages, announcing the availability of a file by publishing its URL ( or a part 
-of a file ), but there are also `sr_report(7) <sr_report.7.rst>`_ messages which 
+of a file ), but there are also `sr_report(7) <#report>`_ messages which 
 can be processed using the same tools. AMQP messages are published to an exchange 
 on a broker (AMQP server). The exchange delivers messages to queues. To receive 
 messages, one must provide the credentials to connect to the broker (AMQP message 
@@ -3269,7 +3273,7 @@ def registered_as(self) :
        return ['ftp','ftps']
 
 
-See the `Programming Guide <Prog.rst>`_ for more information on Extension development.
+See the `Programming Guide <../Explanation/SarraPluginDev.rst>`_ for more information on Extension development.
 
 
 Queue Save/Restore
@@ -3516,6 +3520,7 @@ SEE ALSO
 
 `sr_log2save(8) <sr3_log2save.8.rst>`_ - Convert logfile lines to .save Format for reload/resend.
 
+.. TODO: Link above refers to non-existant file?
 
 **Formats:**
 

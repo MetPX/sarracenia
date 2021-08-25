@@ -556,7 +556,7 @@ The *msg_total* plugin is invoked whenever a message is received, and the *msg_t
 option, used by that plugin, has been set to 5. To learn more: *sr_subscribe list msg_total.py*
 
 Plugins are all written in python, and users can create their own and place them in ~/.config/sr3/plugins. 
-For information on creating new custom plugins, see The `Sarracenia Programming Guide <Prog.rst>`_  
+For information on creating new custom plugins, see The `Sarracenia Programming Guide <../Contribution/Development.rst>`_  
 
 
 To recap:
@@ -701,8 +701,8 @@ the proxy, not just a single configuration.
 More Information
 ----------------
 
-The `sr_subscribe(1) <sr_subscribe.1.rst>`_ is the definitive source of reference
+The `sr_subscribe(1) <../Reference/sr3.1.rst#subscribe>`_ is the definitive source of reference
 information for configuration options. For additional information,
-consult: `Sarracenia Documentation <sr_subscribe.1.rst#documentation>`_
+consult: `Sarracenia Documentation <../Reference/sr3.1.rst#documentation>`_
 
 

@@ -20,9 +20,9 @@ Pre-Requisites
 --------------
 
 Ideally, one should be familiar with user-level access to existing pumps
-as either a `subscriber <subscriber.rst>`_ or a `source <source.rst>`_  before proceeding to administration.
+as either a `subscriber <../How2Guides/subscriber.rst>`_ or a `source <../How2Guides/source.rst>`_  before proceeding to administration.
 This manual aims to be prescriptive, rather than explanatory.  For the reasons why things are
-built as they are see `Concepts.rst <Concepts.rst>`_
+built as they are see `Concepts.rst <../Explanation/Concepts.rst>`_
 
 
 Minimum Requirements
@@ -125,7 +125,7 @@ and delete the queue on the broker. While that solves the broker performance iss
 will not receive the notifications.
 
 To avoid data loss, please consult the 
-`sr_sender(1) manual page *DESTINATION UNAVAILABLE* <sr_sender.1.rst#destination-unavailable>`_
+`sr_sender(1) manual page *DESTINATION UNAVAILABLE* <../Reference/#sr3.1.rst#destination-unavailable>`_
 section for details of save and restore options. Briefly, when a sender is placed 
 in *save* mode, rather than attempting to send each file, the messages written 
 to a disk file. When the remote user is back, one invokes *restore* mode, and 

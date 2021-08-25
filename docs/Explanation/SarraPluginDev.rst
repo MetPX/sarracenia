@@ -44,7 +44,7 @@ There are other ways to extend Sarracenia v3 by subclassing of:
 That will be discussed after callbacks are dealt with.
 
 There are short interactive demonstration to all of these topics in the
-`Jupyter Notebooks <../jupyter>`_  included with Sarracenia.
+`Jupyter Notebooks <../../jupyter>`_  included with Sarracenia.
 
 
 Introduction
@@ -352,7 +352,7 @@ self is the message being processed. variables variables most used:
   concatenating the two gives the complete URL.
 
 *msg['notice']*
-  The body of the message being processed. see `sr_post(7) <sr_post.7.rst>`_
+  The body of the message being processed. see `sr_post(7) <../Reference/sr3.1.rst#post>`_
   a space-separated tuple of: pubtime,baseurl,and relpath, 
   If parts here are modified, one must modify extracted fields for full effect.
 
@@ -389,7 +389,7 @@ Plugins can define their own options by calling::
 
 Options so declared just become instance variables in the options passed to init.
 By convention, plugins set self.o to contain the options passed at init time, so that 
-all the built-in options are similarly processing.  If consult the `sr_subscribe(1) <sr_subscribe.1.rst>`_
+all the built-in options are similarly processing.  If consult the `sr_subscribe(1) <../Reference/sr3.1.rst#subscribe>`_
 manual page, and most of the options will have a corresponing instance variable.
 
 Some examples:
@@ -402,7 +402,7 @@ Some examples:
   Value of 0 indicates caching is disabled.
 
 *self.o.inflight*
-  The current setting of *inflight* (see `Delivery Completion <sr_subscribe.1.rst#Delivery%20Completion%20(inflight)>`_
+  The current setting of *inflight* (see `Delivery Completion <../Reference/sr3.1.rst#Delivery%20Completion%20(inflight)>`_
 
 *self.o.overwrite*
   setting which controls whether to files already downloaded should be overwritten unconditionally.
@@ -772,7 +772,7 @@ Some may not want to use the Sarracenia and configuration language at all.
 They may have existing code, that they want call some sort of data ingesting code from.
 One can call sarracenia related functions directly from existing python programs.
 
-For now, best to consult the `Jupyter Notebooks <../jupyter>`_  included with Sarracenia,
+For now, best to consult the `Jupyter Notebooks <../../jupyter>`_  included with Sarracenia,
 which have some examples of such use.
 
 
