@@ -1,4 +1,3 @@
-
 ====================================
  MetPX-Sarracenia Developer's Guide
 ====================================
@@ -37,31 +36,7 @@ The rest of the Guide assumes you are there.
 
 Documentation
 -------------
-
-The development process is to write up what one intends to do or have done into
-a restructured text file in the doc/design sub-directory.  The files there provide
-a basis for discussion. Ideally, the information there acts as a pieces which can
-be edited into documentation for the features as they are implemented.
-
-Each new component sr\_whatever, should have relevant man pages implemented.
-The Guides should also be revised to reflect additions or changes:
-
-- `Install.rst <Install.rst>`_ (Installation)
-- `Prog.rst <Prog.rst>`_ (a guide to writing plugins.)
-- `Dev.rst <Dev.rst>`_ (this guide for developers of Sarracenia itself.)
-- `Subscribers.rst <subscribers.rst>`_ (a guide for how to read data from a pump.)
-- `Source.rst <source.rst>`_ (a guide for those publishing data to a pump.)
-- `Admin.rst <Admin.rst>`_ (an Admininistrator´s Guide.)
-
-When there are new sections, they should likely start out in design/ and after
-review, graduate into the main documentation.  
-
-The French documentation has the same file names as the English, but it placed
-under the fr/ sub-directory.  It's easiest if the documentation is produced in 
-both languages at once. At least use an auto translation tool (such as 
-www.deepl.com) to provide a starting point. (and same procedure in reverse 
-for Francophones.)
-
+`Documentation Standards <Documentation.rst>`_ exist in /docs/Contribution/Documentation.rst
 
 Where to Put Options 
 ~~~~~~~~~~~~~~~~~~~~
@@ -352,7 +327,7 @@ execution of this script on a working system may lead to undesirable side effect
 
 The configuration one is trying to replicate:
 
-.. image:: Flow_test.svg
+.. image:: Development/Flow_test.svg
 
 
 Following table describes what each element of the dynamic flow test does, and the test coverage
@@ -467,7 +442,7 @@ Assumption: test environment is a Linux PC, either a laptop/desktop, or a server
 can start a browser. If working with the C implementation as well, there are also the following
 flows defined:
 
-.. image:: cFlow_test.svg
+.. image:: Development/cFlow_test.svg
 
    
 Running Flow Test

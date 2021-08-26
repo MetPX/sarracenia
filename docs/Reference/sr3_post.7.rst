@@ -640,7 +640,7 @@ intended meaning so that other producers and consumers of messages can be implem
 v02
 ~~~
 
-`sr_post version 2 reference man page <sr_post.7.rst>`_
+`sr_post version 2 reference man page <sr3_post.7.rst>`_
 
 Changes from v02
 ~~~~~~~~~~~~~~~~
@@ -898,18 +898,18 @@ http://rabbitmq.net - home page of the AMQP broker used to develop Sarracenia.
 SEE ALSO
 --------
 
-`sr_report(7) <sr_report.7.rst>`_ - the format of report messages.
+`sr_report(7) <sr3.1.rst#report.7.rst>`_ - the format of report messages.
 
-`sr_pulse(7) <sr_pulse.7.rst>`_ - the format of pulse messages.
+`sr_pulse(7) <sr3.1.rst#pulse>`_ - the format of pulse messages.
 
-`sr_report(1) <sr_report.1.rst>`_ - process report messages.
+`sr_report(1) <sr3.1.rst#report>`_ - process report messages.
 
-`sr_post(1) <sr_post.1.rst>`_ - post announcemensts of specific files.
+`sr_post(1) <sr3_post.1.rst>`_ - post announcemensts of specific files.
 
-`sr_sarra(8) <sr_sarra.8.rst>`_ - Subscribe, Acquire, and ReAdvertise tool.
+`sr_sarra(8) <sr3.1.rst#sarra>`_ - Subscribe, Acquire, and ReAdvertise tool.
 
-`sr_subscribe(1) <sr_subscribe.1.rst>`_ - the download client.
+`sr_subscribe(1) <sr3.1.rst#subscribe>`_ - the download client.
 
-`sr_watch(1) <sr_watch.1.rst>`_ - the directory watching daemon.
+`sr_watch(1) <sr3.1.rst#watch>`_ - the directory watching daemon.
 
-tree `dd_subscribe(1) <dd_subscribe.1.rst>`_ - the http-only download client.
+tree `dd_subscribe(1) <sr3.1.rst#dd_subscribe>`_ - the http-only download client.

@@ -3,6 +3,7 @@ Sarracenia
 ==========
 
 [ `version française <fr/sarra.rst>`_ ]
+TODO: Coming soon..
 
 .. contents::
 
@@ -68,7 +69,7 @@ platform (Linux, Windows, Mac).
 
 For more information about Sarra, view the
 `Sarracenia in 10 Minutes Video <https://www.youtube.com/watch?v=G47DRwzwckk>`_
-or proceed to the detailed `documentation <sr_subscribe.1.rst#documentation>`_
+or proceed to the detailed `documentation <../Reference/sr3.1.rst#documentation>`_
 
 Implementations
 ---------------
@@ -93,7 +94,7 @@ More implementations are welcome.
 Downloading Sarracenia
 ----------------------
 
-Steps for downloading the latest version of Sarracenia are available on our `downloads page <Install.rst>`_ .
+Steps for downloading the latest version of Sarracenia are available on our `downloads page <../Tutorials/Install.rst>`_ .
 
 Getting The Source Code
 -----------------------
@@ -103,7 +104,7 @@ The source code is available from our `git repository <https://github.com/MetPX/
 Documentation
 -------------
 
-The documentation for Sarracenia can be found on our `documentation <sr_subscribe.1.rst#documentation>`_ .
+The documentation for Sarracenia can be found on our `documentation <../Reference/sr3.1.rst#documentation>`_ .
 
 
 Deployments/Use Cases
@@ -111,7 +112,7 @@ Deployments/Use Cases
 
 Deployment status in 2015: `Sarracenia in 10 Minutes Video (5:26 in) <https://www.youtube.com/watch?v=G47DRwzwckk&t=326s>`_
 
-Deployment status in 2018: `Deployments as of January 2018 <deployment_2018.rst>`_
+Deployment status in 2018: `Deployments as of January 2018 <../../doc/deployment_2018.rst>`_
 
 Mailing Lists
 -------------
@@ -168,6 +169,7 @@ that method more efficient. Use of another compatible binary, such as `dd <downl
 `cp <accel_cp.py>`_, (for local files), `scp <download_scp.py>`_, or `wget <accel_wget.py>`_ via 
 plugins is also straightforward.
 
+.. TODO: All the links above are broken?
 
 Why No FTP?
 ~~~~~~~~~~~

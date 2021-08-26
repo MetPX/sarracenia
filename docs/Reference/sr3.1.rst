@@ -28,7 +28,7 @@ state of all components.  It then makes the change requested.
 This man page is a reference, sort of a dictionary for the entire application, and may be a bit much to chew off at first.
 If you already familiar in general with Sarracenia, and are looking for information about specific options or directives, 
 check the table of `Contents`_
-To more easily get started, have a look at `the Subscriber Guide on github <https://github.com/MetPX/sarracenia/blob/v03_wip/doc/subscriber.rst>`_
+To more easily get started, have a look at `the Subscriber Guide on github <../How2Guides/subscriber.rst>`_
 
 sr3 components are used to publish to and download files from websites or file servers 
 that provide `sr3_post(7) <sr3_post.7.rst>`_ protocol notifications. Such sites 
@@ -56,10 +56,10 @@ output can be piped to other processes in classic UNIX text filter style.
  - `winnow`_ - copy messages, suppressing duplicates.
  
 All of these components accept the same options, with the same effects.
-There is also `sr_cpump(1) <sr_cpump.1.rst>`_ which is a C version that implements a
+There is also `sr_cpump(1) <sr3_cpump.1.rst>`_ which is a C version that implements a
 subset of the options here, but where they are implemented, they have the same effect.
 
-The **sr3** command takes two arguments: an action start|stop|restart|reload|status, 
+The **sr3** command takes two arguments: an action ``start|stop|restart|reload|status``, 
 followed by a list of configuration files
 
 When any component is invoked, an operation and a configuration file are specified. 
@@ -104,9 +104,11 @@ service (daemon or fleet of daemons whose number is controlled by the *instances
 If multiple configurations and components need to be run together, the entire fleet 
 can be similarly controlled using the `sr(8) <sr.8.rst>`_ command. 
 
+.. TODO: Where to find the new sr.8 docs... fix link above
+
 To have components run all the time, on Linux one can use `systemd <https://www.freedesktop.org/wiki/Software/systemd/>`_ integration,
-as described in the `Admin Guide <Admin.rst>`_ On Windows, one can configure a service,
-as described in the `Windows user manual <windows/Windows.rst>`_
+as described in the `Admin Guide <../How2Guides/Admin.rst>`_ On Windows, one can configure a service,
+as described in the `Windows user manual <../Tutorials/Windows.rst>`_
 
 The actions **cleanup**, **declare**, **setup** can be used to manage resources on
 the rabbitmq server. The resources are either queues or exchanges. **declare** creates
@@ -134,28 +136,28 @@ COMMANDS
 
 Call the corresponding function for each configuration::
 
-  fractal% sr3 declare
-  declare: 2020-09-06 23:22:18,043 [INFO] root declare looking at cpost/pelle_dd1_f04 
-  2020-09-06 23:22:18,048 [INFO] sarra.moth.amqp __putSetup exchange declared: xcvan00 (as: amqp://tfeed@localhost/) 
-  2020-09-06 23:22:18,049 [INFO] sarra.moth.amqp __putSetup exchange declared: xcvan01 (as: amqp://tfeed@localhost/) 
-  2020-09-06 23:22:18,049 [INFO] root declare looking at cpost/veille_f34 
-  2020-09-06 23:22:18,053 [INFO] sarra.moth.amqp __putSetup exchange declared: xcpublic (as: amqp://tfeed@localhost/) 
-  2020-09-06 23:22:18,053 [INFO] root declare looking at cpost/pelle_dd2_f05 
-  ...
-  2020-09-06 23:22:18,106 [INFO] root declare looking at cpost/pelle_dd2_f05 
-  2020-09-06 23:22:18,106 [INFO] root declare looking at cpump/xvan_f14 
-  2020-09-06 23:22:18,110 [INFO] sarra.moth.amqp __getSetup queue declared q_tfeed.sr_cpump.xvan_f14.23011811.49631644 (as: amqp://tfeed@localhost/) 
-  2020-09-06 23:22:18,110 [INFO] sarra.moth.amqp __getSetup um..: pfx: v03, exchange: xcvan00, values: #
-  2020-09-06 23:22:18,110 [INFO] sarra.moth.amqp __getSetup binding q_tfeed.sr_cpump.xvan_f14.23011811.49631644 with v03.# to xcvan00 (as: amqp://tfeed@localhost/)
-  2020-09-06 23:22:18,111 [INFO] root declare looking at cpump/xvan_f15 
-  2020-09-06 23:22:18,115 [INFO] sarra.moth.amqp __getSetup queue declared q_tfeed.sr_cpump.xvan_f15.50074940.98161482 (as: amqp://tfeed@localhost/) 
+  $ sr3 declare
+    declare: 2020-09-06 23:22:18,043 [INFO] root declare looking at cpost/pelle_dd1_f04 
+    2020-09-06 23:22:18,048 [INFO] sarra.moth.amqp __putSetup exchange declared: xcvan00 (as: amqp://tfeed@localhost/) 
+    2020-09-06 23:22:18,049 [INFO] sarra.moth.amqp __putSetup exchange declared: xcvan01 (as: amqp://tfeed@localhost/) 
+    2020-09-06 23:22:18,049 [INFO] root declare looking at cpost/veille_f34 
+    2020-09-06 23:22:18,053 [INFO] sarra.moth.amqp __putSetup exchange declared: xcpublic (as: amqp://tfeed@localhost/) 
+    2020-09-06 23:22:18,053 [INFO] root declare looking at cpost/pelle_dd2_f05 
+    ...
+    2020-09-06 23:22:18,106 [INFO] root declare looking at cpost/pelle_dd2_f05 
+    2020-09-06 23:22:18,106 [INFO] root declare looking at cpump/xvan_f14 
+    2020-09-06 23:22:18,110 [INFO] sarra.moth.amqp __getSetup queue declared q_tfeed.sr_cpump.xvan_f14.23011811.49631644 (as: amqp://tfeed@localhost/) 
+    2020-09-06 23:22:18,110 [INFO] sarra.moth.amqp __getSetup um..: pfx: v03, exchange: xcvan00, values: #
+    2020-09-06 23:22:18,110 [INFO] sarra.moth.amqp __getSetup binding q_tfeed.sr_cpump.xvan_f14.23011811.49631644 with v03.# to xcvan00 (as: amqp://tfeed@localhost/)
+    2020-09-06 23:22:18,111 [INFO] root declare looking at cpump/xvan_f15 
+    2020-09-06 23:22:18,115 [INFO] sarra.moth.amqp __getSetup queue declared q_tfeed.sr_cpump.xvan_f15.50074940.98161482 (as: amqp://tfeed@localhost/) 
 
 Declares the queues and exchanges related to each configuration.
 One can also invoke it with --users, so that it will declare users as well as exchanges and queues::
 
-  fractal% sr3 --users declare
-  2020-09-06 23:28:56,211 [INFO] sarra.rabbitmq_admin add_user permission user 'ender' role source  configure='^q_ender.*|^xs_ender.*' write='^q_ender.*|^xs_ender.*' read='^q_ender.*|^x[lrs]_ender.*|^x.*public$' 
-  ...
+  $ sr3 --users declare
+    2020-09-06 23:28:56,211 [INFO] sarra.rabbitmq_admin add_user permission user 'ender' role source  configure='^q_ender.*|^xs_ender.*' write='^q_ender.*|^xs_ender.*' read='^q_ender.*|^x[lrs]_ender.*|^x.*public$' 
+    ...
 
 
 **dump**
@@ -190,23 +192,22 @@ It is quite long, and so a bit too much information to look at in a raw state.
 Usually used in conjunction with linux filters, such as grep.
 for example::
 
-    blacklab% sr3 dump  | grep stopped
-        WMO_mesh_post : {'status': 'stopped', 'instances': 0}
-    	shim_f63 : {'status': 'stopped', 'instances': 0}
-    	test2_f61 : {'status': 'stopped', 'instances': 0}
+  $ sr3 dump  | grep stopped
+    WMO_mesh_post : {'status': 'stopped', 'instances': 0}
+    shim_f63 : {'status': 'stopped', 'instances': 0}
+    test2_f61 : {'status': 'stopped', 'instances': 0}
 
-    blacklab% sr3 dump  | grep disabled
-        amqp_f30.conf : {'status': 'disabled', 'instances': 5}
-    blacklab%
+  $ sr3 dump  | grep disabled
+    amqp_f30.conf : {'status': 'disabled', 'instances': 5}
+
 
 provides easy method to determine which configurations are in a particular state.
 Another example, if *sr status* reports sender/tsource2send_f50 as being partial, then 
 one can use dump to get more detail::
 
-    fractal% sr3 dump | grep sender/tsource2send_f50
-        49308: name:sr3_sender.py cmdline:['/usr/bin/python3', '/usr/lib/python3/dist-packages/sarracenia/instance.py', '--no', '1', 'start', 'sender/tsource2send_f50']
-        q_tsource.sr_sender.tsource2send_f50.58710892.12372870: ['sender/tsource2send_f50']
-    fractal% 
+  $ sr3 dump | grep sender/tsource2send_f50
+    49308: name:sr3_sender.py cmdline:['/usr/bin/python3', '/usr/lib/python3/dist-packages/sarracenia/instance.py', '--no', '1', 'start', 'sender/tsource2send_f50']
+    q_tsource.sr_sender.tsource2send_f50.58710892.12372870: ['sender/tsource2send_f50']
 
 
 **foreground** 
@@ -218,7 +219,7 @@ a configuration m
 
 shows the user the configuration files present::
 
-    fractal% sr3 list
+  $ sr3 list
     User Configurations: (from: /home/peter/.config/sarra )
     cpost/pelle_dd1_f04.conf         cpost/pelle_dd2_f05.conf         cpost/veille_f34.conf            
     cpump/xvan_f14.conf              cpump/xvan_f15.conf              poll/f62.conf                    
@@ -235,7 +236,7 @@ The last line says which directory the log files are in.
 
 Also *list examples* shows included configuration templates available as starting points with the *add* command::
     
-    fractal% sr3 list examples
+  $ sr3 list examples
     Sample Configurations: (from: /home/peter/Sarracenia/v03_wip/sarra/examples )
     cpump/cno_trouble_f00.inc        poll/aws-nexrad.conf             poll/pollingest.conf             
     poll/pollnoaa.conf               poll/pollsoapshc.conf            poll/pollusgs.conf               
@@ -252,11 +253,11 @@ Also *list examples* shows included configuration templates available as startin
     subscribe/sci2ec.conf            subscribe/subnoaa.conf           subscribe/subsoapshc.conf        
     subscribe/subusgs.conf           watch/master.conf                watch/pitcher_client.conf        
     watch/pitcher_server.conf        watch/sci2ec.conf                
-    fractal% 
 
-    fractal% sr3 add dd_all.conf
+
+  $ sr3 add dd_all.conf
     add: 2021-01-24 18:04:57,018 [INFO] sarracenia.sr add copying: /usr/lib/python3/dist-packages/sarracenia/examples/subscribe/dd_all.conf to /home/peter/.config/sr3/subscribe/dd_all.conf 
-    fractal% sr3 edit dd_all.conf
+  $ sr3 edit dd_all.conf
 
 The **add, remove, list, edit, enable & disable** actions are used to manage the list
 of configurations.  One can see all of the configurations available using the **list**
@@ -269,7 +270,7 @@ the **start**, **foreground**, or **restart** actions.
 
 View all configuration settings (the result of all parsing... what the flow components actually see)::
 
-    fractal% sr3 --debug show subscribe/q_f71
+  $ sr3 --debug show subscribe/q_f71
     
     Config of subscribe/q_f71: 
     _Config__admin=amqp://bunnymaster@localhost
@@ -367,29 +368,28 @@ View all configuration settings (the result of all parsing... what the flow comp
 
 launch all configured components::
 
-  blacklab% sr3 start
-  gathering global state: procs, configs, state files, logs, analysis - Done. 
-  starting............................................................................................Done
-  blacklab% 
+  $ sr3 start
+    gathering global state: procs, configs, state files, logs, analysis - Done. 
+    starting...Done
 
 
 **stop**
 
 stop all processes::
 
-  blacklab% sr3 stop
-  gathering global state: procs, configs, state files, logs, analysis - Done. 
-  stopping.............................................................................................Done
-  Waiting 1 sec. to check if 93 processes stopped (try: 0)
-  All stopped after try 0
-  blacklab% 
+  $ sr3 stop
+    gathering global state: procs, configs, state files, logs, analysis - Done. 
+    stopping........Done
+    Waiting 1 sec. to check if 93 processes stopped (try: 0)
+    All stopped after try 0
+ 
 
 
 **status**
 
 Sample OK status (sr is running)::
 
-    fractal% sr3 status
+  $ sr3 status
     status: 
     Component/Config                         State        Run  Miss   Exp Retry
     ----------------                         -----        ---  ----   --- -----
@@ -419,7 +419,7 @@ Sample OK status (sr is running)::
     subscribe/u_sftp_f60                     running        1     0     1     0
     watch/f40                                running        1     0     1     0
           total running configs:  15 ( processes: 15 missing: 3 stray: 0 )
-    fractal% 
+
 
 The configurations are listed on the left. For each configuraion, the state
 will be:
@@ -437,13 +437,14 @@ The last column is the number of messages stored in the local retry queue, indic
 processing difficulties. Here is an example of seeing that a single configuration is running, stopping it, 
 cleaning it out::
 
-    fractal% sr3 status
+  $ sr3 status
     status: 
     Component/Config                         State        Run  Miss   Exp Retry
     ----------------                         -----        ---  ----   --- -----
     subscribe/dd_all                         running        5     0     1     0
           total running configs:   1 ( processes: 5 missing: 0 stray: 0 )
-    fractal% sr3 stop subscribe/dd_all
+
+  $ sr3 stop subscribe/dd_all
     Stopping: sending SIGTERM ..... ( 5 ) Done
     Waiting 1 sec. to check if 5 processes stopped (try: 0)
     Waiting 2 sec. to check if 3 processes stopped (try: 1)
@@ -451,15 +452,15 @@ cleaning it out::
     Waiting 4 sec. to check if 3 processes stopped (try: 2)
     All stopped after try 2
     
-    fractal% sr3 cleanup subscribe/dd_all
+  $ sr3 cleanup subscribe/dd_all
     cleanup: queues to delete: [(ParseResult(scheme='amqps', netloc='anonymous:anonymous@dd.weather.gc.ca', path='/', params='', query='', fragment=''), 'q_anonymous.sr_subscribe.dd_all.47257736.46056854')]
     removing state file: /home/peter/.cache/sr3/subscribe/dd_all/sr_subscribe.dd_all.anonymous.qname
     
-    fractal% sr3 remove subscribe/dd_all
+  $ sr3 remove subscribe/dd_all
     2021-01-24 23:57:59,800 [INFO] root remove FIXME remove! ['subscribe/dd_all']
     2021-01-24 23:57:59,800 [INFO] root remove removing /home/peter/.config/sr3/subscribe/dd_all.conf 
     
-    fractal% sr3 status
+  $ sr3 status
     status: 
     Component/Config                         State        Run  Miss   Exp Retry
     ----------------                         -----        ---  ----   --- -----
@@ -630,7 +631,7 @@ POSTING SPECIFICATIONS
 
 These options set what files the user wants to be notified for and where
 **sr_poll** polls the availability of file on a remote server by creating
-an announcment for it.  Subscribers use `sr_subscribe <sr_subscribe.1.rst>`_
+an announcment for it.  Subscribers use `sr_subscribe <#subscribe>`_
 to consume the announcement and download the file (or **sr_sarra**).
 To make files available to subscribers, **sr_poll** sends the announcements to
 an AMQP or MQTT server, also called a broker.  Format of argument to the *broker* option::
@@ -891,7 +892,7 @@ It then posts a notification for the downloaded files on a broker (usually on th
 or `watch`_  or to reproduce a web-accessible folders (WAF),
 that announce its products.
 
-The **sr_sarra** is an `sr_subscribe(1) <sr_subscribe.1.rst>`_  with the following presets::
+The **sr_sarra** is an `sr_subscribe(1) <#subscribe>`_  with the following presets::
 
    mirror True
 
@@ -1130,6 +1131,8 @@ The *topicPrefix* option must to be set to:
 
  - **v03** to shovel `sr3_postv2(7) <sr3_postv2.7.rst>`_ messages
 
+.. TODO: Above links to a potentially removed file..
+
 shovel is a flow with the following presets::
    
    no-download True
@@ -1282,25 +1285,25 @@ throughs and should start with them.
 
 Users:
 
-* `Installation <Install.rst>`_ - initial installation.
-* `Subscriber Guide <subscriber.rst>`_ - effective downloading from a pump (mostly on Linux)
-* `Windows User Guide <windows/Windows.rst>`_ - Windows specific variations.
-* `Source Guide <source.rst>`_ - effective uploading to a pump
-* `Programming Guide <Prog.rst>`_ - Programming custom plugins for workflow integration.
+* `Installation <../Tutorials/Install.rst>`_ - initial installation.
+* `Subscriber Guide <../How2Guides/subscriber.rst>`_ - effective downloading from a pump (mostly on Linux)
+* `Windows User Guide <../Tutorials/Windows.rst>`_ - Windows specific variations.
+* `Source Guide <../How2Guides/source.rst>`_ - effective uploading to a pump
+* `Programming Guide <../Explanation/SarraPluginDev.rst>`_ - Programming custom plugins for workflow integration.
 
 Administrators:
 
-* `Admin Guide <Admin.rst>`_ - Configuration of Pumps
-* `Upgrade Guide <UPGRADING.rst>`_ - MUST READ when upgrading pumps.
+* `Admin Guide <../How2Guides/Admin.rst>`_ - Configuration of Pumps
+* `Upgrade Guide <../How2Guides/UPGRADING.rst>`_ - MUST READ when upgrading pumps.
  
 Contributors:
 
-* `Developer Guide <Dev.rst>`_ - contributing to sarracenia development.
+* `Developer Guide <../Contribution/Development.rst>`_ - contributing to sarracenia development.
 
 Meta:
 
-* `Overview <sarra.rst>`_ - Introduction.
-* `Concepts <Concepts.rst>`_ - Concepts and Glossary
+* `Overview <../Explanation/sarra.rst>`_ - Introduction.
+* `Concepts <../Explanation/Concepts.rst>`_ - Concepts and Glossary
 
 There are also other manual pages available here: `See Also`_
 
@@ -1322,33 +1325,33 @@ directory and copies into the active configuration one.
 Each configuration file manages the consumers for a single queue on
 the broker. To view the available configurations, use::
 
-  blacklab% sr_subscribe list
+  $ sr_subscribe list
 
-  configuration examples: ( /usr/lib/python3/dist-packages/sarra/examples/subscribe ) 
-            all.conf     all_but_cap.conf            amis.conf            aqhi.conf             cap.conf      cclean_f91.conf 
-      cdnld_f21.conf       cfile_f44.conf        citypage.conf       clean_f90.conf            cmml.conf cscn22_bulletins.conf 
-        ftp_f70.conf            gdps.conf         ninjo-a.conf           q_f71.conf           radar.conf            rdps.conf 
-           swob.conf           t_f30.conf      u_sftp_f60.conf 
+    configuration examples: ( /usr/lib/python3/dist-packages/sarra/examples/subscribe ) 
+              all.conf     all_but_cap.conf            amis.conf            aqhi.conf             cap.conf      cclean_f91.conf 
+        cdnld_f21.conf       cfile_f44.conf        citypage.conf       clean_f90.conf            cmml.conf cscn22_bulletins.conf 
+          ftp_f70.conf            gdps.conf         ninjo-a.conf           q_f71.conf           radar.conf            rdps.conf 
+             swob.conf           t_f30.conf      u_sftp_f60.conf 
+  
+    user plugins: ( /home/peter/.config/sarra/plugins ) 
+          destfn_am.py         destfn_nz.py       msg_tarpush.py 
+  
+    general: ( /home/peter/.config/sarra ) 
+            admin.conf     credentials.conf         default.conf
+  
+    user configurations: ( /home/peter/.config/sarra/subscribe )
+       cclean_f91.conf       cdnld_f21.conf       cfile_f44.conf       clean_f90.conf         ftp_f70.conf           q_f71.conf 
+            t_f30.conf      u_sftp_f60.conf
 
-  user plugins: ( /home/peter/.config/sarra/plugins ) 
-        destfn_am.py         destfn_nz.py       msg_tarpush.py 
-
-  general: ( /home/peter/.config/sarra ) 
-          admin.conf     credentials.conf         default.conf
-
-  user configurations: ( /home/peter/.config/sarra/subscribe )
-     cclean_f91.conf       cdnld_f21.conf       cfile_f44.conf       clean_f90.conf         ftp_f70.conf           q_f71.conf 
-          t_f30.conf      u_sftp_f60.conf
-  blacklab%
 
 one can then modify it using::
 
-  sr_subscribe edit q_f71.conf
+  $ sr_subscribe edit q_f71.conf
 
 (The edit command uses the EDITOR environment variable, if present.)
 Once satisfied, one can start the the configuration running::
 
-  sr_subscibe foreground q_f71.conf
+  $ sr_subscibe foreground q_f71.conf
 
 What goes into the files? See next section:
 
@@ -1401,7 +1404,7 @@ does nothing in relation to X.
 
 To provide non-functional descriptions of configurations, or comments, use lines that begin with a **#**.
 
-**All options are case sensitive.**  **Debug** is not the same as **debug** or **DEBUG**.
+**All options are case sensitive.**  **Debug** is not the same as **debug** nor **DEBUG**.
 Those are three different options (two of which do not exist and will have no effect,
 but should generate an ´unknown option warning´).
 
@@ -1503,7 +1506,7 @@ The log.py file included in the package is like this::
 It's a normal python class, declared as a child of the sarracenia.flowcb.FlowCB
 class. The methods (function names) in the plugin describe when
 those routines will be called. For more details consult the 
-`Programmer's Guide <Prog.rst>`_
+`Programmer's Guide <../Explanation/SarraPluginDev.rst>`_
 
 To add special processing of messages, create a module in the python
 path, and have it include entry points. 
@@ -1553,7 +1556,7 @@ would look like this::
   logger.warning("loading")
 
 For more details on implementing extensions, consult the
-`Programmer's Guide <Prog.rst>`_
+`Programmer's Guide <../Explanation/SarraPluginDev.rst>`_
 
 Deprecated v2 plugins
 ~~~~~~~~~~~~~~~~~~~~~
@@ -1744,7 +1747,7 @@ CONSUMER
 Most Metpx Sarracenia components loop on reception and consumption of sarracenia 
 AMQP messages.  Usually, the messages of interest are `sr3_post(7) <sr3_post.7.rst>`_ 
 messages, announcing the availability of a file by publishing its URL ( or a part 
-of a file ), but there are also `sr_report(7) <sr_report.7.rst>`_ messages which 
+of a file ), but there are also `sr_report(7) <#report>`_ messages which 
 can be processed using the same tools. AMQP messages are published to an exchange 
 on a broker (AMQP server). The exchange delivers messages to queues. To receive 
 messages, one must provide the credentials to connect to the broker (AMQP message 
@@ -3158,14 +3161,14 @@ One can override or add functionality with python scripting.
 Sarracenia comes with a variety of example plugins, and uses some to implement base functionality,
 such as logging (implemented by default use of msg_log, file_log, post_log plugins)::
   
-  fractal% sr3 list fcb
+$ sr3 list fcb
   Provided callback classes: ( /home/peter/Sarracenia/sr3/sarracenia ) 
   flowcb/filter/deleteflowfiles.py flowcb/filter/fdelay.py          flowcb/filter/pclean_f90.py      flowcb/filter/pclean_f92.py
   flowcb/gather/file.py            flowcb/gather/message.py         flowcb/line_log.py               flowcb/line_mode.py 
   flowcb/log.py                    flowcb/nodupe.py                 flowcb/pclean.py                 flowcb/post/message.py
   flowcb/retry.py                  flowcb/sample.py                 flowcb/script.py                 flowcb/v2wrapper.py
   flowcb/work/rxpipe.py            
-  fractal% 
+$ 
 
 Users can place their own scripts in the script sub-directory of their config directory 
 tree ( on Linux, the ~/.config/sarra/plugins).  
@@ -3270,7 +3273,7 @@ def registered_as(self) :
        return ['ftp','ftps']
 
 
-See the `Programming Guide <Prog.rst>`_ for more information on Extension development.
+See the `Programming Guide <../Explanation/SarraPluginDev.rst>`_ for more information on Extension development.
 
 
 Queue Save/Restore
@@ -3517,6 +3520,7 @@ SEE ALSO
 
 `sr_log2save(8) <sr3_log2save.8.rst>`_ - Convert logfile lines to .save Format for reload/resend.
 
+.. TODO: Link above refers to non-existant file?
 
 **Formats:**
 

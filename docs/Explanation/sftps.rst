@@ -56,7 +56,7 @@ of files, there will likely be a large number of network devices
 between Alice and Bob's servers.  The following diagram is a typical
 simple case one is likely to meet in reality:  
 
-.. image::  ftp_proxy_today.svg
+.. image::  sftps/ftp_proxy_today.svg
   :align: center
 
 To send large numbers of files and withstand failures of
