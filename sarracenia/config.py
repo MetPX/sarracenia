@@ -1156,20 +1156,30 @@ class Config:
 
             self.queue_filename = queuefile
 
-            if (not hasattr(self, 'queue_name')) or (self.queue_name is None):
+            while (not hasattr(self, 'queue_name')) or (self.queue_name is None):
                 if os.path.isfile(queuefile):
                     f = open(queuefile, 'r')
                     self.queue_name = f.read()
                     f.close()
+                    #logger.info('FIXME: read queue_name %s from queue state file' % self.queue_name )
+                    if len(self.queue_name) < 1:
+                          #logger.info('FIXME: queue name too short, try again' )
+                          self.queue_name=None
+                else:
+                    if self.no > 1:
+                        time.sleep(randint(1,4))
+                    else:
+                        break
 
-                # if the queuefile is corrupt, then will need to guess anyways.
-                if ( self.queue_name is None ) or ( self.queue_name == '' ):
-                    queue_name = 'q_' + self.broker.username + '_' + component + '.' + cfg
-                    if hasattr(self, 'queue_suffix'):
-                        queue_name += '.' + self.queue_suffix
-                    queue_name += '.' + str(randint(0, 100000000)).zfill(8)
-                    queue_name += '.' + str(randint(0, 100000000)).zfill(8)
-                    self.queue_name = queue_name
+            #if the queuefile is corrupt, then will need to guess anyways.
+            if ( self.queue_name is None ) or ( self.queue_name == '' ):
+                queue_name = 'q_' + self.broker.username + '_' + component + '.' + cfg
+                if hasattr(self, 'queue_suffix'):
+                    queue_name += '.' + self.queue_suffix
+                queue_name += '.' + str(randint(0, 100000000)).zfill(8)
+                queue_name += '.' + str(randint(0, 100000000)).zfill(8)
+                self.queue_name = queue_name
+                #logger.info('FIXME: defaulted queue_name  %s ' % self.queue_name )
 
             if not os.path.isdir(os.path.dirname(queuefile)):
                 pathlib.Path(os.path.dirname(queuefile)).mkdir(parents=True,
@@ -1179,6 +1189,7 @@ class Config:
                 f = open(queuefile, 'w')
                 f.write(self.queue_name)
                 f.close()
+                logger.info('FIXME: wrote queue_name  %s to queue state file' % self.queue_name )
 
         if hasattr(self, 'no'):
             if self.statehost:
