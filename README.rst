@@ -22,6 +22,7 @@
     :alt: Build Status
     :target: https://travis-ci.com/MetPX/sarracenia
 
+
 +---------------------------------------------------------+-----------------------------------------------------------------+
 | [ `Guides <docs/Reference/sr3.1.rst#documentation>`_ ]  | [ `Orientation <docs/Reference/sr3.1.rst#documentation>`_ ]     |
 | [ `Manual Pages <docs/Reference/sr3.1.rst#see-also>`_ ] | [ `Référence <docs/Reference/sr3.1.rst#see-also>`_ ]            |
@@ -75,8 +76,3 @@
 page web / homepage: http://github.com/MetPX/sarracenia
 
 Concepts: `Sarracenia in 10 Minutes Video (anglais seulement) <https://www.youtube.com/watch?v=G47DRwzwckk>`_
-
-Documentation *master* location: https://github.com/MetPX/sarracenia/blob/master/doc/sr_subscribe.1.rst#documentation
-
-Documentation *principale* située à: https://github.com/MetPX/sarracenia/blob/master/doc/fr/sr_subscribe.1.rst#documentation
-
