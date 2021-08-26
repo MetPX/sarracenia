@@ -17,9 +17,9 @@ So this document is now essentially historical. If someone does not know v2,
 this document will not help as it is exclusively about mapping v2 to v3. 
 Reading the balance of v03 documentation should be more helpful. 
 
-Abstract Goals:
+Abstract Goals of v3:
 
-* configuration compatibility (upward compatible.) including all plugins.
+* configuration compatibility (upward compatible from v2.) including all plugins.
 
 * multi-protocol support.
   ability to put in urls for mqtt, or different amqp libraries, perhaps others.
@@ -48,7 +48,7 @@ State of the Code
 ~~~~~~~~~~~~~~~~~
 
 As of 2021/08/24, the v3 code passes all the same flow tests that v2 does
-on one laptop. It runs those same tests using the same configurations, so compatibiliy
+on one laptop (except dynamic in v3 #407). It runs those same tests using the same configurations, so compatibiliy
 goal is achieved. V3 accept mqtt broker urls, and an issue is created #389 for amqp v1.
 V3 is being used to feed a WMO experimental feed, albeit with the need
 to restart it regularly ( issue #388 )
@@ -190,8 +190,10 @@ writing plugins is a lot harder than it should be.
 
 * when a setting is put in a config file, it's value is [ value ], and not value (It's in a list.)
 
-* weird scoping issue of import (import in main does not carry over to on_messag, need to import again.)
-  what the heck is self, what the heck is parent?  these are not obvious in the plugins.
+* weird scoping issue of import (import in main does not carry over to on_message, need to import 
+  in the main body of the routine as well as in the python file.)
+
+* What the heck is self, what the heck is parent?  These arguments to plugins are not obvious. 
 
 * bizarre use of python logger API... self.logger? wha?
 
@@ -354,7 +356,7 @@ v2->v3 instance variables::
 
 Changes needed in v2 plugins::
 
-    from sarra.sr_util import --> from sarra import 
+    from sarra.sr_util import --> from sarracenia import 
 
 
 
@@ -362,9 +364,9 @@ Dictionaries or Members for Properties?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 There seems to be a tension between using class members and dictionaries
-for settings.  members seem more convenient, but harder to manipulate,
+for settings. Members seem more convenient, but harder to manipulate,
 though we have equivalent idioms. Argparse returns options as their own
-members of this parsing object.  There is a hierarchy to reconcile:
+members of this parsing object. There is a hierarchy to reconcile:
 
 * protocol defaults
 * consumer defaults
@@ -374,7 +376,7 @@ members of this parsing object.  There is a hierarchy to reconcile:
 
 resolving them to apply overrides, mais more sense as operations
 on dictionaries, printing, saving loading, again makes more sense
-as dictionaries.  In code, members are slightly shorter, and perhaps
+as dictionaries. In code, members are slightly shorter, and perhaps
 more idiomatic:: 
 
    hasattr(cfg,'member') vs. 'member' in cfg (dictionary)
@@ -637,6 +639,9 @@ After Parity: True Improvements
 TODO
 ----
 
+At this point am able to report existing problems as issues with the v03only tag.
+so below is the things leftover after refactor:
+
 * added "missing defaults" message, examine list, and see if we should set them all.
   check_undeclared_options missing defaults: {'discard', 'exchange_split', 
   'pipe', 'post_total_maxlag', 'exchange_suffix', 'destination', 'inplace', 
@@ -710,7 +715,7 @@ Probably need to be settled before having anyone else dive in.
 
 * think about API by sub-classing flow... and having it auto-integrate
   with sr entry point... hmm... likely look at this when updating
-  Programmer's Guide.
+  Programmer's Guide. 
 
 * more worklists? rename failed -> retry or deferred.  Add a new failed
   where failed represents a permanent failure. and the other represents
