@@ -1166,7 +1166,7 @@ class Config:
                           #logger.info('FIXME: queue name too short, try again' )
                           self.queue_name=None
                 else:
-                    if self.no > 1:
+                    if hasattr(self,'no') and self.no > 1:
                         time.sleep(randint(1,4))
                     else:
                         break
@@ -1185,11 +1185,10 @@ class Config:
                 pathlib.Path(os.path.dirname(queuefile)).mkdir(parents=True,
                                                                exist_ok=True)
 
-            if self.queue_name is not None:
+            if (self.queue_name is not None) and hasattr(self,'no') and (self.no < 2):
                 f = open(queuefile, 'w')
                 f.write(self.queue_name)
                 f.close()
-                logger.info('FIXME: wrote queue_name  %s to queue state file' % self.queue_name )
 
         if hasattr(self, 'no'):
             if self.statehost:
