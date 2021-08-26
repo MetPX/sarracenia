@@ -63,7 +63,7 @@ maintain schedule.
 HPCR Solution Overview
 ----------------------
 
-.. image:: HPC-XC_High_Availability.png
+.. image:: HPC_Mirroring_Use_Case/HPC-XC_High_Availability.png
   :scale: 66 %
 
 
@@ -198,7 +198,7 @@ load time) that finds the first entry in the path that has the proper signature.
 For example, in issuing a file close(2) call, the operating system will arrange
 for the correct routine in the correct library to be called.
 
-.. image:: shim_explanation_normal_close.svg
+.. image:: HPC_Mirroring_Use_Case/shim_explanation_normal_close.svg
 
 A call to the close routine, indicates that a program has finished writing the
 file in question, and so usually indicates the earliest time it is useful to 
@@ -207,9 +207,9 @@ points that impersonate the ones being called by the application, in order
 to have file availability notifications posted by the application itself,
 without any application modification.
 
-.. image:: shim_explanation_shim_close.svg
+.. image:: HPC_Mirroring_Use_Case/shim_explanation_shim_close.svg
 
-Usage of the shim library is detailed in `sr_post(1) <sr_post.1.rst>`_
+Usage of the shim library is detailed in `sr_post(1) <../Reference/sr3.1.rst#post>`_
 
 
 Copying Files
@@ -229,7 +229,7 @@ There are multiple networks (40GigE, Infiniband, as well as management networks)
 to use needs to be chosen as well.  Then there are the methods of communication (ssh over tcp/ip?
 bbcp over tcp/ip? GPFS over tcpip? ipoib? native-ib?).
 
-.. image:: site-store.jpg
+.. image:: HPC_Mirroring_Use_Case/site-store.jpg
 
 Many different sources and destinations (ppp, nfs, and protocol nodes), as well many different 
 methods (rcp, scp, bbcp, sscp, cp, dd) and were all trialled to different degrees at different 

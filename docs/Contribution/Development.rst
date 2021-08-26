@@ -1,4 +1,3 @@
-
 ====================================
  MetPX-Sarracenia Developer's Guide
 ====================================
@@ -28,101 +27,88 @@ To hack on the sarracenia source, you need:
 
 after you have cloned the source code::
 
-    git clone -b v03_wip https://github.com/MetPX/sarracenia sr3
+    git clone -b v03_wip https://github.com/MetPX/sarracenia metpx-sr3
     git clone -b v03 https://github.com/MetPX/sarrac sr3c
+    git clone -b v03_wip https://github.com/MetPX/sr_insects insects
     cd sr3
 
 The rest of the Guide assumes you are there.
 
 Documentation
 -------------
-
-The development process is to write up what one intends to do or have done into
-a restructured text file in the doc/design sub-directory.  The files there provide
-a basis for discussion. Ideally, the information there acts as a pieces which can
-be edited into documentation for the features as they are implemented.
-
-Each new component sr\_whatever, should have relevant man pages implemented.
-The Guides should also be revised to reflect additions or changes:
-
-- `Install.rst <Install.rst>`_ (Installation)
-- `Prog.rst <Prog.rst>`_ (a guide to writing plugins.)
-- `Dev.rst <Dev.rst>`_ (this guide for developers of Sarracenia itself.)
-- `Subscribers.rst <subscribers.rst>`_ (a guide for how to read data from a pump.)
-- `Source.rst <source.rst>`_ (a guide for those publishing data to a pump.)
-- `Admin.rst <Admin.rst>`_ (an Admininistrator´s Guide.)
-
-When there are new sections, they should likely start out in design/ and after
-review, graduate into the main documentation.  
-
-The French documentation has the same file names as the English, but it placed
-under the fr/ sub-directory.  It's easiest if the documentation is produced in 
-both languages at once. At least use an auto translation tool (such as 
-www.deepl.com) to provide a starting point. (and same procedure in reverse 
-for Francophones.)
-
+`Documentation Standards <Documentation.rst>`_ exist in /docs/Contribution/Documentation.rst
 
 Where to Put Options 
 ~~~~~~~~~~~~~~~~~~~~
 
-Most options are documented in sr_subscribe(1), which is kind of a *parent* to 
+Options are documented in sr3(1), which is kind of a *parent* to 
 all other consuming components. Any options used by multiple components should
 be documented there. Options which are unique to a single component should be
 documented in the man page for that component.
-
-Where the default value for an option varies among components, each component's
-man page should indicate the option's default for that component. Sr_sarra, 
-sr_winnow, sr_shovel, and sr_report components which only exist because they
-use the base sr_subscribe with different defaults. There is no code difference
-between them.
 
 
 Development
 -----------
 
-Development occurs on the master branch, which may be in any state at any given
-time, and should not be relied upon.  From time to time releases are tagged, and
-maintenance results in a branch.  Releases are classified as follows:
+In general, the development workflow is to get a laptop or a VM where one can run
+the flow_tests (available from http://github.com/MetPX/sr_insects ) The first step
+in configuring a development environment is ensuring that the sr_insects flow tests
+work, as they function as a gate for commits to important branches. 
 
-Alpha
-  Snapshot releases taken directly from master, with no other qualitative guarantees.
-  No guarantee of functionality, some components may be partially implemented, some
-  breakage may occur.
-  No bug-fixes, issues addressed by subsequent version.
-  Often used for early end-to-end testing (rather than installing custom from tree on
-  each test machine.)
+Development is most commonly done on Ubuntu >=18.04 platform. 
 
-Beta
-  Feature Complete for a given release.  Components in their final form for this release.
-  Documentation exists in at least one language.
-  All previously known release block bugs addressed.
-  No bug-fixes, issues addressed by subsequent version.
 
-RC - Release Candidate.
-  Implies it has gone through beta to identify and address major issues.
-  Translated documentation available.
-  No bug-fixes, issues addressed by subsequent version.
+v2 Workflow
+~~~~~~~~~~~
 
-Final versions have no suffix and are considered stable and supported.
-Stable should receive bug-fixes if necessary from time to time.
-One can build python wheels, or debian packages for local testing purposes
-during development.
+Finished development work for version 2 is committed to on the main branch, which is used
+to produce daily snapshots. One should not normally commit changes to the main branch,
+but rather merge them from a working branch.
 
-.. Note:: If you change default settings for exchanges / queues  as
-      part of a new version, keep in mind that all components have to use
-      the same settings or the bind will fail, and they will not be able
-      to connect.  If a new version declares different queue or exchange
-      settings, then the simplest means of upgrading (preserving data) is to
-      drain the queues prior to upgrading, for example by
-      setting, the access to the resource will not be granted by the server.
-      (??? perhaps there is a way to get access to a resource as is... no declare)
-      (??? should be investigated)
+Development branches are named after the issue they are meant to address "issue365", for
+example. If there are multiple attempts to address a given issue, then use the issue
+as a name prefix. For example, there could be issue365, but if we decide that isn't
+a good way to address the issue, there could be an issue365_methodB branch.
 
-      Changing the default requires the removal and recreation of the resource.
-      This has a major impact on processes...
+**Before submitting a pull-request (PR), please ensure that the flow tests from
+sr_insects have been run successfully:  at least static_flow, flakey_broker, and dynamic_flow**
+
+When a PR is generated, the second developer can look it over for concerns.
+Once satisfied with the nature of the patch, the second developer should pull the branch
+and run the flow tests again (the same three) to confirm.  Only after the flow tests
+have been run on multiple machines should a change be merged to main.
+
+issues unique to v2 may be tagged *v2only*.
+
+v3 Workflow
+~~~~~~~~~~~
+
+The upcoming version of Sarracenia is maintained in the v03_wip (work in progress) branch.
+As the major refactor is substantially complete, the remaining work is now entirely constructive
+and all development is co-ordinated through issues exactly as v2 is.  Issues unique to v3,
+be they regressions or enhancements that don't make sense to add to v2, have the tag *v3only*.
+Issues that are common between the releases are tagged *v3*.
+
+The workflow with v3 is similar to v2 but with different branches.  New development work should
+have a v03\_ prefix, such as v03\_issue401. Having all the flow tests complete fairly successfully
+is one criterion for acceptance into v03_wip.
+
+To run the sr_insects tests, the repository must be cloned with the v03_wip branch.
+A gate for merging to v03_wip is for a second developer to run the flow_tests.
+**For v03, these tests must run:  static_flow, flakey_broker, dynamic_flow, transform_flow**
+
+
+sr_insects
+~~~~~~~~~~
+
+the sr_insects repository has it's own issues DB, and work on sr_insects is encouraged.
+Both v2 and v3 are supported on the v03_wip branch of sr_insects.  That branch should be
+used to support all development in both versions.... hmm... perhaps should make v03_wip
+the main branch?
+
 
 Local Installation
-~~~~~~~~~~~~~~~~~~
+------------------
 
 There are many different ways to install python packages on a computer. Different developers
 will prefer different methods, and all the methods need to be tested prior to each release.
@@ -148,7 +134,7 @@ This section describes creating a test environment for use in a virtual machine.
 a virtual machine is to use multipass (https://multipass.run) Assuming it is installed, one can
 create a vm with::
 
- multipass launch -m 4G --name flow
+ multipass launch -m 4G -d 50G --name flow
 
 need to have ssh localhost work in the multipass container.  Can do that by copying multipass
 private key into the container::
@@ -341,7 +327,7 @@ execution of this script on a working system may lead to undesirable side effect
 
 The configuration one is trying to replicate:
 
-.. image:: Flow_test.svg
+.. image:: Development/Flow_test.svg
 
 
 Following table describes what each element of the dynamic flow test does, and the test coverage
@@ -456,7 +442,7 @@ Assumption: test environment is a Linux PC, either a laptop/desktop, or a server
 can start a browser. If working with the C implementation as well, there are also the following
 flows defined:
 
-.. image:: cFlow_test.svg
+.. image:: Development/cFlow_test.svg
 
    
 Running Flow Test
@@ -1188,6 +1174,44 @@ Where:
   X.Y     # Final release
   X.ypostN #ack! patched release.
 
+Releases are classified as follows:
+
+Alpha
+  Snapshot releases taken directly from master, with no other qualitative guarantees.
+  No guarantee of functionality, some components may be partially implemented, some
+  breakage may occur.
+  No bug-fixes, issues addressed by subsequent version.
+  Often used for early end-to-end testing (rather than installing custom from tree on
+  each test machine.)
+
+Beta
+  Feature Complete for a given release.  Components in their final form for this release.
+  Documentation exists in at least one language.
+  All previously known release block bugs addressed.
+  No bug-fixes, issues addressed by subsequent version.
+
+RC - Release Candidate.
+  Implies it has gone through beta to identify and address major issues.
+  Translated documentation available.
+  No bug-fixes, issues addressed by subsequent version.
+
+Final versions have no suffix and are considered stable and supported.
+Stable should receive bug-fixes if necessary from time to time.
+One can build python wheels, or debian packages for local testing purposes
+during development.
+
+.. Note:: If you change default settings for exchanges / queues  as
+      part of a new version, keep in mind that all components have to use
+      the same settings or the bind will fail, and they will not be able
+      to connect.  If a new version declares different queue or exchange
+      settings, then the simplest means of upgrading (preserving data) is to
+      drain the queues prior to upgrading, for example by
+      setting, the access to the resource will not be granted by the server.
+      (??? perhaps there is a way to get access to a resource as is... no declare)
+      (??? should be investigated)
+
+      Changing the default requires the removal and recreation of the resource.
+      This has a major impact on processes...
 
 Example:
 

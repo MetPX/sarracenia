@@ -3,10 +3,23 @@
 Version 3 Refactor
 ==================
 
+Summary
+-------
+
+
+This document is aimed at developers who need to work with both v2 code and 
+the refactor that turned it into v3. For developers familiar with v2, It can serve 
+as a bit of a map to navigating the source code of v3, which has now
+stablizied enough that it substantially passes the flow_tests.
+V3 is perhaps not really usable yet, but the direction is well established and further
+development is now described using the issue tracker (look at the v3only label.)  
+So this document is now essentially historical. If someone does not know v2, 
+this document will not help as it is exclusively about mapping v2 to v3. 
+Reading the balance of v03 documentation should be more helpful. 
+
 Abstract Goals:
 
-* Absolute configuration compatibility (upward compatible.)
-  including all plugins.
+* configuration compatibility (upward compatible.) including all plugins.
 
 * multi-protocol support.
   ability to put in urls for mqtt, or different amqp libraries, perhaps others.
@@ -18,20 +31,153 @@ Abstract Goals:
   more readable, elegant, pythonic code.
   make maintenance easier. 
 
-while you're at it
-------------------
 
-goals of opportunity:
+goals of opportunity
+~~~~~~~~~~~~~~~~~~~~
 
   * add stuff to make it work as an API?
   * potentially new plugin api to allow groups (of messages and/or files.)
-  * Finish off log rotation.
+  * Finish off log rotation. 
   * Assume python >= 3.4 remove old cruft.
   * Assume ubuntu >= 18.04 remove old cruft.
   * Assume systemd, remove sysv integration.
   * have options adopt camelCase where possible.
   * fully async, multi-sources and sinks.
  
+State of the Code
+~~~~~~~~~~~~~~~~~
+
+As of 2021/08/24, the v3 code passes all the same flow tests that v2 does
+on one laptop. It runs those same tests using the same configurations, so compatibiliy
+goal is achieved. V3 accept mqtt broker urls, and an issue is created #389 for amqp v1.
+V3 is being used to feed a WMO experimental feed, albeit with the need
+to restart it regularly ( issue #388 )
+
+The new v3 code has 4000 fewer lines than v2, and includes mqtt.py (extra broker protocol) 
+as well as a module implementing a compatibility layer with v2 plugins. For example, the 
+new configuration routine is 30% shorter and more consistent in v3 than in v2.
+The code is also much more pythonic, as the API is much more 
+natural to work with multiple API levels that can be learned by consulting jupyter notebooks.
+
+
+v2 code::
+
+  fractal% find -name '*.py' | grep -v .pybuild | grep -v debian | grep -v plugins | xargs wc -l
+   133 ./sr_winnow.py
+   544 ./sr_sftp.py
+    47 ./sr_tailf.py
+   365 ./sr_cache.py
+   164 ./sr_xattr.py
+  1136 ./sr_message.py
+    51 ./sr_checksum.py
+   129 ./pyads.py
+   306 ./sr_http.py
+  2204 ./sr_subscribe.py
+   403 ./sr_consumer.py
+  1636 ./sr_post.py
+   265 ./sr1.py
+    54 ./sr_log2save.py
+   206 ./sr_sarra.py
+   286 ./sr_rabbit.py
+   567 ./sr_file.py
+    28 ./__init__.py
+   107 ./sr_report.py
+    74 ./sr_watch.py
+   126 ./sr_shovel.py
+   505 ./sr_retry.py
+   956 ./sr_util.py
+   355 ./sr_sender.py
+   368 ./sr_cfg2.py
+  1119 ./sr.py
+   753 ./sr_poll.py
+   729 ./sr_audit.py
+   308 ./sr_credentials.py
+   988 ./sr_instances.py
+   608 ./sr_amqp.py
+   455 ./sr_ftp.py
+  3062 ./sr_config.py
+    33 ./sum/checksum_s.py
+    34 ./sum/checksum_d.py
+    34 ./sum/__init__.py
+    26 ./sum/checksum_0.py
+    30 ./sum/checksum_n.py
+    29 ./sum/checksum_a.py
+  19223 total
+  fractal% 
+
+v3 code::
+
+  fractal% find -name '*.py' | grep -v plugins | xargs wc -l
+    38 ./examples/moth_api_consumer.py
+    68 ./examples/moth_http_retrieval.py
+   214 ./instance.py
+    50 ./sr_tailf.py
+   135 ./pyads.py
+    15 ./integrity/arbitrary.py
+    24 ./integrity/sha512.py
+    24 ./integrity/md5.py
+    92 ./integrity/__init__.py
+    16 ./integrity/random.py
+    33 ./integrity/md5name.py
+    52 ./sr_post.py
+   323 ./rabbitmq_admin.py
+    55 ./sr_log2save.py
+  2115 ./config.py
+    65 ./flowcb/line_mode.py
+   108 ./flowcb/retry.py
+    43 ./flowcb/log.py
+    23 ./flowcb/sample.py
+    77 ./flowcb/pclean.py
+   838 ./flowcb/gather/file.py
+    44 ./flowcb/gather/message.py
+    63 ./flowcb/gather/remote.py
+   173 ./flowcb/gather/__init__.py
+    91 ./flowcb/script.py
+   165 ./flowcb/__init__.py
+   407 ./flowcb/nodupe.py
+    37 ./flowcb/shiftdir2baseurl.py
+    14 ./flowcb/work/__init__.py
+    29 ./flowcb/work/rxpipe.py
+   463 ./flowcb/v2wrapper.py
+    38 ./flowcb/line_log.py
+    47 ./flowcb/post/message.py
+    14 ./flowcb/post/__init__.py
+    30 ./flowcb/filter/deleteflowfiles.py
+     7 ./flowcb/filter/__init__.py
+    70 ./flowcb/filter/pclean_f92.py
+   101 ./flowcb/filter/fdelay.py
+   122 ./flowcb/filter/pclean_f90.py
+    93 ./flowcb/mdelaylatest.py
+   384 ./diskqueue.py
+    17 ./moth/amq1.py
+   283 ./moth/__init__.py
+   525 ./moth/amqp.py
+    16 ./moth/pika.py
+   514 ./moth/mqtt.py
+   186 ./__init__.py
+   167 ./filemetadata.py
+    26 ./sr_flow.py
+    16 ./flow/winnow.py
+    18 ./flow/report.py
+   494 ./flow/poll.py
+    16 ./flow/shovel.py
+  1528 ./flow/__init__.py
+    34 ./flow/post.py
+    29 ./flow/subscribe.py
+    29 ./flow/sarra.py
+    35 ./flow/watch.py
+    27 ./flow/sender.py
+  1993 ./sr.py
+   315 ./credentials.py
+   657 ./transfer/file.py
+   366 ./transfer/https.py
+   522 ./transfer/ftp.py
+   437 ./transfer/__init__.py
+   614 ./transfer/sftp.py
+  15664 total
+  fractal%
+
+
 V02 Plugin Pain Points
 ----------------------
 
@@ -263,8 +409,8 @@ Known Problems (Solved in v3)
   totally refactored now. Integrity class is normal, and separate from flowcb.
 
 
-Concrete Plan
--------------
+Concrete Plan (Done)
+--------------------
 
 Replace sarra/sr_config with sarra/sr_cfg2. The new sr_cfg2 uses argparse 
 and a simpler model for config file parsing. This became config.py
@@ -315,10 +461,10 @@ This happenned and became the Flow Module, and *the General Algorithm* got
 renamed *the Flow Algorithm*. yes, that is now flow/ class hierarchy.
 The main logic is in __init__, and actual components are sub-classes.
 
-Thinking about just removing the sr\_ prefix from classes for replacements,
+Thinking about just removing sr\_ the prefix from classes for replacements,
 since they are in sarra directory anyways. so have an internal class 
 sarra/instances, sarra/sarra <- replace consumer... This happenned
-and became a place holder for progress, meaning that files with sr_
+and became a place holder for progress, meaning that files with sr\_
 prefix in the name, that are not entry-points, indicate v2 code that
 has not yet been retired/replaced.
 
@@ -363,7 +509,7 @@ sr_sarra was straightforward once sr_subscribe was done.
 re-implemented Transfer get to have conventional return value as the number of bytes 
 transferred, and if they differ, that signals an issue.
 
-sr_sender send now done, involved a lot more thinking about how to set new_ fields
+sr_sender send now done, involved a lot more thinking about how to set new\_ fields
 in messages. but once that was done, was able to remove both the sender and sr_subscribe
 (the parent class of most components) and allowed removal of sr_cache, sr_consumer, sr_file,
 sr_ftp, sr_http, sr_message, sr_retry, and sr_sftp, sum/\*, sr_util.
@@ -438,7 +584,7 @@ Items from the TODO list that have been addressed.
 
 * migrate sr_xattr.py to sarra/xattr.py (now called sarracenia/filemetadata.py)
 
-* fix flakey_broker test to pass.
+* fix flakey_broker test to pass. (done!)
 
 * update documentation... change everything to use sr3 entry point, yes done.
   (See transition point below.)
@@ -448,10 +594,6 @@ Items from the TODO list that have been addressed.
   (sr_subscribe and friends only included in compat package, and all)
   interactivity natively only happens through sr3?
   now called metpx-sr3
-
-* log is added.
-
-* edit is added.
 
 * perhaps move the whole plugin thing up a level (get rid of directory)
   so Plugin becomes a class instantiated in sarra/__init__.py... puts
@@ -471,8 +613,6 @@ Items from the TODO list that have been addressed.
 * log incoherency between 'info' and logging.INFO prevents proper log control.
   FIXED 2021/02.
 
-* add SSL support to moth/mqtt.py
-
 * missing accelerators:  sftp.putAcc, ftp.putAc, ftp.getAc, file.getAc, 
 
 * migrate sr_credentials.py to sarracenia/credentials.py.
@@ -483,60 +623,16 @@ Items from the TODO list that have been addressed.
 
 * test with dynamic-flow.
 
+* MQTT Support (Done!)
+
+
+BUGS/Concerns/Issues
+--------------------
+
+migrated to github issues with v3only tag.
 
 After Parity: True Improvements
 -------------------------------
-
-* start re-writing some plugins, like unidata stuff to see how hard it is
-  new interface should be a lot easier, but road testing is needed.
-
-* MQTT Support (Done!)
-
-* AMQP 1.0 support (SWIM support for Aviation exchange.)
-
-* Consider replacing manual queues in moth with more pythonic Queue.
-  How to decide.
-
-* Replace sarracenia.flowcb.retry (transliteration of v2) with more pythonic. 
-  write an alternate module for each implementation.
-  Would want to implement multiple options and examine performance
-  in high load situation. Options:
-   * Queue + sequential file writing
-   * persist-queue (single task like today.)
-   * persist-queue (shared among all instances?)
-
-* use this to implement cache sharing (copying of cache from processes with 
-  vip to those without.) General feature makes switchovers much cleaner.
-  peer_broker, peer_exchange.
-
-  advertise  shovel/config/recently_received/ and have non vip holders subscribe...
-
-  or permit substitution with memcached?
-  Make a peerqueue wrapper class, wait... just have peers subscribe to peer output.
-
-* True Async: Single timing loop for entire app. Requires a retry_queue for posting.
-  * requires a place to store failed/deferred posts (a second retry queue.)
-  * changing events to have "after_post" processing of to append to outbound retry queue.
-  * Do we have logic, like outbound winnow, where as long as published once, ok?
-  * MQTT reception is already async, just need to fix transmit.
-
-* Multi-source (requires async):
-  * allow >1 broker and post_broker to be specified, gather from all brokers, post to all brokers.
-    effect of true async.
-
-* re-write poll, 
-
-  * remove listing files from implementation, just use NoDupe.py Tune nodupe for cases.
-    we will just keep using v2 for old polls, and write new polls in v3, so don't worry about
-    compat. They can never be vaguely similar... true/False? 
-
-  * add walk to the Transfer protocols.  just call walk from a flowcb/gather/remote.py
-
-  * use cache-sharing to avoid multiple polls. or just remove filtering in poll, use winnow?
-
-* log could read all the log files, so it would work with multiple
-  instances.
-
 
 TODO
 ----
@@ -548,42 +644,36 @@ TODO
   'sanity_log_dead', 'report_daemons', 'realpath_filter', 'reconnect', 
   'post_exchange_suffix', 'save', 'pump_flag', 'cache_stat', 'declare_queue', 'restore', 
   'bind_queue', 'dry_run', 'source_from_exchange', 'retry_mode', 'poll_without_vip', 'header'}
+  #405
 
 * #369 ... clean shutdown
 
-* figure out an AsyncAPI implementation for subscription at least.
+* figure out an AsyncAPI implementation for subscription at least. #401
 
-* get partitioned file transfers working again.
+* get partitioned file transfers working again. #396
 
-* convert existing poll to poll0 ? old poll.
+* convert existing poll to poll0 ? old poll. #394
 
-* alarm_set truncates to integers... hmm.. use setitimer instead? 
+* alarm_set truncates to integers... hmm.. use setitimer instead?  #397
 
-* outlet option is missing.
+* outlet option is missing. #398
 
-* vhost support needed.
-
-* add directories?
+* vhost support needed. #384
 
 * sr_poll active/passive bug #29
 
-* realpath_filter is used by CMOI. Seems to be disappeared in v3. It's there in the C version.
+* realpath_filter is used by CMOI. Seems to be disappeared in v3. It's there in the C version. #399
 
-* port rest of v02 plugins to v03 equivalents and add mappings in config.py,
-  so that we have barely any v2's left.
+* port rest of v02 plugins to v03 equivalents and add mappings in config.py, #400
+  so that we have barely any v2's left. 
 
 * transfer/sftp.py remove file_index from implementation ( #367 ) depend on NoDupe.py
 
-* poll, remove listing files from implementation, just use NoDupe.py Tune nodupe for cases.
-  we will just keep using v2 for old polls, and write new polls in v3, so don't worry about
-  compat. They can never be vaguely similar... true/False? 
-  (equivalent to re-write poll above.)
-
 * full async mode for MQP's. requires publish_retry functionality.
-  (again in future plans above.)
+  (again in future plans above.) #392
 
 * once full async mode available, allow multiple gathers and publishes.
-  (again in future plans above.)
+  (again in future plans above.) #392
 
 * #33 add hostname to default queue.
 
@@ -597,7 +687,7 @@ Not Baked/Thinking
 Structural code things that are not settled, may change.
 Probably need to be settled before having anyone else dive in.
 
-* scopable properties for internal classes, like they exist for plugins.
+* scopable properties for internal classes, like they exist for plugins. #402
   I think this is done.  Would have to document somewhere,
   testing and demoing at the same time.
 
@@ -606,14 +696,14 @@ Probably need to be settled before having anyone else dive in.
   main code? Don't think it will ever go away. It is fairly ugly, but 
   very useful and heavily used in existing configs. probably OK. 
 
-* changing recovery model, so that all retry/logic is in main loop,
+* changing recovery model, so that all retry/logic is in main loop,  #392
   and moth just returns immediately.  Point being could have multiple
   gathers for multiple upstreams, and get messages from whichever is
   live...
   also end up with a single loop that way... cleaner.
   likely equivalent to async mode mentioned above.
 
-* *gather* as a way of separating having multiple input brokers.
+* *gather* as a way of separating having multiple input brokers.  #392
   so could avoid needing a winnow, but just having a subscriber connect to 
   multiple upstreams directly.
   likely equivalent to async, and multi-gather.
@@ -626,7 +716,7 @@ Probably need to be settled before having anyone else dive in.
   where failed represents a permanent failure. and the other represents
   to be retried later.
 
-* `MQTT issues <mqtt_issues.rst>`_
+* `MQTT issues <../../doc/mqtt_issues.rst>`_
 
 
 FIXME/Deferred
@@ -639,7 +729,7 @@ This section includes a mix of tasks that can hopefully be assigned,
 FIXME are things left to the side that need to be seen to.
 
 
-* **RELEASE BLOCKER** hairy.
+* **RELEASE BLOCKER** hairy. #403
   sr_watch does not batch things. It just dumps an entire tree.
   This will need to be re-wored before release into an iterator style approach.
   so if you start in a tree with a million files, it will scan the entire million
@@ -651,15 +741,16 @@ FIXME are things left to the side that need to be seen to.
   impact and delay to producing the first file is still there, but at least
   returns one batch at a time.
 
-* **RELEASE BLOCKER** logs of sr_poll and sr_watch tend to get humungous way too quickly.
+* **RELEASE BLOCKER** logs of sr_poll and sr_watch tend to get humungous way too quickly. #389
 
-* try out jsonfile for building messages to post. can build json incrementally,
+* try out jsonfile for building messages to post. can build json incrementally, #402
   so you do not need to delete the _deleteOnPost elements (can just skip over them)
 
-* um... add the protocols.   mqtt and qpid-proton amqpv1
+* um... add the protocols.   mqtt and qpid-proton (amq1) #389
 
 * make sure stop actually works... seeing strays after tests... but changing too much 
-  to really know. need to check.
+  to really know. need to check. It does!
+
 
 Transition
 ----------
@@ -672,8 +763,6 @@ It depends on whether v3 will work as a drop-in replacement or not. There is som
 we know will happen with do_* plugins. If that is sufficiently well documented and easily
 dealt with, then it might not be a problem. On the other hand, if there are subtle
 problems, then a parallel approach might be needed.
-
-What is easier for the analysts to deal with?
 
 Replacement
 ~~~~~~~~~~~
@@ -734,7 +823,7 @@ breaking changes:
 
 * log messages and output in interactive, will be completely different.
 
-* dropped settings: use_amqplib, use_pika... replaced by separate per protocol implementation libraries. amqp uses the 'amqp' library which is neither of the above.
+* dropped settings: use_amqplib, use_pika... replaced by separate per protocol implementation libraries. amqp uses the 'amqp' library which is neither of the above. ( commit 02fad37b89c2f51420e62f2f883a3828d2056de1 )
 
 * dropping on_watch plugins. afaict, no-one uses them.  The way v03 works it would be an after_accept for a watch.
   makes more sense that way anyways.
@@ -816,28 +905,4 @@ Features
 * gather (inlet? sources of messages) are now plugins.
 
 * added typing to options settings, so plugins can declare: size, duration, string, or list.
-
-
-Coverage Failures in Flow Tests
-===============================
-
-This section lists some areas of poor coverage in the flow test, that became evident
-when other testing done.
-
-* product selection (subtopics)  The subtopic selection logic was not working properly
-  (we were getting far too many messages) but issue was masked by client side selection.
-  DONE (transform_flow)
-
-* names changed (transformed) during download DONE ( transform_flow )
-
-* default directory on accept_unmatch was wrong... DONE ( added to sender in transform_flow )
-
-* HTTP with BASIC authentication (was broken in last v2 release.)
-
-* shim library commands other than the one or two tested.
-
-* file partitioning.
-
-* md5sum behaviour (ie. content changes, but checksum remains the same.)
-
 
