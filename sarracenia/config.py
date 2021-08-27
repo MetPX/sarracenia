@@ -62,6 +62,7 @@ default_options = {
     'delete': False,
     'documentRoot': None,
     'download': False,
+    'filename': 'WHATFN',
     'inflight': None,
     'inline': False,
     'inline_only': False,
@@ -102,7 +103,7 @@ size_options = ['blocksize', 'bufsize', 'bytes_per_second', 'inline_max']
 
 str_options = [
     'admin', 'baseDir', 'broker', 'destination', 'directory', 'exchange',
-    'exchange_suffix', 'events', 'feeder', 'header', 'logLevel', 'path',
+    'exchange_suffix', 'events', 'feeder', 'filename', 'header', 'logLevel', 'path',
     'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
     'post_exchange_suffix', 'queue_name',
     'report_exchange', 'strip', 'nodupe_ttl',
@@ -1331,7 +1332,7 @@ class Config:
 
         return ndestDir
 
-    def sundew_getDestInfos(self, currentFileOption, filename):
+    def sundew_getDestInfos(self, msg, currentFileOption, filename):
         """
         modified from sundew client
 
@@ -1343,7 +1344,9 @@ class Config:
 
         ex: mask[2] = 'NONE:TIME'
         """
+
         if currentFileOption == None: return filename
+
         timeSuffix = ''
         satnet = ''
         parts = filename.split(':')
@@ -1631,9 +1634,9 @@ class Config:
             filename = flatten.join(token)
             token[-1] = [filename]
 
-        if maskFileOption != None:
+        if maskFileOption is not None:
             try:
-                filename = self.sundew_getDestInfos(filename)
+                filename = self.sundew_getDestInfos(msg, maskFileOption, filename)
             except:
                 logger.error("problem with accept file option %s" %
                              maskFileOption)

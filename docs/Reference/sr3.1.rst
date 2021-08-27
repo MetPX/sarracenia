@@ -3565,12 +3565,16 @@ for the delivery of the product.  The script receives the sr_sender class
 instance.  The script takes the parent as an argument, and for example, any
 modification to  **parent.msg.new_file**  will change the name of the file written locally.
 
-filename <keyword> (default:NONESENDER)
+filename <keyword> (default:WHATFN)
 ---------------------------------------
 
 From **metpx-sundew** the support of this option give all sorts of possibilities
 for setting the remote filename. Some **keywords** are based on the fact that
 **metpx-sundew** filenames are five (to six) fields strings separated by for colons.
+
+The default value on Sundew is NONESENDER, but in the interest of discouraging use
+of colon separation in files, the default in Sarracenia is WHATFN
+
 The possible keywords are :
 
 

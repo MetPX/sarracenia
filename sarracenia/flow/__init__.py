@@ -421,14 +421,22 @@ class Flow:
 
             if 'oldname' in m:
                 url = self.o.set_dir_pattern(m['baseUrl'],m) + os.sep + m['oldname']
+                if 'sundew_extension' in m  and url.count(":") < 1 : 
+                    urlToMatch= url + ':' + m['sundew_extension']
+                else:
+                    urlToMatch=url
                 oldname_matched = False
                 for mask in self.o.masks:
                     pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
-                    if mask_regexp.match(url):
+                    if mask_regexp.match(urlToMatch):
                         oldname_matched = accepting
                         break
 
             url = self.o.set_dir_pattern(m['baseUrl'],m) + os.sep + m['relPath']
+            if 'sundew_extension' in m and url.count(":") < 1: 
+                urlToMatch= url + ':' + m['sundew_extension']
+            else:
+                urlToMatch=url
 
             # apply masks for accept/reject options.
             matched = False
@@ -436,7 +444,7 @@ class Flow:
                 #logger.info('filter - checking: %s' % str(mask) )
                 pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
 
-                if mask_regexp.match(url):
+                if mask_regexp.match(urlToMatch):
                     matched = True
                     if not accepting:
                         if ('oldname' in m) and oldname_matched:
