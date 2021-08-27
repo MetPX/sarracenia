@@ -1182,16 +1182,16 @@ class Config:
                 self.queue_name = queue_name
                 #logger.info('FIXME: defaulted queue_name  %s ' % self.queue_name )
 
-            if not os.path.isdir(os.path.dirname(queuefile)):
-                pathlib.Path(os.path.dirname(queuefile)).mkdir(parents=True,
-                                                               exist_ok=True)
+                if not os.path.isdir(os.path.dirname(queuefile)):
+                    pathlib.Path(os.path.dirname(queuefile)).mkdir(parents=True,
+                                                                   exist_ok=True)
 
-            # only lead instance (0-forground, 1-start, or none in the case of 'declare')
-            # should write the state file.
-            if (self.queue_name is not None) and (not hasattr(self,'no') or (self.no < 2)):
-                f = open(queuefile, 'w')
-                f.write(self.queue_name)
-                f.close()
+                # only lead instance (0-forground, 1-start, or none in the case of 'declare')
+                # should write the state file.
+                if (self.queue_name is not None) and (not hasattr(self,'no') or (self.no < 2)):
+                    f = open(queuefile, 'w')
+                    f.write(self.queue_name)
+                    f.close()
 
         if hasattr(self, 'no'):
             if self.statehost:
