@@ -134,7 +134,7 @@ This section describes creating a test environment for use in a virtual machine.
 a virtual machine is to use multipass (https://multipass.run) Assuming it is installed, one can
 create a vm with::
 
- multipass launch -m 4G -d 50G --name flow
+ multipass launch -m 4G -d 30G --name flow
 
 need to have ssh localhost work in the multipass container.  Can do that by copying multipass
 private key into the container::
@@ -151,11 +151,58 @@ Weird issues with ssh keys not being interpreted properly by paramiko, work arou
 ::
 
  fractal% sudo cat /var/snap/multipass/common/data/multipassd/ssh-keys/id_rsa | sed 's/BEGIN .*PRIVATE/BEGIN RSA PRIVATE/;s/END .*PRIVATE/END RSA PRIVATE/' >id_rsa_container
+ chmod 600 id_rsa_container
  scp -i id_rsa_container id_rsa_container ubuntu@10.23.119.175:/home/ubuntu/.ssh/id_rsa
                                                                    100% 1704     2.7MB/s   00:00    
 
  
  multipass shell flow
+ fractal% scp -i id_rsa_container id_rsa_container ubuntu@10.23.119.106:/home/ubuntu/.ssh/id_rsa
+ The authenticity of host '10.23.119.106 (10.23.119.106)' can't be established.
+ ECDSA key fingerprint is SHA256:jlRnxV7udiCBdAzCvOVgTu0MYJR5+kYzNwy/DIhkeD8.
+ Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+ Warning: Permanently added '10.23.119.106' (ECDSA) to the list of known hosts.
+ id_rsa_container                                                                                                                         100% 1712     9.4MB/s   00:00    
+ fractal% multipass shell flow
+ Welcome to Ubuntu 20.04.3 LTS (GNU/Linux 5.4.0-81-generic x86_64)
+ 
+  * Documentation:  https://help.ubuntu.com
+  * Management:     https://landscape.canonical.com
+  * Support:        https://ubuntu.com/advantage
+ 
+   System information as of Fri Aug 27 21:12:16 EDT 2021
+ 
+   System load:  0.42              Processes:             112
+   Usage of /:   4.4% of 28.90GB   Users logged in:       0
+   Memory usage: 5%                IPv4 address for ens4: 10.23.119.106
+   Swap usage:   0%
+ 
+ 
+ 1 update can be applied immediately.
+ To see these additional updates run: apt list --upgradable
+ 
+ 
+ To run a command as administrator (user "root"), use "sudo <command>".
+ See "man sudo_root" for details.
+ 
+ ubuntu@flow:~$ 
+
+then prompt ssh to accept the localhost key::
+
+ ubuntu@flow:~$ ssh localhost ls -a
+ The authenticity of host 'localhost (127.0.0.1)' can't be established.
+ ECDSA key fingerprint is SHA256:jlRnxV7udiCBdAzCvOVgTu0MYJR5+kYzNwy/DIhkeD8.
+ Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+ Warning: Permanently added 'localhost' (ECDSA) to the list of known hosts.
+ .
+ ..
+ .bash_logout
+ .bashrc
+ .cache
+ .profile
+ .ssh
+ ubuntu@flow:~$ 
+
 
 This will provide a shell in an initialized VM.  To configure it::
 
@@ -176,6 +223,25 @@ sr3c and sr3 are now installed, and should be ready to run a flow test from the 
 has also been cloned:
 
   cd ../sr_insects
+
+The v03 branch of sr_insects supports testing of both v2 and v3, and both versions are now installed.
+The flow tests are intended to be run to confirm compatibility between v2 and v3, and so one
+must be able to test v2 as well::
+
+  ubuntu@flow:~/sr_insects$ dpkg -l | grep metpx
+  ii  metpx-libsr3c                    3.21.08a1-0~202108270410~ubuntu20.04.1 amd64        C-Implementation of a Sarracenia Client
+  ii  metpx-sarracenia                 2.21.08-0~202108241854~ubuntu20.04.1   all          Directory mirroring in real-time for users, file servers and web sites.
+  ii  metpx-sr3                        3.00.008exp                            all          v3 Directory mirroring in real-time for users, file servers and web sites.
+  ii  metpx-sr3c                       3.21.08a1-0~202108270410~ubuntu20.04.1 amd64        C-Implementation of a Sarracenia Client
+  ubuntu@flow:~/sr_insects$ 
+
+The v2 package is metpx-sarracenia, whereas the v3 one is metpx-sr3. the flow tests will detect
+which version is installed and test v3 if both are present.  To override that::
+
+  ubuntu@flow:~/sr_insects$ export sarra_py_version=2.21.08
+  ubuntu@flow:~/sr_insects$ 
+
+Then one can run flow_tests from this shell normally.
 
 Python Wheel
 ~~~~~~~~~~~~
@@ -445,8 +511,8 @@ flows defined:
 .. image:: Development/cFlow_test.svg
 
    
-Running Flow Test
------------------
+Running Flow Tests
+------------------
 
 This section documents these steps in much more detail.  
 Before one can run the sr_insects tests, some pre-requisites must be taken care of.
@@ -649,8 +715,8 @@ As it runs the setup, it also executes all existing unit_tests.
 Only proceed to the flow_check tests if all the tests in flow_setup.sh pass.
 
 
-Run Flow Test
-~~~~~~~~~~~~~
+Run A Flow Test
+~~~~~~~~~~~~~~~
 
 The flow_check.sh script reads the log files of all the components started, and compares the number
 of messages, looking for a correspondence within +- 10%   It takes a few minutes for the
@@ -834,7 +900,7 @@ between each run of the flow test::
 
 After the flow_cleanup.sh, to check that a test has completed, use::
 
-   sr status 
+   sr3 status 
 
 which should show that there are no active configurations.
 
@@ -849,11 +915,11 @@ server and can run for any length desired. The dynamic flow_test length defaults
 to 1000 files being flowed through the test cases. When in rapid development, 
 one can supply an argument to shorten that::
 
-  ./flow_test 200
+  ./flow_limit.sh 200
 
 Towards the end of a development cycle, longer flow_tests are adviseable::
 
-  ./flow_test 20000 
+  ./flow_limit.sh 20000 
 
 to identify more issues. sample run to 100,000 entries::
 
@@ -1062,8 +1128,8 @@ FIXME: steps missing, more clarity required.
 
 Most components will use MQTT instead of amqp and can be run normally.
 
-Commits to the Master Branch
-----------------------------
+Commits to the Main Branch
+--------------------------
 
 Aside from typos, language fixups in the documentation, and incrementing
 the version, developers are not expected to commit to master. All work 
@@ -1101,7 +1167,7 @@ Main Branches
 There is a long running discussion about `Which Version is stable <https://github.com/MetPX/sarracenia/issues/139>`_
 The current set up is that there are three main branches:
 
-* master  ... the master branch is used to build `Daily <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily>`_
+* main  ... the main branch is used to build `Daily <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily>`_
   and `Pre-Release <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-pre-release>`_ repositories on launchpad.net.
 
 * v2_stable ... generally this branch gets code via merges from master, after the pre-release has been tested on a
