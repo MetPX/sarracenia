@@ -1141,7 +1141,7 @@ request on github.
 
 ::
    
-   git checkout issueXXX
+   git checkout issueXXX  # v03_issueXXX for v3 work.
    vi CHANGES.rst # summarize the changes in Restructured Text
    dch # copy/paste from CHANGES.rst, inserting one leading space.
    vi doc/UPGRADING.rst # rarely, if code has user impact.
@@ -1170,11 +1170,15 @@ The current set up is that there are three main branches:
 * main  ... the main branch is used to build `Daily <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily>`_
   and `Pre-Release <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-pre-release>`_ repositories on launchpad.net.
 
+* issue branches to be merged to main should be called issueXXX.
+
 * v2_stable ... generally this branch gets code via merges from master, after the pre-release has been tested on a
   as many systems as possible. used to build the stable: `MetPX <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx>`_
 
-* v3_wip ... The `version 3 <v03.rst>`_ work in progress branch is a next generation version of sarracenia in development.
+* v03_wip ... The `version 3 <v03.rst>`_ work in progress branch is a next generation version of sarracenia in development.
   It is quite different and currently not usable at all. Do not try it, unless specifically invited. IT DOES NOT WORK.
+
+* issue branches to be merged to v03_wip, it should be called v3_issueXXX
   
 
 Repositories
