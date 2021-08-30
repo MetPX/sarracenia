@@ -77,6 +77,7 @@ import json
 STREAM_NAME = 'sr_.json'
 
 xattr_disabled=False
+supports_pyxattr = False
 
 def disable_xattr():
      global xattr_disabled
@@ -88,10 +89,19 @@ class sr_xattr:
 
        global supports_alternate_data_streams
        global supports_extended_attributes
+       global supports_pyxattr
 
        self.path = path
        self.x = {}
        self.dirty = False
+
+       # xattr will have both attributes xattr and listxattr
+       # pyxattr will have only listxattr, and not xattr
+       if not hasattr(xattr, 'xattr'):
+           supports_pyxattr = True
+           # disable xattr for now (because module pyxattr is installed)
+           disable_xattr()
+           print("pyxattr module in use, xattr disabled")
 
        if xattr_disabled:
            supports_alternate_data_streams=False
@@ -105,8 +115,8 @@ class sr_xattr:
               self.x = json.loads( self.ads.get_stream_content(STREAM_NAME).decode('utf-8')  )
 
        if supports_extended_attributes:
-          d = xattr.xattr(path)
-          for i in d:
+           d = xattr.xattr(path)
+           for i in d:
               if not i.startswith('user.sr_'):
                  continue
               k= i.replace('user.sr_','') 
