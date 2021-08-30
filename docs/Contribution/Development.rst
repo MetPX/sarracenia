@@ -134,7 +134,7 @@ This section describes creating a test environment for use in a virtual machine.
 a virtual machine is to use multipass (https://multipass.run) Assuming it is installed, one can
 create a vm with::
 
- multipass launch -m 4G -d 30G --name flow
+ multipass launch -m 8G -d 30G --name flow
 
 need to have ssh localhost work in the multipass container.  Can do that by copying multipass
 private key into the container::
