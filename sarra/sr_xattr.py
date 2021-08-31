@@ -73,7 +73,7 @@ try:
     if not hasattr(xattr, 'xattr'):
         supports_pyxattr = True
         # pyxattr is installed, disable xattr for now
-        disable_xattr()
+        # disable_xattr()
         print("pyxattr module in use, xattr disabled")
 except:
     # neither pyxattr or xattr installed
@@ -112,12 +112,16 @@ class sr_xattr:
                 self.x = json.loads(self.ads.get_stream_content(STREAM_NAME).decode('utf-8'))
 
         if supports_extended_attributes:
-            d = xattr.xattr(path)
+            d = xattr.listxattr(path)
             for i in d:
+                # if only python3-pyxattr or just pyxattr is installed the result will be in bytes and needs decoding
+                if isinstance(i, bytes):
+                    i = i.decode('utf-8')
                 if not i.startswith('user.sr_'):
                     continue
                 k = i.replace('user.sr_', '')
-                v = d[i].decode('utf-8')
+                # xattr.listxattr returns a tuple not a dictionnary so it cannot be indexed like it was before.
+                v = xattr.getxattr(path, i).decode('utf-8')
                 self.x[k] = v
 
     def __del__(self):
@@ -162,11 +166,12 @@ class sr_xattr:
                 # set the attributes in the list. encoding utf8...
                 for i in self.x:
                     xattr.setxattr(self.path, 'user.sr_' + i, bytes(self.x[i], 'utf-8'))
-        except:
+        except Exception as ex:
             # not really sure what to do in the exception case...
             # permission would be a normal thing and just silently fail...
             # could also be on windows, but not on an NTFS file system.
             # silent failure means it falls back to using other means.
+
             pass
 
         self.dirty = False

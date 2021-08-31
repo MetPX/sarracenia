@@ -754,7 +754,6 @@ class sr_transport():
         #self.logger.debug("sr_transport set_local_file_attributes %s" % local_file)
 
         hdr  = msg.headers
-
         # if the file is not partitioned, the the onfly_checksum is for the whole file.
         # cache it here, along with the mtime.
         if ( msg.partstr[0:2] == '1,' ) : 
@@ -766,6 +765,7 @@ class sr_transport():
            x = sr_xattr( local_file )
            x.set( 'sum' , sumstr )
 
+
            if self.parent.preserve_time and 'mtime' in hdr and hdr['mtime'] :
                x.set( 'mtime' , hdr['mtime'] )
            else:
@@ -773,6 +773,7 @@ class sr_transport():
                mtime = timeflt2str( st.st_mtime )
                x.set( 'mtime' , mtime )
            x.persist()
+
 
         mode = 0
         if self.parent.preserve_mode and 'mode' in hdr :

@@ -575,6 +575,10 @@ class sr_post(sr_instances):
         return ok
 
     def compute_sumstr(self, path, fsiz):
+        # I think this is a misleading name because it is easily confused with the module xattr. Here, xattr is an
+        # objct of the class sr_xattr with its own methods such as get (so xattr.get() is ok). But its confusing
+        # with the module xattr which has its own methods as well such as xattr.getxattr(). In sr_subscribe an instance of
+        # sr_xattr was named x, perhaps less confusing.
         xattr = sr_xattr(path)
         
         if self.randomize:
