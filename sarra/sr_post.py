@@ -575,21 +575,17 @@ class sr_post(sr_instances):
         return ok
 
     def compute_sumstr(self, path, fsiz):
-        # I think this is a misleading name because it is easily confused with the module xattr. Here, xattr is an
-        # objct of the class sr_xattr with its own methods such as get (so xattr.get() is ok). But its confusing
-        # with the module xattr which has its own methods as well such as xattr.getxattr(). In sr_subscribe an instance of
-        # sr_xattr was named x, perhaps less confusing.
-        xattr = sr_xattr(path)
+        x = sr_xattr(path)
         
         if self.randomize:
             algos = ['0', 'd', 'n', 's', 'z,d', 'z,s']
             sumflg = choice(algos)
-        elif 'sum' in xattr.x and 'mtime' in xattr.x:
+        elif 'sum' in x.x and 'mtime' in x.x:
             sumflg = self.sumflg
-            if xattr.get('mtime') >= self.msg.headers['mtime']:
+            if x.get('mtime') >= self.msg.headers['mtime']:
                 self.logger.debug("mtime remembered by xattr")
 
-                attr_sum = xattr.get('sum')
+                attr_sum = x.get('sum')
                 if ( attr_sum[0] == self.sumflg ) :
                     return attr_sum
 
@@ -599,7 +595,7 @@ class sr_post(sr_instances):
         else:
             sumflg = self.sumflg
 
-        xattr.set('mtime', self.msg.headers['mtime'])
+        x.set('mtime', self.msg.headers['mtime'])
 
         self.logger.debug("sum set by compute_sumstr")
 
@@ -629,8 +625,8 @@ class sr_post(sr_instances):
             checksum = sumalgo.get_value()
             sumstr = '%s,%s' % (sumflg, checksum)
 
-        xattr.set('sum', sumstr)
-        xattr.persist()
+        x.set('sum', sumstr)
+        x.persist()
         return sumstr
 
     # =============

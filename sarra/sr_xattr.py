@@ -93,7 +93,6 @@ class sr_xattr:
 
         global supports_alternate_data_streams
         global supports_extended_attributes
-        global supports_pyxattr
 
         self.path = path
         self.x = {}
