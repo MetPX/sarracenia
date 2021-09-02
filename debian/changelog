@@ -1,4 +1,10 @@
-metpx-sarracenia (2.21.08) UNRELEASED; urgency=medium
+metpx-sarracenia (2.21.09) UNRELEASED; urgency=medium
+
+  * bug #378 python3-pyxattr module breaking xattr support.
+
+ -- Peter Silva <peter@fractal>  Thu, 02 Sep 2021 13:30:26 -0400
+
+metpx-sarracenia (2.21.08) stable; urgency=medium
 
   * bugfix #386 not honouring environment variables.
   * bugfix #377 not interpreting sum n properly.
@@ -7,6 +13,7 @@ metpx-sarracenia (2.21.08) UNRELEASED; urgency=medium
   * bugfix #371 sr_audit should not kill 'edit' sessions as strays.
   * hmm.. charset in ftp.. defaults to iso8859-1, changed to utf-8.
     noticed caused some issues in newer tests that use accented characters. 
+  * 
 
  -- Peter Silva <peter@fractal>  Sat, 24 Apr 2021 12:52:19 -0400
 
