@@ -109,7 +109,7 @@ str_options = [
     'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
     'post_exchange_suffix', 'queue_name',
     'report_exchange', 'strip', 'nodupe_ttl',
-    'nodupe_basis', 'tls_rigour'
+    'nodupe_basis', 'tls_rigour', 'vip'
 ]
 """
    for backward compatibility, 
