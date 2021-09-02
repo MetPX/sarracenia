@@ -105,12 +105,14 @@ class FileMetadata:
                     self.ads.get_stream_content(STREAM_NAME).decode('utf-8'))
 
         if supports_extended_attributes:
-            d = xattr.xattr(path)
+            d = xattr.listxattr(path)
             for i in d:
+                if isinstance(i, bytes):
+                    i = i.decode('utf-8')
                 if not i.startswith('user.sr_'):
                     continue
                 k = i.replace('user.sr_', '')
-                v = d[i].decode('utf-8')
+                v = xattr.getxattr(path, i).decode('utf-8')
                 self.x[k] = v
 
     def __del__(self):
