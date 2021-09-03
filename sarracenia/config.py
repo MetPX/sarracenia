@@ -988,7 +988,7 @@ class Config:
                 self.plugins = [ v ] + self.plugins
             elif k in ['set', 'setting', 's']:
                 self._parse_setting(line[1], line[2:])
-            elif k in ['sum']:
+            elif k in ['sum', 'integrity' ]:
                 self._parse_sum(v)
             elif k in Config.v2entry_points:
                 if k in self.plugins:

@@ -560,7 +560,9 @@ class Flow:
         else:
             data = msg['content']['value'].encode('utf-8')
 
-        if msg['integrity']['method'] == 'cod':
+        if 'cod,' in self.o.integrity_method :
+            algo_method = self.o.integrity_method[4:]
+        elif msg['integrity']['method'] == 'cod':
             algo_method = msg['integrity']['value']
         else:
             algo_method = msg['integrity']['method']
@@ -1071,7 +1073,11 @@ class Flow:
             # FIXME  locking for i parts in temporary file ... should stay lock
             # and file_reassemble... take into account the locking
 
-            self.proto[self.scheme].set_sumalgo(msg['integrity']['method'])
+            if 'cod,' in self.o.integrity_method:
+                 download_algo = self.o.integrity_method[4:]
+            else:
+                 download_algo = msg['integrity']['method']
+            self.proto[self.scheme].set_sumalgo(download_algo)
 
             if options.inflight == None or (
                 ('blocks' in msg) and (msg['blocks']['method'] == 'inplace')):
@@ -1103,6 +1109,7 @@ class Flow:
             if accelerated:
                 len_written = self.proto[self.scheme].getAccelerated(
                     msg, remote_file, new_inflight_path, block_length)
+                #FIXME: no onfly_checksum calculation during download.
             else:
                 self.proto[self.scheme].set_path(new_inflight_path)
                 len_written = self.proto[self.scheme].get(
@@ -1127,6 +1134,9 @@ class Flow:
 
             msg['onfly_checksum'] = self.proto[self.scheme].get_sumstr()
             msg['data_checksum'] = self.proto[self.scheme].data_checksum
+
+            if 'cod,' in self.o.integrity_method and not accelerated:
+                msg['integrity'] = msg['onfly_checksum'] 
 
             msg['_deleteOnPost'] |= set(['onfly_checksum'])
 
