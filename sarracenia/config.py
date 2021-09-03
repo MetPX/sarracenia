@@ -881,7 +881,7 @@ class Config:
             return
 
         if (value[0:2] == 'z,'):
-            value = value[3:]
+            value = value[2:]
             self.integrity_method = 'cod,'
         else:
             self.integrity_method = ''
