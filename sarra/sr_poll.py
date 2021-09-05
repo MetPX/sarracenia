@@ -147,7 +147,7 @@ class sr_poll(sr_post):
     def _file_date_exceed_limit(self, date, time_limit):
         """comments:
             This method compares today's date to the file's date by creating a date time object
-            Three formats are acceptd so far, more can be added if needed (format on https://strftime.org/ )
+            Four formats are acceptd so far, more can be added if needed (format on https://strftime.org/ )
             Files with future dates are processed as long as the (future date - todays date) is < time_limit.
             FIXME: french input like Fev will not work - only Feb is accepted for the month
             If year is not provided, this means that the file is < 6 months old, so depending on todays date,
@@ -162,7 +162,7 @@ class sr_poll(sr_post):
                 file_date = date_temp.replace(year=(current_date.year - 1))
             else:
                 file_date = date_temp.replace(year=current_date.year)
-            self.logger.info("File date is: " + str(file_date) +
+            self.logger.debug("File date is: " + str(file_date) +
                              " > File is " + str(abs((file_date - current_date).seconds))+" seconds old")
             return abs((file_date - current_date).seconds) < time_limit
         except Exception as e:
@@ -172,19 +172,26 @@ class sr_poll(sr_post):
                     file_date = date_temp.replace(year=(current_date.year - 1))
                 else:
                     file_date = date_temp.replace(year=current_date.year)
-                self.logger.info("File date is: " + str(file_date) +
+                self.logger.debug("File date is: " + str(file_date) +
                                  " > File is " + str(abs((file_date - current_date).seconds))+" seconds old")
                 return abs((file_date - current_date).seconds) < time_limit
             except Exception as e:
                 try:
                     file_date = datetime.datetime.strptime(date, '%b %d %Y')
-                    self.logger.info("File date is: " + str(file_date) +
+                    self.logger.debug("File date is: " + str(file_date) +
                                      " > File is " + str(abs((file_date - current_date).seconds)) + " seconds old")
                     return abs((file_date - current_date).seconds) < time_limit
                 except Exception as e:
-                    warning_msg = str(e)
-                    print("%s" % warning_msg)
-                    return False
+                    try:
+                        file_date = datetime.datetime.strptime(date, '%d %b %Y')
+                        self.logger.debug("File date is: " + str(file_date) + " > File is " +
+                                          str(abs((file_date - current_date).seconds)) + " seconds old")
+                        return abs((file_date - current_date).seconds) < time_limit
+                    except Exception as e:
+                        warning_msg = str(e)
+                        # self.logger.error("%s, assuming ok" % warning_msg)
+                        self.logger.error("Assuming ok, unrecognized date format, %s" % date)
+                        return True
 
     # find differences between current ls and last ls
     # only the newer or modified files will be kept...
@@ -216,7 +223,7 @@ class sr_poll(sr_post):
                 # line_mode.py format "-rwxrwxr-x 1 1000 1000 8123 24 Mar 22:54 2017-03-25-0254-CL2D-AUTO-minute-swob.xml"
                 date = str2[5] + " " + str2[6] + " " + str2[7]
                 if self._file_date_exceed_limit(date, self.file_time_limit):
-                    self.logger.info("File should be processed")
+                    self.logger.debug("File should be processed")
                     # execute rest of code
                     # keep a newer entry
                     if not f in old_ls:
@@ -232,7 +239,7 @@ class sr_poll(sr_post):
                         desclst[f] = ls[f]
                         continue
                 else:
-                    self.logger.info("File should be skipped")
+                    self.logger.debug("File should be skipped")
                     # ignore rest of code and re iterate
             except:
                 pass
