@@ -135,9 +135,14 @@ class Poll(Flow):
                     logger.debug("File date is: " + str(file_date) + " > File is " + str(abs((file_date - current_date).seconds)) + " seconds old")
                     return abs((file_date - current_date).seconds) < time_limit
                 except Exception as e:
-                    warning_msg = str(e)
-                    print("%s" % warning_msg)
-                    return False
+                    try:
+                        file_date = datetime.datetime.strptime(date, '%d %b %Y')
+                        logger.debug("File date is: " + str(file_date) + " > File is " + str(abs((file_date - current_date).seconds)) + " seconds old")
+                        return abs((file_date - current_date).seconds) < time_limit
+                    except Exception as e:
+                        warning_msg = str(e)
+                        logger.error("%s, assuming ok" % warning_msg)
+                        return True
 
 
     # find differences between current ls and last ls
