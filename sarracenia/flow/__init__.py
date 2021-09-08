@@ -320,19 +320,11 @@ class Flow:
 
                 # adjust message after action is done, but before 'after_work' so adjustment is possible.
                 for m in self.worklist.ok:
-
                     if ('new_baseUrl' in m) and (m['baseUrl'] != m['new_baseUrl'] ):
                         m['baseUrl'] = m['new_baseUrl']
-
                     if ('new_relPath' in m ) and ( m['relPath'] != m['new_relPath'] ) :
                         m['relPath'] = m['new_relPath']
-                        if m['new_relPath'][0] == os.sep :
-                            m['subtopic'] = m['new_relPath'].split(os.sep)[1:-1]
-                        else:
-                            m['subtopic'] = m['new_relPath'].split(os.sep)[:-1]
-
-                    if self.o.post_baseDir:
-                        m['relPath'] = m['relPath'].replace(self.o.post_baseDir, '', 1)
+                        m['subtopic'] = m['new_subtopic']
 
                 self.ack(self.worklist.rejected)
                 self.worklist.rejected = []
@@ -417,7 +409,6 @@ class Flow:
              default_accept_directory=self.o.baseDir
 
         for m in self.worklist.incoming:
-            #logger.warning('message: %s ' % m)
 
             if 'oldname' in m:
                 url = self.o.set_dir_pattern(m['baseUrl'],m) + os.sep + m['oldname']
@@ -431,7 +422,7 @@ class Flow:
                     if mask_regexp.match(urlToMatch):
                         oldname_matched = accepting
                         break
-
+            
             url = self.o.set_dir_pattern(m['baseUrl'],m) + os.sep + m['relPath']
             if 'sundew_extension' in m and url.count(":") < 1: 
                 urlToMatch= url + ':' + m['sundew_extension']
@@ -456,7 +447,7 @@ class Flow:
                                          (m['oldname']))
                         elif self.o.log_reject:
                             logger.info("reject: mask=%s strip=%s url=%s" %
-                                        (str(mask), strip, url))
+                                        (str(mask), strip, urlToMatch))
                         self.worklist.rejected.append(m)
                         break
 
@@ -972,7 +963,8 @@ class Flow:
                         self.worklist.ok.append(msg)
                         break
                     else:
-                        logger.info("warning downloaded attempt %d failed: %s" % ( i, new_path) )
+                        logger.info("attempt %d failed to download %s/%s to %s" \
+                            % ( i, msg['baseUrl'], msg['relPath'], new_path) )
                     i = i + 1
 
                 if not ok:
@@ -990,7 +982,7 @@ class Flow:
 
         self.o = options
 
-        logger.debug("%s_transport download" % self.scheme)
+        logger.debug("%s_transport download relPath=%s" % (self.scheme, msg['relPath']) )
 
         token = msg['relPath'].split('/')
         cdir = '/' + '/'.join(token[:-1])
@@ -1026,7 +1018,6 @@ class Flow:
                 logger.debug("%s_transport download connects" % self.scheme)
                 self.proto[self.scheme] = sarracenia.transfer.Transfer.factory(
                     self.scheme, self.o)
-                logger.debug("HOHO proto %s " % type(self.proto))
                 ok = self.proto[self.scheme].connect()
                 if not ok:
                     self.proto[self.scheme] = None
@@ -1045,7 +1036,6 @@ class Flow:
             if hasattr(self.proto[self.scheme], 'getcwd'):
                 cwd = self.proto[self.scheme].getcwd()
 
-            logger.debug(" proto %s " % type(self.proto[self.scheme]))
             if cwd != cdir:
                 logger.debug("%s_transport download cd to %s" %
                              (self.scheme, cdir))
@@ -1186,7 +1176,7 @@ class Flow:
                      (self.scheme, msg['new_dir'], msg['new_file']))
 
         if self.o.baseDir:
-            local_path = self.o.baseDir + '/' + msg['relPath']
+            local_path = self.o.set_dir_pattern(self.o.baseDir,msg) + '/' + msg['relPath']
         else:
             local_path = '/' + msg['relPath']
 
@@ -1205,7 +1195,7 @@ class Flow:
             try: 
                 os.chdir(local_dir)
             except Exception as ex:
-                logger.error("could chdir to %s to write: %s" % (local_dir, ex))
+                logger.error("could not chdir to %s to write: %s" % (local_dir, ex))
                 return False
 
         try:
@@ -1500,18 +1490,6 @@ class Flow:
             return
 
         for msg in self.worklist.incoming:
-
-            #=================================
-            # check message for local file
-            #=================================
-
-            if msg['baseUrl'] != 'file:/':
-                if hasattr(self.o,'baseDir'):
-                    msg['baseUrl'] = 'file:/' + self.o.baseDir 
-                else:
-                    logger.error("protocol should be 'file:' message ignored")
-                    self.worklist.rejected.append(msg)
-                    continue
 
             #=================================
             # proceed to send :  has to work

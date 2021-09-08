@@ -133,6 +133,7 @@ def v02tov03message(body, headers, topic, topicPrefix):
     msg['pubTime'] = timev2tov3str(pubTime)
     msg['baseUrl'] = baseUrl.replace('%20', ' ').replace('%23', '#')
     msg['relPath'] = relPath
+    msg['subtopic'] = relPath.split('/')
     for t in ['atime', 'mtime']:
         if t in msg:
             msg[t] = timev2tov3str(msg[t])

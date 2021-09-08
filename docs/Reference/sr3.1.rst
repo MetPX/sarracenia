@@ -2384,7 +2384,8 @@ option, with the use of *${..}* notation::
 
    SOURCE   - the amqp user that injected data (taken from the message.)
    BD       - the base directory
-   BRP      - the baseUrl path.
+   BUP      - the path component of the baseUrl (aka base url path) 
+   BUPL     - the last element of the baseUrl path.
    PBD      - the post base dir
    YYYYMMDD - the current daily timestamp.
    HH       - the current hourly timestamp.

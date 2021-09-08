@@ -1344,6 +1344,7 @@ class Config:
 
         ex: mask[2] = 'NONE:TIME'
         """
+        logger.info('FIXME1347 cfo=%s, filename=%s' % ( currentFileOption, filename ) ) 
 
         if currentFileOption == None: return filename
 
@@ -1484,9 +1485,13 @@ class Config:
         if '${BD}' in cdir and self.baseDir != None:
             new_dir = new_dir.replace('${BD}', self.baseDir)
 
-        if ( '${BRP}' in cdir ) and ( 'baseUrl' in message ):
+        if ( '${BUP}' in cdir ) and ( 'baseUrl' in message ):
             u = urllib.parse.urlparse( message['baseUrl'] )
-            new_dir = new_dir.replace('${BRP}', u.path )
+            new_dir = new_dir.replace('${BUP}', u.path )
+
+        if ( '${BUPL}' in cdir ) and ( 'baseUrl' in message ):
+            u = urllib.parse.urlparse( message['baseUrl'] )
+            new_dir = new_dir.replace('${BUPL}', os.path.basename(u.path) )
 
         if '${PBD}' in cdir and self.post_baseDir != None:
             new_dir = new_dir.replace('${PBD}', self.post_baseDir)
@@ -1576,6 +1581,15 @@ class Config:
 
         return new_dir
 
+
+    """
+       2020/05/26 PAS... FIXME: end of sheer terror. 
+
+       the parts below used be part of the sheer terror... but have been
+       tamed a bit.
+    """
+
+
     # ==============================================
     # how will the download file land on this server
     # with all options, this is really tricky
@@ -1583,19 +1597,31 @@ class Config:
 
     def set_newMessageFields(self, msg, urlstr, pattern, maskDir,
                              maskFileOption, mirror, strip, pstrip, flatten):
-
-        msg['_deleteOnPost'] |= set( ['new_dir', 'new_file', 'new_relPath', 'new_baseUrl'] )
+        """
+           Set new message fields according to values when the message is accepted.
+           
+        """
 
         # relative path by default mirror
+        if type(maskDir) is str:
+            # trying to subtract maskDir if present in relPath...
+            # occurs in polls a lot.
+            if maskDir in msg['relPath']:
+                 relPath = '%s' % msg['relPath'].replace(maskDir,'',1)
 
-        relPath = '%s' % msg['relPath']
- 
+            # sometimes the same, just the leading / is missing.
+            elif maskDir[1:] in msg['relPath']:
+                 relPath = '%s' % msg['relPath'].replace(maskDir[1:],'',1)
+            else:
+                relPath = '%s' % msg['relPath']
+        else:
+            relPath = '%s' % msg['relPath']
+
         if self.baseUrl_relPath :
             u = urllib.parse.urlparse( msg['baseUrl'] )
             relPath = u.path[1:] + '/' + relPath
 
-        # case S=0  sr_post -> sr_suscribe... rename in headers
-        # FIXME: 255 char limit on headers, rename will break!
+        # FIXME... why the % ? why not just assign it to copy the value?
         if 'rename' in msg: relPath = '%s' % msg['rename']
 
         token = relPath.split('/')
@@ -1637,6 +1663,7 @@ class Config:
         if maskFileOption is not None:
             try:
                 filename = self.sundew_getDestInfos(msg, maskFileOption, filename)
+                logger.info('FIXME1666 filename=%s' % ( filename ) )
             except:
                 logger.error("problem with accept file option %s" %
                              maskFileOption)
@@ -1664,7 +1691,7 @@ class Config:
 
         #if self.currentDir : new_dir = self.currentDir
         if maskDir:
-            new_dir = maskDir
+            new_dir = self.set_dir_pattern(maskDir,msg)
         else:
             new_dir = ''
 
@@ -1672,7 +1699,7 @@ class Config:
             if new_dir :
                 d=new_dir
             elif self.post_baseDir:
-                d=self.post_baseDir
+                d=self.set_dir_pattern(self.post_baseDir,msg)
             else:
                 d=None
 
@@ -1690,38 +1717,63 @@ class Config:
         # resolution of sundew's dirPattern
 
         tfname = filename
-        if 'sundew_extension' in msg.keys():
-            tfname = filename.split(':')[0] + ':' + msg['sundew_extension']
-
         # when sr_sender did not derived from sr_subscribe it was always called
         new_dir = self.sundew_dirPattern(pattern, urlstr, tfname, new_dir)
 
-        # reset relPath from new_dir
+        self.set_newMessageUpdatePaths( msg, new_dir, filename )
 
-        # FIXME: 2020/09/05 - PAS ... normpath will put back slashes in on Windows.
-        # normpath thing is probably wrong... not sure why it is here...
-        if 'new_dir' not in msg:
-            #msg['new_dir'] = os.path.normpath(new_dir)
-            msg['new_dir'] = new_dir
 
-        relPath = msg['new_dir'] + '/' + filename
+    def set_newMessageUpdatePaths( self, msg, new_dir, new_file ):
+        """
+        set the new_ fields in the message based on changed file placement.
 
-        if self.post_baseDir:
-            relPath = relPath.replace(self.set_dir_pattern(self.post_baseDir,msg), '')
+        If you change file placement in a flow callback, for example.
+        One would change new_dir and new_file in the message.
+        This routines updates other fields in the message (e.g. relPath, 
+        baseUrl, topic ) to match new_dir/new_file.
 
-        if relPath[0] == '/':
+        msg['post_baseUrl'] defaults to msg['baseUrl']
+     
+        """
+
+        msg['_deleteOnPost'] |= set( ['new_dir', 'new_file', 'new_relPath', 'new_baseUrl', 'new_subtopic'] )
+
+        msg['new_dir'] = new_dir
+        msg['new_file'] = new_file
+
+        relPath = new_dir + '/' + new_file
+
+        if self.post_baseUrl:
+            baseUrl_str = self.set_dir_pattern( self.post_baseUrl, msg )
+        else:
+            if 'baseUrl' in msg:
+                baseUrl_str = msg['baseUrl']
+            else:
+                logger.error('missing post_baseUrl setting' )
+                return
+ 
+        if hasattr(self, 'post_baseDir') and ( type(self.post_baseDir) is str ) \
+            and ( len(self.post_baseDir) > 1):
+            pbd_str = self.set_dir_pattern( self.post_baseDir, msg )
+            parsed_baseUrl = urllib.parse.urlparse(baseUrl_str)
+
+            relPath = new_dir.replace( pbd_str, '', 1) + '/' + new_file
+
+            if (len(parsed_baseUrl.path) > 1):
+                relPath=relPath.replace( parsed_baseUrl.path, '', 1 )
+
+        msg['new_baseUrl'] = baseUrl_str
+
+        if relPath[0] == '/' :
             relPath = relPath[1:]
 
-        # set the results for the new file (downloading or sending)
-
-        # final value
-        # NOTE : normpath keeps '/a/b/c' and '//a/b/c' the same
-        #        Everywhere else // or /../ are corrected.
-        #        but if the number of / starting the path > 2  ... it will result into 1 /
-
-        #msg['new_relPath'] = os.path.normpath(relPath)
         msg['new_relPath'] = relPath
+        msg['new_subtopic' ] = relPath.split('/')[0:-1]
 
+        for i in [ 'relPath', 'subtopic', 'baseUrl' ]:
+            if not i in msg:
+               msg[ i ]= msg[ 'new_%s' % i ] 
+        
         if sys.platform == 'win32':
             if 'new_dir' not in msg:
                 msg['new_dir'] = msg['new_dir'].replace('\\', '/')
@@ -1730,23 +1782,7 @@ class Config:
                 msg['new_dir'] = msg['new_dir'].lstrip('/')
                 msg['new_relPath'] = msg['new_relPath'].lstrip('/')
 
-        msg['new_file'] = filename
 
-        if self.post_broker and self.post_baseUrl:
-            msg['new_baseUrl'] = self.set_dir_pattern( self.post_baseUrl, msg )
-        else:
-            msg['new_baseUrl'] = msg['baseUrl']
-
-        #if 'new_relPath' in msg:
-        #    offset = 1 if msg['new_relPath'][0] == '/' else 0
-        #    msg['subtopic'] = msg['new_relPath'].split('/')[offset:-1]
-
-        #logger.debug( "leaving with: new_dir=%s new_relpath=%s new_baseUrl=%s " % \
-        #   ( msg['new_dir'], msg['new_relPath'], msg['new_baseUrl'] ) )
-
-    """
-       2020/05/26 PAS... FIXME: end of sheer terror. 
-   """
 
     class addBinding(argparse.Action):
         """

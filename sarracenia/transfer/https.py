@@ -91,7 +91,7 @@ class Https(Transfer):
             elif self.o.tls_rigour == 'normal':
                 pass
             else:
-                self.logger.warning(
+                logger.warning(
                     "option tls_rigour must be one of:  lax, normal, strict")
 
         self.init()
@@ -282,7 +282,7 @@ class Https(Transfer):
             # when credentials are needed.
             headers = {'user-agent': 'Sarracenia ' + sarracenia.__version__}
             if self.bearer_token:
-                self.logger.debug('bearer_token: %s' % self.bearer_token)
+                logger.debug('bearer_token: %s' % self.bearer_token)
                 headers['Authorization'] = 'Bearer ' + self.bearer_token
 
             if self.user != None:

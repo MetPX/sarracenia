@@ -91,36 +91,21 @@ def msg_init(path, o, lstat=None):
     """
 
     msg = {}
-    msg['new_dir'] = os.path.dirname(path)
-    msg['new_file'] = os.path.basename(path)
 
-    # relpath
-
-    if o.post_baseDir:
-        post_relPath = path.replace(o.post_baseDir, '')
-    else:
-        post_relPath = path
-
-    # exchange
+    #FIXME no variable substitution... o.set_dir_pattern ?
     msg['exchange'] = o.post_exchange
 
-    # topic
-    words = post_relPath.strip('/').split('/')
-    if len(words) > 1:
-        subtopic = words[:-1]
-    else:
-        subtopic = []
-    msg['subtopic'] = subtopic
     msg['local_offset'] = 0
-
-    msg['_deleteOnPost'] = set ( [ 'exchange', 'local_offset', 'new_dir', 'new_file', 'post_relpath', 'subtopic' ] )
+    msg['_deleteOnPost'] = set ( [ 'exchange', 'local_offset' ] )
 
     # notice
     msg['pubTime'] = v3timeflt2str(time.time())
-    msg['relPath'] = post_relPath
-    msg['baseUrl'] = o.post_baseUrl
+
+    # set new_dir, new_file, new_subtopic, etc...
+    o.set_newMessageUpdatePaths( msg, os.path.dirname(path), os.path.basename(path) )
 
     # rename
+    post_relPath = msg['new_relPath']
     newname = post_relPath
 
     # rename path given with no filename
@@ -129,8 +114,6 @@ def msg_init(path, o, lstat=None):
         newname = o.rename
         if o.rename[-1] == '/':
             newname += os.path.basename(path)
-
-    # following is a transcription of v2: path_rename
 
     # strip 'N' heading directories
 
@@ -146,8 +129,6 @@ def msg_init(path, o, lstat=None):
         newname = '/' + '/'.join(token)
 
     if newname != post_relPath: msg['rename'] = newname
-
-    # headers
 
     if hasattr(o, 'to_clusters') and (o.to_clusters is not None):
         msg['to_clusters'] = o.to_clusters
