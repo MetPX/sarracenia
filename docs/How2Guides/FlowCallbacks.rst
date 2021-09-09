@@ -4,9 +4,12 @@
 Writing FlowCallback Plugins
 ============================
 
+All sarracenia components implement *the Flow* algorithm, with different
+callbacks.  Sarracenia's main class is *sarracenia.flow* and the a great
+deal of core functionality is implemented using the class created to add
+custom processing to a flow, the flowcb (flow callback) class.
 
-The main algorithm of sarracenia is *the Flow*. All the components implement
-variations of *the flow.* For a detailed discussion of the flow, have a look 
+For a detailed discussion of the flow algorithm itself, have a look 
 at `Concepts <../Explanations/Concepts.rst>`_ manual. For any flow, one can
 add custom processing at a variety of times during processing by sub-classing 
 the `sarracenia.flowcb <../../sarracenia/flowcb/__init__.py>`_ class.  
@@ -41,6 +44,11 @@ To add a callback to a a flow, a line is added to the config file::
 
     flowcb sarracenia.flowcb.log.Log
 
+If you follow the convention, and the name of the class is a capitalized 
+version (Log) of the file name (log), then a shorthand is available::
+
+   callback log 
+
 The class constructor accepts a sarracenia.config.Config class object,
 called options, that stores all the settings to be used by the running flow.
 Options is used to override default behaviour of both flows and callbacks.
@@ -60,15 +68,16 @@ argument will contain::
 
     options.logLevel = 'debug'
 
-If no module specific 
+If no module specific override is present, then the more global
+setting is used.
 
 
 Worklists
 ---------
 
-The other main argument to a number of callback routines is the worklist.
-The worklist is given to entry points occurring during message processing,
-and is a number of lists of messages::
+Besides option, the other main argument to after_accept and after_work callback
+routines is the worklist. The worklist is given to entry points occurring during message
+processing, and is a number of worklists of messages::
 
     worklist.incoming --> messages to process (either new or retries.)
     worklist.ok       --> successfully processed
@@ -76,7 +85,7 @@ and is a number of lists of messages::
     worklist.failed   --> messages for which processing failed.
                           failed messages will be retried.
 
-Initially, all messages are placed in incoming.
+Initially, all messages are placed in worklists.incoming.
 if a plugin decides:
 
 - a message is not relevant, moved it to the rejected worklist. 
@@ -159,7 +168,7 @@ Entry Points
 ------------
 
 
-Other entry_points::
+Other entry_points, extracted from sarracenia/flowcb/__init__.py ::
 
     def name(self):
         Task: return the name of a plugin for reference purposes. (automatically there)
@@ -218,12 +227,12 @@ Other entry_points::
 
 
 
-Example Callback Class
-----------------------
+Sample Flowcb Sub-Class
+-----------------------
 
-This is an example callback class that accepts files from a UNIDATA flow, 
-and renames the directory tree to a different standard, and evolving one 
-for the WMO WIS 2.0 (for more information on that module: 
+This is an example callback class file (gts2wis2.py) that accepts files whose
+names begin with AHL's, and renames the directory tree to a different standard, 
+the evolving one for the WMO WIS 2.0 (for more information on that module: 
 https://github.com/wmo-im/GTStoWIS2) ::
 
   import json
@@ -255,32 +264,21 @@ https://github.com/wmo-im/GTStoWIS2) ::
 
         for msg in worklist.incoming:
 
-            # /20181218/UCAR-UNIDATA/WMO-BULLETINS/IX/21/IXTD99_KNES_182147_9d73fc80e12fca52a06bf41c716cd718
-
-            logger.info("before: %s " % msg_dumps(msg) )
-
             # fix file name suffix.
             type_suffix = self.topic_builder.mapAHLtoExtension( msg['new_file'][0:2] )
-
-            # correct suffix if need be.
-            if ( type_suffix != 'UNKNOWN' ) and ( msg['new_file'][-len(type_suffix):] != type_suffix ):
-                msg['new_file'] += type_suffix
-                if 'rename' in msg:
-                    msg['rename'] += type_suffix
-
-            # /20181218/UCAR-UNIDATA/WMO-BULLETINS/IX/21/IXTD99_KNES_182147_9d73fc80e12fca52a06bf41c716cd718.cap
             tpfx=msg['subtopic']
     
             # input has relpath=/YYYYMMDD/... + pubTime
             # need to move the date from relPath to BaseDir, adding the T hour from pubTime.
-            new_baseSubDir=tpfx[0]+msg['pubTime'][8:11]
-            t='.'.join(tpfx[0:2])+'.'+new_baseSubDir
-            logger.error('new_baseSubDir=%s, t=%s' % ( new_baseSubDir, t ) )
             try:
+                new_baseSubDir=tpfx[0]+msg['pubTime'][8:11]
+                t='.'.join(tpfx[0:2])+'.'+new_baseSubDir
                 new_baseDir = msg['new_dir'] + os.sep + new_baseSubDir
                 new_relDir = 'WIS' + os.sep + self.topic_builder.mapAHLtoTopic(msg['new_file'])
                 msg['new_dir'] = new_baseDir + os.sep + new_relDir
-                self.o.set_newMessageUpdatePaths( msg, new_baseDir + os.sep + new_relDir, msg['new_file'] )
+                self.o.set_newMessageUpdatePaths( msg, \
+                     new_baseDir + os.sep + new_relDir, \
+                     msg['new_file'] )
 
             except Exception as ex:
                 logger.error( "skipped" , exc_info=True )
@@ -289,7 +287,6 @@ https://github.com/wmo-im/GTStoWIS2) ::
     
             msg['_deleteOnPost'] |= set( [ 'from_cluster', 'sum', 'to_clusters' ] )
             new_incoming.append(msg)
-            logger.info("accepted: %s " % msg_dumps(msg) )
 
         worklist.incoming=new_incoming 
 
