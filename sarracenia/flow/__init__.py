@@ -510,17 +510,12 @@ class Flow:
 
     def post(self):
 
-        #logger.info('on_post starting for %d messages' % len(self.worklist.ok))
-        #logger.info('post_baseDir=%s' % self.o.post_baseDir)
-
-        #self._runCallbacksWorklist('on_posts')
         for p in self.plugins["post"]:
             p(self.worklist)
 
     def report(self):
         # post reports
         # apply on_report plugins
-        #logger.info('unimplemented')
         pass
 
     def write_inline_file(self, msg):
