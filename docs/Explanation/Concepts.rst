@@ -84,8 +84,6 @@ in more detail:
  |          |                                                             |
  |          | run after_work                                              |
  +----------+-------------------------------------------------------------+
- |          | run on_post                                                 |
- |          |                                                             |
  | *post*   | Post announcement of file downloads/sent to post_broker     |
  |          | or otherwise dispose of task (to file, or retry... or)      |
  +----------+-------------------------------------------------------------+
