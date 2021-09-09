@@ -311,20 +311,16 @@ are downloading in to directory *mine* on the local system, the new_dir would be
 
 The plugin above changes the layout of the files that are to be downloaded, based on the 
 `GTStoWIS <https://github.com/wmo-im/GTStoWIS>`_ class, which prescribes a different
-directory tree on output. To change the delivery directory, one needs to change:
-
-* msg['new_dir'] - gives the complete directory path to which the file will be written.
-* msg['new_file'] - gives the name to which the file will be written.
-
-There are a lot of fields to update when changing file placement, so
-best to use::
+directory tree on output.  There are a lot of fields to update when changing file 
+placement, so best to use::
 
    self.o.set_newMessageUpdatePaths( msg, new_dir, new_file )
 
-when changing the file placement, as it will update all necessary fields in the
-message properly.
+to update all necessary fields in the message properly. It will update 
+'new_baseURL', 'new_relPath', 'new_subtopic' for use when posting.
 
-If a file arrives with a name from which a topic tree cannot be built, then an exception
+The try/except part of the routine deals with the case that, should
+a file arrive with a name from which a topic tree cannot be built, then an exception
 may occur, and the message is added to the failed worklist, and will not be
 processed by later plugins.
 
