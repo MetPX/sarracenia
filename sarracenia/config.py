@@ -1344,8 +1344,6 @@ class Config:
 
         ex: mask[2] = 'NONE:TIME'
         """
-        logger.info('FIXME1347 cfo=%s, filename=%s' % ( currentFileOption, filename ) ) 
-
         if currentFileOption == None: return filename
 
         timeSuffix = ''
@@ -1663,7 +1661,6 @@ class Config:
         if maskFileOption is not None:
             try:
                 filename = self.sundew_getDestInfos(msg, maskFileOption, filename)
-                logger.info('FIXME1666 filename=%s' % ( filename ) )
             except:
                 logger.error("problem with accept file option %s" %
                              maskFileOption)
