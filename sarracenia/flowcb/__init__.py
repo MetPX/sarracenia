@@ -48,11 +48,12 @@ worklist given to on_plugins...
 Initially all messages are placed in incoming.
 if a plugin decides:
 
-- a message is not relevant, it is moved to rejected. 
-- all processing has been done, it moves it to ok. 
-- an operation failed and it should be retried later, move to retry 
+- a message is not relevant, it is moved to the rejected worklist. 
+- all processing has been done, it moves it to the ok worklist
+- an operation failed and it should be retried later, append it to the failed
+  worklist
 
-Do not remove from all lists, only move messages between them.
+Do not remove any message from all lists, only move messages between them.
    it is necessary to put rejected messages in the appropriate worklist
    so they can be acknowledged as received. Messages can only removed after ack.
 

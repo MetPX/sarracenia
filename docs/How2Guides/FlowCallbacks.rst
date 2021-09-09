@@ -5,18 +5,45 @@ Writing FlowCallback Plugins
 ============================
 
 
-The main algorithm of sarracenia is *the flow*. All the components implement
-variations of *the flow.* For details of the flow, have a look 
-at `Concepts <../Explanations/Concepts.rst>`_ For any flow, one can
-add customer processing at a variety of times during processing by sub-classing 
+The main algorithm of sarracenia is *the Flow*. All the components implement
+variations of *the flow.* For a detailed discussion of the flow, have a look 
+at `Concepts <../Explanations/Concepts.rst>`_ manual. For any flow, one can
+add custom processing at a variety of times during processing by sub-classing 
 the `sarracenia.flowcb <../../sarracenia/flowcb/__init__.py>`_ class.  
 
-The class constructor accepts a dictionary of settings, called *options*.
-options is used to override default behaviour of both flows and callbacks.
+Briefly, the algorithm has the following steps:
+
+* **gather** -- collect messages to be processed.
+* **filter** -- apply accept/reject regular expression matches to the message list.
+
+  * *after_accept* callback entry point
+
+* **work** -- perform a transfer or transformation on a file.
+
+  * *after_work* callback entry point
+
+* **post**  -- post the result of the work done for the next step.
+  
+A flow callback, is a python class built with routines named to
+indicate when the programmer wants them to be called.
+To do that, create a routine which subclasses *sarracenia.flowcb.FlowCB*
+so the class will normally have::
+
+   from sarracenia.flowcb import FlowCB
+
+in among the imports.
+
+
+Config File Entries to use Flow_Callbacks
+-----------------------------------------
+
 To add a callback to a a flow, a line is added to the config file::
 
     flowcb sarracenia.flowcb.log.Log
 
+The class constructor accepts a sarracenia.config.Config class object,
+called options, that stores all the settings to be used by the running flow.
+Options is used to override default behaviour of both flows and callbacks.
 The argument to the flowcb is a standard python class that needs to be
 in the normal python path for python *import*, and the last element
 is the name of the class in within the file that needs to be instantiated
@@ -24,90 +51,108 @@ as a flowcb instance.
 
 a setting for a callback is declared as follows::
 
-    set sarracenia.flowcb.filter.log.Log.level debug
+    set sarracenia.flowcb.filter.log.Log.logLevel debug
 
 (the prefix for the setting matches the type hierarchy in flow_callback)
 
 when the constructor for the callback is called, it's options
 argument will contain::
 
-    options.level = 'debug'
+    options.logLevel = 'debug'
 
+If no module specific 
+
+
+Worklists
+---------
 
 The other main argument to a number of callback routines is the worklist.
 The worklist is given to entry points occurring during message processing,
 and is a number of lists of messages::
 
-    worklist.incoming --> new messages to continue processing
+    worklist.incoming --> messages to process (either new or retries.)
     worklist.ok       --> successfully processed
     worklist.rejected --> messages to not be further processed.
     worklist.failed   --> messages for which processing failed.
                           failed messages will be retried.
 
-Initially all messages are placed in incoming.
+Initially, all messages are placed in incoming.
 if a plugin decides:
 
-- a message is not relevant, it is moved to rejected. 
-- all processing has been done, it moves it to ok. 
-- an operation failed and it should be retried later, move to retry 
+- a message is not relevant, moved it to the rejected worklist. 
+- a no further processing of the message is needed, move it to ok worklist. 
+- an operation failed and it should be retried later, move to failed worklist. 
 
-Do not remove from all lists, only move messages between them.
-   it is necessary to put rejected messages in the appropriate worklist
-   so they can be acknowledged as received. Messages can only removed after ack.
+Do not remove from all lists, only move messages between the worklists.
+it is necessary to put rejected messages in the appropriate worklist
+so that they are acknowledged as received. Messages can only removed 
+after the acknowledgement has been taken care of.
 
 
 Logging
 -------
 
-to have python logging work normally, after all other imports, do the standard:: 
+Python has great built-in logging, and once has to just use the module
+in a normal, pythonic way, with::
 
   import logging
+
+After all imports in your python source file, then define a logger
+for the source file::
+
   logger = logging.getLogger(__name__)
 
-and then logger messages will be like so::
+As is normal with the Python logging module, messages can then 
+be posted to the log::
 
   logger.debug('got here')
 
-each message in the log will be prefixed with the class and routine emitting the log message,
-as well as the date/time.
-
+Each message in the log will be prefixed with the class and routine 
+emitting the log message, as well as the date/time.
 
 
 Initialization and Settings
 ---------------------------
 
+The next step is declaring a class::
 
-These are the Entry Points that will be called if declared in a flow_callback.
-If you don't define a given entry point, no harm done. It will just not be calledi.
-the __init__ class is used to initialize things for the callback class::
+  class Myclass(FlowCB):
+
+as a subclass as FlowCB.  The main routines in the class  are entry points 
+that will be called at the time their name implies. If you a class is missing a
+given entry point, it will just not be called. The __init__() class is used to 
+initialize things for the callback class::
 
     def __init__(self, options):
+
         self.o = options
 
         logging.basicConfig(format=self.o.logFormat,
                             level=getattr(logging, self.o.logLevel.upper()))
-
         logger.setLevel(getattr(logging, self.o.logLevel.upper()))
-        
-        self.o.add_option( 'myoption', 'str')
 
-Options to be used in callbacks can be declared in the init function, so that 
+        self.o.add_option( 'myoption', 'str', 'usuallythis')
+
+The logging setup lines in __init__ allow setting a specific logging level
+for this flow_callback class. Once the logging boiler-plate is done, 
+the add_option routine to define settings to for the class.
 users can include them in configuration files, just like built-in options::
 
         myoption IsReallyNeeded
 
-The result of such a setting is that the self.o.myoption = 'IsReallyNeeded'.
+The result of such a setting is that the *self.o.myoption = 'IsReallyNeeded'*.
+If no value is set in the configuration, *self.o.myoption* will default to *'usuallyThis'*
 There are various *kinds* of options, where the declared type modifies the parsing::
            
-           'count'      integer count type. 
-           'duration'   a floating point number indicating a quantity of seconds (0.001 is 1 milisecond)
-                        modified by a unit suffix ( m-minute, h-hour, w-week ) 
-           'flag'       boolean (True/False) option.
-           'list'       a list of string values, each succeeding occurrence catenates to the total.
-                        all v2 plugin options are declared of type list.
-           'size'       integer size. Suffixes k, m, and g for kilo, mega, and giga (base 2) multipliers.
-           'str'        an arbitrary string value, as will all of the above types, each succeeding occurrence overrides the previous one.
-
+   'count'    integer count type. 
+   'duration' a floating point number indicating a quantity of seconds (0.001 is 1 milisecond)
+              modified by a unit suffix ( m-minute, h-hour, w-week ) 
+   'flag'     boolean (True/False) option.
+   'list'     a list of string values, each succeeding occurrence catenates to the total.
+              all v2 plugin options are declared of type list.
+   'size'     integer size. Suffixes k, m, and g for kilo, mega, and giga (base 2) multipliers.
+   'str'      an arbitrary string value, as will all of the above types, each 
+              succeeding occurrence overrides the previous one.
 
 
 Entry Points
@@ -126,12 +171,19 @@ Other entry_points::
         Task: gather messages from a source... return a list of messages.
         return []
 
+    """
+      application of the accept/reject clauses happens here, so after_accept callbacks
+      run on a filtered set of messages.
+
+    """
+
     def after_accept(self,worklist):
+        """
          Task: just after messages go through accept/reject masks,
                operate on worklist.incoming to help decide which messages to process further.
                and move messages to worklist.rejected to prevent further processing.
                do not delete any messages, only move between worklists.
-
+        """
     def do_poll(self):
         Task: build worklist.incoming, a form of gather()
 
@@ -169,8 +221,10 @@ Other entry_points::
 Example Callback Class
 ----------------------
 
-This is an example callback class that accepts files from a UNIDATA flow, and renames the directory 
-tree to a different standard, and evolving one for the WMO WIS 2.0::
+This is an example callback class that accepts files from a UNIDATA flow, 
+and renames the directory tree to a different standard, and evolving one 
+for the WMO WIS 2.0 (for more information on that module: 
+https://github.com/wmo-im/GTStoWIS2) ::
 
   import json
   import logging
@@ -185,32 +239,12 @@ tree to a different standard, and evolving one for the WMO WIS 2.0::
 
   class GTS2WIS2(FlowCB):
 
-    def find_type(self, TT):
-        """
-            given the TT of a WMO AHL, return the corresponding file type suffix.
-        """
-
-        if TT[0] in ['G']: return '.grid'
-        elif TT[0] in ['I']: return '.bufr'
-        elif TT in ['IX']: return '.hdf'
-        elif TT[0] in ['K']: return '.crex'
-        elif TT in ['LT']: return '.iwxxm'
-        elif TT[0] in ['L']: return '.grib'
-        elif TT in ['XW']: return '.txt'
-        elif TT[0] in ['X']: return '.cap'
-        elif TT[0] in ['D', 'H', 'O', 'Y']: return '.grib'
-        elif TT[0] in ['E', 'P', 'Q', 'R']: return '.bin'
-        else: return '.txt'
-
     def __init__(self, options):
 
-        # FIXME: should a logging module have a logLevel setting?
-        #        just put in a cookie cutter for now...
         if hasattr(options, 'logLevel'):
             logger.setLevel(getattr(logging, options.logLevel.upper()))
         else:
             logger.setLevel(logging.INFO)
-
         self.topic_builder=GTStoWIS2.GTStoWIS2()
         self.o = options
 
@@ -226,7 +260,7 @@ tree to a different standard, and evolving one for the WMO WIS 2.0::
             logger.info("before: %s " % msg_dumps(msg) )
 
             # fix file name suffix.
-            type_suffix = self.find_type(msg['new_file'][0:2] )
+            type_suffix = self.topic_builder.mapAHLtoExtension( msg['new_file'][0:2] )
 
             # correct suffix if need be.
             if ( type_suffix != 'UNKNOWN' ) and ( msg['new_file'][-len(type_suffix):] != type_suffix ):
@@ -261,7 +295,6 @@ tree to a different standard, and evolving one for the WMO WIS 2.0::
 
 The *after_accept* routine is one of the two most common ones in use.
 
-
 The after_accept routine has an outer loop that cycles through the entire
 list of incoming messages. The normal processing is that is builds a new list of 
 incoming messages, appending all the rejected ones to *worklist.failed.* The 
@@ -283,9 +316,8 @@ The plugin above changes the layout of the files that are to be downloaded, base
 `GTStoWIS <https://github.com/wmo-im/GTStoWIS>`_ class, which prescribes a different
 directory tree on output. To change the delivery directory, one needs to change:
 
-* new_dir - gives the complete directory path to which the file will be written.
-* new_file - gives the name to which the file will be written.
-* subtopic - will be used to build the topics for downstream subscribers.
+* msg['new_dir'] - gives the complete directory path to which the file will be written.
+* msg['new_file'] - gives the name to which the file will be written.
 
 There are a lot of fields to update when changing file placement, so
 best to use::
@@ -296,7 +328,35 @@ when changing the file placement, as it will update all necessary fields in the
 message properly.
 
 If a file arrives with a name from which a topic tree cannot be built, then an exception
-may occur, and the message is added to the failed worklist.
+may occur, and the message is added to the failed worklist, and will not be
+processed by later plugins.
 
+Other Examples
+--------------
+
+Subclassing of Sarracenia.flowcb is used internally to do a lot of core work.
+It's a good idea to look at the sarracenia source code itself. For example:
+
+* *sarracenia.flowcb* have a look at the __init__.py file in there, which
+  provides this information on a more programmatically succinct format.
+
+* *sarracenia.flowcb.gather.file.File*  is a class that implements 
+  file posting and directory watching, in the sense of a callback that 
+  implements the *gather* entry point, by reading a file system and building a
+  list of messages for processing.
+
+* *sarracenia.flowcb.gather.message.Message* is a class that implements
+  reception of messages from message queue protocol flows.
+
+* *sarracenia.flowcb.nodupe.NoDupe* This modules removes duplicates from message
+  flows based on Integrity checksums.
+
+* *sarracenia.flowcb.post.message.Message* is a class that implements posting
+  messages to Message queue protocol flows
+
+* *sarracenia.flowcb.retry.Retry* when the transfer of a file fails,
+  Sarracenia needs to persist the relevant message to a state file for 
+  a later time when it can be tried again.  This class implements
+  that functionality.
 
 
