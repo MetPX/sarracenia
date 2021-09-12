@@ -55,8 +55,12 @@ class Wistree(FlowCB):
                 new_baseDir = msg['new_dir'] + os.sep + new_baseSubDir
                 new_relDir = 'WIS' + os.sep + self.topic_builder.mapAHLtoTopic(msg['new_file'])
 
-                msg['new_dir'] = new_baseDir + os.sep + new_relDir
-                self.o.set_newMessageUpdatePaths( msg, new_baseDir + os.sep + new_relDir, msg['new_file']+type_suffix )
+                if msg['new_file'][-len(type_suffix):] != type_suffix:
+                   new_file = msg['new_file']+type_suffix
+                else:
+                   new_file = msg['new_file']
+
+                self.o.set_newMessageUpdatePaths( msg, new_baseDir + os.sep + new_relDir, new_file )
 
             except Exception as ex:
                 logger.error( "failed to map %s to a topic, skipped." % msg['new_file'] , exc_info=True )
