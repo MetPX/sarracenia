@@ -168,11 +168,11 @@ class Flow:
 
     def loadCallbacks(self, plugins_to_load):
 
-        logger.info('imports to load: %s' % (self.o.imports))
+        #logger.info('imports to load: %s' % (self.o.imports))
         for m in self.o.imports:
             importlib.import_module(m)
 
-        #logger.info( 'plugins to load: %s' % ( plugins_to_load ) )
+        logger.info( 'plugins to load: %s' % ( plugins_to_load ) )
         for c in plugins_to_load:
 
             plugin = sarracenia.flowcb.load_library(c, self.o)
@@ -270,7 +270,7 @@ class Flow:
         next_housekeeping = nowflt() + self.o.housekeeping
 
         current_rate = 0
-        total_messages = 0
+        total_messages = 1
         start_time = nowflt()
 
         current_sleep = self.o.sleep
