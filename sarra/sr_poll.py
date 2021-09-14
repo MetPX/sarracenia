@@ -163,7 +163,7 @@ class sr_poll(sr_post):
             else:
                 file_date = date_temp.replace(year=current_date.year)
             self.logger.info("File date is: " + str(file_date) +
-                             " > File is " + str(abs((file_date - current_date).seconds))+" seconds old, limit is %d" % time_limit)
+                             " > File is " + str(abs((file_date - current_date).seconds))+" seconds old")
             return abs((file_date - current_date).seconds) < time_limit
         except Exception as e:
             try:
@@ -173,24 +173,18 @@ class sr_poll(sr_post):
                 else:
                     file_date = date_temp.replace(year=current_date.year)
                 self.logger.info("File date is: " + str(file_date) +
-                                 " > File is " + str(abs((file_date - current_date).seconds))+" seconds old. limit is %d" % time_limit)
+                                 " > File is " + str(abs((file_date - current_date).seconds))+" seconds old")
                 return abs((file_date - current_date).seconds) < time_limit
             except Exception as e:
                 try:
                     file_date = datetime.datetime.strptime(date, '%b %d %Y')
                     self.logger.info("File date is: " + str(file_date) +
-                                     " > File is " + str(abs((file_date - current_date).seconds)) + " seconds old. limit is %d" % time_limit)
+                                     " > File is " + str(abs((file_date - current_date).seconds)) + " seconds old")
                     return abs((file_date - current_date).seconds) < time_limit
                 except Exception as e:
-                    try:
-                        file_date = datetime.datetime.strptime(date, '%d %b %Y')
-                        logger.debug("File date is: " + str(file_date) + " > File is " + str(abs((file_date - current_date).seconds)) + " seconds old. limit is %d" % time_limit )
-                        return abs((file_date - current_date).seconds) < time_limit
-                    except Exception as e:
-                        warning_msg = str(e)
-                        logger.error("%s, assuming ok" % warning_msg)
-                        return True
-
+                    warning_msg = str(e)
+                    print("%s" % warning_msg)
+                    return False
 
     # find differences between current ls and last ls
     # only the newer or modified files will be kept...
