@@ -8,6 +8,17 @@
 
 .. contents::
 
+V03_wip is the focus of development now
+---------------------------------------
+
+This document deals with working on version 2 which is the current stable version.
+There is a considerable re-factor that is slowly converging towards a stable release,
+but there is still a great deal of work to do. Version 2 is only receiving urgent
+fixes. The version 2 code is quite different from version 3 even conceptually,
+and so work done for one will not easily adapt to v3. New contributors will
+find the version 3 code easier to work with and their efforts are better spent there.
+
+Here is a `link for Contributing to version 3: <https://github.com/MetPX/sarracenia/blob/v03_wip/docs/Contribution/Development.rst>`_
 
 Tools you Need
 --------------
