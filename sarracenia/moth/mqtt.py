@@ -13,6 +13,7 @@ from sarracenia.flowcb.gather import msg_validate,msg_dumps
 import ssl
 import threading
 import time
+from urllib.parse import unquote
 
 
 logger = logging.getLogger(__name__)
@@ -212,7 +213,7 @@ class MQTT(Moth):
         client.subscribe_in_progress=True
         # defaults to 20... kind of a mix of "batch" and prefetch... 
         client.max_inflight_messages_set(options['batch']+options['prefetch'])
-        client.username_pw_set( self.broker.username, self.broker.password )
+        client.username_pw_set( self.broker.username, unquote( self.broker.password ) )
         return client
 
     def __getSetup(self, options):
@@ -301,7 +302,7 @@ class MQTT(Moth):
                 self.client.on_publish = MQTT.__pub_on_publish
                 #dunno if this is a good idea.
                 self.client.max_queued_messages_set(options['prefetch'])
-                self.client.username_pw_set( self.broker.username, self.broker.password )
+                self.client.username_pw_set( self.broker.username, unquote( self.broker.password ) )
                 res = self.client.connect( options['broker'].hostname, port=self.__sslClientSetup(), properties=props  )
                 logger.info( 'connecting to %s, res=%s' % (options['broker'].hostname, res ) )
 

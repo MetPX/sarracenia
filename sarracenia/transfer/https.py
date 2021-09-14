@@ -42,6 +42,7 @@ import urllib.request, urllib.error
 
 from sarracenia.transfer import Transfer
 from sarracenia.transfer import alarm_cancel, alarm_set, alarm_raise
+from urllib.parse import unquote
 
 logger = logging.getLogger(__name__)
 
@@ -296,7 +297,7 @@ class Https(Transfer):
 
                 # continue with authentication
                 password_mgr.add_password(None, self.urlstr, self.user,
-                                          self.password)
+                                          unquote(self.password))
                 auth_handler = urllib.request.HTTPBasicAuthHandler(
                     password_mgr)
 

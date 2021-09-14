@@ -35,6 +35,7 @@ import ftplib, os, subprocess, sys, time
 import logging
 from sarracenia.transfer import Transfer
 from sarracenia.transfer import alarm_cancel, alarm_set, alarm_raise
+from urllib.parse import unquote
 
 logger = logging.getLogger(__name__)
 
@@ -201,12 +202,12 @@ class Ftp(Transfer):
                 ftp = ftplib.FTP()
                 ftp.encoding='utf-8'
                 ftp.connect(self.host, self.port, timeout=expire)
-                ftp.login(self.user, self.password)
+                ftp.login(self.user, unquote(self.password))
             else:
                 # ftplib supports FTPS with TLS
                 ftp = ftplib.FTP_TLS(self.host,
                                      self.user,
-                                     self.password,
+                                     unquote(self.password),
                                      timeout=expire)
                 ftp.encoding='utf-8'
                 if self.prot_p: ftp.prot_p()

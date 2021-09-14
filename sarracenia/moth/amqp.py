@@ -30,6 +30,7 @@ import json
 
 import logging
 
+from urllib.parse import unquote
 from sarracenia import durationToSeconds
 from sarracenia.flowcb import v2wrapper
 from sarracenia.flowcb.gather import msg_validate
@@ -174,7 +175,7 @@ class AMQP(Moth):
 
         self.connection = amqp.Connection(host=host,
                                           userid=broker.username,
-                                          password=broker.password,
+                                          password=unquote(broker.password),
                                           virtual_host=self.o['vhost'],
                                           ssl=(broker.scheme[-1] == 's'))
         if hasattr(self.connection, 'connect'):

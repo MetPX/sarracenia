@@ -37,6 +37,7 @@ from stat import *
 
 from sarracenia.transfer import Transfer
 from sarracenia.transfer import alarm_cancel, alarm_set, alarm_raise
+from urllib.parse import unquote
 
 import logging
 
@@ -229,7 +230,7 @@ class Sftp(Transfer):
             # FIXME this should be an option... for security reasons... not forced
             self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             if self.password:
-                self.ssh.connect(self.host,self.port,self.user,self.password, \
+                self.ssh.connect(self.host,self.port,self.user,unquote(self.password), \
                                  pkey=None,key_filename=self.ssh_keyfile,\
                                  timeout=self.o.timeout,allow_agent=False,look_for_keys=False)
             else:
