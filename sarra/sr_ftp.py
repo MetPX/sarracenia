@@ -32,6 +32,7 @@
 #
 
 import ftplib,os,sys,time
+from urllib.parse import unquote
 
 try :
          from sr_util            import *
@@ -190,7 +191,7 @@ class sr_ftp(sr_proto):
                    # in 2021, better to assume utf-8 rather than iso8859-1
                    ftp.encoding='utf-8'
                    ftp.connect(self.host,self.port,timeout=expire)
-                   ftp.login(self.user, self.password)
+                   ftp.login(self.user, unquote(self.password) )
                 else :
                    # ftplib supports FTPS with TLS 
                    ftp = ftplib.FTP_TLS(self.host,self.user,self.password,timeout=expire)

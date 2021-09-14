@@ -34,6 +34,7 @@
 import logging, paramiko, os,sys,time
 from   paramiko import *
 from   stat     import *
+from urllib.parse import unquote
 
 try :
          from sr_util            import *
@@ -209,7 +210,7 @@ class sr_sftp(sr_proto):
                 # FIXME this should be an option... for security reasons... not forced
                 self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
                 if self.password:
-                   self.ssh.connect(self.host,self.port,self.user,self.password, \
+                   self.ssh.connect(self.host,self.port,self.user, unquote(self.password), \
                                     pkey=None,key_filename=self.ssh_keyfile,\
                                     timeout=self.timeout,allow_agent=False,look_for_keys=False)
                 else:
