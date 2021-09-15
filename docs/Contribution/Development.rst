@@ -11,18 +11,30 @@
 Tools you Need
 --------------
 
-To hack on the sarracenia source, you need:
 
-- python3. The application is developed in and depends on python versions > 3.
+To hack on the Sarracenia source, you need:
+
+- A linux development environment, either a workstation, or a VM of some kind.
+  setup using ubuntu is automated, but adjustment for other distros is possible.
+  command-line comfort a must.
+
+- python3. The application is developed in and depends on python versions >= 3.5.
+
 - style: PEP8 except max line length is 119, enforced via yapf3 or other similar tool.
-- some python-amqp bindings (like python-amqplib for current implementations)
-- a bunch of other modules indicated in the dependencies (setup.py or debian/control)
-- paramiko. For SSH/SFTP support you need to install the python3-paramiko package
+
+- an account on github.com will help in submitting patches for consideration.
+
+Things that will be installed by automated setup:
+
+- a bunch of other python modules indicated in the dependencies (setup.py or debian/control)
+
 - python3 pyftpdlib module, used to run an ftpserver on a high port during the flow test.
+
 - git. in order to download the source from the github repository, and to prepare and submit
   changes.
-- an account on github.com will help in submitting patches for consideration.
+
 - a dedicated rabbitmq broker, with administrative access, to run the sr_insects tests.
+  this is installed by automated tools for setting up the linux environment.
   The flow test creates and destroys exchanges and will disrupt any active flows on the broker.
 
 after you have cloned the source code::
@@ -32,7 +44,7 @@ after you have cloned the source code::
     git clone -b v03_wip https://github.com/MetPX/sr_insects insects
     cd sr3
 
-The rest of the Guide assumes you are there.
+The rest of the Guide takes the above for granted.
 
 Documentation
 -------------
@@ -155,8 +167,6 @@ Weird issues with ssh keys not being interpreted properly by paramiko, work arou
  scp -i id_rsa_container id_rsa_container ubuntu@10.23.119.175:/home/ubuntu/.ssh/id_rsa
                                                                    100% 1704     2.7MB/s   00:00    
 
- 
- multipass shell flow
  fractal% scp -i id_rsa_container id_rsa_container ubuntu@10.23.119.106:/home/ubuntu/.ssh/id_rsa
  The authenticity of host '10.23.119.106 (10.23.119.106)' can't be established.
  ECDSA key fingerprint is SHA256:jlRnxV7udiCBdAzCvOVgTu0MYJR5+kYzNwy/DIhkeD8.
