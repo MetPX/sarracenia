@@ -15,6 +15,19 @@ Setting up a local environment:
     pip install -r requirements.txt
     jupyter notebook --ip=0.0.0.0 --port=8000
 
+Another option:
+
+    establish a virtual machine running ubuntu 20.04 or later.
+    apt update ; apt upgrade
+    apt install git python3-pip
+    export PATH="${HOME}/.local/bin:${PATH}"
+    git clone -b v03_wip https://github.com/MetPX/sarracenia.git
+    cd sr3
+    pip3 install -e .
+    cd jupyter
+    pip3 install jupyter
+    jupyter notebook --ip=0.0.0.0 --port=8000
+    
 ## Command Line Interface
 
 An introduction to the command Line interface, used to manage fleets of instances and configurations.
