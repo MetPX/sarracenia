@@ -18,16 +18,20 @@ Setting up a local environment:
 Another option:
 
     establish a virtual machine running ubuntu 20.04 or later.
-    apt update ; apt upgrade
-    apt install git python3-pip
+    sudo apt update ; sudo apt upgrade
+    sudo apt install git python3-pip
     export PATH="${HOME}/.local/bin:${PATH}"
-    git clone -b v03_wip https://github.com/MetPX/sarracenia.git
+    git clone -b v03_wip https://github.com/MetPX/sarracenia.git sr3
     cd sr3
     pip3 install -e .
     cd jupyter
     pip3 install jupyter
+    ip addr show # to know the ip to point your browser at.
     jupyter notebook --ip=0.0.0.0 --port=8000
-    
+    # open broser on ip:8000
+    #look for the certificate to post as credential for browser. 
+    # in the startup text.
+
 ## Command Line Interface
 
 An introduction to the command Line interface, used to manage fleets of instances and configurations.
