@@ -1487,9 +1487,17 @@ class Config:
             u = urllib.parse.urlparse( message['baseUrl'] )
             new_dir = new_dir.replace('${BUP}', u.path )
 
+        if ( '${baseUrlPath}' in cdir ) and ( 'baseUrl' in message ):
+            u = urllib.parse.urlparse( message['baseUrl'] )
+            new_dir = new_dir.replace('${baseUrlPath}', u.path )
+
         if ( '${BUPL}' in cdir ) and ( 'baseUrl' in message ):
             u = urllib.parse.urlparse( message['baseUrl'] )
             new_dir = new_dir.replace('${BUPL}', os.path.basename(u.path) )
+
+        if ( '${baseUrlPathLast}' in cdir )  and ( 'baseUrl' in message ):
+            u = urllib.parse.urlparse( message['baseUrl'] )
+            new_dir = new_dir.replace('${baseUrlPathLast}', os.path.basename(u.path) )
 
         if '${PBD}' in cdir and self.post_baseDir != None:
             new_dir = new_dir.replace('${PBD}', self.post_baseDir)
