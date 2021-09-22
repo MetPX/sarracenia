@@ -93,7 +93,11 @@ def msg_init(path, o, lstat=None):
     msg = {}
 
     #FIXME no variable substitution... o.set_dir_pattern ?
-    msg['exchange'] = o.post_exchange
+ 
+    if hasattr(o,'post_exchange'):
+        msg['exchange'] = o.post_exchange
+    elif hasattr(o,'exchange'):
+        msg['exchange'] = o.exchange
 
     msg['local_offset'] = 0
     msg['_deleteOnPost'] = set ( [ 'exchange', 'local_offset' ] )

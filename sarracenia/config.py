@@ -507,6 +507,7 @@ class Config:
         self.post_exchanges = []
 	#self.post_topicPrefix = None
         self.pstrip = False
+        self.rename = None
         self.randid = "%04x" % randint(0, 65536)
         self.statehost = False
         self.settings = {}
