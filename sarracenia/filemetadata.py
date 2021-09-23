@@ -113,6 +113,8 @@ class FileMetadata:
                     continue
                 k = i.replace('user.sr_', '')
                 v = xattr.getxattr(path, i).decode('utf-8')
+                if v[0] == '{':
+                   v= json.loads(v)
                 self.x[k] = v
 
     def __del__(self):
@@ -157,8 +159,11 @@ class FileMetadata:
             if supports_extended_attributes:
                 #set the attributes in the list. encoding utf8...
                 for i in self.x:
-                    xattr.setxattr(self.path, 'user.sr_' + i,
-                                   bytes(self.x[i], 'utf-8'))
+                    if type(self.x[i]) is not str:
+                        s=json.dumps(self.x[i])
+                    else:
+                        s=self.x[i]
+                    xattr.setxattr(self.path, 'user.sr_' + i, bytes(s, 'utf-8'))
         except:
             # not really sure what to do in the exception case...
             # permission would be a normal thing and just silently fail...
