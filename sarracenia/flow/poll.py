@@ -311,41 +311,6 @@ class Poll(Flow):
 
         return msgs
 
-    #def post(self,post_exchange,post_baseUrl,post_relpath,to_clusters, \
-    #              partstr=None,sumstr=None,rename=None,mtime=None,atime=None,mode=None,link=None):
-    #
-    #   self.msg.exchange = post_exchange
-    #
-    #   self.msg.set_topic(self.post_topic_prefix,post_relpath)
-    #   if self.subtopic != None : self.msg.set_topic_usr(self.post_topic_prefix,self.subtopic)
-
-    #   self.msg.set_notice(post_baseUrl,post_relpath)
-
-    # set message headers
-    #   msg = msg_init(
-
-    #   msg['to_clusters'] = to_clusters
-
-    #   if partstr  != None : msg['parts']        = partstr
-    #   if sumstr   != None : msg['sum']          = sumstr
-    #   if rename   != None : msg['rename']       = rename
-
-    #   if self.preserve_time:
-    #       if mtime    != None : msg['mtime']        = mtime
-    #       if atime    != None : msg['atime']        = atime
-
-    #   if self.preserve_mode:
-    #       if mode     != None : msg['mode']         = "%o" % ( mode & 0o7777 )
-
-    #   if link     != None : msg['link']         = link
-
-    #   if self.cluster != None : msg['from_cluster'] = self.cluster
-    #   if self.source  != None : msg['source']       = self.source
-
-    #   logger.debug("Added %s" % (self.msg.notice))
-
-    #   return ok
-
     def poll_file_post(self, ssiz, destDir, remote_file):
 
         FileOption = None
@@ -394,9 +359,6 @@ class Poll(Flow):
 
         if this_rename is not None:
             msg['rename'] = this_rename
-
-        #ok = self.post(self, self.o.post_exchange,self.o.post_baseUrl,self.o.post_relPath,self.o.to_clusters, \
-        #               self.partstr, self.sumstr,this_rename)
 
         return [msg]
 

@@ -1,4 +1,3 @@
-import json
 import logging
 from sarracenia.flowcb import FlowCB
 from sarracenia.flowcb.gather import msg_dumps

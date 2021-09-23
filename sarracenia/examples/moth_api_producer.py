@@ -1,5 +1,5 @@
 import sarracenia.moth
-from sarracenia.flowcb.gather import msg_init
+from sarracenia.flowcb.gather import msg_fromFile
 from sarracenia.config import default_config
 
 import os
@@ -33,7 +33,7 @@ PMN
 sample_file.close()
 
 # you can supply msg_init with your files, it will build a message appropriate for it.
-m = msg_init(sample_fileName, cfg, os.stat(sample_fileName) )
+m = msg_fromFile(sample_fileName, cfg, os.stat(sample_fileName) )
 
 # here is the resulting message.
 print(m)
