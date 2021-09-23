@@ -105,17 +105,20 @@ class FileMetadata:
                     self.ads.get_stream_content(STREAM_NAME).decode('utf-8'))
 
         if supports_extended_attributes:
-            d = xattr.listxattr(path)
-            for i in d:
-                if isinstance(i, bytes):
-                    i = i.decode('utf-8')
-                if not i.startswith('user.sr_'):
-                    continue
-                k = i.replace('user.sr_', '')
-                v = xattr.getxattr(path, i).decode('utf-8')
-                if v[0] == '{':
-                   v= json.loads(v)
-                self.x[k] = v
+            try: 
+                d = xattr.listxattr(path)
+                for i in d:
+                    if isinstance(i, bytes):
+                        i = i.decode('utf-8')
+                    if not i.startswith('user.sr_'):
+                        continue
+                    k = i.replace('user.sr_', '')
+                    v = xattr.getxattr(path, i).decode('utf-8')
+                    if v[0] == '{':
+                       v= json.loads(v)
+                    self.x[k] = v
+            except:
+                   self.x = {}
 
     def __del__(self):
         self.persist()
