@@ -558,6 +558,10 @@ class Flow:
         onfly_algo.set_path(path)
         data_algo.set_path(path)
 
+        if algo_method  == 'arbitrary' :
+            onfly_algo.set_value( msg['integrity']['value' ] )
+            data_algo.set_value( msg['integrity']['value' ] )
+
         onfly_algo.update(data)
         #msg.onfly_checksum = "{},{}".format(onfly_algo.registered_as(), onfly_algo.get_value())
 
@@ -632,6 +636,10 @@ class Flow:
 
         local_integrity = sarracenia.integrity.Integrity.factory(
             msg['integrity']['method'])
+
+        if msg['integrity']['method'] == 'arbitrary' :
+            local_integrity.set_value( msg['integrity']['value' ] )
+
         local_integrity.update_file(msg['new_path'])
         msg['local_integrity'] = {
             'method': msg['integrity']['method'],
@@ -1062,7 +1070,11 @@ class Flow:
                  download_algo = self.o.integrity_method[4:]
             else:
                  download_algo = msg['integrity']['method']
+
             self.proto[self.scheme].set_sumalgo(download_algo)
+
+            if download_algo == 'arbitrary':
+                self.proto[self.scheme].set_sumArbitrary(msg['integrity']['value'])
 
             if options.inflight == None or (
                 ('blocks' in msg) and (msg['blocks']['method'] == 'inplace')):

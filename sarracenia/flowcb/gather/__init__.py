@@ -8,12 +8,13 @@
 # Documentation: https://github.com/MetPX/sarracenia
 #
 
-import os.path
+from base64 import b64decode, b64encode
 import logging
+import os.path
 import stat
-import time
 from sarracenia import v3timeflt2str
 import sarracenia.filemetadata
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -190,12 +191,15 @@ def msg_computeIntegrity(path, o, msg):
         else:
             calc_method = o.integrity_method
 
+        logger.error('FIXME: calc_method=%s' % calc_method )
         xattr.set('mtime', msg['mtime'])
 
         #logger.debug("sum set by compute_sumstr")
 
         if calc_method[:4] == 'cod,' and len(calc_method) > 2:
             sumstr = calc_method
+        elif calc_method == 'arbitrary' :
+            sumstr =  { 'method' : 'arbitrary', 'value': b64encode(bytes(o.integrity_arbitrary_value,'utf-8')).decode('utf-8') }
         else:
             sumalgo = sarracenia.integrity.Integrity.factory(calc_method)
             sumalgo.set_path(path)

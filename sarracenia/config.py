@@ -51,6 +51,8 @@ import sarracenia.flow
 
 from sarracenia.flow.sarra import default_options as sarradefopts
 
+import sarracenia.integrity.arbitrary
+
 import sarracenia.moth
 import sarracenia.moth.amqp
 import sarracenia.integrity
@@ -498,6 +500,7 @@ class Config:
         self.inline = False
         self.inline_max = 4096
         self.inline_encoding = 'guess'
+        self.integrity_arbitrary_value = None
         self.lr_backupCount = 5
         self.lr_interval = 1
         self.lr_when = 'midnight'
@@ -885,10 +888,16 @@ class Config:
         if (value[0:2] == 'z,'):
             value = value[2:]
             self.integrity_method = 'cod,'
+        elif (value[0:2] == 'a,'):
+            self.integrity_method = 'arbitrary' 
+            self.integrity_arbitrary_value = value[2:]
         else:
             self.integrity_method = ''
 
+
         for sc in sarracenia.integrity.Integrity.__subclasses__():
+            if self.integrity_method == sc.__name__.lower():
+                return
             if hasattr(sc, 'registered_as') and (sc.registered_as() == value):
                 self.integrity_method += sc.__name__.lower()
                 return

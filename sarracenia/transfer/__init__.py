@@ -373,6 +373,10 @@ class Transfer():
         self.sumalgo = sarracenia.integrity.Integrity.factory(sumalgo)
         self.data_sumalgo = sarracenia.integrity.Integrity.factory(sumalgo)
 
+    def set_sumArbitrary(self, value):
+        self.sumalgo.set_value(value)
+        self.data_sumalgo.set_value(value)
+
     def update_file(self, path):
         if self.sumalgo:
             self.sumalgo.update_file(path)
