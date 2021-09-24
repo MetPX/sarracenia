@@ -73,7 +73,8 @@ class Integrity:
             for data in iter(functools.partial(f.read, 1024 * 1024), b''):
                 self.update(data)
 
-    def get_value(self):
+    @property
+    def value(self):
         """
         return the current value of the checksum calculation.
         """

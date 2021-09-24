@@ -366,7 +366,7 @@ def file_write_length(req, msg, bufsize, filesize, options):
 
     if chk:
         msg.onfly_checksum = "{},{}".format(chk.registered_as(),
-                                            chk.get_value())
+                                            chk.value)
 
     return True
 

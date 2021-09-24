@@ -164,9 +164,9 @@ class Transfer():
 
         # finalize checksum
 
-        if self.sumalgo: self.checksum = self.sumalgo.get_value()
+        if self.sumalgo: self.checksum = self.sumalgo.value
         if self.data_sumalgo:
-            self.data_checksum = self.data_sumalgo.get_value()
+            self.data_checksum = self.data_sumalgo.value
 
     # local_read_open
     def local_read_open(self, local_file, local_offset=0):
@@ -203,9 +203,9 @@ class Transfer():
 
         # finalize checksum
 
-        if self.sumalgo: self.checksum = self.sumalgo.get_value()
+        if self.sumalgo: self.checksum = self.sumalgo.value
         if self.data_sumalgo:
-            self.data_checksum = self.data_sumalgo.get_value()
+            self.data_checksum = self.data_sumalgo.value
 
     # local_write_open
     def local_write_open(self, local_file, local_offset=0):
@@ -374,8 +374,8 @@ class Transfer():
         self.data_sumalgo = sarracenia.integrity.Integrity.factory(sumalgo)
 
     def set_sumArbitrary(self, value):
-        self.sumalgo.set_value(value)
-        self.data_sumalgo.set_value(value)
+        self.sumalgo.value = value
+        self.data_sumalgo.value = value
 
     def update_file(self, path):
         if self.sumalgo:
@@ -391,10 +391,10 @@ class Transfer():
 
     def get_sumstr(self):
         if self.sumalgo:
-            #return { 'method':type(self.sumalgo).__name__, 'value':self.sumalgo.get_value() }
+            #return { 'method':type(self.sumalgo).__name__, 'value':self.sumalgo.value }
             return {
                 'method': self.sumalgo.get_method(),
-                'value': self.sumalgo.get_value()
+                'value': self.sumalgo.value
             }
         else:
             return None

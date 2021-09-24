@@ -559,15 +559,14 @@ class Flow:
         data_algo.set_path(path)
 
         if algo_method  == 'arbitrary' :
-            onfly_algo.set_value( msg['integrity']['value' ] )
-            data_algo.set_value( msg['integrity']['value' ] )
+            onfly_algo.value = msg['integrity']['value' ]
+            data_algo.value = msg['integrity']['value' ]
 
         onfly_algo.update(data)
-        #msg.onfly_checksum = "{},{}".format(onfly_algo.registered_as(), onfly_algo.get_value())
 
         msg['onfly_checksum'] = {
             'method': algo_method,
-            'value': onfly_algo.get_value()
+            'value': onfly_algo.value
         }
 
         if len(data) != msg['size']:
@@ -592,7 +591,7 @@ class Flow:
 
         msg['data_checksum'] = {
             'method': algo_method,
-            'value': data_algo.get_value()
+            'value': data_algo.value
         }
 
         msg['_deleteOnPost'] |= set(['onfly_checksum'])
@@ -638,12 +637,12 @@ class Flow:
             msg['integrity']['method'])
 
         if msg['integrity']['method'] == 'arbitrary' :
-            local_integrity.set_value( msg['integrity']['value' ] )
+            local_integrity.value = msg['integrity']['value' ]
 
         local_integrity.update_file(msg['new_path'])
         msg['local_integrity'] = {
             'method': msg['integrity']['method'],
-            'value': local_integrity.get_value()
+            'value': local_integrity.value
         }
         msg['_deleteOnPost'] |= set(['local_integrity'])
 
@@ -1159,16 +1158,18 @@ class Flow:
             if (len_written != block_length):
                 return False
 
-        except:
+        except Exception as ex:
+            logger.debug('Exception details: ', exc_info=True)
+            logger.warning("failed to write %s: %s" % (new_inflight_file, ex))
+
             #closing on problem
             try:
                 self.proto[self.scheme].close()
                 self.cdir = None
                 self.proto[self.scheme] = None
             except:
-                pass
+                logger.debug('closing exception details: ', exc_info=True)
 
-            logger.debug('Exception details: ', exc_info=True)
             if os.path.isfile(new_inflight_path):
                 os.remove(new_inflight_path)
             return False

@@ -83,7 +83,7 @@ class Message:
 
             self.sumflag = sa
             # transform sum value
-            if sa in ['0']:
+            if sa in ['0','a']:
                 sv = h["integrity"]["value"]
             elif sa in ['z']:
                 sv = sum_algo_v3tov2[h["integrity"]["value"]]

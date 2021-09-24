@@ -303,7 +303,7 @@ class File(FlowCB):
                     t += len(buf)
                 fp.close()
 
-                checksum = sumalgo.get_value()
+                checksum = sumalgo.value
                 sumstr = {'method': sumflg, 'value': checksum}
 
             # complete  message

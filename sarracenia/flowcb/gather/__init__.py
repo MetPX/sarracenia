@@ -191,7 +191,6 @@ def msg_computeIntegrity(path, o, msg):
         else:
             calc_method = o.integrity_method
 
-        logger.error('FIXME: calc_method=%s' % calc_method )
         xattr.set('mtime', msg['mtime'])
 
         #logger.debug("sum set by compute_sumstr")
@@ -199,7 +198,7 @@ def msg_computeIntegrity(path, o, msg):
         if calc_method[:4] == 'cod,' and len(calc_method) > 2:
             sumstr = calc_method
         elif calc_method == 'arbitrary' :
-            sumstr =  { 'method' : 'arbitrary', 'value': b64encode(bytes(o.integrity_arbitrary_value,'utf-8')).decode('utf-8') }
+            sumstr =  { 'method' : 'arbitrary', 'value': o.integrity_arbitrary_value }
         else:
             sumalgo = sarracenia.integrity.Integrity.factory(calc_method)
             sumalgo.set_path(path)
@@ -218,7 +217,7 @@ def msg_computeIntegrity(path, o, msg):
                 fp.close()
 
             # setting sumstr
-            checksum = sumalgo.get_value()
+            checksum = sumalgo.value
             sumstr = {'method': calc_method, 'value': checksum}
 
         xattr.set('integrity', sumstr)
