@@ -4,7 +4,7 @@ Porting v2 Plugins to Sr3
 
 This is a guide to porting plugins from Sarracenia version 2.X (metpx-sarracenia) to Sarracenia version 3.x (metpx-sr3)
 If you are new to Sarracenia, and have no experience or need to look at v2 plugins, don't read this. it will just
-confuse you.  This document is for those people who need to take existing v2 plugins and port them to v3.
+confuse you. This guide is for those who need to take existing v2 plugins and port them to v3.
 You are better off getting a fresh look by looking at the jupyter notebook examples::
 
     https://github.com/MetPX/sarracenia/tree/v03_wip/jupyter
@@ -21,11 +21,11 @@ Generally speaking v2 plugins were bolted onto existing code to allow some modif
 v2 plugins when through a first generation, when only single routines were declared (e.g. *on_message*), 
 and a second generation, when whole classes (e.g. *plugin*) were declared, but still in a stilted way.
 
-Sr3 plugins are core design elements, composed together to implement Sarracenia itself. V3 plugins should
-be easier for Python programmers to debug and implement, and are strictly more flexible and powerful
+Sr3 plugins are core design elements, composed together to implement part of Sarracenia itself. V3 plugins 
+should be easier for Python programmers to debug and implement, and are strictly more flexible and powerful
 than the v2 mechanism.
 
- * v3 uses standard python syntax, not v2's strange things ... e.g. *self.plugins*, *parent.logger*, why doesn't *import* work?
+ * v3 uses standard python syntax, not v2's strange things ... e.g. *self.plugins*, *parent.logger*, Why doesn't *import* work?
  * standard python import; Syntax errors are detected and reported *the normal way*
  * v3 classes are designed to be usable outside the CLI itself (see jupyter notebook examples)
    callable by application programmers in their own code, like any other python library.
@@ -40,6 +40,21 @@ v3 places configuration files under ~/.config/sr3, and state files under ~/.cach
 
 v2 has a C implementation of sarra called sarrac. The C implementation for v3, is called sr3c,
 and is the same as the v2 one, except it uses the new file locations.
+
+Command Line Difference
+=======================
+
+Briefly, the sr3 entry point is used to start/stop/status things::
+
+  v2:  sr_*component* start config
+
+  v3:  sr3 start *component*/config
+
+In sr3, one can also use file globbing style specifications to ask for a command
+to be invoked on a group of configurations, wheras in v2, one could only operate on one at a time.
+
+sr3_post is an exception to this change in that it works like v2's sr_post did, being
+a tool for interactive posting.
 
 
 What Will Work Without Change
