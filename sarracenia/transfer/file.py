@@ -4,17 +4,8 @@
 # The sarracenia suite is Free and is proudly provided by the Government of Canada
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
 #
-# Questions or bugs report: dps-client@ec.gc.ca
 # Sarracenia repository: https://github.com/MetPX/sarracenia
 # Documentation: https://github.com/MetPX/sarracenia
-#
-# sr_file.py : python3 utility tools for file processing
-#
-#
-# Code contributed by:
-#  Michel Grenier - Shared Services Canada
-#  Last Changed   : Aug 23 10:41:32 EDT 2018
-#  Last Revision  : Feb  5 09:48:34 EST 2016
 #
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify

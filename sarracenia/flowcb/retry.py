@@ -8,10 +8,6 @@
 #
 # sr_retry.py : python3 standalone retry logic/testing
 #
-# Code contributed by:
-#  Michel Grenier - Shared Services Canada
-#  first shot     : Wed Jan 10 16:06:16 UTC 2018
-#
 
 import os, json, sys, time
 from _codecs import decode, encode

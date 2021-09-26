@@ -12,12 +12,6 @@
 #             programs, it is used as a time based buffer that prevents, when activated,
 #             identical files (of some kinds) from being processed more than once.
 #
-# Code contributed by:
-#  Michel Grenier - Shared Services Canada
-#  Last Changed   : Wed Jul 26 18:57:19 UTC 2017
-#  copied and re-arranged after his retirement... don't blame him any more...
-#  He wrote it as sr_cache.py Peter Silva turned it into a v3 plugin.
-#
 
 import os
 
