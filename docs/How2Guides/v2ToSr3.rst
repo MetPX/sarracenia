@@ -21,11 +21,11 @@ Generally speaking v2 plugins were bolted onto existing code to allow some modif
 v2 plugins when through a first generation, when only single routines were declared (e.g. *on_message*), 
 and a second generation, when whole classes (e.g. *plugin*) were declared, but still in a stilted way.
 
-Sr3 plugins are a core element of design, composed together to implement Sarracenia. V3 plugins should
+Sr3 plugins are core design elements, composed together to implement Sarracenia itself. V3 plugins should
 be easier for Python programmers to debug and implement, and are strictly more flexible and powerful
 than the v2 mechanism.
 
- * standard python syntax, no strange 'isms... e.g. *self.plugins*, *parent.logger*, why doesn't *import* work?
+ * v3 uses standard python syntax, not v2's strange things ... e.g. *self.plugins*, *parent.logger*, why doesn't *import* work?
  * standard python import; Syntax errors are detected and reported *the normal way*
  * v3 classes are designed to be usable outside the CLI itself (see jupyter notebook examples)
    callable by application programmers in their own code, like any other python library.
@@ -42,18 +42,16 @@ v2 has a C implementation of sarra called sarrac. The C implementation for v3, i
 and is the same as the v2 one, except it uses the new file locations.
 
 
-What Will work without Change
+What Will Work Without Change
 =============================
 
 The first step in porting a configuration subscribe/X to v3, is just to copy the configuration file from
-~/.config/sarra to the corresponding location in ~/.config/sr3.  
-and try::
-
+~/.config/sarra to the corresponding location in ~/.config/sr3 and try::
 
 sr3 show subscribe/X
 
-Most of it should work, unless you have do_* plugins. The *show* command  is
-new in sr3 and provides a way to view the configuration after it has been parsed.
+The *show* command is new in sr3 and provides a way to view the configuration after 
+it has been parsed. Most of it should work, unless you have do_* plugins. 
 
 Examples of things that should work:
 
@@ -262,8 +260,9 @@ convention, one can also use a more flexible but longer-winded::
 
   flowcb sarracenia.flowcb.x.X
 
-the above two are equivalent, but one could substitute Y for X
-in the above and the latter version would work.
+the above two are equivalent. The flowcb version can be used to import classes 
+that don't match the convention of the x.X (a file named x.py containing a class called X.py)
+
 
 
     

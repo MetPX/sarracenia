@@ -14,6 +14,7 @@ Michel Grenier <michel.grenier@IamRetiredNow.ca> (Retired)
   All of the code until 2016/03. 
   A lot of the code, until 2017/08-2018/05 (major refactoring.)
   Retired now...
+  none of the code since sr3, but a lot was copy/pasted.
 
 Jun Hu <jun.hu3@canada.ca>
   Documentation Diagrams, lead on some deployments (head tester!)
