@@ -117,7 +117,9 @@ class FlowCB:
          do periodic processing.
 
     def on_html_page(self,page):
-         Task: modify an html page.
+         Task: modify an html poll page. used in transfer/https.py to interpret weirdly 
+               formatted lists of files.
+         return True|False
 
     def on_line(self,line):
          used in FTP polls, because servers have different formats, modify to canonical use.

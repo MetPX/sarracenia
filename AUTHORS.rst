@@ -3,7 +3,7 @@ Peter Silva <peter.silva@canada.ca>
   Project Prime mover, Manager & Evangelist. A lot of Documentation, and 
   Review of Docs. Much discussion with Michel. Small bug fixes.
   wrote none of the code in v2, except most (all?) plugins included with package.
-  added the 'plugin' model to v2. Did all work for v3. 
+  added the 'plugin' model to v2. Did all work for sr3.
 
 Benoit Lapointe <Benoit.Lapointe@canada.ca>
   Improving testing frameworks/ Design documentation / code hygiene.
