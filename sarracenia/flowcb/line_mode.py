@@ -34,10 +34,7 @@ class Line_Mode(FlowCB):
             self.o.chmod = 0o4
 
         logger.setLevel( getattr( logging, options.logLevel.upper() ) )
-
-        logger.debug(
-            "line_mode initialized mask (from chmod setting) is: %03o " %
-            self.o.chmod)
+        logger.info( "initialized mask (from chmod setting) is: %03o " % self.o.chmod)
 
     def modstr2num(self, m):
         mode = 0
@@ -57,7 +54,7 @@ class Line_Mode(FlowCB):
         mode += self.modstr2num(modstr[4:7]) << 3
         mode += self.modstr2num(modstr[7:10])
 
-        #logger.info("line_mode: %s mode: %03o" %  ( line, mode ) )
+        #logger.debug("%s mode: %03o" %  ( line, mode ) )
 
         if ((mode & self.o.chmod) == self.o.chmod):
             return line

@@ -398,7 +398,7 @@ class V2Wrapper(FlowCB):
             plugin(self.o)
 
     def on_housekeeping(self):
-        self.on_time('on_housekeeping')
+        self.on_time('on_heartbeat')
 
     def on_start(self):
         self.on_time('on_start')

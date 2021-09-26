@@ -27,6 +27,24 @@ logger = logging.getLogger(__name__)
 
 """
 
+class fakeStat():
+   """
+     this allows building a stat record for assignment by msg_init, to set access times and permissions,
+     if desired.
+
+     msg_init( path, options, fakeStat(access_time,modification_time,file_size_in_bytes,permission_bits)
+     values should be as they would be defined in a stat record returned by os.stat, or os.lstat 
+     routines.
+
+   """
+   def __init__(self,atime,mtime,size,mode):
+     self.st_atime = atime 
+     self.st_mtime = mtime 
+     self.st_size = size 
+     self.st_mode = mode 
+
+
+
 def msg_dumps(msg):
    """
        print a message in a compact but relatively compact way.
