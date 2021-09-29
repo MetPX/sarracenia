@@ -64,7 +64,6 @@ def disable_xattr():
     global xattr_disabled
     xattr_disabled = True
 
-
 try:
     import xattr
     supports_extended_attributes = True
@@ -111,17 +110,21 @@ class sr_xattr:
                 self.x = json.loads(self.ads.get_stream_content(STREAM_NAME).decode('utf-8'))
 
         if supports_extended_attributes:
-            d = xattr.listxattr(path)
-            for i in d:
-                # if only python3-pyxattr or just pyxattr is installed the result will be in bytes and needs decoding
-                if isinstance(i, bytes):
-                    i = i.decode('utf-8')
-                if not i.startswith('user.sr_'):
-                    continue
-                k = i.replace('user.sr_', '')
-                # xattr.listxattr returns a tuple not a dictionnary so it cannot be indexed like it was before.
-                v = xattr.getxattr(path, i).decode('utf-8')
-                self.x[k] = v
+            try:
+                d = xattr.xattr(path)
+                for i in d:
+                    if not i.startswith('user.sr_'):
+                       continue
+                    k= i.replace('user.sr_','') 
+                    v= d[i].decode('utf-8')
+                    self.x[k] = v
+            except:
+                # FIXME.. some weird error reading xattr happens once in a while.
+                #   just ignore it, we won't get xattrs from this file. so sad.
+                #   I think it is a race condition when two poll processes are posting the same
+                #   tree, and one is writing attributes while the other is reading.
+                #   unlikely to be a difficulty in real life? but perhaps worthy of an error message.
+                pass
 
     def __del__(self):
         self.persist()
