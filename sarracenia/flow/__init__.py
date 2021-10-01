@@ -1160,7 +1160,7 @@ class Flow:
 
         except Exception as ex:
             logger.debug('Exception details: ', exc_info=True)
-            logger.warning("failed to write %s: %s" % (new_inflight_file, ex))
+            logger.warning("failed to write %s: %s" % (new_inflight_path, ex))
 
             #closing on problem
             try:
