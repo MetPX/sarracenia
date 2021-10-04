@@ -659,6 +659,7 @@ class sr_config:
     def defaults(self):
         self.logger.debug("sr_config defaults")
         self.file_time_limit      = self.duration_from_str("60d")
+        self.destination_timezone = 'UTC'
         self.retry_mode           = True
         self.retry_ttl            = None
 
@@ -903,6 +904,7 @@ class sr_config:
 
         #self.on_post_list = [ self.on_post ]
         self.execfile("on_line",'line_mode')
+        self.execfile("on_line", 'line_date')
 
 
     # this function converts duration into a specifid unit: [milliseconds, seconds or days]
@@ -1594,6 +1596,8 @@ class sr_config:
                      self.logger.debug("Masks %s"% self.masks)
                 elif words0 =='file_time_limit':
                     self.file_time_limit = self.duration_from_str(words1)
+                elif words0 == 'destination_timezone':
+                    self.destination_timezone = words1
                 elif words0 in ['accept_unmatched','accept_unmatch','au']: # See: sr_config.7
                      if (words1 is None) or words[0][0:1] == '-' : 
                         self.accept_unmatch = True

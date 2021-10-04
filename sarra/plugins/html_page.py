@@ -30,7 +30,7 @@ class Html_parser():
                self.mysize = "%d" % isize
 
         except:
-               self.logger.debug("bad size %s" % self.mysize)
+               # self.logger.debug("bad size %s" % self.mysize)
                return
 
         return
