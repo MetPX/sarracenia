@@ -700,7 +700,7 @@ class Config:
                  sv=v
             else:
                 if '|' in v: 
-                    sv=set(v.split('|'))
+                    sv=set(v.split(','))
                 else: 
                     sv=set([v])
             if hasattr(self, option):

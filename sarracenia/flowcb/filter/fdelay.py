@@ -83,7 +83,8 @@ class FDelay(FlowCB):
                 continue
 
             # Test file delay
-            filetime = os.stat(f)[stat.st_mtime]
+            fos = os.stat(f)
+            filetime = fos.st_mtime
             elapsedtime = nowflt() - filetime
             if elapsedtime < self.o.fdelay:
                 dbg_msg = "file not old enough, sleeping for {:.3f} seconds"

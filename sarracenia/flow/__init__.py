@@ -491,8 +491,8 @@ class Flow:
                                                 self.o.flatten)
                     filtered_worklist.append(m)
                 else:
-                    self.reject( m, "unmatched pattern=%s" % url )
-                    msg_set_report(m, 304, "not modified (filter)")
+                    self.reject( m, "unmatched pattern %s" % url )
+                    msg_set_report(m, 304, "not modified (filter) %s" % url )
 
         self.worklist.incoming = filtered_worklist
         logger.debug('end len(incoming)=%d, rejected=%d' % ( len(self.worklist.incoming), len(self.worklist.rejected) ) )
@@ -685,7 +685,7 @@ class Flow:
                          (msg['new_path']))
             return True
 
-    # compare dates...
+        # compare dates...
 
         if 'mtime' in msg:
             new_mtime = timestr2flt(msg['mtime'])
@@ -906,7 +906,7 @@ class Flow:
                 logger.error('interval inflight setting: %s, not for remote.' %
                              self.o.inflight)
                 # FIXME... what to do?
-                self.reject( msg, "invalid message settings" % new_path )
+                self.reject( msg, "invalid inflight %s settings %s" % (self.o.inflight, new_path) )
                 msg_set_report(msg, 503, "invalid reception settings.")
                 continue
 
@@ -936,7 +936,6 @@ class Flow:
                     continue
 
                 if not self.file_should_be_downloaded(msg):
-                    #self.reject( msg, "Not modified 3 - (compared to local file %s)" % new_path )
                     msg_set_report( msg, 304, "Not modified 3 - (compared to local file)")
                     continue
 
