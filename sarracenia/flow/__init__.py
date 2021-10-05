@@ -77,6 +77,7 @@ class Flow:
           worklist.ok       --> successfully processed
           worklist.rejected --> messages to not be further processed.
           worklist.failed   --> messages for which processing failed.
+          worklist.dirrectories_ok --> directories created.
 
       Initially all messages are placed in incoming.
       if a callback decides:
@@ -143,6 +144,7 @@ class Flow:
         self.worklist.incoming = []
         self.worklist.rejected = []
         self.worklist.failed = []
+        self.worklist.directories_ok = []
 
         self.plugins['load'] = ['sarracenia.flowcb.retry.Retry']
 
@@ -162,7 +164,7 @@ class Flow:
             self.plugins['load'].extend(self.o.plugins)
 
         # initialize plugins.
-        if hasattr(self.o, 'v2plugins'):
+        if hasattr(self.o, 'v2plugins') and len(self.o.v2plugins) > 0:
             self.plugins['load'].append(
                 'sarracenia.flowcb.v2wrapper.V2Wrapper')
 
@@ -235,6 +237,16 @@ class Flow:
                     j += 1
         return False
 
+    def reject(self, m, reason):
+        """
+            reject a message.
+        """
+        if not 'reject' in m:
+          m['reject'] = ''
+        m['_deleteOnPost'] |= set(['reject'])
+        m['reject'] += reason
+        self.worklist.rejected.append(m)
+
     def please_stop(self):
         self._stop_requested = True
 
@@ -247,16 +259,6 @@ class Flow:
         if "ack" in self.plugins:
             for p in self.plugins["ack"]:
                 p(mlist)
-
-    def ackOKandRejected(self, desc):
-        logger.debug('%s incoming: %d, ok: %d, rejected: %d, failed: %d' %
-                     (desc, len(self.worklist.incoming), len(self.worklist.ok),
-                      len(self.worklist.rejected), len(self.worklist.failed)))
-
-        self.ack(self.worklist.ok)
-        self.worklist.ok = []
-        self.ack(self.worklist.rejected)
-        self.worklist.rejected = []
 
     def run(self):
         """
@@ -281,8 +283,6 @@ class Flow:
 
 
         logger.info("callbacks loaded: %s" % self.plugins['load'])
-        #for t in self.plugins:
-        #    logger.info("%s : %s" % ( t, self.plugins[t] ) )
 
         self._runCallbacksTime('on_start')
 
@@ -300,8 +300,6 @@ class Flow:
                 #            (current_rate, self.o.message_rate_max))
                 self.gather()
 
-                self.ackOKandRejected('A gathered')
-
                 last_gather_len = len(self.worklist.incoming)
                 if (last_gather_len == 0):
                     spamming = True
@@ -311,7 +309,17 @@ class Flow:
 
                 self.filter()
 
-                self.ackOKandRejected('B filtered')
+                self._runCallbacksWorklist('after_accept')
+
+                logger.debug('B filtered incoming: %d, ok: %d (directories: %d), rejected: %d, failed: %d' %
+                     (len(self.worklist.incoming), len(self.worklist.ok),
+                      len(self.worklist.directories_ok),
+                      len(self.worklist.rejected), len(self.worklist.failed)))
+
+                self.ack(self.worklist.ok)
+                self.worklist.ok = []
+                self.ack(self.worklist.rejected)
+                self.worklist.rejected = []
 
                 self.do()
 
@@ -326,16 +334,18 @@ class Flow:
                         m['relPath'] = m['new_relPath']
                         m['subtopic'] = m['new_subtopic']
 
+                self._runCallbacksWorklist('after_work')
+
                 self.ack(self.worklist.rejected)
                 self.worklist.rejected = []
                 self.ack(self.worklist.failed)
-                self._runCallbacksWorklist('after_work')
 
                 self.post()
 
                 self.report()
 
                 self.worklist.ok = []
+                self.worklist.directories_ok = []
                 self.worklist.failed = []
 
             now = nowflt()
@@ -398,7 +408,7 @@ class Flow:
 
     def filter(self):
 
-        #logger.debug('start')
+        logger.debug('start len(incoming)=%d, rejected=%d' % ( len(self.worklist.incoming), len(self.worklist.rejected) ) )
         filtered_worklist = []
 
         if hasattr(self.o,'directory'):
@@ -445,10 +455,8 @@ class Flow:
                                 m['_deleteOnPost'] |= set(['renameUnlink'])
                             logger.debug("rename deletion 1 %s" %
                                          (m['oldname']))
-                        elif self.o.log_reject:
-                            logger.info("reject: mask=%s strip=%s url=%s" %
-                                        (str(mask), strip, urlToMatch))
-                        self.worklist.rejected.append(m)
+                        else:
+                            self.reject( m, "mask=%s strip=%s url=%s" % (str(mask), strip, urlToMatch) )
                         break
 
                     # FIXME... missing dir mapping with mirror, strip, etc...
@@ -483,16 +491,11 @@ class Flow:
                                                 self.o.flatten)
                     filtered_worklist.append(m)
                 else:
-                    if self.o.log_reject:
-                        logger.info("reject: unmatched pattern=%s" % (url))
+                    self.reject( m, "unmatched pattern=%s" % url )
                     msg_set_report(m, 304, "not modified (filter)")
-                    self.worklist.rejected.append(m)
 
         self.worklist.incoming = filtered_worklist
-        # apply after_accept plugins.
-        self._runCallbacksWorklist('after_accept')
-
-        #logger.debug('done')
+        logger.debug('end len(incoming)=%d, rejected=%d' % ( len(self.worklist.incoming), len(self.worklist.rejected) ) )
 
     def gather(self):
         self.worklist.incoming = []
@@ -526,6 +529,7 @@ class Flow:
         # make sure directory exists, create it if not
         if not os.path.isdir(msg['new_dir']):
             try:
+                self.worklist.directories_ok.append( msg['new_dir'] )
                 os.makedirs(msg['new_dir'], 0o775, True)
             except Exception as ex:
                 logger.error("failed to make directory %s: %s" % (newdir, ex))
@@ -697,9 +701,7 @@ class Flow:
                     pass
 
             if new_mtime <= old_mtime:
-                if self.o.log_reject:
-                    logger.info("rejected: mtime not newer %s " %
-                                (msg['new_path']))
+                self.reject( msg, "mtime not newer %s " % (msg['new_path']) )
                 return False
             else:
                 logger.debug(
@@ -729,8 +731,7 @@ class Flow:
                      (msg['integrity'], msg['local_integrity']))
 
         if msg['local_integrity'] == msg['integrity']:
-            if self.o.log_reject:
-                logger.info("rejected: same checksum %s " % (msg['new_path']))
+            self.reject( msg, "same checksum %s " % (msg['new_path']) )
             return False
         else:
             return True
@@ -798,6 +799,7 @@ class Flow:
 
         if not os.path.isdir(msg['new_dir']):
             try:
+                self.worklist.directories_ok.append( msg['new_dir'] )
                 os.makedirs(msg['new_dir'], 0o775, True)
             except Exception as ex:
                 logger.warning("making %s: %s" % (msg['new_dir'], ex))
@@ -868,8 +870,8 @@ class Flow:
                     #FIXME: should this really be queued for retry? or just permanently failed?
                     # in rejected to avoid retry, but wondering if failed and deferred
                     # should be separate lists in worklist...
+                    self.reject( msg, "remove %s failed" % new_path  )
                     msg_set_report(msg, 500, "remove failed")
-                    self.worklist.rejected.append(msg)
                 continue
 
             if 'link' in msg.keys() and ( 'link' in self.o.events ):
@@ -878,8 +880,8 @@ class Flow:
                     self.worklist.ok.append(msg)
                 else:
                     # as above...
+                    self.reject( msg, "link %s failed" % msg['link']  )
                     msg_set_report(msg, 500, "symlink failed")
-                    self.worklist.rejected.append(msg)
                 continue
 
             # establish new_inflight_path which is the file to download into initially.
@@ -904,8 +906,8 @@ class Flow:
                 logger.error('interval inflight setting: %s, not for remote.' %
                              self.o.inflight)
                 # FIXME... what to do?
+                self.reject( msg, "invalid message settings" % new_path )
                 msg_set_report(msg, 503, "invalid reception settings.")
-                self.worklist.rejected.append(msg)
                 continue
 
             msg['new_inflight_path'] = new_inflight_path
@@ -929,14 +931,13 @@ class Flow:
             # FIXME: decision of whether to download, goes here.
             if os.path.isfile(new_path):
                 if not self.o.overwrite:
+                    self.reject( msg, "not overwriting existing file %s" % new_path )
                     msg_set_report(msg, 204, "not overwriting existing files.")
-                    self.worklist.rejected.append(msg)
                     continue
 
                 if not self.file_should_be_downloaded(msg):
-                    msg_set_report(
-                        msg, 304, "Not modified 3 - (compared to local file)")
-                    self.worklist.rejected.append(msg)
+                    #self.reject( msg, "Not modified 3 - (compared to local file %s)" % new_path )
+                    msg_set_report( msg, 304, "Not modified 3 - (compared to local file)")
                     continue
 
             # download content
@@ -946,8 +947,8 @@ class Flow:
                                    "Download successful (inline content)")
                     self.worklist.ok.append(msg)
                 else:
+                    self.reject( msg, "failed to write inline content %s" % new_path )
                     msg_set_report(msg, 503, "failed to write inline content")
-                    self.worklist.rejected.append(msg)
             else:
                 parsed_url = urllib.parse.urlparse(msg['baseUrl'])
                 self.scheme = parsed_url.scheme
@@ -1004,6 +1005,7 @@ class Flow:
             # make sure directory exists, create it if not
             try:
                 if not os.path.isdir(new_dir):
+                    self.worklist.directories_ok.append( new_dir )
                     os.makedirs(new_dir, 0o775, True)
                 os.chdir(new_dir)
             except Exception as ex:

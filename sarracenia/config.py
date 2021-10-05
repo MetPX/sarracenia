@@ -101,6 +101,8 @@ duration_options = [
 
 list_options = []
 
+set_options = ['log_events']
+
 size_options = ['blocksize', 'bufsize', 'bytes_per_second', 'inline_max']
 
 str_options = [
@@ -138,11 +140,14 @@ convert_to_v3 = {
             'flow_callback',
             'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles'
         ],
-        'msg_log': ['flow_callback', 'sarracenia.flowcb.log.Log'],
-        'msg_rawlog': ['flow_callback', 'sarracenia.flowcb.log.Log']
+        'msg_log': ['log_events', 'after_accept'],
+        'msg_rawlog': ['log_events', 'after_accept']
     },
     'on_line': {
-        'line_log': ['flow_callback', 'sarracenia.flowcb.line_log']
+        'line_log': ['log_events', 'on_line']
+    },
+    'on_post': {
+        'post_log': ['log_events', 'after_work']
     },
     'before_post': {
         'post_rate_limit': ['continue']
@@ -488,6 +493,7 @@ class Config:
         self.v2plugins = {}
         self.v2plugin_options = []
         self.imports = []
+        self.log_events = set([])
         self.plugins = []
         self.exchange = None
         self.filename = None
@@ -495,6 +501,7 @@ class Config:
         self.flatten = '/'
         self.hostname = socket.getfqdn()
         self.hostdir = socket.getfqdn().split('.')[0]
+        self.log_flowcb_needed = False
         self.sleep = 0.1
         self.housekeeping = 30
         self.inline = False
@@ -656,6 +663,7 @@ class Config:
            'flag'       boolean (True/False) option.
            'list'       a list of string values, each succeeding occurrence catenates to the total.
                         all v2 plugin options are declared of type list.
+           'set'        a set of string values, each succeeding occurrence is unioned to the total.
            'size'       integer size. Suffixes k, m, and g for kilo, mega, and giga (base 2) multipliers.
            'str'        an arbitrary string value, as will all of the above types, each succeeding occurrence overrides the previous one.
     
@@ -677,10 +685,28 @@ class Config:
             flag_options.append(option)
             if type(v) is not bool:
                 setattr(self, option, isTrue(v))
-        elif kind == 'list':
-            list_options.append(option)
+        elif kind == 'list':  
+            list_options.append( option )
             if type(v) is not list:
                 setattr(self, option, [v])
+        elif kind == 'set':  
+            set_options.append( option )
+            sv=set()
+            if v == 'None': 
+                 delattr(self, option)
+            elif type(v) is list:
+                 sv=set(v)
+            elif type(v) is set:
+                 sv=v
+            else:
+                if '|' in v: 
+                    sv=set(v.split('|'))
+                else: 
+                    sv=set([v])
+            if hasattr(self, option):
+                sv= getattr(self,option) | sv
+            setattr(self, option, sv)
+
         elif kind == 'size':
             size_options.append(option)
             if type(v) is not int:
@@ -922,6 +948,8 @@ class Config:
                 k = Config.synonyms[k]
 
             if (k in convert_to_v3): 
+                self.log_flowcb_needed |= '_log' in k
+                   
                 if (len(line) > 1):
                     v = line[1].replace('.py', '', 1)
                     if (v in convert_to_v3[k]):
@@ -1048,8 +1076,17 @@ class Config:
                 if not hasattr(self, k):
                     setattr(self, k, [' '.join(line[1:])])
                 else:
-                    setattr(self, k,
-                            getattr(self, line[0]).append(' '.join(line[1:])))
+                    setattr(self, k, getattr(self, k).append(' '.join(line[1:])))
+            elif k in set_options:
+                vs = set(v.split('|'))
+                if v=='None':
+                   setattr(self, k, set([]))
+                   continue
+
+                if not hasattr(self, k):
+                    setattr(self, k, vs )
+                else:
+                    setattr(self, k, getattr(self, k) | vs)
             elif k in str_options:
                 v = ' '.join(line[1:])
                 setattr(self, k, v)
@@ -1115,6 +1152,14 @@ class Config:
         for f in flag_options:
             if hasattr(self, f) and (type(getattr(self, f)) is str):
                 setattr(self, f, isTrue(getattr(self, f)))
+
+        if hasattr(self,'log_reject'):
+            if self.log_reject:
+                self.log_events |= set( ['reject'] )
+            delattr( self, 'log_reject' )
+
+        if ( (len(self.log_events) > 0 ) or self.log_flowcb_needed) and ( '.log.Log' not in self.plugins ):
+            self.plugins += [ 'sarracenia.flowcb.log.Log' ]
 
         # patch, as there is no 'none' level in python logging module...
         #    mapping so as not to break v2 configs.
@@ -1272,7 +1317,7 @@ class Config:
 
     def check_undeclared_options(self):
 
-        alloptions = str_options + flag_options + list_options + count_options + size_options + duration_options
+        alloptions = str_options + flag_options + list_options + set_options + count_options + size_options + duration_options
         # FIXME: confused about this...  commenting out for now...
         for u in self.undeclared:
             if u not in alloptions:

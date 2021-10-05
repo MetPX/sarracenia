@@ -326,7 +326,7 @@ class AMQP(Moth):
 
         if not self.is_subscriber:  #build_consumer
             logger.error("getting from a publisher")
-            return None
+            return []
 
         ml = []
         m = self.getNewMessage()

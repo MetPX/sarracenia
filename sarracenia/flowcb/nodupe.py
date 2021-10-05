@@ -69,8 +69,7 @@ class NoDupe(FlowCB):
         if hasattr(options, 'nodupe_basis'):
             self.o.nodupe_basis = options.nodupe_basis
 
-        logger.info( 'time_to_live=%d, basis=%s, log_reject=%s' % \
-           ( self.o.nodupe_ttl, self.o.nodupe_basis, self.o.log_reject ) )
+        logger.info( 'time_to_live=%d, basis=%s, ' % ( self.o.nodupe_ttl, self.o.nodupe_basis, ) )
 
         self.cache_dict = {}
         self.cache_file = None
@@ -199,8 +198,8 @@ class NoDupe(FlowCB):
             if self.check_message(m):
                 new_incoming.append(m)
             else:
-                if self.o.log_reject:
-                    logger.info("rejected %s" % m['relPath'])
+                m['_deleteOnPost'] |= set(['reject'])
+                m['reject'] = "not modifified 1 (nodupe check)"
                 msg_set_report(m, 304, 'Not modified 1 (cache check)')
                 worklist.rejected.append(m)
 

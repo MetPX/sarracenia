@@ -50,7 +50,7 @@ class Msg_FDelay(object):
             return False
 
         # Test file delay
-        filetime = os.stat(f)[stat.ST_MTIME]
+        filetime = os.stat(f)[stat.st_mtime]
         elapsedtime = nowflt() - filetime
         if elapsedtime < parent.msg_fdelay:
             dbg_msg = "file not old enough, sleeping for {:.3f} seconds"
