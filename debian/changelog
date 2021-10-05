@@ -1,6 +1,8 @@
-metpx-sarracenia (2.21.09) UNRELEASED; urgency=medium
+metpx-sarracenia (2.21.10) UNRELEASED; urgency=medium
 
-  * bug #378 python3-pyxattr module breaking xattr support.
+  * bugfix #378 python3-pyxattr module breaking xattr support.
+  * bugfix #366 polling of old files much improved.
+  * bugfix from @junmtl about plugins/msg_fdelay.py
 
  -- Peter Silva <peter@fractal>  Thu, 02 Sep 2021 13:30:26 -0400
 
