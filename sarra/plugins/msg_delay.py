@@ -27,7 +27,7 @@ class Msg_Delay(object):
             parent.msg.headers['delay'] = nowstr()
 
         # Test msg delay
-        elapsedtime = nowflt() - timestr2flt(parent.msg.headers['pubTime'])
+        elapsedtime = nowflt() - timestr2flt(parent.msg.pubtime)
         if 0 < elapsedtime < 1:
             parent.logger.debug("msg_delay received msg")
         else:
