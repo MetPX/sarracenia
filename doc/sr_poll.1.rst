@@ -94,6 +94,7 @@ These options set what files the user wants to be notified for and where
 - **chmod     <integer>        (default: 0o400)**
 - **poll_without_vip  <boolean> (default: True)**
 - **file_time_limit <integer>   (default 60d)**
+- **destination_timezone        (default 'UTC')**
 
 The option *filename* can be used to set a global rename to the products.
 Ex.:
@@ -164,7 +165,7 @@ persistence is needed in the poll, set the **poll_without_vip** option
 to *False* (or *off*). This reduces overhead forty-fold in some measured 
 cases.  
 
-By default, files that are more than 2 months are not posted. However, this can be modified to any specified time limit in the configurations by using the option *file_time_limit <integer>*. By default, seconds are used, but one can specify hours, days or weeks with 1, 1h, 1d, 1w respectively. 
+By default, files that are more than 2 months are not posted. However, this can be modified to any specified time limit in the configurations by using the option *file_time_limit <integer>*. By default, seconds are used, but one can specify hours, days or weeks with 1, 1h, 1d, 1w respectively. One can also specify the *destination_timezone '<TIMEZONE>'* of such files by adding this option in the configurations in order convert all files to 'UTC'. By default, the destination_timezone is set to 'UTC' but one can specify another timezone in the format: '<TIMEZONE>' such as 'PST' or 'EST'.
 
 POSTING SPECIFICATIONS
 ----------------------

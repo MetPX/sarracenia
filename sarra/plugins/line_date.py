@@ -2,11 +2,10 @@
 """comments:
     This plugin modifies the date of parent.line to a standard date fomrat: year-month-date hours:minutes:seconds
     An example of this date format is : 2021-09-06 11:09:00, which is Septemebr 6th, 2021 11:09PM
-    Ten formats are acceptd so far, more can be added if needed (format on https://strftime.org/ ).
-    FIXME: french input like Fev will not work - only Feb is accepted for the month
+    This uses the dateparser package and parse() method. The timezone is 'UTC' by default, but the
+    destination_timezone can be modified in the configs to any other timezone and will be converted to 'UTC'
     If year is not provided, this means that the file is < 6 months old, so depending on todays date, assign
     appropriate year (for todays year: jan-jun -> assign prev year, for jul-dec assign current year)
-    Note: is it possible for a file to be more than 6 months old and have the format Mo Day TIME ? (problematic)
 """
 class Line_date(object):
     def __init__(self, parent):
