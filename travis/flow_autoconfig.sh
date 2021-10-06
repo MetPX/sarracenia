@@ -18,6 +18,7 @@ pip3 install pyftpdlib paramiko net-tools
 mkdir -p ~/.config/sarra ~/.config/sr3
 
 cat > ~/.config/sarra/default.conf << EOF
+expire 7h
 declare env FLOWBROKER=localhost
 declare env SFTPUSER=${USER}
 declare env TESTDOCROOT=${HOME}/sarra_devdocroot
