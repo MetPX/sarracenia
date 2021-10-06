@@ -144,13 +144,18 @@ class AMQP(Moth):
 
         self.first_setup = True
 
-        me = 'sarracenia.moth.amqp.AMQP'
+        me = "%s.%s" % ( __class__.__module__ , __class__.__name__ )
+
+        logger.setLevel( 'WARNING' )
 
         if ('settings' in self.o) and (me in self.o['settings']):
-            logger.debug('props[%s] = %s ' % (me, self.o['settings'][me]))
             for s in self.o['settings'][me]:
                 self.o[s] = self.o['settings'][me][s]
 
+            if 'logLevel' in self.o['settings'][me]:
+                logger.setLevel( self.o['logLevel'].upper() )
+
+        
         if self.is_subscriber:  #build_consumer
             self.__getSetup()
             return

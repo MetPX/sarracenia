@@ -93,7 +93,16 @@ class MQTT(Moth):
         self.o.update(default_options)
         self.o.update(options)
 
-        logger.setLevel(getattr(logging, self.o['logLevel'].upper()))
+        me = "%s.%s" % ( __class__.__module__ , __class__.__name__ )
+        logger.setLevel( 'WARNING' )
+
+        if ('settings' in self.o) and (me in self.o['settings']):
+            logger.debug('props[%s] = %s ' % (me, self.o['settings'][me]))
+            for s in self.o['settings'][me]:
+                self.o[s] = self.o['settings'][me][s]
+ 
+            if 'logLevel' in self.o['settings'][me]:
+                logger.setLevel( self.o['logLevel'].upper() )
 
         self.proto_version=paho.mqtt.client.MQTTv5
 
