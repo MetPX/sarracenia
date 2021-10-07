@@ -8,7 +8,8 @@ import sarracenia.moth
 import copy
 from sarracenia.flow import Flow
 import logging
-from sarracenia import msg_init
+
+import sarracenia 
 
 import sarracenia.config
 
@@ -328,12 +329,12 @@ class Poll(Flow):
                     lstat = os.stat(path)
                 except:
                     lstat = None
-                ok = msg_init(path, self.o, lstat)
+                ok = sarracenia.Message.fromFileMetadata(path, self.o, lstat)
                 return ok
 
         post_relPath = destDir + '/' + remote_file
 
-        msg = msg_init(post_relPath, self.o, None)
+        msg = sarracenia.Message.fromFileMetadata(post_relPath, self.o, None)
 
         if self.o.integrity_method and (',' in self.o.integrity_method):
             m, v = self.o.integrity_method.split(',')

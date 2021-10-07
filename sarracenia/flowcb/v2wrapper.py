@@ -123,7 +123,9 @@ class Message:
 
 
 def v02tov03message(body, headers, topic, topicPrefix):
-    msg = headers
+    msg = sarracenia.Message()
+    msg.copyDict(headers)
+
     msg['subtopic'] = topic.split('.')[len(topicPrefix):]
     if not '_deleteOnPost' in msg:
         msg['_deleteOnPost'] = set()

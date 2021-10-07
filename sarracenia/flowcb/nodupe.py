@@ -19,8 +19,6 @@ import urllib.parse
 
 import logging
 
-from sarracenia import msg_set_report
-
 #============================================================
 # NoDupe supports/uses :
 #
@@ -200,7 +198,7 @@ class NoDupe(FlowCB):
             else:
                 m['_deleteOnPost'] |= set(['reject'])
                 m['reject'] = "not modifified 1 (nodupe check)"
-                msg_set_report(m, 304, 'Not modified 1 (cache check)')
+                m.setReport( 304, 'Not modified 1 (cache check)')
                 worklist.rejected.append(m)
 
         worklist.incoming = new_incoming

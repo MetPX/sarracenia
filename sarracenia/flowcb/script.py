@@ -1,7 +1,6 @@
 import json
 import logging
 from sarracenia.flowcb import FlowCB
-from sarracenia import msg_dumps
 import subprocess
 
 logger = logging.getLogger(__name__)

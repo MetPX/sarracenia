@@ -13,7 +13,7 @@ import time
 import types
 import urllib.parse
 
-from sarracenia import timestr2flt, timeflt2str, msg_set_report
+import sarracenia
 
 import sarracenia.filemetadata
 
@@ -242,7 +242,7 @@ class Flow:
             reject a message.
         """
         self.worklist.rejected.append(m)
-        msg_set_report( m, code, reason )
+        m.setReport( code, reason )
 
     def please_stop(self):
         self._stop_requested = True
@@ -684,7 +684,7 @@ class Flow:
         # compare dates...
 
         if 'mtime' in msg:
-            new_mtime = timestr2flt(msg['mtime'])
+            new_mtime = sarracenia.timestr2flt(msg['mtime'])
             old_mtime = 0.0
 
             if self.o.preserve_time:
@@ -692,7 +692,7 @@ class Flow:
             elif sarracenia.filemetadata.supports_extended_attributes:
                 try:
                     x = sarracenia.filemetadata.FileMetadata(msg['new_path'])
-                    old_mtime = timestr2flt(x.get('mtime'))
+                    old_mtime = sarracenia.timestr2flt(x.get('mtime'))
                 except:
                     pass
 
@@ -846,7 +846,7 @@ class Flow:
             if 'oldname' in msg:
                 if 'renameUnlink' in msg:
                     self.removeOneFile(msg['oldname'])
-                    msg_set_report(msg, 201, 'old unlinked %s' %msg['oldname'] )
+                    msg.setReport(201, 'old unlinked %s' %msg['oldname'] )
                     self.worklist.ok.append(msg)
                 else:
                     # actual rename...
@@ -856,12 +856,12 @@ class Flow:
                     # if rename fails, recover by falling through to download the data anyways.
                     if ok:
                          self.worklist.ok.append(msg)
-                         msg_set_report(msg, 201, 'renamed')
+                         msg.setReport( 201, 'renamed')
                          continue
                         
             elif (msg['integrity']['method'] == 'remove') and ('delete' in self.o.events):
                 if self.removeOneFile(new_path):
-                    msg_set_report(msg, 201, 'removed')
+                    msg.setReport(201, 'removed')
                     self.worklist.ok.append(msg)
                 else:
                     #FIXME: should this really be queued for retry? or just permanently failed?
@@ -872,7 +872,7 @@ class Flow:
 
             if 'link' in msg.keys() and ( 'link' in self.o.events ):
                 if self.link1file(msg):
-                    msg_set_report(msg, 201, 'linked')
+                    msg.setReport(201, 'linked')
                     self.worklist.ok.append(msg)
                 else:
                     # as above...
@@ -934,8 +934,7 @@ class Flow:
             # download content
             if 'content' in msg.keys():
                 if self.write_inline_file(msg):
-                    msg_set_report(msg, 201,
-                                   "Download successful (inline content)")
+                    msg.setReport(201, "Download successful (inline content)")
                     self.worklist.ok.append(msg)
                 else:
                     self.reject( msg, 503, "failed to write inline content %s" % new_path )
@@ -952,7 +951,7 @@ class Flow:
                     ok = self.download(msg, self.o)
                     if ok:
                         logger.info("downloaded ok: %s" % new_path)
-                        msg_set_report(msg, 201, "Download successful %s" % new_path )
+                        msg.setReport(201, "Download successful %s" % new_path )
                         self.worklist.ok.append(msg)
                         break
                     else:
@@ -1420,7 +1419,7 @@ class Flow:
                 x.set('mtime', msg['mtime'])
             else:
                 st = os.stat(local_file)
-                mtime = timeflt2str(st.st_mtime)
+                mtime = sarracenia.timeflt2str(st.st_mtime)
                 x.set('mtime', mtime)
             x.persist()
 
@@ -1437,10 +1436,10 @@ class Flow:
             os.chmod(local_file, self.o.chmod)
 
         if self.o.preserve_time and 'mtime' in msg and msg['mtime']:
-            mtime = timestr2flt(msg['mtime'])
+            mtime = sarracenia.timestr2flt(msg['mtime'])
             atime = mtime
             if 'atime' in msg and msg['atime']:
-                atime = timestr2flt(msg['atime'])
+                atime = sarracenia.timestr2flt(msg['atime'])
             os.utime(local_file, (atime, mtime))
 
     # set_remote_file_attributes
@@ -1468,10 +1467,10 @@ class Flow:
 
         if hasattr(proto, 'chmod'):
             if self.o.preserve_time and 'mtime' in msg and msg['mtime']:
-                mtime = timestr2flt(msg['mtime'])
+                mtime = sarracenia.timestr2flt(msg['mtime'])
                 atime = mtime
                 if 'atime' in msg and msg['atime']:
-                    atime = timestr2flt(msg['atime'])
+                    atime = sarracenia.timestr2flt(msg['atime'])
                 try:
                     proto.utime(remote_file, (atime, mtime))
                 except:

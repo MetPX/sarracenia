@@ -31,9 +31,8 @@ import json
 import logging
 
 from urllib.parse import unquote
-from sarracenia import durationToSeconds
+import sarracenia 
 from sarracenia.flowcb import v2wrapper
-from sarracenia import msg_validate
 from sarracenia.moth import Moth
 
 
@@ -77,7 +76,8 @@ class AMQP(Moth):
     def _msgRawToDict(self, raw_msg):
         if raw_msg is not None:
             if raw_msg.properties['content_type'] == 'application/json': # used as key to indicate version 3.
-                msg = json.loads(raw_msg.body)
+                msg = sarracenia.Message()
+                msg.copyDict( json.loads(raw_msg.body) )
                 """
                   observed Sarracenia v2.20.08p1 and earlier have 'parts' header in v03 messages.
                   bug, or implementation did not keep up. Applying Postel's Robustness principle: normalizing messages.
@@ -113,7 +113,7 @@ class AMQP(Moth):
             msg['ack_id'] = raw_msg.delivery_info['delivery_tag']
             msg['local_offset'] = 0
             msg['_deleteOnPost'] = set( [ 'ack_id', 'exchange', 'local_offset', 'subtopic' ] )
-            if not msg_validate(msg): 
+            if not msg.validate(): 
                 self.channel.basic_ack(msg['ack_id'])
                 logger.error('message acknowledged and discarded: %s' % msg)
                 msg=None
@@ -461,7 +461,7 @@ class AMQP(Moth):
                 exchange = self.o['exchange']
 
         if self.o['message_ttl']:
-            ttl = "%d" * int(durationToSeconds(self.o['message_ttl']) * 1000)
+            ttl = "%d" * int(sarracenia.durationToSeconds(self.o['message_ttl']) * 1000)
         else:
             ttl = "0"
 

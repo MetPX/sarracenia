@@ -8,8 +8,9 @@ from paho.mqtt.properties import Properties
 from paho.mqtt.packettypes import PacketTypes
 import paho.mqtt.client 
 
+import sarracenia
+
 from sarracenia.moth import Moth
-from sarracenia import msg_validate,msg_dumps
 import ssl
 import threading
 import time
@@ -374,7 +375,8 @@ class MQTT(Moth):
            decode MQTT message (protocol specific thingamabob) into sr3 one (python dictionary)
         """
         try:
-            message = json.loads(mqttMessage.payload.decode('utf-8'))
+            message = sarracenia.Message()
+            message.copyDict( json.loads(mqttMessage.payload.decode('utf-8')) )
         except Exception as ex:
             logger.error( "ignored malformed message: %s" % mqttMessage.payload.decode('utf-8') )
             logger.error("decode error" % err)
@@ -392,7 +394,7 @@ class MQTT(Moth):
         message['local_offset'] = 0
         message['_deleteOnPost'] = set( [ 'exchange', 'local_offset', 'ack_id', 'subtopic' ] )
 
-        if msg_validate( message ):
+        if message.validate():
            return message
         else:
            return None

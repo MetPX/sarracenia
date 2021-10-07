@@ -1,5 +1,5 @@
 import sarracenia.moth
-from sarracenia import msg_fromFile
+import sarracenia 
 from sarracenia.config import default_config
 
 import os
@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 
 cfg = default_config()
 #cfg.logLevel = 'debug'
-cfg.broker = urlparse('amqp://username:password@localhost')
+cfg.broker = urlparse('amqp://tfeed:HungryCat@localhost')
 cfg.exchange = 'xpublic'
 cfg.post_baseUrl = 'http://host'
 cfg.post_baseDir = '/tmp'
@@ -33,7 +33,7 @@ PMN
 sample_file.close()
 
 # you can supply msg_init with your files, it will build a message appropriate for it.
-m = msg_fromFile(sample_fileName, cfg, os.stat(sample_fileName) )
+m = sarracenia.Message.fromFileAddSum(sample_fileName, cfg, os.stat(sample_fileName) )
 
 # here is the resulting message.
 print(m)

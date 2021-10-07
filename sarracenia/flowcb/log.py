@@ -1,6 +1,5 @@
 import logging
 from sarracenia.flowcb import FlowCB
-from sarracenia import msg_dumps
 
 logger = logging.getLogger(__name__)
 
@@ -33,11 +32,11 @@ class Log(FlowCB):
                 if 'report' in msg:
                     logger.info("rejected: %d %s " % ( msg['report']['code'], msg['report']['message'] ) )
                 else:
-                    logger.info("rejected: %s " % msg_dumps(msg) )
+                    logger.info("rejected: %s " % msg.dumps() )
 
         if set ( ['after_accept', 'all'] ) & self.o.log_events:
             for msg in worklist.incoming:
-                logger.info("accepted: %s " % msg_dumps(msg) )
+                logger.info("accepted: %s " % msg.dumps() )
 
     def after_work(self, worklist):
         if set ( ['reject', 'all'] ) & self.o.log_events:
@@ -45,11 +44,11 @@ class Log(FlowCB):
                 if 'report' in msg:
                     logger.info("rejected: %d %s " % ( msg['report']['code'], msg['report']['message'] ) )
                 else:
-                    logger.info("rejected: %s " % msg_dumps(msg) )
+                    logger.info("rejected: %s " % msg.dumps() )
 
         if set ( ['after_work', 'all'] ) & self.o.log_events:
             for msg in worklist.ok:
-                logger.info("worked successfully: %s " % msg_dumps(msg) )
+                logger.info("worked successfully: %s " % msg.dumps() )
 
 
     def on_stop(self):
