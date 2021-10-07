@@ -3580,7 +3580,6 @@ for that callback class::
   import json
   import logging
   from sarracenia.flowcb import FlowCB
-  from sarracenia.flowcb.gather import msg_dumps
 
   logger = logging.getLogger(__name__)
 
@@ -3601,7 +3600,7 @@ for that callback class::
 
     def after_work(self, worklist):
         for msg in worklist.ok:
-            logger.info("worked successfully: %s " % msg_dumps(msg) )
+            logger.info("worked successfully: %s " % msg.dumps() )
 
 If you have multiple callbacks configured, they will be called in the same order they are 
 configuration file. components in sr3 are often differentiated by the callbacks configured.
@@ -3619,7 +3618,6 @@ the directory will be checked for new files.  Here is part of the Script callbac
     
     import logging
     from sarracenia.flowcb import FlowCB
-    from sarracenia.flowcb.gather import msg_dumps
     import subprocess
     
     logger = logging.getLogger(__name__)

@@ -240,7 +240,6 @@ https://github.com/wmo-im/GTStoWIS2) ::
   import os.path
 
   from sarracenia.flowcb import FlowCB
-  from sarracenia.flowcb.gather import msg_dumps
   import GTStoWIS2
 
   logger = logging.getLogger(__name__)

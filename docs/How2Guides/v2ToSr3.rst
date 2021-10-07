@@ -198,17 +198,17 @@ In general, v3 plugins:
   requireed modifying plugins (v03 message format is not supported by most v2 plugins,
   for example. To build a message from a local file::
 
-     from sarracenia.flowcb.gather import msg_fromFile
+     import sarracenia
 
-     m = msg_fromFile(sample_fileName, self.o, os.stat(sample_fileName) )
+     m = sarracenia.Message.fromFileData(sample_fileName, self.o, os.stat(sample_fileName) )
 
 
 * **Really, No Need to set message fields in plugins**
   To build a message, without a local file, use msg_init::
   
-     from sarracenia.flowcb.gather import msg_init
+     impor sarracenia
 
-     m = msg_init(sample_fileName, cfg)
+     m = sarracenia.Message.fromFileInfo(sample_fileName, cfg)
 
   builds an message from scratch, without checksums, or file size.
   This can be used for polling, when you don't have the local file.
@@ -222,10 +222,10 @@ In general, v3 plugins:
   get 'mtime', 'atime', 'size', and 'mode' message fields set::
 
 
-     from sarracenia.flowcb.gather import fakeStat
+     from sarracenia import fakeStat
 
      st = fakeStat( mtime=99, atime=99, size=129, mode=0o666 )
-     m = msg_init(sample_fileName, cfg, st)
+     m = sarracenia.Message.fromFileInfo(sample_fileName, cfg, st)
 
 * **rarely, involve subclassing of moth or transfer classes.**
   The sarracenia.moth class implements support for message queueing protocols
