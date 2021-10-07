@@ -30,8 +30,8 @@ class Log(FlowCB):
 
         if set ( ['reject', 'all'] ) & self.o.log_events:
             for msg in worklist.rejected:
-                if 'reject' in msg:
-                    logger.info("rejected: %s " % msg['reject'] )
+                if 'report' in msg:
+                    logger.info("rejected: %d %s " % ( msg['report']['code'], msg['report']['message'] ) )
                 else:
                     logger.info("rejected: %s " % msg_dumps(msg) )
 
@@ -42,8 +42,8 @@ class Log(FlowCB):
     def after_work(self, worklist):
         if set ( ['reject', 'all'] ) & self.o.log_events:
             for msg in worklist.rejected:
-                if 'reject' in msg:
-                    logger.info("rejected: %s " % msg['reject'] )
+                if 'report' in msg:
+                    logger.info("rejected: %d %s " % ( msg['report']['code'], msg['report']['message'] ) )
                 else:
                     logger.info("rejected: %s " % msg_dumps(msg) )
 

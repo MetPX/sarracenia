@@ -177,10 +177,8 @@ def msg_set_report(msg, code, text=None):
         if text is None:
             text = 'unknown disposition'
 
-    if not 'report' in msg:
-        msg['report'] = code
-        msg['message'] = text
-        msg['_deleteOnPost'] |= set(['report', 'message'])
-    else:
-        msg['report'] = code
-        msg['message'] += text
+    if 'report' in msg:
+       logger.warning('overriding initial report: %d: %s' % ( msg['report']['code'], msg['report']['message'] ) )
+
+    msg['_deleteOnPost'] |= set(['report'])
+    msg['report'] = { 'code' : code, 'message': text }

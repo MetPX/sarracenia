@@ -241,10 +241,6 @@ class Flow:
         """
             reject a message.
         """
-        if not 'reject' in m:
-          m['reject'] = ''
-        m['_deleteOnPost'] |= set(['reject'])
-        m['reject'] += reason
         self.worklist.rejected.append(m)
         msg_set_report( m, code, reason )
 

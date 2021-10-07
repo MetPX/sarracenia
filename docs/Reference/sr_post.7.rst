@@ -107,8 +107,9 @@ The headers are an array of name:value pairs::
           For "v03.report" topic messages the following addtional
           headers will be present:
   
-          "report"   - status report field documented in `Report Messages`_
-          "message"  - status report message documented in `Report Messages`_
+          "report" { "code": 999  - HTTP style response code. 
+                     "message" :  - status report message documented in `Report Messages`_
+                   }
 
           additional user defined name:value pairs are permitted.
 
