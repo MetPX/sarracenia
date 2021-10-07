@@ -699,7 +699,7 @@ class Config:
             elif type(v) is set:
                  sv=v
             else:
-                if '|' in v: 
+                if ',' in v: 
                     sv=set(v.split(','))
                 else: 
                     sv=set([v])
@@ -1078,7 +1078,7 @@ class Config:
                 else:
                     setattr(self, k, getattr(self, k).append(' '.join(line[1:])))
             elif k in set_options:
-                vs = set(v.split('|'))
+                vs = set(v.split(','))
                 if v=='None':
                    setattr(self, k, set([]))
                    continue
