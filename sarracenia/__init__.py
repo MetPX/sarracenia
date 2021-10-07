@@ -297,21 +297,24 @@ class Message(dict):
        return s
     
     @staticmethod
-    def fromFileAddSum( path, o, lstat=None ):
+    def fromFileData( path, o, lstat=None ):
         """
-            create a message based on a given file.
+            create a message based on a given file, calculating the checksum.
             returns a well-formed message, or none.
         """
-        m = sarracenia.Message.fromFileMetadata( path, o, lstat )
+        m = sarracenia.Message.fromFileInfo( path, o, lstat )
         m['integrity'] = m.computeIntegrity( path, o )
         return m
     
     
     @staticmethod    
-    def fromFileMetadata(path, o, lstat=None):
+    def fromFileInfo(path, o, lstat=None):
         """
-            return an message suitable for placement on a worklist.
-            A message is a python dictionary with a certain set of fields in it.
+            based on the fiven information about the file (it's name and a stat record if available)
+            and a configuration options object (sarracenia.config.Config) 
+            return an sarracenia.Message suitable for placement on a worklist.
+
+            A message is a specialized python dictionary with a certain set of fields in it.
             The message returned will have the necessary fields for processing and posting. 
     
             The message is built for a file is based on the given path, options (o), and lstat (output of os.stat)

@@ -128,7 +128,7 @@ class File(FlowCB):
     def post_delete(self, path, key=None, value=None):
         #logger.debug("post_delete %s (%s,%s)" % (path, key, value))
 
-        msg = sarracenia.Message.fromFileMetadata(path, self.o, None)
+        msg = sarracenia.Message.fromFileInfo(path, self.o, None)
 
         # sumstr
         hash = sha512()
@@ -176,7 +176,7 @@ class File(FlowCB):
         if blksz > 0 and blksz < fsiz:
             return self.post_file_in_parts(path, lstat)
 
-        msg = sarracenia.Message.fromFileAddSum(path, self.o, lstat)
+        msg = sarracenia.Message.fromFileData(path, self.o, lstat)
 
         # complete message
         if ( self.o.post_topicPrefix[0] == 'v03') and self.o.inline: 
@@ -226,7 +226,7 @@ class File(FlowCB):
     def post_file_in_parts(self, path, lstat):
         #logger.debug("post_file_in_parts %s" % path )
 
-        msg = sarracenia.Message.fromFileMetadata(path, self.o, lstat)
+        msg = sarracenia.Message.fromFileInfo(path, self.o, lstat)
 
         # check the value of blocksize
 
@@ -315,7 +315,7 @@ class File(FlowCB):
 
     def post_file_part(self, path, lstat):
 
-        msg = sarracenia.Message.fromFileMetadata(path, self.o, lstat)
+        msg = sarracenia.Message.fromFileInfo(path, self.o, lstat)
 
         # verify suffix
 
@@ -344,7 +344,7 @@ class File(FlowCB):
     def post_link(self, path, key=None, value=None):
         #logger.debug("post_link %s" % path )
 
-        msg = sarracenia.Message.fromFileMetadata(path, self.o, None)
+        msg = sarracenia.Message.fromFileInfo(path, self.o, None)
 
         # resolve link
 
