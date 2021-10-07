@@ -846,6 +846,7 @@ class Flow:
             if 'oldname' in msg:
                 if 'renameUnlink' in msg:
                     self.removeOneFile(msg['oldname'])
+                    msg_set_report(msg, 201, 'old unlinked %s' %msg['oldname'] )
                     self.worklist.ok.append(msg)
                 else:
                     # actual rename...
@@ -951,7 +952,7 @@ class Flow:
                     ok = self.download(msg, self.o)
                     if ok:
                         logger.info("downloaded ok: %s" % new_path)
-                        msg_set_report(msg, 201, "Download successful")
+                        msg_set_report(msg, 201, "Download successful %s" % new_path )
                         self.worklist.ok.append(msg)
                         break
                     else:
@@ -1502,7 +1503,6 @@ class Flow:
                     logger.warning("sending again, attempt %d" % i)
 
                 ok = self.send(msg, self.o)
-                logger.info("ok: %s" % ok)
                 if ok:
                     self.worklist.ok.append(msg)
                     break

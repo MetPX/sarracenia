@@ -1,6 +1,6 @@
 import logging
 from sarracenia.flowcb import FlowCB
-from sarracenia.flowcb.gather import msg_dumps
+from sarracenia import msg_dumps
 
 logger = logging.getLogger(__name__)
 

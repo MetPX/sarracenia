@@ -1,5 +1,5 @@
 import sarracenia.moth
-from sarracenia.flowcb.gather import msg_fromFile
+from sarracenia import msg_fromFile
 from sarracenia.config import default_config
 
 import os

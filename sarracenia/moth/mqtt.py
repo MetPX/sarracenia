@@ -9,7 +9,7 @@ from paho.mqtt.packettypes import PacketTypes
 import paho.mqtt.client 
 
 from sarracenia.moth import Moth
-from sarracenia.flowcb.gather import msg_validate,msg_dumps
+from sarracenia import msg_validate,msg_dumps
 import ssl
 import threading
 import time

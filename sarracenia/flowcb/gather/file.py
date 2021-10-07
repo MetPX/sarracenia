@@ -20,7 +20,7 @@ from random import choice
 
 from sarracenia import *
 from sarracenia.flowcb import FlowCB
-from sarracenia.flowcb.gather import msg_init,msg_fromFile
+from sarracenia import msg_init,msg_fromFile
 import sarracenia.integrity
 
 import stat

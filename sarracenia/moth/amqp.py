@@ -33,7 +33,7 @@ import logging
 from urllib.parse import unquote
 from sarracenia import durationToSeconds
 from sarracenia.flowcb import v2wrapper
-from sarracenia.flowcb.gather import msg_validate
+from sarracenia import msg_validate
 from sarracenia.moth import Moth
 
 

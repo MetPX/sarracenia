@@ -8,7 +8,7 @@ import sarracenia.moth
 import copy
 from sarracenia.flow import Flow
 import logging
-from sarracenia.flowcb.gather import msg_init
+from sarracenia import msg_init
 
 import sarracenia.config
 
