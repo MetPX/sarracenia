@@ -237,7 +237,7 @@ class Flow:
                     j += 1
         return False
 
-    def reject(self, m, reason):
+    def reject(self, m, code, reason):
         """
             reject a message.
         """
@@ -246,6 +246,7 @@ class Flow:
         m['_deleteOnPost'] |= set(['reject'])
         m['reject'] += reason
         self.worklist.rejected.append(m)
+        msg_set_report( m, code, reason )
 
     def please_stop(self):
         self._stop_requested = True
@@ -456,7 +457,7 @@ class Flow:
                             logger.debug("rename deletion 1 %s" %
                                          (m['oldname']))
                         else:
-                            self.reject( m, "mask=%s strip=%s url=%s" % (str(mask), strip, urlToMatch) )
+                            self.reject( m, 304, "mask=%s strip=%s url=%s" % (str(mask), strip, urlToMatch) )
                         break
 
                     # FIXME... missing dir mapping with mirror, strip, etc...
@@ -491,8 +492,7 @@ class Flow:
                                                 self.o.flatten)
                     filtered_worklist.append(m)
                 else:
-                    self.reject( m, "unmatched pattern %s" % url )
-                    msg_set_report(m, 304, "not modified (filter) %s" % url )
+                    self.reject( m, 304, "unmatched pattern %s" % url )
 
         self.worklist.incoming = filtered_worklist
         logger.debug('end len(incoming)=%d, rejected=%d' % ( len(self.worklist.incoming), len(self.worklist.rejected) ) )
@@ -701,7 +701,7 @@ class Flow:
                     pass
 
             if new_mtime <= old_mtime:
-                self.reject( msg, "mtime not newer %s " % (msg['new_path']) )
+                self.reject( msg, 304, "mtime not newer %s " % (msg['new_path']) )
                 return False
             else:
                 logger.debug(
@@ -731,7 +731,7 @@ class Flow:
                      (msg['integrity'], msg['local_integrity']))
 
         if msg['local_integrity'] == msg['integrity']:
-            self.reject( msg, "same checksum %s " % (msg['new_path']) )
+            self.reject( msg, 304, "same checksum %s " % (msg['new_path']) )
             return False
         else:
             return True
@@ -870,8 +870,7 @@ class Flow:
                     #FIXME: should this really be queued for retry? or just permanently failed?
                     # in rejected to avoid retry, but wondering if failed and deferred
                     # should be separate lists in worklist...
-                    self.reject( msg, "remove %s failed" % new_path  )
-                    msg_set_report(msg, 500, "remove failed")
+                    self.reject( msg, 500, "remove %s failed" % new_path  )
                 continue
 
             if 'link' in msg.keys() and ( 'link' in self.o.events ):
@@ -880,8 +879,7 @@ class Flow:
                     self.worklist.ok.append(msg)
                 else:
                     # as above...
-                    self.reject( msg, "link %s failed" % msg['link']  )
-                    msg_set_report(msg, 500, "symlink failed")
+                    self.reject( msg, 500, "link %s failed" % msg['link']  )
                 continue
 
             # establish new_inflight_path which is the file to download into initially.
@@ -906,8 +904,7 @@ class Flow:
                 logger.error('interval inflight setting: %s, not for remote.' %
                              self.o.inflight)
                 # FIXME... what to do?
-                self.reject( msg, "invalid inflight %s settings %s" % (self.o.inflight, new_path) )
-                msg_set_report(msg, 503, "invalid reception settings.")
+                self.reject( msg, 503, "invalid inflight %s settings %s" % (self.o.inflight, new_path) )
                 continue
 
             msg['new_inflight_path'] = new_inflight_path
@@ -931,12 +928,10 @@ class Flow:
             # FIXME: decision of whether to download, goes here.
             if os.path.isfile(new_path):
                 if not self.o.overwrite:
-                    self.reject( msg, "not overwriting existing file %s" % new_path )
-                    msg_set_report(msg, 204, "not overwriting existing files.")
+                    self.reject( msg, 204, "not overwriting existing file %s" % new_path )
                     continue
 
                 if not self.file_should_be_downloaded(msg):
-                    msg_set_report( msg, 304, "Not modified 3 - (compared to local file)")
                     continue
 
             # download content
@@ -946,8 +941,7 @@ class Flow:
                                    "Download successful (inline content)")
                     self.worklist.ok.append(msg)
                 else:
-                    self.reject( msg, "failed to write inline content %s" % new_path )
-                    msg_set_report(msg, 503, "failed to write inline content")
+                    self.reject( msg, 503, "failed to write inline content %s" % new_path )
             else:
                 parsed_url = urllib.parse.urlparse(msg['baseUrl'])
                 self.scheme = parsed_url.scheme
