@@ -178,10 +178,17 @@ class AMQP(Moth):
         else:
             host += ':{}'.format(broker.port)
 
+        # if needed, set the vhost using the broker URL's path
+        vhost = self.o['vhost']
+        # if the URL path is '/' (no vhost specified), the default vhost from self.o will be used.
+        # Otherwise, strip off leading or trailing slashes.
+        if broker.path != '/':
+            vhost = broker.path.strip('/')
+
         self.connection = amqp.Connection(host=host,
                                           userid=broker.username,
                                           password=unquote(broker.password),
-                                          virtual_host=self.o['vhost'],
+                                          virtual_host=vhost,
                                           ssl=(broker.scheme[-1] == 's'))
         if hasattr(self.connection, 'connect'):
             # check for amqp 1.3.3 and 1.4.9 because connect doesn't exist in those older versions

@@ -581,13 +581,6 @@ class Config:
                 self.__broker = url
         else:
             self.__broker = v
-        # if needed, set the vhost using the broker URL's path
-        if type(self.__broker) is urllib.parse.ParseResult:
-            path = self.__broker.path
-            # if the URL path is '/' (no vhost specified), do nothing and the default
-            # vhost will be used. Otherwise, strip off leading or trailing slashes
-            if path != '/':
-                self.vhost = path.strip('/')
 
     @property
     def post_broker(self):
