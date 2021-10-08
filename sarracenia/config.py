@@ -103,15 +103,20 @@ duration_options = [
 list_options = []
 
 # set, valid values of the set.
-set_options = [ 'logEvents' ]
+set_options = [ 'logEvents', 'fileEvents' ]
 
-set_choices = { 'logEvents': sarracenia.flowcb.entry_points + ['reject' ] }
+set_choices = { 
+    'logEvents': sarracenia.flowcb.entry_points + ['reject' ],
+    'fileEvents': set( [ 'create', 'delete', 'link', 'modify' ] )
+ }
+# FIXME: doesn't work... wonder why?
+#    'fileEvents': sarracenia.flow.allFileEvents
  
 size_options = ['blocksize', 'bufsize', 'bytes_per_second', 'inline_max']
 
 str_options = [
     'admin', 'baseDir', 'broker', 'destination', 'directory', 'exchange',
-    'exchange_suffix', 'events', 'feeder', 'filename', 'header', 'logLevel', 'path',
+    'exchange_suffix', 'feeder', 'filename', 'header', 'logLevel', 'path',
     'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
     'post_exchange_suffix', 'queue_name',
     'report_exchange', 'strip', 'nodupe_ttl',
@@ -439,6 +444,8 @@ class Config:
         'no_duplicates': 'nodupe_ttl',
         'caching': 'nodupe_ttl',
         'cache_basis': 'nodupe_basis',
+        'e' : 'fileEvents',
+        'events' : 'fileEvents',
         'instance': 'instances',
         'chmod': 'default_mode',
         'chmod_dir': 'default_dir_mode',
@@ -703,12 +710,12 @@ class Config:
             elif type(v) is set:
                  sv=v
             else:
+                v=v.replace('|',',')
                 if ',' in v: 
                     sv=set(v.split(','))
                 else: 
                     sv=set([v])
             if hasattr(self, option):
-                logger.critical('FIXME: option=%s, type=%s' % ( option, type(getattr(self,option)) ) )
                 sv= getattr(self,option) | sv
             setattr(self, option, sv)
 

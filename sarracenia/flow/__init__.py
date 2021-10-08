@@ -30,6 +30,8 @@ from sarracenia import nowflt
 
 logger = logging.getLogger(__name__)
 
+allFileEvents = set( [ 'create', 'delete', 'link', 'modify' ] )
+
 default_options = {
     'accel_threshold': 0,
     'accept_unmatched': False,
@@ -38,7 +40,7 @@ default_options = {
     'bytes_per_second': None,
     'discard' : False,
     'download': False,
-    'events': 'create|delete|link|modify',
+    'fileEvents': allFileEvents,
     'housekeeping': 30,
     'log_reject': False,
     'logFormat':
@@ -793,7 +795,7 @@ class Flow:
                      (msg['new_file'], msg['link']))
 
         # redundant, check is done in caller.
-        #if not 'link' in self.o.events:
+        #if not 'link' in self.o.fileEvents:
         #    logger.info("message to link %s to %s ignored (events setting)" %  \
         #                                    ( msg['new_file'], msg[ 'link' ] ) )
         #    return False
@@ -864,7 +866,7 @@ class Flow:
                          msg.setReport( 201, 'renamed')
                          continue
                         
-            elif (msg['integrity']['method'] == 'remove') and ('delete' in self.o.events):
+            elif (msg['integrity']['method'] == 'remove') and ('delete' in self.o.fileEvents):
                 if self.removeOneFile(new_path):
                     msg.setReport(201, 'removed')
                     self.worklist.ok.append(msg)
@@ -875,7 +877,7 @@ class Flow:
                     self.reject( msg, 500, "remove %s failed" % new_path  )
                 continue
 
-            if 'link' in msg.keys() and ( 'link' in self.o.events ):
+            if 'link' in msg.keys() and ( 'link' in self.o.fileEvents ):
                 if self.link1file(msg):
                     msg.setReport(201, 'linked')
                     self.worklist.ok.append(msg)

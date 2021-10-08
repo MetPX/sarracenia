@@ -819,11 +819,11 @@ The value of the *blocksize*  is an integer that may be followed by  letter desi
 for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All these references are powers of 2.
 
 
-[-e|--events <event|event|...>]
+[-e|--fileEvents <event|event|...>]
 -------------------------------
 
-A list of event types to monitor separated by a 'pipe symbol'.
-Available events:  create, delete, link, modify
+A list of file event types to monitor separated by a 'pipe symbol'.
+Available file events:  create, delete, link, modify
 
 The *create*, *modify*, and *delete* events reflect what is expected: a file being created, modified, or deleted.
 If *link* is set, symbolic links will be posted as links so that consumers can choose
@@ -833,6 +833,9 @@ how to process them. If it is not set, then no symbolic link events will ever be
    move or rename events result in a special double post pattern, with one post as the old name
    and a field *newname* set, and a second post with the new name, and a field *oldname* set. 
    This allows subscribers to perform an actual rename, and avoid triggering a download when possible.
+
+   FIXME: rename algorithm improved in v3 to avoid use of double post... just oldname.
+   
 
 [-fp|--force_polling <boolean>]
 -------------------------------

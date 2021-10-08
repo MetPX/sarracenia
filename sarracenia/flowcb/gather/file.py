@@ -99,8 +99,8 @@ class File(FlowCB):
         self.left_events = OrderedDict()
 
         self.o.blocksize = 200 * 1024 * 1024
-        self.o.create_modify = ('create' in self.o.events) or (
-            'modify' in self.o.events)
+        self.o.create_modify = ('create' in self.o.fileEvents) or (
+            'modify' in self.o.fileEvents)
 
     def path_inflight(self, path, lstat):
         """
@@ -488,7 +488,7 @@ class File(FlowCB):
         # delete
 
         if event == 'delete':
-            if event in self.o.events:
+            if event in self.o.fileEvents:
                 return self.post1file(src, None)
             return []
 
@@ -510,7 +510,7 @@ class File(FlowCB):
         # link ( os.path.exists = false, lstat = None )
 
         if os.path.islink(src):
-            if 'link' in self.o.events:
+            if 'link' in self.o.fileEvents:
                 return self.post1file(src, None)
             return []
 
