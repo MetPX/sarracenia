@@ -158,7 +158,7 @@ class Poll(Flow):
 
         # get old list and description
 
-        old_ls = self.load_ls_file(lspath)
+        old_ls = [] 
 
         # compare
 
@@ -207,33 +207,6 @@ class Poll(Flow):
             self.worklist.incoming.extend(self.post_new_urls())
             #logger.debug('post_new_urls returned: %s' %
             #             len(self.worklist.incoming))
-
-    def load_ls_file(self, path):
-        lsold = {}
-
-        if not os.path.isfile(path): return lsold
-        try:
-            file = open(path, 'r')
-            lines = file.readlines()
-            file.close()
-
-            for line in lines:
-                line = line.strip('\n')
-                parts = line.split()
-                if hasattr(self, 'dest_file_index'):
-                    fil = ' '.join(parts[self.dest_file_index:])
-                else:
-                    fil = parts[-1]
-                    if not self.ls_file_index in [-1, len(parts) - 1]:
-                        fil = ' '.join(parts[self.ls_file_index:])
-                lsold[fil] = line
-
-            return lsold
-
-        except:
-            logger.error("load_ls_file: Unable to parse files from %s" % path)
-
-        return lsold
 
     def lsdir(self):
         try:
@@ -294,10 +267,6 @@ class Poll(Flow):
             # post poll list
 
             msgs.extend(self.poll_list_post(pdir, desclst, filelst))
-
-        # sleeping or not, write the directory file content
-
-        ok = self.write_ls_file(file_dict, lspath)
 
         # poll in children directory
 
@@ -434,29 +403,3 @@ class Poll(Flow):
             pass
 
         return msgs
-
-    # write ls file
-
-    def write_ls_file(self, ls, lspath):
-
-        if len(ls) == 0:
-            try:
-                os.unlink(lspath)
-            except:
-                pass
-            return True
-
-        filelst = sorted(ls.keys())
-
-        try:
-            fp = open(lspath, 'w')
-            for f in filelst:
-                fp.write(ls[f] + '\n')
-            fp.close()
-
-            return True
-
-        except:
-            logger.error("Unable to write ls to file %s" % lspath)
-
-        return False
