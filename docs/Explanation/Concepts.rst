@@ -199,14 +199,17 @@ topic prefix?  We start the topic tree with fixed fields
        of a file (or part of a file) being available.
 
 
-Sarracenia is an AMQP Application
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sarracenia is a MQP Application
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-MetPX-Sarracenia is only a light wrapper/coating around AMQP.
+MetPX-Sarracenia is only a light wrapper/coating around Message Queueing Protocols.
 
 - A MetPX-Sarracenia data pump is a python AMQP application that uses a (rabbitmq)
   broker to co-ordinate SFTP and HTTP client data transfers, and accompanies a
   web server (apache) and sftp server (openssh), often on the same user-facing address.
+
+- A MetPX-Sarracenia data pump can also work with rabbitmq replaced by an MQTT broker
+  such as mosquitto.org (but some administrivia must be handled manually.
 
 - Wherever reasonable, we use their terminology and syntax.
   If someone knows AMQP, they understand. If not, they can research.

@@ -106,12 +106,23 @@ class FlowCB:
 
         return new_data
 
+        The "work" step will do the downloads and/or sends, placing successful ones
+        in worklist.ok, and failed ones in worklist.failed.
+
+
     def after_work(self,worklist):
         Task: operate on worklist.ok (files which have arrived.)
 
+        worklist.failed processing should occur in here as it will be zeroed out after this step.
+        The flowcb/retry.py plugin, for example, processes failed messages.
+
     def post(self,worklist):
+         
          Task: operate on worklist.ok, and worklist.failed. modifies them appropriately.
                message acknowledgement has already occurred before they are called.
+
+         to indicate failure to process a message, append to worklist.failed.
+         worklist.failed processing should occur in here as it will be zeroed out after this step.
 
     def on_housekeeping(self):
          do periodic processing.

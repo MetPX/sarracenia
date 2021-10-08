@@ -992,7 +992,7 @@ class Config:
             elif k in [ 'callback_prepend', 'cbp' ]:
                 vv = v.split('.')
                 v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
-                self.plugins = [ v ] + self.plugins
+                self.plugins.insert(0, v)
             elif k in ['declare']:
                 self._parse_declare(line[1:])
             elif k in ['feeder']:
@@ -1024,7 +1024,7 @@ class Config:
             elif k in ['flow_callback', 'flowcb', 'fcb']:
                 self.plugins.append(v)
             elif k in ['flow_callback_prepend', 'flowcb_prepend', 'fcbp']:
-                self.plugins = [ v ] + self.plugins
+                self.plugins.insert(0,  v )
             elif k in ['set', 'setting', 's']:
                 self._parse_setting(line[1], line[2:])
             elif k in ['sum', 'integrity' ]:

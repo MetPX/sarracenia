@@ -37,9 +37,13 @@ class Message(FlowCB):
 
     def post(self, worklist):
 
+        still_ok=[]
         for m in worklist.ok:
-            if not self.poster.putNewMessage(m):
+            if self.poster.putNewMessage(m):
+                still_ok.append(m)
+            else:
                 worklist.failed.append(m)
+        worklist.ok=still_ok 
 
     def on_stop(self):
         self.poster.close()

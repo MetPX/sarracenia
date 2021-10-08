@@ -66,4 +66,4 @@ class Log(FlowCB):
     def post(self, worklist):
         if set ( ['post', 'all'] ) & self.o.log_events:
             for msg in worklist.ok:
-                logger.info("posting %s" % msg )
+                logger.info("posted %s" % msg )

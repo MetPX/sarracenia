@@ -53,7 +53,7 @@ class Poll(Flow):
 
         super().__init__(options)
         self.plugins['load'].append('sarracenia.flowcb.line_mode.Line_Mode')
-        self.plugins['load'].append('sarracenia.flowcb.post.message.Message')
+        self.plugins['load'].insert(0,'sarracenia.flowcb.post.message.Message')
 
         # check destination
 
