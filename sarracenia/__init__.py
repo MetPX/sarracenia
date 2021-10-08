@@ -32,12 +32,42 @@ import calendar
 import datetime
 import logging
 import os.path
+import re
 import sarracenia.filemetadata
 import stat
+import sys
 import time
+import urllib
 
 logger = logging.getLogger(__name__)
 
+"""
+    Core utilities of Sarracenia.  The main class here is sarracenia.Message.
+    a Sarracenia.Message is subclassed from a dict, so for most uses, it works like the 
+    python built-in, but also we have a few major  entrye points some factoryies:
+
+    m = sarracenia.Message.fromFileData( path, options, lstat )
+ 
+    which builds a message from a given existing file, consulting *options*, a parsed
+    in memory version of the configuration settings that are applicable.
+
+    If you don't have a local file, then build your message with:
+
+    m = sarracenia.Message.fromFileInfo( path, options, lstat )
+
+    where you can make up the lstat values to fill in some fields in the message.
+    You can make a fake lstat structure to provide these values using fakestat 
+
+    fs = fakeStat( atime, mtime, size, mode)
+
+    that you can then provide as an *lstat* argument to the above *fromFileInfo()* 
+    call. However the message returned will lack an integrity checksum field.
+    once you get the file, you can add the Integrity field with:
+
+    m.computeIntegrity(path, o):
+
+   That's the entire message creation API.
+"""
 
 
 """
@@ -341,7 +371,7 @@ class Message(dict):
         msg['pubTime'] = v3timeflt2str(time.time())
     
         # set new_dir, new_file, new_subtopic, etc...
-        o.set_newMessageUpdatePaths( msg, os.path.dirname(path), os.path.basename(path) )
+        msg.updatePaths( o, os.path.dirname(path), os.path.basename(path) )
     
         # rename
         post_relPath = msg['new_relPath']
@@ -421,6 +451,214 @@ class Message(dict):
         msg['_deleteOnPost'] |= set(['report'])
         msg['report'] = { 'code' : code, 'message': text }
     
+
+    # ==============================================
+    # how will the download file land on this server
+    # with all options, this is really tricky
+    # ==============================================
+
+    def updateFieldsAccepted(msg, options, urlstr, pattern, maskDir,
+                             maskFileOption, mirror, strip, pstrip, flatten):
+        """
+           Set new message fields according to values when the message is accepted.
+           
+           options - the sarracenia.config instance giving all the current configuration.
+           urlstr - the urlstr being matched (baseUrl+relPath+sundew_extension)
+           pattern - the regex that was matched.
+           maskDir - the current directory to base the relPath from.
+           maskFileOption - filename option value (sundew compatibility options.)
+           strip  - number of path entries to strip from the left side of the path.
+           pstrip - pattern strip regexp to apply instead of a count.
+           flatten - a character to replace path separators with toe change 
+                     a multi-directory deep file name into a single long file name
+        """
+        logger.critical('438 urlstr=%s, relPath=%s' % ( urlstr, msg['relPath'] ) )
+
+        # relative path by default mirror
+        if type(maskDir) is str:
+            # trying to subtract maskDir if present in relPath...
+            # occurs in polls a lot.
+            if maskDir in msg['relPath']:
+                 relPath = '%s' % msg['relPath'].replace(maskDir,'',1)
+
+            # sometimes the same, just the leading / is missing.
+            elif maskDir[1:] in msg['relPath']:
+                 relPath = '%s' % msg['relPath'].replace(maskDir[1:],'',1)
+            else:
+                relPath = '%s' % msg['relPath']
+        else:
+            relPath = '%s' % msg['relPath']
+
+        if options.baseUrl_relPath :
+            u = urllib.parse.urlparse( msg['baseUrl'] )
+            relPath = u.path[1:] + '/' + relPath
+
+        # FIXME... why the % ? why not just assign it to copy the value?
+        if 'rename' in msg: relPath = '%s' % msg['rename']
+
+        token = relPath.split('/')
+        filename = token[-1]
+
+
+        # if provided, strip (integer) ... strip N heading directories
+        #         or  pstrip (pattern str) strip regexp pattern from relPath
+        # cannot have both (see setting of option strip in sr_config)
+
+        if strip > 0:
+            try:
+                token = token[strip:]
+
+            # strip too much... keep the filename
+            except:
+                token = [filename]
+
+        # strip using a pattern
+
+        elif pstrip != None:
+
+            #MG FIXME Peter's wish to have replacement in pstrip (ex.:${SOURCE}...)
+            try:
+                relstrip = re.sub(pstrip, '', relPath, 1)
+            except:
+                relstrip = relPath
+
+            # if filename dissappear... same as numeric strip, keep the filename
+            if not filename in relstrip: relstrip = filename
+            token = relstrip.split('/')
+
+        # if flatten... we flatten relative path
+        # strip taken into account
+
+        if flatten != '/':
+            filename = flatten.join(token)
+            token[-1] = [filename]
+
+        if maskFileOption is not None:
+            try:
+                filename = options.sundew_getDestInfos(msg, maskFileOption, filename)
+            except:
+                logger.error("problem with accept file option %s" %
+                             maskFileOption)
+            token[-1] = [filename]
+
+        # MG this was taken from the sr_sender when not derived from sr_subscribe.
+        # if a desftn_script is set in a plugin, it is going to be applied on all file
+        # this might be confusing
+
+        if options.destfn_script:
+            options.new_file = filename
+            ok = options.destfn_script(options)
+            if filename != options.new_file:
+                logger.debug("destfn_script : %s becomes %s " %
+                             (filename, options.new_file))
+                filename = options.new_file
+                token[-1] = [filename]
+
+        # not mirroring
+
+        if not mirror:
+            token = [filename]
+
+        # uses current dir
+
+        #if options.currentDir : new_dir = options.currentDir
+        if maskDir:
+            new_dir = options.set_dir_pattern(maskDir,msg)
+        else:
+            new_dir = ''
+
+        if options.baseDir:
+            if new_dir :
+                d=new_dir
+            elif options.post_baseDir:
+                d=options.set_dir_pattern(options.post_baseDir,msg)
+            else:
+                d=None
+
+            if d:
+                for f in [ 'link', 'oldname', 'newname' ]:
+                    if f in msg:
+                        msg[f] = msg[f].replace( options.baseDir, d )
+
+        # add relPath
+
+        if len(token) > 1:
+            new_dir = new_dir + '/' + '/'.join(token[:-1])
+
+        new_dir = options.set_dir_pattern(new_dir, msg)
+        # resolution of sundew's dirPattern
+
+        logger.critical('553 new_dir=%s' % new_dir )
+
+        tfname = filename
+        # when sr_sender did not derived from sr_subscribe it was always called
+        new_dir = options.sundew_dirPattern(pattern, urlstr, tfname, new_dir)
+
+        msg.updatePaths( options, new_dir, filename )
+
+        logger.critical('561 dump: %s' % msg.dumps() )
+
+
+
+    def updatePaths( msg, options, new_dir, new_file ):
+        """
+        set the new_ fields in the message based on changed file placement.
+
+        If you change file placement in a flow callback, for example.
+        One would change new_dir and new_file in the message.
+        This routines updates other fields in the message (e.g. relPath, 
+        baseUrl, topic ) to match new_dir/new_file.
+
+        msg['post_baseUrl'] defaults to msg['baseUrl']
+     
+        """
+
+        msg['_deleteOnPost'] |= set( ['new_dir', 'new_file', 'new_relPath', 'new_baseUrl', 'new_subtopic'] )
+        msg['new_dir'] = new_dir
+        msg['new_file'] = new_file
+
+        relPath = new_dir + '/' + new_file
+
+        if options.post_baseUrl:
+            baseUrl_str = options.set_dir_pattern( options.post_baseUrl, msg )
+        else:
+            if 'baseUrl' in msg:
+                baseUrl_str = msg['baseUrl']
+            else:
+                logger.error('missing post_baseUrl setting' )
+                return
+ 
+        if hasattr(options, 'post_baseDir') and ( type(options.post_baseDir) is str ) \
+            and ( len(options.post_baseDir) > 1):
+            pbd_str = options.set_dir_pattern( options.post_baseDir, msg )
+            parsed_baseUrl = urllib.parse.urlparse(baseUrl_str)
+
+            relPath = new_dir.replace( pbd_str, '', 1) + '/' + new_file
+
+            if (len(parsed_baseUrl.path) > 1):
+                relPath=relPath.replace( parsed_baseUrl.path, '', 1 )
+
+        msg['new_baseUrl'] = baseUrl_str
+
+        if relPath[0] == '/' :
+            relPath = relPath[1:]
+
+        msg['new_relPath'] = relPath
+        msg['new_subtopic' ] = relPath.split('/')[0:-1]
+
+        for i in [ 'relPath', 'subtopic', 'baseUrl' ]:
+            if not i in msg:
+               msg[ i ]= msg[ 'new_%s' % i ] 
+        
+        if sys.platform == 'win32':
+            if 'new_dir' not in msg:
+                msg['new_dir'] = msg['new_dir'].replace('\\', '/')
+            msg['new_relPath'] = msg['new_relPath'].replace('\\', '/')
+            if re.match('[A-Z]:', str(options.currentDir), flags=re.IGNORECASE):
+                msg['new_dir'] = msg['new_dir'].lstrip('/')
+                msg['new_relPath'] = msg['new_relPath'].lstrip('/')
+
+
     def validate(msg):
         """
         FIXME: used to be msg_validate
@@ -437,3 +675,5 @@ class Message(dict):
         if not res:
             logger.error('malformed message: %s', msg )
         return res
+
+

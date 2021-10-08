@@ -275,9 +275,7 @@ https://github.com/wmo-im/GTStoWIS2) ::
                 new_baseDir = msg['new_dir'] + os.sep + new_baseSubDir
                 new_relDir = 'WIS' + os.sep + self.topic_builder.mapAHLtoTopic(msg['new_file'])
                 msg['new_dir'] = new_baseDir + os.sep + new_relDir
-                self.o.set_newMessageUpdatePaths( msg, \
-                     new_baseDir + os.sep + new_relDir, \
-                     msg['new_file'] )
+                msg.updatePaths( self.o, new_baseDir + os.sep + new_relDir, msg['new_file'] )
 
             except Exception as ex:
                 logger.error( "skipped" , exc_info=True )
@@ -313,7 +311,7 @@ The plugin above changes the layout of the files that are to be downloaded, base
 directory tree on output.  There are a lot of fields to update when changing file 
 placement, so best to use::
 
-   self.o.set_newMessageUpdatePaths( msg, new_dir, new_file )
+   msg.updatePaths( self.o, new_dir, new_file )
 
 to update all necessary fields in the message properly. It will update 
 'new_baseURL', 'new_relPath', 'new_subtopic' for use when posting.

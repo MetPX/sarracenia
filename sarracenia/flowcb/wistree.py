@@ -59,7 +59,7 @@ class Wistree(FlowCB):
                 else:
                    new_file = msg['new_file']
 
-                self.o.set_newMessageUpdatePaths( msg, new_baseDir + os.sep + new_relDir, new_file )
+                msg.updatePaths( self.o, new_baseDir + os.sep + new_relDir, new_file )
 
             except Exception as ex:
                 logger.error( "failed to map %s to a topic, skipped." % msg['new_file'] , exc_info=True )

@@ -457,7 +457,11 @@ class Flow:
                         break
 
                     # FIXME... missing dir mapping with mirror, strip, etc...
-                    self.o.set_newMessageFields(m, url, pattern, maskDir,
+                    #self.o.set_newMessageFields(m, url, pattern, maskDir,
+                    #                            maskFileOption, mirror, strip,
+                    #                            pstrip, flatten)
+
+                    m.updateFieldsAccepted(self.o, url, pattern, maskDir,
                                                 maskFileOption, mirror, strip,
                                                 pstrip, flatten)
 
@@ -472,7 +476,7 @@ class Flow:
                         m['_deleteOnPost'] |= set(['renameUnlink'])
                     logger.debug("rename deletion 2 %s" % (m['oldname']))
                     filtered_worklist.append(m)
-                    self.o.set_newMessageFields(m, url, None, default_accept_directory,
+                    m.updateFieldsAccepted(self.o, url, None, default_accept_directory,
                                                 self.o.filename, self.o.mirror,
                                                 self.o.strip, self.o.pstrip,
                                                 self.o.flatten)
@@ -481,7 +485,7 @@ class Flow:
                 if self.o.accept_unmatched:
                     logger.debug("accept: unmatched pattern=%s" % (url))
                     # FIXME... missing dir mapping with mirror, strip, etc...
-                    self.o.set_newMessageFields(m, url, None,
+                    m.updateFieldsAccepted(self.o, url, None,
                                                 default_accept_directory,
                                                 self.o.filename, self.o.mirror,
                                                 self.o.strip, self.o.pstrip,

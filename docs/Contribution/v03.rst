@@ -696,7 +696,8 @@ Probably need to be settled before having anyone else dive in.
   I think this is done.  Would have to document somewhere,
   testing and demoing at the same time.
 
-* took the code required to implement set_newMessageFields verbatim from v2.
+* took the code required to implement set_newMessageFields (now called
+  sarracenia.Message.updateFieldsAccept) verbatim from v2.
   It is pretty hairy... perhaps turn into a plugin, to get it out of the 
   main code? Don't think it will ever go away. It is fairly ugly, but 
   very useful and heavily used in existing configs. probably OK. 
