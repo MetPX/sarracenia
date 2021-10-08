@@ -515,6 +515,7 @@ class Flow:
 
         for p in self.plugins["post"]:
             p(self.worklist)
+        self.worklist.ok = []
 
     def report(self):
         # post reports

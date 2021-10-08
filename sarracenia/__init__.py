@@ -472,7 +472,6 @@ class Message(dict):
            flatten - a character to replace path separators with toe change 
                      a multi-directory deep file name into a single long file name
         """
-        logger.critical('438 urlstr=%s, relPath=%s' % ( urlstr, msg['relPath'] ) )
 
         # relative path by default mirror
         if type(maskDir) is str:
@@ -588,15 +587,12 @@ class Message(dict):
         new_dir = options.set_dir_pattern(new_dir, msg)
         # resolution of sundew's dirPattern
 
-        logger.critical('553 new_dir=%s' % new_dir )
-
         tfname = filename
         # when sr_sender did not derived from sr_subscribe it was always called
         new_dir = options.sundew_dirPattern(pattern, urlstr, tfname, new_dir)
 
         msg.updatePaths( options, new_dir, filename )
 
-        logger.critical('561 dump: %s' % msg.dumps() )
 
 
 
