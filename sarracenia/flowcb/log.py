@@ -16,54 +16,54 @@ class Log(FlowCB):
             logger.setLevel(logging.INFO)
         logger.setLevel(logging.INFO)
         self.o = options
-        self.o.add_option( 'log_events', 'set', [ 'after_accept' ] )
-        logger.info( 'initialized with: %s' % self.o.log_events )
+        self.o.add_option( 'logEvents', 'set', [ 'after_accept' ] )
+        logger.info( 'initialized with: %s' % self.o.logEvents )
 
     def gather(self):
-        if set ( ['gather', 'all'] ) & self.o.log_events:
+        if set ( ['gather', 'all'] ) & self.o.logEvents:
             logger.info('')
 
         return []
 
     def after_accept(self, worklist):
 
-        if set ( ['reject', 'all'] ) & self.o.log_events:
+        if set ( ['reject', 'all'] ) & self.o.logEvents:
             for msg in worklist.rejected:
                 if 'report' in msg:
                     logger.info("rejected: %d %s " % ( msg['report']['code'], msg['report']['message'] ) )
                 else:
                     logger.info("rejected: %s " % msg.dumps() )
 
-        if set ( ['after_accept', 'all'] ) & self.o.log_events:
+        if set ( ['after_accept', 'all'] ) & self.o.logEvents:
             for msg in worklist.incoming:
                 logger.info("accepted: %s " % msg.dumps() )
 
     def after_work(self, worklist):
-        if set ( ['reject', 'all'] ) & self.o.log_events:
+        if set ( ['reject', 'all'] ) & self.o.logEvents:
             for msg in worklist.rejected:
                 if 'report' in msg:
                     logger.info("rejected: %d %s " % ( msg['report']['code'], msg['report']['message'] ) )
                 else:
                     logger.info("rejected: %s " % msg.dumps() )
 
-        if set ( ['after_work', 'all'] ) & self.o.log_events:
+        if set ( ['after_work', 'all'] ) & self.o.logEvents:
             for msg in worklist.ok:
                 logger.info("worked successfully: %s " % msg.dumps() )
 
 
     def on_stop(self):
-        if set ( ['on_stop', 'all'] ) & self.o.log_events:
+        if set ( ['on_stop', 'all'] ) & self.o.logEvents:
             logger.info("stopping")
 
     def on_start(self):
-        if set ( ['on_start', 'all'] ) & self.o.log_events:
+        if set ( ['on_start', 'all'] ) & self.o.logEvents:
             logger.info("starting")
 
     def on_housekeeping(self):
-        if set ( ['on_housekeeping', 'all'] ) & self.o.log_events:
+        if set ( ['on_housekeeping', 'all'] ) & self.o.logEvents:
             logger.info("housekeeping")
 
     def post(self, worklist):
-        if set ( ['post', 'all'] ) & self.o.log_events:
+        if set ( ['post', 'all'] ) & self.o.logEvents:
             for msg in worklist.ok:
                 logger.info("posted %s" % msg )

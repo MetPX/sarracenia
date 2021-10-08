@@ -48,6 +48,7 @@ import sarracenia
 from sarracenia import durationToSeconds, chunksize_from_str
 import sarracenia.credentials
 import sarracenia.flow
+import sarracenia.flowcb
 
 from sarracenia.flow.sarra import default_options as sarradefopts
 
@@ -101,8 +102,11 @@ duration_options = [
 
 list_options = []
 
-set_options = ['log_events']
+# set, valid values of the set.
+set_options = [ 'logEvents' ]
 
+set_choices = { 'logEvents': sarracenia.flowcb.entry_points + ['reject' ] }
+ 
 size_options = ['blocksize', 'bufsize', 'bytes_per_second', 'inline_max']
 
 str_options = [
@@ -140,14 +144,14 @@ convert_to_v3 = {
             'flow_callback',
             'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles'
         ],
-        'msg_log': ['log_events', 'after_accept'],
-        'msg_rawlog': ['log_events', 'after_accept']
+        'msg_log': ['logEvents', 'after_accept'],
+        'msg_rawlog': ['logEvents', 'after_accept']
     },
     'on_line': {
-        'line_log': ['log_events', 'on_line']
+        'line_log': ['logEvents', 'on_line']
     },
     'on_post': {
-        'post_log': ['log_events', 'after_work']
+        'post_log': ['logEvents', 'after_work']
     },
     'before_post': {
         'post_rate_limit': ['continue']
@@ -493,7 +497,7 @@ class Config:
         self.v2plugins = {}
         self.v2plugin_options = []
         self.imports = []
-        self.log_events = set([])
+        self.logEvents = set([])
         self.plugins = []
         self.exchange = None
         self.filename = None
@@ -690,7 +694,7 @@ class Config:
             if type(v) is not list:
                 setattr(self, option, [v])
         elif kind == 'set':  
-            set_options.append( option )
+            set_options.append(option)
             sv=set()
             if v == 'None': 
                  delattr(self, option)
@@ -704,6 +708,7 @@ class Config:
                 else: 
                     sv=set([v])
             if hasattr(self, option):
+                logger.critical('FIXME: option=%s, type=%s' % ( option, type(getattr(self,option)) ) )
                 sv= getattr(self,option) | sv
             setattr(self, option, sv)
 
@@ -1087,6 +1092,10 @@ class Config:
                     setattr(self, k, vs )
                 else:
                     setattr(self, k, getattr(self, k) | vs)
+                if hasattr(self, k) and (k in set_choices) :
+                   for i in getattr(self,k):
+                       if i not in set_choices[k]:
+                          logger.error('invalid entry for %s:  %s. Must be one of: %s' % ( k, i, set_choices[k] ) )
             elif k in str_options:
                 v = ' '.join(line[1:])
                 setattr(self, k, v)
@@ -1155,11 +1164,11 @@ class Config:
 
         if hasattr(self,'log_reject'):
             if self.log_reject:
-                self.log_events |= set( ['reject'] )
+                self.logEvents |= set( ['reject'] )
             delattr( self, 'log_reject' )
 
-        if ( (len(self.log_events) > 0 ) or self.log_flowcb_needed) and ( '.log.Log' not in self.plugins ):
-            self.plugins += [ 'sarracenia.flowcb.log.Log' ]
+        if ( (len(self.logEvents) > 0 ) or self.log_flowcb_needed) and ( '.log.Log' not in self.plugins ):
+            self.plugins.append( 'sarracenia.flowcb.log.Log' )
 
         # patch, as there is no 'none' level in python logging module...
         #    mapping so as not to break v2 configs.
