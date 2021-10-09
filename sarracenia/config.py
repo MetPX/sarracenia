@@ -1208,6 +1208,29 @@ class Config:
                 hostdir = None
             self.cfg_run_dir = os.path.join(get_user_cache_dir(hostdir),
                                             component, cfg)
+
+        if self.post_broker is not None:
+            if not hasattr(self,
+                           'post_exchange') or self.post_exchange is None:
+                self.post_exchange = 'xs_%s' % self.post_broker.username
+
+            if hasattr(self, 'post_exchange_suffix'):
+                self.post_exchange += '_%s' % self.post_exchange_suffix
+
+            if hasattr(self, 'post_exchange_split'):
+                l = []
+                for i in range(0, int(self.post_exchange_split)):
+                    y = self.post_exchange + '%02d' % i
+                    l.append(y)
+                self.post_exchange = l
+            else:
+                self.post_exchange = [self.post_exchange]
+
+            if component in ['poll' ]: 
+                logger.critical('FIME: hallo! exchange is: %s', getattr(self,'exchange') )
+            if component in ['poll' ] and (not hasattr(self,'exchange') or not self.exchange):
+                self.exchange = self.post_exchange[0]
+
         if self.broker is not None:
 
             self._resolve_exchange()
@@ -1274,22 +1297,6 @@ class Config:
                                                  self.no)
             self.retry_path = self.pid_filename.replace('.pid', '.retry')
 
-        if self.post_broker is not None:
-            if not hasattr(self,
-                           'post_exchange') or self.post_exchange is None:
-                self.post_exchange = 'xs_%s' % self.post_broker.username
-
-            if hasattr(self, 'post_exchange_suffix'):
-                self.post_exchange += '_%s' % self.post_exchange_suffix
-
-            if hasattr(self, 'post_exchange_split'):
-                l = []
-                for i in range(0, int(self.post_exchange_split)):
-                    y = self.post_exchange + '%02d' % i
-                    l.append(y)
-                self.post_exchange = l
-            else:
-                self.post_exchange = [self.post_exchange]
 
         if (self.bindings == [] and hasattr(self, 'exchange')):
             self.bindings = [(self.exchange, self.topicPrefix, [ '#' ])]
@@ -2024,6 +2031,9 @@ def one_config(component, config, isPost=False):
     #logger.error( 'after args' )
     #print( 'after args' )
     #cfg.dump()
+    if component in ['poll' ]:
+        if not hasattr(cfg,'broker') or (cfg.broker is None):
+             cfg.broker = cfg.post_broker
 
     cfg.fill_missing_options(component, config)
 

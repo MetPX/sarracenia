@@ -294,7 +294,8 @@ class Flow:
                 self.close()
                 break
 
-            if self.has_vip():
+            have_vip = self.has_vip()
+            if (self.o.program_name == 'poll' ) or have_vip:
 
                 #logger.info("current_rate (%g) vs. message_rate_max(%g)) " %
                 #            (current_rate, self.o.message_rate_max))
@@ -322,32 +323,38 @@ class Flow:
                 self.ack(self.worklist.rejected)
                 self.worklist.rejected = []
 
-                self.do()
+                if (self.o.program_name == 'poll' ) and not have_vip:
+                    # this for duplicate cache synchronization.
+                    self.ack(self.worklist.incoming)
+                    self.worklist.incoming = []
+                else:
+                    # normal processing, when you are active.
+                    self.do()
 
-                # need to acknowledge here, because posting will delete message-id
-                self.ack(self.worklist.ok)
+                    # need to acknowledge here, because posting will delete message-id
+                    self.ack(self.worklist.ok)
 
-                # adjust message after action is done, but before 'after_work' so adjustment is possible.
-                for m in self.worklist.ok:
-                    if ('new_baseUrl' in m) and (m['baseUrl'] != m['new_baseUrl'] ):
-                        m['baseUrl'] = m['new_baseUrl']
-                    if ('new_relPath' in m ) and ( m['relPath'] != m['new_relPath'] ) :
-                        m['relPath'] = m['new_relPath']
-                        m['subtopic'] = m['new_subtopic']
+                    # adjust message after action is done, but before 'after_work' so adjustment is possible.
+                    for m in self.worklist.ok:
+                        if ('new_baseUrl' in m) and (m['baseUrl'] != m['new_baseUrl'] ):
+                            m['baseUrl'] = m['new_baseUrl']
+                        if ('new_relPath' in m ) and ( m['relPath'] != m['new_relPath'] ) :
+                            m['relPath'] = m['new_relPath']
+                            m['subtopic'] = m['new_subtopic']
 
-                self._runCallbacksWorklist('after_work')
+                    self._runCallbacksWorklist('after_work')
 
-                self.ack(self.worklist.rejected)
-                self.worklist.rejected = []
-                self.ack(self.worklist.failed)
+                    self.ack(self.worklist.rejected)
+                    self.worklist.rejected = []
+                    self.ack(self.worklist.failed)
 
-                self.post()
+                    self.post()
 
-                self.report()
+                    self.report()
 
-                self.worklist.ok = []
-                self.worklist.directories_ok = []
-                self.worklist.failed = []
+                    self.worklist.ok = []
+                    self.worklist.directories_ok = []
+                    self.worklist.failed = []
 
             now = nowflt()
             run_time = now - start_time
