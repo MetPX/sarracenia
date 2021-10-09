@@ -187,10 +187,13 @@ class Poll(Flow):
 
     def gather(self):
 
-        if self.dest != None:
+        super().gather()
+
+        if self.have_vip and self.dest:
             self.worklist.incoming.extend(self.post_new_urls())
             #logger.debug('post_new_urls returned: %s' %
             #             len(self.worklist.incoming))
+
 
     def lsdir(self):
         try:

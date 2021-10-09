@@ -294,8 +294,8 @@ class Flow:
                 self.close()
                 break
 
-            have_vip = self.has_vip()
-            if (self.o.program_name == 'poll' ) or have_vip:
+            self.have_vip = self.has_vip()
+            if (self.o.program_name == 'poll' ) or self.have_vip:
 
                 #logger.info("current_rate (%g) vs. message_rate_max(%g)) " %
                 #            (current_rate, self.o.message_rate_max))
@@ -323,7 +323,7 @@ class Flow:
                 self.ack(self.worklist.rejected)
                 self.worklist.rejected = []
 
-                if (self.o.program_name == 'poll' ) and not have_vip:
+                if (self.o.program_name == 'poll' ) and not self.have_vip:
                     # this for duplicate cache synchronization.
                     self.ack(self.worklist.incoming)
                     self.worklist.incoming = []
