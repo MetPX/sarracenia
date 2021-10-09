@@ -179,11 +179,18 @@ class NoDupe(FlowCB):
 
         if msg['integrity']['method'] in [ 'arbitrary', 'md5name', 'remove', 'link' ]:
             partstr = 'None'
+        elif msg['integrity']['method'] in ['cod']:
+            if 'mtime' in msg:
+                sumstr = "%s,%s" % ( msg['integrity']['method'],msg['mtime'] )
+            elif 'size' in msg:
+                sumstr = "%s,%s" % ( msg['integrity']['method'],msg['size'] )
+            partstr = 'None'
         else:
             if 'size' in msg:
                 partstr = '1,' + str(msg['size'])
             else:
                 partstr = msg['blocks']
+        
 
         logger.debug("NoDupe calling check( %s, %s, %s )" % ( sumstr, relpath, partstr ) )
         return self.check(sumstr, relpath, partstr)

@@ -505,18 +505,22 @@ POLL
 **poll** is a component that connects to a remote server to
 check in various directories for some files. When a file is
 present, modified or created in the remote directory, the program will
-notify about the new product.
+notify about the new product. 
 
 The notification protocol is defined here `sr3_post(7) <sr3_post.7.rst>`_
 
 **poll** connects to a *broker*.  Every *sleep* seconds, it connects to
 a *destination* (sftp, ftp, ftps). For each of the *directory* defined, it lists
-the contents. When a file matches a pattern given by *accept*, **sr_poll** builds
-a notification for that product and sends it to the *broker*. The matching content
-of the *directory* is kept in a file for reference. Should a matching file be changed,
-or created at a later iteration, a new notification is sent.
+the contents.  Polling is only intended to be used for recently modified
+files. The *file_time_limit* option eliminates files that are too old 
+from consideration. When a file is found that matches a pattern given 
+by *accept*, **poll** builds a notification message for that product.
 
-**sr_poll** can be used to acquire remote files in conjunction with an `sarra`_
+The message is then checked in the duplicate cache (time limited by
+nodupe_ttl option.) to prevent posting of files which have already
+been seen.
+
+**poll** can be used to acquire remote files in conjunction with an `sarra`_
 subscribed to the posted notifications, to download and repost them from a data pump.
 
 The destination option specify what is needed to connect to the remote server
@@ -537,6 +541,17 @@ For example, the user can set :
 And complete the needed information in the credentials file with the line  :
 
 **ftp://myself:mypassword@myserver:2121  passive,binary**
+
+Repeated Scans and VIP
+~~~~~~~~~~~~~~~~~~~~~~
+
+When multiple servers are being co-operating to poll a remote server,
+the *vip* setting is used to decide which server will actually poll.
+All servers participating subscribe to where **poll** is posting,
+and use the results to fill in the duplicate suppression cache, so
+that if the VIP moves, the alternate servers have uptodate indications
+of what was posted.
+
 
 POLLING SPECIFICATIONS
 ~~~~~~~~~~~~~~~~~~~~~~

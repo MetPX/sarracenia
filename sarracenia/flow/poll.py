@@ -268,7 +268,7 @@ class Poll(Flow):
 
         return msgs
 
-    def poll_file_post(self, ssiz, destDir, remote_file):
+    def poll_file_post(self, ssiz, mtime, destDir, remote_file):
 
         FileOption = None
         for mask in self.pulllst:
@@ -291,6 +291,8 @@ class Poll(Flow):
         post_relPath = destDir + '/' + remote_file
 
         msg = sarracenia.Message.fromFileInfo(post_relPath, self.o, None)
+
+        msg['mtime'] = mtime
 
         if self.o.integrity_method and (',' in self.o.integrity_method):
             m, v = self.o.integrity_method.split(',')
@@ -328,7 +330,9 @@ class Poll(Flow):
             desc = desclst[remote_file]
             ssiz = desc.split()[4]
 
-            msgs.extend(self.poll_file_post(ssiz, destDir, remote_file))
+            logger.critical('FIXME: Mocking mtime ... need to calculate mtime here=%s' % desc )
+            mtime="19000101T000000.000000"
+            msgs.extend(self.poll_file_post(ssiz, mtime, destDir, remote_file))
         return msgs
 
     # =============
