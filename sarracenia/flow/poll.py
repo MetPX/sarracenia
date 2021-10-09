@@ -146,21 +146,13 @@ class Poll(Flow):
                         return True
 
 
-    # find differences between current ls and last ls
-    # only the newer or modified files will be kept and the ones withing a specific time limit, default 60d
 
-
-    def differ_ls_file(self, ls, lspath):
-
-        # get new list and description
-
+    def getFileNamesAndDesc(self, ls, lspath):
+        """
+            get new list and description (date and size)
+            return a list of files, and descriptions.
+        """
         new_lst = sorted(ls.keys())
-
-        # get old list and description
-
-        old_ls = [] 
-
-        # compare
 
         filelst = []
         desclst = {}
@@ -177,21 +169,8 @@ class Poll(Flow):
                 date = str2[5] + " " + str2[6] + " " + str2[7]
                 if self._file_date_within_limit(date, self.o.file_time_limit):
                     #logger.debug("File should be processed")
-
-                    # execute rest of code
-                    # keep a newer entry
-                    if not f in old_ls:
-                        # logger.debug("IS NEW %s" % f)
-                        filelst.append(f)
-                        desclst[f] = ls[f]
-                        continue
-
-                    # keep a modified entry
-                    if ls[f] != old_ls[f]:
-                        # logger.debug("IS DIFFERENT %s from (%s,%s)" %(f, old_ls[f], ls[f]))
-                        filelst.append(f)
-                        desclst[f] = ls[f]
-                        continue
+                    filelst.append(f)
+                    desclst[f] = ls[f]
                 else:
                     # ignore rest of code and re iterate
                     logger.debug("File should be skipped")
@@ -261,7 +240,7 @@ class Poll(Flow):
 
             # get file list from difference in ls
 
-            filelst, desclst = self.differ_ls_file(file_dict, lspath)
+            filelst, desclst = self.getFileNamesAndDesc(file_dict, lspath)
             logger.debug("poll_directory: after differ, len=%d" % len(filelst))
 
             # post poll list
