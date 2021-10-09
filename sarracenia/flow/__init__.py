@@ -286,6 +286,7 @@ class Flow:
         self._runCallbacksTime('on_start')
 
         spamming = True
+        last_gather_len = 0
 
         while True:
 
