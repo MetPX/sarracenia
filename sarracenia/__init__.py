@@ -86,7 +86,6 @@ numbers.
    - also OK for year 2032 or whatever (rollover of time_t on 32 bits.)
    - string representation is forced to UTC timezone to avoid having to communicate timezone.
 
-   timeflt2str - accepts a float and returns a string.
    timestr2flt - accepts a string and returns a float.
 
 
@@ -105,13 +104,20 @@ def nowflt():
 def nowstr():
     return timeflt2str(time.time())
 
-
 def timeflt2str(f):
-    nsec = "{:.9g}".format(f % 1)[1:]
-    return "{}{}".format(time.strftime("%Y%m%d%H%M%S", time.gmtime(f)), nsec)
+    """
+        timeflt2str - accepts a float and returns a string.
 
+        flow is a floating point number such as returned by time.now()
+        (number of seconds since beginning of epoch.)
 
-def v3timeflt2str(f):
+        the str is YYYYMMDDTHHMMSS.sssss
+
+        20210921T011331.0123
+
+        translates to: Sept. 21st, 2021 at 01:13 and 31.0123 seconds.
+        always UTC timezone.    
+    """
     nsec = "{:.9g}".format(f % 1)[1:]
     return "{}{}".format(time.strftime("%Y%m%dT%H%M%S", time.gmtime(f)), nsec)
 
@@ -123,7 +129,6 @@ def timestr2flt(s):
         s[10:12]), int(s[12:14])
     t = datetime.datetime(*dt_tuple, tzinfo=datetime.timezone.utc)
     return calendar.timegm(t.timetuple()) + float('0' + s[14:])
-
 
 def timev2tov3str(s):
     if s[8] == 'T':
@@ -368,7 +373,7 @@ class Message(dict):
         msg['_deleteOnPost'] = set ( [ 'exchange', 'local_offset' ] )
     
         # notice
-        msg['pubTime'] = v3timeflt2str(time.time())
+        msg['pubTime'] = timeflt2str(time.time())
     
         # set new_dir, new_file, new_subtopic, etc...
         msg.updatePaths( o, os.path.dirname(path), os.path.basename(path) )
@@ -416,8 +421,8 @@ class Message(dict):
         msg['size'] = lstat.st_size
     
         if o.preserve_time:
-            msg['mtime'] = v3timeflt2str(lstat.st_mtime)
-            msg['atime'] = v3timeflt2str(lstat.st_atime)
+            msg['mtime'] = timeflt2str(lstat.st_mtime)
+            msg['atime'] = timeflt2str(lstat.st_atime)
     
         if o.preserve_mode:
             msg['mode'] = "%o" % (lstat.st_mode & 0o7777)
