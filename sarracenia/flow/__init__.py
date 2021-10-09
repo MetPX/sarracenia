@@ -297,6 +297,7 @@ class Flow:
 
                 #logger.info("current_rate (%g) vs. message_rate_max(%g)) " %
                 #            (current_rate, self.o.message_rate_max))
+                self.worklist.incoming = []
                 self.gather()
 
                 last_gather_len = len(self.worklist.incoming)
@@ -500,7 +501,6 @@ class Flow:
         logger.debug('end len(incoming)=%d, rejected=%d' % ( len(self.worklist.incoming), len(self.worklist.rejected) ) )
 
     def gather(self):
-        self.worklist.incoming = []
         for p in self.plugins["gather"]:
             new_incoming = p()
             if len(new_incoming) > 0:

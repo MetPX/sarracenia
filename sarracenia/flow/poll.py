@@ -41,7 +41,8 @@ default_options = {
     'rename': None,
     'post_on_start': False,
     'sleep': -1,
-    'nodupe_ttl': 0
+    'nodupe_ttl': 7*60*60,
+    'file_time_limit': 6*60*60
 }
 
 
