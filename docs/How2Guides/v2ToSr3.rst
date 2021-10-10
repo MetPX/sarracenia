@@ -63,7 +63,7 @@ What Will Work Without Change
 The first step in porting a configuration subscribe/X to v3, is just to copy the configuration file from
 ~/.config/sarra to the corresponding location in ~/.config/sr3 and try::
 
-sr3 show subscribe/X
+   sr3 show subscribe/X
 
 The *show* command is new in sr3 and provides a way to view the configuration after 
 it has been parsed. Most of it should work, unless you have do_* plugins. 
@@ -192,6 +192,28 @@ In general, v3 plugins:
 * **messages are python dictionaries** , so *msg.relpath becomes msg['relPath']*
   v3 messages, as dictionaries are the default internal representation.
 
+* **plugins operate on batches of messages** v2 *on_message* gets parent as a parameter,
+  and the message is in parent.message. In v3, *after_accept* has worklist as an
+  option, which is python list of messages, maximum length being fixed by the
+  *batch* option. So the general organization for after_accept, and after_work is::
+
+      new_incoming=[]
+      for message in old_list:
+          if good:
+             new_incoming.append(message)
+          if bad:
+             worklist.rejected.append(message)
+      worklist.incoming=new_incoming
+      
+  In *after_work*, the replacement for v2 *on_file*, the operations are on:
+
+  * worklist.ok (transfer succeeded.)
+  * worklist.failed (transfers that failed.)
+
+  In the case of receiving a .tar file and expanding into to individual files,
+  the *after_work* routine would change the worklist.ok to contain messages for
+  the individual files, rather than the original collective .tar.
+
 * **No Need to set message fields in plugins**
   in v2, one would set partstr, and sumstr for v2 messages in plugins. This required
   an excessive understanding of message formats, and meant that changing message formats
@@ -204,28 +226,7 @@ In general, v3 plugins:
 
 
 * **Really, No Need to set message fields in plugins**
-  To build a message, without a local file, use msg_init::
-  
-     impor sarracenia
-
-     m = sarracenia.Message.fromFileInfo(sample_fileName, cfg)
-
-  builds an message from scratch, without checksums, or file size.
-  This can be used for polling, when you don't have the local file.
-  to request a normal checksum be computed when the file is downloaded,
-  specify::
-
-     m['size'] = size_you_got_from_your_poll
-     m['integrity'] = { 'method': 'cod', 'value': 'sha512' }
-
-  One can also build an supply a fake stat record to msg_init in order to
-  get 'mtime', 'atime', 'size', and 'mode' message fields set::
-
-
-     from sarracenia import fakeStat
-
-     st = fakeStat( mtime=99, atime=99, size=129, mode=0o666 )
-     m = sarracenia.Message.fromFileInfo(sample_fileName, cfg, st)
+  just look at  `do_poll -> gather`_
 
 * **rarely, involve subclassing of moth or transfer classes.**
   The sarracenia.moth class implements support for message queueing protocols
@@ -294,9 +295,28 @@ v3: receives worklist
     modify worklist.incoming 
     transferring rejected messages to worklist.rejected, or worklist.failed.
 
+Sample flow::
+
+  def after_accept(self, worklist):
+
+     ...
+
+     new_incoming=[]
+     for m in worklist.incoming:
+
+          if message is useful to us:
+             new_incoming.append(m)
+          else
+             worklist.rejected.append(m)        
+ 
+     worklist.incoming = new_incoming
+
+
+
 examples:
   v2: plugins/msg_gts2wistopic.py
   v3: flowcb/wistree.py
+
 
 on_file --> after_work
 ----------------------
@@ -319,12 +339,13 @@ v2: receives parent as argument.
     will work unchanged.
 
 
-v3: only receives self (which should have self.o)
+v3: only receives self (which should have self.o replacing parent)
 
 examples:
 
   * v2: hb_cache.py -- cleans out cache (references sr_cache.)
   * v3: flowcb/nodupe.py -- implements entire caching routine.
+
 
 
 on_line -> on_line (but different)
@@ -345,14 +366,52 @@ v2: call poll from plugin.
 
 v3: build a list of messages to return.
 
+To build a message, without a local file, use fromFileInfo sarracenia.message factory::
+  
+     import sarracenia
+     import dateparser
+
+     gathered_messages=[]
+
+     m = sarracenia.Message.fromFileInfo(sample_fileName, cfg)
+
+builds an message from scratch, without checksums, or file size.
+This can be used for polling, when you don't have the local file.
+to request a normal checksum be computed when the file is downloaded,
+specify::
+
+
+     m['integrity'] = { 'method': 'cod', 'value': 'sha512' }
+
+One can also build an supply a fake stat record to msg_init in order to
+get 'mtime', 'atime', 'size', and 'mode' message fields set::
+
+
+     pollmtime = dateparser.parse( ... )
+     mtimestamp = sarracenia.timeflt2str( time.mktime( pollmtime.timetuple() ) )
+
+     fsize = info_from_poll #about the size of the file to download
+     st = sarracenia.fakeStat( mtime=mtimstamp, atime=mtimestamp, size=fsize, mode=0o666 )
+     m = sarracenia.Message.fromFileInfo(sample_fileName, cfg, st)
+
+One should fill in the fakestat record if possible, since the duplicate
+cache is driven off it, so the better the metadata, the better the
+detection of changes to existing files.
+
+once the message is built, append it to the list::
+
+     gathered_messages.append(m) 
+  
+and at the end::
+
+     return gathered_messages
+
 
 
 do_download/do_send -> post or sub-classing of transfer/ or moth/
 ----------------------------------------------------------------- 
 
 There are a number of different options here...  
-
-
 
 
 
