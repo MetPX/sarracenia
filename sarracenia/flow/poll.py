@@ -191,7 +191,6 @@ class Poll(Flow):
 
         super().gather()
 
-        logger.critical('self.o.poll_builtinGather=%s' %  self.o.poll_builtinGather )
         if self.have_vip and self.dest and self.o.poll_builtinGather:
             self.worklist.incoming.extend(self.post_new_urls())
             #logger.debug('post_new_urls returned: %s' %
