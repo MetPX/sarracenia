@@ -211,7 +211,7 @@ class fakeStat():
      routines.
 
    """
-   def __init__(self,atime,mtime,size,mode):
+   def __init__(self,atime=0,mtime=0,size=0,mode=0o644):
      self.st_atime = atime 
      self.st_mtime = mtime 
      self.st_size = size 

@@ -26,6 +26,7 @@ default_options = {
     'accept_unmatched': False,
     'blocksize': 1,
     'bufsize': 1024 * 1024,
+    'poll_builtinGather': True,
     'chmod': 0o400,
     'destination': None,
     'follow_symlinks': False,
@@ -53,6 +54,7 @@ class Poll(Flow):
     def __init__(self, options):
 
         super().__init__(options)
+
         self.plugins['load'].append('sarracenia.flowcb.line_mode.Line_Mode')
 
         if options.vip:
@@ -189,7 +191,8 @@ class Poll(Flow):
 
         super().gather()
 
-        if self.have_vip and self.dest:
+        logger.critical('self.o.poll_builtinGather=%s' %  self.o.poll_builtinGather )
+        if self.have_vip and self.dest and self.o.poll_builtinGather:
             self.worklist.incoming.extend(self.post_new_urls())
             #logger.debug('post_new_urls returned: %s' %
             #             len(self.worklist.incoming))

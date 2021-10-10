@@ -542,6 +542,32 @@ And complete the needed information in the credentials file with the line  :
 
 **ftp://myself:mypassword@myserver:2121  passive,binary**
 
+
+Remote Service Types
+~~~~~~~~~~~~~~~~~~~~
+
+Poll gathers information about remote files, to build messages about them.
+The gather method that is built-in uses sarracenia.transfer protocols,
+currently implemented are sftp, ftp, and http. Poll lists remote directories
+and parses the lines returned.  Some servers have non-standard results when
+listing files, so one can write a sarracenia.flowcb callback with the on_line
+entry point to normalize their responses and still be able to use the
+builtin poll gather.
+
+There are other servers that provide different services, not covered
+buy the default poll. One can implement additional *sarracenia.transfer*
+classes to add understanding of them to poll, or one can implement
+a *sarracenia.flowcb* callback with a *gather* routine to support
+such services.
+
+When implementing a custom gather routine, you probably want to
+add::
+
+  poll_builtinGather no
+
+to the configuration, as the default gather process is likely useless.
+
+
 Repeated Scans and VIP
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -566,6 +592,8 @@ These options set what files the user wants to be notified for and where
 - **chmod     <integer>        (default: 0o400)**
 - **poll_without_vip  <boolean> (default: True)**
 - **file_time_limit <duration>   (default 60d)**
+- **poll_builtinGather <boolean> (default: True)**
+
 
 The option *filename* can be used to set a global rename to the products.
 Ex.:
