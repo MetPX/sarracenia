@@ -383,19 +383,21 @@ specify::
 
      m['integrity'] = { 'method': 'cod', 'value': 'sha512' }
 
-One can also build an supply a fake stat record to msg_init in order to
-get 'mtime', 'atime', 'size', and 'mode' message fields set::
+One can also build an supply a fake stat record to fromFileInfor factory,
+for example using the dateparser routines (careful to convert to utc 
+timezone) to convert however the remote server lists the, as well
+as determine the file size and permissions in effect::
 
 
-     pollmtime = dateparser.parse( ... )
-     mtimestamp = sarracenia.timeflt2str( time.mktime( pollmtime.timetuple() ) )
+     pollmtime = dateparser.parse( ... , settings={ ... TO_TIMEZONE='utc' } )
+     mtimestamp = time.mktime( pollmtime.timetuple() )
 
      fsize = info_from_poll #about the size of the file to download
      st = sarracenia.fakeStat( mtime=mtimstamp, atime=mtimestamp, size=fsize, mode=0o666 )
      m = sarracenia.Message.fromFileInfo(sample_fileName, cfg, st)
 
 One should fill in the fakestat record if possible, since the duplicate
-cache is driven off it, so the better the metadata, the better the
+cache use metadata if available. The better the metadata, the better the
 detection of changes to existing files.
 
 once the message is built, append it to the list::

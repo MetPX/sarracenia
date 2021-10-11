@@ -119,6 +119,21 @@ be posted to the log::
 Each message in the log will be prefixed with the class and routine 
 emitting the log message, as well as the date/time.
 
+One can also implement a per module override to log levels.
+See sarracenia/moth/amqp.py as and example. For that module,
+the message logging level is upped to warning by default.
+One can override it with a config file setting::
+
+   set sarracenia.moth.amqp.AMQP.logLevel info
+ 
+in the *__init__(self,options)* function of the callback, 
+include the lines::
+
+   me = "%s.%s" % ( __class__.__module__ , __class__.__name__ )
+   if 'logLevel' in self.o['settings'][me]:
+                logger.setLevel( self.o['logLevel'].upper() )
+
+
 
 Initialization and Settings
 ---------------------------
