@@ -368,8 +368,9 @@ v3: build a list of messages to return.
 
 To build a message, without a local file, use fromFileInfo sarracenia.message factory::
   
-     import sarracenia
      import dateparser
+     import paramiko
+     import sarracenia
 
      gathered_messages=[]
 
@@ -383,17 +384,22 @@ specify::
 
      m['integrity'] = { 'method': 'cod', 'value': 'sha512' }
 
-One can also build an supply a fake stat record to fromFileInfor factory,
-for example using the dateparser routines (careful to convert to utc 
-timezone) to convert however the remote server lists the, as well
-as determine the file size and permissions in effect::
+One can also build an supply a fake stat record to fromFileInfo factory,
+using the *paramiko.SFTPAttributes()* type. For example, using the dateparser 
+routines (careful to convert to utc timezone) to convert however the remote 
+server lists the, as well as determine the file size and permissions in 
+effect::
 
 
      pollmtime = dateparser.parse( ... , settings={ ... TO_TIMEZONE='utc' } )
      mtimestamp = time.mktime( pollmtime.timetuple() )
 
      fsize = info_from_poll #about the size of the file to download
-     st = sarracenia.fakeStat( mtime=mtimstamp, atime=mtimestamp, size=fsize, mode=0o666 )
+     st = paramiko.SFTPAttributes()
+     st.st_mtime=mtimstamp
+     st.st_atime=mtimestamp
+     st.st_size=fsize
+     st.st_mode=0o666 
      m = sarracenia.Message.fromFileInfo(sample_fileName, cfg, st)
 
 One should fill in the fakestat record if possible, since the duplicate

@@ -56,10 +56,17 @@ logger = logging.getLogger(__name__)
     m = sarracenia.Message.fromFileInfo( path, options, lstat )
 
     where you can make up the lstat values to fill in some fields in the message.
-    You can make a fake lstat structure to provide these values using fakestat 
+    You can make a fake lstat structure to provide these values using paramiko.SFTPAttributes 
 
-    fs = fakeStat( atime, mtime, size, mode)
 
+    import paramiko
+
+    lstat = paramiko.SFTPAttributes()
+    lstat.st_mtime= utcinteger second count in UTC (numeric version of a Sarracenia timestamp.)
+    lstat.st_atime=
+    lstat.st_mode=0o644
+    lstat.st_size= size_in_bytes
+ 
     that you can then provide as an *lstat* argument to the above *fromFileInfo()* 
     call. However the message returned will lack an integrity checksum field.
     once you get the file, you can add the Integrity field with:
@@ -198,24 +205,6 @@ known_report_codes = {
     503: "Unable to process: Service unavailable",
     503: "Unsupported transport protocol specified in posting."
 }
-
-
-
-class fakeStat():
-   """
-     this allows building a stat record for assignment by msg_init, to set access times and permissions,
-     if desired.
-
-     msg_init( path, options, fakeStat(access_time,modification_time,file_size_in_bytes,permission_bits)
-     values should be as they would be defined in a stat record returned by os.stat, or os.lstat 
-     routines.
-
-   """
-   def __init__(self,atime=0,mtime=0,size=0,mode=0o644):
-     self.st_atime = atime 
-     self.st_mtime = mtime 
-     self.st_size = size 
-     self.st_mode = mode 
 
 
 class Message(dict):
@@ -421,10 +410,12 @@ class Message(dict):
         msg['size'] = lstat.st_size
     
         if o.preserve_time:
-            msg['mtime'] = timeflt2str(lstat.st_mtime)
-            msg['atime'] = timeflt2str(lstat.st_atime)
+            if lstat.st_mtime:
+                msg['mtime'] = timeflt2str(lstat.st_mtime)
+            if lstat.st_atime:
+                msg['atime'] = timeflt2str(lstat.st_atime)
     
-        if o.preserve_mode:
+        if o.preserve_mode and lstat.st_mode:
             msg['mode'] = "%o" % (lstat.st_mode & 0o7777)
     
         return msg
