@@ -97,76 +97,38 @@ class NoDupe(FlowCB):
         self.last_time = self.now
         self.last_count = new_count
 
-    def check(self, key, path, part):
+    def check(self, key, path ):
         # not found
         self.cache_hit = None
 
         # set time and value
         relpath = self.__get_relpath(path)
         qpath = urllib.parse.quote(relpath)
-        value = '%s*%s' % (relpath, part)
 
         if key not in self.cache_dict:
             #logger.debug("adding a new entry in NoDupe cache")
             kdict = {}
-            kdict[value] = self.now
+            kdict[relpath] = self.now
             self.cache_dict[key] = kdict
-            self.fp.write("%s %f %s %s\n" % (key, self.now, qpath, part))
+            self.fp.write("%s %f %s\n" % (key, self.now, qpath))
             self.count += 1
             return True
 
         #logger.debug("sum already in NoDupe cache: key={}".format(key))
         kdict = self.cache_dict[key]
-        present = value in kdict
-        kdict[value] = self.now
+        present = relpath in kdict
+        kdict[relpath] = self.now
 
         # differ or newer, write to file
-        self.fp.write("%s %f %s %s\n" % (key, self.now, qpath, part))
+        self.fp.write("%s %f %s\n" % (key, self.now, qpath))
         self.count += 1
 
         if present:
-            #logger.debug("updated time of old NoDupe entry: value={}".format(value))
-            self.cache_hit = value
+            #logger.debug("updated time of old NoDupe entry: relpath={}".format(relpath))
+            self.cache_hit = relpath
             return False
         else:
-            logger.debug("added value={}".format(value))
-
-        if part is None or part[0] not in "pi":
-            logger.debug("new entry, not a part: part={}".format(part))
-            return True
-
-        ptoken = part.split(',')
-        if len(ptoken) < 4:
-            logger.debug("new entry, weird part: ptoken={}".format(ptoken))
-            return True
-
-        # build a wiser dict value without
-        # block_count and remainder (ptoken 2 and 3)
-        # FIXME the remainder of this method is wrong. It will trivially have a match because we just
-        #  added the entry in kdict, then we will always find the value and return false. It will not change
-        #  anything at all though. Worst, the cache hit will falsely indicate that we hit an old entry. Then,
-        #  partitioned files would be lost. And why are we removing blktot and brem to do such a check.
-        pvalue = value
-        pvalue = pvalue.replace(',' + ptoken[2], '', 10)
-        pvalue = pvalue.replace(',' + ptoken[3], '', 10)
-
-        # check every key in kdict
-        # build a similar value to compare with pvalue
-
-        for value in kdict:
-            kvalue = value
-            kvalue = kvalue.replace(',' + ptoken[2], '', 10)
-            kvalue = kvalue.replace(',' + ptoken[3], '', 10)
-
-            # if we find the value... its in cache... its old
-
-            if pvalue == kvalue:
-                self.cache_hit = value
-                return False
-
-        # FIXME variable value was overwritten by loop variable value. Using pvalue is safer here
-        #  for when the loop bug will be fixed.
-        logger.debug("did not find it... its new: pvalue={}".format(pvalue))
+            logger.debug("added relpath={}".format(relpath))
 
         return True
 
@@ -193,7 +155,7 @@ class NoDupe(FlowCB):
         
 
         logger.debug("NoDupe calling check( %s, %s, %s )" % ( sumstr, relpath, partstr ) )
-        return self.check(sumstr, relpath, partstr)
+        return self.check(sumstr, relpath)
 
     def after_accept(self, worklist):
 
@@ -266,7 +228,7 @@ class NoDupe(FlowCB):
                 self.count += 1
 
                 if persist:
-                    self.fp.write("%s %f %s %s\n" % (key, t, qpath, part))
+                    self.fp.write("%s %f %s\n" % (key, t, qpath))
 
             if len(ndict) > 0: new_dict[key] = ndict
 
@@ -343,15 +305,13 @@ class NoDupe(FlowCB):
             if not line: break
             lineno += 1
 
-            # words  = [ sum, time, path, part ]
+            # words  = [ sum, time, path ]
             try:
                 words = line.split()
                 key = words[0]
                 ctime = float(words[1])
                 qpath = words[2]
                 path = urllib.parse.unquote(qpath)
-                part = words[3]
-                value = '%s*%s' % (path, part)
 
                 # skip expired entry
 
@@ -369,9 +329,9 @@ class NoDupe(FlowCB):
             if key in self.cache_dict: kdict = self.cache_dict[key]
             else: kdict = {}
 
-            if not value in kdict: self.count += 1
+            if not path in kdict: self.count += 1
 
-            kdict[value] = ctime
+            kdict[path] = ctime
             self.cache_dict[key] = kdict
 
     def open(self, cache_file=None):
