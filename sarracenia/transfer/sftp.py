@@ -446,12 +446,12 @@ class Sftp(Transfer):
         for index in range(len(dir_attr)):
             attr = dir_attr[index]
             line = attr.__str__()
-            self.line_callback(line)
+            self.line_callback(line,attr)
         #logger.debug("sr_sftp ls = %s" % self.entries )
         return self.entries
 
     # line_callback: ls[filename] = 'stripped_file_description'
-    def line_callback(self, iline):
+    def line_callback(self, iline,attr):
         #logger.debug("sr_sftp line_callback %s" % iline)
 
         oline = iline
@@ -474,7 +474,7 @@ class Sftp(Transfer):
         #if not self.o.ls_file_index in [-1,len(opart2)-1] : fil =  ' '.join(opart2[self.o.ls_file_index:])
         line = ' '.join(opart2)
 
-        self.entries[fil] = line
+        self.entries[fil] = attr
 
     # ls_file_index
     def ls_file_index(self, ifil, iline):

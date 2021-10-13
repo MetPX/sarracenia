@@ -66,6 +66,10 @@ logger = logging.getLogger(__name__)
     lstat.st_atime=
     lstat.st_mode=0o644
     lstat.st_size= size_in_bytes
+
+    optional fields that may be of interest:
+    lstat.filename= "nameOfTheFile"
+    lstat.longname= 'lrwxrwxrwx    1 peter    peter          20 Oct 11 20:28 nameOfTheFile'
  
     that you can then provide as an *lstat* argument to the above *fromFileInfo()* 
     call. However the message returned will lack an integrity checksum field.
@@ -407,7 +411,8 @@ class Message(dict):
     
         if lstat is None: return msg
     
-        msg['size'] = lstat.st_size
+        if lstat.st_size:
+            msg['size'] = lstat.st_size
     
         if o.preserve_time:
             if lstat.st_mtime:

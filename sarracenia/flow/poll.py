@@ -6,18 +6,20 @@
 
 import sarracenia.moth
 import copy
-from sarracenia.flow import Flow
+import dateparser
+import datetime
 import logging
+import os
+import paramiko
 
 import sarracenia 
-
 import sarracenia.config
-
-import os, sys, time
-
+from sarracenia.flow import Flow
 import sarracenia.transfer
+import stat
 
-import datetime
+import sys, time
+
 
 
 logger = logging.getLogger(__name__)
@@ -166,6 +168,7 @@ class Poll(Flow):
 
         for f in new_lst:
             # logger.debug("checking %s (%s)" % (f, ls[f]))
+            
             try:
                 str1 = ls[f]
                 str2 = str1.split()
@@ -198,7 +201,7 @@ class Poll(Flow):
 
 
     def lsdir(self):
-        try:
+        if True: #try:
             ls = self.dest.ls()
             new_ls = {}
             new_dir = {}
@@ -213,16 +216,25 @@ class Poll(Flow):
                     for plugin in self.plugins['on_line']:
                         line = plugin(line)
                         if (line is None) or (line == ""): break
-                    if (line is None) or (line == ""): continue
+                    if (line is None) or (line == ""): 
+                        continue
 
-                if line[0] == 'd':
-                    d = f.strip(os.sep)
-                    new_dir[d] = line
-                    continue
+                if type(line) is str:
+                    if line[0] == 'd':
+                        d = f.strip(os.sep)
+                        new_dir[d] = line
+                    else:
+                        new_ls[f] = line.strip('\n')
+                elif type(line) is paramiko.SFTPAttributes:
+                    if stat.S_ISDIR(line.st_mode):
+                         new_dir[f] = line
+                    else:
+                        new_ls[f] = line
+                else:
+                    logger.error('line not understood, type: %s' % type(line) )
 
-                new_ls[f] = line.strip('\n')
             return True, new_ls, new_dir
-        except:
+        else: #except:
             logger.warning("dest.lsdir: Could not ls directory")
             logger.debug("Exception details:", exc_info=True)
 
@@ -250,8 +262,13 @@ class Poll(Flow):
 
             # get file list from difference in ls
 
-            filelst, desclst = self.getFileNamesAndDesc(file_dict, lspath)
-            logger.debug("poll_directory: after differ, len=%d" % len(filelst))
+            if (len(file_dict) > 0) and type(list(file_dict.values())[0]) is str:
+                filelst, desclst = self.getFileNamesAndDesc(file_dict, lspath)
+            else: # SFTPAttributes
+                filelst = file_dict.keys()
+                desclst = file_dict
+
+            logger.debug("poll_directory: new files found %d" % len(filelst))
 
             # post poll list
 
@@ -270,7 +287,7 @@ class Poll(Flow):
 
         return msgs
 
-    def poll_file_post(self, ssiz, mtime, destDir, remote_file):
+    def poll_file_post(self, desc, destDir, remote_file):
 
         FileOption = None
         for mask in self.pulllst:
@@ -292,19 +309,24 @@ class Poll(Flow):
 
         post_relPath = destDir + '/' + remote_file
 
-        msg = sarracenia.Message.fromFileInfo(post_relPath, self.o, None)
+        logger.debug('desc: type: %s, value: %s' % ( type(desc), desc) )
 
-        msg['mtime'] = mtime
+        if type(desc) == str:
+            line = desc.split()
+            st = paramiko.SFTPAttributes()
+            st.st_size = int(line[4])
+            # actionally only need to convert normalized time to number here...
+            # just being lazy...
+            lstime = dateparser.parse( line[5] + " " + line[6] ).timestamp()
+            st.st_mtime = lstime
+            st.st_atime = lstime
+
+            desc=st
+        msg = sarracenia.Message.fromFileInfo(post_relPath, self.o, desc)
 
         if self.o.integrity_method and (',' in self.o.integrity_method):
             m, v = self.o.integrity_method.split(',')
             msg['integrity'] = {'method': m, 'value': v}
-
-        try:
-            isiz = int(ssiz)
-            msg['size'] = isiz
-        except:
-            pass
 
         this_rename = self.o.rename
 
@@ -330,11 +352,7 @@ class Poll(Flow):
 
         for idx, remote_file in enumerate(filelst):
             desc = desclst[remote_file]
-            ssiz = desc.split()[4]
-
-            logger.critical('FIXME: Mocking mtime ... need to calculate mtime here=%s' % desc )
-            mtime="19000101T000000.000000"
-            msgs.extend(self.poll_file_post(ssiz, mtime, destDir, remote_file))
+            msgs.extend(self.poll_file_post(desc, destDir, remote_file))
         return msgs
 
     # =============

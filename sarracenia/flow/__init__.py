@@ -1061,6 +1061,8 @@ class Flow:
                     block_length = msg['blocks']['size']
                     str_range = 'bytes=%d-%d' % (remote_offset, remote_offset +
                                                  block_length - 1)
+            else:
+                str_range = ''
 
             #download file
 

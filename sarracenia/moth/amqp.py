@@ -155,7 +155,6 @@ class AMQP(Moth):
             if 'logLevel' in self.o['settings'][me]:
                 logger.setLevel( self.o['logLevel'].upper() )
 
-        
         if self.is_subscriber:  #build_consumer
             self.__getSetup()
             return

@@ -20,6 +20,7 @@ sample line from sftp server:
 """
 
 import logging
+import paramiko
 from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
@@ -45,17 +46,20 @@ class Line_Mode(FlowCB):
 
     def on_line(self, line):
 
-        parts = line.split()
+        if type(line) is str :
+            parts = line.split()
 
-        modstr = parts[0]
+            modstr = parts[0]
 
-        mode = 0
-        mode += self.modstr2num(modstr[1:4]) << 6
-        mode += self.modstr2num(modstr[4:7]) << 3
-        mode += self.modstr2num(modstr[7:10])
+            mode = 0
+            mode += self.modstr2num(modstr[1:4]) << 6
+            mode += self.modstr2num(modstr[4:7]) << 3
+            mode += self.modstr2num(modstr[7:10])
 
-        #logger.debug("%s mode: %03o" %  ( line, mode ) )
-
+            #logger.debug("%s mode: %03o" %  ( line, mode ) )
+        elif type(line) is paramiko.SFTPAttributes :
+            mode= line.st_mode
+           
         if ((mode & self.o.chmod) == self.o.chmod):
             return line
         else:
