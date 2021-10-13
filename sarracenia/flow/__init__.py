@@ -148,7 +148,7 @@ class Flow:
         self.worklist.failed = []
         self.worklist.directories_ok = []
 
-        self.plugins['load'] = ['sarracenia.flowcb.retry.Retry']
+        self.plugins['load'] = self.o.plugins_early + ['sarracenia.flowcb.retry.Retry']
 
         # open cache, get masks.
         if self.o.nodupe_ttl > 0:
@@ -162,13 +162,13 @@ class Flow:
         self.cdir = None
         self.proto = {}
 
-        if hasattr(self.o, 'plugins'):
-            self.plugins['load'].extend(self.o.plugins)
-
         # initialize plugins.
         if hasattr(self.o, 'v2plugins') and len(self.o.v2plugins) > 0:
             self.plugins['load'].append(
                 'sarracenia.flowcb.v2wrapper.V2Wrapper')
+
+        self.plugins['load'].extend( self.o.plugins_late )
+
 
     def loadCallbacks(self, plugins_to_load):
 

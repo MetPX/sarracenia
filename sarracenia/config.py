@@ -505,7 +505,8 @@ class Config:
         self.v2plugin_options = []
         self.imports = []
         self.logEvents = set([])
-        self.plugins = []
+        self.plugins_late = []
+        self.plugins_early = []
         self.exchange = None
         self.filename = None
         self.fixed_headers = {}
@@ -1000,11 +1001,11 @@ class Config:
             elif k in [ 'callback', 'cb' ]:
                 vv = v.split('.')
                 v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
-                self.plugins.append(v)
+                self.plugins_late.append(v)
             elif k in [ 'callback_prepend', 'cbp' ]:
                 vv = v.split('.')
                 v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
-                self.plugins.insert(0, v)
+                self.plugins_early.append(v)
             elif k in ['declare']:
                 self._parse_declare(line[1:])
             elif k in ['feeder']:
@@ -1034,16 +1035,16 @@ class Config:
             elif k in ['import']:
                 self.imports.append(v)
             elif k in ['flow_callback', 'flowcb', 'fcb']:
-                self.plugins.append(v)
+                self.plugins_late.append(v)
             elif k in ['flow_callback_prepend', 'flowcb_prepend', 'fcbp']:
-                self.plugins.insert(0,  v )
+                self.plugins_early.append( v )
             elif k in ['set', 'setting', 's']:
                 self._parse_setting(line[1], line[2:])
             elif k in ['sum', 'integrity' ]:
                 self._parse_sum(v)
             elif k in Config.v2entry_points:
-                if k in self.plugins:
-                    self.plugins.remove(v)
+                #if k in self.plugins:
+                #    self.plugins.remove(v)
                 self._parse_v2plugin(k, v)
             elif k in ['no-import']:
                 self._parse_v3unplugin(v)
@@ -1174,8 +1175,8 @@ class Config:
                 self.logEvents |= set( ['reject'] )
             delattr( self, 'log_reject' )
 
-        if ( (len(self.logEvents) > 0 ) or self.log_flowcb_needed) and ( '.log.Log' not in self.plugins ):
-            self.plugins.append( 'sarracenia.flowcb.log.Log' )
+        if ( (len(self.logEvents) > 0 ) or self.log_flowcb_needed) and ( '.log.Log' not in self.plugins_late ):
+            self.plugins_late.append( 'sarracenia.flowcb.log.Log' )
 
         # patch, as there is no 'none' level in python logging module...
         #    mapping so as not to break v2 configs.

@@ -217,7 +217,6 @@ class NoDupe(FlowCB):
                 parts = value.split('*')
                 path = parts[0]
                 qpath = urllib.parse.quote(path)
-                part = parts[1]
 
                 if qpath == qdelpath: continue
 

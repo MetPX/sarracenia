@@ -223,6 +223,9 @@ class Transfer():
 
     def __on_data__(self, chunk):
 
+        return chunk
+
+        #FIXME ... need to re-enable on_data plugins... not sure how they should work.
         if 'on_data' not in self.o.plugins:
             return chunk
 
@@ -322,8 +325,9 @@ class Transfer():
 
         # warn if length mismatch without transformation.
 
-        if (not 'on_data' in self.o.plugins
-            ) and length != 0 and rw_length != length:
+        #if (not 'on_data' in self.o.plugins
+        #    ) and length != 0 and rw_length != length:
+        if  length != 0 and rw_length != length:
             logger.error(
                 "util/writelocal mismatched file length writing %s. Message said to expect %d bytes.  Got %d bytes."
                 % (local_file, length, rw_length))

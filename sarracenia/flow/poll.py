@@ -201,7 +201,7 @@ class Poll(Flow):
 
 
     def lsdir(self):
-        if True: #try:
+        try:
             ls = self.dest.ls()
             new_ls = {}
             new_dir = {}
@@ -234,7 +234,7 @@ class Poll(Flow):
                     logger.error('line not understood, type: %s' % type(line) )
 
             return True, new_ls, new_dir
-        else: #except:
+        except:
             logger.warning("dest.lsdir: Could not ls directory")
             logger.debug("Exception details:", exc_info=True)
 
