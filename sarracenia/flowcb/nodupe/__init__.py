@@ -134,28 +134,25 @@ class NoDupe(FlowCB):
 
     def check_message(self, msg):
 
-        relpath = self.__get_relpath(msg['relPath'])
-        sumstr = msg['integrity']['method'] + ',' + msg['integrity'][
-            'value'].replace('\n', '')
-        partstr = relpath
+        if ( 'nodupe_override' in msg ) and ( 'key' in msg['nodupe_override'] ):
+            key=msg['nodupe_override']['key']
+        else: 
+            key = msg['integrity']['method'] + ',' + msg['integrity'][
+                'value'].replace('\n', '')
 
-        if msg['integrity']['method'] in [ 'arbitrary', 'md5name', 'remove', 'link' ]:
-            partstr = 'None'
-        elif msg['integrity']['method'] in ['cod']:
-            if 'mtime' in msg:
-                sumstr = "%s,%s" % ( msg['integrity']['method'],msg['mtime'] )
-            elif 'size' in msg:
-                sumstr = "%s,%s" % ( msg['integrity']['method'],msg['size'] )
-            partstr = 'None'
-        else:
-            if 'size' in msg:
-                partstr = '1,' + str(msg['size'])
-            else:
-                partstr = msg['blocks']
+            if msg['integrity']['method'] in ['cod']:
+                if 'mtime' in msg:
+                    key = "%s,%s" % ( msg['integrity']['method'],msg['mtime'] )
+                elif 'size' in msg:
+                    key = "%s,%s" % ( msg['integrity']['method'],msg['size'] )
         
+        if ( 'nodupe_override' in msg ) and ( 'path' in msg['nodupe_override'] ):
+            path=msg['nodupe_override']['path']
+        else:
+            path = msg['relPath']
 
-        logger.debug("NoDupe calling check( %s, %s, %s )" % ( sumstr, relpath, partstr ) )
-        return self.check(sumstr, relpath)
+        logger.debug("NoDupe calling check( %s, %s )" % ( key, path ) )
+        return self.check(key, path)
 
     def after_accept(self, worklist):
 
