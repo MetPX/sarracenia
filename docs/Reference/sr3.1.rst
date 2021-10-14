@@ -2631,6 +2631,8 @@ and under which name.
 - **message_rate_min <float>   (default: 0 == DISABLED)**
 - **mirror    <boolean>        (default: off)** 
 - **no_download|notify_only    <boolean>        (default: off)** 
+- **nodupe   <off|on|999[smhdw]>     (default: off)**
+- **nodupe_basis   <data|name|path>     (default: path)**
 - **outlet    post|json|url    (default: post)** 
 - **overwrite <boolean>        (default: off)** 
 - **preserve_mode <boolean>  (default: on)**
@@ -2640,8 +2642,6 @@ and under which name.
 - **retry_ttl    <duration>         (default: same as expire)** 
 - **source_from_exchange  <boolean> (default: off)**
 - **strip     <count|regexp>   (default: 0)**
-- **suppress_duplicates   <off|on|999[smhdw]>     (default: off)**
-- **suppress_duplicates_basis   <data|name|path>     (default: path)**
 - **timeout     <float>         (default: 0)**
 - **tls_rigour   <lax|medium|strict>  (default: medium)**
 - **xattr_disable  <boolean>  (default: off)**
@@ -3029,6 +3029,14 @@ cases, suppression of identical files should be done regardless of where in
 the tree the file resides.  Set 'name' for files of identical name, but in
 different directories to be considered duplicates. Set to 'data' for any file, 
 regardless of name, to be considered a duplicate if the checksum matches.
+
+This is implemented as an alias for:
+
+ callback_prepend nodupe.name
+
+or: 
+
+ callback_prepend nodupe.data
 
 
 kbytes_ps <count> (default: 0)

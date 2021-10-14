@@ -27,7 +27,7 @@ import logging
 #              sum time path part
 #
 # cache_dict : {}
-#              cache_dict[sum] = {path1*part1: time1, path2*part2: time2, ...}
+#              cache_dict[key] = {path1: time1, path2: time2, ...}
 #
 
 from sarracenia import nowflt
@@ -39,19 +39,11 @@ logger = logging.getLogger(__name__)
 
 class NoDupe(FlowCB):
     """
-
        options:
 
        nodupe_ttl - duration in seconds (floating point.)
                     The time horizon of the receiption cache.
                     how long to remember files, so they are marked as duplicates.
-
-       nodupe_basis - 'data', 'path', 'name'
-                    What sort of entries to compare for duplicate.
-                    data - files with the same content, but different names will be compared.
-                    name - files with the same name in different directories will be compared.
-                    path - only files with the same relPath will be compared.
-
     """
     def __init__(self, options):
         logger.debug("NoDupe init")
@@ -64,10 +56,7 @@ class NoDupe(FlowCB):
         if hasattr(options, 'nodupe_ttl'):
             self.o.nodupe_ttl = options.nodupe_ttl
 
-        if hasattr(options, 'nodupe_basis'):
-            self.o.nodupe_basis = options.nodupe_basis
-
-        logger.info( 'time_to_live=%d, basis=%s, ' % ( self.o.nodupe_ttl, self.o.nodupe_basis, ) )
+        logger.info( 'time_to_live=%d, ' % ( self.o.nodupe_ttl ) )
 
         self.cache_dict = {}
         self.cache_file = None
@@ -97,12 +86,9 @@ class NoDupe(FlowCB):
         self.last_time = self.now
         self.last_count = new_count
 
-    def check(self, key, path ):
+    def check(self, key, relpath ):
         # not found
         self.cache_hit = None
-
-        # set time and value
-        relpath = self.__get_relpath(path)
         qpath = urllib.parse.quote(relpath)
 
         if key not in self.cache_dict:
@@ -175,19 +161,6 @@ class NoDupe(FlowCB):
     def on_stop(self):
         self.save()
         self.close()
-
-    def __get_relpath(self, path):
-        if self.o.nodupe_basis == 'name':
-            result = path.split('/')[-1]
-        elif self.o.nodupe_basis == 'path':
-            result = path
-        elif self.o.nodupe_basis == 'data':
-            result = "data"
-        else:
-            raise ValueError(
-                "invalid choice for NoDupe basis valid ones:{}".format(
-                    self.o.nodupe_basis))
-        return result
 
     def clean(self, persist=False, delpath=None):
         logger.debug("NoDupe clean")

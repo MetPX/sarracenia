@@ -1184,8 +1184,12 @@ class Config:
             if self.logLevel == 'none':
                 self.logLevel = 'critical'
 
-        if not hasattr(self, 'nodupe_basis'):
-            self.nodupe_basis = 'path'
+        if hasattr(self, 'nodupe_basis'):
+            if self.nodupe_basis == 'data': 
+                self.plugins_early.append( 'sarracenia.flowcb.nodupe.data.Data' )
+            elif self.nodupe_basis == 'name': 
+                self.plugins_early.append( 'sarracenia.flowcb.nodupe.name.Name' )
+            delattr( self, 'nodupe_basis' )
 
         # FIXME: note that v2 *user_cache_dir* is, v3 called:  cfg_run_dir
         if config[-5:] == '.conf':
