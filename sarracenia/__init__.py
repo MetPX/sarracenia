@@ -355,7 +355,6 @@ class Message(dict):
     
         msg = Message()
     
-        logger.critical('lstat=%s' % str(lstat) )
         #FIXME no variable substitution... o.set_dir_pattern ?
      
         if hasattr(o,'post_exchange'):
