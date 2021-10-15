@@ -493,20 +493,20 @@ class sr_GlobalState:
                             # look at pid files, find ones where process is missing.
                             if filename[-4:] == '.pid':
                                 i = int(filename[-6:-4])
-                                p = pathlib.Path(filename)
-                                if sys.version_info[0] > 3 or sys.version_info[
-                                        1] > 4:
-                                    t = p.read_text().strip()
-                                else:
-                                    with p.open() as f:
-                                        t = f.read().strip()
-                                if t.isdigit():
-                                    pid = int(t)
-                                    if pid not in self.procs:
-                                        if i != 0:
+                                if i != 0:
+                                    p = pathlib.Path(filename)
+                                    if sys.version_info[0] > 3 or sys.version_info[
+                                            1] > 4:
+                                        t = p.read_text().strip()
+                                    else:
+                                        with p.open() as f:
+                                            t = f.read().strip()
+                                    if t.isdigit():
+                                        pid = int(t)
+                                        if pid not in self.procs:
                                             missing.append([c, cfg, i])
-                                else:
-                                    missing.append([c, cfg, i])
+                                    else:
+                                            missing.append([c, cfg, i])
                         if ( len(self.states[c][cfg]['instance_pids']) > 0 ) or ( len(missing) > 0 ) :
                             # look for instances that should be running, but no pid file exists.
                             for i in range(1, int(self.configs[c][cfg]['instances'])+1 ):
