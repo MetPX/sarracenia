@@ -288,6 +288,7 @@ class sr_GlobalState:
                             'config': cbase,
                             'directory': '${PWD}'
                         })
+                        cfgbody.applyComponentDefaults( c )
                         cfgbody.parse_file(cfg)
                         cfgbody.fill_missing_options(c, cfg)
                         self.configs[c][cbase]['options'] = cfgbody
@@ -1398,6 +1399,7 @@ class sr_GlobalState:
 
             if not 'options' in self.configs[c][cfg]:
                 continue
+
             o = self.configs[c][cfg]['options']
             print('\nConfig of %s/%s: ' % (c, cfg))
             o.dump()

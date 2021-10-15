@@ -22,6 +22,7 @@ from sarracenia.flow import Flow
 
 from urllib.parse import urlparse, urlunparse
 
+logger = logging.getLogger(__name__)
 
 class RedirectedTimedRotatingFileHandler(
         logging.handlers.TimedRotatingFileHandler):
@@ -55,7 +56,8 @@ class instance:
           *start* (daemon) or *foreground* (interactive)
     
         """
-        logger = logging.getLogger()
+        global logger
+
         logging.basicConfig(
             format=
             '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
@@ -190,17 +192,12 @@ class instance:
         with open(pidfilename, 'w') as pfn:
             pfn.write('%d' % os.getpid())
 
-        if cfg_preparse.action == 'audit':
-            #FIXME: write down instance pid file. is pidfile correct for audit?
-            logger.info('auditing...')
-            self.running_instance = Audit()
-        else:
-            cfg = sarracenia.config.one_config(component, config)
-            for n in cfg.env_declared:
-                 os.environ[n]=cfg.env[n]
-                 os.putenv(n,cfg.env[n])
+        cfg = sarracenia.config.one_config(component, config)
+        for n in cfg.env_declared:
+            os.environ[n]=cfg.env[n]
+            os.putenv(n,cfg.env[n])
 
-            self.running_instance = Flow.factory(cfg)
+        self.running_instance = Flow.factory(cfg)
 
         self.running_instance.run()
 

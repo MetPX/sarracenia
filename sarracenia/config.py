@@ -568,6 +568,20 @@ class Config:
             return False, urllib.parse.urlparse(urlstr)
         return True, details.url
 
+    def applyComponentDefaults( self, component ):
+        if component in ['post']:
+            self.override(sarracenia.flow.post.default_options)
+        elif component in ['poll']:
+            self.override(sarracenia.flow.poll.default_options)
+        elif component in ['sarra']:
+            self.override(sarradefopts)
+        elif component in ['sender']:
+            self.override(sarracenia.flow.sender.default_options)
+        elif component in ['subscribe']:
+            self.override(sarracenia.flow.subscribe.default_options)
+        elif component in ['watch']:
+            self.override(sarracenia.flow.watch.default_options)
+
     @property
     def admin(self):
         return self.__admin
@@ -1968,6 +1982,7 @@ def no_file_config():
     cfg.retry_path = '.'
     return cfg
 
+
 def one_config(component, config, isPost=False):
     """
       single call return a fully parsed single configuration for a single component to run.
@@ -1991,24 +2006,9 @@ def one_config(component, config, isPost=False):
         'no': 0
     })
 
-    #logger.error( 'default' )
-    #print( 'default' )
-    #default_cfg.dump()
-
     cfg = copy.deepcopy(default_cfg)
 
-    if component in ['post']:
-        cfg.override(sarracenia.flow.post.default_options)
-    elif component in ['poll']:
-        cfg.override(sarracenia.flow.poll.default_options)
-    elif component in ['sarra']:
-        cfg.override(sarradefopts)
-    elif component in ['sender']:
-        cfg.override(sarracenia.flow.sender.default_options)
-    elif component in ['subscribe']:
-        cfg.override(sarracenia.flow.subscribe.default_options)
-    elif component in ['watch']:
-        cfg.override(sarracenia.flow.watch.default_options)
+    cfg.applyComponentDefaults( component )
 
     store_pwd = os.getcwd()
 
@@ -2026,9 +2026,6 @@ def one_config(component, config, isPost=False):
          logger.error('config %s not found' % fname )
          return None
 
-    #logger.error( 'after file' )
-    #print( 'after file' )
-    #cfg.dump()
     os.chdir(store_pwd)
 
     cfg.parse_args(isPost)
