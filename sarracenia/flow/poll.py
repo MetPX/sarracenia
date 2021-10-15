@@ -322,6 +322,7 @@ class Poll(Flow):
             st.st_atime = lstime
 
             desc=st
+
         msg = sarracenia.Message.fromFileInfo(post_relPath, self.o, desc)
 
         if self.o.integrity_method and (',' in self.o.integrity_method):

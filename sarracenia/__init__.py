@@ -355,6 +355,7 @@ class Message(dict):
     
         msg = Message()
     
+        logger.critical('lstat=%s' % str(lstat) )
         #FIXME no variable substitution... o.set_dir_pattern ?
      
         if hasattr(o,'post_exchange'):
@@ -411,16 +412,17 @@ class Message(dict):
     
         if lstat is None: return msg
     
-        if lstat.st_size:
+        if lstat.st_size is not None:
             msg['size'] = lstat.st_size
     
         if o.preserve_time:
-            if lstat.st_mtime:
+            if lstat.st_mtime is not None:
                 msg['mtime'] = timeflt2str(lstat.st_mtime)
-            if lstat.st_atime:
+            if lstat.st_atime is not None:
                 msg['atime'] = timeflt2str(lstat.st_atime)
     
-        if o.preserve_mode and lstat.st_mode:
+        if (lstat.st_mode is not None) and  \
+            (o.preserve_mode and lstat.st_mode):
             msg['mode'] = "%o" % (lstat.st_mode & 0o7777)
     
         return msg
