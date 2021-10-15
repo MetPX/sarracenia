@@ -415,6 +415,19 @@ and at the end::
      return gathered_messages
 
 
+vip processing in poll
+~~~~~~~~~~~~~~~~~~~~~~
+
+If you have vip set in v2, all participating nodes poll the upstream server
+and maintain the list of current files, they just don't publish the result.
+So if you have 8 servers sharing a vip, all eight are polling, kind of sad.
+There is also the poll_no_vip setting, and plugins often have to check if they
+have the vip or not.
+
+In v3, only the server with the vip polls. The plugins don't need to check.
+The other participating servers subscribe to where the poll posts to,
+to keep update their recent_files cache.
+
 
 do_download/do_send -> post or sub-classing of transfer/ or moth/
 ----------------------------------------------------------------- 
