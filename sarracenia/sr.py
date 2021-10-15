@@ -503,7 +503,8 @@ class sr_GlobalState:
                                 if t.isdigit():
                                     pid = int(t)
                                     if pid not in self.procs:
-                                        missing.append([c, cfg, i])
+                                        if i != 0:
+                                            missing.append([c, cfg, i])
                                 else:
                                     missing.append([c, cfg, i])
                         if ( len(self.states[c][cfg]['instance_pids']) > 0 ) or ( len(missing) > 0 ) :
@@ -511,7 +512,8 @@ class sr_GlobalState:
                             for i in range(1, int(self.configs[c][cfg]['instances'])+1 ):
                                 if not i in self.states[c][cfg]['instance_pids']:
                                     if i not in self.procs:
-                                        missing.append([c,cfg,i])
+                                        if i != 0:
+                                            missing.append([c,cfg,i])
                         os.chdir('..')
                 os.chdir('..')
 
