@@ -80,7 +80,12 @@ Examples of things that should work:
   * post_base_url -> post_baseUrl
   * post_rate_limit -> message_rate_max
   * cache, suppress_duplicates ->  nodupe_ttl
-  * topic_prefix -> topicPrefix
+  * topic_prefix -> topicPrefix 
+
+  The topic_prefix in v2 is 'v02.post'  in v3, the default is 'v03'. If topic_prefix is omitted 
+  you will need to add the line *topicPrefix v02.post* to get the same behaviour as v2. Could 
+  also be placed in ~/.config/sr3/default.conf if the case is too common.
+  One might have to similarly override the sr3 default for post_topicPrefix.
 
 * all on_message, on_file, on_post, on_heartbeat, routines will work, by sr3 using 
   the flowcb/v2wrapper.py plugin which will be automatically invoked when v2 plugins are 
@@ -95,8 +100,22 @@ Things that will not work:
 * do_*  they are just fundamentally different in v3.
 
 If you have a configuration with a do_* plugin, then you need this guide, from day 1.
-If you don't then 
+to set a configuration to use a plugin, in v2 one used the *plugin* option.
+The equivalent to that in v3 is *callback*::
 
+  v2: plugin x
+  v3: callback x3
+
+where x3 is the v3 ported version of the plugin made for v2. for this shorthand to work,
+there should be a file named x3.py somewhere in the PYTHONPATH (~/.config/plugins is added
+for convenience.) and that python source file needs to have a class X3.py declared in it
+(same as the file name but first letter capitalized.)  If you need to name it differently
+there is a longer form that allows one to violate the convention::
+
+  flow_callback x3.MyFavouriteClass
+
+the individual routine plugin declarations on_message, on_file, etc... are not a way of
+doing things in v3. You declare callbacks, and have them contain the entry points you need.
 
 
 Coding Differences between plugins in v2 vs. Sr3
