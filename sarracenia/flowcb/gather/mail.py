@@ -23,20 +23,27 @@ usage:
 
 """
 
-import poplib, imaplib, datetime, logging, email
+import datetime
+import email
+import imaplib
+import logging
+import poplib
+import sarracenia
+from sarracenia.flowcb import FlowCB
 
+logger = logger.getLogger(__name__)
 
-class Fetcher(object):
-    def __init__(self, parent):
-        parent.logger.info("poll_email_ingest init")
+class Mail(FlowCB):
+    def __init__(self, options):
 
-    def do_poll(self, parent):
-        import poplib, imaplib, datetime, logging, email
+        self.o = options
+        logger.info("poll_email_ingest init")
 
-        logger = parent.logger
-        logger.debug("poll_email_ingest do_poll")
+    def gather(self):
 
-        ok, details = parent.credentials.get(parent.destination)
+        logger.debug("start")
+
+        ok, details = self.o.credentials.get(self.o.destination)
         if ok:
             setting = details.url
             user = setting.username
@@ -44,9 +51,9 @@ class Fetcher(object):
             server = setting.hostname
             protocol = setting.scheme.lower()
             port = setting.port
-            logger.debug("poll_email_ingest destination valid")
+            logger.debug("destination valid")
         else:
-            logger.error("poll_email_ingest destination: invalid credentials")
+            logger.error("destination: invalid credentials")
             return
 
         if not port:
@@ -59,6 +66,7 @@ class Fetcher(object):
             else:
                 port = 110
 
+        gathered_messages=[]
         if "imap" in protocol:
             if protocol == "imaps":
                 try:
@@ -90,15 +98,8 @@ class Fetcher(object):
                 msg_subject = email.message_from_string(msg).get('Subject')
                 msg_filename = msg_subject + datetime.datetime.now().strftime(
                     '%Y%m%d_%H%M%s_%f')
-
-                parent.msg.new_baseurl = parent.destination
-                parent.to_clusters = 'ALL'
-                parent.msg.new_file = msg_filename
-                parent.msg.sumflg = 'z'
-                parent.msg.sumstr = 'z,d'
-                parent.post(parent.exchange, parent.msg.new_baseurl,
-                            parent.msg.new_file, parent.to_clusters,
-                            parent.msg.partstr, parent.msg.sumstr)
+                m = sarracenia.Message.fromFileInfo( msg_filename, self.o ) 
+                gathered_messages.append(m)
 
             mailman.close()
             mailman.logout()
@@ -137,15 +138,8 @@ class Fetcher(object):
                 msg_subject = email.message_from_string(msg).get('Subject')
                 msg_filename = msg_subject + datetime.datetime.now().strftime(
                     '%Y%m%d_%H%M%s_%f')
-                parent.msg.new_baseurl = parent.destination
-                parent.msg.new_file = msg_filename
-                parent.to_clusters = 'ALL'
-                parent.msg.sumflg = 'z'
-                parent.msg.partstr = '1,1,1,0,0'
-                parent.msg.sumstr = 'z,d'
-                parent.post(parent.exchange, parent.msg.new_baseurl,
-                            parent.msg.new_file, parent.to_clusters,
-                            parent.msg.partstr, parent.msg.sumstr)
+                m = sarracenia.Message.fromFileInfo( msg_filename, self.o ) 
+                gathered_messages.append(m)
 
             mailman.quit()
 
@@ -153,12 +147,4 @@ class Fetcher(object):
             logger.error(
                 "poll_email_ingest destination protocol must be one of 'imap/imaps' or 'pop/pops'."
             )
-            return
-
-
-def registered_as(self):
-    return ['imap', 'imaps', 'pop', 'pops']
-
-
-fetcher = Fetcher(self)
-self.do_poll = fetcher.do_poll
+        return gathered_messages

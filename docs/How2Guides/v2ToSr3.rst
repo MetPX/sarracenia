@@ -298,6 +298,12 @@ convention, one can also use a more flexible but longer-winded::
 the above two are equivalent. The flowcb version can be used to import classes 
 that don't match the convention of the x.X (a file named x.py containing a class called X.py)
 
+The gather routines, like all callbacks, accumulate on a stack.
+When you have a custom gather that replaces the built-in processing,
+you will often want to suppress the built-in polling gather.
+You need a setting for that in the configuration file::
+
+   poll_builtinGather off
 
 Options
 =======
@@ -449,6 +455,7 @@ and at the end::
 
      return gathered_messages
 
+ 
 
 vip processing in poll
 ~~~~~~~~~~~~~~~~~~~~~~
