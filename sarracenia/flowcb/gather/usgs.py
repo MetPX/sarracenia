@@ -94,10 +94,7 @@ class Usgs(FlowCB):
                     
                     self.o.msg.new_baseurl = self.o.destination.format(stns)
 
-                    m = sarracenia.Message.fromFileInfo( \
-                         'usgs_{0}_sites{1}.xml'.format( run_time, file_cnt), self.o)
-                    m['integrity'] = { 'method':'cod', 'valued':'sha512' }
-
+                    m = sarracenia.Message.fromFileInfo( 'usgs_{0}_sites{1}.xml'.format( run_time, file_cnt), self.o)
                     gathered_messages.append(m)
                 elif status_code == 403:
                     logger.error(
@@ -115,9 +112,7 @@ class Usgs(FlowCB):
                     logger.info("poll_usgs file updated %s" %
                                 self.o.destination.format(site))
                     self.o.msg.new_baseurl = self.o.destination.format(site)
-                    m = sarracenia.Message.fromFileInfo( \
-                          'usgs_{0}_{1}.xml'.format( run_time, site), self.o)
-                    m['integrity'] = { 'method':'cod', 'valued':'sha512' }
+                    m = sarracenia.Message.fromFileInfo( 'usgs_{0}_{1}.xml'.format( run_time, site), self.o)
                     gathered_messages.append(m)
                 elif status_code == 403:
                     logger.error(

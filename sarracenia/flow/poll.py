@@ -34,7 +34,7 @@ default_options = {
     'follow_symlinks': False,
     'force_polling': False,
     'inflight': None,
-    'integrity_method': 'cod,md5',
+    'integrity_method': 'cod,sha512',
     'part_ext': 'Part',
     'partflg': '1',
     'post_baseDir': None,

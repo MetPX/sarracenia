@@ -418,19 +418,12 @@ To build a message, without a local file, use fromFileInfo sarracenia.message fa
 
      m = sarracenia.Message.fromFileInfo(sample_fileName, cfg)
 
-builds an message from scratch, without checksums, or file size.
-This can be used for polling, when you don't have the local file.
-to request a normal checksum be computed when the file is downloaded,
-specify::
+builds an message from scratch.
 
-
-     m['integrity'] = { 'method': 'cod', 'value': 'sha512' }
-
-One can also build an supply a fake stat record to fromFileInfo factory,
-using the *paramiko.SFTPAttributes()* type. For example, using the dateparser 
-routines (careful to convert to utc timezone) to convert however the remote 
-server lists the, as well as determine the file size and permissions in 
-effect::
+One can also build an supply a simulated stat record to fromFileInfo factory,
+using the *paramiko.SFTPAttributes()* class. For example, using the dateparser 
+routines to convert however the remote server lists the date and time, as well 
+as determine the file size and permissions in effect::
 
 
      pollmtime = dateparser.parse( ... , settings={ ... TO_TIMEZONE='utc' } )

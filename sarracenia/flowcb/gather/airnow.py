@@ -60,11 +60,10 @@ class Airnow(FlowCB):
                           fakeStat.st_mode = 0o644
 
                           m = sarracenia.Message.fromFileInfo(Filename, self.o, fakeStat)
-                          m[ 'integrity' ] = { 'method':'cod', 'value': 'sha512' }
-                        
+                          gathered_messages.append(m)
+
                           logger.info('mtime: %s  last_pollL %s' % (mtime,last_poll))
                           
-                          gathered_messages.append(m)
 
                 return gathered_messages	
 

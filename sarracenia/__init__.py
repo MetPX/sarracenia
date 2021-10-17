@@ -409,6 +409,13 @@ class Message(dict):
             for k in o.fixed_headers:
                 msg[k] = o.fixed_headers[k]
     
+        if o.integrity_method.startswith('cod,'):
+            msg['integrity'] = { 'method':'cod', 'value':o.integrity_method[4:] }
+        elif o.integrity_method in [ 'md5name', 'random' ]:
+            algo = sarracenia.integrity.Integrity.factory(o.integrity_method)
+            algo.set_path( post_relPath )
+            msg['integrity'] = { 'method':o.integrity_method, 'value':algo.value }
+
         if lstat is None: return msg
     
         if lstat.st_size is not None:

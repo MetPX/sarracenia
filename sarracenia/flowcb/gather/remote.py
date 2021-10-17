@@ -12,9 +12,9 @@ class RemoteTransfer(FlowCB):
     """
     Use a sarracenia.transfer Protocol to list remote resources, and generate messages.
 
-    This is supposed to be the basis for the re-factoring of Poll.  the code here
-    just calls proto.walk (currently inexistant.) walk is going to be a stateful, incremental walk
-    throught the file system, and all record of past polls will be dealt with via the recent_files cache.
+    STATUS: Not working... 
+    this was an idea for how to do the built-in gather thing... but doing it stuff built
+    in to poll
 
     """
     def __init__(self, options):

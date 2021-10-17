@@ -561,7 +561,7 @@ class Flow:
         else:
             data = msg['content']['value'].encode('utf-8')
 
-        if 'cod,' in self.o.integrity_method :
+        if self.o.integrity_method.startswith('cod,') :
             algo_method = self.o.integrity_method[4:]
         elif msg['integrity']['method'] == 'cod':
             algo_method = msg['integrity']['value']
@@ -1073,7 +1073,7 @@ class Flow:
             # FIXME  locking for i parts in temporary file ... should stay lock
             # and file_reassemble... take into account the locking
 
-            if 'cod,' in self.o.integrity_method:
+            if self.o.integrity_method.startswith('cod,'):
                  download_algo = self.o.integrity_method[4:]
             else:
                  download_algo = msg['integrity']['method']
@@ -1139,7 +1139,7 @@ class Flow:
             msg['onfly_checksum'] = self.proto[self.scheme].get_sumstr()
             msg['data_checksum'] = self.proto[self.scheme].data_checksum
 
-            if 'cod,' in self.o.integrity_method and not accelerated:
+            if self.o.integrity_method.startswith('cod,') and not accelerated:
                 msg['integrity'] = msg['onfly_checksum'] 
 
             msg['_deleteOnPost'] |= set(['onfly_checksum'])

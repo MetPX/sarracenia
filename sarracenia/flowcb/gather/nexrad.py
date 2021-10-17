@@ -140,8 +140,6 @@ class Nexrad(FlowCB):
             fakeStat.st_size = keysizes[i]
             
             m= sarracenia.Message.fromFileInfo( keys[i], self.o, fakeStat )
-            m['integrity'] = { 'method':'cod', 'value':'sha512' }
-
             gathered_messages.append(m)
             i += 1
         return gathered_messages
