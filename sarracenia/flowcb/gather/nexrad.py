@@ -4,14 +4,15 @@ Retrieves file keys in the NEXRAD US Weather Radar public dataset.
 Can be adjusted slightly for other public datasets on the AWS S3 platform.
 Compatible with Python 3.5+.
 
-poll_nexrad.py: a sample do_poll option for sr_poll.
+sarracenia/flowcb/gather/nexrad.py: a sample gather option for sr3 poll.
 	        connects to a public aws s3 bucket and posts all the keys
 	        corresponding to files uploaded since it last woke up 
 
 usage:
 	in an sr_poll configuration file:
 	poll_nexrad_day [YYYY-MM-DD]
-	do_poll poll_nexrad.py
+	callback gather.nexrad
+        poll_builtinGather off
 	
 	If poll_nexrad_day is set, it'll post all the keys from that day. Specify a day between 1991-06-05 
 	to now (if the current date is specified, it'll post all the keys from today that have been posted
@@ -21,32 +22,33 @@ usage:
 	and ~9s for the API to make all the requests to check for keys, so the counter starts at now - 7 
 	minutes and sleep must be ~51s to work properly.
 
+status: working.
 """
 
-import datetime, logging, boto3, urllib.request
+import boto3 
 from botocore import UNSIGNED
 from botocore.client import Config
+import datetime
+import logging
+import paramiko
+import sarracenia
+from sarracenia.flowcb import FlowCB
+import urllib.request
 
+logger = logging.getLogger(__name__)
 
-class AWSPoller(object):
-    def __init__(self, parent):
-        parent.declare_option('poll_nexrad_day')
+class Nexrad(FlowCB):
+    def __init__(self, options):
+
+        self.o = options
+        self.o.add_option('poll_nexrad_day', 'str', "" )
         self.minutetracker = datetime.datetime.utcnow() + datetime.timedelta(
             minutes=-7)
 
-    def do_poll(self, parent):
-        import datetime, logging, boto3, urllib.request
-        from botocore import UNSIGNED
-        from botocore.client import Config
-
-        logger = parent.logger
-
-        if not hasattr(parent, 'poll_nexrad_day'):
-            day = ""
-        else:
-            day = parent.poll_nexrad_day[0]
+    def gather(self ):
 
         # If a valid day wasn't specified, it just won't return any keys or throw an error here ¯\_(ツ)_/¯
+        day = self.o.poll_nexrad_day
         if day:
             daypts = day.split('-')
             YYYY = daypts[0].zfill(2)
@@ -130,21 +132,16 @@ class AWSPoller(object):
         # To download a file, you'd append the key to the end of the bucket link, e.g:
         # https://s3.amazonaws.com/noaa-nexrad-level2/2018/06/09/KARX/KARX20180609_000228_V06
         i = 0
+        gathered_messages=[]
         while i < len(keys):
             logger.info("poll_nexrad: key received {}".format(keys[i]))
 
-            parent.msg.new_baseurl = parent.post_base_url.replace(" ", "")
-            parent.to_clusters = 'ALL'
-            parent.msg.new_file = keys[i]
-            parent.msg.partstr = '1,%s,1,0,0' % keysizes[i]
-            parent.msg.sumflg = 'z'
-            parent.msg.sumstr = 'z,d'
-            parent.post(parent.exchange, parent.msg.new_baseurl,
-                        parent.msg.new_file, parent.to_clusters,
-                        parent.msg.partstr, parent.msg.sumstr)
+            fakeStat = paramiko.SFTPAttributes()
+            fakeStat.st_size = keysizes[i]
+            
+            m= sarracenia.Message.fromFileInfo( keys[i], self.o, fakeStat )
+            m['integrity'] = { 'method':'cod', 'value':'sha512' }
 
+            gathered_messages.append(m)
             i += 1
-
-
-awspoller = AWSPoller(self)
-self.do_poll = awspoller.do_poll
+        return gathered_messages

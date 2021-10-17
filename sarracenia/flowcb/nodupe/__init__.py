@@ -123,8 +123,7 @@ class NoDupe(FlowCB):
         if ( 'nodupe_override' in msg ) and ( 'key' in msg['nodupe_override'] ):
             key=msg['nodupe_override']['key']
         else: 
-            key = msg['integrity']['method'] + ',' + msg['integrity'][
-                'value'].replace('\n', '')
+            key = msg['integrity']['method'] + ',' + msg['integrity']['value'].replace('\n', '')
 
             if msg['integrity']['method'] in ['cod']:
                 if 'mtime' in msg:

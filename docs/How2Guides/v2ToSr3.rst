@@ -299,6 +299,29 @@ the above two are equivalent. The flowcb version can be used to import classes
 that don't match the convention of the x.X (a file named x.py containing a class called X.py)
 
 
+Options
+=======
+
+In v2, one would declare settings to be used by a plugin in the __init__ routine, with 
+the *declare_option*.::
+
+    parent.declare_option('poll_usgs_stn_file')
+
+it the values are always of type *list*, so usually, one uses the value by
+picking the first value::
+
+    parent.poll_usgs_stn_file[0]
+
+In v3, that would be replaced with::
+
+    self.o.add_option( option='poll_usgs_stn_file', kind='str', default_value='hoho' )
+
+where in version 3 there is now types and default value setting included without additional 
+code. it would be referred to in other routines like so::
+
+    self.o.poll_usgs_stn_file
+
+
 
     
 Mapping Entry Points
@@ -471,6 +494,8 @@ examples:
  * flowcb/gather/file.py - read files from disk (for post and watch)
  * flowcb/gather/message.py - how messages are received by all components
  * flowcb/post/message.py - how messages are posted by all components.
+ * flowcb/gather/nexrad.py - this polls NOAA's AWS server for data.
+   install a configuration to use it with *sr3 add poll/aws-nexrad.conf* 
 
 
 v3 Complex Examples
