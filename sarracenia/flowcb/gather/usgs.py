@@ -10,7 +10,7 @@ usage:
 	in an sr3 poll configuration file:
 	destination http://waterservices.usgs.gov/nwis/iv/?format=waterml,2.0&indent=on&site={0:}&period=PT3H&parameterCd=00060,00065,00011
 
-	poll_usgs_nb_stn [station_chunk]
+	batch [station_chunk]
 	poll_usgs_station  station-declaration
 	callback gather/usgs
 
@@ -56,7 +56,6 @@ class Usgs(FlowCB):
 
         self.o = options
         self.o.add_option('poll_usgs_station', 'list' )
-        self.o.add_option('poll_usgs_nb_stn', 'int', 1 )
 
         # Parse sitecodes from file if provided, or the usgs website (turns excel spreadsheet into pandas
         # dataframe, parses from there)
@@ -73,9 +72,9 @@ class Usgs(FlowCB):
             for row in df.iterrows():
                 self.sitecodes.append(str(row[1]['STATION ID']).zfill(8))
 
-        if hasattr(self.o, 'poll_usgs_nb_stn'):
+        if hasattr(self.o, 'batch'):
             mult = True
-            chunk_size = int(self.o.poll_usgs_nb_stn)
+            chunk_size = int(self.o.batch)
 
 
 
@@ -84,11 +83,11 @@ class Usgs(FlowCB):
         run_time = datetime.datetime.utcnow().strftime('%Y%m%d_%H%M')
         
         gathered_messages=[]
-        if self.o.poll_usgs_nb_stn > 1:
+        if self.o.batch > 1:
             file_cnt = 0
             for sites in [
-                    self.sitecodes[i:i + self.o.poll_usgs_nb_stn]
-                    for i in range(0, len(self.sitecodes), self.o.poll_usgs_nb_stn)
+                    self.sitecodes[i:i + self.o.batch]
+                    for i in range(0, len(self.sitecodes), self.o.batch)
             ]:
                 stns = ','.join([s for s in sites])
                 file_cnt += 1
