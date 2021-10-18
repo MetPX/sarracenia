@@ -17,7 +17,7 @@ import sarracenia.config
 from sarracenia.flow import Flow
 import sarracenia.transfer
 import stat
-
+import pytz
 import sys, time
 
 
@@ -57,7 +57,7 @@ class Poll(Flow):
 
         super().__init__(options)
 
-        self.plugins['load'].append('sarracenia.flowcb.line_mode.Line_Mode')
+        self.plugins['load'].append('sarracenia.flowcb.line_to_SFTPattributes.Line_To_SFTPattributes')
 
         if options.vip:
             self.plugins['load'].insert(0,'sarracenia.flowcb.gather.message.Message')
@@ -110,85 +110,6 @@ class Poll(Flow):
         return False
 
 
-    def _file_date_within_limit(self, date, time_limit):
-        """comments:
-            This method compares today's date to the file's date by creating a date time object
-            Three formats are acceptd so far, more can be added if needed (format on https://strftime.org/ )
-            Files with future dates are processed as long as the (future date - todays date) is < time_limit.
-            FIXME: french input like Fev will not work - only Feb is accepted for the month
-            If year is not provided, this means that the file is < 6 months old, so depending on todays date,
-                assign appropriate year (for jan-jun -> assign prev year, for jul-dec assign current year)
-            Note: is it possible for a file to be more than 6 months old and have the format Mo Day TIME ? (problematic)
-        """
-        time_limit = int(time_limit)
-        current_date = datetime.datetime.now()
-        try:
-            date_temp = datetime.datetime.strptime(date, '%d %b %H:%M')
-            if date_temp.month - current_date.month >= 6:
-                file_date = date_temp.replace(year=(current_date.year - 1))
-            else:
-                file_date = date_temp.replace(year=current_date.year)
-            logger.debug("File date is: " + str(file_date) + " > File is " + str(abs((file_date - current_date).seconds)) + " seconds old")
-            return abs((file_date - current_date).seconds) < time_limit
-        except Exception as e:
-            try:
-                date_temp = datetime.datetime.strptime(date, '%b %d %H:%M')
-                if date_temp.month - current_date.month >= 6:
-                    file_date = date_temp.replace(year=(current_date.year - 1))
-                else:
-                    file_date = date_temp.replace(year=current_date.year)
-                logger.debug("File date is: " + str(file_date) + " > File is " + str(abs((file_date - current_date).seconds)) + " seconds old")
-                return abs((file_date - current_date).seconds) < time_limit
-            except Exception as e:
-                try:
-                    file_date = datetime.datetime.strptime(date, '%b %d %Y')
-                    logger.debug("File date is: " + str(file_date) + " > File is " + str(abs((file_date - current_date).seconds)) + " seconds old")
-                    return abs((file_date - current_date).seconds) < time_limit
-                except Exception as e:
-                    try:
-                        file_date = datetime.datetime.strptime(date, '%d %b %Y')
-                        logger.debug("File date is: " + str(file_date) + " > File is " + str(abs((file_date - current_date).seconds)) + " seconds old")
-                        return abs((file_date - current_date).seconds) < time_limit
-                    except Exception as e:
-                        warning_msg = str(e)
-                        logger.error("%s, assuming ok" % warning_msg)
-                        return True
-
-
-
-    def getFileNamesAndDesc(self, ls, lspath):
-        """
-            get new list and description (date and size)
-            return a list of files, and descriptions.
-        """
-        new_lst = sorted(ls.keys())
-
-        filelst = []
-        desclst = {}
-
-        for f in new_lst:
-            # logger.debug("checking %s (%s)" % (f, ls[f]))
-            
-            try:
-                str1 = ls[f]
-                str2 = str1.split()
-                # specify input for this routine.
-                # ls[f] format controlled by online plugin (line_mode.py)
-                # this format could change depending on plugin
-                # line_mode.py format "-rwxrwxr-x 1 1000 1000 8123 24 Mar 22:54 2017-03-25-0254-CL2D-AUTO-minute-swob.xml"
-                date = str2[5] + " " + str2[6] + " " + str2[7]
-                if self._file_date_within_limit(date, self.o.file_time_limit):
-                    #logger.debug("File should be processed")
-                    filelst.append(f)
-                    desclst[f] = ls[f]
-                else:
-                    # ignore rest of code and re iterate
-                    logger.debug("File should be skipped")
-            except:
-                pass
-            # logger.debug("IS IDENTICAL %s" % f)
-
-        return filelst, desclst
 
     def gather(self):
 
@@ -211,6 +132,7 @@ class Poll(Flow):
             ls = self.dest.ls()
             new_ls = {}
             new_dir = {}
+            # del ls['']  # For some reason with FTP the first line of the ls causes an index out of bounds error becuase it contains only "total ..." in line_mode.py
 
             # apply selection on the list
 
@@ -224,23 +146,13 @@ class Poll(Flow):
                         if (line is None) or (line == ""): break
                     if (line is None) or (line == ""): 
                         continue
-
-                if type(line) is str:
-                    if line[0] == 'd':
-                        d = f.strip(os.sep)
-                        new_dir[d] = line
-                    else:
-                        new_ls[f] = line.strip('\n')
-                elif type(line) is paramiko.SFTPAttributes:
-                    if stat.S_ISDIR(line.st_mode):
-                         new_dir[f] = line
-                    else:
-                        new_ls[f] = line
+                if stat.S_ISDIR(line.st_mode):
+                    new_dir[f] = line
                 else:
-                    logger.error('line not understood, type: %s' % type(line) )
+                    new_ls[f] = line
 
             return True, new_ls, new_dir
-        except:
+        except Exception as e:
             logger.warning("dest.lsdir: Could not ls directory")
             logger.debug("Exception details:", exc_info=True)
 
@@ -265,14 +177,8 @@ class Poll(Flow):
         # when not sleeping
         #if not self.sleeping :
         if True:
-
-            # get file list from difference in ls
-
-            if (len(file_dict) > 0) and type(list(file_dict.values())[0]) is str:
-                filelst, desclst = self.getFileNamesAndDesc(file_dict, lspath)
-            else: # SFTPAttributes
-                filelst = file_dict.keys()
-                desclst = file_dict
+            filelst = file_dict.keys()
+            desclst = file_dict
 
             logger.debug("poll_directory: new files found %d" % len(filelst))
 

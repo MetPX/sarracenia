@@ -96,7 +96,7 @@ flag_options = [ 'baseUrl_relPath', 'bind_queue', 'cache_stat', 'declare_exchang
                 ]
 
 duration_options = [
-    'expire', 'file_time_limit', 'housekeeping', 'message_ttl', 'retry_ttl',
+    'expire', 'file_time_limit', 'housekeeping', 'message_ttl', 'nodupe_file_time_limit', 'retry_ttl',
     'sanity_log_dead', 'sleep', 'timeout'
 ]
 
@@ -119,7 +119,7 @@ str_options = [
     'exchange_suffix', 'feeder', 'filename', 'header', 'logLevel', 'path',
     'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
     'post_exchange_suffix', 'queue_name',
-    'report_exchange', 'strip', 'nodupe_ttl',
+    'report_exchange', 'strip', 'timezone', 'nodupe_ttl',
     'nodupe_basis', 'tls_rigour', 'vip'
 ]
 """
@@ -496,6 +496,8 @@ class Config:
         self.chmod_log = 0o600
 
         self.file_time_limit = durationToSeconds("60d")
+        self.nodupe_file_time_limit = durationToSeconds("60d")
+        self.timezone = 'UTC'
         self.debug = False
         self.declared_exchanges = []
         self.destfn_script = None

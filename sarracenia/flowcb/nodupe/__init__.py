@@ -30,7 +30,7 @@ import logging
 #              cache_dict[key] = {path1: time1, path2: time2, ...}
 #
 
-from sarracenia import nowflt
+from sarracenia import nowflt, timestr2flt
 
 from sarracenia.flowcb import FlowCB
 
@@ -144,10 +144,16 @@ class NoDupe(FlowCB):
         return self.check(key, path)
 
     def after_accept(self, worklist):
-
         new_incoming = []
         self.now = nowflt()
+        max_mtime = self.now - self.o.nodupe_ttl
+        min_mtime = self.now - self.o.nodupe_file_time_limit
         for m in worklist.incoming:
+            try:
+                if timestr2flt(m['mtime']) > max_mtime  or timestr2flt(m['mtime']) < min_mtime:
+                    worklist.rejected.append(m)
+            except Exception as e:
+                print(e)
             if self.check_message(m):
                 new_incoming.append(m)
             else:
