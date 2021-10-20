@@ -506,7 +506,7 @@ class sr_GlobalState:
                                         if pid not in self.procs:
                                             missing.append([c, cfg, i])
                                     else:
-                                            missing.append([c, cfg, i])
+                                        missing.append([c, cfg, i])
                         if ( len(self.states[c][cfg]['instance_pids']) > 0 ) or ( len(missing) > 0 ) :
                             # look for instances that should be running, but no pid file exists.
                             for i in range(1, int(self.configs[c][cfg]['instances'])+1 ):
