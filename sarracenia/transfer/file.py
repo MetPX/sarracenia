@@ -178,14 +178,7 @@ class File(Transfer):
             relpath = dst.replace(self.root, '', 1)
             if relpath[0] == '/': relpath = relpath[1:]
 
-            lstat = os.stat(dst)
-            line = stat.filemode(lstat.st_mode)
-            line += ' %d %d %d' % (lstat.st_nlink, lstat.st_uid, lstat.st_gid)
-            line += ' %d' % lstat.st_size
-            line += ' %s' % time.strftime("%b %d %H:%M",
-                                          time.localtime(lstat.st_mtime))
-            line += ' %s' % relpath
-            self.entries[relpath] = line
+            self.entries[relpath] = os.stat(dst) 
 
 
 # file_insert

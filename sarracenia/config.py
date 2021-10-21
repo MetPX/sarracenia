@@ -1245,8 +1245,6 @@ class Config:
             else:
                 self.post_exchange = [self.post_exchange]
 
-            if component in ['poll' ]: 
-                logger.critical('FIME: hallo! exchange is: %s', getattr(self,'exchange') )
             if component in ['poll' ] and (not hasattr(self,'exchange') or not self.exchange):
                 self.exchange = self.post_exchange[0]
 
