@@ -39,7 +39,7 @@ class Mail(FlowCB):
         self.o = options
         logger.info("poll_email_ingest init")
 
-    def gather(self):
+    def poll(self):
 
         logger.debug("start")
 

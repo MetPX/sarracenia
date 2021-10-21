@@ -557,15 +557,9 @@ builtin poll gather.
 There are other servers that provide different services, not covered
 buy the default poll. One can implement additional *sarracenia.transfer*
 classes to add understanding of them to poll, or one can implement
-a *sarracenia.flowcb* callback with a *gather* routine to support
-such services.
+a *sarracenia.flowcb* callback with a *poll* routine to support
+such services, replacing the default poller.
 
-When implementing a custom gather routine, you probably want to
-add::
-
-  poll_builtinGather no
-
-to the configuration, as the default gather process is likely useless.
 
 
 Repeated Scans and VIP
@@ -592,7 +586,6 @@ These options set what files the user wants to be notified for and where
 - **chmod     <integer>        (default: 0o400)**
 - **poll_without_vip  <boolean> (default: True)**
 - **file_time_limit <duration>   (default 60d)**
-- **poll_builtinGather <boolean> (default: True)**
 
 
 The option *filename* can be used to set a global rename to the products.

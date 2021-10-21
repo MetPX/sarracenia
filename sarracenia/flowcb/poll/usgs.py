@@ -78,7 +78,7 @@ class Usgs(FlowCB):
 
 
 
-    def gather(self):
+    def poll(self):
 
         run_time = datetime.datetime.utcnow().strftime('%Y%m%d_%H%M')
         

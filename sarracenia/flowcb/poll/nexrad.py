@@ -45,7 +45,7 @@ class Nexrad(FlowCB):
         self.minutetracker = datetime.datetime.utcnow() + datetime.timedelta(
             minutes=-7)
 
-    def gather(self ):
+    def poll(self ):
 
         # If a valid day wasn't specified, it just won't return any keys or throw an error here ¯\_(ツ)_/¯
         day = self.o.poll_nexrad_day

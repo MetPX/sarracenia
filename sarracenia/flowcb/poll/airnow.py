@@ -31,7 +31,7 @@ class Airnow(FlowCB):
 
                 logger.debug('init')
 
-        def gather(self):
+        def poll(self):
 
                 sleep = self.o.sleep
 

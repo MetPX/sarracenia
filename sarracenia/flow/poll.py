@@ -194,10 +194,16 @@ class Poll(Flow):
 
         super().gather()
 
-        if self.have_vip and self.dest and self.o.poll_builtinGather:
-            self.worklist.incoming.extend(self.post_new_urls())
-            #logger.debug('post_new_urls returned: %s' %
-            #             len(self.worklist.incoming))
+        if self.have_vip:
+            if len(self.plugins['poll']) > 0:
+                for plugin in self.plugins['poll']:
+                     new_incoming = plugin()
+            else:
+                new_incoming = self.poll()
+
+            if len(new_incoming) > 0:
+                self.worklist.incoming.extend(new_incoming)
+       
 
 
     def lsdir(self):
@@ -362,7 +368,7 @@ class Poll(Flow):
     # False means, go to sleep and retry after sleep seconds
     # =============
 
-    def post_new_urls(self):
+    def poll(self):
 
         # General Attributes
 

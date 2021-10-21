@@ -64,7 +64,7 @@ logger = logging.getLogger(__name__)
 entry_points = [
     'ack', 'do_poll', 'gather', 'after_accept', 'on_data', 'after_work',
     'on_housekeeping', 'on_html_page', 'on_line', 
-    'on_report', 'on_start', 'on_stop', 'post'
+    'on_report', 'on_start', 'on_stop', 'poll', 'post'
 ]
 
 schemed_entry_points = ['do_get', 'do_put']
@@ -90,6 +90,10 @@ class FlowCB:
 
     def gather(self):
         Task: gather messages from a source... return a list of messages.
+
+              in a poll, gather is always called, regardless of vip posession.
+              in all other components, gather is only called when in posession
+              of the vip.
         return []
 
     def after_accept(self,worklist):
@@ -97,9 +101,6 @@ class FlowCB:
                operate on worklist.incoming to help decide which messages to process further.
                and move messages to worklist.rejected to prevent further processing.
                do not delete any messages, only move between worklists.
-
-    def do_poll(self):
-        Task: build worklist.incoming, a form of gather()
 
     def on_data(self,data):
         Task:  return data transformed in some way.
@@ -115,14 +116,6 @@ class FlowCB:
 
         worklist.failed processing should occur in here as it will be zeroed out after this step.
         The flowcb/retry.py plugin, for example, processes failed messages.
-
-    def post(self,worklist):
-         
-         Task: operate on worklist.ok, and worklist.failed. modifies them appropriately.
-               message acknowledgement has already occurred before they are called.
-
-         to indicate failure to process a message, append to worklist.failed.
-         worklist.failed processing should occur in here as it will be zeroed out after this step.
 
     def on_housekeeping(self):
          do periodic processing.
@@ -142,6 +135,25 @@ class FlowCB:
          before any message transfer occurs.
 
     def on_stop(self):
+         
+
+    def poll(self):
+        Task: gather messages from a destination... return a list of messages.
+              works like a gather, but...
+
+              When specified, poll replaces the built-in poll of the poll component.
+              it runs only when the machine running the poll has the vip.
+              in components other than poll, poll is never called.
+        return []
+
+    def post(self,worklist):
+         
+         Task: operate on worklist.ok, and worklist.failed. modifies them appropriately.
+               message acknowledgement has already occurred before they are called.
+
+         to indicate failure to process a message, append to worklist.failed.
+         worklist.failed processing should occur in here as it will be zeroed out after this step.
+
 
 
     """
