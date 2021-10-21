@@ -180,9 +180,9 @@ class AMQP(Moth):
 
         # if needed, set the vhost using the broker URL's path
         vhost = self.o['vhost']
-        # if the URL path is '/' (no vhost specified), the default vhost from self.o will be used.
-        # Otherwise, strip off leading or trailing slashes.
-        if broker.path != '/':
+        # if the URL path is '/' or '', no vhost is specified and the default vhost from self.o
+        # will be used. Otherwise, strip off leading or trailing slashes.
+        if broker.path != '/' and broker.path != '':
             vhost = broker.path.strip('/')
 
         self.connection = amqp.Connection(host=host,
