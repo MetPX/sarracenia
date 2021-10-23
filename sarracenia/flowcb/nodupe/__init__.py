@@ -134,7 +134,11 @@ class NoDupe(FlowCB):
         if ( 'nodupe_override' in msg ) and ( 'path' in msg['nodupe_override'] ):
             path=msg['nodupe_override']['path']
         else:
-            path = msg['relPath']
+            # FIXME:
+            # with SFTP sometimes relpaths are absolute, but other servers participating in poll (sharing the vip)
+            # will be priming their recently used with posts, and the posts are relative... so lstrip here...
+            # perhaps there is a better answer.
+            path = msg['relPath'].lstrip('/')
 
         logger.debug("NoDupe calling check( %s, %s )" % ( key, path ) )
         return self.check(key, path)
