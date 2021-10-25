@@ -89,7 +89,7 @@ count_options = [
 flag_options = [ 'baseUrl_relPath', 'bind_queue', 'cache_stat', 'declare_exchange', 'debug', \
     'declare_queue', 'delete', 'discard', 'download', 'dry_run', 'durable', 'exchange_split', 'realpath_filter', \
     'follow_symlinks', 'force_polling', 'inline', 'inline_only', 'inplace', 'log_reject', 'pipe', 'restore', \
-    'report_daemons', 'mirror', 'notify_only', 'overwrite', 'post_on_start', 'poll_without_vip', \
+    'report_daemons', 'mirror', 'notify_only', 'overwrite', 'post_on_start', \
     'preserve_mode', 'preserve_time', 'pump_flag', 'randomize', 'realpath_post', 'reconnect', \
     'report_back', 'reset', 'retry_mode', 'save', 'set_passwords', 'source_from_exchange', \
     'statehost', 'users'
@@ -1245,8 +1245,11 @@ class Config:
             else:
                 self.post_exchange = [self.post_exchange]
 
-            if component in ['poll' ] and (not hasattr(self,'exchange') or not self.exchange):
-                self.exchange = self.post_exchange[0]
+            if (component in ['poll' ]) and (hasattr(self,'vip') and self.vip):
+                if (not hasattr(self,'exchange') or not self.exchange):
+                    self.exchange = self.post_exchange[0]
+                if (not hasattr(self,'broker') or not self.broker):
+                    self.broker = self.post_broker
 
         if self.broker is not None:
 
