@@ -158,9 +158,6 @@ convert_to_v3 = {
     'on_post': {
         'post_log': ['logEvents', 'after_work']
     },
-    'before_post': {
-        'post_rate_limit': ['continue']
-    }
 }
 
 logger = logging.getLogger(__name__)
@@ -457,7 +454,6 @@ class Config:
         'logdays': 'lr_backupCount',
         'logrotate': 'lr_backupCount',
         'logrotate_interval': 'lr_interval',
-        'on_post' : 'before_post',
         'post_base_dir': 'post_baseDir',
         'post_basedir': 'post_baseDir',
         'post_base_url': 'post_baseUrl',
