@@ -494,25 +494,27 @@ class sr_GlobalState:
                             # look at pid files, find ones where process is missing.
                             if filename[-4:] == '.pid':
                                 i = int(filename[-6:-4])
-                                p = pathlib.Path(filename)
-                                if sys.version_info[0] > 3 or sys.version_info[
-                                        1] > 4:
-                                    t = p.read_text().strip()
-                                else:
-                                    with p.open() as f:
-                                        t = f.read().strip()
-                                if t.isdigit():
-                                    pid = int(t)
-                                    if pid not in self.procs:
+                                if i != 0:
+                                    p = pathlib.Path(filename)
+                                    if sys.version_info[0] > 3 or sys.version_info[
+                                            1] > 4:
+                                        t = p.read_text().strip()
+                                    else:
+                                        with p.open() as f:
+                                            t = f.read().strip()
+                                    if t.isdigit():
+                                        pid = int(t)
+                                        if pid not in self.procs:
+                                            missing.append([c, cfg, i])
+                                    else:
                                         missing.append([c, cfg, i])
-                                else:
-                                    missing.append([c, cfg, i])
                         if ( len(self.states[c][cfg]['instance_pids']) > 0 ) or ( len(missing) > 0 ) :
                             # look for instances that should be running, but no pid file exists.
                             for i in range(1, int(self.configs[c][cfg]['instances'])+1 ):
                                 if not i in self.states[c][cfg]['instance_pids']:
                                     if i not in self.procs:
-                                        missing.append([c,cfg,i])
+                                        if i != 0:
+                                            missing.append([c,cfg,i])
                         os.chdir('..')
                 os.chdir('..')
 
@@ -1182,34 +1184,46 @@ class sr_GlobalState:
             if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
 
-            if not 'options' in self.configs[c][cfg]:
-                continue
-
-            cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
-
             component_path = self._find_component_path(c)
+            pcount = 0
 
-            if c in [
-                    'poll', 'post', 'report', 'sarra', 'sender', 'shovel', 
-                    'subscribe', 'watch', 'winnow'
-            ]:
-                component_path = os.path.dirname(
-                    component_path) + os.sep + 'instance.py'
-                cmd = [sys.executable, component_path, '--no', "0"]
-                if sys.argv[0].find('python') >= 0:
-                    cmd.extend(sys.argv[2:])
-                else:
-                    cmd.extend(sys.argv[1:])
+            if component_path == '':
+                continue
+            if self.configs[c][cfg]['status'] in ['stopped']:
+                numi = self.configs[c][cfg]['instances']
+                for i in range(1, numi + 1):
+                    if pcount % 10 == 0: print('.', end='', flush=True)
+                    pcount += 1
 
-            elif c[0] != 'c':  # python components
-                if cfg is None:
-                    cmd = [sys.executable, component_path, 'foreground']
-                else:
-                    cmd = [sys.executable, component_path, 'foreground', cfg]
-            else:  # C components
-                cmd = [component_path, 'foreground', cfg]
+            if pcount != 0:
+                if not 'options' in self.configs[c][cfg]:
+                    continue
 
-            self.run_command(cmd)
+                cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
+
+                if c in [
+                        'poll', 'post', 'report', 'sarra', 'sender', 'shovel', 
+                        'subscribe', 'watch', 'winnow'
+                ]:
+                    component_path = os.path.dirname(
+                        component_path) + os.sep + 'instance.py'
+                    cmd = [sys.executable, component_path, '--no', "0"]
+                    if sys.argv[0].find('python') >= 0:
+                        cmd.extend(sys.argv[2:])
+                    else:
+                        cmd.extend(sys.argv[1:])
+
+                elif c[0] != 'c':  # python components
+                    if cfg is None:
+                        cmd = [sys.executable, component_path, 'foreground']
+                    else:
+                        cmd = [sys.executable, component_path, 'foreground', cfg]
+                else:  # C components
+                    cmd = [component_path, 'foreground', cfg]
+
+                self.run_command(cmd)
+            else:
+                print('foreground: stop other instances of this process first')
 
     def cleanup(self):
 
@@ -1481,23 +1495,37 @@ class sr_GlobalState:
 
         :return:
         """
-        self._find_missing_instances()
-        filtered_missing = []
-        for m in self.missing:
-            if m[0] + os.sep + m[1] in self.filtered_configurations:
-                filtered_missing.append(m)
+        pcount = 0
+        for f in self.filtered_configurations:
+            (c, cfg) = f.split(os.sep)
+            component_path = self._find_component_path(c)
+            if component_path == '':
+                continue
+            if self.configs[c][cfg]['status'] in ['stopped']:
+                numi = self.configs[c][cfg]['instances']
+                for i in range(1, numi + 1):
+                    if pcount % 10 == 0: print('.', end='', flush=True)
+                    pcount += 1
+        if pcount != 0:
+            self._find_missing_instances()
+            filtered_missing = []
+            for m in self.missing:
+                if m[0] + os.sep + m[1] in self.filtered_configurations:
+                    filtered_missing.append(m)
 
-        print('missing: %s' % filtered_missing)
-        print('starting them up...')
-        self._start_missing()
+            print('missing: %s' % filtered_missing)
+            print('starting them up...')
+            self._start_missing()
 
-        print('killing strays...')
-        for pid in self.procs:
-            if not self.procs[pid]['claimed']:
-                print(
-                    "pid: %s-%s does not match any configured instance, sending it TERM"
-                    % (pid, self.procs[pid]['cmdline'][0:5]))
-                signal_pid(pid, signal.SIGTERM)
+            print('killing strays...')
+            for pid in self.procs:
+                if not self.procs[pid]['claimed']:
+                    print(
+                        "pid: %s-%s does not match any configured instance, sending it TERM"
+                        % (pid, self.procs[pid]['cmdline'][0:5]))
+                    signal_pid(pid, signal.SIGTERM)
+        else:
+            print('no missing processes found')
 
     def start(self):
         """ Starting all components
