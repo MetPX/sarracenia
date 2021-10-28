@@ -1191,6 +1191,12 @@ class Flow:
         logger.debug("%s_transport send %s %s" %
                      (self.scheme, msg['new_dir'], msg['new_file']))
 
+        if len(self.plugins['send']) > 0:
+            for plugin in self.plugins['send']:
+                ok = plugin(msg)
+                if not ok: return False
+            return True 
+ 
         if self.o.baseDir:
             local_path = self.o.set_dir_pattern(self.o.baseDir,msg) + '/' + msg['relPath']
         else:

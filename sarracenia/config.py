@@ -143,6 +143,9 @@ convert_to_v3 = {
         'accel_wget': ['continue'],
         'accel_scp': ['continue'],
     },
+    'do_send': {
+       'file_email' : [ 'flow_callback', 'sarracenia.flowcb.send.email.Email' ],
+    },
     'no_download': [ 'download', 'False' ],
     'on_message': {
         'msg_delete': [

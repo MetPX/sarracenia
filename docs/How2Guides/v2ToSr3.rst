@@ -471,6 +471,20 @@ The other participating servers subscribe to where the poll posts to,
 to keep update their recent_files cache.
 
 
+do_send -> send:
+~~~~~~~~~~~~~~~~
+
+v2: do_send could be either a standalone routine, or associated with a protocol type
+    based on registered_as()
+    accepts parent as an argument (v3, use self.o)
+    
+v3: send(self,msg) 
+    use the provided msg to do sending.
+
+
+
+
+
 do_download/do_send -> post or sub-classing of transfer/ or moth/
 ----------------------------------------------------------------- 
 
@@ -494,7 +508,7 @@ examples:
  * flowcb/gather/file.py - read files from disk (for post and watch)
  * flowcb/gather/message.py - how messages are received by all components
  * flowcb/post/message.py - how messages are posted by all components.
- * flowcb/gather/nexrad.py - this polls NOAA's AWS server for data.
+ * flowcb/poll/nexrad.py - this polls NOAA's AWS server for data.
    install a configuration to use it with *sr3 add poll/aws-nexrad.conf* 
 
 

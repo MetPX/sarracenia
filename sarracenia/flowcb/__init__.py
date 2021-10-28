@@ -64,7 +64,7 @@ logger = logging.getLogger(__name__)
 entry_points = [
     'ack', 'do_poll', 'gather', 'after_accept', 'on_data', 'after_work',
     'on_housekeeping', 'on_html_page', 'on_line', 
-    'on_report', 'on_start', 'on_stop', 'poll', 'post'
+    'on_report', 'on_start', 'on_stop', 'poll', 'post', 'send'
 ]
 
 schemed_entry_points = ['do_get', 'do_put']
@@ -154,7 +154,14 @@ class FlowCB:
          to indicate failure to process a message, append to worklist.failed.
          worklist.failed processing should occur in here as it will be zeroed out after this step.
 
+    def send(self,msg):
 
+         Task: looking at msg['new_dir'], msg['new_file'], and the self.o options perform a transfer
+               of a single file.
+               return True on a successful transfer, False otherwise.
+
+         This replaces built-in send functionality, is a crutch to support do_send.
+         which is why it does not operate on lists. It is expected to be used very rarely.
 
     """
 
