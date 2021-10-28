@@ -234,18 +234,18 @@ In general, v3 plugins:
   the individual files, rather than the original collective .tar.
 
 * **No Need to set message fields in plugins**
-  in v2, one would set partstr, and sumstr for v2 messages in plugins. This required
-  an excessive understanding of message formats, and meant that changing message formats
-  requireed modifying plugins (v03 message format is not supported by most v2 plugins,
-  for example. To build a message from a local file::
+  in v2, one would need to set partstr, and sumstr for v2 messages in plugins. 
+  This required an excessive understanding of message formats, and meant that 
+  changing message formats required modifying plugins (v03 message format is
+  not supported by most v2 plugins, for example). To build a message from a 
+  local file in a v3 plugin::
 
      import sarracenia
 
      m = sarracenia.Message.fromFileData(sample_fileName, self.o, os.stat(sample_fileName) )
 
-
-* **Really, No Need to set message fields in plugins**
   just look at  `do_poll -> gather`_
+
 
 * **rarely, involve subclassing of moth or transfer classes.**
   The sarracenia.moth class implements support for message queueing protocols
@@ -410,9 +410,9 @@ examples:
 do_poll -> gather
 -----------------
 
-v2: call poll from plugin.
+v2: call do_poll from plugin.
 
-v3: build a list of messages to return.
+v3: build a list of messages to return, using a poll entry point.
 
 To build a message, without a local file, use fromFileInfo sarracenia.message factory::
   
@@ -443,11 +443,11 @@ as determine the file size and permissions in effect::
      st.st_mode=0o666 
      m = sarracenia.Message.fromFileInfo(sample_fileName, cfg, st)
 
-One should fill in the fakestat record if possible, since the duplicate
+One should fill in the *SFTPAttributes* record if possible, since the duplicate
 cache use metadata if available. The better the metadata, the better the
 detection of changes to existing files.
 
-once the message is built, append it to the list::
+Once the message is built, append it to the list::
 
      gathered_messages.append(m) 
   
