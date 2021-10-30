@@ -244,7 +244,7 @@ In general, v3 plugins:
 
      m = sarracenia.Message.fromFileData(sample_fileName, self.o, os.stat(sample_fileName) )
 
-  just look at  `do_poll -> gather`_
+  just look at  `do_poll -> poll`_
 
 
 * **rarely, involve subclassing of moth or transfer classes.**
@@ -298,12 +298,6 @@ convention, one can also use a more flexible but longer-winded::
 the above two are equivalent. The flowcb version can be used to import classes 
 that don't match the convention of the x.X (a file named x.py containing a class called X.py)
 
-The gather routines, like all callbacks, accumulate on a stack.
-When you have a custom gather that replaces the built-in processing,
-you will often want to suppress the built-in polling gather.
-You need a setting for that in the configuration file::
-
-   poll_builtinGather off
 
 Options
 =======
@@ -332,6 +326,12 @@ code. it would be referred to in other routines like so::
     
 Mapping Entry Points
 ====================
+
+for a comprehensive look at the v3 entry points, have a look at:
+
+https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/__init__.py
+
+for details.
 
 on_message, on_post --> after_accept
 ------------------------------------
@@ -407,12 +407,33 @@ examples:
   * v3: flowcb/line_mode.py
 
 
-do_poll -> gather
+do_poll -> poll
 -----------------
 
 v2: call do_poll from plugin.
 
-v3: build a list of messages to return, using a poll entry point.
+ * protocol to use the do_poll routine is identified by registered_as() entry point
+    which is mandatory to provide.
+ * requires manually constructing fields for messages, is message verison specific,
+   (generally do not support v03 messages.)
+ * explicitly calls poll entry points.
+ * runs, one must worry about whether one has the vip or not to decide what processing
+   to do in each plugin.
+ * poll_without_vip setting available.
+
+v3: define poll in a flowcb class.
+
+ * poll only runs when has_vip is true.
+
+ * registered_as() entry point is moot.
+
+ * gather runs always, and is used to subscribe to post done by node that has the vip,
+   allowing the nodupe cache to be kept uptodate.
+
+ * api defined to build messages from file data regardless of message format.
+
+ * returns a list of messages to be filtered and posted.
+
 
 To build a message, without a local file, use fromFileInfo sarracenia.message factory::
   
@@ -470,25 +491,38 @@ In v3, only the server with the vip polls. The plugins don't need to check.
 The other participating servers subscribe to where the poll posts to,
 to keep update their recent_files cache.
 
+examples:
+ * flowcb/poll/airnow.py
+
 
 do_send -> send:
 ~~~~~~~~~~~~~~~~
 
 v2: do_send could be either a standalone routine, or associated with a protocol type
-    based on registered_as()
-    accepts parent as an argument (v3, use self.o)
+
+* based on registered_as()  so the destination determines whether it is used or not.
+
+* accepts parent as an argument.
+ 
+* returns True on success, False on failure.
+
+* will typically have a registered_as() entry point to say which protocols to use a sender for.
+
     
 v3: send(self,msg) 
-    use the provided msg to do sending.
+
+* use the provided msg to do sending.
+
+* returns True on success, False on failure.
+
+* registered as is not used anymore, can be deleted.
+
+* The send entry_point overrides all sends, and is not protocol specific.
+  To add support for new protocols, subclass sarracenia.transfer instead.
 
 
-
-
-
-do_download/do_send -> post or sub-classing of transfer/ or moth/
------------------------------------------------------------------ 
-
-There are a number of different options here...  
+examples:
+  * flowcb/send/email.py
 
 
 
