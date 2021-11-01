@@ -298,6 +298,29 @@ convention, one can also use a more flexible but longer-winded::
 the above two are equivalent. The flowcb version can be used to import classes 
 that don't match the convention of the x.X (a file named x.py containing a class called X.py)
 
+Configuration Upgrade
+=====================
+
+Once a plugin is ported, one can also arrange for the v3 option parser to recognize a v2
+plugin invocation and replace it with a v3 one.  looking in sarracenia/config.py,
+there is a data structure *convert_to_v3*.  A sample entry would be::
+
+    .
+    .
+    .
+    'on_message' : {
+             'msg_delete': [ 'flow_callback': 'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles' ]
+    .
+    .
+    .
+
+
+A v2 config file containing a line *on_message msg_delete* would be replaced by the parser with
+effectively::
+
+    flow_callback sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles
+
+
 
 Options
 =======

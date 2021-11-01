@@ -13,7 +13,7 @@ Setting up a local environment:
     git checkout v03_wip
     cd jupyter
     pip install -r requirements.txt
-    jupyter notebook --ip=0.0.0.0 --port=8000
+    jupyter notebook --ip=0.0.0.0 --port=8040
 
 Another option:
 
@@ -27,8 +27,8 @@ Another option:
     cd jupyter
     pip3 install jupyter
     ip addr show # to know the ip to point your browser at.
-    jupyter notebook --ip=0.0.0.0 --port=8000
-    # open broser on ip:8000
+    jupyter notebook --ip=0.0.0.0 --port=8040
+    # open broser on ip:8040
     #look for the certificate to post as credential for browser. 
     # in the startup text.
 
