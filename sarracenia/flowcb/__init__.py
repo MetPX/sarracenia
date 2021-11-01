@@ -23,7 +23,7 @@ will be called at the right time.
 
 __init__ accepts options as an argument.
 
-options is a dictionary of settings, used to override default behaviour
+options is a sarracenia.config.Config object, used to override default behaviour
 
 a setting is declared:
 
@@ -43,7 +43,7 @@ worklist given to on_plugins...
     worklist.rejected --> messages to not be further processed.
     worklist.failed   --> messages for which processing failed.
                           failed messages will be retried.
-
+    worklist.directories_ok --> list of directories created during processing.
 
 Initially all messages are placed in incoming.
 if a plugin decides:
@@ -74,16 +74,12 @@ class FlowCB:
     """
     FIXME: document the API signatures for all the entry points. 
 
-    def name(self):
-        Task: return the name of a plugin for reference purposes.
-        return __name__
+    def __init__(self,options):
+        Task: initialization of the flow_callback at instantiation time.
 
-    def registered_as(self):
-        for schemed downloads, return the scheme this plugin provides.
-        for example, an accel_wget will in on_message, change url scheme from http/https -> download/downloads.
-        the do_get accellerate will need to be registered for download/downloads
+        usually contains:
 
-        return [ "registration", "registrations" ]
+        self.o = options
 
     def ack(self,messagelist):
         Task: acknowledge messages from a gather source.
@@ -113,6 +109,9 @@ class FlowCB:
 
     def after_work(self,worklist):
         Task: operate on worklist.ok (files which have arrived.)
+
+        All messages on the worklist.ok list have been acknowledged, so to suppress posting
+        of them, or futher processing, the messages must be removed from worklist.ok.
 
         worklist.failed processing should occur in here as it will be zeroed out after this step.
         The flowcb/retry.py plugin, for example, processes failed messages.
@@ -175,6 +174,23 @@ class FlowCB:
 
 
 def load_library(factory_path, options):
+    """
+       Loading the entry points for a python module. It searches 
+       the normal python module pat using the importlib module. 
+
+       the factory_path is a combined file specification with a dot separator
+       with a special last entry being the name of the class within the file.
+
+       factory_path  a.b.c.C
+
+       means import the module named a.b.c and instantiate an object of type
+       C. In that class-C object, look for the known callback entry points. 
+
+       note that the ~/.config/sr3/plugins will also be in the python library 
+       path, so modules placed there will be found, in addition to those in the
+       package itself in the *sarracenia/flowcb*  directory
+
+    """
 
     if not '.' in factory_path:
        logger.error('flow_callback <file>.<Class> no dot... missing something from: %s' % factory_path )

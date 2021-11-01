@@ -109,14 +109,16 @@ The components just have different default settings:
  |   post the downloaded  |                          |
  |   file.                | Outlet=optional          |
  +------------------------+--------------------------+
- | *sr_poll*              | Gather=gather.remote     |
+ | *sr_poll*              | Gather                   |
+ |                        | if has_vip: poll         |
  |                        |                          |
  |   Find files on other  | Filter                   |
  |   servers to post to   |                          |
- |   a pump.              | Do=nil                   |
- |                        |                          |
- |                        | Outlet=yes               |
- |                        |   Message?, File?        |
+ |   a pump.              | if has_vip:              |
+ |                        |     Do=nil               |
+ |   has_vip*             |                          |
+ |                        |     Outlet=yes           |
+ |                        |     Message?, File?      |
  +------------------------+--------------------------+
  | *sr_shovel/sr_winnow*  | Gather=gather.message    |
  |                        |                          |
@@ -146,6 +148,42 @@ The components just have different default settings:
 
 Components are easily composed using AMQP brokers, which create elegant networks
 of communicating sequential processes (in the `Hoare <http://dl.acm.org/citation.cfm?doid=359576.359585>`_ sense).
+
+Multiple processes: Instances, Singletons and VIP
+-------------------------------------------------
+
+The flow algorithm isn't confined to a single process. Many processes can run
+the same flow configuration. For the sarra, sender, shovel and subscribe, components,
+one sets the *instance* setting to the number of processes to run and 
+consume from the configured *queue* that they share.
+
+The poll, post, and watch components, by contrast, are limited to a single process
+on any given server. In the table above, there is a note about *has_vip*. When 
+there are multiple servers participating in a configuration, the vip directive
+can be used to have the servers co-operate to provide a single service (where
+only one server is active at a time.) For most components, The vip directive in
+a configuration file defines a virtual ip address that a server must have 
+actively on it for that component to be active. If Sarracenia detects that the
+interface is not present on the server, then the component will run in passive
+mode.
+
+For almost all components, passive mode means that no processing will occur.
+it will just passively check once in a while if it has obtained the vip, and
+if not, will stand by indefinitely.
+
+The exception to this is poll, which works differently. in poll, when you
+do not have the vip the following algorithmic loop will continue:
+
+* gather
+* filter
+*  after_accept
+
+The poll's gather and fileter being alive and kicking even in passive mode, 
+allows it to subscribe to the exchange it is posting to and update it's cache
+of files posted from the messages, so that if it ever does become active, its
+state is current.
+
+
 
 Mapping AMQP Concepts to Sarracenia
 -----------------------------------
@@ -216,7 +254,7 @@ MetPX-Sarracenia is only a light wrapper/coating around Message Queueing Protoco
 
   - Users configure a *broker*, instead of a pump.
   - by convention, the default vhost '/' is always used (did not feel the need to use other vhosts yet)
-  - users explicitly can pick their *queue* names.
+  - users explicitly can pick their *queue* names (this ia a client-id in MQTT.)
   - users set *subtopic*,
   - topics with dot separator are minimally transformed, rather than encoded.
   - queue *durable*.
