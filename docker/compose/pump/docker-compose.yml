@@ -26,4 +26,4 @@ services:
       - ./:/data:rw
     depends_on:
       - rabbitmq
-    command: sr3 start watch/watch.conf
+    command: sr3 start
