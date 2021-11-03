@@ -1,0 +1,29 @@
+version: "3"
+
+services:
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3.9-management-alpine
+    environment:
+      - RABBITMQ_DEFAULT_USER=wis2node
+      - RABBITMQ_DEFAULT_PASS=wis2node
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+  metpx-sr3:
+    container_name: metpx
+    build: ../../..
+    environment:
+      - METPX_SR3_HOST=rabbitmq
+      - METPX_SR3_BROKER_USERNAME=foo
+      - METPX_SR3_BROKER_PASSWORD=bar
+      - METPX_SR3_PATH=/data
+      - METPX_SR3_BASEURL=http://localhost
+      - METPX_SR3_LOGLEVEL=DEBUG
+    volumes:
+      - ./watch.conf:/home/sarra/.config/sr3/watch/watch.conf:ro
+      - ./:/data:rw
+    depends_on:
+      - rabbitmq
+    command: sr3 start watch/watch.conf
