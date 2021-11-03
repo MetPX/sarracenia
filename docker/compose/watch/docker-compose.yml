@@ -5,8 +5,8 @@ services:
     container_name: rabbitmq
     image: rabbitmq:3.9-management-alpine
     environment:
-      - RABBITMQ_DEFAULT_USER=wis2node
-      - RABBITMQ_DEFAULT_PASS=wis2node
+      - RABBITMQ_DEFAULT_USER=foo
+      - RABBITMQ_DEFAULT_PASS=bar
     ports:
       - 5672:5672
       - 15672:15672
