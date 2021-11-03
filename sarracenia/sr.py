@@ -785,7 +785,7 @@ class sr_GlobalState:
                 if cfg not in self.states[c]:
                     # print('missing state for %s/%s' % (c,cfg) )
                     continue
-                if len(self.states[c][cfg]['instance_pids']) > 0:
+                if len(self.states[c][cfg]['instance_pids']) >= 0:
                     self.states[c][cfg]['missing_instances'] = []
                     observed_instances = 0
                     for i in self.states[c][cfg]['instance_pids']:
