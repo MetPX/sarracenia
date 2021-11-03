@@ -41,9 +41,9 @@ Below are various workflows to build, orchestrate and run sarracenia via Docker:
 
   # sarracenia connected to a rabbitmq setup
   # start
-  docker-compose -f docker/compose/watch/docker-compose.yml up
+  docker-compose -f docker/compose/pump/docker-compose.yml up
   # stop
-  docker-compose -f docker/compose/watch/docker-compose.yml down
+  docker-compose -f docker/compose/pump/docker-compose.yml down
 
 
 .. _`Docker`: https://docker.com

@@ -22,7 +22,7 @@ services:
       - METPX_SR3_BASEURL=http://localhost
       - METPX_SR3_LOGLEVEL=DEBUG
     volumes:
-      - ./watch.conf:/home/sarra/.config/sr3/watch/watch.conf:ro
+      - ./config:/home/sarra/.config:ro
       - ./:/data:rw
     depends_on:
       - rabbitmq
