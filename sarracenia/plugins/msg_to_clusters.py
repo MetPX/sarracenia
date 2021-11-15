@@ -18,21 +18,20 @@
 """
 
 import os, stat, time
+import logging
+from sarracenia.flowcb import FlowCB
 
+logger = logging.getLogger(__name__)
 
-class ToCluster(object):
-    def __init__(self, parent):
-
-        if not hasattr(parent, 'msg_to_clusters'):
-            parent.logger.info("msg_to_clusters setting mandatory")
+class ToCluster(FlowCB):
+    def __init__(self, options):
+        self.o = options
+        if not hasattr(self.o, 'msg_to_clusters'):
+            logger.info("msg_to_clusters setting mandatory")
             return
 
-        parent.logger.info("msg_to_clusters valid destinations: %s " %
-                           parent.msg_to_clusters)
+        logger.info("msg_to_clusters valid destinations: %s " % self.o.msg_to_clusters)
 
-    def on_message(self, parent):
-        return (parent.msg.headers['to_clusters'] in parent.msg_to_clusters)
+    def on_message(self):
+        return (self.o.msg['headers']['to_clusters'] in self.o.msg_to_clusters)
 
-
-tocluster = ToCluster(self)
-self.on_message = tocluster.on_message

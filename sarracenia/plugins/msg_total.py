@@ -22,111 +22,105 @@
 """
 
 import os, stat, time
-
+import calendar
+import humanize
+import datetime
+import sys
 from sarracenia import timeflt2str, timestr2flt, nowflt
+import logging
+from sarracenia.flowcb import FlowCB
 
+logger = logging.getLogger(__name__)
 
-class Msg_Total(object):
-    def __init__(self, parent):
+class Msg_Total(FlowCB):
+    def __init__(self, options):
         """
            set defaults for options.  can be overridden in config file.
         """
-        logger = parent.logger
+        self.o = options
 
         # make parent know about these possible options
 
-        parent.declare_option('msg_total_interval')
-        parent.declare_option('msg_total_maxlag')
-        parent.declare_option('msg_total_count')
+        self.o.declare_option('msg_total_interval')
+        self.o.declare_option('msg_total_maxlag')
+        self.o.declare_option('msg_total_count')
 
-        if hasattr(parent, 'msg_total_count'):
-            if type(parent.msg_total_count) is list:
-                parent.msg_total_count = int(parent.msg_total_count[0])
+        if hasattr(self.o, 'msg_total_count'):
+            if type(self.o.msg_total_count) is list:
+                self.o.msg_total_count = int(self.o.msg_total_count[0])
         else:
-            parent.msg_total_count = 0
+            self.o.msg_total_count = 0
 
-        if hasattr(parent, 'msg_total_maxlag'):
-            if type(parent.msg_total_maxlag) is list:
-                parent.msg_total_maxlag = int(parent.msg_total_maxlag[0])
+        if hasattr(self.o, 'msg_total_maxlag'):
+            if type(self.o.msg_total_maxlag) is list:
+                self.o.msg_total_maxlag = int(self.o.msg_total_maxlag[0])
         else:
-            parent.msg_total_maxlag = 60
+            self.o.msg_total_maxlag = 60
 
-        if hasattr(parent, 'msg_total_interval'):
-            if type(parent.msg_total_interval) is list:
-                parent.msg_total_interval = int(parent.msg_total_interval[0])
+        if hasattr(self.o, 'msg_total_interval'):
+            if type(self.o.msg_total_interval) is list:
+                self.o.msg_total_interval = int(self.o.msg_total_interval[0])
         else:
-            parent.msg_total_interval = 5
+            self.o.msg_total_interval = 5
 
         now = nowflt()
 
-        parent.msg_total_last = now
-        parent.msg_total_start = now
-        parent.msg_total_msgcount = 0
-        parent.msg_total_bytecount = 0
-        parent.msg_total_msgcount = 0
-        parent.msg_total_bytecount = 0
-        parent.msg_total_lag = 0
+        self.o.msg_total_last = now
+        self.o.msg_total_start = now
+        self.o.msg_total_msgcount = 0
+        self.o.msg_total_bytecount = 0
+        self.o.msg_total_msgcount = 0
+        self.o.msg_total_bytecount = 0
+        self.o.msg_total_lag = 0
         logger.debug("msg_total: initialized, interval=%d, maxlag=%d" % \
-            ( parent.msg_total_interval, parent.msg_total_maxlag ) )
+            ( self.o.msg_total_interval, self.o.msg_total_maxlag ) )
 
-    def on_message(self, parent):
-        logger = parent.logger
-        msg = parent.msg
+    def on_message(self):
+        msg = self.o.msg
 
-        if msg.isRetry: return True
+        if msg['isRetry']: return True
 
-        import calendar
-        import humanize
-        import datetime
-        import sys
+        if (self.o.msg_total_msgcount == 0):
+            logger.info("msg_total: 0 messages received: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)")
 
-        if (parent.msg_total_msgcount == 0):
-            logger.info(
-                "msg_total: 0 messages received: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)"
-            )
-
-        msgtime = timestr2flt(msg.pubtime)
+        msgtime = timestr2flt(msg['pubtime'])
         now = nowflt()
 
-        parent.msg_total_msgcount = parent.msg_total_msgcount + 1
+        self.o.msg_total_msgcount = self.o.msg_total_msgcount + 1
 
         lag = now - msgtime
-        parent.msg_total_lag = parent.msg_total_lag + lag
+        self.o.msg_total_lag = self.o.msg_total_lag + lag
 
         # guess the size of the message payload, ignoring overheads.
-        parent.msg_total_bytecount += (len(parent.msg.exchange) +
-                                       len(parent.msg.topic) +
-                                       len(parent.msg.notice) +
-                                       len(parent.msg.hdrstr))
+        self.o.msg_total_bytecount += (len(self.o.msg['exchange']) +
+                                       len(self.o.msg['topic']) +
+                                       len(self.o.msg['notice']) +
+                                       len(self.o.msg['hdrstr']))
 
         #not time to report yet.
-        if parent.msg_total_interval > now - parent.msg_total_last:
+        if self.o.msg_total_interval > now - self.o.msg_total_last:
             return True
 
         logger.info(
             "msg_total: %3d messages received: %5.2g msg/s, %s bytes/s, lag: %4.2g s"
             %
-            (parent.msg_total_msgcount, parent.msg_total_msgcount /
-             (now - parent.msg_total_start),
+            (self.o.msg_total_msgcount, self.o.msg_total_msgcount /
+             (now - self.o.msg_total_start),
              humanize.naturalsize(
-                 parent.msg_total_bytecount / (now - parent.msg_total_start),
-                 binary=True,
-                 gnu=True), parent.msg_total_lag / parent.msg_total_msgcount))
+                 self.o.msg_total_bytecount / (now - self.o.msg_total_start), binary=True,
+                 gnu=True), self.o.msg_total_lag / self.o.msg_total_msgcount))
         # Set the maximum age, in seconds, of a message to retrieve.
 
-        if lag > parent.msg_total_maxlag:
+        if lag > self.o.msg_total_maxlag:
             logger.warn("total: Excessive lag! Messages posted %s " %
                         humanize.naturaltime(datetime.timedelta(seconds=lag)))
 
-        parent.msg_total_last = now
+        self.o.msg_total_last = now
 
-        if (parent.msg_total_count > 0) and (parent.msg_total_msgcount >=
-                                             parent.msg_total_count):
+        if (self.o.msg_total_count > 0) and (self.o.msg_total_msgcount >=
+                                             self.o.msg_total_count):
             os._exit(0)
 
         return True
 
 
-msg_total = Msg_Total(self)
-
-self.on_message = msg_total.on_message
