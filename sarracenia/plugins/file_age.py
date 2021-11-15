@@ -10,28 +10,25 @@
 """
 
 import os, stat, time
-
+import logging
+from sarracenia.flowcb import FlowCB
 from sarracenia import nowflt, timestr2flt
 
+logger = logging.getLogger(__name__)
 
-class File_Age(object):
-    def __init__(self, parent):
-        parent.logger.debug("file_age initialized")
+class File_Age(FlowCB):
+    def __init__(self, options):
+        logger.debug("file_age initialized")
+        self.o = options
 
-    def perform(self, parent):
-        import time
-
-        if not 'mtime' in parent.msg.headers.keys():
-            return True
+    def on_file(self):
+        if not 'mtime' in self.o.msg['headers'].keys():
+            return None
 
         now = nowflt()
-        mtime = timestr2flt(parent.msg.headers['mtime'])
+        mtime = timestr2flt(self.o.msg['headers']['mtime'])
         age = now - mtime
-        parent.logger.info("file_age %g seconds for %s" %
-                           (age, parent.msg.new_file))
-        return True
+        logger.info("file_age %g seconds for %s" %
+                           (age, self.o.msg['new_file']))
+        return None
 
-
-file_age = File_Age(self)
-
-self.on_file = file_age.perform

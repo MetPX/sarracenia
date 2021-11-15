@@ -23,22 +23,24 @@ and  mjg777:ssc_di  the destination ownership (destination user:group)
 """
 
 import grp, os, pwd
+import logging
+from sarracenia.flowcb import FlowCB
 
+logger = logging.getLogger(__name__)
 
-class ROOT_CHOWN(object):
-    def __init__(self, parent):
-
-        parent.declare_option('mapping_file')
+class ROOT_CHOWN(FLowCB):
+    def __init__(self, options):
+        self.o = options
+        self.o.declare_option('mapping_file')
         self.mapping = {}
 
-    def on_start(self, parent):
-        logger = parent.logger
+    def on_start(self):
 
-        if not hasattr(parent, "mapping_file"):
-            parent.mapping_file = [None]
+        if not hasattr(self.o, "mapping_file"):
+            self.o.mapping_file = [None]
             return True
 
-        mf_path = parent.mapping_file[0]
+        mf_path = self.o.mapping_file[0]
         try:
             f = open(mf_path, 'r')
             while True:
@@ -57,33 +59,28 @@ class ROOT_CHOWN(object):
 
         return True
 
-    def on_post(self, parent):
-        import grp, os, pwd
-
-        logger = parent.logger
-        msg = parent.msg
+    def on_post(self):
+        msg = self.o.msg
 
         logger.debug("ROOT_CHOWN on_post")
 
-        new_dir = parent.msg.new_dir
-        new_file = parent.msg.new_file
+        new_dir = self.o.msg['new_dir']
+        new_file = self.o.msg['new_file']
 
         # if remove ...
 
-        if msg.headers['sum'].startswith(
-                'R,') and not 'newname' in msg.headers:
+        if msg['headers']['sum'].startswith('R,') and not 'newname' in msg['headers']:
             return True
 
         # if move ... sr_watch sets new_dir new_file on destination file so we are ok
 
         # already set ... check for mapping switch
 
-        if 'ownership' in msg.headers:
-            ug = msg.headers['ownership']
+        if 'ownership' in msg['headers']:
+            ug = msg['headers']['ownership']
             if ug in self.mapping:
-                logger.debug("ROOT_CHOWN mapping from %s to %s" %
-                             (ug, self.mapping[ug]))
-                msg.headers['ownership'] = self.mapping[ug]
+                logger.debug("ROOT_CHOWN mapping from %s to %s" %(ug, self.mapping[ug]))
+                msg['headers']['ownership'] = self.mapping[ug]
             return True
 
         # need to add ownership in message
@@ -99,44 +96,37 @@ class ROOT_CHOWN(object):
 
             # check for mapping switch
             if ug in self.mapping:
-                logger.debug("ROOT_CHOWN mapping from %s to %s" %
-                             (ug, self.mapping[ug]))
+                logger.debug("ROOT_CHOWN mapping from %s to %s" % (ug, self.mapping[ug]))
                 ug = self.mapping[ug]
 
-            msg.headers['ownership'] = ug
-            logger.debug("ROOT_CHOWN set ownership in headers %s" %
-                         msg.headers['ownership'])
+            msg['headers']['ownership'] = ug
+            logger.debug("ROOT_CHOWN set ownership in headers %s" % msg['headers']['ownership'])
 
         except:
             logger.error("ROOT_CHOWN could not set ownership  %s" % local_file)
-
         return True
 
-    def on_file(self, parent):
-        import grp, os, pwd
-
-        logger = parent.logger
-        msg = parent.msg
+    def on_file(self):
+        msg = self.o.msg
 
         logger.debug("ROOT_CHOWN on_file")
 
         # the message does not have the requiered info
 
-        if not 'ownership' in msg.headers:
+        if not 'ownership' in msg['headers']:
             logger.info("ROOT_CHOWN no ownership in msg_headers")
             return True
 
         # it does, check for mapping
 
-        ug = msg.headers['ownership']
+        ug = msg['headers']['ownership']
         if ug in self.mapping:
-            logger.debug("received ownership %s mapped to %s" %
-                         (ug, self.mapping[ug]))
+            logger.debug("received ownership %s mapped to %s" % (ug, self.mapping[ug]))
             ug = self.mapping[ug]
 
         # try getting/setting ownership info to local_file
 
-        local_file = parent.msg.new_dir + os.sep + parent.msg.new_file
+        local_file = self.o.msg['new_dir'] + os.sep + self.o.msg['new_file']
 
         try:
             parts = ug.split(':')
@@ -150,10 +140,6 @@ class ROOT_CHOWN(object):
             logger.info("ROOT_CHOWN set ownership %s to %s" % (ug, local_file))
 
         except:
-            logger.error("ROOT_CHOWN could not set %s to %s" %
-                         (ug, local_file))
-
+            logger.error("ROOT_CHOWN could not set %s to %s" % (ug, local_file))
         return True
 
-
-self.plugin = 'ROOT_CHOWN'
