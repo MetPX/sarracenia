@@ -13,33 +13,26 @@
  to transfer the data selected.  if the lag keeps increasing, then something must be done, either
 
 """
-
-import os, stat, time
-
+import calendar
+import logger
+import os
+import stat
+import time
 from sarracenia import timestr2flt, nowflt
+from sarracenia.flowcb import FlowCB
+logger = logging.getLogger(__name__)
 
 
-class Transformer(object):
-
-    import calendar
-
-    def __init__(self, parent):
+class Transformer(FlowCB):
+    def __init__(self, options):
+        self.o = options
         pass
 
-    def on_message(self, parent):
-        logger = parent.logger
-        msg = parent.msg
+    def after_accept(self, worklsit):
+        for message in worklsit.incoming:
+            then = timestr2flt(message['pubtime'])
+            now = nowflt()
 
-        import calendar
+            logger.info("print_lag, posted: %s, lag: %g sec. to deliver: %s, " %
+                    (message['pubtime'], (now - then), message['new_file']))
 
-        then = timestr2flt(msg.pubtime)
-        now = nowflt()
-
-        logger.info("print_lag, posted: %s, lag: %g sec. to deliver: %s, " %
-                    (msg.pubtime, (now - then), msg.new_file))
-
-        return True
-
-
-transformer = Transformer(self)
-self.on_message = transformer.on_message
