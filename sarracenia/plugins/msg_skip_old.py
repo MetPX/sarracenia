@@ -22,43 +22,39 @@
 
 
 """
-
-import os, stat, time
-
+import calendar
+import logger
+import os
+import stat
+import time
 from sarracenia import timestr2flt, nowflt
+from sarracenia.flowcb import FlowCB
+logger = logging.getLogger(__name__)
 
 
-class Transformer(object):
-    def __init__(self, parent):
-
-        if not hasattr(parent, 'msg_skip_threshold'):
-            parent.msg_skip_threshold = 3600
+class Transformer(FlowCB):
+    def __init__(self, options):
+        self.o = options
+        if not hasattr(self.o, 'msg_skip_threshold'):
+            self.o.msg_skip_threshold = 3600
         else:
-            if type(parent.msg_skip_threshold) is list:
-                parent.msg_skip_threshold = int(parent.msg_skip_threshold[0])
+            if type(self.o.msg_skip_threshold) is list:
+                self.o.msg_skip_threshold = int(self.o.msg_skip_threshold[0])
 
-        pass
+    def after_accept(self, worklist):
+        new_incoming = []
 
-    def on_message(self, parent):
-        logger = parent.logger
-        msg = parent.msg
+        for message in worklist.incoming:
+            then = timestr2flt(message['pubtime'])
+            now = nowflt()
 
-        import calendar
+            # Set the maximum age, in seconds, of a message to retrieve.
+            lag = now - then
 
-        then = timestr2flt(msg.pubtime)
-        now = nowflt()
+            if lag > int(self.o.msg_skip_threshold):
+                logger.info("msg_skip_old, Excessive lag: %g sec. Skipping download of: %s, "
+                    % (lag, message['new_file']))
+                worklist.rejected.append(m)
 
-        # Set the maximum age, in seconds, of a message to retrieve.
-        lag = now - then
-
-        if lag > int(parent.msg_skip_threshold):
-            logger.info(
-                "msg_skip_old, Excessive lag: %g sec. Skipping download of: %s, "
-                % (lag, msg.new_file))
-            return False
-
-        return True
-
-
-transformer = Transformer(self)
-self.on_message = transformer.on_message
+            new_incoming.append(message)
+        worklist.incoming = new_incoming
