@@ -75,7 +75,7 @@ class Msg_Total(FlowCB):
         logger.debug("msg_total: initialized, interval=%d, maxlag=%d" % \
             ( self.o.msg_total_interval, self.o.msg_total_maxlag ) )
 
-    def after_work(self, worklist):
+    def after_accept(self,worklist):
         new_incoming = []
         for message in worklist.incoming:
 

@@ -20,7 +20,7 @@ class Msg_test_retry(FlowCB):
         self.details_bad = None
         self.msg_baseurl_bad = 'sftp://ruser:rpass@retryhost'
 
-    def after_work(self, worklist):
+    def  after_accept(self,worklist):
         new_incoming = []
         for message in worlist.incoming:
             logger.debug("msg_test_retry")

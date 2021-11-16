@@ -65,7 +65,7 @@ class Msg_Total(FlowCB):
         self.o.msg_total_cache_file = self.o.user_cache_dir + os.sep
         self.o.msg_total_cache_file += 'msg_total_plugin_%.4d.vars' % self.o.instance
 
-    def after_work(self, worklist):
+    def  after_accept(self,worklist):
         new_incoming = []
         for message in worklist.incoming:
 
