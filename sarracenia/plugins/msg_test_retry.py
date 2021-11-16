@@ -7,53 +7,59 @@
 """
 
 import random
+import logger
+from sarracenia.flowcb import FlowCB
 
+logger = logging.getLogger(__name__)
 
-class Msg_test_retry():
-    def __init__(self, parent):
+class Msg_test_retry(FlowCB):
+    def __init__(self, options):
+        self.o = options
         self.destination = None
         self.msg_baseurl_good = None
         self.details_bad = None
         self.msg_baseurl_bad = 'sftp://ruser:rpass@retryhost'
 
-    def on_message(self, parent):
+    def after_work(self, worklist):
+        new_incoming = []
+        for message in worlist.incoming:
+            logger.debug("msg_test_retry")
 
-        l = parent.logger
-        m = parent.msg
+            if self.destination == None:
+                self.destination = self.o.destination
+            if self.msg_baseurl_good == None:
+                self.msg_baseurl_good = message['baseUrl']
 
-        l.debug("msg_test_retry")
+            # retry message : recover it
+            # FIXME dont see 'isRetry' as an entry in the message dictionary, could cause an error
+            if message['isRetry']:
+                self.o.destination = self.destination
+                ok, self.o.details = self.o.credentials.get(self.destination)
 
-        if self.destination == None: self.destination = parent.destination
+                # FIXME dont see 'set_notice' as an entry in the message dictionary, could cause an error
+                message['set_notice'](self.msg_baseurl_good, message['relpath'], message['pubtime'])
 
-        if self.msg_baseurl_good == None: self.msg_baseurl_good = m.baseurl
+            # original message :  50% chance of breakage
+            elif random.randint(0, 2):
 
-        # retry message : recover it
-        if m.isRetry:
-            parent.destination = self.destination
-            ok, parent.details = parent.credentials.get(self.destination)
-            m.set_notice(self.msg_baseurl_good, m.relpath, m.pubtime)
+                # if sarra or subscribe break download
+                if self.o.program_name != 'sr_sender':
+                    logger.debug("making it bad 1")
+                    ok, self.o.details = self.o.credentials.get(self.destination)
 
-        # original message :  50% chance of breakage
-        elif random.randint(0, 2):
+                    # FIXME dont see 'set_notice' as an entry in the message dictionary, could cause an error
+                    message['set_notice'](self.msg_baseurl_bad, message['relpath'], message['pubtime'])
 
-            # if sarra or subscribe  break download
-            if parent.program_name != 'sr_sender':
-                l.debug("making it bad 1")
-                ok, parent.details = parent.credentials.get(self.destination)
-                m.set_notice(self.msg_baseurl_bad, m.relpath, m.pubtime)
+                # if sender break destination
+                else:
+                    logger.debug("making it bad 2")
+                    self.o.sleep_connect_try_interval_max = 1.0
+                    self.o.destination = self.msg_baseurl_bad
+                    self.o.credentials.parse(self.msg_baseurl_bad)
+                    ok, self.o.details = self.o.credentials.get(self.msg_baseurl_bad)
 
-            # if sender break destination
-            else:
-                l.debug("making it bad 2")
-                parent.sleep_connect_try_interval_max = 1.0
-                parent.destination = self.msg_baseurl_bad
-                parent.credentials.parse(self.msg_baseurl_bad)
-                ok, parent.details = parent.credentials.get(
-                    self.msg_baseurl_bad)
-
-        l.debug("return from msg_test_retry")
-        return True
+            logger.debug("return from msg_test_retry")
+            # TODO not sure where to add to new_incoming. as of now not appending to new_incoming or worklist.rejected
+        worklist.incoming = new_incoming
 
 
-msg_test_retry = Msg_test_retry(None)
-self.on_message = msg_test_retry.on_message

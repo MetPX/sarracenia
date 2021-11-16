@@ -14,8 +14,8 @@
 
   The local pump will select messages destined for the DD or DDI clusters, and reject those for DDSR, which isn't in the list.
 
-
 """
+
 
 import os, stat, time
 import logging
@@ -32,6 +32,12 @@ class ToCluster(FlowCB):
 
         logger.info("msg_to_clusters valid destinations: %s " % self.o.msg_to_clusters)
 
-    def on_message(self):
-        return (self.o.msg['headers']['to_clusters'] in self.o.msg_to_clusters)
+    def after_accept(self, worklist):
+        new_incoming = []
+        for message in worklist.incoming:
+            if m['headers']['to_clusters'] in self.o.msg_to_clusters:
+                new_incoming.append(message)
+            else:
+                worklist.rejected.append(message)
+        worklist.incoming = new_incoming
 

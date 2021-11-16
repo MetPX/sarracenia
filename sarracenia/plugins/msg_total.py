@@ -75,52 +75,57 @@ class Msg_Total(FlowCB):
         logger.debug("msg_total: initialized, interval=%d, maxlag=%d" % \
             ( self.o.msg_total_interval, self.o.msg_total_maxlag ) )
 
-    def on_message(self):
-        msg = self.o.msg
+    def after_work(self, worklist):
+        new_incoming = []
+        for message in worklist.incoming:
 
-        if msg['isRetry']: return True
+            # FIXME so far don't see 'isRetry' as an entry in the message dictionary -> could cause an error
+            if message['isRetry']:
+                new_incoming.append(message)
+                continue
 
-        if (self.o.msg_total_msgcount == 0):
-            logger.info("msg_total: 0 messages received: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)")
+            if (self.o.msg_total_msgcount == 0):
+                logger.info("msg_total: 0 messages received: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)")
 
-        msgtime = timestr2flt(msg['pubtime'])
-        now = nowflt()
+            msgtime = timestr2flt(message['pubtime'])
+            now = nowflt()
 
-        self.o.msg_total_msgcount = self.o.msg_total_msgcount + 1
+            self.o.msg_total_msgcount = self.o.msg_total_msgcount + 1
 
-        lag = now - msgtime
-        self.o.msg_total_lag = self.o.msg_total_lag + lag
+            lag = now - msgtime
+            self.o.msg_total_lag = self.o.msg_total_lag + lag
 
-        # guess the size of the message payload, ignoring overheads.
-        self.o.msg_total_bytecount += (len(self.o.msg['exchange']) +
-                                       len(self.o.msg['topic']) +
-                                       len(self.o.msg['notice']) +
-                                       len(self.o.msg['hdrstr']))
+            # guess the size of the message payload, ignoring overheads.
+            self.o.msg_total_bytecount += (len(self.o.msg['exchange']) +
+                                           len(self.o.msg['topic']) +
+                                           len(self.o.msg['notice']) +
+                                           len(self.o.msg['hdrstr']))
 
-        #not time to report yet.
-        if self.o.msg_total_interval > now - self.o.msg_total_last:
-            return True
+            #not time to report yet.
+            if self.o.msg_total_interval > now - self.o.msg_total_last:
+                new_incoming.append(message)
+                continue
 
-        logger.info(
-            "msg_total: %3d messages received: %5.2g msg/s, %s bytes/s, lag: %4.2g s"
-            %
-            (self.o.msg_total_msgcount, self.o.msg_total_msgcount /
-             (now - self.o.msg_total_start),
-             humanize.naturalsize(
-                 self.o.msg_total_bytecount / (now - self.o.msg_total_start), binary=True,
-                 gnu=True), self.o.msg_total_lag / self.o.msg_total_msgcount))
-        # Set the maximum age, in seconds, of a message to retrieve.
+            logger.info(
+                "msg_total: %3d messages received: %5.2g msg/s, %s bytes/s, lag: %4.2g s"
+                %
+                (self.o.msg_total_msgcount, self.o.msg_total_msgcount /
+                 (now - self.o.msg_total_start),
+                 humanize.naturalsize(
+                     self.o.msg_total_bytecount / (now - self.o.msg_total_start), binary=True,
+                     gnu=True), self.o.msg_total_lag / self.o.msg_total_msgcount))
+            # Set the maximum age, in seconds, of a message to retrieve.
 
-        if lag > self.o.msg_total_maxlag:
-            logger.warn("total: Excessive lag! Messages posted %s " %
-                        humanize.naturaltime(datetime.timedelta(seconds=lag)))
+            if lag > self.o.msg_total_maxlag:
+                logger.warn("total: Excessive lag! Messages posted %s " %
+                            humanize.naturaltime(datetime.timedelta(seconds=lag)))
 
-        self.o.msg_total_last = now
+            self.o.msg_total_last = now
 
-        if (self.o.msg_total_count > 0) and (self.o.msg_total_msgcount >=
-                                             self.o.msg_total_count):
-            os._exit(0)
+            if (self.o.msg_total_count > 0) and (self.o.msg_total_msgcount >=self.o.msg_total_count):
+                os._exit(0)
 
-        return True
+        worklist.incoming = new_incoming
+
 
 
