@@ -12,21 +12,30 @@
 
 """
 
-import os, stat, time
+import logging
+import os
+import stat
+import time
+from sarracenia.flowcb import FlowCB
+
+logger = logging.getLogger(__name__)
 
 
-class Transformer(object):
-    def __init__(self, parent):
-
+class Transformer(FlowCB):
+    def __init__(self, options):
+        self.o = options
         if not hasattr(parent, 'msg_from_cluster'):
-            parent.logger.info("msg_from_cluster setting mandatory")
+            self.o.logger.info("msg_from_cluster setting mandatory")
             return
 
-        parent.logger.info("msg_from_cluster is %s " % parent.msg_from_cluster)
+        logger.info("msg_from_cluster is %s " % self.o.msg_from_cluster)
 
-    def on_message(self, parent):
-        return (parent.msg.headers['from_cluster'] in parent.msg_from_cluster)
+    def after_accept(self, worklist):
+        new_incoming = []
+        for message in worklist.incoming:
+            if message['headers']['from_cluster'] in message['msg_from_cluster']:
+                new_incoming.append(message)
+            else:
+                worklist.rejected.append(message)
+        worklist.incoming = new_incoming
 
-
-transformer = Transformer(self)
-self.on_message = transformer.on_message

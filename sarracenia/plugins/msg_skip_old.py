@@ -23,7 +23,7 @@
 
 """
 import calendar
-import logger
+import logging
 import os
 import stat
 import time

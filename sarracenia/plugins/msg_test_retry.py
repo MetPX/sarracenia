@@ -7,7 +7,7 @@
 """
 
 import random
-import logger
+import logging
 from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
