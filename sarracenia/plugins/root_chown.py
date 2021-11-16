@@ -57,89 +57,90 @@ class ROOT_CHOWN(FLowCB):
         except:
             logger.error("ROOT_CHOWN problem when parsing %s" % mf_path)
 
-        return True
 
-    def on_post(self):
-        msg = self.o.msg
+    def after_accept(self, worklist):
+        logger.debug("ROOT_CHOWN after_accept")
+        new_incoming = []
 
-        logger.debug("ROOT_CHOWN on_post")
+        for message in worklist.incoming:
+            new_dir = message['new_dir']
+            new_file = message['new_file']
 
-        new_dir = self.o.msg['new_dir']
-        new_file = self.o.msg['new_file']
+            # if remove ...
 
-        # if remove ...
+            if message['headers']['sum'].startswith('R,') and not 'newname' in message['headers']:
+                # FIXME should we append to new_incoming here? or worklist.reject.  Also don't see 'headers' as an entry in the message dict
+                continue
 
-        if msg['headers']['sum'].startswith('R,') and not 'newname' in msg['headers']:
-            return True
+            # if move ... sr_watch sets new_dir new_file on destination file so we are ok
 
-        # if move ... sr_watch sets new_dir new_file on destination file so we are ok
+            # already set ... check for mapping switch
 
-        # already set ... check for mapping switch
+            if 'ownership' in message['headers']:
+                ug = message['headers']['ownership']
+                if ug in self.mapping:
+                    logger.debug("ROOT_CHOWN mapping from %s to %s" %(ug, self.mapping[ug]))
+                    message['headers']['ownership'] = self.mapping[ug]
+                    new_incoming.append(message)
 
-        if 'ownership' in msg['headers']:
-            ug = msg['headers']['ownership']
+            # need to add ownership in message
+
+            try:
+                local_file = new_dir + os.sep + new_file
+
+                s = os.lstat(local_file)
+                username = pwd.getpwuid(s.st_uid).pw_name
+                group = grp.getgrgid(s.st_gid).gr_name
+
+                ug = "%s:%s" % (username, group)
+
+                # check for mapping switch
+                if ug in self.mapping:
+                    logger.debug("ROOT_CHOWN mapping from %s to %s" % (ug, self.mapping[ug]))
+                    ug = self.mapping[ug]
+
+                message['headers']['ownership'] = ug
+                new_incoming.append(message)
+                logger.debug("ROOT_CHOWN set ownership in headers %s" % message['headers']['ownership'])
+
+            except:
+                logger.error("ROOT_CHOWN could not set ownership  %s" % local_file)
+                #FIXME should we do worklist.reject here?
+
+    def after_work(self, worklist):
+        logger.debug("ROOT_CHOWN after_work")
+
+        for message in worklist.ok:
+            # the message does not have the requiered info
+
+            if not 'ownership' in message['headers']:
+                logger.info("ROOT_CHOWN no ownership in msg_headers")
+                # FIXME worklist.reject here?
+                continue
+
+            # it does, check for mapping
+
+            ug = message['headers']['ownership']
             if ug in self.mapping:
-                logger.debug("ROOT_CHOWN mapping from %s to %s" %(ug, self.mapping[ug]))
-                msg['headers']['ownership'] = self.mapping[ug]
-            return True
-
-        # need to add ownership in message
-
-        try:
-            local_file = new_dir + os.sep + new_file
-
-            s = os.lstat(local_file)
-            username = pwd.getpwuid(s.st_uid).pw_name
-            group = grp.getgrgid(s.st_gid).gr_name
-
-            ug = "%s:%s" % (username, group)
-
-            # check for mapping switch
-            if ug in self.mapping:
-                logger.debug("ROOT_CHOWN mapping from %s to %s" % (ug, self.mapping[ug]))
+                logger.debug("received ownership %s mapped to %s" % (ug, self.mapping[ug]))
                 ug = self.mapping[ug]
 
-            msg['headers']['ownership'] = ug
-            logger.debug("ROOT_CHOWN set ownership in headers %s" % msg['headers']['ownership'])
+            # try getting/setting ownership info to local_file
 
-        except:
-            logger.error("ROOT_CHOWN could not set ownership  %s" % local_file)
-        return True
+            local_file = message['new_dir'] + os.sep + message['new_file']
 
-    def on_file(self):
-        msg = self.o.msg
+            try:
+                parts = ug.split(':')
+                username = parts[0]
+                group = parts[1]
 
-        logger.debug("ROOT_CHOWN on_file")
+                uid = pwd.getpwnam(username).pw_uid
+                gid = grp.getgrnam(group).pw_gid
 
-        # the message does not have the requiered info
+                os.chown(local_file, uid, gid)
+                logger.info("ROOT_CHOWN set ownership %s to %s" % (ug, local_file))
+                #FIXME not sure if we add to worklist.ok here
 
-        if not 'ownership' in msg['headers']:
-            logger.info("ROOT_CHOWN no ownership in msg_headers")
-            return True
-
-        # it does, check for mapping
-
-        ug = msg['headers']['ownership']
-        if ug in self.mapping:
-            logger.debug("received ownership %s mapped to %s" % (ug, self.mapping[ug]))
-            ug = self.mapping[ug]
-
-        # try getting/setting ownership info to local_file
-
-        local_file = self.o.msg['new_dir'] + os.sep + self.o.msg['new_file']
-
-        try:
-            parts = ug.split(':')
-            username = parts[0]
-            group = parts[1]
-
-            uid = pwd.getpwnam(username).pw_uid
-            gid = grp.getgrnam(group).pw_gid
-
-            os.chown(local_file, uid, gid)
-            logger.info("ROOT_CHOWN set ownership %s to %s" % (ug, local_file))
-
-        except:
-            logger.error("ROOT_CHOWN could not set %s to %s" % (ug, local_file))
-        return True
+            except:
+                logger.error("ROOT_CHOWN could not set %s to %s" % (ug, local_file))
 
