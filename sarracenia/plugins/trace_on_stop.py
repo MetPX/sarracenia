@@ -5,9 +5,11 @@ This plugin prints a traceback when the program is stopped
   plugin trace_on_stop
 
 """
-import io, traceback
+import io
+import logging
+import traceback
 from sarracenia.flowcb import FlowCB
-import logger
+
 logger = logging.getLogger(__name__)
 
 class TRACE_ON_STOP(FlowCB):

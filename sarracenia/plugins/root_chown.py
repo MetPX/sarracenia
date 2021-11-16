@@ -22,13 +22,15 @@ and  mjg777:ssc_di  the destination ownership (destination user:group)
 
 """
 
-import grp, os, pwd
+import grp
 import logging
+import os
+import pwd
 from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
 
-class ROOT_CHOWN(FLowCB):
+class ROOT_CHOWN(FlowCB):
     def __init__(self, options):
         self.o = options
         self.o.declare_option('mapping_file')
