@@ -173,7 +173,7 @@ In general, v3 plugins:
 
 * **use standard python logging** ::
 
-      import logger
+      import logging
   
   Make sure the following logger declaration is after the last _import_ in the file::
 
