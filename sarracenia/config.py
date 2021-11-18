@@ -106,7 +106,7 @@ list_options = []
 set_options = [ 'logEvents', 'fileEvents' ]
 
 set_choices = { 
-    'logEvents': sarracenia.flowcb.entry_points + ['reject' ],
+    'logEvents': sarracenia.flowcb.entry_points + [ 'reject', 'all' ],
     'fileEvents': set( [ 'create', 'delete', 'link', 'modify' ] )
  }
 # FIXME: doesn't work... wonder why?
