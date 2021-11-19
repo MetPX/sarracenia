@@ -3,8 +3,8 @@
     This plugin turns a line into an SFTPattributes object. It sets the fields st_mtime, st_gid,
     st_uid, st_size, st_mode, filname, and longname.
 
-    This plugin also verifies if a file if OK to downlaod. It uses the o.chmod setting as a mask to
-    identify minimum permissions required to download file.
+    This plugin also verifies if a file if OK to downlaod (old line_mode.py plugin). It uses the o.chmod
+    setting as a mask to identify minimum permissions required to download a file.
     This means the owner must have read permission...
 
     sample line from an FTP server with the setting: chmod 400
@@ -16,6 +16,8 @@
 
     SFTP servers return lines as SFTPattributes objects. In this case the st_mode attribute is accesed
     and compared to the chmod option.
+
+
 """
 import logging
 import paramiko

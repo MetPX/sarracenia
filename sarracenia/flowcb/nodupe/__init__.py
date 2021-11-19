@@ -146,16 +146,14 @@ class NoDupe(FlowCB):
     def after_accept(self, worklist):
         new_incoming = []
         self.now = nowflt()
-        max_mtime = self.now - self.o.nodupe_ttl
         min_mtime = self.now - self.o.nodupe_file_time_limit
         for m in worklist.incoming:
-            try:
-                if timestr2flt(m['mtime']) > max_mtime  or timestr2flt(m['mtime']) < min_mtime:
-                    worklist.rejected.append(m)
-            except Exception as e:
-                print(e)
+            if timestr2flt(m['mtime']) < min_mtime:
+                worklist.rejected.append(m)
+                continue
             if self.check_message(m):
                 new_incoming.append(m)
+                continue
             else:
                 m['_deleteOnPost'] |= set(['reject'])
                 m['reject'] = "not modifified 1 (nodupe check)"
