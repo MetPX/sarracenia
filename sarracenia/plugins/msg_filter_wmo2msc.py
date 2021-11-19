@@ -332,7 +332,7 @@ class Xwmo2msc(object):
         baseurl = 'file:'
         # from msg_2local.py if used
         if hasattr(msg, 'savedurl'): baseurl = msg.savedurl
-        # from msg_2localfile.py if used
+        # from tolocalfile.py if used
         if hasattr(msg, 'saved_baseurl'): baseurl = msg.saved_baseurl
 
         relpath = relpath.replace('//', '/')
