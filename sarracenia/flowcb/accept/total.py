@@ -32,7 +32,7 @@ from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
 
-class Msg_Total(FlowCB):
+class Total(FlowCB):
     def __init__(self, options):
         """
            set defaults for options.  can be overridden in config file.
@@ -119,6 +119,7 @@ class Msg_Total(FlowCB):
             if lag > self.o.msg_total_maxlag:
                 logger.warn("total: Excessive lag! Messages posted %s " %
                             humanize.naturaltime(datetime.timedelta(seconds=lag)))
+                #FIXME: should we reject here? worklist.rejected.append(message) ?
 
             self.o.msg_total_last = now
 

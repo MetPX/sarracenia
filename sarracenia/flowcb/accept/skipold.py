@@ -32,7 +32,7 @@ from sarracenia.flowcb import FlowCB
 logger = logging.getLogger(__name__)
 
 
-class Transformer(FlowCB):
+class SkipOld(FlowCB):
     def __init__(self, options):
         self.o = options
         if not hasattr(self.o, 'msg_skip_threshold'):

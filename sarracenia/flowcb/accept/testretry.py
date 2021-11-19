@@ -6,13 +6,13 @@
                    when a message is being retried, it is randomly fixed
 """
 
-import random
 import logging
+import random
 from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
 
-class Msg_test_retry(FlowCB):
+class TestRetry(FlowCB):
     def __init__(self, options):
         self.o = options
         self.destination = None
@@ -20,9 +20,9 @@ class Msg_test_retry(FlowCB):
         self.details_bad = None
         self.msg_baseurl_bad = 'sftp://ruser:rpass@retryhost'
 
-    def  after_accept(self,worklist):
+    def  after_accept(self, worklist):
         new_incoming = []
-        for message in worlist.incoming:
+        for message in worklist.incoming:
             logger.debug("msg_test_retry")
 
             if self.destination == None:
@@ -32,6 +32,8 @@ class Msg_test_retry(FlowCB):
 
             # retry message : recover it
             # FIXME dont see 'isRetry' as an entry in the message dictionary, could cause an error
+            # update: this is set somewhere as true in /diskqueue.py, should think about initializing first so we
+            # dont have to test for existence
             if message['isRetry']:
                 self.o.destination = self.destination
                 ok, self.o.details = self.o.credentials.get(self.destination)

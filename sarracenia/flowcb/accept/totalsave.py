@@ -28,7 +28,7 @@ from sarracenia import timestr2flt, timeflt2str, nowflt
 logger = logging.getLogger(__name__)
 
 
-class Msg_Total(FlowCB):
+class TotalSave(FlowCB):
     def __init__(self, options):
         """
            set defaults for options.  can be overridden in config file.
@@ -65,7 +65,7 @@ class Msg_Total(FlowCB):
         self.o.msg_total_cache_file = self.o.user_cache_dir + os.sep
         self.o.msg_total_cache_file += 'msg_total_plugin_%.4d.vars' % self.o.instance
 
-    def  after_accept(self,worklist):
+    def after_accept(self, worklist):
         new_incoming = []
         for message in worklist.incoming:
 
@@ -86,7 +86,7 @@ class Msg_Total(FlowCB):
             self.o.msg_total_lag = self.o.msg_total_lag + lag
 
             # message with sum 'R' and 'L' have no partstr
-            if hasattr(self.o.msg, 'partstr'):
+            if 'partstr' in message.keys():
                 (method, psize, ptot, prem, pno) = message['partstr'].split(',')
                 self.o.msg_total_bytecount = self.o.msg_total_bytecount + int(psize)
 
@@ -138,7 +138,7 @@ class Msg_Total(FlowCB):
         return True
     # TODO fix this on_stop (not sure how to do for v3)
     # saving accounting variables
-    def on_stop(self, options):
+    def on_stop(self):
 
         line = '%f ' % self.o.msg_total_last
         line += '%f ' % self.o.msg_total_start

@@ -21,11 +21,12 @@ from sarracenia.flowcb import FlowCB
 logger = logging.getLogger(__name__)
 
 
-class Transformer(FlowCB):
+class FromCluster(FlowCB):
     def __init__(self, options):
         self.o = options
-        if not hasattr(parent, 'msg_from_cluster'):
-            self.o.logger.info("msg_from_cluster setting mandatory")
+        # FIXME would this ever be the case or is this a new name in V3? 'msg_from_cluster'
+        if not hasattr(self.o, 'msg_from_cluster'):
+            logger.info("msg_from_cluster setting mandatory")
             return
 
         logger.info("msg_from_cluster is %s " % self.o.msg_from_cluster)

@@ -23,7 +23,7 @@ from sarracenia.flowcb import FlowCB
 logger = logging.getLogger(__name__)
 
 
-class Transformer(FlowCB):
+class TotalSave(FlowCB):
     def __init__(self, options):
         self.o = options
         pass
