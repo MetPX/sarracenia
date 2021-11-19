@@ -36,9 +36,8 @@ class TotalSave(FlowCB):
         self.o = options
 
         # make self.o know about these possible options
-
-        self.o.declare_option('msg_total_interval')
-        self.o.declare_option('msg_total_maxlag')
+        self.o.add_option('msg_total_interval', 'str')
+        self.o.add_option('msg_total_maxlag', 'str')
 
         if hasattr(self.o, 'msg_total_maxlag'):
             if type(self.o.msg_total_maxlag) is list:

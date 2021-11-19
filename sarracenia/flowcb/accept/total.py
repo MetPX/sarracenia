@@ -39,11 +39,10 @@ class Total(FlowCB):
         """
         self.o = options
 
-        # make parent know about these possible options
-
-        self.o.declare_option('msg_total_interval')
-        self.o.declare_option('msg_total_maxlag')
-        self.o.declare_option('msg_total_count')
+        # make self.o know about these possible options FIXME: is the kind ? str? or flt?
+        self.o.add_option('msg_total_interval', 'str')
+        self.o.add_option('msg_total_maxlag', 'str')
+        self.o.add_option('msg_total_count', 'str')
 
         if hasattr(self.o, 'msg_total_count'):
             if type(self.o.msg_total_count) is list:
