@@ -149,7 +149,7 @@ convert_to_v3 = {
     'no_download': [ 'download', 'False' ],
     'on_message': {
         #TODO: should this be flowcb.accept.FromCluster since the 7 following plugins are in the /flowcb/accept directory?
-        # Ill add the accept for now since it makes sense to me, will modify if its wrong. 
+        # Ill add the accept for now since it makes sense to me, will modify if its wrong.
         'fromcluster': { [ 'flow_callback', 'sarracenia.flowcb.accept.fromcluster.FromCluster' ] },
         'printlag': { [ 'flow_callback', 'sarracenia.flowcb.accept.printlag.PrintLag' ] },
         'skipold': { [ 'flow_callback', 'sarracenia.flowcb.accept.skipold.SkipOld' ] },
