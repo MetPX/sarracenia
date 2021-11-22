@@ -148,17 +148,20 @@ convert_to_v3 = {
     },
     'no_download': [ 'download', 'False' ],
     'on_message': {
-        #TODO: should this be flowcb.accept.FromCluster since the 9 following plugins are in the /flowcb/accept directory?
-        # Ill add the accept for now since it makes sense to me, will modify if its wrong.
-        'fromcluster': [ 'flow_callback', 'sarracenia.flowcb.accept.fromcluster.FromCluster' ],
-        'printlag': [ 'flow_callback', 'sarracenia.flowcb.accept.printlag.PrintLag' ],
-        'skipold': [ 'flow_callback', 'sarracenia.flowcb.accept.skipold.SkipOld' ],
-        'testretry': [ 'flow_callback', 'sarracenia.flowcb.accept.testretry.TestRetry' ],
-        'toclusters': [ 'flow_callback', 'sarracenia.flowcb.accept.toclusters.ToClusters' ],
-        'total': [ 'flow_callback', 'sarracenia.flowcb.accept.total.Total' ],
-        'totalsave': [ 'flow_callback', 'sarracenia.flowcb.accept.totalsave.TotalSave' ],
-        'save': [ 'flow_callback', 'sarracenia.flowcb.accept.save.Save' ],
-        'tolocalfile': [ 'flow_callback', 'sarracenia.flowcb.accept.tolocalfile.ToLocalFile' ],
+        'fromcluster': [ 'flow_callback', 'sarracenia.flowcb.accept.fromcluster.FromCluster'],
+        'printlag': [ 'flow_callback', 'sarracenia.flowcb.accept.printlag.PrintLag'],
+        'skipold': [ 'flow_callback', 'sarracenia.flowcb.accept.skipold.SkipOld'],
+        'testretry': [ 'flow_callback', 'sarracenia.flowcb.accept.testretry.TestRetry'],
+        'toclusters': [ 'flow_callback', 'sarracenia.flowcb.accept.toclusters.ToClusters'],
+        'total': [ 'flow_callback', 'sarracenia.flowcb.accept.total.Total'],
+        'totalsave': [ 'flow_callback', 'sarracenia.flowcb.accept.totalsave.TotalSave'],
+        'save': [ 'flow_callback', 'sarracenia.flowcb.accept.save.Save'],
+        'tolocalfile': [ 'flow_callback', 'sarracenia.flowcb.accept.tolocalfile.ToLocalFile'],
+        'renamewhatfn': [ 'flow_callback', 'sarracenia.flowcb.accept.renamewhatfn.RenameWhatFn'],
+        'renamedmf': [ 'flow_callback', 'sarracenia.flowcb.accept.renamedmf.RenameDMF'],
+        'hourtree': [ 'flow_callback', 'sarracenia.flowcb.accept.hourtree.HourTree'],
+        'renamer': [ 'flow_callback', 'sarracenia.flowcb.accept.renamer.Renamer'],
+
 
         'msg_delete': [ 'flow_callback', 'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles'],
         'msg_log': ['logEvents', 'after_accept'],
