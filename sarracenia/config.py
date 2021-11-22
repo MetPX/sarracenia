@@ -163,7 +163,8 @@ convert_to_v3 = {
         'renamer': [ 'flow_callback', 'sarracenia.flowcb.accept.renamer.Renamer'],
         'delete': [ 'flow_callback', 'sarracenia.flowcb.accept.delete.Delete'],
         'tohttp': [ 'flow_callback', 'sarracenia.flowcb.accept.tohttp.HttpToLocal'],
-
+        'httptohttps': [ 'flow_callback', 'sarracenia.flowcb.accept.httptohttps.HttpToHttps'],
+        'speedo': [ 'flow_callback', 'sarracenia.flowcb.accept.speedo.Speedo'],
 
         'msg_delete': [ 'flow_callback', 'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles'],
         'msg_log': ['logEvents', 'after_accept'],
