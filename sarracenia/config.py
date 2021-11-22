@@ -161,6 +161,8 @@ convert_to_v3 = {
         'renamedmf': [ 'flow_callback', 'sarracenia.flowcb.accept.renamedmf.RenameDMF'],
         'hourtree': [ 'flow_callback', 'sarracenia.flowcb.accept.hourtree.HourTree'],
         'renamer': [ 'flow_callback', 'sarracenia.flowcb.accept.renamer.Renamer'],
+        'delete': [ 'flow_callback', 'sarracenia.flowcb.accept.delete.Delete'],
+        'tohttp': [ 'flow_callback', 'sarracenia.flowcb.accept.tohttp.HttpToLocal'],
 
 
         'msg_delete': [ 'flow_callback', 'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles'],
