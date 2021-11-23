@@ -162,9 +162,11 @@ convert_to_v3 = {
         'hourtree': [ 'flow_callback', 'sarracenia.flowcb.accept.hourtree.HourTree'],
         'renamer': [ 'flow_callback', 'sarracenia.flowcb.accept.renamer.Renamer'],
         'delete': [ 'flow_callback', 'sarracenia.flowcb.accept.delete.Delete'],
-        'tohttp': [ 'flow_callback', 'sarracenia.flowcb.accept.tohttp.HttpToLocal'],
+        'tohttp': [ 'flow_callback', 'sarracenia.flowcb.accept.tohttp.ToHttp'],
+        'tolocal': [ 'flow_callback', 'sarracenia.flowcb.accept.tolocal.ToLocal'],
         'httptohttps': [ 'flow_callback', 'sarracenia.flowcb.accept.httptohttps.HttpToHttps'],
         'speedo': [ 'flow_callback', 'sarracenia.flowcb.accept.speedo.Speedo'],
+        'wmotypesuffix': [ 'flow_callback', 'sarracenia.flowcb.accept.wmotypesuffix.WmoTypeSuffix'],
 
         'msg_delete': [ 'flow_callback', 'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles'],
         'msg_log': ['logEvents', 'after_accept'],

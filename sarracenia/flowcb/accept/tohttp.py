@@ -10,7 +10,7 @@ import re
 from sarracenia.flowcb import FlowCB
 logger = logging.getLogger(__name__)
 
-class HttpToLocal(FlowCB):
+class ToHttp(FlowCB):
     def __init__(self, options):
         self.o = options
         if hasattr(self.o, 'baseDir'):

@@ -46,41 +46,38 @@
 
 
 """
+import logging
 import re
+from sarracenia.flowcb import FlowCB
+logger = logging.getLogger(__name__)
 
 
-class Http2Local(object):
-    def __init__(self, parent):
-        if hasattr(parent, 'base_dir'):
-            parent.ldocroot = parent.base_dir
+class ToLocal(FlowCB):
+    def __init__(self, options):
+        self.o = options
+        if hasattr(self.o, 'baseDir'):
+            self.o.ldocroot = self.o.baseDir
 
-        if hasattr(parent, 'msg_2local_root'):
-            parent.ldocroot = parent.msg_2local_root[0]
+        if hasattr(self.o, 'msg_2local_root'):
+            self.o.ldocroot = self.o.msg_2local_root[0]
 
-        parent.lurlre = re.compile("(http[s]{0,1}://[^/]+/)")
+        self.o.lurlre = re.compile("(http[s]{0,1}://[^/]+/)")
 
-        if hasattr(parent, 'msg_2local_url'):
-            parent.lurlre = re.compile(parent.msg_2local_url[0])
-        pass
+        if hasattr(self.o, 'msg_2local_url'):
+            self.o.lurlre = re.compile(self.o.msg_2local_url[0])
 
-    def on_message(self, parent):
-        import re
+    def after_accept(self, worklist):
+        new_incoming = []
+        for message in worklist.incoming:
+            # TODO should all these be logger.error? should we append
+            #  to worklist.rejected or worklist.failed at some point?
+            logger.error("input: urlstr: %s" % message['urlstr'])
+    
+            message['savedurl'] = self.o.lurlre.match(message['urlstr']).group(1)
+            message['urlstr'] = 'file:/%s' % self.o.lurlre.sub(self.o.ldocroot + '/', message['urlstr'])
+    
+            logger.error("doc_root=%s " % (self.o.baseDir))
+            logger.error("output: urlstr: %s saved url: %s" % (message['urlstr'], message['savedurl']))
+            new_incoming.append(message)
+        worklist.incoming = new_incoming
 
-        l = parent.logger
-        m = parent.msg
-
-        l.error("input: urlstr: %s" % m.urlstr)
-
-        m.savedurl = parent.lurlre.match(m.urlstr).group(1)
-        m.urlstr = 'file:/%s' % parent.lurlre.sub(parent.ldocroot + '/',
-                                                  m.urlstr)
-
-        l.error("doc_root=%s " % (parent.base_dir))
-        l.error("output: urlstr: %s saved url: %s" % (m.urlstr, m.savedurl))
-
-        return True
-
-
-http2local = Http2Local(self)
-
-self.on_message = http2local.on_message
