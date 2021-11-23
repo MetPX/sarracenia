@@ -14,10 +14,13 @@
 
 
 """
+import logging
 
+from sarracenia.flowcb import FlowCB
+logger = logging.getLogger(__name__)
 
-class SundewRoute(object):
-    def __init__(self, parent):
+class SundewPxRoute(FlowCB):
+    def __init__(self, options):
         """
 
           For World Meteorological Organization message oriented routing.
@@ -28,11 +31,11 @@ class SundewRoute(object):
           init sets 'ahls_to_route' according to the contents of pxrouting
 
         """
+        self.o = options
         self.ahls_to_route = {}
 
-        logger = parent.logger
-        pxrf = open(parent.msg_pxrouting[0], 'r')
-        possible_references = parent.msg_pxclient[0].split(',')
+        pxrf = open(self.o.msg_pxrouting[0], 'r')
+        possible_references = self.o.msg_pxclient[0].split(',')
         logger.info("sundew_pxroute, target clients: %s" % possible_references)
 
         for line in pxrf:
@@ -55,32 +58,28 @@ class SundewRoute(object):
                 for i in possible_references:
                     if i in expansion:
                         self.ahls_to_route[words[1]] = True
-
         pxrf.close()
 
-        logger.debug(
-            "sundew_pxroute For %s, the following headers are routed %s" %
-            (parent.msg_pxclient[0], self.ahls_to_route.keys()))
+        logger.debug("sundew_pxroute For %s, the following headers are routed %s" %
+            (self.o.msg_pxclient[0], self.ahls_to_route.keys()))
 
-    def on_message(self, parent):
-        logger = parent.logger
-        msg = parent.msg
+    def after_accept(self, worklist):
+        new_incoming = []
 
-        ahl = msg.new_file.split('/')[-1][0:11]
+        for message in worklist.incoming:
+            ahl = msg.new_file.split('/')[-1][0:11]
 
-        if (len(ahl) < 11) or (ahl[6] != '_'):
-            logger.debug("sundew_pxroute not an AHL: %s, " % ahl)
-            return False
+            if (len(ahl) < 11) or (ahl[6] != '_'):
+                logger.debug("sundew_pxroute not an AHL: %s, " % ahl)
+                worklist.rejected.append(message)
+                continue
+            if (ahl in self.ahls_to_route.keys()):
+                logger.debug("sundew_pxroute yes, deliver: %s, " % ahl)
+                new_incoming.append(message)
+                continue
+            else:
+                logger.debug("sundew_pxroute no, do not deliver: %s, " % ahl)
+                worklist.rejected.append(message)
+        worklist.incoming = new_incoming
 
-        if (ahl in self.ahls_to_route.keys()):
-            logger.debug("sundew_pxroute yes, deliver: %s, " % ahl)
-            return True
-        else:
-            logger.debug("sundew_pxroute no, do not deliver: %s, " % ahl)
-            return False
 
-
-# at this point the parent is  "self"
-sundewroute = SundewRoute(self)
-
-self.on_message = sundewroute.on_message

@@ -10,32 +10,34 @@ import sys, os, os.path, time, stat
  and restructure it into an incoming pds  name : /apps/dms/dms-decoder-jicc/data/import/jicc.201603022127.ccstn.dat:pull-ccstn:NCP:JICC:5:Codecon:20160302212706   (jicc.yyyymmddhhmm.ccstn.dat )
 
 """
+import logging
+import time
+from sarracenia.flowcb import FlowCB
+logger = logging.getLogger(__name__)
+
+class Rename4Jicc(FlowCB):
+    def __init__(self, options):
+        self.o = options
+
+    def after_accept(self, worklist):
+        new_incoming = []
+        for message in worklist.incoming:
+
+            if not 'ccstn.dat' in message['new_file']:
+                new_incoming.append(message)
+                continue
+            # build new name
+            local_file = message['new_file']
+            datestr = time.strftime('%Y%m%d%H%M', time.localtime())
+            local_file = local_file.replace('ccstn.dat', 'jicc.' + datestr + '.ccstn.dat')
+
+            # set in message (and headers for logging)
+            message['new_file'] = local_file
+
+            # dont use this... new_file is where the file will be downloaded... so need to keep a rename in headers
+            #message['headers']['rename'] = local_file
+
+            new_incoming.append(message)
+        worklist.incoming = new_incoming
 
 
-class Renamer(object):
-    def __init__(self):
-        pass
-
-    def on_message(self, parent):
-        import time
-
-        if not 'ccstn.dat' in parent.msg.new_file: return True
-
-        # build new name
-        local_file = parent.msg.new_file
-        datestr = time.strftime('%Y%m%d%H%M', time.localtime())
-        local_file = local_file.replace('ccstn.dat',
-                                        'jicc.' + datestr + '.ccstn.dat')
-
-        # set in message (and headers for logging)
-        parent.msg.new_file = local_file
-
-        # dont use this... new_file is where the file will be downloaded... so need to keep a rename in headers
-        #parent.msg.headers['rename'] = local_file
-
-        # on garde tous les messages
-        return True
-
-
-renamer = Renamer()
-self.on_message = renamer.on_message

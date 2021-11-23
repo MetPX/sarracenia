@@ -167,6 +167,8 @@ convert_to_v3 = {
         'httptohttps': [ 'flow_callback', 'sarracenia.flowcb.accept.httptohttps.HttpToHttps'],
         'speedo': [ 'flow_callback', 'sarracenia.flowcb.accept.speedo.Speedo'],
         'wmotypesuffix': [ 'flow_callback', 'sarracenia.flowcb.accept.wmotypesuffix.WmoTypeSuffix'],
+        'sundewpxroute': [ 'flow_callback', 'sarracenia.flowcb.accept.sundewpxroute.SundewPxRoute'],
+        'rename4jicc': [ 'flow_callback', 'sarracenia.flowcb.accept.rename4jicc.Rename4Jicc'],
 
         'msg_delete': [ 'flow_callback', 'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles'],
         'msg_log': ['logEvents', 'after_accept'],
