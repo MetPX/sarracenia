@@ -86,7 +86,7 @@ class Total(FlowCB):
             if (self.o.msg_total_msgcount == 0):
                 logger.info("msg_total: 0 messages received: 0 msg/s, 0.0 bytes/s, lag: 0.0 s (RESET)")
 
-            msgtime = timestr2flt(message['pubtime'])
+            msgtime = timestr2flt(message['pubTime'])
             now = nowflt()
 
             self.o.msg_total_msgcount = self.o.msg_total_msgcount + 1

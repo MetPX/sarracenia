@@ -30,9 +30,9 @@ class TotalSave(FlowCB):
 
     def after_accept(self, worklsit):
         for message in worklsit.incoming:
-            then = timestr2flt(message['pubtime'])
+            then = timestr2flt(message['pubTime'])
             now = nowflt()
 
             logger.info("print_lag, posted: %s, lag: %g sec. to deliver: %s, " %
-                    (message['pubtime'], (now - then), message['new_file']))
+                    (message['pubTime'], (now - then), message['new_file']))
 

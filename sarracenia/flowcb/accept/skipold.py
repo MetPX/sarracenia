@@ -45,7 +45,7 @@ class SkipOld(FlowCB):
         new_incoming = []
 
         for message in worklist.incoming:
-            then = timestr2flt(message['pubtime'])
+            then = timestr2flt(message['pubTime'])
             now = nowflt()
 
             # Set the maximum age, in seconds, of a message to retrieve.

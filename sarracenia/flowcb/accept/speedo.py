@@ -53,7 +53,7 @@ class Speedo(FlowCB):
     def after_accept(self, worklist):
         new_incoming = []
         for message in worklist.incoming:
-            msgtime = timestr2flt(message['pubtime'])
+            msgtime = timestr2flt(message['pubTime'])
             now = nowflt()
             self.o.msg_speedo_msgcount = self.o.msg_speedo_msgcount + 1
 

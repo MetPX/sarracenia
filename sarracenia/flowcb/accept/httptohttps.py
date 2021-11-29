@@ -22,11 +22,11 @@ class HttpToHttps(FlowCB):
     def after_accept(self, worklist):
         new_incoming = []
         for message in worklist.incoming:
-            if not 'http:' in msg['baseUrl']:
+            if not 'http:' in message['baseUrl']:
                 new_incoming.append(message)
                 continue
             baseUrl = message['baseUrl'].replace('http:', 'https:')
-            message['set_notice'](baseUrl, message['relpath'])
+            message['set_notice'](baseUrl, message['relPath'])
             new_incoming.append(message)
 
         worklist.incoming = new_incoming

@@ -17,7 +17,7 @@ class Delete(FlowCB):
     def after_accept(self, worklist):
         new_incoming = []
         for message in worklist.incoming:
-            f = "%s/%s" % (message['new_dir'], msg['new_file'])
+            f = "%s/%s" % (message['new_dir'], message['new_file'])
             logger.info("msg_delete: %s" % f)
             try:
                 os.unlink(f)
