@@ -237,8 +237,8 @@ In general, v3 plugins:
   the *after_work* routine would change the worklist.ok to contain messages for
   the individual files, rather than the original collective .tar.
 
-  Note: on_file plugins that become after_accept plugins should be placed in the
-  /flowcb/action directory
+  Note: on_file plugins that become after_work plugins should be placed in the
+  /flowcb/after_work directory
   
 * **No Need to set message fields in plugins**
   in v2, one would need to set partstr, and sumstr for v2 messages in plugins. 
