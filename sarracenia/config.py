@@ -148,7 +148,6 @@ convert_to_v3 = {
     },
     'no_download': [ 'download', 'False' ],
     'on_message': {
-        'fromcluster': [ 'flow_callback', 'sarracenia.flowcb.accept.fromcluster.FromCluster'],
         'printlag': [ 'flow_callback', 'sarracenia.flowcb.accept.printlag.PrintLag'],
         'skipold': [ 'flow_callback', 'sarracenia.flowcb.accept.skipold.SkipOld'],
         'testretry': [ 'flow_callback', 'sarracenia.flowcb.accept.testretry.TestRetry'],
@@ -169,6 +168,8 @@ convert_to_v3 = {
         'wmotypesuffix': [ 'flow_callback', 'sarracenia.flowcb.accept.wmotypesuffix.WmoTypeSuffix'],
         'sundewpxroute': [ 'flow_callback', 'sarracenia.flowcb.accept.sundewpxroute.SundewPxRoute'],
         'rename4jicc': [ 'flow_callback', 'sarracenia.flowcb.accept.rename4jicc.Rename4Jicc'],
+        'postoverride': [ 'flow_callback', 'sarracenia.flowcb.accept.postoverride.PostOverride'],
+        'posthourtree': [ 'flow_callback', 'sarracenia.flowcb.accept.posthourtree.PostHourTree'],
 
         'msg_delete': [ 'flow_callback', 'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles'],
         'msg_log': ['logEvents', 'after_accept'],
