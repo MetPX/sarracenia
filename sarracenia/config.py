@@ -172,6 +172,8 @@ convert_to_v3 = {
         'posthourtree': [ 'flow_callback', 'sarracenia.flowcb.accept.posthourtree.PostHourTree'],
         'longflow': [ 'flow_callback', 'sarracenia.flowcb.accept.longflow.LongFLow'],
 
+
+        'wmo2msc': [ 'flow_callback', 'sarracenia.flowcb.filter.wmo2msc.Wmo2Msc'],
         'msg_delete': [ 'flow_callback', 'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles'],
         'msg_log': ['logEvents', 'after_accept'],
         'msg_rawlog': ['logEvents', 'after_accept']
