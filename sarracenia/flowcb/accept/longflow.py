@@ -8,23 +8,22 @@
 
   put some utf characters in there to make it interesting... (truncation complex.)
 """
-
+import logging
 import os, stat, time
+from sarracenia.flowcb import FlowCB
+
+logger = logging.getLogger(__name__)
+
+class LongFlow(FlowCB):
+    def __init__(self, options):
+        self.o = options
+
+    def after_accept(self, worklist):
+        for message in worklist.incoming:
+            logger.info('setting toolong header')
+            message['headers']['toolong'] = '1234567890ßñç' * 26
 
 
-class Override(object):
-    def __init__(self, parent):
-        pass
-
-    def perform(self, parent):
-        logger = parent.logger
-        msg = parent.msg
-
-        parent.logger.info('setting toolong header')
-        parent.msg.headers['toolong'] = '1234567890ßñç' * 26
-
-        return True
 
 
-override = Override(self)
-self.on_post = override.perform
+
