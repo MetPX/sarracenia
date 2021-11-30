@@ -285,6 +285,8 @@ class Message(dict):
        """
           copy dictionary into message.
        """
+       if d is None: return
+
        for h in d:
             msg[h]=d[h]
 
