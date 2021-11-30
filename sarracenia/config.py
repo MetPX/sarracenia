@@ -171,6 +171,7 @@ convert_to_v3 = {
         'postoverride': [ 'flow_callback', 'sarracenia.flowcb.accept.postoverride.PostOverride'],
         'posthourtree': [ 'flow_callback', 'sarracenia.flowcb.accept.posthourtree.PostHourTree'],
         'longflow': [ 'flow_callback', 'sarracenia.flowcb.accept.longflow.LongFLow'],
+        'posttotalsave': [ 'flow_callback', 'sarracenia.flowcb.accept.posttotalsave.PostTotalSave'],
 
 
         'wmo2msc': [ 'flow_callback', 'sarracenia.flowcb.filter.wmo2msc.Wmo2Msc'],
