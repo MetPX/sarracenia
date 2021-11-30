@@ -172,6 +172,7 @@ convert_to_v3 = {
         'posthourtree': [ 'flow_callback', 'sarracenia.flowcb.accept.posthourtree.PostHourTree'],
         'longflow': [ 'flow_callback', 'sarracenia.flowcb.accept.longflow.LongFLow'],
         'posttotalsave': [ 'flow_callback', 'sarracenia.flowcb.accept.posttotalsave.PostTotalSave'],
+        'messagedelay': [ 'flow_callback', 'sarracenia.flowcb.accept.messagedelay.MessageDelay'],
 
 
         'wmo2msc': [ 'flow_callback', 'sarracenia.flowcb.filter.wmo2msc.Wmo2Msc'],
