@@ -6,7 +6,7 @@
   on a server where the files are available, it is more efficient to access 
   them as local files, and so this plugin turn the message's notice Web URL
   into a File URL (file:/d1/d2/.../fn)
-   
+
   Normal usage:
 
   A Web URL in an amqp message is hold in the following values:
@@ -20,15 +20,15 @@
   message['saved_relPath'] = message['relPath']
 
   We will then turn them into an absolute File Url
-  (Note if a base_dir was set it prefix the relPath)
+  (Note if a baseDir was set it prefix the relPath)
 
   message['baseUrl'] = 'file:'
-  message['relPath'] = [base_dir] + message['relPath']
+  message['relPath'] = [baseDir] + message['relPath']
 
 
   Example 
 
-  base_dir /var/www/html
+  baseDir /var/www/html
 
   message pubtime=20171003131233.494 baseUrl=http://localhost relPath=/20171003/CMOE/productx.gif
 
@@ -49,8 +49,8 @@
 
        message['baseUrl'] = 'file:'
 
-       if parent['base_dir'] :
-          message['relPath'] = parent['base_dir'] + '/' + message['relPath']
+       if parent['baseDir'] :
+          message['relPath'] = parent['baseDir'] + '/' + message['relPath']
           message['relPath'] = message['relPath'].replace('//','/')
 
 

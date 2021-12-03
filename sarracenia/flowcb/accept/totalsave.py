@@ -62,7 +62,7 @@ class TotalSave(FlowCB):
                      (self.o.msg_total_interval, self.o.msg_total_maxlag))
 
         self.o.msg_total_cache_file = self.o.user_cache_dir + os.sep
-        self.o.msg_total_cache_file += 'msg_total_plugin_%.4d.vars' % self.o.instance
+        self.o.msg_total_cache_file += 'msg_total_plugin_%.4d.vars' % self.o.instances
 
     def after_accept(self, worklist):
         new_incoming = []
@@ -115,7 +115,7 @@ class TotalSave(FlowCB):
     def on_start(self):
 
         self.o.msg_total_cache_file = self.o.user_cache_dir + os.sep
-        self.o.msg_total_cache_file += 'msg_total_plugin_%.4d.vars' % self.o.instance
+        self.o.msg_total_cache_file += 'msg_total_plugin_%.4d.vars' % self.o.instances
 
         if not os.path.isfile(self.o.msg_total_cache_file): return True
 

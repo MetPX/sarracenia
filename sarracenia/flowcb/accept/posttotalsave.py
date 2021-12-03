@@ -62,7 +62,7 @@ class PostTotalSave(FlowCB):
              ( self.o.post_total_interval, self.o.post_total_maxlag ) )
 
         self.o.post_total_cache_file = self.o.user_cache_dir + os.sep
-        self.o.post_total_cache_file += 'post_total_plugin_%.4d.vars' % self.o.instance
+        self.o.post_total_cache_file += 'post_total_plugin_%.4d.vars' % self.o.instances
 
     def after_accept(self, worklist):
         for message in worlist.incoming:
@@ -100,7 +100,7 @@ class PostTotalSave(FlowCB):
     def on_start(self):
 
         self.o.post_total_cache_file = self.o.user_cache_dir + os.sep
-        self.o.post_total_cache_file += 'post_total_plugin_%.4d.vars' % self.o.instance
+        self.o.post_total_cache_file += 'post_total_plugin_%.4d.vars' % self.o.instances
 
         if not os.path.isfile(self.o.post_total_cache_file): return True
 

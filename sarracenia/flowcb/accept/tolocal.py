@@ -7,7 +7,7 @@
    
   Normal usage:
 
-  base_dir /var/www/html
+  baseDir /var/www/html
 
                url is http://localhost/<date>/<src>/input/file.txt
 
@@ -37,7 +37,7 @@
 
   The easiest way is to set msg_2local_url as follows:
 
-  base_dir /home/user/www
+  baseDir /home/user/www
   msg_2local_url (https://hostname/~user/)
 
   the parentheses around the URL set the value of to be put in m.savedurl that

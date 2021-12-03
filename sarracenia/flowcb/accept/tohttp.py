@@ -14,7 +14,7 @@ class ToHttp(FlowCB):
     def __init__(self, options):
         self.o = options
         if hasattr(self.o, 'baseDir'):
-            self.o.ldocroot = self.o.base_dir
+            self.o.ldocroot = self.o.baseDir
         if hasattr(self.o, 'msg_2http_root'):
             self.o.ldocroot = self.o.msg_2http_root[0]
 
@@ -27,7 +27,7 @@ class ToHttp(FlowCB):
             message['urlstr'] = self.o.hurlre.sub(message['savedurl'], message['urlstr'])
             message['url'] = urllib.parse.urlparse(message['urlstr'])
             message['set_notice_url'](message['url'])
-            logger.debug("msg_2http base_dir=%s " % (self.o.baseDir))
+            logger.debug("msg_2http baseDir=%s " % (self.o.baseDir))
             logger.info("msg_2http output: urlstr: %s" % message['urlstr'])
             new_incoming.append(message)
         worklist.incoming = new_incoming
