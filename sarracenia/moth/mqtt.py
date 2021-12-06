@@ -119,7 +119,7 @@ class MQTT(Moth):
         logger.info("note: mqtt support is newish, not very well tested")
         
 
-    def __sub_on_disconnect(client, userdata, rc):
+    def __sub_on_disconnect(client, userdata, rc, properties=None):
         logger.info( paho.mqtt.client.connack_string(rc) )
         if hasattr(userdata,'pending_messages'):
             lost=len(userdata.pending_messages)
@@ -155,7 +155,7 @@ class MQTT(Moth):
     def __sub_on_subscribe(client, userdata, mid, granted_qos, properties=None):
         logger.info( "subscribe completed mid={} granted_qos={}".format( mid, list( map( lambda x: x.getName(), granted_qos ))) )
 
-    def __pub_on_disconnect(client, userdata, rc ):
+    def __pub_on_disconnect(client, userdata, rc, properties=None ):
         logger.info( paho.mqtt.client.connack_string(rc) )
 
     def __pub_on_connect(client, userdata, flags, rc, properties=None):
