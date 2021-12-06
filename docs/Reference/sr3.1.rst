@@ -512,7 +512,7 @@ The notification protocol is defined here `sr3_post(7) <sr3_post.7.rst>`_
 **poll** connects to a *broker*.  Every *sleep* seconds, it connects to
 a *destination* (sftp, ftp, ftps). For each of the *directory* defined, it lists
 the contents.  Polling is only intended to be used for recently modified
-files. The *nodupe_file_time_limit* option eliminates files that are too old 
+files. The *nodupe_fileAgeMaximum* option eliminates files that are too old 
 from consideration. When a file is found that matches a pattern given 
 by *accept*, **poll** builds a notification message for that product.
 
@@ -585,7 +585,7 @@ These options set what files the user wants to be notified for and where
 - **reject    <regexp pattern> (optional)**
 - **chmod     <integer>        (default: 0o400)**
 - **poll_without_vip  <boolean> (default: True)**
-- **nodupe_file_time_limit <duration>   (default 60d)**
+- **nodupe_fileAgeMaximum <duration>   (default 60d)**
 
 
 The option *filename* can be used to set a global rename to the products.
@@ -659,7 +659,7 @@ cases.
 
 By default, files that are more than 2 months are not posted. However, this 
 can be modified to any specified time limit in the configurations by using 
-the option *nodupe_file_time_limit <duration>*. By default, seconds are used, but 
+the option *nodupe_fileAgeMaximum <duration>*. By default, seconds are used, but 
 one can specify hours, days or weeks with 1, 1h, 1d, 1w respectively. 
 
 POSTING SPECIFICATIONS

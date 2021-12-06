@@ -96,7 +96,7 @@ flag_options = [ 'baseUrl_relPath', 'bind_queue', 'cache_stat', 'declare_exchang
                 ]
 
 duration_options = [
-    'expire', 'file_time_limit', 'housekeeping', 'message_ttl', 'nodupe_file_time_limit', 'retry_ttl',
+    'expire', 'housekeeping', 'message_ttl', 'nodupe_fileAgeMaximum', 'retry_ttl',
     'sanity_log_dead', 'sleep', 'timeout'
 ]
 
@@ -495,8 +495,7 @@ class Config:
         self.chmod_dir = 0o775
         self.chmod_log = 0o600
 
-        self.file_time_limit = durationToSeconds("60d")
-        self.nodupe_file_time_limit = durationToSeconds("60d")
+        self.nodupe_fileAgeMaximum = 0 # disabled.
         self.timezone = 'UTC'
         self.debug = False
         self.declared_exchanges = []
