@@ -153,11 +153,13 @@ class NoDupe(FlowCB):
 
         for m in worklist.incoming:
             if ('mtime' in m ) and (timestr2flt(m['mtime']) < min_mtime):
+                m['_deleteOnPost'] |= set(['reject'])
+                m['reject'] = "too old (nodupe check)"
+                m.setReport( 304, 'too old (nodupe check)')
                 worklist.rejected.append(m)
                 continue
             if self.check_message(m):
                 new_incoming.append(m)
-                continue
             else:
                 m['_deleteOnPost'] |= set(['reject'])
                 m['reject'] = "not modifified 1 (nodupe check)"

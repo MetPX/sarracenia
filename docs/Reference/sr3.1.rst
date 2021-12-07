@@ -585,7 +585,7 @@ These options set what files the user wants to be notified for and where
 - **reject    <regexp pattern> (optional)**
 - **chmod     <integer>        (default: 0o400)**
 - **poll_without_vip  <boolean> (default: True)**
-- **nodupe_fileAgeMaximum <duration>   (default 60d)**
+- **nodupe_fileAgeMaximum <duration>   (default 30d)**
 
 
 The option *filename* can be used to set a global rename to the products.
@@ -657,10 +657,13 @@ persistence is needed in the poll, set the **poll_without_vip** option
 to *False* (or *off*). This reduces overhead forty-fold in some measured
 cases.
 
-By default, files that are more than 2 months are not posted. However, this 
+files that are more than nodupe_fileAgeMaximum are ignored. However, this 
 can be modified to any specified time limit in the configurations by using 
-the option *nodupe_fileAgeMaximum <duration>*. By default, seconds are used, but 
-one can specify hours, days or weeks with 1, 1h, 1d, 1w respectively. 
+the option *nodupe_fileAgeMaximum <duration>*. By default in components
+other than poll, it is disabled by being set to zero (0). As it is a 
+duration option, units are in seconds by default, but minutes, hours, 
+days, and weeks, are available. In the poll component, nodupe_fileAgeMaximum
+defaults to 30 days.
 
 POSTING SPECIFICATIONS
 ~~~~~~~~~~~~~~~~~~~~~~
