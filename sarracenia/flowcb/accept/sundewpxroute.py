@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
 """
-  Implement message filtering based on a routing table from MetPX-Sundew.
-  Make it easier to feed clients exactly the same products with sarracenia,
-  that they are used to with sundew.  
+Plugin sundewpxroute.py:
+    Implement message filtering based on a routing table from MetPX-Sundew.
+    Make it easier to feed clients exactly the same products with sarracenia,
+    that they are used to with sundew.
 
-  the pxrouting option must be set in the configuration before the on_message
-  plugin is configured, like so:
-
-  msg_pxrouting /local/home/peter/src/pdspx/routing/etc/pxRouting.conf
-  msg_pxclient  navcan-amis
-
-  on_message sundew_pxroute.py
-
-
+Usage:
+    the pxrouting option must be set in the configuration before the plugin
+    is configured, like so:
+        - pxRouting /local/home/peter/src/pdspx/routing/etc/pxRouting.conf
+        - pxClient  navcan-amis
+    flowcb sarracenia.flowcb.accept.sundewpxroute.SundewPxRoute
 """
+
 import logging
 
 from sarracenia.flowcb import FlowCB
@@ -34,8 +33,8 @@ class SundewPxRoute(FlowCB):
         self.o = options
         self.ahls_to_route = {}
 
-        pxrf = open(self.o.msg_pxrouting[0], 'r')
-        possible_references = self.o.msg_pxclient[0].split(',')
+        pxrf = open(self.o.pxRouting[0], 'r')
+        possible_references = self.o.pxClient[0].split(',')
         logger.info("sundew_pxroute, target clients: %s" % possible_references)
 
         for line in pxrf:
@@ -61,7 +60,7 @@ class SundewPxRoute(FlowCB):
         pxrf.close()
 
         logger.debug("sundew_pxroute For %s, the following headers are routed %s" %
-            (self.o.msg_pxclient[0], self.ahls_to_route.keys()))
+            (self.o.pxClient[0], self.ahls_to_route.keys()))
 
     def after_accept(self, worklist):
         new_incoming = []

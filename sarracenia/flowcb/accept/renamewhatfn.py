@@ -1,9 +1,14 @@
 """
- this renamer strips of everything from the first colon in the file name to the end.
- This does the same thing as a 'WHATFN' config on a sundew sender.
+Plugin renamewhatfn.py:
+    This renamer strips everything from the first colon in the file name to the end.
+    This does the same thing as a 'WHATFN' config on a sundew sender.
 
- takes px name     : /apps/dms/dms-metadata-updater/data/international_surface/import/mdicp4d:pull-international-metadata:CMC:DICTIONARY:4:ASCII:20160223124648
- rename for        : /apps/dms/dms-metadata-updater/data/international_surface/import/mdicp4d
+Example:
+    takes px name     : /apps/dms/dms-metadata-updater/data/international_surface/import/mdicp4d:pull-international-metadata:CMC:DICTIONARY:4:ASCII:20160223124648
+    rename for        : /apps/dms/dms-metadata-updater/data/international_surface/import/mdicp4d
+
+Usage:
+    flowcb sarracenia.flowcb.accept.renamewhatfn.RenameWhatFn
 
 """
 

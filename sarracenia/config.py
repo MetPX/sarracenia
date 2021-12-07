@@ -173,6 +173,7 @@ convert_to_v3 = {
         'longflow': [ 'flow_callback', 'sarracenia.flowcb.accept.longflow.LongFLow'],
         'posttotalsave': [ 'flow_callback', 'sarracenia.flowcb.accept.posttotalsave.PostTotalSave'],
         'messagedelay': [ 'flow_callback', 'sarracenia.flowcb.accept.messagedelay.MessageDelay'],
+        'downloadbaseurl': [ 'flow_callback', 'sarracenia.flowcb.accept.downloadbaseurl.DownloadBaseUrl'],
 
 
         'wmo2msc': [ 'flow_callback', 'sarracenia.flowcb.filter.wmo2msc.Wmo2Msc'],

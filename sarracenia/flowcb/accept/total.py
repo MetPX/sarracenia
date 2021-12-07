@@ -1,23 +1,23 @@
 #!/usr/bin/python3
 """
-  msg_total
-  
-  give a running total of the messages received from a broker.
-  as this is an on_msg 
+Plugin total.py:
+    Give a running total of the messages received from a broker.
+    as this is an after_accept 
+    
+    NOTE: BYTE COUNT DOES NOT MATCH msg_log:
+    accumulate the number of messages and the bytes transferred in the messages over a period of time.
+    the bytes represent the message traffic, not the file traffic, msg_log reports file byte counts.
 
-  NOTE: BYTE COUNT DOES NOT MATCH msg_log:
-  accumulate the number of messages and the bytes transferred in the messages over a period of time.
-  the bytes represent the message traffic, not the file traffic, msg_log reports file byte counts.
+Options:
+    - msgTotalInterval -> how often the total is updated. (default: 5)
+    - msgTotalMaxlag  -> if the message flow indicates that messages are 'late', emit warnings. (default 60)
+    - msgTotalCount -> how many messages to process before stopping the program.
 
-  options:
+Dependency:
+    requires python3-humanize module.
 
-  msg_total_interval -- how often the total is updated. (default: 5)
-  msg_total_maxlag  -- if the message flow indicates that messages are 'late', emit warnings.
-                    (default 60)
-  msg_total_count -- how many messages to process before stopping the program.
-
-  dependency:
-     requires python3-humanize module.
+Usage:
+    callback accept.total
 
 """
 
@@ -40,27 +40,27 @@ class Total(FlowCB):
         self.o = options
 
         # make self.o know about these possible options FIXME: is the kind ? str? or flt?
-        self.o.add_option('msg_total_interval', 'str')
-        self.o.add_option('msg_total_maxlag', 'str')
-        self.o.add_option('msg_total_count', 'str')
+        self.o.add_option('msgTotalInterval', 'str')
+        self.o.add_option('msgTotalMaxlag', 'str')
+        self.o.add_option('msgTotalCount', 'str')
 
-        if hasattr(self.o, 'msg_total_count'):
-            if type(self.o.msg_total_count) is list:
-                self.o.msg_total_count = int(self.o.msg_total_count[0])
+        if hasattr(self.o, 'msgTotalCount'):
+            if type(self.o.msgTotalCount) is list:
+                self.o.msgTotalCount = int(self.o.msgTotalCount[0])
         else:
-            self.o.msg_total_count = 0
+            self.o.msgTotalCount = 0
 
-        if hasattr(self.o, 'msg_total_maxlag'):
-            if type(self.o.msg_total_maxlag) is list:
-                self.o.msg_total_maxlag = int(self.o.msg_total_maxlag[0])
+        if hasattr(self.o, 'msgTotalMaxlag'):
+            if type(self.o.msgTotalMaxlag) is list:
+                self.o.msgTotalMaxlag = int(self.o.msgTotalMaxlag[0])
         else:
-            self.o.msg_total_maxlag = 60
+            self.o.msgTotalMaxlag = 60
 
-        if hasattr(self.o, 'msg_total_interval'):
-            if type(self.o.msg_total_interval) is list:
-                self.o.msg_total_interval = int(self.o.msg_total_interval[0])
+        if hasattr(self.o, 'msgTotalInterval'):
+            if type(self.o.msgTotalInterval) is list:
+                self.o.msgTotalInterval = int(self.o.msgTotalInterval[0])
         else:
-            self.o.msg_total_interval = 5
+            self.o.msgTotalInterval = 5
 
         now = nowflt()
 
@@ -72,7 +72,7 @@ class Total(FlowCB):
         self.o.msg_total_bytecount = 0
         self.o.msg_total_lag = 0
         logger.debug("msg_total: initialized, interval=%d, maxlag=%d" % \
-            ( self.o.msg_total_interval, self.o.msg_total_maxlag ) )
+            ( self.o.msgTotalInterval, self.o.msgTotalMaxlag ) )
 
     def after_accept(self,worklist):
         new_incoming = []
@@ -101,7 +101,7 @@ class Total(FlowCB):
                                            len(self.o.msg['hdrstr']))
 
             #not time to report yet.
-            if self.o.msg_total_interval > now - self.o.msg_total_last:
+            if self.o.msgTotalInterval > now - self.o.msg_total_last:
                 new_incoming.append(message)
                 continue
 
@@ -115,14 +115,14 @@ class Total(FlowCB):
                      gnu=True), self.o.msg_total_lag / self.o.msg_total_msgcount))
             # Set the maximum age, in seconds, of a message to retrieve.
 
-            if lag > self.o.msg_total_maxlag:
+            if lag > self.o.msgTotalMaxlag:
                 logger.warn("total: Excessive lag! Messages posted %s " %
                             humanize.naturaltime(datetime.timedelta(seconds=lag)))
                 #FIXME: should we reject here? worklist.rejected.append(message) ?
 
             self.o.msg_total_last = now
 
-            if (self.o.msg_total_count > 0) and (self.o.msg_total_msgcount >=self.o.msg_total_count):
+            if (self.o.msgTotalCount > 0) and (self.o.msg_total_msgcount >=self.o.msgTotalCount):
                 os._exit(0)
 
         worklist.incoming = new_incoming

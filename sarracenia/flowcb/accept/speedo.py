@@ -1,20 +1,21 @@
 #!/usr/bin/python3
 """
-  msg_speedo
-  
-  give a *speedometer* reading on the messages going through an exchange.
-  as this is an on_msg 
+Plugin speedo.py:
+    Gives a *speedometer* reading on the messages going through an exchange.
+    as this is an after_accept
+    Accumulate the number of messages and the bytes they represent over a period of time.
 
-  accumulate the number of messages and the bytes they represent over a period of time.
-  options:
+Options:
+    msgSpeedoInterval -> how often the speedometer is updated. (default: 5)
+    msg_speedo_maxlag  -> if the message flow indicates that messages are 'late', emit warnings. (default 60)
 
-  msg_speedo_interval -- how often the speedometer is updated. (default: 5)
-  msg_speedo_maxlag  -- if the message flow indicates that messages are 'late', emit warnings.
-                    (default 60)
+Dependency:
+    Requires python3-humanize module.
 
-  dependency:
-     requires python3-humanize module.
-
+Usage: 
+    callback accept.speedo
+    msgSpeedoInterval x
+    msg_speedo_maxlag y
 """
 
 import os, stat, time
@@ -39,11 +40,11 @@ class Speedo(FlowCB):
             self.o.msg_speedo_maxlag = 60
         logger.debug("speedo init: 2 ")
 
-        if hasattr(self.o, 'msg_speedo_interval'):
-            if type(self.o.msg_speedo_interval) is list:
-                self.o.msg_speedo_interval = int(self.o.msg_speedo_interval[0])
+        if hasattr(self.o, 'msgSpeedoInterval'):
+            if type(self.o.msgSpeedoInterval) is list:
+                self.o.msgSpeedoInterval = int(self.o.msgSpeedoInterval[0])
         else:
-            self.o.msg_speedo_interval = 5
+            self.o.msgSpeedoInterval = 5
 
         now = nowflt()
         self.o.msg_speedo_last = now
@@ -62,7 +63,7 @@ class Speedo(FlowCB):
             self.o.msg_speedo_bytecount = self.o.msg_speedo_bytecount + int(psize)
 
             #not time to report yet.
-            if self.o.msg_speedo_interval > now - self.o.msg_speedo_last:
+            if self.o.msgSpeedoInterval > now - self.o.msg_speedo_last:
                 new_incoming.append(message)
                 continue
 
