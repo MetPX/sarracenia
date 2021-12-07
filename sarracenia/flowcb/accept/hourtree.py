@@ -1,7 +1,12 @@
 """
- When receiving a file, insert an hourly directory into the local delivery path hierarchy.
+Plugin hourtree.py:
+    When receiving a file, insert an hourly directory into the local delivery path hierarchy.
 
- input A/B/c.gif  --> output A/B/<hour>/c.gif
+Example:
+    input A/B/c.gif  --> output A/B/<hour>/c.gif
+
+Usage:
+    flowcb sarracenia.flowcb.accept.hourtree.HourTree
 
 """
 

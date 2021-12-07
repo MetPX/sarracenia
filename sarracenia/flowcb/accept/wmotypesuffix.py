@@ -1,24 +1,22 @@
 """
-Given the WMO-386 TT designator of a WMO file, file type suffix to the file name.
-Web browsers and modern operating systems may do *the right thing* if files have a recognizable suffix.
+Plugin wmotypesuffix.py:
+    Given the WMO-386 TT designator of a WMO file, file type suffix to the file name.
+    Web browsers and modern operating systems may do *the right thing* if files have a recognizable suffix.
 
-http://www.wmo.int/pages/prog/www/ois/Operational_Information/Publications/WMO_386/AHLsymbols/TableA.html
+    http://www.wmo.int/pages/prog/www/ois/Operational_Information/Publications/WMO_386/AHLsymbols/TableA.html
 
-Status: proof of concept demonstrator... missing many TT's. please add!
-  
-Tested with UNIDATA feeds, discrepancies:
+    Status: proof of concept demonstrator... missing many TT's. please add!
+    Tested with UNIDATA feeds, discrepancies:
+    TableA says L is Aviation XML, but UNIDATA Feed, it is all GRIB.
+    XW - should be CAP, but is GRIB.
+    IX used by Americans for HDF, unsure if that is kosher/halal/blessed, but it is in the UNIDATA feed.
 
-TableA says L is Aviation XML, but UNIDATA Feed, it is all GRIB.
+    IU/IS/IB are BUFR
+    other type designators welcome... for example, GRIB isn't identified yet.
+    default to .txt.
 
-XW - should be CAP, but is GRIB.
-
-IX used by Americans for HDF, unsure if that is kosher/halal/blessed, but it is in the UNIDATA feed.
-
-IU/IS/IB are BUFR 
-
-other type designators welcome... for example, GRIB isn't identified yet.
-
-default to .txt.  
+Usage:
+    flowcb sarracenia.flowcb.accept.wmotypesuffix.WmoTypeSuffix
   
 """
 import logging

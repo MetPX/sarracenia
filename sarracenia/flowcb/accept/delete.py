@@ -1,9 +1,13 @@
 #!/usr/bin/python3
 """
-  the default on_msg handler for sr_log.
-  prints a simple notice. # FIXME is this doc accurate? seems it is also modifying a message.
+Plugin delete.py:
+    the default after_accept handler for log.
+    prints a simple notice. # FIXME is this doc accurate? seems it is also modifying a message.
 
+Usage:
+    flowcb sarracenia.flowcb.accept.downloadbaseurl.DownloadBaseUrl
 """
+
 import logging
 import os
 from sarracenia.flowcb import FlowCB

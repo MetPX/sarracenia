@@ -1,9 +1,11 @@
 """
-  msg_2http:  is the converse of msg_2file.
-  after processing on a filter, a file URL needs to be turned back into a web url.
-  
-  uses savedurl created by msg_2file, to convert file url back to original.
-   
+Plugin tohttp.py:
+    ToHttp is the converse of ToFile.
+    After processing on a filter, a file URL needs to be turned back into a web url.
+    Uses savedUrl created by ToFile, to convert file url back to original.
+
+Usage:
+    flowcb sarracenia.flowcb.accept.tohttp.ToHttp
 """
 import logging
 import re
@@ -15,8 +17,8 @@ class ToHttp(FlowCB):
         self.o = options
         if hasattr(self.o, 'baseDir'):
             self.o.ldocroot = self.o.baseDir
-        if hasattr(self.o, 'msg_2http_root'):
-            self.o.ldocroot = self.o.msg_2http_root[0]
+        if hasattr(self.o, 'toHttpRoot'):
+            self.o.ldocroot = self.o.toHttpRoot[0]
 
         self.o.hurlre = re.compile('file:/' + self.o.ldocroot)
 

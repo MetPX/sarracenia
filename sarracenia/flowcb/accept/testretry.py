@@ -1,9 +1,12 @@
 #!/usr/bin/python3
 """
-  msg_test_retry:  this change the message randomly so that it will cause
-                   a download or send error.
+Plugin testretry.py:
+    This changes the message randomly so that it will cause
+    a download or send an error.
+    When a message is being retried, it is randomly fixed
 
-                   when a message is being retried, it is randomly fixed
+Usage:
+     flowcb sarracenia.flowcb.accept.testretry.TestRetry
 """
 
 import logging
@@ -23,7 +26,7 @@ class TestRetry(FlowCB):
     def  after_accept(self, worklist):
         new_incoming = []
         for message in worklist.incoming:
-            logger.debug("msg_test_retry")
+            logger.debug("testretry")
 
             if self.destination == None:
                 self.destination = self.o.destination
@@ -31,7 +34,6 @@ class TestRetry(FlowCB):
                 self.msg_baseUrl_good = message['baseUrl']
 
             # retry message : recover it
-            # FIXME dont see 'isRetry' as an entry in the message dictionary, could cause an error
             # update: this is set somewhere as true in /diskqueue.py, should think about initializing first so we
             # dont have to test for existence
             if message['isRetry']:

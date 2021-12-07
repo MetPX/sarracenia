@@ -1,9 +1,12 @@
-
 """
- When posting a file, insert an hourly directory into the delivery path hierarchy.
+Plugin posthourtree.py:
+    When posting a file, insert an hourly directory into the delivery path hierarchy.
 
- input A/B/c.gif  --> output A/B/<hour>/c.gif
+Example:
+    input A/B/c.gif  --> output A/B/<hour>/c.gif
 
+Usage:
+    flowcb sarracenia.flowcb.accept.posthourtree.PostHourTree
 
 """
 import logging

@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 """
+
   This plugin delays processing of messages by *message_delay* seconds
 
 
@@ -7,6 +8,8 @@
   on_message msg_delay
 
   every message will be at least 30 seconds old before it is forwarded by this plugin.
+  Usage:
+    flowcb sarracenia.flowcb.accept.httptohttps.HttpToHttps
 
 """
 import logging

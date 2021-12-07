@@ -1,20 +1,18 @@
 #!/usr/bin/python3
 """
-  msg_total
+Plugin totalsave.py:
+    give a running total of the messages going through an exchange as this is an after_accept plugin.
+    
+    Accumulate the number of messages and the bytes they represent over a period of time.
+    options:
+       -  msgTotalInterval -> how often the total is updated. (default: 5)
+       -  msgTotalMaxlag  -> if the message flow indicates that messages are 'late', emit warnings. (default 60)
 
-  give a running total of the messages going through an exchange.
-  as this is an on_msg
-
-  accumulate the number of messages and the bytes they represent over a period of time.
-  options:
-
-  msg_total_interval -- how often the total is updated. (default: 5)
-  msg_total_maxlag  -- if the message flow indicates that messages are 'late', emit warnings.
-                    (default 60)
-
-  dependency:
+Dependency:
      requires python3-humanize module.
 
+Usage:
+    flowcb sarracenia.flowcb.accept.totalsave.TotalSave
 """
 
 import os, stat, time
@@ -36,20 +34,20 @@ class TotalSave(FlowCB):
         self.o = options
 
         # make self.o know about these possible options
-        self.o.add_option('msg_total_interval', 'str')
-        self.o.add_option('msg_total_maxlag', 'str')
+        self.o.add_option('msgTotalInterval', 'str')
+        self.o.add_option('msgTotalMaxlag', 'str')
 
-        if hasattr(self.o, 'msg_total_maxlag'):
-            if type(self.o.msg_total_maxlag) is list:
-                self.o.msg_total_maxlag = int(self.o.msg_total_maxlag[0])
+        if hasattr(self.o, 'msgTotalMaxlag'):
+            if type(self.o.msgTotalMaxlag) is list:
+                self.o.msgTotalMaxlag = int(self.o.msgTotalMaxlag[0])
         else:
-            self.o.msg_total_maxlag = 60
+            self.o.msgTotalMaxlag = 60
 
-        if hasattr(self.o, 'msg_total_interval'):
-            if type(self.o.msg_total_interval) is list:
-                self.o.msg_total_interval = int(self.o.msg_total_interval[0])
+        if hasattr(self.o, 'msgTotalInterval'):
+            if type(self.o.msgTotalInterval) is list:
+                self.o.msgTotalInterval = int(self.o.msgTotalInterval[0])
         else:
-            self.o.msg_total_interval = 5
+            self.o.msgTotalInterval = 5
 
         now = nowflt()
 
@@ -59,7 +57,7 @@ class TotalSave(FlowCB):
         self.o.msg_total_bytecount = 0
         self.o.msg_total_lag = 0
         logger.debug("msg_total: initialized, interval=%d, maxlag=%d" % \
-                     (self.o.msg_total_interval, self.o.msg_total_maxlag))
+                     (self.o.msgTotalInterval, self.o.msgTotalMaxlag))
 
         self.o.msg_total_cache_file = self.o.user_cache_dir + os.sep
         self.o.msg_total_cache_file += 'msg_total_plugin_%.4d.vars' % self.o.instances
@@ -90,7 +88,7 @@ class TotalSave(FlowCB):
                 self.o.msg_total_bytecount = self.o.msg_total_bytecount + int(psize)
 
             # not time to report yet.
-            if self.o.msg_total_interval > now - self.o.msg_total_last:
+            if self.o.msgTotalInterval > now - self.o.msg_total_last:
                 new_incoming.append(message)
                 continue
 
@@ -103,7 +101,7 @@ class TotalSave(FlowCB):
                              gnu=True), self.o.msg_total_lag / self.o.msg_total_msgcount))
             # Set the maximum age, in seconds, of a message to retrieve.
 
-            if lag > self.o.msg_total_maxlag:
+            if lag > self.o.msgTotalMaxlag:
                 logger.warning("total: Excessive lag! Messages posted %s " %
                                humanize.naturaltime(datetime.timedelta(seconds=lag)))
 

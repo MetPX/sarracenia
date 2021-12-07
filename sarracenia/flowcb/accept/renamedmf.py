@@ -1,9 +1,16 @@
 """
- unlikely to be useful to others, except as example.
+Plugin renamedmf.py:
+    This is an  example of the usage of after_accept script
+    to rename the product when it is downloaded
+    It adds a ':datetime' to the name of the product
+    unlikely to be useful to others, except as example.
 
- this renamer
- takes px name     : CACN00_CWAO_081900__WZS_14623:pxatx:CWAO:CA:5:Direct:20081008190602
- add datetimestamp : CACN00_CWAO_081900__WZS_14623:pxatx:CWAO:CA:5:Direct:20081008190602:20081008190612
+Example:
+    takes px name     : CACN00_CWAO_081900__WZS_14623:pxatx:CWAO:CA:5:Direct:20081008190602
+    add datetimestamp : CACN00_CWAO_081900__WZS_14623:pxatx:CWAO:CA:5:Direct:20081008190602:20081008190612
+
+Usage:
+    flowcb sarracenia.flowcb.accept.renamedmf.RenameDMF
 
 """
 import logging

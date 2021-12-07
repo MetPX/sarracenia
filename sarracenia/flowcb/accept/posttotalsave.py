@@ -1,19 +1,19 @@
 #!/usr/bin/python3
 """
-  post_total
-  
-  give a running total of the messages going through an exchange.
-  as this is an on_msg 
+Plugin posttotalsave.py:
+    Gives a running total of the messages going through an exchange as this is an after_accept plugin.
+    Accumulate the number of messages and the bytes they represent over a period of time.
 
-  accumulate the number of messages and the bytes they represent over a period of time.
-  options:
+Options:
+    postTotalInterval -- how often the total is updated. (default: 5)
+    postTotalMaxlag  -- if the message flow indicates that messages are 'late', emit warnings.(default 60)
 
-  post_total_interval -- how often the total is updated. (default: 5)
-  post_total_maxlag  -- if the message flow indicates that messages are 'late', emit warnings.
-                    (default 60)
+Usage:
+    flowcb sarracenia.flowcb.accept.posttotalsave.PostTotalSave
+    postTotalInterval x
+    postTotalMaxlag y
 
-  dependency:
-     requires python3-humanize module.
+
 
 """
 import calendar
@@ -34,7 +34,7 @@ class PostTotalSave(FlowCB):
         self.o = options
 
         # make parent know about these possible options #FIXME should these really be str?
-        self.o.add_option('post_total_interval', 'str')
+        self.o.add_option('postTotalInterval', 'str')
         self.o.add_option('post_total_maxlag', 'str')
 
         if hasattr(self.o, 'post_total_maxlag'):
@@ -45,11 +45,11 @@ class PostTotalSave(FlowCB):
 
         logger.debug("speedo init: 2 ")
 
-        if hasattr(self.o, 'post_total_interval'):
-            if type(self.o.post_total_interval) is list:
-                self.o.post_total_interval = int(self.o.post_total_interval[0])
+        if hasattr(self.o, 'postTotalInterval'):
+            if type(self.o.postTotalInterval) is list:
+                self.o.postTotalInterval = int(self.o.postTotalInterval[0])
         else:
-            self.o.post_total_interval = 5
+            self.o.postTotalInterval = 5
 
         now = nowflt()
 
@@ -59,7 +59,7 @@ class PostTotalSave(FlowCB):
         self.o.post_total_bytecount = 0
         self.o.post_total_lag = 0
         logger.debug( "post_total: initialized, interval=%d, maxlag=%d" % \
-             ( self.o.post_total_interval, self.o.post_total_maxlag ) )
+             ( self.o.postTotalInterval, self.o.post_total_maxlag ) )
 
         self.o.post_total_cache_file = self.o.user_cache_dir + os.sep
         self.o.post_total_cache_file += 'post_total_plugin_%.4d.vars' % self.o.instances
@@ -81,7 +81,7 @@ class PostTotalSave(FlowCB):
             #self.o.post_total_bytecount = self.o.post_total_bytecount + int(psize)
 
             #not time to report yet.
-            if self.o.post_total_interval > now - self.o.post_total_last:
+            if self.o.postTotalInterval > now - self.o.post_total_last:
                 continue
 
             logger.info("post_total: %3d messages posted: %5.2g msg/s, lag: %4.2g s" %
