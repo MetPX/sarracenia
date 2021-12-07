@@ -146,8 +146,8 @@ class NoDupe(FlowCB):
     def after_accept(self, worklist):
         new_incoming = []
         self.now = nowflt()
-        if self.o.nodupe_fileAgeMaximum > 0:
-            min_mtime = self.now - self.o.nodupe_fileAgeMaximum
+        if self.o.nodupe_fileAgeMax > 0:
+            min_mtime = self.now - self.o.nodupe_fileAgeMax
         else:
             min_mtime = 0
 

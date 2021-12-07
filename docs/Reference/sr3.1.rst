@@ -512,7 +512,7 @@ The notification protocol is defined here `sr3_post(7) <sr3_post.7.rst>`_
 **poll** connects to a *broker*.  Every *sleep* seconds, it connects to
 a *destination* (sftp, ftp, ftps). For each of the *directory* defined, it lists
 the contents.  Polling is only intended to be used for recently modified
-files. The *nodupe_fileAgeMaximum* option eliminates files that are too old 
+files. The *nodupe_fileAgeMax* option eliminates files that are too old 
 from consideration. When a file is found that matches a pattern given 
 by *accept*, **poll** builds a notification message for that product.
 
@@ -585,7 +585,7 @@ These options set what files the user wants to be notified for and where
 - **reject    <regexp pattern> (optional)**
 - **chmod     <integer>        (default: 0o400)**
 - **poll_without_vip  <boolean> (default: True)**
-- **nodupe_fileAgeMaximum <duration>   (default 30d)**
+- **nodupe_fileAgeMax <duration>   (default 30d)**
 
 
 The option *filename* can be used to set a global rename to the products.
@@ -657,12 +657,12 @@ persistence is needed in the poll, set the **poll_without_vip** option
 to *False* (or *off*). This reduces overhead forty-fold in some measured
 cases.
 
-files that are more than nodupe_fileAgeMaximum are ignored. However, this 
+files that are more than nodupe_fileAgeMax are ignored. However, this 
 can be modified to any specified time limit in the configurations by using 
-the option *nodupe_fileAgeMaximum <duration>*. By default in components
+the option *nodupe_fileAgeMax <duration>*. By default in components
 other than poll, it is disabled by being set to zero (0). As it is a 
 duration option, units are in seconds by default, but minutes, hours, 
-days, and weeks, are available. In the poll component, nodupe_fileAgeMaximum
+days, and weeks, are available. In the poll component, nodupe_fileAgeMax
 defaults to 30 days.
 
 POSTING SPECIFICATIONS
@@ -2622,9 +2622,9 @@ and under which name.
 - **inplace       <boolean>        (default: On)**
 - **kbytes_ps <count>               (default: 0)**
 - **inflight  <string>         (default: .tmp or NONE if post_broker set)** 
-- **message_count_max <count> (default: 0 == DISABLED)**
-- **message_rate_max <float>   (default: 0 == DISABLED)**
-- **message_rate_min <float>   (default: 0 == DISABLED)**
+- **messageCountMax <count> (default: 0 == DISABLED)**
+- **messageRateMax <float>   (default: 0 == DISABLED)**
+- **messageRateMin <float>   (default: 0 == DISABLED)**
 - **mirror    <boolean>        (default: off)** 
 - **no_download|notify_only    <boolean>        (default: off)** 
 - **nodupe   <off|on|999[smhdw]>     (default: off)**
@@ -3043,24 +3043,24 @@ speed in kilobytes per second... ftp,ftps,or sftp)
 
 **FIXME**: kbytes_ps... only implemented by sender? or subscriber as well, data only, or messages also?
 
-message_count_max <count> (default: 0)
+messageCountMax <count> (default: 0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If **message_count_max** is greater than zero, the flow will exit after processing the given
+If **messageCountMax** is greater than zero, the flow will exit after processing the given
 number of messages.  This is normally used only for debugging.
 
-message_rate_max <float> (default: 0)
+messageRateMax <float> (default: 0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-if **message_rate_max** is greater than zero, the flow attempts to respect this delivery
+if **messageRateMax** is greater than zero, the flow attempts to respect this delivery
 speed in terms of messages per second. Note that the throttle is on messages obtained or generated 
 per second, prior to accept/reject filtering. the flow will sleep to limit the processing rate.
 
 
-message_rate_min <float> (default: 0)
+messageRateMin <float> (default: 0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-if **message_rate_min** is greater than zero, and the flow detected is lower than this rate,
+if **messageRateMin** is greater than zero, and the flow detected is lower than this rate,
 a warning message will be produced:
 
 

@@ -45,7 +45,7 @@ default_options = {
     'post_on_start': False,
     'sleep': -1,
     'nodupe_ttl': 7*60*60,
-    'nodupe_fileAgeMaximum': 30*24*60*60,
+    'nodupe_fileAgeMax': 30*24*60*60,
 }
 
 
