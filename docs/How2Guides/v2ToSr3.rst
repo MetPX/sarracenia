@@ -173,7 +173,7 @@ In general, v3 plugins:
 
 * **use standard python logging** ::
 
-      import logger
+      import logging
   
   Make sure the following logger declaration is after the last _import_ in the file::
 
@@ -224,6 +224,10 @@ In general, v3 plugins:
              worklist.rejected.append(message)
       worklist.incoming=new_incoming
       
+  Note: plugins must be moved from the /plugins directory to the /flowcb directory, 
+  and specifically, on_message plugins that turn into after_accept ones should be 
+  placed in the flowcb/accept directory (so simialr plugins can be grouped together).
+  
   In *after_work*, the replacement for v2 *on_file*, the operations are on:
 
   * worklist.ok (transfer succeeded.)
@@ -233,6 +237,9 @@ In general, v3 plugins:
   the *after_work* routine would change the worklist.ok to contain messages for
   the individual files, rather than the original collective .tar.
 
+  Note: on_file plugins that become after_work plugins should be placed in the
+  /flowcb/after_work directory
+  
 * **No Need to set message fields in plugins**
   in v2, one would need to set partstr, and sumstr for v2 messages in plugins. 
   This required an excessive understanding of message formats, and meant that 

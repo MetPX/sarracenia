@@ -49,9 +49,9 @@ default_options = {
     'mirror': True,
     'preserve_mode': True,
     'preserve_time': True,
-    'message_count_max': 0,
-    'message_rate_max': 0,
-    'message_rate_min': 0,
+    'messageCountMax': 0,
+    'messageRateMax': 0,
+    'messageRateMin': 0,
     'sleep': 0.1,
     'topicPrefix': [ 'v03' ],
     'vip': None
@@ -297,8 +297,8 @@ class Flow:
             self.have_vip = self.has_vip()
             if (self.o.program_name == 'poll' ) or self.have_vip:
 
-                #logger.info("current_rate (%g) vs. message_rate_max(%g)) " %
-                #            (current_rate, self.o.message_rate_max))
+                #logger.info("current_rate (%g) vs. messageRateMax(%g)) " %
+                #            (current_rate, self.o.messageRateMax))
                 self.worklist.incoming = []
                 self.gather()
 
@@ -360,7 +360,7 @@ class Flow:
             run_time = now - start_time
             total_messages += last_gather_len
 
-            if (self.o.message_count_max > 0) and (total_messages >= self.o.message_count_max):
+            if (self.o.messageCountMax > 0) and (total_messages >= self.o.messageCountMax):
                 self.close()
                 break
 
@@ -379,17 +379,17 @@ class Flow:
                 self._runCallbacksTime('on_housekeeping')
                 next_housekeeping = now + self.o.housekeeping
 
-            if (self.o.message_rate_min > 0) and (current_rate <
-                                                  self.o.message_rate_min):
+            if (self.o.messageRateMin > 0) and (current_rate <
+                                                  self.o.messageRateMin):
                 logger.warning("receiving below minimum message rate")
 
-            if (self.o.message_rate_max > 0) and (current_rate >=
-                                                  self.o.message_rate_max):
-                stime = 1 + 2 * ((current_rate - self.o.message_rate_max) /
-                                 self.o.message_rate_max)
+            if (self.o.messageRateMax > 0) and (current_rate >=
+                                                  self.o.messageRateMax):
+                stime = 1 + 2 * ((current_rate - self.o.messageRateMax) /
+                                 self.o.messageRateMax)
                 logger.info(
-                    "current_rate/2 (%g) above message_rate_max(%g): throttling"
-                    % (current_rate, self.o.message_rate_max))
+                    "current_rate/2 (%g) above messageRateMax(%g): throttling"
+                    % (current_rate, self.o.messageRateMax))
             else:
                 stime = 0
 
