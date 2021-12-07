@@ -450,6 +450,7 @@ class Config:
         'chmod': 'default_mode',
         'chmod_dir': 'default_dir_mode',
         'chmod_log': 'default_log_mode',
+        'file_time_limit' : 'nodupe_fileAgeMaximum', 
         'heartbeat': 'housekeeping',
         'log_format': 'logFormat',
         'll': 'logLevel',
