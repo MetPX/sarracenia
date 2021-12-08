@@ -25,7 +25,7 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 #
-__version__ = "3.00.010"
+__version__ = "3.00.011"
 
 from base64 import b64decode, b64encode
 import calendar
@@ -286,6 +286,8 @@ class Message(dict):
        """
           copy dictionary into message.
        """
+       if d is None: return
+
        for h in d:
             msg[h]=d[h]
 

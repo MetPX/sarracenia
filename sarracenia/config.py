@@ -82,7 +82,7 @@ default_options = {
 
 count_options = [
     'batch', 'exchange_split', 'instances', 'no', 'post_exchange_split', 'prefetch',
-    'message_count_max', 'message_rate_max', 'message_rate_min'
+    'messageCountMax', 'messageRateMax', 'messageRateMin'
 ]
 
 # all the boolean settings.
@@ -96,7 +96,7 @@ flag_options = [ 'baseUrl_relPath', 'bind_queue', 'cache_stat', 'declare_exchang
                 ]
 
 duration_options = [
-    'expire', 'file_time_limit', 'housekeeping', 'message_ttl', 'retry_ttl',
+    'expire', 'housekeeping', 'message_ttl', 'nodupe_fileAgeMax', 'retry_ttl',
     'sanity_log_dead', 'sleep', 'timeout'
 ]
 
@@ -106,7 +106,7 @@ list_options = []
 set_options = [ 'logEvents', 'fileEvents' ]
 
 set_choices = { 
-    'logEvents': sarracenia.flowcb.entry_points + ['reject' ],
+    'logEvents': sarracenia.flowcb.entry_points + [ 'reject', 'all' ],
     'fileEvents': set( [ 'create', 'delete', 'link', 'modify' ] )
  }
 # FIXME: doesn't work... wonder why?
@@ -119,7 +119,7 @@ str_options = [
     'exchange_suffix', 'feeder', 'filename', 'header', 'logLevel', 'path',
     'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
     'post_exchange_suffix', 'queue_name',
-    'report_exchange', 'strip', 'nodupe_ttl',
+    'report_exchange', 'strip', 'timezone', 'nodupe_ttl',
     'nodupe_basis', 'tls_rigour', 'vip'
 ]
 """
@@ -476,6 +476,7 @@ class Config:
         'chmod': 'default_mode',
         'chmod_dir': 'default_dir_mode',
         'chmod_log': 'default_log_mode',
+        'file_time_limit' : 'nodupe_fileAgeMax', 
         'heartbeat': 'housekeeping',
         'log_format': 'logFormat',
         'll': 'logLevel',
@@ -488,7 +489,7 @@ class Config:
         'post_base_url': 'post_baseUrl',
         'post_baseurl': 'post_baseUrl',
         'post_document_root': 'post_documentRoot',
-        'post_rate_limit': 'message_rate_max',
+        'post_rate_limit': 'messageRateMax',
         'post_topic_prefix' : 'post_topicPrefix',
         'suppress_duplicates' : 'nodupe_ttl',
         'suppress_duplicates_basis' : 'nodupe_basis', 
@@ -521,7 +522,8 @@ class Config:
         self.chmod_dir = 0o775
         self.chmod_log = 0o600
 
-        self.file_time_limit = durationToSeconds("60d")
+        self.nodupe_fileAgeMax = 0 # disabled.
+        self.timezone = 'UTC'
         self.debug = False
         self.declared_exchanges = []
         self.destfn_script = None
@@ -1378,10 +1380,10 @@ class Config:
                 logger.info("defaulting post_baseDir to same as baseDir")
 
 
-        if self.message_count_max > 0:
-            if self.batch > self.message_count_max:
-               self.batch = self.message_count_max
-               logger.info( 'overriding batch for consistency with message_count_max: %d' % self.batch )
+        if self.messageCountMax > 0:
+            if self.batch > self.messageCountMax:
+               self.batch = self.messageCountMax
+               logger.info( 'overriding batch for consistency with messageCountMax: %d' % self.batch )
 
 
     def check_undeclared_options(self):

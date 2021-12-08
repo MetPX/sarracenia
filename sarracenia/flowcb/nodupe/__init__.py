@@ -30,7 +30,7 @@ import logging
 #              cache_dict[key] = {path1: time1, path2: time2, ...}
 #
 
-from sarracenia import nowflt
+from sarracenia import nowflt, timestr2flt
 
 from sarracenia.flowcb import FlowCB
 
@@ -144,10 +144,20 @@ class NoDupe(FlowCB):
         return self.check(key, path)
 
     def after_accept(self, worklist):
-
         new_incoming = []
         self.now = nowflt()
+        if self.o.nodupe_fileAgeMax > 0:
+            min_mtime = self.now - self.o.nodupe_fileAgeMax
+        else:
+            min_mtime = 0
+
         for m in worklist.incoming:
+            if ('mtime' in m ) and (timestr2flt(m['mtime']) < min_mtime):
+                m['_deleteOnPost'] |= set(['reject'])
+                m['reject'] = "too old (nodupe check)"
+                m.setReport( 304, 'too old (nodupe check)')
+                worklist.rejected.append(m)
+                continue
             if self.check_message(m):
                 new_incoming.append(m)
             else:
