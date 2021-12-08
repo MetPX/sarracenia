@@ -426,7 +426,13 @@ class Flow:
         elif hasattr(self.o, 'baseDir'):
              default_accept_directory=self.o.baseDir
 
+        now = nowflt()
         for m in self.worklist.incoming:
+            then = sarracenia.timestr2flt(m['pubTime'])
+            lag = now - then
+            if self.o.messageAgeMax != 0 and lag > self.o.messageAgeMax:
+                self.reject(m ,504, "Excessive lag: %g sec. Skipping download of: %s, " % (lag, m['new_file']))
+                continue
 
             if 'oldname' in m:
                 url = self.o.set_dir_pattern(m['baseUrl'],m) + os.sep + m['oldname']

@@ -205,9 +205,10 @@ known_report_codes = {
     307: "Insertion deferred (writing to temporary part file for the moment.)",
     417: "Expectation Failed: invalid message (corrupt headers)",
     499: "Failure: Not Copied. SFTP/FTP/HTTP download problem",
-    503: "Service unavailable. delete (File removal not currently supported.)",
+    #FIXME : should  not have 503 error code 3 times in a row
+    # 503: "Service unavailable. delete (File removal not currently supported.)",
     503: "Unable to process: Service unavailable",
-    503: "Unsupported transport protocol specified in posting."
+    # 503: "Unsupported transport protocol specified in posting."
 }
 
 

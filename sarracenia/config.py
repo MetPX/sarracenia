@@ -551,6 +551,7 @@ class Config:
         self.masks = []
         self.instances = 1
         self.mirror = False
+        self.messageAgeMax = 0
         self.post_exchanges = []
 	#self.post_topicPrefix = None
         self.pstrip = False
