@@ -1043,7 +1043,6 @@ class sr_GlobalState:
 
         if self.users:
             for h in self.brokers:
-                print('h: %s' % h)
                 if 'admin' in self.brokers[h]:
                     with open(
                             self.user_config_dir + os.sep + 'credentials.conf',
