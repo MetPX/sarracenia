@@ -70,7 +70,6 @@ default_options = {
     'inline': False,
     'inline_only': False,
     'integrity_method': 'sha512',
-    'notify_only': False,
     'overwrite': True,
     'permDefault': 0,
     'permDirDefault': 0o775,
@@ -879,7 +878,7 @@ class Config:
             #if hasattr(self, 'post_broker') and self.post_broker is not None:
             #    self.exchange = 'xs_%s' % self.post_broker.username
             #else:
-            if self.broker.username == 'anonymous':
+            if not hasattr(self.broker,'username') or ( self.broker.username == 'anonymous' ):
                 self.exchange = 'xpublic'
             else:
                 self.exchange = 'xs_%s' % self.broker.username
