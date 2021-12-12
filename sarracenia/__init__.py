@@ -351,7 +351,7 @@ class Message(dict):
             The message is built for a file is based on the given path, options (o), and lstat (output of os.stat)
              
             The lstat record is used to build 'atime', 'mtime' and 'mode' fields if 
-            preserve_time and preserve_mode options are set.
+            timeCopy and permCopy options are set.
     
             if no lstat record is supplied, then those fields will not be set.
         """
@@ -424,14 +424,14 @@ class Message(dict):
         if lstat.st_size is not None:
             msg['size'] = lstat.st_size
     
-        if o.preserve_time:
+        if o.timeCopy:
             if lstat.st_mtime is not None:
                 msg['mtime'] = timeflt2str(lstat.st_mtime)
             if lstat.st_atime is not None:
                 msg['atime'] = timeflt2str(lstat.st_atime)
     
         if (lstat.st_mode is not None) and  \
-            (o.preserve_mode and lstat.st_mode):
+            (o.permCopy and lstat.st_mode):
             msg['mode'] = "%o" % (lstat.st_mode & 0o7777)
     
         return msg

@@ -72,6 +72,9 @@ default_options = {
     'integrity_method': 'sha512',
     'notify_only': False,
     'overwrite': True,
+    'permDefault': 0,
+    'permDirDefault': 0o775,
+    'permLog': 0o600,
     'post_documentRoot': None,
     'post_baseDir': None,
     'post_baseUrl': None,
@@ -89,8 +92,8 @@ count_options = [
 flag_options = [ 'baseUrl_relPath', 'bind_queue', 'cache_stat', 'declare_exchange', 'debug', \
     'declare_queue', 'delete', 'discard', 'download', 'dry_run', 'durable', 'exchange_split', 'realpath_filter', \
     'follow_symlinks', 'force_polling', 'inline', 'inline_only', 'inplace', 'log_reject', 'pipe', 'restore', \
-    'report_daemons', 'mirror', 'notify_only', 'overwrite', 'post_on_start', \
-    'preserve_mode', 'preserve_time', 'pump_flag', 'randomize', 'realpath_post', 'reconnect', \
+    'report_daemons', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
+    'permCopy', 'pump_flag', 'randomize', 'realpath_post', 'reconnect', \
     'report_back', 'reset', 'retry_mode', 'save', 'set_passwords', 'source_from_exchange', \
     'statehost', 'users'
                 ]
@@ -112,6 +115,8 @@ set_choices = {
 # FIXME: doesn't work... wonder why?
 #    'fileEvents': sarracenia.flow.allFileEvents
  
+perm_options = [ 'permDefault', 'permDirDefault' ]
+
 size_options = ['blocksize', 'bufsize', 'bytes_per_second', 'inline_max']
 
 str_options = [
@@ -473,9 +478,12 @@ class Config:
         'e' : 'fileEvents',
         'events' : 'fileEvents',
         'instance': 'instances',
-        'chmod': 'default_mode',
-        'chmod_dir': 'default_dir_mode',
-        'chmod_log': 'default_log_mode',
+        'chmod': 'permDefault',
+        'default_mode': 'permDefault',
+        'chmod_dir': 'permDirDefault',
+        'default_dir_mode': 'permDirDefault',
+        'chmod_log': 'permLog',
+        'default_log_mode': 'permLog',
         'file_time_limit' : 'nodupe_fileAgeMax', 
         'heartbeat': 'housekeeping',
         'log_format': 'logFormat',
@@ -491,6 +499,8 @@ class Config:
         'post_document_root': 'post_documentRoot',
         'post_rate_limit': 'messageRateMax',
         'post_topic_prefix' : 'post_topicPrefix',
+        'preserve_mode' : 'permCopy',
+        'preserve_time' : 'timeCopy',
         'suppress_duplicates' : 'nodupe_ttl',
         'suppress_duplicates_basis' : 'nodupe_basis', 
         'topic_prefix' : 'topicPrefix'
@@ -518,9 +528,6 @@ class Config:
 
         self.bufsize = 1024 * 1024
         self.bytes_ps = 0
-        self.chmod = 0o0
-        self.chmod_dir = 0o775
-        self.chmod_log = 0o600
 
         self.nodupe_fileAgeMax = 0 # disabled.
         self.timezone = 'UTC'
@@ -1122,6 +1129,11 @@ class Config:
                         % ( cfg, lineno, line[0]) )
                     continue
                 setattr(self, k, durationToSeconds(v))
+            elif k in perm_options:
+                if v.isdigit():
+                    setattr(self, k, int(v, base=8))
+                else:
+                    logger.error('%s setting to %s ignored: only numberic modes supported' % ( k, v ) )
             elif k in size_options:
                 setattr(self, k, chunksize_from_str(v))
             elif k in count_options:

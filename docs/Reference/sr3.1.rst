@@ -287,9 +287,9 @@ View all configuration settings (the result of all parsing... what the flow comp
     bytes_per_second=None
     bytes_ps=0
     cfg_run_dir='/home/peter/.cache/sarra/subscribe/q_f71'
-    chmod=0
-    chmod_dir=509
-    chmod_log=384
+    permDefault=0
+    permDirDefault=509
+    permLog=384
     config='q_f71'
     currentDir='/home/peter/.cache/sarra/log'
     debug=False
@@ -335,8 +335,8 @@ View all configuration settings (the result of all parsing... what the flow comp
     post_documentRoot=None
     post_exchanges=[]
     prefetch=25
-    preserve_mode=True
-    preserve_time=True
+    permCopy=True
+    timeCopy=True
     program_name='subscribe'
     pstrip='.*sent_by_tsource2send/'
     queue_filename='/home/peter/.cache/sarra/subscribe/q_f71/sr_subscribe.q_f71.tsource.qname'
@@ -583,7 +583,7 @@ These options set what files the user wants to be notified for and where
 - **directory <path>           (default: .)**
 - **accept    <regexp pattern> [rename=] (must be set)**
 - **reject    <regexp pattern> (optional)**
-- **chmod     <integer>        (default: 0o400)**
+- **permDefault     <integer>        (default: 0o400)**
 - **poll_without_vip  <boolean> (default: True)**
 - **nodupe_fileAgeMax <duration>   (default 30d)**
 
@@ -634,14 +634,14 @@ They are fixed...
         directory /mylocaldirectory/${YYYYMMDD}/mydailies
         accept    .*observations.*
 
-The **chmod** option allows users to specify a linux-style numeric octal
+The **permDefault** option allows users to specify a linux-style numeric octal
 permission mask::
 
-  chmod 040
+  permDefault 040
 
 means that a file will not be posted unless the group has read permission
 (on an ls output that looks like: ---r-----, like a chmod 040 <file> command).
-The **chmod** options specifies a mask, that is the permissions must be
+The **permDefault** options specifies a mask, that is the permissions must be
 at least what is specified.
 
 As with all other components, the **vip** option can be used to indicate
@@ -713,7 +713,7 @@ The **on_line** plugin gives scripts that can read each line of an 'ls' on the p
 site, to interpret it further. It returns True if the line should be further processed,
 or False to reject it.  By default, there is a line_mode plugin included with the package
 which implements the comparison of file permissions on the remote server against
-the **chmod** mask.
+the **permDefault** mask.
 
 If the poll fetches using the http protocol, the 'ls' like entries must be derived from
 an html page. The default plugin **html_page** provided with the package, gives an idea of
@@ -2120,7 +2120,7 @@ Here are some settings for log file management:
 - logrotate_interval <duration>[<time_unit>] ( default: 1 )
    The duration of the interval with an optional time unit (ie 5m, 2h, 3d)
 
-- chmod_log ( default: 0600 )
+- permLog ( default: 0600 )
    The permission bits to set on log files.
 
 
@@ -2608,8 +2608,8 @@ and under which name.
 - **accept_unmatch   <boolean> (default: off)**
 - **attempts     <count>          (default: 3)**
 - **batch     <count>          (default: 100)**
-- **default_mode     <octalint>       (default: 0 - umask)**
-- **default_dir_mode <octalint>       (default: 0755)**
+- **permDefault     <octalint>       (default: 0 - umask)**
+- **permLog <octalint>       (default: 0755)**
 - **delete    <boolean>>       (default: off)**
 - **directory <path>           (default: .)** 
 - **discard   <boolean>        (default: off)**
@@ -2631,8 +2631,8 @@ and under which name.
 - **nodupe_basis   <data|name|path>     (default: path)**
 - **outlet    post|json|url    (default: post)** 
 - **overwrite <boolean>        (default: off)** 
-- **preserve_mode <boolean>  (default: on)**
-- **preserve_time <boolean>  (default: on)**
+- **permCopy <boolean>  (default: on)**
+- **timeCopy <boolean>  (default: on)**
 - **reject    <regexp pattern> (optional)** 
 - **retry    <boolean>         (default: On)** 
 - **retry_ttl    <duration>         (default: same as expire)** 
@@ -3065,12 +3065,12 @@ a warning message will be produced:
 
 
 
-preserve_time (default: on)
+timeCopy (default: on)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 On unix-like systems, when the *ls* commend or a file browser shows modification or 
 access times, it is a display of the posix *st_atime*, and *st_ctime* elements of a 
-struct struct returned by stat(2) call.  When *preserve_time* is on, headers
+struct struct returned by stat(2) call.  When *timeCopy* is on, headers
 reflecting these values in the messages are used to restore the access and modification 
 times respectively on the subscriber system. To document delay in file reception,
 this option can be turned off, and then file times on source and destination compared.
@@ -3078,25 +3078,19 @@ this option can be turned off, and then file times on source and destination com
 When set in a posting component, it has the effect of eliding the *atime* and *mtime* 
 headers from the messages.
 
-default_mode, default_dir_mode, preserve_mode
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+permDefault, permDirDefault, permLog, permCopy
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Permission bits on the destination files written are controlled by the *preserve_mode* directives.
-*preserve_modes* will apply the mode permissions posted by the source of the file.
-If no source mode is available, the *default_mode* will be applied to files, and the
-*default_dir_mode* will be applied to directories. If no default is specified,
+Permission bits on the destination files written are controlled by the *permCopy* directives.
+*permCopy* will apply the mode permissions posted by the source of the file.
+If no source mode is available, the *permDefault* will be applied to files, and the
+*permLog* will be applied to directories. If no default is specified,
 then the operating system  defaults (on linux, controlled by umask settings)
 will determine file permissions. (Note that the *chmod* option is interpreted as a synonym
-for *default_mode*, and *chmod_dir* is a synonym for *default_dir_mode*).
+for *permDefault*, and *chmod_dir* is a synonym for *permDirDefault*).
 
 When set in a posting component, it has the effect of eliding the *mode* 
 header from the messages.
-
-recompute_chksum <boolean> (Always on now)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-recompute_chksum option has been removed in 2.19.03b2. Recomputing will occur
-whenever appropriate without the need for a setting.
 
 tls_rigour (default: medium)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -3216,7 +3210,7 @@ Frequent Configuration Errors
    mtime is vulnerable to slow transfers, where incomplete files can be picked up because of a 
    networking issue interrupting or delaying transfers. 
 
-   Sources may not to include mtime data in their posts ( *preserve_time* option on post.)
+   Sources may not to include mtime data in their posts ( *timeCopy* option on post.)
 
 
 **Setting NONE when delivering to non-Sarracenia destination.**
