@@ -17,7 +17,7 @@ class Log(FlowCB):
             logger.setLevel(logging.INFO)
         logger.setLevel(logging.INFO)
         self.o = options
-        self.o.add_option( 'logEvents', 'set', [ 'after_accept' ] )
+        self.o.add_option( 'logEvents', 'set', [ 'after_accept', 'on_housekeeping' ] )
         logger.info( 'initialized with: %s' % self.o.logEvents )
         self.file_bytes=0
         self.lag_cumulative=0 

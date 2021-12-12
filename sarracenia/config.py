@@ -151,6 +151,7 @@ convert_to_v3 = {
        'file_email' : [ 'flow_callback', 'sarracenia.flowcb.send.email.Email' ],
     },
     'no_download': [ 'download', 'False' ],
+    'notify_only': [ 'download', 'False' ],
     'on_message': {
         'printlag': [ 'flow_callback', 'sarracenia.flowcb.accept.printlag.PrintLag'],
         'skipold': [ 'flow_callback', 'sarracenia.flowcb.accept.skipold.SkipOld'],

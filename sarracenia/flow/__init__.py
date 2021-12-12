@@ -842,7 +842,7 @@ class Flow:
 
         """
 
-        if self.o.notify_only:
+        if not self.o.download:
             self.worklist.ok = self.worklist.incoming
             self.worklist.incoming = []
             return
@@ -1506,7 +1506,7 @@ class Flow:
     def do_send(self):
         """
         """
-        if self.o.notify_only:
+        if not self.o.download:
             self.worklist.ok = self.worklist.incoming
             self.worklist.incoming = []
             return

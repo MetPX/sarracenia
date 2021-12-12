@@ -40,7 +40,7 @@ notifications. Sr_subscribe can be configured to post messages after they are do
 to make them available to consumers for further processing or transfers.
 
 **sr3** can also be used for purposes other than downloading, (such as for 
-supplying to an external program) specifying the -n (*notify_only*, or *no_download*) will
+supplying to an external program) specifying the -n (equal to: *download off*) will
 suppress the download behaviour and only post the URL on standard output. The standard
 output can be piped to other processes in classic UNIX text filter style.  
 
@@ -2613,6 +2613,7 @@ and under which name.
 - **delete    <boolean>>       (default: off)**
 - **directory <path>           (default: .)** 
 - **discard   <boolean>        (default: off)**
+- **download  <boolean>        (default: on)** 
 - **baseDir <path>       (default: /)**
 - **flatten   <string>         (default: '/')** 
 - **housekeeping <count>                 (default: 300 seconds)**
@@ -2626,7 +2627,6 @@ and under which name.
 - **messageRateMax <float>   (default: 0 == DISABLED)**
 - **messageRateMin <float>   (default: 0 == DISABLED)**
 - **mirror    <boolean>        (default: off)** 
-- **no_download|notify_only    <boolean>        (default: off)** 
 - **nodupe   <off|on|999[smhdw]>     (default: off)**
 - **nodupe_basis   <data|name|path>     (default: path)**
 - **outlet    post|json|url    (default: post)** 

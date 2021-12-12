@@ -694,7 +694,7 @@ local file is sufficient::
   broker amqps://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
   document_root /data/web/dd_root
-  no_download
+  download off
   flowcb msg_2local.Msg2Local
   flowcb do_something.DoSomething
 
