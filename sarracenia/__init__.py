@@ -31,6 +31,7 @@ from base64 import b64decode, b64encode
 import calendar
 import datetime
 import logging
+import os
 import os.path
 import re
 import sarracenia.filemetadata
@@ -435,6 +436,21 @@ class Message(dict):
     
         return msg
     
+    @staticmethod
+    def fromStream( path, o, data=None ):
+        """
+           Create a file and message for the given path.  
+           The file will be created or overwritten with the provided data.
+           then invoke fromFileData() for the resulting file.
+        """
+
+        with open(path, 'wb') as fh:
+            fh.write(data)
+
+        if hasattr(o,'chmod') and o.chmod:
+            os.chmod( path, o.chmod )
+
+        return sarracenia.Message.fromFileData( path, o, os.stat(path) )
     
     
     def setReport(msg, code, text=None):
