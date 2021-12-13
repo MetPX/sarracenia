@@ -152,7 +152,7 @@ def v02tov03message(body, headers, topic, topicPrefix):
             "z": "cod"
         }
         sm = sum_algo_map[msg["sum"][0]]
-        if sm in ['random']:
+        if sm in ['random', 'arbitrary']:
             sv = msg["sum"][2:]
         elif sm in ['cod']:
             sv = sum_algo_map[msg["sum"][2:]]
