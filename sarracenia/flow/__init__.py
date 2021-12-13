@@ -965,7 +965,7 @@ class Flow:
 
                     ok = self.download(msg, self.o)
                     if ok:
-                        logger.info("downloaded ok: %s" % new_path)
+                        logger.debug("downloaded ok: %s" % new_path)
                         msg.setReport(201, "Download successful %s" % new_path )
                         self.worklist.ok.append(msg)
                         break

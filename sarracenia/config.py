@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 #
 # This file is part of Sarracenia.
 # The sarracenia suite is Free and is proudly provided by the Government of Canada
@@ -538,7 +537,7 @@ class Config:
         self.v2plugins = {}
         self.v2plugin_options = []
         self.imports = []
-        self.logEvents = set([])
+        self.logEvents = set(['after_accept', 'after_work', 'on_housekeeping'])
         self.plugins_late = []
         self.plugins_early = []
         self.exchange = None
@@ -752,18 +751,20 @@ class Config:
         elif kind == 'set':  
             set_options.append(option)
             sv=set()
-            if v == 'None': 
-                 delattr(self, option)
-            elif type(v) is list:
-                 sv=set(v)
+            if type(v) is list:
+                sv=set(v)
             elif type(v) is set:
-                 sv=v
-            else:
-                v=v.replace('|',',')
-                if ',' in v: 
-                    sv=set(v.split(','))
-                else: 
-                    sv=set([v])
+                logger.error('is a set')
+                sv=v
+            elif type(v) is str:
+                if v == 'None': 
+                    delattr(self, option)
+                else:
+                    v=v.replace('|',',')
+                    if ',' in v: 
+                        sv=set(v.split(','))
+                    else: 
+                        sv=set([v])
             if hasattr(self, option):
                 sv= getattr(self,option) | sv
             setattr(self, option, sv)
@@ -777,6 +778,9 @@ class Config:
             str_options.append(option)
             if type(v) is not str:
                 setattr(self, option, str(v))
+        else:
+            logger.error('invalid kind: %s for option: %s, ignored' % ( kind, option ) )
+            return
 
         logger.debug('%s declared as type:%s value:%s' % (option, type(getattr(self,option)), v))
 
@@ -1049,11 +1053,13 @@ class Config:
             elif k in [ 'callback', 'cb' ]:
                 vv = v.split('.')
                 v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
-                self.plugins_late.append(v)
+                if v not in self.plugins_late:
+                    self.plugins_late.append(v)
             elif k in [ 'callback_prepend', 'cbp' ]:
                 vv = v.split('.')
                 v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
-                self.plugins_early.append(v)
+                if v not in self.plugins_early:
+                    self.plugins_early.append(v)
             elif k in ['declare']:
                 self._parse_declare(line[1:])
             elif k in ['feeder']:
@@ -1083,9 +1089,11 @@ class Config:
             elif k in ['import']:
                 self.imports.append(v)
             elif k in ['flow_callback', 'flowcb', 'fcb']:
-                self.plugins_late.append(v)
+                if v not in self.plugins_late:
+                    self.plugins_late.append(v)
             elif k in ['flow_callback_prepend', 'flowcb_prepend', 'fcbp']:
-                self.plugins_early.append( v )
+                if v not in self.plugins_early:
+                    self.plugins_early.append( v )
             elif k in ['set', 'setting', 's']:
                 self._parse_setting(line[1], line[2:])
             elif k in ['sum', 'integrity' ]:
@@ -1228,8 +1236,9 @@ class Config:
                 self.logEvents |= set( ['reject'] )
             delattr( self, 'log_reject' )
 
-        if ( (len(self.logEvents) > 0 ) or self.log_flowcb_needed) and ( '.log.Log' not in self.plugins_late ):
-            self.plugins_late.append( 'sarracenia.flowcb.log.Log' )
+        if ( (len(self.logEvents) > 0 ) or self.log_flowcb_needed) :
+            if not 'sarracenia.flowcb.log.Log' in self.plugins_late:
+                self.plugins_late.append( 'sarracenia.flowcb.log.Log' )
 
         # patch, as there is no 'none' level in python logging module...
         #    mapping so as not to break v2 configs.
