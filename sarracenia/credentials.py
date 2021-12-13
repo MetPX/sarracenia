@@ -66,6 +66,7 @@ class credential_details:
         self.tls = False
         self.prot_p = False
         self.bearer_token = None
+        self.login_method = None
 
     def __str__(self):
         s = ''
@@ -76,6 +77,7 @@ class credential_details:
         s += " %s" % self.tls
         s += " %s" % self.prot_p
         s += " %s" % self.bearer_token
+        s += " %s" % self.login_method
         return s
 
 
@@ -242,6 +244,8 @@ class Credentials:
                     details.prot_p = True
                 elif keyword in ['bearer_token', 'bt']:
                     details.bearer_token = parts[1].strip()
+                elif keyword == 'login_method':
+                    details.login_method = parts[1].strip()
                 else:
                     logger.warning("bad credential option (%s)" % keyword)
 
