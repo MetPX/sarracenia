@@ -156,7 +156,7 @@ One can also see which plugins are active in a configuration by looking at the m
    .
    blacklab% 
 
-Use of the *flowCallback_prepend* option will have the the class loaded at the beginning of the list, rather than
+Use of the *flowCallbackPrepend* option will have the the class loaded at the beginning of the list, rather than
 at the end.
 
 Settings
