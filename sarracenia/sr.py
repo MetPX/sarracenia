@@ -783,7 +783,15 @@ class sr_GlobalState:
 
             for cfg in self.configs[c]:
                 if cfg not in self.states[c]:
-                    # print('missing state for %s/%s' % (c,cfg) )
+                    print('missing state for %s/%s' % (c,cfg))
+                    os.mkdir(self.user_cache_dir + os.sep + c + os.sep + cfg)
+                    # add config as state in .cache under right directory.
+                    self.states[c][cfg] = {}
+                    self.states[c][cfg]['instance_pids'] = {}
+                    self.states[c][cfg]['queue_name'] = None
+                    self.states[c][cfg]['status'] = 'stopped'
+                    self.states[c][cfg]['has_state'] = False
+                    self.states[c][cfg]['retry_queue'] = 0
                     continue
                 if len(self.states[c][cfg]['instance_pids']) >= 0:
                     self.states[c][cfg]['missing_instances'] = []
