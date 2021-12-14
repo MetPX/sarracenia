@@ -1455,12 +1455,14 @@ class sr_GlobalState:
                 continue
 
             cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
+            statefile = self.user_cache_dir + os.sep + c + os.sep + cfg
 
             if not os.path.exists(cfgfile):
                 cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.off'
 
             logging.info('removing %s ' % (cfgfile))
             os.unlink(cfgfile)
+            shutil.rmtree(statefile)
 
     def maint(self, action):
         """
