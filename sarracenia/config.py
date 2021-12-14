@@ -138,50 +138,50 @@ str_options = [
 """
 convert_to_v3 = {
     'plugin': {
-        'msg_fdelay': ['flow_callback', 'sarracenia.flowcb.filter.fdelay.FDelay'],
+        'msg_fdelay': ['flowCallback', 'sarracenia.flowcb.filter.fdelay.FDelay'],
         'msg_pclean_f90':
-        ['flow_callback', 'sarracenia.flowcb.filter.pclean_f90.PClean_F90'],
+        ['flowCallback', 'sarracenia.flowcb.filter.pclean_f90.PClean_F90'],
         'msg_pclean_f92':
-        ['flow_callback', 'sarracenia.flowcb.filter.pclean_f92.PClean_F92'],
+        ['flowCallback', 'sarracenia.flowcb.filter.pclean_f92.PClean_F92'],
         'accel_wget': ['continue'],
         'accel_scp': ['continue'],
     },
     'do_send': {
-       'file_email' : [ 'flow_callback', 'sarracenia.flowcb.send.email.Email' ],
+       'file_email' : [ 'flowCallback', 'sarracenia.flowcb.send.email.Email' ],
     },
     'no_download': [ 'download', 'False' ],
     'notify_only': [ 'download', 'False' ],
     'on_message': {
-        'printlag': [ 'flow_callback', 'sarracenia.flowcb.accept.printlag.PrintLag'],
-        'skipold': [ 'flow_callback', 'sarracenia.flowcb.accept.skipold.SkipOld'],
-        'testretry': [ 'flow_callback', 'sarracenia.flowcb.accept.testretry.TestRetry'],
-        'toclusters': [ 'flow_callback', 'sarracenia.flowcb.accept.toclusters.ToClusters'],
-        'total': [ 'flow_callback', 'sarracenia.flowcb.accept.total.Total'],
-        'totalsave': [ 'flow_callback', 'sarracenia.flowcb.accept.totalsave.TotalSave'],
-        'save': [ 'flow_callback', 'sarracenia.flowcb.accept.save.Save'],
-        'tolocalfile': [ 'flow_callback', 'sarracenia.flowcb.accept.tolocalfile.ToLocalFile'],
-        'renamewhatfn': [ 'flow_callback', 'sarracenia.flowcb.accept.renamewhatfn.RenameWhatFn'],
-        'renamedmf': [ 'flow_callback', 'sarracenia.flowcb.accept.renamedmf.RenameDMF'],
-        'hourtree': [ 'flow_callback', 'sarracenia.flowcb.accept.hourtree.HourTree'],
-        'renamer': [ 'flow_callback', 'sarracenia.flowcb.accept.renamer.Renamer'],
-        'delete': [ 'flow_callback', 'sarracenia.flowcb.accept.delete.Delete'],
-        'tohttp': [ 'flow_callback', 'sarracenia.flowcb.accept.tohttp.ToHttp'],
-        'tolocal': [ 'flow_callback', 'sarracenia.flowcb.accept.tolocal.ToLocal'],
-        'httptohttps': [ 'flow_callback', 'sarracenia.flowcb.accept.httptohttps.HttpToHttps'],
-        'speedo': [ 'flow_callback', 'sarracenia.flowcb.accept.speedo.Speedo'],
-        'wmotypesuffix': [ 'flow_callback', 'sarracenia.flowcb.accept.wmotypesuffix.WmoTypeSuffix'],
-        'sundewpxroute': [ 'flow_callback', 'sarracenia.flowcb.accept.sundewpxroute.SundewPxRoute'],
-        'rename4jicc': [ 'flow_callback', 'sarracenia.flowcb.accept.rename4jicc.Rename4Jicc'],
-        'postoverride': [ 'flow_callback', 'sarracenia.flowcb.accept.postoverride.PostOverride'],
-        'posthourtree': [ 'flow_callback', 'sarracenia.flowcb.accept.posthourtree.PostHourTree'],
-        'longflow': [ 'flow_callback', 'sarracenia.flowcb.accept.longflow.LongFLow'],
-        'posttotalsave': [ 'flow_callback', 'sarracenia.flowcb.accept.posttotalsave.PostTotalSave'],
-        'messagedelay': [ 'flow_callback', 'sarracenia.flowcb.accept.messagedelay.MessageDelay'],
-        'downloadbaseurl': [ 'flow_callback', 'sarracenia.flowcb.accept.downloadbaseurl.DownloadBaseUrl'],
+        'printlag': [ 'flowCallback', 'sarracenia.flowcb.accept.printlag.PrintLag'],
+        'skipold': [ 'flowCallback', 'sarracenia.flowcb.accept.skipold.SkipOld'],
+        'testretry': [ 'flowCallback', 'sarracenia.flowcb.accept.testretry.TestRetry'],
+        'toclusters': [ 'flowCallback', 'sarracenia.flowcb.accept.toclusters.ToClusters'],
+        'total': [ 'flowCallback', 'sarracenia.flowcb.accept.total.Total'],
+        'totalsave': [ 'flowCallback', 'sarracenia.flowcb.accept.totalsave.TotalSave'],
+        'save': [ 'flowCallback', 'sarracenia.flowcb.accept.save.Save'],
+        'tolocalfile': [ 'flowCallback', 'sarracenia.flowcb.accept.tolocalfile.ToLocalFile'],
+        'renamewhatfn': [ 'flowCallback', 'sarracenia.flowcb.accept.renamewhatfn.RenameWhatFn'],
+        'renamedmf': [ 'flowCallback', 'sarracenia.flowcb.accept.renamedmf.RenameDMF'],
+        'hourtree': [ 'flowCallback', 'sarracenia.flowcb.accept.hourtree.HourTree'],
+        'renamer': [ 'flowCallback', 'sarracenia.flowcb.accept.renamer.Renamer'],
+        'delete': [ 'flowCallback', 'sarracenia.flowcb.accept.delete.Delete'],
+        'tohttp': [ 'flowCallback', 'sarracenia.flowcb.accept.tohttp.ToHttp'],
+        'tolocal': [ 'flowCallback', 'sarracenia.flowcb.accept.tolocal.ToLocal'],
+        'httptohttps': [ 'flowCallback', 'sarracenia.flowcb.accept.httptohttps.HttpToHttps'],
+        'speedo': [ 'flowCallback', 'sarracenia.flowcb.accept.speedo.Speedo'],
+        'wmotypesuffix': [ 'flowCallback', 'sarracenia.flowcb.accept.wmotypesuffix.WmoTypeSuffix'],
+        'sundewpxroute': [ 'flowCallback', 'sarracenia.flowcb.accept.sundewpxroute.SundewPxRoute'],
+        'rename4jicc': [ 'flowCallback', 'sarracenia.flowcb.accept.rename4jicc.Rename4Jicc'],
+        'postoverride': [ 'flowCallback', 'sarracenia.flowcb.accept.postoverride.PostOverride'],
+        'posthourtree': [ 'flowCallback', 'sarracenia.flowcb.accept.posthourtree.PostHourTree'],
+        'longflow': [ 'flowCallback', 'sarracenia.flowcb.accept.longflow.LongFLow'],
+        'posttotalsave': [ 'flowCallback', 'sarracenia.flowcb.accept.posttotalsave.PostTotalSave'],
+        'messagedelay': [ 'flowCallback', 'sarracenia.flowcb.accept.messagedelay.MessageDelay'],
+        'downloadbaseurl': [ 'flowCallback', 'sarracenia.flowcb.accept.downloadbaseurl.DownloadBaseUrl'],
 
 
-        'wmo2msc': [ 'flow_callback', 'sarracenia.flowcb.filter.wmo2msc.Wmo2Msc'],
-        'msg_delete': [ 'flow_callback', 'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles'],
+        'wmo2msc': [ 'flowCallback', 'sarracenia.flowcb.filter.wmo2msc.Wmo2Msc'],
+        'msg_delete': [ 'flowCallback', 'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles'],
         'msg_log': ['logEvents', 'after_accept'],
         'msg_rawlog': ['logEvents', 'after_accept']
     },
@@ -1088,10 +1088,10 @@ class Config:
                     self.post_topicPrefix = v.split('.')
             elif k in ['import']:
                 self.imports.append(v)
-            elif k in ['flow_callback', 'flowcb', 'fcb']:
+            elif k in ['flow_callback', 'flowcb', 'fcb', 'flowCallback' ]:
                 if v not in self.plugins_late:
                     self.plugins_late.append(v)
-            elif k in ['flow_callback_prepend', 'flowcb_prepend', 'fcbp']:
+            elif k in ['flow_callback_prepend', 'flowcb_prepend', 'fcbp', 'flowCallbackPrepend' ]:
                 if v not in self.plugins_early:
                     self.plugins_early.append( v )
             elif k in ['set', 'setting', 's']:

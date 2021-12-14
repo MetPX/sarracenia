@@ -1910,13 +1910,13 @@ Settings in an individual .conf file are read in after the default.conf
 file, and so can override defaults. Options specified on
 the command line override configuration files.
 
-flow_callback options
+flowCallback options
 ~~~~~~~~~~~~~~~~~~~~~
 
 Sarracenia makes extensive use of small python code snippets that customize
-processing called *flow_callbacks* Flow_callbacks define and use additional settings::
+processing called *flowCallback* Flow_callbacks define and use additional settings::
 
-  flow_callback sarracenia.flowcb.log.Log
+  flowCallback sarracenia.flowcb.log.Log
 
 There is also a shorter form to express the same thing::
 
@@ -1946,8 +1946,8 @@ those routines will be called. For more details consult the
 To add special processing of messages, create a module in the python
 path, and have it include entry points. 
 
-There is also *flow_callbacks_prepend* which adds a flow_callback class to the front
-of the list (which determines relative execution order among flow_callback classes.)
+There is also *flowCallbackPrepend* which adds a flowCallback class to the front
+of the list (which determines relative execution order among flowCallback classes.)
 
    
 callback options
@@ -1960,7 +1960,7 @@ callbacks that are delivered with metpx-sr3 follow the following convention:
 
 so we provide the following syntactic sugar::
 
-  callback log    (is equivalent to *flow_callback sarracenia.flowcb.log.Log* )
+  callback log    (is equivalent to *flowCallback sarracenia.flowcb.log.Log* )
 
 There is similarly a *callback_prepend* to fill in.  
 
@@ -1968,7 +1968,7 @@ Importing Extensions
 ~~~~~~~~~~~~~~~~~~~~
 
 The *import* option works in a way familiar to Python developers,
-Making them available for use by the Sarracenia core, or flow_callbacks.
+Making them available for use by the Sarracenia core, or flowCallback.
 Developers can add additional protocols for messages or 
 file transfer.  For example::
 
@@ -2007,7 +2007,7 @@ prefixed with the name of the plugin::
 A setting 'msg_to_clusters' is needed by the *msg_to_clusters* plugin
 referenced in the *on_message* the v2 plugins are a little more
 cumbersome to write. They are included here for completeness, but
-people should use version 3 (either flow_callbacks, or extensions
+people should use version 3 (either flowCallback, or extensions
 discussed next) when possible.
 
 Reasons to use newer style plugins:
@@ -2020,7 +2020,7 @@ Reasons to use newer style plugins:
 * newer style extensions are ordinary python modules, unlike
   v2 ones which require minor magic incantations.
 
-* when a v3 (flow_callback or imported) module has a syntax error,
+* when a v3 (flowCallback or imported) module has a syntax error,
   all the tools of the python interpreter apply, providing
   a lot more feedback is given to the coder. with v2, it just
   says there is something wrong, much more difficult to debug.
@@ -2086,7 +2086,7 @@ rejecting messages:
 * rejecting loop -- directories in a tree refer to each other causing the same directory to be scanned redundantly, perhaps in an infinite loop.
 
 
-One can also get finer grained control over logging by using flow_callbacks. For example, the default settings
+One can also get finer grained control over logging by using flowCallback. For example, the default settings
 typically include which logs each file after it has been downloaded, but not
 when the message is received. To have a line in the log for each message received set::
 
@@ -3616,12 +3616,12 @@ such as logging (implemented by default use of msg_log, file_log, post_log plugi
 Users can place their own scripts in the script sub-directory of their config directory 
 tree ( on Linux, the ~/.config/sarra/plugins).  
 
-flow_callback and flow_callback_prepend <class>
+flowCallback and flowCallbackPrepend <class>
 -----------------------------------------------
 
-The flow_callback directive takes a class to load can scan for entry points as an argument::
+The flowCallback directive takes a class to load can scan for entry points as an argument::
 
-    flow_callback sarracenia.flowcb.log.Log
+    flowCallback sarracenia.flowcb.log.Log
    
 With this directive in a configuration file, the Log class found in installed package will be used.
 That module logs messages *after_accept* (after messages have passed through the accept/reject masks.)
@@ -3659,11 +3659,11 @@ For example, a *watch* is a flow with sarracenia.flowcb.gather.file.File class t
 is used to scan directories. A Common need when a data source is not easily accessed
 with python scripts is to use the script callback::
 
-   flow_callback_prepend sarracenia.flowcb.script.Script
+   flowCallbackPrepend sarracenia.flowcb.script.Script
 
    script_gather get_weird_data.sh
 
-Using the *_prepend* variant of the *flow_callback* option, will have the Script callback
+Using the *_prepend* variant of the *flowCallback* option, will have the Script callback
 class's entry point, before the File callback... So A script will be executed, and then
 the directory will be checked for new files.  Here is part of the Script callback class::
     

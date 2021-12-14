@@ -51,7 +51,7 @@ instead of .sarra. So copy config files that one wants to use from the old ~/.co
 ~/.config/sr3. The two versions operate independently.
 
 Most v2 plugins (as per *plugin* and *on\_* directives) are honoured via a wrapper class. To build
-native v3 plugins, One should investigate the flow_callback (flowcb) class. 
+native v3 plugins, One should investigate the flowCallback (flowcb) class. 
 
 default topicPrefix is just plain 'v03'  as opposed to topic_prefix being 'v02.post' in v2.
 
