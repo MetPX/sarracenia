@@ -2062,8 +2062,15 @@ Log files can be very large for high volume configurations, so the logging is ve
 To begin with, one can select the logging level:
 
 - debug
-   Setting option debug is identical to use  **loglevel debug**
+   Setting option debug is identical to use  **logLevel debug**
 
+- logMessageDump  (default: off) boolean flag
+  if set, all fields of a message are printed, rather than just a url/path reference.
+
+- logEvents ( default after_accept,after_work,on_housekeeping )
+   emit standard log messages at the given points in message processing. 
+   other values: on_start, on_stop, post, gather, ... etc...
+  
 - logLevel ( default: info )
    The level of logging as expressed by python's logging. Possible values are :  critical, error, info, warning, debug.
 

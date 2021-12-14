@@ -4,9 +4,15 @@ from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
 
-
-
 class Log(FlowCB):
+    """
+       The logging flow callback class.
+       logs message at the indicated time. Controlled by:
+
+       logEvents - which entry points to emit log messages at.
+
+       logMessageDump - print literal messages when printing log messages.
+    """
     def __init__(self, options):
 
         # FIXME: should a logging module have a logLevel setting?
@@ -20,13 +26,13 @@ class Log(FlowCB):
         self.o.add_option( 'logEvents', 'set', [ 'after_accept', 'on_housekeeping' ] )
         self.o.add_option( 'logMessageDump', 'flag', False )
         logger.info( 'initialized with: %s' % self.o.logEvents )
-        self.file_bytes=0
-        self.lag_cumulative=0 
-        self.lag_max=0 
-        self.message_bytes=0
-        self.message_count=0
-        self.reject_count=0
-        self.transfer_count=0
+        self.fileBytes=0
+        self.lagTotal=0 
+        self.lagMax=0 
+        self.msgBytes=0
+        self.msgCount=0
+        self.rejectCount=0
+        self.transferCount=0
 
     def gather(self):
         if set ( ['gather', 'all'] ) & self.o.logEvents:
@@ -43,8 +49,8 @@ class Log(FlowCB):
 
     def after_accept(self, worklist):
 
-        self.reject_count += len(worklist.rejected)
-        self.message_count += len(worklist.incoming)
+        self.rejectCount += len(worklist.rejected)
+        self.msgCount += len(worklist.incoming)
         now=nowflt()
 
         if set ( ['reject', 'all'] ) & self.o.logEvents:
@@ -57,18 +63,18 @@ class Log(FlowCB):
         for msg in worklist.incoming:
 
             lag = now - timestr2flt(msg['pubTime'])
-            self.lag_cumulative += lag
-            if lag > self.lag_max:
-               self.lag_max = lag
-            self.message_bytes += len(msg)
+            self.lagTotal += lag
+            if lag > self.lagMax:
+               self.lagMax = lag
+            self.msgBytes += len(msg)
             if set ( ['after_accept', 'all'] ) & self.o.logEvents:
 
                 logger.info("accepted: (lag: %g ) %s " % ( lag, self._messageStr(msg) ) )
                 
 
     def after_work(self, worklist):
-        self.reject_count += len(worklist.rejected)
-        self.transfer_count += len(worklist.ok)
+        self.rejectCount += len(worklist.rejected)
+        self.transferCount += len(worklist.ok)
         if set ( ['reject', 'all'] ) & self.o.logEvents:
             for msg in worklist.rejected:
                 if 'report' in msg:
@@ -78,19 +84,24 @@ class Log(FlowCB):
 
         for msg in worklist.ok:
             if 'size' in msg:
-                self.file_bytes += msg['size']
+                self.fileBytes += msg['size']
 
             if set ( ['after_work', 'all'] ) & self.o.logEvents:
-                logger.info("worked successfully: %s " % ( msg['new_dir'] + '/' + msg['new_file'] ) )
+                if msg['integrity']['method'] in [ 'link', 'remove' ]:
+                     verb=msg['integrity']['method'] 
+                else:
+                     verb='transfer'
+
+                logger.info("%s ok: %s " % ( verb, msg['new_dir'] + '/' + msg['new_file'] ) )
                 if self.o.logMessageDump:
                      logger.info('message: %s' % msg.dumps() )
 
     def _stats(self):
         logger.info( "messages_received: %d, accepted: %d, rejected: %d ( bytes: %s )" %
-            ( self.message_count+self.reject_count, self.message_count, self.reject_count, self.message_bytes ) )
-        logger.info( "files transferred: %d, cumulative bytes of data: %d" % ( self.transfer_count, self.file_bytes )  )
-        if self.message_count > 0:
-            logger.info( "lag: average: %g, maximum: %g " % ( self.lag_cumulative/self.message_count, self.lag_max ) )
+            ( self.msgCount+self.rejectCount, self.msgCount, self.rejectCount, self.msgBytes ) )
+        logger.info( "files transferred: %d, cumulative bytes of data: %d" % ( self.transferCount, self.fileBytes )  )
+        if self.msgCount > 0:
+            logger.info( "lag: average: %g, maximum: %g " % ( self.lagTotal/self.msgCount, self.lagMax ) )
 
     def on_stop(self):
         if set ( ['on_stop', 'all'] ) & self.o.logEvents:
