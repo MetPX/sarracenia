@@ -776,8 +776,13 @@ class sr_GlobalState:
 
         self._resolve_brokers()
 
+        if not os.path.exists( self.user_cache_dir ):
+            os.mkdir(self.user_cache_dir)
+
         # comparing states and configs to find missing instances, and correct state.
         for c in self.components:
+            if not os.path.exists( self.user_cache_dir + os.sep + c ):
+                os.mkdir(self.user_cache_dir + os.sep + c )
             if (c not in self.states) or (c not in self.configs):
                 continue
 
