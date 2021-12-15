@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 #
 # This file is part of Sarracenia.
 # The sarracenia suite is Free and is proudly provided by the Government of Canada
@@ -70,8 +69,10 @@ default_options = {
     'inline': False,
     'inline_only': False,
     'integrity_method': 'sha512',
-    'notify_only': False,
     'overwrite': True,
+    'permDefault': 0,
+    'permDirDefault': 0o775,
+    'permLog': 0o600,
     'post_documentRoot': None,
     'post_baseDir': None,
     'post_baseUrl': None,
@@ -89,8 +90,8 @@ count_options = [
 flag_options = [ 'baseUrl_relPath', 'bind_queue', 'cache_stat', 'declare_exchange', 'debug', \
     'declare_queue', 'delete', 'discard', 'download', 'dry_run', 'durable', 'exchange_split', 'realpath_filter', \
     'follow_symlinks', 'force_polling', 'inline', 'inline_only', 'inplace', 'log_reject', 'pipe', 'restore', \
-    'report_daemons', 'mirror', 'notify_only', 'overwrite', 'post_on_start', \
-    'preserve_mode', 'preserve_time', 'pump_flag', 'randomize', 'realpath_post', 'reconnect', \
+    'report_daemons', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
+    'permCopy', 'pump_flag', 'randomize', 'realpath_post', 'reconnect', \
     'report_back', 'reset', 'retry_mode', 'save', 'set_passwords', 'source_from_exchange', \
     'statehost', 'users'
                 ]
@@ -112,6 +113,8 @@ set_choices = {
 # FIXME: doesn't work... wonder why?
 #    'fileEvents': sarracenia.flow.allFileEvents
  
+perm_options = [ 'permDefault', 'permDirDefault' ]
+
 size_options = ['blocksize', 'bufsize', 'bytes_per_second', 'inline_max']
 
 str_options = [
@@ -135,49 +138,50 @@ str_options = [
 """
 convert_to_v3 = {
     'plugin': {
-        'msg_fdelay': ['flow_callback', 'sarracenia.flowcb.filter.fdelay.FDelay'],
+        'msg_fdelay': ['flowCallback', 'sarracenia.flowcb.filter.fdelay.FDelay'],
         'msg_pclean_f90':
-        ['flow_callback', 'sarracenia.flowcb.filter.pclean_f90.PClean_F90'],
+        ['flowCallback', 'sarracenia.flowcb.filter.pclean_f90.PClean_F90'],
         'msg_pclean_f92':
-        ['flow_callback', 'sarracenia.flowcb.filter.pclean_f92.PClean_F92'],
+        ['flowCallback', 'sarracenia.flowcb.filter.pclean_f92.PClean_F92'],
         'accel_wget': ['continue'],
         'accel_scp': ['continue'],
     },
     'do_send': {
-       'file_email' : [ 'flow_callback', 'sarracenia.flowcb.send.email.Email' ],
+       'file_email' : [ 'flowCallback', 'sarracenia.flowcb.send.email.Email' ],
     },
     'no_download': [ 'download', 'False' ],
+    'notify_only': [ 'download', 'False' ],
     'on_message': {
-        'printlag': [ 'flow_callback', 'sarracenia.flowcb.accept.printlag.PrintLag'],
-        'skipold': [ 'flow_callback', 'sarracenia.flowcb.accept.skipold.SkipOld'],
-        'testretry': [ 'flow_callback', 'sarracenia.flowcb.accept.testretry.TestRetry'],
-        'toclusters': [ 'flow_callback', 'sarracenia.flowcb.accept.toclusters.ToClusters'],
-        'total': [ 'flow_callback', 'sarracenia.flowcb.accept.total.Total'],
-        'totalsave': [ 'flow_callback', 'sarracenia.flowcb.accept.totalsave.TotalSave'],
-        'save': [ 'flow_callback', 'sarracenia.flowcb.accept.save.Save'],
-        'tolocalfile': [ 'flow_callback', 'sarracenia.flowcb.accept.tolocalfile.ToLocalFile'],
-        'renamewhatfn': [ 'flow_callback', 'sarracenia.flowcb.accept.renamewhatfn.RenameWhatFn'],
-        'renamedmf': [ 'flow_callback', 'sarracenia.flowcb.accept.renamedmf.RenameDMF'],
-        'hourtree': [ 'flow_callback', 'sarracenia.flowcb.accept.hourtree.HourTree'],
-        'renamer': [ 'flow_callback', 'sarracenia.flowcb.accept.renamer.Renamer'],
-        'delete': [ 'flow_callback', 'sarracenia.flowcb.accept.delete.Delete'],
-        'tohttp': [ 'flow_callback', 'sarracenia.flowcb.accept.tohttp.ToHttp'],
-        'tolocal': [ 'flow_callback', 'sarracenia.flowcb.accept.tolocal.ToLocal'],
-        'httptohttps': [ 'flow_callback', 'sarracenia.flowcb.accept.httptohttps.HttpToHttps'],
-        'speedo': [ 'flow_callback', 'sarracenia.flowcb.accept.speedo.Speedo'],
-        'wmotypesuffix': [ 'flow_callback', 'sarracenia.flowcb.accept.wmotypesuffix.WmoTypeSuffix'],
-        'sundewpxroute': [ 'flow_callback', 'sarracenia.flowcb.accept.sundewpxroute.SundewPxRoute'],
-        'rename4jicc': [ 'flow_callback', 'sarracenia.flowcb.accept.rename4jicc.Rename4Jicc'],
-        'postoverride': [ 'flow_callback', 'sarracenia.flowcb.accept.postoverride.PostOverride'],
-        'posthourtree': [ 'flow_callback', 'sarracenia.flowcb.accept.posthourtree.PostHourTree'],
-        'longflow': [ 'flow_callback', 'sarracenia.flowcb.accept.longflow.LongFLow'],
-        'posttotalsave': [ 'flow_callback', 'sarracenia.flowcb.accept.posttotalsave.PostTotalSave'],
-        'messagedelay': [ 'flow_callback', 'sarracenia.flowcb.accept.messagedelay.MessageDelay'],
-        'downloadbaseurl': [ 'flow_callback', 'sarracenia.flowcb.accept.downloadbaseurl.DownloadBaseUrl'],
+        'printlag': [ 'flowCallback', 'sarracenia.flowcb.accept.printlag.PrintLag'],
+        'skipold': [ 'flowCallback', 'sarracenia.flowcb.accept.skipold.SkipOld'],
+        'testretry': [ 'flowCallback', 'sarracenia.flowcb.accept.testretry.TestRetry'],
+        'toclusters': [ 'flowCallback', 'sarracenia.flowcb.accept.toclusters.ToClusters'],
+        'total': [ 'flowCallback', 'sarracenia.flowcb.accept.total.Total'],
+        'totalsave': [ 'flowCallback', 'sarracenia.flowcb.accept.totalsave.TotalSave'],
+        'save': [ 'flowCallback', 'sarracenia.flowcb.accept.save.Save'],
+        'tolocalfile': [ 'flowCallback', 'sarracenia.flowcb.accept.tolocalfile.ToLocalFile'],
+        'renamewhatfn': [ 'flowCallback', 'sarracenia.flowcb.accept.renamewhatfn.RenameWhatFn'],
+        'renamedmf': [ 'flowCallback', 'sarracenia.flowcb.accept.renamedmf.RenameDMF'],
+        'hourtree': [ 'flowCallback', 'sarracenia.flowcb.accept.hourtree.HourTree'],
+        'renamer': [ 'flowCallback', 'sarracenia.flowcb.accept.renamer.Renamer'],
+        'delete': [ 'flowCallback', 'sarracenia.flowcb.accept.delete.Delete'],
+        'tohttp': [ 'flowCallback', 'sarracenia.flowcb.accept.tohttp.ToHttp'],
+        'tolocal': [ 'flowCallback', 'sarracenia.flowcb.accept.tolocal.ToLocal'],
+        'httptohttps': [ 'flowCallback', 'sarracenia.flowcb.accept.httptohttps.HttpToHttps'],
+        'speedo': [ 'flowCallback', 'sarracenia.flowcb.accept.speedo.Speedo'],
+        'wmotypesuffix': [ 'flowCallback', 'sarracenia.flowcb.accept.wmotypesuffix.WmoTypeSuffix'],
+        'sundewpxroute': [ 'flowCallback', 'sarracenia.flowcb.accept.sundewpxroute.SundewPxRoute'],
+        'rename4jicc': [ 'flowCallback', 'sarracenia.flowcb.accept.rename4jicc.Rename4Jicc'],
+        'postoverride': [ 'flowCallback', 'sarracenia.flowcb.accept.postoverride.PostOverride'],
+        'posthourtree': [ 'flowCallback', 'sarracenia.flowcb.accept.posthourtree.PostHourTree'],
+        'longflow': [ 'flowCallback', 'sarracenia.flowcb.accept.longflow.LongFLow'],
+        'posttotalsave': [ 'flowCallback', 'sarracenia.flowcb.accept.posttotalsave.PostTotalSave'],
+        'messagedelay': [ 'flowCallback', 'sarracenia.flowcb.accept.messagedelay.MessageDelay'],
+        'downloadbaseurl': [ 'flowCallback', 'sarracenia.flowcb.accept.downloadbaseurl.DownloadBaseUrl'],
 
 
-        'wmo2msc': [ 'flow_callback', 'sarracenia.flowcb.filter.wmo2msc.Wmo2Msc'],
-        'msg_delete': [ 'flow_callback', 'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles'],
+        'wmo2msc': [ 'flowCallback', 'sarracenia.flowcb.filter.wmo2msc.Wmo2Msc'],
+        'msg_delete': [ 'flowCallback', 'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles'],
         'msg_log': ['logEvents', 'after_accept'],
         'msg_rawlog': ['logEvents', 'after_accept']
     },
@@ -473,9 +477,12 @@ class Config:
         'e' : 'fileEvents',
         'events' : 'fileEvents',
         'instance': 'instances',
-        'chmod': 'default_mode',
-        'chmod_dir': 'default_dir_mode',
-        'chmod_log': 'default_log_mode',
+        'chmod': 'permDefault',
+        'default_mode': 'permDefault',
+        'chmod_dir': 'permDirDefault',
+        'default_dir_mode': 'permDirDefault',
+        'chmod_log': 'permLog',
+        'default_log_mode': 'permLog',
         'file_time_limit' : 'nodupe_fileAgeMax', 
         'heartbeat': 'housekeeping',
         'log_format': 'logFormat',
@@ -491,6 +498,8 @@ class Config:
         'post_document_root': 'post_documentRoot',
         'post_rate_limit': 'messageRateMax',
         'post_topic_prefix' : 'post_topicPrefix',
+        'preserve_mode' : 'permCopy',
+        'preserve_time' : 'timeCopy',
         'suppress_duplicates' : 'nodupe_ttl',
         'suppress_duplicates_basis' : 'nodupe_basis', 
         'topic_prefix' : 'topicPrefix'
@@ -518,9 +527,6 @@ class Config:
 
         self.bufsize = 1024 * 1024
         self.bytes_ps = 0
-        self.chmod = 0o0
-        self.chmod_dir = 0o775
-        self.chmod_log = 0o600
 
         self.nodupe_fileAgeMax = 0 # disabled.
         self.timezone = 'UTC'
@@ -531,7 +537,7 @@ class Config:
         self.v2plugins = {}
         self.v2plugin_options = []
         self.imports = []
-        self.logEvents = set([])
+        self.logEvents = set(['after_accept', 'after_work', 'on_housekeeping'])
         self.plugins_late = []
         self.plugins_early = []
         self.exchange = None
@@ -745,18 +751,20 @@ class Config:
         elif kind == 'set':  
             set_options.append(option)
             sv=set()
-            if v == 'None': 
-                 delattr(self, option)
-            elif type(v) is list:
-                 sv=set(v)
+            if type(v) is list:
+                sv=set(v)
             elif type(v) is set:
-                 sv=v
-            else:
-                v=v.replace('|',',')
-                if ',' in v: 
-                    sv=set(v.split(','))
-                else: 
-                    sv=set([v])
+                logger.error('is a set')
+                sv=v
+            elif type(v) is str:
+                if v == 'None': 
+                    delattr(self, option)
+                else:
+                    v=v.replace('|',',')
+                    if ',' in v: 
+                        sv=set(v.split(','))
+                    else: 
+                        sv=set([v])
             if hasattr(self, option):
                 sv= getattr(self,option) | sv
             setattr(self, option, sv)
@@ -770,6 +778,9 @@ class Config:
             str_options.append(option)
             if type(v) is not str:
                 setattr(self, option, str(v))
+        else:
+            logger.error('invalid kind: %s for option: %s, ignored' % ( kind, option ) )
+            return
 
         logger.debug('%s declared as type:%s value:%s' % (option, type(getattr(self,option)), v))
 
@@ -872,7 +883,7 @@ class Config:
             #if hasattr(self, 'post_broker') and self.post_broker is not None:
             #    self.exchange = 'xs_%s' % self.post_broker.username
             #else:
-            if self.broker.username == 'anonymous':
+            if not hasattr(self.broker,'username') or ( self.broker.username == 'anonymous' ):
                 self.exchange = 'xpublic'
             else:
                 self.exchange = 'xs_%s' % self.broker.username
@@ -1042,11 +1053,13 @@ class Config:
             elif k in [ 'callback', 'cb' ]:
                 vv = v.split('.')
                 v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
-                self.plugins_late.append(v)
+                if v not in self.plugins_late:
+                    self.plugins_late.append(v)
             elif k in [ 'callback_prepend', 'cbp' ]:
                 vv = v.split('.')
                 v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
-                self.plugins_early.append(v)
+                if v not in self.plugins_early:
+                    self.plugins_early.append(v)
             elif k in ['declare']:
                 self._parse_declare(line[1:])
             elif k in ['feeder']:
@@ -1075,10 +1088,12 @@ class Config:
                     self.post_topicPrefix = v.split('.')
             elif k in ['import']:
                 self.imports.append(v)
-            elif k in ['flow_callback', 'flowcb', 'fcb']:
-                self.plugins_late.append(v)
-            elif k in ['flow_callback_prepend', 'flowcb_prepend', 'fcbp']:
-                self.plugins_early.append( v )
+            elif k in ['flow_callback', 'flowcb', 'fcb', 'flowCallback' ]:
+                if v not in self.plugins_late:
+                    self.plugins_late.append(v)
+            elif k in ['flow_callback_prepend', 'flowcb_prepend', 'fcbp', 'flowCallbackPrepend' ]:
+                if v not in self.plugins_early:
+                    self.plugins_early.append( v )
             elif k in ['set', 'setting', 's']:
                 self._parse_setting(line[1], line[2:])
             elif k in ['sum', 'integrity' ]:
@@ -1122,6 +1137,11 @@ class Config:
                         % ( cfg, lineno, line[0]) )
                     continue
                 setattr(self, k, durationToSeconds(v))
+            elif k in perm_options:
+                if v.isdigit():
+                    setattr(self, k, int(v, base=8))
+                else:
+                    logger.error('%s setting to %s ignored: only numberic modes supported' % ( k, v ) )
             elif k in size_options:
                 setattr(self, k, chunksize_from_str(v))
             elif k in count_options:
@@ -1216,8 +1236,9 @@ class Config:
                 self.logEvents |= set( ['reject'] )
             delattr( self, 'log_reject' )
 
-        if ( (len(self.logEvents) > 0 ) or self.log_flowcb_needed) and ( '.log.Log' not in self.plugins_late ):
-            self.plugins_late.append( 'sarracenia.flowcb.log.Log' )
+        if ( (len(self.logEvents) > 0 ) or self.log_flowcb_needed) :
+            if not 'sarracenia.flowcb.log.Log' in self.plugins_late:
+                self.plugins_late.append( 'sarracenia.flowcb.log.Log' )
 
         # patch, as there is no 'none' level in python logging module...
         #    mapping so as not to break v2 configs.

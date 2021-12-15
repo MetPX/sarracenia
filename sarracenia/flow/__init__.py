@@ -47,8 +47,8 @@ default_options = {
     '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
     'logLevel': 'info',
     'mirror': True,
-    'preserve_mode': True,
-    'preserve_time': True,
+    'permCopy': True,
+    'timeCopy': True,
     'messageCountMax': 0,
     'messageRateMax': 0,
     'messageRateMin': 0,
@@ -702,7 +702,7 @@ class Flow:
             new_mtime = sarracenia.timestr2flt(msg['mtime'])
             old_mtime = 0.0
 
-            if self.o.preserve_time:
+            if self.o.timeCopy:
                 old_mtime = lstat.st_mtime
             elif sarracenia.filemetadata.supports_extended_attributes:
                 try:
@@ -842,7 +842,7 @@ class Flow:
 
         """
 
-        if self.o.notify_only:
+        if not self.o.download:
             self.worklist.ok = self.worklist.incoming
             self.worklist.incoming = []
             return
@@ -905,7 +905,7 @@ class Flow:
                     if not os.path.isdir(self.o.inflight):
                         try:
                             os.mkdir(self.o.inflight)
-                            os.chmod(self.o.inflight, self.o.chmod_dir)
+                            os.chmod(self.o.inflight, self.o.permDirDefault)
                         except:
                             pass
                     new_inflight_path = self.o.inflight + new_file
@@ -965,7 +965,7 @@ class Flow:
 
                     ok = self.download(msg, self.o)
                     if ok:
-                        logger.info("downloaded ok: %s" % new_path)
+                        logger.debug("downloaded ok: %s" % new_path)
                         msg.setReport(201, "Download successful %s" % new_path )
                         self.worklist.ok.append(msg)
                         break
@@ -1092,7 +1092,7 @@ class Flow:
                 elif options.inflight[-1] == '/':
                     try:
                         os.mkdir(options.inflight)
-                        os.chmod(options.inflight, options.chmod_dir)
+                        os.chmod(options.inflight, options.permDirDefault)
                     except:
                         pass
                     new_inflight_path = options.inflight + new_file
@@ -1438,7 +1438,7 @@ class Flow:
             x = sarracenia.filemetadata.FileMetadata(local_file)
             x.set('integrity', sumstr)
 
-            if self.o.preserve_time and 'mtime' in msg and msg['mtime']:
+            if self.o.timeCopy and 'mtime' in msg and msg['mtime']:
                 x.set('mtime', msg['mtime'])
             else:
                 st = os.stat(local_file)
@@ -1447,7 +1447,7 @@ class Flow:
             x.persist()
 
         mode = 0
-        if self.o.preserve_mode and 'mode' in msg:
+        if self.o.permCopy and 'mode' in msg:
             try:
                 mode = int(msg['mode'], base=8)
             except:
@@ -1455,10 +1455,10 @@ class Flow:
             if mode > 0:
                 os.chmod(local_file, mode)
 
-        if mode == 0 and self.o.chmod != 0:
-            os.chmod(local_file, self.o.chmod)
+        if mode == 0 and self.o.permDefault != 0:
+            os.chmod(local_file, self.o.permDefault)
 
-        if self.o.preserve_time and 'mtime' in msg and msg['mtime']:
+        if self.o.timeCopy and 'mtime' in msg and msg['mtime']:
             mtime = sarracenia.timestr2flt(msg['mtime'])
             atime = mtime
             if 'atime' in msg and msg['atime']:
@@ -1471,7 +1471,7 @@ class Flow:
 
         if hasattr(proto, 'chmod'):
             mode = 0
-            if self.o.preserve_mode and 'mode' in msg:
+            if self.o.permCopy and 'mode' in msg:
                 try:
                     mode = int(msg['mode'], base=8)
                 except:
@@ -1482,14 +1482,14 @@ class Flow:
                     except:
                         pass
 
-            if mode == 0 and self.o.chmod != 0:
+            if mode == 0 and self.o.permDefault != 0:
                 try:
-                    proto.chmod(self.o.chmod, remote_file)
+                    proto.chmod(self.o.permDefault, remote_file)
                 except:
                     pass
 
         if hasattr(proto, 'chmod'):
-            if self.o.preserve_time and 'mtime' in msg and msg['mtime']:
+            if self.o.timeCopy and 'mtime' in msg and msg['mtime']:
                 mtime = sarracenia.timestr2flt(msg['mtime'])
                 atime = mtime
                 if 'atime' in msg and msg['atime']:
@@ -1506,7 +1506,7 @@ class Flow:
     def do_send(self):
         """
         """
-        if self.o.notify_only:
+        if not self.o.download:
             self.worklist.ok = self.worklist.incoming
             self.worklist.incoming = []
             return

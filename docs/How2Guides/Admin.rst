@@ -1159,7 +1159,7 @@ It is now possible to enable MQTT in Sarracenia through the RabbitMQ MQTT plugin
    # Print out all msg received
    accept .*
    on_message msg_rawlog
-   no_download
+   download off
   Note that we use *xmqtt_public* as the (post\_)exchange which is defined as the *rabbitmq_mqtt.exchange* in the rabbitmq.config file. We also append the source exchange to the (post\_)topicPrefix, which will map the source exchange and could be useful if we map multiple exchanges to mqtt.
 
 * Start and test your configuration::

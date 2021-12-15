@@ -60,8 +60,8 @@ logger = logging.getLogger(__name__)
 #           options.credentials
 #           options.destination
 #           options.batch
-#           options.chmod
-#           options.chmod_dir
+#           options.permDefault
+#           options.permDirDefault
 #     opt   options.kbytes_ps
 #     opt   options.bufsize
 
@@ -144,7 +144,7 @@ class Sftp(Transfer):
 
             # create and go to subdir
             alarm_set(self.o.timeout)
-            self.sftp.mkdir(d, self.o.chmod_dir)
+            self.sftp.mkdir(d, self.o.permDirDefault)
             self.sftp.chdir(d)
             alarm_cancel()
 
@@ -499,7 +499,7 @@ class Sftp(Transfer):
     def mkdir(self, remote_dir):
         logger.debug("sr_sftp mkdir %s" % remote_dir)
         alarm_set(self.o.timeout)
-        self.sftp.mkdir(remote_dir, self.o.chmod_dir)
+        self.sftp.mkdir(remote_dir, self.o.permDirDefault)
         alarm_cancel()
 
     # put

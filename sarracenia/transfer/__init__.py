@@ -110,8 +110,8 @@ class Transfer():
                options.credentials
                options.destination 
                options.batch 
-               options.chmod
-               options.chmod_dir
+               options.permDefault
+               options.permDirDefault
                options.timeout
          opt   options.bytes_per_second
          opt   options.bufsize

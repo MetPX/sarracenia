@@ -31,6 +31,7 @@ from base64 import b64decode, b64encode
 import calendar
 import datetime
 import logging
+import os
 import os.path
 import re
 import sarracenia.filemetadata
@@ -350,7 +351,7 @@ class Message(dict):
             The message is built for a file is based on the given path, options (o), and lstat (output of os.stat)
              
             The lstat record is used to build 'atime', 'mtime' and 'mode' fields if 
-            preserve_time and preserve_mode options are set.
+            timeCopy and permCopy options are set.
     
             if no lstat record is supplied, then those fields will not be set.
         """
@@ -423,18 +424,33 @@ class Message(dict):
         if lstat.st_size is not None:
             msg['size'] = lstat.st_size
     
-        if o.preserve_time:
+        if o.timeCopy:
             if lstat.st_mtime is not None:
                 msg['mtime'] = timeflt2str(lstat.st_mtime)
             if lstat.st_atime is not None:
                 msg['atime'] = timeflt2str(lstat.st_atime)
     
         if (lstat.st_mode is not None) and  \
-            (o.preserve_mode and lstat.st_mode):
+            (o.permCopy and lstat.st_mode):
             msg['mode'] = "%o" % (lstat.st_mode & 0o7777)
     
         return msg
     
+    @staticmethod
+    def fromStream( path, o, data=None ):
+        """
+           Create a file and message for the given path.  
+           The file will be created or overwritten with the provided data.
+           then invoke fromFileData() for the resulting file.
+        """
+
+        with open(path, 'wb') as fh:
+            fh.write(data)
+
+        if hasattr(o,'chmod') and o.chmod:
+            os.chmod( path, o.chmod )
+
+        return sarracenia.Message.fromFileData( path, o, os.stat(path) )
     
     
     def setReport(msg, code, text=None):

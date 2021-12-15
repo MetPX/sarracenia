@@ -112,7 +112,7 @@ for convenience.) and that python source file needs to have a class X3.py declar
 (same as the file name but first letter capitalized.)  If you need to name it differently
 there is a longer form that allows one to violate the convention::
 
-  flow_callback x3.MyFavouriteClass
+  flowCallback x3.MyFavouriteClass
 
 the individual routine plugin declarations on_message, on_file, etc... are not a way of
 doing things in v3. You declare callbacks, and have them contain the entry points you need.
@@ -316,7 +316,7 @@ there is a data structure *convert_to_v3*.  A sample entry would be::
     .
     .
     'on_message' : {
-             'msg_delete': [ 'flow_callback': 'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles' ]
+             'msg_delete': [ 'flowCallback': 'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles' ]
     .
     .
     .
@@ -325,7 +325,7 @@ there is a data structure *convert_to_v3*.  A sample entry would be::
 A v2 config file containing a line *on_message msg_delete* would be replaced by the parser with
 effectively::
 
-    flow_callback sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles
+    flowCallback sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles
 
 
 

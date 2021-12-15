@@ -10,7 +10,7 @@ class Script(FlowCB):
     """
        usage:
 
-       flowcb_prepend sarracenia.flowcb.script.Script
+       flowCallbackPrepend sarracenia.flowcb.script.Script
 
        module to run scripts or binary (non-python) whenever you need to.  
        typically use would be to fetch files for processing by watch.
@@ -19,7 +19,7 @@ class Script(FlowCB):
 
        script_gather  
 
-              using flowcb_prepend places it at the front of the flowcb list.
+              using flowCallbackPrepend places it at the front of the flowcb list.
               ... script to run before gather (so gather.file will pick it up.)
  
        script_filter ...
