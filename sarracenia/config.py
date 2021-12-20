@@ -595,11 +595,14 @@ class Config:
 
     def _validate_urlstr(self, urlstr):
         # check url and add credentials if needed from credential file
-        ok, details = Config.credentials.get(urlstr)
-        if details is None:
+        ok, cred_details = Config.credentials.get(urlstr)
+        if cred_details is None:
             logging.error("bad credential %s" % urlstr)
-            return False, urllib.parse.urlparse(urlstr)
-        return True, details.url
+            # Callers expect that a credential_details object will be returned
+            cred_details = sarracenia.credentials.credential_details()
+            cred_details.url = urllib.parse.urlparse(urlstr)
+            return False, cred_details
+        return True, cred_details
 
     def applyComponentDefaults( self, component ):
         if component in ['post']:
@@ -622,9 +625,9 @@ class Config:
     @admin.setter
     def admin(self, v):
         if type(v) is str:
-            ok, url = self._validate_urlstr(v)
+            ok, cred_details = self._validate_urlstr(v)
             if ok:
-                self.__admin = url
+                self.__admin = cred_details
         else:
             self.__admin = v
 
@@ -635,9 +638,9 @@ class Config:
     @broker.setter
     def broker(self, v):
         if type(v) is str:
-            ok, url = self._validate_urlstr(v)
+            ok, cred_details = self._validate_urlstr(v)
             if ok:
-                self.__broker = url
+                self.__broker = cred_details
         else:
             self.__broker = v
 
@@ -648,9 +651,9 @@ class Config:
     @post_broker.setter
     def post_broker(self, v):
         if type(v) is str:
-            ok, url = self._validate_urlstr(v)
+            ok, cred_details = self._validate_urlstr(v)
             if ok:
-                self.__post_broker = url
+                self.__post_broker = cred_details
         else:
             self.__post_broker = v
 
@@ -667,8 +670,8 @@ class Config:
 
         result = word
         if ('${BROKER_USER}' in word) and hasattr(self, 'broker') and hasattr(
-                self.broker, 'username'):
-            result = result.replace('${BROKER_USER}', self.broker.username)
+                self.broker.url, 'username'):
+            result = result.replace('${BROKER_USER}', self.broker.url.username)
             # FIXME: would this work also automagically if BROKER.USERNAME ?
 
         if not '$' in result:
@@ -880,13 +883,13 @@ class Config:
 
     def _resolve_exchange(self):
         if not hasattr(self, 'exchange') or self.exchange is None:
-            #if hasattr(self, 'post_broker') and self.post_broker is not None:
-            #    self.exchange = 'xs_%s' % self.post_broker.username
+            #if hasattr(self, 'post_broker') and self.post_broker is not None and self.post_broker.url is not None:
+            #    self.exchange = 'xs_%s' % self.post_broker.url.username
             #else:
-            if not hasattr(self.broker,'username') or ( self.broker.username == 'anonymous' ):
+            if not hasattr(self.broker.url,'username') or ( self.broker.url.username == 'anonymous' ):
                 self.exchange = 'xpublic'
             else:
-                self.exchange = 'xs_%s' % self.broker.username
+                self.exchange = 'xs_%s' % self.broker.url.username
 
             if hasattr(self, 'exchange_suffix'):
                 self.exchange += '_%s' % self.exchange_suffix
@@ -904,11 +907,11 @@ class Config:
         self._resolve_exchange()
 
         if type(subtopic_string) is str:
-            if not hasattr(self, 'broker') or self.broker is None:
+            if not hasattr(self, 'broker') or self.broker.url is None:
                 logger.error( 'broker needed before subtopic' )
                 return
 
-            if self.broker.scheme == 'amq' :
+            if self.broker.url.scheme == 'amq' :
                 subtopic = subtopic_string.split('.')
             else:
                 subtopic = subtopic_string.split('/')
@@ -1081,7 +1084,7 @@ class Config:
                 else:
                     self.topicPrefix = v.split('.')
             elif k in ['post_topicPrefix']:
-                #if (not self.post_broker) or self.post_broker.scheme[0:3] == 'amq':
+                #if (not self.post_broker.url) or self.post_broker.url.scheme[0:3] == 'amq':
                 if '/' in v :
                     self.post_topicPrefix = v.split('/')
                 else:
@@ -1276,10 +1279,10 @@ class Config:
             self.cfg_run_dir = os.path.join(get_user_cache_dir(hostdir),
                                             component, cfg)
 
-        if self.post_broker is not None:
+        if self.post_broker is not None and self.post_broker.url is not None:
             if not hasattr(self,
                            'post_exchange') or self.post_exchange is None:
-                self.post_exchange = 'xs_%s' % self.post_broker.username
+                self.post_exchange = 'xs_%s' % self.post_broker.url.username
 
             if hasattr(self, 'post_exchange_suffix'):
                 self.post_exchange += '_%s' % self.post_exchange_suffix
@@ -1299,7 +1302,7 @@ class Config:
                 if (not hasattr(self,'broker') or not self.broker):
                     self.broker = self.post_broker
 
-        if self.broker is not None:
+        if self.broker is not None and self.broker.url is not None:
 
             self._resolve_exchange()
 
@@ -1311,7 +1314,7 @@ class Config:
                 queuefile += os.sep + self.hostdir
 
             queuefile += os.sep + component + os.sep + cfg
-            queuefile += os.sep + component + '.' + cfg + '.' + self.broker.username
+            queuefile += os.sep + component + '.' + cfg + '.' + self.broker.url.username
 
             if hasattr(self, 'exchange_split') and hasattr(
                     self, 'no') and (self.no > 0):
@@ -1337,7 +1340,7 @@ class Config:
 
             #if the queuefile is corrupt, then will need to guess anyways.
             if ( self.queue_name is None ) or ( self.queue_name == '' ):
-                queue_name = 'q_' + self.broker.username + '_' + component + '.' + cfg
+                queue_name = 'q_' + self.broker.url.username + '_' + component + '.' + cfg
                 if hasattr(self, 'queue_suffix'):
                     queue_name += '.' + self.queue_suffix
                 queue_name += '.' + str(randint(0, 100000000)).zfill(8)

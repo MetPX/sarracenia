@@ -178,7 +178,7 @@ class MQTT(Moth):
           return port number for connection.
       
         """
-        if self.broker.scheme[-1] == 's' :
+        if self.broker.url.scheme[-1] == 's' :
             port=8883
             logger.info('tls_rigour: %s' % self.o['tls_rigour'] )
             self.o['tls_rigour'] = self.o['tls_rigour'].lower()
@@ -205,8 +205,8 @@ class MQTT(Moth):
         else:
             port=1883
 
-        if self.broker.port:
-           port =  self.broker.port 
+        if self.broker.url.port:
+           port =  self.broker.url.port
         return port
 
     def __clientSetup(self, options, cid):
@@ -223,7 +223,7 @@ class MQTT(Moth):
         client.subscribe_in_progress=True
         # defaults to 20... kind of a mix of "batch" and prefetch... 
         client.max_inflight_messages_set(options['batch']+options['prefetch'])
-        client.username_pw_set( self.broker.username, unquote( self.broker.password ) )
+        client.username_pw_set( self.broker.url.username, unquote( self.broker.url.password ) )
         return client
 
     def __getSetup(self, options):
@@ -252,7 +252,7 @@ class MQTT(Moth):
                     for i in range(1,options['instances']+1):
                         icid= options['queue_name'] + '%02d' % i 
                         decl_client = self.__clientSetup( options, icid )
-                        decl_client.connect( self.broker.hostname, port=self.__sslClientSetup(), \
+                        decl_client.connect( self.broker.url.hostname, port=self.__sslClientSetup(), \
                            clean_start=False, properties=props )
                         while not decl_client.is_connected():
                             decl_client.loop(1)
@@ -277,14 +277,14 @@ class MQTT(Moth):
                     logger.warning("paho library without auto_ack support. Loses data every crash or restart." )
                     self.auto_ack=True
 
-                self.client.connect_async( self.broker.hostname, port=self.__sslClientSetup(), \
+                self.client.connect_async( self.broker.url.hostname, port=self.__sslClientSetup(), \
                        clean_start=False, properties=props )
                 self.client.loop_start()
                 return
 
                 
             except Exception as err:
-                logger.error("failed to {} with {}".format( self.broker.hostname, err))
+                logger.error("failed to {} with {}".format( self.broker.url.hostname, err))
                 logger.error('Exception details: ', exc_info=True)
 
             if ebo < 60 : ebo *= 2
@@ -312,15 +312,15 @@ class MQTT(Moth):
                 self.client.on_publish = MQTT.__pub_on_publish
                 #dunno if this is a good idea.
                 self.client.max_queued_messages_set(options['prefetch'])
-                self.client.username_pw_set( self.broker.username, unquote( self.broker.password ) )
-                res = self.client.connect( options['broker'].hostname, port=self.__sslClientSetup(), properties=props  )
-                logger.info( 'connecting to %s, res=%s' % (options['broker'].hostname, res ) )
+                self.client.username_pw_set( self.broker.url.username, unquote( self.broker.url.password ) )
+                res = self.client.connect( options['broker'].url.hostname, port=self.__sslClientSetup(), properties=props  )
+                logger.info( 'connecting to %s, res=%s' % (options['broker'].url.hostname, res ) )
 
                 self.client.loop_start()
                 return
 
             except Exception as err:
-                logger.error("failed to {} with {}".format( self.broker.hostname, err))
+                logger.error("failed to {} with {}".format( self.broker.url.hostname, err))
                 logger.error('Exception details: ', exc_info=True)
 
             if ebo < 60 : ebo *= 2
@@ -359,7 +359,7 @@ class MQTT(Moth):
             for i in range(1,self.o['instances']+1):
                 icid= self.o['queue_name'] + '%02d' % i 
                 myclient = self.__clientSetup( options, icid )
-                myclient.connect( self.broker.hostname, port=self.__sslClientSetup(), \
+                myclient.connect( self.broker.url.hostname, port=self.__sslClientSetup(), \
                    myclean_start=True, properties=props )
                 while not self.client.is_connected():
                     myclient.loop(0.1)
