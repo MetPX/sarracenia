@@ -185,8 +185,9 @@ class AMQP(Moth):
             vhost = broker.url.path.strip('/')
 
         self.connection = amqp.Connection(host=host,
-                                          userid=broker.username,
-                                          password=unquote(broker.password),
+                                          userid=broker.url.username,
+                                          password=unquote(broker.url.password),
+                                          login_method=broker.login_method,
                                           virtual_host=vhost,
                                           ssl=(broker.url.scheme[-1] == 's'))
         if hasattr(self.connection, 'connect'):
