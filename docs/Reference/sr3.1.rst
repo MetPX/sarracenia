@@ -2158,6 +2158,8 @@ passwords and settings needed by components.  The format is one entry per line. 
 - **amqp://user1:password1@host/**
 - **amqps://user2:password2@host:5671/dev**
 
+- **amqps://usern:passwd@host/ login_method=PLAIN**
+
 - **sftp://user5:password5@host**
 - **sftp://user6:password6@host:22  ssh_keyfile=/users/local/.ssh/id_dsa**
 
@@ -2172,6 +2174,24 @@ passwords and settings needed by components.  The format is one entry per line. 
 In other configuration files or on the command line, the url simply lacks the
 password or key specification.  The url given in the other files is looked
 up in credentials.conf.
+
+Credential Details
+~~~~~~~~~~~~~~~~~~
+
+You may need to specify additional options for specific credential entries. These details can be added after the end of the URL, with multiple details separated by commas (see examples above).
+
+Supported details:
+
+- ``ssh_keyfile=<path>`` - (SFTP) Path to SSH keyfile
+- ``passive`` - (FTP) Use passive mode
+- ``active`` - (FTP) Use active mode
+- ``binary`` - (FTP) Use binary mode
+- ``ascii`` - (FTP) Use ASCII mode
+- ``ssl`` - (FTP) Use SSL/standard FTP
+- ``tls`` - (FTP) Use FTPS with TLS
+- ``prot_p`` - (FTPS) Use a secure data connection for TLS connections (otherwise, clear text is used)
+- ``bearer_token=<token>`` (or ``bt=<token>``) - (HTTP) Bearer token for authentication
+- ``login_method=<PLAIN|AMQPLAIN|EXTERNAL|GSSAPI>`` - (AMQP) By default, the login method will be automatically determined. This can be overriden by explicity specifying a login method, which may be required if a broker supports multiple methods and an incorrect one is automatically selected.
 
 Note::
  SFTP credentials are optional, in that sarracenia will look in the .ssh directory
