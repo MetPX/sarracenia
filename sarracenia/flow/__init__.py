@@ -515,6 +515,10 @@ class Flow:
                 self.worklist.incoming.extend(new_incoming)
 
     def do(self):
+        """
+            stub to do the work: does nothing, marking everything done.
+            to be replaced in child classes that do transforms or transfers.
+        """
 
         # mark all remaining messages as done.
         self.worklist.ok = self.worklist.incoming
