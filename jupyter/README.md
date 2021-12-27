@@ -54,7 +54,7 @@ What is a flow? it is the following steps:
 
 
 FIXME: missing notebook. Planned.
-The Sarracenia.flowcb or flow_callback class allows developers to implement custom processes
+The Sarracenia flowCallback (sarracenia.flowcb.FlowCB) class allows developers to implement custom processes
 
 FIXME: missing notebook. Planned.
 

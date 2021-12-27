@@ -146,14 +146,18 @@ class NoDupe(FlowCB):
     def after_accept(self, worklist):
         new_incoming = []
         self.now = nowflt()
-        max_mtime = self.now - self.o.nodupe_ttl
-        min_mtime = self.now - self.o.nodupe_file_time_limit
+        if self.o.nodupe_fileAgeMax > 0:
+            min_mtime = self.now - self.o.nodupe_fileAgeMax
+        else:
+            min_mtime = 0
+
         for m in worklist.incoming:
-            try:
-                if timestr2flt(m['mtime']) > max_mtime  or timestr2flt(m['mtime']) < min_mtime:
-                    worklist.rejected.append(m)
-            except Exception as e:
-                print(e)
+            if ('mtime' in m ) and (timestr2flt(m['mtime']) < min_mtime):
+                m['_deleteOnPost'] |= set(['reject'])
+                m['reject'] = "too old (nodupe check)"
+                m.setReport( 304, 'too old (nodupe check)')
+                worklist.rejected.append(m)
+                continue
             if self.check_message(m):
                 new_incoming.append(m)
             else:

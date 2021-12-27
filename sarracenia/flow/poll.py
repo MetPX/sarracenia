@@ -38,14 +38,14 @@ default_options = {
     'part_ext': 'Part',
     'partflg': '1',
     'post_baseDir': None,
-    'preserve_mode': True,
-    'preserve_time': True,
+    'permCopy': True,
+    'timeCopy': True,
     'randomize': False,
     'rename': None,
     'post_on_start': False,
     'sleep': -1,
     'nodupe_ttl': 7*60*60,
-    'file_time_limit': 6*60*60
+    'nodupe_fileAgeMax': 30*24*60*60,
 }
 
 

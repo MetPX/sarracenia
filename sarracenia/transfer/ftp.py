@@ -429,7 +429,7 @@ class Ftp(Transfer):
         self.ftp.mkd(remote_dir)
         alarm_cancel()
         alarm_set(self.o.timeout)
-        self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(self.o.chmod_dir) +
+        self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(self.o.permDirDefault) +
                          ' ' + remote_dir)
         alarm_cancel()
 

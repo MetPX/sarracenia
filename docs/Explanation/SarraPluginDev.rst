@@ -30,7 +30,7 @@ Introduction
 ------------
 
 Sarracenia v3 includes a number of points where processing can be customized by
-small snippets of user provided code, known as flow_callbacks. The flow_callbacks themselves
+small snippets of user provided code, known as flowCallbacks. The flowCallbacks themselves
 are expected to be concise, and an elementary knowledge of Python should suffice to
 build new ones in a copy/paste manner, with many samples being available to read.  
 
@@ -114,7 +114,7 @@ the sarra.flow class. There is a parent class sarra.flowcb to implement them.
 The package's plugins are shown in the first grouping of available ones. Many of them have arguments which
 are documented by listing them. In a configuration file, one might have the line::
 
-    flow_callback sarracenia.flowcb.log.Log
+    flowCallback sarracenia.flowcb.log.Log
 
 That line cause Sarracenia to look in the Python search path for a class like:
 
@@ -156,7 +156,7 @@ One can also see which plugins are active in a configuration by looking at the m
    .
    blacklab% 
 
-Use of the *flow_callback_prepend* option will have the the class loaded at the beginning of the list, rather than
+Use of the *flowCallbackPrepend* option will have the the class loaded at the beginning of the list, rather than
 at the end.
 
 Settings
@@ -265,7 +265,7 @@ The Simplest Flow_Callback
 Sample Extensions
 -----------------
 
-Below is a minimal flow_callback sample class, that would be in a sample.py
+Below is a minimal flowCallback sample class, that would be in a sample.py
 file placed in any directory in the PYTHONPATH::
 
     import logging
@@ -295,7 +295,7 @@ file grammar, and then print the value on start up.
 
 In a configuration file one, would expect to see::
 
-   flow_callback sample.Sample
+   flowCallback sample.Sample
 
    announce_list https://tracker1.com
    announce_list https://tracker2.com
@@ -657,7 +657,7 @@ Why v3 API should be used whenever possible
   messages only contain the actual fields, no settings or other things...
   plain data.
 
-* what used to be called plugins, are now only a type of plugins, called flow_callbacks.
+* what used to be called plugins, are now only a type of plugins, called flowCallbacks.
   They now move messages between worklists. 
 
 
@@ -694,7 +694,7 @@ local file is sufficient::
   broker amqps://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
   document_root /data/web/dd_root
-  no_download
+  download off
   flowcb msg_2local.Msg2Local
   flowcb do_something.DoSomething
 

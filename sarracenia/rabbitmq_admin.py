@@ -94,7 +94,7 @@ def add_user(url, role, user, passwd, simulate):
         w = "write=.*"
         r = "read=.*"
         logger.info("permission user '%s' role %s  %s %s %s " %
-                    (user, 'feeder', c, w, r))
+                    (user + '@' + url.hostname, 'feeder', c, w, r))
         declare = "declare permission vhost=/ user='%s' %s %s %s" % (user, c,
                                                                      w, r)
         dummy = run_rabbitmqadmin(url, declare, simulate)
@@ -107,7 +107,7 @@ def add_user(url, role, user, passwd, simulate):
         w = "write='^q_%s.*|^xs_%s.*'" % (user, user)
         r = "read='^q_%s.*|^x[lrs]_%s.*|^x.*public$'" % (user, user)
         logger.info("permission user '%s' role %s  %s %s %s " %
-                    (user, 'source', c, w, r))
+                    (user + '@' + url.hostname, 'source', c, w, r))
         declare = "declare permission vhost=/ user='%s' %s %s %s" % (user, c,
                                                                      w, r)
         dummy = run_rabbitmqadmin(url, declare, simulate)
@@ -120,7 +120,7 @@ def add_user(url, role, user, passwd, simulate):
         w = "write='^q_%s.*|^xs_%s$'" % (user, user)
         r = "read='^q_%s.*|^x[lrs]_%s.*|^x.*public$'" % (user, user)
         logger.info("permission user '%s' role %s  %s %s %s " %
-                    (user, 'source', c, w, r))
+                    (user + '@' + url.hostname, 'source', c, w, r))
         declare = "declare permission vhost=/ user='%s' %s %s %s" % (user, c,
                                                                      w, r)
         dummy = run_rabbitmqadmin(url, declare, simulate)

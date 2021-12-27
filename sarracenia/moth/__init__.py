@@ -152,21 +152,27 @@ class Moth():
     """
     @staticmethod
     def subFactory(broker, props):
-        for sc in Moth.__subclasses__():
-            if (broker.scheme == sc.__name__.lower()) or (
-                (broker.scheme[0:-1] == sc.__name__.lower()) and
-                (broker.scheme[-1] == 's')):
-                return sc(broker, props, True)
-        return None
+        if broker:
+            for sc in Moth.__subclasses__():
+                if (broker.scheme == sc.__name__.lower()) or (
+                    (broker.scheme[0:-1] == sc.__name__.lower()) and
+                    (broker.scheme[-1] == 's')):
+                    return sc(broker, props, True)
+        else:
+            logger.error('no broker specified')
+            return None
 
     @staticmethod
     def pubFactory(broker, props):
-        for sc in Moth.__subclasses__():
-            if (broker.scheme == sc.__name__.lower()) or (
-                (broker.scheme[0:-1] == sc.__name__.lower()) and
-                (broker.scheme[-1] == 's')):
-                return sc(broker, props, False)
-        return None
+        if broker:
+            for sc in Moth.__subclasses__():
+                if (broker.scheme == sc.__name__.lower()) or (
+                    (broker.scheme[0:-1] == sc.__name__.lower()) and
+                    (broker.scheme[-1] == 's')):
+                    return sc(broker, props, False)
+        else:
+            logger.error('no broker specified')
+            return None
 
     def __init__(self, broker, props=None, is_subscriber=True):
         """

@@ -1,6 +1,7 @@
 import json
 import logging
 import os.path
+import re
 
 from sarracenia.flowcb import FlowCB
 import GTStoWIS2
@@ -30,6 +31,7 @@ class Wistree(FlowCB):
 
         self.topic_builder=GTStoWIS2.GTStoWIS2()
         self.o = options
+        self.date_pattern= re.compile("^[0-9]{8}$")
 
 
     def after_accept(self, worklist):
@@ -49,8 +51,12 @@ class Wistree(FlowCB):
     
                 # input has relpath=/YYYYMMDD/... + pubTime
                 # need to move the date from relPath to BaseDir, adding the T hour from pubTime.
-                new_baseSubDir=tpfx[0]+msg['pubTime'][8:11]
-                t='.'.join(tpfx[0:2])+'.'+new_baseSubDir
+                if self.date_pattern.match(tpfx[0]):
+                    new_baseSubDir=tpfx[0]+msg['pubTime'][8:11]
+                else:
+                    # or default to using pubTime...
+                    new_baseSubDir=msg['pubTime'][0:11]
+
                 new_baseDir = msg['new_dir'] + os.sep + new_baseSubDir
                 new_relDir = 'WIS' + os.sep + self.topic_builder.mapAHLtoTopic(msg['new_file'])
 

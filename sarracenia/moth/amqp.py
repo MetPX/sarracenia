@@ -75,7 +75,7 @@ class AMQP(Moth):
 
     def _msgRawToDict(self, raw_msg):
         if raw_msg is not None:
-            if raw_msg.properties['content_type'] == 'application/json': # used as key to indicate version 3.
+            if (raw_msg.properties['content_type'] == 'application/json') or ( raw_msg.body[0] == '{' ): # used as key to indicate version 3.
                 msg = sarracenia.Message()
                 msg.copyDict( json.loads(raw_msg.body) )
                 """

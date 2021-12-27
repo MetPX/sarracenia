@@ -160,12 +160,8 @@ class instance:
 
             logger.addHandler(handler)
 
-            if hasattr(cfg_preparse, 'chmod_log'):
-                if type(cfg_preparse.chmod) == str:
-                    mode = int(cfg_preparse.chmod_log, base=8)
-                else:
-                    mode = cfg_preparse.chmod_log
-                os.chmod(logfilename, mode)
+            if hasattr(cfg_preparse, 'permLog'):
+                os.chmod(logfilename, cfg_preparse.permLog)
 
             # FIXME: https://docs.python.org/3/library/contextlib.html portable redirection...
             if sys.platform != 'win32':
