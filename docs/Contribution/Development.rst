@@ -20,7 +20,7 @@ To hack on the Sarracenia source, you need:
 
 - python3. The application is developed in and depends on python versions >= 3.5.
 
-- style: PEP8 except max line length is 119, enforced via yapf3 or other similar tool.
+- style: PEP8 except max line length is 119, enforced via `pycodestyle <https://pycodestyle.pycqa.org/en/latest/intro.html#disclaimer>`_ for VSCode, yapf3 or other similar tool.
 
 - an account on github.com will help in submitting patches for consideration.
 
