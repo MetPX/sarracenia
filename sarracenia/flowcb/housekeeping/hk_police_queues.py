@@ -1,12 +1,12 @@
 #!/usr/bin/python3
-"""
-  on_heartbeat handler that runs a check on all queues
-  This plugin was designed to be used under sr_audit only
-
-"""
 
 
 class Hb_Police_Queues(object):
+    """
+      on_heartbeat handler that runs a check on all queues
+      
+      This plugin was designed to be used under sr_audit only
+    """
     def __init__(self, parent):
         parent.logger.debug("hb_police_queues initialized")
 
