@@ -611,13 +611,23 @@ Install a minimal localhost broker and configure rabbitmq test users::
 Setup Flow Test Environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Once the server environment is established, the flow tests use sftp transfers to localhost, so need to confirm
-that ssh to localhost works::
+Once the server environment is established, the flow tests use sftp transfers to localhost. 
+
+It is also required that passwordless ssh access is configured on the test host
+for the system user that will run the flow test. This can be done by creating
+a private/public ssh key pair for the user (if there isn't one already) and copying
+the public key to the authorized_keys file in the same directory as the keys (~/.ssh).
+For associated commands, see http://www.linuxproblem.org/art_9.html
+
+Note that on systems where older versions of Paramiko (< 2.7.2) are installed, and the ssh key pair was generated with OpenSSH >= 6.5, manually testing the below command will work, but Paramiko will not be able to connect. This is likely the case if the ``~/.ssh/id_rsa`` file contains ``BEGIN OPENSSH PRIVATE KEY``. To work around this, convert the private key's format using ``ssh-keygen -p -m PEM -f ~/.ssh/id_rsa``.
+
+To confirm that that passwordless ssh to localhost works::
 
    ssh localhost ls
 
 This should run and complete.  If it prompts for a password, the flow tests will not work.
-check that the broker is working::
+
+Check that the broker is working::
 
    systemctl status rabbitmq-server
 
@@ -626,11 +636,7 @@ Need the following package for that::
 
     sudo apt-get install python3-pyftpdlib python3-paramiko
 
-It is also required that passwordless ssh access is configured on the test host
-for the system user that will run the flow test. This can be done by creating
-a private/public ssh key pair for the user (if there isn't one already) and copying
-the public key to the authorized_keys file in the same directory as the keys (~/.ssh).
-For associated commands, see http://www.linuxproblem.org/art_9.html
+
 
 The setup script starts a trivial web server, and ftp server, and a daemon that invokes sr_post.
 It also tests the C components, which need to have been already installed as well 
