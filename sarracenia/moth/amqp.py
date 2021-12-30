@@ -259,7 +259,7 @@ class AMQP(Moth):
             except Exception as err:
                 logger.error("AMQP getSetup failed to {} with {}".format(
                     self.broker.hostname, err))
-                logger.error('Exception details: ', exc_info=True)
+                logger.debug('Exception details: ', exc_info=True)
 
             if not self.o['message_strategy']['stubborn']: return
 
