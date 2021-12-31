@@ -669,8 +669,8 @@ class Config:
             return word
 
         result = word
-        if ('${BROKER_USER}' in word) and hasattr(self, 'broker') and hasattr(
-                self.broker.url, 'username'):
+        if (('${BROKER_USER}' in word) and hasattr(self, 'broker') and self.broker is not None and
+                self.broker.url is not None and hasattr(self.broker.url, 'username')):
             result = result.replace('${BROKER_USER}', self.broker.url.username)
             # FIXME: would this work also automagically if BROKER.USERNAME ?
 
@@ -904,10 +904,11 @@ class Config:
                 also should sqwawk about error if no exchange or topicPrefix defined.
                 also None to reset to empty, not done.
        """
-        self._resolve_exchange()
+        if hasattr(self, 'broker') and self.broker is not None and self.broker.url is not None:
+            self._resolve_exchange()
 
         if type(subtopic_string) is str:
-            if not hasattr(self, 'broker') or self.broker.url is None:
+            if not hasattr(self, 'broker') or self.broker is None or self.broker.url is None:
                 logger.error( 'broker needed before subtopic' )
                 return
 
