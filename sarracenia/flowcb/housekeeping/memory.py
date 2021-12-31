@@ -29,6 +29,7 @@ Returns
     Nothing, restarts components if memory usage is outside of set thresholds.
 """
 
+from _typeshed import Self
 import logging
 import humanize
 import os
@@ -50,6 +51,11 @@ class Memory(FlowCB):
 
         self.threshold = None
         self.file_count = None
+
+    def on_housekeeping(self):
+        logger.error('*Screams into the void\n\n\t\tAAAAHHHHHHHH\n\n...*')
+        logger.info('*Screams into the void\n\n\t\tAAAAHHHHHHHH\n\n...*')
+        self.checkMemory(self)
 
     def checkMemory(self):
         proc = psutil.Process()
