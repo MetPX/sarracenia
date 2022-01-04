@@ -229,14 +229,19 @@ class Flow:
         if self.o.vip == None:
             return True
 
-        for i in netifaces.interfaces():
-            for a in netifaces.ifaddresses(i):
-                j = 0
-                while (j < len(netifaces.ifaddresses(i)[a])):
-                    if self.o.vip in netifaces.ifaddresses(i)[a][j].get(
+        try:
+            for i in netifaces.interfaces():
+                for a in netifaces.ifaddresses(i):
+                    j = 0
+                    while (j < len(netifaces.ifaddresses(i)[a])):
+                        if self.o.vip in netifaces.ifaddresses(i)[a][j].get(
                             'addr'):
-                        return True
-                    j += 1
+                            return True
+                        j += 1
+        except Exception as ex:
+            logger.error('error while looking for interfaces to compare with vip (%s): ' % ( self.o.vip, ex)  )
+            logger.debug('Exception details: ', exc_info=True)
+
         return False
 
     def reject(self, m, code, reason):
