@@ -2043,24 +2043,6 @@ of an environment variable, then they can be set in configuration files::
 LOGS and MONITORING
 -------------------
 
-As sr3 components usually run as a daemon (unless invoked in *foreground* mode) 
-one normally examines its log file to find out how processing is going.  When only
-a single instance is running, one can view the log of the running process like so::
-
-   sr3 log subscribe/*myconfig*
-
-Where *myconfig* is the name of the running configuration. Log files 
-are placed as per the XDG Open Directory Specification. There will be a log file 
-for each *instance* (download process) of an sr_subscribe process running the myflow configuration::
-
-   in linux: ~/.cache/sarra/log/sr_subscribe_myflow_01.log
-
-One can override placement on linux by setting the XDG_CACHE_HOME environment variable, as
-per: `XDG Open Directory Specification <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ 
-Log files can be very large for high volume configurations, so the logging is very configurable.
-
-To begin with, one can select the logging level:
-
 - debug
    Setting option debug is identical to use  **logLevel debug**
 
@@ -2076,41 +2058,6 @@ To begin with, one can select the logging level:
 
 - log_reject <True|False> ( default: False )
    print a log message when *rejecting* messages (choosing not to download the corresponding files)
-
-rejecting messages:
-
-* rejecting pattern -- based on accept/reject clause, excluding a file from processing.
-
-* rejecting duplicate -- based on suppress_duplicates settings (recent file cache) 
-
-* rejecting loop -- directories in a tree refer to each other causing the same directory to be scanned redundantly, perhaps in an infinite loop.
-
-
-One can also get finer grained control over logging by using flowCallback. For example, the default settings
-typically include which logs each file after it has been downloaded, but not
-when the message is received. To have a line in the log for each message received set::
-
-   FIXME: v2 example, wrong for v3
-
-   after_accept msg_rawlog
-
-There are similar plugins available for different parts of processing::
-
-   after_work file_log (default)
-
-   on_posts post_log
-   
-etc... One can also modify the provided plugins, or write new ones to completely change the logging.
-
-At the end of the day (at midnight), these logs are rotated automatically by 
-the components, and the old log gets a date suffix. The directory in which 
-the logs are stored can be overridden by the **log** option, the number of 
-rotated logs to keep are set by the **logrotate** parameter. The oldest log 
-file is deleted when the maximum number of logs has been reach and this 
-continues for each rotation. An interval takes a duration of the interval and 
-it may takes a time unit suffix, such as 'd\|D' for days, 'h\|H' for hours, 
-or 'm\|M' for minutes. If no unit is provided logs will rotate at midnight.
-Here are some settings for log file management:
 
 - log <dir> ( default: ~/.cache/sarra/log ) (on Linux)
    The directory to store log files in.
@@ -2129,6 +2076,9 @@ Here are some settings for log file management:
 
 - permLog ( default: 0600 )
    The permission bits to set on log files.
+
+See the `Subscriber Guide <../How2Guides/subscriber.rst>` for a more detailed discussion of logging
+options and techniques.
 
 
 
