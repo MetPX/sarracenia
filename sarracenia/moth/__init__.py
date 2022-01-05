@@ -17,6 +17,7 @@ default_options = {
     'logFormat':
     '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
     'logLevel': 'info',
+    'messageDebugDump': False,
     'message_strategy': {
         'reset': True,
         'stubborn': True,

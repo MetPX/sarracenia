@@ -61,6 +61,7 @@ default_options = {
     'reset': False,
     'declare': True,
     'bind': True,
+    'rawMessageDump': False,
 }
 
 
@@ -75,9 +76,20 @@ class AMQP(Moth):
 
     def _msgRawToDict(self, raw_msg):
         if raw_msg is not None:
-            if (raw_msg.properties['content_type'] == 'application/json') or ( raw_msg.body[0] == '{' ): # used as key to indicate version 3.
+            body = raw_msg.body
+
+            if self.o['messageDebugDump']:
+                if not ( 'content_type' in raw_msg.properties ):
+                    logger.warning('message is missing content-type header')
+                logger.debug('raw message body: type: %s (%d bytes) %s' % (type(body), len(body) , body))
+                logger.debug('raw message properties:' % raw_msg.properties)
+
+            if type(body) is bytes:
+               body= raw_msg.body.decode("utf8")
+
+            if (( 'content_type' in raw_msg.properties ) and ( raw_msg.properties['content_type'] == 'application/json')) or ( body[0] == '{' ): # used as key to indicate version 3.
                 msg = sarracenia.Message()
-                msg.copyDict( json.loads(raw_msg.body) )
+                msg.copyDict( json.loads(body) )
                 """
                   observed Sarracenia v2.20.08p1 and earlier have 'parts' header in v03 messages.
                   bug, or implementation did not keep up. Applying Postel's Robustness principle: normalizing messages.
@@ -104,7 +116,7 @@ class AMQP(Moth):
                         msg['size'] = int(msg['size'])
             else:
                 msg = v2wrapper.v02tov03message(
-                    raw_msg.body, raw_msg.headers,
+                    body, raw_msg.headers,
                     raw_msg.delivery_info['routing_key'],
                      self.o['topicPrefix'] )
     
