@@ -338,9 +338,9 @@ class MQTT(Moth):
              no locking needed, except to increment list index.... later.
         """
        
-        #dm = userdata._msgDecode(msg)
-        #if dm:
-        logger.info( "Message received: %d, %s %s" % (msg.mid, msg.topic, msg.payload.decode('utf-8')) )
+        if self.o['messageDebugDump']:
+            logger.info( "Message received: %d, %s %s" % (msg.mid, msg.topic, msg.payload) )
+
         userdata.new_message_mutex.acquire()
         client.received_messages.append( msg )
         userdata.new_message_mutex.release()
@@ -378,7 +378,7 @@ class MQTT(Moth):
             message = sarracenia.Message()
             message.copyDict( json.loads(mqttMessage.payload.decode('utf-8')) )
         except Exception as ex:
-            logger.error( "ignored malformed message: %s" % mqttMessage.payload.decode('utf-8') )
+            logger.error( "ignored malformed message: %s" % mqttMessage.payload )
             logger.error("decode error" % err)
             logger.error('Exception details: ', exc_info=True)
             return None

@@ -85,11 +85,22 @@ class AMQP(Moth):
                 logger.debug('raw message properties:' % raw_msg.properties)
 
             if type(body) is bytes:
-               body= raw_msg.body.decode("utf8")
+                try:
+                    body= raw_msg.body.decode("utf8")
+                except Exception as ex:
+                    logger.warning('expected utf8 encoded message, decode error: %s' % ex)
+                    logger.debug('Exception details: ', exc_info=True)
+                    return None
 
             if (( 'content_type' in raw_msg.properties ) and ( raw_msg.properties['content_type'] == 'application/json')) or ( body[0] == '{' ): # used as key to indicate version 3.
                 msg = sarracenia.Message()
-                msg.copyDict( json.loads(body) )
+                try:
+                    msg.copyDict( json.loads(body) )
+                except Exception as ex:
+                   logger.warning('expected json, decode error: %s' % ex)
+                   logger.debug('Exception details: ', exc_info=True)
+                   return None
+
                 """
                   observed Sarracenia v2.20.08p1 and earlier have 'parts' header in v03 messages.
                   bug, or implementation did not keep up. Applying Postel's Robustness principle: normalizing messages.
@@ -115,10 +126,15 @@ class AMQP(Moth):
                     if (type(msg['size']) is str):
                         msg['size'] = int(msg['size'])
             else:
-                msg = v2wrapper.v02tov03message(
-                    body, raw_msg.headers,
-                    raw_msg.delivery_info['routing_key'],
-                     self.o['topicPrefix'] )
+                try:
+                    msg = v2wrapper.v02tov03message(
+                        body, raw_msg.headers,
+                        raw_msg.delivery_info['routing_key'],
+                         self.o['topicPrefix'] )
+                except Exception as ex:
+                   logger.warning('expected v2 encoded message, decode error: %s' % ex)
+                   logger.debug('Exception details: ', exc_info=True)
+                   return None
     
             msg['exchange'] = raw_msg.delivery_info['exchange']
             msg['subtopic'] = raw_msg.delivery_info['routing_key'].split('.')[len(self.o['topicPrefix']):]
