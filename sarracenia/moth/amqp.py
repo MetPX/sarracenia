@@ -61,7 +61,7 @@ default_options = {
     'reset': False,
     'declare': True,
     'bind': True,
-    'rawMessageDump': False,
+    'messageDebugDump': False,
 }
 
 

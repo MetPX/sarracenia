@@ -90,8 +90,8 @@ count_options = [
 flag_options = [ 'baseUrl_relPath', 'bind_queue', 'cache_stat', 'declare_exchange', 'debug', \
     'declare_queue', 'delete', 'discard', 'download', 'dry_run', 'durable', 'exchange_split', 'realpath_filter', \
     'follow_symlinks', 'force_polling', 'inline', 'inline_only', 'inplace', 'log_reject', 'pipe', 'restore', \
-    'report_daemons', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
-    'permCopy', 'pump_flag', 'randomize', 'realpath_post', 'reconnect', \
+    'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
+    'permCopy', 'pump_flag', 'randomize', 'realpath_post', 'reconnect', 'report_daemons', \
     'report_back', 'reset', 'retry_mode', 'save', 'set_passwords', 'source_from_exchange', \
     'statehost', 'users'
                 ]
