@@ -26,6 +26,9 @@ class Log(FlowCB):
         self.o.add_option( 'logEvents', 'set', [ 'after_accept', 'on_housekeeping' ] )
         self.o.add_option( 'logMessageDump', 'flag', False )
         logger.info( 'initialized with: %s' % self.o.logEvents )
+        self.__reset()
+
+    def __reset(self):
         self.fileBytes=0
         self.lagTotal=0 
         self.lagMax=0 
@@ -102,6 +105,7 @@ class Log(FlowCB):
         logger.info( "files transferred: %d, cumulative bytes of data: %d" % ( self.transferCount, self.fileBytes )  )
         if self.msgCount > 0:
             logger.info( "lag: average: %g, maximum: %g " % ( self.lagTotal/self.msgCount, self.lagMax ) )
+        self.__reset()
 
     def on_stop(self):
         if set ( ['on_stop', 'all'] ) & self.o.logEvents:
