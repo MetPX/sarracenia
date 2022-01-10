@@ -338,7 +338,7 @@ class MQTT(Moth):
              no locking needed, except to increment list index.... later.
         """
        
-        if self.o['messageDebugDump']:
+        if userdata.o['messageDebugDump']:
             logger.info( "Message received: %d, %s %s" % (msg.mid, msg.topic, msg.payload) )
 
         userdata.new_message_mutex.acquire()
