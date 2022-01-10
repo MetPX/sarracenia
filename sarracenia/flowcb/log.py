@@ -29,6 +29,7 @@ class Log(FlowCB):
         self.__reset()
 
     def __reset(self):
+        logger.warning('hi')
         self.fileBytes=0
         self.lagTotal=0 
         self.lagMax=0 
@@ -99,28 +100,28 @@ class Log(FlowCB):
                 if self.o.logMessageDump:
                      logger.info('message: %s' % msg.dumps() )
 
-    def _stats(self):
+    def housekeeping_stats(self):
         logger.info( "messages_received: %d, accepted: %d, rejected: %d ( bytes: %s )" %
             ( self.msgCount+self.rejectCount, self.msgCount, self.rejectCount, self.msgBytes ) )
         logger.info( "files transferred: %d, cumulative bytes of data: %d" % ( self.transferCount, self.fileBytes )  )
         if self.msgCount > 0:
             logger.info( "lag: average: %g, maximum: %g " % ( self.lagTotal/self.msgCount, self.lagMax ) )
-        self.__reset()
 
     def on_stop(self):
         if set ( ['on_stop', 'all'] ) & self.o.logEvents:
-            self._stats()
+            self.housekeeping_stats()
             logger.info("stopping")
 
     def on_start(self):
         if set ( ['on_start', 'all'] ) & self.o.logEvents:
-            self._stats()
+            self.housekeeping_stats()
             logger.info("starting")
 
     def on_housekeeping(self):
         if set ( ['on_housekeeping', 'all'] ) & self.o.logEvents:
-            self._stats()
+            self.housekeeping_stats()
             logger.info("housekeeping")
+        self.__reset()
 
     def post(self, worklist):
         if set ( ['post', 'all'] ) & self.o.logEvents:
