@@ -59,6 +59,7 @@ import sarracenia.integrity
 
 default_options = {
     'accept_unmatched': True,
+    'acceptSizeWrong': False,
     'baseDir': None,
     'baseUrl_relPath': False,
     'delete': False,
@@ -87,7 +88,7 @@ count_options = [
 ]
 
 # all the boolean settings.
-flag_options = [ 'baseUrl_relPath', 'bind_queue', 'cache_stat', 'declare_exchange', 'debug', \
+flag_options = [ 'acceptSizeWrong', 'baseUrl_relPath', 'bind_queue', 'cache_stat', 'declare_exchange', 'debug', \
     'declare_queue', 'delete', 'discard', 'download', 'dry_run', 'durable', 'exchange_split', 'realpath_filter', \
     'follow_symlinks', 'force_polling', 'inline', 'inline_only', 'inplace', 'log_reject', 'pipe', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \

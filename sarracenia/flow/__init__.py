@@ -593,11 +593,16 @@ class Flow:
             'value': onfly_algo.value
         }
 
-        if len(data) != msg['size']:
-            logger.error(
-                "decoded data size (%d bytes) does not have expected size: (%d bytes)"
-                % (len(data), msg['size']))
-            return False
+        if ((msg['size'] > 0 ) and len(data) != msg['size']):
+            if self.o.acceptSizeWrong: 
+                logger.warning(
+                    "acceptSizeWrong data size is (%d bytes) vs. expected: (%d bytes)" 
+                    % (len(data), msg['size']))
+            else:
+                logger.warning(
+                    "decoded data size (%d bytes) does not have expected size: (%d bytes)"
+                    % (len(data), msg['size']))
+                return False
 
         try:
             for p in self.plugins['on_data']:
@@ -692,18 +697,20 @@ class Flow:
         # FIXME... local_offset... offset within the local file... partitioned... who knows?
         #   part of partitioning deferral.
         #end   = self.local_offset + self.length
-        end = msg['size']
-
-        # compare sizes... if (sr_subscribe is downloading partitions into taget file) and (target_file isn't fully done)
-        # This check prevents random halting of subscriber (inplace on) if the messages come in non-sequential order
-        # target_file is the same as new_file unless the file is partitioned.
-        # FIXME If the file is partitioned, then it is the new_file with a partition suffix.
-        #if ('self.target_file == msg['new_file'] ) and ( fsiz != msg['size'] ):
-
-        if (fsiz != msg['size']):
-            logger.debug("%s file size different, so cannot be the same" %
+        if 'size' in msg:
+            end = msg['size']
+            # compare sizes... if (sr_subscribe is downloading partitions into taget file) and (target_file isn't fully done)
+            # This check prevents random halting of subscriber (inplace on) if the messages come in non-sequential order
+            # target_file is the same as new_file unless the file is partitioned.
+            # FIXME If the file is partitioned, then it is the new_file with a partition suffix.
+            #if ('self.target_file == msg['new_file'] ) and ( fsiz != msg['size'] ):
+            if (fsiz != msg['size']):
+                logger.debug("%s file size different, so cannot be the same" %
                          (msg['new_path']))
-            return True
+                return True
+        else:
+            end=0
+
 
         # compare dates...
 
@@ -960,34 +967,34 @@ class Flow:
                 if self.write_inline_file(msg):
                     msg.setReport(201, "Download successful (inline content)")
                     self.worklist.ok.append(msg)
+                    continue
+                logger.warning( "failed to write inline content %s, falling through to download" % new_path )
+
+            parsed_url = urllib.parse.urlparse(msg['baseUrl'])
+            self.scheme = parsed_url.scheme
+
+            i = 1
+            while i <= self.o.attempts:
+
+                if i > 1:
+                    logger.warning("downloading again, attempt %d" % i)
+
+                ok = self.download(msg, self.o)
+                if ok:
+                    logger.debug("downloaded ok: %s" % new_path)
+                    msg.setReport(201, "Download successful %s" % new_path )
+                    self.worklist.ok.append(msg)
+                    break
                 else:
-                    self.reject( msg, 503, "failed to write inline content %s" % new_path )
-            else:
-                parsed_url = urllib.parse.urlparse(msg['baseUrl'])
-                self.scheme = parsed_url.scheme
+                    logger.info("attempt %d failed to download %s/%s to %s" \
+                        % ( i, msg['baseUrl'], msg['relPath'], new_path) )
+                i = i + 1
 
-                i = 1
-                while i <= self.o.attempts:
-
-                    if i > 1:
-                        logger.warning("downloading again, attempt %d" % i)
-
-                    ok = self.download(msg, self.o)
-                    if ok:
-                        logger.debug("downloaded ok: %s" % new_path)
-                        msg.setReport(201, "Download successful %s" % new_path )
-                        self.worklist.ok.append(msg)
-                        break
-                    else:
-                        logger.info("attempt %d failed to download %s/%s to %s" \
-                            % ( i, msg['baseUrl'], msg['relPath'], new_path) )
-                    i = i + 1
-
-                if not ok:
-                    logger.error("gave up downloading for now")
-                    self.worklist.failed.append(msg)
-                # FIXME: file reassembly missing?
-                #if self.inplace : file_reassemble(self)
+            if not ok:
+                logger.error("gave up downloading for now")
+                self.worklist.failed.append(msg)
+            # FIXME: file reassembly missing?
+            #if self.inplace : file_reassemble(self)
 
         self.worklist.incoming = []
 
@@ -1071,6 +1078,7 @@ class Flow:
                     str_range = 'bytes=%d-%d' % (remote_offset, remote_offset +
                                                  block_length - 1)
             else:
+                block_length=0
                 str_range = ''
 
             #download file
@@ -1140,10 +1148,20 @@ class Flow:
                 logger.error( "failed to download %s" % new_file )
                 return False
             else:
-                logger.error(
-                    'incomplete download only %d of expected %d bytes for %s' %
-                    (len_written, block_length, new_inflight_path))
-                msg['size'] = len_written
+                if block_length == 0:
+                    logger.warning( 'downloaded %d of with no length given for %s assuming ok' % (len_written, new_inflight_path))
+                else:
+                    if self.o.acceptSizeWrong:
+                        logger.info(
+                            'AcceptSizeWrong download size mismatch, received %d of expected %d bytes for %s' %
+                             (len_written, block_length, new_inflight_path))
+                    else:
+                        logger.error(
+                            'incomplete download only %d of expected %d bytes for %s' %
+                             (len_written, block_length, new_inflight_path))
+                        return False
+
+                    msg['size'] = len_written
 
             msg['onfly_checksum'] = self.proto[self.scheme].get_sumstr()
             msg['data_checksum'] = self.proto[self.scheme].data_checksum
@@ -1171,6 +1189,9 @@ class Flow:
                     logger.error('unable to delete remote file %s' %
                                  remote_file)
                     logger.debug('Exception details: ', exc_info=True)
+
+            if (block_length == 0 ) and (len_written > 0 ):
+                return True
 
             if (len_written != block_length):
                 return False

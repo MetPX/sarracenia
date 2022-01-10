@@ -2583,6 +2583,7 @@ and under which name.
 - **accel_threshold  <byte count> (default: 0)** 
 - **accept    <regexp pattern> (must be set)** 
 - **accept_unmatch   <boolean> (default: off)**
+- **acceptSizeWrong   <boolean> (default: off)**
 - **attempts     <count>          (default: 3)**
 - **batch     <count>          (default: 100)**
 - **permDefault     <octalint>       (default: 0 - umask)**
@@ -2611,7 +2612,7 @@ and under which name.
 - **permCopy <boolean>  (default: on)**
 - **timeCopy <boolean>  (default: on)**
 - **reject    <regexp pattern> (optional)** 
-- **retry    <boolean>         (default: On)** 
+- **retry    <boolean>         (default: On)**  (FIXME: OPTION UNIMPLEMENTED. Always on!)
 - **retry_ttl    <duration>         (default: same as expire)** 
 - **source_from_exchange  <boolean> (default: off)**
 - **strip     <count|regexp>   (default: 0)**
