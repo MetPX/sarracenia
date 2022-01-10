@@ -29,7 +29,6 @@ class Log(FlowCB):
         self.__reset()
 
     def __reset(self):
-        logger.warning('hi')
         self.fileBytes=0
         self.lagTotal=0 
         self.lagMax=0 

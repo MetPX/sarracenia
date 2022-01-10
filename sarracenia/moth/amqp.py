@@ -539,8 +539,7 @@ class AMQP(Moth):
                 return True  # no failure == success :-)
 
             except Exception as err:
-                logger.warning("moth.amqp.putNewMessage: failed %s: %s" %
-                               (exchange, err))
+                logger.warning("failed %s: %s" % (exchange, err))
                 logger.debug('Exception details: ', exc_info=True)
 
             if not self.o['message_strategy']['stubborn']:

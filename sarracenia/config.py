@@ -549,7 +549,7 @@ class Config:
         self.hostdir = socket.getfqdn().split('.')[0]
         self.log_flowcb_needed = False
         self.sleep = 0.1
-        self.housekeeping = 30
+        self.housekeeping = 300
         self.inline = False
         self.inline_max = 4096
         self.inline_encoding = 'guess'
@@ -1033,6 +1033,8 @@ class Config:
 
             if k == 'continue':
                 continue
+            
+            #FIXME: note for Clea, line conversion to v3 complete here.
 
             line = list(map(lambda x: self._varsub(x), line))
 
