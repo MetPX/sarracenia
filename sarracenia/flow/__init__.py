@@ -1149,10 +1149,13 @@ class Flow:
                 return False
             else:
                 if block_length == 0:
-                    logger.warning( 'downloaded %d of with no length given for %s assuming ok' % (len_written, new_inflight_path))
+                    if self.o.acceptSizeWrong:
+                        logger.debug( 'AcceptSizeWrong %d of with no length given for %s assuming ok' % (len_written, new_inflight_path))
+                    else:
+                        logger.warning( 'downloaded %d of with no length given for %s assuming ok' % (len_written, new_inflight_path))
                 else:
                     if self.o.acceptSizeWrong:
-                        logger.info(
+                        logger.debug(
                             'AcceptSizeWrong download size mismatch, received %d of expected %d bytes for %s' %
                              (len_written, block_length, new_inflight_path))
                     else:

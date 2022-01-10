@@ -2634,6 +2634,11 @@ of **attempts** (or send, in a sender) will cause the message to be added to a q
 for later retry.  When there are no messages ready to consume from the AMQP queue, 
 the retry queue will be queried.
 
+
+acceptSizeWrong: <boolean> (default: False)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 retry_ttl <duration> (default: same as expire)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
