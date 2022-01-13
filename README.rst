@@ -22,9 +22,9 @@
     :alt: Build Status
     :target: https://travis-ci.com/MetPX/sarracenia
 
-.. image:: https://github.com/MetPX/sarracenia/actions/workflows/ghcr.yml/badge.svg)
+.. image:: https://github.com/MetPX/sarracenia/actions/workflows/ghcr.yml/badge.svg
     :alt: Docker Image Build Status
-    :target: https://github.com/MetPX/sarracenia/actions/workflows/ghcr.yml)
+    :target: https://github.com/MetPX/sarracenia/actions/workflows/ghcr.yml
 
 +---------------------------------------------------------+-----------------------------------------------------------------+
 | [ `Guides <docs/Reference/sr3.1.rst#documentation>`_ ]  | [ `Orientation <docs/Reference/sr3.1.rst#documentation>`_ ]     |
