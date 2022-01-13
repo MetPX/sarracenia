@@ -41,7 +41,7 @@ default_options = {
     'discard' : False,
     'download': False,
     'fileEvents': allFileEvents,
-    'housekeeping': 30,
+    'housekeeping': 300,
     'log_reject': False,
     'logFormat':
     '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
