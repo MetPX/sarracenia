@@ -136,8 +136,9 @@ class AMQP(Moth):
                    logger.debug('Exception details: ', exc_info=True)
                    return None
     
+            topic = raw_msg.delivery_info['routing_key'].replace('%23','#').replace('%22','*')
             msg['exchange'] = raw_msg.delivery_info['exchange']
-            msg['subtopic'] = raw_msg.delivery_info['routing_key'].split('.')[len(self.o['topicPrefix']):]
+            msg['subtopic'] = topic.split('.')[len(self.o['topicPrefix']):]
             msg['ack_id'] = raw_msg.delivery_info['delivery_tag']
             msg['local_offset'] = 0
             msg['_deleteOnPost'] = set( [ 'ack_id', 'exchange', 'local_offset', 'subtopic' ] )
@@ -457,6 +458,7 @@ class AMQP(Moth):
         #body = copy.deepcopy(bd)
         topic = '.'.join( self.o['topicPrefix'] + body['subtopic'] )
         topic = topic.replace('#', '%23')
+        topic = topic.replace('*', '%22')
 
         if len(topic) >= 255:  # ensure topic is <= 255 characters
             logger.error("message topic too long, truncating")

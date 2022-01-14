@@ -383,7 +383,7 @@ class MQTT(Moth):
             logger.error('Exception details: ', exc_info=True)
             return None
 
-        subtopic=mqttMessage.topic.split('/')
+        subtopic=mqttMessage.topic.replace('%23', '#' ).replace('%2b', '+' ).split('/')
          
         if subtopic[0] != self.o['topicPrefix'][0]:
             message['exchange'] = subtopic[0]
@@ -488,16 +488,19 @@ class MQTT(Moth):
   
         # FIXME: might 
         topic= '/'.join( [ exchange ] + self.o['topicPrefix'] + body['subtopic']  )
+
+        # url-quote wildcard characters in topics.
         topic = topic.replace('#', '%23')
+        topic = topic.replace('+', '%2B')
 
         del body['subtopic']
         props=Properties(PacketTypes.PUBLISH)
         # https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901111
         props.PayloadFormatIndicator = 1 # designates UTF-8
         props.ContentType = 'application/json'
-
         while True:
             try:
+                
                 info = self.client.publish( topic=topic, payload=json.dumps(body), qos=1, properties=props) 
                 if info.rc == paho.mqtt.client.MQTT_ERR_SUCCESS: 
                     self.pending_messages_mutex.acquire()
