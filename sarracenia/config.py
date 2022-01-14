@@ -152,8 +152,6 @@ convert_to_v3 = {
         'skipold': [ 'flow_callback', 'sarracenia.flowcb.accept.skipold.SkipOld'],
         'testretry': [ 'flow_callback', 'sarracenia.flowcb.accept.testretry.TestRetry'],
         'toclusters': [ 'flow_callback', 'sarracenia.flowcb.accept.toclusters.ToClusters'],
-        'total': [ 'flow_callback', 'sarracenia.flowcb.accept.total.Total'],
-        'totalsave': [ 'flow_callback', 'sarracenia.flowcb.accept.totalsave.TotalSave'],
         'save': [ 'flow_callback', 'sarracenia.flowcb.accept.save.Save'],
         'tolocalfile': [ 'flow_callback', 'sarracenia.flowcb.accept.tolocalfile.ToLocalFile'],
         'renamewhatfn': [ 'flow_callback', 'sarracenia.flowcb.accept.renamewhatfn.RenameWhatFn'],
@@ -171,7 +169,6 @@ convert_to_v3 = {
         'postoverride': [ 'flow_callback', 'sarracenia.flowcb.accept.postoverride.PostOverride'],
         'posthourtree': [ 'flow_callback', 'sarracenia.flowcb.accept.posthourtree.PostHourTree'],
         'longflow': [ 'flow_callback', 'sarracenia.flowcb.accept.longflow.LongFLow'],
-        'posttotalsave': [ 'flow_callback', 'sarracenia.flowcb.accept.posttotalsave.PostTotalSave'],
         'messagedelay': [ 'flow_callback', 'sarracenia.flowcb.accept.messagedelay.MessageDelay'],
         'downloadbaseurl': [ 'flow_callback', 'sarracenia.flowcb.accept.downloadbaseurl.DownloadBaseUrl'],
 
