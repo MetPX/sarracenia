@@ -107,7 +107,6 @@ class MQTT(Moth):
 
         self.proto_version=paho.mqtt.client.MQTTv5
 
-        ebo=1
         if is_subscriber:
             # https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Receive_Maximum
             if not 'receiveMaximum' in self.o:
@@ -448,12 +447,6 @@ class MQTT(Moth):
            logger.error("publishing from a consumer")
            return False
  
-        if not self.client.is_connected():
-           logger.error("no connection to publish to broker with")
-           return False
-
-        #body = copy.deepcopy(bd)
-
         if '_deleteOnPost' in body:
             # FIXME: need to delete because building entire JSON object at once.
             # makes this routine alter the message. Ideally, would use incremental
@@ -513,6 +506,8 @@ class MQTT(Moth):
             except Exception as ex:
                 logger.error('Exception details: ', exc_info=True)
 
+            self.close()
+            self.__putSetup(self.o)
   
   
     def close(self):

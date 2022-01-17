@@ -389,7 +389,6 @@ class AMQP(Moth):
             logger.error("getting from a publisher")
             return None
 
-        ebo = 1
         while True:
             try:
                 raw_msg = self.channel.basic_get(self.o['queue_name'])
@@ -414,12 +413,7 @@ class AMQP(Moth):
 
             logger.warning('lost connection to broker')
             self.close()
-            self.__getSetup()
-
-            if ebo < 60: ebo *= 2
-
-            logger.debug("Sleeping {} seconds ...".format(ebo))
-            time.sleep(ebo)
+            self.__getSetup() # will only return when a connection is successful.
 
     def ack(self, m):
         """
