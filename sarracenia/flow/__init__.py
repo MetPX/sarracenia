@@ -148,7 +148,9 @@ class Flow:
         self.worklist.failed = []
         self.worklist.directories_ok = []
 
-        self.plugins['load'] = self.o.plugins_early + ['sarracenia.flowcb.retry.Retry']
+        # Witness the creation of this list 
+        self.plugins['load'] = self.o.plugins_early + ['sarracenia.flowcb.retry.Retry', 'sarracenia.flowcb.housekeeping.memory.Memory']
+
 
         # open cache, get masks.
         if self.o.nodupe_ttl > 0:
