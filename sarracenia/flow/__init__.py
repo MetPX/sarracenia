@@ -302,7 +302,7 @@ class Flow:
             self.have_vip = self.has_vip()
             if (self.o.program_name == 'poll' ) or self.have_vip:
 
-                #logger.info("current_rate (%g) vs. messageRateMax(%g)) " %
+                #logger.info("current_rate (%.2f) vs. messageRateMax(%.2f)) " %
                 #            (current_rate, self.o.messageRateMax))
                 self.worklist.incoming = []
                 self.gather()
@@ -393,7 +393,7 @@ class Flow:
                 stime = 1 + 2 * ((current_rate - self.o.messageRateMax) /
                                  self.o.messageRateMax)
                 logger.info(
-                    "current_rate/2 (%g) above messageRateMax(%g): throttling"
+                    "current_rate/2 (%.2f) above messageRateMax(%.2f): throttling"
                     % (current_rate, self.o.messageRateMax))
             else:
                 stime = 0
@@ -403,7 +403,7 @@ class Flow:
                     stime += current_sleep - elapsed
                     if stime > 60:  # if sleeping for a long time, debug output is good...
                         logger.debug(
-                            "sleeping for more than 60 seconds: %g seconds. Elapsed since wakeup: %g Sleep setting: %g "
+                            "sleeping for more than 60 seconds: %.2f seconds. Elapsed since wakeup: %.2f Sleep setting: %.2f "
                             % (stime, elapsed, self.o.sleep))
                 else:
                     logger.debug('worked too long to sleep!')
@@ -412,7 +412,7 @@ class Flow:
 
             if (stime > 0):
                 try:
-                    logger.debug('sleeping for stime: %g seconds' % stime)
+                    logger.debug('sleeping for stime: %.2f seconds' % stime)
                     time.sleep(stime)
                 except:
                     logger.info("flow woken abnormally from sleep")

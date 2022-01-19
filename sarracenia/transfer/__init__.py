@@ -404,7 +404,7 @@ class Transfer():
         if span > rspan:
             stime = span - rspan
             if stime > 10:
-                logger.debug("sr_proto throttle sleeping for %g" % stime)
+                logger.debug("sr_proto throttle sleeping for %.2f" % stime)
             time.sleep(stime)
 
     # write_chunk

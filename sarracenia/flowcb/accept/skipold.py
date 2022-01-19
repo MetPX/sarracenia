@@ -53,7 +53,7 @@ class SkipOld(FlowCB):
             lag = now - then
 
             if lag > int(self.o.skipThreshold):
-                logger.info("SkipOld, Excessive lag: %g sec. Skipping download of: %s, " % (lag, message['new_file']))
+                logger.info("SkipOld, Excessive lag: %.2f sec. Skipping download of: %s, " % (lag, message['new_file']))
                 worklist.rejected.append(m)
                 continue
 

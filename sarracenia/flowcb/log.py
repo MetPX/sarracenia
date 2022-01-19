@@ -72,7 +72,7 @@ class Log(FlowCB):
             self.msgBytes += len(msg)
             if set ( ['after_accept', 'all'] ) & self.o.logEvents:
 
-                logger.info("accepted: (lag: %g ) %s " % ( lag, self._messageStr(msg) ) )
+                logger.info("accepted: (lag: %.2f ) %s " % ( lag, self._messageStr(msg) ) )
                 
 
     def after_work(self, worklist):
@@ -104,7 +104,7 @@ class Log(FlowCB):
             ( self.msgCount+self.rejectCount, self.msgCount, self.rejectCount, self.msgBytes ) )
         logger.info( "files transferred: %d, cumulative bytes of data: %d" % ( self.transferCount, self.fileBytes )  )
         if self.msgCount > 0:
-            logger.info( "lag: average: %g, maximum: %g " % ( self.lagTotal/self.msgCount, self.lagMax ) )
+            logger.info( "lag: average: %.2f, maximum: %.2f " % ( self.lagTotal/self.msgCount, self.lagMax ) )
 
     def on_stop(self):
         if set ( ['on_stop', 'all'] ) & self.o.logEvents:
