@@ -96,6 +96,8 @@ flag_options = [ 'baseUrl_relPath', 'bind_queue', 'cache_stat', 'declare_exchang
     'statehost', 'users'
                 ]
 
+float_options = [ ]
+
 duration_options = [
     'expire', 'housekeeping', 'message_ttl', 'nodupe_fileAgeMax', 'retry_ttl',
     'sanity_log_dead', 'sleep', 'timeout'
@@ -720,6 +722,7 @@ class Config:
            'duration'   a floating point number indicating a quantity of seconds (0.001 is 1 milisecond)
                         modified by a unit suffix ( m-minute, h-hour, w-week ) 
            'flag'       boolean (True/False) option.
+           'float'      a simple floating point number.
            'list'       a list of string values, each succeeding occurrence catenates to the total.
                         all v2 plugin options are declared of type list.
            'set'        a set of string values, each succeeding occurrence is unioned to the total.
@@ -727,9 +730,11 @@ class Config:
            'str'        an arbitrary string value, as will all of the above types, each succeeding occurrence overrides the previous one.
     
         """
+        #Blindly add the option to the list if it doesn't already exist
         if not hasattr(self, option):
             setattr(self, option, default_value)
 
+        # Retreive the 'new' option & enforce the correct type.
         v = getattr(self, option)
 
         if kind == 'count':
@@ -744,6 +749,10 @@ class Config:
             flag_options.append(option)
             if type(v) is not bool:
                 setattr(self, option, isTrue(v))
+        elif kind == 'float':
+            float_options.append(option)
+            if type(v) is not float:
+                setattr(self, option, float(v))
         elif kind == 'list':  
             list_options.append( option )
             if type(v) is not list:
@@ -1137,6 +1146,11 @@ class Config:
                         % ( cfg, lineno, line[0]) )
                     continue
                 setattr(self, k, durationToSeconds(v))
+            elif k in float_options:
+                try:
+                    setattr(self, k, float(v))
+                except (ValueError, TypeError) as e:
+                    logger.error(f'Ignored "{i}": {e}')
             elif k in perm_options:
                 if v.isdigit():
                     setattr(self, k, int(v, base=8))
@@ -1230,6 +1244,10 @@ class Config:
         for f in flag_options:
             if hasattr(self, f) and (type(getattr(self, f)) is str):
                 setattr(self, f, isTrue(getattr(self, f)))
+
+        for f in float_options:
+            if hasattr(self, f) and (type(getattr(self, f)) is str):
+                setattr(self, f, float(getattr(self, f)))
 
         if hasattr(self,'log_reject'):
             if self.log_reject:
@@ -1408,7 +1426,7 @@ class Config:
 
     def check_undeclared_options(self):
 
-        alloptions = str_options + flag_options + list_options + set_options + count_options + size_options + duration_options
+        alloptions = str_options + flag_options + float_options + list_options + set_options + count_options + size_options + duration_options
         # FIXME: confused about this...  commenting out for now...
         for u in self.undeclared:
             if u not in alloptions:
