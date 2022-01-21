@@ -36,14 +36,14 @@ jobs:
         echo hoho
         cd ${HOME}/sr_insects/static_flow; ./flow_setup.sh
 
-    - name: Limit Static test.
-      run: |
-        cd ${HOME}/sr_insects/static_flow; ./flow_limit.sh
-
     # Enable tmate debugging of manually-triggered workflows if the input option was provided
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
-      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+      #if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+
+    - name: Limit Static test.
+      run: |
+        cd ${HOME}/sr_insects/static_flow; ./flow_limit.sh
 
     - name: Check Static test.
       run: |
