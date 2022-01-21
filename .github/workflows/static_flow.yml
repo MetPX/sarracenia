@@ -6,6 +6,13 @@ on:
     branches:
       - v03_issue445
 
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'     
+        required: false
+        default: false
+
 jobs:
   build:
 
@@ -23,14 +30,23 @@ jobs:
         travis/flow_autoconfig.sh
         travis/ssh_localhost.sh
          
-    - name: run Static test.
+    - name: Setup Static test.
       run: |
         cd ${HOME}; pwd; ls ; 
         echo hoho
         cd ${HOME}/sr_insects/static_flow; ./flow_setup.sh
+
+    - name: Limit Static test.
+      run: |
         cd ${HOME}/sr_insects/static_flow; ./flow_limit.sh
+
+    - name: Setup tmate session
+      # Enable tmate debugging of manually-triggered workflows if the input option was provided
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+
+    - name: Check Static test.
+      run: |
         cd ${HOME}/sr_insects/static_flow; ./flow_check.sh
-
-
-   
 
