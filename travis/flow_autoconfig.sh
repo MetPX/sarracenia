@@ -81,7 +81,7 @@ cd
 echo
 
 # Configure users
-sr_audit --users foreground
+sr3 --users declare
 echo "dir: +${PWD}+"
 git clone -b v03_wip https://github.com/MetPX/sr_insects
 

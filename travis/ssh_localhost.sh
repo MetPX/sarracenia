@@ -23,6 +23,9 @@ EOT
     ssh_works=$?
     if [ ${ssh_works} -le 0 ]; then
          echo "ssh to localhost still fails. boo!"
+    else
+         echo "ssh to localhost fixed by adding keys. Yay!"
+
     fi
 
 else
