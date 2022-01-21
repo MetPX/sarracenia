@@ -1,10 +1,10 @@
 
 name: run the sr_insects static_flow test.
 
-on:
-  push:
-    branches:
-      - v03_wip
+#on:
+#  push:
+#    branches:
+#      - v03_wip
 
 jobs:
   build:
