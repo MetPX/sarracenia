@@ -19,7 +19,7 @@ Host localhost
   IdentityFile ${HOME}/.ssh/id_flow
 EOT
     fi
-    ssh localhost /bin/true
+    ssh -o StrictHostKeyChecking=No localhost /bin/true
     ssh_works=$?
     if [ ${ssh_works} -le 0 ]; then
          echo "ssh to localhost still fails. boo!"
