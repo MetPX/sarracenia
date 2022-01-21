@@ -24,7 +24,7 @@ jobs:
          
     - name: run Static test.
       run: |
-        pwd; ls ; 
+        cd ${HOME}; pwd; ls ; 
         echo hoho
         cd ${HOME}sr_insects/static_flow; ./flow_setup.sh
         cd ${HOME}/sr_insects/static_flow; ./flow_limit.sh
