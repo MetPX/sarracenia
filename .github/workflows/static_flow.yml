@@ -29,7 +29,7 @@ jobs:
         echo hoho
         cd ${HOME}/sr_insects/static_flow; ./flow_setup.sh
         cd ${HOME}/sr_insects/static_flow; ./flow_limit.sh
-        cd ${HOME}sr_insects/static_flow; ./flow_check.sh
+        cd ${HOME}/sr_insects/static_flow; ./flow_check.sh
 
 
    
