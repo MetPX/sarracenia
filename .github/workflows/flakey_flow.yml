@@ -1,5 +1,5 @@
 
-name: run the sr_insects static_flow test.
+name: run the sr_insects flakey_flow test.
 
 on:
   push:
@@ -14,7 +14,7 @@ on:
         default: false
 
 env:
-  WHICH_TEST: flakey_flow
+  WHICH_TEST: flakey_broker
 
 jobs:
   build:
