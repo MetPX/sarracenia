@@ -8,7 +8,7 @@
 sudo apt-key adv --keyserver "hkps.pool.sks-keyservers.net" --recv-keys "0x6B73A36E6026DFCA"
 sudo add-apt-repository -y ppa:ssc-hpc-chp-spc/metpx-daily
 sudo apt-get update
-sudo apt -y install openssh-server rabbitmq-server erlang-nox metpx-sr3c librabbitmq4 metpx-libsr3c metpx-libsr3c-dev git python3-pip net-tools
+sudo apt -y install openssh-server rabbitmq-server erlang-nox metpx-sr3c librabbitmq4 metpx-libsr3c metpx-libsr3c-dev git python3-pip net-tools findutils
 
 pip3 install -U pip
 pip3 install -e .
