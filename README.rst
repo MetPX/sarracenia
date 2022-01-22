@@ -26,6 +26,10 @@
     :alt: Docker Image Build Status
     :target: https://github.com/MetPX/sarracenia/actions/workflows/ghcr.yml
 
+.. image:: https://github.com/MetPX/sarracenia/actions/workflows/static_flow.yml/badge.svg
+    :alt: Run Static Flow
+    :target: https://github.com/MetPX/sarracenia/actions/workflows/static_flow.yml
+
 +---------------------------------------------------------+-----------------------------------------------------------------+
 | [ `Guides <docs/Reference/sr3.1.rst#documentation>`_ ]  | [ `Orientation <docs/Reference/sr3.1.rst#documentation>`_ ]     |
 | [ `Manual Pages <docs/Reference/sr3.1.rst#see-also>`_ ] | [ `Référence <docs/Reference/sr3.1.rst#see-also>`_ ]            |
