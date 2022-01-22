@@ -6,7 +6,7 @@ if [ ${ssh_works} -gt 0 ]; then
     # Setup autossh login
     ssh-keygen -t rsa -N "" -f ~/.ssh/id_flow
     # https://stackoverflow.com/questions/54612609/paramiko-not-a-valid-rsa-private-key-file
-    sed -i 's/BEGIN .*PRIVATE/BEGIN RSA PRIVATE/;s/END .*PRIVATE/END RSA PRIVATE/'  ~/.ssh/id_flow
+    #sed -i 's/BEGIN .*PRIVATE/BEGIN RSA PRIVATE/;s/END .*PRIVATE/END RSA PRIVATE/'  ~/.ssh/id_flow
     cat ~/.ssh/id_flow.pub >> ~/.ssh/authorized_keys
 
     if [ ! -f ~/.ssh/id_rsa ]; then
