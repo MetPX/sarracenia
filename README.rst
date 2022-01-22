@@ -18,10 +18,6 @@
     :alt: Issue Tracker
     :target: https://github.com/MetPX/sarracenia/issues
 
-.. image:: https://travis-ci.com/MetPX/sarracenia.svg?branch=master
-    :alt: Build Status
-    :target: https://travis-ci.com/MetPX/sarracenia
-
 .. image:: https://github.com/MetPX/sarracenia/actions/workflows/ghcr.yml/badge.svg
     :alt: Docker Image Build Status
     :target: https://github.com/MetPX/sarracenia/actions/workflows/ghcr.yml
