@@ -107,7 +107,6 @@ class MQTT(Moth):
 
         self.proto_version=paho.mqtt.client.MQTTv5
 
-        ebo=1
         if is_subscriber:
             # https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Receive_Maximum
             if not 'receiveMaximum' in self.o:
@@ -178,7 +177,7 @@ class MQTT(Moth):
           return port number for connection.
       
         """
-        if self.broker.scheme[-1] == 's' :
+        if self.broker.url.scheme[-1] == 's' :
             port=8883
             logger.info('tls_rigour: %s' % self.o['tls_rigour'] )
             self.o['tls_rigour'] = self.o['tls_rigour'].lower()
@@ -205,8 +204,8 @@ class MQTT(Moth):
         else:
             port=1883
 
-        if self.broker.port:
-           port =  self.broker.port 
+        if self.broker.url.port:
+           port =  self.broker.url.port
         return port
 
     def __clientSetup(self, options, cid):
@@ -223,7 +222,7 @@ class MQTT(Moth):
         client.subscribe_in_progress=True
         # defaults to 20... kind of a mix of "batch" and prefetch... 
         client.max_inflight_messages_set(options['batch']+options['prefetch'])
-        client.username_pw_set( self.broker.username, unquote( self.broker.password ) )
+        client.username_pw_set( self.broker.url.username, unquote( self.broker.url.password ) )
         return client
 
     def __getSetup(self, options):
@@ -252,7 +251,7 @@ class MQTT(Moth):
                     for i in range(1,options['instances']+1):
                         icid= options['queue_name'] + '%02d' % i 
                         decl_client = self.__clientSetup( options, icid )
-                        decl_client.connect( self.broker.hostname, port=self.__sslClientSetup(), \
+                        decl_client.connect( self.broker.url.hostname, port=self.__sslClientSetup(), \
                            clean_start=False, properties=props )
                         while not decl_client.is_connected():
                             decl_client.loop(1)
@@ -277,14 +276,14 @@ class MQTT(Moth):
                     logger.warning("paho library without auto_ack support. Loses data every crash or restart." )
                     self.auto_ack=True
 
-                self.client.connect_async( self.broker.hostname, port=self.__sslClientSetup(), \
+                self.client.connect_async( self.broker.url.hostname, port=self.__sslClientSetup(), \
                        clean_start=False, properties=props )
                 self.client.loop_start()
                 return
 
                 
             except Exception as err:
-                logger.error("failed to {} with {}".format( self.broker.hostname, err))
+                logger.error("failed to {} with {}".format( self.broker.url.hostname, err))
                 logger.error('Exception details: ', exc_info=True)
 
             if ebo < 60 : ebo *= 2
@@ -312,15 +311,15 @@ class MQTT(Moth):
                 self.client.on_publish = MQTT.__pub_on_publish
                 #dunno if this is a good idea.
                 self.client.max_queued_messages_set(options['prefetch'])
-                self.client.username_pw_set( self.broker.username, unquote( self.broker.password ) )
-                res = self.client.connect( options['broker'].hostname, port=self.__sslClientSetup(), properties=props  )
-                logger.info( 'connecting to %s, res=%s' % (options['broker'].hostname, res ) )
+                self.client.username_pw_set( self.broker.url.username, unquote( self.broker.url.password ) )
+                res = self.client.connect( options['broker'].url.hostname, port=self.__sslClientSetup(), properties=props  )
+                logger.info( 'connecting to %s, res=%s' % (options['broker'].url.hostname, res ) )
 
                 self.client.loop_start()
                 return
 
             except Exception as err:
-                logger.error("failed to {} with {}".format( self.broker.hostname, err))
+                logger.error("failed to {} with {}".format( self.broker.url.hostname, err))
                 logger.error('Exception details: ', exc_info=True)
 
             if ebo < 60 : ebo *= 2
@@ -338,9 +337,9 @@ class MQTT(Moth):
              no locking needed, except to increment list index.... later.
         """
        
-        #dm = userdata._msgDecode(msg)
-        #if dm:
-        logger.info( "Message received: %d, %s %s" % (msg.mid, msg.topic, msg.payload.decode('utf-8')) )
+        if userdata.o['messageDebugDump']:
+            logger.info( "Message received: %d, %s %s" % (msg.mid, msg.topic, msg.payload) )
+
         userdata.new_message_mutex.acquire()
         client.received_messages.append( msg )
         userdata.new_message_mutex.release()
@@ -359,7 +358,7 @@ class MQTT(Moth):
             for i in range(1,self.o['instances']+1):
                 icid= self.o['queue_name'] + '%02d' % i 
                 myclient = self.__clientSetup( options, icid )
-                myclient.connect( self.broker.hostname, port=self.__sslClientSetup(), \
+                myclient.connect( self.broker.url.hostname, port=self.__sslClientSetup(), \
                    myclean_start=True, properties=props )
                 while not self.client.is_connected():
                     myclient.loop(0.1)
@@ -378,12 +377,12 @@ class MQTT(Moth):
             message = sarracenia.Message()
             message.copyDict( json.loads(mqttMessage.payload.decode('utf-8')) )
         except Exception as ex:
-            logger.error( "ignored malformed message: %s" % mqttMessage.payload.decode('utf-8') )
+            logger.error( "ignored malformed message: %s" % mqttMessage.payload )
             logger.error("decode error" % err)
             logger.error('Exception details: ', exc_info=True)
             return None
 
-        subtopic=mqttMessage.topic.split('/')
+        subtopic=mqttMessage.topic.replace('%23', '#' ).replace('%2b', '+' ).split('/')
          
         if subtopic[0] != self.o['topicPrefix'][0]:
             message['exchange'] = subtopic[0]
@@ -448,12 +447,6 @@ class MQTT(Moth):
            logger.error("publishing from a consumer")
            return False
  
-        if not self.client.is_connected():
-           logger.error("no connection to publish to broker with")
-           return False
-
-        #body = copy.deepcopy(bd)
-
         if '_deleteOnPost' in body:
             # FIXME: need to delete because building entire JSON object at once.
             # makes this routine alter the message. Ideally, would use incremental
@@ -488,16 +481,19 @@ class MQTT(Moth):
   
         # FIXME: might 
         topic= '/'.join( [ exchange ] + self.o['topicPrefix'] + body['subtopic']  )
+
+        # url-quote wildcard characters in topics.
         topic = topic.replace('#', '%23')
+        topic = topic.replace('+', '%2B')
 
         del body['subtopic']
         props=Properties(PacketTypes.PUBLISH)
         # https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901111
         props.PayloadFormatIndicator = 1 # designates UTF-8
         props.ContentType = 'application/json'
-
         while True:
             try:
+                
                 info = self.client.publish( topic=topic, payload=json.dumps(body), qos=1, properties=props) 
                 if info.rc == paho.mqtt.client.MQTT_ERR_SUCCESS: 
                     self.pending_messages_mutex.acquire()
@@ -510,6 +506,8 @@ class MQTT(Moth):
             except Exception as ex:
                 logger.error('Exception details: ', exc_info=True)
 
+            self.close()
+            self.__putSetup(self.o)
   
   
     def close(self):

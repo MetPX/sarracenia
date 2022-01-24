@@ -110,8 +110,8 @@ class Transfer():
                options.credentials
                options.destination 
                options.batch 
-               options.chmod
-               options.chmod_dir
+               options.permDefault
+               options.permDirDefault
                options.timeout
          opt   options.bytes_per_second
          opt   options.bufsize
@@ -404,7 +404,7 @@ class Transfer():
         if span > rspan:
             stime = span - rspan
             if stime > 10:
-                logger.debug("sr_proto throttle sleeping for %g" % stime)
+                logger.debug("sr_proto throttle sleeping for %.2f" % stime)
             time.sleep(stime)
 
     # write_chunk

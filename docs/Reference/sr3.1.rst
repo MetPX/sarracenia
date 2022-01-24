@@ -40,7 +40,7 @@ notifications. Sr_subscribe can be configured to post messages after they are do
 to make them available to consumers for further processing or transfers.
 
 **sr3** can also be used for purposes other than downloading, (such as for 
-supplying to an external program) specifying the -n (*notify_only*, or *no_download*) will
+supplying to an external program) specifying the -n (equal to: *download off*) will
 suppress the download behaviour and only post the URL on standard output. The standard
 output can be piped to other processes in classic UNIX text filter style.  
 
@@ -287,9 +287,9 @@ View all configuration settings (the result of all parsing... what the flow comp
     bytes_per_second=None
     bytes_ps=0
     cfg_run_dir='/home/peter/.cache/sarra/subscribe/q_f71'
-    chmod=0
-    chmod_dir=509
-    chmod_log=384
+    permDefault=0
+    permDirDefault=509
+    permLog=384
     config='q_f71'
     currentDir='/home/peter/.cache/sarra/log'
     debug=False
@@ -335,8 +335,8 @@ View all configuration settings (the result of all parsing... what the flow comp
     post_documentRoot=None
     post_exchanges=[]
     prefetch=25
-    preserve_mode=True
-    preserve_time=True
+    permCopy=True
+    timeCopy=True
     program_name='subscribe'
     pstrip='.*sent_by_tsource2send/'
     queue_filename='/home/peter/.cache/sarra/subscribe/q_f71/sr_subscribe.q_f71.tsource.qname'
@@ -583,7 +583,7 @@ These options set what files the user wants to be notified for and where
 - **directory <path>           (default: .)**
 - **accept    <regexp pattern> [rename=] (must be set)**
 - **reject    <regexp pattern> (optional)**
-- **chmod     <integer>        (default: 0o400)**
+- **permDefault     <integer>        (default: 0o400)**
 - **poll_without_vip  <boolean> (default: True)**
 - **nodupe_fileAgeMax <duration>   (default 30d)**
 
@@ -634,14 +634,14 @@ They are fixed...
         directory /mylocaldirectory/${YYYYMMDD}/mydailies
         accept    .*observations.*
 
-The **chmod** option allows users to specify a linux-style numeric octal
+The **permDefault** option allows users to specify a linux-style numeric octal
 permission mask::
 
-  chmod 040
+  permDefault 040
 
 means that a file will not be posted unless the group has read permission
 (on an ls output that looks like: ---r-----, like a chmod 040 <file> command).
-The **chmod** options specifies a mask, that is the permissions must be
+The **permDefault** options specifies a mask, that is the permissions must be
 at least what is specified.
 
 As with all other components, the **vip** option can be used to indicate
@@ -713,7 +713,7 @@ The **on_line** plugin gives scripts that can read each line of an 'ls' on the p
 site, to interpret it further. It returns True if the line should be further processed,
 or False to reject it.  By default, there is a line_mode plugin included with the package
 which implements the comparison of file permissions on the remote server against
-the **chmod** mask.
+the **permDefault** mask.
 
 If the poll fetches using the http protocol, the 'ls' like entries must be derived from
 an html page. The default plugin **html_page** provided with the package, gives an idea of
@@ -1910,13 +1910,13 @@ Settings in an individual .conf file are read in after the default.conf
 file, and so can override defaults. Options specified on
 the command line override configuration files.
 
-flow_callback options
+flowCallback options
 ~~~~~~~~~~~~~~~~~~~~~
 
 Sarracenia makes extensive use of small python code snippets that customize
-processing called *flow_callbacks* Flow_callbacks define and use additional settings::
+processing called *flowCallback* Flow_callbacks define and use additional settings::
 
-  flow_callback sarracenia.flowcb.log.Log
+  flowCallback sarracenia.flowcb.log.Log
 
 There is also a shorter form to express the same thing::
 
@@ -1946,8 +1946,8 @@ those routines will be called. For more details consult the
 To add special processing of messages, create a module in the python
 path, and have it include entry points. 
 
-There is also *flow_callbacks_prepend* which adds a flow_callback class to the front
-of the list (which determines relative execution order among flow_callback classes.)
+There is also *flowCallbackPrepend* which adds a flowCallback class to the front
+of the list (which determines relative execution order among flowCallback classes.)
 
    
 callback options
@@ -1960,7 +1960,7 @@ callbacks that are delivered with metpx-sr3 follow the following convention:
 
 so we provide the following syntactic sugar::
 
-  callback log    (is equivalent to *flow_callback sarracenia.flowcb.log.Log* )
+  callback log    (is equivalent to *flowCallback sarracenia.flowcb.log.Log* )
 
 There is similarly a *callback_prepend* to fill in.  
 
@@ -1968,7 +1968,7 @@ Importing Extensions
 ~~~~~~~~~~~~~~~~~~~~
 
 The *import* option works in a way familiar to Python developers,
-Making them available for use by the Sarracenia core, or flow_callbacks.
+Making them available for use by the Sarracenia core, or flowCallback.
 Developers can add additional protocols for messages or 
 file transfer.  For example::
 
@@ -2007,7 +2007,7 @@ prefixed with the name of the plugin::
 A setting 'msg_to_clusters' is needed by the *msg_to_clusters* plugin
 referenced in the *on_message* the v2 plugins are a little more
 cumbersome to write. They are included here for completeness, but
-people should use version 3 (either flow_callbacks, or extensions
+people should use version 3 (either flowCallback, or extensions
 discussed next) when possible.
 
 Reasons to use newer style plugins:
@@ -2020,7 +2020,7 @@ Reasons to use newer style plugins:
 * newer style extensions are ordinary python modules, unlike
   v2 ones which require minor magic incantations.
 
-* when a v3 (flow_callback or imported) module has a syntax error,
+* when a v3 (flowCallback or imported) module has a syntax error,
   all the tools of the python interpreter apply, providing
   a lot more feedback is given to the coder. with v2, it just
   says there is something wrong, much more difficult to debug.
@@ -2043,67 +2043,21 @@ of an environment variable, then they can be set in configuration files::
 LOGS and MONITORING
 -------------------
 
-As sr3 components usually run as a daemon (unless invoked in *foreground* mode) 
-one normally examines its log file to find out how processing is going.  When only
-a single instance is running, one can view the log of the running process like so::
-
-   sr3 log subscribe/*myconfig*
-
-Where *myconfig* is the name of the running configuration. Log files 
-are placed as per the XDG Open Directory Specification. There will be a log file 
-for each *instance* (download process) of an sr_subscribe process running the myflow configuration::
-
-   in linux: ~/.cache/sarra/log/sr_subscribe_myflow_01.log
-
-One can override placement on linux by setting the XDG_CACHE_HOME environment variable, as
-per: `XDG Open Directory Specification <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ 
-Log files can be very large for high volume configurations, so the logging is very configurable.
-
-To begin with, one can select the logging level:
-
 - debug
-   Setting option debug is identical to use  **loglevel debug**
+   Setting option debug is identical to use  **logLevel debug**
 
+- logMessageDump  (default: off) boolean flag
+  if set, all fields of a message are printed, rather than just a url/path reference.
+
+- logEvents ( default after_accept,after_work,on_housekeeping )
+   emit standard log messages at the given points in message processing. 
+   other values: on_start, on_stop, post, gather, ... etc...
+  
 - logLevel ( default: info )
    The level of logging as expressed by python's logging. Possible values are :  critical, error, info, warning, debug.
 
 - log_reject <True|False> ( default: False )
    print a log message when *rejecting* messages (choosing not to download the corresponding files)
-
-rejecting messages:
-
-* rejecting pattern -- based on accept/reject clause, excluding a file from processing.
-
-* rejecting duplicate -- based on suppress_duplicates settings (recent file cache) 
-
-* rejecting loop -- directories in a tree refer to each other causing the same directory to be scanned redundantly, perhaps in an infinite loop.
-
-
-One can also get finer grained control over logging by using flow_callbacks. For example, the default settings
-typically include which logs each file after it has been downloaded, but not
-when the message is received. To have a line in the log for each message received set::
-
-   FIXME: v2 example, wrong for v3
-
-   after_accept msg_rawlog
-
-There are similar plugins available for different parts of processing::
-
-   after_work file_log (default)
-
-   on_posts post_log
-   
-etc... One can also modify the provided plugins, or write new ones to completely change the logging.
-
-At the end of the day (at midnight), these logs are rotated automatically by 
-the components, and the old log gets a date suffix. The directory in which 
-the logs are stored can be overridden by the **log** option, the number of 
-rotated logs to keep are set by the **logrotate** parameter. The oldest log 
-file is deleted when the maximum number of logs has been reach and this 
-continues for each rotation. An interval takes a duration of the interval and 
-it may takes a time unit suffix, such as 'd\|D' for days, 'h\|H' for hours, 
-or 'm\|M' for minutes. If no unit is provided logs will rotate at midnight.
-Here are some settings for log file management:
 
 - log <dir> ( default: ~/.cache/sarra/log ) (on Linux)
    The directory to store log files in.
@@ -2120,8 +2074,11 @@ Here are some settings for log file management:
 - logrotate_interval <duration>[<time_unit>] ( default: 1 )
    The duration of the interval with an optional time unit (ie 5m, 2h, 3d)
 
-- chmod_log ( default: 0600 )
+- permLog ( default: 0600 )
    The permission bits to set on log files.
+
+See the `Subscriber Guide <../How2Guides/subscriber.rst>` for a more detailed discussion of logging
+options and techniques.
 
 
 
@@ -2151,6 +2108,8 @@ passwords and settings needed by components.  The format is one entry per line. 
 - **amqp://user1:password1@host/**
 - **amqps://user2:password2@host:5671/dev**
 
+- **amqps://usern:passwd@host/ login_method=PLAIN**
+
 - **sftp://user5:password5@host**
 - **sftp://user6:password6@host:22  ssh_keyfile=/users/local/.ssh/id_dsa**
 
@@ -2165,6 +2124,24 @@ passwords and settings needed by components.  The format is one entry per line. 
 In other configuration files or on the command line, the url simply lacks the
 password or key specification.  The url given in the other files is looked
 up in credentials.conf.
+
+Credential Details
+~~~~~~~~~~~~~~~~~~
+
+You may need to specify additional options for specific credential entries. These details can be added after the end of the URL, with multiple details separated by commas (see examples above).
+
+Supported details:
+
+- ``ssh_keyfile=<path>`` - (SFTP) Path to SSH keyfile
+- ``passive`` - (FTP) Use passive mode
+- ``active`` - (FTP) Use active mode
+- ``binary`` - (FTP) Use binary mode
+- ``ascii`` - (FTP) Use ASCII mode
+- ``ssl`` - (FTP) Use SSL/standard FTP
+- ``tls`` - (FTP) Use FTPS with TLS
+- ``prot_p`` - (FTPS) Use a secure data connection for TLS connections (otherwise, clear text is used)
+- ``bearer_token=<token>`` (or ``bt=<token>``) - (HTTP) Bearer token for authentication
+- ``login_method=<PLAIN|AMQPLAIN|EXTERNAL|GSSAPI>`` - (AMQP) By default, the login method will be automatically determined. This can be overriden by explicity specifying a login method, which may be required if a broker supports multiple methods and an incorrect one is automatically selected.
 
 Note::
  SFTP credentials are optional, in that sarracenia will look in the .ssh directory
@@ -2606,13 +2583,15 @@ and under which name.
 - **accel_threshold  <byte count> (default: 0)** 
 - **accept    <regexp pattern> (must be set)** 
 - **accept_unmatch   <boolean> (default: off)**
+- **acceptSizeWrong   <boolean> (default: off)**
 - **attempts     <count>          (default: 3)**
 - **batch     <count>          (default: 100)**
-- **default_mode     <octalint>       (default: 0 - umask)**
-- **default_dir_mode <octalint>       (default: 0755)**
+- **permDefault     <octalint>       (default: 0 - umask)**
+- **permLog <octalint>       (default: 0755)**
 - **delete    <boolean>>       (default: off)**
 - **directory <path>           (default: .)** 
 - **discard   <boolean>        (default: off)**
+- **download  <boolean>        (default: on)** 
 - **baseDir <path>       (default: /)**
 - **flatten   <string>         (default: '/')** 
 - **housekeeping <count>                 (default: 300 seconds)**
@@ -2626,15 +2605,14 @@ and under which name.
 - **messageRateMax <float>   (default: 0 == DISABLED)**
 - **messageRateMin <float>   (default: 0 == DISABLED)**
 - **mirror    <boolean>        (default: off)** 
-- **no_download|notify_only    <boolean>        (default: off)** 
 - **nodupe   <off|on|999[smhdw]>     (default: off)**
 - **nodupe_basis   <data|name|path>     (default: path)**
 - **outlet    post|json|url    (default: post)** 
 - **overwrite <boolean>        (default: off)** 
-- **preserve_mode <boolean>  (default: on)**
-- **preserve_time <boolean>  (default: on)**
+- **permCopy <boolean>  (default: on)**
+- **timeCopy <boolean>  (default: on)**
 - **reject    <regexp pattern> (optional)** 
-- **retry    <boolean>         (default: On)** 
+- **retry    <boolean>         (default: On)**  (FIXME: OPTION UNIMPLEMENTED. Always on!)
 - **retry_ttl    <duration>         (default: same as expire)** 
 - **source_from_exchange  <boolean> (default: off)**
 - **strip     <count|regexp>   (default: 0)**
@@ -2655,6 +2633,11 @@ When The **retry** option is set (default), a failure to download after prescrib
 of **attempts** (or send, in a sender) will cause the message to be added to a queue file 
 for later retry.  When there are no messages ready to consume from the AMQP queue, 
 the retry queue will be queried.
+
+
+acceptSizeWrong: <boolean> (default: False)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 retry_ttl <duration> (default: same as expire)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -3065,12 +3048,12 @@ a warning message will be produced:
 
 
 
-preserve_time (default: on)
+timeCopy (default: on)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 On unix-like systems, when the *ls* commend or a file browser shows modification or 
 access times, it is a display of the posix *st_atime*, and *st_ctime* elements of a 
-struct struct returned by stat(2) call.  When *preserve_time* is on, headers
+struct struct returned by stat(2) call.  When *timeCopy* is on, headers
 reflecting these values in the messages are used to restore the access and modification 
 times respectively on the subscriber system. To document delay in file reception,
 this option can be turned off, and then file times on source and destination compared.
@@ -3078,25 +3061,19 @@ this option can be turned off, and then file times on source and destination com
 When set in a posting component, it has the effect of eliding the *atime* and *mtime* 
 headers from the messages.
 
-default_mode, default_dir_mode, preserve_mode
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+permDefault, permDirDefault, permLog, permCopy
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Permission bits on the destination files written are controlled by the *preserve_mode* directives.
-*preserve_modes* will apply the mode permissions posted by the source of the file.
-If no source mode is available, the *default_mode* will be applied to files, and the
-*default_dir_mode* will be applied to directories. If no default is specified,
+Permission bits on the destination files written are controlled by the *permCopy* directives.
+*permCopy* will apply the mode permissions posted by the source of the file.
+If no source mode is available, the *permDefault* will be applied to files, and the
+*permLog* will be applied to directories. If no default is specified,
 then the operating system  defaults (on linux, controlled by umask settings)
 will determine file permissions. (Note that the *chmod* option is interpreted as a synonym
-for *default_mode*, and *chmod_dir* is a synonym for *default_dir_mode*).
+for *permDefault*, and *chmod_dir* is a synonym for *permDirDefault*).
 
 When set in a posting component, it has the effect of eliding the *mode* 
 header from the messages.
-
-recompute_chksum <boolean> (Always on now)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-recompute_chksum option has been removed in 2.19.03b2. Recomputing will occur
-whenever appropriate without the need for a setting.
 
 tls_rigour (default: medium)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -3216,7 +3193,7 @@ Frequent Configuration Errors
    mtime is vulnerable to slow transfers, where incomplete files can be picked up because of a 
    networking issue interrupting or delaying transfers. 
 
-   Sources may not to include mtime data in their posts ( *preserve_time* option on post.)
+   Sources may not to include mtime data in their posts ( *timeCopy* option on post.)
 
 
 **Setting NONE when delivering to non-Sarracenia destination.**
@@ -3615,12 +3592,12 @@ such as logging (implemented by default use of msg_log, file_log, post_log plugi
 Users can place their own scripts in the script sub-directory of their config directory 
 tree ( on Linux, the ~/.config/sarra/plugins).  
 
-flow_callback and flow_callback_prepend <class>
+flowCallback and flowCallbackPrepend <class>
 -----------------------------------------------
 
-The flow_callback directive takes a class to load can scan for entry points as an argument::
+The flowCallback directive takes a class to load can scan for entry points as an argument::
 
-    flow_callback sarracenia.flowcb.log.Log
+    flowCallback sarracenia.flowcb.log.Log
    
 With this directive in a configuration file, the Log class found in installed package will be used.
 That module logs messages *after_accept* (after messages have passed through the accept/reject masks.)
@@ -3658,11 +3635,11 @@ For example, a *watch* is a flow with sarracenia.flowcb.gather.file.File class t
 is used to scan directories. A Common need when a data source is not easily accessed
 with python scripts is to use the script callback::
 
-   flow_callback_prepend sarracenia.flowcb.script.Script
+   flowCallbackPrepend sarracenia.flowcb.script.Script
 
    script_gather get_weird_data.sh
 
-Using the *_prepend* variant of the *flow_callback* option, will have the Script callback
+Using the *_prepend* variant of the *flowCallback* option, will have the Script callback
 class's entry point, before the File callback... So A script will be executed, and then
 the directory will be checked for new files.  Here is part of the Script callback class::
     

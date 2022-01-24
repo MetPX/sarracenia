@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 #
 # This file is part of Sarracenia.
 # The sarracenia suite is Free and is proudly provided by the Government of Canada
@@ -60,6 +59,7 @@ import sarracenia.integrity
 
 default_options = {
     'accept_unmatched': True,
+    'acceptSizeWrong': False,
     'baseDir': None,
     'baseUrl_relPath': False,
     'delete': False,
@@ -70,8 +70,10 @@ default_options = {
     'inline': False,
     'inline_only': False,
     'integrity_method': 'sha512',
-    'notify_only': False,
     'overwrite': True,
+    'permDefault': 0,
+    'permDirDefault': 0o775,
+    'permLog': 0o600,
     'post_documentRoot': None,
     'post_baseDir': None,
     'post_baseUrl': None,
@@ -86,11 +88,11 @@ count_options = [
 ]
 
 # all the boolean settings.
-flag_options = [ 'baseUrl_relPath', 'bind_queue', 'cache_stat', 'declare_exchange', 'debug', \
+flag_options = [ 'acceptSizeWrong', 'baseUrl_relPath', 'bind_queue', 'cache_stat', 'declare_exchange', 'debug', \
     'declare_queue', 'delete', 'discard', 'download', 'dry_run', 'durable', 'exchange_split', 'realpath_filter', \
     'follow_symlinks', 'force_polling', 'inline', 'inline_only', 'inplace', 'log_reject', 'pipe', 'restore', \
-    'report_daemons', 'mirror', 'notify_only', 'overwrite', 'post_on_start', \
-    'preserve_mode', 'preserve_time', 'pump_flag', 'randomize', 'realpath_post', 'reconnect', \
+    'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
+    'permCopy', 'pump_flag', 'randomize', 'realpath_post', 'reconnect', 'report_daemons', \
     'report_back', 'reset', 'retry_mode', 'save', 'set_passwords', 'source_from_exchange', \
     'statehost', 'users'
                 ]
@@ -112,6 +114,8 @@ set_choices = {
 # FIXME: doesn't work... wonder why?
 #    'fileEvents': sarracenia.flow.allFileEvents
  
+perm_options = [ 'permDefault', 'permDirDefault' ]
+
 size_options = ['blocksize', 'bufsize', 'bytes_per_second', 'inline_max']
 
 str_options = [
@@ -135,18 +139,19 @@ str_options = [
 """
 convert_to_v3 = {
     'plugin': {
-        'msg_fdelay': ['flow_callback', 'sarracenia.flowcb.filter.fdelay.FDelay'],
+        'msg_fdelay': ['flowCallback', 'sarracenia.flowcb.filter.fdelay.FDelay'],
         'msg_pclean_f90':
-        ['flow_callback', 'sarracenia.flowcb.filter.pclean_f90.PClean_F90'],
+        ['flowCallback', 'sarracenia.flowcb.filter.pclean_f90.PClean_F90'],
         'msg_pclean_f92':
-        ['flow_callback', 'sarracenia.flowcb.filter.pclean_f92.PClean_F92'],
+        ['flowCallback', 'sarracenia.flowcb.filter.pclean_f92.PClean_F92'],
         'accel_wget': ['continue'],
         'accel_scp': ['continue'],
     },
     'do_send': {
-       'file_email' : [ 'flow_callback', 'sarracenia.flowcb.send.email.Email' ],
+       'file_email' : [ 'flowCallback', 'sarracenia.flowcb.send.email.Email' ],
     },
     'no_download': [ 'download', 'False' ],
+    'notify_only': [ 'download', 'False' ],
     'on_message': {
         'msg_print_lag': [ 'flow_callback', 'sarracenia.flowcb.accept.printlag.PrintLag'],
         'msg_skip_old': [ 'flow_callback', 'sarracenia.flowcb.accept.skipold.SkipOld'],
@@ -158,7 +163,6 @@ convert_to_v3 = {
         'msg_rename_dmf': [ 'flow_callback', 'sarracenia.flowcb.accept.renamedmf.RenameDMF'],
         'msg_hour_tree': [ 'flow_callback', 'sarracenia.flowcb.accept.hourtree.HourTree'],
         'msg_renamer': [ 'flow_callback', 'sarracenia.flowcb.accept.renamer.Renamer'],
-         # 'msg_delete': [ 'flow_callback', 'sarracenia.flowcb.accept.delete.Delete'],
         'msg_2http': [ 'flow_callback', 'sarracenia.flowcb.accept.tohttp.ToHttp'],
         'msg_2local': [ 'flow_callback', 'sarracenia.flowcb.accept.tolocal.ToLocal'],
         'msg_http_to_https': [ 'flow_callback', 'sarracenia.flowcb.accept.httptohttps.HttpToHttps'],
@@ -171,7 +175,6 @@ convert_to_v3 = {
         'post_long_flow': [ 'flow_callback', 'sarracenia.flowcb.accept.longflow.LongFLow'],
         'msg_delay': [ 'flow_callback', 'sarracenia.flowcb.accept.messagedelay.MessageDelay'],
         'msg_download_baseurl': [ 'flow_callback', 'sarracenia.flowcb.accept.downloadbaseurl.DownloadBaseUrl'],
-	    
 	'msg_from_cluster': ['continue'],
 	'msg_stdfiles': ['continue'],
 	'msg_fdelay': ['continue'],
@@ -186,7 +189,6 @@ convert_to_v3 = {
 	'msg_total_save': ['continue'],
 	'post_total': ['continue'],
 	'post_total_save': ['continue'],
-
         'wmo2msc': [ 'flow_callback', 'sarracenia.flowcb.filter.wmo2msc.Wmo2Msc'],
         'msg_delete': [ 'flow_callback', 'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles'],
         'msg_log': ['logEvents', 'after_accept'],
@@ -484,9 +486,12 @@ class Config:
         'e' : 'fileEvents',
         'events' : 'fileEvents',
         'instance': 'instances',
-        'chmod': 'default_mode',
-        'chmod_dir': 'default_dir_mode',
-        'chmod_log': 'default_log_mode',
+        'chmod': 'permDefault',
+        'default_mode': 'permDefault',
+        'chmod_dir': 'permDirDefault',
+        'default_dir_mode': 'permDirDefault',
+        'chmod_log': 'permLog',
+        'default_log_mode': 'permLog',
         'file_time_limit' : 'nodupe_fileAgeMax', 
         'heartbeat': 'housekeeping',
         'log_format': 'logFormat',
@@ -502,6 +507,8 @@ class Config:
         'post_document_root': 'post_documentRoot',
         'post_rate_limit': 'messageRateMax',
         'post_topic_prefix' : 'post_topicPrefix',
+        'preserve_mode' : 'permCopy',
+        'preserve_time' : 'timeCopy',
         'suppress_duplicates' : 'nodupe_ttl',
         'suppress_duplicates_basis' : 'nodupe_basis', 
         'topic_prefix' : 'topicPrefix'
@@ -529,9 +536,6 @@ class Config:
 
         self.bufsize = 1024 * 1024
         self.bytes_ps = 0
-        self.chmod = 0o0
-        self.chmod_dir = 0o775
-        self.chmod_log = 0o600
 
         self.nodupe_fileAgeMax = 0 # disabled.
         self.timezone = 'UTC'
@@ -542,7 +546,7 @@ class Config:
         self.v2plugins = {}
         self.v2plugin_options = []
         self.imports = []
-        self.logEvents = set([])
+        self.logEvents = set(['after_accept', 'after_work', 'on_housekeeping'])
         self.plugins_late = []
         self.plugins_early = []
         self.exchange = None
@@ -553,7 +557,7 @@ class Config:
         self.hostdir = socket.getfqdn().split('.')[0]
         self.log_flowcb_needed = False
         self.sleep = 0.1
-        self.housekeeping = 30
+        self.housekeeping = 300
         self.inline = False
         self.inline_max = 4096
         self.inline_encoding = 'guess'
@@ -601,11 +605,14 @@ class Config:
 
     def _validate_urlstr(self, urlstr):
         # check url and add credentials if needed from credential file
-        ok, details = Config.credentials.get(urlstr)
-        if details is None:
+        ok, cred_details = Config.credentials.get(urlstr)
+        if cred_details is None:
             logging.error("bad credential %s" % urlstr)
-            return False, urllib.parse.urlparse(urlstr)
-        return True, details.url
+            # Callers expect that a credential_details object will be returned
+            cred_details = sarracenia.credentials.credential_details()
+            cred_details.url = urllib.parse.urlparse(urlstr)
+            return False, cred_details
+        return True, cred_details
 
     def applyComponentDefaults( self, component ):
         if component in ['post']:
@@ -628,9 +635,9 @@ class Config:
     @admin.setter
     def admin(self, v):
         if type(v) is str:
-            ok, url = self._validate_urlstr(v)
+            ok, cred_details = self._validate_urlstr(v)
             if ok:
-                self.__admin = url
+                self.__admin = cred_details
         else:
             self.__admin = v
 
@@ -641,9 +648,9 @@ class Config:
     @broker.setter
     def broker(self, v):
         if type(v) is str:
-            ok, url = self._validate_urlstr(v)
+            ok, cred_details = self._validate_urlstr(v)
             if ok:
-                self.__broker = url
+                self.__broker = cred_details
         else:
             self.__broker = v
 
@@ -654,9 +661,9 @@ class Config:
     @post_broker.setter
     def post_broker(self, v):
         if type(v) is str:
-            ok, url = self._validate_urlstr(v)
+            ok, cred_details = self._validate_urlstr(v)
             if ok:
-                self.__post_broker = url
+                self.__post_broker = cred_details
         else:
             self.__post_broker = v
 
@@ -672,9 +679,9 @@ class Config:
             return word
 
         result = word
-        if ('${BROKER_USER}' in word) and hasattr(self, 'broker') and hasattr(
-                self.broker, 'username'):
-            result = result.replace('${BROKER_USER}', self.broker.username)
+        if (('${BROKER_USER}' in word) and hasattr(self, 'broker') and self.broker is not None and
+                self.broker.url is not None and hasattr(self.broker.url, 'username')):
+            result = result.replace('${BROKER_USER}', self.broker.url.username)
             # FIXME: would this work also automagically if BROKER.USERNAME ?
 
         if not '$' in result:
@@ -757,18 +764,20 @@ class Config:
         elif kind == 'set':  
             set_options.append(option)
             sv=set()
-            if v == 'None': 
-                 delattr(self, option)
-            elif type(v) is list:
-                 sv=set(v)
+            if type(v) is list:
+                sv=set(v)
             elif type(v) is set:
-                 sv=v
-            else:
-                v=v.replace('|',',')
-                if ',' in v: 
-                    sv=set(v.split(','))
-                else: 
-                    sv=set([v])
+                logger.error('is a set')
+                sv=v
+            elif type(v) is str:
+                if v == 'None': 
+                    delattr(self, option)
+                else:
+                    v=v.replace('|',',')
+                    if ',' in v: 
+                        sv=set(v.split(','))
+                    else: 
+                        sv=set([v])
             if hasattr(self, option):
                 sv= getattr(self,option) | sv
             setattr(self, option, sv)
@@ -782,6 +791,9 @@ class Config:
             str_options.append(option)
             if type(v) is not str:
                 setattr(self, option, str(v))
+        else:
+            logger.error('invalid kind: %s for option: %s, ignored' % ( kind, option ) )
+            return
 
         logger.debug('%s declared as type:%s value:%s' % (option, type(getattr(self,option)), v))
 
@@ -881,13 +893,13 @@ class Config:
 
     def _resolve_exchange(self):
         if not hasattr(self, 'exchange') or self.exchange is None:
-            #if hasattr(self, 'post_broker') and self.post_broker is not None:
-            #    self.exchange = 'xs_%s' % self.post_broker.username
+            #if hasattr(self, 'post_broker') and self.post_broker is not None and self.post_broker.url is not None:
+            #    self.exchange = 'xs_%s' % self.post_broker.url.username
             #else:
-            if self.broker.username == 'anonymous':
+            if not hasattr(self.broker.url,'username') or ( self.broker.url.username == 'anonymous' ):
                 self.exchange = 'xpublic'
             else:
-                self.exchange = 'xs_%s' % self.broker.username
+                self.exchange = 'xs_%s' % self.broker.url.username
 
             if hasattr(self, 'exchange_suffix'):
                 self.exchange += '_%s' % self.exchange_suffix
@@ -902,14 +914,15 @@ class Config:
                 also should sqwawk about error if no exchange or topicPrefix defined.
                 also None to reset to empty, not done.
        """
-        self._resolve_exchange()
+        if hasattr(self, 'broker') and self.broker is not None and self.broker.url is not None:
+            self._resolve_exchange()
 
         if type(subtopic_string) is str:
-            if not hasattr(self, 'broker') or self.broker is None:
+            if not hasattr(self, 'broker') or self.broker is None or self.broker.url is None:
                 logger.error( 'broker needed before subtopic' )
                 return
 
-            if self.broker.scheme == 'amq' :
+            if self.broker.url.scheme == 'amq' :
                 subtopic = subtopic_string.split('.')
             else:
                 subtopic = subtopic_string.split('/')
@@ -1029,6 +1042,8 @@ class Config:
 
             if k == 'continue':
                 continue
+            
+            #FIXME: note for Clea, line conversion to v3 complete here.
 
             line = list(map(lambda x: self._varsub(x), line))
 
@@ -1054,11 +1069,13 @@ class Config:
             elif k in [ 'callback', 'cb' ]:
                 vv = v.split('.')
                 v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
-                self.plugins_late.append(v)
+                if v not in self.plugins_late:
+                    self.plugins_late.append(v)
             elif k in [ 'callback_prepend', 'cbp' ]:
                 vv = v.split('.')
                 v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
-                self.plugins_early.append(v)
+                if v not in self.plugins_early:
+                    self.plugins_early.append(v)
             elif k in ['declare']:
                 self._parse_declare(line[1:])
             elif k in ['feeder']:
@@ -1080,17 +1097,19 @@ class Config:
                 else:
                     self.topicPrefix = v.split('.')
             elif k in ['post_topicPrefix']:
-                #if (not self.post_broker) or self.post_broker.scheme[0:3] == 'amq':
+                #if (not self.post_broker.url) or self.post_broker.url.scheme[0:3] == 'amq':
                 if '/' in v :
                     self.post_topicPrefix = v.split('/')
                 else:
                     self.post_topicPrefix = v.split('.')
             elif k in ['import']:
                 self.imports.append(v)
-            elif k in ['flow_callback', 'flowcb', 'fcb']:
-                self.plugins_late.append(v)
-            elif k in ['flow_callback_prepend', 'flowcb_prepend', 'fcbp']:
-                self.plugins_early.append( v )
+            elif k in ['flow_callback', 'flowcb', 'fcb', 'flowCallback' ]:
+                if v not in self.plugins_late:
+                    self.plugins_late.append(v)
+            elif k in ['flow_callback_prepend', 'flowcb_prepend', 'fcbp', 'flowCallbackPrepend' ]:
+                if v not in self.plugins_early:
+                    self.plugins_early.append( v )
             elif k in ['set', 'setting', 's']:
                 self._parse_setting(line[1], line[2:])
             elif k in ['sum', 'integrity' ]:
@@ -1134,6 +1153,11 @@ class Config:
                         % ( cfg, lineno, line[0]) )
                     continue
                 setattr(self, k, durationToSeconds(v))
+            elif k in perm_options:
+                if v.isdigit():
+                    setattr(self, k, int(v, base=8))
+                else:
+                    logger.error('%s setting to %s ignored: only numberic modes supported' % ( k, v ) )
             elif k in size_options:
                 setattr(self, k, chunksize_from_str(v))
             elif k in count_options:
@@ -1228,8 +1252,9 @@ class Config:
                 self.logEvents |= set( ['reject'] )
             delattr( self, 'log_reject' )
 
-        if ( (len(self.logEvents) > 0 ) or self.log_flowcb_needed) and ( '.log.Log' not in self.plugins_late ):
-            self.plugins_late.append( 'sarracenia.flowcb.log.Log' )
+        if ( (len(self.logEvents) > 0 ) or self.log_flowcb_needed) :
+            if not 'sarracenia.flowcb.log.Log' in self.plugins_late:
+                self.plugins_late.append( 'sarracenia.flowcb.log.Log' )
 
         # patch, as there is no 'none' level in python logging module...
         #    mapping so as not to break v2 configs.
@@ -1267,10 +1292,10 @@ class Config:
             self.cfg_run_dir = os.path.join(get_user_cache_dir(hostdir),
                                             component, cfg)
 
-        if self.post_broker is not None:
+        if self.post_broker is not None and self.post_broker.url is not None:
             if not hasattr(self,
                            'post_exchange') or self.post_exchange is None:
-                self.post_exchange = 'xs_%s' % self.post_broker.username
+                self.post_exchange = 'xs_%s' % self.post_broker.url.username
 
             if hasattr(self, 'post_exchange_suffix'):
                 self.post_exchange += '_%s' % self.post_exchange_suffix
@@ -1290,7 +1315,7 @@ class Config:
                 if (not hasattr(self,'broker') or not self.broker):
                     self.broker = self.post_broker
 
-        if self.broker is not None:
+        if self.broker is not None and self.broker.url is not None:
 
             self._resolve_exchange()
 
@@ -1302,7 +1327,7 @@ class Config:
                 queuefile += os.sep + self.hostdir
 
             queuefile += os.sep + component + os.sep + cfg
-            queuefile += os.sep + component + '.' + cfg + '.' + self.broker.username
+            queuefile += os.sep + component + '.' + cfg + '.' + self.broker.url.username
 
             if hasattr(self, 'exchange_split') and hasattr(
                     self, 'no') and (self.no > 0):
@@ -1328,7 +1353,7 @@ class Config:
 
             #if the queuefile is corrupt, then will need to guess anyways.
             if ( self.queue_name is None ) or ( self.queue_name == '' ):
-                queue_name = 'q_' + self.broker.username + '_' + component + '.' + cfg
+                queue_name = 'q_' + self.broker.url.username + '_' + component + '.' + cfg
                 if hasattr(self, 'queue_suffix'):
                     queue_name += '.' + self.queue_suffix
                 queue_name += '.' + str(randint(0, 100000000)).zfill(8)

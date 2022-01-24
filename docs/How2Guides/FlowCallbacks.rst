@@ -61,7 +61,7 @@ a setting for a callback is declared as follows::
 
     set sarracenia.flowcb.filter.log.Log.logLevel debug
 
-(the prefix for the setting matches the type hierarchy in flow_callback)
+(the prefix for the setting matches the type hierarchy in flowCallback)
 
 when the constructor for the callback is called, it's options
 argument will contain::
@@ -158,7 +158,7 @@ initialize things for the callback class::
         self.o.add_option( 'myoption', 'str', 'usuallythis')
 
 The logging setup lines in __init__ allow setting a specific logging level
-for this flow_callback class. Once the logging boiler-plate is done, 
+for this flowCallback class. Once the logging boiler-plate is done, 
 the add_option routine to define settings to for the class.
 users can include them in configuration files, just like built-in options::
 

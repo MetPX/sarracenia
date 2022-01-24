@@ -633,6 +633,110 @@ $ sr_subscribe --reset foreground ../dd_swob.conf
   2016-05-07 18:01:17,544 [INFO] Received notice  20160507220117.437 http://dd3.weather.gc.ca/ observations/swob-ml/20160507/CVFS/2016-05-07-2200-CVFS-AUTO-swob.xml
   2016-05-07 18:01:17,607 [INFO] 201 Downloaded : v02.report.observations.swob-ml.20160507.CVFS 20160507220117.437 http://dd3.weather.gc.ca/ observations/swob-ml/20160507/CVFS/2016-05-07-2200-CVFS-AUTO-swob.xml 201 blacklab anonymous 0.151982 parts=1,7174,1,0,0 sum=d,a8b14bd2fa8923fcdb90494f3c5f34a8 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM rename=./2016-05-07-2200-CVFS-AUTO-swob.xml message=Downloaded 
   
+
+Logging and Debugging
+---------------------
+
+As sr3 components usually run as a daemon (unless invoked in *foreground* mode)
+one normally examines its log file to find out how processing is going.  When only
+a single instance is running, one can view the log of the running process like so::
+
+   sr3 log subscribe/*myconfig*
+
+FIXME: not implemented properly. normally use "foreground" command instead.
+
+Where *myconfig* is the name of the running configuration. Log files
+are placed as per the XDG Open Directory Specification. There will be a log file
+for each *instance* (download process) of an sr_subscribe process running the myflow configuration::
+
+   in linux: ~/.cache/sarra/log/sr_subscribe_myflow_01.log
+
+One can override placement on linux by setting the XDG_CACHE_HOME environment variable, as
+per: `XDG Open Directory Specification <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_
+Log files can be very large for high volume configurations, so the logging is very configurable.
+
+To begin with, one can select the logging level throughout the entire application using
+logLevel, and logReject:
+
+- debug
+   Setting option debug is identical to use  **logLevel debug**
+
+- logLevel ( default: info )
+   The level of logging as expressed by python's logging. Possible values are :  critical, error, info, warning, debug.
+
+- log_reject <True|False> ( default: False )
+   print a log message when *rejecting* messages (choosing not to download the corresponding files)
+
+   The rejection messages also indicate the reason for the rejection.
+
+At the end of the day (at midnight), these logs are rotated automatically by
+the components, and the old log gets a date suffix. The directory in which
+the logs are stored can be overridden by the **log** option, the number of
+rotated logs to keep are set by the **logrotate** parameter. The oldest log
+file is deleted when the maximum number of logs has been reach and this
+continues for each rotation. An interval takes a duration of the interval and
+it may takes a time unit suffix, such as 'd\|D' for days, 'h\|H' for hours,
+or 'm\|M' for minutes. If no unit is provided logs will rotate at midnight.
+Here are some settings for log file management:
+
+- log <dir> ( default: ~/.cache/sarra/log ) (on Linux)
+   The directory to store log files in.
+
+- statehost <False|True> ( default: False )
+   In large data centres, the home directory can be shared among thousands of
+   nodes. Statehost adds the node name after the cache directory to make it
+   unique to each node. So each node has it's own statefiles and logs.
+   example, on a node named goofy,  ~/.cache/sarra/log/ becomes ~/.cache/sarra/goofy/log.
+
+- logrotate <max_logs> ( default: 5 , alias: lr_backupCount)
+   Maximum number of logs archived.
+
+- logrotate_interval <duration>[<time_unit>] ( default: 1, alias: lr_interval)
+   The duration of the interval with an optional time unit (ie 5m, 2h, 3d)
+
+- permLog ( default: 0600 )
+   The permission bits to set on log files.
+
+
+
+flowcb/log.py Debug Tuning
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In addition to application-options, there is a flowcb that is used by default for logging, which
+has additional options:
+
+- logMessageDump  (default: off) boolean flag
+  If set, all fields of a message are printed, at each event, rather than just a url/path reference.
+
+- logEvents ( default after_accept,after_work,on_housekeeping )
+   emit standard log messages at the given points in message processing.
+   other values: on_start, on_stop, post, gather, ... etc...
+
+etc... One can also modify the provided plugins, or write new ones to completely change the logging.
+
+
+moth Debug Tuning
+~~~~~~~~~~~~~~~~~
+
+Turning on logLevel to debug on the entire application often results in inordinately large log files.
+By default the Messages Organized into Topic Hierarchies (Moth) parent class for the messaging protocols,
+ignores the application-wide debug option.  To enable debugging output from these classes, there
+are additional settings.
+
+One can explicitly set the debug option specifically for the messaging protocol class::
+
+    set sarracenia.moth.amqp.AMQP.logLevel debug
+    set sarracenia.moth.mqtt.MQTT.logLevel debug
+
+will make the messaging layer very verbose.
+Sometimes during interoperability testing, one must see the raw messages, before decoding by moth classes::
+
+    messageDebugDump
+
+Either or both of these options will make very large logs, and are best used judiciously.
+
+
+
   
 Speedo Metrics
 --------------

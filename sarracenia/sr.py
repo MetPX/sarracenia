@@ -638,7 +638,7 @@ class sr_GlobalState:
                 exl.append(o.exchange)
             return exl
 
-        x = 'xs_%s' % o.broker.username
+        x = 'xs_%s' % o.broker.url.username
 
         if hasattr(o, 'exchange_suffix'):
             x += '_%s' % o.exchange_suffix
@@ -665,7 +665,7 @@ class sr_GlobalState:
             if self.states[c][cfg]['queue_name']:
                 return self.states[c][cfg]['queue_name']
 
-        n = 'q_' + o.broker.username + '.sr3_' + c + '.' + cfg
+        n = 'q_' + o.broker.url.username + '.sr3_' + c + '.' + cfg
         n += '.' + str(random.randint(0, 100000000)).zfill(8)
         n += '.' + str(random.randint(0, 100000000)).zfill(8)
 
@@ -697,9 +697,9 @@ class sr_GlobalState:
 
                 if hasattr(o, 'admin') and (o.admin is not None):
                     # FIXME: sometimes o.admin is a string... no idea why.. upstream cause should be addressed.
-                    if type(o.admin) == str:
-                        o.admin = urllib.parse(o.admin)
-                    host = self._init_broker_host(o.admin.netloc)
+                    if o.admin.url is not None and type(o.admin.url) == str:
+                        o.admin.url = urllib.parse(o.admin.url)
+                    host = self._init_broker_host(o.admin.url.netloc)
                     self.brokers[host]['admin'] = o.admin
                     if hasattr(o, 'declared_exchanges'):
                         for x in o.declared_exchanges:
@@ -713,8 +713,8 @@ class sr_GlobalState:
                                     self.brokers[host]['exchanges'][x].append(
                                         'declared')
 
-                if hasattr(o, 'broker') and o.broker is not None:
-                    host = self._init_broker_host(o.broker.netloc)
+                if hasattr(o, 'broker') and o.broker is not None and o.broker.url is not None:
+                    host = self._init_broker_host(o.broker.url.netloc)
 
                     xl = self.__resolved_exchanges(c, cfg, o)
 
@@ -733,8 +733,8 @@ class sr_GlobalState:
                     else:
                         self.brokers[host]['queues'][q] = [name]
 
-                if hasattr(o, 'post_broker') and o.post_broker is not None:
-                    host = self._init_broker_host(o.post_broker.netloc)
+                if hasattr(o, 'post_broker') and o.post_broker is not None and o.post_broker.url is not None:
+                    host = self._init_broker_host(o.post_broker.url.netloc)
 
                     #o.broker = o.post_broker
                     if hasattr(o, 'post_exchange'):
@@ -776,14 +776,27 @@ class sr_GlobalState:
 
         self._resolve_brokers()
 
+        if not os.path.exists( self.user_cache_dir ):
+            os.mkdir(self.user_cache_dir)
+
         # comparing states and configs to find missing instances, and correct state.
         for c in self.components:
+            if not os.path.exists( self.user_cache_dir + os.sep + c ):
+                os.mkdir(self.user_cache_dir + os.sep + c )
             if (c not in self.states) or (c not in self.configs):
                 continue
 
             for cfg in self.configs[c]:
                 if cfg not in self.states[c]:
-                    # print('missing state for %s/%s' % (c,cfg) )
+                    print('missing state for %s/%s' % (c,cfg))
+                    os.mkdir(self.user_cache_dir + os.sep + c + os.sep + cfg)
+                    # add config as state in .cache under right directory.
+                    self.states[c][cfg] = {}
+                    self.states[c][cfg]['instance_pids'] = {}
+                    self.states[c][cfg]['queue_name'] = None
+                    self.states[c][cfg]['status'] = 'stopped'
+                    self.states[c][cfg]['has_state'] = False
+                    self.states[c][cfg]['retry_queue'] = 0
                     continue
                 if len(self.states[c][cfg]['instance_pids']) >= 0:
                     self.states[c][cfg]['missing_instances'] = []
@@ -1043,7 +1056,6 @@ class sr_GlobalState:
 
         if self.users:
             for h in self.brokers:
-                print('h: %s' % h)
                 if 'admin' in self.brokers[h]:
                     with open(
                             self.user_config_dir + os.sep + 'credentials.conf',
@@ -1062,7 +1074,7 @@ class sr_GlobalState:
                                 #print( 'u_url : user:%s, pw:%s, role: %s' % \
                                 #    (u_url.username, u_url.password, self.default_cfg.declared_users[u_url.username]))
                                 sarracenia.rabbitmq_admin.add_user( \
-                                    self.brokers[h]['admin'], \
+                                    self.brokers[h]['admin'].url, \
                                     self.default_cfg.declared_users[u_url.username],
                                     u_url.username, u_url.password, False )
 
@@ -1241,7 +1253,7 @@ class sr_GlobalState:
             o = self.configs[c][cfg]['options']
 
             if hasattr(o, 'resolved_qname'):
-                #print('deleting: %s is: %s @ %s' % (f, o.resolved_qname, o.broker.hostname ))
+                #print('deleting: %s is: %s @ %s' % (f, o.resolved_qname, o.broker.url.hostname ))
                 qdc = sarracenia.moth.Moth.subFactory(
                     o.broker, {
                         'declare': False,
@@ -1256,7 +1268,7 @@ class sr_GlobalState:
 
         for h in self.brokers:
             for qd in queues_to_delete:
-                if qd[0].hostname != h: continue
+                if qd[0].url.hostname != h: continue
                 for x in self.brokers[h]['exchanges']:
                     xx = self.brokers[h]['exchanges'][x]
                     if qd[1] in xx:
@@ -1447,12 +1459,14 @@ class sr_GlobalState:
                 continue
 
             cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
+            statefile = self.user_cache_dir + os.sep + c + os.sep + cfg
 
             if not os.path.exists(cfgfile):
                 cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.off'
 
             logging.info('removing %s ' % (cfgfile))
             os.unlink(cfgfile)
+            shutil.rmtree(statefile)
 
     def maint(self, action):
         """
@@ -1719,7 +1733,7 @@ class sr_GlobalState:
         print('\n\nbroker summaries:\n\n')
         for h in self.brokers:
             if 'admin' in self.brokers[h]:
-                admin_url = self.brokers[h]['admin']
+                admin_url = self.brokers[h]['admin'].url
                 admin_urlstr = "%s://%s@%s" % ( admin_url.scheme, \
                    admin_url.username, admin_url.hostname)
                 if admin_url.port:

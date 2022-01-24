@@ -46,8 +46,8 @@ logger = logging.getLogger(__name__)
 #           options.credentials
 #           options.destination
 #           options.batch
-#           options.chmod
-#           options.chmod_dir
+#           options.permDefault
+#           options.permDirDefault
 #     opt   options.bytes_per_second
 #     opt   options.bufsize
 
@@ -337,14 +337,14 @@ def file_write_length(req, msg, bufsize, filesize, options):
     fp.close()
 
     h = options.msg.headers
-    if options.preserve_mode and 'mode' in h:
+    if options.permCopy and 'mode' in h:
         try:
             mod = int(h['mode'], base=8)
         except:
             mod = 0
         if mod > 0: os.chmod(msg['new_file'], mod)
 
-    if options.preserve_time and 'mtime' in h and h['mtime']:
+    if options.timeCopy and 'mtime' in h and h['mtime']:
         os.utime(msg['new_file'],
                  times=(timestr2flt(h['atime']), timestr2flt(h['mtime'])))
 

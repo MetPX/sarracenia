@@ -11,11 +11,11 @@ import importlib
 import logging
 import sys
 """
-1st draft of a v03 plugin method: flow_callback
+1st draft of a v03 plugin method: flowCallback
 
 sample call:
 
-flow_callback sarracenia.flowcb.name.Name
+flowCallback sarracenia.flowcb.name.Name
 
 will instantiate an object of that type whose appropriately name methods
 will be called at the right time.
@@ -29,7 +29,7 @@ a setting is declared:
 
 set sarracenia.flowcb.filter.log.Log.level debug
 
-(the prefix for the setting matches the type hierarchy in flow_callback)
+(the prefix for the setting matches the type hierarchy in flowCallback)
 
 the plugin should get the setting:
 
@@ -75,7 +75,7 @@ class FlowCB:
     FIXME: document the API signatures for all the entry points. 
 
     def __init__(self,options):
-        Task: initialization of the flow_callback at instantiation time.
+        Task: initialization of the flowCallback at instantiation time.
 
         usually contains:
 
@@ -193,7 +193,7 @@ def load_library(factory_path, options):
     """
 
     if not '.' in factory_path:
-       logger.error('flow_callback <file>.<Class> no dot... missing something from: %s' % factory_path )
+       logger.error('flowCallback <file>.<Class> no dot... missing something from: %s' % factory_path )
        return None
 
     packagename, classname = factory_path.rsplit('.', 1)
