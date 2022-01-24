@@ -171,7 +171,21 @@ convert_to_v3 = {
         'post_long_flow': [ 'flow_callback', 'sarracenia.flowcb.accept.longflow.LongFLow'],
         'msg_delay': [ 'flow_callback', 'sarracenia.flowcb.accept.messagedelay.MessageDelay'],
         'msg_download_baseurl': [ 'flow_callback', 'sarracenia.flowcb.accept.downloadbaseurl.DownloadBaseUrl'],
-
+	    
+	'msg_from_cluster': ['continue'],
+	'msg_stdfiles': ['continue'],
+	'msg_fdelay': ['continue'],
+	'msg_stopper': ['continue'],
+	'msg_overwrite_sum': ['continue'],
+	'msg_gts2wistopic': ['continue'],
+	'msg_download': ['continue'],
+	'msg_by_source': ['continue'],
+	'msg_by_user': ['continue'],
+	'msg_dump': ['continue'],
+	'msg_total': ['continue'],
+	'msg_total_save': ['continue'],
+	'post_total': ['continue'],
+	'post_total_save': ['continue'],
 
         'wmo2msc': [ 'flow_callback', 'sarracenia.flowcb.filter.wmo2msc.Wmo2Msc'],
         'msg_delete': [ 'flow_callback', 'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles'],
