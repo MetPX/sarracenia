@@ -4,7 +4,7 @@ name: run the sr_insects static_flow test.
 on:
   push:
     branches:
-      - v03
+      - v03_wip
 
   workflow_dispatch:
     inputs:
@@ -39,9 +39,9 @@ jobs:
     # Enable tmate debugging of manually-triggered workflows if the input option was provided
     # https://github.com/marketplace/actions/debugging-with-tmate
     # 
-    #- name: Setup tmate session
-    #  uses: mxschmitt/action-tmate@v3
-    #  #if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+      #if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
 
     - name: Limit Static test.
       run: |
