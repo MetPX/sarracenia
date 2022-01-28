@@ -149,7 +149,7 @@ class Flow:
         self.worklist.directories_ok = []
 
         # Witness the creation of this list 
-        self.plugins['load'] = self.o.plugins_early + ['sarracenia.flowcb.retry.Retry', 'sarracenia.flowcb.housekeeping.memory.Memory']
+        self.plugins['load'] = self.o.plugins_early + ['sarracenia.flowcb.retry.Retry', 'sarracenia.flowcb.housekeeping.resources.Resources']
 
 
         # open cache, get masks.

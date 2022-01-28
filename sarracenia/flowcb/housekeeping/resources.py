@@ -1,16 +1,17 @@
 #!/usr/bin/python3
 """
-Default `on_heartbeat` handler that restarts components to deal with memory leaks.
+Default `on_heartbeat` handler that:
+- Logs Memory and CPU usage.
+- Restarts components to deal with memory leaks.
 
-Setting `MemoryMax` in the config overrides the following:
+If `MemoryMax` is not in the config, it is automatically calculated with the following procedure:
 
-The plugin processes the first `MemoryBaseLineFile` items to reach a steady state before setting the threshold
-(messages-in for subscribers, messages-posted for posting programs).
-Once processed, the `MemoryMax` threshold is set to `MemoryMultiplier` * current memory in use.
+1. The plugin processes the first `MemoryBaseLineFile` items to reach a steady state.
+   - Subscribers process messages-in
+   - Posting programs process messages-posted
+2. Set `MemoryMax` threshold to `MemoryMultiplier` * (memory usage at time steady state)
 
 If memory use ever exceeds the `MemoryMax` threshold, then the plugin triggers a restart, reducing memory consumption.
-
-
 
 Parameters
 ----------
@@ -47,7 +48,7 @@ import sys
 logger = logging.getLogger(__name__)
 
 
-class Memory(FlowCB):
+class Resources(FlowCB):
 
     def __init__(self, options):
         self.o = options
@@ -62,10 +63,7 @@ class Memory(FlowCB):
         self.msgCount = 0
 
     def on_housekeeping(self):
-        logger.info(f"According to sys.argv:\n\t{sys.argv}")
         mem = psutil.Process().memory_info().vms
-        # TODO: Should this be instead in logger? Why does it exist here?
-        # Change this class to resources so it encapsulates more appropriately.
         ost = os.times()
         logger.info(f"Current Memory cpu_times: user={ost.user} system={ost.system} elapse={ost.elapsed}")
 
@@ -100,16 +98,17 @@ class Memory(FlowCB):
 
     def restart(self):
         """
+        Do an in-place restart of the current process (keeps pid).
+        Gets a new memory stack/heap, keeps all file descriptors but replaces the buffers.
         """
-        # Do an in-place restart (keeps pid)
-        logger.info(f"Memory threshold surpassed! Triggering a restart for '{sys.executable}' with '{sys.argv}'")
+        logger.info(f"Memory threshold surpassed! Triggering a restart for '{sys.argv}' via '{sys.executable}'")
         # First arg must be the program to be run (absolute path to program)
         # Second arg has to be python for windows, see how this affects the linux side of things..
         # Third arg is the name of the program you wish to run (should be full path to script) plus all the args.
         #   The star unpacks the sys.argv list into the remaining function args
 
         if sys.platform.startswith(('linux', 'cygwin', 'darwin', 'aix')):
-            # Unix* (Linux / Windows/Cygwin / MacOS / AIX) Specific
+            # Unix* (Linux / Windows/Cygwin / MacOS / AIX) Specific restart
             os.execl(sys.executable, sys.executable, * sys.argv)
         elif sys.platform.startswith('win32'):
             # Windows Specific restart
@@ -119,15 +118,15 @@ class Memory(FlowCB):
             os.execl(sys.executable, sys.executable, * sys.argv)
 
         # Scream out in agony and die
-        logger.critical(f'Restart "execl" failed, this should never be logged.')
+        logger.critical(f'Plugin resources.py:restart() "execl" failed, this should never be logged.')
         exit(1)
 
     def after_work(self, worklist):
         self.transferCount += len(worklist.ok)
         # if self.threshold is not None:
-        #    TODO: Remove this callback when isue #444 is implemented
+        #    TODO: Remove this callback when issue #444 is implemented
 
     def after_accept(self, worklist):
         self.msgCount += len(worklist.incoming)
         # if self.threshold is not None:
-        #    TODO: Remove this callback when isue #444 is implemented
+        #    TODO: Remove this callback when issue #444 is implemented
