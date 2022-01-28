@@ -78,17 +78,17 @@ class Resources(FlowCB):
                 #   Process MemoryBaseLineFile(s)+ then get a memory reading before setting memory restart threshold.
                 if (self.transferCount < self.o.MemoryBaseLineFile) and (self.msgCount < self.o.MemoryBaseLineFile):
                     # Not enough files processed for steady state, continue to wait..
-                    logger.info(f"Current mem usage: {humanize.naturalsize(mem, binary=True)}, accumulating count \
-                                  ({self.transferCount} or {self.msgCount}/{self.o.MemoryBaseLineFile} so far) \
-                                  before self-setting threshold")
+                    logger.info(f"Current mem usage: {humanize.naturalsize(mem, binary=True)}, accumulating count "
+                                f"({self.transferCount} or {self.msgCount}/{self.o.MemoryBaseLineFile} so far) "
+                                f"before self-setting threshold")
                     return True
 
                 self.threshold = int(self.o.MemoryMultiplier * mem)
 
             logger.info(f"Memory threshold set to: {humanize.naturalsize(self.threshold, binary=True)}")
 
-        logger.info(f"Current Memory usage: {humanize.naturalsize(mem, binary=True)} / \
-                      {humanize.naturalsize(self.threshold, binary=True)} = {(mem/self.threshold):.2%}")
+        logger.info(f"Current Memory usage: {humanize.naturalsize(mem, binary=True)} / "
+                    f"{humanize.naturalsize(self.threshold, binary=True)} = {(mem/self.threshold):.2%}")
 
         if mem > self.threshold:
             self.restart()
