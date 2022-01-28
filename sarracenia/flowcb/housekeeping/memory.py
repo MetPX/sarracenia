@@ -8,7 +8,7 @@ The plugin processes the first `MemoryBaseLineFile` items to reach a steady stat
 (messages-in for subscribers, messages-posted for posting programs).
 Once processed, the `MemoryMax` threshold is set to `MemoryMultiplier` * current memory in use.
 
-If memory use ever exceeds the `MemoryMax` threshold, then the plugin triggers a restart, which should reduce the memory consumption.
+If memory use ever exceeds the `MemoryMax` threshold, then the plugin triggers a restart, reducing memory consumption.
 
 
 
@@ -25,7 +25,7 @@ MemoryBaseLineFile : int, optional (default: 100)
     (how many files are expected to process before a steady state is reached)
 
 MemoryMultiplier : int, optional (default: 3)
-    How many times past the steady state memory footprint you want to allow the component to grow before considering it a memory leak.
+    How many times past the steady state memory footprint you want to allow the component to grow before restarting.
     It could be normal for memory usage to grow, especially if plugins store data in memory.
 
 
@@ -71,23 +71,26 @@ class Memory(FlowCB):
 
         # We must set a threshold **after** the config file has been parsed.
         if self.threshold is None:
-            # If the config set something, use it. 
+            # If the config set something, use it.
             if self.o.MemoryMax != -1024:
                 self.threshold = self.o.MemoryMax
 
             if self.threshold is None:
                 # No user input set, now to figure out what our baseline memory usage is at a steady state
-                #   Process at least MemoryBaseLineFile(s) then get a memory reading before actually setting our memory threshold to trigger restart. 
+                #   Process MemoryBaseLineFile(s)+ then get a memory reading before setting memory restart threshold.
                 if (self.transferCount < self.o.MemoryBaseLineFile) and (self.msgCount < self.o.MemoryBaseLineFile):
                     # Not enough files processed for steady state, continue to wait..
-                    logger.info(f"Current mem usage: {humanize.naturalsize(mem, binary=True)}, accumulating count ({self.transferCount} or {self.msgCount}/{self.o.MemoryBaseLineFile} so far) before self-setting threshold")
+                    logger.info(f"Current mem usage: {humanize.naturalsize(mem, binary=True)}, accumulating count \
+                                  ({self.transferCount} or {self.msgCount}/{self.o.MemoryBaseLineFile} so far) \
+                                  before self-setting threshold")
                     return True
 
                 self.threshold = int(self.o.MemoryMultiplier * mem)
 
             logger.info(f"Memory threshold set to: {humanize.naturalsize(self.threshold, binary=True)}")
 
-        logger.info(f"Current Memory usage: {humanize.naturalsize(mem, binary=True)} / {humanize.naturalsize(self.threshold, binary=True)} = {(mem/self.threshold):.2%}")
+        logger.info(f"Current Memory usage: {humanize.naturalsize(mem, binary=True)} / \
+                      {humanize.naturalsize(self.threshold, binary=True)} = {(mem/self.threshold):.2%}")
 
         if mem > self.threshold:
             self.restart()
@@ -100,24 +103,24 @@ class Memory(FlowCB):
         """
         # Do an in-place restart (keeps pid)
         logger.info(f"Memory threshold surpassed! Triggering a restart for '{sys.executable}' with '{sys.argv}'")
-        # FIXME Verify this actually works in Windows...
-        os.execl(sys.executable, sys.executable, * sys.argv)
+        # First arg must be the program to be run (absolute path to program)
+        # Second arg has to be python for windows, see how this affects the linux side of things..
+        # Third arg is the name of the program you wish to run (should be full path to script) plus all the args.
+        #   The star unpacks the sys.argv list into the remaining function args
 
-        # cmd_list = []
+        if sys.platform.startswith(('linux', 'cygwin', 'darwin', 'aix')):
+            # Unix* (Linux / Windows/Cygwin / MacOS / AIX) Specific
+            os.execl(sys.executable, sys.executable, * sys.argv)
+        elif sys.platform.startswith('win32'):
+            # Windows Specific restart
+            os.execl(sys.executable, 'python', * sys.argv)
+        else:
+            logger.error(f'Unknown platform type: "{sys.platform}", attempting default unix process restart..')
+            os.execl(sys.executable, sys.executable, * sys.argv)
 
-        # program_name == poll|post|sarra|sender|shovel|subscribe|watch
-        # cmd_list.append(self.o.program_name)
-
-        # We essentially want to run : sr3 <options> restart <config>.. I think?
-        # cmd_list.append('sr3')
-        # sys.argv == ['/.../sr3/sarracenia/instance.py', '--no', '1', 'start|restart|stop', 'poll|post|sarra|sender|shovel|subscribe|watch/<configFileName>']
-        # cmd_list.extend(sys.argv[1:])
-        # cmd_list[cmd_list.index('start')] = 'restart'
-
-        # logger.info(f"Memory threshold surpassed! Triggering a restart with '{cmd_list}'")
-        # sr_GlobalState.run_command(self, cmd_list)
-
-        # Do an in-place restart (keeps pid)
+        # Scream out in agony and die
+        logger.critical(f'Restart "execl" failed, this should never be logged.')
+        exit(1)
 
     def after_work(self, worklist):
         self.transferCount += len(worklist.ok)
