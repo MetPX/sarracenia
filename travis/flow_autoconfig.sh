@@ -8,7 +8,7 @@
 sudo apt-key adv --keyserver "hkps.pool.sks-keyservers.net" --recv-keys "0x6B73A36E6026DFCA"
 sudo add-apt-repository -y ppa:ssc-hpc-chp-spc/metpx-daily
 sudo apt-get update
-sudo apt -y install rabbitmq-server erlang-nox sarrac librabbitmq4 libsarrac libsarrac-dev git python3-pip net-tools
+sudo apt -y install openssh-server rabbitmq-server erlang-nox metpx-sr3c librabbitmq4 metpx-libsr3c metpx-libsr3c-dev git python3-pip net-tools findutils xattr
 
 pip3 install -U pip
 pip3 install -e .
@@ -81,7 +81,7 @@ cd
 echo
 
 # Configure users
-sr_audit --users foreground
+sr3 --users declare
 echo "dir: +${PWD}+"
 git clone -b v03_wip https://github.com/MetPX/sr_insects
 

@@ -61,6 +61,7 @@ default_options = {
     'reset': False,
     'declare': True,
     'bind': True,
+    'messageDebugDump': False,
 }
 
 
@@ -75,9 +76,31 @@ class AMQP(Moth):
 
     def _msgRawToDict(self, raw_msg):
         if raw_msg is not None:
-            if (raw_msg.properties['content_type'] == 'application/json') or ( raw_msg.body[0] == '{' ): # used as key to indicate version 3.
+            body = raw_msg.body
+
+            if self.o['messageDebugDump']:
+                if not ( 'content_type' in raw_msg.properties ):
+                    logger.warning('message is missing content-type header')
+                logger.debug('raw message body: type: %s (%d bytes) %s' % (type(body), len(body) , body))
+                logger.debug('raw message properties:' % raw_msg.properties)
+
+            if type(body) is bytes:
+                try:
+                    body= raw_msg.body.decode("utf8")
+                except Exception as ex:
+                    logger.warning('expected utf8 encoded message, decode error: %s' % ex)
+                    logger.debug('Exception details: ', exc_info=True)
+                    return None
+
+            if (( 'content_type' in raw_msg.properties ) and ( raw_msg.properties['content_type'] == 'application/json')) or ( body[0] == '{' ): # used as key to indicate version 3.
                 msg = sarracenia.Message()
-                msg.copyDict( json.loads(raw_msg.body) )
+                try:
+                    msg.copyDict( json.loads(body) )
+                except Exception as ex:
+                   logger.warning('expected json, decode error: %s' % ex)
+                   logger.debug('Exception details: ', exc_info=True)
+                   return None
+
                 """
                   observed Sarracenia v2.20.08p1 and earlier have 'parts' header in v03 messages.
                   bug, or implementation did not keep up. Applying Postel's Robustness principle: normalizing messages.
@@ -103,13 +126,19 @@ class AMQP(Moth):
                     if (type(msg['size']) is str):
                         msg['size'] = int(msg['size'])
             else:
-                msg = v2wrapper.v02tov03message(
-                    raw_msg.body, raw_msg.headers,
-                    raw_msg.delivery_info['routing_key'],
-                     self.o['topicPrefix'] )
+                try:
+                    msg = v2wrapper.v02tov03message(
+                        body, raw_msg.headers,
+                        raw_msg.delivery_info['routing_key'],
+                         self.o['topicPrefix'] )
+                except Exception as ex:
+                   logger.warning('expected v2 encoded message, decode error: %s' % ex)
+                   logger.debug('Exception details: ', exc_info=True)
+                   return None
     
+            topic = raw_msg.delivery_info['routing_key'].replace('%23','#').replace('%22','*')
             msg['exchange'] = raw_msg.delivery_info['exchange']
-            msg['subtopic'] = raw_msg.delivery_info['routing_key'].split('.')[len(self.o['topicPrefix']):]
+            msg['subtopic'] = topic.split('.')[len(self.o['topicPrefix']):]
             msg['ack_id'] = raw_msg.delivery_info['delivery_tag']
             msg['local_offset'] = 0
             msg['_deleteOnPost'] = set( [ 'ack_id', 'exchange', 'local_offset', 'subtopic' ] )
@@ -168,27 +197,28 @@ class AMQP(Moth):
 
           Expect caller to handle errors.
         """
-        host = broker.hostname
-        if broker.port is None:
-            if (broker.scheme[-1] == 's'):
+        host = broker.url.hostname
+        if broker.url.port is None:
+            if (broker.url.scheme[-1] == 's'):
                 host += ':5671'
             else:
                 host += ':5672'
         else:
-            host += ':{}'.format(broker.port)
+            host += ':{}'.format(broker.url.port)
 
         # if needed, set the vhost using the broker URL's path
         vhost = self.o['vhost']
         # if the URL path is '/' or '', no vhost is specified and the default vhost from self.o
         # will be used. Otherwise, strip off leading or trailing slashes.
-        if broker.path != '/' and broker.path != '':
-            vhost = broker.path.strip('/')
+        if broker.url.path != '/' and broker.url.path != '':
+            vhost = broker.url.path.strip('/')
 
         self.connection = amqp.Connection(host=host,
-                                          userid=broker.username,
-                                          password=unquote(broker.password),
+                                          userid=broker.url.username,
+                                          password=unquote(broker.url.password),
+                                          login_method=broker.login_method,
                                           virtual_host=vhost,
-                                          ssl=(broker.scheme[-1] == 's'))
+                                          ssl=(broker.url.scheme[-1] == 's'))
         if hasattr(self.connection, 'connect'):
             # check for amqp 1.3.3 and 1.4.9 because connect doesn't exist in those older versions
             self.connection.connect()
@@ -211,14 +241,14 @@ class AMQP(Moth):
                 # from sr_consumer.build_connection...
                 self.__connect(self.broker)
 
-                #logger.info('getSetup connected to {}'.format(self.o['broker'].hostname) )
+                #logger.info('getSetup connected to {}'.format(self.o['broker'].url.hostname) )
 
                 if self.o['prefetch'] != 0:
                     self.channel.basic_qos(0, self.o['prefetch'], True)
 
                 #FIXME: test self.first_setup and props['reset']... delete queue...
-                broker_str = self.broker.geturl().replace(
-                    ':' + self.broker.password + '@', '@')
+                broker_str = self.broker.url.geturl().replace(
+                    ':' + self.broker.url.password + '@', '@')
 
                 # from Queue declare
                 if self.o['declare']:
@@ -258,8 +288,8 @@ class AMQP(Moth):
 
             except Exception as err:
                 logger.error("AMQP getSetup failed to {} with {}".format(
-                    self.broker.hostname, err))
-                logger.error('Exception details: ', exc_info=True)
+                    self.broker.url.hostname, err))
+                logger.debug('Exception details: ', exc_info=True)
 
             if not self.o['message_strategy']['stubborn']: return
 
@@ -280,8 +310,8 @@ class AMQP(Moth):
 
                 # transaction mode... confirms would be better...
                 self.channel.tx_select()
-                broker_str = self.broker.geturl().replace(
-                    ':' + self.broker.password + '@', '@')
+                broker_str = self.broker.url.geturl().replace(
+                    ':' + self.broker.url.password + '@', '@')
 
                 #logger.debug('putSetup ... 1. connected to {}'.format(broker_str ) )
 
@@ -305,7 +335,7 @@ class AMQP(Moth):
 
             except Exception as err:
                 logger.error("AMQP putSetup failed to {} with {}".format(
-                    self.o['broker'].hostname, err))
+                    self.o['broker'].url.hostname, err))
                 logger.debug('Exception details: ', exc_info=True)
 
             if not self.o['message_strategy']['stubborn']: return
@@ -321,7 +351,7 @@ class AMQP(Moth):
             self.channel.exchange_delete(self.o['exchange'])
         except Exception as err:
             logger.error("AMQP putCleanup failed on {} with {}".format(
-                self.o['broker'].hostname, err))
+                self.o['broker'].url.hostname, err))
             logger.debug('Exception details: ', exc_info=True)
 
     def getCleanUp(self):
@@ -330,7 +360,7 @@ class AMQP(Moth):
             self.channel.queue_delete(self.o['queue_name'])
         except Exception as err:
             logger.error("AMQP putCleanup failed to {} with {}".format(
-                self.o['broker'].hostname, err))
+                self.o['broker'].url.hostname, err))
             logger.debug('Exception details: ', exc_info=True)
 
     def newMessages(self):
@@ -359,7 +389,6 @@ class AMQP(Moth):
             logger.error("getting from a publisher")
             return None
 
-        ebo = 1
         while True:
             try:
                 raw_msg = self.channel.basic_get(self.o['queue_name'])
@@ -384,12 +413,7 @@ class AMQP(Moth):
 
             logger.warning('lost connection to broker')
             self.close()
-            self.__getSetup()
-
-            if ebo < 60: ebo *= 2
-
-            logger.debug("Sleeping {} seconds ...".format(ebo))
-            time.sleep(ebo)
+            self.__getSetup() # will only return when a connection is successful.
 
     def ack(self, m):
         """
@@ -428,6 +452,7 @@ class AMQP(Moth):
         #body = copy.deepcopy(bd)
         topic = '.'.join( self.o['topicPrefix'] + body['subtopic'] )
         topic = topic.replace('#', '%23')
+        topic = topic.replace('*', '%22')
 
         if len(topic) >= 255:  # ensure topic is <= 255 characters
             logger.error("message topic too long, truncating")
@@ -510,8 +535,7 @@ class AMQP(Moth):
                 return True  # no failure == success :-)
 
             except Exception as err:
-                logger.warning("moth.amqp.putNewMessage: failed %s: %s" %
-                               (exchange, err))
+                logger.warning("failed %s: %s" % (exchange, err))
                 logger.debug('Exception details: ', exc_info=True)
 
             if not self.o['message_strategy']['stubborn']:

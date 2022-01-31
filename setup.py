@@ -22,7 +22,7 @@ print("packages = %s" % packages)
 
 setup(
     name='metpx-sr3',
-    python_requires='>3.4',
+    python_requires='>=3.6',
     version=sarracenia.__version__,
     description='Subscribe, Acquire, and Re-Advertise products.',
     long_description=(read('README.rst') + '\n\n' + read('CHANGES.rst') +

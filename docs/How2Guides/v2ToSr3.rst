@@ -30,6 +30,10 @@ than the v2 mechanism.
  * v3 classes are designed to be usable outside the CLI itself (see jupyter notebook examples)
    callable by application programmers in their own code, like any other python library.
  * v3 classes can be sub-classed to add core functionality, like new message or file transport protocols.
+ 
+There are also a couple walkthrough videos on Youtube showing simple v2 -> v3 ports:
+ - `Sender (10 min) <https://www.youtube.com/watch?v=rUazjoGzPac>`_
+ - `Poll (20 min) <https://www.youtube.com/watch?v=P20M9ojn_Zw>`_
 
 File Placement
 ==============
