@@ -1930,7 +1930,7 @@ def main():
     ]
 
     cfg = sarracenia.config.Config({
-        'accept_unmatched': True,
+        'acceptUnmatched': True,
         'exchange': 'xpublic',
         'inline': False,
         'inline_encoding': 'auto',

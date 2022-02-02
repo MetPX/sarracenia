@@ -30,7 +30,7 @@ def main():
     cfg1.override({
         'program_name': 'post',
         'directory': os.getcwd(),
-        'accept_unmatched': True,
+        'acceptUnmatched': True,
         'action': 'foreground'
     })
 

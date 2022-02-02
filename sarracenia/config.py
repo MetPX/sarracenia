@@ -58,8 +58,8 @@ import sarracenia.moth.amqp
 import sarracenia.integrity
 
 default_options = {
-    'accept_unmatched': True,
     'acceptSizeWrong': False,
+    'acceptUnmatched': True,
     'baseDir': None,
     'baseUrl_relPath': False,
     'delete': False,
@@ -88,7 +88,7 @@ count_options = [
 ]
 
 # all the boolean settings.
-flag_options = [ 'accept_unmatched', 'acceptSizeWrong', 'baseUrl_relPath', 'bind_queue', 'cache_stat', 'declare_exchange', 'debug', \
+flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'baseUrl_relPath', 'bind_queue', 'cache_stat', 'declare_exchange', 'debug', \
     'declare_queue', 'delete', 'discard', 'download', 'dry_run', 'durable', 'exchange_split', 'realpath_filter', \
     'follow_symlinks', 'force_polling', 'inline', 'inline_only', 'inplace', 'log_reject', 'pipe', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
@@ -474,7 +474,8 @@ class Config:
     synonyms = {
         'accel_scp_threshold': 'accel_threshold',
         'accel_wget_threshold': 'accel_threshold',
-        'accept_unmatch': 'accept_unmatched',
+        'accept_unmatch': 'acceptUnmatched',
+        'accept_unmatched': 'acceptUnmatched',
         'basedir': 'baseDir',
         'base_dir': 'baseDir',
         'baseurl': 'baseUrl',
@@ -1825,8 +1826,8 @@ class Config:
         if sys.version_info[0] >= 3 and sys.version_info[1] < 8:
             parser.register('action', 'extend', ExtendAction)
         
-        parser.add_argument('--accept_unmatched',
-                            default=self.accept_unmatched,
+        parser.add_argument('--acceptUnmatched',
+                            default=self.acceptUnmatched,
                             type=bool,
                             nargs='?',
                             help='default selection, if nothing matches')
@@ -2064,10 +2065,10 @@ def one_config(component, config, isPost=False):
 
     """
     default_cfg = default_config()
-    #default_cfg.override(  { 'program_name':component, 'directory': os.getcwd(), 'accept_unmatched':True, 'no':0 } )
+    #default_cfg.override(  { 'program_name':component, 'directory': os.getcwd(), 'acceptUnmatched':True, 'no':0 } )
     default_cfg.override({
         'program_name': component,
-        'accept_unmatched': True,
+        'acceptUnmatched': True,
         'no': 0
     })
 
