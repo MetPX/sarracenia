@@ -25,7 +25,7 @@ import sys, time
 logger = logging.getLogger(__name__)
 
 default_options = {
-    'accept_unmatched': False,
+    'acceptUnmatched': False,
     'blocksize': 1,
     'bufsize': 1024 * 1024,
     'poll_builtinGather': True,

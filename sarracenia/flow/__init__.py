@@ -34,7 +34,7 @@ allFileEvents = set( [ 'create', 'delete', 'link', 'modify' ] )
 
 default_options = {
     'accel_threshold': 0,
-    'accept_unmatched': False,
+    'acceptUnmatched': False,
     'attempts': 3,
     'batch': 100,
     'bytes_per_second': None,
@@ -506,7 +506,7 @@ class Flow:
                                                 self.o.flatten)
                     continue
 
-                if self.o.accept_unmatched:
+                if self.o.acceptUnmatched:
                     logger.debug("accept: unmatched pattern=%s" % (url))
                     # FIXME... missing dir mapping with mirror, strip, etc...
                     m.updateFieldsAccepted(self.o, url, None,
