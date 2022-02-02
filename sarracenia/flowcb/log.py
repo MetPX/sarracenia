@@ -25,7 +25,16 @@ class Log(FlowCB):
         self.o = options
         self.o.add_option( 'logEvents', 'set', [ 'after_accept', 'on_housekeeping' ] )
         self.o.add_option( 'logMessageDump', 'flag', False )
-        logger.info( 'initialized with: %s' % self.o.logEvents )
+        logger.info( f'{self.o.program_name} initialized with: {self.o.logEvents}' )
+        if self.o.program_name in [ 'sender' ]:
+            self.action_verb = 'sent'
+        elif self.o.program_name in [ 'post', 'poll', 'watch' ] :
+            self.action_verb = 'noticed'
+        elif self.o.program_name in [ 'shovel' ]:
+            self.action_verb = 'filtered'
+        else:
+            self.action_verb = 'downloaded'
+
         self.__reset()
 
     def __reset(self):
@@ -93,7 +102,7 @@ class Log(FlowCB):
                 if msg['integrity']['method'] in [ 'link', 'remove' ]:
                      verb=msg['integrity']['method'] 
                 else:
-                     verb='transfer'
+                     verb=self.action_verb
 
                 logger.info("%s ok: %s " % ( verb, msg['new_dir'] + '/' + msg['new_file'] ) )
                 if self.o.logMessageDump:
