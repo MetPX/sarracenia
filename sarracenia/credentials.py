@@ -53,13 +53,34 @@ import re
 import urllib, urllib.parse
 import sys
 
-# a class for credential details/options
-# add any other options here... and process in parse
+class Credential:
+    """An object that holds information about a credential.
 
+    Attributes:
+        url: urllib.parse.ParseResult object with URL, password, etc.
+        ssh_keyfile: path to SSH key file for SFTP
+        passive: use passive FTP mode
+        binary: use binary FTP mode
+        tls: use FTPS with TLS
+        prot_p: use a secure data connection for TLS
+        bearer_token: bearer token for HTTP authentication
+        login_method: force a specific login method for AMQP (PLAIN, AMQPLAIN,
+            EXTERNAL or GSSAPI)
 
-class credential_details:
-    def __init__(self):
-        self.url = None
+    """
+    def __init__(self, urlstr=None):
+        """Create a Credential object.
+
+        Args:
+            urlstr: a URL in string form to be parsed.
+
+        """
+
+        if urlstr is not None:
+            self.url = urllib.parse.urlparse(urlstr)
+        else:
+            self.url = None
+
         self.ssh_keyfile = None
         self.passive = True
         self.binary = True
@@ -81,10 +102,12 @@ class credential_details:
         return s
 
 
-# class credentials
+# class CredentialDB
 
+class CredentialDB:
+    """ Parses, stores and manages Credential objects.
+    """
 
-class Credentials:
     def __init__(self, Unused_logger=None):
         """
            logger argument no longer used... left there for API compat with old calls.
@@ -98,18 +121,18 @@ class Credentials:
 
         # need to create url object
         if details == None:
-            details = credential_details()
+            details = Credential()
             details.url = urllib.parse.urlparse(urlstr)
 
         self.credentials[urlstr] = details
 
     def get(self, urlstr):
-        #logger.debug("Credentials get %s" % urlstr)
+        #logger.debug("CredentialDB get %s" % urlstr)
 
         # already cached
 
         if self.has(urlstr):
-            #logger.debug("Credentials get in cache %s %s" % (urlstr,self.credentials[urlstr]))
+            #logger.debug("CredentialDB get in cache %s %s" % (urlstr,self.credentials[urlstr]))
             return True, self.credentials[urlstr]
 
         # create url object if needed
@@ -204,7 +227,7 @@ class Credentials:
             url = urllib.parse.urlparse(urlstr)
 
             # credential details
-            details = credential_details()
+            details = Credential()
             details.url = url
 
             # no option
