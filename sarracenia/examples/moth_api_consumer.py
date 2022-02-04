@@ -1,14 +1,14 @@
 import sarracenia.moth
 import sarracenia.moth.amqp
+import sarracenia.credentials
 
 import time
 import socket
-from urllib.parse import urlparse
 
 options = sarracenia.moth.default_options
 options.update(sarracenia.moth.amqp.default_options)
 
-broker = urlparse('amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
+broker = sarracenia.credentials.Credential('amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
 
 # binding tuple:  consists of prefix, exchange, rest.
 # effect is to bind from queue using prefix/rest to exchange.

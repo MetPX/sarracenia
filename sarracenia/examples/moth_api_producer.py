@@ -1,15 +1,15 @@
 import sarracenia.moth
-import sarracenia 
+import sarracenia
+import sarracenia.credentials
 from sarracenia.config import default_config
 
 import os
 import time
 import socket
-from urllib.parse import urlparse
 
 cfg = default_config()
 #cfg.logLevel = 'debug'
-cfg.broker = urlparse('amqp://tfeed:HungryCat@localhost')
+cfg.broker = sarracenia.credentials.Credential('amqp://tfeed:HungryCat@localhost')
 cfg.exchange = 'xpublic'
 cfg.post_baseUrl = 'http://host'
 cfg.post_baseDir = '/tmp'
