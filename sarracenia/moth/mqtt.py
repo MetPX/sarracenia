@@ -251,6 +251,7 @@ class MQTT(Moth):
                     for i in range(1,options['instances']+1):
                         icid= options['queue_name'] + '%02d' % i 
                         decl_client = self.__clientSetup( options, icid )
+                        decl_client.on_connect = MQTT.__mgt_on_connect
                         decl_client.connect( self.broker.url.hostname, port=self.__sslClientSetup(), \
                            clean_start=False, properties=props )
                         while not decl_client.is_connected():
@@ -259,10 +260,7 @@ class MQTT(Moth):
                         decl_client.loop_stop()
                         logger.info('instance declaration for %s done' % icid )
 
-                    self.client = self.__clientSetup( options, cid )
-                    self.client.on_connect = MQTT.__mgt_on_connect
-                else:
-                    self.client = self.__clientSetup( options, cid )
+                self.client = self.__clientSetup( options, cid )
 
                 self.new_message_mutex.acquire()
                 self.client.received_messages=[]
