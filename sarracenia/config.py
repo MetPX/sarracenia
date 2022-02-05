@@ -528,7 +528,7 @@ class Config:
         self.__post_broker = None
 
         if Config.credentials is None:
-            Config.credentials = sarracenia.credentials.Credentials()
+            Config.credentials = sarracenia.credentials.CredentialDB()
             Config.credentials.read(get_user_config_dir() + os.sep +
                                     "credentials.conf")
         # FIXME... Linux only for now, no appdirs
@@ -614,8 +614,8 @@ class Config:
         ok, cred_details = Config.credentials.get(urlstr)
         if cred_details is None:
             logging.error("bad credential %s" % urlstr)
-            # Callers expect that a credential_details object will be returned
-            cred_details = sarracenia.credentials.credential_details()
+            # Callers expect that a Credential object will be returned
+            cred_details = sarracenia.credentials.Credential()
             cred_details.url = urllib.parse.urlparse(urlstr)
             return False, cred_details
         return True, cred_details

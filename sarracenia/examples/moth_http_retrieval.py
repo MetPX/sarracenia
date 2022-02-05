@@ -1,13 +1,13 @@
 import sarracenia.moth
 import sarracenia.moth.amqp
+import sarracenia.credentials
 
 import time
 import socket
-from urllib.parse import urlparse
 import urllib.request
 import xml.etree.ElementTree as ET
 
-broker = urlparse('amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
+broker = sarracenia.credentials.Credential('amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
 
 options = sarracenia.moth.default_options
 options.update(sarracenia.moth.amqp.default_options)
