@@ -1,16 +1,21 @@
-FROM alpine:3.11
+FROM ubuntu:latest
 
 MAINTAINER "Peter.Silva@ssc-spc.gc.ca"
 
-RUN apk add py3-pip build-base python3-dev libffi-dev git py3-cryptography openssl-dev
+ENV TZ="Etc/UTC" \
+    DEBIAN_FRONTEND="noninteractive" \
+    BUILD_PACKAGES="build-essential" 
 
-ENV CRYPTOGRAPHY_DONT_BUILD_RUST=1
+# deps copied from setup.py requires= ...  
+
+RUN apt-get update ; apt-get install -y python3-appdirs python3-dateparser python3-watchdog python3-netifaces python3-humanize python3-jsonpickle python3-paramiko python3-psutil python3-amqp python3-pip
+
+# need version >= 1.5.1 to get MQTT v5 support, not in repos of 20.04 ... so get from pip.
+RUN pip3 install paho-mqtt
 
 WORKDIR /src
 
 COPY . /src
 
-RUN python3 -m pip install --upgrade pip && \
-    pip install cryptography==3.4.6 wheel && \
-    python3 setup.py install
+RUN python3 setup.py install
 
