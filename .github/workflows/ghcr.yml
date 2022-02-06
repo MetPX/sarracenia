@@ -23,6 +23,11 @@ jobs:
       packages: write
       contents: read
 
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x64, aarch64]
+
     steps:
       - uses: actions/checkout@v2
 
