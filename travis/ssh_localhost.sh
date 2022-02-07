@@ -4,7 +4,7 @@ ssh_works=$?
 if [ ${ssh_works} -gt 0 ]; then
     echo "no ssh to localhost... must fix..."
     # Setup autossh login
-    ssh-keygen -t rsa -N "" -f ~/.ssh/id_flow
+    ssh-keygen -t rsa -m PEM -N "" -f ~/.ssh/id_flow
     # https://stackoverflow.com/questions/54612609/paramiko-not-a-valid-rsa-private-key-file
     #sed -i 's/BEGIN .*PRIVATE/BEGIN RSA PRIVATE/;s/END .*PRIVATE/END RSA PRIVATE/'  ~/.ssh/id_flow
     cat ~/.ssh/id_flow.pub >> ~/.ssh/authorized_keys
