@@ -114,7 +114,19 @@ class sr_GlobalState:
 
             lfn += os.sep + 'log' + os.sep + c + '_' + cfg + "_%02d" % i + '.log'
 
-        os.makedirs(os.path.dirname(lfn), exist_ok=True)
+        dir_not_there = not os.path.exists( os.path.dirname(lfn) )
+
+        while dir_not_there:
+            try:
+                os.makedirs(os.path.dirname(lfn), exist_ok=True)
+                dir_not_there = False 
+            except FileExistsError:
+                dir_not_there = False 
+            except Exception as ex:
+                logging.error( "makedirs {} failed err={}".format(os.path.dirname(lfn),err))
+                logging.debug("Exception details:", exc_info=True)
+                os.sleep(1)
+                
 
         if c in [
                 'poll', 'post', 'report', 'sarra', 'sender', 'shovel',

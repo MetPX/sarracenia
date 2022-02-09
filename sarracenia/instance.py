@@ -141,7 +141,17 @@ class instance:
                 hostdir, component, config, cfg_preparse.no)
 
             #print('logfilename= %s' % logfilename )
-            os.makedirs(os.path.dirname(logfilename), exist_ok=True)
+            dir_not_there = not os.path.exists( os.path.dirname(logfilename) )
+            while dir_not_there:
+                try:
+                    os.makedirs(os.path.dirname(logfilename), exist_ok=True)
+                    dir_not_there = False 
+                except FileExistsError:
+                    dir_not_there = False 
+                except Exception as ex:
+                    logging.error( "makedirs {} failed err={}".format(os.path.dirname(logfilename),err))
+                    logging.debug("Exception details:", exc_info=True)
+                    os.sleep(1)
 
             log_format = '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s'
             if logging.getLogger().hasHandlers():
