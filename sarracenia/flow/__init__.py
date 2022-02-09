@@ -1023,7 +1023,31 @@ class Flow:
 
         new_dir = msg['new_dir']
         new_file = msg['new_file']
+        new_inflight_path = None
 
+        if options.inflight == None or (
+            ('blocks' in msg) and (msg['blocks']['method'] == 'inplace')):
+            new_inflight_path = new_file
+        elif type(options.inflight) == str:
+            if options.inflight == '.':
+                new_inflight_path = '.' + new_file
+            elif options.inflight[-1] == '/':
+                new_inflight_path = options.inflight + new_file
+            elif options.inflight[0] == '.':
+                new_inflight_path = new_file + options.inflight
+        else:
+            logger.error('inflight setting: %s, not for remote.' %
+                         options.inflight)
+        if new_inflight_path:
+           msg['new_inflight_path'] = new_inflight_path
+           msg['_deleteOnPost'] |= set(['new_inflight_path'])
+         
+        if 'download' in self.plugins and len(self.plugins['download']) > 0:
+            for plugin in self.plugins['download']:
+                ok = plugin(msg)
+                if not ok: return False
+            return True 
+ 
         try:
             curdir = os.getcwd()
         except:
@@ -1108,24 +1132,14 @@ class Flow:
             if download_algo == 'arbitrary':
                 self.proto[self.scheme].set_sumArbitrary(msg['integrity']['value'])
 
-            if options.inflight == None or (
-                ('blocks' in msg) and (msg['blocks']['method'] == 'inplace')):
-                new_inflight_path = new_file
-            elif type(options.inflight) == str:
-                if options.inflight == '.':
-                    new_inflight_path = '.' + new_file
-                elif options.inflight[-1] == '/':
-                    try:
-                        os.mkdir(options.inflight)
-                        os.chmod(options.inflight, options.permDirDefault)
-                    except:
-                        pass
-                    new_inflight_path = options.inflight + new_file
-                elif options.inflight[0] == '.':
-                    new_inflight_path = new_file + options.inflight
-            else:
-                logger.error('inflight setting: %s, not for remote.' %
-                             options.inflight)
+            if ( type(options.inflight) == str ) and ( options.inflight[-1] == '/' ) and not os.path.exists(options.inflight) :
+                try:
+                    os.mkdir(options.inflight)
+                    os.chmod(options.inflight, options.permDirDefault)
+                except:
+                    logger.error('unable to make inflight directory %s/%s' %
+                                 (msg['new_dir'], options.inflight) )
+                    logger.debug('Exception details: ', exc_info=True)
 
             logger.debug( "hasattr=%s, thresh=%d, len=%d, remote_off=%d, local_off=%d " % \
                 ( hasattr( self.proto[self.scheme], 'getAccelerated'),  \

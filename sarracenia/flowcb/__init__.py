@@ -116,6 +116,31 @@ class FlowCB:
         worklist.failed processing should occur in here as it will be zeroed out after this step.
         The flowcb/retry.py plugin, for example, processes failed messages.
 
+    def download(self,msg):
+
+         Task: looking at msg['new_dir'], msg['new_file'], msg['new_inflight_file'] 
+               and the self.o options perform a download of a single file.
+               return True on a successful transfer, False otherwise.
+
+         This replaces built-in download functionality, providing an override.
+         for individual file transfers. ideally you set checksums as you download.
+            
+         looking at self.o.integrity_method to establish download checksum algorithm.
+         might have to allow for cod... say it is checksum_method
+            
+         checksum = sarracenia.integrity.Integrity.factory(checksum_method)
+         while downloading:
+             checksum.update(chunk)
+
+         where chunk is the bytes read.
+ 
+         if the checksum does not match what is in the received message, then 
+         it is imperative, to avoid looping, to apply the actual checksum of the
+         data to the message.
+
+         msg['integrity'] =  { 'method': checksum_method, 'value': checksum.get_sumstr() }
+   
+
     def on_housekeeping(self):
          do periodic processing.
 
@@ -159,8 +184,7 @@ class FlowCB:
                of a single file.
                return True on a successful transfer, False otherwise.
 
-         This replaces built-in send functionality, is a crutch to support do_send.
-         which is why it does not operate on lists. It is expected to be used very rarely.
+         This replaces built-in send functionality for individual files.
 
     """
 
