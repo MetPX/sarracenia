@@ -1298,8 +1298,9 @@ class sr_GlobalState:
                                     'broker': self.brokers[h]['admin'],
                                     'message_strategy': { 'stubborn':True }
                                 })
-                            qdc.putCleanUp()
-                            qdc.close()
+                            if qdc:
+                                qdc.putCleanUp()
+                                qdc.close()
 
         self.user_cache_dir
         for f in self.filtered_configurations:
