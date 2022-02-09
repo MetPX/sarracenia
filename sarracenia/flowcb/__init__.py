@@ -62,7 +62,7 @@ Do not remove any message from all lists, only move messages between them.
 logger = logging.getLogger(__name__)
 
 entry_points = [
-    'ack', 'do_poll', 'gather', 'after_accept', 'on_data', 'after_work',
+    'ack', 'do_poll', 'download', 'gather', 'after_accept', 'on_data', 'after_work',
     'on_housekeeping', 'on_html_page', 'on_line', 
     'on_report', 'on_start', 'on_stop', 'poll', 'post', 'send'
 ]
@@ -140,6 +140,9 @@ class FlowCB:
 
          msg['integrity'] =  { 'method': checksum_method, 'value': checksum.get_sumstr() }
    
+         return Boolean success indicator.  if False, download  will be attempted again and/or
+         appended to retry queue.
+
 
     def on_housekeeping(self):
          do periodic processing.
