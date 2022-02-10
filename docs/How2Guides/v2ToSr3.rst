@@ -559,6 +559,46 @@ examples:
   * flowcb/send/email.py
 
 
+do_download -> download:
+------------------------
+
+create a flowCallback class with a *download* entry point.
+
+* accepts a single message as an argument.
+
+* returns True if download succeeds.
+
+* if it returns False, the retry logic applies (download will be called again
+  then placed on the retry queue.)
+
+* use msg['new_dir'], msg['new_file'], msg['new_inflight_path'] 
+  to respect settings such as *inflight* and place file properly.
+  (unless changing that is motivation for the plugin.)
+
+* might be a good idea to verify the checksum of the downloaded data.
+  if the checksum of the file downloaded does not agree with what is in
+  the message, duplicate suppression fails, and looping results.
+   
+* one case of download is when retrievalURL is not a normal file download.
+  in v03, there is a retPath fields for exactly this case. This new feature
+  can be used to eliminate the need for download plugins.  Example:
+
+  in v2:
+
+      * https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/poll_noaa.py 
+
+      * https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/download_noaa.py
+
+  is ported to sr3:
+
+      * https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/poll/noaa_hydrometric.py
+
+  The ported result sets the new field *retPath* ( retrieval path ) instead of new_dir and new_file 
+  fields, and normal processing of the *retPath* field in the message will do a good download, no
+  plugin required. 
+
+
+
 
 v3 only: post,gather
 --------------------
