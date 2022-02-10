@@ -41,7 +41,7 @@ class Line_To_SFTPattributes(FlowCB):
         self.o = options
 
 
-    def modstr2num(self, m):
+    def modstr2num(self, m) -> int:
         mode = 0
         if (m[0] == 'r'): mode += 4
         if (m[1] == 'w'): mode += 2
@@ -49,7 +49,7 @@ class Line_To_SFTPattributes(FlowCB):
         return mode
 
 
-    def filemode(self, modstr):
+    def filemode(self, modstr) -> int:
         mode = 0
         mode += file_type_dict[modstr[0]]
         mode += self.modstr2num(modstr[1:4]) << 6
@@ -57,7 +57,7 @@ class Line_To_SFTPattributes(FlowCB):
         mode += self.modstr2num(modstr[7:10])
         return mode
 
-    def fileid(self, id):
+    def fileid(self, id) -> int:
         if id.isnumeric():
             return int(id)
         else:

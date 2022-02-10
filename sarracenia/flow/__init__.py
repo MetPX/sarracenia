@@ -246,22 +246,22 @@ class Flow:
 
         return False
 
-    def reject(self, m, code, reason):
+    def reject(self, m, code, reason) -> None:
         """
             reject a message.
         """
         self.worklist.rejected.append(m)
         m.setReport( code, reason )
 
-    def please_stop(self):
+    def please_stop(self) -> None:
         self._stop_requested = True
 
-    def close(self):
+    def close(self) -> None:
 
         self._runCallbacksTime('on_stop')
         logger.info('flow/close completed cleanly')
 
-    def ack(self, mlist):
+    def ack(self, mlist) -> None:
         if "ack" in self.plugins:
             for p in self.plugins["ack"]:
                 p(mlist)

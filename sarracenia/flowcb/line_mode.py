@@ -37,14 +37,14 @@ class Line_Mode(FlowCB):
         logger.setLevel( getattr( logging, options.logLevel.upper() ) )
         logger.info( "initialized mask (from chmod setting) is: %03o " % self.o.chmod)
 
-    def modstr2num(self, m):
+    def modstr2num(self, m) -> int:
         mode = 0
         if (m[0] == 'r'): mode += 4
         if (m[1] == 'w'): mode += 2
         if (m[2] == 'x'): mode += 1
         return mode
 
-    def on_line(self, line):
+    def on_line(self, line) -> str:
 
         if type(line) is str :
             parts = line.split()

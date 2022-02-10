@@ -32,7 +32,7 @@ class Line_Log(FlowCB):
         self.o = options
         logger.setLevel( getattr( logging, option.logLevel.upper() ) )
 
-    def on_line(self, line):
+    def on_line(self, line) -> str:
 
         logger.info("line_log: reading: %s" % (line))
         return line

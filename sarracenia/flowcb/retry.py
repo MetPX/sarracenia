@@ -29,7 +29,7 @@ class Retry(FlowCB):
     """
       store a message received for a later repeated attempt.
     """
-    def __init__(self, options):
+    def __init__(self, options) -> None:
 
         logger.debug("sr_retry __init__")
 
@@ -44,11 +44,11 @@ class Retry(FlowCB):
         logger.debug('logLevel=%s' % self.o.logLevel)
 
    
-    def cleanup(self):
+    def cleanup(self) -> None:
         self.download_retry.cleanup()
         self.post_retry.cleanup()
 
-    def after_accept(self, worklist):
+    def after_accept(self, worklist) -> None:
         """
           if there are only a few new messages, then get some from the retry list.
         """
@@ -65,7 +65,7 @@ class Retry(FlowCB):
             worklist.incoming.extend(mlist)
 
 
-    def after_work(self, worklist):
+    def after_work(self, worklist) -> None:
         """
          worklist.failed should be put on the retry list.
         """
@@ -88,17 +88,17 @@ class Retry(FlowCB):
             worklist.ok.extend(mlist)
 
 
-    def after_post(self, worklist):
+    def after_post(self, worklist) -> None:
         self.post_retry.put(worklist.failed)
         worklist.failed=[]
         pass
 
-    def on_housekeeping(self):
+    def on_housekeeping(self) -> None:
         logger.info("on_housekeeping")
 
         self.download_retry.on_housekeeping()
         self.post_retry.on_housekeeping()
 
-    def on_stop(self):
+    def on_stop(self) -> None:
         self.download_retry.close()
         self.post_retry.close()

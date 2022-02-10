@@ -74,17 +74,17 @@ class FlowCB:
     """
     FIXME: document the API signatures for all the entry points. 
 
-    def __init__(self,options):
+    def __init__(self,options) -> None:
         Task: initialization of the flowCallback at instantiation time.
 
         usually contains:
 
         self.o = options
 
-    def ack(self,messagelist):
+    def ack(self,messagelist) -> None:
         Task: acknowledge messages from a gather source.
 
-    def gather(self):
+    def gather(self) -> list:
         Task: gather messages from a source... return a list of messages.
 
               in a poll, gather is always called, regardless of vip posession.
@@ -92,13 +92,13 @@ class FlowCB:
               of the vip.
         return []
 
-    def after_accept(self,worklist):
+    def after_accept(self,worklist) -> None:
          Task: just after messages go through accept/reject masks,
                operate on worklist.incoming to help decide which messages to process further.
                and move messages to worklist.rejected to prevent further processing.
                do not delete any messages, only move between worklists.
 
-    def on_data(self,data):
+    def on_data(self,data) -> None:
         Task:  return data transformed in some way.
 
         return new_data
@@ -107,7 +107,7 @@ class FlowCB:
         in worklist.ok, and failed ones in worklist.failed.
 
 
-    def after_work(self,worklist):
+    def after_work(self,worklist) -> None:
         Task: operate on worklist.ok (files which have arrived.)
 
         All messages on the worklist.ok list have been acknowledged, so to suppress posting
@@ -116,7 +116,7 @@ class FlowCB:
         worklist.failed processing should occur in here as it will be zeroed out after this step.
         The flowcb/retry.py plugin, for example, processes failed messages.
 
-    def download(self,msg):
+    def download(self,msg) -> bool:
 
          Task: looking at msg['new_dir'], msg['new_file'], msg['new_inflight_file'] 
                and the self.o options perform a download of a single file.
@@ -144,7 +144,7 @@ class FlowCB:
          appended to retry queue.
 
 
-    def on_housekeeping(self):
+    def on_housekeeping(self) -> None:
          do periodic processing.
 
     def on_html_page(self,page):
@@ -152,19 +152,19 @@ class FlowCB:
                formatted lists of files.
          return True|False
 
-    def on_line(self,line):
+    def on_line(self,line) -> str:
          used in FTP polls, because servers have different formats, modify to canonical use.
 
          Task: return modified line.
 
-    def on_start(self):
+    def on_start(self) -> None:
          After the connection is established with the broker and things are instantiated, but
          before any message transfer occurs.
 
-    def on_stop(self):
+    def on_stop(self) -> None:
          
 
-    def poll(self):
+    def poll(self) -> list:
         Task: gather messages from a destination... return a list of messages.
               works like a gather, but...
 
@@ -173,7 +173,7 @@ class FlowCB:
               in components other than poll, poll is never called.
         return []
 
-    def post(self,worklist):
+    def post(self,worklist) -> None:
          
          Task: operate on worklist.ok, and worklist.failed. modifies them appropriately.
                message acknowledgement has already occurred before they are called.
@@ -181,7 +181,7 @@ class FlowCB:
          to indicate failure to process a message, append to worklist.failed.
          worklist.failed processing should occur in here as it will be zeroed out after this step.
 
-    def send(self,msg):
+    def send(self,msg) -> bool:
 
          Task: looking at msg['new_dir'], msg['new_file'], and the self.o options perform a transfer
                of a single file.
