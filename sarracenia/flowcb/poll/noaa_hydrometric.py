@@ -60,8 +60,6 @@ class Noaa_hydrometric(FlowCB):
 
 
     def poll(self) -> list:
-        import logging, urllib.request
-        import xml.etree.ElementTree as ET
 
         # Make list of site codes to pass to http get request
         sitecodes = []

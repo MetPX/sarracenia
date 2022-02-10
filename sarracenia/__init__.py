@@ -130,11 +130,13 @@ def timeflt2str(f):
         translates to: Sept. 21st, 2021 at 01:13 and 31.0123 seconds.
         always UTC timezone.    
     """
+
     nsec = "{:.9g}".format(f % 1)[1:]
     return "{}{}".format(time.strftime("%Y%m%dT%H%M%S", time.gmtime(f)), nsec)
 
 
 def timestr2flt(s):
+
     if s[8] == "T":
         s = s.replace('T', '')
     dt_tuple = int(s[0:4]), int(s[4:6]), int(s[6:8]), int(s[8:10]), int(
