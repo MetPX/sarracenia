@@ -1013,12 +1013,19 @@ class Flow:
 
         self.o = options
 
-        logger.debug("%s_transport download relPath=%s" % (self.scheme, msg['relPath']) )
+        if 'retPath' in msg:
+            logger.debug("%s_transport download override retPath=%s" % (self.scheme, msg['retPath']) )
+            remote_file=msg['retPath']
+            cdir='/'
+            urlstr = msg['baseUrl'] + '/' + msg['retPath']
+        else:
+            logger.debug("%s_transport download relPath=%s" % (self.scheme, msg['relPath']) )
 
-        token = msg['relPath'].split('/')
-        cdir = '/' + '/'.join(token[:-1])
-        remote_file = token[-1]
-        urlstr = msg['baseUrl'] + '/' + msg['relPath']
+            token = msg['relPath'].split('/')
+            cdir = '/' + '/'.join(token[:-1])
+            remote_file = token[-1]
+            urlstr = msg['baseUrl'] + '/' + msg['relPath']
+
         new_inflight_path = ''
 
         new_dir = msg['new_dir']

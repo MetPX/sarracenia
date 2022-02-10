@@ -163,7 +163,10 @@ class Https(Transfer):
 
         # open self.http
 
-        url = self.destination + '/' + urllib.parse.quote( self.path + '/' + remote_file )
+        if 'retPath' in msg:
+            url = self.destination + msg['retPath']
+        else:
+            url = self.destination + '/' + urllib.parse.quote( self.path + '/' + remote_file )
 
         ok = self.__open__(url, remote_offset, length)
 
