@@ -1,150 +1,352 @@
-"""
-plugins intended for on_message entry_point.
+#
+# This file is part of sarracenia.
+# The sarracenia suite is Free and is proudly provided by the Government of Canada
+# Copyright (C) Her Majesty The Queen in Right of Canada, 2008-2021
+#
 
-(when messages are received.)
-
-"""
-
+import sarracenia.moth
+import copy
 import dateparser
 import datetime
-import html.parser
 import logging
+import os
 import paramiko
-import pytz
-import sarracenia
-from sarracenia import nowflt, timestr2flt
+
+import sarracenia 
+import sarracenia.config
 from sarracenia.flowcb import FlowCB
-import urllib.request
+import sarracenia.transfer
+import stat
+import pytz
+import sys, time
 
 logger = logging.getLogger(__name__)
 
 
+file_type_dict = {
+    'l': 0o120000,  # symbolic link
+    's': 0o140000,  # socket file
+    '-': 0o100000,  # regular file
+    'b': 0o060000,  # block device
+    'd': 0o040000,  # directory
+    'c': 0o020000,  # character device
+    'p': 0o010000   # fifo (named pipe)
+}
+
+#class Line_To_SFTPattributes(FlowCB):
+
+
+def modstr2num(self, m) -> int:
+        mode = 0
+        if (m[0] == 'r'): mode += 4
+        if (m[1] == 'w'): mode += 2
+        if (m[2] == 'x'): mode += 1
+        return mode
+
+
+def filemode(self, modstr) -> int:
+        mode = 0
+        mode += file_type_dict[modstr[0]]
+        mode += self.modstr2num(modstr[1:4]) << 6
+        mode += self.modstr2num(modstr[4:7]) << 3
+        mode += self.modstr2num(modstr[7:10])
+        return mode
+
+def fileid(self, id) -> int:
+        if id.isnumeric():
+            return int(id)
+        else:
+            return None
+
 
 class Poll(FlowCB):
+    def __init__(self, options):
 
-    def __init__(self,options):
+
         self.o = options
-        logger.info( 'FIXME: parent poll hello')
-        self.parser = html.parser.HTMLParser()
-        self.parser.handle_starttag = self.handle_starttag
-        self.parser.handle_data = self.handle_data
 
-    def file_size_fix(self):
+        # check destination
+
+        self.details = None
+        if self.o.destination is not None:
+            ok, self.details = sarracenia.config.Config.credentials.get(
+                self.o.destination)
+
+        if self.o.destination is None or self.details == None:
+            logger.error("destination option incorrect or missing\n")
+            sys.exit(1)
+
+        if self.o.post_baseUrl is None:
+            self.o.post_baseUrl = self.details.url.geturl()
+            if self.o.post_baseUrl[-1] != '/': self.o.post_baseUrl += '/'
+            if self.o.post_baseUrl.startswith('file:'):
+                self.o.post_baseUrl = 'file:'
+            if self.details.url.password:
+                self.o.post_baseUrl = self.o.post_baseUrl.replace(
+                    ':' + self.details.url.password, '')
+
+        self.dest = sarracenia.transfer.Transfer.factory(
+            self.details.url.scheme, self.o)
+
+        if self.dest is None:
+            logger.critical("unsupported polling protocol")
+
+        # rebuild mask as pulls instructions
+        # pulls[directory] = [mask1,mask2...]
+
+        self.pulls = {}
+        for mask in self.o.masks:
+            pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
+            logger.debug(mask)
+            if not maskDir in self.pulls:
+                self.pulls[maskDir] = []
+            self.pulls[maskDir].append(mask)
+
+
+    def cd(self, path):
         try:
-            str_value = self.mysize
-
-            factor = 1
-            if   str_value[-1] in 'bB'   : str_value = str_value[:-1]
-            elif str_value[-1] in 'kK'   : factor = 1024
-            elif str_value[-1] in 'mM'   : factor = 1024 * 1024
-            elif str_value[-1] in 'gG'   : factor = 1024 * 1024 * 1024
-            elif str_value[-1] in 'tT'   : factor = 1024 * 1024 * 1024 * 1024
-            if str_value[-1].isalpha() : str_value = str_value[:-1]
- 
-            fsize = (float(str_value) + 0.5) * factor
-            isize = int(fsize)
-
-            self.mysize = isize
-
+            self.dest.cd(path)
+            return True
         except:
-               logger.debug("bad size %s" % self.mysize)
-               return
+            logger.warning("sr_poll/cd: could not cd to directory %s" % path)
+        return False
 
-        return
-
-
-    def handle_starttag(self, tag, attrs):
-        for attr in attrs:
-            c,n = attr
-            if c == "href":
-               self.myfname = n.strip().strip('\t')
-
-    def handle_data(self, data):
-        import time
-
-        if self.myfname == None : return
-        if self.myfname == data : return
-
-        words = data.split()
-
-        if len(words) != 3 :
-           self.myfname = None
-           return
-
-        sdate = words[0] + ' ' + words[1]
-
+    def filedate(self,line):
+        line_split = line.split()
+        file_date = line_split[5] + " " + line_split[6] + " " + line_split[7]
         current_date = datetime.datetime.now(pytz.utc)
-        standard_date_format = dateparser.parse(sdate,
-            settings={
-                'RELATIVE_BASE': datetime.datetime(current_date.year, 1, 1),
-                'TIMEZONE': self.o.timezone, #turn this into an option - should be EST for mtl
-                'TO_TIMEZONE': 'UTC'})
+        # case 1: the date contains '-' implies the date is in 1 string not 3 seperate ones, and H:M is also provided
+        if "-" in file_date: file_date = line_split[5] + " " + line_split[6]
+        standard_date_format = dateparser.parse(file_date,
+                                                settings={
+                                                    'RELATIVE_BASE': datetime.datetime(current_date.year, 1, 1),
+                                                    'TIMEZONE': self.o.timezone, #turn this into an option - should be EST for mtl
+                                                    'TO_TIMEZONE': 'UTC'})
+        if standard_date_format is not None:
+            # case 2: the year was not given, it is defaulted to 1900. Must find which year (this one or last one).
+            if standard_date_format.month - current_date.month >= 6:
+                standard_date_format = standard_date_format.replace(year=(current_date.year - 1))
+        timestamp = datetime.datetime.timestamp(standard_date_format)
+        return timestamp
 
-        logger.error( f'standard_date_format {standard_date_format}' )
-        mydate = datetime.datetime.timestamp(standard_date_format)
 
-        logger.error( f'mydate type={type(mydate)} value={mydate}' )
-        #try   : t = time.strptime(sdate,'%d-%b-%Y %H:%M')
-        #except: t = time.strptime(sdate,'%Y-%m-%d %H:%M')
-        #mydate = time.strftime('%b %d %H:%M',t)
-
-        logger.error( f'self.mydate type is {type(mydate)}, value is {mydate}' )
-
-        self.mysize = words[-1]
-        self.file_size_fix()
-
-        st = paramiko.SFTPAttributes()
-        st.st_mtime = mydate
-        st.st_size = self.mysize
-        st.filename = self.myfname
-        entry = sarracenia.Message.fromFileInfo( self.myfname, self.o, st )
-        
-        if self.myfname[-1] != '/':
-              self.entries.append(entry)
+    def on_line(self, line) -> paramiko.SFTPAttributes:
+        """
+           default line processing, converts a file listing into an SFTPAttributes
+           verifies that file is accessible (based on self.o.chmod pattern to establish minimum permissions.)
+        """
+        if type(line) is paramiko.SFTPAttributes:
+            sftp_obj = line
+        elif type(line) is str and len(line.split()) > 7:
+            parts = line.split()
+            sftp_obj = SFTPAttributes()
+            sftp_obj.st_mode = self.filemode(parts[0])
+            sftp_obj.st_uid = self.fileid(parts[2])
+            sftp_obj.st_gid = self.fileid(parts[3])
+            sftp_obj.st_size = int(parts[4])
+            sftp_obj.st_mtime = self.filedate(line)
+            sftp_obj.filename = parts[-1]
+            sftp_obj.longname= line
+        if 'sftp_obj' in locals() and ((sftp_obj.st_mode & self.o.chmod) == self.o.chmod):
+            return sftp_obj
         else:
-              # directory? what?
-              pass
+            return None
 
 
-    def parse_line(self,line) -> paramiko.SFTPAttributes:
-        """
-         reformat a single line to build SFTPAttributes record.
-        """
-        #ret = paramiko.SFTPAttributes()
-        pass
+    def lsdir(self):
+        try:
+            ls = self.dest.ls()
+            new_ls = {}
+            new_dir = {}
+            # del ls['']  # For some reason with FTP the first line of the ls causes an index out of bounds error becuase it contains only "total ..." in line_mode.py
 
-    def parse_result(self,raw_content) -> list:
-       """
-         reformat the byte stream into a series of messages
+            # apply selection on the list
 
+            for f in ls:
+                matched = False
+                line = ls[f]
 
-         note for v2: something like on_html_path in v2.
-       """
+                line = self.on_line(line)
+                if (line is None) or (line == ""): 
+                    continue
+                if stat.S_ISDIR(line.st_mode):
+                    new_dir[f] = line
+                else:
+                    new_ls[f] = line
 
-       self.parser.feed(raw_content.decode('utf-8'))
-       self.parser.close()
+            return True, new_ls, new_dir
+        except Exception as e:
+            logger.warning("dest.lsdir: Could not ls directory")
+            logger.debug("Exception details:", exc_info=True)
 
-       return self.entries
-       pass
+        return False, {}, {}
 
-   
+    def poll_directory(self, pdir, lspath):
+        #logger.debug("poll_directory %s %s" % (pdir, lspath))
+        npost = 0
+        msgs = []
 
-    def poll(self) -> list:
+        # cd to that directory
 
-       url_to_poll = self.o.destination
-       logger.info( f'polling: {url_to_poll}' )
+        logger.debug(" cd %s" % pdir)
+        ok = self.cd(pdir)
+        if not ok: return []
 
-       self.entries = []
-       self.myfname = None
+        # ls that directory
 
-       response = urllib.request.urlopen( url_to_poll ) 
-       content = response.read()
+        ok, file_dict, dir_dict = self.lsdir()
+        if not ok: return []
 
-       lines = self.parse_result(content) 
+        # when not sleeping
+        #if not self.sleeping :
+        if True:
+            filelst = file_dict.keys()
+            desclst = file_dict
 
-       logger.error( f'type of lines: {type(lines)} ' )
-       for l in lines:
-           logger.info( f'line: {l}' )
+            logger.debug("poll_directory: new files found %d" % len(filelst))
 
-       return lines
-       
+            # post poll list
+
+            msgs.extend(self.poll_list_post(pdir, desclst, filelst))
+
+        # poll in children directory
+
+        sdir = sorted(dir_dict.keys())
+        for d in sdir:
+            if d == '.' or d == '..': continue
+
+            d_lspath = lspath + '_' + d
+            d_pdir = pdir + os.sep + d
+
+            msgs.extend(self.poll_directory(d_pdir, d_lspath))
+
+        return msgs
+
+    def poll_file_post(self, desc, destDir, remote_file):
+
+        FileOption = None
+        for mask in self.pulllst:
+            pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
+            if mask_regexp.match(remote_file) and accepting:
+                FileOption = maskFileOption
+
+        path = destDir + '/' + remote_file
+
+        # posting a localfile
+        if self.o.post_baseUrl.startswith('file:'):
+            if os.path.isfile(path):
+                try:
+                    lstat = os.stat(path)
+                except:
+                    lstat = None
+                ok = sarracenia.Message.fromFileInfo(path, self.o, lstat)
+                return ok
+
+        post_relPath = destDir + '/' + remote_file
+
+        logger.debug('desc: type: %s, value: %s' % ( type(desc), desc) )
+
+        if type(desc) == str:
+            line = desc.split()
+            st = paramiko.SFTPAttributes()
+            st.st_size = int(line[4])
+            # actionally only need to convert normalized time to number here...
+            # just being lazy...
+            lstime = dateparser.parse( line[5] + " " + line[6] ).timestamp()
+            st.st_mtime = lstime
+            st.st_atime = lstime
+
+            desc=st
+
+        msg = sarracenia.Message.fromFileInfo(post_relPath, self.o, desc)
+
+        if self.o.integrity_method and (',' in self.o.integrity_method):
+            m, v = self.o.integrity_method.split(',')
+            msg['integrity'] = {'method': m, 'value': v}
+
+        this_rename = self.o.rename
+
+        # FIX ME generalized fileOption
+        if FileOption is not None:
+            parts = FileOption.split('=')
+            option = parts[0].strip()
+            if option == 'rename' and len(parts) == 2:
+                this_rename = parts[1].strip()
+
+        if this_rename is not None and this_rename[-1] == '/':
+            this_rename += remote_file
+
+        if this_rename is not None:
+            msg['rename'] = this_rename
+
+        return [msg]
+
+    def poll_list_post(self, destDir, desclst, filelst):
+
+        n = 0
+        msgs = []
+
+        for idx, remote_file in enumerate(filelst):
+            desc = desclst[remote_file]
+            msgs.extend(self.poll_file_post(desc, destDir, remote_file))
+        return msgs
+
+    # =============
+    # for all directories, get urls to post
+    # if True is returned it means : no sleep, retry on return
+    # False means, go to sleep and retry after sleep seconds
+    # =============
+
+    def poll(self):
+
+        # General Attributes
+
+        self.pulllst = []
+
+        msgs = []
+        # number of post files
+
+        npost = 0
+
+        # connection did not work
+
+        try:
+            self.dest.connect()
+        except:
+            logger.error("sr_poll/post_new_url: unable to connect to %s" %
+                         self.o.destination)
+            logger.debug('Exception details: ', exc_info=True)
+            logger.error("Sleeping 30 secs and retry")
+            time.sleep(30)
+            return []
+
+        if hasattr(self.dest, 'file_index'):
+            self.dest_file_index = self.dest.file_index
+        # loop on all directories where there are pulls to do
+
+        for destDir in self.pulls:
+
+            # setup of poll directory info
+
+            self.pulllst = self.pulls[destDir]
+
+            path = destDir
+            path = path.replace('${', '')
+            path = path.replace('}', '')
+            path = path.replace('/', '_')
+            lsPath = self.o.cfg_run_dir + os.sep + 'ls' + path
+
+            currentDir = self.o.set_dir_pattern(destDir)
+
+            if currentDir == '': currentDir = destDir
+            msgs.extend(self.poll_directory(currentDir, lsPath))
+            logger.debug('poll_directory returned: %s' % len(msgs))
+
+        # close connection
+
+        try:
+            self.dest.close()
+        except:
+            pass
+
+        return msgs

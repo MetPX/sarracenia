@@ -435,7 +435,6 @@ class Flow:
 
         now = nowflt()
         for m in self.worklist.incoming:
-            logger.info( f" type 'pubTime' {type(m['pubTime'])}" )
             then = sarracenia.timestr2flt(m['pubTime'])
             lag = now - then
             if self.o.messageAgeMax != 0 and lag > self.o.messageAgeMax:
