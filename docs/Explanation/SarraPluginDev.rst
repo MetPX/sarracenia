@@ -40,6 +40,8 @@ There are other ways to extend Sarracenia v3 by subclassing of:
 * Sarracenia.integrity to add more checksumming methods.
 * Sarracenia.moth to add support for more messaging protocols.
 * Sarracenia.flow to create new flows. 
+* Sarracenia.flowcb to customize flows.
+* Sarracenia.flowcb.poll to customize poll flows.
 
 That will be discussed after callbacks are dealt with.
 
@@ -159,6 +161,8 @@ One can also see which plugins are active in a configuration by looking at the m
 Use of the *flowCallbackPrepend* option will have the the class loaded at the beginning of the list, rather than
 at the end.
 
+
+
 Settings
 --------
 
@@ -237,6 +241,80 @@ Use the _sr3_ _show_ command to view all active settings resulting from a config
     fractal% 
 
 
+Logging Control
+---------------
+
+The method of understanding sr3 flow activity is by examining its logs.
+Logging can be very heavy in sr3, so there are many ways of fine tuning it.
+
+
+logLevel
+~~~~~~~~
+
+the normal logLevel one is used to in the built-in python Log classes. It has 
+levels: *debug, info, warning, error,* and *critical,*  where level indicates
+the lowest priority message to print.  Default value is *info*.
+
+Because a simple binary switch of the logLevel can result in huge logs, for
+example when polling, where every time every line is polled could generate a log line.
+The monitoring of MQP protocols can be similarly verbose, so by default neither
+of these are actually put into debug mode by the global logLevel setting.
+some classes do not honour the global setting, and ask for explicit
+enabling:
+
+set sarracenia.transfer.Transfer.logLevel debug
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Can control the logLevel used in transfer classes, to set it lower or higher
+than the rest of sr3.
+
+
+set sarracenia.moth.amqp.AMQP.logLevel debug
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Print out debug messages specific to the AMQP message queue (sarracenia.moth.amqp.AMQP class).
+used only when debugging with the MQP itself, such as dealing with broker connectivity issues.
+interop diagnostics & testing.
+
+set sarracenia.moth.mqtt.MQTT.logLevel debug
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Print out debug messages specific to the MQTT message queue (sarracenia.moth.mqtt.MQTT class).
+used only when debugging with the MQP itself, such as dealing with broker connectivity issues.
+interop diagnostics & testing.
+
+logEvents
+~~~~~~~~~
+
+default: *after_accept, after_work, on_housekeeping*
+available: after_accept, after_work, all, gather, on_housekeeping, on_start, on_stop, post
+
+implemented by the *sarracenia.flowcb.log.Log* class, one can select which events generate log
+messages. wildcard: *all* generates log messages for every event known to the *Log* class.
+
+
+
+logMessageDump
+~~~~~~~~~~~~~~
+
+implemented by sarracenia.flowcb.log, at each logging event, print out the current content
+of the message being processed.
+
+logReject
+~~~~~~~~~
+
+print out a log message for each message rejected (normally silently ignored.)
+
+
+messageDebugDump
+~~~~~~~~~~~~~~~~
+
+Implemented in moth sub-classes, prints out the bytes actually received or sent
+for the MQP protocol in use.
+
+
+
+
 
 Extending Classes
 -----------------
@@ -251,6 +329,11 @@ One can add additional functionality to Sarracenia by creating subclassing.
 
 * sarra.flow - creation of new components beyond the built-in ones. (post, sarra, shovel, etc...)
  
+* sarra.flowcb - customization of component flows using callbacks.
+
+* sarra.flowcb.poll - customization of poll callback for non-standard sources.
+
+
 One would start with the one of the existing classes, copy it somewhere else in the python path,
 and build your extension. These classes are added to Sarra using the *import* option
 in the configuration files. the __init__ files in the source directories are the good
@@ -341,6 +424,11 @@ self is the message being processed. variables variables most used:
   *parent.new_dir*, which operates on the directory to which the file
   will be downloaded.
 
+*msg['new_inflight_file']*
+  in download and send callbacks this field will be set with the temporary name
+  of a file used while the transfer is in progress.  Once the transfer is complete,
+  the file should be renamed to what is in *msg['new_file']*.
+
 *msg['pubTime']*
   The time the message was originally inserted into the network (first field of a notice.)
 
@@ -351,31 +439,20 @@ self is the message being processed. variables variables most used:
   The relative path from the baseURL of the file.
   concatenating the two gives the complete URL.
 
-*msg['notice']*
-  The body of the message being processed. see `sr_post(7) <../Reference/sr3.1.rst#post>`_
-  a space-separated tuple of: pubtime,baseurl,and relpath, 
-  If parts here are modified, one must modify extracted fields for full effect.
-
 *msg['integrity']*
   The checksum structure, a python dictionary with 'method' and 'value' fields.
 
 *msg['subtopic']*
   list of strings (with the topic prefix stripped off)
 
-*msg['url']*
-  The equivalent url after it has been parsed with urlparse
-  (see Python3 documentation of urlparse for detailed usage). This gives access
-  to, for example, *msg['url.hostname* for the remote host from which a file is to be obtained,
-  or *msg['url.username* for the account to use, parent.url.path gives the path on the
-  remote host.
-
-*msg['urlstr']*
-  There is also msg['urlstr which is the completed download URL of the file,
-
-
 These are the message fields which are most often of interest, but many other 
-can be viewed by just turning on the logging flowcb, which will print all available fields
-to both after_accept and after_work callbacks.
+can be viewed by the following in a configuration::
+
+   logMessageDump True
+   callback log
+
+Which ensures the log flowcb class is active, and turns on the setting
+to print rawish messages during processing.
 
 
 Accessing Options
@@ -419,44 +496,124 @@ Flow Callback Points
 Sarracenia will interpret the names of functions as indicating times in processing when
 a given routine should be called.
 
-+-------------------+----------------------------------------------------+
-|  Name             | When/Why it is Called                              |
-+===================+====================================================+
-|                   | very freqently used.                               |
-|                   | examine parent.msg for finer grained filtering.    |
-| after_accept      | Return False to stop further processing of message.|
-|                   | return True to proceed                             |
-|                   |                                                    |
-|                   | Examples: msg_* in the examples directory          |
-|                   |                                                    |
-|                   | msg_delay - make sure messages are old before      |
-|                   | processing them.                                   |
-|                   |                                                    |
-|                   | msg_download - change messages to use different    |
-|                   | downloaders based on file size (built-in for small |
-|                   | ones, binary downloaders for large files.)         |
-|                   |                                                    |
-|                   |                                                    |
-+-------------------+----------------------------------------------------+
-|                   | change msg['new_file'] to taste.                   |
-| destfn_script     | called when renaming the file from inflight to     |
-|                   | permanent name.                                    |
-|                   |                                                    |
-+-------------------+----------------------------------------------------+
-|                   | When a transfer has been completed.                |
-| after_work           |                                                    |
-|                   | return False to stop further processing.           |
-|                   | return True to proceed                             |
-|                   |                                                    |
-+-------------------+----------------------------------------------------+
-|                   | Called every housekeeping interval (minutes)       |
-|                   | used to clean cache, check for occasional issues.  |
-|                   | manage retry queues.                               |
-| on_housekeeping   |                                                    |
-|                   | return False to abort further processing           |
-|                   | return True to proceed                             |
-|                   |                                                    |
-|                   |                                                    |
+View the `FlowCB source <https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/__init__.py>`_
+for detailed information about call signatures and return values, etc...
+
++---------------------+----------------------------------------------------+
+|  Name               | When/Why it is Called                              |
++=====================+====================================================+
+|  ack                | acknowledge messages from a broker.                |
+|                     |                                                    |
++---------------------+----------------------------------------------------+
+|                     | very freqently used.                               |
+|                     |                                                    |
+|                     | can just modify messages in worklist.incoming.     |
+|                     | adding a field, or changing a value.               |
+|                     |                                                    |
+|                     | Move messages among lists of messages in worklist. |
+| after_accept        | to reject a message, it is moved from              |
+| (self,worklist)     | worklist.incoming -> worklist.rejected.            |
+|                     | (will be acknowledged and discarded.)              |
+|                     |                                                    |
+|                     | To indicate a message has been processed, move     |
+|                     | worklist.incoming -> worklist.ok                   |
+|                     | (will be acknowledged and discarded.)              |
+|                     |                                                    |
+|                     | To indicate failure to process, move:              |
+|                     | worklist.incoming -> worklist.failed               |
+|                     | (will go on retry queue for later.)                |
+|                     |                                                    |
+|                     | Examples: msg_* in the examples directory          |
+|                     |                                                    |
+|                     | msg_delay - make sure messages are old before      |
+|                     | processing them.                                   |
+|                     |                                                    |
+|                     | msg_download - change messages to use different    |
+|                     | downloaders based on file size (built-in for small |
+|                     | ones, binary downloaders for large files.)         |
+|                     |                                                    |
+|                     |                                                    |
++---------------------+----------------------------------------------------+
+|                     | called after When a transfer has been attempted.   |
+| after_work          |                                                    |
+| (self,worklist)     | All messages are acknowledged by this point.       |
+|                     | worklist.ok contains successful transfers          |
+|                     | worklist.failed contains failed transfers          |
+|                     | worklist.rejected contains transfers rejected      |
+|                     | during transfer.                                   |
+|                     |                                                    |
+|                     | usually about doing something with the file after  |
+|                     | download has completed.                            |
+|                     |                                                    |
++---------------------+----------------------------------------------------+
+|                     | change msg['new_file'] to taste.                   |
+| destfn_script       | called when renaming the file from inflight to     |
+|                     | permanent name.                                    |
+|                     |                                                    |
+|                     | NOT IMPLEMENTED? FIXME?                            |
++---------------------+----------------------------------------------------+
+| download(self,msg)  | replace built-in downloader return true on success |
+|                     | takes message as argument.                         |
++---------------------+----------------------------------------------------+
+| gather(self)        | gather messages from a source, returns a list of   |
+|                     | messages.                                          |
++---------------------+----------------------------------------------------+
+|                     | Called every housekeeping interval (minutes)       |
+|                     | used to clean cache, check for occasional issues.  |
+|                     | manage retry queues.                               |
+| on_housekeeping     |                                                    |
+| (self)              | return False to abort further processing           |
+|                     | return True to proceed                             |
+|                     |                                                    |
+|                     |                                                    |
++---------------------+----------------------------------------------------+
+|                     | when a componente (e.g. sr_subscribe) is started.  |
+| on_start(self)      | Can be used to read state from files.              |
+|                     |                                                    |
+|                     | state files in self.o.user_cache_dir               |
+|                     |                                                    |
+|                     | return value ignored                               |
+|                     |                                                    |
+|                     | example: file_total_save.py [#]_                   |
+|                     |                                                    |
++---------------------+----------------------------------------------------+
+|                     | when a component (e.g. sr_subscribe) is stopped.   |
+| on_stop(self)       | can be used to persist state.                      |
+|                     |                                                    |
+|                     | state files in self.o.user_cache_dir               |
+|                     |                                                    |
+|                     | return value ignored                               |
+|                     |                                                    |
++---------------------+----------------------------------------------------+
+| poll(self)          | replace the built-in poll method.                  |
+|                     | return a list of messages.                         |
++---------------------+----------------------------------------------------+
+| post(self,worklist) | replace the built-in post routine.                 |
+|                     |                                                    |
++---------------------+----------------------------------------------------+
+| send(self,msg)      | replace the built-in send routine.                 |
+|                     |                                                    |
++---------------------+----------------------------------------------------+
+
+
+Flow Callback Poll Customization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A built-in subclass of flowcb, sarracenia.flowcb.poll.Poll implements the bulk
+of sr3 polling. There are many times different types resources to poll, and 
+so many options to customize it are needed. Customization is accomplished
+via sub-classing, so the top of such an callback looks like::
+
+   ...
+   from sarracenia.flowcb.poll import Poll
+   ....
+
+   class Nasa_mls_nrt(Poll):
+
+Rather than implementing a flowcb class, one subclasses the 
+flowcb.poll.Poll class.  Here are the common poll
+subclass specific entry points usually implemented in sub-classes:
+
 +-------------------+----------------------------------------------------+
 |                   | in sr_poll if you only want to change how the      |
 | on_html_page      | downloaded html URL is parsed, override this       |
@@ -479,28 +636,9 @@ a given routine should be called.
 |                   | Examples:  line_* in the examples directory        |
 |                   |                                                    |
 +-------------------+----------------------------------------------------+
-|                   | when a componente (e.g. sr_subscribe) is started.  |
-| on_start          | Can be used to read state from files.              |
-|                   |                                                    |
-|                   | state files in self.o.user_cache_dir               |
-|                   |                                                    |
-|                   | return value ignored                               |
-|                   |                                                    |
-|                   | example: file_total_save.py [#]_                   |
-|                   |                                                    |
-+-------------------+----------------------------------------------------+
-|                   | when a component (e.g. sr_subscribe) is stopped.   |
-| on_stop           | can be used to persist state.                      |
-|                   |                                                    |
-|                   | state files in self.o.user_cache_dir               |
-|                   |                                                    |
-|                   | return value ignored                               |
-|                   |                                                    |
-+-------------------+----------------------------------------------------+
-|                   | Returns one or more labels, often protocols,       |
-| registered_as     | examples [ 'imap', 'pop', 'imaps', 'pops' ]        |
-|                   | example: samples/poll_email_ingest.py [#]_         |
-+-------------------+----------------------------------------------------+
+
+Examination of the built-in `flowcb Poll <https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/poll/__init__.py>`_
+class is helpful 
 
 .. [#] see `smc_download_cp <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/smc_download_cp.py>`_
 .. [#] see `Issue 74 <https://github.com/MetPX/sarracenia/issues/74>`_

@@ -543,22 +543,9 @@ And complete the needed information in the credentials file with the line  :
 **ftp://myself:mypassword@myserver:2121  passive,binary**
 
 
-Remote Service Types
-~~~~~~~~~~~~~~~~~~~~
-
 Poll gathers information about remote files, to build messages about them.
 The gather method that is built-in uses sarracenia.transfer protocols,
-currently implemented are sftp, ftp, and http. Poll lists remote directories
-and parses the lines returned.  Some servers have non-standard results when
-listing files, so one can write a sarracenia.flowcb callback with the on_line
-entry point to normalize their responses and still be able to use the
-builtin poll gather.
-
-There are other servers that provide different services, not covered
-buy the default poll. One can implement additional *sarracenia.transfer*
-classes to add understanding of them to poll, or one can implement
-a *sarracenia.flowcb* callback with a *poll* routine to support
-such services, replacing the default poller.
+currently implemented are sftp, ftp, and http. 
 
 
 
@@ -701,23 +688,32 @@ Under **sr_sarra** these fields could be reset.
 ADVANCED FEATURES
 ~~~~~~~~~~~~~~~~~
 
-There are ways to insert scripts into the flow of messages and file downloads:
-Should you want to implement tasks in various part of the execution of the program:
+The built-in Poll lists remote directories and parses the lines returned building 
+paramiko.SFTPAttributes structures (similar to os.stat) for each file listed. 
+There is a wide variety of customization available because resources to poll 
+are so disparate:
 
-- **on_line      <script>        (default: line_mode)**
-- **do_poll      <script>        (default: None)**
-- **on_post      <script>        (default: None)**
-- **on_html_page <script>        (default: html_page)**
+* one can implement a *sarracenia.flowcb* callback with a *poll* routine 
+  to support such services, replacing the default poller.
 
-The **on_line** plugin gives scripts that can read each line of an 'ls' on the polled
-site, to interpret it further. It returns True if the line should be further processed,
-or False to reject it.  By default, there is a line_mode plugin included with the package
-which implements the comparison of file permissions on the remote server against
-the **permDefault** mask.
+* Some servers have non-standard results when listing files, so one can 
+  subclass a sarracenia.flowcb.poll callback with the **on_line**
+  entry point to normalize their responses and still be able to use the
+  builtin polling flow.
 
-If the poll fetches using the http protocol, the 'ls' like entries must be derived from
-an html page. The default plugin **html_page** provided with the package, gives an idea of
-how to parse such a page into a python directory manageable by **sr_poll**.
+* There are many http servers that provide disparately formatted
+  listings of files, so that sometimes rather than reformatting individual
+  lines, a means of overriding the parsing of an entire page is needed.
+  The **on_html_page** entry point in sarracenia.flowcb.poll can be 
+  modified by subclassing as well.
+
+* There are other servers that provide different services, not covered
+  buy the default poll. One can implement additional *sarracenia.transfer*
+  classes to add understanding of them to poll.
+
+The output of a poll is a list of messages built from the file names
+and SFTPAttributes records, which can then be filtered by elements
+after *gather* in the algorithm.
 
 
 post|sr3_post|sr_cpost|watch
