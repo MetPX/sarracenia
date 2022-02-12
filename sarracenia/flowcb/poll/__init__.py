@@ -120,14 +120,14 @@ class Poll(FlowCB):
 
         self.myfname = None
 
-    def parse(self, data):
-        logger.debug("Html_parser parse")
+    def on_html_page(self, data):
         self.entries = {}
         self.myfname = None
 
-        self.parser.feed(data.decode('utf-8'))
+        self.parser.feed(data)
         self.parser.close()
 
+        logger.info( f'FIXME: type of self.entries is {type(self.entries)} ' )
         return self.entries
 
 
@@ -234,7 +234,7 @@ class Poll(FlowCB):
             ls = self.dest.ls()
 
             if type(ls) is bytes:
-                ls = self.parse(ls)
+                ls = self.on_html_page(ls.decode('utf-8'))
 
             new_ls = {}
             new_dir = {}

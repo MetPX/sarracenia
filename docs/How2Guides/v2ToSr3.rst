@@ -528,6 +528,144 @@ to keep update their recent_files cache.
 examples:
  * flowcb/poll/airnow.py
 
+on_html_page -> subclass flowcb/poll
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Here is a v2 plugin nsa_mls_nrt.py::
+
+    #!/usr/bin/env python3                                                                                                                          
+                                                  
+    class Html_parser():                                                                                                                            
+                                                  
+        def __init__(self,parent):                                                                                                                  
+                                                  
+            parent.logger.debug("Html_parser __init__")
+            import html.parser
+    
+            self.parent = parent
+            self.logger = parent.logger
+    
+            self.parser = html.parser.HTMLParser()
+            self.parser.handle_starttag = self.handle_starttag
+            self.parser.handle_data     = self.handle_data
+    
+    
+        def handle_starttag(self, tag, attrs):
+            for attr in attrs:
+                c,n = attr
+                if c == "href" and n[-1] != '/':
+                   self.myfname = n.strip().strip('\t')
+    
+        def handle_data(self, data):
+            import time
+    
+            if 'MLS-Aura' in data:
+                   self.logger.debug("data %s" %data)
+                   self.entries[self.myfname] = '-rwxr-xr-x 1 101 10 ' +'_' + ' ' + 'Jan 1 00:01' + ' ' + data
+                   self.logger.debug("(%s) = %s" % (self.myfname,self.entries[self.myfname]))
+            if self.myfname == None : return
+            if self.myfname == data : return
+            ''' 
+            # at this point data is a filename like
+            name = data.strip().strip('\t')
+    
+            parts = name.split('_')
+            if len(parts) != 3 : return
+    
+            words = parts[1].split('.')
+            sdate  = ' '.join(words[:4])
+            t      = time.strptime(sdate,'%Y %j %H %M')
+    
+            # accept file if 1 month old in sec  60 sec* 60min * 24hr * 31days
+    
+            epochf = time.mktime(t)
+            now    = time.time()
+            elapse = now - epochf
+    
+            if elapse > self.month_in_secs : return
+    
+            # build an ls line from date in file ... size set to 0  since not provided
+    
+            mydate = time.strftime('%b %d %H:%M',t)
+     
+            mysize = '_'
+     
+            self.entries[self.myfname] = '-rwxr-xr-x 1 101 10 ' + mysize + ' ' + mydate + ' ' + data
+            self.logger.debug("(%s) = %s" % (self.myfname,self.entries[self.myfname]))
+            '''
+    
+        def parse(self,parent):
+            self.logger.debug("Html_parser parse")
+            self.entries = {}
+            self.myfname = None
+    
+            self.logger.debug("data %s" % parent.data)
+            self.parser.feed(parent.data)
+            self.parser.close()
+    
+            parent.entries = self.entries
+    
+            return True
+    
+    html_parser = Html_parser(self)
+    self.on_html_page = html_parser.parse
+
+This plugin is a near exact copy of the html_page.py plugin used by default.
+the on_html_page entry point for plugins is replaced by a completely different
+mechanism. Most of the logic of v2 poll in sr3 is in the new sarracenia.FlowCB.Poll class.
+Logic from the v2 plugins/html_page.py, used by default, is now part of this 
+new Poll class, subclassed from flowcb, so basic HTML parsing is built-in.
+
+So the way to replace on_html_page in sr3 is by sub-classing Poll.  Here is an 
+sr3 version of same plugin (nasa_mls_nrt.py)::
+
+    import logging
+    import paramiko
+    import sarracenia
+    from sarracenia import nowflt, timestr2flt
+    from sarracenia.flowcb.poll import Poll
+    
+    logger = logging.getLogger(__name__)
+    
+    class Nasa_mls_nrt(Poll):
+    
+        def handle_data(self, data):
+    
+            st = paramiko.SFTPAttributes()
+            st.st_mtime = 0
+            st.st_mode = 0o775
+            st.filename = data
+    
+            if 'MLS-Aura' in data:
+                   logger.debug("data %s" %data)
+                   #self.entries[self.myfname] = '-rwxr-xr-x 1 101 10 ' +'_' + ' ' + 'Jan 1 00:01' + ' ' + data
+                   self.entries[data]=st
+    
+                   logger.info("(%s) = %s" % (self.myfname,st))
+            if self.myfname == None : return
+            if self.myfname == data : return
+
+( https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/poll/nasa_mls_nrt.py )
+and matching config file provided here:
+( https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/examples/poll/nasa-mls-nrt.conf )
+
+The new class is declared as a subclass of Poll, and only the needed
+The HTML routine (handle_data) need be written to override the behaviour
+provided by the parent class.
+
+This solution is less than half the size of the v2 one, and permits
+all manner of flexibility by allowing replacement of any or all elements
+of the poll class.
+
+
+on_line -> poll subclassing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Similarly to on_html_page above, all uses of on_line in the previous version
+were about re-formatting lines to be parseable. the on_line routine can be
+similarly sub-classed to replace it.
+
+
 
 do_send -> send:
 ~~~~~~~~~~~~~~~~

@@ -13,8 +13,9 @@ logger = logging.getLogger(__name__)
 class Nasa_mls_nrt(Poll):
 
     def handle_data(self, data):
-        import time
-
+        """
+           decode some HTML into an SFTPAttributes record for a file.
+        """
 
         st = paramiko.SFTPAttributes()
         st.st_mtime = 0
@@ -23,7 +24,6 @@ class Nasa_mls_nrt(Poll):
 
         if 'MLS-Aura' in data:
                logger.debug("data %s" %data)
-               #self.entries[self.myfname] = '-rwxr-xr-x 1 101 10 ' +'_' + ' ' + 'Jan 1 00:01' + ' ' + data
                self.entries[data]=st
 
                logger.info("(%s) = %s" % (self.myfname,st))
