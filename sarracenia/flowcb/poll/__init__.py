@@ -251,7 +251,8 @@ class Poll(FlowCB):
 
 
     def lsdir(self):
-        if True: #try:
+
+        try:
             ls = self.dest.ls()
 
             if type(ls) is bytes:
@@ -276,7 +277,7 @@ class Poll(FlowCB):
                     new_ls[f] = line
 
             return True, new_ls, new_dir
-        else: #except Exception as e:
+        except Exception as e:
             logger.warning("dest.lsdir: Could not ls directory")
             logger.debug("Exception details:", exc_info=True)
 

@@ -430,17 +430,6 @@ examples:
 
 
 
-on_line -> on_line (but different)
------------------------------------
-
-v2:  modify parent.line and return True if processing should confinue, otherwise False.
-v3:  return (potentially modified) line if processing should continue, otherwise None.
-
-examples:
-  * v2: plugins/line_mode.py
-  * v3: flowcb/line_mode.py
-
-
 do_poll -> poll
 -----------------
 
@@ -671,7 +660,13 @@ on_line -> poll subclassing
 
 Similarly to on_html_page above, all uses of on_line in the previous version
 were about re-formatting lines to be parseable. the on_line routine can be
-similarly sub-classed to replace it.
+similarly sub-classed to replace it.  One had to modify the parent.line
+string to be parseable by the built in *ls* style line parsing.
+
+In sr3, on_line is expected to return a populated paramiko.SFTPAttributes field, similar
+to the way on_html_page works (but only a single one instead of a dictionary of them.)
+With the more flexible date parsing in sr3, there has been no identified need for on_line
+on which to build an example.
 
 
 

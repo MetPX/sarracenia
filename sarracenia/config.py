@@ -196,9 +196,6 @@ convert_to_v3 = {
         'msg_log': ['logEvents', 'after_accept'],
         'msg_rawlog': ['logEvents', 'after_accept']
     },
-    'on_line': {
-        'line_log': ['logEvents', 'on_line']
-    },
     'on_post': {
         'post_log': ['logEvents', 'after_work']
     },
@@ -452,10 +449,12 @@ def config_path(subdir, config, mandatory=True, ctype='conf'):
 
 class Config:
 
+    port_required = [ 'on_line', 'on_html_page' ]
+
     v2entry_points = [
         'do_download', 'do_get', 'do_poll', 'do_put', 'do_send', 'on_message',
         'on_data', 'on_file', 'on_heartbeat', 'on_housekeeping',
-        'on_html_page', 'on_line', 'on_part', 'on_post', 'on_report',
+        'on_html_page', 'on_part', 'on_post', 'on_report',
         'on_start', 'on_stop', 'on_watch', 'plugin'
     ]
     components = [
@@ -1127,6 +1126,10 @@ class Config:
                 self._parse_setting(line[1], line[2:])
             elif k in ['sum', 'integrity' ]:
                 self._parse_sum(v)
+            elif k in Config.port_required:
+                logger.error( f' {k} {v} not supported in v3, consult porting guide. Option ignored.' )
+                logger.error( f' porting guide: https://github.com/MetPX/sarracenia/blob/v03_wip/docs/How2Guides/v2ToSr3.rst ' )
+                continue
             elif k in Config.v2entry_points:
                 #if k in self.plugins:
                 #    self.plugins.remove(v)
