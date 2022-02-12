@@ -230,7 +230,7 @@ class Https(Transfer):
 
         # get html page for directory
 
-        try:
+        if True : #try:
             dbuf = None
             while True:
                 alarm_set(self.o.timeout)
@@ -240,20 +240,20 @@ class Https(Transfer):
                 if dbuf: dbuf += chunk
                 else: dbuf = chunk
 
-            self.data = dbuf.decode('utf-8')
+            #self.data = dbuf.decode('utf-8')
 
             # invoke option defined on_html_page ... if any
 
-            for plugin in self.o.on_html_page_list:
-                if not plugin(self):
-                    logger.warning("something wrong")
-                    return self.entries
+            #for plugin in self.o.on_html_page_list:
+            #    if not plugin(self):
+            #        logger.warning("something wrong")
+            #        return self.entries
 
-        except:
+        else: #except:
             logger.warning("sr_http/ls: unable to open %s" % self.urlstr)
             logger.debug('Exception details: ', exc_info=True)
 
-        return self.entries
+        return dbuf
 
     # open
     def __open__(self, path, remote_offset=0, length=0):

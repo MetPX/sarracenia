@@ -8,6 +8,7 @@ import sarracenia.moth
 import copy
 import dateparser
 import datetime
+import html.parser
 import logging
 import os
 import paramiko
@@ -23,6 +24,28 @@ import sys, time
 logger = logging.getLogger(__name__)
 
 
+
+def file_size_fix(str_value) -> int:
+    try:
+
+        factor = 1
+        if str_value[-1] in 'bB': str_value = str_value[:-1]
+        elif str_value[-1] in 'kK': factor = 1024
+        elif str_value[-1] in 'mM': factor = 1024 * 1024
+        elif str_value[-1] in 'gG': factor = 1024 * 1024 * 1024
+        elif str_value[-1] in 'tT': factor = 1024 * 1024 * 1024 * 1024
+        if str_value[-1].isalpha(): str_value = str_value[:-1]
+
+        fsize = (float(str_value) + 0.5) * factor
+        isize = int(fsize)
+
+    except:
+        self.logger.debug("bad size %s" % self.mysize)
+        return 0
+
+    return isize
+
+
 file_type_dict = {
     'l': 0o120000,  # symbolic link
     's': 0o140000,  # socket file
@@ -32,8 +55,6 @@ file_type_dict = {
     'c': 0o020000,  # character device
     'p': 0o010000   # fifo (named pipe)
 }
-
-#class Line_To_SFTPattributes(FlowCB):
 
 
 def modstr2num(self, m) -> int:
@@ -60,6 +81,56 @@ def fileid(self, id) -> int:
 
 
 class Poll(FlowCB):
+
+    def handle_starttag(self, tag, attrs):
+        for attr in attrs:
+            c, n = attr
+            if c == "href":
+                self.myfname = n.strip().strip('\t')
+
+    def handle_data(self, data):
+        import time
+
+        if self.myfname == None: return
+        if self.myfname == data: return
+
+        words = data.split()
+
+        if len(words) != 3:
+            self.myfname = None
+            return
+
+        sdate = words[0] + ' ' + words[1]
+        try:
+            t = time.strptime(sdate, '%d-%b-%Y %H:%M')
+        except:
+            t = time.strptime(sdate, '%Y-%m-%d %H:%M')
+        mydate = time.strftime('%b %d %H:%M', t)
+
+        self.mysize = file_size_fix(words[-1])
+
+        if self.myfname[-1] != '/':
+            self.entries[
+                self.
+                myfname] = '-rwxr-xr-x 1 101 10 ' + self.mysize + ' ' + mydate + ' ' + self.myfname
+        else:
+            self.entries[
+                self.
+                myfname] = 'drwxr-xr-x 1 101 10 ' + self.mysize + ' ' + mydate + ' ' + self.myfname
+
+        self.myfname = None
+
+    def parse(self, data):
+        logger.debug("Html_parser parse")
+        self.entries = {}
+        self.myfname = None
+
+        self.parser.feed(data.decode('utf-8'))
+        self.parser.close()
+
+        return self.entries
+
+
     def __init__(self, options):
 
 
@@ -101,6 +172,11 @@ class Poll(FlowCB):
             if not maskDir in self.pulls:
                 self.pulls[maskDir] = []
             self.pulls[maskDir].append(mask)
+
+        # HTML Parsing stuff.
+        self.parser = html.parser.HTMLParser()
+        self.parser.handle_starttag = self.handle_starttag
+        self.parser.handle_data = self.handle_data
 
 
     def cd(self, path):
@@ -154,8 +230,12 @@ class Poll(FlowCB):
 
 
     def lsdir(self):
-        try:
+        if True: #try:
             ls = self.dest.ls()
+
+            if type(ls) is bytes:
+                ls = self.parse(ls)
+
             new_ls = {}
             new_dir = {}
             # del ls['']  # For some reason with FTP the first line of the ls causes an index out of bounds error becuase it contains only "total ..." in line_mode.py
@@ -175,7 +255,7 @@ class Poll(FlowCB):
                     new_ls[f] = line
 
             return True, new_ls, new_dir
-        except Exception as e:
+        else: #except Exception as e:
             logger.warning("dest.lsdir: Could not ls directory")
             logger.debug("Exception details:", exc_info=True)
 
