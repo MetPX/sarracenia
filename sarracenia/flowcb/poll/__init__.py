@@ -1,7 +1,7 @@
 #
 # This file is part of sarracenia.
 # The sarracenia suite is Free and is proudly provided by the Government of Canada
-# Copyright (C) Her Majesty The Queen in Right of Canada, 2008-2021
+# Copyright (C) Her Majesty The Queen in Right of Canada, 2008-2022
 #
 
 import sarracenia.moth
@@ -82,6 +82,12 @@ def fileid(self, id) -> int:
 
 class Poll(FlowCB):
 
+    """
+      HTML Parsing begine
+      design thoughts:
+      perhaps a separate class?
+      want to override by sub-classing... easier if in main class
+    """ 
     def handle_starttag(self, tag, attrs):
         for attr in attrs:
             c, n = attr
@@ -130,7 +136,16 @@ class Poll(FlowCB):
         logger.info( f'FIXME: type of self.entries is {type(self.entries)} ' )
         return self.entries
 
+    def on_html_parser_init(self):
+        # HTML Parsing stuff.
+        self.parser = html.parser.HTMLParser()
+        self.parser.handle_starttag = self.handle_starttag
+        self.parser.handle_data = self.handle_data
 
+    """
+      HTML Parsing begine
+
+    """
     def __init__(self, options):
 
 
@@ -173,10 +188,7 @@ class Poll(FlowCB):
                 self.pulls[maskDir] = []
             self.pulls[maskDir].append(mask)
 
-        # HTML Parsing stuff.
-        self.parser = html.parser.HTMLParser()
-        self.parser.handle_starttag = self.handle_starttag
-        self.parser.handle_data = self.handle_data
+        self.on_html_parser_init()
 
 
     def cd(self, path):
