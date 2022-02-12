@@ -126,7 +126,12 @@ class Poll(FlowCB):
 
         self.myfname = None
 
-    def on_html_page(self, data):
+
+    def on_html_page(self, data) -> dict:
+        """
+           called once per directory or page of HTML, invokes html.parser, returns
+           a dictionary of file entries.
+        """
         self.entries = {}
         self.myfname = None
 
@@ -220,7 +225,8 @@ class Poll(FlowCB):
 
     def on_line(self, line) -> paramiko.SFTPAttributes:
         """
-           default line processing, converts a file listing into an SFTPAttributes
+           default line processing, converts a file listing into an SFTPAttributes.
+           does nothing if input is already an SFTPAttributes item, returning it unchanged.
            verifies that file is accessible (based on self.o.chmod pattern to establish minimum permissions.)
         """
         if type(line) is paramiko.SFTPAttributes:
