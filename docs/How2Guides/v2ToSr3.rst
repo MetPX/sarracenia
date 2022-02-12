@@ -610,11 +610,19 @@ Here is a v2 plugin nsa_mls_nrt.py::
     html_parser = Html_parser(self)
     self.on_html_page = html_parser.parse
 
+The plugin has a main "parse" routine, which invokes the html.parser class, where data_handler
+is called for each line, gradually building the self.entries dictionary where each entry is
+a string constructed to resemble a line of *ls* command output.
+
 This plugin is a near exact copy of the html_page.py plugin used by default.
-the on_html_page entry point for plugins is replaced by a completely different
+The on_html_page entry point for plugins is replaced by a completely different
 mechanism. Most of the logic of v2 poll in sr3 is in the new sarracenia.FlowCB.Poll class.
 Logic from the v2 plugins/html_page.py, used by default, is now part of this 
 new Poll class, subclassed from flowcb, so basic HTML parsing is built-in.
+
+Another change from v2 is that there was far more string manipulation in the old
+version. in sr3 polls, most string maniupulation has been replaced by filling an 
+paramiko.SFTPAttributes structure as soon as possible.
 
 So the way to replace on_html_page in sr3 is by sub-classing Poll.  Here is an 
 sr3 version of same plugin (nasa_mls_nrt.py)::

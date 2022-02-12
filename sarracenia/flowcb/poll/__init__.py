@@ -40,7 +40,7 @@ def file_size_fix(str_value) -> int:
         isize = int(fsize)
 
     except:
-        self.logger.debug("bad size %s" % self.mysize)
+        logger.debug("bad size %s" % str_value)
         return 0
 
     return isize
@@ -95,7 +95,11 @@ class Poll(FlowCB):
                 self.myfname = n.strip().strip('\t')
 
     def handle_data(self, data):
-        import time
+        """
+           routine called from html.parser to deal with a single line.
+           if the line is about a file, then create a new entry for it
+           with a metadata available from SFTPAttributes.
+        """
 
         if self.myfname == None: return
         if self.myfname == data: return
@@ -115,15 +119,15 @@ class Poll(FlowCB):
 
         self.mysize = file_size_fix(words[-1])
 
-        if self.myfname[-1] != '/':
-            self.entries[
-                self.
-                myfname] = '-rwxr-xr-x 1 101 10 ' + self.mysize + ' ' + mydate + ' ' + self.myfname
-        else:
-            self.entries[
-                self.
-                myfname] = 'drwxr-xr-x 1 101 10 ' + self.mysize + ' ' + mydate + ' ' + self.myfname
+        entry  = paramiko.SFTPAttributes()
+        entry.st_mtime = time.mktime(t)
 
+        if self.myfname[-1] != '/':
+            entry.st_mode = 0o755
+        else:
+            entry.st_mode = stat.S_IFDIR | 0o755
+
+        self.entries[ self.myfname ] = entry
         self.myfname = None
 
 
@@ -138,7 +142,6 @@ class Poll(FlowCB):
         self.parser.feed(data)
         self.parser.close()
 
-        logger.info( f'FIXME: type of self.entries is {type(self.entries)} ' )
         return self.entries
 
     def on_html_parser_init(self):
