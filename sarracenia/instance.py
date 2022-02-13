@@ -60,7 +60,7 @@ class instance:
 
         logging.basicConfig(
             format=
-            '%(asctime)s %(process)d [%(levelname)s] %(name)s %(funcName)s %(message)s', 
+            '%(asctime)s [%(levelname)s] %(process)d %(name)s %(funcName)s %(message)s', 
             level=logging.INFO)
 
         # FIXME: honour SR_ variable for moving preferences...

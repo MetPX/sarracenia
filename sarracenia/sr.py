@@ -1970,7 +1970,6 @@ def main():
     if cfg.logStdout:
        logging.basicConfig(
            format= '%(asctime)s [%(levelname)s] %(process)d %{processName}s %(name)s %(funcName)s %(message)s' )
-       logger.critical('bc4 logStdout global')
 
     gs = sr_GlobalState(cfg, cfg.configurations)
 
