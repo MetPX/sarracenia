@@ -70,6 +70,7 @@ default_options = {
     'inline': False,
     'inline_only': False,
     'integrity_method': 'sha512',
+    'logStdout': False,
     'overwrite': True,
     'permDefault': 0,
     'permDirDefault': 0o775,
@@ -90,7 +91,7 @@ count_options = [
 # all the boolean settings.
 flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'baseUrl_relPath', 'bind_queue', 'cache_stat', 'declare_exchange', 'debug', \
     'declare_queue', 'delete', 'discard', 'download', 'dry_run', 'durable', 'exchange_split', 'realpath_filter', \
-    'follow_symlinks', 'force_polling', 'inline', 'inline_only', 'inplace', 'log_reject', 'pipe', 'restore', \
+    'follow_symlinks', 'force_polling', 'inline', 'inline_only', 'inplace', 'logStdout', 'log_reject', 'pipe', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
     'permCopy', 'pump_flag', 'randomize', 'realpath_post', 'reconnect', 'report_daemons', \
     'report_back', 'reset', 'retry_mode', 'save', 'set_passwords', 'source_from_exchange', \
@@ -1950,6 +1951,10 @@ class Config:
                 'notset', 'debug', 'info', 'warning', 'error', 'critical'
             ],
             help='encode payload in base64 (for binary) or text (utf-8)')
+        parser.add_argument('--logStdout',
+                            action='store_true',
+                            default=False,
+                            help='disable logging, everything to standard output/error')
         parser.add_argument('--no',
                             type=int,
                             help='instance number of this process')

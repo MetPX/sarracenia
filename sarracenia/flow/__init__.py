@@ -298,6 +298,7 @@ class Flow:
         while True:
 
             if self._stop_requested:
+                logger.info('clean stop from run loop')
                 self.close()
                 break
 
@@ -320,10 +321,11 @@ class Flow:
 
                 self._runCallbacksWorklist('after_accept')
 
-                logger.debug('B filtered incoming: %d, ok: %d (directories: %d), rejected: %d, failed: %d' %
+                logger.debug('B filtered incoming: %d, ok: %d (directories: %d), rejected: %d, failed: %d stop_requested: %s' %
                      (len(self.worklist.incoming), len(self.worklist.ok),
                       len(self.worklist.directories_ok),
-                      len(self.worklist.rejected), len(self.worklist.failed)))
+                      len(self.worklist.rejected), len(self.worklist.failed),
+                      self._stop_requested))
 
                 self.ack(self.worklist.ok)
                 self.worklist.ok = []
@@ -536,7 +538,7 @@ class Flow:
         # mark all remaining messages as done.
         self.worklist.ok = self.worklist.incoming
         self.worklist.incoming = []
-        logger.debug('processing %d messages worked!' % len(self.worklist.ok))
+        logger.debug('processing %d messages worked! (stop reuqested: %s)' % (len(self.worklist.ok),self._stop_requested))
 
     def post(self):
 

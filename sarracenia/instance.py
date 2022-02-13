@@ -60,7 +60,7 @@ class instance:
 
         logging.basicConfig(
             format=
-            '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
+            '%(asctime)s %(process)d [%(levelname)s] %(name)s %(funcName)s %(message)s', 
             level=logging.INFO)
 
         # FIXME: honour SR_ variable for moving preferences...
@@ -70,7 +70,7 @@ class instance:
 
         cfg_preparse=sarracenia.config.Config( \
             {
-               'acceptUnmatched':False, 'exchange':None, 'inline':False, 'inline_encoding':'guess'
+               'acceptUnmatched':False, 'exchange':None, 'inline':False, 'inline_encoding':'guess', 'logStdout': False,
             } )
 
         defconfig = default_cfg_dir + os.sep + "default.conf"
@@ -131,7 +131,7 @@ class instance:
             component, config = cfg_preparse.configurations[0].split(os.sep)
 
         # init logs here. need to know instance number and configuration and component before here.
-        if cfg_preparse.action == 'start':
+        if cfg_preparse.action == 'start' and not cfg_preparse.logStdout:
             if cfg_preparse.statehost:
                 hostdir = cfg_preparse.hostdir
             else:

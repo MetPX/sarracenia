@@ -213,7 +213,7 @@ one can use dump to get more detail::
 **foreground** 
 
 run a single instance of a single configuration as an interactive process logging to the current stderr/terminal output.
-a configuration m
+for debugging.
 
 **list** 
 
@@ -855,7 +855,7 @@ for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All these r
 
 
 [-e|--fileEvents <event|event|...>]
--------------------------------
+-----------------------------------
 
 A list of file event types to monitor separated by a 'pipe symbol'.
 Available file events:  create, delete, link, modify
@@ -2051,6 +2051,23 @@ LOGS and MONITORING
   
 - logLevel ( default: info )
    The level of logging as expressed by python's logging. Possible values are :  critical, error, info, warning, debug.
+
+- --logStdout ( default: False )  EXPERIMENTAL FOR DOCKER use case
+
+   The *logStdout* disables log management. Best used on the command line, as there is 
+   some risk of creating stub files before the configurations are completely parsed::
+
+       sr3 --logStdout start
+
+   All launched processes inherit their file descriptors from the parent. so all output is like an interactive session.
+
+   This is in contrast to the normal case, where each instance takes care of its logs, rotating and purging periodically. 
+   In some cases, one wants to have other software take care of logs, such as in docker, where it is preferable for all 
+   logging to be to standard output.
+
+   It has not been measured, but there is a reasonable likelihood that use of *logStdout* with large configurations (dozens
+   of configured instances/processes) will cause either corruption of logs, or limit the speed of execution of all processes
+   writing to stdout.
 
 - log_reject <True|False> ( default: False )
    print a log message when *rejecting* messages (choosing not to download the corresponding files)

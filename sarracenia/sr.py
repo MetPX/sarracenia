@@ -103,31 +103,32 @@ class sr_GlobalState:
         """
           start up a instance process (always daemonish/background fire & forget type process.)
         """
+
         if cfg is None:
             lfn = self.log_dir + os.sep + c + "_%02d" % i + '.log'
         else:
-            # FIXME: honouring statehost missing.
-            if self.configs[c][cfg]['options'].statehost:
-                lfn = self.user_cache_dir + os.sep + self.hostname
-            else:
-                lfn = self.user_cache_dir
+            if not self.configs[c][cfg]['options'].logStdout:
+                # FIXME: honouring statehost missing.
+                if self.configs[c][cfg]['options'].statehost:
+                    lfn = self.user_cache_dir + os.sep + self.hostname
+                else:
+                    lfn = self.user_cache_dir
 
-            lfn += os.sep + 'log' + os.sep + c + '_' + cfg + "_%02d" % i + '.log'
+                lfn += os.sep + 'log' + os.sep + c + '_' + cfg + "_%02d" % i + '.log'
 
-        dir_not_there = not os.path.exists( os.path.dirname(lfn) )
+                dir_not_there = not os.path.exists( os.path.dirname(lfn) )
 
-        while dir_not_there:
-            try:
-                os.makedirs(os.path.dirname(lfn), exist_ok=True)
-                dir_not_there = False 
-            except FileExistsError:
-                dir_not_there = False 
-            except Exception as ex:
-                logging.error( "makedirs {} failed err={}".format(os.path.dirname(lfn),err))
-                logging.debug("Exception details:", exc_info=True)
-                os.sleep(1)
+                while dir_not_there:
+                    try:
+                        os.makedirs(os.path.dirname(lfn), exist_ok=True)
+                        dir_not_there = False 
+                    except FileExistsError:
+                        dir_not_there = False 
+                    except Exception as ex:
+                        logging.error( "makedirs {} failed err={}".format(os.path.dirname(lfn),err))
+                        logging.debug("Exception details:", exc_info=True)
+                        os.sleep(1)
                 
-
         if c in [
                 'poll', 'post', 'report', 'sarra', 'sender', 'shovel',
                 'subscribe', 'watch', 'winnow'
@@ -161,8 +162,11 @@ class sr_GlobalState:
         #print("launching +%s+  re-directed to: %s" % (cmd, lfn), flush=True)
 
         try:
-            with open(lfn, "a") as lf:
-                subprocess.Popen(cmd,
+            if self.configs[c][cfg]['options'].logStdout:
+                subprocess.Popen(cmd)
+            else:
+                with open(lfn, "a") as lf:
+                    subprocess.Popen(cmd,
                                  stdin=subprocess.DEVNULL,
                                  stdout=lf,
                                  stderr=subprocess.STDOUT)
@@ -1927,7 +1931,7 @@ def main():
     """
     logger = logging.getLogger()
     logging.basicConfig(
-        format='%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
+        format='%(asctime)s %(process)d [%(levelname)s] %(name)s %(funcName)s %(message)s',
         level=logging.DEBUG)
     logger.setLevel(logging.INFO)
 
@@ -1946,6 +1950,7 @@ def main():
         'acceptUnmatched': True,
         'exchange': 'xpublic',
         'inline': False,
+        'logStdout': False,
         'inline_encoding': 'auto',
         'inline_max': 4096,
         'subtopic': None
@@ -1961,6 +1966,11 @@ def main():
         return
 
     action = cfg.action
+
+    if cfg.logStdout:
+       logging.basicConfig(
+           format= '%(asctime)s [%(levelname)s] %(process)d %{processName}s %(name)s %(funcName)s %(message)s' )
+       logger.critical('bc4 logStdout global')
 
     gs = sr_GlobalState(cfg, cfg.configurations)
 
