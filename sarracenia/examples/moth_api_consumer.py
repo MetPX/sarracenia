@@ -29,6 +29,8 @@ while count < 5:
     m = h.getNewMessage()
     if m is not None:
         print("message: %s" % m)
+        content = m.getContent() 
+        print("corresponding file: %s" % content)
         h.ack(m)
     time.sleep(0.1)
     count += 1

@@ -39,13 +39,14 @@ import stat
 import sys
 import time
 import urllib
+import urllib.request
 
 logger = logging.getLogger(__name__)
 
 """
     Core utilities of Sarracenia.  The main class here is sarracenia.Message.
     a Sarracenia.Message is subclassed from a dict, so for most uses, it works like the 
-    python built-in, but also we have a few major  entrye points some factoryies:
+    python built-in, but also we have a few major entry points some factoryies:
 
     m = sarracenia.Message.fromFileData( path, options, lstat )
  
@@ -77,6 +78,21 @@ logger = logging.getLogger(__name__)
     once you get the file, you can add the Integrity field with:
 
     m.computeIntegrity(path, o):
+
+    In terms of consuming messages, the fields in the dictionary provide metadata
+    for the announced resource. The anounced data could be embedded in the message itself,
+    or available by a URL.
+
+    Messages are generally gathered from a source such as the Message Queueing Protocol wrapper
+    class: moth... sarracenia.moth. 
+
+
+    data = m.getContent()
+
+    will return the content of the announced resource as raw data.
+
+
+
 
    That's the entire message creation API.
 """
@@ -702,4 +718,31 @@ class Message(dict):
             logger.error('malformed message: %s', msg )
         return res
 
+    def getContent(msg):
+        """
+           Retrieve the data referred to by a message.  The data may be embedded
+           in the messate, or this routine may resolve a link to an external server 
+           and download the data.
+
+           does not handle authentication.
+           This routine is meant to be used with small files. using it to download
+           large files may be very inefficient. Untested in that use-case.
+
+           Return value is the data.
+        """
+
+        # inlined/embedded case.
+        if 'content' in msg:
+            if msg['content']['encoding'] == 'base64':
+                return b64decode(msg['content']['value'])
+            else:
+                return msg['content']['value'].encode('utf-8')
+        # case requiring resolution. 
+        if 'retPath' in msg:
+            retUrl = msg['baseUrl'] + '/' + msg['retPath'] 
+        else:                        
+            retUrl = msg['baseUrl'] + '/' + msg['relPath'] 
+
+        with urllib.request.urlopen(retUrl) as response:
+            return response.read()
 
