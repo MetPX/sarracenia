@@ -1032,6 +1032,10 @@ class sr_GlobalState:
         except subprocess.CalledProcessError as err:
             logging.error("subprocess.run failed err={}".format(err))
             logging.debug("Exception details:", exc_info=True)
+        except KeyboardInterrupt:
+            logging.info("KeyboardInterrupt...")
+            logging.info("Stopping config...")
+            self.stop()
 
     def add(self):
 
@@ -1144,7 +1148,7 @@ class sr_GlobalState:
                 continue
 
             cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
-            disabledfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.off'
+            disabledfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf.off'
             logging.info('renaming at %s to %s ' % (cfgfile, disabledfile))
             os.rename(cfgfile, disabledfile)
 
