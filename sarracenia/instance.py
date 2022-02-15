@@ -199,6 +199,10 @@ class instance:
             pfn.write('%d' % os.getpid())
 
         cfg = sarracenia.config.one_config(component, config)
+
+        if not hasattr(cfg, 'env_declared'):
+            sys.exit(0) 
+
         for n in cfg.env_declared:
             os.environ[n]=cfg.env[n]
             os.putenv(n,cfg.env[n])
