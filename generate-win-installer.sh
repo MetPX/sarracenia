@@ -15,6 +15,9 @@ pip3 download pika --only-binary=:all: --platform win_amd64
 pip3 download psutil --only-binary=:all: --platform win_amd64
 pip3 download paramiko --only-binary=:all: --platform win_amd64
 
+# weirdly... pip install fails for this one, so fetch an arch neutral one.
+pip3 wheel paho-mqtt 
+
 # No binary available, thats why they are not fetched by pip (to be tested later) 
 #pip3 download humanize --only-binary=:all: --platform win_amd64
 #pip3 download pycparser --only-binary=:all: --platform win_amd64

@@ -2042,6 +2042,7 @@ class Config:
 
         #FIXME need to apply _varsub
 
+
         self.merge(args)
 
 
