@@ -838,7 +838,8 @@ class sr_GlobalState:
                                     if not i in self.states[c][cfg]['instance_pids']:
                                          self.states[c][cfg]['missing_instances'].append(i)
                             else:
-                                self.configs[c][cfg]['status'] = 'stopped'
+                                if self.configs[c][cfg]['status'] != 'disabled':
+                                    self.configs[c][cfg]['status'] = 'stopped'
                     elif observed_instances == 0:
                         self.configs[c][cfg]['status'] = 'stopped'
                     else:
@@ -1150,6 +1151,7 @@ class sr_GlobalState:
             cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
             disabledfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf.off'
             logging.info('renaming at %s to %s ' % (cfgfile, disabledfile))
+            #self.configs[c][cfg]['status'] = 'disabled'
             os.rename(cfgfile, disabledfile)
 
     def edit(self):
