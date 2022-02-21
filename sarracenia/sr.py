@@ -1147,6 +1147,10 @@ class sr_GlobalState:
             if len(self.states[c][cfg]['instance_pids']) > 0:
                 logging.error("cannot disable %s while it is running! " % f)
                 continue
+            if self.configs[c][cfg]['status'] == 'disabled':
+                logging.error("%s is already disabled! " % f)
+                continue
+
 
             cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
             disabledfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf.off'
