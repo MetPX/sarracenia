@@ -282,7 +282,7 @@ class sr_GlobalState:
                         continue
                     numi = 0
                     if cfg[-4:] == '.off':
-                        cbase = cfg[0:-4]
+                        cbase = cfg[0:-9]
                         state = 'disabled'
                     elif cfg[-5:] == '.conf':
                         cbase = cfg[0:-5]
@@ -1196,7 +1196,7 @@ class sr_GlobalState:
             if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
 
-            disabledfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.off'
+            disabledfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf.off'
             cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
 
             if os.path.exists(cfgfile):
