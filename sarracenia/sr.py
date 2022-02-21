@@ -1151,7 +1151,6 @@ class sr_GlobalState:
             cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
             disabledfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf.off'
             logging.info('renaming at %s to %s ' % (cfgfile, disabledfile))
-            #self.configs[c][cfg]['status'] = 'disabled'
             os.rename(cfgfile, disabledfile)
 
     def edit(self):
@@ -1485,7 +1484,7 @@ class sr_GlobalState:
             statefile = self.user_cache_dir + os.sep + c + os.sep + cfg
 
             if not os.path.exists(cfgfile):
-                cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.off'
+                cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf.off'
 
             logging.info('removing %s ' % (cfgfile))
             os.unlink(cfgfile)
