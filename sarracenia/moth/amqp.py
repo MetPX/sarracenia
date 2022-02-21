@@ -342,6 +342,7 @@ class AMQP(Moth):
 
             if ebo < 60: ebo *= 2
 
+            self.close()
             logger.info("Sleeping {} seconds ...".format(ebo))
             time.sleep(ebo)
 
@@ -427,14 +428,27 @@ class AMQP(Moth):
         if not 'ack_id' in m: 
             return 
 
-        try:
-            self.channel.basic_ack(m['ack_id'])
-            del m['ack_id']
-            m['_deleteOnPost'].remove('ack_id') 
+        ebo = 1
+        while True:
+            try:
+                self.channel.basic_ack(m['ack_id'])
+                del m['ack_id']
+                m['_deleteOnPost'].remove('ack_id')
+                # Break loop if no exceptions encountered
+                return
 
-        except Exception as err:
-            logger.warning("failed for tag: %s: %s" % (m['ack_id'], err))
-            logger.debug('Exception details: ', exc_info=True)
+            except Exception as err:
+                logger.warning("failed for tag: %s: %s" % (m['ack_id'], err))
+                logger.debug('Exception details: ', exc_info=True)
+
+                # Cleanly close partially broken connection and restablish
+                self.close()
+                self.__putSetup()
+
+            if ebo < 60: ebo *= 2
+
+            logger.warning("WIP Sleeping {} seconds before re-trying ack...".format(ebo))
+            time.sleep(ebo)
 
 
     def putNewMessage(self,
