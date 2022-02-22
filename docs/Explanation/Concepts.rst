@@ -11,7 +11,7 @@ but it seems this information should be available *somewhere*.
 Introduction
 ------------
 
-Sarracenia pumps form a network. The network uses amqp brokers as a transfer
+Sarracenia pumps form a network. The network uses mqp brokers as a transfer
 manager which sends advertisements in one direction and report messages in the
 opposite direction. Administrators configure the paths that data flows through
 at each pump, as each broker acts independently, managing transfers from
@@ -44,7 +44,7 @@ The Flow Algorithm
 ~~~~~~~~~~~~~~~~~~
 
 All of the components (post, subscribe, sarra, sender, shovel, watch, winnow)
-share substantial code and differ only in default settings.  The Flow
+share substantial code and differ only in default settings. The Flow
 algorithm is:
 
 * Gather a list of messages
@@ -101,13 +101,26 @@ The components just have different default settings:
  +------------------------+--------------------------+
  | Component              | Use of the algorithm     |
  +------------------------+--------------------------+
+ +------------------------+--------------------------+
  | *sr_subscribe*         | Gather=gather.message    |
  |                        |                          |
  |   Download file from a | Filter                   |
- |   pump. If the local   |                          |
- |   host is a pump,      | Do=Download              |
- |   post the downloaded  |                          |
- |   file.                | Outlet=optional          |
+ |   pump.                |                          |
+ |                        | Work=Download            |
+ |   default mirror=False |                          |
+ |   All others it is True| post=optional            |
+ +------------------------+--------------------------+
+ | *sr_sarra*             | Gather=gather.message    |
+ |                        |                          |
+ |   Used on pumps.       |                          |
+ |   Download file from a | Filter                   |
+ |   pump to another pump |                          |
+ |   Post the file from   |                          |
+ |   the new pump so that |                          |
+ |   subscribers to       | Work=Download            |
+ |   this pump can        |                          |
+ |   download in turn.    | post=post                |
+ |                        |                          |
  +------------------------+--------------------------+
  | *sr_poll*              | Gather                   |
  |                        | if has_vip: poll         |
@@ -115,26 +128,34 @@ The components just have different default settings:
  |   Find files on other  | Filter                   |
  |   servers to post to   |                          |
  |   a pump.              | if has_vip:              |
- |                        |     Do=nil               |
+ |                        |     Work=nil             |
  |   has_vip*             |                          |
- |                        |     Outlet=yes           |
+ |                        |     Post=yes             |
  |                        |     Message?, File?      |
  +------------------------+--------------------------+
- | *sr_shovel/sr_winnow*  | Gather=gather.message    |
+ | *sr_shovel*            | Gather=gather.message    |
  |                        |                          |
  |   Move posts or        | Filter (shovel cache=off)|
  |   reports around.      |                          |
- |                        | Do=nil                   |
+ |                        | Work=nil                 |
  |                        |                          |
- |                        | Outlet=yes               |
+ |                        | Post=yes                 |
+ +------------------------+--------------------------+
+ | *sr_winnow*            | Gather=gather.message    |
+ |                        |                          |
+ |   Move posts or        | Filter (shovel cache=off)|
+ |   reports around.      |                          |
+ |                        | Work=nil                 |
+ |   suppress duplicates  |                          |
+ |                        | Post=yes                 |
  +------------------------+--------------------------+
  | *sr_post/watch*        | Gather=gather.file       |
  |                        |                          |
  |   Find file on a       | Filter                   |
  |   local server to      |                          |
- |   post                 | Do=nil                   |
+ |   post                 | Work=nil                 |
  |                        |                          |
- |                        | Outlet=yes               |
+ |                        | Post=yes                 |
  |                        |   Message?, File?        |
  +------------------------+--------------------------+
  | *sr_sender*            | Gather=gather.message    |
@@ -176,7 +197,7 @@ do not have the vip the following algorithmic loop will continue:
 
 * gather
 * filter
-*  after_accept
+* after_accept
 
 The poll's gather and fileter being alive and kicking even in passive mode, 
 allows it to subscribe to the exchange it is posting to and update it's cache
@@ -208,20 +229,19 @@ be rabbitmq specific, but management functions differ between implementations.
 *Queues* are usually taken care of transparently, but you need to know
    - A consumer/subscriber creates a queue to receive messages.
    - Consumer queues are *bound* to exchanges (AMQP-speak)
+   - MQTT equivalent: *client-id*
 
-An *exchange* is a matchmaker between *publisher* and *consumer* queues.
+An *exchange* is a matchmaker between *publisher* and *consumer queues*.
    - A message arrives from a publisher.
    - message goes to the exchange, is anyone interested in this message?
    - in a *topic based exchange*, the message topic provides the *exchange key*.
    - interested: compare message key to the bindings of *consumer queues*.
    - message is routed to interested *consumer queues*, or dropped if there aren't any.
+   - concept does not exist in MQTT, used as root of the topic hierarchy.
 
 Multiple processes can share a *queue*, they just take turns removing messages from it.
    - This is used heavily for sr_sarra and sr_subcribe multiple instances.
-
-*Queues* can be *durable*, so even if your subscription process dies,
-  if you come back in a reasonable time and you use the same queue,
-  you will not have missed any messages.
+   - Same concept is available as *shared subscriptions* in MQTT.
 
 How to Decide if Someone is Interested.
    - For Sarracenia, we use (AMQP standard) *topic based exchanges*.
@@ -231,43 +251,66 @@ How to Decide if Someone is Interested.
    - Resolution & syntax of server filtering is set by AMQP. (. separator, # and * wildcards)
    - Server side filtering is coarse, messages can be further filtered after download using regexp on the actual paths (the reject/accept directives.)
 
-topic prefix?  We start the topic tree with fixed fields
-     - v02 the version/format of sarracenia messages.
-     - post ... the message type, this is an announcement
-       of a file (or part of a file) being available.
 
 
-Sarracenia is a MQP Application
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+AMQP v09 (Rabbitmq) Settings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 MetPX-Sarracenia is only a light wrapper/coating around Message Queueing Protocols.
+For those who are familiary with the underlying protocols, These are the mappings:
 
-- A MetPX-Sarracenia data pump is a python AMQP application that uses a (rabbitmq)
-  broker to co-ordinate SFTP and HTTP client data transfers, and accompanies a
-  web server (apache) and sftp server (openssh), often on the same user-facing address.
+  - A MetPX-Sarracenia data pump is a python AMQP application that uses a (rabbitmq)
+    broker to co-ordinate SFTP and HTTP client data transfers, and accompanies a
+    web server (apache) and sftp server (openssh), often on the same user-facing address.
 
-- A MetPX-Sarracenia data pump can also work with rabbitmq replaced by an MQTT broker
-  such as mosquitto.org (but some administrivia must be handled manually.
+  - A MetPX-Sarracenia data pump can also work with rabbitmq replaced by an MQTT broker
+    such as mosquitto.org (but some administrivia must be handled manually.
 
-- Wherever reasonable, we use their terminology and syntax.
-  If someone knows AMQP, they understand. If not, they can research.
+  - Wherever reasonable, we use their terminology and syntax.
+    If someone knows AMQP, they understand. If not, they can research.
 
-  - Users configure a *broker*, instead of a pump.
-  - by convention, the default vhost '/' is always used (did not feel the need to use other vhosts yet)
-  - users explicitly can pick their *queue* names (this ia a client-id in MQTT.)
-  - users set *subtopic*,
-  - topics with dot separator are minimally transformed, rather than encoded.
-  - queue *durable*.
-  - we use *message headers* (AMQP-speak for key-value pairs) rather than encoding in JSON or some other payload format.
+    - Users configure a *broker*, instead of a pump.
+    - by convention, the default vhost '/' is always used (did not feel the need to use other vhosts yet)
+    - users explicitly can pick their *queue* names (this ia a client-id in MQTT.)
+    - users set *subtopic*,
+    - topics with dot separator are minimally transformed, rather than encoded.
+    - queue is set to *durable* so that messages are not lost across broker restarts.
+    - we use *message headers* (AMQP-speak for key-value pairs) rather than encoding in JSON or some other payload format.
+    - *expire* how long to keep an idle queue or exchange around. 
 
-- reduce complexity through conventions.
-   - use only one type of exchanges (Topic), take care of bindings.
-   - naming conventions for exchanges and queues.
-      - exchanges start with x.
-        - xs_Weather - the exchange for the source (amqp user) named Weather to post messages
-        - xpublic -- exchange used for most subscribers.
-      - queues start with q\_
+  - reduce complexity through conventions.
+     - use only one type of exchanges (Topic), take care of bindings.
+     - naming conventions for exchanges and queues.
+        - exchanges start with x.
+          - xs_Weather - the exchange for the source (mqp user) named Weather to post messages
+          - xpublic -- exchange used for most subscribers.
+        - queues start with q\_
 
+MQTT (version =5) Settings
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+MQTT is actually a better match to Sarracenia than AMQP, as it is entirely
+based on hierarchical topics, while topics are only one among a variety of 
+choices for routing methods in AMQP.
+
+  - in MQTT, topic separator is / instead of .
+  - the MQTT topic wildcard *#* is the same as in AMQP (match rest of topic)
+  - the MQTT topic wildcard *+* is the same as the AMQP *\** (match one topic.)
+  - an AMQP "Exchange" is mapped to the root of the MQTT topic tree, 
+  - an AMQP "queue" is represented in MQTT by  *client-id* and a *shared subscription*
+    Note: Shared subscriptions are only present in MQTTv5. So Sarracenia can only easily
+
+    * AMQP: A queue named *queuename* is bount to an exchange xpublic with key: v03.observations ...  
+    * MQTT subscription: topic $shared/*queuename*/xpublic/v03/observations ...  
+
+  - connections are clean_sesssion=0 normally, to recover messages when a connection is broken.
+  - MQTT QoS==1 is used to assure messages are sent at least once, and avoid overhead
+    of ensuring only once.
+  - AMQP *prefetch* mapped to MQTT *receiveMaximum*
+  - *expire* has same meaning in MQTT as in AMQP.
+
+MQTT v3 lacks shared subscriptions, and the recovery logic is quite different.
+Sarracenia only supports v5.
 
 
 Flow Through Pumps

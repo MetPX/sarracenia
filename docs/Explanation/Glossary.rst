@@ -27,23 +27,24 @@ Subscribers
 Post, Notice, Notification, Advertisement, Announcement
   These are AMQP messages build by sr_post, sr_poll, or sr_watch to let users
   know that a particular file is ready. The format of these AMQP messages is 
-  described by the `sr_post(7) <../Reference/sr3.1.rst#post>`_ manual page. All of these 
+  described by the `sr_post(7) <../Reference/sr_post.7.rst>`_ manual page. All of these 
   words are used interchangeably. Advertisements at each step preserve the
   original source of the posting, so that report messages can be routed back 
   to the source.
 
 
 Report messages
-  These are AMQP messages (in `sr_post(7) <../Reference/sr3.1.rst#post>`_ format, with _report_ 
+  These are AMQP messages (in `sr_post(7) <../Reference/sr_post.7.rst>`_ format, with _report_ 
   field included) built by consumers of messages, to indicate what a given pump 
   or subscriber decided to do with a message. They conceptually flow in the 
   opposite direction of notifications in a network, to get back to the source.
 
 
 Pump or broker
-  A pump is a host running Sarracenia, a rabbitmq AMQP server (called a *broker*
-  in AMQP parlance) The pump has administrative users and manage the AMQP broker
-  as a dedicated resource.  Some sort of transport engine, like an apache 
+  A pump is a host running Sarracenia, either a rabbitmq AMQP server or an MQTTT
+  one such as mosquitto. The message queueing middleware is called a *broker.*
+  The pump has administrative users and manage the MQP broker
+  as a dedicated resource. Some sort of transport engine, like an apache 
   server, or an openssh server, is used to support file transfers. SFTP, and 
   HTTP/HTTPS are the protocols which are fully supported by sarracenia. Pumps
   copy files from somewhere, and write them locally. They then re-advertise the

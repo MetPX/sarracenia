@@ -3,8 +3,6 @@
  Sarracenia Programming Guide
 =============================
 
-[ `version française <fr/Prog.rst>`_ ]
-
 ---------------------
  Working with Plugins
 ---------------------
@@ -53,10 +51,10 @@ Introduction
 ------------
 
 A Sarracenia data pump is a web server with notifications for subscribers to
-know, quickly, when new data has arrived.  To find out what data is already
+know, quickly, when new data has arrived. To find out what data is already
 available on a pump, view the tree with a web browser.  For simple immediate
 needs, one can download data using the browser itself or through a standard tool
-such as wget.  The usual intent is for sr_subscribe to automatically download
+such as wget. The usual intent is for sr_subscribe to automatically download
 the data wanted to a directory on a subscriber machine where other software
 can process it.
 
