@@ -15,6 +15,10 @@ broker = sarracenia.credentials.Credential('amqps://anonymous:anonymous@hpfx.col
 options['topicPrefix'] = [ 'v02', 'post' ]
 options['bindings'] = [ ('xpublic', [ 'v02', 'post'] , [ '#' ] )]
 
+# turn on debug output for these classes.
+#options['settings'] = { 'sarracenia.moth.mqtt.MQTT': { 'logLevel':'debug' }}
+#options['settings'] = { 'sarracenia.moth.amqp.AMQP': { 'logLevel':'debug' }}
+
 # Note: queue name must start with q_<username> because server is configured to deny anything else.
 #
 options['queue_name'] = 'q_anonymous_' + socket.getfqdn(

@@ -98,7 +98,6 @@ class MQTT(Moth):
         logger.setLevel( 'WARNING' )
 
         if ('settings' in self.o) and (me in self.o['settings']):
-            logger.debug('props[%s] = %s ' % (me, self.o['settings'][me]))
             for s in self.o['settings'][me]:
                 self.o[s] = self.o['settings'][me][s]
  
@@ -134,7 +133,7 @@ class MQTT(Moth):
         logger.info( "rc=%s, flags=%s" % ( paho.mqtt.client.connack_string(rc), flags ) )
 
         if flags['session present'] != 1:
-            logger.error( 'failed to find existing session, no recovery of inflight messages from previous connection' )
+            logger.debug( 'no existing session, no recovery of inflight messages from previous connection' )
 
         if rc != paho.mqtt.client.MQTT_ERR_SUCCESS:
             return
@@ -268,10 +267,10 @@ class MQTT(Moth):
 
                 if hasattr( self.client, 'auto_ack' ): # FIXME breaking this...
                     self.client.auto_ack( False )
-                    logger.debug("Switching off auto_ack for higher reliability. Using explicit acknowledgements." )
+                    logger.debug("Switching off auto_ack for higher reliability via explicit acknowledgements." )
                     self.auto_ack=False
                 else:
-                    logger.warning("paho library without auto_ack support. Loses data every crash or restart." )
+                    logger.warning("paho library using auto_ack. may lose data every crash or restart." )
                     self.auto_ack=True
 
                 self.client.connect_async( self.broker.url.hostname, port=self.__sslClientSetup(), \
@@ -376,7 +375,7 @@ class MQTT(Moth):
             message.copyDict( json.loads(mqttMessage.payload.decode('utf-8')) )
         except Exception as ex:
             logger.error( "ignored malformed message: %s" % mqttMessage.payload )
-            logger.error("decode error" % err)
+            logger.error("decode error" % ex)
             logger.error('Exception details: ', exc_info=True)
             return None
 
@@ -396,13 +395,21 @@ class MQTT(Moth):
         else:
            return None
 
-    def newMessages(self):
+    def newMessages(self, blocking=False):
         """
            return new messages.
 
            FIXME: hate the locking... too fine grained, especially in on_message... just a 1st shot.
 
         """
+        if blocking:
+            ebo=0.1
+            while len(self.client.received_messages) == 0:
+                logger.debug('blocked: no messages available')
+                time.sleep(ebo)
+                if ebo < 10:
+                   ebo *= 2
+
         self.new_message_mutex.acquire()
 
         if len(self.client.received_messages) > self.o['batch'] :
@@ -417,7 +424,15 @@ class MQTT(Moth):
         ml = list(filter( None, map( self._msgDecode, mqttml ) ))
         return ml
 
-    def getNewMessage(self):
+    def getNewMessage(self, blocking=False):
+
+        if blocking:
+            ebo=0.1
+            while len(self.client.received_messages) == 0:
+                logger.debug('blocked: no messages available')
+                time.sleep(ebo)
+                if ebo < 10:
+                   ebo *= 2
 
         self.new_message_mutex.acquire()
 
@@ -428,7 +443,10 @@ class MQTT(Moth):
             m=None
         self.new_message_mutex.release()
 
-        return self._msgDecode(m)
+        if m: 
+            return self._msgDecode(m)
+        else:
+            return None
     
     def ack(self, m):
         if (not self.auto_ack) and ('ack_id' in m):
