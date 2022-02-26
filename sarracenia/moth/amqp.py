@@ -528,7 +528,8 @@ class AMQP(Moth):
             AMQP_Message = amqp.Message(v2m.notice,
                                         content_type='text/plain',
                                         application_headers=v2m.headers,
-                                        expire=ttl)
+                                        expire=ttl,
+                                        delivery_mode=2)
             body=v2m.notice
             headers=v2m.headers
         else:  #assume v03
@@ -538,7 +539,8 @@ class AMQP(Moth):
             AMQP_Message = amqp.Message(raw_body,
                                         content_type='application/json',
                                         application_headers=headers,
-                                        expire=ttl)
+                                        expire=ttl,
+                                        delivery_mode=2)
         ebo = 1
         while True:
             try:
