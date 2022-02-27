@@ -281,10 +281,7 @@ class sr_GlobalState:
                     if cfg[0] == '.':
                         continue
                     numi = 0
-                    if cfg[-4:] == '.off':
-                        cbase = cfg[0:-9]
-                        state = 'disabled'
-                    elif cfg[-5:] == '.conf':
+                    if cfg[-5:] == '.conf':
                         cbase = cfg[0:-5]
                         state = 'stopped'
                     elif cfg[-4:] == '.inc':
@@ -885,9 +882,9 @@ class sr_GlobalState:
                         self.filtered_configurations.append(fcc)
                         leftover_matches[p] += 1
 
-                    if p[-4:] == '.off' and fnmatch.fnmatch(fcc, p[0:-4]):
-                        self.filtered_configurations.append(fcc)
-                        leftover_matches[p] += 1
+                    # if p[-4:] == '.off' and fnmatch.fnmatch(fcc, p[0:-4]):
+                    #     self.filtered_configurations.append(fcc)
+                    #     leftover_matches[p] += 1
 
         for p in patterns:
             if leftover_matches[p] == 0:
@@ -1489,9 +1486,6 @@ class sr_GlobalState:
 
             cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
             statefile = self.user_cache_dir + os.sep + c + os.sep + cfg
-
-            if not os.path.exists(cfgfile):
-                cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf.off'
 
             logging.info('removing %s ' % (cfgfile))
             os.unlink(cfgfile)
