@@ -1154,7 +1154,9 @@ class sr_GlobalState:
                 logging.error("%s is already disabled! " % f)
                 continue
             if os.path.exists(state_file_cfg):
-                f.write('')
+                with open(state_file_cfg_disabled, 'w') as f:
+                    f.write('')
+                logging.info(c + '/' + cfg)
             else:
                 logging.error('%s does not exist' % cfg)
 
@@ -1203,19 +1205,18 @@ class sr_GlobalState:
             if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
 
-            disabledcfg = self.user_cache_dir + os.sep + c + os.sep + 'disabled' + os.sep + cfg
-            cfgfile = self.user_cache_dir + os.sep + c + os.sep + cfg
-
-            if os.path.exists(cfgfile):
-                logging.error('%s already enabled' % f)
-                continue
-
-            if not os.path.exists(disabledcfg):
+            state_file_cfg = self.user_cache_dir + os.sep + c + os.sep + cfg
+            state_file_cfg_disabled = state_file_cfg + os.sep + 'disabled'
+            if not os.path.exists(state_file_cfg):
                 logging.error('%s disabled configuration not found' % f)
                 continue
-
-            logging.info('Rempving %s to from disabled directory' % disabledcfg)
-            os.rename(disabledcfg, cfgfile)
+            if os.path.exists(state_file_cfg):
+                if not os.path.exists(state_file_cfg_disabled):
+                    logging.error('%s already enabled' % f)
+                    continue
+                else:
+                    os.remove(state_file_cfg_disabled)
+                    logging.info(c + '/' + cfg)
 
     def foreground(self):
 
