@@ -1147,15 +1147,19 @@ class sr_GlobalState:
             if len(self.states[c][cfg]['instance_pids']) > 0:
                 logging.error("cannot disable %s while it is running! " % f)
                 continue
-            if self.configs[c][cfg]['status'] == 'disabled':
+
+            state_file_cfg = self.user_cache_dir + os.sep + c + os.sep + cfg
+            state_file_cfg_disabled = state_file_cfg + os.sep + 'disabled'
+            if os.path.exists(state_file_cfg_disabled):
                 logging.error("%s is already disabled! " % f)
                 continue
+            if os.path.exists(state_file_cfg):
+               cd
 
+                    f.write('')
+            else:
+                logging.error('%s does not exist' % cfg)
 
-            cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
-            disabledfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf.off'
-            logging.info('renaming at %s to %s ' % (cfgfile, disabledfile))
-            os.rename(cfgfile, disabledfile)
 
     def edit(self):
 
@@ -1201,19 +1205,19 @@ class sr_GlobalState:
             if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
 
-            disabledfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf.off'
-            cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
+            disabledcfg = self.user_cache_dir + os.sep + c + os.sep + 'disabled' + os.sep + cfg
+            cfgfile = self.user_cache_dir + os.sep + c + os.sep + cfg
 
             if os.path.exists(cfgfile):
                 logging.error('%s already enabled' % f)
                 continue
 
-            if not os.path.exists(disabledfile):
+            if not os.path.exists(disabledcfg):
                 logging.error('%s disabled configuration not found' % f)
                 continue
 
-            logging.info('renaming at %s to %s ' % (disabledfile, cfgfile))
-            os.rename(disabledfile, cfgfile)
+            logging.info('Rempving %s to from disabled directory' % disabledcfg)
+            os.rename(disabledcfg, cfgfile)
 
     def foreground(self):
 
