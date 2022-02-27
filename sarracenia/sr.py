@@ -1134,6 +1134,9 @@ class sr_GlobalState:
                 qdc.close()
 
     def disable(self):
+        if len(self.filtered_configurations) == 0:
+            logging.error('%s configuration not found', self.leftovers)
+            return
 
         for f in self.filtered_configurations:
             if f == 'audit': continue
@@ -1155,8 +1158,6 @@ class sr_GlobalState:
                 with open(state_file_cfg_disabled, 'w') as f:
                     f.write('')
                 logging.info(c + '/' + cfg)
-            else:
-                logging.error('%s does not exist' % cfg)
 
 
     def edit(self):
@@ -1197,7 +1198,9 @@ class sr_GlobalState:
                 self.run_command(['tail', '-f', lfn])
 
     def enable(self):
-
+        if len(self.filtered_configurations) == 0:
+            logging.error('%s configuration not found', self.leftovers)
+            return
         # declare exchanges first.
         for f in self.filtered_configurations:
             if f == 'audit': continue
@@ -1205,9 +1208,6 @@ class sr_GlobalState:
 
             state_file_cfg = self.user_cache_dir + os.sep + c + os.sep + cfg
             state_file_cfg_disabled = state_file_cfg + os.sep + 'disabled'
-            if not os.path.exists(state_file_cfg):
-                logging.error('%s disabled configuration not found' % f)
-                continue
             if os.path.exists(state_file_cfg):
                 if not os.path.exists(state_file_cfg_disabled):
                     logging.error('%s already enabled' % f)
