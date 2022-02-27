@@ -1154,9 +1154,7 @@ class sr_GlobalState:
                 logging.error("%s is already disabled! " % f)
                 continue
             if os.path.exists(state_file_cfg):
-               cd
-
-                    f.write('')
+                f.write('')
             else:
                 logging.error('%s does not exist' % cfg)
 
