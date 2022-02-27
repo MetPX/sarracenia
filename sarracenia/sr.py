@@ -811,6 +811,8 @@ class sr_GlobalState:
                     self.states[c][cfg]['has_state'] = False
                     self.states[c][cfg]['retry_queue'] = 0
                     continue
+                if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'disabled'):
+                    self.configs[c][cfg]['status'] = 'disabled'
                 if len(self.states[c][cfg]['instance_pids']) >= 0:
                     self.states[c][cfg]['missing_instances'] = []
                     observed_instances = 0
@@ -824,10 +826,9 @@ class sr_GlobalState:
                                        [i]]['claimed'] = True
 
                     if observed_instances < int(self.configs[c][cfg]['instances']):
-                        if (c == 'post') and (
-                            ('sleep' not in self.states[c][cfg])
-                                or self.states[c][cfg]['sleep'] <= 0):
-                            self.configs[c][cfg]['status'] = 'stopped'
+                        if (c == 'post') and (('sleep' not in self.states[c][cfg]) or self.states[c][cfg]['sleep'] <= 0):
+                            if self.configs[c][cfg]['status'] != 'disabled':
+                                self.configs[c][cfg]['status'] = 'stopped'
                         else:
                             if observed_instances > 0:
                                 self.configs[c][cfg]['status'] = 'partial'
@@ -1487,7 +1488,7 @@ class sr_GlobalState:
             cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
             statefile = self.user_cache_dir + os.sep + c + os.sep + cfg
 
-            logging.info('removing %s ' % (cfgfile))
+            logging.info('removing %s/%s ' % ( c, cfg ))
             os.unlink(cfgfile)
             shutil.rmtree(statefile)
 
