@@ -139,7 +139,7 @@ In general, v3 plugins:
 
       from sarracenia.flowcb import FlowCB
 
-      class myplugin(Flowcb):
+      class myplugin(FlowCB):
 
   To create an *after_accept* plugin in *myplugin* class, define a function
   with that name, and the appropriate signature.
@@ -156,12 +156,12 @@ In general, v3 plugins:
 
   at the end to assign entry points explicitly. either way a naive python
   of the file would invariably fail without some sort of test harness being
-  wrapped around it.
+  wrapped around it. (**In v3, delete these lines (usually located at the bottom of the file**)
 
   In v2, there were strange issues with imports, resulting in people putting
   import statements within some functions. That problem is fixed in v3;
   put the necessary imports at the beginning of the file, like any other python
-  module.
+  module **and remove the imports located within functions**.
 
   in v3 one can at least check syntax by doing *import X* in any python interpreter.
 
@@ -179,12 +179,15 @@ In general, v3 plugins:
 
       import logging
   
-  Make sure the following logger declaration is after the last _import_ in the file::
+  Make sure the following logger declaration is after the **last _import_** in the top of the file::
 
       logger = logging.getLogger(__name__)
 
       #when you want a log message:
       logger.warning( ... )
+      
+      # In VI you can use the global replace:
+      :%s/parent.logger/logger/g
 
   In v3 plugins: *logger.x* replaces *parent.logger.x* found in v2 plugins.
   In v2, to test outside the app, one had to build a test harness that had
@@ -198,6 +201,11 @@ In general, v3 plugins:
        self.o = options 
 
   so in v2 if you need to access settings, *replace parent.setting by self.o.setting*.
+  
+      # In VI you can use the global replace:
+      :%s/parent/self.o/g
+
+   Likewise in the __init__ function needs the self.o with options
 
 * **you can see what options are active by starting a component with the 'show' command** ::
 
@@ -212,7 +220,7 @@ In general, v3 plugins:
   *  post_broker is unchanged. 
   *  post_base_url -> post_baseUrl
 
-* **messages are python dictionaries** , so *msg.relpath becomes msg['relPath']*
+* **messages are python dictionaries** , so `msg.relpath` becomes `msg['relPath']`
   v3 messages, as dictionaries are the default internal representation.
 
 * **plugins operate on batches of messages** v2 *on_message* gets parent as a parameter,
