@@ -623,7 +623,7 @@ class Message(dict):
             if d:
                 for f in [ 'link', 'oldname', 'newname' ]:
                     if f in msg:
-                        msg[f] = msg[f].replace( options.baseDir, d )
+                        msg[f] = msg[f].replace( options.baseDir, d, 1)
 
         # add relPath
 

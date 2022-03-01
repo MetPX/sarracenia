@@ -1670,37 +1670,37 @@ class Config:
         new_dir = cdir
 
         if '${BD}' in cdir and self.baseDir != None:
-            new_dir = new_dir.replace('${BD}', self.baseDir)
+            new_dir = new_dir.replace('${BD}', self.baseDir, 1)
 
         if ( '${BUP}' in cdir ) and ( 'baseUrl' in message ):
             u = urllib.parse.urlparse( message['baseUrl'] )
-            new_dir = new_dir.replace('${BUP}', u.path )
+            new_dir = new_dir.replace('${BUP}', u.path, 1 )
 
         if ( '${baseUrlPath}' in cdir ) and ( 'baseUrl' in message ):
             u = urllib.parse.urlparse( message['baseUrl'] )
-            new_dir = new_dir.replace('${baseUrlPath}', u.path )
+            new_dir = new_dir.replace('${baseUrlPath}', u.path, 1)
 
         if ( '${BUPL}' in cdir ) and ( 'baseUrl' in message ):
             u = urllib.parse.urlparse( message['baseUrl'] )
-            new_dir = new_dir.replace('${BUPL}', os.path.basename(u.path) )
+            new_dir = new_dir.replace('${BUPL}', os.path.basename(u.path), 1 )
 
         if ( '${baseUrlPathLast}' in cdir )  and ( 'baseUrl' in message ):
             u = urllib.parse.urlparse( message['baseUrl'] )
-            new_dir = new_dir.replace('${baseUrlPathLast}', os.path.basename(u.path) )
+            new_dir = new_dir.replace('${baseUrlPathLast}', os.path.basename(u.path), 1 )
 
         if '${PBD}' in cdir and self.post_baseDir != None:
-            new_dir = new_dir.replace('${PBD}', self.post_baseDir)
+            new_dir = new_dir.replace('${PBD}', self.post_baseDir, 1)
 
         if '${DR}' in cdir and self.documentRoot != None:
             logger.warning(
                 "DR = documentRoot should be replaced by BD for base_dir")
-            new_dir = new_dir.replace('${DR}', self.documentRoot)
+            new_dir = new_dir.replace('${DR}', self.documentRoot, 1)
 
         if '${PDR}' in cdir and self.post_baseDir != None:
             logger.warning(
                 "PDR = post_documentRoot should be replaced by PBD for post_baseDir"
             )
-            new_dir = new_dir.replace('${PDR}', self.post_baseDir)
+            new_dir = new_dir.replace('${PDR}', self.post_baseDir, 1)
 
         if '${YYYYMMDD}' in cdir:
             YYYYMMDD = time.strftime("%Y%m%d", time.gmtime())
