@@ -150,6 +150,13 @@ def timeflt2str(f):
     nsec = "{:.9g}".format(f % 1)[1:]
     return "{}{}".format(time.strftime("%Y%m%dT%H%M%S", time.gmtime(f)), nsec)
 
+def timeValidate(s) -> bool:
+    if len(s) < 14: return False
+    if ( s[8] == 'T' ) and ( s[15] != '.' ): return False
+    if ( s[8] != 'T' ) and ( s[14] != '.' ): return False
+    if not s[0:8].isalnum() : return False       
+    return True
+      
 
 def timestr2flt(s):
 
@@ -675,9 +682,10 @@ class Message(dict):
             pbd_str = options.set_dir_pattern( options.post_baseDir, msg )
             parsed_baseUrl = urllib.parse.urlparse(baseUrl_str)
 
-            relPath = new_dir.replace( pbd_str, '', 1) + '/' + new_file
+            if relPath.startswith( pbd_str ):
+                relPath = new_dir.replace( pbd_str, '', 1) + '/' + new_file
 
-            if (len(parsed_baseUrl.path) > 1):
+            if (len(parsed_baseUrl.path) > 1) and relPath.startswith(parsed_baseUrl.path):
                 relPath=relPath.replace( parsed_baseUrl.path, '', 1 )
 
         msg['new_baseUrl'] = baseUrl_str
@@ -714,6 +722,13 @@ class Message(dict):
             if not required_key in msg:
                logger.error('missing key: %s' % required_key )
                res=False
+        if msg['integrity']['method'] in [ 'unknown' ]:
+            logger.error( f"invalid integrity: {msg['integrity']} ")
+            res=False
+
+        if not timeValidate( msg['pubTime'] ):
+            res=False
+
         if not res:
             logger.error('malformed message: %s', msg )
         return res

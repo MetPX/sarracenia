@@ -393,6 +393,8 @@ class MQTT(Moth):
         if message.validate():
            return message
         else:
+           self.client.ack(msg['ack_id'])
+           logger.error('message acknowledged and discarded: %s' % msg)
            return None
 
     def newMessages(self, blocking=False):
