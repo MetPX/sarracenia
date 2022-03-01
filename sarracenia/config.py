@@ -1707,7 +1707,7 @@ class Config:
             new_dir = new_dir.replace('${YYYYMMDD}', YYYYMMDD)
 
         if '${SOURCE}' in cdir:
-            new_dir = new_dir.replace('${SOURCE}', msg['source'])
+            new_dir = new_dir.replace('${SOURCE}', message['source'])
 
         if '${DD}' in cdir:
             DD = time.strftime("%d", time.gmtime())
