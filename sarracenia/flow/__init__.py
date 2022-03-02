@@ -565,7 +565,7 @@ class Flow:
                 logger.error("failed to make directory %s: %s" % (newdir, ex))
                 return False
 
-        logger.info("data inlined with message, no need to download")
+        logger.debug("data inlined with message, no need to download")
         path = msg['new_dir'] + os.path.sep + msg['new_file']
         #path = msg['new_relPath']
 
@@ -993,6 +993,9 @@ class Flow:
                 if ok:
                     logger.debug("downloaded ok: %s" % new_path)
                     msg.setReport(201, "Download successful %s" % new_path )
+                    # if content is present, but downloaded anyways, then it is no good, and should not be forwarded.
+                    if 'content' in msg:
+                        del msg['content']
                     self.worklist.ok.append(msg)
                     break
                 else:

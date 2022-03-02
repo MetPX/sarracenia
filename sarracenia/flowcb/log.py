@@ -101,6 +101,8 @@ class Log(FlowCB):
             if set ( ['after_work', 'all'] ) & self.o.logEvents:
                 if msg['integrity']['method'] in [ 'link', 'remove' ]:
                      verb=msg['integrity']['method'] 
+                elif self.action_verb in [ 'downloaded' ] and 'content' in msg:
+                     verb='written from message'
                 else:
                      verb=self.action_verb
 
