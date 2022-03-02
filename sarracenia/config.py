@@ -2098,6 +2098,7 @@ def one_config(component, config, isPost=False):
     #default_cfg.override(  { 'program_name':component, 'directory': os.getcwd(), 'acceptUnmatched':True, 'no':0 } )
     default_cfg.override({
         'program_name': component,
+        'config': config,
         'acceptUnmatched': True,
         'no': 0
     })

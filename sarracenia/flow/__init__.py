@@ -259,7 +259,7 @@ class Flow:
     def close(self) -> None:
 
         self._runCallbacksTime('on_stop')
-        logger.info('flow/close completed cleanly')
+        logger.info( f'flow/close completed cleanly pid: {os.getpid()} {self.o.program_name}/{self.o.config} instance: {self.o.no}')
 
     def ack(self, mlist) -> None:
         if "ack" in self.plugins:
@@ -289,8 +289,8 @@ class Flow:
 
 
         logger.info("callbacks loaded: %s" % self.plugins['load'])
-
-        self._runCallbacksTime('on_start')
+        logger.info( f'pid: {os.getpid()} {self.o.program_name}/{self.o.config} instance: {self.o.no}' )
+        self._runCallbacksTime( f'on_start' )
 
         spamming = True
         last_gather_len = 0
@@ -384,8 +384,8 @@ class Flow:
                 current_sleep *= 2
 
             if now > next_housekeeping:
-                logger.info('on_housekeeping')
-                self._runCallbacksTime('on_housekeeping')
+                logger.info( f'on_housekeeping pid: {os.getpid()} {self.o.program_name}/{self.o.config} instance: {self.o.no}')
+                self._runCallbacksTime( 'on_housekeeping' )
                 next_housekeeping = now + self.o.housekeeping
 
             if (self.o.messageRateMin > 0) and (current_rate <
