@@ -562,7 +562,7 @@ class Flow:
                 self.worklist.directories_ok.append( msg['new_dir'] )
                 os.makedirs(msg['new_dir'], 0o775, True)
             except Exception as ex:
-                logger.error("failed to make directory %s: %s" % (newdir, ex))
+                logger.error("failed to make directory %s: %s" % (msg['new_dir'], ex))
                 return False
 
         logger.info("data inlined with message, no need to download")
