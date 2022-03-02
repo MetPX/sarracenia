@@ -4,7 +4,7 @@ name: Run the sr_insects flakey_broker flow test.
 on:
   push:
     branches:
-      - v03_issue445
+      - v03_wip
 
   workflow_dispatch:
     inputs:
