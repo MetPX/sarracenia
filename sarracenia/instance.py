@@ -103,6 +103,16 @@ class instance:
             logger.critical("can only run one configuration in an instance")
             return
 
+        if (not os.sep in cfg_preparse.configurations[0]):
+            logger.critical(
+                "configuration should be of the form component%sconfiguration"
+                % os.sep)
+            return
+        else:
+            component, config = cfg_preparse.configurations[0].split(os.sep)
+
+        cfg_preparse = sarracenia.config.one_config(component, config)        
+
         # FIXME: do we put explicit error handling here for bad input?
         #        probably worth exploring.
         #
@@ -118,17 +128,6 @@ class instance:
             lr_backupCount = int(float(cfg_preparse.lr_backupCount))
         else:
             lr_backupCount = cfg_preparse.lr_backupCount
-
-        if ('audit' == cfg_preparse.configurations[0]):
-            config = None
-            component = 'audit'
-        elif (not os.sep in cfg_preparse.configurations[0]):
-            logger.critical(
-                "configuration should be of the form component%sconfiguration"
-                % os.sep)
-            return
-        else:
-            component, config = cfg_preparse.configurations[0].split(os.sep)
 
         # init logs here. need to know instance number and configuration and component before here.
         if cfg_preparse.action == 'start' and not cfg_preparse.logStdout:
