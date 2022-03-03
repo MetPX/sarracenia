@@ -1,5 +1,5 @@
 
-name: Run the sr_insects ${WHICH_TEST} flow test.
+name: Run the sr_insects dynamic flow test.
 
 on:
   push:
@@ -33,7 +33,7 @@ jobs:
         travis/flow_autoconfig.sh
         travis/ssh_localhost.sh
          
-    - name: Setup ${WHICH_TEST} flow test.
+    - name: Setup dynamic flow test.
       run: |
         cd ${HOME}; pwd; ls ; 
         echo hoho
@@ -46,10 +46,10 @@ jobs:
     #  uses: mxschmitt/action-tmate@v3
     #  #if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
 
-    - name: Limit ${WHICH_TEST} flow test.
+    - name: Limit dynamic flow test.
       run: |
         cd ${HOME}/sr_insects/${WHICH_TEST}; ./flow_limit.sh
 
-    - name: Check results of ${WHICH_TEST} flow test.
+    - name: Check results of dynamic flow test.
       run: |
         cd ${HOME}/sr_insects/${WHICH_TEST}; ./flow_check.sh
