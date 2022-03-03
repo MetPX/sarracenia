@@ -7,7 +7,6 @@ on:
   push:
     branches:
       - v03_wip
-      - v03_wip_issue407actions
 
   workflow_dispatch:
     inputs:
