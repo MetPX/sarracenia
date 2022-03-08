@@ -31,7 +31,7 @@ For exactly these reasons, those standards stipulate a minimum polling interval 
 minutes. Advanced Message Queueing Protocol (AMQP) messaging brings true push 
 to notifications, and makes real-time sending far more efficient.
 
-.. image:: e-ddsr-components.jpg
+.. image:: Concepts/e-ddsr-components.jpg
 
 Sources of data announce their products, pumping systems pull the data using HTTP
 or SFTP onto their WAF trees, and then announce their trees for downstream clients.
