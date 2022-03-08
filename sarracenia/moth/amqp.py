@@ -443,11 +443,11 @@ class AMQP(Moth):
 
                 # Cleanly close partially broken connection and restablish
                 self.close()
-                self.__putSetup()
+                self.__getSetup()
 
             if ebo < 60: ebo *= 2
 
-            logger.warning("WIP Sleeping {} seconds before re-trying ack...".format(ebo))
+            logger.info("Sleeping {} seconds before re-trying ack...".format(ebo))
             time.sleep(ebo)
 
 

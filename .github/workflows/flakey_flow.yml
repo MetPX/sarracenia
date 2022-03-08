@@ -57,7 +57,7 @@ jobs:
     - name: Limit ${{ env.WHICH_TEST }} flow test.
       run: |
         cd ${HOME}/sr_insects/${WHICH_TEST}; ./flow_limit.sh
-        sleep 120s
+        sleep 180s
 
     - name: Check results of ${{ env.WHICH_TEST }} flow test.
       run: |
