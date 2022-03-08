@@ -1,3 +1,4 @@
+import humanize
 import logging
 from sarracenia import nowflt, timestr2flt
 from sarracenia.flowcb import FlowCB
@@ -41,7 +42,6 @@ class Log(FlowCB):
         self.fileBytes=0
         self.lagTotal=0 
         self.lagMax=0 
-        self.msgBytes=0
         self.msgCount=0
         self.rejectCount=0
         self.transferCount=0
@@ -78,7 +78,6 @@ class Log(FlowCB):
             self.lagTotal += lag
             if lag > self.lagMax:
                self.lagMax = lag
-            self.msgBytes += len(msg)
             if set ( ['after_accept', 'all'] ) & self.o.logEvents:
 
                 logger.info("accepted: (lag: %.2f ) %s " % ( lag, self._messageStr(msg) ) )
@@ -111,9 +110,12 @@ class Log(FlowCB):
                      logger.info('message: %s' % msg.dumps() )
 
     def housekeeping_stats(self):
-        logger.info( "messages_received: %d, accepted: %d, rejected: %d ( bytes: %s )" %
-            ( self.msgCount+self.rejectCount, self.msgCount, self.rejectCount, self.msgBytes ) )
-        logger.info( "files transferred: %d, cumulative bytes of data: %d" % ( self.transferCount, self.fileBytes )  )
+        logger.info( "messages received: %d, accepted: %d, rejected: %d  rate: %5.4g%%" %
+            ( self.msgCount+self.rejectCount, self.msgCount, self.rejectCount,
+              100*self.msgCount/(self.msgCount+self.rejectCount) ) )
+        logger.info( f"files transferred: {self.transferCount} " +\
+             f"bytes: {humanize.naturalsize(self.fileBytes,binary=True)} " +\
+             f"rate: {humanize.naturalsize(self.fileBytes/self.o.housekeeping, binary=True)}/sec" )
         if self.msgCount > 0:
             logger.info( "lag: average: %.2f, maximum: %.2f " % ( self.lagTotal/self.msgCount, self.lagMax ) )
 

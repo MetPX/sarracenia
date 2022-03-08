@@ -184,6 +184,8 @@ class Moth():
         """
 
         self.is_subscriber = is_subscriber
+        self.metrics = {}
+        self.metricsReset()
 
         if (sys.version_info.major == 3) and (sys.version_info.minor < 7):
             self.o={}
@@ -211,6 +213,14 @@ class Moth():
         logging.basicConfig(format=self.o['logFormat'],
                             level=getattr(logging, self.o['logLevel'].upper()))
 
+    def ack(self, message ):
+        """
+          tell broker that a given message has been received.
+
+          ack uses the 'ack_id' property to send an acknowledgement back to the broker.
+        """
+        logger.error("ack unimplemented")
+
     @property
     def default_options():
         """
@@ -223,6 +233,11 @@ class Moth():
         """
         If there is one new message available, return it. Otherwise return None. Do not block.
 
+        side effects:
+            metrics.
+            self.metrics['RxByteCount'] should be incremented by size of payload.
+            self.metrics['RxGoodCount'] should be incremented by 1 if a good message is received.
+            self.metrics['RxBadCount'] should be incremented by 1 if an invalid message is received (&discarded.)
         """
         logger.error("getNewMessage unimplemented")
         return None
@@ -239,23 +254,30 @@ class Moth():
         logger.error("NewMessages unimplemented")
         return []
 
-    def ack(self, message ):
-        """
-          tell broker that a given message has been received.
-
-          ack uses the 'ack_id' property to send an acknowledgement back to the broker.
-        """
-        logger.error("ack unimplemented")
-
     def putNewMessage(self, message, content_type='application/json'):
         """
            publish a message as set up to the given topic.
 
            return True is succeeded, False otherwise.
+
+           side effect
+            self.metrics['TxByteCount'] should be incremented by size of payload.
+            self.metrics['TxGoodCount'] should be incremented by 1 if a good message is received.
+            self.metrics['TxBadCount'] should be incremented by 1 if an invalid message is received (&discarded.)
         """
         logger.error("putNewMessage unimplemented")
         return False
 
+    def metricsReset(self) -> None:
+        self.metrics['rxByteCount']=0
+        self.metrics['rxGoodCount']=0
+        self.metrics['rxBadCount']=0
+        self.metrics['txByteCount']=0
+        self.metrics['txGoodCount']=0
+        self.metrics['txBadCount']=0
+
+    def metricsReport(self) -> tuple:
+        return self.metrics
 
     def close(self):
         """

@@ -65,7 +65,7 @@ class Resources(FlowCB):
     def on_housekeeping(self):
         mem = psutil.Process().memory_info().vms
         ost = os.times()
-        logger.info(f"Current Memory cpu_times: user={ost.user} system={ost.system} elapse={ost.elapsed}")
+        logger.info(f"Current Memory cpu_times: user={ost.user} system={ost.system}")
 
         # We must set a threshold **after** the config file has been parsed.
         if self.threshold is None:

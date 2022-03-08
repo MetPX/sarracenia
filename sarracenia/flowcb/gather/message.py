@@ -5,6 +5,7 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2020
 #
 
+import humanize
 import logging
 
 import sarracenia.moth
@@ -38,6 +39,14 @@ class Message(FlowCB):
             # see plugin/retry.py
             if not (('isRetry' in m) and m['isRetry']):
                 self.consumer.ack(m)
+
+    def on_housekeeping(self):
+        m = self.consumer.metricsReport()
+        logger.info( f"messages: good: {m['rxGoodCount']} bad: {m['rxBadCount']} " +\
+           f"bytes: {humanize.naturalsize(m['rxByteCount'],binary=True)} " +\
+           f"average: {humanize.naturalsize(m['rxByteCount']/m['rxGoodCount'],binary=True)}"  )
+        self.consumer.metricsReset()
+
 
     def on_stop(self):
         self.consumer.close()

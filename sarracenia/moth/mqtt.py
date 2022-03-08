@@ -372,11 +372,13 @@ class MQTT(Moth):
         """
         try:
             message = sarracenia.Message()
+            self.metrics['rxByteCount'] += len(mqttMessage.payload)
             message.copyDict( json.loads(mqttMessage.payload.decode('utf-8')) )
         except Exception as ex:
             logger.error( "ignored malformed message: %s" % mqttMessage.payload )
             logger.error("decode error" % ex)
             logger.error('Exception details: ', exc_info=True)
+            self.metrics['rxBadCount'] += 1
             return None
 
         subtopic=mqttMessage.topic.replace('%23', '#' ).replace('%2b', '+' ).split('/')
@@ -391,8 +393,10 @@ class MQTT(Moth):
         message['_deleteOnPost'] = set( [ 'exchange', 'local_offset', 'ack_id', 'subtopic' ] )
 
         if message.validate():
+           self.metrics['rxGoodCount'] += 1
            return message
         else:
+           self.metrics['rxBadCount'] += 1
            self.client.ack(msg['ack_id'])
            logger.error('message acknowledged and discarded: %s' % msg)
            return None
@@ -511,19 +515,21 @@ class MQTT(Moth):
         props.ContentType = 'application/json'
         while True:
             try:
-                
-                info = self.client.publish( topic=topic, payload=json.dumps(body), qos=1, properties=props) 
+                raw_body=json.dumps(body)
+                self.metrics['txByteCount'] += len(raw_body)
+                info = self.client.publish( topic=topic, payload=raw_body, qos=1, properties=props) 
                 if info.rc == paho.mqtt.client.MQTT_ERR_SUCCESS: 
                     self.pending_messages_mutex.acquire()
                     self.pending_messages.append(info.mid)
+                    self.metrics['txGoodCount'] += 1
                     self.pending_messages_mutex.release()
-
                     logger.info("published mid={} {} to under: {} ".format(info.mid, body, topic))
                     return True #success...
 
             except Exception as ex:
                 logger.error('Exception details: ', exc_info=True)
 
+            self.metrics['txBadCount'] += 1
             self.close()
             self.__putSetup(self.o)
   

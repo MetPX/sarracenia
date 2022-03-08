@@ -45,6 +45,11 @@ class Message(FlowCB):
                 worklist.failed.append(m)
         worklist.ok=still_ok 
 
+    def on_housekeeping(self):
+        m = self.poster.metricsReport()
+        logger.info( f"messages: good: {m['txGoodCount']} bad: {m['txBadCount']} bytes: {m['txByteCount']}" )
+        self.poster.metricsReset()
+
     def on_stop(self):
         self.poster.close()
         logger.info('closing')

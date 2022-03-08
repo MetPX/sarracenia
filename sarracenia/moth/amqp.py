@@ -334,8 +334,8 @@ class AMQP(Moth):
                 return
 
             except Exception as err:
-                logger.error("AMQP putSetup failed to {} with {}".format(
-                    self.o['broker'].url.hostname, err))
+                logger.error("AMQP putSetup failed to declare exchanges {}@{} on {}: {}".format(
+                    self.o['exchange'], self.o['broker'].url.username, self.o['broker'].url.hostname, err))
                 logger.debug('Exception details: ', exc_info=True)
 
             if not self.o['message_strategy']['stubborn']: return
@@ -397,7 +397,12 @@ class AMQP(Moth):
                 if (raw_msg is None) and (self.connection.connected):
                     return None
                 else:
+                    self.metrics['rxByteCount'] += len(raw_msg.body) 
                     msg = self._msgRawToDict(raw_msg)
+                    if msg is None:
+                        self.metrics['rxBadCount'] += 1
+                    else:
+                        self.metrics['rxGoodCount'] += 1
                     if hasattr(self.o, 'fixed_headers'):
                         for k in self.o.fixed_headers:
                             m[k] = self.o.fixed_headers[k]
@@ -535,6 +540,7 @@ class AMQP(Moth):
         else:  #assume v03
 
             raw_body = json.dumps(body)
+            self.metrics['txByteCount'] += len(raw_body)
             headers=None
             AMQP_Message = amqp.Message(raw_body,
                                         content_type='application/json',
@@ -548,12 +554,14 @@ class AMQP(Moth):
                 self.channel.tx_commit()
                 logger.info("published body: {} headers: {} to {} under: {} ".format(
                     body, headers, exchange, topic))
+                self.metrics['txGoodCount'] += 1
                 return True  # no failure == success :-)
 
             except Exception as err:
                 logger.warning("failed %s: %s" % (exchange, err))
                 logger.debug('Exception details: ', exc_info=True)
 
+            self.metrics['txBadCount'] += 1
             if not self.o['message_strategy']['stubborn']:
                 return False
 
