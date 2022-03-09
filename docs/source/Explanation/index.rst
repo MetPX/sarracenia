@@ -5,10 +5,10 @@ Explanations/Concepts/Background
    :maxdepth: 1
    :caption: Contents:
 
+   overview
    Concepts
    DeploymentConsiderations
    Glossary
    HPC_Mirroring_Use_Case
    SarraPluginDev
-   sarra
    sftps

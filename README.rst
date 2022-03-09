@@ -2,6 +2,8 @@
  MetPX-Sarracenia
 ==================
 
+page web / homepage: https://metpx.github.io/
+
 .. image:: https://img.shields.io/pypi/v/metpx-sarracenia?style=flat
   :alt: PyPI version
   :target: https://pypi.org/project/metpx-sarracenia/
@@ -76,6 +78,5 @@
 |                                                                |                                                                        |
 +----------------------------------------------------------------+------------------------------------------------------------------------+
 
-page web / homepage: http://github.com/MetPX/sarracenia
 
 Concepts: `Sarracenia in 10 Minutes Video (anglais seulement) <https://www.youtube.com/watch?v=G47DRwzwckk>`_

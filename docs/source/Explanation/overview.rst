@@ -2,30 +2,30 @@
 Overview
 ========
 
-**MetPX-Sarracenia** adds a management message queueing protocol layer of availability notifications 
-to file and web servers to drive workflows that transfer and transform data continuously in a real-time 
-and mission-critical context.
+**MetPX-Sarracenia is a publication/subscription management toolkit supporting the publication of real-time data.**
 
-A main goal of the layer is to link together processes on the same or different computers so that they
+Sarracenia adds a message queueing protocol layer of file availability notifications 
+to file and web servers to drive workflows that transfer and transform data continuously 
+in a real-time and mission-critical context.
+
+A main goal of the toolkit is to link together processes on the same or different computers so that they
 avoid having to poll (repeatedly query, list, and then filter) upstream resources. Sarracenia can be
 used to implement an initial upstream poll, and that still begets substantial efficiency because 
 tasks beyond initial identification of the file to process can be driven by notifications,
 which are substantially cheaper (in i/o and processing.) than polling even local directories.
 
 This management layer provides simple methods to get parallellism in file transfers, robustness
-in the face of failures, load balancing among steps in a workflow, and lets application developers 
-ignore many failure modes. Hundreds of such flows to be composed together into a large data pumps, 
-and operated using common methods familiar to Linux System Administrators.
-
-
+in the face of failures, load balancing among steps in a workflow, and takes care of many failure
+modes, so application developers do not need to. Hundreds of such flows can be composed together 
+into large data pumps and operated using common methods familiar to Linux System Administrators.
 
 
 Longer Overview
 ---------------
 
-**MetPX-Sarracenia** is a configuration file and command line driven service to download files as they are made available. 
-One can subscribe to a Sarracenia enabled web server (called a data pump) and select data to stream from it, 
-using linux, Mac, or Windows. More than that:
+**MetPX-Sarracenia** is a configuration file and command line driven service to download files as 
+they are made available. One can subscribe to a Sarracenia enabled web server (called a data 
+pump) and select data to stream from it, using linux, Mac, or Windows. More than that:
 
 *  It avoids people having to poll the web server to know if their data is there yet.
    (can be 100x less work for client and server from just this.)

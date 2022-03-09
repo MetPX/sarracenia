@@ -1,5 +1,5 @@
-Hands On Instructions, How 2 Guides
-===================================
+HOWTOS 
+======
 
 .. toctree::
    :maxdepth: 1

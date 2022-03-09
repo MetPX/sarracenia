@@ -314,7 +314,7 @@ Checklist:
 - **update doc/** manual pages should get their updates ideally at the same time as the code.
 
 Usually there will be many such cycles on a development branch before one is ready
-to issue a pull request. Eventually, we get to `Commits to the Master Branch`_
+to issue a pull request. Eventually, we get to `Commits to the Main Branch`_
 
 
 sr_insects Tests Description
@@ -1358,7 +1358,9 @@ Assuming pypi upload credentials are in place, uploading a new release used to b
 
 Note that the CHANGES.rst file is in restructured text and is parsed by pypi.python.org
 on upload.  
+
 .. Note::
+
    When uploading pre-release packages (alpha,beta, or RC) PYpi does not serve those to users by default.
    For seamless upgrade, early testers need to do supply the ``--pre`` switch to pip::
 
@@ -1402,10 +1404,11 @@ What is different about this *v03_launchpad* branch? It:
 
 * removes the dependency on python3-paho-mqtt as the version in the repositories is too old.
 * removed the dependency on python3-dateparser, as that package is not available in the repository.
-* override the testing target un debian/rules, because testing without the dependencies fails.::
+* override the testing target un debian/rules, because testing without the 
+  dependencies fails::
 
-  override_dh_auto_test:
-  	echo "disable on 18.04... some deps must come from pip"
+     override_dh_auto_test:
+   	echo "disable on 18.04... some deps must come from pip"
 
 The missing dependencies should be installed with pip3.
 

@@ -1,9 +1,5 @@
-.. sarracenia documentation master file, created by
-   sphinx-quickstart on Tue Mar  8 20:23:06 2022.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 
-Welcome to sarracenia's documentation!
+Welcome to Sarracenia's Documentation!
 ======================================
 
 Caveat: 
@@ -15,7 +11,7 @@ Caveat:
    :maxdepth: 1
    :caption: Contents:
 
-   Explanation/sarra.rst
+   Explanation/overview.rst
    How2Guides/index
    Explanation/index
    Reference/index
