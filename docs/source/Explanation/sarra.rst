@@ -1,25 +1,63 @@
-==========
-Sarracenia
-==========
-
-[ `version française <fr/sarra.rst>`_ ]
-TODO: Coming soon..
-
-.. contents::
-
-**MetPX-Sarracenia** is a data duplication or distribution engine that leverages existing
-standard technologies (file and web servers and AMQP_ brokers) to achieve real-time message
-delivery and end to end transparency in file transfers. Whereas in Sundew, each switch
-is a standalone configuration which transforms data in complex ways, in Sarracenia, the
-data sources establish a file tree hierarchy which is carried through any number of intervening 
-pumps until they arrive at a client. The client can provide explicit acknowledgement that
-propagates back through the network to the source. Whereas traditional file switching
-is a point-to-point affair where knowledge is only between each segment, in Sarracenia,
-information flows from end to end in both directions.
-
+========
 Overview
---------
+========
 
+**MetPX-Sarracenia** is a command line service to download files as they are made available. One can subscribe 
+to a Sarracenia enabled web server (called a data pump) and select data to stream from it, 
+using linux, Mac, or Windows. but it's more than that, because:
+
+*  It avoids people having to poll the web server to know if their data is there yet.
+   (can be 100x less work for client and server from just this.)
+
+*  It is faster at downloading by using true pub/sub, so it only receives notifications 
+   exactly when the file is ready.
+
+*  it is very naturally parallel: when one process is not enough, just add instances.
+   they will share the same selections seamlessly.
+
+*  for Linux servers, it is used to daisy-chain multiple data pumps together, so that people 
+   can maintain independent real-time copied trees for service redundancy, and also for 
+   network topology reasons (to serve private networks, for example.)
+   it's an efficient, daisy-chaining tree duplicator.
+
+*  Multiple copies means de-coupled availability. One server being down does not affect
+   the entire web of interlocking APIS. Data pumps form meshes, where the data is transferred 
+   so that each one can have a copy if they want it. It's a very simple way to achieve that.
+
+*  It can also push trees (using a sender instead of a subscriber.)
+   which is great for transfers across network demarcations (firewalls.)
+
+*  files can be renamed on the fly, the directory structure can be changed completely. 
+
+*  with the extensive plugin API, can transform the tree, or the files in the tree.
+   the output tree can bear no resemblance to the input one.
+
+*  the plugin API can be used to implement efficient data-driven workflows, reducing or 
+   eliminating polling of directories and scheduled tasks that impose heavey loads and 
+   increase transfer latency.
+
+*  Multi-step workflows are naturally implemented with it as an adjunct of connecting
+   producers with consumers. Transformation is just a consumer within the data pump,
+   while external consumers only access end products. Queues between components
+   provides co-ordination of entire workflows.
+
+*  Sarracenia is robust. It operates 24x7 and makes extensive provision to be a civilised
+   participant in mission critical data flows:
+
+   * when a server is down, it uses exponential backoff to avoid punishing it. 
+   * when a transfer fails, it is placed in a retry queue. Other transfers continue,
+     and the failed transfer is retried later as real-time flows permit.
+   * reliability is tunable for many use cases.
+
+*  It uses message queueing protocols (currently AMQP and/or MQTT) to send file
+   advertisements, and file transfers can be done over SFTP, HTTP, or any other web service.
+
+*  is an sample implementation following the World Meteorological Organizations work
+   to replace the Global Teleceommunications System (GTS) with modern solutions.
+
+
+Longer Overview
+---------------
 
 At its heart, Sarracenia exposes a tree of web accessible folders (WAF), using any
 standard HTTP server (tested with apache) or SFTP server, with other types of servers as
@@ -38,7 +76,7 @@ or SFTP onto their WAF trees, and then announce their trees for downstream clien
 When clients download data, they may write a report message back to the server. Servers
 are configured to forward those client report messages back through the intervening
 servers back to the source. The Source can see the entire path that the data took
-to get to each client. With traditional switching applications, sources only see
+to get to each client.  With traditional data switching applications, sources only see
 that they delivered to the first hop in a chain. Beyond that first hop, routing is
 opaque, and tracing the path of data required assistance from administrators of each
 intervening system. With Sarracenia's report forwarding, the switching network is
@@ -54,18 +92,6 @@ and network usage without explicit user intervention. As intervening pumps
 do not store and forward entire files, the maximum file size which can traverse
 the network is maximized.
 
-Where Sundew supports a wide variety of file formats, protocols, and conventions
-specific to the real-time meteorology, Sarracenia takes a step further away from
-specific applications and is a ruthlessly generic tree replication engine, which
-should allow it to be used in other domains. The initial prototype client, dd_subscribe,
-in use since 2013, was replaced in 2016 by the full blown Sarracenia package,
-with all components necessary for production as well as consumption of file trees.
-
-Sarracenia is expected to be a far simpler application than sundew from every
-point of view: Operator, Developer, Analyst, Data Sources, Data Consumers.
-Sarracenia imposes a single interface mechanism, but that mechanism is
-completely portable and generic. It should run without issue on any modern
-platform (Linux, Windows, Mac).
 
 For more information about Sarra, view the
 `Sarracenia in 10 Minutes Video <https://www.youtube.com/watch?v=G47DRwzwckk>`_
@@ -81,13 +107,13 @@ Sarracenia has multiple implementations:
 
 - sarrac ( https://github.com/MetPX/sarrac ) is a C implementation of data insertion (post & watch). It is Linux only. There is also a libcshim to be able to tranparently implement data insertion with this tool, and libsarra allows C programs to post directly. There is consumer code as well (to read queues) but no downloading so far. This subset is meant to be used where python3 environments are impractical (some HPC environments). 
 
-- node-sarra ( https://github.com/darkskyapp/node-sarra ) An embryonic implementation for node.js.
+- node-sarra ( https://github.com/darkskyapp/node-sarra ) An embryonic v2 implementation for node.js.
 
-- ecpush ( https://github.com/TheTannerRyan/ecpush ) an simple client in Go ( http://golang.org ) 
+- ecpush ( https://github.com/TheTannerRyan/ecpush ) an simple v2 client in Go ( http://golang.org ) 
 
-- dd_subscribe ( https://github.com/MetPX/sarracenia ) python2 stripped-down download-only client.  The predecessor of Sarracenia. Still compatible.
+- dd_subscribe ( https://github.com/MetPX/sarracenia ) python2 stripped-down download-only v2 client.  The predecessor of Sarracenia. Still compatible.
 
-- PySarra ( https://github.com/JohnTheNerd/PySarra ) a very dumbed-down client for python3, allowing you to abstract away all the complexity.
+- PySarra ( https://github.com/JohnTheNerd/PySarra ) a very dumbed-down v2 client for python3, allowing you to abstract away all the complexity.
 
 More implementations are welcome.
 
@@ -162,12 +188,9 @@ scanning within the flow.
 Another consideration is that Sarracenia doesn't actually implement any transport. It is completely agnostic 
 to the actual protocol used to tranfer data. Once can post arbitrary protocol URLs, and add plugins to work 
 with those arbitrary protocols, or substitute accelerated downloaders to deal with certain types of downloads. 
-The `download_scp <download_scp.py>`_ plugin, included with the package, shows
-the use of the built-in python transfer mechanisms, but the simple use of a 
-binary to accellerate downloads when the file exceeds a threshold size, making
-that method more efficient. Use of another compatible binary, such as `dd <download_dd.py>`_ or 
-`cp <accel_cp.py>`_, (for local files), `scp <download_scp.py>`_, or `wget <accel_wget.py>`_ via 
-plugins is also straightforward.
+The built-in transfer drivers include binary accellerators and tunable criteria for using them.
+
+**Caveat file segmentation was dropped. FIXME**
 
 .. TODO: All the links above are broken?
 
@@ -209,6 +232,53 @@ providers are very Java oriented.
 Sarracenia relies heavily on the use of brokers and topic based exchanges, which were prominent in AMQP standards efforts prior
 to version 1.0, at which point they were removed. It is hoped that these concepts will be re-introduced at some point. Until
 that time, the application will rely on pre-1.0 standard message brokers, such as rabbitmq.
+
+History/Context
+---------------
+
+**MetPX-Sarracenia** as a part of the Meteorological Product Exchange Project, originated in Environment Canada,
+but now run by Shared Services Canada on their behalf. The project started in 2004, with the goal of providing
+a free stack that implements World Meteorological Organization standard real-time data exchange, and also
+adjacent needs.  `Sundew <https://github.com/MetPX/Sundew>`_ was the first generation WMO 386 (GTS) switch.
+The switch also needed compatibility with existing internal transfer mechanisms based heavily on FTP.
+It worked, but the GTS itself is obsolete in many deep ways, and work started in 2009 extending Sundew
+to leverage new technologies, such as message queueing protocols, starting in 2008.
+Versions of Sundew are generally labelled < 1.0
+
+We eventually ran into the limits of this extension approach, and in 2015 we started `Sarracenia <https://github.com/MetPX/Sarracenia>`_
+as a ground-up second generation replacement, unburdened by strict legacy GTS compatibility.
+Sarracenia (version 2) was initially a prototype, and many changes of many kinds occurred during it's lifetime.
+It is still (in 2022) the only version operationally deployed. It went through three changes in operational
+message format (exp, v00, and v02.) It supports hundreds of thousands file transfers per hour 24/7
+in Canada.
+
+Where Sundew supports a wide variety of file formats, protocols, and conventions
+specific to the real-time meteorology, Sarracenia takes a step further away from
+specific applications and is a ruthlessly generic tree replication engine, which
+should allow it to be used in other domains. The initial prototype client, dd_subscribe,
+in use since 2013, was replaced in 2016 by the full blown Sarracenia package,
+with all components necessary for production as well as consumption of file trees.
+
+Sarracenia is expected to be a far simpler application than sundew from every
+point of view: Operator, Developer, Analyst, Data Sources, Data Consumers.
+Sarracenia imposes a single interface mechanism, but that mechanism is
+completely portable and generic. It should run without issue on any modern
+platform (Linux, Windows, Mac).
+Sarracenia v2 sufferred from internal clutter and complexity resulting from it's long evolution, and so
+in 2020, the sr3 (version 3) re-factor began. Sr3 is about 30% less code that v2, and offers a much improved API,
+and supports additional message protocols, rather than just rabbitmq.
+
++-------+----------------------------+------------+---------------------------------------------------+
+| Era   | Application                | Code size  | Features                                          |
++-------+----------------------------+------------+---------------------------------------------------+
+| 1980s | Tandem, PDS (domestic GTS) |  500kloc   | X.25, WMO Socket, AM Socket, FTP (push only)      |
++-------+----------------------------+------------+---------------------------------------------------+
+| 2000s | Sundew                     |   30kloc   | WMO Socket/TCP, FTP, SFTP (push only)             |
++-------+----------------------------+------------+---------------------------------------------------+
+| 2010s | Sarracenia v2              |   25kloc   | AMQP, HTTP, SFTP, FTP (pub/sub)                   |
++-------+----------------------------+------------+---------------------------------------------------+
+| 2020s | Sarracenia v3 (sr3)        |   17kloc   | AMQP, MQTT, HTTP, SFTP, API (pub/sub)             |
++-------+----------------------------+------------+---------------------------------------------------+
 
 
 References & Links
