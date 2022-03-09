@@ -2,9 +2,9 @@
 Overview
 ========
 
-**MetPX-Sarracenia** is a command line service to download files as they are made available. One can subscribe 
-to a Sarracenia enabled web server (called a data pump) and select data to stream from it, 
-using linux, Mac, or Windows. but it's more than that, because:
+**MetPX-Sarracenia** is a configuration file and command line driven service to download files as they are made available. 
+One can subscribe to a Sarracenia enabled web server (called a data pump) and select data to stream from it, 
+using linux, Mac, or Windows. More than that:
 
 *  It avoids people having to poll the web server to know if their data is there yet.
    (can be 100x less work for client and server from just this.)
@@ -12,8 +12,8 @@ using linux, Mac, or Windows. but it's more than that, because:
 *  It is faster at downloading by using true pub/sub, so it only receives notifications 
    exactly when the file is ready.
 
-*  it is very naturally parallel: when one process is not enough, just add instances.
-   they will share the same selections seamlessly.
+*  it is naturally parallel: when one process is not enough, just add more.
+   They will share the same selections seamlessly.
 
 *  for Linux servers, it is used to daisy-chain multiple data pumps together, so that people 
    can maintain independent real-time copied trees for service redundancy, and also for 
@@ -38,8 +38,8 @@ using linux, Mac, or Windows. but it's more than that, because:
    increase transfer latency.
 
 *  Multi-step workflows are naturally implemented with it as an adjunct of connecting
-   producers with consumers. Transformation is just a consumer within the data pump,
-   while external consumers only access end products. Queues between components
+   producers with consumers. Transformation is a consumer within the data pump,
+   while external consumers access end products. Queues between components
    provides co-ordination of entire workflows.
 
 *  Sarracenia is robust. It operates 24x7 and makes extensive provision to be a civilised
@@ -52,6 +52,9 @@ using linux, Mac, or Windows. but it's more than that, because:
 
 *  It uses message queueing protocols (currently AMQP and/or MQTT) to send file
    advertisements, and file transfers can be done over SFTP, HTTP, or any other web service.
+
+*  It does not depend on any proprietary technologies at all. Completely free to use
+   for any purpose whatever.
 
 *  is an sample implementation following the `World Meteorological Organizations <WMO>`_ work
    to replace the Global Teleceommunications System (GTS) with modern solutions.
