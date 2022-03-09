@@ -2,7 +2,7 @@ Hands On Instructions, How 2 Guides
 ===================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
    Admin

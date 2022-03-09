@@ -6,8 +6,13 @@
 Welcome to sarracenia's documentation!
 ======================================
 
+Caveat: 
+   This new web-site is for version 3 currently under development in the v03_wip branch
+   Users of stable version 2 should go https://github.com/MetPX/Sarracenia instead.
+   While the code for version 3 is stabilizing nicely, the docs are not completely ready.
+
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
    overview

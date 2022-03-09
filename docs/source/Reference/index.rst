@@ -2,7 +2,7 @@ Reference
 =========
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
    sr3.1
