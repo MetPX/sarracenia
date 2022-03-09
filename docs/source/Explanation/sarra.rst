@@ -2,6 +2,27 @@
 Overview
 ========
 
+**MetPX-Sarracenia** adds a management message queueing protocol layer of availability notifications 
+to file and web servers to drive workflows that transfer and transform data continuously in a real-time 
+and mission-critical context.
+
+A main goal of the layer is to link together processes on the same or different computers so that they
+avoid having to poll (repeatedly query, list, and then filter) upstream resources. Sarracenia can be
+used to implement an initial upstream poll, and that still begets substantial efficiency because 
+tasks beyond initial identification of the file to process can be driven by notifications,
+which are substantially cheaper (in i/o and processing.) than polling even local directories.
+
+This management layer provides simple methods to get parallellism in file transfers, robustness
+in the face of failures, load balancing among steps in a workflow, and lets application developers 
+ignore many failure modes. Hundreds of such flows to be composed together into a large data pumps, 
+and operated using common methods familiar to Linux System Administrators.
+
+
+
+
+Longer Overview
+---------------
+
 **MetPX-Sarracenia** is a configuration file and command line driven service to download files as they are made available. 
 One can subscribe to a Sarracenia enabled web server (called a data pump) and select data to stream from it, 
 using linux, Mac, or Windows. More than that:
@@ -42,6 +63,9 @@ using linux, Mac, or Windows. More than that:
    while external consumers access end products. Queues between components
    provides co-ordination of entire workflows.
 
+*  You can set up a *poll* to make any web site act like a Sarracenia Data pump. so
+   the workflow can work even without a Sarracenia pump to start with.
+
 *  Sarracenia is robust. It operates 24x7 and makes extensive provision to be a civilised
    participant in mission critical data flows:
 
@@ -49,6 +73,9 @@ using linux, Mac, or Windows. More than that:
    * when a transfer fails, it is placed in a retry queue. Other transfers continue,
      and the failed transfer is retried later as real-time flows permit.
    * reliability is tunable for many use cases.
+
+*  Since Sarracenia takes care of transient failures and queueing, your application
+   just deals with normal cases.
 
 *  It uses message queueing protocols (currently AMQP and/or MQTT) to send file
    advertisements, and file transfers can be done over SFTP, HTTP, or any other web service.
@@ -59,9 +86,6 @@ using linux, Mac, or Windows. More than that:
 *  is an sample implementation following the `World Meteorological Organizations <WMO>`_ work
    to replace the Global Teleceommunications System (GTS) with modern solutions.
 
-
-Longer Overview
----------------
 
 At its heart, Sarracenia exposes a tree of web accessible folders (WAF), using any
 standard HTTP server (tested with apache) or SFTP server, with other types of servers as
