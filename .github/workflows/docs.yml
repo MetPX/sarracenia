@@ -18,6 +18,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update -y && sudo apt-get install -y pandoc
+        pip3 install .
     - name: Setup python
       uses: actions/setup-python@v2
     - name: Checkout
