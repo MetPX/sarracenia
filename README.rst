@@ -27,8 +27,8 @@
     :target: https://github.com/MetPX/sarracenia/actions/workflows/static_flow.yml
 
 +---------------------------------------------------------+-----------------------------------------------------------------+
-| [ `Guides <docs/Reference/sr3.1.rst#documentation>`_ ]  | [ `Orientation <docs/Reference/sr3.1.rst#documentation>`_ ]     |
-| [ `Manual Pages <docs/Reference/sr3.1.rst#see-also>`_ ] | [ `Référence <docs/Reference/sr3.1.rst#see-also>`_ ]            |
+| [ `Guides <docs/source/Reference/sr3.1.rst#documentation>`_ ]  | [ `Orientation <docs/source/Reference/sr3.1.rst#documentation>`_ ]     |
+| [ `Manual Pages <docs/source/Reference/sr3.1.rst#see-also>`_ ] | [ `Référence <docs/source/Reference/sr3.1.rst#see-also>`_ ]            |
 +---------------------------------------------------------+-----------------------------------------------------------------+
 |                                                         |                                                                 |
 |MetPX-sr3 (Sarracenia v3) is a data duplication          |MetPX-sr3 (Sarracenia v3) est un engin de copie et de            |
