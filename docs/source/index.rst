@@ -11,7 +11,11 @@ Welcome to sarracenia's documentation!
    :caption: Contents:
 
    overview
-
+   How2Guides/index
+   Explanation/index
+   Reference/index
+   Tutorials/index
+   Contribution/index
 
 Indices and tables
 ==================
