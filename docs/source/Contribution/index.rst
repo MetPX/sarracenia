@@ -8,4 +8,5 @@ Contributing to Sarracenia
 
    Development
    Documentation
+   man_page_template.rst
    v03

@@ -27,13 +27,14 @@ using linux, Mac, or Windows. but it's more than that, because:
 *  It can also push trees (using a sender instead of a subscriber.)
    which is great for transfers across network demarcations (firewalls.)
 
-*  files can be renamed on the fly, the directory structure can be changed completely. 
+*  using only configuration, files can be renamed on the fly, the directory structure 
+   can be changed completely. 
 
 *  with the extensive plugin API, can transform the tree, or the files in the tree.
    the output tree can bear no resemblance to the input one.
 
 *  the plugin API can be used to implement efficient data-driven workflows, reducing or 
-   eliminating polling of directories and scheduled tasks that impose heavey loads and 
+   eliminating polling of directories and scheduled tasks that impose heavy loads and 
    increase transfer latency.
 
 *  Multi-step workflows are naturally implemented with it as an adjunct of connecting
@@ -52,7 +53,7 @@ using linux, Mac, or Windows. but it's more than that, because:
 *  It uses message queueing protocols (currently AMQP and/or MQTT) to send file
    advertisements, and file transfers can be done over SFTP, HTTP, or any other web service.
 
-*  is an sample implementation following the World Meteorological Organizations work
+*  is an sample implementation following the `World Meteorological Organizations <WMO>`_ work
    to replace the Global Teleceommunications System (GTS) with modern solutions.
 
 
@@ -82,6 +83,7 @@ opaque, and tracing the path of data required assistance from administrators of 
 intervening system. With Sarracenia's report forwarding, the switching network is
 relatively transparent to the sources. Diagnostics are vastly simplified.
 
+N.B. FIXME: file segmentation removed in sr3 for initial versions. will come back.
 For large files / high performance, files are segmented on ingest if they are sufficiently
 large to make this worthwhile. Each file can traverse the data pumping network independently,
 and reassembly is only needed at end points. A file of sufficient size will announce
@@ -174,7 +176,7 @@ middleware message passing, which also handles the logs in a straight-forward wa
 One of the design goals of Sarracenia is to be end-to-end. Rsync is point-to-point,
 meaning it does not support the *transitivity* of transfers across multiple data pumps that
 is desired. On the other hand, the first use case for Sarracenia is the distribution of
-new files. Updates to files were not common initially. `ZSync <http://zsync.moria.org.uk/>`_ 
+new files. Updates to files were not common initially. `ZSync <https://zsync.moria.org.uk>`_ 
 is much closer in spirit to this use case. Sarracenia now has a similar 
 approach based on file partitions (or blocks), but with user selectable size
 (50M is a good choice), generally much larger than Zsync blocks (typically 4k),
@@ -210,6 +212,24 @@ partitioning on FTP. So while FTP sort-of-works, it is not now, nor ever will
 be, fully supported.
 
 
+WMO
+---
+
+The World Meteorological Organization, is a part of the United Nations that has the weather and environmental
+monitoring, prediction, and alerting services of each country as members. For many decades, there has
+been a real-time exchange of weather data between countries, often even in times of war.  The standards
+that cover these exchanges are:
+
+- Manual on the Global Telecommunications´ System: WMO Manual 386. The standard reference for this domain. (a likely stale copy is  `here <WMO-386.pdf>`_.) Try https://www.wmo.int for the latest version.
+
+Usually these links are referred to collectively as *the GTS*.  The standards are very old, and a modernization
+process has been ongoing for the last decade or two. Some current work on replacing the GTS is here:
+
+- `WMO Task Team on message queueing protocols <https://github.com/wmo-im/GTStoWIS2>`_
+
+The discussions around this topic are important drivers for Sarracenia.
+
+
 AMQP
 ~~~~
 
@@ -232,6 +252,20 @@ providers are very Java oriented.
 Sarracenia relies heavily on the use of brokers and topic based exchanges, which were prominent in AMQP standards efforts prior
 to version 1.0, at which point they were removed. It is hoped that these concepts will be re-introduced at some point. Until
 that time, the application will rely on pre-1.0 standard message brokers, such as rabbitmq.
+
+MQTT
+----
+
+The Message Queue Telemetry Transport (MQTT) version 5 is a second Message Queueing protocol with all the features
+necessary to support sarracenia's data exchange patterns.
+
+
+* `mqtt.org <https://mqtt.org>`_
+* `mosquitto.org <https://mosquitto.org>`_
+* `EMQX.io <emqx.io>`_
+
+
+
 
 History/Context
 ---------------
@@ -275,25 +309,23 @@ and supports additional message protocols, rather than just rabbitmq.
 +-------+----------------------------+------------+---------------------------------------------------+
 | 2000s | Sundew                     |   30kloc   | WMO Socket/TCP, FTP, SFTP (push only)             |
 +-------+----------------------------+------------+---------------------------------------------------+
-| 2010s | Sarracenia v2              |   25kloc   | AMQP, HTTP, SFTP, FTP (pub/sub)                   |
+| 2010s | Sarracenia v2              |   25kloc   | AMQP, HTTP, SFTP, FTP (pub/sub and push)          |
 +-------+----------------------------+------------+---------------------------------------------------+
-| 2020s | Sarracenia v3 (sr3)        |   17kloc   | AMQP, MQTT, HTTP, SFTP, API (pub/sub)             |
+| 2020s | Sarracenia v3 (sr3)        |   15kloc   | AMQP, MQTT, HTTP, SFTP, API (pub/sub and push)    |
 +-------+----------------------------+------------+---------------------------------------------------+
-
 
 References & Links
 ~~~~~~~~~~~~~~~~~~
 
 Other, somewhat similar software, no endorsements or judgements should be taken from these links:
 
-- Manual on the Global Telecommunications´ System: WMO Manual 386. The standard reference for this domain. (a likely stale copy is  `here <WMO-386.pdf>`_.) Try http://www.wmo.int for the latest version.
-- `Local Data Manager <http://www.unidata.ucar.edu/software/ldm>`_ LDM includes a network protocol, and it fundamentally wishes to exchange with other LDM systems.  This package was instructive in interesting ways, in the early 2000's there was an effort called NLDM which layered meteorological messaging over a standard TCP/IP protocol.  That effort died, however, but the inspiration of keeping the domain (weather) separate from the transport layer (TCP/IP) was an important motivation for MetPX.
-- `Automatic File Distributor  <http://www.dwd.de/AFD>`_ - from the German Weather Service.  Routes files using the transport protocol of the user's choice.  Philosophically close to MetPX Sundew.
-- `Corobor <http://www.corobor.com>`_ - commercial WMO switch supplier. 
-- `Netsys  <http://www.netsys.co.za>`_ - commercial WMO switch supplier.
-- `IBLSoft <http://www.iblsoft.com>`_ - commercial WMO switch supplier.
+- `Local Data Manager <https://www.unidata.ucar.edu/software/ldm>`_ LDM includes a network protocol, and it fundamentally wishes to exchange with other LDM systems.  This package was instructive in interesting ways, in the early 2000's there was an effort called NLDM which layered meteorological messaging over a standard TCP/IP protocol.  That effort died, however, but the inspiration of keeping the domain (weather) separate from the transport layer (TCP/IP) was an important motivation for MetPX.
+- `Automatic File Distributor  <https://www.dwd.de/AFD>`_ - from the German Weather Service.  Routes files using the transport protocol of the user's choice.  Philosophically close to MetPX Sundew.
+- `Corobor <https://www.corobor.com>`_ - commercial WMO switch supplier. 
+- `Netsys  <https://www.netsys.co.za>`_ - commercial WMO switch supplier.
+- `IBLSoft <https://www.iblsoft.com>`_ - commercial WMO switch supplier.
 - variety of file transfer engines: Standard Networks Move IT DMZ, Softlink B-HUB & FEST, Globalscape EFT Server, Axway XFB, Primeur Spazio, Tumbleweed Secure File Transfer, Messageway.
 - `Quantum <https://www.websocket.org/quantum.html>`_ about HTML5 web sockets. A good discussion of why traditional web push is awful, showing how web sockets can help.  AMQP is a pure socket solution that has the same advantages websockets for efficiency. Note: KAAZING wrote the piece, not disinterested.
 - `Rsync  <https://rsync.samba.org/>`_ provides fast incremental file transfer.
 - `Lsyncd <https://github.com/axkibe/lsyncd>`_ Live syncing (Mirror) Daemon.
-- `Zsync <http://zsync.moria.org.uk>`_ optimised rsync over HTTP.
+- `Zsync <https://zsync.moria.org.uk>`_ optimised rsync over HTTP.
