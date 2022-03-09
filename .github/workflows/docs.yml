@@ -1,4 +1,4 @@
-name: Build docs and publish to GitHub Pages
+name: Build docs and publish to gh-pages branch and GitHub Pages
 on:
   push:
     branches:
