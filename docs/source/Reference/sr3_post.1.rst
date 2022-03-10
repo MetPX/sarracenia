@@ -554,10 +554,6 @@ implementation.
 SEE ALSO
 ========
 
-`sr_report(7) <sr3.1.rst#report>`_ - the format of report messages.
-
-`sr_report(1) <sr3.1.rst#report>`_ - process report messages.
-
 `sr_post(7) <sr_post.7.rst>`_ - the format of announcement messages.
 
 `sr_sarra(8) <sr3.1.rst#sarra>`_ - Subscribe, Acquire, and ReAdvertise tool.

@@ -32,8 +32,6 @@ with some limitations.
 
 It can therefore act as a drop-in replacement for:
 
-   `sr_report(1) <sr3.1.rst#report>`_ - process report messages.
-
    `sr_shovel(8) <sr3.1.rst#shovel>`_ - process shovel messages.
 
    `sr_winnow(8) <sr3.1.rst#winnow>`_ - process winnow messages.
@@ -100,11 +98,7 @@ implementation.
 SEE ALSO
 ========
 
-`sr_report(7) <sr3.1.rst#report>`_ - the format of report messages.
-
-`sr_report(1) <sr3.1.rst#report>`_ - process report messages.
-
-`sr_post(1) <sr_post.1.rst>`_ - post announcemensts of specific files.
+`sr_post(1) <sr_post.1.rst>`_ - post announcements of specific files.
 
 `sr_post(7) <sr_post.7.rst>`_ - the format of announcements.
 

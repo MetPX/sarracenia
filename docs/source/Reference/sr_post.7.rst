@@ -50,7 +50,7 @@ Version 03 format of file change announcements for sr_post.
 
 An sr_post message consists of a topic, and the *BODY* 
 
-**AMQP Topic:** *<version>.[post|report].{<dir>.}*
+**AMQP Topic:** *<version>.{<dir>.}*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
@@ -132,7 +132,7 @@ With this method, AMQP messages provide a 'control plane' for data transfers.  W
 is essentially point to point, data pumps can be transitively linked together to make arbitrary 
 networks.  Each posting is consumed by the next hop in the chain. Each hop re-advertises 
 (creates a new post for) the data for later hops.  The posts flow in the same direction as the 
-data.  If consumers permit it, report messages (see sr_report(7)) also flow through the control path, 
+data.  If consumers permit it, report messages also flow through the control path, 
 but in the opposite direction, allowing sources to know the entire disposition of their 
 files through a network.  
 
@@ -897,12 +897,6 @@ http://rabbitmq.net - home page of the AMQP broker used to develop Sarracenia.
 SEE ALSO
 --------
 
-`sr_report(7) <sr3.1.rst#report.7.rst>`_ - the format of report messages.
-
-`sr_pulse(7) <sr3.1.rst#pulse>`_ - the format of pulse messages.
-
-`sr_report(1) <sr3.1.rst#report>`_ - process report messages.
-
 `sr_post(1) <sr3_post.1.rst>`_ - post announcemensts of specific files.
 
 `sr_sarra(8) <sr3.1.rst#sarra>`_ - Subscribe, Acquire, and ReAdvertise tool.
@@ -910,5 +904,3 @@ SEE ALSO
 `sr_subscribe(1) <sr3.1.rst#subscribe>`_ - the download client.
 
 `sr_watch(1) <sr3.1.rst#watch>`_ - the directory watching daemon.
-
-tree `dd_subscribe(1) <sr3.1.rst#dd_subscribe>`_ - the http-only download client.

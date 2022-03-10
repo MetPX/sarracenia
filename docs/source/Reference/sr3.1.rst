@@ -2164,10 +2164,10 @@ CONSUMER
 ========
 
 Most Metpx Sarracenia components loop on reception and consumption of sarracenia 
-AMQP messages.  Usually, the messages of interest are `sr3_post(7) <sr3_post.7.rst>`_ 
+AMQP messages. Usually, the messages of interest are `sr3_post(7) <sr3_post.7.rst>`_ 
 messages, announcing the availability of a file by publishing its URL ( or a part 
-of a file ), but there are also `sr_report(7) <#report>`_ messages which 
-can be processed using the same tools. AMQP messages are published to an exchange 
+of a file ), but there are also report messages which can be processed using the 
+same tools. AMQP messages are published to an exchange 
 on a broker (AMQP server). The exchange delivers messages to queues. To receive 
 messages, one must provide the credentials to connect to the broker (AMQP message 
 pump). Once connected, a consumer needs to create a queue to hold pending messages.
@@ -3351,7 +3351,7 @@ Subscribers usually bind to the xpublic exchange to get the main data feed. This
 Another example, a user named Alice will have at least two exchanges:
 
   - xs_Alice the exhange where Alice posts her file notifications and report messages (via many tools).
-  - xr_Alice the exchange where Alice reads her report messages from (via sr_report).
+  - xr_Alice the exchange where Alice reads her report messages from (via sr_shovel).
   - Alice can create a new exchange by just posting to it (with sr3_post or sr_cpost) if it meets the naming rules.
 
 Usually an sr_sarra run by a pump administrator will read from an exchange such as xs_Alice_mydata, 
@@ -3742,95 +3742,6 @@ After the last one::
 
 
 and the sr_sender will function normally thereafter.
-
-
-
-Shovel Save/Restore
--------------------
-
-If a queue builds up on a broker because a subscriber is unable to process
-messages, overall broker performance will suffer, so leaving the queue lying around
-is a problem. As an administrator, one could keep a configuration like this
-around::
-
-  % more ~/tools/save.conf
-  broker amqp://tfeed@localhost/
-  topicPrefix v03
-  exchange xpublic
-
-  post_rate_limit 50
-  on_post post_rate_limit
-  post_broker amqp://tfeed@localhost/
-
-The configuration relies on the use of an administrator or feeder account.
-Note the queue which has messages in it, in this case q_tsub.sr_subscribe.t.99524171.43129428. Invoke the shovel in save mode to consume messages from the queue
-and save them to disk::
-
-  % cd ~/tools
-  % sr_shovel -save -queue q_tsub.sr_subscribe.t.99524171.43129428 foreground save.conf
-
-  2017-03-18 13:07:27,786 [INFO] sr_shovel start
-  2017-03-18 13:07:27,786 [INFO] sr_sarra run
-  2017-03-18 13:07:27,786 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
-  2017-03-18 13:07:27,788 [WARNING] non standard queue name q_tsub.sr_subscribe.t.99524171.43129428
-  2017-03-18 13:07:27,788 [INFO] Binding queue q_tsub.sr_subscribe.t.99524171.43129428 with key v03.# from exchange xpublic on broker amqp://tfeed@localhost/
-  2017-03-18 13:07:27,790 [INFO] report_back to tfeed@localhost, exchange: xreport
-  2017-03-18 13:07:27,792 [INFO] sr_shovel saving to /home/peter/.cache/sarra/shovel/save/sr_shovel_save_0000.save for future restore
-  2017-03-18 13:07:27,794 [INFO] sr_shovel saving 1 message topic: v03.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml
-  2017-03-18 13:07:27,795 [INFO] sr_shovel saving 2 message topic: v03.hydrometric.doc.hydrometric_StationList.csv
-          .
-          .
-          .
-  2017-03-18 13:07:27,901 [INFO] sr_shovel saving 188 message topic: v03.hydrometric.csv.ON.hourly.ON_hourly_hydrometric.csv
-  2017-03-18 13:07:27,902 [INFO] sr_shovel saving 189 message topic: v03.hydrometric.csv.BC.hourly.BC_hourly_hydrometric.csv
-
-  ^C2017-03-18 13:11:27,261 [INFO] signal stop
-  2017-03-18 13:11:27,261 [INFO] sr_shovel stop
-
-
-  % wc -l /home/peter/.cache/sarra/shovel/save/sr_shovel_save_0000.save
-  189 /home/peter/.cache/sarra/shovel/save/sr_shovel_save_0000.save
-  % 
-
-The messages are written to a file in the caching directory for future use, with
-the name of the file being based on the configuration name used. The file is in
-json format, one message per line (lines are very long) and so filtering with other tools
-is possible to modify the list of saved messages. Note that a single save file per
-configuration is automatically set, so to save multiple queues, one would need one configurations
-file per queue to be saved.  Once the subscriber is back in service, one can return the messages
-saved to a file into the same queue::
-
-  % sr_shovel -restore_to_queue q_tsub.sr_subscribe.t.99524171.43129428 foreground save.conf
-
-  2017-03-18 13:15:33,610 [INFO] sr_shovel start
-  2017-03-18 13:15:33,611 [INFO] sr_sarra run
-  2017-03-18 13:15:33,611 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
-  2017-03-18 13:15:33,613 [INFO] Binding queue q_tfeed.sr_shovel.save with key v03.# from exchange xpublic on broker amqp://tfeed@localhost/
-  2017-03-18 13:15:33,615 [INFO] report_back to tfeed@localhost, exchange: xreport
-  2017-03-18 13:15:33,618 [INFO] sr_shovel restoring 189 messages from save /home/peter/.cache/sarra/shovel/save/sr_shovel_save_0000.save 
-  2017-03-18 13:15:33,620 [INFO] sr_shovel restoring message 1 of 189: topic: v03.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml
-  2017-03-18 13:15:33,620 [INFO] msg_log received: 20170318165818.878 http://localhost:8000/ observations/swob-ml/20170318/CPSL/2017-03-18-1600-CPSL-AUTO-swob.xml topic=v03.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml lag=1034.74 sundew_extension=DMS:WXO_RENAMED_SWOB:MSC:XML::20170318165818 source=metpx mtime=20170318165818.878 sum=d,66f7249bd5cd68b89a5ad480f4ea1196 to_clusters=DD,DDI.CMC,DDI.EDM,DDI.CMC,CMC,SCIENCE,EDM parts=1,5354,1,0,0 toolong=1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ß from_cluster=DD atime=20170318165818.878 filename=2017-03-18-1600-CPSL-AUTO-swob.xml 
-     .
-     .
-     .
-  2017-03-18 13:15:33,825 [INFO] post_log notice=20170318165832.323 http://localhost:8000/hydrometric/csv/BC/hourly/BC_hourly_hydrometric.csv headers={'sundew_extension': 'BC:HYDRO:CSV:DEV::20170318165829', 'toolong': '1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ß', 'filename': 'BC_hourly_hydrometric.csv', 'to_clusters': 'DD,DDI.CMC,DDI.EDM,DDI.CMC,CMC,SCIENCE,EDM', 'sum': 'd,a22b2df5e316646031008654b29c4ac3', 'parts': '1,12270407,1,0,0', 'source': 'metpx', 'from_cluster': 'DD', 'atime': '20170318165832.323', 'mtime': '20170318165832.323'}
-  2017-03-18 13:15:33,826 [INFO] sr_shovel restore complete deleting save file: /home/peter/.cache/sarra/shovel/save/sr_shovel_save_0000.save 
-
-
-  2017-03-18 13:19:26,991 [INFO] signal stop
-  2017-03-18 13:19:26,991 [INFO] sr_shovel stop
-  % 
-
-All the messages saved are returned to the named *return_to_queue*. Note that the use of the *post_rate_limit*
-plugin prevents the queue from being flooded with hundreds of messages per second. The rate limit to use will need
-to be tuned in practice.
-
-By default the file name for the save file is chosen to be in ~/.cache/sarra/shovel/<config>_<instance>.save.
-To choose a different destination, *save_file* option is available::
-
-  sr_shovel -save_file `pwd`/here -restore_to_queue q_tsub.sr_subscribe.t.99524171.43129428 ./save.conf foreground
-
-will create the save files in the current directory named here_000x.save where x is the instance number (0 for foreground.)
 
 
 
