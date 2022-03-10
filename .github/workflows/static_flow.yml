@@ -15,9 +15,12 @@ on:
         required: false
         default: false
 
+env:
+  WHICH_TEST: static_flow
+
 jobs:
   build:
-
+    name: Run static_flow test
     runs-on: ubuntu-latest
 
     steps:
@@ -32,11 +35,11 @@ jobs:
         travis/flow_autoconfig.sh
         travis/ssh_localhost.sh
          
-    - name: Setup Static test.
+    - name: Setup ${{ env.WHICH_TEST }} test.
       run: |
         cd ${HOME}; pwd; ls ; 
         echo hoho
-        cd ${HOME}/sr_insects/static_flow; ./flow_setup.sh
+        cd ${HOME}/sr_insects/${WHICH_TEST}; ./flow_setup.sh
 
     # Enable tmate debugging of manually-triggered workflows if the input option was provided
     # https://github.com/marketplace/actions/debugging-with-tmate
@@ -45,10 +48,17 @@ jobs:
     #  uses: mxschmitt/action-tmate@v3
     #  #if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
 
-    - name: Limit Static test.
+    - name: Limit ${{ env.WHICH_TEST }} test.
       run: |
-        cd ${HOME}/sr_insects/static_flow; ./flow_limit.sh
+        cd ${HOME}/sr_insects/${WHICH_TEST}; ./flow_limit.sh
 
-    - name: Check Static test.
+    - name: Check results of ${{ env.WHICH_TEST }} test.
       run: |
-        cd ${HOME}/sr_insects/static_flow; ./flow_check.sh
+        cd ${HOME}/sr_insects/${WHICH_TEST}; ./flow_check.sh
+
+    - name: Save run artifacts
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: sr3_${{ env.WHICH_TEST }}_logs_${{ github.sha }}
+        path: ~/.cache/sr3/log/
