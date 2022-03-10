@@ -10,8 +10,6 @@ Receiving Data from a MetPX-Sarracenia Data Pump
 [ `version française <fr/subscriber.rst>`_ ]
 
 
-.. contents::
-
 Revision Record
 ---------------
 
@@ -620,7 +618,7 @@ configuration file::
 so that each file downloaded (or each part of the file if it is large),
 is to be AV scanned. Sample run::
 
-$ sr_subscribe --reset foreground ../dd_swob.conf 
+  $ sr_subscribe --reset foreground ../dd_swob.conf 
   clam_scan on_part plugin initialized
   clam_scan on_part plugin initialized
   2016-05-07 18:01:15,007 [INFO] sr_subscribe start
@@ -753,7 +751,7 @@ result in::
   
 Gives lines in the log like so::
 
-$ sr_subscribe --reset foreground ../dd_swob.conf 
+  $ sr_subscribe --reset foreground ../dd_swob.conf 
   2016-05-07 18:05:52,097 [INFO] sr_subscribe start
   2016-05-07 18:05:52,097 [INFO] sr_subscribe run
   2016-05-07 18:05:52,097 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)

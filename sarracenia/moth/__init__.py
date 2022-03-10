@@ -32,27 +32,27 @@ default_options = {
 class Moth():
     """
         Moth ... Messages Organized by Topic Headers
-           (en français: Messages organisés par thème hierarchique. )
+        (en français: Messages organisés par thème hierarchique. )
 
         A multi-protocol library for use by hierarchical message passing implementations,
         (messages which have a 'topic' header that is used for routing by brokers.)
  
-       - regardless of protocol, the message format returned should be the same.
-       - the message is turned into a python dictionary, corresponding to key-value pairs
-         in the message body, and properties.
-       - topic is special key that may end up in the message body, or some sort of property
-         or metadata.
-       - the protocol should support acknowledgement under user control. Such control indicated
-         by the presence of an entry_point called "ack". The entry point accepts "ack_id" as
-         a message identifier to be passed to the broker.  Whatever protocol symbol is used
-         by the protocol, it is passed through this message property.  Examples:
-         in rabbitmq/amqp ack takes a "delivery_tag" as an argument, in MQTT, it takes a "message-id"
-         so when receiving an AMQP message, the m['ack_id'] is assigned the delivery_tag from the message. 
-       - There is a special dict item:  "_DeleteOnPost",  
-         to identify keys which are added only for local use.
-         they will be removed from the message when publishing.
-         examples:  topic (sent outside body), message-id (used for acknowledgements.)
-                    new_basedir, ack_id, new_... (settings...)
+        - regardless of protocol, the message format returned should be the same.
+        - the message is turned into a python dictionary, corresponding to key-value pairs
+          in the message body, and properties.
+        - topic is special key that may end up in the message body, or some sort of property
+          or metadata.
+        - the protocol should support acknowledgement under user control. Such control indicated
+          by the presence of an entry_point called "ack". The entry point accepts "ack_id" as
+          a message identifier to be passed to the broker.  Whatever protocol symbol is used
+          by the protocol, it is passed through this message property.  Examples:
+          in rabbitmq/amqp ack takes a "delivery_tag" as an argument, in MQTT, it takes a "message-id"
+          so when receiving an AMQP message, the m['ack_id'] is assigned the delivery_tag from the message. 
+        - There is a special dict item:  "_DeleteOnPost",  
+          to identify keys which are added only for local use.
+          they will be removed from the message when publishing.
+          examples:  topic (sent outside body), message-id (used for acknowledgements.)
+          new_basedir, ack_id, new\_... (settings...)
 
      intent is to be specialized for topic based data distribution (MQTT style.)
      API to allow pass-through of protocol specific properties, but apply templates for genericity.
@@ -137,17 +137,18 @@ class Moth():
            'topicPrefix' : [ 'v03' ]
 
        for get:
-           'batch'  : 100  # how many messages to get at once
-           'broker' : an sr_broker ?
-           'Queue'  : Mandatory, name of a queue. (only in AMQP... hmm...)
-           'bindings' : [ list of bindings ]
+       *  'batch'  : 100  # how many messages to get at once
+       *  'broker' : an sr_broker ?
+       *  'Queue'  : Mandatory, name of a queue. (only in AMQP... hmm...)
+       *  'bindings' : [ list of bindings ]
 
-           'loop'
-        optional:
-           'message_ttl'    
+       *  'loop'
+
+       optional:
+       *  'message_ttl'    
 
        for put:
-           'exchange' (only in AMQP... hmm...)
+       *   'exchange' (only in AMQP... hmm...)
        
 
     """

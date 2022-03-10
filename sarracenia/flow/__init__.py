@@ -60,12 +60,13 @@ default_options = {
 
 class Flow:
     """
-    Implement the General Algorithm from the Concepts Guide.
+      Implement the General Algorithm from the Concepts Guide.
 
-    The constructor/factory accept a configuration (sarracenia.config.Config class) with all the 
-    settings in it.
+      All of the component types (e.g. poll, subscribe, sarra, winnow, shovel ) are implemented 
+      as sub-classes of Flow. The constructor/factory accept a configuration 
+      (sarracenia.config.Config class) with all the settings in it.
 
-    This class takes care of starting up, running with callbacks, and clean shutdown.
+      This class takes care of starting up, running with callbacks, and clean shutdown.
 
       need to know whether to sleep between passes  
       o.sleep - an interval (floating point number of seconds)
@@ -75,11 +76,11 @@ class Flow:
 
       worklist given to callbacks...
 
-          worklist.incoming --> new messages to continue processing
-          worklist.ok       --> successfully processed
-          worklist.rejected --> messages to not be further processed.
-          worklist.failed   --> messages for which processing failed.
-          worklist.dirrectories_ok --> directories created.
+      * worklist.incoming --> new messages to continue processing
+      * worklist.ok       --> successfully processed
+      * worklist.rejected --> messages to not be further processed.
+      * worklist.failed   --> messages for which processing failed.
+      * worklist.dirrectories_ok --> directories created.
 
       Initially all messages are placed in incoming.
       if a callback decides:
@@ -88,15 +89,17 @@ class Flow:
       - all processing has been done, it moves it to ok.
       - an operation failed and it should be retried later, move to retry
 
-    callbacks must not remove messages from all worklists, re-classify them.
-    it is necessary to put rejected messages in the appropriate worklist
-    so they can be acknowledged as received.
+      callbacks must not remove messages from all worklists, re-classify them.
+      it is necessary to put rejected messages in the appropriate worklist
+      so they can be acknowledged as received.
 
-    plugins  -- dict of modular functionality metadata.
-         "load" - list of (v3) flow_callbacks to load.
-         time    - one of the invocation times of callbacks. examples:
-                   "on_start", "after_accept", etc...
-                 contains routines to run at each *time*
+      interesting data structure:
+      self.plugins  -- dict of modular functionality metadata. 
+
+      * self.plugins[ "load" ] contains a list of (v3) flow_callbacks to load.
+
+      * self.plugins[ entry_point ]  - one for each invocation times of callbacks. examples:
+        "on_start", "after_accept", etc...  contains routines to run at each *entry_point*
      
     """
     @staticmethod
@@ -268,6 +271,8 @@ class Flow:
 
     def run(self):
         """
+          This is the core routine of of the algorithm, with most important data driven 
+          loop in it. This implements the General Algorithm (as described in the Concepts Explanation Guide) 
           check if stop_requested once in a while, but never return otherwise.
         """
 

@@ -43,86 +43,92 @@ import urllib.request
 
 logger = logging.getLogger(__name__)
 
-"""
-    Core utilities of Sarracenia.  The main class here is sarracenia.Message.
-    a Sarracenia.Message is subclassed from a dict, so for most uses, it works like the 
-    python built-in, but also we have a few major entry points some factoryies:
-
-    m = sarracenia.Message.fromFileData( path, options, lstat )
- 
-    which builds a message from a given existing file, consulting *options*, a parsed
-    in memory version of the configuration settings that are applicable.
-
-    If you don't have a local file, then build your message with:
-
-    m = sarracenia.Message.fromFileInfo( path, options, lstat )
-
-    where you can make up the lstat values to fill in some fields in the message.
-    You can make a fake lstat structure to provide these values using paramiko.SFTPAttributes 
-
-
-    import paramiko
-
-    lstat = paramiko.SFTPAttributes()
-    lstat.st_mtime= utcinteger second count in UTC (numeric version of a Sarracenia timestamp.)
-    lstat.st_atime=
-    lstat.st_mode=0o644
-    lstat.st_size= size_in_bytes
-
-    optional fields that may be of interest:
-    lstat.filename= "nameOfTheFile"
-    lstat.longname= 'lrwxrwxrwx    1 peter    peter          20 Oct 11 20:28 nameOfTheFile'
- 
-    that you can then provide as an *lstat* argument to the above *fromFileInfo()* 
-    call. However the message returned will lack an integrity checksum field.
-    once you get the file, you can add the Integrity field with:
-
-    m.computeIntegrity(path, o):
-
-    In terms of consuming messages, the fields in the dictionary provide metadata
-    for the announced resource. The anounced data could be embedded in the message itself,
-    or available by a URL.
-
-    Messages are generally gathered from a source such as the Message Queueing Protocol wrapper
-    class: moth... sarracenia.moth. 
-
-
-    data = m.getContent()
-
-    will return the content of the announced resource as raw data.
-
-
-
-
-   That's the entire message creation API.
-"""
-
-
-"""
-
-  Time conversion routines.  
-   - os.stat, and time.now() return floating point 
-   - The floating point representation is a count of seconds since the beginning of the epoch.
-   - beginning of epoch is platform dependent, and conversion to actual date is fraught (leap seconds, etc...)
-   - Entire SR_* formats are text, no floats are sent over the protocol (avoids byte order issues, null byte / encoding 
-issues, 
-     and enhances readability.) 
-   - str format: YYYYMMDDHHMMSS.msec goal of this representation is that a naive conversion to floats yields comparable 
-numbers.
-   - but the number that results is not useful for anything else, so need these special routines to get a proper epochal
- time.
-   - also OK for year 2032 or whatever (rollover of time_t on 32 bits.)
-   - string representation is forced to UTC timezone to avoid having to communicate timezone.
-
-   timestr2flt - accepts a string and returns a float.
-
-
-  caveat:
-   - FIXME: this encoding will break in the year 10000 (assumes four digit year) and requires leading zeroes prior to 10
-00.
-     one will have to add detection of the decimal point, and change the offsets at that point.
+class Sarracenia:
+    """
+        Core utilities of Sarracenia.  The main class here is sarracenia.Message.
+        a Sarracenia.Message is subclassed from a dict, so for most uses, it works like the 
+        python built-in, but also we have a few major entry points some factoryies:
     
-"""
+        m = sarracenia.Message.fromFileData( path, options, lstat )
+     
+        which builds a message from a given existing file, consulting *options*, a parsed
+        in memory version of the configuration settings that are applicable.
+    
+        If you don't have a local file, then build your message with:
+    
+        m = sarracenia.Message.fromFileInfo( path, options, lstat )
+    
+        where you can make up the lstat values to fill in some fields in the message.
+        You can make a fake lstat structure to provide these values using paramiko.SFTPAttributes 
+    
+    
+        import paramiko
+    
+        lstat = paramiko.SFTPAttributes()
+        lstat.st_mtime= utcinteger second count in UTC (numeric version of a Sarracenia timestamp.)
+        lstat.st_atime=
+        lstat.st_mode=0o644
+        lstat.st_size= size_in_bytes
+    
+        optional fields that may be of interest:
+        lstat.filename= "nameOfTheFile"
+        lstat.longname= 'lrwxrwxrwx    1 peter    peter          20 Oct 11 20:28 nameOfTheFile'
+     
+        that you can then provide as an *lstat* argument to the above *fromFileInfo()* 
+        call. However the message returned will lack an integrity checksum field.
+        once you get the file, you can add the Integrity field with:
+    
+        m.computeIntegrity(path, o):
+    
+        In terms of consuming messages, the fields in the dictionary provide metadata
+        for the announced resource. The anounced data could be embedded in the message itself,
+        or available by a URL.
+    
+        Messages are generally gathered from a source such as the Message Queueing Protocol wrapper
+        class: moth... sarracenia.moth. 
+    
+    
+        data = m.getContent()
+    
+        will return the content of the announced resource as raw data.
+    
+       """
+    pass
+
+class TimeConversions:
+    """
+    
+     Time conversion routines.  
+
+     * os.stat, and time.now() return floating point 
+
+     * The floating point representation is a count of seconds since the beginning of the epoch.
+
+     * beginning of epoch is platform dependent, and conversion to actual date is fraught (leap seconds, etc...)
+
+     * Entire SR\_* formats are text, no floats are sent over the protocol 
+       (avoids byte order issues, null byte / encoding issues, and enhances readability.) 
+
+     * str format: YYYYMMDDHHMMSS.msec goal of this representation is that a naive 
+       conversion to floats yields comparable numbers.
+
+     * but the number that results is not useful for anything else, so need these 
+       special routines to get a proper epochal time.
+
+     * also OK for year 2032 or whatever (rollover of time_t on 32 bits.)
+
+     * string representation is forced to UTC timezone to avoid having to communicate timezone.
+    
+     timestr2flt() - accepts a string and returns a float.
+    
+     caveat
+
+     FIXME: this encoding will break in the year 10000 (assumes four digit year) 
+     and requires leading zeroes prior to 1000. One will have to add detection of 
+     the decimal point, and change the offsets at that point.
+        
+    """
+    pass
 
 
 def nowflt():
@@ -249,14 +255,16 @@ class Message(dict):
     def computeIntegrity(msg, path, o):
         """
            check extended attributes for a cached integrity sum calculation.
-           if present, and 
-                  the file mtime is not too new, and 
-                  the cached sum using the same method
-              then use the cached value.
+           if extended attributes are present, and 
+           * the file mtime is not too new, and 
+           * the cached sum us using the same method
+           then use the cached value.
 
-           otherwise, will need to use calculate a checksum.
+           otherwise, calculate a checksum. 
+           set the file's extended attributes for the new value.
            the method of checksum calculation is from options.integrity_method.
            
+           return the checksum value.
         """
         xattr = sarracenia.filemetadata.FileMetadata(path)
 
@@ -515,15 +523,15 @@ class Message(dict):
         """
            Set new message fields according to values when the message is accepted.
            
-           options - the sarracenia.config instance giving all the current configuration.
-           urlstr - the urlstr being matched (baseUrl+relPath+sundew_extension)
-           pattern - the regex that was matched.
-           maskDir - the current directory to base the relPath from.
-           maskFileOption - filename option value (sundew compatibility options.)
-           strip  - number of path entries to strip from the left side of the path.
-           pstrip - pattern strip regexp to apply instead of a count.
-           flatten - a character to replace path separators with toe change 
-                     a multi-directory deep file name into a single long file name
+           * options: the sarracenia.config instance giving all the current configuration.
+           * urlstr: the urlstr being matched (baseUrl+relPath+sundew_extension)
+           * pattern: the regex that was matched.
+           * maskDir: the current directory to base the relPath from.
+           * maskFileOption: filename option value (sundew compatibility options.)
+           * strip: number of path entries to strip from the left side of the path.
+           * pstrip: pattern strip regexp to apply instead of a count.
+           * flatten: a character to replace path separators with toe change a multi-directory 
+             deep file name into a single long file name
         """
 
         # relative path by default mirror
@@ -651,7 +659,7 @@ class Message(dict):
 
     def updatePaths( msg, options, new_dir, new_file ):
         """
-        set the new_ fields in the message based on changed file placement.
+        set the new\_ fields in the message based on changed file placement.
 
         If you change file placement in a flow callback, for example.
         One would change new_dir and new_file in the message.

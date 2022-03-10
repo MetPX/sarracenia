@@ -18,6 +18,8 @@ Caveat:
    Tutorials/index
    Contribution/index
 
+   api-documentation
+
 Indices and tables
 ==================
 

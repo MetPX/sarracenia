@@ -19,8 +19,8 @@ from sarracenia import __version__
 
 # -- Project information -----------------------------------------------------
 
-project = 'sarracenia'
-copyright = '2022, Peter Silva'
+project = 'Sarracenia'
+copyright = '2022, Shared Services Canada, Government of Canada, GPLv2'
 author = 'Peter Silva'
 
 # The full version, including alpha/beta/rc tags
@@ -32,11 +32,14 @@ release = __version__
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [ 'sphinx.ext.autodoc' 
-]
-
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+extensions = ['nbsphinx', 'sphinx.ext.autodoc',
+              'sphinx.ext.todo',
+              'sphinx.ext.coverage',
+              'sphinx.ext.ifconfig',
+              'sphinx.ext.viewcode',
+              'sphinx.ext.doctest',
+              'sphinx.ext.githubpages',
+              'sphinx.ext.intersphinx']
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.

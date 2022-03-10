@@ -80,21 +80,24 @@ def alarm_set(time):
 
 class Transfer():
     """
-    v2: sarracenia.sr_proto -> v3: sarracenia.transfer
-    ============================================================
-     protocol in sarracenia supports/uses :
-    
-     connect
-     close
-    
-     if downloading : 
+     This is a sort of abstract base classe for implementing transfer protocols.
+     Implemented subclasses include support for: local files, https, sftp, and ftp. 
+
+     This class has routines that do i/o given descriptors opened by the sub-classes,
+     so that each one does not need to re-implement copying, for example.
+
+     Each subclass needs to implement the following routines:
+
+     if downloading:: 
+
          get    ( msg, remote_file, local_file, remote_offset=0, local_offset=0, length=0 )
          getAccellerated( msg, remote_file, local_file, length ) 
          ls     ()
          cd     (dir)
          delete (path)
     
-     if a sending    : 
+     if a sending:: 
+
          put    ( msg, remote_file, local_file, remote_offset=0, local_offset=0, length=0 )
          putAccelerated ( msg, remote_file, local_file, length=0 )
          cd     (dir)
@@ -103,18 +106,15 @@ class Transfer():
          chmod  (perm)
          rename (old,new)
     
-     SFTP : supports remote file seek... so 'I' part possible
-    
-    
-     require   
-               options.credentials
-               options.destination 
-               options.batch 
-               options.permDefault
-               options.permDirDefault
-               options.timeout
-         opt   options.bytes_per_second
-         opt   options.bufsize
+     uses options (on Sarracenia.config data structure passed to constructor/factory.)
+     * options.credentials
+     * options.destination 
+     * options.batch 
+     * options.permDefault
+     * options.permDirDefault
+     * options.timeout
+     * opt   options.bytes_per_second
+     * opt   options.bufsize
 
     """
     @staticmethod

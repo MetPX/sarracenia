@@ -10,56 +10,7 @@ import copy
 import importlib
 import logging
 import sys
-"""
-1st draft of a v03 plugin method: flowCallback
 
-sample call:
-
-flowCallback sarracenia.flowcb.name.Name
-
-will instantiate an object of that type whose appropriately name methods
-will be called at the right time.
-
-
-__init__ accepts options as an argument.
-
-options is a sarracenia.config.Config object, used to override default behaviour
-
-a setting is declared:
-
-set sarracenia.flowcb.filter.log.Log.level debug
-
-(the prefix for the setting matches the type hierarchy in flowCallback)
-
-the plugin should get the setting:
-
-    options.level = 'debug'
-
-
-worklist given to on_plugins...
-
-    worklist.incoming --> new messages to continue processing
-    worklist.ok       --> successfully processed
-    worklist.rejected --> messages to not be further processed.
-    worklist.failed   --> messages for which processing failed.
-                          failed messages will be retried.
-    worklist.directories_ok --> list of directories created during processing.
-
-Initially all messages are placed in incoming.
-if a plugin decides:
-
-- a message is not relevant, it is moved to the rejected worklist. 
-- all processing has been done, it moves it to the ok worklist
-- an operation failed and it should be retried later, append it to the failed
-  worklist
-
-Do not remove any message from all lists, only move messages between them.
-   it is necessary to put rejected messages in the appropriate worklist
-   so they can be acknowledged as received. Messages can only removed after ack.
-
-"""
-
-logger = logging.getLogger(__name__)
 
 entry_points = [
     'ack', 'do_poll', 'download', 'gather', 'after_accept', 'on_data', 'after_work',
@@ -72,19 +23,65 @@ schemed_entry_points = ['do_get', 'do_put']
 
 class FlowCB:
     """
-    FIXME: document the API signatures for all the entry points. 
+    1st draft of a v03 plugin method: flowCallback
+    
+    sample call:
+    
+    flowCallback sarracenia.flowcb.name.Name
+    
+    will instantiate an object of that type whose appropriately name methods
+    will be called at the right time.
+    
+    
+    __init__ accepts options as an argument.
+    
+    options is a sarracenia.config.Config object, used to override default behaviour
+    
+    a setting is declared in a configuration file like so::
+    
+        set sarracenia.flowcb.filter.log.Log.level debug
+    
+    (the prefix for the setting matches the type hierarchy in flowCallback)
+    the plugin should get the setting::
+    
+        options.level = 'debug'
+    
+    
+    worklist given to on_plugins...
+    
+    * worklist.incoming --> new messages to continue processing
+    * worklist.ok       --> successfully processed
+    * worklist.rejected --> messages to not be further processed.
+    * worklist.failed   --> messages for which processing failed. Failed messages will be retried.
+    * worklist.directories_ok --> list of directories created during processing.
+    
+    Initially, all messages are placed in incoming.
+    if a plugin entry_point decides:
+    
+    - a message is not relevant, it is moved to the rejected worklist. 
+    - all processing has been done, it moves it to the ok worklist
+    - an operation failed and it should be retried later, append it to the failed
+      worklist
+    
+    Do not remove any message from all lists, only move messages between them.
+    it is necessary to put rejected messages in the appropriate worklist
+    so they can be acknowledged as received. Messages can only removed after ack.
+    
+    
+    def __init__(self,options) -> None::
 
-    def __init__(self,options) -> None:
         Task: initialization of the flowCallback at instantiation time.
 
         usually contains:
 
         self.o = options
 
-    def ack(self,messagelist) -> None:
+    def ack(self,messagelist) -> None::
+
         Task: acknowledge messages from a gather source.
 
-    def gather(self) -> list:
+    def gather(self) -> list::
+
         Task: gather messages from a source... return a list of messages.
 
               in a poll, gather is always called, regardless of vip posession.
@@ -92,13 +89,15 @@ class FlowCB:
               of the vip.
         return []
 
-    def after_accept(self,worklist) -> None:
+    def after_accept(self,worklist) -> None::
+
          Task: just after messages go through accept/reject masks,
                operate on worklist.incoming to help decide which messages to process further.
                and move messages to worklist.rejected to prevent further processing.
                do not delete any messages, only move between worklists.
 
-    def on_data(self,data) -> None:
+    def on_data(self,data) -> None::
+
         Task:  return data transformed in some way.
 
         return new_data
@@ -107,7 +106,8 @@ class FlowCB:
         in worklist.ok, and failed ones in worklist.failed.
 
 
-    def after_work(self,worklist) -> None:
+    def after_work(self,worklist) -> None::
+
         Task: operate on worklist.ok (files which have arrived.)
 
         All messages on the worklist.ok list have been acknowledged, so to suppress posting
@@ -116,7 +116,7 @@ class FlowCB:
         worklist.failed processing should occur in here as it will be zeroed out after this step.
         The flowcb/retry.py plugin, for example, processes failed messages.
 
-    def download(self,msg) -> bool:
+    def download(self,msg) -> bool::
 
          Task: looking at msg['new_dir'], msg['new_file'], msg['new_inflight_file'] 
                and the self.o options perform a download of a single file.
@@ -144,27 +144,33 @@ class FlowCB:
          appended to retry queue.
 
 
-    def on_housekeeping(self) -> None:
+    def on_housekeeping(self) -> None::
+
          do periodic processing.
 
-    def on_html_page(self,page):
+    def on_html_page(self,page)::
+
          Task: modify an html poll page. used in transfer/https.py to interpret weirdly 
                formatted lists of files.
          return True|False
 
-    def on_line(self,line) -> str:
+    def on_line(self,line) -> str::
+
          used in FTP polls, because servers have different formats, modify to canonical use.
 
          Task: return modified line.
 
-    def on_start(self) -> None:
+    def on_start(self) -> None::
+
          After the connection is established with the broker and things are instantiated, but
          before any message transfer occurs.
 
-    def on_stop(self) -> None:
-         
+    def on_stop(self) -> None::
+        
+         what it says on the tin... clean up processing when stopping.         
 
-    def poll(self) -> list:
+    def poll(self) -> list::
+
         Task: gather messages from a destination... return a list of messages.
               works like a gather, but...
 
@@ -173,7 +179,7 @@ class FlowCB:
               in components other than poll, poll is never called.
         return []
 
-    def post(self,worklist) -> None:
+    def post(self,worklist) -> None::
          
          Task: operate on worklist.ok, and worklist.failed. modifies them appropriately.
                message acknowledgement has already occurred before they are called.
@@ -181,7 +187,7 @@ class FlowCB:
          to indicate failure to process a message, append to worklist.failed.
          worklist.failed processing should occur in here as it will be zeroed out after this step.
 
-    def send(self,msg) -> bool:
+    def send(self,msg) -> bool::
 
          Task: looking at msg['new_dir'], msg['new_file'], and the self.o options perform a transfer
                of a single file.

@@ -6,8 +6,6 @@
  Continuously Mirror 27 Million File Tree Very Quickly
 -------------------------------------------------------
 
-.. Note::
-
 .. contents::
 
 

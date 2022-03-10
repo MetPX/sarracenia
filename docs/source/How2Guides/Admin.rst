@@ -766,7 +766,7 @@ upstream that data has been downloaded. Sr_audit helps with routing by creating 
  - for each subscriber, a shovel configuration named rr_<user>2xreport.conf is created
  - for each source, a shovel configuration named rr_xreport2<user>user.conf is created
 
-The *2xreport* shovels subscribes to messages posted in each user's xs_ exchange and posts them to the common xreport exchange.
+The *2xreport* shovels subscribes to messages posted in each user's xs\_ exchange and posts them to the common xreport exchange.
 Sample configuration file::
 
   # Initial report routing configuration created by sr_audit, tune to taste.
@@ -1160,7 +1160,10 @@ It is now possible to enable MQTT in Sarracenia through the RabbitMQ MQTT plugin
    accept .*
    on_message msg_rawlog
    download off
-  Note that we use *xmqtt_public* as the (post\_)exchange which is defined as the *rabbitmq_mqtt.exchange* in the rabbitmq.config file. We also append the source exchange to the (post\_)topicPrefix, which will map the source exchange and could be useful if we map multiple exchanges to mqtt.
+
+  Note that we use *xmqtt_public* as the (post\_)exchange which is defined as the *rabbitmq_mqtt.exchange* 
+  in the rabbitmq.config file. We also append the source exchange to the (post\_)topicPrefix, which will 
+  map the source exchange and could be useful if we map multiple exchanges to mqtt.
 
 * Start and test your configuration::
 
@@ -1170,6 +1173,7 @@ It is now possible to enable MQTT in Sarracenia through the RabbitMQ MQTT plugin
   On another machine you may now run::
   
    mosquitto_sub -h ${abroker} -t '#' -d
+
   Messages received from both sr_subscribe and mosquitto_sub should be the same.
 
 
