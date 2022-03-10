@@ -1,19 +1,20 @@
 
-=====================================
- MetPX-Sarracenia for Administrators
-=====================================
+==================================================
+ MetPX-Sarracenia with Rabbitmq for Administrators
+==================================================
 
 .. note::
    **FIXME**: Missing sections are highlighted by **FIXME**. What is here is accurate.
 
 
 
-Revision Record
----------------
+Overview
+--------
 
-:version: @Version@
-:date: @Date@
-
+Describes setup and operations of a MetPX-Sarracenia Data Pump using
+Rabbitmq as the message queueing protocol broker. For administration,
+most tasks are different, depending on the broker used. If using
+another broker, there needs to be another admin guide.
 
 Pre-Requisites
 --------------
@@ -259,13 +260,6 @@ In upto-date distros, you likely can just take the distro version.
 WebUI
 ~~~~~
 
-Sr_audit makes use of a variety of calls to the web management interface.
-sr_audit is the component which, as the name implies, audits configurations
-for left over queues, or attempts at malicious usage. Without this sort
-of auditing, the switch is likely to accumulate messages rapidly, which
-slows it down to a greater degree as the amount of messages pending increases
-potentially overflowing to disk.
-
 Basically, from a root shell one must::
 
  rabbitmq-plugins enable rabbitmq_management
@@ -455,7 +449,7 @@ Managing Users on a Pump Using Sr_audit
 
 To set up a pump, one needs a broker administrative user (in the examples: sarra)
 and a feeder user (in the examples: feeder). Management of other users is done with
-the sr_audit program.
+the sr3 program.
 
 First, write the correct credentials for the admin and feeder users in
 the credentials file .config/sarra/credentials.conf ::
@@ -482,11 +476,11 @@ in the file  .config/sarra/admin.conf ::
 
 Now to configure the pump execute the following::
 
- *sr --users declare*
+ *sr3 --users declare*
 
 Sample run::
 
-  fractal% sr --users declare
+  fractal% sr3 --users declare
   2020-09-06 23:28:56,211 [INFO] sarra.rabbitmq_admin add_user permission user 'ender' role source  configure='^q_ender.*|^xs_ender.*' write='^q_ender.*|^xs_ender.*' read='^q_ender.*|^x[lrs]_ender.*|^x.*public$' 
   ...
   020-09-06 23:32:50,903 [INFO] root declare looking at cpost/pelle_dd1_f04 
@@ -509,7 +503,7 @@ Sample run::
   2020-09-06 23:32:50,987 [INFO] sarra.moth.amqp __getSetup queue declared q_tsource.sr_sender.tsource2send_f50.60675197.29220410 (as: amqp://tsource@localhost/) 
   
 
-The *sr* program:
+The *sr3* program:
 
 - uses the *admin* account from .config/sarra/admin.conf to authenticate to broker.
 - creates exchanges *xpublic* and *xreport* if they don't exist.
@@ -525,19 +519,7 @@ The *sr* program:
 - user exchanges which do not correspond to users' roles are deleted ('xl\_*,xs\_*')
 - exchanges which do not start with 'x' (aside from builtin ones) are deleted.
 
-.. Note::
-   PS changed this so that with --users it exits after one pass... um.. not great ...
-   but otherwise:
-   The program runs as a daemon. After the initial pass to create the users,
-   It will go into to sleep, and then audit the configuration again.
-   To stop it from running in the foreground, stop it with: <ctrl-c>
-   (most common linux default interrupt character)
-   or find some other way to kill the running process.
-
-   **FIXME:** when invoked with --users, sr_audit, should set a 'once' flag,
-   and exist immediately, rather than looping.
-
-One can inspect whether the sr_audit command did all it should using either the Management GUI
+One can inspect whether the sr3 command did all it should using either the Management GUI
 or the command line tool::
 
   sarra@boule:~$ sudo rabbitmqctl  list_exchanges
@@ -573,7 +555,7 @@ or the command line tool::
   ...done.
   sarra@boule:~$
 
-The above looks like *sr_audit* did its job.
+The above looks like *sr3* did its job.
 In short, here are the permissions and exchanges *sr_audit* manages::
 
   admin user        : the only one creating users...
