@@ -2,7 +2,6 @@ Jupyter Notebook Tutorial Examples using CLI and APIs
 =====================================================
 
 .. toctree::
-   :maxdepth: 1
    :caption: Contents:
 
    README

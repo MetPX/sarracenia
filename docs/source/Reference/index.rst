@@ -2,7 +2,7 @@ Reference (Linux Man pages)
 ===========================
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 0
    :caption: Contents:
 
    sr3.1
