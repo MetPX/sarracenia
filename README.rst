@@ -2,7 +2,7 @@
  MetPX-Sarracenia
 ==================
 
-page web / homepage: https://metpx.github.io/
+page web / homepage: https://metpx.github.io/sarracenia
 
 .. image:: https://img.shields.io/pypi/v/metpx-sarracenia?style=flat
   :alt: PyPI version

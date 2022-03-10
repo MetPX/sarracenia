@@ -102,7 +102,7 @@ The components just have different default settings:
  | Component              | Use of the algorithm     |
  +------------------------+--------------------------+
  +------------------------+--------------------------+
- | *sr_subscribe*         | Gather=gather.message    |
+ | *subscribe*            | Gather=gather.message    |
  |                        |                          |
  |   Download file from a | Filter                   |
  |   pump.                |                          |
@@ -110,7 +110,7 @@ The components just have different default settings:
  |   default mirror=False |                          |
  |   All others it is True| post=optional            |
  +------------------------+--------------------------+
- | *sr_sarra*             | Gather=gather.message    |
+ | *sarra*                | Gather=gather.message    |
  |                        |                          |
  |   Used on pumps.       |                          |
  |   Download file from a | Filter                   |
@@ -122,7 +122,7 @@ The components just have different default settings:
  |   download in turn.    | post=post                |
  |                        |                          |
  +------------------------+--------------------------+
- | *sr_poll*              | Gather                   |
+ | *poll*                 | Gather                   |
  |                        | if has_vip: poll         |
  |                        |                          |
  |   Find files on other  | Filter                   |
@@ -133,7 +133,7 @@ The components just have different default settings:
  |                        |     Post=yes             |
  |                        |     Message?, File?      |
  +------------------------+--------------------------+
- | *sr_shovel*            | Gather=gather.message    |
+ | *shovel*               | Gather=gather.message    |
  |                        |                          |
  |   Move posts or        | Filter (shovel cache=off)|
  |   reports around.      |                          |
@@ -141,7 +141,7 @@ The components just have different default settings:
  |                        |                          |
  |                        | Post=yes                 |
  +------------------------+--------------------------+
- | *sr_winnow*            | Gather=gather.message    |
+ | *winnow*               | Gather=gather.message    |
  |                        |                          |
  |   Move posts or        | Filter (shovel cache=off)|
  |   reports around.      |                          |
@@ -149,7 +149,7 @@ The components just have different default settings:
  |   suppress duplicates  |                          |
  |                        | Post=yes                 |
  +------------------------+--------------------------+
- | *sr_post/watch*        | Gather=gather.file       |
+ | *post/watch*           | Gather=gather.file       |
  |                        |                          |
  |   Find file on a       | Filter                   |
  |   local server to      |                          |
@@ -158,7 +158,7 @@ The components just have different default settings:
  |                        | Post=yes                 |
  |                        |   Message?, File?        |
  +------------------------+--------------------------+
- | *sr_sender*            | Gather=gather.message    |
+ | *sender*               | Gather=gather.message    |
  |                        |                          |
  |   Send files from a    | Filter                   |
  |   pump. If remote is   |                          |
