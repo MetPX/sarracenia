@@ -2,6 +2,7 @@
 Documentation Standards
 =======================
 
+
 Folder Structure
 ~~~~~~~~~~~~~~~~~
 
@@ -19,6 +20,19 @@ and does it well with respect to the 4 quadrants.
 
 
 .. note:: TODO:Add example links to each of the below sections:
+
+Processing
+----------
+
+The entire documentation is under the docs/source tree. It is processed using sphinx, invoked
+using the Makefile in docs/.  One can install sphinx locally, and run make to build locally 
+and debug. The result is produced in docs/build/html.
+
+There is a github Actions jobs that does this on each push to appropriate branchs to update
+the main documentation. the main url for the resulting web-site is:
+
+  https://metpx.github.io/sarracenia/
+
 
 Tutorials
 ---------

@@ -12,13 +12,18 @@ Caveat:
    :caption: Contents:
 
    Explanation/overview.rst
+
+   Tutorials/index
+   jupyter/index
    How2Guides/index
+
    Explanation/index
    Reference/index
-   Tutorials/index
    Contribution/index
 
    api-documentation
+
+   1_CLI_introduction
 
 Indices and tables
 ==================
