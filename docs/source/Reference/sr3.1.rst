@@ -123,12 +123,6 @@ started or restarted by the **start**,
 temporarily. 
 
 
-Contents
-========
-
-.. contents::
-
-
 COMMANDS
 ========
 

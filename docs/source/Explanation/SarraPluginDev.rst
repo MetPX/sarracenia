@@ -7,8 +7,6 @@
  Working with Plugins
 ---------------------
 
-.. Contents::
-
 Revision Record
 ---------------
 

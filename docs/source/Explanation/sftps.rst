@@ -3,8 +3,6 @@
  Why SFTP is More Often Chosen than FTPS
 =========================================
 
-.. contents::
-
 There has been some discussion around where to place an S in order to
 secure file transfers. Among a variety of competing technologies, there
 are two that may appear fairly equivalent: SFTP and FTPS. Both of these

@@ -2,8 +2,6 @@
 Documentation Standards
 =======================
 
-..  contents:: Table of Contents
-
 Folder Structure
 ~~~~~~~~~~~~~~~~~
 

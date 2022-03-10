@@ -11,8 +11,6 @@ sr_shovel in C
 :Version: @Version@
 :Manual group: MetPX-Sarracenia
 
-.. contents::
-
 SYNOPSIS
 ========
 

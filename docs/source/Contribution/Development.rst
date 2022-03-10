@@ -5,8 +5,6 @@
 :version: @Version@
 :date: @Date@
 
-.. contents::
-
 
 Tools you Need
 --------------

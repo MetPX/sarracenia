@@ -12,8 +12,6 @@ Sarracenia v03 Post Message Format/Protocol
 :Version: @Version@
 :Manual group: MetPX-Sarracenia
 
-.. contents::
-
 
 STATUS: EXPERIMENTAL
 --------------------

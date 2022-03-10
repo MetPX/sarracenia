@@ -10,7 +10,6 @@ Running MetPX via Docker
 [ `version française <fr/docker.rst>`_ ]
 
 
-.. contents::
 
 Revision Record
 ---------------

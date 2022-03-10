@@ -11,8 +11,6 @@ sr_title
 :Version: @Version@
 :Manual group: MetPX-Sarracenia
 
-.. contents::
-
 SYNOPSIS
 ========
 

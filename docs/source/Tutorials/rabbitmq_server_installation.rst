@@ -3,8 +3,6 @@
 Historical Revisions
 ====================
 
-.. contents::
-
 
 Introduction
 ~~~~~~~~~~~~

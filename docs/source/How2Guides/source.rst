@@ -11,8 +11,6 @@ Injecting Data into a MetPX-Sarracenia Pump Network
   **FIXME**: Missing sections are highlighted by **FIXME**. 
   Not really ready for use, too much missing for now.
 
-.. contents::
-
 .. note::
   **FIXME**: known missing elements: good discussion of checksum choice.
   Caveat about file update strategies. Use case of a file that is constantly updated,

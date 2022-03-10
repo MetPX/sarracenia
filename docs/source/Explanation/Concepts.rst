@@ -6,8 +6,6 @@ This document describes abstractions underlying Sarracenia.
 It isn't clear how directly applicable this information is to normal usage, 
 but it seems this information should be available *somewhere*.
 
-.. contents::
-
 Introduction
 ------------
 

@@ -6,7 +6,6 @@ Several different environmental data websites use APIs to communicate data. In o
 availability of new files and integrate them seamlessly into the Sarracenia stack, a few plugins are
 needed to extend the polling functionality.
 
-.. contents::
 
 Polling Protocols Natively Supported
 ------------------------------------

@@ -6,7 +6,6 @@
 .. note::
    **FIXME**: Missing sections are highlighted by **FIXME**. What is here is accurate.
 
-.. Contents::
 
 
 Revision Record
