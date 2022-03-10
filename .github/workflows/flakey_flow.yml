@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - v03_wip
+      - v03_wip_issue407actions
 
   workflow_dispatch:
     inputs:
@@ -18,22 +19,29 @@ env:
 
 jobs:
   build:
-
+    name: Run flakey_broker test
     runs-on: ubuntu-latest
 
     steps:
+    
     - uses: actions/checkout@v2
+    
     - name: Set up Python 3.10
       uses: actions/setup-python@v2
       with:
         python-version: "3.10"
+    
     - name: Install dependencies
       run: |
         pip3 install .
         travis/flow_autoconfig.sh
         travis/ssh_localhost.sh
+        
+    # - name: Setup tmate session
+    #   uses: mxschmitt/action-tmate@v3
+    #   #if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
          
-    - name: Setup flakey_broker flow test.
+    - name: Setup ${{ env.WHICH_TEST }} flow test.
       run: |
         cd ${HOME}; pwd; ls ; 
         echo hoho
@@ -42,14 +50,22 @@ jobs:
     # Enable tmate debugging of manually-triggered workflows if the input option was provided
     # https://github.com/marketplace/actions/debugging-with-tmate
     # 
-    #- name: Setup tmate session
-    #  uses: mxschmitt/action-tmate@v3
-    #  #if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+    # - name: Setup tmate session
+    #   uses: mxschmitt/action-tmate@v3
+    #   #if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
 
-    - name: Limit flakey_broker flow test.
+    - name: Limit ${{ env.WHICH_TEST }} flow test.
       run: |
         cd ${HOME}/sr_insects/${WHICH_TEST}; ./flow_limit.sh
+        sleep 180s
 
-    - name: Check results of flakey_broker flow test.
+    - name: Check results of ${{ env.WHICH_TEST }} flow test.
       run: |
         cd ${HOME}/sr_insects/${WHICH_TEST}; ./flow_check.sh
+
+    - name: Save run artifacts
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: sr3_${{ env.WHICH_TEST }}_logs_${{ github.sha }}
+        path: ~/.cache/sr3/log/

@@ -18,7 +18,7 @@ env:
 
 jobs:
   build:
-
+    name: Run dynamic_flow test
     runs-on: ubuntu-latest
 
     steps:
@@ -33,7 +33,7 @@ jobs:
         travis/flow_autoconfig.sh
         travis/ssh_localhost.sh
          
-    - name: Setup dynamic flow test.
+    - name: Setup ${{ env.WHICH_TEST }} test.
       run: |
         cd ${HOME}; pwd; ls ; 
         echo hoho
@@ -46,10 +46,17 @@ jobs:
     #  uses: mxschmitt/action-tmate@v3
     #  #if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
 
-    - name: Limit dynamic flow test.
+    - name: Limit ${{ env.WHICH_TEST }} test.
       run: |
         cd ${HOME}/sr_insects/${WHICH_TEST}; ./flow_limit.sh
 
-    - name: Check results of dynamic flow test.
+    - name: Check results of ${{ env.WHICH_TEST }} test.
       run: |
         cd ${HOME}/sr_insects/${WHICH_TEST}; ./flow_check.sh
+        
+    - name: Save run artifacts
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: sr3_${{ env.WHICH_TEST }}_logs_${{ github.sha }}
+        path: ~/.cache/sr3/log/

@@ -14,6 +14,18 @@ pip3 install -U pip
 pip3 install -e .
 pip3 install pyftpdlib paramiko net-tools
 
+# The dependencies that are installed using apt are only available to system default Python versions (e.g. Python 3.8 on Ubuntu 20.04)
+# If we are testing on a non-default Python version, we need to ensure these dependencies are still installed, so we use pip.
+# See issue #407, #445.
+for PKG in amqp appdirs dateparser watchdog netifaces humanize jsonpickle paho-mqtt psutil xattr ; do
+    PKG_INSTALLED="`pip3 list | grep ${PKG}`"
+    if [ "$?" == "0" ] ; then
+        echo "$PKG is already installed"
+    else
+        pip3 install ${PKG}
+    fi
+done
+
 # Setup basic configs
 mkdir -p ~/.config/sarra ~/.config/sr3
 
