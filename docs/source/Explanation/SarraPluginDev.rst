@@ -882,16 +882,61 @@ Examples of things that would be fun to do with plugins:
 Polling
 -------
 
-.. warning::
-    **FIXME** Sample polling.
+To implement a customized poll, declare it as a subclass of Poll 
+(sarracenia.flowcb.poll.Poll), and only the needed The routine (in this case 
+the html parsing "handle_data") need be written to override the behaviour provided 
+by the parent class.
+
+( https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/poll/__init__.py )
+
+The plugin has a main "parse" routine, which invokes the html.parser class, in which
+the data_handler is called for each line, gradually building the self.entries 
+dictionary where each entry with an SFTPAttributes structure describing one file being polled.
+
+So the work in handle_data is just to fill an paramiko.SFTPAttributes structure. 
+Since the web site doesn't actually provide any metadata, it is just filled in with sensible
+default info, that provides enough information to build a message and run it through
+duplicate suppression.
+
+Here it the complete poll callback::
+
+    import logging
+    import paramiko
+    import sarracenia
+    from sarracenia import nowflt, timestr2flt
+    from sarracenia.flowcb.poll import Poll
+    
+    logger = logging.getLogger(__name__)
+    
+    class Nasa_mls_nrt(Poll):
+    
+        def handle_data(self, data):
+    
+            st = paramiko.SFTPAttributes()
+            st.st_mtime = 0
+            st.st_mode = 0o775
+            st.filename = data
+    
+            if 'MLS-Aura' in data:
+                   logger.debug("data %s" %data)
+                   self.entries[data]=st
+    
+                   logger.info("(%s) = %s" % (self.myfname,st))
+            if self.myfname == None : return
+            if self.myfname == data : return
 
 
------------------
-Integrity Plugins
------------------
+The file is here:
 
-.. warning::
-    **FIXME**
+( https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/poll/nasa_mls_nrt.py )
+
+and matching config file provided here:
+
+( https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/examples/poll/nasa-mls-nrt.conf )
+
+
+
+
 
 
 ------------------------------

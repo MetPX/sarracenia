@@ -1,6 +1,6 @@
-=======================================
+===============================
 Email Ingesting with Sarracenia
-=======================================
+===============================
 
 Email is an easy way to route data between servers. Using the Post Office Protocol (POP3) and
 Internet Message Access Protocol (IMAP), email files can be disseminated through Sarracenia 
@@ -9,18 +9,56 @@ by extending the polling and downloading functions.
 
 Polling
 -------
+
+
 Extending Polling Protocols
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Out of the box, Sarracenia supports polling destinations with HTTP/HTTPS and SFTP/FTP protocols. Other
-protocols can be supported by creating a *do_poll* plugin, with the new protocol registered at the 
-bottom of the plugin file in the form of a **registered_as** function::
+Out of the box, Sarracenia supports polling destinations with HTTP/HTTPS and SFTP/FTP protocols. 
+Other protocols can be supported by subclassing the sarracenia.flowcb.poll.Poll class.
+Fortunately there is an existing mail poll plugin, which invokes a plugin.
+start by listing available examples::
 
-	def registered_as(self):
-		return ['pop','pops','imap','imaps']
+   fractal% sr3 list examples | grep poll
+   cpump/cno_trouble_f00.inc        poll/airnow.conf                 
+   poll/aws-nexrad.conf             poll/mail.conf                   
+   poll/nasa-mls-nrt.conf           poll/noaa.conf                   
+   poll/soapshc.conf                poll/usgs.conf                   
+   fractal% 
 
-Now when the sr_poll instance is started up with this plugin, it would confirm the destination is
-valid if the scheme is any one of the protocols returned by **registered_as**, and perform the
-polling as outlined in the *do_poll* plugin. 
+adding the configuration::
+
+   fractal% sr3 add poll/mail.conf
+   add: 2022-03-10 15:59:48,266 2785187 [INFO] sarracenia.sr add copying: /home/peter/Sarracenia/sr3/sarracenia/examples/poll/mail.conf to /home/peter/.config/sr3/poll/mail.conf 
+   fractal% 
+
+What did we get?::
+
+   fractal% cat ~/.config/sr3/poll/mail.conf
+   #
+   # Sample poll config, used to advertise availability of new emails using either POP3/IMAP protocols.
+   # To use, make sure rabbitmq is running as described in the Dev.rst documentation,
+   # and a tsource user/xs_tsource exchange exist, with FLOWBROKER set to the hostname
+   # rabbitmq is running on (e.g. export FLOWBROKER='localhost')
+   #
+   # The destination is in RFC 1738 format, e.g. <scheme>://<user>@<host>:<port>/ where your full credentials,
+   # <scheme>://<user>:<password>@<host>:<port>/ would be contained in your ~/.config/sarra/credentials.conf.
+   # Valid schemes are pop/pops/imap/imaps, where the s denotes an SSL connection. If a port isn't 
+   # specified, the default port associated with the scheme will be used (IMAPS -> 993, POPS -> 995,
+   # IMAP -> 143, POP -> 110).
+   #
+   
+   post_broker amqp://tsource@${FLOWBROKER}
+   post_exchange xs_tsource
+   
+   sleep 60
+   
+   destination <scheme>://<user>@<host>:<port>/
+   
+   callback poll.mail
+   
+   fractal% 
+
+Now when the poll instance is started up with this plugin, 
 
 Implementing POP/IMAP
 ~~~~~~~~~~~~~~~~~~~~~

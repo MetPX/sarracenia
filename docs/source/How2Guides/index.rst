@@ -3,14 +3,16 @@ HOWTOS
 
 .. toctree::
    :maxdepth: 0
-   :caption: Contents:
+   :caption: For Users:
+
+   Subscribing to Data Feeds <subscriber>
+
+   Using Flow Callback Plugins <FlowCallbacks>
 
    Admin
    Email_Ingesting_With_Sarracenia
-   FlowCallbacks
    Hydro_Examples
    source
-   subscriber
    UPGRADING
    v2ToSr3
 
