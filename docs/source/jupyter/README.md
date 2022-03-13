@@ -24,8 +24,8 @@ Another option:
     git clone -b v03_wip https://github.com/MetPX/sarracenia.git sr3
     cd sr3
     pip3 install -e .
-    cd jupyter
-    pip3 install jupyter
+    pip3 install -r requirements-dev.txt 
+    cd docs/source/jupyter
     ip addr show # to know the ip to point your browser at.
     jupyter notebook --ip=0.0.0.0 --port=8040
     # open broser on ip:8040

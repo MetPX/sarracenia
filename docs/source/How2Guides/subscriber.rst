@@ -7,8 +7,6 @@
 Receiving Data from a MetPX-Sarracenia Data Pump
 ------------------------------------------------
 
-[ `version française <fr/subscriber.rst>`_ ]
-
 
 Revision Record
 ---------------
@@ -504,67 +502,66 @@ can be used to change processing done by components. The list of pre-built plugi
 in a 'plugins' directory wherever the package is installed (viewable with *sr_subscribe list*)
 sample output::
 
- $ sr_subscribe list
-   
-   packaged plugins: ( /usr/lib/python3/dist-packages/sarra/plugins ) 
-            __pycache__     destfn_sample.py       download_cp.py       download_dd.py 
-        download_scp.py     download_wget.py          file_age.py        file_check.py 
-            file_log.py       file_rxpipe.py        file_total.py          hb_cache.py 
-              hb_log.py         hb_memory.py          hb_pulse.py         html_page.py 
-            line_log.py         line_mode.py         msg_2http.py        msg_2local.py 
-      msg_2localfile.py     msg_auditflow.py     msg_by_source.py       msg_by_user.py 
-           msg_delay.py        msg_delete.py      msg_download.py          msg_dump.py 
-          msg_fdelay.py msg_filter_wmo2msc.py  msg_from_cluster.py     msg_hour_tree.py 
-             msg_log.py     msg_print_lag.py   msg_rename4jicc.py    msg_rename_dmf.py 
-   msg_rename_whatfn.py       msg_renamer.py msg_replace_new_dir.py          msg_save.py 
-        msg_skip_old.py        msg_speedo.py msg_sundew_pxroute.py    msg_test_retry.py 
-     msg_to_clusters.py         msg_total.py        part_check.py  part_clamav_scan.py 
-          poll_pulse.py       poll_script.py    post_hour_tree.py          post_log.py 
-      post_long_flow.py     post_override.py   post_rate_limit.py        post_total.py 
-           watch_log.py 
-   configuration examples: ( /usr/lib/python3/dist-packages/sarra/examples/subscribe ) 
-               all.conf     all_but_cap.conf            amis.conf            aqhi.conf 
-               cap.conf      cclean_f91.conf       cdnld_f21.conf       cfile_f44.conf 
-          citypage.conf           clean.conf       clean_f90.conf            cmml.conf 
-   cscn22_bulletins.conf         ftp_f70.conf            gdps.conf         ninjo-a.conf 
-             q_f71.conf           radar.conf            rdps.conf            swob.conf 
-             t_f30.conf      u_sftp_f60.conf 
-   
-   user plugins: ( /home/peter/.config/sr3/plugins ) 
-           destfn_am.py         destfn_nz.py       msg_tarpush.py 
-   
-   general: ( /home/peter/.config/sr3 ) 
-             admin.conf     credentials.conf         default.conf
-   
-   user configurations: ( /home/peter/.config/sr3/subscribe )
-        cclean_f91.conf       cdnld_f21.conf       cfile_f44.conf       clean_f90.conf 
-           ftp_f70.conf           q_f71.conf           t_f30.conf      u_sftp_f60.conf 
-   
- $ 
+   $ sr3 list help
+   blacklab% sr3 list help
+   Valid things to list: examples,eg,ie flow_callback,flowcb,fcb v2plugins,v2p
 
-For all plugins, the prefix indicates how the plugin is to be used: a file\_ plugin is
-to be used with *on_file*, *Msg\_* plugins are to be used with on_message, etc...
-When plugins have options, the options must be placed before the plugin declaration
-in the configuration file. Example::
+   $ sr3 list fcb
+      
+      
+   Provided callback classes: ( /home/peter/Sarracenia/sr3/sarracenia ) 
+   flowcb/accept/delete.py          flowcb/accept/downloadbaseurl.py 
+   flowcb/accept/hourtree.py        flowcb/accept/httptohttps.py     
+   flowcb/accept/longflow.py        flowcb/accept/posthourtree.py    
+   flowcb/accept/postoverride.py    flowcb/accept/printlag.py        
+   flowcb/accept/rename4jicc.py     flowcb/accept/renamedmf.py       
+   flowcb/accept/renamewhatfn.py    flowcb/accept/save.py            
+   flowcb/accept/speedo.py          flowcb/accept/sundewpxroute.py   
+   flowcb/accept/testretry.py       flowcb/accept/toclusters.py      
+   flowcb/accept/tohttp.py          flowcb/accept/tolocal.py         
+   flowcb/accept/tolocalfile.py     flowcb/accept/wmotypesuffix.py   
+   flowcb/filter/deleteflowfiles.py flowcb/filter/fdelay.py          
+   flowcb/filter/pclean_f90.py      flowcb/filter/pclean_f92.py      
+   flowcb/filter/wmo2msc.py         flowcb/gather/file.py            
+   flowcb/gather/message.py         flowcb/housekeeping/hk_police_queues.py 
+   flowcb/housekeeping/resources.py flowcb/line_log.py               
+   flowcb/log.py                    flowcb/mdelaylatest.py           
+   flowcb/nodupe/data.py            flowcb/nodupe/name.py            
+   flowcb/pclean.py                 flowcb/poll/airnow.py            
+   flowcb/poll/mail.py              flowcb/poll/nasa_mls_nrt.py      
+   flowcb/poll/nexrad.py            flowcb/poll/noaa_hydrometric.py  
+   flowcb/poll/usgs.py              flowcb/post/message.py           
+   flowcb/retry.py                  flowcb/sample.py                 
+   flowcb/script.py                 flowcb/send/email.py             
+   flowcb/shiftdir2baseurl.py       flowcb/v2wrapper.py              
+   flowcb/wistree.py                flowcb/work/delete.py            
+   flowcb/work/rxpipe.py            
+   $ 
 
-  msg_total_interval 5
-  on_message msg_total
+Plugins can be included in configurations by adding 'flow_callback' lines like::
 
-The *msg_total* plugin is invoked whenever a message is received, and the *msg_total_interval*
-option, used by that plugin, has been set to 5. To learn more: *sr_subscribe list msg_total.py*
+
+   flowcb work.rxpipe
+
+which appends the given callback to the list of callbacks to be invoked.
+There is also::
+
+   flowcb_prepend work.rxpipe
+
+which will prepend this callback to the list, so that is is called before the
+non prepended ones.
 
 Plugins are all written in python, and users can create their own and place them in ~/.config/sr3/plugins. 
-For information on creating new custom plugins, see The `Sarracenia Programming Guide <../Contribution/Development.rst>`_  
+For information on creating new custom plugins, see `Writing Flow Callbacks <FlowCallbacks.rst>`_  
 
 
 To recap:
 
-* To view the plugins currently available on the system  *sr_subscribe list plugins*
-* To view the contents of a plugin: *sr_subscribe list <plugin>*
-* The beginning of the plugin describes its function and settings
+* To view the plugins currently available on the system  *sr3 list fcb*
+* To view the contents of a plugin: *sr3 list <plugin>*
 * Plugins can have option settings, just like built-in ones
 * To set them, place the options in the configuration file before the plugin call itself
-* To make your own new plugin: *sr3 edit subscribe/<plugin>.py*
+* To make your own plugins, create them in ~/.config/sr3/plugins.
 
 
 file_rxpipe
@@ -574,26 +571,28 @@ The file_rxpipe plugin for sr_subscribe makes all the instances write the names
 of files downloaded to a named pipe. Setting this up required two lines in 
 an sr_subscribe configuration file::
 
+$ mknod /home/peter/test/.rxpipe p
 $ sr3 edit subscribe/swob 
 
   broker amqps://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
 
-  file_rxpipe_name /home/peter/test/.rxpipe
-  on_file file_rxpipe
+  rxpipe_name /home/peter/test/.rxpipe
+
+  callback work/rxpipe
+
   directory /tmp
   mirror True
   accept .*
   # rxpipe is a builtin on_file plugin which writes the name of the file received to
   # a pipe named '.rxpipe' in the current working directory.
 
-With the *on_file* option, one can specify a processing option such as rxpipe.  
+
 With rxpipe, every time a file transfer has completed and is ready for 
-post-processing, its name is written to the linux pipe (named .rxpipe) in the 
-current working directory.  
+post-processing, its name is written to the linux pipe (named .rxpipe.) 
 
 .. NOTE::
-   In the case where a large number of sr_subscribe instances are working
+   In the case where a large number of subscribe instances are working
    On the same configuration, there is slight probability that notifications
    may corrupt one another in the named pipe.  
 
@@ -606,31 +605,61 @@ Anti-Virus Scanning
 -------------------
 
 Another example of easy use of a plugin is to achieve anti-virus scanning.
-Assuming that ClamAV is installed, as well as the python3-pyclamd
-package, then one can add the following to an sr_subscribe 
+Assuming that ClamAV-daemon is installed, as well as the python3-pyclamd
+package, then one can add the following to a subscriber
 configuration file::
 
   broker amqps://dd.weather.gc.ca
-  on_part part_clamav_scan.py
+  topicPredix v02.post
+  batch 1
+  callback clamav
   subtopic observations.swob-ml.#
   accept .*
 
-so that each file downloaded (or each part of the file if it is large),
-is to be AV scanned. Sample run::
+So that each file downloaded is AV scanned. Sample run::
 
-  $ sr_subscribe --reset foreground ../dd_swob.conf 
-  clam_scan on_part plugin initialized
-  clam_scan on_part plugin initialized
-  2016-05-07 18:01:15,007 [INFO] sr_subscribe start
-  2016-05-07 18:01:15,007 [INFO] sr_subscribe run
-  2016-05-07 18:01:15,007 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
-  2016-05-07 18:01:15,137 [INFO] Binding queue q_anonymous.sr_subscribe.dd_swob.13118484.63321617 with key v02.post.observations.swob-ml.# from exchange xpublic on broker amqps://anonymous@dd.weather.gc.ca/
-  2016-05-07 18:01:15,846 [INFO] Received notice  20160507220115.632 http://dd3.weather.gc.ca/ observations/swob-ml/20160507/CYYR/2016-05-07-2200-CYYR-MAN-swob.xml
-  2016-05-07 18:01:15,911 [INFO] 201 Downloaded : v02.report.observations.swob-ml.20160507.CYYR 20160507220115.632 http://dd3.weather.gc.ca/ observations/swob-ml/20160507/CYYR/2016-05-07-2200-CYYR-MAN-swob.xml 201 blacklab anonymous 0.258438 parts=1,4349,1,0,0 sum=d,399e3d9119821a30d480eeee41fe7749 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM rename=./2016-05-07-2200-CYYR-MAN-swob.xml message=Downloaded 
-  2016-05-07 18:01:15,913 [INFO] part_clamav_scan took 0.00153089 seconds, no viruses in ./2016-05-07-2200-CYYR-MAN-swob.xml
-  2016-05-07 18:01:17,544 [INFO] Received notice  20160507220117.437 http://dd3.weather.gc.ca/ observations/swob-ml/20160507/CVFS/2016-05-07-2200-CVFS-AUTO-swob.xml
-  2016-05-07 18:01:17,607 [INFO] 201 Downloaded : v02.report.observations.swob-ml.20160507.CVFS 20160507220117.437 http://dd3.weather.gc.ca/ observations/swob-ml/20160507/CVFS/2016-05-07-2200-CVFS-AUTO-swob.xml 201 blacklab anonymous 0.151982 parts=1,7174,1,0,0 sum=d,a8b14bd2fa8923fcdb90494f3c5f34a8 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM rename=./2016-05-07-2200-CVFS-AUTO-swob.xml message=Downloaded 
+    $ sr3 foreground subscribe//dd_swob.conf 
+
+    blacklab% sr3 foreground subscribe/dd_swob
+    2022-03-12 18:47:18,137 [INFO] 29823 sarracenia.flow loadCallbacks plugins to load: ['sarracenia.flowcb.gather.message.Message', 'sarracenia.flowcb.retry.Retry', 'sarracenia.flowcb.housekeeping.resources.Resources', 'sarracenia.flowcb.clamav.Clamav', 'sarracenia.flowcb.log.Log']
+    clam_scan on_part plugin initialized
+    2022-03-12 18:47:22,865 [INFO] 29823 sarracenia.flowcb.log __init__ subscribe initialized with: {'after_work', 'on_housekeeping', 'after_accept'}
+    2022-03-12 18:47:22,866 [INFO] 29823 sarracenia.flow run options:
+    _Config__admin=amqp://bunnymaster:Easter1@localhost/ None True True False False None None, _Config__broker=amqps://anonymous:anonymous@dd.weather.gc.ca/ None True True False False None None,
+    _Config__post_broker=None, accel_threshold=0, acceptSizeWrong=False, acceptUnmatched=False, action='foreground', attempts=3, auto_delete=False, baseDir=None, baseUrl_relPath=False, batch=100, bind=True,
+    bindings=[('xpublic', ['v02', 'post'], ['observations.swob-ml.#'])], bufsize=1048576, bytes_per_second=None, bytes_ps=0, cfg_run_dir='/home/peter/.cache/sr3/subscribe/dd_swob', config='dd_swob',
+    configurations=['subscribe/dd_swob'], currentDir=None, dangerWillRobinson=False, debug=False, declare=True, declared_exchanges=['xpublic', 'xcvan01'],
+   .
+   .
+   .
+    022-03-12 18:47:22,867 [INFO] 29823 sarracenia.flow run pid: 29823 subscribe/dd_swob instance: 0
+    2022-03-12 18:47:30,019 [INFO] 29823 sarracenia.flowcb.log after_accept accepted: (lag: 140.22 ) https://dd4.weather.gc.ca /observations/swob-ml/20220312/COGI/2022-03-12-2344-COGI-AUTO-minute-swob.xml 
+   .
+   .
+   .  # good entries...
+
+    22-03-12 19:00:55,347 [INFO] 30992 sarracenia.flowcb.clamav after_work scanning: /tmp/dd_swob/2022-03-12-2347-CVPX-AUTO-minute-swob.xml
+    2022-03-12 19:00:55,353 [INFO] 30992 sarracenia.flowcb.clamav avscan_hit part_clamav_scan took 0.00579023 seconds, no viruses in /tmp/dd_swob/2022-03-12-2347-CVPX-AUTO-minute-swob.xml
+    2022-03-12 19:00:55,385 [INFO] 30992 sarracenia.flowcb.log after_accept accepted: (lag: 695.46 ) https://dd4.weather.gc.ca /observations/swob-ml/20220312/COTR/2022-03-12-2348-COTR-AUTO-minute-swob.xml 
+    2022-03-12 19:00:55,571 [INFO] 30992 sarracenia.flowcb.clamav after_work scanning: /tmp/dd_swob/2022-03-12-2348-COTR-AUTO-minute-swob.xml
+    2022-03-12 19:00:55,596 [INFO] 30992 sarracenia.flowcb.clamav avscan_hit part_clamav_scan took 0.0243611 seconds, no viruses in /tmp/dd_swob/2022-03-12-2348-COTR-AUTO-minute-swob.xml
+    2022-03-12 19:00:55,637 [INFO] 30992 sarracenia.flowcb.log after_accept accepted: (lag: 695.71 ) https://dd4.weather.gc.ca /observations/swob-ml/20220312/CWGD/2022-03-12-2348-CWGD-AUTO-minute-swob.xml 
+    2022-03-12 19:00:55,844 [INFO] 30992 sarracenia.flowcb.clamav after_work scanning: /tmp/dd_swob/2022-03-12-2348-CWGD-AUTO-minute-swob.xml
   
+    .
+    .
+    . # bad entries.
+
+    2022-03-12 18:50:13,809 [INFO] 30070 sarracenia.flowcb.log after_work downloaded ok: /tmp/dd_swob/2022-03-12-2343-CWJX-AUTO-minute-swob.xml 
+    2022-03-12 18:50:13,930 [INFO] 30070 sarracenia.flowcb.log after_accept accepted: (lag: 360.72 ) https://dd4.weather.gc.ca /observations/swob-ml/20220312/CAJT/2022-03-12-2343-CAJT-AUTO-minute-swob.xml 
+    2022-03-12 18:50:14,104 [INFO] 30070 sarracenia.flowcb.clamav after_work scanning: /tmp/dd_swob/2022-03-12-2343-CAJT-AUTO-minute-swob.xml
+    2022-03-12 18:50:14,105 [ERROR] 30070 sarracenia.flowcb.clamav avscan_hit part_clamav_scan took 0.0003829 not forwarding, virus detected in /tmp/dd_swob/2022-03-12-2343-CAJT-AUTO-minute-swob.xml
+
+    .
+    . # every heartbeat interval, a little summary:
+    .
+    2022-03-12 19:00:55,115 [INFO] 30992 sarracenia.flowcb.clamav on_housekeeping files scanned 121, hits: 5
+
 
 Logging and Debugging
 ---------------------
@@ -736,41 +765,24 @@ Either or both of these options will make very large logs, and are best used jud
 
 
   
-Speedo Metrics
---------------
-  
-Activating the speedo plugin lets one understand how much bandwidth
-and how many messages per second a given set of selection criteria
-result in::
-  
-  broker amqps://dd.weather.gc.ca
-  on_message msg_speedo
-  subtopic observations.swob-ml.#
-  accept .*
-
-  
-Gives lines in the log like so::
-
-  $ sr_subscribe --reset foreground ../dd_swob.conf 
-  2016-05-07 18:05:52,097 [INFO] sr_subscribe start
-  2016-05-07 18:05:52,097 [INFO] sr_subscribe run
-  2016-05-07 18:05:52,097 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
-  2016-05-07 18:05:52,231 [INFO] Binding queue q_anonymous.sr_subscribe.dd_swob.13118484.63321617 with key v02.post.observations.swob-ml.# from exchange xpublic on broker amqps://anonymous@dd.weather.gc.ca/
-  2016-05-07 18:05:57,228 [INFO] speedo:   2 messages received:  0.39 msg/s, 2.6K bytes/s, lag: 0.26 s
-  
-  
-  
-Partial File Updates
+Housekeeping Metrics
 --------------------
+  
+  
+Flow Callbacks can implement a on_housekeeping entry point.  This entry point is usually
+an opportunity for callbacks to print metrics periodically.  The builtin log and
+resource monitoring callbacks, for example, give lines in the log like so::
 
-When files are large, they are divided into parts. Each part is transferred
-separately by sr_sarracenia. So when a large file is updated, new part
-notifications (posts) are created. sr_subscribe will check if the file on 
-disk matches the new part by checksumming the local data and comparing
-that to the post. If they do not match, then the new part of the file
-will be downloaded.
-
-
+    2022-03-12 19:00:55,114 [INFO] 30992 sarracenia.flowcb.housekeeping.resources on_housekeeping Current Memory cpu_times: user=1.97 system=0.3
+    2022-03-12 19:00:55,115 [INFO] 30992 sarracenia.flowcb.housekeeping.resources on_housekeeping Memory threshold set to: 161.2 MiB
+    2022-03-12 19:00:55,115 [INFO] 30992 sarracenia.flowcb.housekeeping.resources on_housekeeping Current Memory usage: 53.7 MiB / 161.2 MiB = 33.33%
+    2022-03-12 19:00:55,115 [INFO] 30992 sarracenia.flowcb.clamav on_housekeeping files scanned 121, hits: 0 
+    2022-03-12 19:00:55,115 [INFO] 30992 sarracenia.flowcb.log housekeeping_stats messages received: 242, accepted: 121, rejected: 121  rate:    50%
+    2022-03-12 19:00:55,115 [INFO] 30992 sarracenia.flowcb.log housekeeping_stats files transferred: 0 bytes: 0 Bytes rate: 0 Bytes/sec
+    2022-03-12 19:00:55,115 [INFO] 30992 sarracenia.flowcb.log housekeeping_stats lag: average: 778.91, maximum: 931.06 
+  
+  
+  
 Redundant File Reception
 ------------------------
 
@@ -803,7 +815,7 @@ the proxy, not just a single configuration.
 More Information
 ----------------
 
-The `sr_subscribe(1) <../Reference/sr3.1.rst#subscribe>`_ is the definitive source of reference
+The `sr3(1) <../Reference/sr3.1.rst#subscribe>`_ is the definitive source of reference
 information for configuration options. For additional information,
 consult: `Sarracenia Documentation <../Reference/sr3.1.rst#documentation>`_
 

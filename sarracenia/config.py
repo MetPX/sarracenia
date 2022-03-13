@@ -780,7 +780,6 @@ class Config:
             if type(v) is list:
                 sv=set(v)
             elif type(v) is set:
-                logger.error('is a set')
                 sv=v
             elif type(v) is str:
                 if v == 'None': 

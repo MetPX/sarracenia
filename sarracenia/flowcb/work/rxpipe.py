@@ -6,7 +6,7 @@ from sarracenia.flowcb import FlowCB
 logger = logging.getLogger(__name__)
 
 
-class RxPipe(FlowCB):
+class Rxpipe(FlowCB):
 
       def __init__(self,options):
 
@@ -19,11 +19,13 @@ class RxPipe(FlowCB):
               logger.error("Missing rxpipe_name parameter")
               return
           self.rxpipe = open( self.o.rxpipe_name, "w" )
+          logger.info( f'opened rxpipe_name: {self.o.rxpipe_name} for append' )
 
       def after_work(self, worklist):
 
           for msg in worklist.ok:
-              self.rxpipe.write( msg['new_dir'] + os.sep + msg['new_file'] + '\n' )
+              fname= msg['new_dir'] + os.sep + msg['new_file']
+              self.rxpipe.write( fname + '\n' )
           self.rxpipe.flush()
           return None
 

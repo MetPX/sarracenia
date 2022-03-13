@@ -4,8 +4,8 @@
 Writing FlowCallback Plugins
 ============================
 
-All sarracenia components implement *the Flow* algorithm, with different
-callbacks.  Sarracenia's main class is *sarracenia.flow* and the a great
+All Sarracenia components implement *the Flow* algorithm.
+Sarracenia's main class is *sarracenia.flow* and the a great
 deal of core functionality is implemented using the class created to add
 custom processing to a flow, the flowcb (flow callback) class.
 
@@ -16,7 +16,8 @@ the `sarracenia.flowcb <../../sarracenia/flowcb/__init__.py>`_ class.
 
 Briefly, the algorithm has the following steps:
 
-* **gather** -- collect messages to be processed.
+* **gather** -- passively collect messages to be processed.
+* **poll** -- actively collect messages to be processed.
 * **filter** -- apply accept/reject regular expression matches to the message list.
 
   * *after_accept* callback entry point
@@ -341,6 +342,9 @@ Other Examples
 
 Subclassing of Sarracenia.flowcb is used internally to do a lot of core work.
 It's a good idea to look at the sarracenia source code itself. For example:
+
+* sr3 list fcb  is a command to list all the callback classes that are
+  included in the metpx-sr3 package.
 
 * *sarracenia.flowcb* have a look at the __init__.py file in there, which
   provides this information on a more programmatically succinct format.

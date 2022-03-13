@@ -20,6 +20,9 @@ entry_points = [
 
 schemed_entry_points = ['do_get', 'do_put']
 
+logger = logging.getLogger(__name__)
+
+
 
 class FlowCB:
     """
