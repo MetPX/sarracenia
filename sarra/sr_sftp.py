@@ -464,8 +464,6 @@ class sr_sftp(sr_proto):
     def put(self, local_file, remote_file, local_offset=0, remote_offset=0, length=0 ):
         self.logger.debug("sr_sftp put %s %s %d %d %d" % (local_file,remote_file,local_offset,remote_offset,length))
 
-        if self.simulate: return
-
         # simple file
 
         alarm_set(2*self.iotime)

@@ -61,11 +61,6 @@ class PXSENDER_LOG(object):
    def registered_as(self) :
        return self.registered_list
 
-self.plugin='PXSENDER_LOG'
-       self.pxSender_print(parent,src,dest)
-
-       return True
-
    def do_send(self,parent):
        msg    = parent.msg
        logger = parent.logger
