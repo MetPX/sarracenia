@@ -382,7 +382,7 @@ class sr_subscribe(sr_instances):
                      try    : from sr_sftp       import sftp_transport
                      except : from sarra.sr_sftp import sftp_transport
                      if not hasattr(self,'sftp_link') :
-                        self.sftp_link = sftp_transport()
+                        self.sftp_link = sftp_transport(self)
                      ok = self.sftp_link.download(self)
                      return ok
 

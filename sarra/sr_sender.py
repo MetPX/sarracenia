@@ -196,7 +196,7 @@ class sr_sender(sr_subscribe):
                      try    : from sr_sftp       import sftp_transport
                      except : from sarra.sr_sftp import sftp_transport
                      if not hasattr(self,'sftp_link') :
-                        self.sftp_link = sftp_transport()
+                        self.sftp_link = sftp_transport(self)
                      ok = self.sftp_link.send(self)
                      return ok
 
