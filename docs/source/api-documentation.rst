@@ -4,22 +4,17 @@
 API Documentation
 =================
 
-Sarracenia.Flow
----------------
+Config
+------
 
-.. automodule:: sarracenia.flow
-   :show-inheritance:
+.. automodule:: sarracenia.config
    :members:
-   :private-members:
-   :special-members:
-
 
 Sarracenia
 ----------
 
 .. automodule:: sarracenia
    :members:
-   :private-members:
    :special-members:
 
 Sarracenia.FlowCB

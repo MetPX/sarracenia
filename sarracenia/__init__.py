@@ -78,7 +78,7 @@ class Sarracenia:
         call. However the message returned will lack an integrity checksum field.
         once you get the file, you can add the Integrity field with:
     
-        m.computeIntegrity(path, o):
+        m.__computeIntegrity(path, o):
     
         In terms of consuming messages, the fields in the dictionary provide metadata
         for the announced resource. The anounced data could be embedded in the message itself,
@@ -252,7 +252,7 @@ class Message(dict):
         and hence the need for the copyDict member.
     """
 
-    def computeIntegrity(msg, path, o):
+    def __computeIntegrity(msg, path, o):
         """
            check extended attributes for a cached integrity sum calculation.
            if extended attributes are present, and 
@@ -325,7 +325,7 @@ class Message(dict):
        for h in d:
             msg[h]=d[h]
 
-    def dumps(msg):
+    def dumps(msg) -> str:
        """
            FIXME: used to be msg_dumps.
            print a message in a compact but relatively compact way.
@@ -368,7 +368,7 @@ class Message(dict):
             returns a well-formed message, or none.
         """
         m = sarracenia.Message.fromFileInfo( path, o, lstat )
-        m['integrity'] = m.computeIntegrity( path, o )
+        m['integrity'] = m.__computeIntegrity( path, o )
         return m
     
     

@@ -10,6 +10,7 @@ HOWTOS
    Using Flow Callback Plugins <FlowCallbacks>
 
    Admin
+   Admin_Rabbit_Addendum
    Email_Ingesting_With_Sarracenia
    Hydro_Examples
    source

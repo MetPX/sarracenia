@@ -1,8 +1,9 @@
 
-====================
-Historical Revisions
-====================
+==============================
+Rabbitmq Server Admin Addendum
+==============================
 
+Old edits people wanted to keep?
 
 Introduction
 ~~~~~~~~~~~~
