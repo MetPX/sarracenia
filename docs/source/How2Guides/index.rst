@@ -14,8 +14,10 @@ HOWTOS
    Email_Ingesting_With_Sarracenia
    Hydro_Examples
    source
-   UPGRADING
+   What Needs to Change when Upgrading <UPGRADING>
+   docker
    v2ToSr3
+
 
 # omitted as immature:
 #   docker

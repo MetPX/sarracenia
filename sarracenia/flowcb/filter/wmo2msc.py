@@ -6,67 +6,65 @@ Meant to be called as an sr_shovel plugin.
 
 It prints an output line:
 
-filter_wmo2msc: <input_file> -> <output_file> (<detected format>)
+wmo2msc: <input_file> -> <output_file> (<detected format>)
 
 usage:
-     Use the directory setting to know the root of tree where files are placed.
-     FIXME: well, likely what you really what is something like:
+
+Use the directory setting to know the root of tree where files are placed.
+FIXME: well, likely what you really what is something like::
 
      <date>/<source>/dir1/dir2/dir3
 
      <date>/<source>/dir1/dir2/newdir4/...
 
-          -- so Directory doesn't cut it.
+     -- so Directory doesn't cut it.
 
-In a sr_shovel configuration:
+In a sr_shovel configuration:: 
 
-directory /.... 
-on_message msg_filter_wmo2msc
+    directory /.... 
+    callback filter.wmo2msc
 
 
 Parameters:
 
-  msg_filter_wmo2msc_replace_dir  old,new
+* filter_wmo2msc_replace_dir  old,new
 
-  msg_filter_wmo2msc_bad_tac SFUK45 EGRR,FPCN11 CWAO
-     - When receiving bulletins with the given Abbreviated Headers, force their type to 'unknown binary'
-     - list of AHL's comma separated.
-     - default: SFUK45 EGRR
+* filter_wmo2msc_bad_tac SFUK45 EGRR,FPCN11 CWAO
+  - When receiving bulletins with the given Abbreviated Headers, force their type to 'unknown binary'
+  - list of AHL's comma separated.
+  - default: SFUK45 EGRR
 
-  msg_filter_wmo2msc_uniquify hash|time|anything else
-     - whether to add a string in addition to the AHL to make the filename unique.
-     - hash - means apply a hash, so that the additional string is content based.
-     - if time, add a suffix _YYYYMMDDHHMMSS_99999 which ensures file name uniqueness.
-     - otherwise, no suffix will be added.
-     - default: hash
+* filter_wmo2msc_uniquify hash|time|anything else
+  - whether to add a string in addition to the AHL to make the filename unique.
+  - hash - means apply a hash, so that the additional string is content based.
+  - if time, add a suffix _YYYYMMDDHHMMSS_99999 which ensures file name uniqueness.
+  - otherwise, no suffix will be added.
+  - default: hash
 
- msg_filter_wmo2msc_convert on|off
+* filter_wmo2msc_convert on|off
+  if on, then traditional conversion to MSC-BULLETINS is done as per TANDEM/APPS & MetPX Sundew
+  this involves \n as termination character, and other charater substitutions.
 
-     - if on, then traditional conversion to MSC-BULLETINS is done as per TANDEM/APPS & MetPX Sundew
-       this involves \n as termination character, and other charater substitutions.
+* filter_wmo2msc_use_symlink on|off
+  if on, instead of copying the bulletin is will be symlink from is original filepath
 
- msg_filter_wmo2msc_use_symlink on|off
+* filter_wmo2msc_tree  on|off
+  if tree is off, files are just placed in destination directory.
+  if tree is on, then the file is placed in a subdirectory tree, based on
+  the WMO 386 AHL::
 
-     - if on, instead of copying the bulletin is will be symlink from is original filepath
-
- msg_filter_wmo2msc_tree  on|off
-
-     if tree is off, files are just placed in destination directory.
-     if tree is on, then the file is placed in a subdirectory tree, based on
-     the WMO 386 AHL:
-
-      TTAAii CCCC YYGGgg  ( example: SACN37 CWAO 300104 )
+         TTAAii CCCC YYGGgg  ( example: SACN37 CWAO 300104 )
  
-      TT = SA - surface observation.
-      AA = CN - Canada ( but the AA depends on TT value, in many cases not a national code. )
-      ii = 37 - a number.. there are various conventions, they are picked to avoid duplication.
+         TT = SA - surface observation.
+         AA = CN - Canada ( but the AA depends on TT value, in many cases not a national code. )
+         ii = 37 - a number.. there are various conventions, they are picked to avoid duplication.
      
-     The first line of the file is expected to contain an AHL. and when we build a tree
-     from it, we build it as follows:
+  The first line of the file is expected to contain an AHL. and when we build a tree
+  from it, we build it as follows::
 
      TT/CCCC/GG/TTAAii_CCCC_YYGGgg_<uniquify>
 
-     assuming tree=on, uniquify=hash:
+  assuming tree=on, uniquify=hash:
 
      SA/CWAO/01/SACN37_CWAO_300104_1c699da91817cc4a84ab19ee4abe4e22
 
@@ -86,44 +84,44 @@ from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger('__name__')
 
-class Wmo2Msc(FlowCB):
+class Wmo2msc(FlowCB):
     def __init__(self, options):
         self.o = options
         self.o.uniquify = 'hash'
-        if not hasattr(self.o, 'msg_filter_wmo2msc_replace_dir'):
-            logger.error("msg_filter_wmo2msc_replace_dir setting is mandatory")
+        if not hasattr(self.o, 'filter_wmo2msc_replace_dir'):
+            logger.error("filter_wmo2msc_replace_dir setting is mandatory")
             return
 
-        (self.o.filter_olddir, self.o.filter_newdir) = self.o.msg_filter_wmo2msc_replace_dir[0].split(',')
+        (self.o.filter_olddir, self.o.filter_newdir) = self.o.filter_wmo2msc_replace_dir[0].split(',')
 
-        logger.info( "msg_filter_wmo2msc old-dir=%s, newdir=%s" % ( self.o.filter_olddir, self.o.filter_newdir ) )
-        if hasattr(self.o, 'msg_filter_wmo2msc_uniquify'):
-            logger.info('msg_filter_wmo2msc, override')
-            self.o.uniquify = self.o.msg_filter_wmo2msc_uniquify[0]
+        logger.info( "filter_wmo2msc old-dir=%s, newdir=%s" % ( self.o.filter_olddir, self.o.filter_newdir ) )
+        if hasattr(self.o, 'filter_wmo2msc_uniquify'):
+            logger.info('filter_wmo2msc, override')
+            self.o.uniquify = self.o.filter_wmo2msc_uniquify[0]
 
-        if hasattr(self.o, 'msg_filter_wmo2msc_bad_ahls'):
+        if hasattr(self.o, 'filter_wmo2msc_bad_ahls'):
             self.o.bad_ahl = []
-            for i in self.o.msg_filter_wmo2msc_bad_ahls:
+            for i in self.o.filter_wmo2msc_bad_ahls:
                 for j in i.split(','):
                     self.o.bad_ahl.append(j.replace('_', ' '))
         else:
             self.o.bad_ahl = ['SFUK45 EGRR']
 
         self.o.treeify = False
-        if hasattr(self.o, 'msg_filter_wmo2msc_tree'):
-            self.o.treeify = self.o.isTrue(self.o.msg_filter_wmo2msc_tree[0])
+        if hasattr(self.o, 'filter_wmo2msc_tree'):
+            self.o.treeify = self.o.isTrue(self.o.filter_wmo2msc_tree[0])
 
         self.o.convert2msc = False
 
-        if hasattr(self.o, 'msg_filter_wmo2msc_convert'):
-            self.o.convert2msc = self.o.isTrue(self.o.msg_filter_convert[0])
+        if hasattr(self.o, 'filter_wmo2msc_convert'):
+            self.o.convert2msc = self.o.isTrue(self.o.filter_convert[0])
 
-        if hasattr(self.o, 'msg_filter_use_symlink'):
+        if hasattr(self.o, 'filter_use_symlink'):
             self.o.use_symlink = self.o.isTrue(
-                self.o.msg_filter_use_symlink[0])
+                self.o.filter_use_symlink[0])
 
         self.trimre = re.compile(b" +\n")
-        logger.info('msg_filter_wmo2msc initialized, uniquify=%s bad_ahls=%s' % \
+        logger.info('filter_wmo2msc initialized, uniquify=%s bad_ahls=%s' % \
            ( self.o.uniquify, self.o.bad_ahl ) )
 
     def replaceChar(self, oldchar, newchar):
@@ -338,48 +336,6 @@ class Wmo2Msc(FlowCB):
         worklist.incoming = new_incoming
 
 
-#TODO do we need the rest of this?
-if __name__ != '__main__':
-
-    # real activation as a do_download filtering script.
-    xwmo2msc = Xwmo2msc(self)
-    self.on_message = xwmo2msc.on_message
-
-else:
-
-    class TestLogger:
-        def silence(self, str):
-            pass
-
-        def __init__(self):
-            self.debug = print
-            self.error = print
-            self.info = print
-            self.warning = print
-
-    class TestMessage():
-        def __init__(self, fname):
-            self.urlstr = "download://" + fname
-            self.headers = {}
-
-    class TestParent(object):
-        def __init__(self, fname):
-            self.msg = TestMessage(fname, '/tmp/dest/')
-            self.message['new_file'] = fname + os.sep + 'hoho'
-            self.logger = TestLogger()
-            pass
-
-    if len(sys.argv) > 1:
-        l = sys.argv[1:]
-    else:
-        l = os.listdir()
-
-    for f in l:
-
-        if f[0].isdigit():
-            testparent = TestParent(os.getcwd() + os.sep + f)
-            xwmo2msc = Xwmo2msc(testparent)
-            xwmo2msc.on_message(testparent)
 """
 
 SUPPLEMENTARY INFORMATION

@@ -2,22 +2,15 @@
 """
  A sample on_part plugin to perform virus scanning, using the ClamAV engine.
 
- Options:
+ requires a clamd binding package to be installed. On debian derived systems:: 
 
- part_clamav_maxblock 3
-
- then when files are sent in more than 3 parts, only the first 3 will be scanned.
- if the option is not set, all blocks of files will be scanned.
-
- STATUS: FIXME.. not tested on multi-part files!
-
- requires a clamd binding package to be installed.
- on debian derived systems: 
     sudo apt-get install python3-pyclamd
- on others:
-    pip3 install pyClamd
 
- blame: PS
+ on others::
+
+    pip3 install pyclamd
+
+ author: Peter Silva
 """
 
 import logging

@@ -4,9 +4,9 @@ Posts updated files of NOAA water level/temperature hydrometric data. Station si
 in the poll_noaa_stn_file. Compatible with Python 3.5+.
 
 usage:
-        sample url:
-                https://tidesandcurrents.noaa.gov/api/datagetter?range=1&station=9450460&product=water_temperature&units=metric&time_zone=gmt&application=web_services&format=csv
-	in an sr_poll configuration file:
+sample url: https://tidesandcurrents.noaa.gov/api/datagetter?range=1&station=9450460&product=water_temperature&units=metric&time_zone=gmt&application=web_services&format=csv
+
+in an sr_poll configuration file::
 
 	destination http://tidesandcurrents.noaa.gov/api
         retPathPattern /datagetter?range=1&station={0:}&product={1:}&units=metric&time_zone=gmt&application=web_services&format=csv
@@ -14,16 +14,17 @@ usage:
 	poll_noaa_stn_file [path/to/stn/file]
 	callback noaa_hydrometric
 
-sample station file:
+sample station file::
+
         7|70678|9751639|Charlotte Amalie|US|VI|-4.0
         7|70614|9440083|Vancouver|US|WA|-8.0
 
-the poll:
-	If poll_noaa_stn_file isn't set, it'll grab an up-to-date version of all station site code data from the 
-	NOAA website. The station list file is in the following format:
-	SourceID | SiteID | SiteCode | SiteName | CountryID | StateID | UTCOffset
-	Each station on its own line.
-	Posts the file on the exchange if the request returns a valid URL. 
+The poll:
+If poll_noaa_stn_file isn't set, it'll grab an up-to-date version of all station site code data from the 
+NOAA website. The station list file is in the following format:
+SourceID | SiteID | SiteCode | SiteName | CountryID | StateID | UTCOffset
+Each station on its own line.
+Posts the file on the exchange if the request returns a valid URL. 
 
 in v2, one needed a matching downloader plugin, but in sr3 we can leverage the retPath feature
 so that normalk downloader works, so only the poll one needed.

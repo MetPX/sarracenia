@@ -8,8 +8,8 @@ Example:
     for example company A delivers to their own DMZ server. ACME is a client of them,
     and so subscribes to the ADMZ server, but the to_cluster=ADMZ, when ACME downloads, they
     need to override the destination to specify the distribution within ACME.
-        - postOverride to_clusters ACME
-        - postOverrideDel from_cluster
+    * postOverride to_clusters ACME
+    * postOverrideDel from_cluster
 
 Usage: 
     flowcb sarracenia.flowcb.accept.postoverride.PostOverride

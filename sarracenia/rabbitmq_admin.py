@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 def exec_rabbitmqadmin(url, options, simulate=False):
     """
-       invoke rabbitmqadmin..
+       invoke rabbitmqadmin using a sub-process, with the given options.
     """
 
     try:
@@ -76,8 +76,9 @@ def exec_rabbitmqadmin(url, options, simulate=False):
 
 
 def add_user(url, role, user, passwd, simulate):
-
-    # properly declare user
+    """
+       add the given user with the given credentials.
+    """
 
     declare = "declare user name='%s' password=" % user
 
@@ -127,24 +128,36 @@ def add_user(url, role, user, passwd, simulate):
 
 
 def del_user(url, user, simulate):
+    """
+        delete user from the given broker.
+    """
     logger.info("deleting user %s" % user)
     delete = "delete user name='%s'" % user
     dummy = run_rabbitmqadmin(url, delete, simulate)
 
 
 def get_exchanges(url):
+    """
+        get the list of existing exchanges.
+    """
     logger.info("geting exchanges")
     cmd = "list exchanges name"
     return run_rabbitmqadmin(url, cmd)
 
 
 def get_queues(url):
+    """
+        get the list of existing queues.
+    """
     logger.info("geting queues")
     cmd = "list queues name messages state"
     return run_rabbitmqadmin(url, cmd)
 
 
 def get_users(url):
+    """
+        get the list of existing users.
+    """
     logger.info("geting users")
     cmd = "list users name"
     return run_rabbitmqadmin(url, cmd)
@@ -157,6 +170,9 @@ def get_users(url):
 
 
 def broker_get_exchanges(url, ssl_key_file=None, ssl_cert_file=None):
+    """
+        get the list of existing exchanges using a url query.
+    """
     import http.client
     method = "GET"
     path = "/api/exchanges?columns=name"
@@ -200,10 +216,12 @@ def user_access(url, user):
       lox = list of exchanges, just a list of names.
       loq = array of queues, where the value of each is the number of messages ready.
 
-      { 'exchanges': { 'configure': lox, 'write': lox, 'read': lox },
-        'queues' : { 'configure': loq, 'write': loq, 'read': loq },
-        'bindings' : { <queue> : { 'exchange': <exchange> , 'key' : <routing_key> } }
-      }
+      return value:: 
+
+         { 'exchanges': { 'configure': lox, 'write': lox, 'read': lox },
+           'queues' : { 'configure': loq, 'write': loq, 'read': loq },
+           'bindings' : { <queue> : { 'exchange': <exchange> , 'key' : <routing_key> } }
+         }
     """
     import json
     import re
@@ -294,6 +312,10 @@ if __name__ == "__main__":
 
 
 def run_rabbitmqadmin(url, options, simulate=False):
+    """
+      spawn a subprocess to run rabbitmqadmin with the given options.
+      capture result.
+    """
 
     logger.debug("sr_rabbit run_rabbitmqadmin %s" % options)
     try:

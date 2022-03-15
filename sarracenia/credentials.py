@@ -65,7 +65,7 @@ class Credential:
         prot_p: use a secure data connection for TLS
         bearer_token: bearer token for HTTP authentication
         login_method: force a specific login method for AMQP (PLAIN, AMQPLAIN,
-            EXTERNAL or GSSAPI)
+        EXTERNAL or GSSAPI)
 
     """
     def __init__(self, urlstr=None):

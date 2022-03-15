@@ -64,9 +64,9 @@ class FileMetadata:
       This class implements storing metadata *with* a file.
 
       on unlix/linux/mac systems, we use extended attributes,
-      where we apply a *user.sr_* prefix to the attribute names to avoid clashes.
+      where we apply a *user.sr\_* prefix to the attribute names to avoid clashes.
     
-      on Windows NT, create an "sr_.json" Alternate Data Stream  to store them.
+      on Windows NT, create an "sr\_.json" Alternate Data Stream  to store them.
 
       API:
     
@@ -75,11 +75,17 @@ class FileMetadata:
 
       x = sr_attr( path )  <- read metadata from file.
       x.list()  <- list all extant extended attributes.
-       sample return value: [ 'sum', 'mtime' ]
+      
+      * sample return value: [ 'sum', 'mtime' ]
+
       x.get('sum') <- look at one value.
-         returns None if missing.
+
+      * returns None if missing.
+
       x.set('sum', 'hoho') <- set one value.
-         fails silently (fall-back gracefully.)
+
+      * fails silently (fall-back gracefully.)
+
       x.persist() <- write metadata back to file, if necessary.
 
    """

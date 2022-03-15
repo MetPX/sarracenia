@@ -8,8 +8,8 @@ Plugin sundewpxroute.py:
 Usage:
     the pxrouting option must be set in the configuration before the plugin
     is configured, like so:
-        - pxRouting /local/home/peter/src/pdspx/routing/etc/pxRouting.conf
-        - pxClient  navcan-amis
+    * pxRouting /local/home/peter/src/pdspx/routing/etc/pxRouting.conf
+    * pxClient  navcan-amis
     flowcb sarracenia.flowcb.accept.sundewpxroute.SundewPxRoute
 """
 

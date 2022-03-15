@@ -23,7 +23,6 @@ Caveat:
 
    api-documentation
 
-   1_CLI_introduction
 
 Indices and tables
 ==================

@@ -31,7 +31,7 @@ import poplib
 import sarracenia
 from sarracenia.flowcb import FlowCB
 
-logger = logger.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 class Mail(FlowCB):
     def __init__(self, options):
