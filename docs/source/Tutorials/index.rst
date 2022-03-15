@@ -2,7 +2,7 @@ Tutorials
 =========
 
 .. toctree::
-   :maxdepth: 0
+   :maxdepth: 2
    :caption: Contents:
 
    1_CLI_introduction
