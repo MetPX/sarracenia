@@ -539,7 +539,8 @@ class sr_sftp(sr_proto):
 #============================================================
 
 class sftp_transport(sr_transport):
-    def __init__(self) :
+    def __init__(self,parent) :
         sr_transport.__init__(self)
         self.pclass = sr_sftp
         self.scheme = 'sftp'
+        self.simulate = parent.simulate 
