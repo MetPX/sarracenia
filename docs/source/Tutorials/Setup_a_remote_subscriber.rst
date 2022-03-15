@@ -1,10 +1,8 @@
 ================================
 How to setup a Remote Subscriber
 ================================
+
 This example goes over how to subscribe to the swob files from the Environment Canada Weather office.
-
-
-FIXME: v03 edit is broken.
 
 Setup
 ~~~~~

@@ -8,10 +8,10 @@ Sarracenia adds a message queueing protocol layer of file availability notificat
 to file and web servers to drive workflows that transfer and transform data continuously 
 in a real-time and mission-critical context.
 
-A main goal of the toolkit is to link together processes on the same or different computers so that they
-avoid having to poll (repeatedly query, list, and then filter) upstream resources. Sarracenia can be
-used to implement an initial upstream poll, and that still begets substantial efficiency because 
-tasks beyond initial identification of the file to process can be driven by notifications,
+A main goal of the toolkit is to link together processes so that they avoid having to poll 
+(repeatedly query, list, and then filter) servers or directories. Sarracenia can also be
+used to implement an initial upstream poll, which is still win because tasks beyond initial 
+identification of the file to process can be driven by notifications,
 which are substantially cheaper (in i/o and processing.) than polling even local directories.
 
 This management layer provides simple methods to get parallellism in file transfers, robustness
@@ -30,14 +30,14 @@ pump) and select data to stream from it, using linux, Mac, or Windows. More than
 *  It avoids people having to poll the web server to know if their data is there yet.
    (can be 100x less work for client and server from just this.)
 
-*  It is faster at downloading by using true pub/sub, so it only receives notifications 
+*  It is faster at downloading by using true pub/sub. so it receives notifications 
    exactly when the file is ready.
 
 *  it is naturally parallel: when one process is not enough, just add more.
    They will share the same selections seamlessly.
 
-*  for Linux servers, it is used to daisy-chain multiple data pumps together, so that people 
-   can maintain independent real-time copied trees for service redundancy, and also for 
+*  One can daisy-chain multiple data pumps together, so that people can maintain 
+   independent real-time copied trees for service redundancy, and also for 
    network topology reasons (to serve private networks, for example.)
    it's an efficient, daisy-chaining tree duplicator.
 

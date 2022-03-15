@@ -4,16 +4,17 @@ Windows user manual
 
 .. no section-numbering::
 
-This document teaches novice user with Python on Windows how they could easily run Sarracenia in various way. 
-The screenshots were taken from *Windows Server 2012 R2 Standard* edition. Feel free to create issues if you believe that this
-document could be enhanced with one (or more) important case(s).
+This document teaches novice user with Python on Windows how they could easily run Sarracenia in various ways. 
+The screenshots were taken from *Windows Server 2012 R2 Standard* edition. Feel free to create issues if 
+you believe that this document could be enhanced with one (or more) important case(s).
 
 
 Running Sarracenia with a Command Prompt
 ----------------------------------------
+
 From the Start Menu:
 ~~~~~~~~~~~~~~~~~~~~
-Click on Sarracenia (it will execute *sr.exe restart*):
+Click on Sarracenia (it will execute *sr3.exe restart*):
 
 .. image:: Windows/start-menu-1.png
 
@@ -27,7 +28,7 @@ From a Windows Powershell session:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Launch a Powershell |powershell| session and type this command at the prompt::
 
- sr restart
+ sr3 restart
 
 .. |powershell| image:: Windows/powershell.png
 
@@ -37,7 +38,7 @@ This will start Sarracenia processes as instructed by your configurations and sh
 
 Keep this Powershell session alive until you are done with Sarracenia. To stop Sarracenia you may type::
 
- sr stop
+ sr3 stop
 
 This will stop all Sarracenia processes cleanly as would do a restart. Closing this window will also kill all processes.
 
@@ -45,7 +46,7 @@ From Anaconda Prompt:
 ~~~~~~~~~~~~~~~~~~~~~
 Run this command::
 
- activate sarracenia && sr restart
+ activate sr3 && s3r restart
 
 Running Sarracenia without a Command Prompt
 -------------------------------------------

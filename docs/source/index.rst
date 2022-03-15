@@ -18,7 +18,6 @@ Caveat:
    Explanation/overview.rst
 
    Tutorials/index
-   jupyter/index
    How2Guides/index
 
    Explanation/index

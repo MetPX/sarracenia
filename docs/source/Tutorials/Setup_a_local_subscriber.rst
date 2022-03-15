@@ -1,6 +1,6 @@
-===============================
-How to setup a Local Subscriber
-===============================
+================================
+Server Admin: A Local Subscriber
+================================
 This example goes over how to subscribe to the swob files from the Environment Canada Weather office.
 
 

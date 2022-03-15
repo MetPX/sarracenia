@@ -23,15 +23,16 @@ will be installed by the package manager automatically.
 Ubuntu/Debian (apt/dpkg) **Recommended**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-On Ubuntu 14.04/16.04/17.10/18.04 and derivatives of same::
+On Ubuntu 22.04 and derivatives of same::
 
   sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx
   sudo apt-get update
-  sudo apt-get install python3-paramiko   # required SFTP support.
-  sudo apt-get install metpx-sarracenia  # only supports HTTP/HTTPS
-  sudo apt-get install sarrac # optional C client.
+  sudo apt-get install metpx-sr3  # main python package.
+  sudo apt-get install metpx-sr3c # optional C client.
 
 Currently, only the debian packages include man pages.  The guides are only available in the source repository.
+For earlier ubuntu versions, install via pip is required because of missing dependencies
+in the python environment shipped with earlier operating systems.
 
 Redhat/Suse distros (rpm based)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -72,12 +73,12 @@ the package using pip (python install package) from `<http://pypi.python.org/>`_
 It is straightforward to do that::
 
   $ sudo pip install paramiko
-  $ sudo pip install metpx-sarracenia
+  $ sudo pip install metpx-sr3
 
 and to upgrade after the initial installation::
 
-  $ sudo pip uninstall metpx-sarracenia
-  $ sudo pip install metpx-sarracenia
+  $ sudo pip uninstall metpx-sr3
+  $ sudo pip install metpx-sr3
 
 
 NOTE:: 
@@ -140,7 +141,7 @@ The C client is available in prebuilt binaries in the launchpad repositories alo
 
   $ sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx
   $ sudo apt-get update
-  $ sudo apt-get install sarrac 
+  $ sudo apt-get install metpx-sr3c 
 
 For any recent ubuntu version. The librabbitmq-0.8.0 has been backported in the PPA.
 sarrac's dependency. For other architectures or distributions, one can build from source::
@@ -149,33 +150,4 @@ sarrac's dependency. For other architectures or distributions, one can build fro
 
 on any linux system, as long as librabbitmq dependency is satisfied. Note that the package does
 not build or run on non-linux systems.
-
-
-Building on Old Systems
------------------------
-
-Sarracenia requires python3, and python themselves do not support python3 older than 3.4.  Some older
-Linux distributions either have no python3 or have such an old version that it is difficult to install
-the necessary dependencies.
-
-On Ubuntu 12.04::
-
-  $ apt-get install python3-dev
-  $ apt-get install python3-setuptools
-  $ easy_install3 pip==1.5.6
-  $ pip3 install paramiko==1.16.0
-  $ pip3 install metpx_sarracenia==<latest version>
-
-.. note:: 
-   **Why the specific versions on older distributions?**
-
-   pip > 1.5.6 does not support python < 3.2 which is the python in Ubuntu 12.04.
-
-   Later versions of paramiko require the cryptography module, which
-   doesn't build on python-3.2, so need to use an older version of paramiko
-   which uses pyCrypto, and that does build on 3.2.
-
-Sarracenia still works python 3.2, but there might be some cosmetic functionality 
-missing. When having trouble installing sarracenia, one should try building the C 
-client (sarrac) as it has fewer dependencies and should be easier to build on older systems.
 
