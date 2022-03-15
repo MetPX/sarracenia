@@ -6,8 +6,12 @@
 Code Reference
 ==============
 
-Internal Documentation on all modules included in sr3.
+Internal Documentation on the full source of sr3
 Not an API. subject to change without notice.
+What is missing:
+
+* All flowcallbacks are here: `flowcb <flowcb.html>`_
+* the entry points are excluded (not compatible with sphinx/autodoc.)
 
 sarracenia
 ----------
