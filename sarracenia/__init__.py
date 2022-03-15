@@ -49,11 +49,33 @@ class Sarracenia:
         a Sarracenia.Message is subclassed from a dict, so for most uses, it works like the 
         python built-in, but also we have a few major entry points some factoryies:
     
+
+        Building a message from a file
+        ------------------------------
+
         m = sarracenia.Message.fromFileData( path, options, lstat )
      
-        which builds a message from a given existing file, consulting *options*, a parsed
-        in memory version of the configuration settings that are applicable.
-    
+        builds a message from a given existing file, consulting *options*, a parsed
+        in memory version of the configuration settings that are applicable
+
+        Options
+        -------
+
+        see the sarracenia.config.Config class for functions to parse configuration files
+        and create corresponding python option dictionaries. One can supply small 
+        dictionaries for example::
+
+          options['topicPrefix'] = [ 'v02', 'post' ]
+          options['bindings'] = [ ('xpublic', [ 'v02', 'post'] , [ '#' ] )]
+          options['queue_name'] = 'q_anonymous_' + socket.getfqdn() + '_SomethingHelpfulToYou'
+
+        Above is an example of a minimal options dictionary taken from the tutorial 
+        example called moth_api_consumer.py. often 
+        
+
+        If you don't have a file
+        ------------------------
+
         If you don't have a local file, then build your message with:
     
         m = sarracenia.Message.fromFileInfo( path, options, lstat )
@@ -92,7 +114,7 @@ class Sarracenia:
     
         will return the content of the announced resource as raw data.
     
-       """
+    """
     pass
 
 class TimeConversions:

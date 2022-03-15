@@ -2,6 +2,10 @@
 Welcome to Sarracenia's Documentation!
 ======================================
 
+Home page: https://metpx.github.io/sarracenia
+
+Source Repo: https://github.com/MetPX/sarracenia
+
 Caveat: 
    This new web-site is for version 3 currently under development in the v03_wip branch
    Users of stable version 2 should go https://github.com/MetPX/Sarracenia instead.
