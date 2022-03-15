@@ -92,6 +92,7 @@ SETUP 1 : PUMP TO PUMP REPLICATION
 ----------------------------------
 
  - **mirror             <boolean>   (default: True)** 
+ - **simulate             <boolean>   (default: False)** 
  - **base_dir      <directory> (None)** 
 
  - **destination        <url>       (MANDATORY)** 
@@ -149,6 +150,9 @@ published on the **post_broker**  and **post_exchange**, the
 **on_post** script is called... with the **sr_sender** class instance as an argument.
 The script can perform whatever you want... if it returns False, the message will not 
 be published. If True, the program will continue processing from there.  
+
+**simulate**  replaces the active sender with one that just logs the name of the file
+it would be sent with.
 
 
 DESTINATION SETUP 2 : METPX-SUNDEW LIKE DISSEMINATION
