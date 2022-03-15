@@ -52,7 +52,7 @@ class File(FlowCB):
 
     FIXME FIXME FIXME
     FIXME: the sr_post version would post files on the fly as it was traversing trees.
-    so it was incremental and had little overhead.  This one is does the whole recursion
+    so it was incremental and had little overhead. This one is does the whole recursion
     in one gather.
 
     It will fail horribly for large trees. Need to re-formulate to replace recursion with interation.

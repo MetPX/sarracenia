@@ -6,8 +6,6 @@
 #
 # more info: https://github.com/MetPX/sarracenia
 #
-# sr_retry.py : python3 standalone retry logic/testing
-#
 
 import os, json, sys, time
 from _codecs import decode, encode
@@ -27,7 +25,22 @@ logger = logging.getLogger(__name__)
 
 class Retry(FlowCB):
     """
-      store a message received for a later repeated attempt.
+      overal goal:  When file transfers fail, retry them later.
+                    There is a second retry queue for failed posts, as well.
+
+      how it works:
+      * the after_accept checks how many incoming messages we received.
+        If there is a full batch to process, don't try to retry any.
+
+      * if there is room, then fill in the batch with some retry requests.
+
+      * when after_work is called, the worklist.failed list of messages
+        is the files where the transfer failed. write those messages to
+        a retry file.
+
+      * the DiskQueue class is used to store the retries, and it handles
+        expiry on each housekeeping event.
+      
     """
     def __init__(self, options) -> None:
 

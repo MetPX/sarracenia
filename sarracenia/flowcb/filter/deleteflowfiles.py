@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 
 class DeleteFlowFiles(object):
     """
+       This is a custom callback class for the sr_insects flow tests.
        delete files for messages in two directories.
     """
     def __init__(self, parent):

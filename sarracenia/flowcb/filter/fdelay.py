@@ -2,10 +2,8 @@
 """
   This plugin delays processing of messages by *message_delay* seconds
 
-
   sarracenia.flowcb.msg.fdelay 30
   import sarracenia.flowcb.msg.fdelay.FDelay
-
 
   every message will be at least 30 seconds old before it is forwarded by this plugin.
   in the meantime, the message is placed on the retry queue by marking it as failed.

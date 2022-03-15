@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+"""
+   rabbitmq administration bindings, to allow sr to invoke broker management functions.
+
+"""
 import sys
 import urllib, urllib.parse
 import base64

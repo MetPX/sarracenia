@@ -1,21 +1,20 @@
 #!/usr/bin/python3
 """
-    sarracenia.flowcb.send.email.Email: sr3 sender plugin. Once a file is 
+    sarracenia.flowcb.send.email.Email is an sr3 sender plugin. Once a file is 
     posted, the plugin matches the topic(what the filename begins with) to the
     file name and sends the appropriate emails.
 
     Usage:
       1. Need the following variables in an sr_sender config defined: file_email_to, file_email_relay
-         Optionally, you can also provide a sender name/email as file_email_form
-         ex. file_email_to AACN27 muhammad.taseer@canada.ca, test@test.com
-         ex. file_email_relay email.relay.server.ca
-         ex. file_email_from santa@canada.ca
+         Optionally, you can also provide a sender name/email as file_email_form:
 
+            file_email_to AACN27 muhammad.taseer@canada.ca, test@test.com
+            file_email_relay email.relay.server.ca
+            file_email_from santa@canada.ca
 
       2. In the config file, include the following line:
 
-         callback send.email
-
+            callback send.email
 
       3. sr_sender foreground emails.conf
 

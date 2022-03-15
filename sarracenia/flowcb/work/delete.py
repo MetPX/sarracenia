@@ -1,16 +1,4 @@
 #!/usr/bin/python3
-"""
-Plugin flowcp.work.delete.py:
-    delete working files after download.
-    options:
-
-    delete_source -- delete the original input file that was present initially and transformed.
-    delete_destination -- delete the downloaded file (presumably after other processing has occurred.)
-
-Usage:
-    callback work.delete
-
-"""
 
 import logging
 import os
@@ -18,6 +6,19 @@ from sarracenia.flowcb import FlowCB
 logger = logging.getLogger(__name__)
 
 class Delete(FlowCB):
+    """
+    
+    Plugin flowcp.work.delete.py:
+        delete working files after download.
+        options:
+    
+        delete_source -- delete the original input file that was present initially and transformed.
+        delete_destination -- delete the downloaded file (presumably after other processing has occurred.)
+    
+    Usage:
+        callback work.delete
+    
+    """
     def __init__(self, options):
         self.o = options
         logger.debug("msg_delete initialized")

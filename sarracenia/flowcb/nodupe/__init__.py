@@ -4,14 +4,6 @@
 # The sarracenia suite is Free and is proudly provided by the Government of Canada
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015
 #
-# Questions or bugs report: dps-client@ec.gc.ca
-# Sarracenia repository: https://github.com/MetPX/sarracenia
-# Documentation: https://github.com/MetPX/sarracenia
-#
-# nodupe.py : python3 program that generalise duplicate suppression for sr
-#             programs, it is used as a time based buffer that prevents, when activated,
-#             identical files (of some kinds) from being processed more than once.
-#
 
 import os
 
@@ -19,16 +11,6 @@ import urllib.parse
 
 import logging
 
-#============================================================
-# NoDupe supports/uses :
-#
-# cache_file : default ~/.cache/sarra/'pgm'/'cfg'/recent_files_0001.cache
-#              each line in file is
-#              sum time path part
-#
-# cache_dict : {}
-#              cache_dict[key] = {path1: time1, path2: time2, ...}
-#
 
 from sarracenia import nowflt, timestr2flt
 
@@ -39,11 +21,27 @@ logger = logging.getLogger(__name__)
 
 class NoDupe(FlowCB):
     """
+       generalised duplicate suppression for sr3
+       programs, it is used as a time based buffer that prevents, when activated,
+       identical files (of some kinds) from being processed more than once.
+
        options:
 
        nodupe_ttl - duration in seconds (floating point.)
                     The time horizon of the receiption cache.
                     how long to remember files, so they are marked as duplicates.
+
+       The expiry based on nodupe_ttl is applied every housekeeping interval.
+
+       NoDupe supports/uses::
+       
+        cache_file : default ~/.cache/sarra/'pgm'/'cfg'/recent_files_0001.cache
+                     each line in file is
+                     sum time path part
+       
+        cache_dict : {}
+                     cache_dict[key] = {path1: time1, path2: time2, ...}
+       
     """
     def __init__(self, options):
         logger.debug("NoDupe init")

@@ -4,9 +4,13 @@ from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
 
-
-
 class Name(FlowCB):
+    """
+      Override the the comparison so that files with the same name,
+      regardless of what directory they are in, are considered the same.
+      This is useful when receiving data from two different sources (two different trees)
+      and winnowing between them.
+    """
     def __init__(self, options):
         self.o = options
 

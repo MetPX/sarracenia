@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-Default `on_heartbeat` handler that:
+Default on_housekeeping handler that:
 - Logs Memory and CPU usage.
 - Restarts components to deal with memory leaks.
 
@@ -13,8 +13,7 @@ If `MemoryMax` is not in the config, it is automatically calculated with the fol
 
 If memory use ever exceeds the `MemoryMax` threshold, then the plugin triggers a restart, reducing memory consumption.
 
-Parameters
-----------
+Parameters:
 
 MemoryMax : size (default: none)
     Hard coded maximum for tolerable memory consumption.
@@ -30,8 +29,7 @@ MemoryMultiplier : int, optional (default: 3)
     It could be normal for memory usage to grow, especially if plugins store data in memory.
 
 
-Returns
--------
+Returns:
     Nothing, restarts components if memory usage is outside of configured thresholds.
 """
 

@@ -8,7 +8,8 @@
 # Documentation: https://github.com/MetPX/sarracenia
 #
 """
-  Place holder... thought this was not needed, then there was a stack trace.
+  plugins that use primarily the after_work entry point, normally 
+  executed after the file transfer (either send or get) has completed.
 
 """
 pass

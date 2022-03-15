@@ -1,5 +1,8 @@
 #!/usr/bin/python3
-""" msg_pclean_f90 module: file propagation test for Sarracenia components (in flow test)
+""" 
+   msg_pclean_f90 module: file propagation test for Sarracenia components (in flow test)
+   https://github.com/MetPX/sr_insects/
+
 """
 
 from difflib import Differ
@@ -15,7 +18,9 @@ logger = logging.getLogger(__name__)
 
 
 class PClean_F90(PClean):
-    """ This plugin class receive a msg from xflow_public and check propagation of the underlying file
+    """ 
+     functionality within the flow_tests of the sr_insects project.
+     This plugin class receive a msg from xflow_public and check propagation of the underlying file
 
      - it checks if the propagation was ok
      - it randomly set a new test file with a different type in the watch dir (f31 amqp)

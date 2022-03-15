@@ -35,6 +35,12 @@ class RedirectedTimedRotatingFileHandler(
 
 
 class instance:
+    """
+       Process management for a single flow instance.
+       start and stop instances.
+
+       this is the main entry point launched from the sr3 cli, with arguments for it to turn into a specific configuration.
+    """
     def __init__(self):
         self.running_instance = None
         original_sigint = signal.getsignal(signal.SIGINT)

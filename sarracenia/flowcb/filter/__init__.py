@@ -1,7 +1,11 @@
 """
-plugins intended for on_message entry_point.
+a module that is focused on transforming data should be called a filter.
+Filter plugins intended for after_accept(self, worklist) entry_point.
 
-(when messages are received.)
+At that point:
+Messages have been gathered, then passed through the accept and reject pattern matches.
+One of the first callbacks is the nodupe, so that duplicate suppression may cause additional
+rejections.
 
 """
 pass

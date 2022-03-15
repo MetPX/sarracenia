@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class Message(FlowCB):
     """
-       gather messages from a message protocol source.
+       post messages to sarracenia.moth message queuing protocol destination.
     """
     def __init__(self, options):
 

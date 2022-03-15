@@ -64,7 +64,7 @@ class DiskQueue():
 
         This class does no locking (presumed single threading.) 
         could add locks... and they would be coarser grained than stuff in persistentqueue
-        this should be faster than persisten queue, but who knows what magic they did.
+        this should be faster than persistent queue, but who knows what magic they did.
         This class doesn't implement in-memory queue... it is entirely on disk...
         saves memory, optimal for large queues.  
         probably good, since retries should be slow...
