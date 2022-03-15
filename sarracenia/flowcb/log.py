@@ -110,9 +110,13 @@ class Log(FlowCB):
                      logger.info('message: %s' % msg.dumps() )
 
     def housekeeping_stats(self):
+        tot=self.msgCount+self.rejectCount
+        if tot > 0:
+            rate= 100*self.msgCount/tot
+        else:
+            rate = 0
         logger.info( "messages received: %d, accepted: %d, rejected: %d  rate: %5.4g%%" %
-            ( self.msgCount+self.rejectCount, self.msgCount, self.rejectCount,
-              100*self.msgCount/(self.msgCount+self.rejectCount) ) )
+            ( self.msgCount+self.rejectCount, self.msgCount, self.rejectCount, rate ) )
         logger.info( f"files transferred: {self.transferCount} " +\
              f"bytes: {humanize.naturalsize(self.fileBytes,binary=True)} " +\
              f"rate: {humanize.naturalsize(self.fileBytes/self.o.housekeeping, binary=True)}/sec" )
