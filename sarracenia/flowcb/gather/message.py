@@ -42,9 +42,10 @@ class Message(FlowCB):
 
     def on_housekeeping(self):
         m = self.consumer.metricsReport()
+        average = (m['rxByteCount']/m['rxGoodCount'] if m['rxGoodCount'] != 0 else 0)
         logger.info( f"messages: good: {m['rxGoodCount']} bad: {m['rxBadCount']} " +\
            f"bytes: {humanize.naturalsize(m['rxByteCount'],binary=True)} " +\
-           f"average: {humanize.naturalsize(m['rxByteCount']/m['rxGoodCount'],binary=True)}"  )
+           f"average: {humanize.naturalsize(average, binary=True)}" )
         self.consumer.metricsReset()
 
 
