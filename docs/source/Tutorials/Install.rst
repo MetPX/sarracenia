@@ -86,6 +86,36 @@ NOTE::
 
   On many systems where both pythons 2 and 3 are installed, you may need to specify pip3 rather than pip.
 
+System Startup and Shutdown
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If the intent is to implement a Data Pump, that is a server with a role in doing
+large amounts of data transfers, then the convention is to create an *sarra* application
+user, and arrange for it to be started on boot, and stopped on shutdown.
+
+When Sarracenia is installed using a debian package:
+
+* the `SystemD <https://systemd.io>`_ unit file is installed in the right place. 
+* the sarra user is created,
+
+If installing using python3 (pip) methods, then this file should be installed:
+
+    https://github.com/MetPX/sarracenia/blob/v03_wip/debian/metpx-sr3.service
+
+in the correct location. It can be installed in::
+
+    /lib/systemd/system/metpx-sr3.service
+
+once installed, it can be activated in the normal way. It expected a sarra user
+to exist, which might be created like so::
+
+   groupadd sarra
+   useradd --system --create-home sarra
+
+Directories should be made read/write for sara.  The preferences will go in 
+~sarra/.config, and the state files will be in ~sarra/.cache, and the 
+periodic processing (see next session) also be implemented.
+
 
 Periodic Processing/Cron Jobs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -102,6 +132,7 @@ examples::
   7,14,21,28,35,42,49,56 * * * sr3 sanity
   # example directory cleaning jobs, script is included in examples/ subdirectory.
   17 5,11,17,23 * * *    IPALIAS='192.168.1.27';RESULT=`/sbin/ip addr show | grep $IPALIAS|wc|awk '{print $1}'`; if [ $RESULT -eq 1 ]; then tools/old_hour_dirs.py 6 /Projects/web_root ; fi  
+
 
 
 

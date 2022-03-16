@@ -90,8 +90,54 @@ V2 to Sr3
           v2 loglevel -> sr3 logLevel
 
           v2 option that are renamed will be understood, but an informational message will be produced on
-          startup. Underscore is still use for grouping purposes.
-         
+          startup. Underscore is still use for grouping purposes. Options which have changed::
+
+            accel_scp_threshold -> accel_threshold
+            accel_wget_threshold -> accel_threshold
+            accept_unmatch -> acceptUnmatched
+            accept_unmatched -> acceptUnmatched
+            basedir -> baseDir
+            base_dir -> baseDir
+            baseurl -> baseUrl
+            cache -> nodupe_ttl
+            document_root -> documentRoot
+            no_duplicates -> nodupe_ttl
+            caching -> nodupe_ttl
+            cache_basis -> nodupe_basis
+            e  -> fileEvents
+            events  -> fileEvents
+            instance -> instances
+            chmod -> permDefault
+            default_mode -> permDefault
+            chmod_dir -> permDirDefault
+            default_dir_mode -> permDirDefault
+            chmod_log -> permLog
+            default_log_mode -> permLog
+            file_time_limit  -> nodupe_fileAgeMax
+            heartbeat -> housekeeping
+            hb_memory_baseline_file  -> MemoryBaseLineFile
+            hb_memory_max  -> MemoryMax
+            hb_memory_multiplier  -> MemoryMultiplier
+            log_format -> logFormat
+            ll -> logLevel
+            loglevel -> logLevel
+            logdays -> lr_backupCount
+            logrotate -> lr_backupCount
+            logrotate_interval -> lr_interval
+            post_base_dir -> post_baseDir
+            post_basedir -> post_baseDir
+            post_base_url -> post_baseUrl
+            post_baseurl -> post_baseUrl
+            post_document_root -> post_documentRoot
+            post_rate_limit -> messageRateMax
+            post_topic_prefix  -> post_topicPrefix
+            preserve_mode  -> permCopy
+            preserve_time  -> timeCopy
+            suppress_duplicates  -> nodupe_ttl
+            suppress_duplicates_basis  -> nodupe_basis
+            topic_prefix  -> topicPrefix
+    
+          
 *NOTICE*: log messages and output will be completely different.
           New log format includes a prefix with process-id and the routine generating the message.
 
@@ -107,6 +153,70 @@ V2 to Sr3
           be honoured via the `v2wrapper sr3 plugin class <../Reference/flowcb.html#module-sarracenia.flowcb.v2wrapper>`_
           Many other plugins were ported, and the the configuration module recognizes the old
           configuration settings and they are interpreted in the new style.
+          the known conversions::
+
+           convert_to_v3 = {
+               'ls_file_index' : [ 'continue' ],
+               'plugin': {
+                   'msg_fdelay': ['flowCallback', 'sarracenia.flowcb.filter.fdelay.FDelay'],
+                   'msg_pclean_f90':
+                   ['flowCallback', 'sarracenia.flowcb.filter.pclean_f90.PClean_F90'],
+                   'msg_pclean_f92':
+                   ['flowCallback', 'sarracenia.flowcb.filter.pclean_f92.PClean_F92'],
+                   'accel_wget': ['continue'],
+                   'accel_scp': ['continue'],
+               },
+               'do_send': {
+                  'file_email' : [ 'flowCallback', 'sarracenia.flowcb.send.email.Email' ],
+               },
+               'no_download': [ 'download', 'False' ],
+               'notify_only': [ 'download', 'False' ],
+               'on_message': {
+                   'msg_print_lag': [ 'flow_callback', 'sarracenia.flowcb.accept.printlag.PrintLag'],
+                   'msg_skip_old': [ 'flow_callback', 'sarracenia.flowcb.accept.skipold.SkipOld'],
+                   'msg_test_retry': [ 'flow_callback', 'sarracenia.flowcb.accept.testretry.TestRetry'],
+                   'msg_to_clusters': [ 'flow_callback', 'sarracenia.flowcb.accept.toclusters.ToClusters'],
+                   'msg_save': [ 'flow_callback', 'sarracenia.flowcb.accept.save.Save'],
+                   'msg_2localfile': [ 'flow_callback', 'sarracenia.flowcb.accept.tolocalfile.ToLocalFile'],
+                   'msg_rename_whatfn': [ 'flow_callback', 'sarracenia.flowcb.accept.renamewhatfn.RenameWhatFn'],
+                   'msg_rename_dmf': [ 'flow_callback', 'sarracenia.flowcb.accept.renamedmf.RenameDMF'],
+                   'msg_hour_tree': [ 'flow_callback', 'sarracenia.flowcb.accept.hourtree.HourTree'],
+                   'msg_renamer': [ 'flow_callback', 'sarracenia.flowcb.accept.renamer.Renamer'],
+                   'msg_2http': [ 'flow_callback', 'sarracenia.flowcb.accept.tohttp.ToHttp'],
+                   'msg_2local': [ 'flow_callback', 'sarracenia.flowcb.accept.tolocal.ToLocal'],
+                   'msg_http_to_https': [ 'flow_callback', 'sarracenia.flowcb.accept.httptohttps.HttpToHttps'],
+                   'msg_speedo': [ 'flow_callback', 'sarracenia.flowcb.accept.speedo.Speedo'],
+                   'msg_WMO_type_suffix': [ 'flow_callback', 'sarracenia.flowcb.accept.wmotypesuffix.WmoTypeSuffix'],
+                   'msg_sundew_pxroute': [ 'flow_callback', 'sarracenia.flowcb.accept.sundewpxroute.SundewPxRoute'],
+                   'msg_rename4jicc': [ 'flow_callback', 'sarracenia.flowcb.accept.rename4jicc.Rename4Jicc'],
+                   'post_override': [ 'flow_callback', 'sarracenia.flowcb.accept.postoverride.PostOverride'],
+                   'post_hour_tree': [ 'flow_callback', 'sarracenia.flowcb.accept.posthourtree.PostHourTree'],
+                   'post_long_flow': [ 'flow_callback', 'sarracenia.flowcb.accept.longflow.LongFLow'],
+                   'msg_delay': [ 'flow_callback', 'sarracenia.flowcb.accept.messagedelay.MessageDelay'],
+                   'msg_download_baseurl': [ 'flow_callback', 'sarracenia.flowcb.accept.downloadbaseurl.DownloadBaseUrl'],
+                   'msg_from_cluster': ['continue'],
+                   'msg_stdfiles': ['continue'],
+                   'msg_fdelay': ['continue'],
+                   'msg_stopper': ['continue'],
+                   'msg_overwrite_sum': ['continue'],
+                   'msg_gts2wistopic': ['continue'],
+                   'msg_download': ['continue'],
+                   'msg_by_source': ['continue'],
+                   'msg_by_user': ['continue'],
+                   'msg_dump': ['continue'],
+                   'msg_total': ['continue'],
+                   'msg_total_save': ['continue'],
+                   'post_total': ['continue'],
+                   'post_total_save': ['continue'],
+                   'wmo2msc': [ 'flow_callback', 'sarracenia.flowcb.filter.wmo2msc.Wmo2Msc'],
+                   'msg_delete': [ 'flow_callback', 'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles'],
+                   'msg_log': ['logEvents', 'after_accept'],
+                   'msg_rawlog': ['logEvents', 'after_accept']
+               },
+               'on_post': {
+                   'post_log': ['logEvents', 'after_work']
+               },
+           }
 
 *NOTICE*: for API users and plugin writers, the v2 plugin format replaced by 
           the `Flow Callback <FlowCallbacks.html>`_ class. New plugin functionality 
