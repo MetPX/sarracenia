@@ -40,91 +40,116 @@ git
 ---
 
 
-V2 to sr3
+V2 to Sr3
 ---------
 
-sr3 is a very deep refactor of sarracenia. For more detail on the nature
-of the changes, `go here <../Contribution/v03.html>`_ A summary is
-is that v2 was an application written in python that had some plugin facilities,
-where sr3 is a toolkit that naturally provides an API and is far more
-natural to work with for python developers. Sr3 is built with less code, more maintainable
-code, and supports more features, more naturally.
+*NOTICE*: Sr3 is a very deep refactor of Sarracenia. For more detail on the nature
+          of the changes, `go here <../Contribution/v03.html>`_ A summary is
+          is that v2 was an application written in python that had some plugin facilities,
+          where sr3 is a toolkit that naturally provides an API and is far more
+          natural to work with for python developers. Sr3 is built with less code, more 
+          maintainable code, and supports more features, more naturally.
 
-When migrating from v2 to sr3, simple configurations will mostly "just work."
-but there cases relying on user built plugins will need a porting effort.
+*NOTICE*: log messages look completely different.
 
-were there are some major changes in using any version >=3.00, compared to 2.x.
-Configuration and state files are under the 'sr3' directory (on linux: ~/.config/sr3, and ~/.cache/sr3) 
-instead of .sarra. So copy config files that one wants to use from the old ~/.config/sarra to 
-~/.config/sr3. The two versions operate independently.
+*NOTICE*: When migrating from v2 to sr3, simple configurations will mostly "just work."
+          but there cases relying on user built plugins will need a porting effort.
+          The built-in plugins provides with Sarracenia have been ported and provide
+          examples.
 
-This allows one to run v2 and sr3 in parallel on the same server, and gradually transition.
+*CHANGE*: file placement. On Linux: ~/.cache/sarra -> ~/.cache/sr3 
+          ~/.config/sarra -> ~/.config/sr3
+          Similar change on other platforms. The different placement
+          allows to run both v2 and sr3 at the same time on the same server.
 
-The most common v2 plugins are on_message, and on_file ones (as per *plugin* and *on\_* 
-directives in configuration files) which can be honoured via the 
-`v2wrapper sr3 plugin class <../Reference/flowcb.html#module-sarracenia.flowcb.v2wrapper>`_
-Many other plugins were ported, and the the configuration module recognizes the old
-configuration settings and they are interpreted in the new style.
+*CHANGE*: Command line interface (CLI) is different. There is only one main entry_point: sr3.
+          so most invocations are different in a pattern like so::
 
-There are some performance consequences from this compatibility however, so high traffic
-flows will run with less cpu and memory load if the plugins are ported to sr3.
-To build native sr3 plugins, One should investigate the flowCallback (flowcb) class. 
+             sr_subscribe start config -> sr3 start subscribe/config
 
-Another difference is In sr3, the default topicPrefix is just plain 'v03' as opposed to 'v02.post' in v2.
-So one may need to specify topicPrefix when migrating flows and keeping v02 flows.
+          in sr3 one can specify a series of configurations to operate on in a single 
+          command::
 
-The **sr_audit component is gone**.  It's function is replaced by running *sr sanity* as a cron
-job (or scheduled task on windows.) to make sure that necessary processes continue to run.
+             sr3 start poll/airnow subscribe/airnow sender/cmqb
+          
+*CHANGE*:  in sr3, use -- for full word options, like --config, or --broker.  In v2 you 
+           could use -config and -broker, but single dash is reserved for single character options.
+           This is a result of sr3 using python standard ArgParse class::
 
-The cli is different also, invocation is changed as follows:
+                -config hoho.conf  -> in v2 refers to loading the hoho.conf file as a configuration.
 
-old v02:   **sr_subscribe start myflow.conf**
+           In sr3, it will be interpreted as -c (config) load the onfig.conf file, and hoho.conf 
+           is part of some subsequent option. in sr3::
 
-new sr3:   **sr3 start subscribe/myflow.conf**
+                --config hoho.conf
 
-In Sr3, one can specify a list of configurations to start, and they can be a combination of
-any component to be started, or stopped at once.
+           does that is intended.
 
-There are not supposed to be too many Incompatibilities when upgrading from v2.XX.yyy
-This is a running list of incompatibilities that result from explicit
-choices.  breaking changes:
+*CHANGE*: In general, the underscore in options is replaced by camelCase. e.g.:
 
-* in sr3, use -- for full word options, like --config, or --broker.  In v2 you could use -config and -broker,
-  but that will end badly in sr3. In the old command line parser, -config, and --config were the same, which
-  was idiosyncratic.  The new command line option parser is built on ArgParse, and interprets a single - 
-  as prefix a single option where the the subsequent letters are and argument. Example:
+          v2 loglevel -> sr3 logLevel
 
-  -config hoho.conf  -> in v2 refers to loading the hoho.conf file as a configuration.
+          v2 option that are renamed will be understood, but an informational message will be produced on
+          startup. Underscore is still use for grouping purposes.
+         
+*NOTICE*: log messages and output will be completely different.
+          New log format includes a prefix with process-id and the routine generating the message.
 
-  in sr3, it will be interpreted as -c (config) load the onfig.conf file, and hoho.conf is part of some subsequent option.
+*CHANGE*: default topic_prefix v02.post -> topicPrefix  v03
+          may need to change configurations to override default to get
+          compatible configurations.
+          
+*CHANGE*: v2: *mirror* defaults to False on all components except sr_sarra.
+          sr3: *mirror* defaults to True on all components except subscribe.
 
-* loglevel none -> logLevel notset (now passing loglevel setting directly to python logging module, none isn't defined.)
+*NOTICE*: The most common v2 plugins are on_message, and on_file ones 
+          (as per *plugin* and *on\_* directives in v2 configuration files) which can 
+          be honoured via the `v2wrapper sr3 plugin class <../Reference/flowcb.html#module-sarracenia.flowcb.v2wrapper>`_
+          Many other plugins were ported, and the the configuration module recognizes the old
+          configuration settings and they are interpreted in the new style.
 
-* log messages and output will be completely different, as the logging modules have been re-done.
+*NOTICE*: for API users and plugin writers, the v2 plugin format replaced by the `Flow Callback <FlowCallbacks.html>`_
+          class. New plugin functionality can mostly be implemented as plugins.
+          
+*CHANGE*: the v2 do_poll plugins must be replaced by subclassing for `poll <../Reference/flowcb.html#module-sarracenia.flowcb.poll>`_
+          Example in `plugin porting <v2ToSr3.html>`_ 
 
-* dropped settings: use_amqplib, use_pika... replaced by separate per protocol implementation libraries. amqp uses the 'amqp' library which is neither of the above. ( commit 02fad37b89c2f51420e62f2f883a3828d2056de1 )
+*CHANGE*: The v2 on_html_page plugins are also replaced by subclassing `poll <../Reference/flowcb.html#module-sarracenia.flowcb.poll>`_
 
-* dropping on_watch plugins. afaict, no-one ever used them.  The way sr3 works, it would be an after_accept for a watch.
+*CHANGE*: v2 do_send replaced by send entrypoint in a Flowcb plugin `plugin porting <v2ToSr3.html>`_
 
-* plugins that access internals of sr_retry need to be rewritten, as the class is now plugin/retry.py.
-  The way to queue something for retry in current plugins is to append them to the failed queue.
-  This is only an issue in the flow tests of sr_insects.
+*NOTICE*: the v2 accellerator plugins are replaced by built-in accelleration.
+          accel_wget_command, accel_scp_command, accel_ftpget_command, accel_ftpput_command,
+          accel_scp_command, are now built-in options used by the
+          `Transfer <../Reference/flowcb.html#module-sarracenia.transfer>`_ class.
+          Adding new transfer protocols is done by sub-classing Transfer.
+          
+*SHOULD*: v2 on_message -> after_accept should be re-written `plugin porting <v2ToSr3.html>`_
 
-* plugins are very different. For more information: `plugin porting <v2ToSr3.html>`_
+*SHOULD*: v2 on_file -> after_work should be re-written `plugin porting <v2ToSr3.html>`_
 
-* In v2, mirror default settings used to be False in all components except sr_sarra.
-  but the mirror setting was not honoured in shovel, and winnow (bug #358)
-  this bug is corrected in sr3, but then you notice that the default is wrong.
+*SHOULD*: v2 plugins should to be re-written.  `plugin porting <v2ToSr3.html>`_
+          there are many built-in plugins that are ported and automatically
+          converted, but external ones must be re-written.
 
-  In sr3, the default for mirror is changed to True for all flows except subscribe, 
-  which is the least surprising behaviour given the default to False in v2.
+          There are some performance consequences from this compatibility however, so high traffic
+          flows will run with less cpu and memory load if the plugins are ported to sr3.
+          To build native sr3 plugins, One should investigate the flowCallback (flowcb) class. 
 
-* In v2, if you delete a file, and then re-create it, an event will be created.
-  In sr3, if you do the same, the old entry will be in the nodupe cache, and the event will be suppressed.
-  I have noticed this difference, but not sure which version's behaviour is correct.
-  it could be fixed, if we decide the old behaviour is right.
+*CHANGE*: on_watch plugins entry_point becomes an sr3 after_accept entrypoint in a flowcb in a watch.
 
-* sr_watch, with the *force_polling* option, is much less efficient on sr3 than v2 
-  for large directory trees (see issue #403 )
+*ACTION*: The **sr_audit component is gone**. Replaced by running *sr sanity* as a cron
+          job (or scheduled task on windows.) to make sure that necessary processes continue to run.
+
+*CHANGE*: obsolete settings: use_amqplib, use_pika. the new `sarracenia.moth.amqp <../Reference/code.html#module-sarracenia.moth.amqp>`_
+          uses the amqp library.  To use other libraries, one should create new subclasses of sarracenia.moth.
+
+*CHANGE*: sr_retry became `retry.py <../Reference/flowcb.html#module-sarracenia.flowcb.retry>`_. 
+          Any plugins accessing internal structures of sr_retry.py need to be re-written. 
+          This access is no longer necessary, as the API defines how to put messages on 
+          the retry queue (move messages to worklist.failed. )
+
+*NOTICE*: sr3 watch, with the *force_polling* option, is much less efficient 
+          on sr3 than v2 for large directory trees (see issue #403 )
 
 

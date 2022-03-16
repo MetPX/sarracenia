@@ -141,6 +141,7 @@ str_options = [
    accelerators and rate limiting are now built-in, no plugin required.
 """
 convert_to_v3 = {
+    'ls_file_index' : [ 'continue' ],
     'plugin': {
         'msg_fdelay': ['flowCallback', 'sarracenia.flowcb.filter.fdelay.FDelay'],
         'msg_pclean_f90':
@@ -1046,7 +1047,10 @@ class Config:
                     if (v in convert_to_v3[k]):
                         line = convert_to_v3[k][v]
                         k = line[0]
-                        logger.debug('%s:%d Converting \"%s\" to v3: \"%s\"' % (cfg, lineno, l, line))
+                        if 'continue' in line:
+                            logger.info( f'{cfg}:{lineno} obsolete v2: \"{l}\" ignored' )
+                        else:
+                            logger.info( f'{cfg}:{lineno} obsolete v2:\"{l}\" converted to sr3:\"{line}\"' )
                 else:
                     line = convert_to_v3[k]
                     k=line[0]

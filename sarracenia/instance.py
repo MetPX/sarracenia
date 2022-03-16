@@ -51,7 +51,7 @@ class instance:
 
     def start(self):
         """
-          Main element to run a single flow instance.  it parses the command line arguments twice.
+          Main element to run a single flow instance. It parses the command line arguments twice.
           the first pass, is to initialize the log file and debug level, and select the configuration file to parse.
           Once the log file is set, and output & error re-direction is in place, the second pass begins:
     
