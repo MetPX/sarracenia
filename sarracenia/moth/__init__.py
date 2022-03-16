@@ -38,14 +38,14 @@ class Moth():
         (messages which have a 'topic' header that is used for routing by brokers.)
  
         - regardless of protocol, the message format returned should be the same.
-        - the message is turned into a python dictionary, corresponding to key-value pairs
-          in the message body, and properties.
-        - topic is special key that may end up in the message body, or some sort of property
+        - the message is turned into a sarracenia.Message object, which acts like a python 
+          dictionary, corresponding to key-value pairs in the message body, and properties.
+        - topic is a special key that may end up in the message body, or some sort of property
           or metadata.
         - the protocol should support acknowledgement under user control. Such control indicated
           by the presence of an entry_point called "ack". The entry point accepts "ack_id" as
-          a message identifier to be passed to the broker.  Whatever protocol symbol is used
-          by the protocol, it is passed through this message property.  Examples:
+          a message identifier to be passed to the broker. Whatever protocol symbol is used
+          by the protocol, it is passed through this message property. Examples:
           in rabbitmq/amqp ack takes a "delivery_tag" as an argument, in MQTT, it takes a "message-id"
           so when receiving an AMQP message, the m['ack_id'] is assigned the delivery_tag from the message. 
         - There is a special dict item:  "_DeleteOnPost",  
@@ -54,78 +54,77 @@ class Moth():
           examples:  topic (sent outside body), message-id (used for acknowledgements.)
           new_basedir, ack_id, new\_... (settings...)
 
-     intent is to be specialized for topic based data distribution (MQTT style.)
-     API to allow pass-through of protocol specific properties, but apply templates for genericity.
+        Intent is to be specialized for topic based data distribution (MQTT style.)
+        API to allow pass-through of protocol specific properties, but apply templates for genericity.
 
-     Target protocols (and corresponding libraries.): AMQP, MQTT, ?
+        Target protocols (and corresponding libraries.): AMQP, MQTT, ?
 
-     Things to specify:
-  	broker
-	topicPrefix
-        subTopic  
-        id   (queue for amqp, id for mqtt)
+        Things to specify:
+            broker
+            topicPrefix
+            subTopic  
+            id   (queue for amqp, id for mqtt)
 
-  this library knows nothing about Sarracenia, the only code used from sarracenia is to interpret
-  duration properties, from the root sarra/__init__.py
+        this library knows nothing about Sarracenia, the only code used from sarracenia is to interpret
+        duration properties, from the root sarracenia/__init__.py, the broker argument from sarracenia.credentials
   
-  usage:
-     c= Moth( broker, True, '5m', { 'batch':1 } )
+        usage::
 
-     c.newMessages()
-       - if there are new messages from a publisher, return them, otherwise return
-         an empty list []].
-       
-     p=Moth( broker, True, '5m', { 'batch':1 }, True )
-     p.putNewMessage()
+           c= Moth( broker, True, '5m', { 'batch':1 } )
 
-     p.close()
-       - tear down connection.     
+           c.newMessages()
+           # if there are new messages from a publisher, return them, otherwise return
+           # an empty list []].
+             
+           p=Moth( broker, True, '5m', { 'batch':1 }, True )
+
+           p.putNewMessage()
+
+           p.close()
+           # tear down connection.     
   
-
-       initialize a broker connection. Connections are unidirectional.
-       either for subscribing (with subFactory) or publishing (with pubFactory.)
+        Initialize a broker connection. Connections are unidirectional.
+        either for subscribing (with subFactory) or publishing (with pubFactory.)
        
-       the factories return objects subclassed to match the protocol required
-       by the broker argument.
+        The factories return objects subclassed to match the protocol required
+        by the broker argument.
 
-       arguments to the factories are:
+        arguments to the factories are:
 
-       broker ... the url of the broker to connect to.
-       props is a dictionary or properties/parameters.
-       supplied as overrides to the default properties listed above.
+        broker ... the url of the broker to connect to.
+        props is a dictionary or properties/parameters.
+        supplied as overrides to the default properties listed above.
 
-       Some may vary among protocols.
+        Some may vary among protocols::
+ 
+          Protocol     library implementing    URL to select
+          --------     --------------------    -------------
 
-       Protocol     library implementing    URL to select
-       --------     --------------------    -------------
+          AMQPv0.9 --> amqplib from Celery --> amqp, amqps
 
-       AMQPv0.9 --> amqplib from Celery --> amqp, amqps
-       AMQPv0.9 --> pika                --> pika, pikas
-       MQTTv3   --> paho                --> mqtt, mqtts
-       AMQPv1.0 --> qpid-proton         --> amq1, amq1s
+          AMQPv0.9 --> pika                --> pika, pikas
+
+          MQTTv3   --> paho                --> mqtt, mqtts
+
+          AMQPv1.0 --> qpid-proton         --> amq1, amq1s
 
 
 
        messaging_strategy:
-        how to manage the connection. Covers whether to treat the connection
-        as new or assume it is set up. Also, If something goes wrong.  
-        What should be done. 
+         how to manage the connection. Covers whether to treat the connection
+         as new or assume it is set up. Also, If something goes wrong.  
+         What should be done. 
          
-       reset:
-         on startup... erase any state, and re-initialize.
-
-       stubborn:  
-         if set to True, loop forever if something bad happens.  Never give up.
-         This sort of setting is desired in operations, especially unattended.
- 
-         if set to False, may give up more easily.
-
-       failure_duration is to advise library how to structure connection service level.
+         * reset: on startup... erase any state, and re-initialize.
+         * stubborn: If set to True, loop forever if something bad happens.  
+           Never give up. This sort of setting is desired in operations, especially unattended.
+           if set to False, may give up more easily.
+         * failure_duration is to advise library how to structure connection service level.
           
-       5m - make a connection that will recover from transient errors of a few minutes,
-            but not tax the broker too much for prolonged outages.
+           * 5m - make a connection that will recover from transient errors of a few minutes,
+             but not tax the broker too much for prolonged outages.
 
-       5d    - duration outage to striving to survive connection for five days.
+           * 5d - duration outage to striving to survive connection for five days.
 
        Changing recovery_strategy setting, might result in having to destroy and re-create 
        consumer queues (AMQP.)

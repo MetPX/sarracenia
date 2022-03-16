@@ -13,6 +13,8 @@ What is missing:
 * All flowcallbacks are here: `flowcb <flowcb.html>`_
 * the entry points are excluded (not compatible with sphinx/autodoc.)
 
+.. Contents::
+
 sarracenia
 ----------
 

@@ -9,6 +9,7 @@ FlowCallback Reference
 Documentation of the Flow callback plugins included
 with sr3.
 
+.. Contents::
 
 sarracenia.flowcb.accept
 ------------------------
