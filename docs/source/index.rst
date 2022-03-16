@@ -1,6 +1,8 @@
 
-Welcome to Sarracenia's Documentation!
-======================================
+Subscribe and Replicate 3
+=========================
+
+Subscribe and Replicate 3 (Sr3) is version 3 of the Sarracenia toolkit.
 
 Home page: https://metpx.github.io/sarracenia
 

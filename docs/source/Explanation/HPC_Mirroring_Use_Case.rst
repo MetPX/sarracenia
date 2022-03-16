@@ -205,7 +205,7 @@ without any application modification.
 
 .. image:: HPC_Mirroring_Use_Case/shim_explanation_shim_close.svg
 
-Usage of the shim library is detailed in `sr_post(1) <../Reference/sr3.1.rst#post>`_
+Usage of the shim library is detailed in `sr_post(1) <../Reference/sr3.1.html#post>`_
 
 
 Copying Files

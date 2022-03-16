@@ -2,38 +2,32 @@
  General Sarracenia Concepts
 =============================
 
-This document describes abstractions underlying Sarracenia. 
-It isn't clear how directly applicable this information is to normal usage, 
-but it seems this information should be available *somewhere*.
-
-Introduction
-------------
-
-Sarracenia pumps form a network. The network uses mqp brokers as a transfer
-manager which sends advertisements in one direction and report messages in the
-opposite direction. Administrators configure the paths that data flows through
-at each pump, as each broker acts independently, managing transfers from
-transfer engines it can reach, with no knowledge of the overall network. The
-locations of pump and the directions of traffic flow are chosen to work with
-permitted flows. Ideally, no firewall exceptions are needed.
+Sarracenia pumps form a network. The network uses 
+`Message Queueing Protocol (MQP) <https://en.wikipedia.org/wiki/Message_queue>`_ brokers 
+as a transfer manager which sends announcements of file availability in one direction 
+and report messages in the opposite direction. Administrators configure the paths 
+that data flows through at each pump, as each broker acts independently, managing 
+transfers from transfer engines it can reach, with no knowledge of the overall 
+network. The locations of pump and the directions of traffic flow are chosen to 
+work with permitted flows. Ideally, no firewall exceptions are needed.
 
 Sarracenia does no data transport. It is a management layer to co-ordinate
-the use of transport layers. So to get a running pump, actual transport mechanisms
-need to be set up as well. The two mechanisms currently supported are web
-servers and SFTP. In the simplest case, all of the components are on the
-same server, but there is no need for that. The broker could be on a
-different server from both ends of a given hop of a data transfer.
+the use of transport layers. To get a running pump, actual transport mechanisms
+(web or sftp servers) need to be set up as well.  In the simplest case, all of 
+the components are on the same server, but there is no need for that. The 
+broker could be on a different server from both ends of a given hop of a 
+data transfer.
 
 The best way for data transfers to occur is to avoid polling. It is more
-efficient if writers can be coaxed into emitting appropriate sr_post messages.
+efficient if writers produce appropriate sr_post messages.
 Similarly, when delivering, it is ideal if the receivers use sr_subscribe, and
 an on_file plugin to trigger their further processing, so that the file is 
 handed to them without polling. This is the most efficient way of working, but
 it is understood that not all software can be made co-operative. Tools to poll
 in order to start transport flows are sr_poll, and sr_watch.
 
-Generally speaking, Linux is the main deployment target, and the only platform on which
-server configurations are deployed. Other platforms are used as client end points.
+Generally speaking, Linux is the main deployment target, and the only platform on 
+which server configurations are deployed. Other platforms are used as client end points.
 This isn´t a limitation, it is just what is used and tested. Implementations of
 the pump on Windows should work, they just are not tested.
 
@@ -197,10 +191,8 @@ do not have the vip the following algorithmic loop will continue:
 * filter
 * after_accept
 
-The poll's gather and fileter being alive and kicking even in passive mode, 
-allows it to subscribe to the exchange it is posting to and update it's cache
-of files posted from the messages, so that if it ever does become active, its
-state is current.
+The poll's gather (and/or poll) subscribes to the exchange other vip 
+participants are posting to and updates its cache from the messages.
 
 
 

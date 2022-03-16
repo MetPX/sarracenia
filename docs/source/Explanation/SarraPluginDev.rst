@@ -462,7 +462,7 @@ Plugins can define their own options by calling::
 
 Options so declared just become instance variables in the options passed to init.
 By convention, plugins set self.o to contain the options passed at init time, so that 
-all the built-in options are similarly processing.  If consult the `sr_subscribe(1) <../Reference/sr3.1.rst#subscribe>`_
+all the built-in options are similarly processing.  If consult the `sr_subscribe(1) <../Reference/sr3.1.html#subscribe>`_
 manual page, and most of the options will have a corresponing instance variable.
 
 Some examples:
@@ -475,7 +475,7 @@ Some examples:
   Value of 0 indicates caching is disabled.
 
 *self.o.inflight*
-  The current setting of *inflight* (see `Delivery Completion <../Reference/sr3.1.rst#Delivery%20Completion%20(inflight)>`_
+  The current setting of *inflight* (see `Delivery Completion <../Reference/sr3.1.html#Delivery%20Completion%20(inflight)>`_
 
 *self.o.overwrite*
   setting which controls whether to files already downloaded should be overwritten unconditionally.
