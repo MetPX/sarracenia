@@ -8,16 +8,17 @@ Summary
 
 
 This document is aimed at developers who need to work with both v2 code and 
-the refactor that turned it into v3. For developers familiar with v2, It can serve 
-as a bit of a map to navigating the source code of v3, which has now
-stablizied enough that it substantially passes the flow_tests.
-V3 is perhaps not really usable yet, but the direction is well established and further
+the refactor that was originally called v3, but eventually was called sr3.
+For developers familiar with v2, the document can serve as a bit of a map 
+to navigating the source code of sr3, which has now stablizied enough that 
+it substantially passes the flow_tests.
+Sr3 is perhaps not really usable yet, but the direction is well established and further
 development is now described using the issue tracker (look at the v3only label.)  
 So this document is now essentially historical. If someone does not know v2, 
-this document will not help as it is exclusively about mapping v2 to v3. 
+this document will not help as it is exclusively about mapping v2 to sr3. 
 Reading the balance of v03 documentation should be more helpful. 
 
-Abstract Goals of v3:
+Abstract Goals of sr3:
 
 * configuration compatibility (upward compatible from v2.) including all plugins.
 
@@ -47,15 +48,15 @@ goals of opportunity
 State of the Code
 ~~~~~~~~~~~~~~~~~
 
-As of 2021/08/24, the v3 code passes all the same flow tests that v2 does
-on one laptop (except dynamic in v3 #407). It runs those same tests using the same configurations, so compatibiliy
-goal is achieved. V3 accept mqtt broker urls, and an issue is created #389 for amqp v1.
-V3 is being used to feed a WMO experimental feed, albeit with the need
+As of 2021/08/24, the sr3 code passes all the same flow tests that v2 does
+on one laptop (except dynamic in sr3 #407). It runs those same tests using the same configurations, so compatibiliy
+goal is achieved. Sr3 accept mqtt broker urls, and an issue is created #389 for amqp v1.
+Sr3 is being used to feed a WMO experimental feed, albeit with the need
 to restart it regularly ( issue #388 )
 
-The new v3 code has 4000 fewer lines than v2, and includes mqtt.py (extra broker protocol) 
+The new sr3 code has 4000 fewer lines than v2, and includes mqtt.py (extra broker protocol) 
 as well as a module implementing a compatibility layer with v2 plugins. For example, the 
-new configuration routine is 30% shorter and more consistent in v3 than in v2.
+new configuration routine is 30% shorter and more consistent in sr3 than in v2.
 The code is also much more pythonic, as the API is much more 
 natural to work with multiple API levels that can be learned by consulting jupyter notebooks.
 
@@ -105,84 +106,68 @@ v2 code::
   19223 total
   fractal% 
 
-v3 code::
+sr3 code::
 
-  fractal% find -name '*.py' | grep -v plugins | xargs wc -l
-    38 ./examples/moth_api_consumer.py
-    68 ./examples/moth_http_retrieval.py
-   214 ./instance.py
-    50 ./sr_tailf.py
-   135 ./pyads.py
-    15 ./integrity/arbitrary.py
-    24 ./integrity/sha512.py
-    24 ./integrity/md5.py
-    92 ./integrity/__init__.py
-    16 ./integrity/random.py
-    33 ./integrity/md5name.py
-    52 ./sr_post.py
-   323 ./rabbitmq_admin.py
-    55 ./sr_log2save.py
-  2115 ./config.py
-    65 ./flowcb/line_mode.py
-   108 ./flowcb/retry.py
-    43 ./flowcb/log.py
-    23 ./flowcb/sample.py
-    77 ./flowcb/pclean.py
-   838 ./flowcb/gather/file.py
-    44 ./flowcb/gather/message.py
-    63 ./flowcb/gather/remote.py
-   173 ./flowcb/gather/__init__.py
-    91 ./flowcb/script.py
-   165 ./flowcb/__init__.py
-   407 ./flowcb/nodupe.py
-    37 ./flowcb/shiftdir2baseurl.py
-    14 ./flowcb/work/__init__.py
-    29 ./flowcb/work/rxpipe.py
-   463 ./flowcb/v2wrapper.py
-    38 ./flowcb/line_log.py
-    47 ./flowcb/post/message.py
-    14 ./flowcb/post/__init__.py
-    30 ./flowcb/filter/deleteflowfiles.py
-     7 ./flowcb/filter/__init__.py
-    70 ./flowcb/filter/pclean_f92.py
-   101 ./flowcb/filter/fdelay.py
-   122 ./flowcb/filter/pclean_f90.py
-    93 ./flowcb/mdelaylatest.py
+  2157 ./config.py
+   342 ./credentials.py
    384 ./diskqueue.py
-    17 ./moth/amq1.py
-   283 ./moth/__init__.py
-   525 ./moth/amqp.py
-    16 ./moth/pika.py
-   514 ./moth/mqtt.py
-   186 ./__init__.py
-   167 ./filemetadata.py
-    26 ./sr_flow.py
-    16 ./flow/winnow.py
-    18 ./flow/report.py
-   494 ./flow/poll.py
-    16 ./flow/shovel.py
-  1528 ./flow/__init__.py
+   183 ./filemetadata.py
+   768 ./flowcb/gather/file.py
+    53 ./flowcb/gather/message.py
+     7 ./flowcb/housekeeping/__init__.py
+   130 ./flowcb/housekeeping/resources.py
+   250 ./flowcb/__init__.py
+   145 ./flowcb/log.py
+    24 ./flowcb/nodupe/data.py
+   345 ./flowcb/nodupe/__init__.py
+    24 ./flowcb/nodupe/name.py
+   454 ./flowcb/poll/__init__.py
+    14 ./flowcb/post/__init__.py
+    55 ./flowcb/post/message.py
+   117 ./flowcb/retry.py
+   461 ./flowcb/v2wrapper.py
+  1617 ./flow/__init__.py
+    80 ./flow/poll.py
     34 ./flow/post.py
-    29 ./flow/subscribe.py
+    18 ./flow/report.py
     29 ./flow/sarra.py
-    35 ./flow/watch.py
     27 ./flow/sender.py
-  1993 ./sr.py
-   315 ./credentials.py
-   657 ./transfer/file.py
-   366 ./transfer/https.py
-   522 ./transfer/ftp.py
+    16 ./flow/shovel.py
+    29 ./flow/subscribe.py
+    35 ./flow/watch.py
+    16 ./flow/winnow.py
+   793 ./__init__.py
+   226 ./instance.py
+    36 ./integrity/arbitrary.py
+    93 ./integrity/__init__.py
+    33 ./integrity/md5name.py
+    24 ./integrity/md5.py
+    17 ./integrity/random.py
+    24 ./integrity/sha512.py
+    17 ./moth/amq1.py
+   585 ./moth/amqp.py
+   313 ./moth/__init__.py
+   548 ./moth/mqtt.py
+    16 ./moth/pika.py
+   135 ./pyads.py
+   349 ./rabbitmq_admin.py
+    26 ./sr_flow.py
+    52 ./sr_post.py
+  2066 ./sr.py
+    50 ./sr_tailf.py
+   383 ./transfer/file.py
+   514 ./transfer/ftp.py
+   361 ./transfer/https.py
    437 ./transfer/__init__.py
-   614 ./transfer/sftp.py
-  15664 total
-  fractal%
+   607 ./transfer/sftp.py
+  15519 total
 
 
 V02 Plugin Pain Points
 ----------------------
 
-Writing plugins should be a straight-forward thing for people with a rudimentary
-knowledge of python, and some understanding of the task at hand. in version 2,
+Writing plugins should be a straight-forward activity for people with a rudimentary
+knowledge of Python, and some understanding of the task at hand. In version 2,
 writing plugins is a lot harder than it should be.  
 
 * syntax error, v2 gives basically a binary response, either reading in the plugin worked
@@ -193,7 +178,10 @@ writing plugins is a lot harder than it should be.
 * weird scoping issue of import (import in main does not carry over to on_message, need to import 
   in the main body of the routine as well as in the python file.)
 
-* What the heck is self, what the heck is parent?  These arguments to plugins are not obvious. 
+* What the heck is self, what the heck is parent? These arguments to plugins are not obvious. 
+  self usually refers to the caller, not the self in a normal class, and parent is the flow,
+  so no state can be stored in self, and all must be stored in parent. Parent is kind of
+  a catch all for settings and dynamic values in one pile.
 
 * bizarre use of python logger API... self.logger? wha?
 
@@ -319,7 +307,7 @@ the two versions, is clear:
 | sr_sftp.py               | transfer/sftp.py          |
 |                          |                           |
 +--------------------------+---------------------------+
-| plugins/                 | flowcb/  (v3 ones)        |
+| plugins/                 | flowcb/  (sr3 ones)       |
 |                          |    plugins/ still there   |
 |                          |    for v2 ones.           |
 +--------------------------+---------------------------+
@@ -350,7 +338,7 @@ the two versions, is clear:
 Mappings
 ~~~~~~~~
 
-v2->v3 instance variables::
+v2->sr3 instance variables::
 
     self.user_cache_dir --> self.o.cfg_run_dir
 
@@ -386,8 +374,8 @@ not sure... need to keep the members for places where
 callbacks are called, but can use properties elsewhere, if desired.
 
 
-Known Problems (Solved in v3)
------------------------------
+Known Problems (Solved in sr3)
+------------------------------
 
 * passing of logs around is really odd. We didn't understand what 
   python logging objects were. Need to use them in the normal way.
@@ -427,7 +415,7 @@ away. (This later became the Moth module.)
 The method of testing is to make modifications and check them against the 
 sr_insects v03_wip branch. In general, an un-modified sr_insects tests should
 work, but since the logs change, there is logic being added on that branch
-to parse v2 and v3 versions in the same way. Thus the v03_wip branch tests
+to parse v2 and sr3 versions in the same way. Thus the v03_wip branch tests
 are compatible with both stable and work-in-progress versions.
 
 To get each component working, practice with individual unit tests, and then
@@ -483,26 +471,26 @@ flow/run() is visibly  the general algorithm,
 shovel is a sub-class of flow.
 
 Got a skeleton for v2 plugins working (v2wrapper.py)
-implemented import-based and group oriented v3 plugin framework. ( #213 )
+implemented import-based and group oriented sr3 plugin framework. ( #213 )
 
 cache (now called noDupe) working.
 
-re-wrote how the v3 callbacks work to use worklists, and then re-cast
-cache and retry v2plugins as v3 callbacks themselves.
+re-wrote how the sr3 callbacks work to use worklists, and then re-cast
+cache and retry v2plugins as sr3 callbacks themselves.
 
 renamed message queue abstract class from tmpc to moth
 (what does a Sarracenia eat?)
 
 With shovel and winnow replaced by new implementations, it passes
-the dynamic flow test, including the Retry module ported to v3, and
+the dynamic flow test, including the Retry module ported to sr3, and
 a number of v2 modules used as-is.
 
-Completed an initial version of the sr_post component now (in v3: flowcb.gather.file.File)
+Completed an initial version of the sr_post component now (in sr3: flowcb.gather.file.File)
 Now working on sr_poll, which will take a while because it involve refactoring: sr_file, sr_http,
 sr_ftp, sr_sftp into the transfer module
 
 Mostly done sr_subscribe, which, in the old version, is a base class for all other components,
-but in v3 is just the first component that actually downloads data. So encountering all
+but in sr3 is just the first component that actually downloads data. So encountering all
 issues with data download, and flowcb that do interesting things. Mostly done, but 
 flowcb not quite working.
 
@@ -557,7 +545,7 @@ so noting down what the solution was.
 Accel Overhaul
 ~~~~~~~~~~~~~~
 
-plugin compatiblity under review... decided to re-write the accel_* plugins for v3, and
+plugin compatiblity under review... decided to re-write the accel_* plugins for sr3, and
 change the API because the v2 one has fundamental deficiencies:
 
 * the do_get api deals with failure by raising an exception... there is no checking
@@ -571,7 +559,7 @@ change the API because the v2 one has fundamental deficiencies:
   in practice.
 
 Have re-written accel_wget, and accel_scp to the new api... working through static-flow
-to test them. There is also logic to spot v2 invocations of them, and replace with v3
+to test them. There is also logic to spot v2 invocations of them, and replace with sr3
 in the configuration. And the first attempt was quite convoluted... was not happy.
 2nd attempt also... working on a third one.
 
@@ -667,7 +655,7 @@ so below is the things leftover after refactor:
 
 * sr_poll active/passive bug #29
 
-* realpath_filter is used by CMOI. Seems to be disappeared in v3. It's there in the C version. #399
+* realpath_filter is used by CMOI. Seems to be disappeared in sr3. It's there in the C version. #399
 
 * port rest of v02 plugins to v03 equivalents and add mappings in config.py, #400
   so that we have barely any v2's left. 
@@ -728,7 +716,7 @@ Probably need to be settled before having anyone else dive in.
 FIXME/Deferred
 --------------
 
-The point of the main v3 work is to get a re-factor done to the point where
+The point of the main sr3 work is to get a re-factor done to the point where
 the code is understandable to new coders, so that tasks can be assigned.
 This section includes a mix of tasks that can hopefully be assigned, 
 
@@ -757,6 +745,10 @@ FIXME are things left to the side that need to be seen to.
 * make sure stop actually works... seeing strays after tests... but changing too much 
   to really know. need to check. It does!
 
+* We gave up on partitioned sending as a retrenchment for the refactor. It will come in a
+  later version.
+
+* reporting features mostly removed.
 
 Transition
 ----------
@@ -765,7 +757,7 @@ Do not know if straightforward (Replacement) upgrade is a good approach. Will it
 sufficiently such that upgrades of entire pumps are possible? or will incremental (parallel) upgrades 
 be required?
 
-It depends on whether v3 will work as a drop-in replacement or not. There is some incompatibility
+It depends on whether sr3 will work as a drop-in replacement or not. There is some incompatibility
 we know will happen with do_* plugins. If that is sufficiently well documented and easily
 dealt with, then it might not be a problem. On the other hand, if there are subtle
 problems, then a parallel approach might be needed.
@@ -793,7 +785,7 @@ sr), and to avoid confusion the other entry points (sr_subscribe etc...) would b
 so that v2 code would work unchanged. Might require some tweaks to have the sr classes
 ignore instances from the other versions.
 
-This is similar to python2 to python3 transition. Allows deployment of v03 without having
+This is similar to python2 to python3 transition. Allows deployment of sr3 without having
 to convert entirely to it. Allows running some components, and building maturity slowly
 while others are not ready. It facilitates A:B testing, running the same configuration
 with one version or the other without having the install or use a different machine,
@@ -815,15 +807,15 @@ There are not supposed to be any. This is a running list of things to fix or doc
 breaking changes:
 
 
-* in v3, use -- for full word options, like --config, or --broker.  In v2 you could use -config and -broker,
-  but that will end badly in v3.  In the old command line parser, -config, and --config were the same, which 
+* in sr3, use -- for full word options, like --config, or --broker.  In v2 you could use -config and -broker,
+  but that will end badly in sr3.  In the old command line parser, -config, and --config were the same, which 
   was idiosyncratic.  The new
   command line option parser is built on ArgParse, and interprets a single - as prefix a single option where the
   the subsequent letters are and argument.  Example
 
   -config hoho.conf  -> in v2 refers to loading the hoho.conf file as a configuration.
 
-  in v3, it will be interpreted as -c (config) load the onfig.conf gile, and hoho.conf is part of some subsequent option.
+  in sr3, it will be interpreted as -c (config) load the onfig.conf gile, and hoho.conf is part of some subsequent option.
 
 * loglevel none -> loglevel notset (now passing loglevel setting directly to python logging module, none isn't defined.)
 
@@ -852,13 +844,13 @@ breaking changes:
 
 * In v2, mirror default settings used to be False in all components except sr_sarra.
   but the mirror setting was not honoured in shovel, and winnow (bug #358) 
-  this bug is corrected in v3, but then you notice that the default is wrong.
+  this bug is corrected in sr3, but then you notice that the default is wrong.
  
-  In v3, the default for mirror is changed to True for all flows except subscribe, which
+  In sr3, the default for mirror is changed to True for all flows except subscribe, which
   is the least surprising behaviour given the default to False in v2.
    
 * in v2, download does not check the length of a file while it is downloading.
-  in v3, it does. as an example, when using sftp as a poll, ls will list the size of a symbolic link.
+  in sr3, it does. as an example, when using sftp as a poll, ls will list the size of a symbolic link.
   When it downloads, it gets the actual file, and not the symlink, so the size is different.
 
   Example from flow test::
@@ -866,11 +858,11 @@ breaking changes:
        2021-04-03 10:13:07,310 [ERROR] sarracenia.transfer read_writelocal util/writelocal mismatched file length writing FCAS31_KWBC_031412___39224.slink. Message said to expect 135 bytes.  Got 114 bytes.
 
   the file is 114 bytes, by the link path is 135 bytes... 
-  both v2 and v3 download the file and not the link, but v3 produces this error message.
+  both v2 and sr3 download the file and not the link, but sr3 produces this error message.
   Thinking about this one...  is it a bug in poll? 
 
 * In v2, if you delete a file, and then re-create it, an event will be created.
-  In v3, if you do the same, the old entry will be in the nodupe cache, and the event will be suppressed.
+  In sr3, if you do the same, the old entry will be in the nodupe cache, and the event will be suppressed.
   I have noticed this difference, but not sure which version's behaviour is correct.
   it could be fixed, if we decide the old behaviour is right.
 

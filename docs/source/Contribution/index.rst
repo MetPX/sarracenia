@@ -3,7 +3,7 @@ Contributing to Sarracenia
 ==========================
 
 .. toctree::
-   :maxdepth: 0
+   :maxdepth: 2
    :caption: Contents:
 
    Development

@@ -1,4 +1,5 @@
 
+=========================
 Porting v2 Plugins to Sr3
 =========================
 
@@ -36,7 +37,7 @@ There are also a couple walkthrough videos on Youtube showing simple v2 -> v3 po
  - `Poll (20 min) <https://www.youtube.com/watch?v=P20M9ojn_Zw>`_
 
 File Placement
-==============
+--------------
 
 v2 places configuration files under ~/.config/sarra, and state files under ~/.cache/sarra
 
@@ -46,7 +47,7 @@ v2 has a C implementation of sarra called sarrac. The C implementation for v3, i
 and is the same as the v2 one, except it uses the new file locations.
 
 Command Line Difference
-=======================
+-----------------------
 
 Briefly, the sr3 entry point is used to start/stop/status things::
 
@@ -62,7 +63,7 @@ a tool for interactive posting.
 
 
 What Will Work Without Change
-=============================
+-----------------------------
 
 The first step in porting a configuration subscribe/X to v3, is just to copy the configuration file from
 ~/.config/sarra to the corresponding location in ~/.config/sr3 and try::
@@ -123,7 +124,7 @@ doing things in v3. You declare callbacks, and have them contain the entry point
 
 
 Coding Differences between plugins in v2 vs. Sr3
-================================================
+------------------------------------------------
 
 The API for adding or customizing functionality in sr3 is quite different from v2.
 In general, v3 plugins:
@@ -283,7 +284,7 @@ In general, v3 plugins:
 
 
 Configuration Files
-===================
+-------------------
 
 in v2, the primary configuration option to declare a plugin is::
 
@@ -318,7 +319,7 @@ the above two are equivalent. The flowcb version can be used to import classes
 that don't match the convention of the x.X (a file named x.py containing a class called X.py)
 
 Configuration Upgrade
-=====================
+---------------------
 
 Once a plugin is ported, one can also arrange for the v3 option parser to recognize a v2
 plugin invocation and replace it with a v3 one.  looking in sarracenia/config.py,
@@ -342,7 +343,7 @@ effectively::
 
 
 Options
-=======
+-------
 
 In v2, one would declare settings to be used by a plugin in the __init__ routine, with 
 the *declare_option*.::
@@ -367,7 +368,7 @@ code. it would be referred to in other routines like so::
 
     
 Mapping Entry Points
-====================
+--------------------
 
 for a comprehensive look at the v3 entry points, have a look at:
 
@@ -376,7 +377,7 @@ https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/__init__.py
 for details.
 
 on_message, on_post --> after_accept
-------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 v2: receives one message, returns True/False
 
@@ -409,7 +410,7 @@ examples:
 
 
 on_file --> after_work
-----------------------
+~~~~~~~~~~~~~~~~~~~~~~
 
 v2: receives one message, returns True/False
 
@@ -423,7 +424,7 @@ examples:
 
 
 on_heartbeat -> on_housekeeping
--------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 v2: receives parent as argument.
     will work unchanged.
@@ -439,7 +440,7 @@ examples:
 
 
 do_poll -> poll
------------------
+~~~~~~~~~~~~~~~
 
 v2: call do_poll from plugin.
 
@@ -664,7 +665,7 @@ of the poll class.
 
 
 on_line -> poll subclassing
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------
 
 Similarly to on_html_page above, all uses of on_line in the previous version
 were about re-formatting lines to be parseable. the on_line routine can be
@@ -679,7 +680,7 @@ on which to build an example.
 
 
 do_send -> send:
-~~~~~~~~~~~~~~~~
+----------------
 
 v2: do_send could be either a standalone routine, or associated with a protocol type
 

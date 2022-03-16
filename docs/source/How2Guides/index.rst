@@ -2,7 +2,7 @@ HOWTOS
 ======
 
 .. toctree::
-   :maxdepth: 0
+   :maxdepth: 2
    :caption: For Users:
 
    Subscribing to Data Feeds <subscriber>
