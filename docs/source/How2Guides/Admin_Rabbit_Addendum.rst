@@ -1,7 +1,7 @@
 
-==============================
-Rabbitmq Server Admin Addendum
-==============================
+================================
+Administering Rabbitmq Adddendum
+================================
 
 Old edits people wanted to keep?
 

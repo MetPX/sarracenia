@@ -1,7 +1,7 @@
 
-==================================================
- MetPX-Sarracenia with Rabbitmq for Administrators
-==================================================
+=============================
+Administering AMQP Data Pumps 
+=============================
 
 .. note::
    **FIXME**: Missing sections are highlighted by **FIXME**. What is here is accurate.
@@ -854,9 +854,10 @@ anything else?
 Cleanup
 ~~~~~~~
 
-These are examples, the implementation of cleanup is not covered by sarracenia. Given a reasonably small tree as
-given above, it can be practical to scan the tree and prune the old files from it.
-A cron job like so::
+These are examples, the implementation of cleanup is not covered by 
+sarracenia. Given a reasonably small tree as given above, it can be 
+practical to scan the tree and prune the old files from it. A cron 
+job like so::
 
   root@boule:/etc/cron.d# more sarra_clean
   # remove files one hour after they show up.
@@ -887,11 +888,24 @@ Note that the logs will clean up themselves. By default after 5 retention the ol
 remove at midnight if you have always use the same default config since the first rotation.
 It can be shorten to a single retention by adding *logrotate 1d* to default.conf.
 
+Ensuring Things are Up
+~~~~~~~~~~~~~~~~~~~~~~
+
+Processes can crash. One can have automated restart by running *sr3 sanity* periodically::
+
+    root@boule:/etc/cron.d# more sanity
+    # remove files one hour after they show up.
+    # for weather production, 37 minutes passed the hour is a good time.
+    # remove directories the day after the last time they were touched.
+    7,14,21,28,35,42,49,56 * * * sr3 sanity
+
+
+
 Startup
 ~~~~~~~
 
-FIXME: /etc/init.d/ integration missing.
-
+The Debian package installs a systemd unit, but python3 installation does not take 
+care of that.
 
 Sr_Poll
 ~~~~~~~

@@ -31,10 +31,28 @@ sarracenia.config
    :private-members:
    :special-members:
 
+sarracenia.credentials
+----------------------
+
+.. automodule:: sarracenia.credentials
+   :show-inheritance:
+   :members:
+   :private-members:
+   :special-members:
+
 sarracenia.diskqueue
 --------------------
 
 .. automodule:: sarracenia.diskqueue
+   :show-inheritance:
+   :members:
+   :private-members:
+   :special-members:
+
+sarracenia.filemetadata
+-----------------------
+
+.. automodule:: sarracenia.filemetadata
    :show-inheritance:
    :members:
    :private-members:
@@ -130,15 +148,6 @@ sarracenia.flow.winnow
    :private-members:
    :special-members:
 
-sarracenia.filemetadata
------------------------
-
-.. automodule:: sarracenia.filemetadata
-   :show-inheritance:
-   :members:
-   :private-members:
-   :special-members:
-
 sarracenia.instance
 -------------------
 
@@ -202,15 +211,6 @@ sarracenia.integrity.md5name
    :private-members:
    :special-members:
 
-sarracenia.rabbitmq_admin
--------------------------
-
-.. automodule:: sarracenia.rabbitmq_admin
-   :show-inheritance:
-   :members:
-   :private-members:
-   :special-members:
-
 sarracenia.moth
 ---------------
 
@@ -256,10 +256,10 @@ sarracenia.moth.amq1
    :private-members:
    :special-members:
 
-sarracenia.credentials
-----------------------
+sarracenia.rabbitmq_admin
+-------------------------
 
-.. automodule:: sarracenia.credentials
+.. automodule:: sarracenia.rabbitmq_admin
    :show-inheritance:
    :members:
    :private-members:

@@ -47,7 +47,7 @@ For example, on fedora 28::
   $ sudo dnf install python3-netifaces
   $ sudo dnf install python3-humanize
   $ sudo dnf install python3-psutil
-  $ sudo dnf install python3-paramiko   # adds SFTP support.
+  $ sudo dnf install python3-paramiko   
 
   $ sudo dnf install python3-setuptools # needed to build rpm package.
 
@@ -67,23 +67,44 @@ No man pages nor other documentation is installed either.
 PIP
 ~~~
 
-On Windows or other linux distributions where system packages are not available, the above procedures are not applicable.
-There are also special cases, such as if using python in virtual env, where it is more practical to install
-the package using pip (python install package) from `<http://pypi.python.org/>`_.
+On Windows or other linux distributions where system packages are not 
+available, the above procedures are not applicable. There are also special
+cases, such as if using python in virtual env, where it is more practical 
+to install the package using pip (python install package) from `<http://pypi.python.org/>`_.
+
 It is straightforward to do that::
 
-  $ sudo pip install paramiko
-  $ sudo pip install metpx-sr3
+  $ pip install metpx-sr3
 
 and to upgrade after the initial installation::
 
-  $ sudo pip uninstall metpx-sr3
-  $ sudo pip install metpx-sr3
+  $ pip install metpx-sr3
 
+* To install server-wide on a linux server, prefix with *sudo*
 
 NOTE:: 
 
   On many systems where both pythons 2 and 3 are installed, you may need to specify pip3 rather than pip.
+
+
+Periodic Processing/Cron Jobs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Regardless of how it is installed, Additional periodic processing may be necessary:
+
+  * to run *sr3 sanity* to ensure that appropriate processes are running.
+  * to clean up old directories and avoid filling file systems.
+
+examples::
+
+  # kill off stray process, or restart ones that might have died. 
+  # avoiding the top of the hour or the bottom.
+  7,14,21,28,35,42,49,56 * * * sr3 sanity
+  # example directory cleaning jobs, script is included in examples/ subdirectory.
+  17 5,11,17,23 * * *    IPALIAS='192.168.1.27';RESULT=`/sbin/ip addr show | grep $IPALIAS|wc|awk '{print $1}'`; if [ $RESULT -eq 1 ]; then tools/old_hour_dirs.py 6 /Projects/web_root ; fi  
+
+
+
 
 
 Windows

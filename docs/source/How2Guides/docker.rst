@@ -35,7 +35,8 @@ Logging
 
 Norms in the docker world are to send messages to standard output, so
 the option *logStdout* should be used in any configurations in a docker container.
-This will make *docker logs* work normally. 
+This will make *docker logs* work as expected in a docker environment, by printing
+to standard output.
 
 .. _`Docker`: https://docker.com
 .. _`Docker Compose`: https://docs.docker.com/compose/

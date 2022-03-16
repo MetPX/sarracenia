@@ -1,5 +1,5 @@
-Explanations/Concepts/Background
-================================
+Explanation
+===========
 
 .. toctree::
    :maxdepth: 2

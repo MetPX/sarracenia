@@ -10,19 +10,19 @@ Documentation of the Flow callback plugins included
 with sr3.
 
 
-sarracenia.flowcb.housekeeping
-------------------------------
+sarracenia.flowcb.accept
+------------------------
 
-.. automodule:: sarracenia.flowcb.housekeeping
+.. automodule:: sarracenia.flowcb.accept
    :show-inheritance:
    :members:
    :private-members:
    :special-members:
 
-sarracenia.flowcb.housekeeping.resources
-----------------------------------------
+sarracenia.flowcb.accept.delete
+-------------------------------
 
-.. automodule:: sarracenia.flowcb.housekeeping.resources
+.. automodule:: sarracenia.flowcb.accept.delete
    :show-inheritance:
    :members:
    :private-members:
@@ -37,28 +37,10 @@ sarracenia.flowcb.download
    :private-members:
    :special-members:
 
-sarracenia.flowcb.retry
------------------------
+sarracenia.flowcb.accept.downloadbaseurl
+----------------------------------------
 
-.. automodule:: sarracenia.flowcb.retry
-   :show-inheritance:
-   :members:
-   :private-members:
-   :special-members:
-
-sarracenia.flowcb.log
----------------------
-
-.. automodule:: sarracenia.flowcb.log
-   :show-inheritance:
-   :members:
-   :private-members:
-   :special-members:
-
-sarracenia.flowcb.wistree
--------------------------
-
-.. automodule:: sarracenia.flowcb.wistree
+.. automodule:: sarracenia.flowcb.accept.downloadbaseurl
    :show-inheritance:
    :members:
    :private-members:
@@ -68,6 +50,87 @@ sarracenia.flowcb.accept.hourtree
 ---------------------------------
 
 .. automodule:: sarracenia.flowcb.accept.hourtree
+   :show-inheritance:
+   :members:
+   :private-members:
+   :special-members:
+
+sarracenia.flowcb.accept.httptohttps
+------------------------------------
+
+.. automodule:: sarracenia.flowcb.accept.httptohttps
+   :show-inheritance:
+   :members:
+   :private-members:
+   :special-members:
+
+sarracenia.flowcb.accept.longflow
+---------------------------------
+
+.. automodule:: sarracenia.flowcb.accept.longflow
+   :show-inheritance:
+   :members:
+   :private-members:
+   :special-members:
+
+sarracenia.flowcb.accept.posthourtree
+-------------------------------------
+
+.. automodule:: sarracenia.flowcb.accept.posthourtree
+   :show-inheritance:
+   :members:
+   :private-members:
+   :special-members:
+
+sarracenia.flowcb.accept.postoverride
+-------------------------------------
+
+.. automodule:: sarracenia.flowcb.accept.postoverride
+   :show-inheritance:
+   :members:
+   :private-members:
+   :special-members:
+
+sarracenia.flowcb.accept.printlag
+---------------------------------
+
+.. automodule:: sarracenia.flowcb.accept.printlag
+   :show-inheritance:
+   :members:
+   :private-members:
+   :special-members:
+
+sarracenia.flowcb.accept.rename4jicc
+------------------------------------
+
+.. automodule:: sarracenia.flowcb.accept.rename4jicc
+   :show-inheritance:
+   :members:
+   :private-members:
+   :special-members:
+
+sarracenia.flowcb.accept.renamedmf
+----------------------------------
+
+.. automodule:: sarracenia.flowcb.accept.renamedmf
+   :show-inheritance:
+   :members:
+   :private-members:
+   :special-members:
+
+sarracenia.flowcb.accept.renamewhatfn
+-------------------------------------
+
+.. automodule:: sarracenia.flowcb.accept.renamewhatfn
+   :show-inheritance:
+   :members:
+   :private-members:
+   :special-members:
+
+sarracenia.flowcb.accept.save
+-----------------------------
+
+.. automodule:: sarracenia.flowcb.accept.save
    :show-inheritance:
    :members:
    :private-members:
@@ -91,24 +154,6 @@ sarracenia.flowcb.accept.sundewpxroute
    :private-members:
    :special-members:
 
-sarracenia.flowcb.accept.postoverride
--------------------------------------
-
-.. automodule:: sarracenia.flowcb.accept.postoverride
-   :show-inheritance:
-   :members:
-   :private-members:
-   :special-members:
-
-sarracenia.flowcb.accept.httptohttps
-------------------------------------
-
-.. automodule:: sarracenia.flowcb.accept.httptohttps
-   :show-inheritance:
-   :members:
-   :private-members:
-   :special-members:
-
 sarracenia.flowcb.accept.testretry
 ----------------------------------
 
@@ -127,28 +172,10 @@ sarracenia.flowcb.accept.toclusters
    :private-members:
    :special-members:
 
-sarracenia.flowcb.accept.renamedmf
-----------------------------------
+sarracenia.flowcb.accept.tohttp
+-------------------------------
 
-.. automodule:: sarracenia.flowcb.accept.renamedmf
-   :show-inheritance:
-   :members:
-   :private-members:
-   :special-members:
-
-sarracenia.flowcb.accept.longflow
----------------------------------
-
-.. automodule:: sarracenia.flowcb.accept.longflow
-   :show-inheritance:
-   :members:
-   :private-members:
-   :special-members:
-
-sarracenia.flowcb.accept.printlag
----------------------------------
-
-.. automodule:: sarracenia.flowcb.accept.printlag
+.. automodule:: sarracenia.flowcb.accept.tohttp
    :show-inheritance:
    :members:
    :private-members:
@@ -163,10 +190,10 @@ sarracenia.flowcb.accept.tolocal
    :private-members:
    :special-members:
 
-sarracenia.flowcb.accept.downloadbaseurl
-----------------------------------------
+sarracenia.flowcb.accept.tolocalfile
+------------------------------------
 
-.. automodule:: sarracenia.flowcb.accept.downloadbaseurl
+.. automodule:: sarracenia.flowcb.accept.tolocalfile
    :show-inheritance:
    :members:
    :private-members:
@@ -181,91 +208,73 @@ sarracenia.flowcb.accept.wmotypesuffix
    :private-members:
    :special-members:
 
-sarracenia.flowcb.accept
+sarracenia.flowcb.clamav
 ------------------------
 
-.. automodule:: sarracenia.flowcb.accept
+.. automodule:: sarracenia.flowcb.clamav
    :show-inheritance:
    :members:
    :private-members:
    :special-members:
 
-sarracenia.flowcb.accept.rename4jicc
-------------------------------------
+sarracenia.flowcb.filter
+------------------------
 
-.. automodule:: sarracenia.flowcb.accept.rename4jicc
+.. automodule:: sarracenia.flowcb.filter
    :show-inheritance:
    :members:
    :private-members:
    :special-members:
 
-sarracenia.flowcb.accept.delete
+sarracenia.flowcb.filter.deleteflowfiles
+----------------------------------------
+
+.. automodule:: sarracenia.flowcb.filter.deleteflowfiles
+   :show-inheritance:
+   :members:
+   :private-members:
+   :special-members:
+
+sarracenia.flowcb.filter.fdelay
 -------------------------------
 
-.. automodule:: sarracenia.flowcb.accept.delete
+.. automodule:: sarracenia.flowcb.filter.fdelay
    :show-inheritance:
    :members:
    :private-members:
    :special-members:
 
-sarracenia.flowcb.accept.tolocalfile
-------------------------------------
+sarracenia.flowcb.filter.pclean_f90
+-----------------------------------
 
-.. automodule:: sarracenia.flowcb.accept.tolocalfile
+.. automodule:: sarracenia.flowcb.filter.pclean_f90
    :show-inheritance:
    :members:
    :private-members:
    :special-members:
 
-sarracenia.flowcb.accept.save
------------------------------
+sarracenia.flowcb.filter.pclean_f92
+-----------------------------------
 
-.. automodule:: sarracenia.flowcb.accept.save
+.. automodule:: sarracenia.flowcb.filter.pclean_f92
    :show-inheritance:
    :members:
    :private-members:
    :special-members:
 
-sarracenia.flowcb.accept.tohttp
--------------------------------
+sarracenia.flowcb.filter.wmo2msc
+--------------------------------
 
-.. automodule:: sarracenia.flowcb.accept.tohttp
+.. automodule:: sarracenia.flowcb.filter.wmo2msc
    :show-inheritance:
    :members:
    :private-members:
    :special-members:
 
-sarracenia.flowcb.accept.renamewhatfn
--------------------------------------
-
-.. automodule:: sarracenia.flowcb.accept.renamewhatfn
-   :show-inheritance:
-   :members:
-   :private-members:
-   :special-members:
-
-sarracenia.flowcb.accept.posthourtree
--------------------------------------
-
-.. automodule:: sarracenia.flowcb.accept.posthourtree
-   :show-inheritance:
-   :members:
-   :private-members:
-   :special-members:
-
-sarracenia.flowcb.sample
+sarracenia.flowcb.gather
 ------------------------
 
-.. automodule:: sarracenia.flowcb.sample
-   :show-inheritance:
-   :members:
-   :private-members:
-   :special-members:
-
-sarracenia.flowcb.pclean
-------------------------
-
-.. automodule:: sarracenia.flowcb.pclean
+.. automodule:: sarracenia.flowcb.gather
    :show-inheritance:
    :members:
    :private-members:
@@ -289,37 +298,46 @@ sarracenia.flowcb.gather.message
    :private-members:
    :special-members:
 
-sarracenia.flowcb.gather
-------------------------
+sarracenia.flowcb.housekeeping
+------------------------------
 
-.. automodule:: sarracenia.flowcb.gather
+.. automodule:: sarracenia.flowcb.housekeeping
    :show-inheritance:
    :members:
    :private-members:
    :special-members:
 
-sarracenia.flowcb.script
-------------------------
+sarracenia.flowcb.housekeeping.resources
+----------------------------------------
 
-.. automodule:: sarracenia.flowcb.script
+.. automodule:: sarracenia.flowcb.housekeeping.resources
    :show-inheritance:
    :members:
    :private-members:
    :special-members:
 
-sarracenia.flowcb.clamav
-------------------------
+sarracenia.flowcb.log
+---------------------
 
-.. automodule:: sarracenia.flowcb.clamav
+.. automodule:: sarracenia.flowcb.log
    :show-inheritance:
    :members:
    :private-members:
    :special-members:
 
-sarracenia.flowcb.shiftdir2baseurl
-----------------------------------
+sarracenia.flowcb.mdelaylatest
+------------------------------
 
-.. automodule:: sarracenia.flowcb.shiftdir2baseurl
+.. automodule:: sarracenia.flowcb.mdelaylatest
+   :show-inheritance:
+   :members:
+   :private-members:
+   :special-members:
+
+sarracenia.flowcb.nodupe
+------------------------
+
+.. automodule:: sarracenia.flowcb.nodupe
    :show-inheritance:
    :members:
    :private-members:
@@ -343,28 +361,46 @@ sarracenia.flowcb.nodupe.name
    :private-members:
    :special-members:
 
-sarracenia.flowcb.nodupe
+sarracenia.flowcb.retry
+-----------------------
+
+.. automodule:: sarracenia.flowcb.retry
+   :show-inheritance:
+   :members:
+   :private-members:
+   :special-members:
+
+sarracenia.flowcb.pclean
 ------------------------
 
-.. automodule:: sarracenia.flowcb.nodupe
+.. automodule:: sarracenia.flowcb.pclean
    :show-inheritance:
    :members:
    :private-members:
    :special-members:
 
-sarracenia.flowcb.poll.nasa_mls_nrt
------------------------------------
+sarracenia.flowcb.sample
+------------------------
 
-.. automodule:: sarracenia.flowcb.poll.nasa_mls_nrt
+.. automodule:: sarracenia.flowcb.sample
    :show-inheritance:
    :members:
    :private-members:
    :special-members:
 
-sarracenia.flowcb.poll.usgs
----------------------------
+sarracenia.flowcb.script
+------------------------
 
-.. automodule:: sarracenia.flowcb.poll.usgs
+.. automodule:: sarracenia.flowcb.script
+   :show-inheritance:
+   :members:
+   :private-members:
+   :special-members:
+
+sarracenia.flowcb.shiftdir2baseurl
+----------------------------------
+
+.. automodule:: sarracenia.flowcb.shiftdir2baseurl
    :show-inheritance:
    :members:
    :private-members:
@@ -379,10 +415,37 @@ sarracenia.flowcb.poll
    :private-members:
    :special-members:
 
+sarracenia.flowcb.poll.airnow
+-----------------------------
+
+.. automodule:: sarracenia.flowcb.poll.airnow
+   :show-inheritance:
+   :members:
+   :private-members:
+   :special-members:
+
 sarracenia.flowcb.poll.mail
 ---------------------------
 
 .. automodule:: sarracenia.flowcb.poll.mail
+   :show-inheritance:
+   :members:
+   :private-members:
+   :special-members:
+
+sarracenia.flowcb.poll.nasa_mls_nrt
+-----------------------------------
+
+.. automodule:: sarracenia.flowcb.poll.nasa_mls_nrt
+   :show-inheritance:
+   :members:
+   :private-members:
+   :special-members:
+
+sarracenia.flowcb.poll.nexrad
+-----------------------------
+
+.. automodule:: sarracenia.flowcb.poll.nexrad
    :show-inheritance:
    :members:
    :private-members:
@@ -397,19 +460,55 @@ sarracenia.flowcb.poll.noaa_hydrometric
    :private-members:
    :special-members:
 
-sarracenia.flowcb.poll.airnow
------------------------------
+sarracenia.flowcb.poll.usgs
+---------------------------
 
-.. automodule:: sarracenia.flowcb.poll.airnow
+.. automodule:: sarracenia.flowcb.poll.usgs
    :show-inheritance:
    :members:
    :private-members:
    :special-members:
 
-sarracenia.flowcb.poll.nexrad
------------------------------
+sarracenia.flowcb.post
+----------------------
 
-.. automodule:: sarracenia.flowcb.poll.nexrad
+.. automodule:: sarracenia.flowcb.post
+   :show-inheritance:
+   :members:
+   :private-members:
+   :special-members:
+
+sarracenia.flowcb.send.email
+----------------------------
+
+.. automodule:: sarracenia.flowcb.send.email
+   :show-inheritance:
+   :members:
+   :private-members:
+   :special-members:
+
+sarracenia.flowcb.post.message
+------------------------------
+
+.. automodule:: sarracenia.flowcb.post.message
+   :show-inheritance:
+   :members:
+   :private-members:
+   :special-members:
+
+sarracenia.flowcb.send
+----------------------
+
+.. automodule:: sarracenia.flowcb.send
+   :show-inheritance:
+   :members:
+   :private-members:
+   :special-members:
+
+sarracenia.flowcb.wistree
+-------------------------
+
+.. automodule:: sarracenia.flowcb.wistree
    :show-inheritance:
    :members:
    :private-members:
@@ -446,105 +545,6 @@ sarracenia.flowcb.v2wrapper
 ---------------------------
 
 .. automodule:: sarracenia.flowcb.v2wrapper
-   :show-inheritance:
-   :members:
-   :private-members:
-   :special-members:
-
-sarracenia.flowcb.post.message
-------------------------------
-
-.. automodule:: sarracenia.flowcb.post.message
-   :show-inheritance:
-   :members:
-   :private-members:
-   :special-members:
-
-sarracenia.flowcb.post
-----------------------
-
-.. automodule:: sarracenia.flowcb.post
-   :show-inheritance:
-   :members:
-   :private-members:
-   :special-members:
-
-sarracenia.flowcb.filter.deleteflowfiles
-----------------------------------------
-
-.. automodule:: sarracenia.flowcb.filter.deleteflowfiles
-   :show-inheritance:
-   :members:
-   :private-members:
-   :special-members:
-
-sarracenia.flowcb.filter
-------------------------
-
-.. automodule:: sarracenia.flowcb.filter
-   :show-inheritance:
-   :members:
-   :private-members:
-   :special-members:
-
-sarracenia.flowcb.filter.pclean_f92
------------------------------------
-
-.. automodule:: sarracenia.flowcb.filter.pclean_f92
-   :show-inheritance:
-   :members:
-   :private-members:
-   :special-members:
-
-sarracenia.flowcb.filter.wmo2msc
---------------------------------
-
-.. automodule:: sarracenia.flowcb.filter.wmo2msc
-   :show-inheritance:
-   :members:
-   :private-members:
-   :special-members:
-
-sarracenia.flowcb.filter.fdelay
--------------------------------
-
-.. automodule:: sarracenia.flowcb.filter.fdelay
-   :show-inheritance:
-   :members:
-   :private-members:
-   :special-members:
-
-sarracenia.flowcb.filter.pclean_f90
------------------------------------
-
-.. automodule:: sarracenia.flowcb.filter.pclean_f90
-   :show-inheritance:
-   :members:
-   :private-members:
-   :special-members:
-
-sarracenia.flowcb.mdelaylatest
-------------------------------
-
-.. automodule:: sarracenia.flowcb.mdelaylatest
-   :show-inheritance:
-   :members:
-   :private-members:
-   :special-members:
-
-sarracenia.flowcb.send
-----------------------
-
-.. automodule:: sarracenia.flowcb.send
-   :show-inheritance:
-   :members:
-   :private-members:
-   :special-members:
-
-sarracenia.flowcb.send.email
-----------------------------
-
-.. automodule:: sarracenia.flowcb.send.email
    :show-inheritance:
    :members:
    :private-members:
