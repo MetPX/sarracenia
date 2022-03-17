@@ -195,7 +195,7 @@ class MQTT(Moth):
 
         userdata.pending_messages_mutex.release()
 
-    def __sslClientSetup(self):
+    def __sslClientSetup(self) -> int:
         """
           Initializse self.client SSL context, must be called after self.client is instantiated.
           return port number for connection.
@@ -232,7 +232,7 @@ class MQTT(Moth):
            port =  self.broker.url.port
         return port
 
-    def __clientSetup(self, options, cid):
+    def __clientSetup(self, options, cid) -> paho.mqtt.client.Client:
 
         client = paho.mqtt.client.Client( userdata=self, \
             client_id=cid, protocol=paho.mqtt.client.MQTTv5 )
@@ -391,7 +391,7 @@ class MQTT(Moth):
         self.client.loop_stop()
         pass
 
-    def _msgDecode(self, mqttMessage ):
+    def _msgDecode(self, mqttMessage ) -> sarracenia.Message:
         """
            decode MQTT message (protocol specific thingamabob) into sr3 one (python dictionary)
         """
@@ -426,7 +426,7 @@ class MQTT(Moth):
            logger.error('message acknowledged and discarded: %s' % msg)
            return None
 
-    def newMessages(self, blocking=False):
+    def newMessages(self, blocking=False) -> list:
         """
            return new messages.
 
@@ -455,7 +455,7 @@ class MQTT(Moth):
         ml = list(filter( None, map( self._msgDecode, mqttml ) ))
         return ml
 
-    def getNewMessage(self, blocking=False):
+    def getNewMessage(self, blocking=False) -> sarracenia.Message:
 
         if blocking:
             ebo=0.1
@@ -479,14 +479,14 @@ class MQTT(Moth):
         else:
             return None
     
-    def ack(self, m):
+    def ack(self, m) -> None:
         if (not self.auto_ack) and ('ack_id' in m):
             logger.info('mid=%d' % m['ack_id'] )
             self.client.ack(m['ack_id'])
             del m['ack_id']
             m['_deleteOnPost'].remove('ack_id')
 
-    def putNewMessage(self, body, content_type='application/json', exchange=None):
+    def putNewMessage(self, body, content_type='application/json', exchange=None) -> bool:
         """
           publish a message.
         """

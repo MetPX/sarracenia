@@ -74,7 +74,7 @@ class AMQP(Moth):
 
     """
 
-    def _msgRawToDict(self, raw_msg):
+    def _msgRawToDict(self, raw_msg) -> sarracenia.Message :
         if raw_msg is not None:
             body = raw_msg.body
 
@@ -156,7 +156,7 @@ class AMQP(Moth):
     # length of an AMQP short string (used for headers and many properties)
     amqp_ss_maxlen = 255
 
-    def __init__(self, broker, props, is_subscriber):
+    def __init__(self, broker, props, is_subscriber) -> None:
         """
            connect to broker, depending on message_strategy stubborness, remain connected.
            
@@ -190,7 +190,7 @@ class AMQP(Moth):
         else:  # publisher...
             self.__putSetup()
 
-    def __connect(self, broker):
+    def __connect(self, broker) -> None:
         """
           connect to broker. 
           returns with self.channel set to a new channel.
@@ -225,7 +225,7 @@ class AMQP(Moth):
 
         self.channel = self.connection.channel()
 
-    def __getSetup(self):
+    def __getSetup(self) -> None:
         """
         Setup so we can get messages.
 
@@ -298,7 +298,7 @@ class AMQP(Moth):
             logger.info("Sleeping {} seconds ...".format(ebo))
             time.sleep(ebo)
 
-    def __putSetup(self):
+    def __putSetup(self) -> None:
         ebo = 1
         while True:
 
@@ -346,7 +346,7 @@ class AMQP(Moth):
             logger.info("Sleeping {} seconds ...".format(ebo))
             time.sleep(ebo)
 
-    def putCleanUp(self):
+    def putCleanUp(self) -> None:
 
         try:
             self.channel.exchange_delete(self.o['exchange'])
@@ -355,7 +355,7 @@ class AMQP(Moth):
                 self.o['broker'].url.hostname, err))
             logger.debug('Exception details: ', exc_info=True)
 
-    def getCleanUp(self):
+    def getCleanUp(self) -> None:
 
         try:
             self.channel.queue_delete(self.o['queue_name'])
@@ -364,7 +364,7 @@ class AMQP(Moth):
                 self.o['broker'].url.hostname, err))
             logger.debug('Exception details: ', exc_info=True)
 
-    def newMessages(self):
+    def newMessages(self) -> list :
 
         if not self.is_subscriber:  #build_consumer
             logger.error("getting from a publisher")
@@ -384,7 +384,7 @@ class AMQP(Moth):
 
         return ml
 
-    def getNewMessage(self):
+    def getNewMessage(self) -> sarracenia.Message :
 
         if not self.is_subscriber:  #build_consumer
             logger.error("getting from a publisher")
@@ -421,7 +421,7 @@ class AMQP(Moth):
             self.close()
             self.__getSetup() # will only return when a connection is successful.
 
-    def ack(self, m):
+    def ack(self, m) -> None:
         """
            do what you need to acknowledge that processing of a message is done.
         """
@@ -459,7 +459,7 @@ class AMQP(Moth):
     def putNewMessage(self,
                       body,
                       content_type='application/json',
-                      exchange=None):
+                      exchange=None) -> bool:
         """
         put a new message out, to the configured exchange by default.
         """
@@ -573,7 +573,7 @@ class AMQP(Moth):
             logger.info("Sleeping {} seconds ...".format(ebo))
             time.sleep(ebo)
 
-    def close(self):
+    def close(self) -> None:
         try:
             self.connection.collect()
             self.connection.close()

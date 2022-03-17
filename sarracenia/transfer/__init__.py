@@ -118,7 +118,7 @@ class Transfer():
 
     """
     @staticmethod
-    def factory(proto, options):
+    def factory(proto, options) -> 'Transfer':
 
         for sc in Transfer.__subclasses__():
             if (hasattr(sc, 'registered_as')
@@ -148,7 +148,6 @@ class Transfer():
         self.tbytes = 0
         self.tbegin = nowflt()
 
-    # local_read_close
     def local_read_close(self, src):
         #logger.debug("sr_proto local_read_close")
 
@@ -160,7 +159,6 @@ class Transfer():
         if self.data_sumalgo:
             self.data_checksum = self.data_sumalgo.value
 
-    # local_read_open
     def local_read_open(self, local_file, local_offset=0):
         logger.debug("sr_proto local_read_open getcwd=%s self.cwd=%s" %
                      (os.getcwd(), self.getcwd()))
@@ -179,7 +177,6 @@ class Transfer():
 
         return src
 
-    # local_write_close
     def local_write_close(self, dst):
 
         # flush sync (make sure all io done)
@@ -199,7 +196,6 @@ class Transfer():
         if self.data_sumalgo:
             self.data_checksum = self.data_sumalgo.value
 
-    # local_write_open
     def local_write_open(self, local_file, local_offset=0):
         #logger.debug("sr_proto local_write_open")
 
@@ -236,7 +232,6 @@ class Transfer():
         if self.data_sumalgo: self.data_sumalgo.update(new_chunk)
         return new_chunk
 
-    # read_write
     def read_write(self, src, dst, length=0):
         logger.debug("sr_proto read_write")
 
@@ -299,7 +294,6 @@ class Transfer():
 
         return rw_length
 
-    # read_writelocal
     def read_writelocal(self,
                         src_path,
                         src,
@@ -334,7 +328,6 @@ class Transfer():
 
         return rw_length
 
-    # readlocal_write
     def readlocal_write(self, local_file, local_offset=0, length=0, dst=None):
         logger.debug("sr_proto readlocal_write")
 
@@ -357,13 +350,6 @@ class Transfer():
 
         return rw_length
 
-    # set_iotime : bypass automated computation of iotime
-    #def set_iotime(self.o.timeout) :
-    #    logger.debug("sr_proto set_iotime %s" % iotime)
-    #    if iotime < 1 : iotime = 1
-    #    self.o.timeout = iotime
-
-    # set_sumalgo
     def set_sumalgo(self, sumalgo):
         logger.debug("sr_proto set_sumalgo %s" % sumalgo)
         self.sumalgo = sarracenia.integrity.Integrity.factory(sumalgo)
@@ -385,7 +371,7 @@ class Transfer():
         if self.data_sumalgo:
             self.data_sumalgo.set_path(path)
 
-    def get_sumstr(self):
+    def get_sumstr(self) -> dict:
         if self.sumalgo:
             #return { 'method':type(self.sumalgo).__name__, 'value':self.sumalgo.value }
             return {

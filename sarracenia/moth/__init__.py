@@ -1,6 +1,7 @@
 import copy
 import logging
 import sys
+import sarracenia
 
 logger = logging.getLogger(__name__)
 
@@ -152,7 +153,7 @@ class Moth():
 
     """
     @staticmethod
-    def subFactory(broker, props):
+    def subFactory(broker, props) -> 'Moth':
         if broker and broker.url:
             for sc in Moth.__subclasses__():
                 if (broker.url.scheme == sc.__name__.lower()) or (
@@ -164,7 +165,7 @@ class Moth():
             return None
 
     @staticmethod
-    def pubFactory(broker, props):
+    def pubFactory(broker, props) -> 'Moth':
         if broker and broker.url:
             for sc in Moth.__subclasses__():
                 if (broker.url.scheme == sc.__name__.lower()) or (
@@ -175,7 +176,7 @@ class Moth():
             logger.error('no broker specified')
             return None
 
-    def __init__(self, broker, props=None, is_subscriber=True):
+    def __init__(self, broker, props=None, is_subscriber=True) -> None:
         """
            If is_subscriber=True, then this is a consuming instance.
            expect calls to get* routines.
@@ -213,7 +214,7 @@ class Moth():
         logging.basicConfig(format=self.o['logFormat'],
                             level=getattr(logging, self.o['logLevel'].upper()))
 
-    def ack(self, message ):
+    def ack(self, message ) -> None:
         """
           tell broker that a given message has been received.
 
@@ -222,14 +223,14 @@ class Moth():
         logger.error("ack unimplemented")
 
     @property
-    def default_options():
+    def default_options() -> dict:
         """
         get default properties to override, used by client for validation. 
 
         """
         return Moth.__default_options
     
-    def getNewMessage(self):
+    def getNewMessage(self) -> sarracenia.Message :
         """
         If there is one new message available, return it. Otherwise return None. Do not block.
 
@@ -242,7 +243,7 @@ class Moth():
         logger.error("getNewMessage unimplemented")
         return None
 
-    def newMessages(self):
+    def newMessages(self) -> list:
         """
         If there are new messages available from the broker, return them, otherwise return None.
 
@@ -254,7 +255,7 @@ class Moth():
         logger.error("NewMessages unimplemented")
         return []
 
-    def putNewMessage(self, message, content_type='application/json'):
+    def putNewMessage(self, message, content_type='application/json') -> bool:
         """
            publish a message as set up to the given topic.
 
@@ -279,13 +280,13 @@ class Moth():
     def metricsReport(self) -> tuple:
         return self.metrics
 
-    def close(self):
+    def close(self) -> None:
         """
            tear down an existing connection.
         """
         logger.error("close unimplemented")
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """
           get rid of server-side resources associated with a client. (queues/id's, etc...)
         """
