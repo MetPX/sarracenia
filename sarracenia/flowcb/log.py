@@ -13,6 +13,13 @@ class Log(FlowCB):
        logEvents - which entry points to emit log messages at.
 
        logMessageDump - print literal messages when printing log messages.
+
+       every housekeeping interval, prints:
+
+       * how many messages were received, rejected, %accepted.
+       * number of files transferred, their size, and rate in files/s and bytes/s
+       * lag: some information about how old the messages are when processed 
+
     """
     def __init__(self, options):
 
