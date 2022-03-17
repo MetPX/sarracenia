@@ -26,7 +26,13 @@ Processing
 
 The entire documentation is under the docs/source tree. It is processed using sphinx, invoked
 using the Makefile in docs/.  One can install sphinx locally, and run make to build locally 
-and debug. The result is produced in docs/build/html.
+and debug. The result is produced in docs/build/html::
+
+    pip install -f requirements-dev.txt
+    cd docs
+    make html
+ 
+then point a browser to docs/build/html.
 
 There is a github Actions jobs that does this on each push to appropriate branchs to update
 the main documentation. the main url for the resulting web-site is:
@@ -36,12 +42,18 @@ the main documentation. the main url for the resulting web-site is:
 
 Tutorials
 ---------
+
 - Learning-oriented, specifically learning how rather than learning *that*.
 - Allow the user to learn by doing to get them started, be sure your tutorial works and users can see results immediately. 
 - Tutorials must be reliably repeatable focused on concrete steps (not abstract concepts) with the minimum necessary explanation.
 
+Many of the Tutorials are built using jupyter notebooks. See docs/Tutorials/README.md for
+how to work with them.
+
+
 How2Guides
 ----------
+
 - Problem and goal oriented: "**I want to... How do I...**" Differing from tutorials in that tutorials are for complete beginners, how to guides assume some knowledge and understanding with a basic setup and tools.
 - Provide a series of steps focused on the results of some particular problem. 
 - Don't explain concepts, if they are important, they can be linked to in `../Explanations/`
@@ -50,16 +62,20 @@ How2Guides
 
 Explanations
 ------------
+
 - Understanding-oriented: can be equally considered discussions. Much more relaxed version of documentation where concepts are explored from a higher level or different perspectives.
 - Provide context, discuss alternatives and opinions while providing technical reference (for other sections).
 
 Reference
 ---------
+
+- Dictionary style.
 - Information oriented: code-determined descriptions of functionality.
 - Strictly for the man pages and direct reference of the various programs, protocols, and functions.
 
 Contribution
 ------------
+
 - Information critical to the enhancement and progression of the Sarracenia project, ie: for those that are looking to develop Sarracenia.
 - Style guide(s)
 - Template(s)
@@ -80,6 +96,7 @@ or changes of the new component.
 
 Updating the Wiki
 -----------------
+
 The wiki in GitHub is a separate Git project that has been grafted into the main project
 as a subtree in /docs/. This means that any changes to the wiki pages in /docs/ will not
 be updated on the web wiki until the changes are pushed to the subtree. This can be
@@ -124,8 +141,12 @@ pick and stick to a default header hierarchy (ie : = > ~ > - > ... for title > h
 
 Why rST?
 --------
+
 `reStructuredText`_ was chosen primarily as it supports the auto-creation of a table of contents with the '``.. contents::``' directive.
 Like many other markup languages, it also supports inline styling, tables, headings and literal blocks.
+
+In Jupyter Notebooks, unfortunately, only Markdown is supported, elsewhere RST is great.
+
 
 Localization
 ~~~~~~~~~~~~

@@ -10,14 +10,59 @@ Revision Record
 :version: @Version@
 :date: @Date@
 
+Do you already have it?
+-----------------------
+
+If you are on a server with it already installed, you can invoke it like so::
+
+    fractal% sr3 status
+    status: 
+    Component/Config                         State        Run  Miss   Exp Retry
+    ----------------                         -----        ---  ----   --- -----
+          total running configs:   0 ( processes: 0 missing: 0 stray: 0 )
+    fractal%
+
+It that works, then you don't need to install it. Assuming it isn't already
+installed, does the package need to be installed system-wide? or only for 
+one user?  For use by a single user, the python `<#PIP>`_ method should work,
+giving access to sr3 any all libraries needed for programmatic access.
+
+For operational use, administrative access may be needed for package installation,
+and integration with systemd. Regardless of how it is installed, some periodic
+processing (on linux usually known as *cron jobs*) may also need to be configured.
+
+
+
 Client Installation
 -------------------
 
-The package is built for python version 3.4 or higher. On systems where
+The package is built for python version 3.6 or higher. On systems where
 they are available, debian packages are recommended. These can be obtained from the 
 launchpad repository. If you cannot use debian packages, then consider pip packages 
 avialable from PyPI. In both cases, the other python packages (or dependencies) needed
 will be installed by the package manager automatically.
+
+PIP
+~~~
+
+On Windows or linux distributions where system packages are not 
+available, or other special cases, such as if using python in virtual env, where
+it is more practical to install the package using pip (python install package) 
+from `<http://pypi.python.org/>`_.
+
+It is straightforward to do that::
+
+  $ pip install metpx-sr3
+
+and to upgrade after the initial installation::
+
+  $ pip install metpx-sr3
+
+* To install server-wide on a linux server, prefix with *sudo*
+
+NOTE:: 
+
+  On many systems where both pythons 2 and 3 are installed, you may need to specify pip3 rather than pip.
 
 
 Ubuntu/Debian (apt/dpkg) **Recommended**
@@ -30,11 +75,12 @@ On Ubuntu 22.04 and derivatives of same::
   sudo apt-get install metpx-sr3  # main python package.
   sudo apt-get install metpx-sr3c # optional C client.
 
-Currently, only the debian packages include man pages.  The guides are only available in the source repository.
-For earlier ubuntu versions, install via pip is required because of missing dependencies
-in the python environment shipped with earlier operating systems.
+Currently, only the debian packages include man pages.  The guides are only 
+available in the source repository. For earlier ubuntu versions, install 
+via pip is required because of missing dependencies in the python environment 
+shipped with earlier operating systems.
 
-Redhat/Suse distros (rpm based)
+Redhat/Suse Distros (rpm based)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Python distutils on redhat package manager based distributions does not handle dependencies
@@ -63,28 +109,6 @@ Once the dependencies are in place, one can build an RPM file using ``setuptools
 This procedure installs only the python application (not the C one.)
 No man pages nor other documentation is installed either.
 
-
-PIP
-~~~
-
-On Windows or other linux distributions where system packages are not 
-available, the above procedures are not applicable. There are also special
-cases, such as if using python in virtual env, where it is more practical 
-to install the package using pip (python install package) from `<http://pypi.python.org/>`_.
-
-It is straightforward to do that::
-
-  $ pip install metpx-sr3
-
-and to upgrade after the initial installation::
-
-  $ pip install metpx-sr3
-
-* To install server-wide on a linux server, prefix with *sudo*
-
-NOTE:: 
-
-  On many systems where both pythons 2 and 3 are installed, you may need to specify pip3 rather than pip.
 
 System Startup and Shutdown
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

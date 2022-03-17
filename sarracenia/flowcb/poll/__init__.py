@@ -83,10 +83,61 @@ def fileid(self, id) -> int:
 class Poll(FlowCB):
 
     """
-      HTML Parsing begine
-      design thoughts:
-      perhaps a separate class?
-      want to override by sub-classing... easier if in main class
+      The Poll flow callback class implements the main logic for polling remote resources.
+      the *poll* routine returns a list of messages for new files to be filtered. 
+
+      when instantiated with options, the options honoured include:
+
+      * destination - the URL of the server to be polled.
+
+      * post_baseURL - parameter for messages to be returned. Also used to look
+        up credentials to help subscribers with retrieval.
+
+      * masks - These are the directories at the destination to poll.
+        derived from the accept/reject clauses, but filtering should happen later.
+        entire directories are listed at this point.
+
+      * timezone - interpret listings from an FTP server as being in the given timezone 
+        (as per `pytz <pypi.org/project/pytz>`_
+
+      * chmod - used to identify the minimum permissions to accept for a file to
+        be included in a polling result.
+
+      * integrity_method - parameter for how to build integrity checksum for messages.
+        as these are usually remote files, the default is typically "cod" (calculate on download)
+
+      * rename - parameter used to to put in messages built to specify the rename field contents.
+
+      * options are passed to sarracenia.Transfer classes for their use as well.
+
+
+      Poll uses sarracenia.transfer (ftp, sftp, https, etc... )classes to 
+      requests lists of files using those protocols using built-in logic.  
+
+      Internally, Poll normalizes the listings received by placing them into paramiko.SFTPAttributes
+      metadata records (similar to stat records) and builds a Sarracenia.Message from them.
+      The *poll* routine does one pass of this, returning a list of Sarracenia.Messages.
+
+      To customize: 
+
+      * one can add new sarracenia.transfer protocols, each implementing the *ls* entry point
+        to be compatible with this polling routine, ideally the entry point would return a
+        list of paramiko.SFTPAttributes for each file in a directory listing.
+        This can be used to implement polling of structured remote resources such as S3 or webdav.
+
+      * one can deal with different formats of HTTP pages by overriding the handle_data entry point,
+        as done in `nasa_mls_nrt.py <nasa_mls_nrt.py>`_ plugin 
+
+      * for traditional file servers, the listing format should be decypherable with the built-in processing.
+
+      * sftp file servers provide paramiko.SFTPAttributes naturally which are timezone agnostic.
+
+      * for some FTP servers, one may need to specify the *timezone* option to override the UTC default.
+
+      * If there are problems with date or line formats, one can sub-class poll, and override only the on_line
+        routine to deal with that.
+
+
     """ 
     def handle_starttag(self, tag, attrs):
         for attr in attrs:
@@ -99,6 +150,8 @@ class Poll(FlowCB):
            routine called from html.parser to deal with a single line.
            if the line is about a file, then create a new entry for it
            with a metadata available from SFTPAttributes.
+
+           this can be overridden by subclassing to deal with new web sites.
         """
 
         if self.myfname == None: return
@@ -399,7 +452,7 @@ class Poll(FlowCB):
     # False means, go to sleep and retry after sleep seconds
     # =============
 
-    def poll(self):
+    def poll(self) -> list :
 
         # General Attributes
 

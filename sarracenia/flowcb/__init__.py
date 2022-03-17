@@ -14,8 +14,7 @@ import sys
 
 entry_points = [
     'ack', 'do_poll', 'download', 'gather', 'after_accept', 'on_data', 'after_work',
-    'on_housekeeping', 'on_html_page', 'on_line', 
-    'on_report', 'on_start', 'on_stop', 'poll', 'post', 'send'
+    'on_housekeeping', 'on_report', 'on_start', 'on_stop', 'poll', 'post', 'send'
 ]
 
 schemed_entry_points = ['do_get', 'do_put']
@@ -26,15 +25,14 @@ logger = logging.getLogger(__name__)
 
 class FlowCB:
     """
-    1st draft of a v03 plugin method: flowCallback
-    
-    sample call:
+    Flow Callback is the main class for implementing plugin customization to flows.
+
+    sample activation in a configuration file:
     
     flowCallback sarracenia.flowcb.name.Name
     
     will instantiate an object of that type whose appropriately name methods
     will be called at the right time.
-    
     
     __init__ accepts options as an argument.
     
@@ -150,18 +148,6 @@ class FlowCB:
     def on_housekeeping(self) -> None::
 
          do periodic processing.
-
-    def on_html_page(self,page)::
-
-         Task: modify an html poll page. used in transfer/https.py to interpret weirdly 
-               formatted lists of files.
-         return True|False
-
-    def on_line(self,line) -> str::
-
-         used in FTP polls, because servers have different formats, modify to canonical use.
-
-         Task: return modified line.
 
     def on_start(self) -> None::
 

@@ -44,13 +44,14 @@ V2 to Sr3
 ---------
 
 *NOTICE*: Sr3 is a very deep refactor of Sarracenia. For more detail on the nature
-          of the changes, `go here <../Contribution/v03.html>`_ A summary is
-          is that v2 was an application written in python that had some plugin facilities,
-          where sr3 is a toolkit that naturally provides an API and is far more
-          natural to work with for python developers. Sr3 is built with less code, more 
-          maintainable code, and supports more features, more naturally.
+          of the changes, `go here <../Contribution/v03.html>`_ Briefly, where v2 
+          is an application written in python that had a small extension facility,
+          Sr3 is a toolkit that naturally provides an API and is far more
+          pythonic. Sr3 is built with less code, more maintainable code, and 
+          supports more features, and more naturally.
 
-*NOTICE*: log messages look completely different.
+*CHANGE*: log messages look completely different. Any log parsing will have to be reviewed.
+          New log format includes a prefix with process-id and the routine generating the message.
 
 *NOTICE*: When migrating from v2 to sr3, simple configurations will mostly "just work."
           but there cases relying on user built plugins will need a porting effort.
@@ -137,10 +138,6 @@ V2 to Sr3
             suppress_duplicates_basis  -> nodupe_basis
             topic_prefix  -> topicPrefix
     
-          
-*NOTICE*: log messages and output will be completely different.
-          New log format includes a prefix with process-id and the routine generating the message.
-
 **CHANGE**: default topic_prefix v02.post -> topicPrefix  v03
           may need to change configurations to override default to get
           compatible configurations.
@@ -218,7 +215,7 @@ V2 to Sr3
                },
            }
 
-*NOTICE*: for API users and plugin writers, the v2 plugin format replaced by 
+*NOTICE*: for API users and plugin writers, the v2 plugin format is entirely replaced by 
           the `Flow Callback <FlowCallbacks.html>`_ class. New plugin functionality 
           can mostly be implemented as plugins.
           
@@ -262,5 +259,5 @@ V2 to Sr3
 
 *NOTICE*: sr3 watch, with the *force_polling* option, is much less efficient 
           on sr3 than v2 for large directory trees (see issue #403 )
-
+          Ideally, one does not use *force_polling* at all.
 

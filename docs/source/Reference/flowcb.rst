@@ -11,6 +11,15 @@ with sr3.
 
 .. Contents::
 
+sarracenia.flowcb
+-----------------
+
+.. automodule:: sarracenia.flowcb
+   :show-inheritance:
+   :members:
+   :private-members:
+   :special-members:
+
 sarracenia.flowcb.accept
 ------------------------
 
