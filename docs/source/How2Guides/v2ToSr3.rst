@@ -3,34 +3,36 @@
 Porting V2 Plugins to Sr3
 =========================
 
-This is a guide to porting plugins from Sarracenia version 2.X (metpx-sarracenia) to Sarracenia version 3.x (metpx-sr3)
-If you are new to Sarracenia, and have no experience or need to look at v2 plugins, don't read this. it will just
-confuse you. This guide is for those who need to take existing v2 plugins and port them to v3.
-You are better off getting a fresh look by looking at the jupyter notebook examples::
+.. Contents::
 
-    https://github.com/MetPX/sarracenia/tree/v03_wip/jupyter
+This is a guide to porting plugins from Sarracenia version 2.X (metpx-sarracenia) to 
+Sarracenia version 3.x (metpx-sr3) If you are new to Sarracenia, and have no experience 
+or need to look at v2 plugins, don't read this. it will just confuse you. This guide is 
+for those who need to take existing v2 plugins and port them to Sr3.  You are better off 
+getting a fresh look by looking at the `jupyter notebook examples<../Tutorials>`_
 
 Which provide an introduction to v3 without confusing references to v2.  In fact, Those notebooks
-are probably a good pre-requisite for everyone, to understand how v3 plugins work, before trying
+are probably a good pre-requisite for everyone, to understand how Sr3 plugins work, before trying
 to port v2 ones. 
 
-Sample v3 plugin::
+`Sample Sr3 plugin <../Reference/flowcb.html#module-sarracenia.flowcb.log>`_
 
-    https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/log.py
+Generally speaking v2 plugins were bolted onto existing code to allow some modification 
+of behaviour. First generation V2 plugins had only single routines declared (e.g. *on_message*), 
+while second generation ones used a whole classes (e.g. *plugin*) were declared, but 
+still in a stilted way.
 
-Generally speaking v2 plugins were bolted onto existing code to allow some modification of behaviour.
-v2 plugins when through a first generation, when only single routines were declared (e.g. *on_message*), 
-and a second generation, when whole classes (e.g. *plugin*) were declared, but still in a stilted way.
+Sr3 plugins are core design elements, composed together to implement part of 
+Sarracenia itself. V3 plugins should be easier for Python programmers to debug 
+and implement, and are strictly more flexible and powerful than the v2 mechanism.
 
-Sr3 plugins are core design elements, composed together to implement part of Sarracenia itself. V3 plugins 
-should be easier for Python programmers to debug and implement, and are strictly more flexible and powerful
-than the v2 mechanism.
-
- * v3 uses standard python syntax, not v2's strange things ... e.g. *self.plugins*, *parent.logger*, Why doesn't *import* work?
+ * v3 uses standard python syntax, not v2's strange things ... e.g. *self.plugins*, 
+   *parent.logger*, Why doesn't *import* work?
  * standard python import; Syntax errors are detected and reported *the normal way*
  * v3 classes are designed to be usable outside the CLI itself (see jupyter notebook examples)
    callable by application programmers in their own code, like any other python library.
- * v3 classes can be sub-classed to add core functionality, like new message or file transport protocols.
+ * v3 classes can be sub-classed to add core functionality, like new message or file 
+   transport protocols.
  
 There are also a couple walkthrough videos on Youtube showing simple v2 -> v3 ports:
  - `Sender (10 min) <https://www.youtube.com/watch?v=rUazjoGzPac>`_
@@ -65,8 +67,8 @@ a tool for interactive posting.
 What Will Work Without Change
 -----------------------------
 
-The first step in porting a configuration subscribe/X to v3, is just to copy the configuration file from
-~/.config/sarra to the corresponding location in ~/.config/sr3 and try::
+The first step in porting a configuration subscribe/X to v3, is just to copy the 
+configuration file from ~/.config/sarra to the corresponding location in ~/.config/sr3 and try::
 
    sr3 show subscribe/X
 
@@ -80,12 +82,14 @@ Examples of things that should work:
 
   * accept_scp_threshold -> accel_threshold
   * heartbeat -> housekeeping
-  * chmod_log -> default_log_mode
+  * chmod_log -> permLog
   * loglevel -> logLevel
   * post_base_url -> post_baseUrl
-  * post_rate_limit -> message_rate_max
+  * post_rate_limit -> messageRateMax
   * cache, suppress_duplicates ->  nodupe_ttl
   * topic_prefix -> topicPrefix 
+
+  For the full list, look at the `Release Notes <UPGRADING.html>`_ 
 
   The topic_prefix in v2 is 'v02.post'  in v3, the default is 'v03'. If topic_prefix is omitted 
   you will need to add the line *topicPrefix v02.post* to get the same behaviour as v2. Could 
