@@ -52,7 +52,6 @@ class Speedo(FlowCB):
         self.o.msg_speedo_bytecount = 0
 
     def after_accept(self, worklist):
-        new_incoming = []
         for message in worklist.incoming:
             msgtime = timestr2flt(message['pubTime'])
             now = nowflt()
@@ -64,7 +63,6 @@ class Speedo(FlowCB):
 
             #not time to report yet.
             if self.o.msgSpeedoInterval > now - self.o.msg_speedo_last:
-                new_incoming.append(message)
                 continue
 
             lag = now - msgtime
@@ -85,6 +83,3 @@ class Speedo(FlowCB):
             self.o.msg_speedo_last = now
             self.o.msg_speedo_msgcount = 0
             self.o.msg_speedo_bytecount = 0
-            new_incoming.append(message)
-            #TODO not sure if we should be rejecting mesaages anywhere
-        worklist.incoming = new_incoming
