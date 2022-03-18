@@ -10,3 +10,4 @@ Contributing to Sarracenia
    Documentation
    man_page_template.rst
    v03
+   deltas

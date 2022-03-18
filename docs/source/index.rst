@@ -3,7 +3,8 @@ Subscribe and Replicate 3
 =========================
 
 Subscribe and Replicate 3 (Sr3) is version 3 of Sarracenia:
-a *real-time* pub/sub data sharing management toolkit.
+a *real-time* pub/sub data sharing management toolkit for
+command line, python, and C users.
 
 Home page: https://metpx.github.io/sarracenia
 
@@ -47,7 +48,7 @@ Caveats:
    :maxdepth: 1
    :caption: Contents:
 
-   Explanation/overview.rst
+   Explanation/Overview.rst
 
    Tutorials/index
    How2Guides/index

@@ -475,7 +475,7 @@ Some examples:
   Value of 0 indicates caching is disabled.
 
 *self.o.inflight*
-  The current setting of *inflight* (see `Delivery Completion <../Reference/sr3.1.html#Delivery%20Completion%20(inflight)>`_
+  The current setting of *inflight* (see `Delivery Completion <FileCompletion.rst>`_
 
 *self.o.overwrite*
   setting which controls whether to files already downloaded should be overwritten unconditionally.
@@ -612,7 +612,7 @@ subclass specific entry points usually implemented in sub-classes:
 
 +-------------------+----------------------------------------------------+
 |                   | in sr_poll if you only want to change how the      |
-| on_html_page      | downloaded html URL is parsed, override this       |
+| handle_data       | downloaded html URL is parsed, override this       |
 |                   |                                                    |
 |                   | action:                                            |
 |                   | parse parent.entries to make self.entries          |

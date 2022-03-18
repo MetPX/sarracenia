@@ -5,8 +5,11 @@ Explanation
    :maxdepth: 2
    :caption: Contents:
 
-   overview
+   Overview
    Concepts
+   CommandLineGuide.rst
+   DetectFileHasChanged.rst
+   FileCompletion.rst
    DeploymentConsiderations
    SarraPluginDev
    Glossary
