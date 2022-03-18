@@ -407,6 +407,7 @@ class Flow:
                     self.ack(self.worklist.failed)
 
                     self.post()
+                    self._runCallbacksWorklist('after_post')
 
                     self.report()
 
