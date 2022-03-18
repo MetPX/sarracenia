@@ -9,6 +9,10 @@ default_options = {'acceptUnmatched': True, 'nodupe_ttl': 0}
 
 
 class Shovel(Flow):
+    """
+       * subscribe to some messages.
+       * post them somewhere else.
+    """
     def __init__(self, options):
 
         super().__init__(options)

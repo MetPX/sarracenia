@@ -9,6 +9,11 @@ default_options = {'acceptUnmatched': True, 'download': True}
 
 
 class Sarra(Flow):
+    """
+       * download files from a remote server to the local one
+       * modify the messages so they refer to the downloaded files.
+       * re-post them to another exchange for the next other subscribers.
+    """
     def __init__(self, options):
 
         super().__init__(options)

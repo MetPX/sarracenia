@@ -450,6 +450,10 @@ def config_path(subdir, config, mandatory=True, ctype='conf'):
 
 
 class Config:
+    """
+       The option parser to produce a single configuration.
+
+    """
 
     port_required = [ 'on_line', 'on_html_page' ]
 
@@ -522,7 +526,10 @@ class Config:
     }
     credentials = None
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> 'Configuration':
+        """
+          instantiate an empty Configuration
+        """
         self.bindings = []
         self.__admin = None
         self.__broker = None
@@ -593,7 +600,7 @@ class Config:
         self.users = False
         self.vip = None
 
-    def __deepcopy__(self, memo):
+    def __deepcopy__(self, memo) -> 'Configuration':
         """
             code for this from here: https://stackoverflow.com/questions/1500718/how-to-override-the-copy-deepcopy-operations-for-a-python-object
             Needed for python < 3.7ish? (ubuntu 18) found this bug: https://bugs.python.org/issue10076
@@ -610,7 +617,13 @@ class Config:
                 setattr(result, k, copy.deepcopy(v, memo))
         return result
 
-    def _validate_urlstr(self, urlstr):
+    def _validate_urlstr(self, urlstr) -> tuple :
+        """
+           returns a tuple ( bool, expanded_url ) 
+           the bool is whether the expansion worked, and the expanded_url is one with
+           the added necessary authentication details from sarracenia.Credentials.
+
+        """
         # check url and add credentials if needed from credential file
         ok, cred_details = Config.credentials.get(urlstr)
         if cred_details is None:
@@ -622,6 +635,9 @@ class Config:
         return True, cred_details
 
     def applyComponentDefaults( self, component ):
+        """
+          overlay defaults options for the given component to the given configuration.
+        """
         if component in ['post']:
             self.override(sarracenia.flow.post.default_options)
         elif component in ['poll']:
@@ -905,6 +921,10 @@ class Config:
                 self._override_field(k, self._varsub(getattr(oth, k)))
 
     def _resolve_exchange(self):
+        """
+           based on the given configuration, fill in with defaults or guesses.
+           sets self.exchange.
+        """
         if not hasattr(self, 'exchange') or self.exchange is None:
             #if hasattr(self, 'post_broker') and self.post_broker is not None and self.post_broker.url is not None:
             #    self.exchange = 'xs_%s' % self.post_broker.url.username
@@ -1023,7 +1043,7 @@ class Config:
         self.integrity_method = 'invalid'
 
     def parse_file(self, cfg):
-        """ add settings in file to self
+        """ add settings from a given config file to self 
        """
         lineno=0
         for l in open(cfg, "r").readlines():

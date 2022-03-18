@@ -53,6 +53,18 @@ default_options = {
 
 
 class Poll(Flow):
+    """
+       repeatedly query a remote (non-sarracenia) server to list the files there.
+       post messages (to post_broker) for every new file discovered there.
+
+       the sarracenia.flowcb.poll class is used to implement the remote querying,
+       and is highly customizable to that effect.
+
+       if the vip option is set, 
+       * subscribe to the same settings that are being posted to.
+       * consume all the messages posted, keeping new file duplicate cache updated.
+          
+    """
     def __init__(self, options):
 
         super().__init__(options)

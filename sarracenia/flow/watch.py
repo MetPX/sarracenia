@@ -27,6 +27,10 @@ default_options = {
 
 
 class Watch(Flow):
+    """
+      * create messages for files that appear in a directory.
+
+    """
     def __init__(self, options):
 
         super().__init__(options)

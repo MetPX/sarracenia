@@ -9,6 +9,10 @@ default_options = {'acceptUnmatched': False, 'download': True, 'mirror': False}
 
 
 class Subscribe(Flow):
+    """
+       * subscribe to messages about files.
+       * download the corresponding files.
+    """
     def __init__(self, options):
 
         super().__init__(options)

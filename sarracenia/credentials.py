@@ -31,16 +31,6 @@
 #
 
 #
-# in the credential file, one description per line
-# url option1=value1, option2=value2
-#
-# ex:
-#
-# sftp://alice@herhost/ ssh_keyfile=/home/myself/mykeys/.ssh.id_dsa
-# ftp://georges:Gpass@hishost/  passive = True, binary = True
-#
-# (passive true and binary true are credentials default and may be omitted)
-#
 
 import logging
 
@@ -54,18 +44,28 @@ import urllib, urllib.parse
 import sys
 
 class Credential:
-    """An object that holds information about a credential.
+    """An object that holds information about a credential, read from a 
 
-    Attributes:
-        url: urllib.parse.ParseResult object with URL, password, etc.
-        ssh_keyfile: path to SSH key file for SFTP
-        passive: use passive FTP mode
-        binary: use binary FTP mode
-        tls: use FTPS with TLS
-        prot_p: use a secure data connection for TLS
-        bearer_token: bearer token for HTTP authentication
-        login_method: force a specific login method for AMQP (PLAIN, AMQPLAIN,
-        EXTERNAL or GSSAPI)
+       credential file, which has one credential per line, format::
+
+             url option1=value1, option2=value2
+
+       examples::
+
+         sftp://alice@herhost/ ssh_keyfile=/home/myself/mykeys/.ssh.id_dsa
+         ftp://georges:Gpass@hishost/  passive = True, binary = True
+
+        (passive true and binary true are credentials default and may be omitted)
+        Attributes:
+        - url: urllib.parse.ParseResult object with URL, password, etc.
+        - ssh_keyfile: path to SSH key file for SFTP
+        - passive: use passive FTP mode
+        - binary: use binary FTP mode
+        - tls: use FTPS with TLS
+        - prot_p: use a secure data connection for TLS
+        - bearer_token: bearer token for HTTP authentication
+        - login_method: force a specific login method for AMQP (PLAIN, AMQPLAIN,
+          EXTERNAL or GSSAPI)
 
     """
     def __init__(self, urlstr=None):

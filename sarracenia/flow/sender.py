@@ -10,6 +10,12 @@ default_options = {'acceptUnmatched': True, 'download': True}
 
 
 class Sender(Flow):
+    """
+       * subscribe to a stream of messages about local files.
+       * send the files to a remote server.
+       * modify the messages to refer to the remote file copies.
+       * post the messages for subscribers of the remote server.
+    """
     def __init__(self, options):
 
         super().__init__(options)

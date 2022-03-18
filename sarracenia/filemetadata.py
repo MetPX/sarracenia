@@ -135,18 +135,30 @@ class FileMetadata:
    """
 
     def list(self):
+        """
+           return the list of defined extended attributes. (keys to the dict.)
+        """
         return self.x.keys()
 
-    def get(self, name):
+    def get(self, name) -> str:
+        """
+           return the value of the named extended attribute.
+        """
         if name in self.x.keys():
             return self.x[name]
         return None
 
     def set(self, name, value):
+        """
+           set the name & value pair to the extended attributes for the file.
+        """
         self.dirty = True
         self.x[name] = value
 
     def persist(self):
+        """
+           write the in-memory extended attributes to disk.
+        """
 
         global supports_alternate_data_streams
         global supports_extended_attributes

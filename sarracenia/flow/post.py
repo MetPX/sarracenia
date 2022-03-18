@@ -27,6 +27,9 @@ default_options = {
 #'sumflg': 'sha512',
 
 class Post(Flow):
+    """
+       post messages about local files. 
+    """
     def __init__(self, options):
 
         super().__init__(options)

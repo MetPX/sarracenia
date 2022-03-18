@@ -9,6 +9,11 @@ default_options = {'acceptUnmatched': True, 'nodupe_ttl': 300}
 
 
 class Winnow(Flow):
+    """
+       * subscribe to a stream of messages.
+       * suppress duplicates,
+       * post the thinned out stream somewhere else.
+    """
     def __init__(self, options):
 
         super().__init__(options)
