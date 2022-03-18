@@ -644,6 +644,7 @@ so below is the things leftover after refactor:
 * figure out an AsyncAPI implementation for subscription at least. #401
 
 * get partitioned file transfers working again. #396
+  `<on_part_assembly.rst>`_
 
 * convert existing poll to poll0 ? old poll. #394
 
@@ -710,7 +711,7 @@ Probably need to be settled before having anyone else dive in.
   where failed represents a permanent failure. and the other represents
   to be retried later.
 
-* `MQTT issues <../../doc/mqtt_issues.rst>`_
+* `MQTT issues <mqtt_issues.rst>`_
 
 
 FIXME/Deferred

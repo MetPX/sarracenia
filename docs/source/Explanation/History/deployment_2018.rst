@@ -82,7 +82,7 @@ The slide below corresponds to deployed daily data flows in support of
 Environment Canada, mostly for operational weather forecasting, in place since 
 January 2018.
 
-.. image:: E-services_data-volume_pas.png
+.. image:: deployment_2018/E-services_data-volume_pas.png
 
 Sarracenia is being used operationally to acquire about four terabytes of 
 observations from automated weather observing systems, weather RADARS which

@@ -1,8 +1,10 @@
 
+
 Status: Approved-Draft2-20150825
 
-Description of the message protocol / format
---------------------------------------------
+================================================
+Description of the message v02 protocol / format
+================================================
 
 This file was used during the design phase, but post-implementation,
 it is replaced by the sr_post(7) manual page.

@@ -1,3 +1,6 @@
+==================
+Message v01 Format
+==================
 
 Status: Approved-Draft1-20150805
 
@@ -7,7 +10,7 @@ This file documents final conclusions/proposals, reasoning/debates goes elsewher
 
 Messages posted include a ´topic´ and a ´body.´
 
-The message topic breaks down as follows:
+The message topic breaks down as follows::
 
 	<version>.<type>.[varies by version].<dir>.<dir>.<dir>...
 
@@ -35,26 +38,24 @@ topic: <version>.<type>.<src>(.<dir>.)*.<filename>
 content: 1st line:
 <date stamp> <blocksize in bytes> <filesize in blocks> <block#> <remainder> <flags> <md5sum> <flowid> <srcpath> <relpath>
 
-breaks down to:
+breaks down to::
 
-<date stamp>: date
+  <date stamp>: date
 	YYYYMMDDHHMMSS.<decimal> 
 
-<blocksize in bytes>: bsz
+  <blocksize in bytes>: bsz
         the number of bytes in a block.
 	checksums are calculated per block, so one post 
-	
 
-<filesize in blocks>: fzb
+  <filesize in blocks>: fzb
 	the integer total number of blocks in the file
 	FIXME: (including the last block or not?)
 	if set to 1.
-
 	
-<block#>: bno
+  <block#>: bno
   	0 origin, the block number covered by this posting.
 
-<remainder>: brem
+  <remainder>: brem
 	normally 0, on the last block, it remaining blocks in the file 
         to transfer.
 
@@ -62,10 +63,8 @@ breaks down to:
 	       then bsz=fsz in bytes in bytes. 
 	       -- entire files replaced.
 	       -- this is the same as rsync's --whole-file mode.
-		
 
-
-<flags>:a comma-separated list of option letters, some with arguments after ´=´.
+  <flags>:a comma-separated list of option letters, some with arguments after ´=´.
 
 	checksum setting contained in ´flags´ field, but is not the whole 
 	thing.  Other letters/digits could be there to designate other things.
@@ -96,19 +95,20 @@ breaks down to:
 	   - file segment strategy can be overridden by client. just a suggestion.
 	   - analogous to rsync options: --inplace, --partial, 
 
-<flowid>
+  <flowid>
 	an arbitrary tag used for tracking of data through the network.
 
-The two paths are subtly inter-related.  Neither can be interpreted on their own.  One must consider both path components.
-------
+  The two paths are subtly inter-related.  Neither can be interpreted on their own.  
+  One must consider both path components.
+  ------
 
 	what if there are spaces in the file name?
 	it is url-encoded, so a space should turn into: %20
 
-------
+  ------
 
 
-<srcpath> -- the base URL used to retrieve the data.
+  <srcpath> -- the base URL used to retrieve the data.
 
 	options: Complete URL:
 
@@ -126,7 +126,7 @@ The two paths are subtly inter-related.  Neither can be interpreted on their own
         considered a prefix for the variable part of the retrieval URL.
 
 
-<relpath> -- The relative path from the current directory in which to 
+  <relpath> -- The relative path from the current directory in which to 
   	place the file.
 	
 	Two cases based on the end being a path separator or not.
@@ -157,10 +157,10 @@ FIXME: verify the following:
 	fsz = Size of a file in bytes = ( bsz * (fsb-1) ) + brem ?
 
 
-example 1:
+example 1::
 
-v01.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
-201506011357.345 457 1 0 0 d <md5sum> exp13 sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif NRDPS/GIF/ 
+  v01.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
+  201506011357.345 457 1 0 0 d <md5sum> exp13 sftp://afsiext@cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif NRDPS/GIF/ 
 
 	v01 - version of protocol
 	post - indicates the type of message 
@@ -188,12 +188,12 @@ v01.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
 		-- may be modified by validation process.
 
 
-example 2:
+example 2::
 
-v01.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
-201506011357.345 457 1 0 0 d <md5sum> exp13 http://afsiext@cmcdataserver/data/  NRDPS/GIF/NRDPS_HiRes_000.gif
+  v01.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
+  201506011357.345 457 1 0 0 d <md5sum> exp13 http://afsiext@cmcdataserver/data/  NRDPS/GIF/NRDPS_HiRes_000.gif
 
-in this case, the
+  in this case, the
 	pull from: 
 		http://afsiext@cmcdataserver/data/NRPDS/GIF/NRDPS_HiRes_000.gif
 
@@ -207,9 +207,8 @@ in this case, the
 		-- may be modified by validation process.
 
 
-----------------------------------------------------------------------
 Log messages
----------------------------------------------------------------------
+------------
 
 
 Log message contains:
@@ -227,9 +226,8 @@ start is as per post... just add fields after:
 	<date> blksz blckcnt remainder blocknum flags <flow> baseurl relativeurl <status> <host> <client> <duration> 
 
 
-----------------------------------------------------------------------
 CFG messages
----------------------------------------------------------------------
+------------
 
 just a place holder.
 
