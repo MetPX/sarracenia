@@ -8,7 +8,6 @@
 #	make -C doc clean
 # 	dh_clean
 override_dh_auto_clean:
-	make -C doc clean
 	dh_auto_clean
 
 #build:
@@ -18,7 +17,6 @@ override_dh_auto_clean:
 #	dh_auto_build -O--buildsystem=pybuild 
 #	dh_installinit --name=sr  --no-start
 override_dh_auto_build:
-	make -C doc man
 	dh_auto_build
 
 override_dh_installinit:
