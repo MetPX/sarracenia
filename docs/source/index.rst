@@ -2,7 +2,8 @@
 Subscribe and Replicate 3
 =========================
 
-Subscribe and Replicate 3 (Sr3) is version 3 of the Sarracenia toolkit.
+Subscribe and Replicate 3 (Sr3) is version 3 of Sarracenia:
+a *real-time* pub/sub data sharing management toolkit.
 
 Home page: https://metpx.github.io/sarracenia
 
@@ -33,8 +34,12 @@ Source Repo: https://github.com/MetPX/sarracenia
     :target: https://github.com/MetPX/sarracenia/actions/workflows/static_flow.yml
 
 
-Caveat: 
-   This new web-site is for version 3 currently under development in the v03_wip branch
+Caveats: 
+
+* meteorological *real-time* (order of seconds to minutes.) not electronic real-time
+  (order of microseconds to milliseconds)
+
+*  This new web-site is for version 3 currently under development in the v03_wip branch
    Users of stable version 2 should go https://github.com/MetPX/Sarracenia instead.
    While the code for version 3 is stabilizing nicely, the docs are not completely ready.
 

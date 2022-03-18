@@ -165,7 +165,7 @@ national hub is transparent for RADAR data in that the volume scans will be
 downloaded from the other hub, and the other URP processor will produce the
 products needed.
 
-.. image:: RADAR_DI_LogicFlow_Current.gif 
+.. image:: deployment_2018/RADAR_DI_LogicFlow_Current.gif
     :scale: 20%
 
 Each site has multiple Ninjo servers. We use http-based file servers, or web accessible folders to serve data. 

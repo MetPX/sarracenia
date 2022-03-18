@@ -95,3 +95,12 @@ Fewer Klocs, Better klocs
 | 2020s | Sarracenia v3 (sr3)        |   15kloc   | AMQP, MQTT, HTTP, SFTP, API (pub/sub and push)    |
 +-------+----------------------------+------------+---------------------------------------------------+
 
+
+Deployments/Use Cases
+---------------------
+
+Deployment status in 2015: `Sarracenia in 10 Minutes Video (5:26 in) <https://www.youtube.com/watch?v=G47DRwzwckk&t=326s>`_
+
+Deployment status in 2018: `Deployments as of January 2018 <deployment_2018.html>`_
+
+

@@ -2,7 +2,7 @@
 Overview
 ========
 
-**MetPX-Sarracenia is a publication/subscription management toolkit supporting the publication of real-time data.**
+**MetPX-Sarracenia is a publication/subscription management toolkit for publication of real-time data.**
 
 Sarracenia adds a message queueing protocol layer of file availability notifications 
 to file and web servers to drive workflows that transfer and transform data continuously 
@@ -19,6 +19,7 @@ in the face of failures, load balancing among steps in a workflow, and takes car
 modes, so application developers do not need to. Hundreds of such flows can be composed together 
 into large data pumps and operated using common methods familiar to Linux System Administrators.
 
+Design Video from 2015: `Sarracenia in 10 Minutes Video <https://www.youtube.com/watch?v=G47DRwzwckk>`_
 
 Longer Overview
 ---------------
@@ -121,11 +122,6 @@ and network usage without explicit user intervention. As intervening pumps
 do not store and forward entire files, the maximum file size which can traverse
 the network is maximized.
 
-
-For more information about Sarra, view the
-`Sarracenia in 10 Minutes Video <https://www.youtube.com/watch?v=G47DRwzwckk>`_
-or proceed to the detailed `documentation <../Reference/sr3.1.rst#documentation>`_
-
 Implementations
 ---------------
 
@@ -146,13 +142,6 @@ Sarracenia has multiple implementations:
 
 More implementations are welcome.
 
-Deployments/Use Cases
----------------------
-
-Deployment status in 2015: `Sarracenia in 10 Minutes Video (5:26 in) <https://www.youtube.com/watch?v=G47DRwzwckk&t=326s>`_
-
-Deployment status in 2018: `Deployments as of January 2018 <../../doc/deployment_2018.rst>`_
-
 
 Why Not Just Use Rsync?
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -160,7 +149,7 @@ Why Not Just Use Rsync?
 There are a number of tree replication tools that are widely used, why invent another?
 `RSync <https://rsync.samba.org/>`_, for example is a fabulous tool, and we 
 recommend it highly for many use cases. But there are times when Sarracenia can
-go 72 times faster than rsync: Case Study: `HPC Mirroring Use Case <hpc_mirroring_use_case.rst>`_
+go 72 times faster than rsync: Case Study: `HPC Mirroring Use Case <History/hpc_mirroring_use_case.html>`_
 
 Rsync and other tools are comparison based (dealing with a single Source and Destination). Sarracenia, while it does 
 not require or use multi-casting, is oriented towards delivery to multiple receivers, particularly when the source
