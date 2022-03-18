@@ -4,9 +4,9 @@
 --------------------------------------------------
 
 
-DRAFT: working document, subject to change.
-Original `here: <https://github.com/MetPX/sarracenia/blob/master/doc/mesh_gts.rst>`_
-( https://github.com/MetPX/sarracenia/blob/master/doc/mesh_gts.rst )
+Originally part of a demonstration to the WMO committee on message queueing protocols.
+While this proposal was not retained at that time, it has served as the basis
+for much discussion since.
 
 .. contents::
 
@@ -68,7 +68,7 @@ and collaboratively determine implementation details.
 GTS was Designed Long Ago
 -------------------------
 
-.. image:: gtsstructureL.png
+.. image:: mesh_gts/gtsstructureL.png
    :align: center
 
 The World Meteorological Organization (WMO) Information Service (WIS)'s Global
@@ -105,7 +105,7 @@ unnecessarily.
 GTS is Limited & Inflexible
 ---------------------------
 
-.. image:: GTS_Routing.jpg
+.. image:: mesh_gts/GTS_Routing.jpg
    :align: center
 
 
@@ -150,7 +150,7 @@ WIS Part 1 was in service and DAR was available, which at first blush appears
 much easier and friendlier, why didn't everyone just use DAR to replace the
 GTS? 
 
-.. image:: dar.png
+.. image:: mesh_gts/dar.png
    :align: center
 
 The WIS architecture tends to concentrate load at the GISCS, whether they want it
@@ -315,7 +315,7 @@ notifications over AMQP. That application neither requires, nor has,
 any WMO-specific features, and can be used for real-time data replication
 in general.
 
-.. image:: A2B_message.png
+.. image:: mesh_gts/A2B_message.png
    :align: center
 
 A Sarracenia notification contains a Uniform Resource Location (URL) informing 
@@ -524,7 +524,7 @@ node feeds.
 Simple/Scalable Peer Configurations for Nations
 -----------------------------------------------
 
-.. image:: WMO_mesh.png
+.. image:: mesh_gts/WMO_mesh.png
    :align: center
 
 Assume a mesh of national nodes with arbitrary connectivity among them.
@@ -580,7 +580,7 @@ resort to WMO specific standards.
 Using An Open Reference Stack
 ------------------------------
 
-.. image:: A2B_oldtech.png
+.. image:: mesh_gts/A2B_oldtech.png
    :align: center
 
 A sample national mesh node (Linux/UNIX most likely) configuration would 

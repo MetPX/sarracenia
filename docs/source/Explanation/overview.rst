@@ -146,22 +146,6 @@ Sarracenia has multiple implementations:
 
 More implementations are welcome.
 
-Downloading Sarracenia
-----------------------
-
-Steps for downloading the latest version of Sarracenia are available on our `downloads page <../Tutorials/Install.rst>`_ .
-
-Getting The Source Code
------------------------
-
-The source code is available from our `git repository <https://github.com/MetPX/sarracenia>`_ .
-
-Documentation
--------------
-
-The documentation for Sarracenia can be found on our `documentation <../Reference/sr3.1.rst#documentation>`_ .
-
-
 Deployments/Use Cases
 ---------------------
 
@@ -169,15 +153,6 @@ Deployment status in 2015: `Sarracenia in 10 Minutes Video (5:26 in) <https://ww
 
 Deployment status in 2018: `Deployments as of January 2018 <../../doc/deployment_2018.rst>`_
 
-Mailing Lists
--------------
-
-* `metpx-devel <http://lists.sourceforge.net/lists/listinfo/metpx-devel>`_  : Discussions about development. 
-* `metpx-commit <http://lists.sourceforge.net/lists/listinfo/metpx-commit>`_ : Shows logs of commits to the repository
-
-
-Why?
-----
 
 Why Not Just Use Rsync?
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -238,108 +213,6 @@ provided by SFTP and HTTP servers, but not FTP. So we cannot support file
 partitioning on FTP. So while FTP sort-of-works, it is not now, nor ever will
 be, fully supported.
 
-
-WMO
----
-
-The World Meteorological Organization, is a part of the United Nations that has the weather and environmental
-monitoring, prediction, and alerting services of each country as members. For many decades, there has
-been a real-time exchange of weather data between countries, often even in times of war.  The standards
-that cover these exchanges are:
-
-- Manual on the Global Telecommunications´ System: WMO Manual 386. The standard reference for this domain. (a likely stale copy is  `here <WMO-386.pdf>`_.) Try https://www.wmo.int for the latest version.
-
-Usually these links are referred to collectively as *the GTS*.  The standards are very old, and a modernization
-process has been ongoing for the last decade or two. Some current work on replacing the GTS is here:
-
-- `WMO Task Team on message queueing protocols <https://github.com/wmo-im/GTStoWIS2>`_
-
-The discussions around this topic are important drivers for Sarracenia.
-
-
-AMQP
-~~~~
-
-AMQP is the Advanced Message Queuing Protocol, which emerged from the financial trading industry and has gradually
-matured. Implementations first appeared in 2007, and there are now several open source ones. AMQP implementations
-are not JMS plumbing. JMS standardizes the API programmers use, but not the on-the-wire protocol. So 
-typically, one cannot exchange messages between people using different JMS providers. AMQP standardizes 
-for interoperability, and functions effectively as an interoperability shim for JMS, without being 
-limited to Java. AMQP is language neutral, and message neutral. There are many deployments using 
-Python, C++, and Ruby. One could adapt WMO-GTS protocols very easily to function over AMQP. JMS 
-providers are very Java oriented.
-
-
-* `www.amqp.org <http://www.amqp.org>`_ - Defining AMQP.
-* `www.openamq.org <http://www.openamq.org>`_ - Original GPL implementation from JPMorganChase
-* `www.rabbitmq.com <http://www.rabbitmq.com>`_ - Another free implementation. The one we use and are happy with.
-* `Apache Qpid <http://cwiki.apache.org/qpid>`_ - Yet another free implementation.
-* `Apache ActiveMQ <http://activemq.apache.org/>`_ - This is really a JMS provider with a bridge for AMQP. They prefer their own openwire protocol.
-
-Sarracenia relies heavily on the use of brokers and topic based exchanges, which were prominent in AMQP standards efforts prior
-to version 1.0, at which point they were removed. It is hoped that these concepts will be re-introduced at some point. Until
-that time, the application will rely on pre-1.0 standard message brokers, such as rabbitmq.
-
-MQTT
-----
-
-The Message Queue Telemetry Transport (MQTT) version 5 is a second Message Queueing protocol with all the features
-necessary to support sarracenia's data exchange patterns.
-
-
-* `mqtt.org <https://mqtt.org>`_
-* `mosquitto.org <https://mosquitto.org>`_
-* `EMQX.io <emqx.io>`_
-
-
-
-
-History/Context
----------------
-
-**MetPX-Sarracenia** as a part of the Meteorological Product Exchange Project, originated in Environment Canada,
-but now run by Shared Services Canada on their behalf. The project started in 2004, with the goal of providing
-a free stack that implements World Meteorological Organization standard real-time data exchange, and also
-adjacent needs.  `Sundew <https://github.com/MetPX/Sundew>`_ was the first generation WMO 386 (GTS) switch.
-The switch also needed compatibility with existing internal transfer mechanisms based heavily on FTP.
-It worked, but the GTS itself is obsolete in many deep ways, and work started in 2009 extending Sundew
-to leverage new technologies, such as message queueing protocols, starting in 2008.
-Versions of Sundew are generally labelled < 1.0
-
-We eventually ran into the limits of this extension approach, and in 2015 we started `Sarracenia <https://github.com/MetPX/Sarracenia>`_
-as a ground-up second generation replacement, unburdened by strict legacy GTS compatibility.
-Sarracenia (version 2) was initially a prototype, and many changes of many kinds occurred during it's lifetime.
-It is still (in 2022) the only version operationally deployed. It went through three changes in operational
-message format (exp, v00, and v02.) It supports hundreds of thousands file transfers per hour 24/7
-in Canada.
-
-Where Sundew supports a wide variety of file formats, protocols, and conventions
-specific to the real-time meteorology, Sarracenia takes a step further away from
-specific applications and is a ruthlessly generic tree replication engine, which
-should allow it to be used in other domains. The initial prototype client, dd_subscribe,
-in use since 2013, was replaced in 2016 by the full blown Sarracenia package,
-with all components necessary for production as well as consumption of file trees.
-
-Sarracenia is expected to be a far simpler application than sundew from every
-point of view: Operator, Developer, Analyst, Data Sources, Data Consumers.
-Sarracenia imposes a single interface mechanism, but that mechanism is
-completely portable and generic. It should run without issue on any modern
-platform (Linux, Windows, Mac).
-Sarracenia v2 sufferred from internal clutter and complexity resulting from it's long evolution, and so
-in 2020, the sr3 (version 3) re-factor began. Sr3 is about 30% less code that v2, and offers a much improved API,
-and supports additional message protocols, rather than just rabbitmq.
-
-+-------+----------------------------+------------+---------------------------------------------------+
-| Era   | Application                | Code size  | Features                                          |
-+-------+----------------------------+------------+---------------------------------------------------+
-| 1980s | Tandem, PDS (domestic GTS) |  500kloc   | X.25, WMO Socket, AM Socket, FTP (push only)      |
-+-------+----------------------------+------------+---------------------------------------------------+
-| 2000s | Sundew                     |   30kloc   | WMO Socket/TCP, FTP, SFTP (push only)             |
-+-------+----------------------------+------------+---------------------------------------------------+
-| 2010s | Sarracenia v2              |   25kloc   | AMQP, HTTP, SFTP, FTP (pub/sub and push)          |
-+-------+----------------------------+------------+---------------------------------------------------+
-| 2020s | Sarracenia v3 (sr3)        |   15kloc   | AMQP, MQTT, HTTP, SFTP, API (pub/sub and push)    |
-+-------+----------------------------+------------+---------------------------------------------------+
 
 References & Links
 ~~~~~~~~~~~~~~~~~~

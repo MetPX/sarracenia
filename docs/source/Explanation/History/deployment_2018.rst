@@ -6,7 +6,6 @@
 
 [ `version française <fr/deployment_2018.rst>`_ ]
 
-
 Sarracenia is a small application iteratively developed by addressing one use 
 case at a time, so development and deployment have been inextricably linked up
 to this point. That iterative process precipitated changes in the core of the 

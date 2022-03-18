@@ -8,7 +8,8 @@ Explanation
    overview
    Concepts
    DeploymentConsiderations
-   Glossary
    HPC_Mirroring_Use_Case
    SarraPluginDev
+   Glossary
    sftps
+   History/index
