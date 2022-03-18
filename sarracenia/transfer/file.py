@@ -53,6 +53,10 @@ logger = logging.getLogger(__name__)
 
 
 class File(Transfer):
+    """
+        Transfer sub-class for local file i/o.
+
+    """
     def __init__(self, proto, options):
         super().__init__(proto, options)
 

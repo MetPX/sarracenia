@@ -96,7 +96,7 @@ class Transfer():
          cd     (dir)
          delete (path)
     
-     if a sending:: 
+     if sending:: 
 
          put    ( msg, remote_file, local_file, remote_offset=0, local_offset=0, length=0 )
          putAccelerated ( msg, remote_file, local_file, length=0 )
@@ -107,14 +107,14 @@ class Transfer():
          rename (old,new)
     
      uses options (on Sarracenia.config data structure passed to constructor/factory.)
-     * options.credentials
-     * options.destination 
-     * options.batch 
-     * options.permDefault
-     * options.permDirDefault
-     * options.timeout
-     * opt   options.bytes_per_second
-     * opt   options.bufsize
+     * credentials - used to authentication information.
+     * destination  - server to connect to.
+     * batch   - how many files to transfer before a connection is torn down and re-established.
+     * permDefault - what permissions to set on files transferred.
+     * permDirDefault - what permission to set on directories created.
+     * timeout  - how long to wait for operations to complete.
+     * bytes_per_second - maximum transfer rate (throtle to avoid exceeding)
+     * bufsize - size of buffers for file transfers.
 
     """
     @staticmethod

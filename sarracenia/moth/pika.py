@@ -6,10 +6,13 @@ logger = logging.getLogger(__name__)
 
 
 class PIKA(Moth):
-    def __init__(self, broker):
-        """
+    """
+       moth subclass based on the pika AMQP/rabbitmq client library.
 
-        """
+       stub: not implemented.
+
+    """
+    def __init__(self, broker):
         super().__init__(broker, props, is_subscriber)
 
         logger.error(

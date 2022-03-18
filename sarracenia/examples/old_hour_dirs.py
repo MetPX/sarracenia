@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 
-# assume directories are named
-# YYYYMMDDHHTHH
-#
-# after the UTC date when the first product within it is received.
-#  
-# this script looks at the list of directories and removes the ones older
-# than requested.  Sample invocation:
-#
-#  python3 old_hour_dirs.py "5 hours ago" /Project/web_root
-#
+"""
+  assume directories are named
+  YYYYMMDDHHTHH
+ 
+  after the UTC date when the first product within it is received.
+   
+  this script looks at the list of directories and removes the ones older
+  than requested.  Sample invocation:
+ 
+   python3 old_hour_dirs.py "5 hours ago" /Project/web_root
+ 
+"""
 
 import dateparser, os, random, shutil, sys, time
 

@@ -30,29 +30,18 @@ from urllib.parse import unquote
 
 logger = logging.getLogger(__name__)
 
-#============================================================
-# ftp protocol in sarracenia supports/uses :
-#
-# connect
-# close
-#
-# if a source    : get    (remote,local)
-#                  ls     ()
-#                  cd     (dir)
-#                  delete (path)
-#
-# if a sender    : put    (local,remote)
-#                  cd     (dir)
-#                  mkdir  (dir)
-#                  umask  ()
-#                  chmod  (perm)
-#                  rename (old,new)
-#
-# FTP : no remote file seek... so 'I' part impossible
-#
 
 
 class Ftp(Transfer):
+    """
+    File Transfer Protocol (FTP)  ( https://datatracker.ietf.org/doc/html/rfc959 )
+    sarracenia transfer protocol subclass supports/uses additional custom options:
+
+    * accel_ftpput_command (default: '/usr/bin/ncftpput %s %d' )
+    * accel_ftpget_command (default: '/usr/bin/ncftpget %s %d' )
+
+    built using: ftplib ( https://docs.python.org/3/library/ftplib.html )
+    """ 
     def __init__(self, proto, options):
 
         super().__init__(proto, options)

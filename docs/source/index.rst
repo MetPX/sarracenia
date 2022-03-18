@@ -8,6 +8,31 @@ Home page: https://metpx.github.io/sarracenia
 
 Source Repo: https://github.com/MetPX/sarracenia
 
+.. image:: https://img.shields.io/pypi/v/metpx-sarracenia?style=flat
+  :alt: PyPI version
+  :target: https://pypi.org/project/metpx-sarracenia/
+
+.. image:: https://img.shields.io/pypi/pyversions/metpx-sarracenia.svg
+    :alt: Supported Python versions
+    :target: https://pypi.python.org/pypi/metpx-sarracenia.svg
+
+.. image:: https://img.shields.io/pypi/l/metpx-sarracenia?color=brightgreen
+    :alt: License (GPLv2)
+    :target: https://pypi.org/project/metpx-sarracenia/
+
+.. image:: https://img.shields.io/github/issues/MetPX/sarracenia
+    :alt: Issue Tracker
+    :target: https://github.com/MetPX/sarracenia/issues
+
+.. image:: https://github.com/MetPX/sarracenia/actions/workflows/ghcr.yml/badge.svg
+    :alt: Docker Image Build Status
+    :target: https://github.com/MetPX/sarracenia/actions/workflows/ghcr.yml
+
+.. image:: https://github.com/MetPX/sarracenia/actions/workflows/static_flow.yml/badge.svg
+    :alt: Run Static Flow
+    :target: https://github.com/MetPX/sarracenia/actions/workflows/static_flow.yml
+
+
 Caveat: 
    This new web-site is for version 3 currently under development in the v03_wip branch
    Users of stable version 2 should go https://github.com/MetPX/Sarracenia instead.

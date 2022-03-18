@@ -37,23 +37,16 @@ from urllib.parse import unquote
 
 logger = logging.getLogger(__name__)
 
-#============================================================
-# http protocol in sarracenia supports/uses :
-#
-# connect
-# close
-#
-# get    (remote,local)
-# ls     ()
-# cd     (dir)
-#
-# check_is_connected()
-# getcwd()
-#
-# credentials()
-
-
 class Https(Transfer):
+    """
+    HyperText Transfer Protocol (HTTP)  ( https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol ) 
+    sarracenia transfer protocol subclass supports/uses additional custom options:
+
+    * accel_wget_command (default: '/usr/bin/wget %s -O %d' )
+
+    built with: 
+         urllib.request ( https://docs.python.org/3/library/urllib.request.html )
+    """
     def __init__(self, proto, options):
 
         super().__init__(proto, options)

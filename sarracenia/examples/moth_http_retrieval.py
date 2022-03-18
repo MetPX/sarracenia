@@ -1,3 +1,7 @@
+"""
+    Example of consuming data from a Sarracenia Data Pump.
+
+"""
 import sarracenia.moth
 import sarracenia.moth.amqp
 import sarracenia.credentials

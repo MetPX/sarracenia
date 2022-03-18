@@ -35,38 +35,16 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-#============================================================
-# sftp protocol in sarracenia supports/uses :
-#
-# connect
-# close
-#
-# if a source    : get    (remote,local)
-#                  ls     ()
-#                  cd     (dir)
-#                  delete (path)
-#
-# if a sender    : put    (local,remote)
-#                  cd     (dir)
-#                  mkdir  (dir)
-#                  umask  ()
-#                  chmod  (perm)
-#                  rename (old,new)
-#
-# SFTP : supports remote file seek... so 'I' part possible
-#
-#
-# require
-#           options.credentials
-#           options.destination
-#           options.batch
-#           options.permDefault
-#           options.permDirDefault
-#     opt   options.kbytes_ps
-#     opt   options.bufsize
-
-
 class Sftp(Transfer):
+    """
+    SecSH File Transfer Protocol (SFTP)  ( https://filezilla-project.org/specs/draft-ietf-secsh-filexfer-02.txt )
+    Sarracenia transfer protocol subclass supports/uses additional custom options:
+
+    * accel_scp_command (default: '/usr/bin/scp %s %d' )
+
+    The module uses the paramiko library for python SecSH support ( https://www.paramiko.org/ )
+    """
+
     def __init__(self, proto, options):
 
         super().__init__(proto, options)

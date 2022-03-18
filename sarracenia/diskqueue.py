@@ -37,27 +37,28 @@ class DiskQueue():
     so continuous, but append-only io... with an occasional housekeeping cycle.
     to resolve them
    
-    not clear if we need multi-task safety... just one task writes to the queue.
+    not clear if we need multi-task safety... just one task writes to each queue.
 
     retry_ttl how long 
 
     self.retry_cache 
-          - a dictionary indexed by some sort of key to prevent duplicate messages
-            being stored in it.
+    * a dictionary indexed by some sort of key to prevent duplicate
+      messages being stored in it.
 
     retry_path = ~/.cache/sr3/<component>/<config>/diskqueue_<name>
+
     with various suffixes:
 
-    .new  -- messages added to the retry list are appended to this file.
+    .new -- messages added to the retry list are appended to this file.
             
-    whenever a message is added to the retry_cache, it is appended to a cumulative
-    list of entries to add to the retry list.  
+    whenever a message is added to the retry_cache, it is appended to a 
+    cumulative list of entries to add to the retry list.  
 
     every housekeeping interval, the two files are consolidated.
 
-    note that the *ack_id* of messages retreived from the retry list, is removed.
-    files must be acked around the time they are placed on the retry_list.
-    as reception from the source has already been acknowledged.
+    note that the *ack_id* of messages retreived from the retry list, is 
+    removed. Files must be acked around the time they are placed on the 
+    retry_list, as reception from the source should have already been acknowledged.
 
     FIXME:  would be fun to look at performance of this thing and compare it to
         python persistent queue.  the differences:
@@ -133,11 +134,16 @@ class DiskQueue():
         self.new_fp.flush()
 
     def cleanup(self):
-
+        """
+          remove statefiles.
+        """
         if os.path.exists(self.queue_file):
             os.unlink(self.queue_file)
 
     def close(self):
+        """
+           clean shutdown.
+        """
         try:
             self.housekeeping_fp.close()
         except:
@@ -205,7 +211,7 @@ class DiskQueue():
             count +=1
         return ml
 
-    def in_cache(self, message):
+    def in_cache(self, message) -> bool:
         """
           return whether the entry is message is in the cache or not.
           side effect: adds it.
@@ -222,7 +228,10 @@ class DiskQueue():
         self.retry_cache[cache_key] = True
         return False
 
-    def is_expired(self, message):
+    def is_expired(self, message) -> bool:
+        """
+          return is the given message expired ?
+        """
         # no expiry
         if self.o.retry_ttl is None: return False
         if self.o.retry_ttl <= 0: return False
@@ -234,8 +243,12 @@ class DiskQueue():
         # expired ?
         return  msg_age > self.o.retry_ttl
 
-    def needs_requeuing(self, message):
-
+    def needs_requeuing(self, message) -> bool:
+        """
+           return 
+           * True if message is not expired, and not already in queue. 
+           * False otherwise.   
+        """
         if self.in_cache(message):
             logger.info("discarding duplicate message (in %s cache) %s" % (self.name, message) )
             return False
@@ -248,6 +261,9 @@ class DiskQueue():
         return True
 
     def msg_get_from_file(self, fp, path):
+        """
+            read a message from the state file.
+        """
         if fp is None:
             if not os.path.isfile(path): return None, None
             logger.debug("DEBUG %s open read" % path)
