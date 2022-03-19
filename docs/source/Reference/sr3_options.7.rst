@@ -935,20 +935,11 @@ In directory ~/.cache/sarra/log::
 
   A .sender_configname_$instance.log  is created as a log of $instance process.
 
-.. NOTE::
-  known bug in the management interface `sr <sr.8.rst>_`  means that instance should
-  always be in the .conf file (not a .inc) and should always be an number 
-  (not a substituted variable or other more complex value.
-
-.. note::  
-  FIXME: indicate Windows location also... dot files on Windows?
-
-
 .. Note::
 
   While the brokers keep the queues available for some time, queues take resources on 
-  brokers, and are cleaned up from time to time. A queue which is not
-  accessed and has too many (implementation defined) files queued will be destroyed.
+  brokers, and are cleaned up from time to time. A queue which is not accessed 
+  and has too many (implementation defined) files queued will be destroyed.
   Processes which die should be restarted within a reasonable period of time to avoid
   loss of notifications. A queue which is not accessed for a long (implementation dependent)
   period will be destroyed. 

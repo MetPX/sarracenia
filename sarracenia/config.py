@@ -91,7 +91,7 @@ count_options = [
 
 # all the boolean settings.
 flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'baseUrl_relPath', 'cache_stat', 'debug', \
-    'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchange_split', 'realpath_filter', \
+    'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchange_split', 'logReject', 'realpath_filter', \
     'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logStdout', 'logReject', 'pipe', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
     'permCopy', 'pump_flag', 'queueBind', 'queueDeclare', 'randomize', 'realpath_post', 'reconnect', 'report_daemons', \
@@ -202,7 +202,7 @@ convert_to_v3 = {
     'on_post': {
         'post_log': ['logEvents', 'after_work']
     },
-    'windows_run': [ 'continue' ]
+    'windows_run': [ 'continue' ],
     'xattr_disable': [ 'continue' ]
 }
 
@@ -1302,7 +1302,6 @@ class Config:
         if hasattr(self,'logReject'):
             if self.logReject:
                 self.logEvents |= set( ['reject'] )
-            delattr( self, 'logReject' )
 
         if ( (len(self.logEvents) > 0 ) or self.log_flowcb_needed) :
             if not 'sarracenia.flowcb.log.Log' in self.plugins_late:
