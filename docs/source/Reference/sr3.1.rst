@@ -83,14 +83,14 @@ COMPONENTS
 
 Components are a set of defaults that describe common settings for the common use cases:
 
-* `cpump <../Explanation/CommandLineGuide.html#CPUMP>`_ - copy messages from one pump another second one (a C implementation of shovel.)
-* `poll<../Explanation/CommandLineGuide.html#POLL>`_ - poll a non-sarracenia web or file server to create messages for processing.
-* `post|sr3_post|sr_cpost|watch <../Explanation/CommandLineGuide.html#POST>`_ - create messages for files for processing.
-* `sarra <../Explanation/CommandLineGuide.html#SARRA>`_ - download file from a remote server to the local one, and re-post them for others.
-* `sender<../Explanation/CommandLineGuide.html#SENDER>`_ - send files from a local server to a remote one.
-* `shovel<../Explanation/CommandLineGuide.html#SHOVEL>`_ - copy messages, only, not files.
-* `watch<../Explanation/CommandLineGuide.html#WATCH>`_ - create messages for each new file that arrives in a directory, or at a set path.
-* `winnow<../Explanation/CommandLineGuide.html#WINNOW>`_ - copy messages, suppressing duplicates.
+* `cpump <../Explanation/CommandLineGuide.html#cpump>`_ - copy messages from one pump another second one (a C implementation of shovel.)
+* `poll <../Explanation/CommandLineGuide.html#poll>`_ - poll a non-sarracenia web or file server to create messages for processing.
+* `post|sr3_post|sr_cpost|watch <../Explanation/CommandLineGuide.html#post-or-watch>`_ - create messages for files for processing.
+* `sarra <../Explanation/CommandLineGuide.html#sarra>`_ - download file from a remote server to the local one, and re-post them for others.
+* `sender <../Explanation/CommandLineGuide.html#sender>`_ - send files from a local server to a remote one.
+* `shovel <../Explanation/CommandLineGuide.html#shovel>`_ - copy messages, only, not files.
+* `watch <../Explanation/CommandLineGuide.html#watch>`_ - create messages for each new file that arrives in a directory, or at a set path.
+* `winnow <../Explanation/CommandLineGuide.html#winnow>`_ - copy messages, suppressing duplicates.
 
 
 CONFIGURATIONS

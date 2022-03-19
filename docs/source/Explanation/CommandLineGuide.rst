@@ -30,14 +30,14 @@ output can be piped to other processes in classic UNIX text filter style.
 The components of sarracenia are groups of defaults on the main algorithm,
 to reduce the size of individual components.  The components are:
 
- - `cpump <#CPUMP>`_ - copy messages from one pump another second one (a C implementation of shovel.)
- - `poll <#POLL>`_ - poll a non-sarracenia web or file server to create messages for processing.
- - `post & watch <#POST OR WATCH>`_ - create messages for files for processing.
- - `sarra <#SARRA>`_ - download file from a remote server to the local one, and re-post them for others.
- - `sender <#SENDER>`_ - send files from a local server to a remote one.
- - `shovel <#SHOVEL>`_ - copy messages, only, not files.
- - `watch <#WATCH>`_ - create messages for each new file that arrives in a directory, or at a set path.
- - `winnow <#WINNOW>`_ - copy messages, suppressing duplicates.
+ - cpump - copy messages from one pump another second one (a C implementation of shovel.)
+ - poll  - poll a non-sarracenia web or file server to create messages for processing.
+ - post & watch - create messages for files for processing.
+ - sarra _ - download file from a remote server to the local one, and re-post them for others.
+ - sender - send files from a local server to a remote one.
+ - shovel - copy messages, only, not files.
+ - watch - create messages for each new file that arrives in a directory, or at a set path.
+ - winnow - copy messages, suppressing duplicates.
  
 All of these components accept the same options, with the same effects.
 There is also `sr3_cpump(1) <../Reference/sr3_cpump.1.rst>`_ which is a C version that implements a
@@ -933,7 +933,6 @@ data transfers. The components all apply the same single algorithm,
 just starting from different default settings to match common use
 cases.
 
-
 CPUMP
 -----
 
@@ -960,8 +959,6 @@ and subscribes to the notifications of interest. If _suppress_duplicates_ is act
 on reception of a post, it looks up the message's **integity** field in its cache.  If it is 
 found, the file has already come through, so the notification is ignored. If not, then 
 the file is new, and the **sum** is added to the cache and the notification is posted.
-
-
 
 POLL
 ----
