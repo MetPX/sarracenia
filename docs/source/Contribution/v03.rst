@@ -289,8 +289,8 @@ the two versions, is clear:
 |                          |                           |
 |                          | flow/post.py              |
 +--------------------------+---------------------------+
-| sr_poll.py               | flowcb/gather/remote.py   |
-|                          |                           |
+| sr_poll.py               | flowcb/poll/              |
+|                          |        __init__.py        |
 |                          | flow/poll.py              |
 +--------------------------+---------------------------+
 |                          | transfer/__init__.py      |
@@ -308,17 +308,17 @@ the two versions, is clear:
 |                          |                           |
 +--------------------------+---------------------------+
 | plugins/                 | flowcb/  (sr3 ones)       |
-|                          |    plugins/ still there   |
+|                          | plugins/ still there      |
 |                          |    for v2 ones.           |
 +--------------------------+---------------------------+
 | overall flow             | flow/__init__.py          |
 +--------------------------+---------------------------+
 |                          |                           |
 | sr_poll.py               | sr_flow.py                |
-|                          |                           |
+|                          | as entry point...         |
 | sr_post.py               |                           |
-|                          |                           |
-| sr_subscribe.py          |                           |
+|                          | but generally just use    |
+| sr_subscribe.py          | sr.py as single one.      |
 |                          |                           |
 | sr_shovel.py             |                           |
 |                          |                           |
@@ -432,9 +432,9 @@ Done
 
 The functionality of sr_amqp.py is completely reproduced in moth/amqp.py 
 All the important logic is preserved, but it is transcribed into new classes. 
-Should have identical failure recovery behaviour. But it doesn't  we have
+Should have identical failure recovery behaviour. But it doesn't. We have
 static flow test passing, but the flakey broker, which tests such recovery,
-is currently broken.
+is currently broken. (2022/03 all good now!)
 
 sr_cfg2.py was still a stub, it has a lot of features and options, but
 it isn't clear how to expand it to all of them. the thing about instances
@@ -470,8 +470,8 @@ a instance (sets state files and logs) and then calls flow...
 flow/run() is visibly  the general algorithm,
 shovel is a sub-class of flow.
 
-Got a skeleton for v2 plugins working (v2wrapper.py)
-implemented import-based and group oriented sr3 plugin framework. ( #213 )
+Got a skeleton for v2 plugins working (v2wrapper.py) implemented 
+import-based and group oriented sr3 plugin framework. ( #213 )
 
 cache (now called noDupe) working.
 
@@ -549,7 +549,7 @@ plugin compatiblity under review... decided to re-write the accel_* plugins for 
 change the API because the v2 one has fundamental deficiencies:
 
 * the do_get api deals with failure by raising an exception... there is no checking
-  of return codes on built-in routines...  It is possiby taken care of by try/except, 
+  of return codes on built-in routines... It is possiby taken care of by try/except, 
   but would prefer for a normal program flow to be able to trace and
   report when an i/o failure happens (keep try/except to as small a scale as we can.)
 
@@ -692,10 +692,9 @@ Probably need to be settled before having anyone else dive in.
   very useful and heavily used in existing configs. probably OK. 
 
 * changing recovery model, so that all retry/logic is in main loop,  #392
-  and moth just returns immediately.  Point being could have multiple
+  and moth just returns immediately. Point being could have multiple
   gathers for multiple upstreams, and get messages from whichever is
-  live...
-  also end up with a single loop that way... cleaner.
+  live...  also end up with a single loop that way... cleaner.
   likely equivalent to async mode mentioned above.
 
 * *gather* as a way of separating having multiple input brokers.  #392
