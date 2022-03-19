@@ -100,6 +100,9 @@ V2 to Sr3
             basedir -> baseDir
             base_dir -> baseDir
             baseurl -> baseUrl
+            bind_queue -> queueBind
+            declare_exchange -> exchangeDeclare
+            declare_queue -> queueDeclare
             cache -> nodupe_ttl
             document_root -> documentRoot
             no_duplicates -> nodupe_ttl

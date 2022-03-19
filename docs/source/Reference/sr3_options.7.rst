@@ -510,14 +510,6 @@ The *outlet* option allows the final output to be other than a post.
 See `sr3_cpump(1) <sr3_cpump.1.rst>`_ for details.
 
 
-bind_queue
-~~~~~~~~~~
-
-On startup, by default, Sarracenia redeclares resources and bindings to ensure they
-are uptodate.  If the queue already exists, These flags can be
-set to False, so no attempt to declare the queue is made, or it´s bindings.
-These options are useful on brokers that do not permit users to declare their queues.
-
 
 broker
 ~~~~~~
@@ -548,12 +540,6 @@ to exchanges and topics to determine the messages of interest.
 
 
 
-declare_queue
-~~~~~~~~~~~~~
-On startup, by default, Sarracenia redeclares resources and bindings to ensure they
-are uptodate.  If the queue already exists, These flags can be
-set to False, so no attempt to declare the queue is made, or it´s bindings.
-These options are useful on brokers that do not permit users to declare their queues.
 
 declare env NAME=Value
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -681,6 +667,16 @@ time, one can just set *exchange_suffix kk* which will result in the exchange
 being set to *xs_<username>_kk* (overriding the *xpublic* default).
 These settings must appear in the configuration file before the corresponding
 *topicPrefix* and *subtopic* settings.
+
+
+exchangeDeclare
+~~~~~~~~~~~~~~~
+
+On startup, by default, Sarracenia redeclares resources and bindings to ensure they
+are uptodate. If the exchange already exists, this flag can be set to False, 
+so no attempt to exchange the queue is made, or it´s bindings.
+These options are useful on brokers that do not permit users to declare their exchanges.
+
 
 
 expire <duration> (default: 5m  == five minutes. RECOMMEND OVERRIDING)
@@ -1276,6 +1272,23 @@ queue_name is written to:
 Instances started on any node with access to the same shared file will use the
 same queue. Some may want use the *queue_name* option as a more explicit method
 of sharing work across multiple nodes.
+
+queueBind
+~~~~~~~~~
+
+On startup, by default, Sarracenia redeclares resources and bindings to ensure they
+are uptodate.  If the queue already exists, These flags can be
+set to False, so no attempt to declare the queue is made, or it´s bindings.
+These options are useful on brokers that do not permit users to declare their queues.
+
+
+queueDeclare
+~~~~~~~~~~~~
+
+On startup, by default, Sarracenia redeclares resources and bindings to ensure they
+are uptodate.  If the queue already exists, These flags can be
+set to False, so no attempt to declare the queue is made, or it´s bindings.
+These options are useful on brokers that do not permit users to declare their queues.
 
 [-r|--randomize]
 ~~~~~~~~~~~~~~~~

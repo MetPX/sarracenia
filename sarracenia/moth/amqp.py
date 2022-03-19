@@ -48,20 +48,21 @@ the maximum length of a "short string", as per AMQP protocol, in bytes.
 amqp_ss_maxlen = 255
 
 default_options = {
-    'queue_name': None,
+    'auto_delete': False,
     'batch': 25,
-    'exchange': None,
-    'topicPrefix': [ 'v03' ],
-    'subtopic': [],
     'durable': True,
+    'exchange': None,
+    'exchangeDeclare': True,
     'logLevel': 'info',
     'prefetch': 25,
-    'auto_delete': False,
-    'vhost': '/',
+    'queue_name': None,
+    'queueBind': True,
+    'queueDeclare': True,
     'reset': False,
-    'declare': True,
-    'bind': True,
+    'subtopic': [],
     'messageDebugDump': False,
+    'topicPrefix': [ 'v03' ],
+    'vhost': '/',
 }
 
 
@@ -71,6 +72,12 @@ class AMQP(Moth):
        AMQP dialects.
 
        to allow acknowledgements we map: AMQP' 'delivery_tag' to the 'ack_id'
+
+       additional AMQP specific options:
+
+       exchangeDeclare  - declare exchanges before use.
+       queueBind        - bind queue to exchange before use.
+       queueDeclare     - declare queue before use.
 
     """
 
@@ -251,7 +258,7 @@ class AMQP(Moth):
                     ':' + self.broker.url.password + '@', '@')
 
                 # from Queue declare
-                if self.o['declare']:
+                if self.o['queueDeclare']:
 
                     args = {}
                     if self.o['expire']:
@@ -273,7 +280,7 @@ class AMQP(Moth):
                     logger.info('queue declared %s (as: %s) ' %
                                 (self.o['queue_name'], broker_str))
 
-                if self.o['bind']:
+                if self.o['queueBind']:
                     for tup in self.o['bindings']:
                         exchange, prefix, subtopic = tup
                         topic = '.'.join( prefix + subtopic )
@@ -287,6 +294,7 @@ class AMQP(Moth):
                 return
 
             except Exception as err:
+                logger.error( f'connecting to: {self.o["queue_name"]}, durable: {self.o["durable"]}, expire: {self.o["expire"]}, auto_delete={self.o["auto_delete"]}' )
                 logger.error("AMQP getSetup failed to {} with {}".format(
                     self.broker.url.hostname, err))
                 logger.debug('Exception details: ', exc_info=True)
@@ -315,7 +323,7 @@ class AMQP(Moth):
 
                 #logger.debug('putSetup ... 1. connected to {}'.format(broker_str ) )
 
-                if self.o['declare']:
+                if self.o['exchangeDeclare']:
                     logger.debug('putSetup ... 1. declaring {}'.format(
                         self.o['exchange']))
                     if type(self.o['exchange']) is not list:

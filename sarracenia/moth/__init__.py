@@ -135,6 +135,10 @@ class Moth():
 
        both:
            'topicPrefix' : [ 'v03' ]
+           'messageDebugDump': False, --> enable printing of raw messages.
+           'inline': False,  - Are we inlining content within messages?
+           'inline_encoding': 'guess', - what encoding should we use for inlined content?
+           'inline_max': 4096,  - Maximum size of messages to inline.
 
        for get:
        *  'batch'  : 100  # how many messages to get at once

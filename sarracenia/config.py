@@ -90,11 +90,11 @@ count_options = [
 ]
 
 # all the boolean settings.
-flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'baseUrl_relPath', 'bind_queue', 'cache_stat', 'declare_exchange', 'debug', \
-    'declare_queue', 'delete', 'discard', 'download', 'dry_run', 'durable', 'exchange_split', 'realpath_filter', \
+flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'baseUrl_relPath', 'cache_stat', 'debug', \
+    'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchange_split', 'realpath_filter', \
     'follow_symlinks', 'force_polling', 'inline', 'inline_only', 'inplace', 'logStdout', 'log_reject', 'pipe', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
-    'permCopy', 'pump_flag', 'randomize', 'realpath_post', 'reconnect', 'report_daemons', \
+    'permCopy', 'pump_flag', 'queueBind', 'queueDeclare', 'randomize', 'realpath_post', 'reconnect', 'report_daemons', \
     'report_back', 'reset', 'retry_mode', 'save', 'set_passwords', 'source_from_exchange', \
     'statehost', 'users'
                 ]
@@ -487,7 +487,10 @@ class Config:
         'basedir': 'baseDir',
         'base_dir': 'baseDir',
         'baseurl': 'baseUrl',
+        'bind_queue': 'queueBind',
         'cache': 'nodupe_ttl',
+        'declare_exchange': 'exchangeDeclare',
+        'declare_queue': 'queueDeclare',
         'document_root': 'documentRoot',
         'no_duplicates': 'nodupe_ttl',
         'caching': 'nodupe_ttl',
