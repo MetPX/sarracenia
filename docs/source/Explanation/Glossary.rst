@@ -27,6 +27,46 @@ Sarracenia relies heavily on the use of brokers and topic based exchanges, which
 to version 1.0, at which point they were removed. It is hoped that these concepts will be re-introduced at some point. Until
 that time, the application will rely on pre-1.0 standard message brokers, such as rabbitmq.
 
+Back Pressure
+-------------
+
+When a data pumping node is experiencing high latency, it is best not bring in more data 
+at high rate and worsen the overload. Instead, one should refrain from accepting messages
+from the node so that upstream ones maintain queues, and other, less busy nodes can take
+more of the load. Having slow processing affect the ingest of new messages is an example
+of applying back pressure to a transfer stream.
+
+Example of no back-pressure: paho-python-mqtt v3 library currently has acknowledgements
+built-in to the library, so acknowledgement occur without user control, and there is
+no maximum number of messages that can be in the library, before the application sees
+them. If the application stops, all those messages, as yet unseen by the application,
+are lost. In MQTT v5, there is a receiveMaximum setting which at least limits the number
+of messages the library will queue up for the application, but ideally, the python
+library would get application controlled acknowledgements, as the java library already has.
+
+
+Dataless Pumps
+--------------
+
+There are some pumps that have no transport engine, they just mediate 
+transfers for other servers, by making messages available to clients and
+servers in their network area.
+
+
+Dataless Transfers
+------------------
+
+Sometimes transfers through pumps are done without using local space on the pump.
+
+
+Latency
+-------
+
+Time from the insertion of data into a network (the time the message about a file is first published)
+to the time it is made available on an end point.  We want to minimize latency in transfers,
+and high latency can indicate configuration or capacity issues.
+
+
 MQTT
 ----
 
@@ -37,27 +77,13 @@ necessary to support sarracenia's data exchange patterns.
 * `mosquitto.org <https://mosquitto.org>`_
 * `EMQX.io <emqx.io>`_
 
-Source
-------
-
-Someone who wants to ship data to someone else. They do that by advertising a 
-trees of files that are copied from the starting point to one or more pumps
-in the network. The advertisement sources produced tell others exactly where 
-and how to download the files, and Sources have to say where they want the 
-  data to go to.
-
-Sources use the `post <../Reference/sr3.1.html#post>`_,
-`sr_watch.1 <../Reference/sr3.1.html#watch>`_, and 
-`sr_poll(1) <../Reference/sr3.1.html#poll>`_ components to create 
-their advertisements.
 
 
-Subscribers
------------
-are those who examine advertisements about files that are available, and 
-download the files they are interested in.
+Network Maps
+------------
 
-Subscribers use `subscribe(1) <../Reference/sr3.1.html#subscribe>`_
+Each pump should provide a network map to advise users of the known destination
+that they should advertise to send to. *FIXME* undefined so far.
 
 
 Post, Notice, Notification, Advertisement, Announcement
@@ -71,17 +97,8 @@ original source of the posting, so that report messages can be routed back
 to the source.
 
 
-Report messages
----------------
-
-These are AMQP messages (in `sr_post(7) <../Reference/sr_post.7.html>`_ format, with _report_ 
-field included) built by consumers of messages, to indicate what a given pump 
-or subscriber decided to do with a message. They conceptually flow in the 
-opposite direction of notifications in a network, to get back to the source.
-
-
-Pump or broker
---------------
+Pump
+----
 
 A pump is a host running Sarracenia, either a rabbitmq AMQP server or an MQTTT
 one such as mosquitto. The message queueing middleware is called a *broker.*
@@ -100,21 +117,6 @@ obtain the data from this pump.
   many transport engines. The entire cluster would be considered a pump. So the
   two words are not always the same.
 
-
-Dataless Pumps
---------------
-
-There are some pumps that have no transport engine, they just mediate 
-transfers for other servers, by making messages available to clients and
-servers in their network area.
-
-
-Dataless Transfers
-------------------
-
-Sometimes transfers through pumps are done without using local space on the pump.
-
-
 Pumping Network
 ---------------
 
@@ -122,12 +124,37 @@ A number of interconnects servers running the sarracenia stack. Each stack
 determines how it routes items to the next hop, so the entire size or extent
 of the network may not be known to those who put data into it.
 
+Report messages
+---------------
 
-Network Maps
-------------
+These are AMQP messages (in `sr_post(7) <../Reference/sr_post.7.html>`_ format, with _report_ 
+field included) built by consumers of messages, to indicate what a given pump 
+or subscriber decided to do with a message. They conceptually flow in the 
+opposite direction of notifications in a network, to get back to the source.
+in materials from the original 2015 design phase, reports were called *log messages*.
+This was changed to reduce confusing them with data in application log files.
 
-Each pump should provide a network map to advise users of the known destination
-that they should advertise to send to. *FIXME* undefined so far.
+
+Source
+------
+
+Someone who wants to ship data to someone else. They do that by advertising a 
+trees of files that are copied from the starting point to one or more pumps
+in the network. The advertisement sources produced tell others exactly where 
+and how to download the files, and Sources have to say where they want the 
+  data to go to.
+
+Sources use the `post <../Reference/sr3.1.html#post>`_,
+`sr_watch.1 <../Reference/sr3.1.html#watch>`_, and 
+`sr_poll(1) <../Reference/sr3.1.html#poll>`_ components to create 
+their advertisements.
+
+Subscribers
+-----------
+are those who examine advertisements about files that are available, and 
+download the files they are interested in.
+
+Subscribers use `subscribe(1) <../Reference/sr3.1.html#subscribe>`_
 
 
 WMO

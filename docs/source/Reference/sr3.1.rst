@@ -20,8 +20,8 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-sr3 is a tool to manage a fleet of daemons, whose output is mostly
-in log files.  sr3 allows one to start, stop, and inquire the status of configured
+Sr3 is a tool to manage a fleet of daemons, whose output is mostly
+in log files. Sr3 allows one to start, stop, and inquire the status of configured
 Sarracenia flows. It is the primary command line entry point to 
 Sarracenia 3 ( https://metpx.github.io/sarracenia/ )
 When sr3 is started up, it reads the entire configuration tree, and the status of all flows

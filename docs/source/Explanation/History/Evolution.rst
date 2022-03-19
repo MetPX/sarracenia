@@ -40,7 +40,7 @@ were switched to use the sr\_ prefix. The following year, support of
 checksums was added, and in the fall of 2015, the feeds were updated to v02.
 
 We eventually ran into the limits of this extension approach, and in 2015 we 
-started `Sarracenia <https://github.com/MetPX/Sarracenia>`_
+started `Sarracenia <https://metpx.github.io/sarracenia>`_
 as a ground-up second generation replacement, unburdened by strict legacy GTS compatibility.
 Sarracenia (version 2) was initially a prototype, and many changes of many kinds occurred during it's lifetime.
 It is still (in 2022) the only version operationally deployed. It went through three changes in operational

@@ -50,7 +50,7 @@ V2 to Sr3
           pythonic. Sr3 is built with less code, more maintainable code, and 
           supports more features, and more naturally.
 
-*CHANGE*: log messages look completely different. Any log parsing will have to be reviewed.
+**CHANGE**: log messages look completely different. Any log parsing will have to be reviewed.
           New log format includes a prefix with process-id and the routine generating the message.
 
 *NOTICE*: When migrating from v2 to sr3, simple configurations will mostly "just work."
