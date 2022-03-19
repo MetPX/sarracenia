@@ -203,22 +203,16 @@ When data is injected into sarracenia from Sundew, the *sundew_extension* messag
 will provide the source for these substitions even if the fields have been removed
 from the delivered file names.
 
-
-
 SR_DEV_APPNAME
 ~~~~~~~~~~~~~~
 
 The SR_DEV_APPNAME environment variable can be set so that the application configuration and state directories
-are created under a different name.  This is used in development to be able to have many configurations
-active at once.  It enables more testing than always working with the developer´s *real* configuration.
+are created under a different name. This is used in development to be able to have many configurations
+active at once. It enables more testing than always working with the developer´s *real* configuration.
 
 Example:  export SR_DEV_APPNAME=sr-hoho... when you start up a component on a linux system, it will
 look in ~/.config/sr-hoho/ for configuration files, and write state files in the ~/.cache/sr-hoho
 directory.
-
-
-
-
 
 CREDENTIALS
 ===========
@@ -293,6 +287,37 @@ Note::
 OPTIONS
 =======
 
+Option Types
+------------
+
+sr3 options come in several types:
+
+count      
+    integer count type. 
+
+duration   
+    a floating point number indicating a quantity of seconds (0.001 is 1 milisecond)
+    modified by a unit suffix ( m-minute, h-hour, w-week ) 
+
+flag       
+    boolean (True/False) option.
+
+float
+    a floating point number.
+
+list
+    a list of string values, each succeeding occurrence catenates to the total.
+    all v2 plugin options are declared of type list.
+
+set
+    a set of string values, each succeeding occurrence is unioned to the total.
+
+size
+    integer size. Suffixes k, m, and g for kilo, mega, and giga (base 2) multipliers.
+
+str
+    an string value
+   
 
 Configuration File Options
 ---------------------------
@@ -300,7 +325,7 @@ Configuration File Options
 The options available in configuration files:
 
 
-accelTreshold <byte count> default: 0 (disabled.)
+accelTreshold <size> default: 0 (disabled.)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The accelThreshold indicates the minimum size of file being transferred for
@@ -433,9 +458,6 @@ It's named  */this/20160123/pattern/RAW_MERGER_GRIB/directory* if the message wo
 **20150813161959.854 http://this.pump.com/ relative/path/to/20160123_product_RAW_MERGER_GRIB_from_CMC**
 
 
-
-
-
 acceptSizeWrong: <boolean> (default: False)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -465,11 +487,10 @@ baseDir <path> (default: /)
 one in the selected notification gives the absolute path of the file to be sent.
 The default is None which means that the path in the notification is the absolute one.
 
-**FIXME**::
-    cannot explain this... do not know what it is myself. This is taken from sender.
-    in a subscriber, if it is set... will it download? or will it assume it is local?
-    in a sender.
+Sometimes senders subscribe to local xpublic, which are http url's, but sender
+needs a localfile, so the local path is built by concatenating::
 
+   baseDir + relative path in the baseUrl + relPath
 
 
 baseUrl_relPath
@@ -491,7 +512,7 @@ lowered to 1.  For most usual situations the default is fine. For higher volume
 cases, one could raise it to reduce transfer overhead. It is only used for file
 transfer protocols, not HTTP ones at the moment.
 
-blocksize <value> default: 0 (auto)
+blocksize <size> default: 0 (auto)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This **blocksize** option controls the partitioning strategy used to post files.
@@ -536,27 +557,27 @@ Once connected to an AMQP broker, the user needs to bind a queue
 to exchanges and topics to determine the messages of interest.
 
 
-byteRateMax <count> (default: 0)
+byteRateMax <size> (default: 0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**bytRateMax** is greater than 0, the process attempts to respect this delivery
+**byteRateMax** is greater than 0, the process attempts to respect this delivery
 speed in kilobytes per second... ftp,ftps,or sftp)
 
 **FIXME**: byteRateMax... only implemented by sender? or subscriber as well, data only, or messages also?
 
 
+declare 
+~~~~~~~
 
-declare env NAME=Value
-~~~~~~~~~~~~~~~~~~~~~~
+env NAME=Value
+  On can also reference environment variables in configuration files,
+  using the *${ENV}* syntax.  If Sarracenia routines needs to make use
+  of an environment variable, then they can be set in configuration files::
 
-On can also reference environment variables in configuration files,
-using the *${ENV}* syntax.  If Sarracenia routines needs to make use
-of an environment variable, then they can be set in configuration files::
+    declare env HTTP_PROXY=localhost
 
-  declare env HTTP_PROXY=localhost
-
-declare <role> <name> 
-~~~~~~~~~~~~~~~~~~~~~
+exchange exchange_name
+  using the admin url, declare the exchange with *exchange_name*
 
 subscriber
   A subscriber is user that can only subscribe to data and return report messages. Subscribers are
@@ -645,8 +666,8 @@ durable <boolean> (default: True)
 The  **durable** option, if set to True, means writes the queue
 on disk if the broker is restarted.
 
-[-e|--fileEvents <event|event|...>]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+fileEvents <event|event|...>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A list of file event types to monitor separated by a 'pipe symbol'.
 Available file events:  create, delete, link, modify
@@ -970,8 +991,6 @@ logrotate_interval <interval>[<time_unit>] ( default: 1d )
 The duration of the interval with an optional time unit (ie 5m, 2h, 3d)
 
 
-
-
 messageCountMax <count> (default: 0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -991,8 +1010,6 @@ messageRateMin <float> (default: 0)
 
 if **messageRateMin** is greater than zero, and the flow detected is lower than this rate,
 a warning message will be produced:
-
-
 
 
 message_ttl <duration>  (default: None)
@@ -1127,7 +1144,7 @@ path <path>
 ~~~~~~~~~~~
 
 **post** evaluates the filesystem path from the **path** option
-and possibly the **post_base_dir** if the option is used.
+and possibly the **post_baseDir** if the option is used.
 
 If a path defines a file then this file is watched.
 
@@ -1140,7 +1157,7 @@ watches it(them) recursively until all the tree is scanned.
 
 The AMQP announcements are made of the tree fields, the announcement time,
 the **url** option value and the resolved paths to which were withdrawn
-the *post_base_dir* present and needed.
+the *post_baseDir* present and needed.
 
 
 permDefault, permDirDefault, permLog, permCopy
@@ -1164,22 +1181,19 @@ The **permDefault** options specifies a mask, that is the permissions must be
 at least what is specified.
 
 
-
-
-
-[-pbd|--post_baseDir <path>] (optional)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-
+post_baseDir <path> 
+~~~~~~~~~~~~~~~~~~~
 
 The *post_baseDir* option supplies the directory path that, when combined (or found)
 in the given *path*, gives the local absolute path to the data file to be posted.
 The *post_baseDir* part of the path will be removed from the posted announcement.
 For sftp urls it can be appropriate to specify a path relative to a user account.
-Example of that usage would be:  -pbd ~user  -url sftp:user@host
+Example of that usage would be:  -post_baseDir ~user  -url sftp:user@host
 For file: url's, baseDir is usually not appropriate.  To post an absolute path,
-omit the -pbd setting, and just specify the complete path as an argument.
+omit the -post_baseDir setting, and just specify the complete path as an argument.
 
-post_baseUrl <url> (MANDATORY)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+post_baseUrl <url>
+~~~~~~~~~~~~~~~~~~
 
 The **post_baseUrl** option sets how to get the file... it defines the protocol,
 host, port, and optionally, the user. It is best practice to not include
@@ -1189,10 +1203,12 @@ post_exchange <name> (default: xpublic)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The **post_exchange** option set under which exchange the new notification
-will be posted.  In most cases it is 'xpublic'.
+will be posted. when publishing to a pump as an administrator, a common
+choice for post_exchange is 'xpublic'.
 
-Whenever a publish happens for a product, a user can set to trigger a script.
-The option **on_post** would be used to do such a setup.
+When publishing a product, a user can trigger a script, using
+flow callback entry_points such as **after_accept**, and **after_work** 
+to modify messages generated about files prior to posting.
 
 post_exchange_split   <number>   (default: 0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1210,8 +1226,8 @@ will result in posting messages to five exchanges named: xwinnow00, xwinnow01,
 xwinnow02, xwinnow03 and xwinnow04, where each exchange will receive only one fifth
 of the total flow.
 
-[-pos|--post_on_start]
-~~~~~~~~~~~~~~~~~~~~~~
+post_on_start
+~~~~~~~~~~~~~
 
 When starting watch, one can either have the program post all the files in the directories watched
 or not.
@@ -1320,7 +1336,6 @@ path ends with '/' it suggests a directory path...
 If it doesn't, the option specifies a file renaming.
 
 
-
 report_back and report_exchange
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1336,7 +1351,6 @@ exchanges (xs_*username*). The report daemons then copy the messages to *xreport
 
 These reports are used for delivery tuning and for data sources to generate statistical information.
 Set this option to **False**, to prevent generation of reports.
-
 
 
 reset <boolean> (default: False)
@@ -1471,7 +1485,6 @@ It is commonly combined with::
 To have data arrive in the standard format tree.
 
 
-
 subtopic <amqp pattern> (default: #)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1566,9 +1579,6 @@ v2 options are a comma separated string.  Valid checksum flags are :
 .. [#] only implemented in C. ( see https://github.com/MetPX/sarracenia/issues/117 )
 
 
-
-
-
 timeCopy (default: on)
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1616,10 +1626,6 @@ This option applies to subscription bindings.
 Denotes the version of messages received in the sub-topics. (v03 refers to `<sr3_post.7.html>`_)
 
 
-
-
-
-
 vip - ACTIVE/PASSIVE OPTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1647,37 +1653,4 @@ moving vip.
 
 When an **sr3 instance** does not find the vip, it sleeps for 5 seconds and retries.
 If it does, it consumes and processes a message and than rechecks for the vip.
-
-
-
-windows_run
-~~~~~~~~~~~
-
-The python tools are ubiquitously installed with the operating system on Linux,
-and installation methods are somewhat more consistent there.  On Windows,
-there is a wide variety of methods of installation, stemming from the
-variety of python distributions available. The various methods conflict, to the
-extent that using the .exe files, as one would expect using winpython, does not
-work at all when installed using Anaconda.
-
-A setting is provided *windows_run* to allow selection. the choices are:
-
-* exe - run sr3.exe as installed by pip (what one would expect to start)
-
-* pyw - run the pythonw.exe executable with sr.py (or sr3-script.py)
-  as the argument. (sometimes needed to have the component continue to run
-  after calling process is terminated.
-
-* py - run the python.exe executable with sr3.py (or sr3-script.py)
-  as the argument. (sometimes also works.)
-
-xattr_disable (default: off)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-By default, on receipt of files, the mtime and checksum are written to a file's
-extended attributes (on unix/linux/mac) or to alternate data stream called *sr_.json*
-(on windows on NTFS.) This can save re-reading the file to re-calculate the checksum.
-Some use cases may not want files to have Alternate Data Streams or extended
-attributes to be used.
-
 

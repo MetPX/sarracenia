@@ -202,17 +202,12 @@ convert_to_v3 = {
     'on_post': {
         'post_log': ['logEvents', 'after_work']
     },
+    'windows_run': [ 'continue' ]
+    'xattr_disable': [ 'continue' ]
 }
 
 logger = logging.getLogger(__name__)
 
-#    self.v2plugin_options.append(option)
-
-#    #if not hasattr(self,option): return
-
-#    logger.info('value type is: %s' % type(getattr(self,option)) )
-#    if type(getattr(self,option)) is not list:
-#        setattr(self,option, [ getattr(self,option) ] )
 """
    FIXME: respect appdir stuff using an environment variable.
    for not just hard coded as a class variable appdir_stuff

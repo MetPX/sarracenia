@@ -113,7 +113,7 @@ class Transfer():
      * permDefault - what permissions to set on files transferred.
      * permDirDefault - what permission to set on directories created.
      * timeout  - how long to wait for operations to complete.
-     * byteRateMax - maximum transfer rate (throtle to avoid exceeding)
+     * byteRateMax - maximum transfer rate (throttle to avoid exceeding)
      * bufsize - size of buffers for file transfers.
 
     """
