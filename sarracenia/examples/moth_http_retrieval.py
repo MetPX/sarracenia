@@ -17,7 +17,7 @@ options = sarracenia.moth.default_options
 options.update(sarracenia.moth.amqp.default_options)
 options['topicPrefix'] = [ 'v02', 'post' ]
 options['bindings'] = [( 'xpublic', ['v02', 'post'] , ['*', 'WXO-DD', 'observations', 'swob-ml', '#'] )]
-options['queue_name'] = 'q_anonymous_' + socket.getfqdn() + '_SomethingHelpfulToYou'
+options['queueName'] = 'q_anonymous_' + socket.getfqdn() + '_SomethingHelpfulToYou'
 
 #print('options: %s' % options)
 

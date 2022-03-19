@@ -67,7 +67,7 @@ class Sarracenia:
 
           options['topicPrefix'] = [ 'v02', 'post' ]
           options['bindings'] = [ ('xpublic', [ 'v02', 'post'] , [ '#' ] )]
-          options['queue_name'] = 'q_anonymous_' + socket.getfqdn() + '_SomethingHelpfulToYou'
+          options['queueName'] = 'q_anonymous_' + socket.getfqdn() + '_SomethingHelpfulToYou'
 
         Above is an example of a minimal options dictionary taken from the tutorial 
         example called moth_api_consumer.py. often 

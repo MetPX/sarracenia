@@ -431,7 +431,7 @@ class sr_GlobalState:
                         os.chdir(cfg)
                         self.states[c][cfg] = {}
                         self.states[c][cfg]['instance_pids'] = {}
-                        self.states[c][cfg]['queue_name'] = None
+                        self.states[c][cfg]['queueName'] = None
                         if c in self.configs:
                             if cfg not in self.configs[c]:
                                 self.states[c][cfg]['status'] = 'removed'
@@ -459,7 +459,7 @@ class sr_GlobalState:
                                         self.states[c][cfg]['instance_pids'][
                                             i] = int(t)
                                 elif pathname[-6:] == '.qname':
-                                    self.states[c][cfg]['queue_name'] = t
+                                    self.states[c][cfg]['queueName'] = t
                                 elif pathname[-12:] == '.retry.state':
                                     buffer = 2**16
                                     try:
@@ -666,17 +666,17 @@ class sr_GlobalState:
             exl.append(x)
             return exl
 
-    def __guess_queue_name(self, c, cfg, o):
+    def __guess_queueName(self, c, cfg, o):
         """
           Guess the name of a queue. looking at either a direct setting,
           or an existing queue state file, or lastly just guess based on conventions.
         """
-        if hasattr(o, 'queue_name'):
-            return o.queue_name
+        if hasattr(o, 'queueName'):
+            return o.queueName
 
         if cfg in self.states[c]:
-            if self.states[c][cfg]['queue_name']:
-                return self.states[c][cfg]['queue_name']
+            if self.states[c][cfg]['queueName']:
+                return self.states[c][cfg]['queueName']
 
         n = 'q_' + o.broker.url.username + '.sr3_' + c + '.' + cfg
         n += '.' + str(random.randint(0, 100000000)).zfill(8)
@@ -731,7 +731,7 @@ class sr_GlobalState:
 
                     xl = self.__resolved_exchanges(c, cfg, o)
 
-                    q = self.__guess_queue_name(c, cfg, o)
+                    q = self.__guess_queueName(c, cfg, o)
 
                     self.configs[c][cfg]['options'].resolved_qname = q
 
@@ -806,7 +806,7 @@ class sr_GlobalState:
                     # add config as state in .cache under right directory.
                     self.states[c][cfg] = {}
                     self.states[c][cfg]['instance_pids'] = {}
-                    self.states[c][cfg]['queue_name'] = None
+                    self.states[c][cfg]['queueName'] = None
                     self.states[c][cfg]['status'] = 'stopped'
                     self.states[c][cfg]['has_state'] = False
                     self.states[c][cfg]['retry_queue'] = 0
@@ -1129,7 +1129,7 @@ class sr_GlobalState:
             o = self.configs[c][cfg]['options']
             od = o.dictify()
             if hasattr(o, 'resolved_qname'):
-                od['queue_name'] = o.resolved_qname
+                od['queueName'] = o.resolved_qname
                 qdc = sarracenia.moth.Moth.subFactory(o.broker, od)
                 qdc.close()
 
@@ -1286,7 +1286,7 @@ class sr_GlobalState:
                         'queueDeclare': False,
                         'queueBind': False,
                         'broker': o.broker,
-                        'queue_name': o.resolved_qname,
+                        'queueName': o.resolved_qname,
                         'message_strategy': { 'stubborn':True }
                     })
                 qdc.getCleanUp()

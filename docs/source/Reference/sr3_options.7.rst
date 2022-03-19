@@ -1242,8 +1242,10 @@ optimal load sharing, the prefetch should be set as low as possible.  However, o
 haul links, it is necessary to raise this number, to hide round-trip latency, so a setting
 of 10 or more may be needed.
 
-[ queue|queue_name|qn <name>]
+queueName|queue|queue_name|qn 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* queueName <name>
 
 By default, components create a queue name that should be unique. The
 default queue_name components create follows the following convention:

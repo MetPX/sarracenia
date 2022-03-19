@@ -126,7 +126,7 @@ str_options = [
     'admin', 'baseDir', 'broker', 'destination', 'directory', 'exchange',
     'exchange_suffix', 'feeder', 'filename', 'header', 'logLevel', 'path',
     'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
-    'post_exchange_suffix', 'queue_name',
+    'post_exchange_suffix', 'queueName',
     'report_exchange', 'strip', 'timezone', 'nodupe_ttl',
     'nodupe_basis', 'tls_rigour', 'vip'
 ]
@@ -524,6 +524,7 @@ class Config:
         'post_topic_prefix' : 'post_topicPrefix',
         'preserve_mode' : 'permCopy',
         'preserve_time' : 'timeCopy',
+        'queue_name' : 'queueName', 
         'suppress_duplicates' : 'nodupe_ttl',
         'suppress_duplicates_basis' : 'nodupe_basis', 
         'topic_prefix' : 'topicPrefix'
@@ -1389,15 +1390,15 @@ class Config:
 
             self.queue_filename = queuefile
 
-            while (not hasattr(self, 'queue_name')) or (self.queue_name is None):
+            while (not hasattr(self, 'queueName')) or (self.queueName is None):
                 if os.path.isfile(queuefile):
                     f = open(queuefile, 'r')
-                    self.queue_name = f.read()
+                    self.queueName = f.read()
                     f.close()
-                    #logger.info('FIXME: read queue_name %s from queue state file' % self.queue_name )
-                    if len(self.queue_name) < 1:
+                    #logger.info('FIXME: read queueName %s from queue state file' % self.queueName )
+                    if len(self.queueName) < 1:
                           #logger.info('FIXME: queue name too short, try again' )
-                          self.queue_name=None
+                          self.queueName=None
                 else:
                     if hasattr(self,'no') and self.no > 1:
                         time.sleep(randint(1,4))
@@ -1405,14 +1406,14 @@ class Config:
                         break
 
             #if the queuefile is corrupt, then will need to guess anyways.
-            if ( self.queue_name is None ) or ( self.queue_name == '' ):
-                queue_name = 'q_' + self.broker.url.username + '_' + component + '.' + cfg
+            if ( self.queueName is None ) or ( self.queueName == '' ):
+                queueName = 'q_' + self.broker.url.username + '_' + component + '.' + cfg
                 if hasattr(self, 'queue_suffix'):
-                    queue_name += '.' + self.queue_suffix
-                queue_name += '.' + str(randint(0, 100000000)).zfill(8)
-                queue_name += '.' + str(randint(0, 100000000)).zfill(8)
-                self.queue_name = queue_name
-                #logger.info('FIXME: defaulted queue_name  %s ' % self.queue_name )
+                    queueName += '.' + self.queue_suffix
+                queueName += '.' + str(randint(0, 100000000)).zfill(8)
+                queueName += '.' + str(randint(0, 100000000)).zfill(8)
+                self.queueName = queueName
+                #logger.info('FIXME: defaulted queueName  %s ' % self.queueName )
 
                 if not os.path.isdir(os.path.dirname(queuefile)):
                     pathlib.Path(os.path.dirname(queuefile)).mkdir(parents=True,
@@ -1420,9 +1421,9 @@ class Config:
 
                 # only lead instance (0-forground, 1-start, or none in the case of 'declare')
                 # should write the state file.
-                if (self.queue_name is not None) and (not hasattr(self,'no') or (self.no < 2)):
+                if (self.queueName is not None) and (not hasattr(self,'no') or (self.no < 2)):
                     f = open(queuefile, 'w')
-                    f.write(self.queue_name)
+                    f.write(self.queueName)
                     f.close()
 
         if hasattr(self, 'no'):
@@ -1985,7 +1986,7 @@ class Config:
         parser.add_argument('--no',
                             type=int,
                             help='instance number of this process')
-        parser.add_argument('--queue_name',
+        parser.add_argument('--queueName',
                             nargs='?',
                             help='name of AMQP consumer queue to create')
         parser.add_argument('--post_broker',

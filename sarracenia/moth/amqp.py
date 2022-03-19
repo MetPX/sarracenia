@@ -55,7 +55,7 @@ default_options = {
     'exchangeDeclare': True,
     'logLevel': 'info',
     'prefetch': 25,
-    'queue_name': None,
+    'queueName': None,
     'queueBind': True,
     'queueDeclare': True,
     'reset': False,
@@ -270,7 +270,7 @@ class AMQP(Moth):
 
                     #FIXME: conver expire, message_ttl to proper units.
                     qname, msg_count, consumer_count = self.channel.queue_declare(
-                        self.o['queue_name'],
+                        self.o['queueName'],
                         passive=False,
                         durable=self.o['durable'],
                         exclusive=False,
@@ -278,15 +278,15 @@ class AMQP(Moth):
                         nowait=False,
                         arguments=args)
                     logger.info('queue declared %s (as: %s) ' %
-                                (self.o['queue_name'], broker_str))
+                                (self.o['queueName'], broker_str))
 
                 if self.o['queueBind']:
                     for tup in self.o['bindings']:
                         exchange, prefix, subtopic = tup
                         topic = '.'.join( prefix + subtopic )
                         logger.info('binding %s with %s to %s (as: %s)' % \
-                            ( self.o['queue_name'], topic, exchange, broker_str ) )
-                        self.channel.queue_bind(self.o['queue_name'], exchange,
+                            ( self.o['queueName'], topic, exchange, broker_str ) )
+                        self.channel.queue_bind(self.o['queueName'], exchange,
                                                 topic)
 
                 # Setup Successfully Complete!
@@ -294,7 +294,7 @@ class AMQP(Moth):
                 return
 
             except Exception as err:
-                logger.error( f'connecting to: {self.o["queue_name"]}, durable: {self.o["durable"]}, expire: {self.o["expire"]}, auto_delete={self.o["auto_delete"]}' )
+                logger.error( f'connecting to: {self.o["queueName"]}, durable: {self.o["durable"]}, expire: {self.o["expire"]}, auto_delete={self.o["auto_delete"]}' )
                 logger.error("AMQP getSetup failed to {} with {}".format(
                     self.broker.url.hostname, err))
                 logger.debug('Exception details: ', exc_info=True)
@@ -366,7 +366,7 @@ class AMQP(Moth):
     def getCleanUp(self) -> None:
 
         try:
-            self.channel.queue_delete(self.o['queue_name'])
+            self.channel.queue_delete(self.o['queueName'])
         except Exception as err:
             logger.error("AMQP putCleanup failed to {} with {}".format(
                 self.o['broker'].url.hostname, err))
@@ -400,7 +400,7 @@ class AMQP(Moth):
 
         while True:
             try:
-                raw_msg = self.channel.basic_get(self.o['queue_name'])
+                raw_msg = self.channel.basic_get(self.o['queueName'])
 
                 if (raw_msg is None) and (self.connection.connected):
                     return None
@@ -419,7 +419,7 @@ class AMQP(Moth):
                     return msg
             except Exception as err:
                 logger.warning("moth.amqp.getNewMessage: failed %s: %s" %
-                               (self.o['queue_name'], err))
+                               (self.o['queueName'], err))
                 logger.debug('Exception details: ', exc_info=True)
 
             if not self.o['message_strategy']['stubborn']:

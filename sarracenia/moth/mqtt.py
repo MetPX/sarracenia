@@ -167,7 +167,7 @@ class MQTT(Moth):
         for binding_tuple in userdata.o['bindings']:
             exchange, prefix, subtopic = binding_tuple
             logger.info( "tuple: %s %s %s" % ( exchange, prefix, subtopic ) )
-            subj = '/'.join( ['$share', userdata.o['queue_name'], exchange] + prefix + subtopic )
+            subj = '/'.join( ['$share', userdata.o['queueName'], exchange] + prefix + subtopic )
 
             (res, mid) = client.subscribe( subj , qos=userdata.o['qos'] )
             logger.info( "subscribed to: %s, mid=%d qos=%s result: %s" % (subj, mid, \
@@ -259,8 +259,8 @@ class MQTT(Moth):
                 self.new_message_mutex = threading.Lock()
 
                 cs=options['clean_session']
-                if ('queue_name' in options ) and ( 'no' in options ):
-                     cid = options['queue_name'] + '%02d' % options['no']
+                if ('queueName' in options ) and ( 'no' in options ):
+                     cid = options['queueName'] + '%02d' % options['no']
                 else:
                      #cid = ''.join(random.choice(string.ascii_lowercase) for i in range(10))
                      cid = None
@@ -273,7 +273,7 @@ class MQTT(Moth):
                 if ( not ('no' in options) or options['no'] == 0 ) and 'instances' in options: 
                     logger.info('declare sessions for instances')
                     for i in range(1,options['instances']+1):
-                        icid= options['queue_name'] + '%02d' % i 
+                        icid= options['queueName'] + '%02d' % i 
                         decl_client = self.__clientSetup( options, icid )
                         decl_client.on_connect = MQTT.__mgt_on_connect
                         decl_client.connect( self.broker.url.hostname, port=self.__sslClientSetup(), \
@@ -378,7 +378,7 @@ class MQTT(Moth):
             props.SessionExpiryInterval=1
             logger.info('cleanup sessions for instances')
             for i in range(1,self.o['instances']+1):
-                icid= self.o['queue_name'] + '%02d' % i 
+                icid= self.o['queueName'] + '%02d' % i 
                 myclient = self.__clientSetup( options, icid )
                 myclient.connect( self.broker.url.hostname, port=self.__sslClientSetup(), \
                    myclean_start=True, properties=props )

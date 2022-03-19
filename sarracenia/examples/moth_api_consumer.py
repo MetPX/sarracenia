@@ -26,7 +26,7 @@ options['bindings'] = [ ('xpublic', [ 'v02', 'post'] , [ '#' ] )]
 
 # Note: queue name must start with q_<username> because server is configured to deny anything else.
 #
-options['queue_name'] = 'q_anonymous_' + socket.getfqdn(
+options['queueName'] = 'q_anonymous_' + socket.getfqdn(
 ) + '_SomethingHelpfulToYou'
 
 print('options: %s' % options)
