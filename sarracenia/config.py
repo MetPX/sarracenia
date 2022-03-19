@@ -12,6 +12,7 @@
 import appdirs
 import argparse
 import copy
+import humanfriendly
 import inspect
 import logging
 
@@ -44,7 +45,7 @@ if sys.version_info[0] >= 3 and sys.version_info[1] < 8:
 
 
 import sarracenia
-from sarracenia import durationToSeconds, chunksize_from_str
+from sarracenia import durationToSeconds
 import sarracenia.credentials
 import sarracenia.flow
 import sarracenia.flowcb
@@ -119,7 +120,7 @@ set_choices = {
  
 perm_options = [ 'permDefault', 'permDirDefault' ]
 
-size_options = ['blocksize', 'bufsize', 'bytes_per_second', 'inline_max']
+size_options = ['accel_threshold', 'blocksize', 'bufsize', 'bytes_per_second', 'inline_max']
 
 str_options = [
     'admin', 'baseDir', 'broker', 'destination', 'directory', 'exchange',
@@ -774,7 +775,7 @@ class Config:
         if kind == 'count':
             count_options.append(option)
             if type(v) is not int:
-                setattr(self, option, int(v))
+                setattr(self, option, humanfriendly.parse_size(v))
         elif kind == 'duration':
             duration_options.append(option)
             if type(v) is not float:
@@ -814,7 +815,7 @@ class Config:
         elif kind == 'size':
             size_options.append(option)
             if type(v) is not int:
-                setattr(self, option, chunksize_from_str(v))
+                setattr(self, option, humanfriendly.parse_size(v))
 
         elif kind == 'str':
             str_options.append(option)
@@ -1204,9 +1205,9 @@ class Config:
                 else:
                     logger.error('%s setting to %s ignored: only numberic modes supported' % ( k, v ) )
             elif k in size_options:
-                setattr(self, k, chunksize_from_str(v))
+                setattr(self, k, humanfriendly.parse_size(v))
             elif k in count_options:
-                setattr(self, k, int(v))
+                setattr(self, k, humanfriendly.parse_size(v))
             elif k in list_options:
                 if not hasattr(self, k):
                     setattr(self, k, [' '.join(line[1:])])
@@ -1275,14 +1276,14 @@ class Config:
                 setattr(self, d, durationToSeconds(getattr(self, d)))
 
         if hasattr(self, 'kbytes_ps'):
-            bytes_ps = chunksize_from_str(self.kbytes_ps)
+            bytes_ps = humanfriendly.parse_size(self.kbytes_ps)
             if not self.kbytes_ps[-1].isalpha():
                 bytes_ps *= 1024
             setattr(self, 'bytes_per_second', bytes_ps)
 
         for d in count_options:
             if hasattr(self, d) and (type(getattr(self, d)) is str):
-                setattr(self, d, int(getattr(self, d)))
+                setattr(self, d, humanfriendly.parse_size(getattr(self, d)))
 
         for d in size_options:
             if hasattr(self, d) and (type(getattr(self, d)) is str):
@@ -1462,7 +1463,7 @@ class Config:
                 logger.warning("use post_baseDir instead of documentRoot")
             elif self.baseDir is not None:
                 self.post_baseDir = self.baseDir
-                logger.info("defaulting post_baseDir to same as baseDir")
+                logger.debug("defaulting post_baseDir to same as baseDir")
 
 
         if self.messageCountMax > 0:

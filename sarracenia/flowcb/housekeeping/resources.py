@@ -38,7 +38,6 @@ from pickle import TRUE
 import humanize
 import os
 import psutil
-from sarracenia.config import chunksize_from_str
 from sarracenia.flowcb import FlowCB
 from sarracenia.sr import sr_GlobalState
 import sys
@@ -51,7 +50,7 @@ class Resources(FlowCB):
     def __init__(self, options):
         self.o = options
         # Set option to neg value to determine if user set in config
-        self.o.add_option('MemoryMax', 'size', '-1k')
+        self.o.add_option('MemoryMax', 'size', '0')
         self.o.add_option('MemoryBaseLineFile', 'count', 100)
         self.o.add_option('MemoryMultiplier', 'float', 3)
 
@@ -68,7 +67,7 @@ class Resources(FlowCB):
         # We must set a threshold **after** the config file has been parsed.
         if self.threshold is None:
             # If the config set something, use it.
-            if self.o.MemoryMax != -1024:
+            if self.o.MemoryMax != 0:
                 self.threshold = self.o.MemoryMax
 
             if self.threshold is None:
