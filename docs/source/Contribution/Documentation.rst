@@ -47,7 +47,7 @@ Tutorials
 - Allow the user to learn by doing to get them started, be sure your tutorial works and users can see results immediately. 
 - Tutorials must be reliably repeatable focused on concrete steps (not abstract concepts) with the minimum necessary explanation.
 
-Many of the Tutorials are built using jupyter notebooks. See docs/Tutorials/README.md for
+Many of the Tutorials are built using jupyter notebooks. See docs/source/Tutorials/README.md for
 how to work with them.
 
 

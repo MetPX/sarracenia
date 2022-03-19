@@ -33,7 +33,7 @@ the pump on Windows should work, they just are not tested.
 
 
 The Flow Algorithm
-~~~~~~~~~~~~~~~~~~
+------------------
 
 All of the components (post, subscribe, sarra, sender, shovel, watch, winnow)
 share substantial code and differ only in default settings. The Flow

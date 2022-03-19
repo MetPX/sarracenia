@@ -30,8 +30,8 @@ have sr3 operate on a subset of all the configurations present.
 
 * If you already familiar in general with Sarracenia, and are looking for information about 
   specific options or directives, best to look at `sr3 Options (7) <sr3_options.7.html>`_
-* To more easily get started, have a look at `the Subscriber Guide on github <../How2Guides/subscriber.rst>`_
-* For a general guide to the interface: see the `Command Line Guide <../Explanation/CommandLineGuide.rst>`_
+* To more easily get started, have a look at `the Subscriber Guide on github <../How2Guides/subscriber.html>`_
+* For a general guide to the interface: see the `Command Line Guide <../Explanation/CommandLineGuide.html>`_
 
 The command line has three major elements:  
 * options
@@ -43,7 +43,7 @@ OPTIONS
 
 Most options are stored in configuration files referred to by the *component/config* indicated
 by the listing file, but on occasion, one may wish to use command line to override
-values in the configuration file.  Options are defined in `Sr3 Options (7) <sr3_options.7>`_
+values in the configuration file.  Options are defined in `Sr3 Options (7) <sr3_options.7.html>`_
 Refer to that manual page for a full discussion. There is one exception::
 
    -h (or --help) 

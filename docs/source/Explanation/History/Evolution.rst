@@ -104,3 +104,35 @@ Deployment status in 2015: `Sarracenia in 10 Minutes Video (5:26 in) <https://ww
 Deployment status in 2018: `Deployments as of January 2018 <deployment_2018.html>`_
 
 
+Project Website
+---------------
+
+Prior to March 2018, the primary web-site for the project was metpx.sf.net.
+That MetPX website was built from the documentation in the various modules
+in the project. It builds using all **.rst** files found in
+**sarracenia/doc** as well as *some* of the **.rst** files found in
+**sundew/doc**. In the Spring of 2018, development moved to github.com.
+github.com renders .rst when showing pages, so separate processing to render
+web pages is no longer needed.
+
+Between 2018 and 2022, updating was done by committing changes to .rst files
+directly on github, so the home page is:  https://github.com/MetPX/sarracenia)
+There was no post-processing required. As the links are all relative and 
+other services such as gitlab also support such rendering, the
+*website* is portable any gitlab instance, etc... And the entry point is from
+the README.rst file at the root directory of each repository.
+
+That had some readability problems, with people saying "Doesn't it have a web site?"
+and poor navigation, no indexing. In 2022/03, sphinx was adopted as part
+of #380 (Document Restructure) and the local build process is now essentially
+run sphinx. The new website ( https://metpx.github.io/sarracenia ) is updated
+by a github workflow on each commit.
+
+Updating The sf.net Website
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Only the index-e.html and index-f.html pages are used on the sf.net website
+today. Unless you want to change those pages, this operation is useless.
+For all other pages, the links go directly into the various .rst files on
+github.com.
+

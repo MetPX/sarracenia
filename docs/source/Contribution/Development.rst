@@ -47,14 +47,14 @@ The rest of the Guide takes the above for granted.
 Documentation
 -------------
 `Documentation Standards <Documentation.rst>`_ exist in /docs/Contribution/Documentation.rst
+process for locally building the docs are there, as well as live web-site maintenance
+methods.
 
 Where to Put Options 
 ~~~~~~~~~~~~~~~~~~~~
 
-Options are documented in sr3(1), which is kind of a *parent* to 
-all other consuming components. Any options used by multiple components should
-be documented there. Options which are unique to a single component should be
-documented in the man page for that component.
+Options are documented in sr3_options(7) dictionary style in alphabetic order.
+Should it be worthwhile, examples of use could be added to other guides.
 
 
 Development
@@ -304,9 +304,9 @@ Committing Code
 What should be done prior to committing to the master branch?
 Checklist:
 
-- do development on some other branch.  Usually the branch will be named after the issue being
-  addressed.  Example:  issue240, if we give up on an initial approach and start another one, 
-  there may be issue240_2 for a second attempt.  There may also be feature branches, such as v03.
+- do development on some other branch. Usually the branch will be named after the issue being
+  addressed. Example: issue240, if we give up on an initial approach and start another one, 
+  there may be issue240_2 for a second attempt. There may also be feature branches, such as v03.
 - **sr_insects tests works** (See Testing) The master branch should always be functional, do not commit code if the sr_insects tests are not working.
 - Natural consequence: if the code changes means tests need to change, include the test change in the commit.
 - **update doc/** manual pages should get their updates ideally at the same time as the code.
@@ -1146,7 +1146,7 @@ Commits to the Main Branch
 --------------------------
 
 Aside from typos, language fixups in the documentation, and incrementing
-the version, developers are not expected to commit to master. All work 
+the version, developers are not expected to commit to main. All work 
 happens on development branches, and all testing is expected to pass before 
 one considers affecting master. Once the branch development is complete, 
 or a unit of work-in-progress is felt to be worth merging to master, one 
@@ -1566,70 +1566,7 @@ Click on Releases, Edit the release:
 This will give us the ability to have old versions available.
 launchpad.net doesn't seem to keep old versions around.
 
-
-
-Updating The Project Website
-----------------------------
-
-Prior to March 2018, the primary web-site for the project was metpx.sf.net.
-That MetPX website was built from the documentation in the various modules
-in the project. It builds using all **.rst** files found in 
-**sarracenia/doc** as well as *some* of the **.rst** files found in 
-**sundew/doc**. In the Spring of 2018, development moved to github.com.
-That site renders .rst when showing pages, so separate processing to render
-web pages is no longer needed.
-
-On the current web site, updating is done by committing changes to .rst files
-directly on github. There is no post-processing required. As the links are all
-relative and other services such as gitlab also support such rendering, the
-*website* is portable any gitlab instance, etc... And the entry point is from
-the README.rst file at the root directory of each repository.
-
-
-Building Locally
-~~~~~~~~~~~~~~~~
-
-**OBSOLETE, See above**
-
-In order to build the HTML pages, the following software must be available on your workstation:
-
-* `dia <http://dia-installer.de/>`_
-* `docutils <http://docutils.sourceforge.net/>`_
-* `groff <http://www.gnu.org/software/groff/>`_
-
-From a command shell::
-
-  cd site
-  make
-
-note::  the makefile contains a commented line *sed that replaces .rst with .html in the files.
-To build the pages locally, this sed is needed, so un-comment it, but don't commit the change
-because it will break the *updating The website* procedure.
-
-
-Updating The Website
-~~~~~~~~~~~~~~~~~~~~
-
-Today, just edit the pages in the git repository, and they will be active as soon as they are pushed
-to the master branch.
-
-
-**OBSOLETE, See above**
-
-To publish the site to sourceforge (updating metpx.sourceforge.net), you must have a sourceforge.net account
-and have the required permissions to modify the site.
-
-From a shell, run::
-
-  make SFUSER=myuser deploy
-
-Only the index-e.html and index-f.html pages are used on the sf.net website 
-today. Unless you want to change those pages, this operation is useless.
-For all other pages, the links go directly into the various .rst files on
-github.com.
-
-
-
+ 
 Development Environment
 -----------------------
 
@@ -1666,54 +1603,4 @@ sr_report(7) messages should be emitted to indicate final disposition of the dat
 any notifications or report messages (don't report report messages, it becomes an infinite loop!)
 For debugging and other information, the local log file is used.  For example, sr_shovel does
 not emit any sr_report(7) messages, because no data is transferred, only messages.
-
-
-
-Adding Checksum Algorithms
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. note::
-   That addition of a checksum requires code modification is considered a weakness.
-   There will be an API to be able to plugin checksums at some point.  Not done yet.
-
-To add a checksum algorithm, need to add a new class to sr_util.py, and then modify sr_config.py
-to associate it with a label.  Reading of sr_util.py makes this pretty clear.
-Each algorithm needs:
-- an initializer (sets it to 0)
-- an algorithm selector.
-- an updater to add info of a given block to an existing sum,
-- get_value to obtain the hash (usually after all blocks have updated it)
-
-These are called by the code as files are downloaded, so that processing and transfer are overlapped.
-
-For example, to add SHA-2 encoding::
-
-  from hashlib import sha256
-
-  class checksum_s(object):
-      """
-      checksum the entire contents of the file, using SHA256.
-      """
-      def __init__(self):
-          self.value = '0'
-
-      def get_value(self):
-          self.value = self.filehash.hexdigest()
-          return self.value
-
-      def update(self,chunk):
-          self.filehash.update(chunk)
-
-      def set_path(self,path):
-          self.filehash = sha256()
-
-Then in sr_config.py, in the set_sumalgo routine::
-
-      if flgs == 'c':
-          self.sumalgo = checksum_s()
-
-Might want to add 's' to the list of valid sums in validate_sum as well.
-
-It is planned for a future version to make a plugin interface for this so that adding checksums
-becomes an application programmer activity.
 
