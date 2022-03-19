@@ -113,7 +113,7 @@ class Transfer():
      * permDefault - what permissions to set on files transferred.
      * permDirDefault - what permission to set on directories created.
      * timeout  - how long to wait for operations to complete.
-     * bytes_per_second - maximum transfer rate (throtle to avoid exceeding)
+     * byteRateMax - maximum transfer rate (throtle to avoid exceeding)
      * bufsize - size of buffers for file transfers.
 
     """
@@ -255,7 +255,7 @@ class Transfer():
                 alarm_cancel()
                 if not chunk: break
                 if self.sumalgo: self.sumalgo.update(chunk)
-                if self.o.bytes_per_second: self.throttle(chunk)
+                if self.o.byteRateMax: self.throttle(chunk)
             return rw_length
 
         # exact length to be transfered
@@ -276,7 +276,7 @@ class Transfer():
             alarm_cancel()
             if not chunk: break
             if self.sumalgo: self.sumalgo.update(chunk)
-            if self.o.bytes_per_second: self.throttle(chunk)
+            if self.o.byteRateMax: self.throttle(chunk)
             i = i + 1
 
         # remaining
@@ -290,7 +290,7 @@ class Transfer():
                 dst.write(new_chunk)
             alarm_cancel()
             if self.sumalgo: self.sumalgo.update(chunk)
-            if self.o.bytes_per_second: self.throttle(chunk)
+            if self.o.byteRateMax: self.throttle(chunk)
 
         return rw_length
 
@@ -385,7 +385,7 @@ class Transfer():
     def throttle(self, buf):
         logger.debug("sr_proto throttle")
         self.tbytes = self.tbytes + len(buf)
-        span = self.tbytes / self.o.bytes_per_second
+        span = self.tbytes / self.o.byteRateMax
         rspan = nowflt() - self.tbegin
         if span > rspan:
             stime = span - rspan
@@ -399,7 +399,7 @@ class Transfer():
         self.rw_length += len(chunk)
         alarm_cancel()
         if self.sumalgo: self.sumalgo.update(chunk)
-        if self.o.bytes_per_second: self.throttle(chunk)
+        if self.o.byteRateMax: self.throttle(chunk)
         if self.o.timeout: alarm_set(self.o.timeout)
 
     # write_chunk_end

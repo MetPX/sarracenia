@@ -491,8 +491,8 @@ lowered to 1.  For most usual situations the default is fine. For higher volume
 cases, one could raise it to reduce transfer overhead. It is only used for file
 transfer protocols, not HTTP ones at the moment.
 
-[--blocksize <value>] (default: 0 (auto))
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+blocksize <value> default: 0 (auto)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This **blocksize** option controls the partitioning strategy used to post files.
 The value should be one of::
@@ -508,8 +508,6 @@ optimized by only sending parts which have changed.
 
 The *outlet* option allows the final output to be other than a post.
 See `sr3_cpump(1) <sr3_cpump.1.rst>`_ for details.
-
-
 
 broker
 ~~~~~~
@@ -538,6 +536,13 @@ Once connected to an AMQP broker, the user needs to bind a queue
 to exchanges and topics to determine the messages of interest.
 
 
+byteRateMax <count> (default: 0)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**bytRateMax** is greater than 0, the process attempts to respect this delivery
+speed in kilobytes per second... ftp,ftps,or sftp)
+
+**FIXME**: byteRateMax... only implemented by sender? or subscriber as well, data only, or messages also?
 
 
 
@@ -922,13 +927,6 @@ In directory ~/.cache/sarra/log::
           sr_audit acts when a queue gets to the max_queue_size and not running.
 
 
-kbytes_ps <count> (default: 0)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-**kbytes_ps** is greater than 0, the process attempts to respect this delivery
-speed in kilobytes per second... ftp,ftps,or sftp)
-
-**FIXME**: kbytes_ps... only implemented by sender? or subscriber as well, data only, or messages also?
 
 logEvents ( default: after_accept,after_work,on_housekeeping )
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -940,6 +938,12 @@ logLevel ( default: info )
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The level of logging as expressed by python's logging. Possible values are :  critical, error, info, warning, debug.
+
+logReject ( default: False )
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Normally, messages rejection is done silently. When logReject is True, a log message will be generated for
+each message rejected, and indicating the basis for the rejection.
 
 logStdout ( default: False )
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -958,12 +962,6 @@ logging to be to standard output.
 It has not been measured, but there is a reasonable likelihood that use of *logStdout* with large configurations (dozens
 of configured instances/processes) will cause either corruption of logs, or limit the speed of execution of all processes
 writing to stdout.
-
-
-logReject <True|False> ( default: False )
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-print a log message when *rejecting* messages (choosing not to download the corresponding files)
 
 
 logrotate <max_logs> ( default: 5 )

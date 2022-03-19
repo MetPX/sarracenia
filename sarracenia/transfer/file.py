@@ -48,7 +48,7 @@ logger = logging.getLogger(__name__)
 #           options.batch
 #           options.permDefault
 #           options.permDirDefault
-#     opt   options.bytes_per_second
+#     opt   options.byteRateMax
 #     opt   options.bufsize
 
 

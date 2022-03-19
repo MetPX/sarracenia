@@ -92,7 +92,7 @@ count_options = [
 # all the boolean settings.
 flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'baseUrl_relPath', 'cache_stat', 'debug', \
     'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchange_split', 'realpath_filter', \
-    'follow_symlinks', 'force_polling', 'inline', 'inline_only', 'inplace', 'logStdout', 'log_reject', 'pipe', 'restore', \
+    'follow_symlinks', 'force_polling', 'inline', 'inline_only', 'inplace', 'logStdout', 'logReject', 'pipe', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
     'permCopy', 'pump_flag', 'queueBind', 'queueDeclare', 'randomize', 'realpath_post', 'reconnect', 'report_daemons', \
     'report_back', 'reset', 'retry_mode', 'save', 'set_passwords', 'source_from_exchange', \
@@ -120,7 +120,7 @@ set_choices = {
  
 perm_options = [ 'permDefault', 'permDirDefault' ]
 
-size_options = ['accelThreshold', 'blocksize', 'bufsize', 'bytes_per_second', 'inline_max']
+size_options = ['accelThreshold', 'blocksize', 'bufsize', 'byteRateMax', 'inline_max']
 
 str_options = [
     'admin', 'baseDir', 'broker', 'destination', 'directory', 'exchange',
@@ -512,6 +512,7 @@ class Config:
         'log_format': 'logFormat',
         'll': 'logLevel',
         'loglevel': 'logLevel',
+        'log_reject': 'logReject',
         'logdays': 'lr_backupCount',
         'logrotate': 'lr_backupCount',
         'logrotate_interval': 'lr_interval',
@@ -554,7 +555,7 @@ class Config:
                 setattr(self, i, parent[i])
 
         self.bufsize = 1024 * 1024
-        self.bytes_ps = 0
+        self.byteRateMax = 0
 
         self.nodupe_fileAgeMax = 0 # disabled.
         self.timezone = 'UTC'
@@ -1075,7 +1076,7 @@ class Config:
                         if 'continue' in line:
                             logger.info( f'{cfg}:{lineno} obsolete v2: \"{l}\" ignored' )
                         else:
-                            logger.info( f'{cfg}:{lineno} obsolete v2:\"{l}\" converted to sr3:\"{line}\"' )
+                            logger.info( f'{cfg}:{lineno} obsolete v2:\"{l}\" converted to sr3:\"{" ".join(line)}\"' )
                 else:
                     line = convert_to_v3[k]
                     k=line[0]
@@ -1283,7 +1284,7 @@ class Config:
             bytes_ps = humanfriendly.parse_size(self.kbytes_ps)
             if not self.kbytes_ps[-1].isalpha():
                 bytes_ps *= 1024
-            setattr(self, 'bytes_per_second', bytes_ps)
+            setattr(self, 'byteRateMax', bytes_ps)
 
         for d in count_options:
             if hasattr(self, d) and (type(getattr(self, d)) is str):
@@ -1301,10 +1302,10 @@ class Config:
             if hasattr(self, f) and (type(getattr(self, f)) is str):
                 setattr(self, f, float(getattr(self, f)))
 
-        if hasattr(self,'log_reject'):
-            if self.log_reject:
+        if hasattr(self,'logReject'):
+            if self.logReject:
                 self.logEvents |= set( ['reject'] )
-            delattr( self, 'log_reject' )
+            delattr( self, 'logReject' )
 
         if ( (len(self.logEvents) > 0 ) or self.log_flowcb_needed) :
             if not 'sarracenia.flowcb.log.Log' in self.plugins_late:
