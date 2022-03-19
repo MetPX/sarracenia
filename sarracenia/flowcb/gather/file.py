@@ -88,7 +88,7 @@ class File(FlowCB):
         
         logger.setLevel( getattr( logging, self.o.logLevel.upper() ) )
 
-        logger.debug("%s used to be overwrite_defaults" % self.o.program_name)
+        logger.debug("%s used to be overwrite_defaults" % self.o.component)
 
         self.obs_watched = []
         self.watch_handler = None
@@ -708,13 +708,13 @@ class File(FlowCB):
            result in batch sized chunks incrementally.
         """
         #logger.debug("%s run partflg=%s, sum=%s, nodupe_ttl=%s basis=%s pbd=%s" % \
-        #      ( self.o.program_name, self.o.partflg, self.o.sumflg, self.o.nodupe_ttl,
+        #      ( self.o.component, self.o.partflg, self.o.sumflg, self.o.nodupe_ttl,
         #        self.o.nodupe_basis, self.o.post_baseDir ))
         #logger.debug("%s realpath_post=%s follow_links=%s force_polling=%s batch=%s"  % \
-        #      ( self.o.program_name, self.o.realpath_post, self.o.follow_symlinks, \
+        #      ( self.o.component, self.o.realpath_post, self.o.follow_symlinks, \
         #        self.o.force_polling, self.o.batch ) )
         #logger.info("%s len(self.queued_messages)=%d" % \
-        #     ( self.o.program_name, len(self.queued_messages) ) )
+        #     ( self.o.component, len(self.queued_messages) ) )
 
         pbd = self.o.post_baseDir
 

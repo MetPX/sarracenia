@@ -297,7 +297,7 @@ class sr_GlobalState:
                     if state != 'unknown':
                         cfgbody = copy.deepcopy(self.default_cfg)
                         cfgbody.override({
-                            'program_name': c,
+                            'component': c,
                             'config': cbase,
                             'directory': '${PWD}'
                         })

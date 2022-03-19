@@ -38,6 +38,8 @@ The command line has three major elements:
 * action
 * component/config
 
+A flow is a group of processes running using a common component/config.
+
 OPTIONS
 =======
 
@@ -81,7 +83,10 @@ The type of action to take. One of:
 COMPONENTS
 ==========
 
-Components are a set of defaults that describe common settings for the common use cases:
+`The Flow Algorithm <../Explanation/Concepts.html#the-flow-algorithm>`_ is what is
+run by all sr3 processes. The flow algorithm's behaviour is customized by options,
+some of which control optional modules (flowcallbacks) Each component has a 
+different set of default option settings to cover a common use case. 
 
 * `cpump <../Explanation/CommandLineGuide.html#cpump>`_ - copy messages from one pump another second one (a C implementation of shovel.)
 * `poll <../Explanation/CommandLineGuide.html#poll>`_ - poll a non-sarracenia web or file server to create messages for processing.
@@ -105,7 +110,7 @@ It is actually building the effective configuration from:
 
  3. <component>.conf (subscribe.conf, audit.conf, etc...)
 
- 4. <progr>/<config>.conf
+ 4. <component>/<config>.conf
 
 Settings in an individual .conf file are read in after the default.conf
 file, and so can override defaults. Options specified on
@@ -131,8 +136,8 @@ be used by sarracenia ( `CREDENTIALS`_ for details. )
 
 One can also set the XDG_CONFIG_HOME environment variable to override default placement, or
 individual configuration files can be placed in any directory and invoked with the
-complete path.   When components are invoked, the provided file is interpreted as a
-file path (with a .conf suffix assumed.)  If it is not found as a file path, then the
+complete path. When components are invoked, the provided file is interpreted as a
+file path (with a .conf suffix assumed.) If it is not found as a file path, then the
 component will look in the component's config directory ( **config_dir** / **component** )
 for a matching .conf file.
 

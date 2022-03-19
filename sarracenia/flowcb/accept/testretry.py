@@ -47,7 +47,7 @@ class TestRetry(FlowCB):
             elif random.randint(0, 2):
 
                 # if sarra or subscribe break download
-                if self.o.program_name != 'sr_sender':
+                if self.o.component != 'sr_sender':
                     logger.debug("making it bad 1")
                     ok, self.o.details = self.o.credentials.get(self.destination)
 

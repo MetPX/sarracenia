@@ -28,7 +28,7 @@ def main():
     cfg1 = sarracenia.config.default_config()
 
     cfg1.override({
-        'program_name': 'post',
+        'component': 'post',
         'directory': os.getcwd(),
         'acceptUnmatched': True,
         'action': 'foreground'
@@ -44,7 +44,7 @@ def main():
         logger.critical('no posting configuration specified')
         return
 
-    if hasattr(cfg2,'program_name'):
+    if hasattr(cfg2,'component'):
         post_flow = sarracenia.flow.Flow.factory(cfg2)
         post_flow.run()
 

@@ -724,7 +724,7 @@ class Config:
                 pass
         for E in elst:
             if E in ['PROGRAM']:
-                e = 'program_name'
+                e = 'component'
             else:
                 e = E.lower()
             if hasattr(self, e):
@@ -2123,9 +2123,9 @@ def one_config(component, config, isPost=False):
 
     """
     default_cfg = default_config()
-    #default_cfg.override(  { 'program_name':component, 'directory': os.getcwd(), 'acceptUnmatched':True, 'no':0 } )
+    #default_cfg.override(  { 'component':component, 'directory': os.getcwd(), 'acceptUnmatched':True, 'no':0 } )
     default_cfg.override({
-        'program_name': component,
+        'component': component,
         'config': config,
         'acceptUnmatched': True,
         'no': 0

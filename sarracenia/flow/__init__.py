@@ -105,10 +105,10 @@ class Flow:
     @staticmethod
     def factory(cfg):
         for sc in Flow.__subclasses__():
-            if cfg.program_name == sc.__name__.lower():
+            if cfg.component == sc.__name__.lower():
                 return sc(cfg)
 
-        if cfg.program_name == 'flow':
+        if cfg.component == 'flow':
             return Flow(cfg)
         return None
 
@@ -262,7 +262,7 @@ class Flow:
     def close(self) -> None:
 
         self._runCallbacksTime('on_stop')
-        logger.info( f'flow/close completed cleanly pid: {os.getpid()} {self.o.program_name}/{self.o.config} instance: {self.o.no}')
+        logger.info( f'flow/close completed cleanly pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}')
 
     def ack(self, mlist) -> None:
         if "ack" in self.plugins:
@@ -294,7 +294,7 @@ class Flow:
 
 
         logger.info("callbacks loaded: %s" % self.plugins['load'])
-        logger.info( f'pid: {os.getpid()} {self.o.program_name}/{self.o.config} instance: {self.o.no}' )
+        logger.info( f'pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}' )
         self._runCallbacksTime( f'on_start' )
 
         spamming = True
@@ -308,7 +308,7 @@ class Flow:
                 break
 
             self.have_vip = self.has_vip()
-            if (self.o.program_name == 'poll' ) or self.have_vip:
+            if (self.o.component == 'poll' ) or self.have_vip:
 
                 #logger.info("current_rate (%.2f) vs. messageRateMax(%.2f)) " %
                 #            (current_rate, self.o.messageRateMax))
@@ -337,7 +337,7 @@ class Flow:
                 self.ack(self.worklist.rejected)
                 self.worklist.rejected = []
 
-                if (self.o.program_name == 'poll' ) and not self.have_vip:
+                if (self.o.component == 'poll' ) and not self.have_vip:
                     # this for duplicate cache synchronization.
                     self.ack(self.worklist.incoming)
                     self.worklist.incoming = []
@@ -389,7 +389,7 @@ class Flow:
                 current_sleep *= 2
 
             if now > next_housekeeping:
-                logger.info( f'on_housekeeping pid: {os.getpid()} {self.o.program_name}/{self.o.config} instance: {self.o.no}')
+                logger.info( f'on_housekeeping pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}')
                 self._runCallbacksTime( 'on_housekeeping' )
                 next_housekeeping = now + self.o.housekeeping
 

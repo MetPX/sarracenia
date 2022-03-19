@@ -8,7 +8,7 @@ cfg = sarracenia.config.no_file_config()
 
 cfg.broker = sarracenia.credentials.Credential('amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
 cfg.topicPrefix = [ 'v02', 'post']
-cfg.program_name = 'subscribe'
+cfg.component = 'subscribe'
 cfg.config='flow_demo'
 cfg.bindings = [ ('xpublic', ['v02', 'post'], ['*', 'WXO-DD', 'observations', 'swob-ml', '#' ]) ]
 cfg.queueName='q_anonymous.subscriber_test2'
@@ -20,7 +20,7 @@ cfg.messageCountMax=5
 cfg.no=0
 
 # set flow class to put working files in ~/.cache/sr3/subscrribe/flow_demo directory.
-cfg.pid_filename = sarracenia.config.get_pid_filename( None, cfg.program_name, cfg.config, 0)
+cfg.pid_filename = sarracenia.config.get_pid_filename( None, cfg.component, cfg.config, 0)
 
 # accept/reject patterns:
 pattern=".*"

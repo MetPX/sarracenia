@@ -65,7 +65,7 @@ class Clamav(FlowCB):
         return True
 
     def after_accept(self,worklist) -> None:
-        if self.o.program_name in ['sender','post','watch']:
+        if self.o.component in ['sender','post','watch']:
             new_incoming=[]
             for m in worklist.incoming:
                 scanfn = m['new_dir'] + os.sep + m['new_file']
@@ -77,7 +77,7 @@ class Clamav(FlowCB):
             worklist.incoming = new_incoming
 
     def after_work(self,worklist) -> None:
-        if self.o.program_name in ['subscribe','sarra']:
+        if self.o.component in ['subscribe','sarra']:
             new_ok=[]
             for m in worklist.ok:
                 scanfn = m['new_dir'] + os.sep + m['new_file']

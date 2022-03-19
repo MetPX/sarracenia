@@ -33,12 +33,12 @@ class Log(FlowCB):
         self.o = options
         self.o.add_option( 'logEvents', 'set', [ 'after_accept', 'on_housekeeping' ] )
         self.o.add_option( 'logMessageDump', 'flag', False )
-        logger.info( f'{self.o.program_name} initialized with: {self.o.logEvents}' )
-        if self.o.program_name in [ 'sender' ]:
+        logger.info( f'{self.o.component} initialized with: {self.o.logEvents}' )
+        if self.o.component in [ 'sender' ]:
             self.action_verb = 'sent'
-        elif self.o.program_name in [ 'post', 'poll', 'watch' ] :
+        elif self.o.component in [ 'post', 'poll', 'watch' ] :
             self.action_verb = 'noticed'
-        elif self.o.program_name in [ 'shovel' ]:
+        elif self.o.component in [ 'shovel' ]:
             self.action_verb = 'filtered'
         else:
             self.action_verb = 'downloaded'
