@@ -881,7 +881,7 @@ est un option qui a une valeur logique: vrai/faux)
 - **flatten   <string>         (défaut: '/')** 
 - **heartbeat <durée>          (défaut: 300 secondes)**
 - **inline       <booléan>     (défaut: false)**
-- **inline_max <compte>        (défaut: 1024)**
+- **inlineByteMax <compte>        (défaut: 1024)**
 - **inplace       <booléan>    (défaut: true)**
 - **kbytes_ps <count>          (défaut: 0)**
 - **inflight  <chaine>         (défaut: .tmp où NONE si post_broker est setté)** 
@@ -1122,7 +1122,7 @@ inline
 ~~~~~~
 
 Sur des liens qui ont une grande latence, il se peut que ca soit efficace d'inclure les
-fichiers plus petit que *inline_max* octets (defaut: 1024) pour éviter 
+fichiers plus petit que *inlineByteMax* octets (defaut: 1024) pour éviter 
 
 
 

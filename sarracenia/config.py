@@ -69,7 +69,7 @@ default_options = {
     'filename': 'WHATFN',
     'inflight': None,
     'inline': False,
-    'inline_only': False,
+    'inlineOnly': False,
     'integrity_method': 'sha512',
     'logStdout': False,
     'overwrite': True,
@@ -92,7 +92,7 @@ count_options = [
 # all the boolean settings.
 flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'baseUrl_relPath', 'cache_stat', 'debug', \
     'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchange_split', 'realpath_filter', \
-    'follow_symlinks', 'force_polling', 'inline', 'inline_only', 'inplace', 'logStdout', 'logReject', 'pipe', 'restore', \
+    'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logStdout', 'logReject', 'pipe', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
     'permCopy', 'pump_flag', 'queueBind', 'queueDeclare', 'randomize', 'realpath_post', 'reconnect', 'report_daemons', \
     'report_back', 'reset', 'retry_mode', 'save', 'set_passwords', 'source_from_exchange', \
@@ -120,7 +120,7 @@ set_choices = {
  
 perm_options = [ 'permDefault', 'permDirDefault' ]
 
-size_options = ['accelThreshold', 'blocksize', 'bufsize', 'byteRateMax', 'inline_max']
+size_options = ['accelThreshold', 'blocksize', 'bufsize', 'byteRateMax', 'inlineByteMax']
 
 str_options = [
     'admin', 'baseDir', 'broker', 'destination', 'directory', 'exchange',
@@ -521,6 +521,7 @@ class Config:
         'preserve_mode' : 'permCopy',
         'preserve_time' : 'timeCopy',
         'queue_name' : 'queueName', 
+        'sum' : 'integrity',  
         'suppress_duplicates' : 'nodupe_ttl',
         'suppress_duplicates_basis' : 'nodupe_basis', 
         'topic_prefix' : 'topicPrefix'
@@ -574,8 +575,8 @@ class Config:
         self.sleep = 0.1
         self.housekeeping = 300
         self.inline = False
-        self.inline_max = 4096
-        self.inline_encoding = 'guess'
+        self.inlineByteMax = 4096
+        self.inlineEncoding = 'guess'
         self.integrity_arbitrary_value = None
         self.lr_backupCount = 5
         self.lr_interval = 1
@@ -1150,7 +1151,7 @@ class Config:
                     self.plugins_early.append( v )
             elif k in ['set', 'setting', 's']:
                 self._parse_setting(line[1], line[2:])
-            elif k in ['sum', 'integrity' ]:
+            elif k in ['integrity']:
                 self._parse_sum(v)
             elif k in Config.port_required:
                 logger.error( f' {k} {v} not supported in v3, consult porting guide. Option ignored.' )
@@ -1954,13 +1955,13 @@ class Config:
                             action='store_true',
                             help='include file data in the message')
         parser.add_argument(
-            '--inline_encoding',
+            '--inlineEncoding',
             choices=['text', 'binary', 'guess'],
-            default=self.inline_encoding,
+            default=self.inlineEncoding,
             help='encode payload in base64 (for binary) or text (utf-8)')
-        parser.add_argument('--inline_max',
+        parser.add_argument('--inlineByteMax',
                             type=int,
-                            default=self.inline_max,
+                            default=self.inlineByteMax,
                             help='maximum message size to inline')
         parser.add_argument(
             '--instances',
@@ -1976,6 +1977,10 @@ class Config:
                 'notset', 'debug', 'info', 'warning', 'error', 'critical'
             ],
             help='encode payload in base64 (for binary) or text (utf-8)')
+        parser.add_argument('--logReject',
+                            action='store_true',
+                            default=False,
+                            help='print a log message explaining why each file is rejected')
         parser.add_argument('--logStdout',
                             action='store_true',
                             default=False,

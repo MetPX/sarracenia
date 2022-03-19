@@ -1959,8 +1959,8 @@ def main():
         'exchange': 'xpublic',
         'inline': False,
         'logStdout': False,
-        'inline_encoding': 'auto',
-        'inline_max': 4096,
+        'inlineEncoding': 'auto',
+        'inlineByteMax': 4096,
         'subtopic': None
     })
 

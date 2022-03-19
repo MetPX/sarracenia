@@ -180,13 +180,13 @@ class File(FlowCB):
 
         # complete message
         if ( self.o.post_topicPrefix[0] == 'v03') and self.o.inline: 
-            if fsiz < self.o.inline_max:
+            if fsiz < self.o.inlineByteMax:
 
-                if self.o.inline_encoding == 'guess':
+                if self.o.inlineEncoding == 'guess':
                     e = guess_type(path)[0]
                     binary = not e or not ('text' in e)
                 else:
-                    binary = (self.o.inline_encoding == 'text')
+                    binary = (self.o.inlineEncoding == 'text')
     
                 f = open(path, 'rb')
                 d = f.read()
@@ -209,9 +209,9 @@ class File(FlowCB):
                             "value": b64encode(d).decode('utf-8')
                         }
             else:
-               if self.o.inline_only:
+               if self.o.inlineOnly:
                    logger.error('skipping file %s too large (%d bytes > %d bytes max)) for inlining' % \
-                      ( path, fsiz, self.o.inline_max )  )
+                      ( path, fsiz, self.o.inlineByteMax )  )
                    return []
 
         # used when moving a file

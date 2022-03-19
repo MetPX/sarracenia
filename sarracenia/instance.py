@@ -76,7 +76,7 @@ class instance:
 
         cfg_preparse=sarracenia.config.Config( \
             {
-               'acceptUnmatched':False, 'exchange':None, 'inline':False, 'inline_encoding':'guess', 'logStdout': False,
+               'acceptUnmatched':False, 'exchange':None, 'inline':False, 'inlineEncoding':'guess', 'logStdout': False,
             } )
 
         defconfig = default_cfg_dir + os.sep + "default.conf"

@@ -13,8 +13,8 @@ default_options = {
     'exchange': 'xpublic',
     'expire': 300,
     'inline': False,
-    'inline_encoding': 'guess',
-    'inline_max': 4096,
+    'inlineEncoding': 'guess',
+    'inlineByteMax': 4096,
     'logFormat':
     '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
     'logLevel': 'info',
@@ -137,8 +137,8 @@ class Moth():
            'topicPrefix' : [ 'v03' ]
            'messageDebugDump': False, --> enable printing of raw messages.
            'inline': False,  - Are we inlining content within messages?
-           'inline_encoding': 'guess', - what encoding should we use for inlined content?
-           'inline_max': 4096,  - Maximum size of messages to inline.
+           'inlineEncoding': 'guess', - what encoding should we use for inlined content?
+           'inlineByteMax': 4096,  - Maximum size of messages to inline.
 
        for get:
        *  'batch'  : 100  # how many messages to get at once

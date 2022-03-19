@@ -887,10 +887,20 @@ When posting messages, The **inline** option is used to have the file content
 included in the post. This can be efficient when sending small files over high
 latency links, a number of round trips can be saved by avoiding the retrieval
 of the data using the URL.  One should only inline relatively small files,
-so when **inline** is active, only files smaller than **inline_max** bytes
+so when **inline** is active, only files smaller than **inlineByteMax** bytes
 (default: 1024) will actually have their content included in the post messages.
-If **inline_only** is set, and a file is larger than inline_max, the file
+If **inlineOnly** is set, and a file is larger than inlineByteMax, the file
 will not be posted.
+
+inlineByteMax <size>
+~~~~~~~~~~~~~~~~~~~~
+
+the maximums size of messages to inline.
+
+inlineOnly
+~~~~~~~~~~
+
+discard messages if the data is not inline.
 
 
 inplace <boolean> (default: On)
@@ -942,6 +952,32 @@ In directory ~/.cache/sarra/log::
   Processes which die should be restarted within a reasonable period of time to avoid
   loss of notifications. A queue which is not accessed for a long (implementation dependent)
   period will be destroyed. 
+
+integrity <string>
+~~~~~~~~~~~~~~~~~~
+
+All file posts include a checksum.  It is placed in the amqp message header will have as an
+entry *sum* with default value 'd,md5_checksum_on_data'.
+The *sum* option tell the program how to calculate the checksum.
+In v3, they are called Integrity methods::
+
+         cod,x      - Calculate On Download applying x
+         sha512     - do SHA512 on file content  (default)
+         md5        - do md5sum on file content
+         md5name    - do md5sum checksum on filename 
+         random     - invent a random value for each post.
+         arbitrary  - apply the literal fixed value.
+
+v2 options are a comma separated string.  Valid checksum flags are :
+
+* 0 : no checksum... value in post is a random integer (only for testing/debugging.)
+* d : do md5sum on file content 
+* n : do md5sum checksum on filename
+* p : do SHA512 checksum on filename and partstr [#]_
+* s : do SHA512 on file content (default)
+* z,a : calculate checksum value using algorithm a and assign after download.
+
+.. [#] only implemented in C. ( see https://github.com/MetPX/sarracenia/issues/117 )
 
 
 logEvents ( default: after_accept,after_work,on_housekeeping )
@@ -1551,32 +1587,6 @@ One can turn off queue binding as follows::
   subtopic None
 
 (False, or off will also work.)
-
-sum <string>
-~~~~~~~~~~~~
-
-All file posts include a checksum.  It is placed in the amqp message header will have as an
-entry *sum* with default value 'd,md5_checksum_on_data'.
-The *sum* option tell the program how to calculate the checksum.
-In v3, they are called Integrity methods::
-
-         cod,x      - Calculate On Download applying x
-         sha512     - do SHA512 on file content  (default)
-         md5        - do md5sum on file content
-         md5name    - do md5sum checksum on filename 
-         random     - invent a random value for each post.
-         arbitrary  - apply the literal fixed value.
-
-v2 options are a comma separated string.  Valid checksum flags are :
-
-* 0 : no checksum... value in post is a random integer (only for testing/debugging.)
-* d : do md5sum on file content 
-* n : do md5sum checksum on filename
-* p : do SHA512 checksum on filename and partstr [#]_
-* s : do SHA512 on file content (default)
-* z,a : calculate checksum value using algorithm a and assign after download.
-
-.. [#] only implemented in C. ( see https://github.com/MetPX/sarracenia/issues/117 )
 
 
 timeCopy (default: on)

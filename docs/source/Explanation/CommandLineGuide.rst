@@ -292,9 +292,9 @@ View all configuration settings (the result of all parsing... what the flow comp
     housekeeping=30
     inflight=None
     inline=False
-    inline_only=False
-    inline_encoding='guess'
-    inline_max=4096
+    inlineOnly=False
+    inlineEncoding='guess'
+    inlineByteMax=4096
     instances=1
     logFormat='%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s'
     logLevel='info'
