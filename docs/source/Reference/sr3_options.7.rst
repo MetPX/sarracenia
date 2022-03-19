@@ -1590,10 +1590,10 @@ The **timeout** option, sets the number of seconds to wait before aborting a
 connection or download transfer (applied per buffer during transfer).
 
 
-tls_rigour (default: medium)
+tlsRigour (default: medium)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-tls_rigour can be set to: *lax, medium, or strict*, and gives a hint to the
+tlsRigour can be set to: *lax, medium, or strict*, and gives a hint to the
 application of how to configure TLS connections. TLS, or Transport Level
 Security (used to be called Secure Socket Layer (SSL)) is the wrapping of
 normal TCP sockets in standard encryption. There are many aspects of TLS
@@ -1604,7 +1604,7 @@ situation naturally leads to difficulties in communication due to different
 levels of compliance with whatever is currently defined as rigourous encryption.
 
 If a site being connected to, has, for example, and expired certificate, and
-it is nevertheless necessary to use it, then set tls_rigour to *lax* and
+it is nevertheless necessary to use it, then set tlsRigour to *lax* and
 the connection should succeed regardless.
 
 

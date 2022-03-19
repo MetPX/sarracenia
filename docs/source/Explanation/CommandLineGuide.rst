@@ -332,7 +332,7 @@ View all configuration settings (the result of all parsing... what the flow comp
     suppress_duplicates=0
     suppress_duplicates_basis='data'
     timeout=300
-    tls_rigour='normal'
+    tlsRigour='normal'
     topicPrefix='v03'
     undeclared=['msg_total_interval', 'file_total_interval']
     users={'tsub': 'subscriber', 'tsource': 'source', 'anonymous': 'subscriber',...'

@@ -146,7 +146,7 @@ V2 to Sr3
           may need to change configurations to override default to get
           compatible configurations.
           
-**CHANGE**: v2: *mirror* defaults to False on all components except sr_sarra.
+**CHANGE**: v2: *mirror* defaults to False on all components except sarra.
           sr3: *mirror* defaults to True on all components except subscribe.
 
 *NOTICE*: The most common v2 plugins are on_message, and on_file ones 
@@ -255,6 +255,9 @@ V2 to Sr3
 
 **CHANGE**: obsolete settings: use_amqplib, use_pika. the new `sarracenia.moth.amqp <../Reference/code.html#module-sarracenia.moth.amqp>`_
           uses the amqp library.  To use other libraries, one should create new subclasses of sarracenia.moth.
+          
+**CHANGE**: statehost is now a boolean flag, fqdn option no longer implemented.
+          if this is a problem, submit an issue. It's just not considered worthwhile for now.
 
 **CHANGE**: sr_retry became `retry.py <../Reference/flowcb.html#module-sarracenia.flowcb.retry>`_. 
           Any plugins accessing internal structures of sr_retry.py need to be re-written. 

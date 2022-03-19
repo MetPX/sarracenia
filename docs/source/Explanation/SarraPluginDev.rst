@@ -231,7 +231,7 @@ Use the _sr3_ _show_ command to view all active settings resulting from a config
     pstrip=False, queue_filename='/home/peter/.cache/sr3/sarra/download_f20/sarra.download_f20.tfeed.qname',
     queue_name='q_tfeed_sarra.download_f20.65966332.70396990', randid='52f9', realpath_post=False, report_back=False, report_daemons=False, reset=False,
     resolved_exchanges=['xflow_public'], resolved_qname='q_tfeed_sarra.download_f20.65966332.70396990', settings={}, sleep=0.1, statehost=False, strip=0,
-    subtopic=None, suppress_duplicates=0, suppress_duplicates_basis='path', timeout=300, tls_rigour='normal', topicPrefix='v03',
+    subtopic=None, suppress_duplicates=0, suppress_duplicates_basis='path', timeout=300, tlsRigour='normal', topicPrefix='v03',
     undeclared=['announce_list'], users=False, v2plugin_options=[], v2plugins={}, vhost='/', vip=None
     
     fractal% 

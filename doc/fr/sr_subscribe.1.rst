@@ -896,7 +896,7 @@ est un option qui a une valeur logique: vrai/faux)
 - **strip     <compte|regexp>   (défaut: 0)**
 - **suppress_duplicates   <off|on|999>     (défaut: off)**
 - **timeout     <numéro flottante>         (défaut: 0.0)**
-- **tls_rigour  <lax|medium|strict>        (défaut: medium)**
+- **tlsRigour  <lax|medium|strict>        (défaut: medium)**
 
 
 attempts <compte> (défaut: 3)
@@ -1298,10 +1298,10 @@ sommes de contrôle sont tout simplement erronées et devraient être
 remplacées pour les consommateurs en aval.
 
 
-tls_rigour (default: medium)
+tlsRigour (default: medium)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-tls_rigour peut avoir une valeur de: *lax, medium, ou strict*, et indique
+tlsRigour peut avoir une valeur de: *lax, medium, ou strict*, et indique
 à l´application le genre de sécurité qui devrait être toléré dans les
 connexions sécurisés (TLS, Transport Level Security or Secure Socket Layer
 SSL). TLS a plusieurs options a ajuster, par exemple: vérification des
