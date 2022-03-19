@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 allFileEvents = set( [ 'create', 'delete', 'link', 'modify' ] )
 
 default_options = {
-    'accel_threshold': 0,
+    'accelThreshold': 0,
     'acceptUnmatched': False,
     'attempts': 3,
     'batch': 100,
@@ -1160,10 +1160,10 @@ class Flow:
 
             logger.debug( "hasattr=%s, thresh=%d, len=%d, remote_off=%d, local_off=%d " % \
                 ( hasattr( self.proto[self.scheme], 'getAccelerated'),  \
-                self.o.accel_threshold, block_length, remote_offset,  msg['local_offset'] ) )
+                self.o.accelThreshold, block_length, remote_offset,  msg['local_offset'] ) )
 
             accelerated = hasattr( self.proto[self.scheme], 'getAccelerated') and \
-                (self.o.accel_threshold > 0 ) and (block_length > self.o.accel_threshold) and \
+                (self.o.accelThreshold > 0 ) and (block_length > self.o.accelThreshold) and \
                 (remote_offset == 0) and ( msg['local_offset'] == 0)
 
             if accelerated:
@@ -1406,10 +1406,10 @@ class Flow:
 
             logger.debug( "hasattr=%s, thresh=%d, len=%d, remote_off=%d, local_off=%d " % \
                 ( hasattr( self.proto[self.scheme], 'putAccelerated'),  \
-                self.o.accel_threshold, block_length, new_offset,  msg['local_offset'] ) )
+                self.o.accelThreshold, block_length, new_offset,  msg['local_offset'] ) )
 
             accelerated = hasattr( self.proto[self.scheme], 'putAccelerated') and \
-                (self.o.accel_threshold > 0 ) and (block_length > self.o.accel_threshold) and \
+                (self.o.accelThreshold > 0 ) and (block_length > self.o.accelThreshold) and \
                 (new_offset == 0) and ( msg['local_offset'] == 0)
 
 

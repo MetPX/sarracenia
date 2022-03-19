@@ -40,7 +40,7 @@ class Sftp(Transfer):
     SecSH File Transfer Protocol (SFTP)  ( https://filezilla-project.org/specs/draft-ietf-secsh-filexfer-02.txt )
     Sarracenia transfer protocol subclass supports/uses additional custom options:
 
-    * accel_scp_command (default: '/usr/bin/scp %s %d' )
+    * accelScpCommand (default: '/usr/bin/scp %s %d' )
 
     The module uses the paramiko library for python SecSH support ( https://www.paramiko.org/ )
     """
@@ -51,7 +51,7 @@ class Sftp(Transfer):
 
         logger.debug("sr_sftp __init__")
 
-        self.o.add_option("accel_scp_command", "str", "/usr/bin/scp %s %d")
+        self.o.add_option("accelScpCommand", "str", "/usr/bin/scp %s %d")
         # sftp command times out after 20 secs
         # this setting is different from the computed timeout (protocol)
 
@@ -366,7 +366,7 @@ class Sftp(Transfer):
         arg1 = arg1.replace(' ', '\ ')
         arg2 = local_file
 
-        cmd = self.o.accel_scp_command.replace( '%s', arg1 )
+        cmd = self.o.accelScpCommand.replace( '%s', arg1 )
         cmd = cmd.replace( '%d', arg2 ).split()
         logger.info("accel_sftp:  %s" % ' '.join(cmd))
         p = subprocess.Popen(cmd)
@@ -537,7 +537,7 @@ class Sftp(Transfer):
         arg2 = arg2.replace(' ', '\ ')
         arg1 = local_file
 
-        cmd = self.o.accel_scp_command.replace( '%s', arg1 )
+        cmd = self.o.accelScpCommand.replace( '%s', arg1 )
         cmd = cmd.replace( '%d', arg2 ).split()
 
         logger.info("accel_sftp:  %s" % ' '.join(cmd))

@@ -65,7 +65,7 @@ Setup the bits that post changes to the exchange::
     .
     2020-08-20 16:29:26,111 [ERROR] standard queue name based on: 
       prefix=q_bob
-      program_name=sr_subscribe
+      component=subscribe
       exchange_split=False
       no=1
 

@@ -300,13 +300,13 @@ Configuration File Options
 The options available in configuration files:
 
 
-accel_treshold <byte count> (default: 0- disabled.)
+accelTreshold <byte count> default: 0 (disabled.)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The accel_threshold indicates the minimum size of file being transferred for
+The accelThreshold indicates the minimum size of file being transferred for
 which a binary downloader will be launched.
 
-accel_xx_command 
+accelXxxCommand 
 ~~~~~~~~~~~~~~~~
 
 Can specify alternate binaries for downloaders to tune for specific cases.
@@ -314,30 +314,30 @@ Can specify alternate binaries for downloaders to tune for specific cases.
 +-----------------------------------+--------------------------------+
 |  Option                           |  Defaul value                  |
 +-----------------------------------+--------------------------------+
-|  accel_wget_command               |  /usr/bin/wget %s -O %d        |
+|  accelWgetCommand                 |  /usr/bin/wget %s -O %d        |
 +-----------------------------------+--------------------------------+
-|  accel_scp_command                |  /usr/bin/scp %s %d            |
+|  accelScpCommand                  |  /usr/bin/scp %s %d            |
 +-----------------------------------+--------------------------------+
-|  accel_cp_command                 |  /usr/bin/cp  %s %d            |
+|  accelCpCommand                   |  /usr/bin/cp  %s %d            |
 +-----------------------------------+--------------------------------+
-|  accel_ftpget_command             |  /usr/bin/ncftpget %s %d       |
+|  accelFtpgetCommand               |  /usr/bin/ncftpget %s %d       |
 +-----------------------------------+--------------------------------+
-|  accel_ftpput_command             |  /usr/bin/ncftpput %s %d       |
+|  accelFtpputCommand               |  /usr/bin/ncftpput %s %d       |
 +-----------------------------------+--------------------------------+
 
 use the %s to stand-in for the name of the source file, and %d for the
 file being written.  An example setting to override with::
 
-   accel_cp_command dd if=%s of=%d bs=4096k
+   accelCpCommand dd if=%s of=%d bs=4096k
 
 
-accept, reject and accept_unmatch
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+accept, reject and acceptUnmatched
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-- **accept    <regexp pattern> (optional) [<keywords>]**
-- **reject    <regexp pattern> (optional)**
-- **accept_unmatch   <boolean> (default: False)**
+- **accept     <regexp pattern> (optional) [<keywords>]**
+- **reject     <regexp pattern> (optional)**
+- **acceptUnmatched   <boolean> (default: False)**
 
 The  **accept**  and  **reject**  options process regular expressions (regexp).
 The regexp is applied to the the message's URL for a match.
@@ -353,7 +353,7 @@ to the **directory** value they are specified under.
 
 After all **accept** / **reject**  options are processed, normally
 the message is acknowledged as consumed and skipped. To override that
-default, set **accept_unmatch** to True. The **accept/reject**
+default, set **acceptUnmatched** to True. The **accept/reject**
 settings are interpreted in order. Each option is processed orderly
 from top to bottom. For example:
 
@@ -613,7 +613,7 @@ These options are processed sequentially.
 The URL of a file that matches a  **reject**  pattern is never downloaded.
 One that matches an  **accept**  pattern is downloaded into the directory
 declared by the closest  **directory**  option above the matching  **accept** option.
-**accept_unmatch** is used to decide what to do when no reject or accept clauses matched.
+**acceptUnmatched** is used to decide what to do when no reject or accept clauses matched.
 
 ::
 

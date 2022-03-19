@@ -120,7 +120,7 @@ set_choices = {
  
 perm_options = [ 'permDefault', 'permDirDefault' ]
 
-size_options = ['accel_threshold', 'blocksize', 'bufsize', 'bytes_per_second', 'inline_max']
+size_options = ['accelThreshold', 'blocksize', 'bufsize', 'bytes_per_second', 'inline_max']
 
 str_options = [
     'admin', 'baseDir', 'broker', 'destination', 'directory', 'exchange',
@@ -480,8 +480,8 @@ class Config:
 
     # Correct name on the right, old name on the left.
     synonyms = {
-        'accel_scp_threshold': 'accel_threshold',
-        'accel_wget_threshold': 'accel_threshold',
+        'accel_scp_threshold': 'accelThreshold',
+        'accel_wget_threshold': 'accelThreshold',
         'accept_unmatch': 'acceptUnmatched',
         'accept_unmatched': 'acceptUnmatched',
         'basedir': 'baseDir',

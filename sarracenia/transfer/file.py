@@ -60,7 +60,7 @@ class File(Transfer):
     def __init__(self, proto, options):
         super().__init__(proto, options)
 
-        self.o.add_option("accel_cp_command", "str", "/usr/bin/cp %s %d")
+        self.o.add_option("accelCpCommand", "str", "/usr/bin/cp %s %d")
         logger.debug("sr_file __init__")
         self.cwd = None
 
@@ -150,7 +150,7 @@ class File(Transfer):
         arg1 = arg1.replace(' ', '\ ')
         arg2 = local_file
 
-        cmd = self.o.accel_cp_command.replace( '%s', arg1 ) 
+        cmd = self.o.accelCpCommand.replace( '%s', arg1 ) 
         cmd = cmd.replace( '%d', arg2 ).split()
 
         logger.info("accel_cp:  %s" % ' '.join(cmd))

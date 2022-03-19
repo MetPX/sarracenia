@@ -37,8 +37,8 @@ class Ftp(Transfer):
     File Transfer Protocol (FTP)  ( https://datatracker.ietf.org/doc/html/rfc959 )
     sarracenia transfer protocol subclass supports/uses additional custom options:
 
-    * accel_ftpput_command (default: '/usr/bin/ncftpput %s %d' )
-    * accel_ftpget_command (default: '/usr/bin/ncftpget %s %d' )
+    * accelFtpputCommand (default: '/usr/bin/ncftpput %s %d' )
+    * accelFtpgetCommand (default: '/usr/bin/ncftpget %s %d' )
 
     built using: ftplib ( https://docs.python.org/3/library/ftplib.html )
     """ 
@@ -46,8 +46,8 @@ class Ftp(Transfer):
 
         super().__init__(proto, options)
 
-        self.o.add_option('accel_ftpput_command', 'str', '/usr/bin/ncftpput %s %d')
-        self.o.add_option('accel_ftpget_command', 'str', '/usr/bin/ncftpget %s %d')
+        self.o.add_option('accelFtpputCommand', 'str', '/usr/bin/ncftpput %s %d')
+        self.o.add_option('accelFtpgetCommand', 'str', '/usr/bin/ncftpget %s %d')
 
         logger.debug("sr_ftp __init__")
         self.connected = False
@@ -304,7 +304,7 @@ class Ftp(Transfer):
         arg1 = arg1.replace(' ', '\ ')
         arg2 = local_file
 
-        cmd = self.o.accel_ftpget_command.replace( '%s', arg1 )
+        cmd = self.o.accelFtpgetCommand.replace( '%s', arg1 )
         cmd = cmd.replace( '%d', arg2 ).split()
 
         logger.info("accel_ftp:  %s" % ' '.join(cmd))
@@ -458,7 +458,7 @@ class Ftp(Transfer):
         arg2 = arg2.replace(' ', '\ ')
         arg1 = local_file
 
-        cmd = self.o.accel_ftpput_command.replace( '%s', arg1)
+        cmd = self.o.accelFtpputCommand.replace( '%s', arg1)
         cmd = cmd.replace('%d', arg2).split()
 
         logger.info("accel_ftp:  %s" % ' '.join(cmd))

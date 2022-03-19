@@ -93,8 +93,9 @@ V2 to Sr3
           v2 option that are renamed will be understood, but an informational message will be produced on
           startup. Underscore is still use for grouping purposes. Options which have changed::
 
-            accel_scp_threshold -> accel_threshold
-            accel_wget_threshold -> accel_threshold
+            accel_scp_threshold -> accelThreshold
+            accel_wget_threshold -> accelThreshold
+            accel_xxx_command -> accelXxxCommand
             accept_unmatch -> acceptUnmatched
             accept_unmatched -> acceptUnmatched
             basedir -> baseDir
