@@ -578,6 +578,7 @@ class Config:
         self.inlineByteMax = 4096
         self.inlineEncoding = 'guess'
         self.integrity_arbitrary_value = None
+        self.logReject = False
         self.lr_backupCount = 5
         self.lr_interval = 1
         self.lr_when = 'midnight'
@@ -1978,7 +1979,7 @@ class Config:
             help='encode payload in base64 (for binary) or text (utf-8)')
         parser.add_argument('--logReject',
                             action='store_true',
-                            default=False,
+                            default=self.logReject,
                             help='print a log message explaining why each file is rejected')
         parser.add_argument('--logStdout',
                             action='store_true',
