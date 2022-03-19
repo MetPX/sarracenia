@@ -144,7 +144,7 @@ option, with the use of *${..}* notation:
 * HH       - the current hourly timestamp.
 * *var*    - any environment variable.
 * BROKER_USER - the user name for authenticating to the broker (e.g. anonymous)
-* PROGRAM     - the name of the component (sr_subscribe, sr_shovel, etc...)
+* PROGRAM     - the name of the component (subscribe, shovel, etc...)
 * CONFIG      - the name of the configuration file being run.
 * HOSTNAME    - the hostname running the client.
 * RANDID      - a random id that will be consistent within a single invocation.
@@ -226,7 +226,7 @@ CREDENTIALS
 One normally does not specify passwords in configuration files.  Rather they are placed
 in the credentials file::
 
-   sr_subscribe edit credentials
+   edit ~/.config/sr3/credentials.conf
 
 For every url specified that requires a password, one places
 a matching entry in credentials.conf.
@@ -396,7 +396,7 @@ The **permDefault** options specifies a mask, that is the permissions must be
 at least what is specified.
 
 The **regexp pattern** can be used to set directory parts if part of the message is put
-to parenthesis. **sr_sender** can use these parts to build the directory name. The
+to parenthesis. **sender** can use these parts to build the directory name. The
 rst enclosed parenthesis strings will replace keyword **${0}** in the directory name...
 the second **${1}** etc.
 
@@ -562,7 +562,7 @@ subscriber
   A subscriber is user that can only subscribe to data and return report messages. Subscribers are
   not permitted to inject data.  Each subscriber has an xs_<user> named exchange on the pump,
   where if a user is named *Acme*, the corresponding exchange will be *xs_Acme*.  This exchange
-  is where an sr_subscribe process will send its report messages.
+  is where an subscribe process will send its report messages.
 
   By convention/default, the *anonymous* user is created on all pumps to permit subscription without
   a specific account.
@@ -583,7 +583,7 @@ feeder
   messages when no ordinary source or subscriber is appropriate to do so.  Is to be used in
   preference to administrator accounts to run flows.
 
-User credentials are placed in the credentials files, and *sr_audit* will update
+User credentials are placed in the credentials files, and *sr3 --users declare* will update
 the broker to accept what is specified in that file, as long as the admin password is
 already correct.
 
@@ -634,7 +634,7 @@ destfn_script <script> (default:None)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This Sundew compatibility option defines a script to be run when everything is ready
-for the delivery of the product.  The script receives the sr_sender class
+for the delivery of the product.  The script receives the sender class
 instance.  The script takes the parent as an argument, and for example, any
 modification to  **parent.msg.new_file**  will change the name of the file written locally.
 
@@ -765,26 +765,26 @@ would result in the creation of the filepath::
 
  /mylocaldirectory/model_gem_global-25km-grib2-lat_lon-12-015-CMC_glb_TMP_TGL_2_latlon.24x.24_2013121612_P015.grib2
 
-[-fs|--follow_symlinks <boolean>]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+follow_symlinks <boolean>
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The *follow_symlinks* option causes symbolic links to be traversed.  If *follow_symlinks* is set
 and the destination of a symbolic link is a file, then that destination file should be posted as well as the link.
 If the destination of the symbolic link is a directory, then the directory should be added to those being
-monitored by sr_watch.   If *follow_symlinks* is false, then no action related to the destination of the symbolic
+monitored by watch.   If *follow_symlinks* is false, then no action related to the destination of the symbolic
 link is taken.
 
 
-[-fp|--force_polling <boolean>]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+force_polling <boolean> (default: False)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-By default, sr_watch selects an (OS dependent) optimal method to watch a
+By default, watch selects an (OS dependent) optimal method to watch a
 directory. For large trees, the optimal method can be manyfold (10x or even
 100x) faster to recognize when a file has been modified. In some cases,
 however, platform optimal methods do not work (such as with some network
 shares, or distributed file systems), so one must use a slower but more
 reliable and portable polling method.  The *force_polling* keyword causes
-sr_watch to select the polling method in spite of the availability of a
+watch to select the polling method in spite of the availability of a
 normally better one.  KNOWN LIMITATION: When *force_polling* is set,
 the *sleep* setting should be at least 5 seconds. It is not currently clear
 why.
@@ -792,11 +792,11 @@ why.
 NOTE::
 
   When directories are consumed by processes using the subscriber *delete* option, they stay empty, and
-  every file should be reported on every pass.  When subscribers do not use *delete*, sr_watch needs to
+  every file should be reported on every pass.  When subscribers do not use *delete*, watch needs to
   know which files are new.  It does so by noting the time of the beginning of the last polling pass.
   File are posted if their modification time is newer than that.  This will result in many multiple posts
-  by sr_watch, which can be minimized with the use of cache.   One could even depend on the cache
-  entirely and turn on the *delete* option, which will have sr_watch attempt to post the entire tree
+  by watch, which can be minimized with the use of cache.   One could even depend on the cache
+  entirely and turn on the *delete* option, which will have watch attempt to post the entire tree
   every time (ignoring mtime).
 
 
@@ -809,7 +809,7 @@ on how many headers can be used, and minimizing the size of messages has importa
 impacts.
 
 
-housekeeping <count> (default: 300 seconds)
+housekeeping <interval> (default: 300 seconds)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The **housekeeping** option sets how often to execute periodic processing as determined by
@@ -833,7 +833,7 @@ sub-directory of the destination into which the file should be written while in 
 Whether a prefix or suffix is specified, when the transfer is
 complete, the file is renamed to its permanent name to allow further processing.
 
-When posting a file with sr3_post, sr_cpost, or sr3_watch, the  **inflight**  option
+When posting a file with sr3_post, sr3_cpost, or sr3_watch, the  **inflight**  option
 can also be specified as a time interval, for example, 10 for 10 seconds.
 When set to a time interval, file posting process ensures that it waits until
 the file has not been modified in that interval. So a file will
@@ -842,7 +842,7 @@ If you see the error message::
 
     inflight setting: 300, not for remote
 
-It is because the time interval setting is only supported by sr3_post/sr_cpost/sr3_watch.
+It is because the time interval setting is only supported by sr3_post/sr3_cpost/sr3_watch.
 in looking at local files before generating a post, it is not used as say, a means
 of delaying sending files.
 
@@ -894,15 +894,15 @@ Sometimes one instance of a component and configuration is not enough to process
 **instances      <integer>     (default:1)**
 
 The instance option allows launching several instances of a component and configuration.
-When running sr_sender for example, a number of runtime files are created.
+When running sender for example, a number of runtime files are created.
 In the ~/.cache/sarra/sender/configName directory::
 
-  A .sr_sender_configname.state         is created, containing the number instances.
-  A .sr_sender_configname_$instance.pid is created, containing the PID  of $instance process.
+  A .sender_configname.state         is created, containing the number instances.
+  A .sender_configname_$instance.pid is created, containing the PID  of $instance process.
 
 In directory ~/.cache/sarra/log::
 
-  A .sr_sender_configname_$instance.log  is created as a log of $instance process.
+  A .sender_configname_$instance.log  is created as a log of $instance process.
 
 .. NOTE::
   known bug in the management interface `sr <sr.8.rst>_`  means that instance should
@@ -915,17 +915,12 @@ In directory ~/.cache/sarra/log::
 
 .. Note::
 
-  While the brokers keep the queues available for some time, Queues take resources on 
-  brokers, and are cleaned up from time to time.  A queue which is not
+  While the brokers keep the queues available for some time, queues take resources on 
+  brokers, and are cleaned up from time to time. A queue which is not
   accessed and has too many (implementation defined) files queued will be destroyed.
   Processes which die should be restarted within a reasonable period of time to avoid
-  loss of notifications.  A queue which is not accessed for a long (implementation dependent)
+  loss of notifications. A queue which is not accessed for a long (implementation dependent)
   period will be destroyed. 
-
-.. Note::
-   FIXME  The last sentence is not really right...sr_audit does track the queues' age. 
-          sr_audit acts when a queue gets to the max_queue_size and not running.
-
 
 
 logEvents ( default: after_accept,after_work,on_housekeeping )
@@ -969,7 +964,7 @@ logrotate <max_logs> ( default: 5 )
 
 Maximum number of logs archived.
 
-logrotate_interval <duration>[<time_unit>] ( default: 1 )
+logrotate_interval <interval>[<time_unit>] ( default: 1d )
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The duration of the interval with an optional time unit (ie 5m, 2h, 3d)
@@ -1051,9 +1046,9 @@ instances share a queue, the first time a posting is received, it could be
 picked by one instance, and if a duplicate one is received it would likely
 be picked up by another instance. **For effective duplicate suppression with instances**,
 one must **deploy two layers of subscribers**. Use
-a **first layer of subscribers (sr_shovels)** with duplicate suppression turned
+a **first layer of subscribers (shovels)** with duplicate suppression turned
 off and output with *post_exchange_split*, which route posts by checksum to
-a **second layer of subscibers (sr_winnow) whose duplicate suppression caches are active.**
+a **second layer of subscibers (winnow) whose duplicate suppression caches are active.**
 
 
 nodupe_basis <data|name|path> (default: path)
@@ -1114,7 +1109,7 @@ posting to a broker. The valid argument values are:
 
   just output the retrieval URL to standard output.
 
-FIXME: The **outlet** option came from the C implementation ( *sr_cpump*  ) and it has not
+FIXME: The **outlet** option came from the C implementation ( *sr3_cpump*  ) and it has not
 been used much in the python implementation.
 
 overwrite <boolean> (default: off)
@@ -1128,10 +1123,10 @@ The  **overwrite**  option,if set to false, avoid unnecessary downloads under th
 
 The default is False.
 
-[-p|--path path]
-~~~~~~~~~~~~~~~~
+path <path>
+~~~~~~~~~~~
 
-**sr_post** evaluates the filesystem path from the **path** option
+**post** evaluates the filesystem path from the **path** option
 and possibly the **post_base_dir** if the option is used.
 
 If a path defines a file then this file is watched.
@@ -1140,7 +1135,7 @@ If a path defines a directory then all files in that directory are
 watched...
 
 If this path defines a directory, all files in that directory are
-watched and should **sr_watch** find one (or more) directory(ies), it
+watched and should **watch** find one (or more) directory(ies), it
 watches it(them) recursively until all the tree is scanned.
 
 The AMQP announcements are made of the tree fields, the announcement time,
@@ -1205,7 +1200,7 @@ post_exchange_split   <number>   (default: 0)
 The **post_exchange_split** option appends a two digit suffix resulting from
 hashing the last character of the checksum to the post_exchange name,
 in order to divide the output amongst a number of exchanges.  This is currently used
-in high traffic pumps to allow multiple instances of sr_winnow, which cannot be
+in high traffic pumps to allow multiple instances of winnow, which cannot be
 instanced in the normal way.  Example::
 
     post_exchange_split 5
@@ -1218,7 +1213,7 @@ of the total flow.
 [-pos|--post_on_start]
 ~~~~~~~~~~~~~~~~~~~~~~
 
-When starting sr_watch, one can either have the program post all the files in the directories watched
+When starting watch, one can either have the program post all the files in the directories watched
 or not.
 
 post_topicPrefix (default: topicPrefix)
@@ -1226,7 +1221,7 @@ post_topicPrefix (default: topicPrefix)
 
 Prepended to the sub-topic to form a complete topic hierarchy. 
 This option applies to publishing.  Denotes the version of messages published 
-in the sub-topics. (v03 refers to `<sr_post.7.html>`_) defaults to whatever
+in the sub-topics. (v03 refers to `<sr3_post.7.html>`_) defaults to whatever
 was received. 
 
 
@@ -1254,7 +1249,7 @@ Where:
 
 * *brokerUser* is the username used to connect to the broker (often: *anonymous* )
 
-* *programName* is the component using the queue (e.g. *sr_subscribe* ),
+* *programName* is the component using the queue (e.g. *subscribe* ),
 
 * *configName* is the configuration file used to tune component behaviour.
 
@@ -1303,7 +1298,7 @@ posts are randomized meaning that they will not be posted
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The realpath option resolves paths given to their canonical ones, eliminating
-any indirection via symlinks. The behaviour improves the ability of sr_watch to
+any indirection via symlinks. The behaviour improves the ability of watch to
 monitor trees, but the trees may have completely different paths than the arguments
 given. This option also enforces traversing of symbolic links.
 
@@ -1588,7 +1583,7 @@ When set in a posting component, it has the effect of eliding the *atime* and *m
 headers from the messages.
 
 
-timeout <float> (default: 0)
+timeout <interval> (default: 0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The **timeout** option, sets the number of seconds to wait before aborting a
@@ -1618,7 +1613,7 @@ topicPrefix (default: v03)
 
 prepended to the sub-topic to form a complete topic hierarchy. 
 This option applies to subscription bindings.
-Denotes the version of messages received in the sub-topics. (v03 refers to `<sr_post.7.html>`_)
+Denotes the version of messages received in the sub-topics. (v03 refers to `<sr3_post.7.html>`_)
 
 
 
@@ -1633,7 +1628,7 @@ a single node in a cluster at a time, a singleton. This is typically
 required for a poll component, but it can be used in senders or other
 cases.
 
-**sr_subscribe** can be used on a single server node, or multiple nodes
+**subscribe** can be used on a single server node, or multiple nodes
 could share responsibility. Some other, separately configured, high availability
 software presents a **vip** (virtual ip) on the active server. Should
 the server go down, the **vip** is moved on another server, and processing
@@ -1643,7 +1638,7 @@ Both servers would run an **sr3 instance**::
  - **vip          <string>          (None)**
 
 When you run only one **sr3 instance** on one server, these options are not set,
-and sr_subscribe will run in 'standalone mode'.
+and subscribe will run in 'standalone mode'.
 
 In the case of clustered brokers, you would set the options for the
 moving vip.
@@ -1667,13 +1662,13 @@ work at all when installed using Anaconda.
 
 A setting is provided *windows_run* to allow selection. the choices are:
 
-* exe - run sr_subscribe.exe as installed by pip (what one would expect to start)
+* exe - run sr3.exe as installed by pip (what one would expect to start)
 
-* pyw - run the pythonw.exe executable with sr_subscribe.py (or sr_subscribe-script.py)
+* pyw - run the pythonw.exe executable with sr.py (or sr3-script.py)
   as the argument. (sometimes needed to have the component continue to run
   after calling process is terminated.
 
-* py - run the python.exe executable with sr_subscribe.py (or sr_subscribe-script.py)
+* py - run the python.exe executable with sr3.py (or sr3-script.py)
   as the argument. (sometimes also works.)
 
 xattr_disable (default: off)

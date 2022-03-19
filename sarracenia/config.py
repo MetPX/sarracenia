@@ -1053,6 +1053,7 @@ class Config:
        """
         lineno=0
         for l in open(cfg, "r").readlines():
+            l = l.strip()
             lineno+=1
             line = l.split()
 
