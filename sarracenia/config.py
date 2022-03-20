@@ -757,17 +757,13 @@ class Config:
         """
         pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
 
-        if accepting:
-           s='accept '
-        else:
-           s='reject '
-        if pstrip:
-           strip=pstrip
-        if maskFileOption == 'WHATFN':
-           fn=''
-        else:
-           fn=f'filename:{maskFileOption}'
-        return f'{s} {pattern} mirror:{mirror} strip:{pstrip} flatten:{flatten} {fn}'
+        s = 'accept' if accepting else 'reject'
+        if pstrip : strip=pstrip
+        strip = '' if strip == 0 else f' strip:{strip}'
+        fn = '' if (maskFileOption == 'WHATFN') else f' filename:{maskFileOption}'
+        flatten = '' if flatten == '/' else f' flatten:{flatten}'
+        w = 'with ' if fn or flatten or strip else ''
+        return f'{s} {pattern} into {maskDir} {w}mirror:{mirror}{strip}{flatten}{fn}'
 
     def add_option(self, option, kind='list', default_value=None):
         """
@@ -850,6 +846,8 @@ class Config:
     def dump(self):
         """ print out what the configuration looks like.
        """
+
+        term = shutil.get_terminal_size((80, 20))
         d = copy.deepcopy(self.dictify())
         for omit in [ 'env' ] :
             del d[omit]
@@ -863,7 +861,7 @@ class Config:
             if type(d[k]) is sarracenia.credentials.Credential :
                 d[k] = str(d[k])
 
-        pprint.pprint( d, compact=True )
+        pprint.pprint( d, width=term.columns, compact=True )
         return
 
     def dictify(self):
