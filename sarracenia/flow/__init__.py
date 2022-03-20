@@ -470,7 +470,6 @@ class Flow:
             # apply masks for accept/reject options.
             matched = False
             for mask in self.o.masks:
-                #logger.info('filter - checking: %s' % str(mask) )
                 pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
 
                 if mask_regexp.match(urlToMatch):
@@ -487,17 +486,11 @@ class Flow:
                             self.reject( m, 304, "mask=%s strip=%s url=%s" % (str(mask), strip, urlToMatch) )
                         break
 
-                    # FIXME... missing dir mapping with mirror, strip, etc...
-                    #self.o.set_newMessageFields(m, url, pattern, maskDir,
-                    #                            maskFileOption, mirror, strip,
-                    #                            pstrip, flatten)
-
                     m.updateFieldsAccepted(self.o, url, pattern, maskDir,
                                                 maskFileOption, mirror, strip,
                                                 pstrip, flatten)
 
                     filtered_worklist.append(m)
-                    #logger.debug( "accepted mask=%s strip=%s" % (str(mask), strip) )
                     break
 
             if not matched:
