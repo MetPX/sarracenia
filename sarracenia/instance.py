@@ -122,18 +122,18 @@ class instance:
         # FIXME: do we put explicit error handling here for bad input?
         #        probably worth exploring.
         #
-        lr_when = cfg_preparse.lr_when
-        if (type(cfg_preparse.lr_interval) == str) and (
-                cfg_preparse.lr_interval[-1] in 'mMhHdD'):
-            lr_when = cfg_preparse.lr_interval[-1]
-            lr_interval = int(float(cfg_preparse.lr_interval[:-1]))
+        lr_when = 'midnight'
+        if (type(cfg_preparse.logRotateInterval) == str) and (
+                cfg_preparse.logRotateInterval[-1] in 'mMhHdD'):
+            lr_when = cfg_preparse.logRotateInterval[-1]
+            logRotateInterval = int(float(cfg_preparse.logRotateInterval[:-1]))
         else:
-            lr_interval = int(float(cfg_preparse.lr_interval))
+            logRotateInterval = int(float(cfg_preparse.logRotateInterval))
 
-        if type(cfg_preparse.lr_backupCount) == str:
-            lr_backupCount = int(float(cfg_preparse.lr_backupCount))
+        if type(cfg_preparse.logRotateCount) == str:
+            logRotateCount = int(float(cfg_preparse.logRotateCount))
         else:
-            lr_backupCount = cfg_preparse.lr_backupCount
+            logRotateCount = cfg_preparse.logRotateCount
 
         # init logs here. need to know instance number and configuration and component before here.
         if cfg_preparse.action == 'start' and not cfg_preparse.logStdout:
@@ -169,8 +169,8 @@ class instance:
             handler = RedirectedTimedRotatingFileHandler(
                 logfilename,
                 when=lr_when,
-                interval=lr_interval,
-                backupCount=lr_backupCount)
+                interval=logRotateInterval,
+                backupCount=logRotateCount)
             handler.setFormatter(logging.Formatter(log_format))
 
             logger.addHandler(handler)

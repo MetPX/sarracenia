@@ -93,54 +93,69 @@ V2 to Sr3
           v2 option that are renamed will be understood, but an informational message will be produced on
           startup. Underscore is still use for grouping purposes. Options which have changed::
 
-            accel_scp_threshold -> accelThreshold
-            accel_wget_threshold -> accelThreshold
-            accel_xxx_command -> accelXxxCommand
-            accept_unmatch -> acceptUnmatched
-            accept_unmatched -> acceptUnmatched
-            basedir -> baseDir
-            base_dir -> baseDir
-            baseurl -> baseUrl
-            bind_queue -> queueBind
-            declare_exchange -> exchangeDeclare
-            declare_queue -> queueDeclare
-            cache -> nodupe_ttl
-            document_root -> documentRoot
-            no_duplicates -> nodupe_ttl
-            caching -> nodupe_ttl
-            cache_basis -> nodupe_basis
-            e  -> fileEvents
-            events  -> fileEvents
-            instance -> instances
-            chmod -> permDefault
-            default_mode -> permDefault
-            chmod_dir -> permDirDefault
-            default_dir_mode -> permDirDefault
-            chmod_log -> permLog
-            default_log_mode -> permLog
-            file_time_limit  -> nodupe_fileAgeMax
-            heartbeat -> housekeeping
-            hb_memory_baseline_file  -> MemoryBaseLineFile
-            hb_memory_max  -> MemoryMax
-            hb_memory_multiplier  -> MemoryMultiplier
-            log_format -> logFormat
-            ll -> logLevel
-            loglevel -> logLevel
-            logdays -> lr_backupCount
-            logrotate -> lr_backupCount
-            logrotate_interval -> lr_interval
-            post_base_dir -> post_baseDir
-            post_basedir -> post_baseDir
-            post_base_url -> post_baseUrl
-            post_baseurl -> post_baseUrl
-            post_document_root -> post_documentRoot
-            post_rate_limit -> messageRateMax
-            post_topic_prefix  -> post_topicPrefix
-            preserve_mode  -> permCopy
-            preserve_time  -> timeCopy
-            suppress_duplicates  -> nodupe_ttl
-            suppress_duplicates_basis  -> nodupe_basis
-            topic_prefix  -> topicPrefix
+            Python 3.8.10 (default, Nov 26 2021, 20:14:08) 
+            [GCC 9.3.0] on linux
+            Type "help", "copyright", "credits" or "license" for more information.
+            >>> import sarracenia.config,pprint
+            >>> pp=pprint.PrettyPrinter()
+            >>> pp.pprint(sarracenia.config.Config.synonyms)
+            {'accel_scp_threshold': 'accelThreshold',
+             'accel_wget_threshold': 'accelThreshold',
+             'accept_unmatch': 'acceptUnmatched',
+             'accept_unmatched': 'acceptUnmatched',
+             'base_dir': 'baseDir',
+             'basedir': 'baseDir',
+             'baseurl': 'baseUrl',
+             'bind_queue': 'queueBind',
+             'cache': 'nodupe_ttl',
+             'cache_basis': 'nodupe_basis',
+             'caching': 'nodupe_ttl',
+             'chmod': 'permDefault',
+             'chmod_dir': 'permDirDefault',
+             'chmod_log': 'permLog',
+             'declare_exchange': 'exchangeDeclare',
+             'declare_queue': 'queueDeclare',
+             'default_dir_mode': 'permDirDefault',
+             'default_log_mode': 'permLog',
+             'default_mode': 'permDefault',
+             'document_root': 'documentRoot',
+             'e': 'fileEvents',
+             'events': 'fileEvents',
+             'exchange_split': 'exchangeSplit',
+             'file_time_limit': 'nodupe_fileAgeMax',
+             'hb_memory_baseline_file': 'MemoryBaseLineFile',
+             'hb_memory_max': 'MemoryMax',
+             'hb_memory_multiplier': 'MemoryMultiplier',
+             'heartbeat': 'housekeeping',
+             'instance': 'instances',
+             'll': 'logLevel',
+             'logRotate': 'logRotateCount',
+             'logRotate_interval': 'logRotateInterval',
+             'log_format': 'logFormat',
+             'log_reject': 'logReject',
+             'logdays': 'logRotateCount',
+             'loglevel': 'logLevel',
+             'no_duplicates': 'nodupe_ttl',
+             'post_base_dir': 'post_baseDir',
+             'post_base_url': 'post_baseUrl',
+             'post_basedir': 'post_baseDir',
+             'post_baseurl': 'post_baseUrl',
+             'post_document_root': 'post_documentRoot',
+             'post_exchange_split': 'post_exchangeSplit',
+             'post_rate_limit': 'messageRateMax',
+             'post_topic_prefix': 'post_topicPrefix',
+             'preserve_mode': 'permCopy',
+             'preserve_time': 'timeCopy',
+             'queue_name': 'queueName',
+             'report_back': 'report',
+             'source_from_exchange': 'sourceFromExchange',
+             'sum': 'integrity',
+             'suppress_duplicates': 'nodupe_ttl',
+             'suppress_duplicates_basis': 'nodupe_basis',
+             'topic_prefix': 'topicPrefix'}
+            >>> 
+          The values on the left are recognized at v2.
+          The sr3 names are on the right.
     
 **CHANGE**: default topic_prefix v02.post -> topicPrefix  v03
           may need to change configurations to override default to get
@@ -152,72 +167,99 @@ V2 to Sr3
 *NOTICE*: The most common v2 plugins are on_message, and on_file ones 
           (as per *plugin* and *on\_* directives in v2 configuration files) which can 
           be honoured via the `v2wrapper sr3 plugin class <../Reference/flowcb.html#module-sarracenia.flowcb.v2wrapper>`_
-          Many other plugins were ported, and the the configuration module recognizes the old
-          configuration settings and they are interpreted in the new style.
-          the known conversions::
+          Many other plugins were ported, and the the configuration module 
+          recognizes the old configuration settings and they are interpreted 
+          in the new style. the known conversions can be viewed by starting
+          a python interpreter::
 
-           convert_to_v3 = {
-               'ls_file_index' : [ 'continue' ],
-               'plugin': {
-                   'msg_fdelay': ['flowCallback', 'sarracenia.flowcb.filter.fdelay.FDelay'],
-                   'msg_pclean_f90':
-                   ['flowCallback', 'sarracenia.flowcb.filter.pclean_f90.PClean_F90'],
-                   'msg_pclean_f92':
-                   ['flowCallback', 'sarracenia.flowcb.filter.pclean_f92.PClean_F92'],
-                   'accel_wget': ['continue'],
-                   'accel_scp': ['continue'],
-               },
-               'do_send': {
-                  'file_email' : [ 'flowCallback', 'sarracenia.flowcb.send.email.Email' ],
-               },
-               'no_download': [ 'download', 'False' ],
-               'notify_only': [ 'download', 'False' ],
-               'on_message': {
-                   'msg_print_lag': [ 'flow_callback', 'sarracenia.flowcb.accept.printlag.PrintLag'],
-                   'msg_skip_old': [ 'flow_callback', 'sarracenia.flowcb.accept.skipold.SkipOld'],
-                   'msg_test_retry': [ 'flow_callback', 'sarracenia.flowcb.accept.testretry.TestRetry'],
-                   'msg_to_clusters': [ 'flow_callback', 'sarracenia.flowcb.accept.toclusters.ToClusters'],
-                   'msg_save': [ 'flow_callback', 'sarracenia.flowcb.accept.save.Save'],
-                   'msg_2localfile': [ 'flow_callback', 'sarracenia.flowcb.accept.tolocalfile.ToLocalFile'],
-                   'msg_rename_whatfn': [ 'flow_callback', 'sarracenia.flowcb.accept.renamewhatfn.RenameWhatFn'],
-                   'msg_rename_dmf': [ 'flow_callback', 'sarracenia.flowcb.accept.renamedmf.RenameDMF'],
-                   'msg_hour_tree': [ 'flow_callback', 'sarracenia.flowcb.accept.hourtree.HourTree'],
-                   'msg_renamer': [ 'flow_callback', 'sarracenia.flowcb.accept.renamer.Renamer'],
-                   'msg_2http': [ 'flow_callback', 'sarracenia.flowcb.accept.tohttp.ToHttp'],
-                   'msg_2local': [ 'flow_callback', 'sarracenia.flowcb.accept.tolocal.ToLocal'],
-                   'msg_http_to_https': [ 'flow_callback', 'sarracenia.flowcb.accept.httptohttps.HttpToHttps'],
-                   'msg_speedo': [ 'flow_callback', 'sarracenia.flowcb.accept.speedo.Speedo'],
-                   'msg_WMO_type_suffix': [ 'flow_callback', 'sarracenia.flowcb.accept.wmotypesuffix.WmoTypeSuffix'],
-                   'msg_sundew_pxroute': [ 'flow_callback', 'sarracenia.flowcb.accept.sundewpxroute.SundewPxRoute'],
-                   'msg_rename4jicc': [ 'flow_callback', 'sarracenia.flowcb.accept.rename4jicc.Rename4Jicc'],
-                   'post_override': [ 'flow_callback', 'sarracenia.flowcb.accept.postoverride.PostOverride'],
-                   'post_hour_tree': [ 'flow_callback', 'sarracenia.flowcb.accept.posthourtree.PostHourTree'],
-                   'post_long_flow': [ 'flow_callback', 'sarracenia.flowcb.accept.longflow.LongFLow'],
-                   'msg_delay': [ 'flow_callback', 'sarracenia.flowcb.accept.messagedelay.MessageDelay'],
-                   'msg_download_baseurl': [ 'flow_callback', 'sarracenia.flowcb.accept.downloadbaseurl.DownloadBaseUrl'],
-                   'msg_from_cluster': ['continue'],
-                   'msg_stdfiles': ['continue'],
-                   'msg_fdelay': ['continue'],
-                   'msg_stopper': ['continue'],
-                   'msg_overwrite_sum': ['continue'],
-                   'msg_gts2wistopic': ['continue'],
-                   'msg_download': ['continue'],
-                   'msg_by_source': ['continue'],
-                   'msg_by_user': ['continue'],
-                   'msg_dump': ['continue'],
-                   'msg_total': ['continue'],
-                   'msg_total_save': ['continue'],
-                   'post_total': ['continue'],
-                   'post_total_save': ['continue'],
-                   'wmo2msc': [ 'flow_callback', 'sarracenia.flowcb.filter.wmo2msc.Wmo2Msc'],
-                   'msg_delete': [ 'flow_callback', 'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles'],
-                   'msg_log': ['logEvents', 'after_accept'],
-                   'msg_rawlog': ['logEvents', 'after_accept']
-               },
-               'on_post': {
-                   'post_log': ['logEvents', 'after_work']
-               },
-           }
+            Python 3.8.10 (default, Nov 26 2021, 20:14:08) 
+            [GCC 9.3.0] on linux
+            Type "help", "copyright", "credits" or "license" for more information.
+            >>> import sarracenia.config,pprint
+            >>> pp=pprint.PrettyPrinter()
+            >>> pp.pprint(sarracenia.config.convert_to_v3)
+            {'do_send': {'file_email': ['flowCallback',
+                                        'sarracenia.flowcb.send.email.Email']},
+             'ls_file_index': ['continue'],
+             'no_download': ['download', 'False'],
+             'notify_only': ['download', 'False'],
+             'on_message': {'msg_2http': ['flow_callback',
+                                          'sarracenia.flowcb.accept.tohttp.ToHttp'],
+                            'msg_2local': ['flow_callback',
+                                           'sarracenia.flowcb.accept.tolocal.ToLocal'],
+                            'msg_2localfile': ['flow_callback',
+                                               'sarracenia.flowcb.accept.tolocalfile.ToLocalFile'],
+                            'msg_WMO_type_suffix': ['flow_callback',
+                                                    'sarracenia.flowcb.accept.wmotypesuffix.WmoTypeSuffix'],
+                            'msg_by_source': ['continue'],
+                            'msg_by_user': ['continue'],
+                            'msg_delay': ['flow_callback',
+                                          'sarracenia.flowcb.accept.messagedelay.MessageDelay'],
+                            'msg_delete': ['flow_callback',
+                                           'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles'],
+                            'msg_download': ['continue'],
+                            'msg_download_baseurl': ['flow_callback',
+                                                     'sarracenia.flowcb.accept.downloadbaseurl.DownloadBaseUrl'],
+                            'msg_dump': ['continue'],
+                            'msg_fdelay': ['continue'],
+                            'msg_from_cluster': ['continue'],
+                            'msg_gts2wistopic': ['continue'],
+                            'msg_hour_tree': ['flow_callback',
+                                              'sarracenia.flowcb.accept.hourtree.HourTree'],
+                            'msg_http_to_https': ['flow_callback',
+                                                  'sarracenia.flowcb.accept.httptohttps.HttpToHttps'],
+                            'msg_log': ['logEvents', 'after_accept'],
+                            'msg_overwrite_sum': ['continue'],
+                            'msg_print_lag': ['flow_callback',
+                                              'sarracenia.flowcb.accept.printlag.PrintLag'],
+                            'msg_rawlog': ['logEvents', 'after_accept'],
+                            'msg_rename4jicc': ['flow_callback',
+                                                'sarracenia.flowcb.accept.rename4jicc.Rename4Jicc'],
+                            'msg_rename_dmf': ['flow_callback',
+                                               'sarracenia.flowcb.accept.renamedmf.RenameDMF'],
+                            'msg_rename_whatfn': ['flow_callback',
+                                                  'sarracenia.flowcb.accept.renamewhatfn.RenameWhatFn'],
+                            'msg_renamer': ['flow_callback',
+                                            'sarracenia.flowcb.accept.renamer.Renamer'],
+                            'msg_save': ['flow_callback',
+                                         'sarracenia.flowcb.accept.save.Save'],
+                            'msg_skip_old': ['flow_callback',
+                                             'sarracenia.flowcb.accept.skipold.SkipOld'],
+                            'msg_speedo': ['flow_callback',
+                                           'sarracenia.flowcb.accept.speedo.Speedo'],
+                            'msg_stdfiles': ['continue'],
+                            'msg_stopper': ['continue'],
+                            'msg_sundew_pxroute': ['flow_callback',
+                                                   'sarracenia.flowcb.accept.sundewpxroute.SundewPxRoute'],
+                            'msg_test_retry': ['flow_callback',
+                                               'sarracenia.flowcb.accept.testretry.TestRetry'],
+                            'msg_to_clusters': ['flow_callback',
+                                                'sarracenia.flowcb.accept.toclusters.ToClusters'],
+                            'msg_total': ['continue'],
+                            'msg_total_save': ['continue'],
+                            'post_hour_tree': ['flow_callback',
+                                               'sarracenia.flowcb.accept.posthourtree.PostHourTree'],
+                            'post_long_flow': ['flow_callback',
+                                               'sarracenia.flowcb.accept.longflow.LongFLow'],
+                            'post_override': ['flow_callback',
+                                              'sarracenia.flowcb.accept.postoverride.PostOverride'],
+                            'post_total': ['continue'],
+                            'post_total_save': ['continue'],
+                            'wmo2msc': ['flow_callback',
+                                        'sarracenia.flowcb.filter.wmo2msc.Wmo2Msc']},
+             'on_post': {'post_log': ['logEvents', 'after_work']},
+             'plugin': {'accel_scp': ['continue'],
+                        'accel_wget': ['continue'],
+                        'msg_fdelay': ['flowCallback',
+                                       'sarracenia.flowcb.filter.fdelay.FDelay'],
+                        'msg_pclean_f90': ['flowCallback',
+                                           'sarracenia.flowcb.filter.pclean_f90.PClean_F90'],
+                        'msg_pclean_f92': ['flowCallback',
+                                           'sarracenia.flowcb.filter.pclean_f92.PClean_F92']},
+             'windows_run': ['continue'],
+             'xattr_disable': ['continue']}
+            >>> 
+
           The options listed as 'continue' are obsolete ones, superceded by default processing, or rendered
           unnecessary by changes in the implementation.
 

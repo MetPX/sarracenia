@@ -54,9 +54,9 @@ l'échange utilisé est'xs_<brokerSourceUsername>_<xxz>'.  Un tel message
 peut ne pas contenir une source ni une grappe d'origine, ou un utilisateur 
 malveillant peut régler les valeurs incorrectement. Pour se protéger contre 
 les paramètres malveillants, les administrateurs doit 
-setté *source_from_exchange* à **True**.
+setté *sourceFromExchange* à **True**.
 
-- **source_from_exchange <booléen> (par défaut : False)**.
+- **sourceFromExchange <booléen> (par défaut : False)**.
 
 Lors de la réception, le programme réglera les valeurs suivantes
 dans la classe mère (ici le cluster est la valeur de

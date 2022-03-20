@@ -844,7 +844,7 @@ Sarra From a Source
 When reading posts directly from a source, one needs to turn on validation.
 FIXME: example of how user posts are handled.
 
-  - set source_from_exchange
+  - set sourceFromExchange
   - set mirror False to get date/source tree prepended
   - validate that the checksum works...
 
@@ -886,7 +886,7 @@ use [0-9]{8}, but it would appear that find's regex syntax does not include repe
 
 Note that the logs will clean up themselves. By default after 5 retention the oldest log will be
 remove at midnight if you have always use the same default config since the first rotation.
-It can be shorten to a single retention by adding *logrotate 1d* to default.conf.
+It can be shorten to a single retention by adding *logRotate 1d* to default.conf.
 
 Ensuring Things are Up
 ~~~~~~~~~~~~~~~~~~~~~~

@@ -699,7 +699,7 @@ logLevel, and logReject:
 At the end of the day (at midnight), these logs are rotated automatically by
 the components, and the old log gets a date suffix. The directory in which
 the logs are stored can be overridden by the **log** option, the number of
-rotated logs to keep are set by the **logrotate** parameter. The oldest log
+rotated logs to keep are set by the **logRotate** parameter. The oldest log
 file is deleted when the maximum number of logs has been reach and this
 continues for each rotation. An interval takes a duration of the interval and
 it may takes a time unit suffix, such as 'd\|D' for days, 'h\|H' for hours,
@@ -715,10 +715,10 @@ Here are some settings for log file management:
    unique to each node. So each node has it's own statefiles and logs.
    example, on a node named goofy,  ~/.cache/sarra/log/ becomes ~/.cache/sarra/goofy/log.
 
-- logrotate <max_logs> ( default: 5 , alias: lr_backupCount)
+- logRotate <max_logs> ( default: 5 , alias: lr_backupCount)
    Maximum number of logs archived.
 
-- logrotate_interval <duration>[<time_unit>] ( default: 1, alias: lr_interval)
+- logRotate_interval <duration>[<time_unit>] ( default: 1, alias: lr_interval)
    The duration of the interval with an optional time unit (ie 5m, 2h, 3d)
 
 - permLog ( default: 0600 )

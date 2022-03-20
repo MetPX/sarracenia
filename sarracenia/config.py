@@ -95,7 +95,7 @@ flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'baseUrl_relPath', 'cache
     'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logStdout', 'logReject', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
     'permCopy', 'pump_flag', 'queueBind', 'queueDeclare', 'randomize', 'realpath_post', 'reconnect', \
-    'report', 'reset', 'retry_mode', 'save', 'set_passwords', 'source_from_exchange', \
+    'report', 'reset', 'retry_mode', 'save', 'set_passwords', 'sourceFromExchange', \
     'statehost', 'users'
                 ]
 
@@ -508,9 +508,9 @@ class Config:
         'll': 'logLevel',
         'loglevel': 'logLevel',
         'log_reject': 'logReject',
-        'logdays': 'lr_backupCount',
-        'logrotate': 'lr_backupCount',
-        'logrotate_interval': 'lr_interval',
+        'logdays': 'logRotateCount',
+        'logRotate': 'logRotateCount',
+        'logRotate_interval': 'logRotateInterval',
         'no_duplicates': 'nodupe_ttl',
         'post_base_dir': 'post_baseDir',
         'post_basedir': 'post_baseDir',
@@ -524,6 +524,7 @@ class Config:
         'preserve_time' : 'timeCopy',
         'queue_name' : 'queueName', 
         'report_back': 'report',
+        'source_from_exchange': 'sourceFromExchange', 
         'sum' : 'integrity',  
         'suppress_duplicates' : 'nodupe_ttl',
         'suppress_duplicates_basis' : 'nodupe_basis', 
@@ -582,9 +583,8 @@ class Config:
         self.inlineEncoding = 'guess'
         self.integrity_arbitrary_value = None
         self.logReject = False
-        self.lr_backupCount = 5
-        self.lr_interval = 1
-        self.lr_when = 'midnight'
+        self.logRotateCount = 5
+        self.logRotateInterval = 1
         self.masks = []
         self.instances = 1
         self.mirror = False
@@ -1918,9 +1918,9 @@ class Config:
            FIXME:  Most of this is gobblygook place holder stuff, by copying from wmo-mesh example.
            Don't really need this to work right now, so just leaving it around as-is.  Challenges:
 
-           -- sizing units,  K, M, G, 
-           -- time units s,h,m,d
-           -- what to do with verbos.
+           -- sizing units,  K, M, G,  (should have humanfriendly based parsing.)
+           -- time units s,h,m,d 
+           -- what to do with verbs.
            -- accept/reject whole mess requires extension deriving a class from argparse.Action.
            
         """

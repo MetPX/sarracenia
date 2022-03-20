@@ -261,14 +261,14 @@ class SrConfigGeneralTestCase(SrConfigTestCase):
         self.cfg.general()
         self.cfg.randomize = False
         self.cfg.assemble = False
-        self.cfg.lr_backupCount = 5
+        self.cfg.logRotateCount = 5
         self.cfg.expire = 0
         self.expire_value = 1000 * 60 * 60 * 3
         self.message_value = 1000 * 60 * 60 * 24 * 7 * 3
         self.cfg.message_ttl = 0
         self.cfg.args([
             '-expire', '3h', '-message_ttl', '3W', '--randomize', '--assemble',
-            'True', '-logrotate', '5m', '-logrotate_interval', '1m'
+            'True', '-logRotate', '5m', '-logRotate_interval', '1m'
         ])
         self.cfg.toto = ['tutu1', 'tutu2']
         opt1 = "broker amqp://michel:passwd@testbroker.toto"
@@ -295,20 +295,20 @@ class SrConfigGeneralTestCase(SrConfigTestCase):
     def test_inplace(self):
         self.assertTrue(self.cfg.inplace, "test 07: args problem assemble")
 
-    def test_lr_interval(self):
+    def test_logRotateInterval(self):
         self.assertEqual(
-            self.cfg.lr_interval, 1,
-            "test 08a: args problem logrotate %s" % self.cfg.lr_interval)
+            self.cfg.logRotateInterval, 1,
+            "test 08a: args problem logRotate %s" % self.cfg.logRotateInterval)
 
-    def test_lr_backupCount(self):
+    def test_logRotateCount(self):
         self.assertEqual(
-            self.cfg.lr_backupCount, 5,
-            "test 08b: args problem logrotate %s" % self.cfg.lr_backupCount)
+            self.cfg.logRotateCount, 5,
+            "test 08b: args problem logRotate %s" % self.cfg.logRotateCount)
 
     def test_lr_when(self):
         self.assertEqual(
             self.cfg.lr_when, 'm',
-            "test 08c: args problem logrotate %s" % self.cfg.lr_when)
+            "test 08c: args problem logRotate %s" % self.cfg.lr_when)
 
     def test_expire(self):
         self.assertEqual(self.cfg.expire, self.expire_value,

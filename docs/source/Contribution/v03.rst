@@ -636,7 +636,7 @@ so below is the things leftover after refactor:
   'report_exchange', 'post_exchangeSplit', 'set_passwords', 'declare_exchange', 
   'sanity_log_dead', 'report_daemons', 'realpath_filter', 'reconnect', 
   'post_exchange_suffix', 'save', 'pump_flag', 'cache_stat', 'declare_queue', 'restore', 
-  'bind_queue', 'dry_run', 'source_from_exchange', 'retry_mode', 'poll_without_vip', 'header'}
+  'bind_queue', 'dry_run', 'sourceFromExchange', 'retry_mode', 'poll_without_vip', 'header'}
   #405
 
 * #369 ... clean shutdown

@@ -8,7 +8,7 @@ Explanation
    Overview
    Concepts
    CommandLineGuide.rst
-   DetectFileHasChanged.rst
+   DetectFileReady.rst
    FileCompletion.rst
    DeploymentConsiderations
    SarraPluginDev

@@ -405,7 +405,7 @@ ou, pour logger quasiment tout::
 par les composants, et l'ancien journal obtient un suffixe de date.
 Le répertoire dans lequel les fichiers journaux sont stockés peut être changé par
 l'option **log**, le nombre maximum de fichiers journaux retournés à conserver est défini par le
-paramètre *logrotate* et cela continue pour les prochaines rotations. Lorsque le nombre maximum de rotations
+paramètre *logRotate* et cela continue pour les prochaines rotations. Lorsque le nombre maximum de rotations
 a été atteint, le plus vieux fichier journal est supprimé.  Pour l'option d'intervalle, une durée est exprimée
 par un nombre et peu prendre un suffixe d'unité de temps, tel que 'd\|D' pour les jours, 'h\|H' pour les heures ou 'm\|M'
 pour les minutes. Sans unité, la rotation sera effectuée à minuit. On peut ajuster:
@@ -413,10 +413,10 @@ pour les minutes. Sans unité, la rotation sera effectuée à minuit. On peut aj
 - log <dir> ( défaut: ~/.cache/sarra/log ) (sur Linux)
    Le répertoire ou les fichiers journaux seront placés.
 
-- logrotate <max_logs> ( défaut: 5 )
+- logRotate <max_logs> ( défaut: 5 )
    Nombre maximal de fichiers journaux archivés.
 
-- logrotate_interval <durée>[<unité_de_temps>] ( défaut: 1 )
+- logRotate_interval <durée>[<unité_de_temps>] ( défaut: 1 )
    La durée de l'intervalle spécifié et une unité de temps optionnelle (p.ex. 5m, 2h, 3d).
 
 - chmod_log ( défaut: 0600 )
@@ -892,7 +892,7 @@ est un option qui a une valeur logique: vrai/faux)
 - **reject    <regexp pattern> (optional)** 
 - **retry    <booléan>         (défaut: True)** 
 - **retry_ttl    <durée>         (défaut: pareil que expire)** 
-- **source_from_exchange  <booléan> (défaut: False)**
+- **sourceFromExchange  <booléan> (défaut: False)**
 - **strip     <compte|regexp>   (défaut: 0)**
 - **suppress_duplicates   <off|on|999>     (défaut: off)**
 - **timeout     <numéro flottante>         (défaut: 0.0)**
@@ -1100,7 +1100,7 @@ sont traitées par Sarracenia, c'est-à-dire à l'heure à laquelle les données
 n'est pas décodé ou dérivé du contenu des fichiers livrés. Toutes les dates 
 et heures en Sarracenia sont en UTC.
 
-Référez-vous à *source_from_exchange* pour un exemple d'utilisation.  Notez que toute 
+Référez-vous à *sourceFromExchange* pour un exemple d'utilisation.  Notez que toute 
 option explicite dans un fichier de confiuguration Sarracenia prime sur une variable 
 du même nom dans l'environnement.
 
@@ -1194,15 +1194,15 @@ L'option **discard**, si elle est réglée sur true, supprime le fichier une
 fois téléchargé. Cette option peut être utile pour déboguer ou tester une
 configuration.
 
-source_from_exchange <booléan> (défaut: False)
+sourceFromExchange <booléan> (défaut: False)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-L'option **source_from_exchange** est principalement destinée aux administrateurs.
+L'option **sourceFromExchange** est principalement destinée aux administrateurs.
 Si les messages sont reçus directement d'une *source* de données, l'échange utilisé 
 peut être 'xs_<brokerSourceUsername>'. Un tel message peut manqué l´en-tête *from_cluster*, 
 ou un utilisateur malveillant peut définir les valeurs de manière incorrecte.
 Pour se protéger contre les deux problèmes, les administrateurs sélectionnent 
-l'option **source_from_exchange**.
+l'option **sourceFromExchange**.
 
 Lorsque l'option est définie, les valeurs du message pour les en-têtes *source* 
 et *from_cluster* seront alors remplacées par::
@@ -1216,7 +1216,7 @@ d'utilisateurs. Ces champs sont utilisés pour renvoyer les rapports à l'origin
 des données injectées. Il est généralement combiné avec: :
 
        *mirror true*
-       *source_from_exchange true*
+       *sourceFromExchange true*
        *directory ${PBD}/${YYYYYYYMMDD}/${SOURCE}*
   
 Pour que les données arrivent dans l'arbre de format standard.

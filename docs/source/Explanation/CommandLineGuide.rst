@@ -1032,6 +1032,9 @@ sr3_post is a one shot invocation which posts and exits.
 To make files available to subscribers, **sr3_post** sends the announcements
 to an AMQP or MQTT server, also called a broker.
 
+There are many options for detection changes in directories, for
+a detailed discussion of options in Sarracenia, see `<DetectFileReady.rst>`_
+
 This manual page is primarily concerned with the python implementation,
 but there is also an implementation in C, which works nearly identically.
 Differences:
@@ -1143,12 +1146,12 @@ Specific Consuming Requirements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If the messages are posted directly from a source, the exchange used is 'xs_<brokerSourceUsername>'.
-To protect against malicious users, administrators should set *source_from_exchange* to **True**.
+To protect against malicious users, administrators should set *sourceFromExchange* to **True**.
 Such messages may not contain a source nor an origin cluster fields
 or a malicious user may set the values incorrectly.
 
 
-- **source_from_exchange  <boolean> (default: False)**
+- **sourceFromExchange  <boolean> (default: False)**
 
 Upon reception, the program will set these values in the parent class (here 
 cluster is the value of option **cluster** taken from default.conf):
@@ -1346,23 +1349,24 @@ Format of argument to the *url* option::
        file:
 
 
-The [*-p|--path path*] option tells *sr_watch* what to look for.
-If the *path* specifies a directory, *sr_watches* creates a post for any time
+The [*-p|--path path*] option tells *watch* what to look for.
+If the *path* specifies a directory, *watches* creates a post for any time
 a file in that directory is created, modified or deleted.
-If the *path* specifies a file,  *sr_watch*  watches only that file.
+If the *path* specifies a file,  *watch*  watches only that file.
 In the announcement, it is specified with the *path* of the product.
 There is usually one post per file.
 
+FIXME: in version 3 does it work at all without a configuration?
+perhaps we should just create the file if it isn't there?
 
-FIXME: in version 3 does it work at all without a configuration.
-An example of an execution of  *sr_watch*  checking a file::
+An example of an execution of  *watch*  checking a file::
 
- sr3_watch -s sftp://stanley@mysftpserver.com/ -p /data/shared/products/foo -pb amqp://broker.com --action start
+ sr3 --post_baseUrl sftp://stanley@mysftpserver.com/ --path /data/shared/products/foo --post_broker amqp://broker.com start watch/myflow
 
-Here,  *sr_watch*  checks events on the file /data/shared/products/foo.
+Here, *watch* checks events on the file /data/shared/products/foo.
 Default events settings reports if the file is modified or deleted.
-When the file gets modified,  *sr_watch*  reads the file /data/shared/products/foo
-and calculates its checksum.  It then builds a post message, logs into broker.com as user 'guest' (default credentials)
+When the file gets modified, *watch* reads the file /data/shared/products/foo
+and calculates its checksum. It then builds a post message, logs into broker.com as user 'guest' (default credentials)
 and sends the post to defaults vhost '/' and post_exchange 'xs_stanley' (default exchange)
 
 A subscriber can download the file /data/shared/products/foo  by logging as user stanley
@@ -1393,9 +1397,9 @@ is the checksum value.  When the event on a file is a deletion, sum=R,0  R stand
 
 Another example watching a file::
 
- sr3_watch -dr /data/web/public_data -s http://dd.weather.gc.ca/ -p bulletins/alphanumeric/SACN32_CWAO_123456 -pb amqp://broker.com --action start
+ sr3 --post_baseDir /data/web/public_data --post_baseUrl http://dd.weather.gc.ca/ --path bulletins/alphanumeric/SACN32_CWAO_123456 -post_broker amqp://broker.com start watch/myflow
 
-By default, sr_watch checks the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
+By default, watch checks the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
 (concatenating the baseDir and relative path of the source url to obtain the local file path).
 If the file changes, it calculates its checksum. It then builds a post message, logs into broker.com as user 'guest'
 (default credentials) and sends the post to defaults vhost '/' and post_exchange 'sx_guest' (default post_exchange)
@@ -1405,11 +1409,11 @@ without authentication on dd.weather.gc.ca.
 
 An example checking a directory::
 
- sr3_watch -dr /data/web/public_data -pbu http://dd.weather.gc.ca/ -p bulletins/alphanumeric -pb amqp://broker.com -action start
+ sr3 -post_baseDir /data/web/public_data -post_baseUrl http://dd.weather.gc.ca/ --path bulletins/alphanumeric --post_broker amqp://broker.com start watch/myflow
 
-Here, sr_watch checks for file creation(modification) in /data/web/public_data/bulletins/alphanumeric
+Here, watch checks for file creation(modification) in /data/web/public_data/bulletins/alphanumeric
 (concatenating the baseDir and relative path of the source url to obtain the directory path).
-If the file SACN32_CWAO_123456 is being created in that directory, sr_watch calculates its checksum.
+If the file SACN32_CWAO_123456 is being created in that directory, watch calculates its checksum.
 It then builds a post message, logs into broker.com as user 'guest'
 
 A subscriber can download the created/modified file http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 using http
@@ -1450,14 +1454,14 @@ Configurations
 If one has a ready made configuration called *q_f71.conf*, it can be 
 added to the list of known ones with::
 
-  sr_subscribe add q_f71.conf
+  subscribe add q_f71.conf
 
 In this case, xvan_f14 is included with examples provided, so *add* finds it in the examples
 directory and copies into the active configuration one. 
 Each configuration file manages the consumers for a single queue on
 the broker. To view the available configurations, use::
 
-  $ sr_subscribe list
+  $ subscribe list
 
     configuration examples: ( /usr/lib/python3/dist-packages/sarra/examples/subscribe ) 
               all.conf     all_but_cap.conf            amis.conf            aqhi.conf             cap.conf      cclean_f91.conf 
@@ -1478,12 +1482,12 @@ the broker. To view the available configurations, use::
 
 one can then modify it using::
 
-  $ sr_subscribe edit q_f71.conf
+  $ subscribe edit q_f71.conf
 
 (The edit action uses the EDITOR environment variable, if present.)
 Once satisfied, one can start the the configuration running::
 
-  $ sr_subscibe foreground q_f71.conf
+  $ subscibe foreground q_f71.conf
 
 What goes into the files? See next section:
 
@@ -1563,7 +1567,7 @@ Environment variables, and some built-in variables can also be put on the
 right hand side to be evaluated, surrounded by ${..} The built-in variables are:
  
  - ${BROKER_USER} - the user name for authenticating to the broker (e.g. anonymous)
- - ${PROGRAM}     - the name of the component (sr_subscribe, sr_shovel, etc...)
+ - ${PROGRAM}     - the name of the component (subscribe, shovel, etc...)
  - ${CONFIG}      - the name of the configuration file being run.
  - ${HOSTNAME}    - the hostname running the client.
  - ${RANDID}      - a random id that will be consistent within a single invocation.
@@ -1744,10 +1748,10 @@ LOGS and MONITORING
    unique to each node. So each node has it's own statefiles and logs.
    example, on a node named goofy,  ~/.cache/sarra/log/ becomes ~/.cache/sarra/goofy/log.
 
-- logrotate <max_logs> ( default: 5 )
+- logRotate <max_logs> ( default: 5 )
    Maximum number of logs archived.
 
-- logrotate_interval <duration>[<time_unit>] ( default: 1 )
+- logRotate_interval <duration>[<time_unit>] ( default: 1 )
    The duration of the interval with an optional time unit (ie 5m, 2h, 3d)
 
 - permLog ( default: 0600 )
@@ -1765,7 +1769,7 @@ CREDENTIALS
 One normally does not specify passwords in configuration files.  Rather they are placed 
 in the credentials file::
 
-   sr_subscribe edit credentials
+   edit ~/.config/sr3/credentials.conf
 
 For every url specified that requires a password, one places 
 a matching entry in credentials.conf.
@@ -1919,19 +1923,19 @@ A variety of example configuration files are available here:
 QUEUES and MULTIPLE STREAMS
 ---------------------------
 
-When executed,  **sr_subscribe**  chooses a queue name, which it writes
-to a file named after the configuration file given as an argument to **sr_subscribe**
+When executed,  **subscribe**  chooses a queue name, which it writes
+to a file named after the configuration file given as an argument to **subscribe**
 with a .queue suffix ( ."configfile".queue). 
-If sr_subscribe is stopped, the posted messages continue to accumulate on the 
+If subscribe is stopped, the posted messages continue to accumulate on the 
 broker in the queue.  When the program is restarted, it uses the queuename 
 stored in that file to connect to the same queue, and not lose any messages.
 
-File downloads can be parallelized by running multiple sr_subscribes using
+File downloads can be parallelized by running multiple subscribes using
 the same queue.  The processes will share the queue and each download 
 part of what has been selected.  Simply launch multiple instances
-of sr_subscribe in the same user/directory using the same configuration file. 
+of subscribe in the same user/directory using the same configuration file. 
 
-You can also run several sr_subscribe with different configuration files to
+You can also run several subscribe with different configuration files to
 have multiple download streams delivering into the the same directory,
 and that download stream can be multi-streamed as well.
 
@@ -1970,15 +1974,15 @@ Sometimes one instance of a component and configuration is not enough to process
 **instances      <integer>     (default:1)**
 
 The instance option allows launching several instances of a component and configuration.
-When running sr_sender for example, a number of runtime files are created.
+When running sender for example, a number of runtime files are created.
 In the ~/.cache/sarra/sender/configName directory::
 
-  A .sr_sender_configname.state         is created, containing the number instances.
-  A .sr_sender_configname_$instance.pid is created, containing the PID  of $instance process.
+  A .sender_configname.state         is created, containing the number instances.
+  A .sender_configname_$instance.pid is created, containing the PID  of $instance process.
 
 In directory ~/.cache/sarra/log::
 
-  A .sr_sender_configname_$instance.log  is created as a log of $instance process.
+  A .sender_configname_$instance.log  is created as a log of $instance process.
 
 .. NOTE::
   known bug in the management interface `sr <sr.8.rst>_`  means that instance should
@@ -1998,32 +2002,29 @@ In directory ~/.cache/sarra/log::
   loss of notifications.  A queue which is not accessed for a long (implementation dependent)
   period will be destroyed. 
 
-.. Note::
-   FIXME  The last sentence is not really right...sr_audit does track the queues' age. 
-          sr_audit acts when a queue gets to the max_queue_size and not running.
           
 
 vip - ACTIVE/PASSIVE OPTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**sr_subscribe** can be used on a single server node, or multiple nodes
+**sr3** can be used on a single server node, or multiple nodes
 could share responsibility. Some other, separately configured, high availability
 software presents a **vip** (virtual ip) on the active server. Should
 the server go down, the **vip** is moved on another server.
-Both servers would run **sr_subscribe**. It is for that reason that the
+Both servers would run **sr3**. It is for that reason that the
 following options were implemented:
 
  - **vip          <string>          (None)**
 
-When you run only one **sr_subscribe** on one server, these options are not set,
-and sr_subscribe will run in 'standalone mode'.
+When you run only one **sr3** on one server, these options are not set,
+and sr3 will run in 'standalone mode'.
 
 In the case of clustered brokers, you would set the options for the
 moving vip.
 
 **vip 153.14.126.3**
 
-When **sr_subscribe** does not find the vip, it sleeps for 5 seconds and retries.
+When **sr3** does not find the vip, it sleeps for 5 seconds and retries.
 If it does, it consumes and processes a message and than rechecks for the vip.
 
 
@@ -2078,7 +2079,7 @@ post_exchangeSplit   <number>   (default: 0)
 The **post_exchangeSplit** option appends a two digit suffix resulting from 
 hashing the last character of the checksum to the post_exchange name,
 in order to divide the output amongst a number of exchanges.  This is currently used
-in high traffic pumps to allow multiple instances of sr_winnow, which cannot be
+in high traffic pumps to allow multiple instances of winnow, which cannot be
 instanced in the normal way.  Example::
 
     post_exchangeSplit 5
@@ -2095,7 +2096,7 @@ One can specify URI's as configuration files, rather than local files. Example:
 
   - **--config http://dd.weather.gc.ca/alerts/doc/cap.conf**
 
-On startup, sr_subscribe checks if the local file cap.conf exists in the 
+On startup, subscribe checks if the local file cap.conf exists in the 
 local configuration directory.  If it does, then the file will be read to find
 a line like so:
 
@@ -2238,10 +2239,10 @@ ROLES - feeder/admin/declare
 
 Administrative options are set using::
 
-  sr_subscribe edit admin
+  edit ~/.config/sr3/admin.conf
 
 The *feeder* option specifies the account used by default system transfers for components such as
-sr_shovel, sr_sarra and sr_sender (when posting). 
+shovel, sarra and sender (when posting). 
 
 - **feeder    amqp{s}://<user>:<pw>@<post_brokerhost>[:port]/<vhost>**
 
@@ -2259,7 +2260,7 @@ subscriber
   A subscriber is user that can only subscribe to data and return report messages. Subscribers are
   not permitted to inject data.  Each subscriber has an xs_<user> named exchange on the pump,
   where if a user is named *Acme*, the corresponding exchange will be *xs_Acme*.  This exchange
-  is where an sr_subscribe process will send its report messages.
+  is where an subscribe process will send its report messages.
 
   By convention/default, the *anonymous* user is created on all pumps to permit subscription without
   a specific account.
@@ -2285,7 +2286,7 @@ feeder
   preference to administrator accounts to run flows.
 
 
-User credentials are placed in the credentials files, and *sr_audit* will update
+User credentials are placed in the credentials files, and *audit* will update
 the broker to accept what is specified in that file, as long as the admin password is
 already correct.
 

@@ -155,7 +155,7 @@ The YYYYMMDD and HH time stamps refer to the time at which the data is processed
 the component, it is not decoded or derived from the content of the files delivered.
 All date/times in Sarracenia are in UTC.
 
-Refer to *source_from_exchange* for a common example of usage. Note that any sarracenia
+Refer to *sourceFromExchange* for a common example of usage. Note that any sarracenia
 built-in value takes precedence over a variable of the same name in the environment.
 Note that flatten settings can be changed between directory options.
 
@@ -813,15 +813,17 @@ force_polling <flag> (default: False)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 By default, watch selects an (OS dependent) optimal method to watch a
-directory. For large trees, the optimal method can be manyfold (10x or even
+directory. 
+
+For large trees, the optimal method can be manyfold (10x or even
 100x) faster to recognize when a file has been modified. In some cases,
 however, platform optimal methods do not work (such as with some network
 shares, or distributed file systems), so one must use a slower but more
 reliable and portable polling method.  The *force_polling* keyword causes
 watch to select the polling method in spite of the availability of a
-normally better one.  KNOWN LIMITATION: When *force_polling* is set,
-the *sleep* setting should be at least 5 seconds. It is not currently clear
-why.
+normally better one.  
+
+For a detailed discussion, see: `Delivery Completion <../Explanation/DetectFileHasChanged.html>`_
 
 NOTE::
 
@@ -833,6 +835,8 @@ NOTE::
   entirely and turn on the *delete* option, which will have watch attempt to post the entire tree
   every time (ignoring mtime).
 
+  **KNOWN LIMITATION**: When *force_polling* is set, the *sleep* setting should be
+  at least 5 seconds. It is not currently clear why.
 
 header <name>=<value>
 ~~~~~~~~~~~~~~~~~~~~~
@@ -848,6 +852,11 @@ housekeeping <interval> (default: 300 seconds)
 
 The **housekeeping** option sets how often to execute periodic processing as determined by
 the list of on_housekeeping plugins. By default, it prints a log message every houskeeping interval.
+
+include config
+~~~~~~~~~~~~~~
+
+include another configuration within this configuration.
 
 
 inflight <string> (default: .tmp or NONE if post_broker set)
@@ -885,12 +894,6 @@ with the final name, where the recipient will wait to receive a post notifying i
 of the file's arrival.  This is the fastest, lowest overhead option when it is available.
 It is also the default when a *post_broker* is given, indicating that some
 other process is to be notified after delivery.
-
-
-include config
-~~~~~~~~~~~~~~
-
-include another configuration within this configuration.
 
 
 inline <flag> (default: False)
@@ -1020,12 +1023,12 @@ of configured instances/processes) will cause either corruption of logs, or limi
 writing to stdout.
 
 
-logrotate <max_logs> ( default: 5 )
+logRotateCount <max_logs> ( default: 5 )
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Maximum number of logs archived.
 
-logrotate_interval <interval>[<time_unit>] ( default: 1d )
+logRotateInterval <interval>[<time_unit>] ( default: 1d )
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The duration of the interval with an optional time unit (ie 5m, 2h, 3d)
@@ -1510,14 +1513,14 @@ NOTE::
     The expression:  .*?GIF   matches: radar/PRECIP/GIF
     whereas the expression: .*GIF matches the entire name.
 
-source_from_exchange <flag> (default: off)
+sourceFromExchange <flag> (default: off)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The **source_from_exchange** option is mainly for use by administrators.
+The **sourceFromExchange** option is mainly for use by administrators.
 If messages received are posted directly from a source, the exchange used
 is 'xs_<brokerSourceUsername>'. Such messages could be missing *source* and *from_cluster*
 headings, or a malicious user may set the values incorrectly.
-To protect against both problems, administrators should set the **source_from_exchange** option.
+To protect against both problems, administrators should set the **sourceFromExchange** option.
 
 When the option is set, values in the message for the *source* and *from_cluster* headers will then be overridden::
 
@@ -1529,7 +1532,7 @@ user exchange. These fields are used to return reports to the origin of injected
 It is commonly combined with::
 
        *mirror true*
-       *source_from_exchange true*
+       *sourceFromExchange true*
        *directory ${PBD}/${YYYYMMDD}/${SOURCE}*
 
 To have data arrive in the standard format tree.

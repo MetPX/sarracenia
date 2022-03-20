@@ -928,7 +928,7 @@ Lorsque l'on lit les messages directement depuis une source, il faut activer
 la validation. FIXME : exemple de la façon dont les messages des utilisateurs
 sont traités.
 
-  - set source_from_exchange - set source_from_exchange
+  - set sourceFromExchange - set sourceFromExchange
   - set mirror False to get date/source tree prepended
   - valider que la somme de contrôle fonctionne......
 
@@ -977,7 +977,7 @@ regex n'inclut pas les répétitions. )
 
 Il est à noter que les logs se nettoieront par eux-mêmes, par défaut, après 5 rotations le log
 le plus ancien sera enlevé à minuit, seulement si la configuration par défaut a été utilisée
-depuis la première rotation. Il est possible de racourcir ce nombre en ajoutant *logrotate 1d*
+depuis la première rotation. Il est possible de racourcir ce nombre en ajoutant *logRotate 1d*
 à default.conf.
 
 Démarrage
