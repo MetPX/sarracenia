@@ -289,9 +289,9 @@ class Flow:
         current_sleep = self.o.sleep
         last_time = start_time
 
-        logger.info("options:")
-        self.o.dump()
-
+        if self.o.logLevel == 'debug':
+           logger.debug("options:")
+           self.o.dump()
 
         logger.info("callbacks loaded: %s" % self.plugins['load'])
         logger.info( f'pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}' )

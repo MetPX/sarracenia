@@ -617,10 +617,7 @@ class Config:
         result = cls.__new__(cls)
         memo[id(self)] = result
         for k, v in self.__dict__.items():
-            if k == 'masks':
-                setattr(result, k, v)
-            else:
-                setattr(result, k, copy.deepcopy(v, memo))
+            setattr(result, k, copy.deepcopy(v, memo))
         return result
 
     def _validate_urlstr(self, urlstr) -> tuple :
@@ -759,6 +756,7 @@ class Config:
            return a pretty print string version of the given mask, easier for humans to read.
         """
         pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
+
         if accepting:
            s='accept '
         else:
@@ -852,7 +850,7 @@ class Config:
     def dump(self):
         """ print out what the configuration looks like.
        """
-        d = self.dictify()
+        d = copy.deepcopy(self.dictify())
         for omit in [ 'env' ] :
             del d[omit]
 
@@ -865,7 +863,7 @@ class Config:
             if type(d[k]) is sarracenia.credentials.Credential :
                 d[k] = str(d[k])
 
-        pprint.pprint( self.dictify(), compact=True )
+        pprint.pprint( d, compact=True )
         return
 
     def dictify(self):
