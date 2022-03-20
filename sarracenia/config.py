@@ -617,7 +617,14 @@ class Config:
         result = cls.__new__(cls)
         memo[id(self)] = result
         for k, v in self.__dict__.items():
-            setattr(result, k, copy.deepcopy(v, memo))
+            if k == 'masks':
+                v2=[]
+                for m in v:
+                    v2.append(tuple(list(copy.deepcopy(m[0:3]))+ [m[3]] + list(copy.deepcopy(m[4:]))))
+
+                setattr(result, k, v2)
+            else:
+                setattr(result, k, copy.deepcopy(v, memo))
         return result
 
     def _validate_urlstr(self, urlstr) -> tuple :
@@ -848,15 +855,25 @@ class Config:
        """
 
         term = shutil.get_terminal_size((80, 20))
-        d = copy.deepcopy(self.dictify())
+
+        # for python > 3.7
+        #c = copy.deepcopy(self.dictify())
+        # but older python needs:
+        c = self.dictify()
+        d={}
+        for k in c:
+            if k == 'masks':
+                i=0
+                d['masks'] = []
+                while i < len(c['masks']):
+                   d['masks'].append( self.mask_ppstr(c['masks'][i]) )
+                   i+=1
+            else:
+                d[k] = copy.deepcopy(c[k])
+
         for omit in [ 'env' ] :
             del d[omit]
 
-        i=0
-        while i < len(d['masks']):
-           d['masks'][i] = self.mask_ppstr(d['masks'][i])
-           i+=1
- 
         for k in d:
             if type(d[k]) is sarracenia.credentials.Credential :
                 d[k] = str(d[k])
