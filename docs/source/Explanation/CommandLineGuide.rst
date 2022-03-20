@@ -248,99 +248,132 @@ show
 
 View all configuration settings (the result of all parsing... what the flow components actually see)::
 
-  $ sr3 --debug show subscribe/q_f71
+    
+    % sr3 show subscribe/q_f71
+    2022-03-20 15:30:32,507 1084652 [INFO] sarracenia.config parse_file download_f20.conf:35 obsolete v2:"on_message msg_log" converted to sr3:"logEvents after_accept"
+    2022-03-20 15:30:32,508 1084652 [INFO] sarracenia.config parse_file tsource2send_f50.conf:26 obsolete v2:"on_message msg_rawlog" converted to sr3:"logEvents after_accept"
+    2022-03-20 15:30:32,508 1084652 [INFO] sarracenia.config parse_file rabbitmqtt_f22.conf:6 obsolete v2:"on_message msg_log" converted to sr3:"logEvents after_accept"
     
     Config of subscribe/q_f71: 
-    _Config__admin=amqp://bunnymaster@localhost
-    _Config__broker=amqp://tsource@localhost
-    _Config__post_broker=None
-    accept_unmatch=True
-    accept_unmatched=False
-    auto_delete=False
-    baseDir=None
-    batch=100
-    bind=True
-    bindings=[('v03', 'xs_tsource_poll', '#')]
-    bufsize=1048576
-    bytes_per_second=None
-    bytes_ps=0
-    cfg_run_dir='/home/peter/.cache/sarra/subscribe/q_f71'
-    permDefault=0
-    permDirDefault=509
-    permLog=384
-    config='q_f71'
-    currentDir='/home/peter/.cache/sarra/log'
-    debug=False
-    declare=True
-    declared_exchanges=['xpublic', 'xcvan01']
-    delete=False
-    destfn_script=None
-    directory='//home/peter/sarra_devdocroot/recd_by_srpoll_test1'
-    documentRoot=None
-    download=False
-    durable=True
-    env=environ({'SHELL': '/bin/bash', 'SESSION_MANAGER': 'local/fractal:@/tmp...'
-    exchange='xs_tsource_poll'
-    exchange_suffix='poll'
-    expire=3600.0
-    feeder='amqp://tfeed@localhost/'
-    file_total_interval='0'
-    filename=None
-    flatten='/'
-    hostdir='fractal'
-    hostname='fractal'
-    housekeeping=30
-    inflight=None
-    inline=False
-    inlineOnly=False
-    inlineEncoding='guess'
-    inlineByteMax=4096
-    instances=1
-    logFormat='%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s'
-    logLevel='info'
-    log_reject=True
-    lr_backupCount=5
-    lr_interval=1
-    lr_when='midnight'
-    masks=[('.*', '//home/peter/sarra_devdocroot/recd_by_srpoll_test1', None, re...'
-    message_strategy={'reset': True, 'stubborn': True, 'failure_duration': '5m'}
-    message_ttl=0
-    mirror=True
-    msg_total_interval='0'
-    plugins=['sarra.plugin.accel_scp.ACCEL_SCP']
-    post_baseDir=None
-    post_baseUrl=None
-    post_documentRoot=None
-    post_exchanges=[]
-    prefetch=25
-    permCopy=True
-    timeCopy=True
-    program_name='subscribe'
-    pstrip='.*sent_by_tsource2send/'
-    queue_filename='/home/peter/.cache/sarra/subscribe/q_f71/sr_subscribe.q_f71.tsource.qname'
-    queue_name='q_tsource.sr_subscribe.q_f71.68760401.09509451'
-    randid='b486'
-    realpath_post=False
-    report_daemons=False
-    reset=False
-    resolved_qname='q_tsource.sr_subscribe.q_f71.68760401.09509451'
-    settings={}
-    sleep=0.1
-    statehost=False
-    strip=0
-    subtopic=None
-    suppress_duplicates=0
-    suppress_duplicates_basis='data'
-    timeout=300
-    tlsRigour='normal'
-    topicPrefix='v03'
-    undeclared=['msg_total_interval', 'file_total_interval']
-    users={'tsub': 'subscriber', 'tsource': 'source', 'anonymous': 'subscriber',...'
-    v2plugin_options=[]
-    v2plugins={'plugin': ['msg_total_save', 'file_total_save']}
-    vhost='/'
-    vip=None
+    {'_Config__admin': 'amqp://bunnymaster@localhost/ None True True False False None None',
+     '_Config__broker': 'amqp://tsource@localhost/ None True True False False None None',
+     '_Config__post_broker': None,
+     'accelThreshold': 0,
+     'acceptSizeWrong': False,
+     'acceptUnmatched': False,
+     'admin': 'amqp://bunnymaster@localhost/ None True True False False None None',
+     'attempts': 3,
+     'auto_delete': False,
+     'baseDir': None,
+     'baseUrl_relPath': False,
+     'batch': 1,
+     'bindings': [('xs_tsource_poll', ['v03', 'post'], ['#'])],
+     'broker': 'amqp://tsource@localhost/ None True True False False None None',
+     'bufsize': 1048576,
+     'byteRateMax': None,
+     'cfg_run_dir': '/home/peter/.cache/sr3/subscribe/q_f71',
+     'component': 'subscribe',
+     'config': 'q_f71',
+     'currentDir': None,
+     'debug': False,
+     'declared_exchanges': [],
+     'declared_users': {'anonymous': 'subscriber', 'eggmeister': 'subscriber', 'ender': 'source', 'tfeed': 'feeder', 'tsource': 'source', 'tsub': 'subscriber'},
+     'delete': False,
+     'destfn_script': None,
+     'directory': '//home/peter/sarra_devdocroot/recd_by_srpoll_test1',
+     'discard': False,
+     'documentRoot': None,
+     'download': True,
+     'durable': True,
+     'env_declared': ['FLOWBROKER', 'MQP', 'SFTPUSER', 'TESTDOCROOT'],
+     'exchange': 'xs_tsource_poll',
+     'exchangeDeclare': True,
+     'exchange_suffix': 'poll',
+     'expire': 1800.0,
+     'feeder': ParseResult(scheme='amqp', netloc='tfeed@localhost', path='/', params='', query='', fragment=''),
+     'fileEvents': {'create', 'link', 'modify', 'delete'},
+     'file_total_interval': '0',
+     'filename': 'WHATFN',
+     'fixed_headers': {},
+     'flatten': '/',
+     'hostdir': 'fractal',
+     'hostname': 'fractal',
+     'housekeeping': 300,
+     'imports': [],
+     'inflight': None,
+     'inline': False,
+     'inlineByteMax': 4096,
+     'inlineEncoding': 'guess',
+     'inlineOnly': False,
+     'instances': 1,
+     'integrity_arbitrary_value': None,
+     'integrity_method': 'sha512',
+     'logEvents': {'after_work', 'after_accept', 'on_housekeeping'},
+     'logFormat': '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
+     'logLevel': 'info',
+     'logReject': False,
+     'logRotateCount': 5,
+     'logRotateInterval': 1,
+     'logStdout': True,
+     'log_flowcb_needed': False,
+     'masks': ['accept .* into //home/peter/sarra_devdocroot/recd_by_srpoll_test1 with mirror:True strip:.*sent_by_tsource2send/'],
+     'messageAgeMax': 0,
+     'messageCountMax': 0,
+     'messageDebugDump': False,
+     'messageRateMax': 0,
+     'messageRateMin': 0,
+     'message_strategy': {'failure_duration': '5m', 'reset': True, 'stubborn': True},
+     'message_ttl': 0,
+     'mirror': True,
+     'msg_total_interval': '0',
+     'nodupe_fileAgeMax': 0,
+     'nodupe_ttl': 0,
+     'overwrite': True,
+     'permCopy': True,
+     'permDefault': 0,
+     'permDirDefault': 509,
+     'permLog': 384,
+     'plugins_early': [],
+     'plugins_late': ['sarracenia.flowcb.log.Log'],
+     'post_baseDir': None,
+     'post_baseUrl': None,
+     'post_broker': None,
+     'post_documentRoot': None,
+     'post_exchanges': [],
+     'post_topicPrefix': ['v03', 'post'],
+     'prefetch': 25,
+     'pstrip': '.*sent_by_tsource2send/',
+     'queueBind': True,
+     'queueDeclare': True,
+     'queueName': 'q_tsource_subscribe.q_f71.76359618.62916076',
+     'queue_filename': '/home/peter/.cache/sr3/subscribe/q_f71/subscribe.q_f71.tsource.qname',
+     'randid': 'cedf',
+     'randomize': False,
+     'realpath_post': False,
+     'rename': None,
+     'report': False,
+     'reset': False,
+     'resolved_qname': 'q_tsource_subscribe.q_f71.76359618.62916076',
+     'retry_ttl': 1800.0,
+     'settings': {},
+     'sleep': 0.1,
+     'statehost': False,
+     'strip': 0,
+     'subtopic': [],
+     'timeCopy': True,
+     'timeout': 300,
+     'timezone': 'UTC',
+     'tls_rigour': 'normal',
+     'topicPrefix': ['v03', 'post'],
+     'undeclared': ['msg_total_interval', 'file_total_interval'],
+     'users': False,
+     'v2plugin_options': [],
+     'v2plugins': {'plugin': ['msg_total_save', 'file_total_save']},
+     'vhost': '/',
+     'vip': None}
     
+    % 
+
 
 start
 ~~~~~
