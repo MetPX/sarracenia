@@ -2,8 +2,8 @@
  MetPX-Sarracenia Developer's Guide
 ====================================
 
-:version: @Version@
-:date: @Date@
+:version: |release|
+:date: |today|
 
 
 Tools you Need
@@ -421,7 +421,7 @@ shows functionality covered.
 |                   |                                      | post amqp to a local exchange (v02) | 
 |                   |                                      | as feeder(admin) user               | 
 |                   |                                      |                                     | 
-|                   |                                      | post_exchange_split to xwinnow0x    | 
+|                   |                                      | post_exchangeSplit to xwinnow0x    | 
 +-------------------+--------------------------------------+-------------------------------------+
 | winnow t0x_f10    | winnow processing publish for xsarra | read local amqp v02                 | 
 |                   | exchange for downloading.            | as feeder user.                     | 
@@ -747,8 +747,8 @@ sample output::
     2017-10-28 00:37:02,422 [INFO] sr_shovel t_dd1_f00 0001 stopping
     2017-10-28 04:37:02,435 [INFO] 2017-10-28 04:37:02,435 [INFO] info: instances option not implemented, ignored.
     info: instances option not implemented, ignored.
-    2017-10-28 04:37:02,435 [INFO] 2017-10-28 04:37:02,435 [INFO] info: report_back option not implemented, ignored.
-    info: report_back option not implemented, ignored.
+    2017-10-28 04:37:02,435 [INFO] 2017-10-28 04:37:02,435 [INFO] info: report option not implemented, ignored.
+    info: report option not implemented, ignored.
     2017-10-28 00:37:02,436 [INFO] sr_shovel t_dd2_f00 0001 stopping
     running instance for config pelle_dd1_f04 (pid 15872) stopped.
     running instance for config pelle_dd2_f05 (pid 15847) stopped.
@@ -827,9 +827,9 @@ between each run of the flow test::
   Deleting exchanges...
   Removing flow configs...
   2018-02-10 14:17:34,150 [INFO] info: instances option not implemented, ignored.
-  2018-02-10 14:17:34,150 [INFO] info: report_back option not implemented, ignored.
+  2018-02-10 14:17:34,150 [INFO] info: report option not implemented, ignored.
   2018-02-10 14:17:34,353 [INFO] info: instances option not implemented, ignored.
-  2018-02-10 14:17:34,353 [INFO] info: report_back option not implemented, ignored.
+  2018-02-10 14:17:34,353 [INFO] info: report option not implemented, ignored.
   2018-02-10 09:17:34,837 [INFO] sr_poll f62 cleanup
   2018-02-10 09:17:34,845 [INFO] deleting exchange xs_tsource_poll (tsource@localhost)
   2018-02-10 09:17:35,115 [INFO] sr_post shim_f63 cleanup
@@ -944,8 +944,8 @@ to identify more issues. sample run to 100,000 entries::
   stopping shovels and waiting...
   2018-02-10 13:15:08,964 [INFO] 2018-02-10 13:15:08,964 [INFO] info: instances option not implemented, ignored.
   info: instances option not implemented, ignored.
-  2018-02-10 13:15:08,964 [INFO] info: report_back option not implemented, ignored.
-  2018-02-10 13:15:08,964 [INFO] info: report_back option not implemented, ignored.
+  2018-02-10 13:15:08,964 [INFO] info: report option not implemented, ignored.
+  2018-02-10 13:15:08,964 [INFO] info: report option not implemented, ignored.
   running instance for config pelle_dd2_f05 (pid 20031) stopped.
   running instance for config pelle_dd1_f04 (pid 20043) stopped.
   Traceback (most recent call last):ng...
@@ -1060,10 +1060,10 @@ To recover from this state without discarding the results of a long test, do::
   2018-04-07 10:50:16,167 [INFO] sr_shovel t_dd2_f00 0001 stopped
   2018-04-07 10:50:16,177 [INFO] sr_shovel t_dd1_f00 0001 stopped
   2018-04-07 14:50:16,235 [INFO] info: instances option not implemented, ignored.
-  2018-04-07 14:50:16,235 [INFO] info: report_back option not
+  2018-04-07 14:50:16,235 [INFO] info: report option not
   implemented, ignored.
   2018-04-07 14:50:16,235 [INFO] info: instances option not implemented, ignored.
-  2018-04-07 14:50:16,235 [INFO] info: report_back option not
+  2018-04-07 14:50:16,235 [INFO] info: report option not
   implemented, ignored.
   running instance for config pelle_dd1_f04 (pid 12435) stopped.
   running instance for config pelle_dd2_f05 (pid 12428) stopped.

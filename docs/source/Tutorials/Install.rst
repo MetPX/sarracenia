@@ -7,8 +7,8 @@
 Revision Record
 ---------------
 
-:version: @Version@
-:date: @Date@
+:version: |release|
+:date: |today|
 
 Do you already have it?
 -----------------------

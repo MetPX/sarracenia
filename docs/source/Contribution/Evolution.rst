@@ -11,8 +11,8 @@ is totally different from v2. Design changes:
 * nobody used segmented files, and they were very complicated,
   but everyone finds them fantastic in theory. Need to re-implement
   post sr3 re-factor.  
-* mirroring was a use case we had to address, changing some
-  so added more metadata.
+* mirroring was a use case we had to address, had to add metadata,
+  and evolve a bit.
 * the cluster routing concepts have been removed (cluster_from, cluster_to, etc...)
   it got in the analysts' way more than it helped. Dead easy to 
   implement using flow callbacks, if we ever want them back.

@@ -7,8 +7,8 @@ sr_title
 --------
 
 :Manual section: 1 
-:Date: @Date@
-:Version: @Version@
+:Date: |today|
+:Version: |release|
 :Manual group: MetPX-Sarracenia
 
 SYNOPSIS

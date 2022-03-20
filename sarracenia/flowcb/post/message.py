@@ -29,9 +29,9 @@ class Message(FlowCB):
                 'exchange': self.o.post_exchange,
                 'topicPrefix': self.o.post_topicPrefix,
             })
-            if hasattr( self.o, 'post_exchange_split' ):
+            if hasattr( self.o, 'post_exchangeSplit' ):
                 props.update({
-                    'exchange_split': self.o.post_exchange_split,
+                    'exchangeSplit': self.o.post_exchangeSplit,
                 })
             self.poster = sarracenia.moth.Moth.pubFactory(self.o.post_broker, props)
 

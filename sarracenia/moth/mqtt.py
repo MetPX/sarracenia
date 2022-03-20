@@ -509,8 +509,8 @@ class MQTT(Moth):
         if not exchange:
              if (type(self.o['exchange']) is list):
                   if (len(self.o['exchange']) > 1):
-                      if 'post_exchange_split' in self.o:
-                          # FIXME: assert ( len(self.o['exchange']) == self.o['post_exchange_split'] )
+                      if 'post_exchangeSplit' in self.o:
+                          # FIXME: assert ( len(self.o['exchange']) == self.o['post_exchangeSplit'] )
                           #        if that isn't true... then there is something wrong... should we check ?
                           idx = sum(
                               bytearray(body['integrity']['value'],

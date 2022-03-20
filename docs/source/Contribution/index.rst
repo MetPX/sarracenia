@@ -10,7 +10,7 @@ Contributing to Sarracenia
    Documentation
    man_page_template.rst
    v03
-   Original (2015) Outline <Outline>
+   Original (2015) Basic Idea <BasicIdea>
    Original (2015) Design  <Design>
    Evolution
    deltas

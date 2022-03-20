@@ -317,7 +317,7 @@ class sr_GlobalState:
                         else:
                             numi = 1
                         if ( numi > 1 ) and \
-                           hasattr(cfgbody,'exchange_split'):
+                           hasattr(cfgbody,'exchangeSplit'):
                             print( 'exchange: %s split: %d' % \
                                (cfgbody.exchange, numi) )
                             l = []
@@ -656,7 +656,7 @@ class sr_GlobalState:
         if hasattr(o, 'exchange_suffix'):
             x += '_%s' % o.exchange_suffix
 
-        if hasattr(o, 'exchange_split'):
+        if hasattr(o, 'exchangeSplit'):
             l = []
             for i in range(0, o.instances):
                 y = x + '%02d' % i
@@ -752,8 +752,8 @@ class sr_GlobalState:
                     #o.broker = o.post_broker
                     if hasattr(o, 'post_exchange'):
                         o.exchange = o.post_exchange
-                    if hasattr(o, 'post_exchange_split'):
-                        o.exchange_split = o.post_exchange_split
+                    if hasattr(o, 'post_exchangeSplit'):
+                        o.exchangeSplit = o.post_exchangeSplit
                     if hasattr(o, 'post_exchange_suffix'):
                         o.exchange_suffix = o.post_exchange_suffix
 

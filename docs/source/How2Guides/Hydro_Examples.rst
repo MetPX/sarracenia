@@ -66,7 +66,7 @@ look something like this::
 	2018-09-26 15:26:57,704 [INFO]  expire=300000ms reset=False message_ttl=None prefetch=25 accept_unmatch=False delete=False
 	2018-09-26 15:26:57,705 [INFO]  heartbeat=300 default_mode=400 default_mode_dir=775 default_mode_log=600 discard=False durable=True
 	2018-09-26 15:26:57,705 [INFO]  preserve_mode=True preserve_time=True realpath_post=False base_dir=None follow_symlinks=False
-	2018-09-26 15:26:57,705 [INFO]  mirror=False flatten=/ realpath_post=False strip=0 base_dir=None report_back=True
+	2018-09-26 15:26:57,705 [INFO]  mirror=False flatten=/ realpath_post=False strip=0 base_dir=None report=True
 	2018-09-26 15:26:57,705 [INFO]  post_base_dir=None post_base_url=http://tidesandcurrents.noaa.gov/api/datagetter?range=1&station={0:}&product={1:}&units=metric&time_zone=gmt&application=web_services&format=csv/ sum=z,d blocksize=209715200 
 	2018-09-26 15:26:57,705 [INFO]  Plugins configured:
 	2018-09-26 15:26:57,705 [INFO]          on_line: Line_Mode 
@@ -105,7 +105,7 @@ for the polling and::
 	2018-09-26 15:26:53,473 [INFO]  expire=300000ms reset=False message_ttl=None prefetch=25 accept_unmatch=False delete=False
 	2018-09-26 15:26:53,473 [INFO]  heartbeat=300 default_mode=000 default_mode_dir=775 default_mode_log=600 discard=False durable=True
 	2018-09-26 15:26:53,473 [INFO]  preserve_mode=True preserve_time=True realpath_post=False base_dir=None follow_symlinks=False
-	2018-09-26 15:26:53,473 [INFO]  mirror=False flatten=/ realpath_post=False strip=0 base_dir=None report_back=False
+	2018-09-26 15:26:53,473 [INFO]  mirror=False flatten=/ realpath_post=False strip=0 base_dir=None report=False
 	2018-09-26 15:26:53,473 [INFO]  Plugins configured:
 	2018-09-26 15:26:53,473 [INFO]          do_download: BaseURLDownloader 
 	2018-09-26 15:26:53,473 [INFO]          do_get     : 
@@ -122,7 +122,7 @@ for the polling and::
 	2018-09-26 15:26:53,474 [INFO] AMQP  broker(localhost) user(tsource) vhost(/)
 	2018-09-26 15:26:53,478 [INFO] Binding queue q_tsource.sr_subscribe.subnoaa.90449861.55888967 with key v02.post.# from exchange xs_tsource on broker amqp://tsource@localhost/
 	2018-09-26 15:26:53,480 [INFO] reading from to tsource@localhost, exchange: xs_tsource
-	2018-09-26 15:26:53,480 [INFO] report_back suppressed
+	2018-09-26 15:26:53,480 [INFO] report suppressed
 	2018-09-26 15:26:53,480 [INFO] sr_retry on_heartbeat
 	2018-09-26 15:26:53,486 [INFO] No retry in list
 	2018-09-26 15:26:53,488 [INFO] sr_retry on_heartbeat elapse 0.007632

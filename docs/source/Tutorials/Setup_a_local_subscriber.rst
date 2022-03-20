@@ -66,7 +66,7 @@ Setup the bits that post changes to the exchange::
     2020-08-20 16:29:26,111 [ERROR] standard queue name based on: 
       prefix=q_bob
       component=subscribe
-      exchange_split=False
+      exchangeSplit=False
       no=1
 
 --> Note the line with **[ERROR]**, it was unable to find the queue.

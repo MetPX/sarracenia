@@ -179,7 +179,7 @@ pourrait être choisi par une instance, et si un duplicata est reçu  il
 serait probablement pris en charge par une autre instance. **Pour une suppression
 efficace des doublons avec les instances**, il faut **déployer deux couches 
 d'abonnés**. Utiliser une **première couche d'abonnés (sr_shovels)** 
-avec la suppression de doublons désactivée et avec *post_exchange_split*, qui 
+avec la suppression de doublons désactivée et avec *post_exchangeSplit*, qui 
 route les messages par checksum jusqu'à une **seconde couche de 
 d'abonnées (sr_winnow) dont les caches de suppression de doublons sont actives.**
 
@@ -837,7 +837,7 @@ de configuration::
   accept_unmatch True
   on_message None
   on_post None
-  report_back False
+  report False
   post_broker amqp://tfeed@localhost/
   post_exchange xreport
 
@@ -845,7 +845,7 @@ Explications :
   - Les pelles de routage de rapports sont des fonctions administratives, et c'est donc l'utilisateur de l'alimentateur qui est utilisé.
   - Cette configuration permet d'acheminer les rapports soumis par l'utilisateur " anonyme ".
   - on_message None, on_post None, réduire la journalisation non désirée sur le système local.
-  - report_back Faux réduire les rapports non désirés (les sources veulent-elles comprendre la circulation des pelleteuses ?
+  - report Faux réduire les rapports non désirés (les sources veulent-elles comprendre la circulation des pelleteuses ?
   - poster sur l'échange xreport.
 
 Les pelles *2<user>* regardent tous les messages dans l'échange xreport, et les copient aux utilisateurs xr\_ exchange.
@@ -864,7 +864,7 @@ Les pelles *2<user>* regardent tous les messages dans l'échange xreport, et les
   msg_by_source tsource2
   on_message msg_by_source
   on_post None
-  report_back False
+  report False
   post_broker amqp://tfeed@localhost/
   post_exchange xr_tsource2
 
@@ -914,7 +914,7 @@ nouvelle pompe sur boule.  Fondamentalement, les deux sortes de pelles
 construites automatiquement par sr_audit feront tout le routage nécessaire 
 au sein d'un cluster. Lorsqu'il y a des problèmes de volume, ces configurations
 peuvent être modifiées pour augmenter le nombre d'instances ou l'utilisation.
-post_exchange_split le cas échéant.
+post_exchangeSplit le cas échéant.
 
 La configuration manuelle de la pelle est également nécessaire pour acheminer 
 les messages entre les groupes. C'est juste une variation de routage des 

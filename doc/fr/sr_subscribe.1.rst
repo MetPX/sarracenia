@@ -1253,7 +1253,7 @@ est reçu, il pourrait être choisi par une instance, et quand une copie sera
 reçue, il est probable qu'il sera pris en charge par une autre instance. Pour
 une suppression efficace des doublons avec les instances**, il faut **déployer
 deux couches d'abonnés**. Il faut une **première couche d'abonnés (sr_shovels)**
-avec suppression des doublons désactivée, et l´option *post_exchange_split*
+avec suppression des doublons désactivée, et l´option *post_exchangeSplit*
 activé, ce qui route les messages aux instance selon leur checksum vers une 
 **seconde couche de d´abonnés (sr_winnow) dont les caches de suppression de
 doublons sont actives. 
@@ -1577,7 +1577,7 @@ RAPPORTS
 Pour chaque téléchargement, par défaut, un message de rapport amqp est renvoyé au courtier.
 Ceci est fait avec l'option :
 
-- **report_back <booléen> (par défaut : True)**. 
+- **report <booléen> (par défaut : True)**. 
 - **rapport_exchange <report_exchangename> (par défaut : xreport|xs_username* )**
 
 Lorsqu'un rapport est généré, il est envoyé au *report_exchange* configuré. 
@@ -1678,7 +1678,7 @@ le courtier suivant, l'utilisateur définit les options suivantes :
  - **[--outlet <post|json|url>]            (défaut: post)**
  - **[-pbd|--post_base_dir <path>]     (optionelle)**
  - **post_exchange           <name>    (défaut: xpublic)**
- - **post_exchange_split   <number>    (défaut: 0)**
+ - **post_exchangeSplit   <number>    (défaut: 0)**
  - **post_base_url            <url>    (MANDATORY)**
  - **on_post               <script>    (défaut: None)**
 
@@ -1733,16 +1733,16 @@ Chaque fois qu'une avis se produit pour un produit, un utilisateur peut
 définir de déclencher un script. L'option **on_post** serait utilisée pour faire 
 une telle configuration.
 
-post_exchange_split <number> (défaut: 0)
+post_exchangeSplit <number> (défaut: 0)
 ----------------------------------------
 
-L'option **post_exchange_split** ajoute un suffixe à deux chiffres résultant d'une
+L'option **post_exchangeSplit** ajoute un suffixe à deux chiffres résultant d'une
 division entière du dernier digit de la somme de contrôle, afin de répartir les 
 avis entre un certain nombre d'échanges, selon la valeur de leur somme de contrôle.
 C'est utilisé dans les pompes à trafic élevé pour permettre des instances 
 multiples de sr_winnow, ce qui ne peut pas être instancié de la manière normale. exemple::
 
-    post_exchange_split 5
+    post_exchangeSplit 5
     post_exchange xwinnow
 
 se traduira par l'envoi de messages à cinq échanges nommées xwinnow00, xwinnow01,
@@ -2084,7 +2084,7 @@ et les sauvegarder sur disque::
   2017-03-18 13:07:27,786 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
   2017-03-18 13:07:27,788 [WARNING] non standard queue name q_tsub.sr_subscribe.t.99524171.43129428
   2017-03-18 13:07:27,788 [INFO] Binding queue q_tsub.sr_subscribe.t.99524171.43129428 with key v02.post.# from exchange xpublic on broker amqp://tfeed@localhost/
-  2017-03-18 13:07:27,790 [INFO] report_back to tfeed@localhost, exchange: xreport
+  2017-03-18 13:07:27,790 [INFO] report to tfeed@localhost, exchange: xreport
   2017-03-18 13:07:27,792 [INFO] sr_shovel saving to /home/peter/.cache/sarra/shovel/save/sr_shovel_save_0000.save for future restore
   2017-03-18 13:07:27,794 [INFO] sr_shovel saving 1 message topic: v02.post.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml
   2017-03-18 13:07:27,795 [INFO] sr_shovel saving 2 message topic: v02.post.hydrometric.doc.hydrometric_StationList.csv
@@ -2120,7 +2120,7 @@ d´origine::
   2017-03-18 13:15:33,611 [INFO] sr_sarra run
   2017-03-18 13:15:33,611 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
   2017-03-18 13:15:33,613 [INFO] Binding queue q_tfeed.sr_shovel.save with key v02.post.# from exchange xpublic on broker amqp://tfeed@localhost/
-  2017-03-18 13:15:33,615 [INFO] report_back to tfeed@localhost, exchange: xreport
+  2017-03-18 13:15:33,615 [INFO] report to tfeed@localhost, exchange: xreport
   2017-03-18 13:15:33,618 [INFO] sr_shovel restoring 189 messages from save /home/peter/.cache/sarra/shovel/save/sr_shovel_save_0000.save 
   2017-03-18 13:15:33,620 [INFO] sr_shovel restoring message 1 of 189: topic: v02.post.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml
   2017-03-18 13:15:33,620 [INFO] msg_log received: 20170318165818.878 http://localhost:8000/ observations/swob-ml/20170318/CPSL/2017-03-18-1600-CPSL-AUTO-swob.xml topic=v02.post.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml lag=1034.74 sundew_extension=DMS:WXO_RENAMED_SWOB:MSC:XML::20170318165818 source=metpx mtime=20170318165818.878 sum=d,66f7249bd5cd68b89a5ad480f4ea1196 to_clusters=DD,DDI.CMC,DDI.EDM,DDI.CMC,CMC,SCIENCE,EDM parts=1,5354,1,0,0 toolong=1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ß from_cluster=DD atime=20170318165818.878 filename=2017-03-18-1600-CPSL-AUTO-swob.xml 

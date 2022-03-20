@@ -95,7 +95,7 @@ something like this::
 	2018-10-03 15:24:58,617 [INFO]  expire=300000ms reset=False message_ttl=None prefetch=25 accept_unmatch=False delete=False
 	2018-10-03 15:24:58,617 [INFO]  heartbeat=300 default_mode=400 default_mode_dir=775 default_mode_log=600 discard=False durable=True
 	2018-10-03 15:24:58,617 [INFO]  preserve_mode=True preserve_time=True realpath_post=False base_dir=None follow_symlinks=False
-	2018-10-03 15:24:58,617 [INFO]  mirror=False flatten=/ realpath_post=False strip=0 base_dir=None report_back=True
+	2018-10-03 15:24:58,617 [INFO]  mirror=False flatten=/ realpath_post=False strip=0 base_dir=None report=True
 	2018-10-03 15:24:58,617 [INFO]  post_base_dir=None post_base_url=pops://dfsghfgsdfg24@hotmail.com@outlook.office365.com:995/ sum=z,d blocksize=209715200 
 	2018-10-03 15:24:58,617 [INFO]  Plugins configured:
 	2018-10-03 15:24:58,617 [INFO]          on_line: Line_Mode 
@@ -151,7 +151,7 @@ If everything was supplied correctly, the output should look something like this
 	2018-10-03 15:24:57,159 [INFO]  expire=300000ms reset=False message_ttl=None prefetch=25 accept_unmatch=False delete=False
 	2018-10-03 15:24:57,159 [INFO]  heartbeat=300 default_mode=000 default_mode_dir=775 default_mode_log=600 discard=False durable=True
 	2018-10-03 15:24:57,159 [INFO]  preserve_mode=True preserve_time=True realpath_post=False base_dir=None follow_symlinks=False
-	2018-10-03 15:24:57,159 [INFO]  mirror=False flatten=/ realpath_post=False strip=0 base_dir=None report_back=True
+	2018-10-03 15:24:57,159 [INFO]  mirror=False flatten=/ realpath_post=False strip=0 base_dir=None report=True
 	2018-10-03 15:24:57,159 [INFO]  Plugins configured:
 	2018-10-03 15:24:57,159 [INFO]          do_download: Fetcher 
 	2018-10-03 15:24:57,159 [INFO]          do_get     : 
@@ -168,7 +168,7 @@ If everything was supplied correctly, the output should look something like this
 	2018-10-03 15:24:57,160 [INFO] AMQP  broker(localhost) user(tsource) vhost(/)
 	2018-10-03 15:24:57,164 [INFO] Binding queue q_tsource.sr_subscribe.downloademail.64168876.31529683 with key v02.post.# from exchange xs_tsource on broker amqp://tsource@localhost/
 	2018-10-03 15:24:57,166 [INFO] reading from to tsource@localhost, exchange: xs_tsource
-	2018-10-03 15:24:57,167 [INFO] report_back to tsource@localhost, exchange: xs_tsource
+	2018-10-03 15:24:57,167 [INFO] report to tsource@localhost, exchange: xs_tsource
 	2018-10-03 15:24:57,167 [INFO] sr_retry on_heartbeat
 	2018-10-03 15:24:57,172 [INFO] No retry in list
 	2018-10-03 15:24:57,173 [INFO] sr_retry on_heartbeat elapse 0.006333

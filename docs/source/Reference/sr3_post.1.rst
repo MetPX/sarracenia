@@ -7,8 +7,8 @@ Publish the Availability of a File to Subscribers
 -------------------------------------------------
 
 :Manual section: 1 
-:Date: @Date@
-:Version: @Version@
+:Date: |today|
+:Version: |release|
 :Manual group: MetPx Sarracenia Suite
 
 SYNOPSIS

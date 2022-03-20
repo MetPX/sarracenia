@@ -8,8 +8,8 @@ Sarracenia v03 Post Message Format/Protocol
 -------------------------------------------
 
 :Manual section: 7
-:Date: @Date@
-:Version: @Version@
+:Date: |today|
+:Version: |release|
 :Manual group: MetPX-Sarracenia
 
 

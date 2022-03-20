@@ -19,8 +19,8 @@ Injecting Data into a MetPX-Sarracenia Pump Network
 Revision Record
 ---------------
 
-:version: @Version@
-:date: @Date@
+:version: |release|
+:date: |today|
 
 
 A Sarracenia data pump is a web (or sftp) server with notifications for subscribers

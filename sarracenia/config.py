@@ -80,22 +80,22 @@ default_options = {
     'post_baseDir': None,
     'post_baseUrl': None,
     'realpath_post': False,
-    'report_back': False,
+    'report': False,
     'nodupe_ttl': 0
 }
 
 count_options = [
-    'batch', 'exchange_split', 'instances', 'no', 'post_exchange_split', 'prefetch',
+    'batch', 'exchangeSplit', 'instances', 'no', 'post_exchangeSplit', 'prefetch',
     'messageCountMax', 'messageRateMax', 'messageRateMin'
 ]
 
 # all the boolean settings.
 flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'baseUrl_relPath', 'cache_stat', 'debug', \
-    'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchange_split', 'logReject', 'realpath_filter', \
-    'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logStdout', 'logReject', 'pipe', 'restore', \
+    'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchangeSplit', 'logReject', 'realpath_filter', \
+    'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logStdout', 'logReject', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
-    'permCopy', 'pump_flag', 'queueBind', 'queueDeclare', 'randomize', 'realpath_post', 'reconnect', 'report_daemons', \
-    'report_back', 'reset', 'retry_mode', 'save', 'set_passwords', 'source_from_exchange', \
+    'permCopy', 'pump_flag', 'queueBind', 'queueDeclare', 'randomize', 'realpath_post', 'reconnect', \
+    'report', 'reset', 'retry_mode', 'save', 'set_passwords', 'source_from_exchange', \
     'statehost', 'users'
                 ]
 
@@ -487,11 +487,11 @@ class Config:
         'declare_exchange': 'exchangeDeclare',
         'declare_queue': 'queueDeclare',
         'document_root': 'documentRoot',
-        'no_duplicates': 'nodupe_ttl',
         'caching': 'nodupe_ttl',
         'cache_basis': 'nodupe_basis',
         'e' : 'fileEvents',
         'events' : 'fileEvents',
+        'exchange_split': 'exchangeSplit',
         'instance': 'instances',
         'chmod': 'permDefault',
         'default_mode': 'permDefault',
@@ -511,16 +511,19 @@ class Config:
         'logdays': 'lr_backupCount',
         'logrotate': 'lr_backupCount',
         'logrotate_interval': 'lr_interval',
+        'no_duplicates': 'nodupe_ttl',
         'post_base_dir': 'post_baseDir',
         'post_basedir': 'post_baseDir',
         'post_base_url': 'post_baseUrl',
         'post_baseurl': 'post_baseUrl',
         'post_document_root': 'post_documentRoot',
+        'post_exchange_split': 'post_exchangeSplit',
         'post_rate_limit': 'messageRateMax',
         'post_topic_prefix' : 'post_topicPrefix',
         'preserve_mode' : 'permCopy',
         'preserve_time' : 'timeCopy',
         'queue_name' : 'queueName', 
+        'report_back': 'report',
         'sum' : 'integrity',  
         'suppress_duplicates' : 'nodupe_ttl',
         'suppress_duplicates_basis' : 'nodupe_basis', 
@@ -940,7 +943,7 @@ class Config:
             if hasattr(self, 'exchange_suffix'):
                 self.exchange += '_%s' % self.exchange_suffix
 
-            if hasattr(self, 'exchange_split') and hasattr(
+            if hasattr(self, 'exchangeSplit') and hasattr(
                     self, 'no') and (self.no > 0):
                 self.exchange += "%02d" % self.no
 
@@ -1352,9 +1355,9 @@ class Config:
             if hasattr(self, 'post_exchange_suffix'):
                 self.post_exchange += '_%s' % self.post_exchange_suffix
 
-            if hasattr(self, 'post_exchange_split'):
+            if hasattr(self, 'post_exchangeSplit'):
                 l = []
-                for i in range(0, int(self.post_exchange_split)):
+                for i in range(0, int(self.post_exchangeSplit)):
                     y = self.post_exchange + '%02d' % i
                     l.append(y)
                 self.post_exchange = l
@@ -1381,7 +1384,7 @@ class Config:
             queuefile += os.sep + component + os.sep + cfg
             queuefile += os.sep + component + '.' + cfg + '.' + self.broker.url.username
 
-            if hasattr(self, 'exchange_split') and hasattr(
+            if hasattr(self, 'exchangeSplit') and hasattr(
                     self, 'no') and (self.no > 0):
                 queuefile += "%02d" % self.no
             queuefile += '.qname'
@@ -1999,7 +2002,7 @@ class Config:
                             nargs='?',
                             help='root of the topic tree to announce')
         parser.add_argument(
-            '--post_exchange_split',
+            '--post_exchangeSplit',
             type=int,
             nargs='?',
             help='split output into different exchanges 00,01,...')

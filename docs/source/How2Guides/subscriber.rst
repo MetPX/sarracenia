@@ -12,8 +12,8 @@ Revision Record
 ---------------
 
 
-:version: @Version@
-:date: @Date@
+:version: |release|
+:date: |today|
 
 
 Introduction
@@ -474,7 +474,7 @@ as the different occurrences of the same file will not be received by the same
 instance, and so with n instances, roughly n-1/n duplicates will slip through. 
 
 In order to properly suppress duplicate file announcements in data streams 
-that need multiple instances, one uses winnowing with *post_exchange_split*.
+that need multiple instances, one uses winnowing with *post_exchangeSplit*.
 This option sends data to multiple post exchanges based on the data checksum,
 so that all duplicate files will be routed to the same winnow process.
 Each winnow process runs the normal duplicate suppression used in single instances,

@@ -1945,13 +1945,13 @@ and that download stream can be multi-streamed as well.
   loss of notifications.
 
 
-report_back and report_exchange
+report and report_exchange
 -------------------------------
 
 For each download, by default, an amqp report message is sent back to the broker.
 This is done with option :
 
-- **report_back <boolean>        (default: True)** 
+- **report <boolean>        (default: True)** 
 - **report_exchange <report_exchangename> (default: xreport|xs_*username* )**
 
 When a report is generated, it is sent to the configured *report_exchange*. Administrative
@@ -2072,16 +2072,16 @@ will be posted.  In most cases it is 'xpublic'.
 Whenever a publish happens for a product, a user can set to trigger a script.
 The option **on_post** would be used to do such a setup.
 
-post_exchange_split   <number>   (default: 0)
+post_exchangeSplit   <number>   (default: 0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The **post_exchange_split** option appends a two digit suffix resulting from 
+The **post_exchangeSplit** option appends a two digit suffix resulting from 
 hashing the last character of the checksum to the post_exchange name,
 in order to divide the output amongst a number of exchanges.  This is currently used
 in high traffic pumps to allow multiple instances of sr_winnow, which cannot be
 instanced in the normal way.  Example::
 
-    post_exchange_split 5
+    post_exchangeSplit 5
     post_exchange xwinnow
 
 will result in posting messages to five exchanges named: xwinnow00, xwinnow01,

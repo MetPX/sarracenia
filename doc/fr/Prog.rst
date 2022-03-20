@@ -450,7 +450,7 @@ accéder sous la forme *parent.xx* (par exemple *parent.queue_name*)::
   'flatten': '/',
   'exchange': 'xpublic',
   'discard': False,
-  'report_back': True,
+  'report': True,
   'source': None,
   'pidfile': '/local/home/peter/.cache/sarra/.sr_subscribe_dd_0001.pid',
   'event': 'IN_CLOSE_WRITE|IN_ATTRIB|IN_MOVED_TO|IN_MOVE_SELF',

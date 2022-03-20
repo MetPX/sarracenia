@@ -218,6 +218,8 @@ V2 to Sr3
                    'post_log': ['logEvents', 'after_work']
                },
            }
+          The options listed as 'continue' are obsolete ones, superceded by default processing, or rendered
+          unnecessary by changes in the implementation.
 
 *NOTICE*: for API users and plugin writers, the v2 plugin format is entirely replaced by 
           the `Flow Callback <FlowCallbacks.html>`_ class. New plugin functionality 

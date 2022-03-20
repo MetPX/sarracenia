@@ -152,7 +152,7 @@ sr_winnow is used to suppress duplicates.
 first time a posting is received, it could be picked by one instance, and if a duplicate one is received
 it would likely be picked up by another instance. **For effective duplicate suppression with instances**,
 one must **deploy two layers of subscribers**. Use a **first layer of subscribers (sr_shovels)** with duplicate
-suppression turned off and output with *post_exchange_split*, which route posts by checksum to
+suppression turned off and output with *post_exchangeSplit*, which route posts by checksum to
 a **second layer of subscribers (sr_winnow) whose duplicate suppression caches are active.**
 
 
@@ -761,7 +761,7 @@ Sample configuration file::
   accept_unmatch True
   on_message None
   on_post None
-  report_back False
+  report False
   post_broker amqp://tfeed@localhost/
   post_exchange xreport
 
@@ -769,7 +769,7 @@ Explanations:
   - report routing shovels are administrative functions, and therefore the feeder user is used.
   - this configuration is to route the reports submitted by the 'anonymous' user.
   - on_message None, on_post None,  reduce unwanted logging on the local system.
-  - report_back False  reduce unwanted reports (do sources want to understand shovel traffic?)
+  - report False  reduce unwanted reports (do sources want to understand shovel traffic?)
   - post to the xreport exchange.
 
 The *2<user>* shovels look at all the messages in the xreport exchange, and copy them to the users xr\_ exchange.
@@ -787,7 +787,7 @@ Sample::
   msg_by_source tsource2
   on_message msg_by_source
   on_post None
-  report_back False
+  report False
   post_broker amqp://tfeed@localhost/
   post_exchange xr_tsource2
 
@@ -832,7 +832,7 @@ Example::
 From this listing, we can see that a subscriber on blacklab is actively downloading from the new pump on boule.
 Basically, the two sorts of shovels built automatically by sr_audit will do all the routing needed within a cluster. 
 When there are volume issues, these configurations can be tweaked to increase the number of instances or use
-post_exchange_split where appropriate.
+post_exchangeSplit where appropriate.
 
 Manual shovel configuration is also required to route messages between clusters. It is just a variation
 of intra-cluster report routing.
@@ -1142,7 +1142,7 @@ It is now possible to enable MQTT in Sarracenia through the RabbitMQ MQTT plugin
    post_broker amqp://${afeeder}@${abroker}
    post_exchange xmqtt_public
    post_topicPrefix  v03.${from_exchange}
-   report_back False
+   report False
    
   or consume from rabbitmqtt exchange::
    

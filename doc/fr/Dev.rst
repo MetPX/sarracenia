@@ -383,8 +383,8 @@ sortie::
     2017-10-28 00:37:02,422 [INFO] sr_shovel t_dd1_f00 0001 stopping
     2017-10-28 04:37:02,435 [INFO] 2017-10-28 04:37:02,435 [INFO] info: instances option not implemented, ignored.
     info: instances option not implemented, ignored.
-    2017-10-28 04:37:02,435 [INFO] 2017-10-28 04:37:02,435 [INFO] info: report_back option not implemented, ignored.
-    info: report_back option not implemented, ignored.
+    2017-10-28 04:37:02,435 [INFO] 2017-10-28 04:37:02,435 [INFO] info: report option not implemented, ignored.
+    info: report option not implemented, ignored.
     2017-10-28 00:37:02,436 [INFO] sr_shovel t_dd2_f00 0001 stopping
     running instance for config pelle_dd1_f04 (pid 15872) stopped.
     running instance for config pelle_dd2_f05 (pid 15847) stopped.
@@ -467,9 +467,9 @@ doit être effectuée entre chaque exécution de l'essai de débit::
   Deleting exchanges...
   Removing flow configs...
   2018-02-10 14:17:34,150 [INFO] info: instances option not implemented, ignored.
-  2018-02-10 14:17:34,150 [INFO] info: report_back option not implemented, ignored.
+  2018-02-10 14:17:34,150 [INFO] info: report option not implemented, ignored.
   2018-02-10 14:17:34,353 [INFO] info: instances option not implemented, ignored.
-  2018-02-10 14:17:34,353 [INFO] info: report_back option not implemented, ignored.
+  2018-02-10 14:17:34,353 [INFO] info: report option not implemented, ignored.
   2018-02-10 09:17:34,837 [INFO] sr_poll f62 cleanup
   2018-02-10 09:17:34,845 [INFO] deleting exchange xs_tsource_poll (tsource@localhost)
   2018-02-10 09:17:35,115 [INFO] sr_post shim_f63 cleanup
@@ -576,8 +576,8 @@ pour identifier d'autres problèmes. échantillonnage jusqu'à 100 000 entrées:
   stopping shovels and waiting...
   2018-02-10 13:15:08,964 [INFO] 2018-02-10 13:15:08,964 [INFO] info: instances option not implemented, ignored.
   info: instances option not implemented, ignored.
-  2018-02-10 13:15:08,964 [INFO] info: report_back option not implemented, ignored.
-  2018-02-10 13:15:08,964 [INFO] info: report_back option not implemented, ignored.
+  2018-02-10 13:15:08,964 [INFO] info: report option not implemented, ignored.
+  2018-02-10 13:15:08,964 [INFO] info: report option not implemented, ignored.
   running instance for config pelle_dd2_f05 (pid 20031) stopped.
   running instance for config pelle_dd1_f04 (pid 20043) stopped.
   Traceback (most recent call last):ng...
@@ -670,10 +670,10 @@ et est à une phase de vider les tentatives, mais continue d'essayer de nouveau 
   2018-04-07 10:50:16,167 [INFO] sr_shovel t_dd2_f00 0001 stopped
   2018-04-07 10:50:16,177 [INFO] sr_shovel t_dd1_f00 0001 stopped
   2018-04-07 14:50:16,235 [INFO] info: instances option not implemented, ignored.
-  2018-04-07 14:50:16,235 [INFO] info: report_back option not
+  2018-04-07 14:50:16,235 [INFO] info: report option not
   implemented, ignored.
   2018-04-07 14:50:16,235 [INFO] info: instances option not implemented, ignored.
-  2018-04-07 14:50:16,235 [INFO] info: report_back option not
+  2018-04-07 14:50:16,235 [INFO] info: report option not
   implemented, ignored.
   running instance for config pelle_dd1_f04 (pid 12435) stopped.
   running instance for config pelle_dd2_f05 (pid 12428) stopped.

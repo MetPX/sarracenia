@@ -7,9 +7,9 @@ SR3 OPTIONS
 SR3 Configuration File Format
 ------------------------------
 
-:manual section: 5
-:Date: @Date@
-:Version: @Version@
+:manual section: 7
+:Date: |today|
+:Version: |release|
 :Manual group: MetPX-Sarracenia
 
 SYNOPSIS
@@ -300,7 +300,7 @@ duration
     modified by a unit suffix ( m-minute, h-hour, w-week ) 
 
 flag       
-    boolean (True/False) option.
+    an option that has only True or False values (aka: a boolean value)
 
 float
     a floating point number.
@@ -321,6 +321,11 @@ str
 
 Configuration File Options
 ---------------------------
+
+The actual options are listed below. Note that they are case sensitive, and
+only a subset are available on the command line. Those that are available
+on the command line have the same effect as when specified in configuration
+files.
 
 The options available in configuration files:
 
@@ -493,8 +498,8 @@ needs a localfile, so the local path is built by concatenating::
    baseDir + relative path in the baseUrl + relPath
 
 
-baseUrl_relPath
-~~~~~~~~~~~~~~~
+baseUrl_relPath <flag> (default: off)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Normally, the relative path (baseUrl_relPath is False, appended to the base directory) for 
 files which are downloaded will be set according to the relPath header included 
@@ -515,6 +520,7 @@ transfer protocols, not HTTP ones at the moment.
 blocksize <size> default: 0 (auto)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+NOTE: **NOT IMPLEMENTEDin sr3, expected to return in future version**
 This **blocksize** option controls the partitioning strategy used to post files.
 The value should be one of::
 
@@ -659,17 +665,24 @@ for the delivery of the product.  The script receives the sender class
 instance.  The script takes the parent as an argument, and for example, any
 modification to  **parent.msg.new_file**  will change the name of the file written locally.
 
+download <flag> (default: True)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-durable <boolean> (default: True)
+used to disable downloading in subscribe and/or sarra component.
+set False by default in shovel or winnow components.
+
+
+durable <flag> (default: True)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The  **durable** option, if set to True, means writes the queue
-on disk if the broker is restarted.
+The AMQP **durable** option, on queue declarations. If set to True, 
+the broker will preserve the queue across broker reboots.
+It means writes the queue is on disk if the broker is restarted.
 
-fileEvents <event|event|...>
+fileEvents <event,event,...>
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A list of file event types to monitor separated by a 'pipe symbol'.
+A comma separated list of file event types to monitor.
 Available file events:  create, delete, link, modify
 
 The *create*, *modify*, and *delete* events reflect what is expected: a file being created, modified, or deleted.
@@ -695,8 +708,8 @@ These settings must appear in the configuration file before the corresponding
 *topicPrefix* and *subtopic* settings.
 
 
-exchangeDeclare
-~~~~~~~~~~~~~~~
+exchangeDeclare <flag>
+~~~~~~~~~~~~~~~~~~~~~~
 
 On startup, by default, Sarracenia redeclares resources and bindings to ensure they
 are uptodate. If the exchange already exists, this flag can be set to False, 
@@ -786,8 +799,8 @@ would result in the creation of the filepath::
 
  /mylocaldirectory/model_gem_global-25km-grib2-lat_lon-12-015-CMC_glb_TMP_TGL_2_latlon.24x.24_2013121612_P015.grib2
 
-follow_symlinks <boolean>
-~~~~~~~~~~~~~~~~~~~~~~~~~
+follow_symlinks <flag>
+~~~~~~~~~~~~~~~~~~~~~~
 
 The *follow_symlinks* option causes symbolic links to be traversed.  If *follow_symlinks* is set
 and the destination of a symbolic link is a file, then that destination file should be posted as well as the link.
@@ -796,8 +809,8 @@ monitored by watch.   If *follow_symlinks* is false, then no action related to t
 link is taken.
 
 
-force_polling <boolean> (default: False)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+force_polling <flag> (default: False)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 By default, watch selects an (OS dependent) optimal method to watch a
 directory. For large trees, the optimal method can be manyfold (10x or even
@@ -880,8 +893,8 @@ include config
 include another configuration within this configuration.
 
 
-inline <boolean> (default: False)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+inline <flag> (default: False)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When posting messages, The **inline** option is used to have the file content
 included in the post. This can be efficient when sending small files over high
@@ -903,8 +916,8 @@ inlineOnly
 discard messages if the data is not inline.
 
 
-inplace <boolean> (default: On)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+inplace <flag> (default: On)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Large files may be sent as a series of parts, rather than all at once.
 When downloading, if **inplace** is true, these parts will be appended to the file
@@ -1045,8 +1058,8 @@ message_ttl <duration>  (default: None)
 The  **message_ttl**  option set the time a message can live in the queue.
 Past that time, the message is taken out of the queue by the broker.
 
-mirror <boolean> (default: off)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+mirror <flag> (default: off)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The  **mirror**  option can be used to mirror the dd.weather.gc.ca tree of the files.
 If set to  **True**  the directory given by the  **directory**  option
@@ -1064,6 +1077,15 @@ would result in the creation of the directories and the file
 /mylocaldirectory/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
 mirror settings can be changed between directory options.
 
+no <count>
+~~~~~~~~~~
+
+Present on instances started by the sr3 management interface.
+The no option is only used on the command line, and not intended for users.
+It is an option for use by sr3 when spawning instances to inform each process
+which instance it is. e.g instance 3 will be spawned with --no 3 
+
+ 
 nodupe_ttl <off|on|999[smhdw]> 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1091,7 +1113,7 @@ picked by one instance, and if a duplicate one is received it would likely
 be picked up by another instance. **For effective duplicate suppression with instances**,
 one must **deploy two layers of subscribers**. Use
 a **first layer of subscribers (shovels)** with duplicate suppression turned
-off and output with *post_exchange_split*, which route posts by checksum to
+off and output with *post_exchangeSplit*, which route posts by checksum to
 a **second layer of subscibers (winnow) whose duplicate suppression caches are active.**
 
 
@@ -1156,8 +1178,8 @@ posting to a broker. The valid argument values are:
 FIXME: The **outlet** option came from the C implementation ( *sr3_cpump*  ) and it has not
 been used much in the python implementation.
 
-overwrite <boolean> (default: off)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+overwrite <flag> (default: off)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The  **overwrite**  option,if set to false, avoid unnecessary downloads under these conditions :
 
@@ -1237,16 +1259,16 @@ When publishing a product, a user can trigger a script, using
 flow callback entry_points such as **after_accept**, and **after_work** 
 to modify messages generated about files prior to posting.
 
-post_exchange_split   <number>   (default: 0)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+post_exchangeSplit <count> (default: 0)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The **post_exchange_split** option appends a two digit suffix resulting from
+The **post_exchangeSplit** option appends a two digit suffix resulting from
 hashing the last character of the checksum to the post_exchange name,
 in order to divide the output amongst a number of exchanges.  This is currently used
 in high traffic pumps to allow multiple instances of winnow, which cannot be
 instanced in the normal way.  Example::
 
-    post_exchange_split 5
+    post_exchangeSplit 5
     post_exchange xwinnow
 
 will result in posting messages to five exchanges named: xwinnow00, xwinnow01,
@@ -1337,7 +1359,7 @@ If there are several posts because the file is posted
 by block (the *blocksize* option was set), the block
 posts are randomized meaning that they will not be posted
 
-[-real|--realpath <boolean>]
+[-real|--realpath <flag>]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The realpath option resolves paths given to their canonical ones, eliminating
@@ -1363,13 +1385,14 @@ path ends with '/' it suggests a directory path...
 If it doesn't, the option specifies a file renaming.
 
 
-report_back and report_exchange
+report and report_exchange
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+NOTE: **NOT IMPLEMENTEDin sr3, expected to return in future version**
 For each download, by default, an amqp report message is sent back to the broker.
 This is done with option :
 
-- **report_back <boolean>        (default: True)**
+- **report <flag>  (default: True)**
 - **report_exchange <report_exchangename> (default: xreport|xs_*username* )**
 
 When a report is generated, it is sent to the configured *report_exchange*. Administrative
@@ -1380,8 +1403,8 @@ These reports are used for delivery tuning and for data sources to generate stat
 Set this option to **False**, to prevent generation of reports.
 
 
-reset <boolean> (default: False)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+reset <flag> (default: False)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When **reset** is set, and a component is (re)started, its queue is
 deleted (if it already exists) and recreated according to the component's
@@ -1487,8 +1510,8 @@ NOTE::
     The expression:  .*?GIF   matches: radar/PRECIP/GIF
     whereas the expression: .*GIF matches the entire name.
 
-source_from_exchange <boolean> (default: off)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+source_from_exchange <flag> (default: off)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The **source_from_exchange** option is mainly for use by administrators.
 If messages received are posted directly from a source, the exchange used
@@ -1625,6 +1648,12 @@ topicPrefix (default: v03)
 prepended to the sub-topic to form a complete topic hierarchy. 
 This option applies to subscription bindings.
 Denotes the version of messages received in the sub-topics. (v03 refers to `<sr3_post.7.html>`_)
+
+users <flag> (default: false)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As an adjunct when the *declare* action is used, to ask sr3 to declare users
+on the broker, as well as queues and exchanges.
 
 
 vip - ACTIVE/PASSIVE OPTIONS
