@@ -91,7 +91,20 @@ class Credential:
 
     def __str__(self):
         s = ''
-        s += self.url.geturl()
+        if False:
+            s += self.url.geturl()
+        else:
+            s += self.url.scheme + '://' 
+            if self.url.username:
+               s += self.url.username 
+            #if self.url.password:
+            #   s += ':' + self.url.password 
+            s += '@' + self.url.hostname
+            if self.url.port:
+               s+= ':' + self.url.port
+            if self.url.path:
+              s += self.url.path
+
         s += " %s" % self.ssh_keyfile
         s += " %s" % self.passive
         s += " %s" % self.binary

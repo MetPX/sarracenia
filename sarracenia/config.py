@@ -754,6 +754,23 @@ class Config:
                 option.lower() in ['accept', 'get'], self.mirror, self.strip,
                 self.pstrip, self.flatten)
 
+    def mask_ppstr(self, mask):
+        """
+           return a pretty print string version of the given mask, easier for humans to read.
+        """
+        pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
+        if accepting:
+           s='accept '
+        else:
+           s='reject '
+        if pstrip:
+           strip=pstrip
+        if maskFileOption == 'WHATFN':
+           fn=''
+        else:
+           fn=f'filename:{maskFileOption}'
+        return f'{s} {pattern} mirror:{mirror} strip:{pstrip} flatten:{flatten} {fn}'
+
     def add_option(self, option, kind='list', default_value=None):
         """
            options can be declared in any plugin. There are various *kind* of options, where the declared type modifies the parsing.
@@ -835,33 +852,21 @@ class Config:
     def dump(self):
         """ print out what the configuration looks like.
        """
-        term = shutil.get_terminal_size((80, 20))
-        mxcolumns = term.columns
-        #logger.error('mxcolumns: %d' % mxcolumns )
-        column = 0
-        for k in sorted(self.__dict__.keys()):
-            if k in ['env']:
-                continue
-            v = getattr(self, k)
-            if type(v) == urllib.parse.ParseResult:
-                v = v.scheme + '://' + v.username + '@' + v.hostname
-            elif type(v) is str:
-                v = "'%s'" % v
-            ks = str(k)
-            vs = str(v)
+        d = self.dictify()
+        for omit in [ 'env' ] :
+            del d[omit]
 
-            if (not self.debug) and (len(vs) >= (mxcolumns / 2)):
-                vs = '"...' + vs[-int(mxcolumns / 2):] + '"'
+        i=0
+        while i < len(d['masks']):
+           d['masks'][i] = self.mask_ppstr(d['masks'][i])
+           i+=1
+ 
+        for k in d:
+            if type(d[k]) is sarracenia.credentials.Credential :
+                d[k] = str(d[k])
 
-            last_column = column
-            column += len(ks) + len(vs) + 3
-            if column >= mxcolumns:
-                print(',')
-                column = len(ks) + len(vs) + 1
-            elif last_column > 0:
-                print(', ', end='')
-            print(ks + '=' + vs, end='')
-        print('')
+        pprint.pprint( self.dictify(), compact=True )
+        return
 
     def dictify(self):
         """
