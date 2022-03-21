@@ -485,7 +485,7 @@ CONSUMER
 ========
 
 Most Metpx Sarracenia components loop on reception and consumption of sarracenia 
-AMQP messages. Usually, the messages are `sr3_post(7) <sr3_post.7.rst>`_ messages, 
+AMQP messages. Usually, the messages are `sr3_post(7) <../Reference/sr3_post.7.html>`_ messages, 
 announcing the availability of a file by publishing its URL ( or a part 
 of a file ), but there are also report messages which can be processed using the 
 same tools. AMQP messages are published to an exchange 
@@ -842,8 +842,8 @@ By default, sr_poll sends its post message to the broker with default exchange
 (the prefix *xs_* followed by the broker username). The *broker* is mandatory.
 It can be given incomplete if it is well defined in the credentials.conf file.
 
-Refer to `sr3_post(1) <sr3_post.1.rst>`_ - to understand the complete notification process.
-Refer to `sr3_post(7) <sr3_post.7.rst>`_ - to understand the complete notification format.
+Refer to `sr3_post(1) <../Reference/sr3_post.1.html>`_ - to understand the complete notification process.
+Refer to `sr3_post(7) <../Reference/sr3_post.7.rst>`_ - to understand the complete notification format.
 
 
 These options set what files the user wants to be notified for and where
@@ -927,7 +927,7 @@ days, and weeks, are available. In the poll component, nodupe_fileAgeMax
 defaults to 30 days.
 
 Advanced Polling
-~~~~~~~~~~~~~~~~
+----------------
 
 The built-in Poll lists remote directories and parses the lines returned building 
 paramiko.SFTPAttributes structures (similar to os.stat) for each file listed. 
@@ -1001,7 +1001,7 @@ check in various directories for some files. When a file is
 present, modified or created in the remote directory, the program will
 notify about the new product. 
 
-The notification protocol is defined here `sr3_post(7) <sr3_post.7.rst>`_
+The notification protocol is defined here `sr3_post(7) <../Reference/sr3_post.7.rst>`_
 
 **poll** connects to a *broker*.  Every *sleep* seconds, it connects to
 a *destination* (sftp, ftp, ftps). For each of the *directory* defined, it lists
@@ -1159,14 +1159,14 @@ SARRA
 
 **sarra** is a program that Subscribes to file notifications,
 Acquires the files and ReAnnounces them at their new locations.
-The notification protocol is defined here `sr3_post(7) <sr3_post.7.rst>`_
+The notification protocol is defined here `sr3_post(7) <../Reference/sr3_post.7.html>`_
 
 **sarra** connects to a *broker* (often the same as the remote file server
 itself) and subscribes to the notifications of interest. It uses the notification
 information to download the file on the local server it's running on.
 It then posts a notification for the downloaded files on a broker (usually on the local server).
 
-**sarra** can be used to acquire files from `sr3_post(1) <sr3_post.1.rst>`_
+**sarra** can be used to acquire files from `sr3_post(1) <../Reference/sr3_post.1.html>`_
 or `watch`_  or to reproduce a web-accessible folders (WAF),
 that announce its products.
 
@@ -1343,9 +1343,7 @@ by (*exchange*, *subtopic*, and optionally, *accept*/*reject*.)
 
 The *topicPrefix* option must to be set to:
 
- - **v03** to shovel `sr3_postv2(7) <sr3_postv2.7.rst>`_ messages
-
-.. TODO: Above links to a potentially removed file..
+ - to shovel `sr3_post(7) <../Reference/sr3_post.7.html>`_ messages
 
 shovel is a flow with the following presets::
    
@@ -1364,7 +1362,7 @@ WATCH
 -----
 
 Watches a directory and publishes posts when files in the directory change
-( added, modified, or deleted). Its arguments are very similar to  `sr3_post <sr3_post.1.rst>`_.
+( added, modified, or deleted). Its arguments are very similar to  `sr3_post <../Reference/sr3_post.1.html>`_.
 In the MetPX-Sarracenia suite, the main goal is to post the availability and readiness
 of one's files. Subscribers use  *sr_subscribe*  to consume the post and download the files.
 
@@ -1460,7 +1458,7 @@ WINNOW
 
 the **winnow** component subscribes to file notifications and reposts them, suppressing redundant 
 ones by comparing their fingerprints (or checksums).  The **Integrity** header stores a file's 
-fingerprint as described in the `sr3_post(7) <sr3_post.7.rst>`_ man page.
+fingerprint as described in the `sr3_post(7) <../Reference/sr3_post.7.html>`_ man page.
 
 **winnow** has the following options forced::
 
@@ -1476,7 +1474,7 @@ it looks up its **sum** in its cache.  If it is found, the file has already come
 so the notification is ignored. If not, then the file is new, and the **sum** is added
 to the cache and the notification is posted.
 
-**winnow** can be used to trim messages produced by  post, `sr3_post <sr3_post.1.rst>`_, sr3_cpost, `poll`_ or `watch`_ etc... It is
+**winnow** can be used to trim messages produced by  post, `sr3_post <../Reference/sr3_post.1.html>`_, sr3_cpost, `poll`_ or `watch`_ etc... It is
 used when there are multiple sources of the same data, so that clients only download the
 source data once, from the first source that posted it.
 
@@ -1884,13 +1882,13 @@ if additional periodic processing is needed, the user can configure addition
 plugins to run with the *on_housekeeping* option. 
 
 sanity_log_dead <interval> (default: 1.5*housekeeping)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------------------------------
 
 The **sanity_log_dead** option sets how long to consider too long before restarting
 a component.
 
-suppress_duplicates <off|on|999> (default: off)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+nodup_ttl <off|on|999> (default: off)
+-------------------------------------
 
 The cleanup of expired elements in the duplicate suppression store happens at
 each housekeeping.

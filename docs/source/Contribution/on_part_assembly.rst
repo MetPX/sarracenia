@@ -1,6 +1,6 @@
-==========
+==================
 File Re-assembling
-==========
+==================
 
 
 Components
@@ -10,7 +10,7 @@ Components
 
 		- path <path of directory to watch>
 		- on_part /usr/lib/python3/dist-packages/sarra/plugins/part_file_assemble.py
-		- accept *.Part
+		- accept \*.Part
 		- accept_unmatch False # Makes it only acccept the pattern above
 
 **Part_File_Assemble (plugin):** This plugin is an on_part plugin which triggers the assembly code in **sr_file** 
@@ -19,7 +19,7 @@ Components
 
 
 Algorithm 
-----------
+---------
 
 After being triggered by a downloaded part file:  
   
@@ -43,7 +43,8 @@ After being triggered by a downloaded part file:
     
 
 Testing
-----------
+-------
+
 Create an sr_watch config file according to the template above
 Start the process by typing the following command: ```sr_watch foreground path/to/config_file.cfg```
 

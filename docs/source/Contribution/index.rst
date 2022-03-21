@@ -14,5 +14,6 @@ Contributing to Sarracenia
    Original (2015) Design  <Design>
    Evolution
    deltas
-
+   mqtt_issues
+   on_part_assembly
 

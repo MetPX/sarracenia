@@ -421,7 +421,7 @@ shows functionality covered.
 |                   |                                      | post amqp to a local exchange (v02) | 
 |                   |                                      | as feeder(admin) user               | 
 |                   |                                      |                                     | 
-|                   |                                      | post_exchangeSplit to xwinnow0x    | 
+|                   |                                      | post_exchangeSplit to xwinnow0x     | 
 +-------------------+--------------------------------------+-------------------------------------+
 | winnow t0x_f10    | winnow processing publish for xsarra | read local amqp v02                 | 
 |                   | exchange for downloading.            | as feeder user.                     | 

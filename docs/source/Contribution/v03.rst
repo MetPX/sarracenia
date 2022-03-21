@@ -6,17 +6,16 @@ Version 3 Refactor
 Summary
 -------
 
-
 This document is aimed at developers who need to work with both v2 code and 
 the refactor that was originally called v3, but eventually was called sr3.
 For developers familiar with v2, the document can serve as a bit of a map 
-to navigating the source code of sr3, which has now stablizied enough that 
-it substantially passes the flow_tests.
-Sr3 is perhaps not really usable yet, but the direction is well established and further
-development is now described using the issue tracker (look at the v3only label.)  
-So this document is now essentially historical. If someone does not know v2, 
-this document will not help as it is exclusively about mapping v2 to sr3. 
-Reading the balance of v03 documentation should be more helpful. 
+to the source code of sr3, which has now stablizied enough that it substantially 
+passes the flow_tests. Sr3 is perhaps not really usable yet, but the direction
+is well established and further development is now described using the issue
+tracker (look at the v3only label.) So this document is now essentially 
+historical. If someone does not know v2, this document will not help as it is
+exclusively about mapping v2 to sr3. Reading the balance of v03 documentation
+should be more helpful. 
 
 Abstract Goals of sr3:
 

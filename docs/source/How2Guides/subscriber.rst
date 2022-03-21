@@ -810,13 +810,11 @@ Putting in default.conf ensures that all subscribers will use
 the proxy, not just a single configuration. 
 
 
-
-
 More Information
 ----------------
 
-The `sr3(1) <../Reference/sr3.1.rst#subscribe>`_ is the definitive source of reference
+The `sr3(1) <../Reference/sr3.1.html>`_ is the definitive source of reference
 information for configuration options. For additional information,
-consult: `Sarracenia Documentation <../Reference/sr3.1.rst#documentation>`_
+consult: `Sarracenia Documentation <https://metpx.github.io/sarracenia>`_
 
 
