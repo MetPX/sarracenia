@@ -13,6 +13,7 @@ Contributing to Sarracenia
    Original (2015) Basic Idea <BasicIdea>
    Original (2015) Design  <Design>
    Evolution
+   AMQPprimer
    deltas
    mqtt_issues
    on_part_assembly
