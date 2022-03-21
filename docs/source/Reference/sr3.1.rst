@@ -119,7 +119,7 @@ the command line override configuration files.
 While one can manage configuration files using the *add*, *remove*,
 *list*, *edit*, *disable*, and *enable* actions, one can also do all
 of the same activities manually by manipulating files in the settings
-directory. The configuration files for an sr_subscribe configuration
+directory. The configuration files for an sr3 configuration
 called *myflow* would be here:
 
  - linux: ~/.config/sarra/subscribe/myflow.conf (as per: `XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.rst>`_ )
@@ -160,7 +160,7 @@ One can specify URI's as configuration files, rather than local files. Example:
 
   - **--config http://dd.weather.gc.ca/alerts/doc/cap.conf**
 
-On startup, sr_subscribe checks if the local file cap.conf exists in the
+On startup, sr3 checks if the local file cap.conf exists in the
 local configuration directory.  If it does, then the file will be read to find
 a line like so:
 

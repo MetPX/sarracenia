@@ -20,7 +20,7 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-**sr_cpump** is an alternate implementation of `sr_subscribe(7) <sr3.1.rst#subscribe>`_ 
+**sr_cpump** is an alternate implementation of the *shovel* component of `sr3(1) <sr3.1.html>`_ 
 with some limitations.  
 
  - doesn't download data, only circulates posts.
@@ -32,9 +32,9 @@ with some limitations.
 
 It can therefore act as a drop-in replacement for:
 
-   `sr_shovel(8) <sr3.1.rst#shovel>`_ - process shovel messages.
+   `shovel <sr3.1.rst#shovel>`_ - process shovel messages.
 
-   `sr_winnow(8) <sr3.1.rst#winnow>`_ - process winnow messages.
+   `winnow <sr3.1.rst#winnow>`_ - process winnow messages.
 
 The C implementation may be easier to make available in specialized environments, 
 such as High Performance Computing, as it has far fewer dependencies than the python version.
