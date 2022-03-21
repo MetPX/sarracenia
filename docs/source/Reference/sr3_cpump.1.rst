@@ -32,9 +32,9 @@ with some limitations.
 
 It can therefore act as a drop-in replacement for:
 
-   `shovel <sr3.1.rst#shovel>`_ - process shovel messages.
+   `sr3 shovel <sr3.1.rst#shovel>`_ - process shovel messages.
 
-   `winnow <sr3.1.rst#winnow>`_ - process winnow messages.
+   `sr3 winnow <sr3.1.rst#winnow>`_ - process winnow messages.
 
 The C implementation may be easier to make available in specialized environments, 
 such as High Performance Computing, as it has far fewer dependencies than the python version.
@@ -47,13 +47,13 @@ it looks up its **sum** in its cache.  If it is found, the file has already come
 so the notification is ignored. If not, then the file is new, and the **sum** is added 
 to the cache and the notification is posted.  
 
-**sr_cpump** can be used, like `sr_winnow(8) <sr3.1.rst#winnow>`_,  to trim messages 
-from `sr_post(1) <sr_post.1.rst>`_, `sr_poll(1) <sr3.1.rst#poll>`_  
-or `sr_watch(1) <sr3.1.rst#watch>`_  etc... It is used when there are multiple 
+**sr_cpump** can be used, like `sr3 winnow(1) <sr3.1.rst#winnow>`_,  to trim messages 
+from `sr3_post(1) <sr3_post.1.rst>`_, `sr3 poll(1) <sr3.1.rst#poll>`_  
+or `sr3 watch (1) <sr3.1.rst#watch>`_  etc... It is used when there are multiple 
 sources of the same data, so that clients only download the source data once, from 
 the first source that posted it.
 
-The **sr_cpump** command takes two arguments: an action start|stop|restart|reload|status... (self described)
+The **sr3_cpump** command takes two arguments: an action start|stop|restart|reload|status... (self described)
 followed by a configuration file.
 
 The **foreground** action is used when debugging a configuration, when the user wants to 

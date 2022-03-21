@@ -14,11 +14,16 @@ pip3 download netifaces-w38 --only-binary=:all: --platform win_amd64
 pip3 download pika --only-binary=:all: --platform win_amd64
 pip3 download psutil --only-binary=:all: --platform win_amd64
 pip3 download paramiko --only-binary=:all: --platform win_amd64
+pip3 download regex --only-binary=:all: --platform win_amd64
+pip3 download python-dateutil --only-binary=:all: --platform win_amd64
+pip3 download pytz --only-binary=:all: --platform win_amd64
+#pip3 download tzlocal --only-binary=:all: --platform win_amd64
 
 # weirdly... pip install fails for this one, so fetch an arch neutral one.
 pip3 wheel paho-mqtt 
 
 # No binary available, thats why they are not fetched by pip (to be tested later) 
+# look in win_installer.cfg.tem fo additional deps.
 #pip3 download humanize --only-binary=:all: --platform win_amd64
 #pip3 download pycparser --only-binary=:all: --platform win_amd64
 #pip3 download pathtools --only-binary=:all: --platform win_amd64

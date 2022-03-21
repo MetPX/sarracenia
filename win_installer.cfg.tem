@@ -14,7 +14,7 @@ entry_point=sarracenia.sr:main
 [Command sr3_post]
 entry_point=sarracenia.sr3_post:main
 
-[Command sr_tailf]
+[Command sr3_tailf]
 entry_point=sarracenia.sr_tailf:main
 
 [Python]
@@ -24,8 +24,11 @@ bitness=64
 [Include]
 local_wheels=pynsist_pkgs/*.whl
     dist/*.whl
-packages=humanize
+packages=
     dateparser
+    dateutil
+    humanfriendly
+    humanize
     pathtools
     pycparser
     watchdog

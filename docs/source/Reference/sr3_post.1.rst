@@ -14,7 +14,7 @@ Publish the Availability of Files
 SYNOPSIS
 ========
 
-**sr3_post|sr3_cpost** [ *OPTIONS* ][ *-pb|--post_broker broker* ][ *-pbu|--post_base_url url[,url]...** ] 
+**sr3_post|sr3_cpost** [ *OPTIONS* ][ *-pb|--post_broker broker* ][ *-pbu|--post_baseUrl url[,url]...** ] 
 [ *-p|--path ] path1 path2...pathN* ]
 
 ( also **libsrshim.so** )

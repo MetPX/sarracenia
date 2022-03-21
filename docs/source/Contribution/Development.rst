@@ -1308,7 +1308,7 @@ Set the Version
 This is done to *start* development on a version.
 
 * git checkout master
-* Edit ``sarra/__init__.py`` manually and set the version number.
+* Edit ``sarracenia/__init__.py`` manually and set the version number.
 * Edit CHANGES.rst to add a section for the version.
 * run dch to start the changelog for the current version. 
 * git commit -a 
