@@ -72,7 +72,7 @@ CONFIGURATION
 =============
 
 In general, the options for this component are described by 
-the `sr_subscribe(1) <sr3.1.rst#subscribe>`_  page which should be read first.
+the `sr3_options(7) <sr3_options.7.html>`_  page which should be read first.
 It fully explains the option configuration language, and how to find
 the option settings.
 
@@ -98,12 +98,25 @@ implementation.
 SEE ALSO
 ========
 
-`sr_post(1) <sr_post.1.rst>`_ - post announcements of specific files.
 
-`sr_post(7) <sr_post.7.rst>`_ - the format of announcements.
+**User Commands:**
 
-`sr_subscribe(1) <sr3.1.rst#subscribe>`_ - the download client.
+`sr3(1) <sr3.1.html>`_ - Sarracenia main command line interface.
 
-`sr_watch(1) <sr3.1.rst#watch>`_ - the directory watching daemon.
+`sr3_post(1) <sr3_post.1.html>`_ - post file announcements (python implementation.)
 
-`dd_subscribe(1) <3.1.rst#dd_subscribe>`_ - the http-only download client.
+`sr3_cpost(1) <sr3_cpost.1.html>`_ - post file announcemensts (C implementation.)
+
+**Formats:**
+
+`sr3_credentials(7) <sr3_credentials.7.html>`_ - Convert logfile lines to .save Format for reload/resend.
+
+`sr3_options(7) <sr3_options.7.html>`_ - Convert logfile lines to .save Format for reload/resend.
+
+`sr3_post(7) <sr3_post.7.html>`_ - The format of announcement messages.
+
+**Home Page:**
+
+`https://metpx.github.io/sarracenia <https://metpx.github.io/sarracenia>`_ - Sarracenia: a real-time pub/sub data sharing management toolkit
+
+                                     

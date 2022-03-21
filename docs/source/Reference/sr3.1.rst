@@ -221,19 +221,21 @@ SEE ALSO
 
 **User Commands:**
 
-`sr3_post(1) <sr3_post.1.html>`_ - post announcemensts of specific files.
+`sr3_post(1) <sr3_post.1.html>`_ - post file announcements (python implementation.)
 
-`sr3_options(7) <sr3_options.7.html>`_ - Convert logfile lines to .save Format for reload/resend.
+`sr3_cpost(1) <sr3_cpost.1.html>`_ - post file announcemensts (C implementation.)
+
+`sr3_cpump(1) <sr3_cpump.1.html>`_ - C implementation of the shovel component. (copy messages)
 
 **Formats:**
 
-`sr3_post(7) <sr3_post.7.html>`_ - The v03 format of announcement messages.
+`sr3_credentials(7) <sr3_credentials.7.html>`_ - Convert logfile lines to .save Format for reload/resend.
 
-`sr3_postv2(7) <sr3_postv2.7.html>`_ - The v02 format of announcement messages.
+`sr3_options(7) <sr3_options.7.html>`_ - Convert logfile lines to .save Format for reload/resend.
+
+`sr3_post(7) <sr3_post.7.html>`_ - The format of announcement messages.
 
 **Home Page:**
 
-`https://github.com/MetPX/ <https://github.com/MetPX>`_ - sr_subscribe is a component of MetPX-Sarracenia, the AMQP based data pump.
-
-
+`https://metpx.github.io/sarracenia <https://metpx.github.io/sarracenia>`_ - Sarracenia: a real-time pub/sub data sharing management toolkit
 

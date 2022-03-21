@@ -1,10 +1,10 @@
-=========
- SR_Post
-=========
+========
+Sr3_Post
+========
 
--------------------------------------------------
-Publish the Availability of a File to Subscribers
--------------------------------------------------
+---------------------------------
+Publish the Availability of Files
+---------------------------------
 
 :Manual section: 1 
 :Date: |today|
@@ -14,7 +14,7 @@ Publish the Availability of a File to Subscribers
 SYNOPSIS
 ========
 
-**sr_post|sr_cpost** [ *OPTIONS* ][ *-pb|--post_broker broker* ][ *-pbu|--post_base_url url[,url]...** ] 
+**sr3_post|sr3_cpost** [ *OPTIONS* ][ *-pb|--post_broker broker* ][ *-pbu|--post_base_url url[,url]...** ] 
 [ *-p|--path ] path1 path2...pathN* ]
 
 ( also **libsrshim.so** )
@@ -22,12 +22,11 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-**sr_post** posts the availability of a file by creating an announcement.
+**sr3_post** posts the availability of a file by creating an announcement.
 In contrast to most other sarracenia components that act as daemons,
-sr_post is a one shot invocation which posts and exits.
-Subscribers use `sr_subscribe <sr3.1.rst#subscribe>`_  
-
-To make files available to subscribers, **sr_post** sends the announcements 
+sr3_post is a one shot invocation which posts and exits.
+To make files 
+available to subscribers, **sr3_post** sends the announcements 
 to an AMQP server, also called a broker.  
 
 This manual page is primarily concerned with the python implementation,
@@ -37,13 +36,13 @@ Differences:
  - plugins are not supported in the C implementation.
  - C implementation uses POSIX regular expressions, python3 grammar is slightly different.
  - when the *sleep* option ( used only in the C implementation) is set to > 0,
-   it transforms sr_cpost into a daemon that works like `sr_watch(1) <sr3.1.rst#watch>`_.  
-
+   it transforms sr_cpost into a daemon that works like the *watch* component
+   of `sr3(1) <sr3.1.html>`_.  
 
 Mandatory Settings
 ------------------
 
-The [*-pbu|--post_base_url url,url,...*] option specifies the location 
+The *post_base_url url,url,...* option specifies the location 
 subscribers will download the file from.  There is usually one post per file.
 Format of argument to the *post_base_url* option::
 
@@ -66,9 +65,9 @@ The *-pipe* option can be specified to have sr_post read path names from standar
 input as well.
 
 
-An example invocation of *sr_post*::
+An example invocation of *sr3_post*::
 
- sr_post -pb amqp://broker.com -pbu sftp://stanley@mysftpserver.com/ -p /data/shared/products/foo 
+ sr3_post --post_broker amqp://broker.com --post_baseUrl sftp://stanley@mysftpserver.com/ --path /data/shared/products/foo 
 
 By default, sr_post reads the file /data/shared/products/foo and calculates its checksum.
 It then builds a post message, logs into broker.com as user 'guest' (default credentials)
@@ -98,7 +97,7 @@ is the checksum value. The *parts=1,4574,1,0,0* state that the file is available
 
 Another example::
 
- sr_post -pb mqtt://broker.com -pbd /data/web/public_data -pbu http://dd.weather.gc.ca/ -p bulletins/alphanumeric/SACN32_CWAO_123456
+ sr3_post --post_broker mqtt://broker.com --post_baseDir /data/web/public_data --postBaseUrl http://dd.weather.gc.ca/ --path bulletins/alphanumeric/SACN32_CWAO_123456
 
 By default, sr_post reads the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
 (concatenating the post_base_dir and relative path of the source url to obtain the local file path)
@@ -113,34 +112,27 @@ without authentication on dd.weather.gc.ca.
 ARGUMENTS AND OPTIONS
 =====================
 
-Please refer to the `sr_subscribe(1) <sr3.1.rst#subscribe>`_ manual page for a detailed description of 
-common settings, and methods of specifying them.
+Please refer to the `sr3_options(7) <sr3_options(7)>`_ manual page for a detailed description of 
+all settings, and methods of specifying them.
 
-[-c|--config <configfile>]
+path path1 path2 ... pathN
 --------------------------
 
-  A list of settings in a configuration file 
-
-
-
-[-p|--path path1 path2 ... pathN]
----------------------------------
-
-  **sr_post** evaluates the filesystem paths from the **path** option 
-  and possibly the **base_dir** if the option is used.
+  **sr3_post** evaluates the filesystem paths from the **path** option 
+  and possibly the **baseDir** if the option is used.
 
   If a path defines a file, this file is announced.
 
   If a path defines a directory, then all files in that directory are
   announced... 
 
-[-pb|--post_broker <broker>]
-----------------------------
+post_broker <broker>
+--------------------
 
   the broker to which the post is sent.
 
-[-pbd|--post_base_dir <path>]
------------------------------
+post_baseDir <path>
+-------------------
 
   The *base_dir* option supplies the directory path that,
   when combined (or found) in the given *path*, 
@@ -151,88 +143,78 @@ common settings, and methods of specifying them.
   For file URLs: base_dir is usually not appropriate.  To post an absolute path, 
   omit the -dr setting, and just specify the complete path as an argument.
 
-[-px|--post_exchange <exchange>]
---------------------------------
+post_exchange <exchange>
+------------------------
 
   Sr_post publishes to an exchange named *xs_*"broker_username" by default.
   Use the *post_exchange* option to override that default.
 
-[-h|-help|--help]
------------------
+-h|--help
+---------
 
   Display program options.
 
-[--blocksize <value>]
----------------------
+blocksize <value>
+-----------------
 
-  This option controls the partitioning strategy used to post files.
-  The value should be one of::
+**Not currently useful, will re-instate post v3**
+
+This option controls the partitioning strategy used to post files.
+The value should be one of::
 
      0 - autocompute an appropriate partitioning strategy (default)
      1 - always send entire files in a single part.
      <blocksize> - used a fixed partition size (example size: 1M )
 
-  Files can be announced as multiple parts.  Each part has a separate checksum.
-  The parts and their checksums are stored in the cache. Partitions can traverse
-  the network separately, and in parallel.  When files change, transfers are
-  optimized by only sending parts which have changed.  
+Files can be announced as multiple parts.  Each part has a separate checksum.
+The parts and their checksums are stored in the cache. Partitions can traverse
+the network separately, and in parallel.  When files change, transfers are
+optimized by only sending parts which have changed.  
   
-  The value of the *blocksize*  is an integer that may be followed by  letter designator *[B|K|M|G|T]* meaning:
-  for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All these references are powers of 2.
-  Files bigger than this value will get announced with *blocksize* sized parts.
+The value of the *blocksize*  is an integer that may be followed by  letter designator *[B|K|M|G|T]* meaning:
+for Bytes, Kilobytes, Megabytes, Gigabytes, Terabytes respectively.  All these references are powers of 2.
+Files bigger than this value will get announced with *blocksize* sized parts.
   
-  The autocomputation algorithm determines a blocksize that encourages a reasonable number of parts
-  for files of various sizes.  As the file size varies, the automatic computation will give different
-  results.  This will result in resending information which has not changed as partitions of a different 
-  size will have different sums, and therefore be tagged as different.  
+The autocomputation algorithm determines a blocksize that encourages a reasonable number of parts
+for files of various sizes.  As the file size varies, the automatic computation will give different
+results.  This will result in resending information which has not changed as partitions of a different 
+size will have different sums, and therefore be tagged as different.  
   
-  By default, **sr_post** computes a reasonable blocksize that depends on the file size.
-  The user can set a fixed *blocksize* if it is better for its products or if he wants to
-  take advantage of the **cache** mechanism.  In cases where large files are being appended to, for example,
-  it make sense to specify a fixed partition size so that the blocks in the cache will be the 
-  same blocks as those generated when the file is larger, and so avoid re-transmission.  So use 
-  of '10M' would make sense in that case.  
+By default, **sr_post** computes a reasonable blocksize that depends on the file size.
+The user can set a fixed *blocksize* if it is better for its products or if he wants to
+take advantage of the **cache** mechanism.  In cases where large files are being appended to, for example,
+it make sense to specify a fixed partition size so that the blocks in the cache will be the 
+same blocks as those generated when the file is larger, and so avoid re-transmission.  So use 
+of '10M' would make sense in that case.  
   
-  In cases where a custom downloader is used which does not understand partitioning, it is necessary
-  to avoid having the file split into parts, so one would specify '1' to force all files to be sent
-  as a single part.
+In cases where a custom downloader is used which does not understand partitioning, it is necessary
+to avoid having the file split into parts, so one would specify '1' to force all files to be sent
+as a single part.
 
-[-pbu|--post_base_url <url>]
-----------------------------
+post_baseUrl <url>
+------------------
 
-  The **url** option sets the protocol, credentials, host and port under
-  which the product can be fetched.
+The **url** option sets the protocol, credentials, host and port under
+which the product can be fetched.
 
-  The AMQP announcememet is made of the three fields, the announcement time,
-  this **url** value and the given **path** to which was withdrawn from the *base_dir*
-  if necessary.
+The AMQP announcememet is made of the three fields, the announcement time,
+this **url** value and the given **path** to which was withdrawn from the *base_dir*
+if necessary.
 
-  The concatenation of the two last fields of the announcement defines
-  what the subscribers will use to download the product. 
+The concatenation of the two last fields of the announcement defines
+what the subscribers will use to download the product. 
 
-[-pipe <boolean>]
------------------
+reset
+-----
 
-  The pipe option is for sr_post to read the names of the files to post from standard input to read from
-  redirected files, or piped output of other commands. Default is False, accepting file names only on the command line.
-
-[--pulse_message <message>]
----------------------------
-
-  Administrator option to send a message to all subscribers.  Similar to "wall" functionality.
-  When this option is set, a pulse message is sent, ignoring any topic settings or files given as arguments.
-
-[--reset]
----------
-
-  When one has used **--suppress_duplicates|--cache**, this option empties the cache.
+When one has used **--suppress_duplicates|--cache**, this option empties the cache.
 
 
-[-rn|--rename <path>]
----------------------
+rename <path>
+-------------
 
-  With the *rename*  option, the user can suggest a destination path to its files. If the given
-  path ends with '/' it suggests a directory path...  If it doesn't, the option specifies a file renaming.
+With the *rename*  option, the user can suggest a destination path to its files. If the given
+path ends with '/' it suggests a directory path...  If it doesn't, the option specifies a file renaming.
 
 *sr_post*, and *sr_watch* use a file based model based on a process and a disk cache,
 whose design is single threaded. The shim library is typically used by many processes
@@ -241,15 +223,15 @@ The shim library therefore has a purely memory-based cache, tunable with
 the following shim\_ options. 
 
 
-[--shim_defer_posting_to_exit] EXPERIMENTAL
-------------------------------------------- 
+shim_defer_posting_to_exit EXPERIMENTAL
+--------------------------------------- 
 
   Postpones file posting until the process exits.
   In cases where the same file is repeatedly opened and appended to, this
   setting can avoid redundant posts.  (default: False)
 
-[--shim_post_minterval *interval* ] EXPERIMENTAL
-------------------------------------------------
+shim_post_minterval *interval* EXPERIMENTAL
+-------------------------------------------
 
   If a file is opened for writing and closed multiple times within the interval,
   it will only be posted once. When a file is written to many times, particularly 
@@ -262,16 +244,16 @@ the following shim\_ options.
   is not respected, in order to provide the most accurate final post.
 
 
-[--shim_skip_parent_open_files] EXPERIMENTAL
---------------------------------------------
+shim_skip_parent_open_files EXPERIMENTAL
+----------------------------------------
  
   The shim_skip_ppid_open_files option means that a process checks
   whether the parent process has the same file open, and does not
   post if that is the case. (default: True)
 
 
-[--sleep *time* ]
------------------
+sleep *time*
+------------
 
   **This option is only available in the c implementation (sr_cpost)**
 
@@ -287,14 +269,14 @@ the following shim\_ options.
 
    
 
-[-sub|--subtopic <key>]
------------------------
+subtopic <key>
+--------------
 
   The subtopic default can be overwritten with the *subtopic* option.
 
 
-[--suppress_duplicates|-sd|-nd|--no_duplicates|--cache on|off|999]
-------------------------------------------------------------------
+nodupe_ttl on|off|999
+---------------------
 
   Avoid posting duplicates by comparing each file to those seen during the
   *suppress_duplicates* interval. When posting directories, will cause
@@ -308,72 +290,38 @@ the following shim\_ options.
   used ( set to a value other than 0 ) as otherwise blocksize will vary as files grow,
   and much duplicate data transfer will result.
 
-[-to|--to <destination>,<destination>,... ]
--------------------------------------------
+integrity <method>[,<value>]
+----------------------------
 
-  A comma-separated list of destination clusters to which the posted data should be sent.
-  Ask pump administrators for a list of valid destinations.
+All file posts include a checksum. The *sum* option specifies how to calculate the it.
+It is a comma separated string. Valid Integrity methods are ::
 
-  Default: the hostname of the broker.
+         cod,x      - Calculate On Download applying x
+         sha512     - do SHA512 on file content  (default)
+         md5        - do md5sum on file content
+         md5name    - do md5sum checksum on filename 
+         random     - invent a random value for each post.
+         arbitrary  - apply the literal fixed value.
 
-  *FIXME: a good list of destination should be discoverable.*
-
-[-sum|--sum <string>]
----------------------
-
-  All file posts include a checksum.  The *sum* option specifies how to calculate the it.
-  It is a comma separated string.  Valid checksum flags are ::
-
-    [0|a|n|d|s|z]
-    where 0 : no checksum... value in post is a random integer (only for testing/debugging.)
-          a : arbitrary application defined checksum (cannot calculate, must store)
-          d : do md5sum on file content (default for now, compatibility)
-          n : do md5sum checksum on filename
-          p : do SHA512 checksum on filename and partition string [#]_
-          s : do SHA512 on file content (default in future)
-          z,a : calculate checksum value using algorithm a and assign after download.
-
-  Then using a checksum script, it must be registered with the pumping network, so that consumers
-  of the postings have access to the algorithm.
-
-.. [#] The *p* algorithm is only implemented in C ( https://github.com/MetPX/sarracenia/issues/117 )
 
 .. Note::
 
-  On Unix derived systems (including linux and mac) the checksums are stored in extended
-  file attributes. This is necessary for the *a* attribute to work, since we have no means
-  of calculating that checksum. We have not found a method to do the equivalent on Windows 
-  yet, so products announced with *a* will always be downloaded there.
-  This is awful.
+  The checksums are stored in extended file attributes (or Alternate Data Streams on Windows). 
+  This is necessary for the *arbitrary* method to work, since we have no means of calculating it.
 
 
-[-tp|--topicPrefix <key>]
---------------------------
+topicPrefix <key>
+-----------------
 
   *Not usually used*
-  By default, the topic is made of the default topicPrefix : version *V02*, an action *post*,
+  By default, the topic is made of the default topicPrefix : version *V03*
   followed by the default subtopic: the file path separated with dots (dot being the topic separator for amqp).
   You can overwrite the topicPrefix by setting this option.
 
-
-
-[-header <name>=<value>]
-------------------------
+header <name>=<value>
+---------------------
 
   Add a <name> header with the given value to advertisements. Used to pass strings as metadata.
-
-[-header sum=<flag,sum>]
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-  Checksums can be attached to a file by specifying the sum string value in the header on startup with the 
-  'a' (application) scheme indicated::
-
-      sr_post -header sum=a,65537 <fileName(s)> <configName> start|foreground
-
-  where **fileName(s)** can be a list of space separated files or a value containing regex syntax (path must
-  be specified if not located in the current directory). The **user.sr_sum** and **user.sr_mtime** extended 
-  attributes of the files will be updated before being posted. These attributes can also be set using 
-  commandline utilities like xattr. 
 
 
 SHIM LIBRARY USAGE
@@ -480,61 +428,6 @@ in Linux/Unix, mirroring that operation requires creating a rename posting for e
 in the tree, and thus is far more expensive.
 
 
-ADMINISTRATOR SPECIFIC
-======================
-
-[--queue|--queue_name|-qn] <queue>
-----------------------------------
-
-  If a client wants a product to be reannounced,
-  the broker administrator can use *sr_post*  and publish
-  directly into the client's queue. The client could provide
-  his queue_name... or the administrator would find it on
-  the broker... From the log where the product was processed on
-  the broker, the administrator would find all the messages
-  properties. The administrator should pay attention on slight
-  differences between the logs properties and the *sr_post* arguments.
-  The logs would mention *from_cluster*  *to_clusters* and associated
-  values...  **sr_post** arguments would be *-cluster* and  *-to*
-  respectively. The administrator would execute **sr_post**, providing
-  all the options and setting everything found in the log plus 
-  *-queue_name q_....*
-
-
-
-DEVELOPER SPECIFIC OPTIONS
-==========================
-
-[-debug|--debug]
-----------------
-
-  put more messages in the log.
-
-[-r|--randomize]
-----------------
-
-  If a file is posted in several blocks, the posting order
-  is randomized so that the subcriber receives them out of order.
-  It also randomizes the checksum algorithm used for posting.
-
-[-rc|--reconnect]
------------------
-
-  If a file is posted in several blocks, reconnect to the broker
-  for every post. 
-
-[--parts]
----------
-
-  The usual usage of the *blocksize* option is described above, which is what is usually used to set
-  the *parts* header in the messages produced, however there are a number of ways of using the parts flag 
-  that are not generally useful aside from within development.
-  In addition to the user oriented *blocksize* specifications listed before, any valid 'parts' header, as given in the 
-  parts header (e.g. 'i,1,150,0,0') .  One can also specify an alternate basic blocksize for the automatic 
-  algorithm by giving it after the '0', (eg. '0,5') will use 5 bytes (instead of 50M) as the basic block size, so one
-  can see how the algorithm works.
-
-
 ENVIRONMENT VARIABLES
 =====================
 
@@ -554,12 +447,26 @@ implementation.
 SEE ALSO
 ========
 
-`sr_post(7) <sr_post.7.rst>`_ - the format of announcement messages.
+`sr3(1) <sr3.1.html>`_ - Sarracenia main command line interface.
 
-`sr_sarra(8) <sr3.1.rst#sarra>`_ - Subscribe, Acquire, and ReAdvertise tool.
+`sr3_post(1) <sr3_post.1.html>`_ - post file announcements (python implementation.)
 
-`sr_subscribe(1) <sr3.1.rst#subscribe>`_ - the http-only download client.
+`sr3_cpost(1) <sr3_cpost.1.html>`_ - post file announcemensts (C implementation.)
 
-`sr_watch(1) <sr3.1.rst#watch>`_ - the directory watching daemon.
+`sr3_cpump(1) <sr3_cpump.1.html>`_ - C implementation of the shovel component. (copy messages)
+
+**Formats:**
+
+`sr3_credentials(7) <sr3_credentials.7.html>`_ - Convert logfile lines to .save Format for reload/resend.
+
+`sr3_options(7) <sr_options.7.html>`_ - the configuration options
+
+`sr3_post(7) <sr_post.7.html>`_ - the format of announcements.
+
+**Home Page:**
+
+`https://metpx.github.io/sarracenia <https://metpx.github.io/sarracenia>`_ - Sarracenia: a real-time pub/sub data sharing management toolkit
+
+
 
 

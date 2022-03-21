@@ -30,7 +30,7 @@ This format will track work done in the `WMO mesh <https://www.github.com/MetPX/
 
 The change in payload protocol is targetted at simplifying future implementations
 and enabling use by messaging protocols other than pre-1.0 AMQP.
-See `Changes from v02`_ for more details.
+See `v03 Changes <../Explanations/History/messages_v03.html>`_ for more details.
 
 To generate messages in v03 format, use following setting::
 
@@ -275,14 +275,11 @@ Additional fields:
    When file to transfer is a symbolic link, the 'link' header is created to 
    contain its value.
 
-**Parts**
-~~~~~~~~~
+**size and blocks**
+~~~~~~~~~~~~~~~~~~~
 .. _parts:
 
-v02: **parts=<method>,<bsz>,<blktot>,<brem>,<bno>**
-
-v03::
-
+::
      "size":<sz> , 
                   
      "blocks" : 
@@ -361,80 +358,51 @@ v03::
  Hard links are also handled as an ordinary post of the file with a *oldname*
  header set.
 
-**source=<sourceid>**
-~~~~~~~~~~~~~~~~~~~~~
+**integrity**
+~~~~~~~~~~~~~
 
- a character field indicating the source of the data injected into the network.
- should be unique within a data pumping network.  It's usually the same as the
- account used to authenticate to the broker.
+The integrity field gives a checksum useful for identifying the contents
+of a file::
+ 
+ "integrity" : { "method" : <method>, "value": <value> } 
+ 
+The integrity field is a signature computed to allow receivers to determine 
+if they have already downloaded the product from elsewhere.
 
-.. _sum:
+   *<method>* - string field indicating the checksum method used.
 
-**sum=<method>,<value>**
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-
- The sum is a v02 signature computed to allow receivers to determine 
- if they have already downloaded the partition from elsewhere.
-
-   *<method>* - character field indicating the checksum algorithm used.
-
- +----------------+---------------------------------------------------------------------+
- |  Method        | Description                                                         |
- |  v02 - v03     |                                                                     |
- +----------------+---------------------------------------------------------------------+
- |  0 - random    | No checksums (unconditional copy.) Skips reading file (faster)      |
- +----------------+---------------------------------------------------------------------+
- |  a - arbitrary | arbitrary, application defined value which cannot be calculated     |
- +----------------+---------------------------------------------------------------------+
- |  d - md5       | Checksum the entire data (MD-5 as per IETF RFC 1321)                |
- +----------------+---------------------------------------------------------------------+
- |  L - link      | Linked: SHA512 sum of link value                                    |
- +----------------+---------------------------------------------------------------------+
- |  n - md5name   | Checksum the file name (MD-5 as per IETF RFC 1321)                  |
- +----------------+---------------------------------------------------------------------+
- |  R - remove    | Removed: SHA512 of file name.                                       |
- +----------------+---------------------------------------------------------------------+
- |  s - sha512    | Checksum the entire data (SHA512 as per IETF RFC 6234)              |
- +----------------+---------------------------------------------------------------------+
- |  z - cod       | Checksum on download, with algorithm as argument                    |
- |                | Example:  z,d means download, applying d checksum, and advertise    |
- |                | with that calculated checksum when propagating further.             |
- +----------------+---------------------------------------------------------------------+
- |  *<name>*      | Checksum with some other algorithm, named *<name>*                  |
- |                | *<name>* should be *registered* in the data pumping network.        |
- |                | Registered means that all downstream subscribers can obtain the     |
- |                | algorithm to validate the checksum.                                 |
- +----------------+---------------------------------------------------------------------+
-
+ +------------+---------------------------------------------------------------------+
+ |  Method    | Description                                                         |
+ +------------+---------------------------------------------------------------------+
+ |  random    | No checksums (unconditional copy.) Skips reading file (faster)      |
+ +------------+---------------------------------------------------------------------+
+ |  arbitrary | arbitrary, application defined value which cannot be calculated     |
+ +------------+---------------------------------------------------------------------+
+ |  md5       | Checksum the entire data (MD-5 as per IETF RFC 1321)                |
+ +------------+---------------------------------------------------------------------+
+ |  link      | Linked: SHA512 sum of link value                                    |
+ +------------+---------------------------------------------------------------------+
+ |  md5name   | Checksum the file name (MD-5 as per IETF RFC 1321)                  |
+ +------------+---------------------------------------------------------------------+
+ |  remove    | Removed: SHA512 of file name.                                       |
+ +------------+---------------------------------------------------------------------+
+ |  sha512    | Checksum the entire data (SHA512 as per IETF RFC 6234)              |
+ +------------+---------------------------------------------------------------------+
+ |  cod       | Checksum on download, with algorithm as argument                    |
+ |            | Example:  cod,sha512 means download, applying SHA512 checksum, and  |
+ |            | advertise with that calculated checksum when propagating further.   |
+ +------------+---------------------------------------------------------------------+
+ | *<name>*   | Checksum with some other algorithm, named *<name>*                  |
+ |            | *<name>* should be *registered* in the data pumping network.        |
+ |            | Registered means that all downstream subscribers can obtain the     |
+ |            | algorithm to validate the checksum.                                 |
+ +------------+---------------------------------------------------------------------+
 
 *<value>* The value is computed by applying the given method to the partition being transferred.
   for algorithms for which no value makes sense, a random integer is generated to support
   checksum based load balancing.
 
-**integrity**
-~~~~~~~~~~~~~
 
- Is a v03 version of the sum field made more explicit. For example::
-
-   "sum" : "d,hexsumvalue"    ---> "integrity" : { "method":"md5", "value":"base64sumvalue"  }
-
- This is partially supported for now (produce but do not consume.) The change in name
- is also motivated by the intent to use add digital signatures to list of known algorithms.
- there is a change in encoding from hex to base64 for compactness' sake.
- As the values for cod and zero sums are not encoded, they are the same in both v02 and v03.
-
-**to_clusters=<cluster_name1,cluster_name2,...>**
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
- The to_clusters defines a list of destination clusters where the data should go into the network.
- Each name should be unique within all exchanging rabbitmq clusters. It is used to do the transit
- of the products and their notices through the exchanging clusters.
-
-**"topic": v03.<relpath without filename>** ( RESERVED )
- The topic header is not present in the JSON payload of the message. It is instead stored
- in a protocol specific header (AMQP HEADER.) when an application reads the AMQP header
- into memory, it will typically add this to the in-memory structure.
 
 Report Messages
 ---------------
@@ -619,88 +587,6 @@ current block *0*, a flag *d* meaning the md5 checksum is
 performed on the data, and the checksum *25d231ec0ae3c569ba27ab7a74dd72ce*.
 
 
-MetPX-Sarracenia
-----------------
-
-The MetPX project ( https://github.com/MetPX ) has a sub-project called Sarracenia which is intended
-as a testbed and reference implementation for this protocol using AMQP. This implementation is 
-licensed using the General Public License (Gnu GPL v2), and is thus free to use, and can be used to
-confirm interoperability with any other implementations that may arise. While Sarracenia
-itself is expected to be very usable in a variety of contexts, there is no intent for it
-to implement any features not described by this documentation.  
-
-The MetPX project also has the wmo_mesh sub-project, which implements a minimal subset of the
-same message format, but works with MQTT in place of AMQP.  
-
-This Manual page is intended to completely specify the format of messages and their 
-intended meaning so that other producers and consumers of messages can be implemented.
-
-
-v02
-~~~
-
-`sr_post version 2 reference man page <sr3_post.7.rst>`_
-
-Changes from v02
-~~~~~~~~~~~~~~~~
-
-Version 03 is a change in encoding, but the semantics of the fields
-are unchanged from version 02. Changes are limited to how the fields
-are placed in the messages. In v02, AMQP headers were used to store name-value 
-pairs.  
-
-   * v03 headers have practically unlimited length. In v02, individual 
-     name-value pairs are limited to 255 characters. This has proven 
-     limiting in practice. In v03, the limit is not defined by the JSON 
-     standard, but by specific parser implementations. The limits in common
-     parsers are high enough not to cause practical concerns.
-
-   * use of message payload to store headers makes it possible to consider
-     other messaging protocols, such as MQTT 3.1.1, in future. 
-
-   * In v03, pure JSON payload simplifies implementations, reduces documentation
-     required, and amount of parsing to implement. Using a commonly implemented
-     format permits use of existing optimized parsers.
-
-   * In v03, JSON encoding of the entire payload reduces the features required for
-     a protocol to forward Sarracenia posts. For example, one might
-     consider using Sarracenia with MQTT v3.11 brokers which are more
-     standardized and therefore more easily interoperable than AMQP.
-
-   * v02 fixed fields are now  "pubTime", "baseURL", and "relPath" keys
-     in the JSON object that is the messge body.
-
-   * v02 *sum* header with hex encoded value, is replaced by v03 *integrity* header with base64 encoding.
-
-   * v03 *content* header allows file content embedding.
-
-   * Change in overhead... approximately +75 bytes per message (varies.)
-     
-     * JSON object marking curly braces '{' '}', commas and quotes for 
-       three fixed fields. net: +10
-
-     * AMQP section *Application Properties* no longer included in payload, saving
-       a 3 byte header (replaced by 2 bytes of open and close braces payload.) 
-       net: -1 byte
-       
-     * each field has a one byte header to indicate the table entry in an AMQP
-       packet, versus 4 quote characters, a colon, a space, and likely a comma: 7 total.
-       so net change is +6 characters. per header. Most v02 messages have 6 headers,
-       net: +36 bytes 
-
-     * the fixed fields are now named: pubTime, baseUrl, relPath, adding 10 characters
-       each. +30 bytes.
-
-   * In v03, the format of save files is the same as message payload.
-     In v02 it was a json tuple that included a topic field, the body, and the headers.
-
-   * In v03, the report format is a post message with a header, rather than
-     being parsed differently. So this single spec applies to both.
-       
-
-   
-
-
 Optimization Possibilities
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -714,149 +600,6 @@ field 'meta' could contain: atime, mtime, mode so there would be fewer
 named fields and save perhaps 40 bytes of overhead per notice. But
 all the changes increase complexity, make messages more involved to parse.
 
-
-AMQP Feature Selection
-----------------------
-
-AMQP is a universal message passing protocol with many different 
-options to support many different messaging patterns.  MetPX-sarracenia specifies and uses a 
-small subset of AMQP patterns. An important element of Sarracenia development was to 
-select from the many possibilities a small subset of methods are general and 
-easily understood, in order to maximize potential for interoperability.
-
-Analogy FTP
-~~~~~~~~~~~
-
-Specifying the use of a protocol alone may be insufficient to provide enough information for
-data exchange and interoperability.  For example when exchanging data via FTP, a number of choices
-need to be made above and beyond the protocol.
-
-        - authenticated or anonymous use?
-        - how to signal that a file transfer has completed (permission bits? suffix? prefix?)
-        - naming convention
-        - text or binary transfer
-
-Agreed conventions above and beyond simply FTP (IETF RFC 959) are needed.  Similar to the use 
-of FTP alone as a transfer protocol is insufficient to specify a complete data transfer 
-procedure, use of AMQP, without more information, is incomplete. The intent of the conventions
-layered on top of AMQP is to be a minimum amount to achieve meaningful data exchange.
-
-AMQP: not 1.0, but 0.8 or 0.9
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-AMQP 1.0 standardizes the on-the-wire protocol, but removed all broker standardization.   
-As the use of brokers is key to Sarracenia´s use of, was a fundamental element of earlier standards, 
-and as the 1.0 standard is relatively controversial, this protocol assumes a pre 1.0 standard broker, 
-as is provided by many free brokers, such as rabbitmq and Apache QPid, often referred to as 0.8, 
-but 0.9 and post 0.9 brokers could inter-operate well.
-
-Named Exchanges and Queues
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-In AMQP prior to 1.0, many different actors can define communication parameters, such as exchanges
-to publish to, queues where messages accumulate, and bindings between the two. Applications
-and users declare and user their exchanges, queues, and bindings. All of this was dropped 
-in the move to 1.0 making topic based exchanges, an important underpinning of pub/sub patterns
-much more difficult.
-
-in AMQP 0.9, one subscriber can declare a queue, and then multiple processes (given the right
-permissions and the queue name) can consume from the same queue. That requires being able
-to name the queue. In another protocol, such as MQTT, one cannot name the queue, and so
-this processing pattern is not supported.
-
-The mapping convention describte in a Topic_ section, allows MQTT to establish separate 
-hierarchies which provides a fixed distribution among the workers, but not exactly the
-self-balancing shared queue that AMQP provides.
-
-
-.. NOTE::
-
-  In RabbitMQ (the initial broker used), permissions are assigned using regular expressions. So
-  a permission model where AMQP users can define and use *their* exchanges and queues
-  is enforced by a naming convention easily mapped to regular expressions (all such
-  resources include the username near the beginning). Exchanges begin with: xs_<user>_.
-  Queue names begin with: q_<user>_.  
-
-Topic-based Exchanges
-~~~~~~~~~~~~~~~~~~~~~
-
-Topic-based exchanges are used exclusively. AMQP supports many other types of exchanges, 
-but sr_post have the topic sent in order to support server side filtering by using topic 
-based filtering. At AMQP 1.0, topic-based exchanges (indeed all exchanges, are no
-longer defined.) Server-side filtering allows for much fewer topic hierarchies to be used,
-and for much more efficient subsciptions.
-
-In Sarracenia, topics are chosen to mirror the path of the files being announced, allowing 
-straight-forward server-side filtering, to be augmented by client-side filtering on 
-message reception.
-
-The root of the topic tree is the version of the message payload.  This allows single brokers 
-to easily support multiple versions of the protocol at the same time during transitions.  *v02*,
-created in 2015, is the third iteration of the protocol and existing servers routinely support previous 
-versions simultaneously in this way.  The second sub-topic defines the type of message.
-At the time of writing:  v02.post is the topic prefix for current post messages.
-
-Little Data 
-~~~~~~~~~~~
-
-The AMQP messages contain announcements, no actual file data. AMQP is optimized for and assumes 
-small messages. Keeping the messages small allows for maximum message throughtput and permits
-clients to use priority mechanisms based on transfer of data, rather than the announcements.
-Accomodating large messages would create many practical complications, and inevitably require 
-the definition of a maximum file size to be included in the message itself, resulting in
-complexity to cover multiple cases. 
-
-Sr_post is intended for use with arbitrarily large files, via segmentation and multi-streaming.
-Blocks of large files are announced independently and blocks can follow different paths
-between initial pump and final delivery. The protocol is unidirectional, in that there 
-is no dialogue between publisher and subscriber. Each post is a stand-alone item that 
-is one message in a stream, which on receipt may be spread over a number of nodes. 
-
-However, it is likely that, for small files over high latency links, it is 
-more efficient to include the body of the files in the messages themselve, 
-rather than forcing a separate retrieval phase.  The relative advantage depends on:
-
-* relative coarseness of server side filtering means some filtering is done on 
-  the client side.  Any data embedded for messages discarded on the client-side
-  are waste.
-
-* Sarracenia establishes long-lived connections for some protocols, such as SFTP,
-  so the relative overhead for a retrieval may not be long.
-
-* One will achieve a higher messaging rate without data being embedded, and if the
-  messages are distributed to a number of workers, it is possible that the resulting
-  message rate is higher without embedded data (because of faster distribution for
-  parallel download) than the savings from embedding.
-
-* the lower the latency of the connection, the lesser the performance advantage
-  of embedding, and the more it becomes a limiting factor on high performance 
-  transfers.
-
-Further work is needed to better clarify when it makes sense to embed content
-in messages. For now, the *content* header is included to allow such experiments
-to occur.
-
-
-
-Other Parameters
-~~~~~~~~~~~~~~~~
-
-AMQP has many other settings, and reliability for a particular use case
-is assured by making the right choices.  
-
-* persistence (have queues survive broker restarts, default to true),
-
-* expiry (how long a queue should exist when no-one is consuming from it.  Default: a few 
-  minutes for development, but can set much longer for production)
-
-* message_ttl (the life-span of queued messages. Messages that are too old will not 
-  be delivered: default is forever.)
-
-* Pre-fetch is an AMQP tunable to determine how many messages a client will 
-  retrieve from a broker at once, optimizing streaming. (default: 25)
-
-These are used in declarations of queues and exchanges to provide appropriate
-message processing.  This is not an exhaustive list.
 
 
 Standards
@@ -886,21 +629,26 @@ Standards
    where appropriate.
 
 
-FURTHER READING
----------------
-
-https://github.com/MetPX - home page of metpx-sarracenia
-
-http://rabbitmq.net - home page of the AMQP broker used to develop Sarracenia.
-
-
 SEE ALSO
 --------
 
-`sr_post(1) <sr3_post.1.rst>`_ - post announcemensts of specific files.
+`sr3(1) <sr3.1.html>`_ - Sarracenia main command line interface.
 
-`sr_sarra(8) <sr3.1.rst#sarra>`_ - Subscribe, Acquire, and ReAdvertise tool.
+`sr3_post(1) <sr3_post.1.html>`_ - post file announcements (python implementation.)
 
-`sr_subscribe(1) <sr3.1.rst#subscribe>`_ - the download client.
+`sr3_cpost(1) <sr3_cpost.1.html>`_ - post file announcemensts (C implementation.)
 
-`sr_watch(1) <sr3.1.rst#watch>`_ - the directory watching daemon.
+`sr3_cpump(1) <sr3_cpump.1.html>`_ - C implementation of the shovel component. (copy messages)
+
+**Formats:**
+
+`sr3_credentials(7) <sr3_credentials.7.html>`_ - Convert logfile lines to .save Format for reload/resend.
+
+`sr3_options(7) <sr_options.7.html>`_ - the configuration options
+
+
+**Home Page:**
+
+`https://metpx.github.io/sarracenia <https://metpx.github.io/sarracenia>`_ - Sarracenia: a real-time pub/sub data sharing management toolkit
+
+
