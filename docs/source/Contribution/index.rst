@@ -14,7 +14,7 @@ Contributing to Sarracenia
    Original (2015) Design  <Design>
    Evolution
    AMQPprimer
-   deltas
    mqtt_issues
+   deltas
    on_part_assembly
 
