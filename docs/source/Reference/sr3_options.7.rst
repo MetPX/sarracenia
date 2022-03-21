@@ -163,10 +163,11 @@ Note that flatten settings can be changed between directory options.
 Sundew Compatible Substituions 
 ------------------------------
 
-In MetPX Sundew, there is a much more strict file naming standard, specialised for use with
-World Meteorological Organization (WMO) data.   Note that the file naming convention predates, and
+In `MetPX Sundew <../Explanation/Glossary.html#sundew>`_, there is a much more strict 
+file naming standard, specialised for use with World Meteorological 
+Organization (WMO) data. Note that the file naming convention predates, and
 bears no relation to the WMO file naming convention currently approved, but is strictly an internal
-format.   The files are separated into six fields by colon characters.  The first field, DESTFN,
+format. The files are separated into six fields by colon characters. The first field, DESTFN,
 gives the WMO (386 style) Abbreviated Header Line (AHL) with underscores replacing blanks::
 
    TTAAii CCCC YYGGGg BBB ...  
@@ -174,7 +175,7 @@ gives the WMO (386 style) Abbreviated Header Line (AHL) with underscores replaci
 (see WMO manuals for details) followed by numbers to render the product unique (as in practice,
 though not in theory, there are a large number of products which have the same identifiers).
 The meanings of the fifth field is a priority, and the last field is a date/time stamp.
-The other fields vary in meaning depending on context.  A sample file name::
+The other fields vary in meaning depending on context. A sample file name::
 
    SACN43_CWAO_012000_AAA_41613:ncp1:CWAO:SA:3.A.I.E:3:20050201200339
 

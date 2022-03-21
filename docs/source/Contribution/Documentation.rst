@@ -56,12 +56,12 @@ How2Guides
 
 - Problem and goal oriented: "**I want to... How do I...**" Differing from tutorials in that tutorials are for complete beginners, how to guides assume some knowledge and understanding with a basic setup and tools.
 - Provide a series of steps focused on the results of some particular problem. 
-- Don't explain concepts, if they are important, they can be linked to in `../Explanations/`
+- Don't explain concepts, if they are important, they can be linked to in `../Explanation/`
 - There are multiple ways to skin a cat, remain flexible in your guide so users can see *how* things are done.
 - **NAME GUIDES WELL** enough to tell the user *exactly* what they do at a glance.
 
-Explanations
-------------
+Explanation
+-----------
 
 - Understanding-oriented: can be equally considered discussions. Much more relaxed version of documentation where concepts are explored from a higher level or different perspectives.
 - Provide context, discuss alternatives and opinions while providing technical reference (for other sections).

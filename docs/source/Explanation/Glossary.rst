@@ -156,6 +156,15 @@ download the files they are interested in.
 
 Subscribers use `subscribe(1) <../Reference/sr3.1.html#subscribe>`_
 
+Sundew
+------
+
+`MetPX Sundew <https://github.com/MetPX/Sundew>`_ is the ancestor of Sarracenia.
+It is a pure TCP/IP WMO 386 oriented data pump. The configuration files look similar, 
+but the routing algorithms and concepts are quite different. MetPX is a push-only 
+file distribution method, that implemented WMO 386 sockets, AM Sockets, and 
+other obsolete technologies. It does not do pub/sub. 
+More history `here <History/Evolution.html>`_
 
 WMO
 ---

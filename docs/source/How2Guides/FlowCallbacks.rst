@@ -10,7 +10,7 @@ deal of core functionality is implemented using the class created to add
 custom processing to a flow, the flowcb (flow callback) class.
 
 For a detailed discussion of the flow algorithm itself, have a look 
-at `Concepts <../Explanations/Concepts.rst>`_ manual. For any flow, one can
+at `Concepts <../Explanation/Concepts.rst>`_ manual. For any flow, one can
 add custom processing at a variety of times during processing by sub-classing 
 the `sarracenia.flowcb <../../sarracenia/flowcb/__init__.py>`_ class.  
 
