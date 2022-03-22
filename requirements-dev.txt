@@ -2,3 +2,4 @@ Sphinx
 nbsphinx
 jupyter
 pyclamd
+docutils
