@@ -271,7 +271,7 @@ For local installation on a computer, using a pip
 For testing and development::
 
    pip3 install -e .
-   export PATH=${HOME}/.local/bin
+   export PATH=${HOME}/.local/bin:${PATH}
 
 Using the local python package installer (PIP) to create a locally editable version.
 The above will install the package in ~/.local/bin... so need to ensure the path includes
