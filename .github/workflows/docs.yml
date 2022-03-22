@@ -17,16 +17,13 @@ jobs:
         sudo update-locale
     - name: Install dependencies
       run: |
-        sudo apt-get update -y && sudo apt-get install -y pandoc
+        sudo apt-get update -y && sudo apt-get install -y pandoc dia libcanberra-gtk-module libcanberra-gtk3-module
     - name: Setup python
       uses: actions/setup-python@v2
     - name: Checkout
       uses: actions/checkout@master
       with:
         fetch-depth: 0
-    - name: Setup dia
-       run: |
-          apt install dia libcanberra-gtk-module libcanberra-gtk3-module
     - name: Install Sarracenia
       run: |
         pip3 install .
