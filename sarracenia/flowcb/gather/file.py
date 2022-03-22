@@ -703,8 +703,8 @@ class File(FlowCB):
         """
            from sr_post.py/run 
 
-           FIXME: really bad performance with large trees. it does scans an entire tree
-           before emitting any messages.  need to re-factor with iterator style so produce
+           FIXME: really bad performance with large trees: It scans an entire tree
+           before emitting any messages. Need to re-factor with iterator style so produce
            result in batch sized chunks incrementally.
         """
         #logger.debug("%s run partflg=%s, sum=%s, nodupe_ttl=%s basis=%s pbd=%s" % \

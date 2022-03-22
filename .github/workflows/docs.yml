@@ -24,6 +24,9 @@ jobs:
       uses: actions/checkout@master
       with:
         fetch-depth: 0
+    - name: Setup dia
+       run: |
+          apt install dia libcanberra-gtk-module libcanberra-gtk3-module
     - name: Install Sarracenia
       run: |
         pip3 install .

@@ -5,6 +5,7 @@
 #	latex2rtf </dev/null Guide.latex >Guide.rtf
 
 
+BUILDDIR= ../../../build/html
 IMAGES= AMQP4Sarra.svg
 SLIDESHOWS= AMQPprimer.html
 
