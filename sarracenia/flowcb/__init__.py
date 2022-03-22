@@ -13,7 +13,7 @@ import sys
 
 
 entry_points = [
-    'ack', 'do_poll', 'download', 'gather', 'after_accept', 'on_data', 'after_work',
+    'ack', 'do_poll', 'download', 'gather', 'after_accept', 'after_work',
     'on_housekeeping', 'on_report', 'on_start', 'on_stop', 'poll', 'post', 'send'
 ]
 
@@ -96,16 +96,6 @@ class FlowCB:
                operate on worklist.incoming to help decide which messages to process further.
                and move messages to worklist.rejected to prevent further processing.
                do not delete any messages, only move between worklists.
-
-    def on_data(self,data) -> None::
-
-        Task:  return data transformed in some way.
-
-        return new_data
-
-        The "work" step will do the downloads and/or sends, placing successful ones
-        in worklist.ok, and failed ones in worklist.failed.
-
 
     def after_work(self,worklist) -> None::
 

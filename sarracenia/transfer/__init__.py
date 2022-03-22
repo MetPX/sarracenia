@@ -217,20 +217,19 @@ class Transfer():
 
         return dst
 
-    def __on_data__(self, chunk):
+    def on_data(self, chunk) -> bytes:
+        """
+            transform data as it is being read. 
+            Given a buffer, return the transformed buffer. 
+            Checksum calculation is based on pre transformation... likely need
+            a post transformation value as well.
+        """
 
         return chunk
 
         #FIXME ... need to re-enable on_data plugins... not sure how they should work.
-        if 'on_data' not in self.o.plugins:
-            return chunk
-
-        new_chunk = chunk
-        for plugin in self.o.plugins['on_data']:
-            new_chunk = plugin(self, new_chunk)
-
-        if self.data_sumalgo: self.data_sumalgo.update(new_chunk)
-        return new_chunk
+        # sub-classing of transfer class?
+        
 
     def read_write(self, src, dst, length=0):
         logger.debug("sr_proto read_write")
@@ -249,7 +248,7 @@ class Transfer():
                 if self.o.timeout: alarm_set(self.o.timeout)
                 chunk = src.read(self.o.bufsize)
                 if chunk:
-                    new_chunk = self.__on_data__(chunk)
+                    new_chunk = self.on_data(chunk)
                     dst.write(new_chunk)
                     rw_length += len(chunk)
                 alarm_cancel()
@@ -270,7 +269,7 @@ class Transfer():
             if self.o.timeout: alarm_set(self.o.timeout)
             chunk = src.read(self.o.bufsize)
             if chunk:
-                new_chunk = self.__on_data__(chunk)
+                new_chunk = self.on_data(chunk)
                 rw_length += len(new_chunk)
                 dst.write(new_chunk)
             alarm_cancel()
@@ -285,7 +284,7 @@ class Transfer():
             if self.o.timeout: alarm_set(self.o.timeout)
             chunk = src.read(r)
             if chunk:
-                new_chunk = self.__on_data__(chunk)
+                new_chunk = self.on_data(chunk)
                 rw_length += len(new_chunk)
                 dst.write(new_chunk)
             alarm_cancel()
@@ -319,8 +318,6 @@ class Transfer():
 
         # warn if length mismatch without transformation.
 
-        #if (not 'on_data' in self.o.plugins
-        #    ) and length != 0 and rw_length != length:
         if  length != 0 and rw_length != length:
             logger.error(
                 "util/writelocal mismatched file length writing %s. Message said to expect %d bytes.  Got %d bytes."
