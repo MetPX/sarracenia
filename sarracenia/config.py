@@ -1418,11 +1418,10 @@ class Config:
                     if len(self.queueName) < 1:
                           #logger.info('FIXME: queue name too short, try again' )
                           self.queueName=None
+                if hasattr(self,'no') and self.no > 1:
+                    time.sleep(randint(1,4))
                 else:
-                    if hasattr(self,'no') and self.no > 1:
-                        time.sleep(randint(1,4))
-                    else:
-                        break
+                    break
 
             #if the queuefile is corrupt, then will need to guess anyways.
             if ( self.queueName is None ) or ( self.queueName == '' ):
