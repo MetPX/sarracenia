@@ -24,9 +24,6 @@ jobs:
       uses: actions/checkout@master
       with:
         fetch-depth: 0
-    - name: Install Sarracenia
-      run: |
-        pip3 install .
     - name: Build and Commit
       uses: sphinx-notes/pages@v2
       with:
