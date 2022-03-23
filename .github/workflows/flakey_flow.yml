@@ -1,5 +1,5 @@
 
-name: Run the sr_insects flakey_broker flow test.
+name: Flakey Broker Flow Test.
 
 on:
   push:

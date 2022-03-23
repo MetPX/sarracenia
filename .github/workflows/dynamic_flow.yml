@@ -1,5 +1,5 @@
 
-name: Run the sr_insects dynamic flow test.
+name: Dynamic Flow Test.
 
 on:
   push:
@@ -18,7 +18,7 @@ env:
 
 jobs:
   build:
-    name: Run dynamic_flow test
+    name: Dynamic_flow test
     runs-on: ubuntu-latest
 
     steps:

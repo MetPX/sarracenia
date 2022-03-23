@@ -1,5 +1,5 @@
 
-name: run the sr_insects static_flow test.
+name: Static Flow Test
 
 on:
   pull_request:
