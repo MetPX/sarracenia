@@ -12,4 +12,4 @@ History
    messages_v01
    messages_v02
    messages_v03
-   MQPFeatures.rst
+   talks/SarraIntro/index
