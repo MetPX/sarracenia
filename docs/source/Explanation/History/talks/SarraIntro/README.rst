@@ -21,3 +21,7 @@ leaving only reltive paths for include::
     mv A2B.gz A2B.dia
 
 This replaces the old .dia file, might be upsetting...
+
+Then we run awk in the Makefile to produce a .rst file for sphinx.
+
+then when sphinx runs, it puts the paths back in

@@ -30,9 +30,19 @@ Source Repo: https://github.com/MetPX/sarracenia
     :alt: Docker Image Build Status
     :target: https://github.com/MetPX/sarracenia/actions/workflows/ghcr.yml
 
+CI/CD:
+
 .. image:: https://github.com/MetPX/sarracenia/actions/workflows/static_flow.yml/badge.svg
-    :alt: Run Static Flow
+    :alt: CI/CD Static Flow
     :target: https://github.com/MetPX/sarracenia/actions/workflows/static_flow.yml
+
+.. image:: https://github.com/MetPX/sarracenia/actions/workflows/flakey_flow.yml/badge.svg
+    :alt: CI/CD Flakey Broker flow 
+    :target: https://github.com/MetPX/sarracenia/actions/workflows/flakey_flow.yml
+
+.. image:: https://github.com/MetPX/sarracenia/actions/workflows/dynamic_flow.yml/badge.svg
+    :alt: CI/CD Dynamic Broker flow 
+    :target: https://github.com/MetPX/sarracenia/actions/workflows/dynamic_flow.yml
 
 
 Caveats: 
