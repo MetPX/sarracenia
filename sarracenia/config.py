@@ -455,7 +455,7 @@ class Config:
 
     v2entry_points = [
         'do_download', 'do_get', 'do_poll', 'do_put', 'do_send', 'on_message',
-        'on_data', 'on_file', 'on_heartbeat', 'on_housekeeping',
+        'on_file', 'on_heartbeat', 'on_housekeeping',
         'on_html_page', 'on_part', 'on_post', 'on_report',
         'on_start', 'on_stop', 'on_watch', 'plugin'
     ]

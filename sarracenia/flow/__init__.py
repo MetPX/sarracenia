@@ -612,13 +612,13 @@ class Flow:
                     % (len(data), msg['size']))
                 return False
 
-        try:
-            for p in self.plugins['on_data']:
-                data = p(data)
+        #try:
+        #    for p in self.plugins['on_data']:
+        #        data = p(data)
 
-        except Exception as ex:
-            logger.warning("plugin failed: %s" % (p, ex))
-            return False
+        #except Exception as ex:
+        #    logger.warning("plugin failed: %s" % (p, ex))
+        #    return False
 
         data_algo.update(data)
 
