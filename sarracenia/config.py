@@ -1186,7 +1186,7 @@ class Config:
             elif k in ['no-import']:
                 self._parse_v3unplugin(v)
             elif k in ['inflight', 'lock']:
-                if isnumeric(v[:-1]):
+                if v[:-1].isnumeric():
                     setattr(self, k, durationToSeconds(v))
                 else:
                     if line[1].lower() in ['none', 'off', 'false']:
