@@ -8,7 +8,7 @@ command line, python, and C users.
 
 Home page: https://metpx.github.io/sarracenia
 
-Source Repo: https://github.com/MetPX/sarracenia
+Source Repo: https://github.com/MetPX/sarracenia/tree/v03_wip
 
 .. image:: https://img.shields.io/pypi/v/metpx-sarracenia?style=flat
   :alt: PyPI version
@@ -47,12 +47,11 @@ CI/CD:
 
 Caveats: 
 
-* meteorological *real-time* (order of seconds to minutes.) not electronic real-time
-  (order of microseconds to milliseconds)
+* meteorological *real-time* (seconds to minutes.) not electronic real-time (microseconds)
 
 *  This new web-site is for version 3 currently under development in the v03_wip branch
-   Users of stable version 2 should go https://github.com/MetPX/Sarracenia instead.
-   While the code for version 3 is stabilizing nicely, the docs are not completely ready.
+   Users of stable version 2 should go https://github.com/MetPX/sarracenia/tree/v2_stable
+   instead. 
 
 .. toctree::
    :maxdepth: 1

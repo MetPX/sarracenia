@@ -1,6 +1,6 @@
 import humanize
 import logging
-from sarracenia import nowflt, timestr2flt
+from sarracenia import nowflt, timeflt2str, timestr2flt, __version__
 from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
@@ -42,10 +42,12 @@ class Log(FlowCB):
             self.action_verb = 'filtered'
         else:
             self.action_verb = 'downloaded'
+        self.started = nowflt()
 
         self.__reset()
 
     def __reset(self):
+        self.last_housekeeping=nowflt()
         self.fileBytes=0
         self.lagTotal=0 
         self.lagMax=0 
@@ -122,14 +124,17 @@ class Log(FlowCB):
             rate= 100*self.msgCount/tot
         else:
             rate = 0
+        how_long = nowflt() - self.last_housekeeping
+
+        logger.info( f"version: {__version__}, started: {humanize.naturaltime(nowflt()-self.started)}, last_housekeeping: {how_long:4.1f} seconds ago ")
         logger.info( "messages received: %d, accepted: %d, rejected: %d  rate: %5.4g%%" %
             ( self.msgCount+self.rejectCount, self.msgCount, self.rejectCount, rate ) )
         logger.info( f"files transferred: {self.transferCount} " +\
              f"bytes: {humanize.naturalsize(self.fileBytes,binary=True)} " +\
-             f"rate: {humanize.naturalsize(self.fileBytes/self.o.housekeeping, binary=True)}/sec" )
+             f"rate: {humanize.naturalsize(self.fileBytes/how_long, binary=True)}/sec" )
         if self.msgCount > 0:
             logger.info( "lag: average: %.2f, maximum: %.2f " % ( self.lagTotal/self.msgCount, self.lagMax ) )
-
+ 
     def on_stop(self):
         if set ( ['on_stop', 'all'] ) & self.o.logEvents:
             self.housekeeping_stats()
