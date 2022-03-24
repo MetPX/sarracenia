@@ -395,7 +395,7 @@ acceptSizeWrong: <boolean> (default: False)
 -------------------------------------------
 
 When a file is downloaded and its size does not match the one advertised, it is
-normally rejected, as a failure.  This option accepts the file even with the wrong
+normally rejected, as a failure. This option accepts the file even with the wrong
 size. helpful when file is changing frequently, and there is some queueing, so
 the file is changed by the time it is retrieved.
 

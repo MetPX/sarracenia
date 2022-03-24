@@ -1002,7 +1002,7 @@ class Flow:
                 i = i + 1
 
             if not ok:
-                logger.error("gave up downloading for now")
+                logger.error("gave up downloading for now, appending to retry queue")
                 self.worklist.failed.append(msg)
             # FIXME: file reassembly missing?
             #if self.inplace : file_reassemble(self)
@@ -1012,7 +1012,10 @@ class Flow:
     # v2 sr_util.py ... generic sr_transport imported here...
 
     # generalized download...
-    def download(self, msg, options):
+    def download(self, msg, options) -> bool:
+        """
+           download/transfer one file based on message, return True if successful, otherwise False.
+        """
 
         self.o = options
 
