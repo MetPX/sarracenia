@@ -445,8 +445,10 @@ class AMQP(Moth):
             logger.error("publishing from a consumer")
             return False
 
-        #body = copy.deepcopy(bd)
-        version=body['version']
+        # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
+        body = copy.deepcopy(body)
+
+        version = body['version']
         topic = '.'.join(self.o['topicPrefix'] + body['subtopic'])
         topic = topic.replace('#', '%23')
         topic = topic.replace('*', '%22')
