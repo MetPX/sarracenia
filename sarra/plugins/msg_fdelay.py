@@ -30,7 +30,7 @@ class Msg_FDelay(object):
             return False
 
         # Test msg delay
-        elapsedtime = nowflt() - timestr2flt(parent.msg.headers['pubTime'])
+        elapsedtime = nowflt() - timestr2flt(parent.msg.pubtime)
         if elapsedtime < parent.msg_fdelay:
             dbg_msg = "message not old enough, sleeping for {:.3f} seconds"
             parent.logger.debug(dbg_msg.format(elapsedtime, parent.msg_fdelay - elapsedtime))
@@ -44,13 +44,17 @@ class Msg_FDelay(object):
             f = os.path.join(parent.msg.new_dir, parent.msg.new_file)
         else:
             f = parent.msg.relpath
-        if not os.path.exists(f):
+        
+        if os.path.exists(f):
+            # Test file delay
+            filetime = os.stat(f)[stat.ST_MTIME]
+            elapsedtime = nowflt() - filetime
+        elif 'mtime' in parent.msg.headers:
+            elapsedtime = nowflt() - timestr2flt(parent.msg.headers['mtime'])
+        else:  
             parent.logger.error("did not find file {}".format(f))
             return False
 
-        # Test file delay
-        filetime = os.stat(f)[stat.ST_MTIME]
-        elapsedtime = nowflt() - filetime
         if elapsedtime < parent.msg_fdelay:
             dbg_msg = "file not old enough, sleeping for {:.3f} seconds"
             parent.logger.debug(dbg_msg.format(elapsedtime, parent.msg_fdelay - elapsedtime))
