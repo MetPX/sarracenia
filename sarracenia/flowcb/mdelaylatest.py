@@ -16,7 +16,7 @@ class MDelayLatest(FlowCB):
 
 
       mdelay 30
-      flowcb sarracenia.flowcb.msg.mdelaylatest.MDelayLatest
+      flowcb sarracenia.flowcb.mdelaylatest.MDelayLatest
 
       every message will be at least 30 seconds old before it is forwarded by this plugin.
       In the meantime, the message is placed on the retry queue by marking it as failed.
