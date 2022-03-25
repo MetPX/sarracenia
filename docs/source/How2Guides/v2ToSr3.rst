@@ -552,7 +552,9 @@ examples:
 on_html_page -> subclass flowcb/poll
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Here is a v2 plugin nsa_mls_nrt.py::
+Here is a v2 plugin nsa_mls_nrt.py:
+
+.. code-block:: python
 
     #!/usr/bin/env python3                                                                                                                          
                                                   
@@ -646,7 +648,9 @@ version. in sr3 polls, most string maniupulation has been replaced by filling an
 paramiko.SFTPAttributes structure as soon as possible.
 
 So the way to replace on_html_page in sr3 is by sub-classing Poll.  Here is an 
-sr3 version of same plugin (nasa_mls_nrt.py)::
+sr3 version of same plugin (nasa_mls_nrt.py):
+
+.. code-block:: python
 
     import logging
     import paramiko
