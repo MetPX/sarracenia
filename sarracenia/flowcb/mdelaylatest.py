@@ -29,8 +29,9 @@ class MDelayLatest(FlowCB):
         logging.basicConfig(format=self.o.logFormat,
                             level=getattr(logging, self.o.logLevel.upper()))
 
-        options.add_option('mdelay', 'duration', 30 )
-        logger.debug( f'mdelay set to {self.o.mdelay}')
+        self.o.add_option('mdelay', 'duration', 30 )
+
+        logger.info( f'mdelay set to {self.o.mdelay}')
 
 
     def after_accept(self, worklist):
