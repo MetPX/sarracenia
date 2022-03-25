@@ -29,14 +29,11 @@ class MDelayLatest(FlowCB):
         logging.basicConfig(format=self.o.logFormat,
                             level=getattr(logging, self.o.logLevel.upper()))
 
-        logger.debug('hoho! FIXME init')
         options.add_option('mdelay', 'duration', 30 )
+        logger.debug( f'mdelay set to {self.o.mdelay}')
 
 
     def after_accept(self, worklist):
-        # Prepare msg delay test
-        logger.info('FIXME: mdelay?')
-        logger.info(self.o.mdelay)
         
         # Check message in ok list 
         # get time at beginning of loop, less system calls.
@@ -44,17 +41,17 @@ class MDelayLatest(FlowCB):
 
         new_incoming=[]
         for m1 in worklist.incoming:
-             logger.info('1 relPath=%s' %  m1['relPath'])
-             logger.info('1 pubTime=%s' %  m1['pubTime'])
+             #logger.info('1 relPath=%s' %  m1['relPath'])
+             #logger.info('1 pubTime=%s' %  m1['pubTime'])
              elapsedtime = now - timestr2flt(m1['pubTime'])
-             logger.info('1 Time=%s' %  str(elapsedtime))
+             #logger.info('1 Time=%s' %  str(elapsedtime))
              wait = False
              
              # If same message found in the delay list, replaced it with the one in ok list.
              new_ok_delay=[]
              for m2 in self.ok_delay:
                   if m1['relPath'] == m2['relPath']:
-                       logger.info('REPLACED')
+                       #logger.info('REPLACED')
                        new_ok_delay.append(m1)
                        worklist.rejected.append(m2)
                        wait = True
@@ -79,10 +76,10 @@ class MDelayLatest(FlowCB):
         # Check message in the delay list          
         new_ok_delay=[]
         for m1 in self.ok_delay:
-             logger.info('2 relPath=%s' %  m1['relPath'])
-             logger.info('2 pubTime=%s' %  m1['pubTime'])
+             #logger.info('2 relPath=%s' %  m1['relPath'])
+             #logger.info('2 pubTime=%s' %  m1['pubTime'])
              elapsedtime = nowflt() - timestr2flt(m1['pubTime'])
-             logger.info('Time=%s' %  str(elapsedtime))
+             #logger.info('Time=%s' %  str(elapsedtime))
              # if it's time, the message is putting back to the ok list to publish
              if elapsedtime >= self.o.mdelay:
                   logger.info('OK')
