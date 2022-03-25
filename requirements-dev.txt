@@ -3,3 +3,4 @@ nbsphinx
 jupyter
 pyclamd
 docutils
+jinja2==3.0.3

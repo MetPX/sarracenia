@@ -2,18 +2,19 @@
 =========================
 Porting V2 Plugins to Sr3
 =========================
+This is a guide to porting plugins from Sarracenia version 2.X (metpx-sarracenia) to 
+Sarracenia version 3.x (metpx-sr3)
 
 .. Contents::
 
-This is a guide to porting plugins from Sarracenia version 2.X (metpx-sarracenia) to 
-Sarracenia version 3.x (metpx-sr3) If you are new to Sarracenia, and have no experience 
-or need to look at v2 plugins, don't read this. it will just confuse you. This guide is 
-for those who need to take existing v2 plugins and port them to Sr3.  You are better off 
-getting a fresh look by looking at the `jupyter notebook examples<../Tutorials>`_
-
-Which provide an introduction to v3 without confusing references to v2.  In fact, Those notebooks
-are probably a good pre-requisite for everyone, to understand how Sr3 plugins work, before trying
-to port v2 ones. 
+.. warning:: If you are new to Sarracenia, and have no experience or need to look at v2 plugins,
+   don't read this. it will just confuse you. **This guide is for those who need to take existing
+   v2 plugins and port them to Sr3.**  You are better off getting a fresh look by looking at the
+   `jupyter notebook examples <../Tutorials>`_ which provide an introduction to v3 without
+   the confusing references to v2.
+   
+The `jupyter notebook examples <../Tutorials>`_ are probably a good pre-requisite for everyone,
+to understand how Sr3 plugins work, before trying to port v2 ones.
 
 `Sample Sr3 plugin <../Reference/flowcb.html#module-sarracenia.flowcb.log>`_
 
@@ -24,19 +25,20 @@ still in a stilted way.
 
 Sr3 plugins are core design elements, composed together to implement part of 
 Sarracenia itself. V3 plugins should be easier for Python programmers to debug 
-and implement, and are strictly more flexible and powerful than the v2 mechanism.
+and implement, and are more flexible and powerful than the v2 mechanism.
 
- * v3 uses standard python syntax, not v2's strange things ... e.g. *self.plugins*, 
-   *parent.logger*, Why doesn't *import* work?
- * standard python import; Syntax errors are detected and reported *the normal way*
+ * v3 uses standard python syntax, not v2's strange *self.plugins*, *parent.logger*,
+   and oh gee why doesn't *import* work?
+ * Standard python imports; Syntax errors are detected and reported *the normal way*
  * v3 classes are designed to be usable outside the CLI itself (see jupyter notebook examples)
    callable by application programmers in their own code, like any other python library.
  * v3 classes can be sub-classed to add core functionality, like new message or file 
    transport protocols.
  
-There are also a couple walkthrough videos on Youtube showing simple v2 -> v3 ports:
- - `Sender (10 min) <https://www.youtube.com/watch?v=rUazjoGzPac>`_
- - `Poll (20 min) <https://www.youtube.com/watch?v=P20M9ojn_Zw>`_
+.. tip::
+  There are also a couple walkthrough videos on Youtube showing simple v2 -> v3 ports:
+   - `Sender (10 min) <https://www.youtube.com/watch?v=rUazjoGzPac>`_
+   - `Poll (20 min) <https://www.youtube.com/watch?v=P20M9ojn_Zw>`_
 
 File Placement
 --------------
@@ -46,7 +48,7 @@ v2 places configuration files under ~/.config/sarra, and state files under ~/.ca
 v3 places configuration files under ~/.config/sr3, and state files under ~/.cache/sr3
 
 v2 has a C implementation of sarra called sarrac. The C implementation for v3, is called sr3c,
-and is the same as the v2 one, except it uses the new file locations.
+and is the same as the v2 one, except it uses the v3 file locations.
 
 Command Line Difference
 -----------------------
@@ -60,8 +62,9 @@ Briefly, the sr3 entry point is used to start/stop/status things::
 In sr3, one can also use file globbing style specifications to ask for a command
 to be invoked on a group of configurations, wheras in v2, one could only operate on one at a time.
 
-sr3_post is an exception to this change in that it works like v2's sr_post did, being
-a tool for interactive posting.
+.. caution::
+  **sr3_post** is an exception to this change in that it works like v2's sr_post did, being
+  a tool for interactive posting.
 
 
 What Will Work Without Change
@@ -78,16 +81,20 @@ it has been parsed. Most of it should work, unless you have do_* plugins.
 Examples of things that should work:
 
 * all settings from v2 config files should be recognized by the v3 option parser, and converted
-  to v3 equivalents, when they exist. v2 option -> v3 option some examples:
+  to v3 equivalents, ie:
 
-  * accept_scp_threshold -> accel_threshold
-  * heartbeat -> housekeeping
-  * chmod_log -> permLog
-  * loglevel -> logLevel
-  * post_base_url -> post_baseUrl
-  * post_rate_limit -> messageRateMax
-  * cache, suppress_duplicates ->  nodupe_ttl
-  * topic_prefix -> topicPrefix 
+  ========================== ===============
+  v2 Option                  v3 Option
+  ========================== ===============
+  accept_scp_threshold       accel_threshold
+  heartbeat                  housekeeping
+  chmod_log                  permLog
+  loglevel                   logLevel
+  post_base_url              post_baseUrl
+  post_rate_limit            messageRateMax
+  cache, suppress_duplicates nodupe_ttl
+  topic_prefix               topicPrefix 
+  ========================== ===============
 
   For the full list, look at the `Release Notes <UPGRADING.html>`_ 
 
@@ -100,28 +107,31 @@ Examples of things that should work:
   the flowcb/v2wrapper.py plugin which will be automatically invoked when v2 plugins are 
   seen in the config file.
 
-  Note that ideally, v2wrapper is used as a crutch to allow one to have a functional configuration
-  quickly. There is a performance hit to using v2wrapper, and 
+.. Note:: Ideally, v2wrapper is used as a crutch to allow one to have a functional configuration
+  quickly. There is a performance hit to using v2wrapper.
 
 
-Things that will not work:
+What Won't Work Without Change
+------------------------------
 
 * do_*  they are just fundamentally different in v3.
 
 If you have a configuration with a do_* plugin, then you need this guide, from day 1.
-to set a configuration to use a plugin, in v2 one used the *plugin* option.
+to set a configuration to use a plugin, in v2 one used the *plugin* option::
+
+   plugin <pluginName>
+
 The equivalent to that in v3 is *callback*::
 
-  v2: plugin x
-  v3: callback x3
+   callback <pluginName>
 
-where x3 is the v3 ported version of the plugin made for v2. for this shorthand to work,
-there should be a file named x3.py somewhere in the PYTHONPATH (~/.config/plugins is added
-for convenience.) and that python source file needs to have a class X3.py declared in it
-(same as the file name but first letter capitalized.)  If you need to name it differently
-there is a longer form that allows one to violate the convention::
+For this shorthand to work there should be a file named <pluginName>.py somewhere in the
+PYTHONPATH (~/.config/plugins is added for convenience.) and that python source file needs
+to have a class <PluginName> declared in it (same as the file name but first letter capitalized.)
+If you need to name it differently there is a longer form that allows one to violate the
+convention in v3::
 
-  flowCallback x3.MyFavouriteClass
+  flowCallback <pluginName>.MyFavouriteClass
 
 the individual routine plugin declarations on_message, on_file, etc... are not a way of
 doing things in v3. You declare callbacks, and have them contain the entry points you need.
@@ -144,31 +154,36 @@ In general, v3 plugins:
 
       from sarracenia.flowcb import FlowCB
 
-      class myplugin(FlowCB):
+      class MyPlugin(FlowCB):
+        ...the rest of the plugin class..
+        
+         def after_accept(self, worklist):
+           ...code to run in callback...
 
-  To create an *after_accept* plugin in *myplugin* class, define a function
+  To create an *after_accept* plugin in *MyPlugin* class, define a function
   with that name, and the appropriate signature.
 
-* **are pythonic, not weird** : In v2, you need the last line to include something like::
+* v3 plugins **are pythonic, not weird** :
+  In v2, you need the last line to include something like::
 
      self.plugin = 'Msg_Delay'
 
-  for a second generation plugin, the first generation ones had
-  something like::
+  the first generation ones at the end had something like this to assign entry points explicitly::
 
       msg_2localfile = Msg_2LocalFile(None)
       self.on_message = msg_2localfile.on_message
 
-  at the end to assign entry points explicitly. either way a naive python
-  of the file would invariably fail without some sort of test harness being
-  wrapped around it. (**In v3, delete these lines (usually located at the bottom of the file**)
+  either way a naive python portion of the file would invariably fail without some sort of test
+  harness being wrapped around it. 
+  
+  .. Tip:: In v3, delete these lines (usually located at the bottom of the file)
 
   In v2, there were strange issues with imports, resulting in people putting
-  import statements within some functions. That problem is fixed in v3;
-  put the necessary imports at the beginning of the file, like any other python
-  module **and remove the imports located within functions**.
+  import statements inside functions. That problem is fixed in v3, you can check your import syntax
+  by doing *import X* in any python interpreter.
 
-  in v3 one can at least check syntax by doing *import X* in any python interpreter.
+  .. Tip:: Put the necessary imports at the beginning of the file, like any other python module
+           **and remove the imports located within functions when porting**.
 
 * **v3 plugins can be used by application programmers.** The plugins aren't
   bolted on after the fact, but a core element, implementing duplicate 
@@ -180,55 +195,58 @@ In general, v3 plugins:
   to interact with sarracenia pumps without using the Sarracenia CLI.
   see jupyter tutorials. 
 
-* **use standard python logging** ::
+* v3 Plugins now use **standard python logging** ::
 
       import logging
   
-  Make sure the following logger declaration is after the **last _import_** in the top of the file::
+  Make sure the following logger declaration is after the **last _import_** in the top of the v3 plugin::
 
       logger = logging.getLogger(__name__)
 
-      #when you want a log message:
+      # To log a message:
+      logger.debug( ... )
+      logger.info( ... )
       logger.warning( ... )
+      logger.error( ... )
+      logger.critical( ... )
       
-      # In VI you can use the global replace:
-      :%s/parent.logger/logger/g
-
-  In v3 plugins: *logger.x* replaces *parent.logger.x* found in v2 plugins.
-  In v2, to test outside the app, one had to build a test harness that had
-  parent.logger declared. sometimes there is also self.logger x... dunno why...
-  don't ask.
-
-
-* *have options as an argument to the __init__(self, options): routine*.
-  by convention, most modules include::
-
-       self.o = options 
-
-  so in v2 if you need to access settings, *replace parent.setting by self.o.setting*.
+  When porting v2 -> v3 plugins: *logger.x* replaces *parent.logger.x*.
+  Sometimes there is also self.logger x... dunno why... don't ask.
   
-      # In VI you can use the global replace:
-      :%s/parent/self.o/g
+  .. Tip:: In VI you can use the global replace to make quick work when porting::
+  
+             :%s/parent.logger/logger/g
 
-   Likewise in the __init__ function needs the self.o with options
+* v3 plugins *have options as an argument to the __init__(self, options): routine* rather
+  than in v2 where they were in the parent object. By convention, in most modules the 
+  __init__ function includes a::
+
+       self.o = options
+       self.o.add_option('OptionName', Type, DefaultValue)
+       
+  .. Tip:: In VI you can use the global replace::
+  
+             :%s/parent/self.o/g
+
 
 * **you can see what options are active by starting a component with the 'show' command** ::
 
       sr3 show subscribe/myconf
 
-  these settings can be access from self.o
+  these settings can be accessed from self.o
 
-* in the settings generally, **look for replacement of many underscores with camelCase** in sr3, as per WMO standardization.
+* In sr3 settings, **look for replacement of many underscores with camelCase** as per WMO standardization.
   the exception being post\_  where the underscore seems to better match intent.  so:
 
-  *  post_base_dir becomes post_baseDir,   
+  *  custom_setting_thing -> customSettingThing
+  *  post_base_dir -> post_baseDir
   *  post_broker is unchanged. 
   *  post_base_url -> post_baseUrl
 
-* **messages are python dictionaries** , so `msg.relpath` becomes `msg['relPath']`
+* In v3 **messages are now python dictionaries** , so a v2 `msg.relpath` becomes `msg['relPath']` in v3.
   v3 messages, as dictionaries are the default internal representation.
 
-* **plugins operate on batches of messages** v2 *on_message* gets parent as a parameter,
+* In v3 **plugins operate on batches of messages**. v2 *on_message* gets parent as a parameter,
   and the message is in parent.message. In v3, *after_accept* has worklist as an
   option, which is python list of messages, maximum length being fixed by the
   *batch* option. So the general organization for after_accept, and after_work is::
@@ -241,9 +259,9 @@ In general, v3 plugins:
              worklist.rejected.append(message)
       worklist.incoming=new_incoming
       
-  Note: plugins must be moved from the /plugins directory to the /flowcb directory, 
-  and specifically, on_message plugins that turn into after_accept ones should be 
-  placed in the flowcb/accept directory (so simialr plugins can be grouped together).
+  .. Note:: plugins must be moved from the /plugins directory to the /flowcb directory, 
+            and specifically, on_message plugins that turn into after_accept ones should be 
+            placed in the flowcb/accept directory (so simialr plugins can be grouped together).
   
   In *after_work*, the replacement for v2 *on_file*, the operations are on:
 
@@ -254,10 +272,10 @@ In general, v3 plugins:
   the *after_work* routine would change the worklist.ok to contain messages for
   the individual files, rather than the original collective .tar.
 
-  Note: on_file plugins that become after_work plugins should be placed in the
-  /flowcb/after_work directory
+  .. Note:: on_file plugins that become after_work plugins should be placed in the
+            /flowcb/after_work directory
   
-* **No Need to set message fields in plugins**
+* v3 has **no Need to set message fields in plugins**
   in v2, one would need to set partstr, and sumstr for v2 messages in plugins. 
   This required an excessive understanding of message formats, and meant that 
   changing message formats required modifying plugins (v03 message format is
@@ -271,7 +289,7 @@ In general, v3 plugins:
   just look at  `do_poll -> poll`_
 
 
-* **rarely, involve subclassing of moth or transfer classes.**
+* v3 plugins **rarely, involve subclassing of moth or transfer classes.**
   The sarracenia.moth class implements support for message queueing protocols
   that support topic hierarchy based subscriptions. There are currently
   two subclasses of Moth: amqp (for rabbitmq), and mqtt.  It would be
@@ -311,7 +329,7 @@ Ideally, one should invoke v3 plugins like so::
 
 Where x will be a subclass of sarracenia.flowcb, which
 will contain a class X (first letter capitalized) in the
-file x.py a in the python search path, or in the
+file x.py somewhere in the python search path, or in the
 *sarracenia/flowcb* directory included as part of the package.
 This is actually a shorthand version of the python import.
 If you need to declare a callback that does not obey that
@@ -320,13 +338,13 @@ convention, one can also use a more flexible but longer-winded::
   flowcb sarracenia.flowcb.x.X
 
 the above two are equivalent. The flowcb version can be used to import classes 
-that don't match the convention of the x.X (a file named x.py containing a class called X.py)
+that don't match the convention of the x.X (a file named x.py containing a class called X)
 
 Configuration Upgrade
 ---------------------
 
 Once a plugin is ported, one can also arrange for the v3 option parser to recognize a v2
-plugin invocation and replace it with a v3 one.  looking in sarracenia/config.py,
+plugin invocation and replace it with a v3 one.  looking in /sarracenia/config.py#L144,
 there is a data structure *convert_to_v3*.  A sample entry would be::
 
     .
@@ -339,8 +357,7 @@ there is a data structure *convert_to_v3*.  A sample entry would be::
     .
 
 
-A v2 config file containing a line *on_message msg_delete* would be replaced by the parser with
-effectively::
+A v2 config file containing a line *on_message msg_delete* will be replaced by the parser with::
 
     flowCallback sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles
 
@@ -354,8 +371,7 @@ the *declare_option*.::
 
     parent.declare_option('poll_usgs_stn_file')
 
-it the values are always of type *list*, so usually, one uses the value by
-picking the first value::
+The values are always of type *list*, so usually, one uses the value by picking the first value::
 
     parent.poll_usgs_stn_file[0]
 
@@ -363,7 +379,7 @@ In v3, that would be replaced with::
 
     self.o.add_option( option='poll_usgs_stn_file', kind='str', default_value='hoho' )
 
-where in version 3 there is now types and default value setting included without additional 
+Where in v3 there are now types ( as seen in the sarracenia/config.py#L777 file) and default value setting included without additional 
 code. it would be referred to in other routines like so::
 
     self.o.poll_usgs_stn_file
@@ -371,8 +387,8 @@ code. it would be referred to in other routines like so::
 
 
     
-Mapping Entry Points
---------------------
+Mapping v2 Entry Points to v3 Callbacks 
+---------------------------------------
 
 for a comprehensive look at the v3 entry points, have a look at:
 
@@ -425,6 +441,9 @@ v3: receives worklist
     can also be used to work on worklist.failed (retry logic does this.)
 
 examples:
+
+.. Danger:: THERE ARE NO EXAMPLES?!?! 
+            TODO: add some examples
 
 
 on_heartbeat -> on_housekeeping
@@ -483,10 +502,10 @@ To build a message, without a local file, use fromFileInfo sarracenia.message fa
 
 builds an message from scratch.
 
-One can also build an supply a simulated stat record to fromFileInfo factory,
+One can also build and supply a simulated stat record to fromFileInfo factory,
 using the *paramiko.SFTPAttributes()* class. For example, using the dateparser 
-routines to convert however the remote server lists the date and time, as well 
-as determine the file size and permissions in effect::
+routines to convert. However, the remote server lists the date and time, as well 
+as determines the file size and permissions in effect::
 
 
      pollmtime = dateparser.parse( ... , settings={ ... TO_TIMEZONE='utc' } )
@@ -514,18 +533,18 @@ and at the end::
 
  
 
-vip processing in poll
-~~~~~~~~~~~~~~~~~~~~~~
+Virtual IP processing in poll
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you have vip set in v2, all participating nodes poll the upstream server
+In v2 if you have a vIP set, all participating nodes poll the upstream server
 and maintain the list of current files, they just don't publish the result.
-So if you have 8 servers sharing a vip, all eight are polling, kind of sad.
+So if you have 8 servers sharing a vIP, all eight are polling, kind of sad.
 There is also the poll_no_vip setting, and plugins often have to check if they
-have the vip or not.
+have the vIP or not.
 
-In v3, only the server with the vip polls. The plugins don't need to check.
+In v3, only the server with the vIP polls. The plugins don't need to check.
 The other participating servers subscribe to where the poll posts to,
-to keep update their recent_files cache.
+to update their recent_files cache.
 
 examples:
  * flowcb/poll/airnow.py
