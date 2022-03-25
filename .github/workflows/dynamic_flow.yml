@@ -57,6 +57,7 @@ jobs:
     - name: Save run artifacts
       if: always()
       uses: actions/upload-artifact@v2
+      continue-on-error: true
       with:
         name: sr3_${{ env.WHICH_TEST }}_logs_${{ github.sha }}
         path: ~/.cache/sr3/log/
