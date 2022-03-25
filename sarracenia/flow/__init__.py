@@ -881,6 +881,7 @@ class Flow:
                 continue
 
             new_path = msg['new_dir'] + os.path.sep + msg['new_file']
+            new_file = msg['new_file']
 
             if 'oldname' in msg:
                 if 'renameUnlink' in msg:
@@ -1129,7 +1130,7 @@ class Flow:
             #download file
 
             logger.debug('Beginning fetch of %s %s into %s %d-%d' %
-                         (urlstr, str_range, new_file, msg['local_offset'],
+                         (urlstr, str_range, new_inflight_path, msg['local_offset'],
                           msg['local_offset'] + block_length - 1))
 
             # FIXME  locking for i parts in temporary file ... should stay lock
@@ -1154,9 +1155,9 @@ class Flow:
                                  (msg['new_dir'], options.inflight) )
                     logger.debug('Exception details: ', exc_info=True)
 
-            logger.debug( "hasattr=%s, thresh=%d, len=%d, remote_off=%d, local_off=%d " % \
-                ( hasattr( self.proto[self.scheme], 'getAccelerated'),  \
-                self.o.accelThreshold, block_length, remote_offset,  msg['local_offset'] ) )
+            logger.debug( "hasAccel=%s, thresh=%d, len=%d, remote_off=%d, local_off=%d inflight=%s" % \
+                ( hasattr( self.proto[self.scheme], 'getAccelerated' ),  \
+                self.o.accelThreshold, block_length, remote_offset,  msg['local_offset'], new_inflight_path ) )
 
             accelerated = hasattr( self.proto[self.scheme], 'getAccelerated') and \
                 (self.o.accelThreshold > 0 ) and (block_length > self.o.accelThreshold) and \
