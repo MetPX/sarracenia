@@ -130,15 +130,15 @@ class Moth():
        Changing recovery_strategy setting, might result in having to destroy and re-create 
        consumer queues (AMQP.)
 
-       props
-
+       Options
+       -------
 
        both:
-           'topicPrefix' : [ 'v03' ]
-           'messageDebugDump': False, --> enable printing of raw messages.
-           'inline': False,  - Are we inlining content within messages?
-           'inlineEncoding': 'guess', - what encoding should we use for inlined content?
-           'inlineByteMax': 4096,  - Maximum size of messages to inline.
+       * 'topicPrefix' : [ 'v03' ]
+       * 'messageDebugDump': False, --> enable printing of raw messages.
+       * 'inline': False,  - Are we inlining content within messages?
+       * 'inlineEncoding': 'guess', - what encoding should we use for inlined content?
+       * 'inlineByteMax': 4096,  - Maximum size of messages to inline.
 
        for get:
        *  'batch'  : 100  # how many messages to get at once
