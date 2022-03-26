@@ -25,6 +25,8 @@ class MDelayLatest(FlowCB):
     def __init__(self, options):
 
         self.o = options
+        self.stop_requested=False
+        self.suppressions=0
         self.ok_delay = []
         logging.basicConfig(format=self.o.logFormat,
                             level=getattr(logging, self.o.logLevel.upper()))
@@ -52,11 +54,11 @@ class MDelayLatest(FlowCB):
              new_ok_delay=[]
              for m2 in self.ok_delay:
                   if m1['relPath'] == m2['relPath']:
-                       #logger.info('REPLACED')
+                       logger.info( f"intermediate version suppressed: {m1['relPath']}")
+                       self.suppressions+=1
                        new_ok_delay.append(m1)
                        worklist.rejected.append(m2)
                        wait = True
-                       break
                   else:
                        new_ok_delay.append(m2)
                        #new_incoming.append(m1)
@@ -83,9 +85,21 @@ class MDelayLatest(FlowCB):
              #logger.info('Time=%s' %  str(elapsedtime))
              # if it's time, the message is putting back to the ok list to publish
              if elapsedtime >= self.o.mdelay:
-                  logger.info('OK')
+                  #logger.info('OK')
                   worklist.incoming.append(m1)
              else:
                   new_ok_delay.append(m1)
         self.ok_delay=new_ok_delay
 
+        if self.stop_requested:
+            worklist.incoming.extend(self.ok_delay)
+            self.ok_delay=[]
+            logger.info('stop requested, ok_delay queue drained')
+
+    def on_housekeeping(self):
+        logger.info(f'suppressions={self.suppressions} currently delay queue length:{len(self.ok_delay)}')
+        self.suppressions=0
+
+    def please_stop(self):
+        logger.error('acknowledged')
+        self.stop_requested=True
