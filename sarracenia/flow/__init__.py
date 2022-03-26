@@ -186,12 +186,12 @@ class Flow:
 
             plugin = sarracenia.flowcb.load_library(c, self.o)
 
-            #logger.info( 'plugin loading: %s an instance of: %s' % ( c, plugin ) )
+            logger.debug( 'plugin loading: %s an instance of: %s' % ( c, plugin ) )
             for entry_point in sarracenia.flowcb.entry_points:
                 if hasattr(plugin, entry_point):
                     fn = getattr(plugin, entry_point)
                     if callable(fn):
-                        #logger.info( 'registering %s/%s' % (c, entry_point))
+                        logger.debug( 'registering %s/%s' % (c, entry_point))
                         if entry_point in self.plugins:
                             self.plugins[entry_point].append(fn)
                         else:
@@ -257,6 +257,8 @@ class Flow:
         m.setReport( code, reason )
 
     def please_stop(self) -> None:
+        logger.info( f'ok, telling {len(self.plugins["please_stop"])} callbacks about it.')
+        self._runCallbacksTime('please_stop')
         self._stop_requested = True
 
     def close(self) -> None:
@@ -299,12 +301,17 @@ class Flow:
 
         spamming = True
         last_gather_len = 0
+        stopping=False
 
         while True:
 
             if self._stop_requested:
-                logger.info('clean stop from run loop')
-                self.close()
+                if stopping:
+                    logger.info('clean stop from run loop')
+                    self.close()
+                else:
+                    logger.info('starting last pass (without gather) through loop for cleanup.')
+                    stopping=True
                 break
 
             self.have_vip = self.has_vip()
@@ -313,7 +320,11 @@ class Flow:
                 #logger.info("current_rate (%.2f) vs. messageRateMax(%.2f)) " %
                 #            (current_rate, self.o.messageRateMax))
                 self.worklist.incoming = []
-                self.gather()
+
+                if not stopping:
+                    self.gather()
+                else:
+                    self.worklist.incoming=[]
 
                 last_gather_len = len(self.worklist.incoming)
                 if (last_gather_len == 0):
@@ -425,6 +436,7 @@ class Flow:
                     time.sleep(stime)
                 except:
                     logger.info("flow woken abnormally from sleep")
+                    self.please_stop()
 
                 last_time = now
 

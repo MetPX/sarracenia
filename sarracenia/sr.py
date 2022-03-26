@@ -1034,7 +1034,6 @@ class sr_GlobalState:
         except KeyboardInterrupt:
             logging.info("KeyboardInterrupt...")
             logging.info("Stopping config...")
-            self.stop()
 
     def add(self):
 

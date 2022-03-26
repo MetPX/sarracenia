@@ -14,7 +14,8 @@ import sys
 
 entry_points = [
     'ack', 'do_poll', 'download', 'gather', 'after_accept', 'after_work',
-    'on_housekeeping', 'on_report', 'on_start', 'on_stop', 'poll', 'post', 'send'
+    'on_housekeeping', 'on_report', 'on_start', 'on_stop', 'poll', 'post', 
+    'send', 'please_stop'
 ]
 
 schemed_entry_points = ['do_get', 'do_put']
@@ -173,6 +174,10 @@ class FlowCB:
                return True on a successful transfer, False otherwise.
 
          This replaces built-in send functionality for individual files.
+
+    def stop_requested(self):
+         Pre-warn a flowcb that a stop has been requested, allowing processing to wrap up
+         before the full stop happens.
 
     """
 

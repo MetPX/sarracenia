@@ -55,8 +55,8 @@ class WmoTypeSuffix(FlowCB):
                 continue
 
             message['new_file'] = message['new_file'] + type_suffix
-            if 'rename' in message['headers']:
-                message['headers']['rename'] = message['headers']['rename'] + type_suffix
+            if 'rename' in message:
+                message['rename'] = message['rename'] + type_suffix
             new_incoming.append(message)
             # TODO else -> worklist.rejected.append(message) ?? should this be happening at any point?
         worklist.incoming = new_incoming
