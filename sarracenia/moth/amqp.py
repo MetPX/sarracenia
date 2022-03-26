@@ -182,8 +182,6 @@ class AMQP(Moth):
 
         me = "%s.%s" % ( __class__.__module__ , __class__.__name__ )
 
-        logger.setLevel( 'WARNING' )
-
         if ('settings' in self.o) and (me in self.o['settings']):
             for s in self.o['settings'][me]:
                 self.o[s] = self.o['settings'][me][s]
@@ -560,7 +558,7 @@ class AMQP(Moth):
             try:
                 self.channel.basic_publish(AMQP_Message, exchange, topic)
                 self.channel.tx_commit()
-                logger.info("published body: {} headers: {} to {} under: {} ".format(
+                logger.debug("published body: {} headers: {} to {} under: {} ".format(
                     body, headers, exchange, topic))
                 self.metrics['txGoodCount'] += 1
                 return True  # no failure == success :-)
