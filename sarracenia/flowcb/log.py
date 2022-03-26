@@ -118,17 +118,19 @@ class Log(FlowCB):
                 if self.o.logMessageDump:
                      logger.info('message: %s' % msg.dumps() )
 
-    def housekeeping_stats(self):
+    def stats(self):
         tot=self.msgCount+self.rejectCount
-        if tot > 0:
-            rate= 100*self.msgCount/tot
-        else:
-            rate = 0
         how_long = nowflt() - self.last_housekeeping
+        if tot > 0:
+            apc = 100*self.msgCount/tot
+            rate = self.msgCount/how_long
+        else:
+            apc  = 0
+            rate = 0 
 
         logger.info( f"version: {__version__}, started: {humanize.naturaltime(nowflt()-self.started)}, last_housekeeping: {how_long:4.1f} seconds ago ")
-        logger.info( "messages received: %d, accepted: %d, rejected: %d  rate: %5.4g%%" %
-            ( self.msgCount+self.rejectCount, self.msgCount, self.rejectCount, rate ) )
+        logger.info( "messages received: %d, accepted: %d, rejected: %d  %%accepted: %3.1f%% rate: %3.1f m/s" %
+            ( self.msgCount+self.rejectCount, self.msgCount, self.rejectCount, apc, rate ) )
         logger.info( f"files transferred: {self.transferCount} " +\
              f"bytes: {humanize.naturalsize(self.fileBytes,binary=True)} " +\
              f"rate: {humanize.naturalsize(self.fileBytes/how_long, binary=True)}/sec" )
@@ -137,17 +139,17 @@ class Log(FlowCB):
  
     def on_stop(self):
         if set ( ['on_stop', 'all'] ) & self.o.logEvents:
-            self.housekeeping_stats()
+            self.stats()
             logger.info("stopping")
 
     def on_start(self):
         if set ( ['on_start', 'all'] ) & self.o.logEvents:
-            self.housekeeping_stats()
+            self.stats()
             logger.info("starting")
 
     def on_housekeeping(self):
         if set ( ['on_housekeeping', 'all'] ) & self.o.logEvents:
-            self.housekeeping_stats()
+            self.stats()
             logger.info("housekeeping")
         self.__reset()
 
