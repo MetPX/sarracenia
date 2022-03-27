@@ -21,6 +21,7 @@ jobs:
   build:
     name: Run flakey_broker test
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
     
