@@ -177,7 +177,6 @@ class Flow:
 
     def loadCallbacks(self, plugins_to_load):
 
-        #logger.info('imports to load: %s' % (self.o.imports))
         for m in self.o.imports:
             importlib.import_module(m)
 
@@ -201,22 +200,7 @@ class Flow:
                     and callable(getattr(plugin, 'registered_as'))):
                 continue
 
-            schemes = plugin.registered_as()
-            for schemed_entry_point in sarracenia.flowcb.schemed_entry_points:
-                if not hasattr(plugin, schemed_entry_point):
-                    continue
-
-                fn = getattr(plugin, schemed_entry_point)
-                if not callable(fn):
-                    continue
-
-                if not schemed_entry_point in self.plugins:
-                    self.plugins[schemed_entry_point] = {}
-
-                for s in schemes:
-                    self.plugins[schemed_entry_point][s] = fn
-
-        #logger.info( 'plugins initialized')
+        logger.debug('complete')
         self.o.check_undeclared_options()
 
     def _runCallbacksWorklist(self, entry_point):
