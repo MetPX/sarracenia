@@ -1254,10 +1254,10 @@ class Flow:
             #closing on problem
             try:
                 self.proto[self.scheme].close()
-                self.cdir = None
-                self.proto[self.scheme] = None
             except:
                 logger.debug('closing exception details: ', exc_info=True)
+            self.cdir = None
+            self.proto[self.scheme] = None
 
             if os.path.isfile(new_inflight_path):
                 os.remove(new_inflight_path)
@@ -1489,11 +1489,10 @@ class Flow:
             #closing on problem
             try:
                 self.proto[self.scheme].close()
-                self.cdir = None
-                self.proto[self.scheme] = None
-
             except:
                 pass
+            self.cdir = None
+            self.proto[self.scheme] = None
 
             logger.error("Delivery failed %s" % msg['new_dir'] + '/' +
                          msg['new_file'])

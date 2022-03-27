@@ -134,6 +134,8 @@ class Moth():
        -------
 
        both:
+       ~~~~~
+
        * 'topicPrefix' : [ 'v03' ]
        * 'messageDebugDump': False, --> enable printing of raw messages.
        * 'inline': False,  - Are we inlining content within messages?
@@ -141,6 +143,8 @@ class Moth():
        * 'inlineByteMax': 4096,  - Maximum size of messages to inline.
 
        for get:
+       ~~~~~~~~
+
        *  'batch'  : 100  # how many messages to get at once
        *  'broker' : an sr_broker ?
        *  'Queue'  : Mandatory, name of a queue. (only in AMQP... hmm...)
@@ -149,9 +153,13 @@ class Moth():
        *  'loop'
 
        optional:
+       ~~~~~~~~~
+
        *  'message_ttl'    
 
        for put:
+       ~~~~~~~~
+
        *   'exchange' (only in AMQP... hmm...)
        
 
