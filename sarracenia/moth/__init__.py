@@ -61,10 +61,14 @@ class Moth():
         Target protocols (and corresponding libraries.): AMQP, MQTT, ?
 
         Things to specify:
-            broker
-            topicPrefix
-            subTopic  
-            id   (queue for amqp, id for mqtt)
+
+        * broker
+
+        * topicPrefix
+
+        * subTopic  
+
+        * id   (queue for amqp, id for mqtt)
 
         this library knows nothing about Sarracenia, the only code used from sarracenia is to interpret
         duration properties, from the root sarracenia/__init__.py, the broker argument from sarracenia.credentials
@@ -92,9 +96,11 @@ class Moth():
 
         arguments to the factories are:
 
-        broker ... the url of the broker to connect to.
-        props is a dictionary or properties/parameters.
-        supplied as overrides to the default properties listed above.
+        * broker ... the url of the broker to connect to.
+
+        * props is a dictionary or properties/parameters.
+
+        * supplied as overrides to the default properties listed above.
 
         Some may vary among protocols::
  
@@ -112,20 +118,24 @@ class Moth():
 
 
        messaging_strategy:
-         how to manage the connection. Covers whether to treat the connection
-         as new or assume it is set up. Also, If something goes wrong.  
-         What should be done. 
-         
-         * reset: on startup... erase any state, and re-initialize.
-         * stubborn: If set to True, loop forever if something bad happens.  
-           Never give up. This sort of setting is desired in operations, especially unattended.
-           if set to False, may give up more easily.
-         * failure_duration is to advise library how to structure connection service level.
-          
-           * 5m - make a connection that will recover from transient errors of a few minutes,
-             but not tax the broker too much for prolonged outages.
+       ~~~~~~~~~~~~~~~~~~~
 
-           * 5d - duration outage to striving to survive connection for five days.
+       how to manage the connection. Covers whether to treat the connection
+       as new or assume it is set up. Also, If something goes wrong.  
+       What should be done. 
+         
+       * reset: on startup... erase any state, and re-initialize.
+
+       * stubborn: If set to True, loop forever if something bad happens.  
+         Never give up. This sort of setting is desired in operations, especially unattended.
+         if set to False, may give up more easily.
+
+       * failure_duration is to advise library how to structure connection service level.
+          
+         * 5m - make a connection that will recover from transient errors of a few minutes,
+           but not tax the broker too much for prolonged outages.
+
+         * 5d - duration outage to striving to survive connection for five days.
 
        Changing recovery_strategy setting, might result in having to destroy and re-create 
        consumer queues (AMQP.)
@@ -137,17 +147,24 @@ class Moth():
        ~~~~~
 
        * 'topicPrefix' : [ 'v03' ]
+
        * 'messageDebugDump': False, --> enable printing of raw messages.
+
        * 'inline': False,  - Are we inlining content within messages?
+
        * 'inlineEncoding': 'guess', - what encoding should we use for inlined content?
+
        * 'inlineByteMax': 4096,  - Maximum size of messages to inline.
 
        for get:
        ~~~~~~~~
 
        *  'batch'  : 100  # how many messages to get at once
+
        *  'broker' : an sr_broker ?
+
        *  'Queue'  : Mandatory, name of a queue. (only in AMQP... hmm...)
+
        *  'bindings' : [ list of bindings ]
 
        *  'loop'
