@@ -179,9 +179,10 @@ def timeflt2str(f):
     return "{}{}".format(time.strftime("%Y%m%dT%H%M%S", time.gmtime(f)), nsec)
 
 def timeValidate(s) -> bool:
+
     if len(s) < 14: return False
-    if ( s[8] == 'T' ) and ( s[15] != '.' ): return False
-    if ( s[8] != 'T' ) and ( s[14] != '.' ): return False
+    if (len(s) > 14) and ( s[8] != 'T' ) and ( s[14] != '.' ): return False
+    if (len(s) > 15) and ( s[8] == 'T' ) and ( s[15] != '.' ): return False
     if not s[0:8].isalnum() : return False       
     return True
       
