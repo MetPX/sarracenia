@@ -35,6 +35,7 @@ declare env FLOWBROKER=localhost
 declare env SFTPUSER=${USER}
 declare env TESTDOCROOT=${HOME}/sarra_devdocroot
 declare env MQP=amqp
+logEvents after_accept,after_work,on_housekeeping,post
 EOF
 cp ~/.config/sarra/default.conf ~/.config/sr3
 

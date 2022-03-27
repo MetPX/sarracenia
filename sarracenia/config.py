@@ -566,7 +566,7 @@ class Config:
         self.v2plugins = {}
         self.v2plugin_options = []
         self.imports = []
-        self.logEvents = set(['after_accept', 'after_work', 'on_housekeeping', 'post'])
+        self.logEvents = set(['after_accept', 'after_work', 'on_housekeeping' ])
         self.plugins_late = []
         self.plugins_early = []
         self.exchange = None
