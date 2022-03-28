@@ -94,22 +94,6 @@ or changes of the new component.
 .. error:: Need Peter to help ID worthy information in doc/design to pull over to 
     /docs/Explanation/Design/
 
-Updating the Wiki
------------------
-
-The wiki in GitHub is a separate Git project that has been grafted into the main project
-as a subtree in /docs/. This means that any changes to the wiki pages in /docs/ will not
-be updated on the web wiki until the changes are pushed to the subtree. This can be
-achieved by pushing changes to the main project then executing the following command::
-
-  $ git subtree push --squash --prefix docs git@github.com:MetPX/sarracenia.wiki.git master
-
-.. caution:: 
-    Editing things via the web interface will get overwritten. Only make changes to the
-    documentation via the main project's /docs/ folder then push them to the subtree.
-
-The reason this is setup this way, is to allow a single source of documentation with
-multiple access methods for all range of skill levels with the Sarracenia product.
 
 Style Guide
 ~~~~~~~~~~~
