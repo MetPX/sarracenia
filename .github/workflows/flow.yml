@@ -6,7 +6,6 @@ on:
   push:
     branches:
       - v03_wip
-      - v03_wip_gha_matrix
 
   workflow_dispatch:
     inputs:
