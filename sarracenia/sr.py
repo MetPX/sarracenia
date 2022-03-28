@@ -328,6 +328,12 @@ class sr_GlobalState:
                     self.configs[c][cbase]['instances'] = numi
 
                 os.chdir('..')
+        self.basic_configs = []
+        for cfg in os.listdir():
+            if os.path.isfile(cfg):
+                self.basic_configs.append(cfg)
+
+
 
     def _cleanse_credentials(self, savename):
         """
@@ -867,6 +873,9 @@ class sr_GlobalState:
                 fcc = c + os.sep + cfg
                 candidates.append(fcc)
 
+        for c in self.basic_configs:
+            candidates.append(c)
+
         for p in patterns:
             leftover_matches[p] = 0
 
@@ -1163,13 +1172,16 @@ class sr_GlobalState:
     def edit(self):
 
         for f in self.filtered_configurations:
-            if f == 'audit': continue
-            (c, cfg) = f.split(os.sep)
-
-            if not 'options' in self.configs[c][cfg]:
+            if f == 'audit':
                 continue
+            if f in self.basic_configs:
+                cfgfile = self.user_config_dir + os.sep + f
+            else:
+                (c, cfg) = f.split(os.sep)
+                if not 'options' in self.configs[c][cfg]:
+                    continue
+                cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
 
-            cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
             editor = os.environ.get('EDITOR')
 
             if not editor:
