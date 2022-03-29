@@ -13,5 +13,6 @@ class Random(Integrity):
     def value(self):
         return '%.4d' % random.randint(0, 9999)
 
+    @staticmethod
     def registered_as():
         return '0'

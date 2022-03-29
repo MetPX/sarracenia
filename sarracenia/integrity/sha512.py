@@ -13,6 +13,8 @@ class Sha512(Integrity):
     """
       The SHA512 algorithm to checksum the entire file, which is called 's'.
       """
+
+    @staticmethod
     def registered_as():
         return 's'
 
