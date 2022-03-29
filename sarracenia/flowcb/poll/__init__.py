@@ -289,7 +289,7 @@ class Poll(FlowCB):
             sftp_obj = line
         elif type(line) is str and len(line.split()) > 7:
             parts = line.split()
-            sftp_obj = SFTPAttributes()
+            sftp_obj = paramiko.SFTPAttributes()
             sftp_obj.st_mode = self.filemode(parts[0])
             sftp_obj.st_uid = self.fileid(parts[2])
             sftp_obj.st_gid = self.fileid(parts[3])

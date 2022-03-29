@@ -117,7 +117,7 @@ class Message:
     def get_elapse(self):
         return nowflt() - timestr2flt(self.pubtime)
 
-    def set_parts():
+    def set_parts(self):
         logger.info("set_parts not implemented")
         pass
 
