@@ -11,8 +11,6 @@
 import logging
 
 logger = logging.getLogger(__name__)
-
-
 """
   This file was originally a place holder... thought this was not needed, then there was a stack trace.
   and setup.py gets leaves the directory out if not present.

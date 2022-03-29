@@ -24,6 +24,7 @@ from urllib.parse import urlparse, urlunparse
 
 logger = logging.getLogger(__name__)
 
+
 class RedirectedTimedRotatingFileHandler(
         logging.handlers.TimedRotatingFileHandler):
     def doRollover(self):
@@ -66,7 +67,7 @@ class instance:
 
         logging.basicConfig(
             format=
-            '%(asctime)s [%(levelname)s] %(process)d %(name)s %(funcName)s %(message)s', 
+            '%(asctime)s [%(levelname)s] %(process)d %(name)s %(funcName)s %(message)s',
             level=logging.INFO)
 
         # FIXME: honour SR_ variable for moving preferences...
@@ -80,7 +81,7 @@ class instance:
             } )
 
         defconfig = default_cfg_dir + os.sep + "default.conf"
-        if os.path.exists( defconfig ):
+        if os.path.exists(defconfig):
             cfg_preparse.parse_file(defconfig)
         cfg_preparse.parse_args()
 
@@ -117,7 +118,7 @@ class instance:
         else:
             component, config = cfg_preparse.configurations[0].split(os.sep)
 
-        cfg_preparse = sarracenia.config.one_config(component, config)        
+        cfg_preparse = sarracenia.config.one_config(component, config)
 
         # FIXME: do we put explicit error handling here for bad input?
         #        probably worth exploring.
@@ -146,15 +147,16 @@ class instance:
                 hostdir, component, config, cfg_preparse.no)
 
             #print('logfilename= %s' % logfilename )
-            dir_not_there = not os.path.exists( os.path.dirname(logfilename) )
+            dir_not_there = not os.path.exists(os.path.dirname(logfilename))
             while dir_not_there:
                 try:
                     os.makedirs(os.path.dirname(logfilename), exist_ok=True)
-                    dir_not_there = False 
+                    dir_not_there = False
                 except FileExistsError:
-                    dir_not_there = False 
+                    dir_not_there = False
                 except Exception as ex:
-                    logging.error( "makedirs {} failed err={}".format(os.path.dirname(logfilename),err))
+                    logging.error("makedirs {} failed err={}".format(
+                        os.path.dirname(logfilename), err))
                     logging.debug("Exception details:", exc_info=True)
                     os.sleep(1)
 
@@ -206,11 +208,11 @@ class instance:
         cfg = sarracenia.config.one_config(component, config)
 
         if not hasattr(cfg, 'env_declared'):
-            sys.exit(0) 
+            sys.exit(0)
 
         for n in cfg.env_declared:
-            os.environ[n]=cfg.env[n]
-            os.putenv(n,cfg.env[n])
+            os.environ[n] = cfg.env[n]
+            os.putenv(n, cfg.env[n])
 
         self.running_instance = Flow.factory(cfg)
 

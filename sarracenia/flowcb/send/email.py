@@ -30,21 +30,21 @@ import smtplib
 
 logger = logging.getLogger(__name__)
 
-class Email(FlowCB):
 
+class Email(FlowCB):
     def __init__(self, options):
 
         self.o = options
-        self.o.add_option('file_email_command', 'str', '/usr/bin/mail' )
+        self.o.add_option('file_email_command', 'str', '/usr/bin/mail')
         self.o.add_option('file_email_to', 'list')
         self.o.add_option('file_email_from', 'str')
         self.o.add_option('file_email_relay', 'str')
 
-    def send(self,msg):
+    def send(self, msg):
 
         # have a list of email destinations...
         logger.debug("email: %s" % self.o.file_email_to)
-        ipath = os.path.normpath( msg['relPath'] )
+        ipath = os.path.normpath(msg['relPath'])
 
         # loop over all the variables from config file, if files match, send via email
         for header in self.o.file_email_to:
@@ -52,12 +52,10 @@ class Email(FlowCB):
             emails = [x.strip(' ') for x in emails.split(',')]
 
             # check if the file arrived matches any email rules
-            if re.search('^' + file_type + '.*', msg['new_file'] ):
-
+            if re.search('^' + file_type + '.*', msg['new_file']):
 
                 for recipient in emails:
-                    logger.debug('sending file %s to %s' %
-                                        (ipath, recipient))
+                    logger.debug('sending file %s to %s' % (ipath, recipient))
 
                     with open(ipath) as fp:
                         emsg = EmailMessage()
@@ -85,8 +83,7 @@ class Email(FlowCB):
                             'file_email_relay config NOT defined, please define an SMTP (relay) server'
                         )
 
-                    logger.debug("Using email relay server: " +
-                                        email_relay)
+                    logger.debug("Using email relay server: " + email_relay)
                     s = smtplib.SMTP(email_relay)
                     s.send_message(emsg)
                     s.quit()
@@ -94,4 +91,3 @@ class Email(FlowCB):
                     logger.info('sent file %s to %s' % (ipath, recipient))
 
         return True
-

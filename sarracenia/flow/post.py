@@ -26,6 +26,7 @@ default_options = {
 
 #'sumflg': 'sha512',
 
+
 class Post(Flow):
     """
        post messages about local files. 
@@ -34,4 +35,5 @@ class Post(Flow):
 
         super().__init__(options)
         self.plugins['load'].insert(0, 'sarracenia.flowcb.gather.file.File')
-        self.plugins['load'].insert(0, 'sarracenia.flowcb.post.message.Message')
+        self.plugins['load'].insert(0,
+                                    'sarracenia.flowcb.post.message.Message')

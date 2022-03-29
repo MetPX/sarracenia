@@ -111,7 +111,7 @@ class FileMetadata:
                     self.ads.get_stream_content(STREAM_NAME).decode('utf-8'))
 
         if supports_extended_attributes:
-            try: 
+            try:
                 d = xattr.listxattr(path)
                 for i in d:
                     if isinstance(i, bytes):
@@ -121,10 +121,10 @@ class FileMetadata:
                     k = i.replace('user.sr_', '')
                     v = xattr.getxattr(path, i).decode('utf-8')
                     if v[0] == '{':
-                       v= json.loads(v)
+                        v = json.loads(v)
                     self.x[k] = v
             except:
-                   self.x = {}
+                self.x = {}
 
     def __del__(self):
         self.persist()
@@ -181,10 +181,11 @@ class FileMetadata:
                 #set the attributes in the list. encoding utf8...
                 for i in self.x:
                     if type(self.x[i]) is not str:
-                        s=json.dumps(self.x[i])
+                        s = json.dumps(self.x[i])
                     else:
-                        s=self.x[i]
-                    xattr.setxattr(self.path, 'user.sr_' + i, bytes(s, 'utf-8'))
+                        s = self.x[i]
+                    xattr.setxattr(self.path, 'user.sr_' + i,
+                                   bytes(s, 'utf-8'))
         except:
             # not really sure what to do in the exception case...
             # permission would be a normal thing and just silently fail...

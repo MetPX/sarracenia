@@ -19,6 +19,7 @@ from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
 
+
 class RenameDMF(FlowCB):
     def __init__(self, options):
         self.o = options
@@ -32,5 +33,3 @@ class RenameDMF(FlowCB):
             new_incoming.append(message)
 
         worklist.incoming = new_incoming
-
-

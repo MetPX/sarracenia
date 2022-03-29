@@ -85,14 +85,14 @@ class File(FlowCB):
         """
 
         self.o = options
-        
-        logger.setLevel( getattr( logging, self.o.logLevel.upper() ) )
+
+        logger.setLevel(getattr(logging, self.o.logLevel.upper()))
 
         logger.debug("%s used to be overwrite_defaults" % self.o.component)
 
         self.obs_watched = []
         self.watch_handler = None
-        self.post_topicPrefix = [ "v03" ]
+        self.post_topicPrefix = ["v03"]
 
         self.inl = OrderedDict()
         self.new_events = OrderedDict()
@@ -179,7 +179,7 @@ class File(FlowCB):
         msg = sarracenia.Message.fromFileData(path, self.o, lstat)
 
         # complete message
-        if ( self.o.post_topicPrefix[0] == 'v03') and self.o.inline: 
+        if (self.o.post_topicPrefix[0] == 'v03') and self.o.inline:
             if fsiz < self.o.inlineByteMax:
 
                 if self.o.inlineEncoding == 'guess':
@@ -187,11 +187,11 @@ class File(FlowCB):
                     binary = not e or not ('text' in e)
                 else:
                     binary = (self.o.inlineEncoding == 'text')
-    
+
                 f = open(path, 'rb')
                 d = f.read()
                 f.close()
-    
+
                 if binary:
                     msg["content"] = {
                         "encoding": "base64",
@@ -209,10 +209,10 @@ class File(FlowCB):
                             "value": b64encode(d).decode('utf-8')
                         }
             else:
-               if self.o.inlineOnly:
-                   logger.error('skipping file %s too large (%d bytes > %d bytes max)) for inlining' % \
-                      ( path, fsiz, self.o.inlineByteMax )  )
-                   return []
+                if self.o.inlineOnly:
+                    logger.error('skipping file %s too large (%d bytes > %d bytes max)) for inlining' % \
+                       ( path, fsiz, self.o.inlineByteMax )  )
+                    return []
 
         # used when moving a file
 

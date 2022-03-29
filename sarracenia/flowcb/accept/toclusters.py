@@ -17,12 +17,12 @@ Usage:
     ...
 """
 
-
 import os, stat, time
 import logging
 from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
+
 
 class ToClusters(FlowCB):
     def __init__(self, options):
@@ -31,7 +31,8 @@ class ToClusters(FlowCB):
             logger.info("msgToClusters setting mandatory")
             return
 
-        logger.info("msgToClusters valid destinations: %s " % self.o.msgToClusters)
+        logger.info("msgToClusters valid destinations: %s " %
+                    self.o.msgToClusters)
 
     def after_accept(self, worklist):
         new_incoming = []
@@ -41,4 +42,3 @@ class ToClusters(FlowCB):
             else:
                 worklist.rejected.append(message)
         worklist.incoming = new_incoming
-

@@ -46,7 +46,6 @@ logger = logging.getLogger(__name__)
 
 
 class Resources(FlowCB):
-
     def __init__(self, options):
         self.o = options
         # Set option to neg value to determine if user set in config
@@ -62,7 +61,8 @@ class Resources(FlowCB):
     def on_housekeeping(self):
         mem = psutil.Process().memory_info().vms
         ost = os.times()
-        logger.info(f"Current Memory cpu_times: user={ost.user} system={ost.system}")
+        logger.info(
+            f"Current Memory cpu_times: user={ost.user} system={ost.system}")
 
         # We must set a threshold **after** the config file has been parsed.
         if self.threshold is None:
@@ -73,19 +73,25 @@ class Resources(FlowCB):
             if self.threshold is None:
                 # No user input set, now to figure out what our baseline memory usage is at a steady state
                 #   Process MemoryBaseLineFile(s)+ then get a memory reading before setting memory restart threshold.
-                if (self.transferCount < self.o.MemoryBaseLineFile) and (self.msgCount < self.o.MemoryBaseLineFile):
+                if (self.transferCount < self.o.MemoryBaseLineFile) and (
+                        self.msgCount < self.o.MemoryBaseLineFile):
                     # Not enough files processed for steady state, continue to wait..
-                    logger.info(f"Current mem usage: {humanize.naturalsize(mem, binary=True)}, accumulating count "
-                                f"({self.transferCount} or {self.msgCount}/{self.o.MemoryBaseLineFile} so far) "
-                                f"before self-setting threshold")
+                    logger.info(
+                        f"Current mem usage: {humanize.naturalsize(mem, binary=True)}, accumulating count "
+                        f"({self.transferCount} or {self.msgCount}/{self.o.MemoryBaseLineFile} so far) "
+                        f"before self-setting threshold")
                     return True
 
                 self.threshold = int(self.o.MemoryMultiplier * mem)
 
-            logger.info(f"Memory threshold set to: {humanize.naturalsize(self.threshold, binary=True)}")
+            logger.info(
+                f"Memory threshold set to: {humanize.naturalsize(self.threshold, binary=True)}"
+            )
 
-        logger.info(f"Current Memory usage: {humanize.naturalsize(mem, binary=True)} / "
-                    f"{humanize.naturalsize(self.threshold, binary=True)} = {(mem/self.threshold):.2%}")
+        logger.info(
+            f"Current Memory usage: {humanize.naturalsize(mem, binary=True)} / "
+            f"{humanize.naturalsize(self.threshold, binary=True)} = {(mem/self.threshold):.2%}"
+        )
 
         if mem > self.threshold:
             self.restart()
@@ -98,7 +104,9 @@ class Resources(FlowCB):
         Do an in-place restart of the current process (keeps pid).
         Gets a new memory stack/heap, keeps all file descriptors but replaces the buffers.
         """
-        logger.info(f"Memory threshold surpassed! Triggering a restart for '{sys.argv}' via '{sys.executable}'")
+        logger.info(
+            f"Memory threshold surpassed! Triggering a restart for '{sys.argv}' via '{sys.executable}'"
+        )
         # First arg must be the program to be run (absolute path to program)
         # Second arg has to be python for windows, see how this affects the linux side of things..
         # Third arg is the name of the program you wish to run (should be full path to script) plus all the args.
@@ -106,16 +114,20 @@ class Resources(FlowCB):
 
         if sys.platform.startswith(('linux', 'cygwin', 'darwin', 'aix')):
             # Unix* (Linux / Windows/Cygwin / MacOS / AIX) Specific restart
-            os.execl(sys.executable, sys.executable, * sys.argv)
+            os.execl(sys.executable, sys.executable, *sys.argv)
         elif sys.platform.startswith('win32'):
             # Windows Specific restart
-            os.execl(sys.executable, 'python', * sys.argv)
+            os.execl(sys.executable, 'python', *sys.argv)
         else:
-            logger.error(f'Unknown platform type: "{sys.platform}", attempting default unix process restart..')
-            os.execl(sys.executable, sys.executable, * sys.argv)
+            logger.error(
+                f'Unknown platform type: "{sys.platform}", attempting default unix process restart..'
+            )
+            os.execl(sys.executable, sys.executable, *sys.argv)
 
         # Scream out in agony and die
-        logger.critical(f'Plugin resources.py:restart() "execl" failed, this should never be logged.')
+        logger.critical(
+            f'Plugin resources.py:restart() "execl" failed, this should never be logged.'
+        )
         exit(1)
 
     def after_work(self, worklist):

@@ -27,6 +27,7 @@ import logging
 from sarracenia.flowcb import FlowCB
 logger = logging.getLogger(__name__)
 
+
 class Speedo(FlowCB):
     def __init__(self, options):
         """
@@ -59,14 +60,16 @@ class Speedo(FlowCB):
 
             (method, psize, ptot, prem, pno) = msg['partstr'].split(',')
 
-            self.o.msg_speedo_bytecount = self.o.msg_speedo_bytecount + int(psize)
+            self.o.msg_speedo_bytecount = self.o.msg_speedo_bytecount + int(
+                psize)
 
             #not time to report yet.
             if self.o.msgSpeedoInterval > now - self.o.msg_speedo_last:
                 continue
 
             lag = now - msgtime
-            logger.info("speedo: %3d messages received: %5.2g msg/s, %s bytes/s, lag: %4.2g s"
+            logger.info(
+                "speedo: %3d messages received: %5.2g msg/s, %s bytes/s, lag: %4.2g s"
                 % (self.o.msg_speedo_msgcount, self.o.msg_speedo_msgcount /
                    (now - self.o.msg_speedo_last),
                    humanize.naturalsize(self.o.msg_speedo_bytecount /
@@ -77,8 +80,9 @@ class Speedo(FlowCB):
             # Set the maximum age, in seconds, of a message to retrieve.
 
             if lag > self.o.msg_speedo_maxlag:
-                logger.warning("speedo: Excessive lag! Messages posted %s " %
-                               humanize.naturaltime(datetime.timedelta(seconds=lag)))
+                logger.warning(
+                    "speedo: Excessive lag! Messages posted %s " %
+                    humanize.naturaltime(datetime.timedelta(seconds=lag)))
 
             self.o.msg_speedo_last = now
             self.o.msg_speedo_msgcount = 0

@@ -83,7 +83,7 @@ class Message:
 
             self.sumflag = sa
             # transform sum value
-            if sa in ['0','a']:
+            if sa in ['0', 'a']:
                 sv = h["integrity"]["value"]
             elif sa in ['z']:
                 sv = sum_algo_v3tov2[h["integrity"]["value"]]
@@ -203,7 +203,7 @@ class V2Wrapper(FlowCB):
         logging.basicConfig(format=o.logFormat,
                             level=getattr(logging, o.logLevel.upper()))
 
-        logger.setLevel( getattr(logging, o.logLevel.upper()))
+        logger.setLevel(getattr(logging, o.logLevel.upper()))
 
         #logger.info('logging: fmt=%s, level=%s' % ( o.logFormat, o.logLevel ) )
 
@@ -220,7 +220,7 @@ class V2Wrapper(FlowCB):
 
         self.user_cache_dir = sarracenia.config.get_user_cache_dir(hostdir)
 
-        if hasattr(o,'no') :
+        if hasattr(o, 'no'):
             self.instance = o.no
         else:
             self.instance = 0
@@ -291,7 +291,6 @@ class V2Wrapper(FlowCB):
 
         #logger.info('installing: %s %s' % ( opname, path ) )
 
-        
         c1 = set(vars(self))
 
         try:
@@ -374,7 +373,6 @@ class V2Wrapper(FlowCB):
         # set incoming for future steps.
         worklist.ok = outgoing
 
-
     def after_accept(self, worklist):
 
         outgoing = []
@@ -410,17 +408,18 @@ class V2Wrapper(FlowCB):
                                          (v2msg.headers[h] != m[h])):
                 m[h] = v2msg.headers[h]
 
-        if v2msg.new_dir != m['new_dir'] :
-           m['new_dir'] = v2msg.new_dir
-           relpath = m['new_dir'] + '/' + v2msg.new_file
-           if self.o.post_baseDir: relpath=relpath.replace( self.o.post_baseDir, '', 1 )
-           m['new_relPath'] = relpath
+        if v2msg.new_dir != m['new_dir']:
+            m['new_dir'] = v2msg.new_dir
+            relpath = m['new_dir'] + '/' + v2msg.new_file
+            if self.o.post_baseDir:
+                relpath = relpath.replace(self.o.post_baseDir, '', 1)
+            m['new_relPath'] = relpath
 
         if v2msg.baseurl != m['baseUrl']:
             m['baseUrl'] = v2msg.baseurl
- 
-        if hasattr(v2msg,'new_file'):
-            if ( 'new_file' not in m ) or ( m['new_file'] != v2msg.new_file ):
+
+        if hasattr(v2msg, 'new_file'):
+            if ('new_file' not in m) or (m['new_file'] != v2msg.new_file):
                 m['new_file'] = v2msg.new_file
 
         if hasattr(
@@ -433,7 +432,7 @@ class V2Wrapper(FlowCB):
            run plugins for a given entry point.
         """
         self.msg = Message(m)
-        self.msg.topic = '.'.join( self.o.topicPrefix + m['subtopic'] )
+        self.msg.topic = '.'.join(self.o.topicPrefix + m['subtopic'])
         self.o.msg = self.msg
         if hasattr(self.msg, 'partstr'):
             self.o.partstr = self.msg.partstr

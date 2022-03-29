@@ -23,6 +23,7 @@ import logging
 from sarracenia.flowcb import FlowCB
 logger = logging.getLogger(__name__)
 
+
 class WmoTypeSuffix(FlowCB):
     def __init__(self, options):
         self.o = options
@@ -46,7 +47,7 @@ class WmoTypeSuffix(FlowCB):
             type_suffix = self.find_type(message['new_file'][0:2])
             # FIXME confused as to how this could ever be true since find_type never returns "UNKNOWN"
             if type_suffix == 'UNKNOWN':
-                new_incoming.append(message) #FIXME or should we reject here?
+                new_incoming.append(message)  #FIXME or should we reject here?
                 continue
 
             # file name already has suffix

@@ -70,12 +70,14 @@ class ToLocal(FlowCB):
             # TODO should all these be logger.error? should we append
             #  to worklist.rejected or worklist.failed at some point?
             logger.error("input: urlstr: %s" % message['urlstr'])
-    
-            message['savedurl'] = self.o.lurlre.match(message['urlstr']).group(1)
-            message['urlstr'] = 'file:/%s' % self.o.lurlre.sub(self.o.ldocroot + '/', message['urlstr'])
-    
+
+            message['savedurl'] = self.o.lurlre.match(
+                message['urlstr']).group(1)
+            message['urlstr'] = 'file:/%s' % self.o.lurlre.sub(
+                self.o.ldocroot + '/', message['urlstr'])
+
             logger.error("doc_root=%s " % (self.o.baseDir))
-            logger.error("output: urlstr: %s saved url: %s" % (message['urlstr'], message['savedurl']))
+            logger.error("output: urlstr: %s saved url: %s" %
+                         (message['urlstr'], message['savedurl']))
             new_incoming.append(message)
         worklist.incoming = new_incoming
-

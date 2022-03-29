@@ -12,15 +12,13 @@ import logging
 import os
 import paramiko
 
-import sarracenia 
+import sarracenia
 import sarracenia.config
 from sarracenia.flow import Flow
 import sarracenia.transfer
 import stat
 import pytz
 import sys, time
-
-
 
 logger = logging.getLogger(__name__)
 
@@ -44,10 +42,9 @@ default_options = {
     'rename': None,
     'post_on_start': False,
     'sleep': -1,
-    'nodupe_ttl': 7*60*60,
-    'nodupe_fileAgeMax': 30*24*60*60,
+    'nodupe_ttl': 7 * 60 * 60,
+    'nodupe_fileAgeMax': 30 * 24 * 60 * 60,
 }
-
 
 #  'sumflg': 'cod,md5',
 
@@ -73,10 +70,11 @@ class Poll(Flow):
             self.plugins['load'].append('sarracenia.flowcb.poll.Poll')
 
         if options.vip:
-            self.plugins['load'].insert(0,'sarracenia.flowcb.gather.message.Message')
+            self.plugins['load'].insert(
+                0, 'sarracenia.flowcb.gather.message.Message')
 
-        self.plugins['load'].insert(0,'sarracenia.flowcb.post.message.Message')
-
+        self.plugins['load'].insert(0,
+                                    'sarracenia.flowcb.post.message.Message')
 
     def gather(self):
 
@@ -87,6 +85,3 @@ class Poll(Flow):
                 new_incoming = plugin()
                 if len(new_incoming) > 0:
                     self.worklist.incoming.extend(new_incoming)
-
-       
-

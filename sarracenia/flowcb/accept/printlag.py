@@ -38,6 +38,6 @@ class PrintLag(FlowCB):
             then = timestr2flt(message['pubTime'])
             now = nowflt()
 
-            logger.info("print_lag, posted: %s, lag: %.2f sec. to deliver: %s, " %
-                    (message['pubTime'], (now - then), message['new_file']))
-
+            logger.info(
+                "print_lag, posted: %s, lag: %.2f sec. to deliver: %s, " %
+                (message['pubTime'], (now - then), message['new_file']))

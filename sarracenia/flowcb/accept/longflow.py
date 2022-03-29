@@ -17,6 +17,7 @@ from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
 
+
 class LongFlow(FlowCB):
     def __init__(self, options):
         self.o = options
@@ -25,8 +26,3 @@ class LongFlow(FlowCB):
         for message in worklist.incoming:
             logger.info('setting toolong header')
             message['headers']['toolong'] = '1234567890ßñç' * 26
-
-
-
-
-

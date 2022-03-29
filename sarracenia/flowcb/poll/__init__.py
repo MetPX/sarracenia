@@ -13,7 +13,7 @@ import logging
 import os
 import paramiko
 
-import sarracenia 
+import sarracenia
 import sarracenia.config
 from sarracenia.flowcb import FlowCB
 import sarracenia.transfer
@@ -22,7 +22,6 @@ import pytz
 import sys, time
 
 logger = logging.getLogger(__name__)
-
 
 
 def file_size_fix(str_value) -> int:
@@ -53,35 +52,35 @@ file_type_dict = {
     'b': 0o060000,  # block device
     'd': 0o040000,  # directory
     'c': 0o020000,  # character device
-    'p': 0o010000   # fifo (named pipe)
+    'p': 0o010000  # fifo (named pipe)
 }
 
 
 def modstr2num(self, m) -> int:
-        mode = 0
-        if (m[0] == 'r'): mode += 4
-        if (m[1] == 'w'): mode += 2
-        if (m[2] == 'x'): mode += 1
-        return mode
+    mode = 0
+    if (m[0] == 'r'): mode += 4
+    if (m[1] == 'w'): mode += 2
+    if (m[2] == 'x'): mode += 1
+    return mode
 
 
 def filemode(self, modstr) -> int:
-        mode = 0
-        mode += file_type_dict[modstr[0]]
-        mode += self.modstr2num(modstr[1:4]) << 6
-        mode += self.modstr2num(modstr[4:7]) << 3
-        mode += self.modstr2num(modstr[7:10])
-        return mode
+    mode = 0
+    mode += file_type_dict[modstr[0]]
+    mode += self.modstr2num(modstr[1:4]) << 6
+    mode += self.modstr2num(modstr[4:7]) << 3
+    mode += self.modstr2num(modstr[7:10])
+    return mode
+
 
 def fileid(self, id) -> int:
-        if id.isnumeric():
-            return int(id)
-        else:
-            return None
+    if id.isnumeric():
+        return int(id)
+    else:
+        return None
 
 
 class Poll(FlowCB):
-
     """
       The Poll flow callback class implements the main logic for polling remote resources.
       the *poll* routine returns a list of messages for new files to be filtered. 
@@ -138,7 +137,7 @@ class Poll(FlowCB):
         routine to deal with that.
 
 
-    """ 
+    """
     def handle_starttag(self, tag, attrs):
         for attr in attrs:
             c, n = attr
@@ -172,7 +171,7 @@ class Poll(FlowCB):
 
         self.mysize = file_size_fix(words[-1])
 
-        entry  = paramiko.SFTPAttributes()
+        entry = paramiko.SFTPAttributes()
         entry.st_mtime = time.mktime(t)
 
         if self.myfname[-1] != '/':
@@ -180,9 +179,8 @@ class Poll(FlowCB):
         else:
             entry.st_mode = stat.S_IFDIR | 0o755
 
-        self.entries[ self.myfname ] = entry
+        self.entries[self.myfname] = entry
         self.myfname = None
-
 
     def on_html_page(self, data) -> dict:
         """
@@ -207,8 +205,8 @@ class Poll(FlowCB):
       HTML Parsing begine
 
     """
-    def __init__(self, options):
 
+    def __init__(self, options):
 
         self.o = options
 
@@ -251,7 +249,6 @@ class Poll(FlowCB):
 
         self.on_html_parser_init()
 
-
     def cd(self, path):
         try:
             self.dest.cd(path)
@@ -260,24 +257,27 @@ class Poll(FlowCB):
             logger.warning("sr_poll/cd: could not cd to directory %s" % path)
         return False
 
-    def filedate(self,line):
+    def filedate(self, line):
         line_split = line.split()
         file_date = line_split[5] + " " + line_split[6] + " " + line_split[7]
         current_date = datetime.datetime.now(pytz.utc)
         # case 1: the date contains '-' implies the date is in 1 string not 3 seperate ones, and H:M is also provided
         if "-" in file_date: file_date = line_split[5] + " " + line_split[6]
-        standard_date_format = dateparser.parse(file_date,
-                                                settings={
-                                                    'RELATIVE_BASE': datetime.datetime(current_date.year, 1, 1),
-                                                    'TIMEZONE': self.o.timezone, #turn this into an option - should be EST for mtl
-                                                    'TO_TIMEZONE': 'UTC'})
+        standard_date_format = dateparser.parse(
+            file_date,
+            settings={
+                'RELATIVE_BASE': datetime.datetime(current_date.year, 1, 1),
+                'TIMEZONE': self.o.
+                timezone,  #turn this into an option - should be EST for mtl
+                'TO_TIMEZONE': 'UTC'
+            })
         if standard_date_format is not None:
             # case 2: the year was not given, it is defaulted to 1900. Must find which year (this one or last one).
             if standard_date_format.month - current_date.month >= 6:
-                standard_date_format = standard_date_format.replace(year=(current_date.year - 1))
+                standard_date_format = standard_date_format.replace(
+                    year=(current_date.year - 1))
         timestamp = datetime.datetime.timestamp(standard_date_format)
         return timestamp
-
 
     def on_line(self, line) -> paramiko.SFTPAttributes:
         """
@@ -296,12 +296,12 @@ class Poll(FlowCB):
             sftp_obj.st_size = int(parts[4])
             sftp_obj.st_mtime = self.filedate(line)
             sftp_obj.filename = parts[-1]
-            sftp_obj.longname= line
-        if 'sftp_obj' in locals() and ((sftp_obj.st_mode & self.o.chmod) == self.o.chmod):
+            sftp_obj.longname = line
+        if 'sftp_obj' in locals() and ((sftp_obj.st_mode
+                                        & self.o.chmod) == self.o.chmod):
             return sftp_obj
         else:
             return None
-
 
     def lsdir(self):
 
@@ -322,7 +322,7 @@ class Poll(FlowCB):
                 line = ls[f]
 
                 line = self.on_line(line)
-                if (line is None) or (line == ""): 
+                if (line is None) or (line == ""):
                     continue
                 if stat.S_ISDIR(line.st_mode):
                     new_dir[f] = line
@@ -399,7 +399,7 @@ class Poll(FlowCB):
 
         post_relPath = destDir + '/' + remote_file
 
-        logger.debug('desc: type: %s, value: %s' % ( type(desc), desc) )
+        logger.debug('desc: type: %s, value: %s' % (type(desc), desc))
 
         if type(desc) == str:
             line = desc.split()
@@ -407,11 +407,11 @@ class Poll(FlowCB):
             st.st_size = int(line[4])
             # actionally only need to convert normalized time to number here...
             # just being lazy...
-            lstime = dateparser.parse( line[5] + " " + line[6] ).timestamp()
+            lstime = dateparser.parse(line[5] + " " + line[6]).timestamp()
             st.st_mtime = lstime
             st.st_atime = lstime
 
-            desc=st
+            desc = st
 
         msg = sarracenia.Message.fromFileInfo(post_relPath, self.o, desc)
 
@@ -452,7 +452,7 @@ class Poll(FlowCB):
     # False means, go to sleep and retry after sleep seconds
     # =============
 
-    def poll(self) -> list :
+    def poll(self) -> list:
 
         # General Attributes
 

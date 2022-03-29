@@ -24,6 +24,7 @@ from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
 
+
 class Clamav(FlowCB):
     """
        Invoke ClamAV anti-virus scanning on files as they pass through a data pump.
@@ -40,10 +41,9 @@ class Clamav(FlowCB):
 
         self.o = options
         self.av = pyclamd.ClamdAgnostic()
-        self.metric_scanned=0
-        self.metric_hits=0
+        self.metric_scanned = 0
+        self.metric_hits = 0
         print("clam_scan on_part plugin initialized")
-
 
     def avscan_hit(self, scanfn) -> bool:
 
@@ -64,33 +64,32 @@ class Clamav(FlowCB):
                     (end - start, scanfn))
         return True
 
-    def after_accept(self,worklist) -> None:
-        if self.o.component in ['sender','post','watch']:
-            new_incoming=[]
+    def after_accept(self, worklist) -> None:
+        if self.o.component in ['sender', 'post', 'watch']:
+            new_incoming = []
             for m in worklist.incoming:
                 scanfn = m['new_dir'] + os.sep + m['new_file']
-                logger.info( f'scanning: {scanfn}' )
+                logger.info(f'scanning: {scanfn}')
                 if self.avscan_hit(scanfn):
-                   worklist.rejected.append(m)
+                    worklist.rejected.append(m)
                 else:
-                   new_incoming.append(m)
+                    new_incoming.append(m)
             worklist.incoming = new_incoming
 
-    def after_work(self,worklist) -> None:
-        if self.o.component in ['subscribe','sarra']:
-            new_ok=[]
+    def after_work(self, worklist) -> None:
+        if self.o.component in ['subscribe', 'sarra']:
+            new_ok = []
             for m in worklist.ok:
                 scanfn = m['new_dir'] + os.sep + m['new_file']
-                logger.info( f'scanning: {scanfn}' )
+                logger.info(f'scanning: {scanfn}')
                 if self.avscan_hit(scanfn):
-                   worklist.rejected.append(m)
+                    worklist.rejected.append(m)
                 else:
-                   new_ok.append(m)
+                    new_ok.append(m)
             worklist.ok = new_ok
 
     def on_housekeeping(self):
-        logger.info( f'files scanned {self.metric_scanned}, hits: {self.metric_hits} ' )
-        self.metric_scanned=0
-        self.metric_hits=0
-       
-
+        logger.info(
+            f'files scanned {self.metric_scanned}, hits: {self.metric_hits} ')
+        self.metric_scanned = 0
+        self.metric_hits = 0

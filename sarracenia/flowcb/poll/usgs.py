@@ -51,20 +51,21 @@ import urllib.request
 
 logger = logging.getLogger(__name__)
 
+
 class Usgs(FlowCB):
     def __init__(self, options):
 
         self.o = options
-        self.o.add_option('poll_usgs_station', 'list' )
+        self.o.add_option('poll_usgs_station', 'list')
 
         # Parse sitecodes from file if provided, or the usgs website (turns excel spreadsheet into pandas
         # dataframe, parses from there)
-        self.sitecodes=[]
+        self.sitecodes = []
         if hasattr(self.o, 'poll_usgs_station'):
             for s in self.o.poll_usgs_station:
                 items = s.split('|')
                 self.sitecodes.append(items[2])
-            logger.info('%d stations declared' % len(self.sitecodes) )
+            logger.info('%d stations declared' % len(self.sitecodes))
         else:
             df = pd.read_excel(
                 'https://water.usgs.gov/osw/hcdn-2009/HCDN-2009_Station_Info.xlsx'
@@ -76,13 +77,11 @@ class Usgs(FlowCB):
             mult = True
             chunk_size = int(self.o.batch)
 
-
-
     def poll(self):
 
         run_time = datetime.datetime.utcnow().strftime('%Y%m%d_%H%M')
-        
-        gathered_messages=[]
+
+        gathered_messages = []
         if self.o.batch > 1:
             file_cnt = 0
             for sites in [
@@ -91,17 +90,19 @@ class Usgs(FlowCB):
             ]:
                 stns = ','.join([s for s in sites])
                 file_cnt += 1
-                logger.debug( 'getting: %s' % self.o.destination.format(stns) )
+                logger.debug('getting: %s' % self.o.destination.format(stns))
 
                 status_code = urllib.request.urlopen(
                     self.o.destination.format(stns)).getcode()
                 if status_code == 200:
                     logger.info("poll_usgs file updated %s" %
                                 self.o.destination.format(stns))
-                    
+
                     self.o.msg.new_baseurl = self.o.destination.format(stns)
 
-                    m = sarracenia.Message.fromFileInfo( 'usgs_{0}_sites{1}.xml'.format( run_time, file_cnt), self.o)
+                    m = sarracenia.Message.fromFileInfo(
+                        'usgs_{0}_sites{1}.xml'.format(run_time, file_cnt),
+                        self.o)
                     gathered_messages.append(m)
                 elif status_code == 403:
                     logger.error(
@@ -113,14 +114,15 @@ class Usgs(FlowCB):
                                  self.o.destination.format(stns))
         else:  # Get stations one at a time
             for site in self.sitecodes:
-                logger.debug( 'getting: %s' % self.o.destination.format(site) )
+                logger.debug('getting: %s' % self.o.destination.format(site))
                 status_code = urllib.request.urlopen(
                     self.o.destination.format(site)).getcode()
                 if status_code == 200:
                     logger.info("poll_usgs file updated %s" %
                                 self.o.destination.format(site))
                     self.o.msg.new_baseurl = self.o.destination.format(site)
-                    m = sarracenia.Message.fromFileInfo( 'usgs_{0}_{1}.xml'.format( run_time, site), self.o)
+                    m = sarracenia.Message.fromFileInfo(
+                        'usgs_{0}_{1}.xml'.format(run_time, site), self.o)
                     gathered_messages.append(m)
                 elif status_code == 403:
                     logger.error(
@@ -131,4 +133,3 @@ class Usgs(FlowCB):
                     logger.debug("poll_usgs file not found: %s" %
                                  self.o.destination.format(site))
         return gathered_messages
-

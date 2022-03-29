@@ -1,17 +1,13 @@
-
-
-
 import logging
 import paramiko
 import sarracenia
 from sarracenia import nowflt, timestr2flt
 from sarracenia.flowcb.poll import Poll
 
-
 logger = logging.getLogger(__name__)
 
-class Nasa_mls_nrt(Poll):
 
+class Nasa_mls_nrt(Poll):
     def handle_data(self, data):
         """
            decode some HTML into an SFTPAttributes record for a file.
@@ -23,9 +19,9 @@ class Nasa_mls_nrt(Poll):
         st.filename = data
 
         if 'MLS-Aura' in data:
-               logger.debug("data %s" %data)
-               self.entries[data]=st
+            logger.debug("data %s" % data)
+            self.entries[data] = st
 
-               logger.info("(%s) = %s" % (self.myfname,st))
-        if self.myfname == None : return
-        if self.myfname == data : return
+            logger.info("(%s) = %s" % (self.myfname, st))
+        if self.myfname == None: return
+        if self.myfname == data: return

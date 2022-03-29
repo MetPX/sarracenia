@@ -37,6 +37,7 @@ from urllib.parse import unquote
 
 logger = logging.getLogger(__name__)
 
+
 class Https(Transfer):
     """
     HyperText Transfer Protocol (HTTP)  ( https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol ) 
@@ -159,7 +160,8 @@ class Https(Transfer):
         if 'retPath' in msg:
             url = self.destination + msg['retPath']
         else:
-            url = self.destination + '/' + urllib.parse.quote( self.path + '/' + remote_file )
+            url = self.destination + '/' + urllib.parse.quote(self.path + '/' +
+                                                              remote_file)
 
         ok = self.__open__(url, remote_offset, length)
 
@@ -178,8 +180,8 @@ class Https(Transfer):
         arg1 = arg1.replace(' ', '\ ')
         arg2 = local_file
 
-        cmd = self.o.accelWgetCommand.replace( '%s', arg1 )
-        cmd = cmd.replace( '%d', arg2 ).split()
+        cmd = self.o.accelWgetCommand.replace('%s', arg1)
+        cmd = cmd.replace('%d', arg2).split()
         logger.info("accel_wget: %s" % ' '.join(cmd))
         p = subprocess.Popen(cmd)
         p.wait()
@@ -215,7 +217,7 @@ class Https(Transfer):
 
         self.entries = {}
 
-        url = self.destination + '/' + urllib.parse.quote( self.path )
+        url = self.destination + '/' + urllib.parse.quote(self.path)
 
         ok = self.__open__(url)
 
@@ -223,7 +225,7 @@ class Https(Transfer):
 
         # get html page for directory
 
-        if True : #try:
+        if True:  #try:
             dbuf = None
             while True:
                 alarm_set(self.o.timeout)
@@ -242,7 +244,7 @@ class Https(Transfer):
             #        logger.warning("something wrong")
             #        return self.entries
 
-        else: #except:
+        else:  #except:
             logger.warning("sr_http/ls: unable to open %s" % self.urlstr)
             logger.debug('Exception details: ', exc_info=True)
 

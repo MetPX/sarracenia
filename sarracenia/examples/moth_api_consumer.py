@@ -13,12 +13,13 @@ import socket
 options = sarracenia.moth.default_options
 options.update(sarracenia.moth.amqp.default_options)
 
-broker = sarracenia.credentials.Credential('amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
+broker = sarracenia.credentials.Credential(
+    'amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
 
 # binding tuple:  consists of prefix, exchange, rest.
 # effect is to bind from queue using prefix/rest to exchange.
-options['topicPrefix'] = [ 'v02', 'post' ]
-options['bindings'] = [ ('xpublic', [ 'v02', 'post'] , [ '#' ] )]
+options['topicPrefix'] = ['v02', 'post']
+options['bindings'] = [('xpublic', ['v02', 'post'], ['#'])]
 
 # turn on debug output for these classes.
 #options['settings'] = { 'sarracenia.moth.mqtt.MQTT': { 'logLevel':'debug' }}
@@ -33,17 +34,17 @@ print('options: %s' % options)
 
 h = sarracenia.moth.Moth.subFactory(broker, options)
 
-count=0
+count = 0
 while count < 5:
     m = h.getNewMessage()
     if m is not None:
         print("message: %s" % m)
-        content = m.getContent() 
+        content = m.getContent()
         print("corresponding file: %s" % content)
         h.ack(m)
     time.sleep(0.1)
     count += 1
 
-print(' got %d messages' % count )
+print(' got %d messages' % count)
 h.cleanup()
 h.close()

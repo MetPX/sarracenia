@@ -18,6 +18,7 @@ import logging
 from sarracenia.flowcb import FlowCB
 logger = logging.getLogger(__name__)
 
+
 class SundewPxRoute(FlowCB):
     def __init__(self, options):
         """
@@ -59,7 +60,8 @@ class SundewPxRoute(FlowCB):
                         self.ahls_to_route[words[1]] = True
         pxrf.close()
 
-        logger.debug("sundew_pxroute For %s, the following headers are routed %s" %
+        logger.debug(
+            "sundew_pxroute For %s, the following headers are routed %s" %
             (self.o.pxClient[0], self.ahls_to_route.keys()))
 
     def after_accept(self, worklist):
@@ -80,5 +82,3 @@ class SundewPxRoute(FlowCB):
                 logger.debug("sundew_pxroute no, do not deliver: %s, " % ahl)
                 worklist.rejected.append(message)
         worklist.incoming = new_incoming
-
-

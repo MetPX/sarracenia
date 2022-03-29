@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
    rabbitmq administration bindings, to allow sr to invoke broker management functions.
 
@@ -34,7 +33,7 @@ def exec_rabbitmqadmin(url, options, simulate=False):
         command = rabbitmqadmin
         command += ' --host \'' + url.hostname
         command += '\' --user \'' + url.username
-        command += '\' -p \'' + urllib.parse.unquote( url.password )
+        command += '\' -p \'' + urllib.parse.unquote(url.password)
         command += '\' --format raw_json '
         if url.scheme == 'amqps':
             command += ' --ssl --port=15671 '
@@ -187,7 +186,8 @@ def broker_get_exchanges(url, ssl_key_file=None, ssl_cert_file=None):
     else:
         conn = http.client.HTTPConnection(url.hostname, "15672")
 
-    bcredentials = bytes(url.username + ':' + urllib.parse.unquote( url.password ), "utf-8")
+    bcredentials = bytes(
+        url.username + ':' + urllib.parse.unquote(url.password), "utf-8")
     b64credentials = base64.b64encode(bcredentials).decode("ascii")
     headers = {"Authorization": "Basic " + b64credentials}
 

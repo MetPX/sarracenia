@@ -25,9 +25,9 @@ default_options = {
         'failure_duration': '5m'
     },
     'message_ttl': 0,
-    'topicPrefix' : [ 'v03' ],
-    'tlsRigour'  : 'normal'
-    }
+    'topicPrefix': ['v03'],
+    'tlsRigour': 'normal'
+}
 
 
 class Moth():
@@ -218,9 +218,9 @@ class Moth():
         self.metricsReset()
 
         if (sys.version_info.major == 3) and (sys.version_info.minor < 7):
-            self.o={}
-            for k in default_options: 
-                if k== 'masks':
+            self.o = {}
+            for k in default_options:
+                if k == 'masks':
                     self.o[k] = default_options[k]
                 else:
                     self.o[k] = copy.deepcopy(default_options[k])
@@ -243,7 +243,7 @@ class Moth():
         logging.basicConfig(format=self.o['logFormat'],
                             level=getattr(logging, self.o['logLevel'].upper()))
 
-    def ack(self, message ) -> None:
+    def ack(self, message) -> None:
         """
           tell broker that a given message has been received.
 
@@ -258,8 +258,8 @@ class Moth():
 
         """
         return Moth.__default_options
-    
-    def getNewMessage(self) -> sarracenia.Message :
+
+    def getNewMessage(self) -> sarracenia.Message:
         """
         If there is one new message available, return it. Otherwise return None. Do not block.
 
@@ -299,12 +299,12 @@ class Moth():
         return False
 
     def metricsReset(self) -> None:
-        self.metrics['rxByteCount']=0
-        self.metrics['rxGoodCount']=0
-        self.metrics['rxBadCount']=0
-        self.metrics['txByteCount']=0
-        self.metrics['txGoodCount']=0
-        self.metrics['txBadCount']=0
+        self.metrics['rxByteCount'] = 0
+        self.metrics['rxGoodCount'] = 0
+        self.metrics['rxBadCount'] = 0
+        self.metrics['txByteCount'] = 0
+        self.metrics['txGoodCount'] = 0
+        self.metrics['txBadCount'] = 0
 
     def metricsReport(self) -> tuple:
         return self.metrics
@@ -319,12 +319,10 @@ class Moth():
         """
           get rid of server-side resources associated with a client. (queues/id's, etc...)
         """
-        if self.is_subscriber:  
+        if self.is_subscriber:
             self.getCleanUp()
-        else:  
+        else:
             self.putCleanUp()
-
-
 
 
 import importlib.util

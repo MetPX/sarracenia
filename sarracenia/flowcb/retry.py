@@ -48,15 +48,14 @@ class Retry(FlowCB):
 
         self.o = options
 
-        self.download_retry_name =  'work_retry_%02d' % options.no
-        self.download_retry = DiskQueue( options, self.download_retry_name )
-        self.post_retry_name =  'post_retry_%03d' % options.no
-        self.post_retry = DiskQueue( options, self.post_retry_name )
+        self.download_retry_name = 'work_retry_%02d' % options.no
+        self.download_retry = DiskQueue(options, self.download_retry_name)
+        self.post_retry_name = 'post_retry_%03d' % options.no
+        self.post_retry = DiskQueue(options, self.post_retry_name)
 
-        logger.setLevel(getattr( logging, self.o.logLevel.upper()))
+        logger.setLevel(getattr(logging, self.o.logLevel.upper()))
         logger.debug('logLevel=%s' % self.o.logLevel)
 
-   
     def cleanup(self) -> None:
         self.download_retry.cleanup()
         self.post_retry.cleanup()
@@ -65,7 +64,7 @@ class Retry(FlowCB):
         """
           if there are only a few new messages, then get some from the retry list.
         """
-  
+
         qty = (self.o.batch / 2) - len(worklist.incoming)
         #logger.info('qty: %d len(worklist.incoming) %d' % ( qty, len(worklist.incoming) ) )
 
@@ -76,7 +75,6 @@ class Retry(FlowCB):
         #logger.debug("loading from %s: qty=%d ... got: %d " % (self.download_retry_name, qty, len(mlist)))
         if len(mlist) > 0:
             worklist.incoming.extend(mlist)
-
 
     def after_work(self, worklist) -> None:
         """
@@ -100,10 +98,9 @@ class Retry(FlowCB):
         if len(mlist) > 0:
             worklist.ok.extend(mlist)
 
-
     def after_post(self, worklist) -> None:
         self.post_retry.put(worklist.failed)
-        worklist.failed=[]
+        worklist.failed = []
         pass
 
     def on_housekeeping(self) -> None:

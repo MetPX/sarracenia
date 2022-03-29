@@ -12,6 +12,7 @@ from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
 
+
 class TRACE_ON_STOP(FlowCB):
     def __init__(self):
         pass
@@ -29,4 +30,3 @@ class TRACE_ON_STOP(FlowCB):
                            "\n" + tb_output.getvalue()             + "\n" + \
                            "\n****************************************\n")
         tb_output.close()
-

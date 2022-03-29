@@ -11,7 +11,6 @@ import urllib.parse
 
 import logging
 
-
 from sarracenia import nowflt, timestr2flt
 
 from sarracenia.flowcb import FlowCB
@@ -54,7 +53,7 @@ class NoDupe(FlowCB):
         if hasattr(options, 'nodupe_ttl'):
             self.o.nodupe_ttl = options.nodupe_ttl
 
-        logger.info( 'time_to_live=%d, ' % ( self.o.nodupe_ttl ) )
+        logger.info('time_to_live=%d, ' % (self.o.nodupe_ttl))
 
         self.cache_dict = {}
         self.cache_file = None
@@ -84,7 +83,7 @@ class NoDupe(FlowCB):
         self.last_time = self.now
         self.last_count = new_count
 
-    def check(self, key, relpath ):
+    def check(self, key, relpath):
         # not found
         self.cache_hit = None
         qpath = urllib.parse.quote(relpath)
@@ -118,19 +117,20 @@ class NoDupe(FlowCB):
 
     def check_message(self, msg):
 
-        if ( 'nodupe_override' in msg ) and ( 'key' in msg['nodupe_override'] ):
-            key=msg['nodupe_override']['key']
-        else: 
-            key = msg['integrity']['method'] + ',' + msg['integrity']['value'].replace('\n', '')
+        if ('nodupe_override' in msg) and ('key' in msg['nodupe_override']):
+            key = msg['nodupe_override']['key']
+        else:
+            key = msg['integrity']['method'] + ',' + msg['integrity'][
+                'value'].replace('\n', '')
 
             if msg['integrity']['method'] in ['cod']:
                 if 'mtime' in msg:
-                    key = "%s,%s" % ( msg['integrity']['method'],msg['mtime'] )
+                    key = "%s,%s" % (msg['integrity']['method'], msg['mtime'])
                 elif 'size' in msg:
-                    key = "%s,%s" % ( msg['integrity']['method'],msg['size'] )
-        
-        if ( 'nodupe_override' in msg ) and ( 'path' in msg['nodupe_override'] ):
-            path=msg['nodupe_override']['path']
+                    key = "%s,%s" % (msg['integrity']['method'], msg['size'])
+
+        if ('nodupe_override' in msg) and ('path' in msg['nodupe_override']):
+            path = msg['nodupe_override']['path']
         else:
             # FIXME:
             # with SFTP sometimes relpaths are absolute, but other servers participating in poll (sharing the vip)
@@ -138,7 +138,7 @@ class NoDupe(FlowCB):
             # perhaps there is a better answer.
             path = msg['relPath'].lstrip('/')
 
-        logger.debug("NoDupe calling check( %s, %s )" % ( key, path ) )
+        logger.debug("NoDupe calling check( %s, %s )" % (key, path))
         return self.check(key, path)
 
     def after_accept(self, worklist):
@@ -150,10 +150,10 @@ class NoDupe(FlowCB):
             min_mtime = 0
 
         for m in worklist.incoming:
-            if ('mtime' in m ) and (timestr2flt(m['mtime']) < min_mtime):
+            if ('mtime' in m) and (timestr2flt(m['mtime']) < min_mtime):
                 m['_deleteOnPost'] |= set(['reject'])
                 m['reject'] = "too old (nodupe check)"
-                m.setReport( 304, 'too old (nodupe check)')
+                m.setReport(304, 'too old (nodupe check)')
                 worklist.rejected.append(m)
                 continue
             if self.check_message(m):
@@ -161,7 +161,7 @@ class NoDupe(FlowCB):
             else:
                 m['_deleteOnPost'] |= set(['reject'])
                 m['reject'] = "not modifified 1 (nodupe check)"
-                m.setReport( 304, 'Not modified 1 (cache check)')
+                m.setReport(304, 'Not modified 1 (cache check)')
                 worklist.rejected.append(m)
 
         worklist.incoming = new_incoming

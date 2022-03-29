@@ -11,62 +11,64 @@ import socket
 import urllib.request
 import xml.etree.ElementTree as ET
 
-broker = sarracenia.credentials.Credential('amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
+broker = sarracenia.credentials.Credential(
+    'amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
 
 options = sarracenia.moth.default_options
 options.update(sarracenia.moth.amqp.default_options)
-options['topicPrefix'] = [ 'v02', 'post' ]
-options['bindings'] = [( 'xpublic', ['v02', 'post'] , ['*', 'WXO-DD', 'observations', 'swob-ml', '#'] )]
-options['queueName'] = 'q_anonymous_' + socket.getfqdn() + '_SomethingHelpfulToYou'
+options['topicPrefix'] = ['v02', 'post']
+options['bindings'] = [('xpublic', ['v02', 'post'],
+                        ['*', 'WXO-DD', 'observations', 'swob-ml', '#'])]
+options['queueName'] = 'q_anonymous_' + socket.getfqdn(
+) + '_SomethingHelpfulToYou'
 
 #print('options: %s' % options)
 
 h = sarracenia.moth.Moth.subFactory(broker, options)
 
-count=0
+count = 0
 
 while count < 10:
     messages = h.newMessages()
     for m in messages:
         dataUrl = m['baseUrl']
         if 'retPath' in m:
-           dataUrl += m['retPath']
+            dataUrl += m['retPath']
         else:
-           dataUrl += m['relPath']
+            dataUrl += m['relPath']
 
-        print("url %d: %s" % (count,dataUrl) )
-        with urllib.request.urlopen( dataUrl ) as f:
+        print("url %d: %s" % (count, dataUrl))
+        with urllib.request.urlopen(dataUrl) as f:
             vxml = f.read().decode('utf-8')
             xmlData = ET.fromstring(vxml)
-            
-            stn_name=''
-            tc_id=''
-            lat=''
-            lon=''
-            air_temp=''
-            
+
+            stn_name = ''
+            tc_id = ''
+            lat = ''
+            lon = ''
+            air_temp = ''
+
             for i in xmlData.iter():
                 name = i.get('name')
-                if name == 'stn_nam' :
-                   stn_name= i.get('value')
-                elif name == 'tc_id' :
-                   tc_id = i.get('value')
-                elif name == 'lat' :
-                   lat =  i.get('value')
-                elif name == 'long' :
-                   lon  = i.get('value')
-                elif name == 'air_temp' :
-                   air_temp = i.get('value')
+                if name == 'stn_nam':
+                    stn_name = i.get('value')
+                elif name == 'tc_id':
+                    tc_id = i.get('value')
+                elif name == 'lat':
+                    lat = i.get('value')
+                elif name == 'long':
+                    lon = i.get('value')
+                elif name == 'air_temp':
+                    air_temp = i.get('value')
 
-            print( 'station: %s, tc_id: %s, lat: %s, long: %s, air_temp: %s' % 
-                   ( stn_name, tc_id, lat, lon, air_temp  ))
+            print('station: %s, tc_id: %s, lat: %s, long: %s, air_temp: %s' %
+                  (stn_name, tc_id, lat, lon, air_temp))
         h.ack(m)
         count += 1
         if count > 10:
             break
     time.sleep(1)
 
-h.cleanup() # remove server-side queue defined by Factory.
+h.cleanup()  # remove server-side queue defined by Factory.
 h.close()
 print("obtained 10 product announcements")
-

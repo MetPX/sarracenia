@@ -16,6 +16,7 @@ from sarracenia import nowflt, timestr2flt
 
 logger = logging.getLogger(__name__)
 
+
 class File_Age(FlowCB):
     def __init__(self, options):
         logger.debug("file_age initialized")
@@ -29,6 +30,5 @@ class File_Age(FlowCB):
         mtime = timestr2flt(self.o.msg['headers']['mtime'])
         age = now - mtime
         logger.info("file_age %g seconds for %s" %
-                           (age, self.o.msg['new_file']))
+                    (age, self.o.msg['new_file']))
         return None
-

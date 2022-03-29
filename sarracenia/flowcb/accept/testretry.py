@@ -15,6 +15,7 @@ from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
 
+
 class TestRetry(FlowCB):
     def __init__(self, options):
         self.o = options
@@ -23,7 +24,7 @@ class TestRetry(FlowCB):
         self.details_bad = None
         self.msg_baseUrl_bad = 'sftp://ruser:rpass@retryhost'
 
-    def  after_accept(self, worklist):
+    def after_accept(self, worklist):
         new_incoming = []
         for message in worklist.incoming:
             logger.debug("testretry")
@@ -41,7 +42,8 @@ class TestRetry(FlowCB):
                 ok, self.o.details = self.o.credentials.get(self.destination)
 
                 # FIXME dont see 'set_notice' as an entry in the message dictionary, could cause an error
-                message['set_notice'](self.msg_baseUrl_good, message['relPath'], message['pubTime'])
+                message['set_notice'](self.msg_baseUrl_good,
+                                      message['relPath'], message['pubTime'])
 
             # original message :  50% chance of breakage
             elif random.randint(0, 2):
@@ -49,10 +51,13 @@ class TestRetry(FlowCB):
                 # if sarra or subscribe break download
                 if self.o.component != 'sr_sender':
                     logger.debug("making it bad 1")
-                    ok, self.o.details = self.o.credentials.get(self.destination)
+                    ok, self.o.details = self.o.credentials.get(
+                        self.destination)
 
                     # FIXME dont see 'set_notice' as an entry in the message dictionary, could cause an error
-                    message['set_notice'](self.msg_baseUrl_bad, message['relpath'], message['pubTime'])
+                    message['set_notice'](self.msg_baseUrl_bad,
+                                          message['relpath'],
+                                          message['pubTime'])
 
                 # if sender break destination
                 else:
@@ -60,10 +65,9 @@ class TestRetry(FlowCB):
                     self.o.sleep_connect_try_interval_max = 1.0
                     self.o.destination = self.msg_baseUrl_bad
                     self.o.credentials.parse(self.msg_baseUrl_bad)
-                    ok, self.o.details = self.o.credentials.get(self.msg_baseUrl_bad)
+                    ok, self.o.details = self.o.credentials.get(
+                        self.msg_baseUrl_bad)
 
             logger.debug("return from msg_test_retry")
             # TODO not sure where to add to new_incoming. as of now not appending to new_incoming or worklist.rejected
         worklist.incoming = new_incoming
-
-
