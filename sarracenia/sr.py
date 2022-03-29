@@ -125,7 +125,7 @@ class sr_GlobalState:
                     except FileExistsError:
                         dir_not_there = False 
                     except Exception as ex:
-                        logging.error( "makedirs {} failed err={}".format(os.path.dirname(lfn),err))
+                        logging.error( "makedirs {} failed err={}".format(os.path.dirname(lfn),ex))
                         logging.debug("Exception details:", exc_info=True)
                         os.sleep(1)
                 

@@ -182,7 +182,7 @@ def broker_get_exchanges(url, ssl_key_file=None, ssl_cert_file=None):
     path = "/api/exchanges?columns=name"
 
     if url.scheme == 'amqps':
-        conn = http.client.HTTPSConnection(hostname, "15671", ssl_key_file,
+        conn = http.client.HTTPSConnection(url.hostname, "15671", ssl_key_file,
                                            ssl_cert_file)
     else:
         conn = http.client.HTTPConnection(url.hostname, "15672")

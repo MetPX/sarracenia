@@ -1842,15 +1842,15 @@ class Config:
             namespace._resolve_exchange()
 
             if not hasattr(namespace, 'broker'):
-                raise 'broker needed before subtopic'
+                raise Exception('broker needed before subtopic')
                 return
 
             if not hasattr(namespace, 'exchange'):
-                raise 'exchange needed before subtopic'
+                raise Exception('exchange needed before subtopic')
                 return
 
             if not hasattr(namespace, 'topicPrefix'):
-                raise 'topicPrefix needed before subtopic'
+                raise Exception('topicPrefix needed before subtopic')
                 return
 
             if type(namespace.topicPrefix) is str:
