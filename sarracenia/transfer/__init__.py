@@ -380,14 +380,14 @@ class Transfer():
 
     # throttle
     def throttle(self, buf):
-        logger.debug("sr_proto throttle")
+        logger.debug("check")
         self.tbytes = self.tbytes + len(buf)
         span = self.tbytes / self.o.byteRateMax
         rspan = nowflt() - self.tbegin
         if span > rspan:
             stime = span - rspan
             if stime > 10:
-                logger.debug("sr_proto throttle sleeping for %.2f" % stime)
+                logger.info( f"exceeded byteRateMax: {self.o.byteRateMax} sleeping for {stime:.2f}" )
             time.sleep(stime)
 
     # write_chunk

@@ -8,6 +8,7 @@ command line, python, and C users.
 
 Home page: https://metpx.github.io/sarracenia 
 
+Discussions: https://github.com/MetPX/sarracenia/discussions
 Source Repo: https://github.com/MetPX/sarracenia/tree/v03_wip
 
 .. image:: https://img.shields.io/pypi/v/metpx-sarracenia?style=flat
