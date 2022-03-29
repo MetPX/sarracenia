@@ -50,7 +50,7 @@ Caveats:
 
 * meteorological *real-time* (seconds to minutes.) not electronic real-time (microseconds)
 
-*  This new web-site is for version 3 currently under development in the v03_wip branch
+*  This new web-site is for version 3 currently under development in the v03_wip branch.
    Users of stable version 2 should go https://github.com/MetPX/sarracenia/tree/v2_stable
    instead. 
 
