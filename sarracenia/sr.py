@@ -289,41 +289,40 @@ class sr_GlobalState:
                         state = 'include'
                         continue
                     else:
-                        cbase = cfg
-                        state = 'unknown'
+                        # No need to store the file as a config if it doesn't end in .conf or .inc
+                        continue
 
                     self.configs[c][cbase] = {}
                     self.configs[c][cbase]['status'] = state
-                    if state != 'unknown':
-                        cfgbody = copy.deepcopy(self.default_cfg)
-                        cfgbody.override({
-                            'component': c,
-                            'config': cbase,
-                            'directory': '${PWD}'
-                        })
-                        cfgbody.applyComponentDefaults( c )
-                        cfgbody.parse_file(cfg)
-                        cfgbody.fill_missing_options(c, cfg)
-                        self.configs[c][cbase]['options'] = cfgbody
-                        # ensure there is a known value of instances to run.
-                        if c in ['poll', 'post', 'cpost']:
-                            if hasattr(cfgbody,
-                                       'sleep') and cfgbody.sleep not in [
-                                           '-', '0'
-                                       ]:
-                                numi = 1
-                        elif hasattr(cfgbody, 'instances'):
-                            numi = int(cfgbody.instances)
-                        else:
+                    cfgbody = copy.deepcopy(self.default_cfg)
+                    cfgbody.override({
+                        'component': c,
+                        'config': cbase,
+                        'directory': '${PWD}'
+                    })
+                    cfgbody.applyComponentDefaults( c )
+                    cfgbody.parse_file(cfg)
+                    cfgbody.fill_missing_options(c, cfg)
+                    self.configs[c][cbase]['options'] = cfgbody
+                    # ensure there is a known value of instances to run.
+                    if c in ['poll', 'post', 'cpost']:
+                        if hasattr(cfgbody,
+                                   'sleep') and cfgbody.sleep not in [
+                                       '-', '0'
+                                   ]:
                             numi = 1
-                        if ( numi > 1 ) and \
-                           hasattr(cfgbody,'exchangeSplit'):
-                            print( 'exchange: %s split: %d' % \
-                               (cfgbody.exchange, numi) )
-                            l = []
-                            for i in range(0, numi):
-                                l.append(cfgbody.exchange + '%02d' % i)
-                            cfgbody.exchange = l
+                    elif hasattr(cfgbody, 'instances'):
+                        numi = int(cfgbody.instances)
+                    else:
+                        numi = 1
+                    if ( numi > 1 ) and \
+                       hasattr(cfgbody,'exchangeSplit'):
+                        print( 'exchange: %s split: %d' % \
+                           (cfgbody.exchange, numi) )
+                        l = []
+                        for i in range(0, numi):
+                            l.append(cfgbody.exchange + '%02d' % i)
+                        cfgbody.exchange = l
 
                     self.configs[c][cbase]['instances'] = numi
 
@@ -977,7 +976,7 @@ class sr_GlobalState:
             'sender', 'shovel', 'subscribe', 'watch', 'winnow'
         ]
         self.status_values = [
-            'disabled', 'include', 'stopped', 'partial', 'running', 'unknown'
+            'disabled', 'include', 'stopped', 'partial', 'running'
         ]
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
