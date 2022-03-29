@@ -26,7 +26,7 @@ default_options = {
     },
     'message_ttl': 0,
     'topicPrefix' : [ 'v03' ],
-    'tls_rigour'  : 'normal'
+    'tlsRigour'  : 'normal'
     }
 
 

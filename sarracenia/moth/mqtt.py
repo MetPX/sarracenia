@@ -203,14 +203,14 @@ class MQTT(Moth):
         """
         if self.broker.url.scheme[-1] == 's' :
             port=8883
-            logger.info('tls_rigour: %s' % self.o['tls_rigour'] )
-            self.o['tls_rigour'] = self.o['tls_rigour'].lower()
-            if self.o['tls_rigour'] == 'lax':
+            logger.info('tlsRigour: %s' % self.o['tlsRigour'] )
+            self.o['tlsRigour'] = self.o['tlsRigour'].lower()
+            if self.o['tlsRigour'] == 'lax':
                     self.tlsctx = ssl.create_default_context()
                     self.tlsctx.check_hostname = False
                     self.tlsctx.verify_mode = ssl.CERT_NONE
      
-            elif self.o['tls_rigour'] == 'strict':
+            elif self.o['tlsRigour'] == 'strict':
                     self.tlsctx = ssl.SSLContext(ssl.PROTOCOL_TLS)
                     self.tlsctx.options |= ssl.OP_NO_TLSv1
                     self.tlsctx.options |= ssl.OP_NO_TLSv1_1
@@ -220,10 +220,10 @@ class MQTT(Moth):
                     # TODO Find a way to reintroduce certificate revocation (CRL) in the future
                     #  self.tlsctx.verify_flags = ssl.VERIFY_CRL_CHECK_CHAIN
                     #  https://github.com/MetPX/sarracenia/issues/330
-            elif self.o['tls_rigour'] == 'normal':
+            elif self.o['tlsRigour'] == 'normal':
                 self.tlsctx = ssl.create_default_context()
             else:
-                self.logger.warning( "option tls_rigour must be one of:  lax, normal, strict")
+                self.logger.warning( "option tlsRigour must be one of:  lax, normal, strict")
             self.client.tls_set_context(self.tlsctx)
         else:
             port=1883

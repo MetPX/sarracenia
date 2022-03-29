@@ -128,7 +128,7 @@ str_options = [
     'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
     'post_exchange_suffix', 'queueName',
     'report_exchange', 'strip', 'timezone', 'nodupe_ttl',
-    'nodupe_basis', 'tls_rigour', 'vip'
+    'nodupe_basis', 'tlsRigour', 'vip'
 ]
 """
    for backward compatibility, 
@@ -528,6 +528,7 @@ class Config:
         'sum' : 'integrity',  
         'suppress_duplicates' : 'nodupe_ttl',
         'suppress_duplicates_basis' : 'nodupe_basis', 
+        'tls_rigour' : 'tlsRigour',
         'topic_prefix' : 'topicPrefix'
     }
     credentials = None
@@ -599,7 +600,7 @@ class Config:
         self.settings = {}
         self.strip = 0
         self.timeout = 300
-        self.tls_rigour = 'normal'
+        self.tlsRigour = 'normal'
         self.topicPrefix = [ 'v03', 'post' ]
         self.undeclared = []
         self.declared_users = {}

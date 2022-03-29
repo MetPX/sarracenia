@@ -56,14 +56,14 @@ class Https(Transfer):
         logger.debug("sr_http __init__")
 
         self.tlsctx = ssl.create_default_context()
-        if hasattr(self.o, 'tls_rigour'):
-            self.o.tls_rigour = self.o.tls_rigour.lower()
-            if self.o.tls_rigour == 'lax':
+        if hasattr(self.o, 'tlsRigour'):
+            self.o.tlsRigour = self.o.tlsRigour.lower()
+            if self.o.tlsRigour == 'lax':
                 self.tlsctx = ssl.create_default_context()
                 self.tlsctx.check_hostname = False
                 self.tlsctx.verify_mode = ssl.CERT_NONE
 
-            elif self.o.tls_rigour == 'strict':
+            elif self.o.tlsRigour == 'strict':
                 self.tlsctx = ssl.SSLContext(ssl.PROTOCOL_TLS)
                 self.tlsctx.options |= ssl.OP_NO_TLSv1
                 self.tlsctx.options |= ssl.OP_NO_TLSv1_1
@@ -73,11 +73,11 @@ class Https(Transfer):
                 # TODO Find a way to reintroduce certificate revocation (CRL) in the future
                 #  self.tlsctx.verify_flags = ssl.VERIFY_CRL_CHECK_CHAIN
                 #  https://github.com/MetPX/sarracenia/issues/330
-            elif self.o.tls_rigour == 'normal':
+            elif self.o.tlsRigour == 'normal':
                 pass
             else:
                 logger.warning(
-                    "option tls_rigour must be one of:  lax, normal, strict")
+                    "option tlsRigour must be one of:  lax, normal, strict")
 
         self.init()
 
