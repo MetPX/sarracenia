@@ -1388,7 +1388,7 @@ class Flow:
                 if ('blocks' in msg) and (
                         msg['blocks']['method'] == 'inplace'):
                     block_length = msg['blocks']['size']
-                    str_range = 'bytes=%d-%d' % (remote_offset, remote_offset +
+                    str_range = 'bytes=%d-%d' % (new_offset, new_offset +
                                                  block_length - 1)
 
             str_range = ''
@@ -1427,7 +1427,7 @@ class Flow:
                     len_written = self.proto[self.scheme].putAccelerated( msg, local_file, new_inflight_path)
                 else:
                     len_written = self.proto[self.scheme].put(msg, local_file, new_inflight_path)
-                proto.rename(new_inflight_path, new_file)
+                self.proto.rename(new_inflight_path, new_file)
             elif options.inflight[-1] == '/':
                 try:
                     self.proto[self.scheme].cd_forced(
