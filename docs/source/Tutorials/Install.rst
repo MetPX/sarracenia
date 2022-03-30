@@ -56,7 +56,7 @@ It is straightforward to do that just the essentials::
 
 or add the extras::
 
-  $ pip install metpx-sr3[amqp,mqtt,ssh,vip]  
+  $ pip install metpx-sr3[amqp,mqtt,sftp,vip]  
 
 and to upgrade after the initial installation::
 
