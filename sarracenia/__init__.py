@@ -44,12 +44,12 @@ import urllib.request
 
 logger = logging.getLogger(__name__)
 
+
 extras = { 
    'amqp' : { 'module_needed': 'amqp', 'present': False },
    'ftppoll' : { 'module_needed': 'dateparser', 'present': False },
    'mqtt' : { 'module_needed': 'paho.mqtt.client', 'present': False },
-   'sftp' : { 'module_needed': 'paramiko', 'present': False },
-   'vip'  : { 'module_needed': 'netifaces' , 'present': False },
+   'vip'  : { 'module_needed': 'netifaces' , 'present': False }
 }
 
 for x in extras:
@@ -64,8 +64,9 @@ for x in extras:
 if extras['mqtt']['present']:
    import paho.mqtt.client
    if not hasattr( paho.mqtt.client, 'MQTTv5' ):
-       # mqtt is too old to be useful.
+       # without v5 support, mqtt is not useful.
        extras['mqtt']['present'] = False
+
 
 class Sarracenia:
     """

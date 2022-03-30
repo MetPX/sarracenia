@@ -66,13 +66,12 @@ setup(
         'Topic :: System :: Logging',
     ],
     install_requires=[
-        "appdirs", "humanfriendly", "humanize", "jsonpickle", 
+        "appdirs", "humanfriendly", "humanize", "jsonpickle", "paramiko",
         "psutil>=5.3.0", "watchdog"
     ],
     extras_require = {
        'amqp' : [ "amqp" ],
        'ftppoll' : ['dateparser' ],
        'mqtt': [ 'patho.mqtt.client' ],
-       'sftp' : [ 'paramiko' ],
        'vip': [ 'netifaces' ]
     }) 

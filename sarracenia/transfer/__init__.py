@@ -423,7 +423,5 @@ class Transfer():
 import sarracenia.transfer.file
 import sarracenia.transfer.ftp
 import sarracenia.transfer.https
-
-if sarracenia.extras['sftp']['present']:
-    import sarracenia.transfer.sftp
+import sarracenia.transfer.sftp
 
