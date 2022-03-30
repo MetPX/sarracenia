@@ -1842,17 +1842,34 @@ class sr_GlobalState:
     def config_converter(self):
         c_v2, cfg_v2 = self.v2_config[0].split(os.sep)
         v2_config = c_v2 + os.sep + cfg_v2 + '.conf'
-        v2_config_path = self.user_config_dir.replace('sr3','sarra') + os.sep + v2_config
-        v3_config_path = self.user_config_dir +  os.sep + v2_config
+        v2_config_path = self.user_config_dir.replace('sr3', 'sarra') + os.sep + v2_config
+        v3_config_path = self.user_config_dir + os.sep + v2_config
 
         print(v2_config_path)
         print(v3_config_path)
 
-        # from sarracenia.config import convert_to_v3
+        from sarracenia.config import convert_to_v3
+        synonyms = sarracenia.config.Config.synonyms
         with open(v3_config_path, 'w') as v3_cfg:
-            with open(v2_config_path,'r') as v2_cfg:
+            with open(v2_config_path, 'r') as v2_cfg:
                 for line in v2_cfg.readlines():
-                    v3_cfg.write(line)
+                    if (len(line) < 1) or (line[0].startswith('#')) or (line == '\n'):
+                        v3_cfg.write(line)
+                        continue
+                    line = line.strip().split()
+                    k = line[0]
+                    if k in synonyms:
+                        k = synonyms[k]
+
+                    if k in convert_to_v3:
+                        pass
+
+                    if k == 'continue':
+                        continue
+
+
+
+
 
 
 
