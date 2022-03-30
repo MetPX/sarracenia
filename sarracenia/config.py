@@ -69,6 +69,7 @@ default_options = {
     'inlineOnly': False,
     'integrity_method': 'sha512',
     'logStdout': False,
+    'nodupe_ttl': 0,
     'overwrite': True,
     'permDefault': 0,
     'permDirDefault': 0o775,
@@ -78,7 +79,7 @@ default_options = {
     'post_baseUrl': None,
     'realpath_post': False,
     'report': False,
-    'nodupe_ttl': 0
+    'sourceFromExchange': False
 }
 
 count_options = [
@@ -638,6 +639,7 @@ class Config:
         self.randid = "%04x" % randint(0, 65536)
         self.statehost = False
         self.settings = {}
+        self.source = None
         self.strip = 0
         self.timeout = 300
         self.tlsRigour = 'normal'
@@ -781,6 +783,8 @@ class Config:
                 repval = getattr(self, e)
                 if type(repval) is list:
                     repval = repval[0]
+                elif repval is None:
+                    repval = ''
                 result = result.replace('${' + E + '}', repval)
                 continue
 
@@ -1343,6 +1347,28 @@ class Config:
                     setattr(self, k, v)
                     self.undeclared.append(k)
 
+    def get_source_from_exchange(self, exchange):
+        """
+           given an exhange extract a user name.
+        """
+
+        source = None
+        if len(exchange) < 4 or not exchange.startswith('xs_') : return source
+
+        # check if source is a valid declared source user
+        len_u   = 0
+        try:
+                # look for user with appropriate role
+                for u in self.declared_users :
+                    if self.declared_users[u] not in [ 'source', 'feeder' ]: 
+                       continue
+                    if exchange[3:].startswith(u) and len(u) > len_u :
+                       source = u
+                       len_u  = len(u)
+        except: pass
+
+        return source
+
     def fill_missing_options(self, component, config):
         """ 
          There are default options that apply only if they are not overridden... 
@@ -1453,6 +1479,9 @@ class Config:
                     self.exchange = self.post_exchange[0]
                 if (not hasattr(self, 'broker') or not self.broker):
                     self.broker = self.post_broker
+
+        if self.sourceFromExchange and self.exchange:
+           self.source = self.get_source_from_exchange(self.exchange)
 
         if self.broker is not None and self.broker.url is not None:
 
