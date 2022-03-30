@@ -18,12 +18,12 @@ import sarracenia
 
 if sarracenia.extras['ftppoll']['present']:
     import dateparser
+    import pytz
 
 import sarracenia.config
 from sarracenia.flowcb import FlowCB
 import sarracenia.transfer
 import stat
-import pytz
 import sys, time
 
 logger = logging.getLogger(__name__)

@@ -46,20 +46,26 @@ logger = logging.getLogger(__name__)
 
 
 extras = { 
-   'amqp' : { 'module_needed': 'amqp', 'present': False },
-   'ftppoll' : { 'module_needed': 'dateparser', 'present': False },
-   'mqtt' : { 'module_needed': 'paho.mqtt.client', 'present': False },
-   'vip'  : { 'module_needed': 'netifaces' , 'present': False }
+   'amqp' : { 'modules_needed': [ 'amqp' ], 'present': False },
+   'ftppoll' : { 'modules_needed': ['dateparser', 'pytz'], 'present': False },
+   'mqtt' : { 'modules_needed': ['paho.mqtt.client'], 'present': False },
+   'vip'  : { 'modules_needed': ['netifaces'] , 'present': False }
 }
 
 for x in extras:
+   
+   extras[x]['present']=True
+   for y in  extras[x]['modules_needed']:
+       try:
+           if importlib.util.find_spec( y ):
+               pass
+           else:
+               logger.debug( f"extra feature {x} needs missing module {y}. Disabled" ) 
+               extras[x]['present']=False
+       except:
+           logger.debug( f"extra feature {x} needs missing module {y}. Disabled" ) 
+           extras[x]['present']=False
 
-   try:
-       if importlib.util.find_spec( extras[x]['module_needed'] ):
-           extras[x]['present']=True
-   except:
-       logger.debug( f"extra feature {x} needs missing module {extras[x]['module_needed']}. Disabled" ) 
-       pass
 
 if extras['mqtt']['present']:
    import paho.mqtt.client

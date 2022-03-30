@@ -120,10 +120,6 @@ class Transfer():
     @staticmethod
     def factory(proto, options) -> 'Transfer':
 
-        if ( proto == 'sftp' ) and not sarracenia.extras['sftp']['present']:
-            logger.error( f" ssh support missing, please install {sarracenia.extras['ssh']['module_needed']} " )
-            return None
-
         for sc in Transfer.__subclasses__():
             if (hasattr(sc, 'registered_as')
                     and (proto in sc.registered_as())):
