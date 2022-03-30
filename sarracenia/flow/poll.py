@@ -4,21 +4,8 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, 2008-2021
 #
 
-import sarracenia.moth
-import copy
-import dateparser
-import datetime
-import logging
-import os
-import paramiko
-
-import sarracenia
-import sarracenia.config
 from sarracenia.flow import Flow
-import sarracenia.transfer
-import stat
-import pytz
-import sys, time
+import logging
 
 logger = logging.getLogger(__name__)
 

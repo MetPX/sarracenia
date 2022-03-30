@@ -1588,6 +1588,8 @@ class Config:
                 logger.info(
                     'overriding batch for consistency with messageCountMax: %d'
                     % self.batch)
+        if self.vip and not sarracenia.extras['vip']['present']:
+            logger.error( f"vip feature requested, but library {sarracenia.extras['vip']['module_needed']} " )
 
     def check_undeclared_options(self):
 

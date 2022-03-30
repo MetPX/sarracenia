@@ -324,20 +324,8 @@ class Moth():
         else:
             self.putCleanUp()
 
+if sarracenia.extras['amqp']['present']:
+    import sarracenia.moth.amqp
 
-import importlib.util
-
-try:
-    if importlib.util.find_spec("amqp"):
-        import sarracenia.moth.amqp
-except Exception as ex:
-    logger.warning('No amqp module found support for rabbitmq brokers disabled')
-
-# require AMQPv5 support.
-try:
-    if importlib.util.find_spec("paho.mqtt.client"):
-        import paho.mqtt.client
-    if hasattr(paho.mqtt.client,'MQTTv5'):
-        import sarracenia.moth.mqtt
-except Exception as ex:
-    logger.warning('No paho.mqtt.client library found with MQTT support (>= 1.5.1) mqtt support disabled')
+if sarracenia.extras['mqtt']['present']:
+    import sarracenia.moth.mqtt

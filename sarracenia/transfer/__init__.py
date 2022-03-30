@@ -120,6 +120,10 @@ class Transfer():
     @staticmethod
     def factory(proto, options) -> 'Transfer':
 
+        if ( proto == 'sftp' ) and not sarracenia.extras['sftp']['present']:
+            logger.error( f" ssh support missing, please install {sarracenia.extras['ssh']['module_needed']} " )
+            return None
+
         for sc in Transfer.__subclasses__():
             if (hasattr(sc, 'registered_as')
                     and (proto in sc.registered_as())):
@@ -415,20 +419,11 @@ class Transfer():
         self.rw_length = 0
         if self.o.timeout: alarm_set(self.o.timeout)
 
-import importlib.util
-
-try:
-    if importlib.util.find_spec('ftplib'):
-        import sarracenia.transfer.ftp
-except Exception as ex:
-    logger.warning('no ftplib module found. Disabling ftp support')
-
-try:
-    if importlib.util.find_spec('paramiko'):
-        import sarracenia.transfer.sftp
-except Exception as ex:
-    logger.warning('no paramiko module found. Disabling sftp support')
-
 # batteries included.
-import sarracenia.transfer.https
 import sarracenia.transfer.file
+import sarracenia.transfer.ftp
+import sarracenia.transfer.https
+
+if sarracenia.extras['sftp']['present']:
+    import sarracenia.transfer.sftp
+

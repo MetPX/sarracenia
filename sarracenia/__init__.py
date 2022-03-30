@@ -30,6 +30,7 @@ __version__ = "3.00.014"
 from base64 import b64decode, b64encode
 import calendar
 import datetime
+import importlib.util
 import logging
 import os
 import os.path
@@ -43,6 +44,28 @@ import urllib.request
 
 logger = logging.getLogger(__name__)
 
+extras = { 
+   'amqp' : { 'module_needed': 'amqp', 'present': False },
+   'ftppoll' : { 'module_needed': 'dateparser', 'present': False },
+   'mqtt' : { 'module_needed': 'paho.mqtt.client', 'present': False },
+   'sftp' : { 'module_needed': 'paramiko', 'present': False },
+   'vip'  : { 'module_needed': 'netifaces' , 'present': False },
+}
+
+for x in extras:
+
+   try:
+       if importlib.util.find_spec( extras[x]['module_needed'] ):
+           extras[x]['present']=True
+   except:
+       logger.debug( f"extra feature {x} needs missing module {extras[x]['module_needed']}. Disabled" ) 
+       pass
+
+if extras['mqtt']['present']:
+   import paho.mqtt.client
+   if not hasattr( paho.mqtt.client, 'MQTTv5' ):
+       # mqtt is too old to be useful.
+       extras['mqtt']['present'] = False
 
 class Sarracenia:
     """
