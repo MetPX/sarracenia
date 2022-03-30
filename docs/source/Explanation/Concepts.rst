@@ -2,34 +2,13 @@
  General Sarracenia Concepts
 =============================
 
-Sarracenia pumps form a network. The network uses 
-`Message Queueing Protocol (MQP) <https://en.wikipedia.org/wiki/Message_queue>`_ brokers 
-as a transfer manager which sends announcements of file availability in one direction 
-and report messages in the opposite direction. Administrators configure the paths 
-that data flows through at each pump, as each broker acts independently, managing 
-transfers from transfer engines it can reach, with no knowledge of the overall 
-network. The locations of pump and the directions of traffic flow are chosen to 
-work with permitted flows. Ideally, no firewall exceptions are needed.
+Sarracenia pumps form a network. The network uses `Message Queueing Protocol (MQP) <https://en.wikipedia.org/wiki/Message_queue>`_ brokers as a transfer manager which sends announcements of file availability in one direction and report messages in the opposite direction. Administrators configure the paths that data flows through at each pump, as each broker acts independently, managing transfers from transfer engines it can reach, with no knowledge of the overall network. The locations of pump and the directions of traffic flow are chosen to work with permitted flows. Ideally, no firewall exceptions are needed.
 
-Sarracenia does no data transport. It is a management layer to co-ordinate
-the use of transport layers. To get a running pump, actual transport mechanisms
-(web or sftp servers) need to be set up as well.  In the simplest case, all of 
-the components are on the same server, but there is no need for that. The 
-broker could be on a different server from both ends of a given hop of a 
-data transfer.
+Sarracenia itself does no data transport. It is a management layer to co-ordinate the use of transport layers. To get a running pump, actual transport mechanisms (web or sftp servers) need to be set up as well (the most common for our use case being `RabbitMQ <https://www.rabbitmq.com/>`_). In the simplest case, all of the components are on the same server, but there is no need for that. The broker could be on a different server from both ends of a given hop of a data transfer.
 
-The best way for data transfers to occur is to avoid polling. It is more
-efficient if writers produce appropriate sr_post messages.
-Similarly, when delivering, it is ideal if the receivers use sr_subscribe, and
-an on_file plugin to trigger their further processing, so that the file is 
-handed to them without polling. This is the most efficient way of working, but
-it is understood that not all software can be made co-operative. Tools to poll
-in order to start transport flows are sr_poll, and sr_watch.
+The best way for data transfers to occur is to avoid polling, thus limiting unnecessary work and time. Suppliers of data will want to take advantage of writing appropriate sr3_post messages to advertise data that is ready. Similarly, it is ideal if the receivers of said data use subscribe components, and (if required) an on_file plugin to trigger their further processing. This ensures the file transfers from the source to the destination without polling for the data. This is the most efficient way of working, but it is understood that not all software can be made co-operative. Sarracenia components used to poll in order to start transport flows are known as poll, and watch.
 
-Generally speaking, Linux is the main deployment target, and the only platform on 
-which server configurations are deployed. Other platforms are used as client end points.
-This isn´t a limitation, it is just what is used and tested. Implementations of
-the pump on Windows should work, they just are not tested.
+Generally speaking, Linux is the main deployment platform, and the only platform on which server configurations are deployed and tested. Other platforms are used as client end points (Windows, etc.). This isn´t a limitation, it is just what is used and tested. Implementations of the pump on Windows should work, they just are not officially tested.
 
 
 The Flow Algorithm
