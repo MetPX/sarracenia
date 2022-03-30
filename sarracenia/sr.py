@@ -1860,12 +1860,27 @@ class sr_GlobalState:
                     k = line[0]
                     if k in synonyms:
                         k = synonyms[k]
+                        v3_cfg.write(k + ' ' + ' '.join(line[1:]))
+                        print(k + ' ' + ' '.join(line[1:]))
+                        continue
 
                     if k in convert_to_v3:
-                        pass
+                        if len(line) > 1:
+                            v = line[1].replace('.py', '', 1)
+                            if v in convert_to_v3[k]:
+                                line = convert_to_v3[k][v]
+                                k = line[0]
+                                if 'continue' in line:
+                                    logger.info("obsolete v2")
+                        else:
+                            line = convert_to_v3[k]
+                            k = line[0]
+                            v = line[1]
 
-                    if k == 'continue':
-                        continue
+                        if k == 'continue':
+                            continue
+                        v3_cfg.write(k + ' ' + v)
+                        print(k + ' ' + v)
 
 
 
