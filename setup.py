@@ -66,6 +66,12 @@ setup(
         'Topic :: System :: Logging',
     ],
     install_requires=[
-        "amqp", "appdirs", "dateparser", "humanfriendly", "humanize", "jsonpickle", "netifaces", 
-        "paho-mqtt>=1.5.1", "paramiko", "psutil>=5.3.0", "watchdog"
-    ])
+        "appdirs", "dateparser", "humanfriendly", "humanize", "jsonpickle", 
+        "psutil>=5.3.0", "watchdog"
+    ]
+    extras_require = [
+       'amqp' : [ "amqp" ],
+       'mqtt': [ 'patho.mqtt.client' ],
+       'ssh' : [ 'paramiko' ],
+       'vip': [ 'netifaces' ]
+    ]) 

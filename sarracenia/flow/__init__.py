@@ -1,7 +1,6 @@
 import copy
 import importlib
 import logging
-import netifaces
 import os
 
 # v3 plugin architecture...
@@ -57,6 +56,13 @@ default_options = {
     'vip': None
 }
 
+import importlib.util
+if importlib.util.find_spec("netifaces"):
+    netifaces_present=True
+    import netifaces
+else:
+    netifaces_present=False
+    logger.warning("netifaces module not present, needed for vip support")
 
 class Flow:
     """
@@ -217,6 +223,10 @@ class Flow:
             p()
 
     def has_vip(self):
+        global netifaces_present
+
+        if not netifaces_present: return True
+
         # no vip given... standalone always has vip.
         if self.o.vip == None:
             return True

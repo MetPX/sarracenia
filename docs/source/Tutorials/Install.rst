@@ -50,9 +50,13 @@ available, or other special cases, such as if using python in virtual env, where
 it is more practical to install the package using pip (python install package) 
 from `<http://pypi.python.org/>`_.
 
-It is straightforward to do that::
+It is straightforward to do that just the essentials::
 
   $ pip install metpx-sr3
+
+or add the extras::
+
+  $ pip install metpx-sr3[amqp,mqtt,ssh,vip]  
 
 and to upgrade after the initial installation::
 
@@ -71,9 +75,13 @@ Ubuntu/Debian (apt/dpkg) **Recommended**
 On Ubuntu 22.04 and derivatives of same::
 
   sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx
-  sudo apt-get update
-  sudo apt-get install metpx-sr3  # main python package.
-  sudo apt-get install metpx-sr3c # optional C client.
+  sudo apt update
+  sudo apt install metpx-sr3  # main python package.
+  sudo apt install metpx-sr3c # optional C client.
+  sudo apt install python3-paramiko  # optionally support sftp/scp transfers.
+  sudo apt install python3-amqp  # optionally support rabbitmq brokers
+  sudo apt install python3-paho-mqtt  # optionally support MQTT brokers
+  sudo apt install python3-netifaces # optionally support the vip directive (HA failover.)
 
 Currently, only the debian packages include man pages.  The guides are only 
 available in the source repository. For earlier ubuntu versions, install 
@@ -85,18 +93,21 @@ Redhat/Suse Distros (rpm based)
 
 Python distutils on redhat package manager based distributions does not handle dependencies
 with the current packaging, so one needs to manually install them.
-For example, on fedora 28::
+For example, on fedora 28 mandatories::
  
-  $ sudo dnf install python3-amqplib
   $ sudo dnf install python3-appdirs
-  $ sudo dnf install python3-watchdog
-  $ sudo dnf install python3-netifaces
   $ sudo dnf install python3-humanize
   $ sudo dnf install python3-psutil
-  $ sudo dnf install python3-paramiko   
+  $ sudo dnf install python3-watchdog
+
+Optional ones::
+
+  $ sudo dnf install python3-amqp   # optionally support rabbitmq brokers
+  $ sudo dnf install python3-netifaces # optionally support vip directive for HA.
+  $ sudo dnf install python3-paho-mqtt # optionally support mqtt brokers
+  $ sudo dnf install python3-paramiko  # optionally support ssh/sftp transfers 
 
   $ sudo dnf install python3-setuptools # needed to build rpm package.
-
 
 Once the dependencies are in place, one can build an RPM file using ``setuptools``::
 

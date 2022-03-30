@@ -329,12 +329,13 @@ import importlib.util
 
 if importlib.util.find_spec("amqp"):
     import sarracenia.moth.amqp
+else:
+    logger.warning('No amqp module found support for rabbitmq brokers disabled')
 
-if importlib.util.find_spec("paho"):
-    import sarracenia.moth.mqtt
-
-if importlib.util.find_spec("proton"):
-    import sarracenia.moth.amq1
-
-if importlib.util.find_spec("paho"):
-    import sarracenia.moth.pika
+# require AMQPv5 support.
+if importlib.util.find_spec("paho.mqtt.client"):
+    import paho.mqtt.client
+    if hasattr(paho.mqtt.client,'MQTTv5'):
+        import sarracenia.moth.mqtt
+else:
+    logger.warning('No paho.mqtt.client library found with MQTT support (>= 1.5.1) mqtt support disabled')
