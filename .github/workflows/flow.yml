@@ -24,8 +24,9 @@ jobs:
       matrix:
        which_test: [ static_flow, flakey_broker, dynamic_flow ]
        pyver: [ "3.6", "3.7", "3.8", "3.9", "3.10" ]
+       osver: [ "ubuntu-18.04", "ubuntu-20.04"]
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.osver }}
   
     name: ${{ matrix.which_test }} test, using Python ${{ matrix.pyver }}
     timeout-minutes: 30
@@ -71,5 +72,5 @@ jobs:
         uses: actions/upload-artifact@v3
         continue-on-error: true
         with:
-          name: sr3_${{ matrix.which_test }}_python_${{ matrix.pyver }}_logs_${{ github.sha }}
+          name: sr3_${{ matrix.which_test }}_${{ matrix.osver }}_python_${{ matrix.pyver }}_logs_${{ github.sha }}
           path: ~/.cache/sr3/log/
