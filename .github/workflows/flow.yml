@@ -41,7 +41,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip3 install .
           travis/flow_autoconfig.sh
           travis/ssh_localhost.sh
          
