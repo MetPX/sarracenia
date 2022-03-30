@@ -115,7 +115,7 @@ class MQTT(Moth):
         """
 
         super().__init__(broker, options, is_subscriber)
-
+        self.o = options
         self.o.update(default_options)
         self.o.update(options)
 
@@ -379,7 +379,7 @@ class MQTT(Moth):
             logger.info('cleanup sessions for instances')
             for i in range(1,self.o['instances']+1):
                 icid= self.o['queueName'] + '%02d' % i 
-                myclient = self.__clientSetup( options, icid )
+                myclient = self.__clientSetup( self.o, icid )
                 myclient.connect( self.broker.url.hostname, port=self.__sslClientSetup(), \
                    myclean_start=True, properties=props )
                 while not self.client.is_connected():

@@ -411,7 +411,7 @@ class AMQP(Moth):
                         self.metrics['rxGoodCount'] += 1
                     if hasattr(self.o, 'fixed_headers'):
                         for k in self.o.fixed_headers:
-                            m[k] = self.o.fixed_headers[k]
+                            msg[k] = self.o.fixed_headers[k]
 
                     logger.debug("new msg: %s" % msg)
                     return msg
