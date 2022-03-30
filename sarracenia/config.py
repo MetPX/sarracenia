@@ -52,7 +52,6 @@ from sarracenia.flow.sarra import default_options as sarradefopts
 import sarracenia.integrity.arbitrary
 
 import sarracenia.moth
-import sarracenia.moth.amqp
 import sarracenia.integrity
 
 default_options = {
@@ -2200,7 +2199,8 @@ def default_config():
     cfg.currentDir = None
     cfg.override(default_options)
     cfg.override(sarracenia.moth.default_options)
-    cfg.override(sarracenia.moth.amqp.default_options)
+    if sarracenia.extras['amqp']['present']:
+        cfg.override(sarracenia.moth.amqp.default_options)
     cfg.override(sarracenia.flow.default_options)
 
     for g in ["admin.conf", "default.conf"]:
@@ -2221,7 +2221,8 @@ def no_file_config():
     cfg.currentDir = None
     cfg.override(default_options)
     cfg.override(sarracenia.moth.default_options)
-    cfg.override(sarracenia.moth.amqp.default_options)
+    if sarracenia.extras['amqp']['present']:
+        cfg.override(sarracenia.moth.amqp.default_options)
     cfg.override(sarracenia.flow.default_options)
     cfg.cfg_run_dir = '.'
     cfg.retry_path = '.'
