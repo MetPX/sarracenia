@@ -417,14 +417,16 @@ class Transfer():
 
 import importlib.util
 
-if importlib.util.find_spec('ftplib'):
-    import sarracenia.transfer.ftp
-else:
+try:
+    if importlib.util.find_spec('ftplib'):
+        import sarracenia.transfer.ftp
+except Exception as ex:
     logger.warning('no ftplib module found. Disabling ftp support')
 
-if importlib.util.find_spec('paramiko'):
-    import sarracenia.transfer.sftp
-else:
+try:
+    if importlib.util.find_spec('paramiko'):
+        import sarracenia.transfer.sftp
+except Exception as ex:
     logger.warning('no paramiko module found. Disabling sftp support')
 
 # batteries included.

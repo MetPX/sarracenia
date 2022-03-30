@@ -68,10 +68,10 @@ setup(
     install_requires=[
         "appdirs", "dateparser", "humanfriendly", "humanize", "jsonpickle", 
         "psutil>=5.3.0", "watchdog"
-    ]
-    extras_require = [
+    ],
+    extras_require = {
        'amqp' : [ "amqp" ],
        'mqtt': [ 'patho.mqtt.client' ],
        'ssh' : [ 'paramiko' ],
        'vip': [ 'netifaces' ]
-    ]) 
+    }) 
