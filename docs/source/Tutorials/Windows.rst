@@ -30,11 +30,11 @@ Launch a Powershell |powershell| session and type this command at the prompt::
 
  sr3 restart
 
-.. |powershell| image:: Windows/02_prompt_powershell.png
+.. |powershell| image:: Windows/powershell.png
 
 This will start Sarracenia processes as instructed by your configurations and show logging information
 
-.. image:: Windows/sarra-psprompt.png 
+.. image:: Windows/02_prompt_powershell.png 
 
 Keep this Powershell session alive until you are done with Sarracenia. To stop Sarracenia you may type::
 
