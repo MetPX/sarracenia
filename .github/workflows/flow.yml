@@ -66,10 +66,17 @@ jobs:
         run: |
           cd ${HOME}/sr_insects/${{ matrix.which_test }}; ./flow_check.sh
         
+      - name: Compress log files for artifacts
+        if: always()
+        continue-on-error: true
+        run: |
+          cd ${HOME}/.cache/sr3/log/
+          tar -czf ${HOME}/logs.tar.gz *
+      
       - name: Save run artifacts
         if: always()
         uses: actions/upload-artifact@v3
         continue-on-error: true
         with:
           name: sr3_${{ matrix.which_test }}_${{ matrix.osver }}_python_${{ matrix.pyver }}_logs_${{ github.sha }}
-          path: ~/.cache/sr3/log/
+          path: ~/logs.tar.gz
