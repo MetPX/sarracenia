@@ -415,20 +415,9 @@ class Transfer():
         self.rw_length = 0
         if self.o.timeout: alarm_set(self.o.timeout)
 
-import importlib.util
-
-try:
-    if importlib.util.find_spec('ftplib'):
-        import sarracenia.transfer.ftp
-except Exception as ex:
-    logger.warning('no ftplib module found. Disabling ftp support')
-
-try:
-    if importlib.util.find_spec('paramiko'):
-        import sarracenia.transfer.sftp
-except Exception as ex:
-    logger.warning('no paramiko module found. Disabling sftp support')
-
 # batteries included.
-import sarracenia.transfer.https
 import sarracenia.transfer.file
+import sarracenia.transfer.ftp
+import sarracenia.transfer.https
+import sarracenia.transfer.sftp
+

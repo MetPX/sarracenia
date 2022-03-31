@@ -2,49 +2,26 @@
  General Sarracenia Concepts
 =============================
 
-Sarracenia pumps form a network. The network uses 
-`Message Queueing Protocol (MQP) <https://en.wikipedia.org/wiki/Message_queue>`_ brokers 
-as a transfer manager which sends announcements of file availability in one direction 
-and report messages in the opposite direction. Administrators configure the paths 
-that data flows through at each pump, as each broker acts independently, managing 
-transfers from transfer engines it can reach, with no knowledge of the overall 
-network. The locations of pump and the directions of traffic flow are chosen to 
-work with permitted flows. Ideally, no firewall exceptions are needed.
+Sarracenia pumps form a network. The network uses `Message Queueing Protocol (MQP) <https://en.wikipedia.org/wiki/Message_queue>`_ brokers as a transfer manager which sends announcements of file availability in one direction and report messages in the opposite direction. Administrators configure the paths that data flows through at each pump, as each broker acts independently, managing transfers from transfer engines it can reach, with no knowledge of the overall network. The locations of pump and the directions of traffic flow are chosen to work with permitted flows. Ideally, no firewall exceptions are needed.
 
-Sarracenia does no data transport. It is a management layer to co-ordinate
-the use of transport layers. To get a running pump, actual transport mechanisms
-(web or sftp servers) need to be set up as well.  In the simplest case, all of 
-the components are on the same server, but there is no need for that. The 
-broker could be on a different server from both ends of a given hop of a 
-data transfer.
+Sarracenia itself does no data transport. It is a management layer to co-ordinate the use of transport layers. To get a running pump, actual transport mechanisms (web or sftp servers) need to be set up as well (the most common for our use case being `RabbitMQ <https://www.rabbitmq.com/>`_). In the simplest case, all of the components are on the same server, but there is no need for that. The broker could be on a different server from both ends of a given hop of a data transfer.
 
-The best way for data transfers to occur is to avoid polling. It is more
-efficient if writers produce appropriate sr_post messages.
-Similarly, when delivering, it is ideal if the receivers use sr_subscribe, and
-an on_file plugin to trigger their further processing, so that the file is 
-handed to them without polling. This is the most efficient way of working, but
-it is understood that not all software can be made co-operative. Tools to poll
-in order to start transport flows are sr_poll, and sr_watch.
+The best way for data transfers to occur is to avoid polling, thus limiting unnecessary work and time. Suppliers of data will want to take advantage of writing appropriate sr3_post messages to advertise data that is ready. Similarly, it is ideal if the receivers of said data use subscribe components, and (if required) an on_file plugin to trigger their further processing. This ensures the file transfers from the source to the destination without polling for the data. This is the most efficient way of working, but it is understood that not all software can be made co-operative. Sarracenia components used to poll in order to start transport flows are known as poll, and watch.
 
-Generally speaking, Linux is the main deployment target, and the only platform on 
-which server configurations are deployed. Other platforms are used as client end points.
-This isn´t a limitation, it is just what is used and tested. Implementations of
-the pump on Windows should work, they just are not tested.
+Generally speaking, Linux is the main deployment platform, and the only platform on which server configurations are deployed and tested. Other platforms are used as client end points (Windows, etc.). This isn´t a limitation, it is just what is used and tested. Implementations of the pump on Windows should work, they just are not officially tested.
 
 
 The Flow Algorithm
 ------------------
 
-All of the components (post, subscribe, sarra, sender, shovel, watch, winnow)
-share substantial code and differ only in default settings. The Flow
-algorithm is:
+All of the components (post, subscribe, sarra, sender, shovel, watch, winnow) share substantial code and differ only in default settings. Each component follows the same general algorithm known as the Flow algorithm. The steps for the Flow algorithm are:
 
 * Gather a list of messages
 * Filter them with accept/reject clauses
-* Work on the accepted messages.
-* Post the work accomplished for the next flow.
+* Work on the accepted messages
+* Post the work accomplished for the next flow
 
-in more detail:
+In more detail:
 
 .. table:: **Table 1: The Algorithm for All Components**
  :align: center
@@ -54,23 +31,25 @@ in more detail:
  |  PHASE   |                 DESCRIPTION                                 |
  |          |                                                             |
  +----------+-------------------------------------------------------------+
- | *gather* | Get information about an initial list of files              |
+ | *gather* | Get information about an initial list of files.             |
  |          |                                                             |
- |          | from: a queue, a directory, a polling script.               |
- |          | output: worklist.incoming populated with messages.          |
+ |          | From: a queue, a directory, a polling script.               |
+ |          |                                                             |
+ |          | Output: worklist.incoming populated with messages.          |
  |          |                                                             |
  |          | Each message is a python dictionary.                        |
  +----------+-------------------------------------------------------------+
  | *Filter* | Reduce the list of files to act on.                         |
  |          |                                                             |
- |          | Apply accept/reject clauses                                 |
+ |          | Apply accept/reject clauses.                                |
  |          |                                                             |
  |          | after_accept callbacks                                      |
  |          | move messages from worklist.incoming to worklist.rejected.  |
- |          | ones to run: flowcb/nodupe.py (runs duplicate suppresion.)  |
+ |          |                                                             |
+ |          | Ones to run: flowcb/nodupe.py (runs duplicate suppresion.)  |
  |          |                                                             |
  +----------+-------------------------------------------------------------+
- | *work*   | process the message by downloading or sending               |
+ | *work*   | Process the message by downloading or sending.              |
  |          |                                                             |
  |          | run transfer (download or send.)                            |
  |          |                                                             |
@@ -80,10 +59,7 @@ in more detail:
  |          | or otherwise dispose of task (to file, or retry... or)      |
  +----------+-------------------------------------------------------------+
 
-The main components of the python implementation of Sarracenia all implement the same 
-algorithm described above. The algorithm has various points where custom processing
-can be inserted flowCallbacks, or deriving classes from flow, integrity, or transfer
-classes.
+The main components of the python implementation of Sarracenia all implement the same algorithm described above. The algorithm has various points where custom processing can be inserted (using flowCallbacks), or deriving classes from flow, integrity, or transfer classes.
 
 The components just have different default settings:
 
@@ -94,24 +70,24 @@ The components just have different default settings:
  | Component              | Use of the algorithm     |
  +------------------------+--------------------------+
  +------------------------+--------------------------+
- | *subscribe*            | Gather=gather.message    |
+ | *subscribe*            | Gather = gather.message  |
  |                        |                          |
  |   Download file from a | Filter                   |
  |   pump.                |                          |
- |                        | Work=Download            |
+ |                        | Work = Download          |
  |   default mirror=False |                          |
- |   All others it is True| post=optional            |
+ |   All others it is True| Post = optional          |
  +------------------------+--------------------------+
- | *sarra*                | Gather=gather.message    |
+ | *sarra*                | Gather = gather.message  |
  |                        |                          |
  |   Used on pumps.       |                          |
  |   Download file from a | Filter                   |
  |   pump to another pump |                          |
  |   Post the file from   |                          |
  |   the new pump so that |                          |
- |   subscribers to       | Work=Download            |
+ |   subscribers to       | Work = Download          |
  |   this pump can        |                          |
- |   download in turn.    | post=post                |
+ |   download in turn.    | Post = post              |
  |                        |                          |
  +------------------------+--------------------------+
  | *poll*                 | Gather                   |
@@ -120,91 +96,67 @@ The components just have different default settings:
  |   Find files on other  | Filter                   |
  |   servers to post to   |                          |
  |   a pump.              | if has_vip:              |
- |                        |     Work=nil             |
- |   has_vip*             |                          |
- |                        |     Post=yes             |
- |                        |     Message?, File?      |
+ |                        |     Work = nil           |
+ |   Uses has_vip*        |                          |
+ |   (see notes below)    |     Post = yes           |
  +------------------------+--------------------------+
- | *shovel*               | Gather=gather.message    |
+ | *shovel*               | Gather = gather.message  |
  |                        |                          |
  |   Move posts or        | Filter (shovel cache=off)|
  |   reports around.      |                          |
- |                        | Work=nil                 |
+ |                        | Work = nil               |
  |                        |                          |
- |                        | Post=yes                 |
+ |                        | Post = yes               |
  +------------------------+--------------------------+
- | *winnow*               | Gather=gather.message    |
+ | *winnow*               | Gather = gather.message  |
  |                        |                          |
  |   Move posts or        | Filter (shovel cache=off)|
  |   reports around.      |                          |
- |                        | Work=nil                 |
+ |                        | Work = nil               |
  |   suppress duplicates  |                          |
- |                        | Post=yes                 |
+ |                        | Post = yes               |
  +------------------------+--------------------------+
- | *post/watch*           | Gather=gather.file       |
+ | *post/watch*           | Gather = gather.file     |
  |                        |                          |
  |   Find file on a       | Filter                   |
  |   local server to      |                          |
- |   post                 | Work=nil                 |
+ |   post                 | Work = nil               |
  |                        |                          |
- |                        | Post=yes                 |
+ |                        | Post = yes               |
  |                        |   Message?, File?        |
  +------------------------+--------------------------+
- | *sender*               | Gather=gather.message    |
+ | *sender*               | Gather = gather.message  |
  |                        |                          |
  |   Send files from a    | Filter                   |
  |   pump. If remote is   |                          |
- |   also a pump, post    | Do=sendfile              |
+ |   also a pump, post    | Do = sendfile            |
  |   the sent file there. |                          |
- |                        | Outlet=optional          |
+ |                        | Outlet = optional        |
  +------------------------+--------------------------+
 
-Components are easily composed using AMQP brokers, which create elegant networks
-of communicating sequential processes (in the `Hoare <http://dl.acm.org/citation.cfm?doid=359576.359585>`_ sense).
+Components are easily composed using AMQP brokers, which create elegant networks of communicating sequential processes (in the `Hoare <http://dl.acm.org/citation.cfm?doid=359576.359585>`_ sense).
 
 Multiple processes: Instances, Singletons and VIP
 -------------------------------------------------
 
-The flow algorithm isn't confined to a single process. Many processes can run
-the same flow configuration. For the sarra, sender, shovel and subscribe, components,
-one sets the *instance* setting to the number of processes to run and 
-consume from the configured *queue* that they share.
+The flow algorithm isn't confined to a single process. Many processes can run the same flow configuration. For the sarra, sender, shovel and subscribe, components, one sets the *instance* setting to the number of processes to run and consume from the configured *queue* that they share.
 
-The poll, post, and watch components, by contrast, are limited to a single process
-on any given server. In the table above, there is a note about *has_vip*. When 
-there are multiple servers participating in a configuration, the vip directive
-can be used to have the servers co-operate to provide a single service (where
-only one server is active at a time.) For most components, The vip directive in
-a configuration file defines a virtual ip address that a server must have 
-actively on it for that component to be active. If Sarracenia detects that the
-interface is not present on the server, then the component will run in passive
-mode.
+The poll, post, and watch components, by contrast, are limited to a single process on any given server. In the table above, there is a note about *has_vip*. When there are multiple servers participating in a configuration, the vip directive can be used to have the servers co-operate to provide a single service (where only one server is active at a time.) For most components, the vip directive in a configuration file defines a virtual ip address that a server must have actively on it for that component to be active. If Sarracenia detects that the interface is not present on the server, then the component will run in passive mode.
 
-For almost all components, passive mode means that no processing will occur.
-it will just passively check once in a while if it has obtained the vip, and
-if not, will stand by indefinitely.
+For almost all components, passive mode means that no processing will occur. The node will passively check if it has obtained the vip. If the node does not have the vip, it will stand by indefinitely.
 
-The exception to this is poll, which works differently. in poll, when you
-do not have the vip the following algorithmic loop will continue:
+The exception to this is poll, which works differently. In poll, when you do not have the vip the following algorithmic loop will continue:
 
 * gather
 * filter
 * after_accept
 
-The poll's gather (and/or poll) subscribes to the exchange other vip 
-participants are posting to and updates its cache from the messages.
-
-
+The poll's gather (and/or poll) subscribes to the exchange other vip participants are posting to and updates its cache from the messages, avoiding the other polls from having to poll the same endpoint for the same file list.
 
 Mapping AMQP Concepts to Sarracenia
 -----------------------------------
 
-It is helpful to understand a bit about AMQP to work with Sarracenia. 
-AMQP is a vast and interesting topic in its own right. No attempt is
-made to explain all of it here. This section just provides a little context, and introduces
-only background concepts needed to understand and/or use Sarracenia. For more information
-on AMQP itself, a set of links is maintained at the 
-`Metpx web site <sarra.rst#amqp>`_ 
+It is helpful to understand a bit about AMQP to work with Sarracenia. AMQP is a vast and interesting topic in its own right. No attempt is made to explain the entirety of it here. This section intends to provide a little context and introduce background concepts needed to understand and/or use Sarracenia. For more information on AMQP itself, a set of links is maintained at the `Metpx web site <sarra.rst#amqp>`_ 
 
 .. image:: Concepts/AMQP4Sarra.svg
     :scale: 50%

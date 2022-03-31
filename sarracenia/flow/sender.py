@@ -1,5 +1,3 @@
-import sarracenia.moth
-import copy
 from sarracenia.flow import Flow
 import logging
 import urllib.parse

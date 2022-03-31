@@ -25,11 +25,12 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 #
-__version__ = "3.00.014"
+__version__ = "3.00.15"
 
 from base64 import b64decode, b64encode
 import calendar
 import datetime
+import importlib.util
 import logging
 import os
 import os.path
@@ -42,6 +43,35 @@ import urllib
 import urllib.request
 
 logger = logging.getLogger(__name__)
+
+
+extras = { 
+   'amqp' : { 'modules_needed': [ 'amqp' ], 'present': False },
+   'ftppoll' : { 'modules_needed': ['dateparser', 'pytz'], 'present': False },
+   'mqtt' : { 'modules_needed': ['paho.mqtt.client'], 'present': False },
+   'vip'  : { 'modules_needed': ['netifaces'] , 'present': False }
+}
+
+for x in extras:
+   
+   extras[x]['present']=True
+   for y in  extras[x]['modules_needed']:
+       try:
+           if importlib.util.find_spec( y ):
+               pass
+           else:
+               logger.debug( f"extra feature {x} needs missing module {y}. Disabled" ) 
+               extras[x]['present']=False
+       except:
+           logger.debug( f"extra feature {x} needs missing module {y}. Disabled" ) 
+           extras[x]['present']=False
+
+
+if extras['mqtt']['present']:
+   import paho.mqtt.client
+   if not hasattr( paho.mqtt.client, 'MQTTv5' ):
+       # without v5 support, mqtt is not useful.
+       extras['mqtt']['present'] = False
 
 
 class Sarracenia:

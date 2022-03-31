@@ -6,6 +6,7 @@ import os
 # v3 plugin architecture...
 import sarracenia.flowcb
 import sarracenia.integrity
+import sarracenia.transfer
 
 import stat
 import time
@@ -56,13 +57,9 @@ default_options = {
     'vip': None
 }
 
-import importlib.util
-if importlib.util.find_spec("netifaces"):
-    netifaces_present=True
+if sarracenia.extras['vip']['present']:
     import netifaces
-else:
-    netifaces_present=False
-    logger.warning("netifaces module not present, needed for vip support")
+
 
 class Flow:
     """
@@ -223,9 +220,8 @@ class Flow:
             p()
 
     def has_vip(self):
-        global netifaces_present
 
-        if not netifaces_present: return True
+        if not sarracenia.extras['vip']['present']: return True
 
         # no vip given... standalone always has vip.
         if self.o.vip == None:
