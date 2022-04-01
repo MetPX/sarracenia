@@ -45,34 +45,6 @@ import urllib.request
 logger = logging.getLogger(__name__)
 
 
-extras = { 
-   'amqp' : { 'modules_needed': [ 'amqp' ], 'present': False },
-   'ftppoll' : { 'modules_needed': ['dateparser', 'pytz'], 'present': False },
-   'mqtt' : { 'modules_needed': ['paho.mqtt.client'], 'present': False },
-   'vip'  : { 'modules_needed': ['netifaces'] , 'present': False }
-}
-
-for x in extras:
-   
-   extras[x]['present']=True
-   for y in  extras[x]['modules_needed']:
-       try:
-           if importlib.util.find_spec( y ):
-               pass
-           else:
-               logger.debug( f"extra feature {x} needs missing module {y}. Disabled" ) 
-               extras[x]['present']=False
-       except:
-           logger.debug( f"extra feature {x} needs missing module {y}. Disabled" ) 
-           extras[x]['present']=False
-
-
-if extras['mqtt']['present']:
-   import paho.mqtt.client
-   if not hasattr( paho.mqtt.client, 'MQTTv5' ):
-       # without v5 support, mqtt is not useful.
-       extras['mqtt']['present'] = False
-
 
 class Sarracenia:
     """
@@ -819,3 +791,52 @@ class Message(dict):
 
         with urllib.request.urlopen(retUrl) as response:
             return response.read()
+
+"""
+  Extra Feature Scanning and Enablement.
+
+  checking for extra dependencies, not "hard" dependencies ("requires")
+  listed as extras in setup.py and omitted entirely from debian packaging.
+  this allows installation with fewer dependencies ahead of time, and then
+  provide some messaging to users when they "need" an optional dependency.
+ 
+  optional extras can be enabled using pip install metpx-sr3[extra]
+  where extra is one of the features listed below. Alternatively,
+  one can just install the modules that are needed and the functionality
+  will be enabled after a component restart.
+  
+  amqp - ability to communicate with AMQP (rabbitmq) brokers
+  mqtt - ability to communicate with MQTT brokers
+  ftppoll - ability to poll FTP servers
+  vip  - enable vip (Virtual IP) settings to implement singleton processing
+         for high availability support.
+
+"""
+extras = { 
+   'amqp' : { 'modules_needed': [ 'amqp' ], 'present': False },
+   'ftppoll' : { 'modules_needed': ['dateparser', 'pytz'], 'present': False },
+   'mqtt' : { 'modules_needed': ['paho.mqtt.client'], 'present': False },
+   'vip'  : { 'modules_needed': ['netifaces'] , 'present': False }
+}
+
+for x in extras:
+   
+   extras[x]['present']=True
+   for y in  extras[x]['modules_needed']:
+       try:
+           if importlib.util.find_spec( y ):
+               pass
+           else:
+               logger.debug( f"extra feature {x} needs missing module {y}. Disabled" ) 
+               extras[x]['present']=False
+       except:
+           logger.debug( f"extra feature {x} needs missing module {y}. Disabled" ) 
+           extras[x]['present']=False
+
+
+if extras['mqtt']['present']:
+   import paho.mqtt.client
+   if not hasattr( paho.mqtt.client, 'MQTTv5' ):
+       # without v5 support, mqtt is not useful.
+       extras['mqtt']['present'] = False
+

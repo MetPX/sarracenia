@@ -42,31 +42,6 @@ launchpad repository. If you cannot use debian packages, then consider pip packa
 avialable from PyPI. In both cases, the other python packages (or dependencies) needed
 will be installed by the package manager automatically.
 
-PIP
-~~~
-
-On Windows or linux distributions where system packages are not 
-available, or other special cases, such as if using python in virtual env, where
-it is more practical to install the package using pip (python install package) 
-from `<http://pypi.python.org/>`_.
-
-It is straightforward to do that just the essentials::
-
-  $ pip install metpx-sr3
-
-or add the extras::
-
-  $ pip install metpx-sr3[amqp,mqtt,vip]  
-
-and to upgrade after the initial installation::
-
-  $ pip install metpx-sr3
-
-* To install server-wide on a linux server, prefix with *sudo*
-
-NOTE:: 
-
-  On many systems where both pythons 2 and 3 are installed, you may need to specify pip3 rather than pip.
 
 
 Ubuntu/Debian (apt/dpkg) **Recommended**
@@ -81,8 +56,10 @@ On Ubuntu 22.04 and derivatives of same::
   sudo apt install python3-amqp  # optionally support rabbitmq brokers
   sudo apt install python3-paho-mqtt  # optionally support MQTT brokers
   sudo apt install python3-netifaces # optionally support the vip directive (HA failover.)
+  sudo apt install python3-dateparser python3-pytz # optionally support ftp polling.
 
-Currently, only the debian packages include man pages.  The guides are only 
+If packages are not available, the one can substitute by using python install package (pip)
+Currently, only the debian packages include man pages. The guides are only 
 available in the source repository. For earlier ubuntu versions, install 
 via pip is required because of missing dependencies in the python environment 
 shipped with earlier operating systems.
@@ -108,6 +85,8 @@ Optional ones::
 
   $ sudo dnf install python3-setuptools # needed to build rpm package.
 
+If packages are not available, the one can substitute by using python install package (pip)
+
 Once the dependencies are in place, one can build an RPM file using ``setuptools``::
 
   $ git clone https://github.com/MetPX/sarracenia
@@ -119,6 +98,31 @@ Once the dependencies are in place, one can build an RPM file using ``setuptools
 This procedure installs only the python application (not the C one.)
 No man pages nor other documentation is installed either.
 
+PIP
+~~~
+
+On Windows or linux distributions where system packages are not 
+available, or other special cases, such as if using python in virtual env, where
+it is more practical to install the package using pip (python install package) 
+from `<http://pypi.python.org/>`_.
+
+It is straightforward to do that just the essentials::
+
+  $ pip install metpx-sr3
+
+one could also add the extras::
+
+  $ pip install metpx-sr3[amqp,mqtt,vip]  
+
+and to upgrade after the initial installation::
+
+  $ pip install metpx-sr3
+
+* To install server-wide on a linux server, prefix with *sudo*
+
+NOTE:: 
+
+  On many systems where both pythons 2 and 3 are installed, you may need to specify pip3 rather than pip.
 
 System Startup and Shutdown
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
