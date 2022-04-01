@@ -72,6 +72,6 @@ setup(
     extras_require = {
        'amqp' : [ "amqp" ],
        'ftppoll' : ['dateparser' ],
-       'mqtt': [ 'patho.mqtt.client' ],
+       'mqtt': [ 'paho.mqtt>=1.5.1' ],
        'vip': [ 'netifaces' ]
     }) 

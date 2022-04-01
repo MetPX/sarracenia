@@ -24,10 +24,10 @@ pip3 wheel paho-mqtt
 
 # No binary available, thats why they are not fetched by pip (to be tested later) 
 # look in win_installer.cfg.tem fo additional deps.
-#pip3 download humanize --only-binary=:all: --platform win_amd64
+pip3 download humanize --only-binary=:all: --platform win_amd64
 #pip3 download pycparser --only-binary=:all: --platform win_amd64
 #pip3 download pathtools --only-binary=:all: --platform win_amd64
-#pip3 download watchdog --only-binary=:all: --platform win_amd64
+pip3 download watchdog --only-binary=:all: --platform win_amd64
 
 cd ..
 

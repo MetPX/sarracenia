@@ -64,6 +64,54 @@ available in the source repository. For earlier ubuntu versions, install
 via pip is required because of missing dependencies in the python environment 
 shipped with earlier operating systems.
 
+If an option is not installed, but is needed for a given configuration, then sr3 will
+detect and complain, and one needs to install the missing support::
+
+    fractal% sr3 foreground subscribe/data-ingest
+    .2022-04-01 13:44:48,551 [INFO] 2428565 sarracenia.flow loadCallbacks plugins to load: ['sarracenia.flowcb.post.message.Message', 'sarracenia.flowcb.gather.message.Message', 'sarracenia.flowcb.retry.Retry', 'sarracenia.flowcb.housekeeping.resources.Resources', 'sarracenia.flowcb.log.Log']
+    2022-04-01 13:44:48,551 [CRITICAL] 2428565 sarracenia.moth ProtocolPresent support for amqp missing, please install python packages: ['amqp']
+    2022-04-01 13:44:48,564 2428564 [CRITICAL] root run_command subprocess.run failed err=Command '['/usr/bin/python3', '/home/peter/Sarracenia/sr3/sarracenia/instance.py', '--no', '0', 'foreground', 'subscribe/data-ingest']' returned non-zero exit status 1.
+    
+    fractal% 
+    fractal% 
+    fractal% sudo apt install python3-amqp
+    [sudo] password for peter: 
+    Reading package lists... Done
+    Building dependency tree... Done
+    Reading state information... Done
+    The following packages were automatically installed and are no longer required:
+      fonts-lyx g++-9 libblosc1 libgdk-pixbuf-xlib-2.0-0 libgdk-pixbuf2.0-0 libjs-jquery-ui liblbfgsb0 libnetplan0 libqhull-r8.0 libstdc++-9-dev python-babel-localedata
+      python-matplotlib-data python-tables-data python3-alabaster python3-brotli python3-cycler python3-decorator python3-et-xmlfile python3-imagesize python3-jdcal python3-kiwisolver
+      python3-lz4 python3-mpmath python3-numexpr python3-openpyxl python3-pandas-lib python3-protobuf python3-pymacaroons python3-pymeeus python3-regex python3-scipy python3-sip
+      python3-smartypants python3-snowballstemmer python3-sympy python3-tables python3-tables-lib python3-tornado python3-unicodedata2 python3-xlrd python3-xlwt sphinx-common
+      unicode-data
+    Use 'sudo apt autoremove' to remove them.
+    Suggested packages:
+      python-amqp-doc
+    The following NEW packages will be installed:
+      python3-amqp
+    0 upgraded, 1 newly installed, 0 to remove and 1 not upgraded.
+    Need to get 0 B/43.2 kB of archives.
+    After this operation, 221 kB of additional disk space will be used.
+    Selecting previously unselected package python3-amqp.
+    (Reading database ... 460430 files and directories currently installed.)
+    Preparing to unpack .../python3-amqp_5.0.9-1_all.deb ...
+    Unpacking python3-amqp (5.0.9-1) ...
+    Setting up python3-amqp (5.0.9-1) ...
+    fractal% 
+    
+One can satisfy missing requirements using either Debian or pip packages.  to use mqtt brokers with
+ubuntu 18.04, one must obtain the library via pip, because the debian packages are for a version that is too old.::
+
+    fractal% pip3 install paho-mqtt
+    Defaulting to user installation because normal site-packages is not writeable
+    Collecting paho-mqtt
+      Using cached paho_mqtt-1.6.1-py3-none-any.whl
+    Installing collected packages: paho-mqtt
+    Successfully installed paho-mqtt-1.6.1
+    fractal% 
+
+
 Redhat/Suse Distros (rpm based)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

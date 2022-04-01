@@ -825,6 +825,7 @@ for x in extras:
    for y in  extras[x]['modules_needed']:
        try:
            if importlib.util.find_spec( y ):
+               #logger.debug( f'found feature {y}, enabled') 
                pass
            else:
                logger.debug( f"extra feature {x} needs missing module {y}. Disabled" ) 

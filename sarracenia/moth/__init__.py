@@ -35,10 +35,11 @@ def ProtocolPresent(p) -> bool:
     if ( p in ['mqtt', 'mqtts' ] ) and sarracenia.extras['mqtt']['present']:
        return True
     if p in sarracenia.extras:
-        logger.error( f"support for {p} missing, please install: {sarracenia.extras[p]['modules_needed']} " )
+        logger.critical( f"support for {p} missing, please install python packages: {' '.join(sarracenia.extras[p]['modules_needed'])}" )
     else:
-        logger.error( f"Protocol scheme {p} unsupported for communications with message brokers" )
+        logger.critical( f"Protocol scheme {p} unsupported for communications with message brokers" )
 
+    sys.exit(1)
     return False
 
 

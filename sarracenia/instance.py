@@ -11,7 +11,6 @@ import logging.handlers
 import os
 import pathlib
 from sarracenia.moth import Moth
-from sarracenia.moth.amqp import AMQP
 import signal
 import sys
 import time

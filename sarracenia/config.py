@@ -633,6 +633,7 @@ class Config:
         self.post_exchanges = []
         #self.post_topicPrefix = None
         self.pstrip = False
+        self.queueName = None
         self.randomize = False
         self.rename = None
         self.randid = "%04x" % randint(0, 65536)
@@ -1588,7 +1589,8 @@ class Config:
                     'overriding batch for consistency with messageCountMax: %d'
                     % self.batch)
         if self.vip and not sarracenia.extras['vip']['present']:
-            logger.error( f"vip feature requested, but library {sarracenia.extras['vip']['module_needed']} " )
+            logger.critical( f"vip feature requested, but library: {' '.join(sarracenia.extras['vip']['modules_needed'])} " )
+            sys.exit(1)
 
     def check_undeclared_options(self):
 

@@ -423,7 +423,7 @@ class AMQP(Moth):
                     logger.debug("new msg: %s" % msg)
                     return msg
             except Exception as err:
-                logger.warning("moth.amqp.getNewMessage: failed %s: %s" %
+                logger.warning("failed %s: %s" %
                                (self.o['queueName'], err))
                 logger.debug('Exception details: ', exc_info=True)
 
