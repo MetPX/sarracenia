@@ -445,6 +445,16 @@ class AMQP(Moth):
             logger.error("publishing from a consumer")
             return False
 
+        # Check connection and channel status, try to reconnect if not connected
+        if (self.connection is None) or (not self.connection.connected) or (not self.channel.is_open):
+            try:
+                self.close()
+                self.__putSetup()
+            except Exception as err:
+                logger.warning(f"failed, connection was closed/broken and could not be re-opened {exchange}: {err}")
+                logger.debug('Exception details: ', exc_info=True)
+                # Returning False here would prevent looping when retry queues are not in use
+
         # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
         body = copy.deepcopy(body)
 
