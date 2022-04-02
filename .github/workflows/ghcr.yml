@@ -8,7 +8,7 @@ name: Create and publish image to GitHub Container Registry
 on:
   push:
     branches:
-      - v03_wip
+      - main
 
 env:
   REGISTRY: ghcr.io
