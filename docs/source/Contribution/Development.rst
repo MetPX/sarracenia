@@ -71,11 +71,11 @@ Development is most commonly done on Ubuntu >=18.04 platform.
 v2 Workflow
 ~~~~~~~~~~~
 
-Finished development work for version 2 is committed to on the main branch, which is used
-to produce daily snapshots. One should not normally commit changes to the main branch,
+Finished development work for version 2 is committed to on the v2_dev branch, which is used
+to produce daily snapshots. One should not normally commit changes to the v2_dev branch,
 but rather merge them from a working branch.
 
-Development branches are named after the issue they are meant to address "issue365", for
+Development branches are named after the issue they are meant to address "v2_issue365", for
 example. If there are multiple attempts to address a given issue, then use the issue
 as a name prefix. For example, there could be issue365, but if we decide that isn't
 a good way to address the issue, there could be an issue365_methodB branch.
@@ -88,18 +88,18 @@ Once satisfied with the nature of the patch, the second developer should pull th
 and run the flow tests again (the same three) to confirm.  Only after the flow tests
 have been run on multiple machines should a change be merged to main.
 
-issues unique to v2 may be tagged *v2only*.
+issues unique to v2 should be tagged *v2only*.
 
 v3 Workflow
 ~~~~~~~~~~~
 
-The upcoming version of Sarracenia is maintained in the v03_wip (work in progress) branch.
-As the major refactor is substantially complete, the remaining work is now entirely constructive
-and all development is co-ordinated through issues exactly as v2 is.  Issues unique to v3,
-be they regressions or enhancements that don't make sense to add to v2, have the tag *v3only*.
+The upcoming version of Sarracenia is maintained in the v03_wip (work in progress) 
+As the major refactor is substantially complete, the remaining work is now entirely constructive 
+and all development is co-ordinated through issues exactly as v2 is. Issues unique to v3, be 
+they regressions or enhancements that don't make sense to add to v2, have the tag *v3only*. 
 Issues that are common between the releases are tagged *v3*.
 
-The workflow with v3 is similar to v2 but with different branches.  New development work should
+The workflow with v3 is similar to v2 but with different branches. New development work should
 have a v03\_ prefix, such as v03\_issue401. Having all the flow tests complete fairly successfully
 is one criterion for acceptance into v03_wip.
 
@@ -107,14 +107,24 @@ To run the sr_insects tests, the repository must be cloned with the v03_wip bran
 A gate for merging to v03_wip is for a second developer to run the flow_tests.
 **For v03, these tests must run:  static_flow, flakey_broker, dynamic_flow, transform_flow**
 
+Planned by 2022/04/11:
+
+ * main will be merged from v03_wip, so the default branch for new arrivals will be sr3.
+
+ * launchpad daily packages of v2 will be build from v2_dev (instead of main.)
+
+ * launchpad pre-release packages of v2 will be build from v2_dev (instead of main.)
+
+ * launchpad will have new recipes to produce sr3 packages from the main branch. 
+
+
 
 sr_insects
 ~~~~~~~~~~
 
-the sr_insects repository has it's own issues DB, and work on sr_insects is encouraged.
-Both v2 and v3 are supported on the v03_wip branch of sr_insects.  That branch should be
-used to support all development in both versions.... hmm... perhaps should make v03_wip
-the main branch?
+The sr_insects repository has it's own issues DB, and work on sr_insects is encouraged.
+Both v2 and v3 are supported on the main branch of sr_insects.  That branch should be
+used to support all development in both versions.... 
 
 
 Local Installation

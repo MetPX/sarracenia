@@ -4,17 +4,17 @@
 
 page web / homepage: https://metpx.github.io/sarracenia
 
-.. image:: https://img.shields.io/pypi/v/metpx-sarracenia?style=flat
+.. image:: https://img.shields.io/pypi/v/metpx-sr3?style=flat
   :alt: PyPI version
-  :target: https://pypi.org/project/metpx-sarracenia/
+  :target: https://pypi.org/project/metpx-sr3/
 
-.. image:: https://img.shields.io/pypi/pyversions/metpx-sarracenia.svg
+.. image:: https://img.shields.io/pypi/pyversions/metpx-sr3.svg
     :alt: Supported Python versions
-    :target: https://pypi.python.org/pypi/metpx-sarracenia.svg
+    :target: https://pypi.python.org/pypi/metpx-sr3.svg
 
-.. image:: https://img.shields.io/pypi/l/metpx-sarracenia?color=brightgreen
+.. image:: https://img.shields.io/pypi/l/metpx-sr3?color=brightgreen
     :alt: License (GPLv2)
-    :target: https://pypi.org/project/metpx-sarracenia/
+    :target: https://pypi.org/project/metpx-sr3/
 
 .. image:: https://img.shields.io/github/issues/MetPX/sarracenia
     :alt: Issue Tracker
@@ -24,9 +24,9 @@ page web / homepage: https://metpx.github.io/sarracenia
     :alt: Docker Image Build Status
     :target: https://github.com/MetPX/sarracenia/actions/workflows/ghcr.yml
 
-.. image:: https://github.com/MetPX/sarracenia/actions/workflows/static_flow.yml/badge.svg
+.. image:: https://github.com/MetPX/sarracenia/actions/workflows/flow.yml/badge.svg?branch=v03_wip
     :alt: Run Static Flow
-    :target: https://github.com/MetPX/sarracenia/actions/workflows/static_flow.yml
+    :target: https://github.com/MetPX/sarracenia/actions/workflows/flow.yml
 
 +----------------------------------------------------------------+------------------------------------------------------------------------+
 | [ `Guides <docs/source/Reference/sr3.1.rst#documentation>`_ ]  | [ `Orientation <docs/source/Reference/sr3.1.rst#documentation>`_ ]     |
