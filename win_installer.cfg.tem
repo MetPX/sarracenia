@@ -1,39 +1,21 @@
 [Application]
-name=Sarracenia
+name=metpx-sr3
 version=__version__
 publisher=Shared Services Canada
 icon=windows/sarra.ico
-target=$INSTDIR\bin\sr.exe
+target=$INSTDIR\bin\sr3.exe
 parameters=restart
 license_file=LICENSE.txt
 
 
-[Command sr_audit]
-entry_point=sarra.sr_audit:main
-[Command sr]
-entry_point=sarra.sr:main
-[Command sr_report]
-entry_point=sarra.sr_report:main
-[Command sr_poll]
-entry_point=sarra.sr_poll:main
-[Command sr_post]
-entry_point=sarra.sr_post:main
-[Command sr_watch]
-entry_point=sarra.sr_watch:main
-[Command sr_winnow]
-entry_point=sarra.sr_winnow:main
-[Command sr_sarra]
-entry_point=sarra.sr_sarra:main
-[Command sr_shovel]
-entry_point=sarra.sr_shovel:main
-[Command sr_sender]
-entry_point=sarra.sr_sender:main
-[Command sr_subscribe]
-entry_point=sarra.sr_subscribe:main
-[Command sr_log2save]
-entry_point=sarra.log2save:main
-[Command sr_tailf]
-entry_point=sarra.sr_tailf:main
+[Command sr3]
+entry_point=sarracenia.sr:main
+
+[Command sr3_post]
+entry_point=sarracenia.sr3_post:main
+
+[Command sr3_tailf]
+entry_point=sarracenia.sr_tailf:main
 
 [Python]
 version=__pyversion__
@@ -42,7 +24,11 @@ bitness=64
 [Include]
 local_wheels=pynsist_pkgs/*.whl
     dist/*.whl
-packages=humanize
+packages=
+    dateparser
+    dateutil
+    humanfriendly
+    humanize
     pathtools
     pycparser
     watchdog

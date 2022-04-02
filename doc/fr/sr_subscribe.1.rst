@@ -405,7 +405,7 @@ ou, pour logger quasiment tout::
 par les composants, et l'ancien journal obtient un suffixe de date.
 Le répertoire dans lequel les fichiers journaux sont stockés peut être changé par
 l'option **log**, le nombre maximum de fichiers journaux retournés à conserver est défini par le
-paramètre *logrotate* et cela continue pour les prochaines rotations. Lorsque le nombre maximum de rotations
+paramètre *logRotate* et cela continue pour les prochaines rotations. Lorsque le nombre maximum de rotations
 a été atteint, le plus vieux fichier journal est supprimé.  Pour l'option d'intervalle, une durée est exprimée
 par un nombre et peu prendre un suffixe d'unité de temps, tel que 'd\|D' pour les jours, 'h\|H' pour les heures ou 'm\|M'
 pour les minutes. Sans unité, la rotation sera effectuée à minuit. On peut ajuster:
@@ -413,10 +413,10 @@ pour les minutes. Sans unité, la rotation sera effectuée à minuit. On peut aj
 - log <dir> ( défaut: ~/.cache/sarra/log ) (sur Linux)
    Le répertoire ou les fichiers journaux seront placés.
 
-- logrotate <max_logs> ( défaut: 5 )
+- logRotate <max_logs> ( défaut: 5 )
    Nombre maximal de fichiers journaux archivés.
 
-- logrotate_interval <durée>[<unité_de_temps>] ( défaut: 1 )
+- logRotate_interval <durée>[<unité_de_temps>] ( défaut: 1 )
    La durée de l'intervalle spécifié et une unité de temps optionnelle (p.ex. 5m, 2h, 3d).
 
 - chmod_log ( défaut: 0600 )
@@ -881,7 +881,7 @@ est un option qui a une valeur logique: vrai/faux)
 - **flatten   <string>         (défaut: '/')** 
 - **heartbeat <durée>          (défaut: 300 secondes)**
 - **inline       <booléan>     (défaut: false)**
-- **inline_max <compte>        (défaut: 1024)**
+- **inlineByteMax <compte>        (défaut: 1024)**
 - **inplace       <booléan>    (défaut: true)**
 - **kbytes_ps <count>          (défaut: 0)**
 - **inflight  <chaine>         (défaut: .tmp où NONE si post_broker est setté)** 
@@ -892,11 +892,11 @@ est un option qui a une valeur logique: vrai/faux)
 - **reject    <regexp pattern> (optional)** 
 - **retry    <booléan>         (défaut: True)** 
 - **retry_ttl    <durée>         (défaut: pareil que expire)** 
-- **source_from_exchange  <booléan> (défaut: False)**
+- **sourceFromExchange  <booléan> (défaut: False)**
 - **strip     <compte|regexp>   (défaut: 0)**
 - **suppress_duplicates   <off|on|999>     (défaut: off)**
 - **timeout     <numéro flottante>         (défaut: 0.0)**
-- **tls_rigour  <lax|medium|strict>        (défaut: medium)**
+- **tlsRigour  <lax|medium|strict>        (défaut: medium)**
 
 
 attempts <compte> (défaut: 3)
@@ -1100,7 +1100,7 @@ sont traitées par Sarracenia, c'est-à-dire à l'heure à laquelle les données
 n'est pas décodé ou dérivé du contenu des fichiers livrés. Toutes les dates 
 et heures en Sarracenia sont en UTC.
 
-Référez-vous à *source_from_exchange* pour un exemple d'utilisation.  Notez que toute 
+Référez-vous à *sourceFromExchange* pour un exemple d'utilisation.  Notez que toute 
 option explicite dans un fichier de confiuguration Sarracenia prime sur une variable 
 du même nom dans l'environnement.
 
@@ -1122,7 +1122,7 @@ inline
 ~~~~~~
 
 Sur des liens qui ont une grande latence, il se peut que ca soit efficace d'inclure les
-fichiers plus petit que *inline_max* octets (defaut: 1024) pour éviter 
+fichiers plus petit que *inlineByteMax* octets (defaut: 1024) pour éviter 
 
 
 
@@ -1194,15 +1194,15 @@ L'option **discard**, si elle est réglée sur true, supprime le fichier une
 fois téléchargé. Cette option peut être utile pour déboguer ou tester une
 configuration.
 
-source_from_exchange <booléan> (défaut: False)
+sourceFromExchange <booléan> (défaut: False)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-L'option **source_from_exchange** est principalement destinée aux administrateurs.
+L'option **sourceFromExchange** est principalement destinée aux administrateurs.
 Si les messages sont reçus directement d'une *source* de données, l'échange utilisé 
 peut être 'xs_<brokerSourceUsername>'. Un tel message peut manqué l´en-tête *from_cluster*, 
 ou un utilisateur malveillant peut définir les valeurs de manière incorrecte.
 Pour se protéger contre les deux problèmes, les administrateurs sélectionnent 
-l'option **source_from_exchange**.
+l'option **sourceFromExchange**.
 
 Lorsque l'option est définie, les valeurs du message pour les en-têtes *source* 
 et *from_cluster* seront alors remplacées par::
@@ -1216,7 +1216,7 @@ d'utilisateurs. Ces champs sont utilisés pour renvoyer les rapports à l'origin
 des données injectées. Il est généralement combiné avec: :
 
        *mirror true*
-       *source_from_exchange true*
+       *sourceFromExchange true*
        *directory ${PBD}/${YYYYYYYMMDD}/${SOURCE}*
   
 Pour que les données arrivent dans l'arbre de format standard.
@@ -1253,7 +1253,7 @@ est reçu, il pourrait être choisi par une instance, et quand une copie sera
 reçue, il est probable qu'il sera pris en charge par une autre instance. Pour
 une suppression efficace des doublons avec les instances**, il faut **déployer
 deux couches d'abonnés**. Il faut une **première couche d'abonnés (sr_shovels)**
-avec suppression des doublons désactivée, et l´option *post_exchange_split*
+avec suppression des doublons désactivée, et l´option *post_exchangeSplit*
 activé, ce qui route les messages aux instance selon leur checksum vers une 
 **seconde couche de d´abonnés (sr_winnow) dont les caches de suppression de
 doublons sont actives. 
@@ -1298,10 +1298,10 @@ sommes de contrôle sont tout simplement erronées et devraient être
 remplacées pour les consommateurs en aval.
 
 
-tls_rigour (default: medium)
+tlsRigour (default: medium)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-tls_rigour peut avoir une valeur de: *lax, medium, ou strict*, et indique
+tlsRigour peut avoir une valeur de: *lax, medium, ou strict*, et indique
 à l´application le genre de sécurité qui devrait être toléré dans les
 connexions sécurisés (TLS, Transport Level Security or Secure Socket Layer
 SSL). TLS a plusieurs options a ajuster, par exemple: vérification des
@@ -1577,7 +1577,7 @@ RAPPORTS
 Pour chaque téléchargement, par défaut, un message de rapport amqp est renvoyé au courtier.
 Ceci est fait avec l'option :
 
-- **report_back <booléen> (par défaut : True)**. 
+- **report <booléen> (par défaut : True)**. 
 - **rapport_exchange <report_exchangename> (par défaut : xreport|xs_username* )**
 
 Lorsqu'un rapport est généré, il est envoyé au *report_exchange* configuré. 
@@ -1678,7 +1678,7 @@ le courtier suivant, l'utilisateur définit les options suivantes :
  - **[--outlet <post|json|url>]            (défaut: post)**
  - **[-pbd|--post_base_dir <path>]     (optionelle)**
  - **post_exchange           <name>    (défaut: xpublic)**
- - **post_exchange_split   <number>    (défaut: 0)**
+ - **post_exchangeSplit   <number>    (défaut: 0)**
  - **post_base_url            <url>    (MANDATORY)**
  - **on_post               <script>    (défaut: None)**
 
@@ -1733,16 +1733,16 @@ Chaque fois qu'une avis se produit pour un produit, un utilisateur peut
 définir de déclencher un script. L'option **on_post** serait utilisée pour faire 
 une telle configuration.
 
-post_exchange_split <number> (défaut: 0)
+post_exchangeSplit <number> (défaut: 0)
 ----------------------------------------
 
-L'option **post_exchange_split** ajoute un suffixe à deux chiffres résultant d'une
+L'option **post_exchangeSplit** ajoute un suffixe à deux chiffres résultant d'une
 division entière du dernier digit de la somme de contrôle, afin de répartir les 
 avis entre un certain nombre d'échanges, selon la valeur de leur somme de contrôle.
 C'est utilisé dans les pompes à trafic élevé pour permettre des instances 
 multiples de sr_winnow, ce qui ne peut pas être instancié de la manière normale. exemple::
 
-    post_exchange_split 5
+    post_exchangeSplit 5
     post_exchange xwinnow
 
 se traduira par l'envoi de messages à cinq échanges nommées xwinnow00, xwinnow01,
@@ -2084,7 +2084,7 @@ et les sauvegarder sur disque::
   2017-03-18 13:07:27,786 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
   2017-03-18 13:07:27,788 [WARNING] non standard queue name q_tsub.sr_subscribe.t.99524171.43129428
   2017-03-18 13:07:27,788 [INFO] Binding queue q_tsub.sr_subscribe.t.99524171.43129428 with key v02.post.# from exchange xpublic on broker amqp://tfeed@localhost/
-  2017-03-18 13:07:27,790 [INFO] report_back to tfeed@localhost, exchange: xreport
+  2017-03-18 13:07:27,790 [INFO] report to tfeed@localhost, exchange: xreport
   2017-03-18 13:07:27,792 [INFO] sr_shovel saving to /home/peter/.cache/sarra/shovel/save/sr_shovel_save_0000.save for future restore
   2017-03-18 13:07:27,794 [INFO] sr_shovel saving 1 message topic: v02.post.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml
   2017-03-18 13:07:27,795 [INFO] sr_shovel saving 2 message topic: v02.post.hydrometric.doc.hydrometric_StationList.csv
@@ -2120,7 +2120,7 @@ d´origine::
   2017-03-18 13:15:33,611 [INFO] sr_sarra run
   2017-03-18 13:15:33,611 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
   2017-03-18 13:15:33,613 [INFO] Binding queue q_tfeed.sr_shovel.save with key v02.post.# from exchange xpublic on broker amqp://tfeed@localhost/
-  2017-03-18 13:15:33,615 [INFO] report_back to tfeed@localhost, exchange: xreport
+  2017-03-18 13:15:33,615 [INFO] report to tfeed@localhost, exchange: xreport
   2017-03-18 13:15:33,618 [INFO] sr_shovel restoring 189 messages from save /home/peter/.cache/sarra/shovel/save/sr_shovel_save_0000.save 
   2017-03-18 13:15:33,620 [INFO] sr_shovel restoring message 1 of 189: topic: v02.post.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml
   2017-03-18 13:15:33,620 [INFO] msg_log received: 20170318165818.878 http://localhost:8000/ observations/swob-ml/20170318/CPSL/2017-03-18-1600-CPSL-AUTO-swob.xml topic=v02.post.observations.swob-ml.20170318.CPSL.2017-03-18-1600-CPSL-AUTO-swob.xml lag=1034.74 sundew_extension=DMS:WXO_RENAMED_SWOB:MSC:XML::20170318165818 source=metpx mtime=20170318165818.878 sum=d,66f7249bd5cd68b89a5ad480f4ea1196 to_clusters=DD,DDI.CMC,DDI.EDM,DDI.CMC,CMC,SCIENCE,EDM parts=1,5354,1,0,0 toolong=1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ßñç1234567890ß from_cluster=DD atime=20170318165818.878 filename=2017-03-18-1600-CPSL-AUTO-swob.xml 

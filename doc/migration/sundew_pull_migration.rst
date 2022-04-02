@@ -265,7 +265,7 @@ cat get_BC_ENV_AQ_WAMR.conf::
     prefetch  10
     queue_name q_feeder.${PROGRAM}.${CONFIG}.SHARED
 
-    source_from_exchange True
+    sourceFromExchange True
 
     # what to do with product
 

@@ -12,4 +12,4 @@ build
 pynsist_pkgs
 sarra/*.pyc
 .idea
-
+.vscode

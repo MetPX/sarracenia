@@ -3,4 +3,4 @@ include LICENSE.txt
 include CHANGES.txt
 include README.rst
 
-recursive-include sarra *.py
+recursive-include sarracenia *.py

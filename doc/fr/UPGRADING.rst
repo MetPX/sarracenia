@@ -72,7 +72,7 @@ git origin/master
 2.19.02.b2
 ----------
 
-*CHANGE*: Le paramètre *logrotate* était une durée (une quantité de jours à garder les logs). 
+*CHANGE*: Le paramètre *logRotate* était une durée (une quantité de jours à garder les logs). 
           Il indique maintenant la nombre de fichiers à garder.
 
 

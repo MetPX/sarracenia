@@ -1,0 +1,42 @@
+
+------------------------
+Running MetPX via Docker
+------------------------
+
+
+Introduction
+------------
+
+While Sarracenia can be installed via pip, debian/Ubuntu, a `Docker`_ capability
+is also provided in support of "run anywhere" containerization and cloud
+native environments.
+
+To provide maximum flexibility, Sarracenia's default image does not include
+a broker or an entrypoint.  It is up to the user to further orchestrate their
+deployment accordingly.  `Docker Compose`_ is one such orchestration capability.
+
+Below are various workflows to build, orchestrate and run sarracenia via Docker::
+
+  # clone repo
+  git clone https://github.com/MetPX/sarracenia.git
+  cd sarracenia
+
+  # build image
+  docker build -t metpx-sr3:latest .
+
+  # sarracenia connected to a rabbitmq setup
+  # start
+  docker-compose -f docker/compose/pump/docker-compose.yml up
+  # stop
+  docker-compose -f docker/compose/pump/docker-compose.yml down
+
+Logging
+-------
+
+Norms in the docker world are to send messages to standard output, so
+the option *logStdout* should be used in any configurations in a docker container.
+This will make *docker logs* work as expected in a docker environment, by printing
+to standard output.
+
+.. _`Docker`: https://docker.com
+.. _`Docker Compose`: https://docs.docker.com/compose/

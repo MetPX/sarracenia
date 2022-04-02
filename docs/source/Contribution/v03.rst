@@ -1,0 +1,905 @@
+
+==================
+Version 3 Refactor
+==================
+
+Summary
+-------
+
+This document is aimed at developers who need to work with both v2 code and 
+the refactor that was originally called v3, but eventually was called sr3.
+For developers familiar with v2, the document can serve as a bit of a map 
+to the source code of sr3, which has now stablizied enough that it substantially 
+passes the flow_tests. Sr3 is perhaps not really usable yet, but the direction
+is well established and further development is now described using the issue
+tracker (look at the v3only label.) So this document is now essentially 
+historical. If someone does not know v2, this document will not help as it is
+exclusively about mapping v2 to sr3. Reading the balance of v03 documentation
+should be more helpful. 
+
+Abstract Goals of sr3:
+
+* configuration compatibility (upward compatible from v2.) including all plugins.
+
+* multi-protocol support.
+  ability to put in urls for mqtt, or different amqp libraries, perhaps others.
+
+* internally represent things in v03 messages, have something build
+  v02 ones for compatibility, but operate in v03.
+
+* less code, simpler code.
+  more readable, elegant, pythonic code.
+  make maintenance easier. 
+
+
+goals of opportunity
+~~~~~~~~~~~~~~~~~~~~
+
+  * add stuff to make it work as an API?
+  * potentially new plugin api to allow groups (of messages and/or files.)
+  * Finish off log rotation. 
+  * Assume python >= 3.4 remove old cruft.
+  * Assume ubuntu >= 18.04 remove old cruft.
+  * Assume systemd, remove sysv integration.
+  * have options adopt camelCase where possible.
+  * fully async, multi-sources and sinks.
+ 
+State of the Code
+~~~~~~~~~~~~~~~~~
+
+As of 2021/08/24, the sr3 code passes all the same flow tests that v2 does
+on one laptop (except dynamic in sr3 #407). It runs those same tests using the same configurations, so compatibiliy
+goal is achieved. Sr3 accept mqtt broker urls, and an issue is created #389 for amqp v1.
+Sr3 is being used to feed a WMO experimental feed, albeit with the need
+to restart it regularly ( issue #388 )
+
+The new sr3 code has 4000 fewer lines than v2, and includes mqtt.py (extra broker protocol) 
+as well as a module implementing a compatibility layer with v2 plugins. For example, the 
+new configuration routine is 30% shorter and more consistent in sr3 than in v2.
+The code is also much more pythonic, as the API is much more 
+natural to work with multiple API levels that can be learned by consulting jupyter notebooks.
+
+
+v2 code::
+
+  fractal% find -name '*.py' | grep -v .pybuild | grep -v debian | grep -v plugins | xargs wc -l
+   133 ./sr_winnow.py
+   544 ./sr_sftp.py
+    47 ./sr_tailf.py
+   365 ./sr_cache.py
+   164 ./sr_xattr.py
+  1136 ./sr_message.py
+    51 ./sr_checksum.py
+   129 ./pyads.py
+   306 ./sr_http.py
+  2204 ./sr_subscribe.py
+   403 ./sr_consumer.py
+  1636 ./sr_post.py
+   265 ./sr1.py
+    54 ./sr_log2save.py
+   206 ./sr_sarra.py
+   286 ./sr_rabbit.py
+   567 ./sr_file.py
+    28 ./__init__.py
+   107 ./sr_report.py
+    74 ./sr_watch.py
+   126 ./sr_shovel.py
+   505 ./sr_retry.py
+   956 ./sr_util.py
+   355 ./sr_sender.py
+   368 ./sr_cfg2.py
+  1119 ./sr.py
+   753 ./sr_poll.py
+   729 ./sr_audit.py
+   308 ./sr_credentials.py
+   988 ./sr_instances.py
+   608 ./sr_amqp.py
+   455 ./sr_ftp.py
+  3062 ./sr_config.py
+    33 ./sum/checksum_s.py
+    34 ./sum/checksum_d.py
+    34 ./sum/__init__.py
+    26 ./sum/checksum_0.py
+    30 ./sum/checksum_n.py
+    29 ./sum/checksum_a.py
+  19223 total
+  fractal% 
+
+sr3 code::
+
+  2157 ./config.py
+   342 ./credentials.py
+   384 ./diskqueue.py
+   183 ./filemetadata.py
+   768 ./flowcb/gather/file.py
+    53 ./flowcb/gather/message.py
+     7 ./flowcb/housekeeping/__init__.py
+   130 ./flowcb/housekeeping/resources.py
+   250 ./flowcb/__init__.py
+   145 ./flowcb/log.py
+    24 ./flowcb/nodupe/data.py
+   345 ./flowcb/nodupe/__init__.py
+    24 ./flowcb/nodupe/name.py
+   454 ./flowcb/poll/__init__.py
+    14 ./flowcb/post/__init__.py
+    55 ./flowcb/post/message.py
+   117 ./flowcb/retry.py
+   461 ./flowcb/v2wrapper.py
+  1617 ./flow/__init__.py
+    80 ./flow/poll.py
+    34 ./flow/post.py
+    18 ./flow/report.py
+    29 ./flow/sarra.py
+    27 ./flow/sender.py
+    16 ./flow/shovel.py
+    29 ./flow/subscribe.py
+    35 ./flow/watch.py
+    16 ./flow/winnow.py
+   793 ./__init__.py
+   226 ./instance.py
+    36 ./integrity/arbitrary.py
+    93 ./integrity/__init__.py
+    33 ./integrity/md5name.py
+    24 ./integrity/md5.py
+    17 ./integrity/random.py
+    24 ./integrity/sha512.py
+    17 ./moth/amq1.py
+   585 ./moth/amqp.py
+   313 ./moth/__init__.py
+   548 ./moth/mqtt.py
+    16 ./moth/pika.py
+   135 ./pyads.py
+   349 ./rabbitmq_admin.py
+    26 ./sr_flow.py
+    52 ./sr_post.py
+  2066 ./sr.py
+    50 ./sr_tailf.py
+   383 ./transfer/file.py
+   514 ./transfer/ftp.py
+   361 ./transfer/https.py
+   437 ./transfer/__init__.py
+   607 ./transfer/sftp.py
+  15519 total
+
+
+V02 Plugin Pain Points
+----------------------
+
+Writing plugins should be a straight-forward activity for people with a rudimentary
+knowledge of Python, and some understanding of the task at hand. In version 2,
+writing plugins is a lot harder than it should be.  
+
+* syntax error, v2 gives basically a binary response, either reading in the plugin worked
+  or it didn't... it is very unfriendly compared to normal python.
+
+* when a setting is put in a config file, it's value is [ value ], and not value (It's in a list.)
+
+* weird scoping issue of import (import in main does not carry over to on_message, need to import 
+  in the main body of the routine as well as in the python file.)
+
+* What the heck is self, what the heck is parent? These arguments to plugins are not obvious. 
+  self usually refers to the caller, not the self in a normal class, and parent is the flow,
+  so no state can be stored in self, and all must be stored in parent. Parent is kind of
+  a catch all for settings and dynamic values in one pile.
+
+* bizarre use of python logger API... self.logger? wha?
+
+* inability to call from python code (no API.)
+
+* inability to *add* messages within a plugin (can only process the message you have.)
+
+* inability to process groups of messages at a time (say for concurrent sends or 
+  downloads, rather than just one at time.
+
+* poor handling of message acknowledgements. v02 just ackowledges the previous message 
+  when a new one is received.
+
+* lack of clarity about options, versus working variables, because they are in the same namespace
+  in a plugin, if you find self.setting==True  ... is that because the application set it somewhere, 
+  or because an option was set by a client... is it a setting or a variable?
+
+* making changes to messages is a bit complicated, because they evolved over different message formats.
+
+
+Changes Done to Address Pain Points
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* use importlib from python, much more standard way to register plugins.
+  now syntax errors will be picked up just like any other python module being imported,
+  with a reasonable error message.
+
+* no strange decoration at end of plugins (self.plugin = , etc... just plain python.)
+
+* The strange choice of *parent* as a place for storing settings is puzzling to people.
+  *parent* instance variable becomes *options*,  *self.parent* becomes *self.o*
+   
+* plural event callbacks replace singular ones:
+
+  *  after_accept(self,worklist) replaces on_message(self,parent)
+  *  after_work(self,worklist) replaces on_part/on_file(self,parent)
+
+
+* messages are just python dictionaries. fields defined by json.loads( v03 payload format )
+  messages only contain the actual fields, no settings or other things...
+  plain data.
+ 
+* callbacks move messages between worklists. A worklist is just a list of messages. There are four:
+
+  * worklist.incoming -- messages yet to be processed.
+  * worklist.rejected -- message which are not to be further processed.
+  * worklist.ok -- messages which have been successfully processed.
+  * worklist.retry   -- messages for which processing was attempted, but it failed.
+
+  could add others... significant number of applications for something like *deferred*
+
+* acknowledgements done more pro-actively, as soon as a message is processed
+  (for rejected or failed messages, this is much sooner than in v2.)
+
+* add scoping mechanism to define plugin properties.
+
+* properties fed to __init__ of the plugin,  parent is gone from the plugins, they should
+  just refer to self.o for the options/settings they need. (self.o clearly separates options
+  from working data.)
+
+* command-line parsing using python standard argParse library.  Means that keywords no longer work
+  with a single -.  Settling on standard use of -- for word based options, and - for abbrevs.
+  examples:  Good: --config, and -c, BAD: -config --c .
+
+
+
+Ship of Theseus
+---------------
+
+It might be that the re-factoring inherent in v03 results in a 
+Ship of Theseus, where it works the same way as v02, but all
+the parts are different... obviously a concern/risk... 
+might be a feature.
+
+Now that we are a good way throught the process, a
+mapping of source code transcriptions between
+the two versions, is clear:
+
++--------------------------+---------------------------+
+| Version 2 file           | Version 3 file            |
++--------------------------+---------------------------+
+| sr_config.py             | config.py                 |
++--------------------------+---------------------------+
+| sr_instances.py          | sr.py for most mgmt.      |
+|                          | instance.py single proc   |
+|                          |                           |
++--------------------------+---------------------------+
+| sr_consumer.py           | moth/__init__.py          |
+|                          |                           |
+| sr_amqp.py               | moth/amqp.py              |
+|                          |                           |
+| sr_message.py            |                           |
++--------------------------+---------------------------+
+| sr_checksum.py           | integrity/                |
+|                          |      __init__.py          |
+| sum/*                    |      *                    |
++--------------------------+---------------------------+
+| sr_cache.py              | flowcb/nodupe.py          |
++--------------------------+---------------------------+
+| sr_retry.py              | flowcb/retry.py           |
+|                          |                           |
+|                          | diskqueue.py              |
++--------------------------+---------------------------+
+| sr_post.py               | flowcb/gather/file.py     |
+|                          |                           |
+|                          | flow/post.py              |
++--------------------------+---------------------------+
+| sr_poll.py               | flowcb/poll/              |
+|                          |        __init__.py        |
+|                          | flow/poll.py              |
++--------------------------+---------------------------+
+|                          | transfer/__init__.py      |
+| sr_util.py/sr_proto      |  * transfer.Protocol      |
+|                          |                           |
+| sr_util.py/sr_transport  | flow/__init__.py          |
+|                          |                           |
+| sr_file.py               | transfer/file.py          |
+|                          |                           |
+| sr_ftp.py                | transfer/ftp.py           |
+|                          |                           |
+| sr_http.py               | transfer/http.py          |
+|                          |                           |
+| sr_sftp.py               | transfer/sftp.py          |
+|                          |                           |
++--------------------------+---------------------------+
+| plugins/                 | flowcb/  (sr3 ones)       |
+|                          | plugins/ still there      |
+|                          |    for v2 ones.           |
++--------------------------+---------------------------+
+| overall flow             | flow/__init__.py          |
++--------------------------+---------------------------+
+|                          |                           |
+| sr_poll.py               | sr_flow.py                |
+|                          | as entry point...         |
+| sr_post.py               |                           |
+|                          | but generally just use    |
+| sr_subscribe.py          | sr.py as single one.      |
+|                          |                           |
+| sr_shovel.py             |                           |
+|                          |                           |
+| sr_report.py             |                           |
+|                          |                           |
+| sr_sarra.py              |                           |
+|                          |                           |
+| sr_sender.py             |                           |
+|                          |                           |
+| sr_watch.py              |                           |
+|                          |                           |
+| sr_winnow.py             |                           |
+|                          |                           |
++--------------------------+---------------------------+
+
+
+Mappings
+~~~~~~~~
+
+v2->sr3 instance variables::
+
+    self.user_cache_dir --> self.o.cfg_run_dir
+
+Changes needed in v2 plugins::
+
+    from sarra.sr_util import --> from sarracenia import 
+
+
+
+Dictionaries or Members for Properties?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There seems to be a tension between using class members and dictionaries
+for settings. Members seem more convenient, but harder to manipulate,
+though we have equivalent idioms. Argparse returns options as their own
+members of this parsing object. There is a hierarchy to reconcile:
+
+* protocol defaults
+* consumer defaults
+* component defaults
+* configuration settings (overrides)
+* command line options (overrides)
+
+resolving them to apply overrides, mais more sense as operations
+on dictionaries, printing, saving loading, again makes more sense
+as dictionaries. In code, members are slightly shorter, and perhaps
+more idiomatic:: 
+
+   hasattr(cfg,'member') vs. 'member' in cfg (dictionary)
+
+What makes more sense... Does it make any practical difference?
+not sure... need to keep the members for places where
+callbacks are called, but can use properties elsewhere, if desired.
+
+
+Known Problems (Solved in sr3)
+------------------------------
+
+* passing of logs around is really odd. We didn't understand what 
+  python logging objects were. Need to use them in the normal way.
+  new modules are built that way...
+
+  In new modules, use the logging.getLogger( __name__ ) convention, but
+  often the name does not match the actual source file...  why?
+  e.g. a log message from config.py parsing shows up like::
+
+     2020-08-13 ...  [INFO] sarra.sr_credentials parse_file ... msg text...
+
+  why is it labelled sr_credentials? no idea. 
+
+
+* this weird try/except thing for importing modules... tried removing
+  it but it broke parsing of checksums... sigh... have to spend time
+  on specifically that problem. On new modules ( sarra.config, 
+  sarra.tmpc.*, sr.py ) using normal imports. likely need to
+  refactor how checksum plugin mechanism works then try again.
+
+  totally refactored now. Integrity class is normal, and separate from flowcb.
+
+
+Concrete Plan (Done)
+--------------------
+
+Replace sarra/sr_config with sarra/sr_cfg2. The new sr_cfg2 uses argparse 
+and a simpler model for config file parsing. This became config.py
+
+make sr.py accept operations on subsets, so it becomes the unique entry point.
+internalize implementation of all management stuff, declare etc...
+
+HMPC - Topic Message Protocol Client... a generalization of the message
+passing library with a simplified API.  abstracts the protocol differences
+away. (This later became the Moth module.)
+
+The method of testing is to make modifications and check them against the 
+sr_insects v03_wip branch. In general, an un-modified sr_insects tests should
+work, but since the logs change, there is logic being added on that branch
+to parse v2 and sr3 versions in the same way. Thus the v03_wip branch tests
+are compatible with both stable and work-in-progress versions.
+
+To get each component working, practice with individual unit tests, and then
+get to static-flow tests.  Can also do flakey_broker. The work is only going
+that far as all the components are converted. Once full conversion is achieved,
+then will look at dynamic_flow.
+
+Purpose is not a finished product, but a product with sufficient and 
+appropriate structure so that tasks can be delegated with reasonable hope of success.
+
+
+Done
+----
+
+The functionality of sr_amqp.py is completely reproduced in moth/amqp.py 
+All the important logic is preserved, but it is transcribed into new classes. 
+Should have identical failure recovery behaviour. But it doesn't. We have
+static flow test passing, but the flakey broker, which tests such recovery,
+is currently broken. (2022/03 all good now!)
+
+sr_cfg2.py was still a stub, it has a lot of features and options, but
+it isn't clear how to expand it to all of them. the thing about instances
+inheriting from configure... it is odd, but hard to see how changing that
+will not break everything, plugin-wise... thinking about having defaults
+distributed to the classes that use the settings, and having something
+that brings them together, instead of one massive config thing.
+renamed to config.py (aka: sarra.config) and exercising it with
+sr.py.  It is now a complete replacement.
+
+Replaced the sr_consumer class with a new class that implements the
+General Algorithm describe in `Concepts <Concepts.rst#the-general-algorithm>`
+This happenned and became the Flow Module, and *the General Algorithm* got 
+renamed *the Flow Algorithm*. yes, that is now flow/ class hierarchy.
+The main logic is in __init__, and actual components are sub-classes.
+
+Thinking about just removing sr\_ the prefix from classes for replacements,
+since they are in sarra directory anyways. so have an internal class 
+sarra/instances, sarra/sarra <- replace consumer... This happenned
+and became a place holder for progress, meaning that files with sr\_
+prefix in the name, that are not entry-points, indicate v2 code that
+has not yet been retired/replaced.
+
+Added configuration selection to sr.py (e.g. subscribe/\*) and 
+*setup*, and *cleanup* options. 
+
+add/remove/enable/disable/edit (in sr.py) done.
+
+'log' dropped for now... (which log ?)
+
+added list, show, and built prototype shovel... required
+a instance (sets state files and logs) and then calls flow... 
+flow/run() is visibly  the general algorithm,
+shovel is a sub-class of flow.
+
+Got a skeleton for v2 plugins working (v2wrapper.py) implemented 
+import-based and group oriented sr3 plugin framework. ( #213 )
+
+cache (now called noDupe) working.
+
+re-wrote how the sr3 callbacks work to use worklists, and then re-cast
+cache and retry v2plugins as sr3 callbacks themselves.
+
+renamed message queue abstract class from tmpc to moth
+(what does a Sarracenia eat?)
+
+With shovel and winnow replaced by new implementations, it passes
+the dynamic flow test, including the Retry module ported to sr3, and
+a number of v2 modules used as-is.
+
+Completed an initial version of the sr_post component now (in sr3: flowcb.gather.file.File)
+Now working on sr_poll, which will take a while because it involve refactoring: sr_file, sr_http,
+sr_ftp, sr_sftp into the transfer module
+
+Mostly done sr_subscribe, which, in the old version, is a base class for all other components,
+but in sr3 is just the first component that actually downloads data. So encountering all
+issues with data download, and flowcb that do interesting things. Mostly done, but 
+flowcb not quite working.
+
+sr_sarra was straightforward once sr_subscribe was done.  
+
+re-implemented Transfer get to have conventional return value as the number of bytes 
+transferred, and if they differ, that signals an issue.
+
+sr_sender send now done, involved a lot more thinking about how to set new\_ fields
+in messages. but once that was done, was able to remove both the sender and sr_subscribe
+(the parent class of most components) and allowed removal of sr_cache, sr_consumer, sr_file,
+sr_ftp, sr_http, sr_message, sr_retry, and sr_sftp, sum/\*, sr_util.
+
+That's the end of the most difficult part.  
+
+There was one commit to reformat the entire codebase to PEP style using yapf3.
+Now I have the yapf3 pre-commit hook that reformats changes so that the entire codebase
+remains yapf3 formatted.
+
+Also have written message rate limiting into core, so now have message_rate_min, and message_rate_max
+settings that replace/deprecate v2 post_rate_limit plugin.
+
+
+Worries Addressed
+~~~~~~~~~~~~~~~~~
+
+This section contains issues that were taken care of.  They were a bother for a while,
+so noting down what the solution was.
+
+* logging using __name__ sometimes ends up claiming to be from the wrong file.
+  example::  
+
+    2020-08-16 01:31:52,628 [INFO] sarra.sr_credentials set_newMessageFields FIXME new_dir=/home/peter/sarra_devdocroot/download
+
+  set_newMessageFields is in config.py not sr_credentials... why it is doing that?
+  Likely wait until all legacy code is replaced before tackling this.
+  if this doesn't get fixed, then make it a bug report.
+
+  fixed: note... the problem was that the logger declaration must be AFTER all 
+  imports.  Concretely::
+
+    logger = logging.getLogger( __name__ )
+
+  must be placed after all imports.
+
+* sr_audit ? what to do. Removed.
+
+* all non entry_point sr_*.py files can be removed.
+  remove sum sub-directory. sr_util.py
+
+
+Accel Overhaul
+~~~~~~~~~~~~~~
+
+plugin compatiblity under review... decided to re-write the accel_* plugins for sr3, and
+change the API because the v2 one has fundamental deficiencies:
+
+* the do_get api deals with failure by raising an exception... there is no checking
+  of return codes on built-in routines... It is possiby taken care of by try/except, 
+  but would prefer for a normal program flow to be able to trace and
+  report when an i/o failure happens (keep try/except to as small a scale as we can.)
+
+* there is a highly... idiosyncratic nature of the do_get, for example in the v2 accel_scp,
+  where it calls do_get, and then decides not to run and falls through to the built-in 
+  one. This logic is rarely helpful, difficult to explain, and confusing to diagnose
+  in practice.
+
+Have re-written accel_wget, and accel_scp to the new api... working through static-flow
+to test them. There is also logic to spot v2 invocations of them, and replace with sr3
+in the configuration. And the first attempt was quite convoluted... was not happy.
+2nd attempt also... working on a third one.
+
+Re-wrote again, just adding getAccelerated() to the Transfer API, so it is built-in
+instead of being a plugin.  Any Transfer class can specify an accelerator and it
+will be triggered by accel_threshold. https and sftp/scp accelerators are implemented.
+
+DoneTodo
+--------
+
+Items from the TODO list that have been addressed.
+
+* migrate sr_xattr.py to sarra/xattr.py (now called sarracenia/filemetadata.py)
+
+* fix flakey_broker test to pass. (done!)
+
+* update documentation... change everything to use sr3 entry point, yes done.
+  (See transition point below.)
+
+* consider transition, life with both versions... should sr.py --> sr3.py ? Yes. Done
+  should we have a separate debian package with transition entry points
+  (sr_subscribe and friends only included in compat package, and all)
+  interactivity natively only happens through sr3?
+  now called metpx-sr3
+
+* perhaps move the whole plugin thing up a level (get rid of directory)
+  so Plugin becomes a class instantiated in sarra/__init__.py... puts
+  plugins and built-in code on a more even level... for example how
+  do plugin transfer protocols work?  thinking... This is sort of done
+  now: plugin became flowcb. Integrity is removed from the hierarchy.
+  Class extension is now a separate kind of plugin (via import)
+
+* change default topic_prefix to v03.post done 2021/02
+
+* change default topic_prefix to v03 done 2021/03
+
+* change topic_prefix to topicPrefix done 2021/03
+
+* Adjust Programmer's Guide to reflect new API. done 2021/02
+
+* log incoherency between 'info' and logging.INFO prevents proper log control.
+  FIXED 2021/02.
+
+* missing accelerators:  sftp.putAcc, ftp.putAc, ftp.getAc, file.getAc, 
+
+* migrate sr_credentials.py to sarracenia/credentials.py.
+
+* remove *post* from v03 topic trees. Done!
+
+* cleanup entry points: sr_audit, sr_tailf, sr_log2save, 
+
+* test with dynamic-flow.
+
+* MQTT Support (Done!)
+
+
+BUGS/Concerns/Issues
+--------------------
+
+migrated to github issues with v3only tag.
+
+After Parity: True Improvements
+-------------------------------
+
+TODO
+----
+
+At this point am able to report existing problems as issues with the v03only tag.
+so below is the things leftover after refactor:
+
+* added "missing defaults" message, examine list, and see if we should set them all.
+  check_undeclared_options missing defaults: {'discard', 'exchangeSplit', 
+  'pipe', 'post_total_maxlag', 'exchange_suffix', 'destination', 'inplace', 
+  'report_exchange', 'post_exchangeSplit', 'set_passwords', 'declare_exchange', 
+  'sanity_log_dead', 'report_daemons', 'realpath_filter', 'reconnect', 
+  'post_exchange_suffix', 'save', 'pump_flag', 'cache_stat', 'declare_queue', 'restore', 
+  'bind_queue', 'dry_run', 'sourceFromExchange', 'retry_mode', 'poll_without_vip', 'header'}
+  #405
+
+* #369 ... clean shutdown
+
+* figure out an AsyncAPI implementation for subscription at least. #401
+
+* get partitioned file transfers working again. #396
+  `<on_part_assembly.rst>`_
+
+* convert existing poll to poll0 ? old poll. #394
+
+* alarm_set truncates to integers... hmm.. use setitimer instead?  #397
+
+* outlet option is missing. #398
+
+* vhost support needed. #384
+
+* sr_poll active/passive bug #29
+
+* realpath_filter is used by CMOI. Seems to be disappeared in sr3. It's there in the C version. #399
+
+* port rest of v02 plugins to v03 equivalents and add mappings in config.py, #400
+  so that we have barely any v2's left. 
+
+* transfer/sftp.py remove file_index from implementation ( #367 ) depend on NoDupe.py
+
+* full async mode for MQP's. requires publish_retry functionality.
+  (again in future plans above.) #392
+
+* once full async mode available, allow multiple gathers and publishes.
+  (again in future plans above.) #392
+
+* #33 add hostname to default queue.
+
+* #348 add statehost to .cache directory tree.
+
+
+
+Not Baked/Thinking
+------------------
+
+Structural code things that are not settled, may change.
+Probably need to be settled before having anyone else dive in.
+
+* scopable properties for internal classes, like they exist for plugins. #402
+  I think this is done.  Would have to document somewhere,
+  testing and demoing at the same time.
+
+* took the code required to implement set_newMessageFields (now called
+  sarracenia.Message.updateFieldsAccept) verbatim from v2.
+  It is pretty hairy... perhaps turn into a plugin, to get it out of the 
+  main code? Don't think it will ever go away. It is fairly ugly, but 
+  very useful and heavily used in existing configs. probably OK. 
+
+* changing recovery model, so that all retry/logic is in main loop,  #392
+  and moth just returns immediately. Point being could have multiple
+  gathers for multiple upstreams, and get messages from whichever is
+  live...  also end up with a single loop that way... cleaner.
+  likely equivalent to async mode mentioned above.
+
+* *gather* as a way of separating having multiple input brokers.  #392
+  so could avoid needing a winnow, but just having a subscriber connect to 
+  multiple upstreams directly.
+  likely equivalent to async, and multi-gather.
+
+* think about API by sub-classing flow... and having it auto-integrate
+  with sr entry point... hmm... likely look at this when updating
+  Programmer's Guide. 
+
+* more worklists? rename failed -> retry or deferred.  Add a new failed
+  where failed represents a permanent failure. and the other represents
+  to be retried later.
+
+* `MQTT issues <mqtt_issues.rst>`_
+
+
+FIXME/Deferred
+--------------
+
+The point of the main sr3 work is to get a re-factor done to the point where
+the code is understandable to new coders, so that tasks can be assigned.
+This section includes a mix of tasks that can hopefully be assigned, 
+
+FIXME are things left to the side that need to be seen to.
+
+
+* **RELEASE BLOCKER** hairy. #403
+  sr_watch does not batch things. It just dumps an entire tree.
+  This will need to be re-wored before release into an iterator style approach.
+  so if you start in a tree with a million files, it will scan the entire million
+  and present them as a single in memory worklist.  This will have performance
+  problems.  want to incrementally proceed though lists one 'prefetch' batch
+  at a time.
+
+  There is an interim fix to pretend it does batching properly, but the memory
+  impact and delay to producing the first file is still there, but at least
+  returns one batch at a time.
+
+* **RELEASE BLOCKER** logs of sr_poll and sr_watch tend to get humungous way too quickly. #389
+
+* try out jsonfile for building messages to post. can build json incrementally, #402
+  so you do not need to delete the _deleteOnPost elements (can just skip over them)
+
+* um... add the protocols.   mqtt and qpid-proton (amq1) #389
+
+* make sure stop actually works... seeing strays after tests... but changing too much 
+  to really know. need to check. It does!
+
+* We gave up on partitioned sending as a retrenchment for the refactor. It will come in a
+  later version.
+
+* reporting features mostly removed.
+
+Transition
+----------
+
+Do not know if straightforward (Replacement) upgrade is a good approach. Will it be possible to test sarra 
+sufficiently such that upgrades of entire pumps are possible? or will incremental (parallel) upgrades 
+be required?
+
+It depends on whether sr3 will work as a drop-in replacement or not. There is some incompatibility
+we know will happen with do_* plugins. If that is sufficiently well documented and easily
+dealt with, then it might not be a problem. On the other hand, if there are subtle
+problems, then a parallel approach might be needed.
+
+Replacement
+~~~~~~~~~~~
+
+The package has the same name as v2 ones (metpx-sarracenia) differing only in version number.
+Installing the new replaces the old completely. This requires that the new version be equal
+or better than the old in all aspects, or that installation be confined to test machines
+until that point is reached.
+
+This takes longer to get initial installation, but has much clearer demarcation (you know
+when you are done.)
+
+
+Parallel
+~~~~~~~~
+
+Name the package metpx-sarra3 and have the python class directory be sarra3 (instead of sarra.)
+(also ~/.config/sr3 and ~/.cache/sr3. likely the .cache files must be different because
+retry files have different formats? validate. ) So one can copy configurations from old to
+new and run both versions in parallel. The central entry point would be sr3 (rather than
+sr), and to avoid confusion the other entry points (sr_subscribe etc...) would be omitted
+so that v2 code would work unchanged. Might require some tweaks to have the sr classes
+ignore instances from the other versions.
+
+This is similar to python2 to python3 transition. Allows deployment of sr3 without having
+to convert entirely to it. Allows running some components, and building maturity slowly
+while others are not ready. It facilitates A:B testing, running the same configuration
+with one version or the other without having the install or use a different machine,
+facilitating verification of compatibility.
+
+Conclusion
+~~~~~~~~~~
+
+Have implemented Parallel model, with APPNAME=sr3 ( ~/.config/sr3, ~/.cache/sr3 )
+sr3\_ prefix replacing sr\_ for all commands, and changing the sarra Python class to
+the full sarracenia name to avoid clashing python classes.
+
+
+
+Incompatibilities
+-----------------
+
+There are not supposed to be any. This is a running list of things to fix or document.
+breaking changes:
+
+
+* in sr3, use -- for full word options, like --config, or --broker.  In v2 you could use -config and -broker,
+  but that will end badly in sr3.  In the old command line parser, -config, and --config were the same, which 
+  was idiosyncratic.  The new
+  command line option parser is built on ArgParse, and interprets a single - as prefix a single option where the
+  the subsequent letters are and argument.  Example
+
+  -config hoho.conf  -> in v2 refers to loading the hoho.conf file as a configuration.
+
+  in sr3, it will be interpreted as -c (config) load the onfig.conf gile, and hoho.conf is part of some subsequent option.
+
+* loglevel none -> loglevel notset (now passing loglevel setting directly to python logging module, none isn't defined.)
+
+* log messages and output in interactive, will be completely different.
+
+* dropped settings: use_amqplib, use_pika... replaced by separate per protocol implementation libraries. amqp uses the 'amqp' library which is neither of the above. ( commit 02fad37b89c2f51420e62f2f883a3828d2056de1 )
+
+* dropping on_watch plugins. afaict, no-one uses them.  The way v03 works it would be an after_accept for a watch.
+  makes more sense that way anyways.
+
+* plugins that access internals of sr_retry need to be rewritten, as the class is now plugin/retry.py.
+  the way to queue something for retry in current plugins is to append them to the failed queue.
+  This is only an issue in the flow tests of sr_insects.
+
+* do_download and do_send were 1st pass at *schemed* plugins, I think they should be deprecated/replaced
+  by do_get and do_put. unclear whether there is a need for these anymore (download and send plugins are
+  at wrong level of abstraction)
+
+* do_download, do_send, do_get, do_put are *schemed* downloads... that is, rather than stacking so that
+  all are called, they are registered for particular protocols.  in v2, for example accel_* plugins would
+  register the "download" scheme. an on_message entry point would alter the scheme so that the do_* routine
+  would be invoked. In v2, the calling signature for all plugins is the same (self, parent) but for
+  these do_get and do_put cases, that is quite counter productive. so instead have a calling signature
+  identical to built-in protocol get/put... src_file, dst_file, src_offset, dst_offset, len )
+  Resolution: just implement new Transfer classes, does not naturally fit in flowcb.
+
+* In v2, mirror default settings used to be False in all components except sr_sarra.
+  but the mirror setting was not honoured in shovel, and winnow (bug #358) 
+  this bug is corrected in sr3, but then you notice that the default is wrong.
+ 
+  In sr3, the default for mirror is changed to True for all flows except subscribe, which
+  is the least surprising behaviour given the default to False in v2.
+   
+* in v2, download does not check the length of a file while it is downloading.
+  in sr3, it does. as an example, when using sftp as a poll, ls will list the size of a symbolic link.
+  When it downloads, it gets the actual file, and not the symlink, so the size is different.
+
+  Example from flow test::
+
+       2021-04-03 10:13:07,310 [ERROR] sarracenia.transfer read_writelocal util/writelocal mismatched file length writing FCAS31_KWBC_031412___39224.slink. Message said to expect 135 bytes.  Got 114 bytes.
+
+  the file is 114 bytes, by the link path is 135 bytes... 
+  both v2 and sr3 download the file and not the link, but sr3 produces this error message.
+  Thinking about this one...  is it a bug in poll? 
+
+* In v2, if you delete a file, and then re-create it, an event will be created.
+  In sr3, if you do the same, the old entry will be in the nodupe cache, and the event will be suppressed.
+  I have noticed this difference, but not sure which version's behaviour is correct.
+  it could be fixed, if we decide the old behaviour is right.
+
+
+Features
+--------
+
+* All the components are now derived from the *flow* class, and run the general algorithm already
+  designed as the basis of v2, but never implemented as such.
+
+* The extension API is now vanilla python with no magic settings. just standard classes, using standard import mechanism.
+  debugging should be much simpler now as the interpreter will provide much better error messages on startup.
+  The v2 style plugins are now called *flow callbacks*, and there are a number of classes (integrity, moth, 
+  transfer, perhaps flow) that permit extension by straightforward sub-classing. This should make it much
+  easier to add additional protocols for transport and messages, as well checksum algorithms for new data types.
+
+* sarra.moth class abstracts away AMQP, so messaging protocol becomes pluggable.
+
+* use the sarracenia/ prefix (already present) to replace sr\_ prefix on modules.
+
+* API access to flows. (so can build entirely new programs in python by subclassing.)
+
+* properties/options for classes are now hierarchical, so can set debug to specific classes within app.
+
+* sr ability to select multiple components and configurations to operate on.
+
+* sr list examples is now used to display examples separate from the installed ones.
+
+* sr show is now used to display the parsed configuration.
+
+* messages are acknowledged more quickly, should help with throughput.
+
+* FlowCB plugin entry_points are now based on groups of messages, rather than individual ones, allowing people
+  to organize concurrent work.
+
+* integrity (checksums) are now plugins.
+
+* gather (inlet? sources of messages) are now plugins.
+
+* added typing to options settings, so plugins can declare: size, duration, string, or list.
+

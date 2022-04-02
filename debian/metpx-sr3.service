@@ -1,0 +1,22 @@
+# This file provides a service definition for sarra
+# It is equivalent to a /etc/init.d script when systemd is init system.
+# Packager should place this file in: /usr/lib/systemd/system
+# user and group 'sarra' need to exist and that account needs to 
+# contain the configuration for the pump (as per sarra standards)
+# 
+
+[Unit]
+Description=Sarracenia File Copy Service
+After=network.target local-fs.target remote-fs.target 
+
+[Service]
+Type=forking
+ExecStart=/usr/bin/sr3 start
+User=sarra
+Group=sarra
+
+ExecReload=/usr/bin/sr3 reload
+ExecStop=/usr/bin/sr3 stop
+
+[Install]
+WantedBy=multi-user.target

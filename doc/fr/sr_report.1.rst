@@ -38,7 +38,7 @@ sr_report est sr_subscribe avec les paramètres suivants modifiés: :
   topic-prefix v02.report
   cache       off
   accept_unmatch On
-  report_back off
+  report off
 
 L'action **foreground** est différente. Il est utilisé lors de la construction d'une configuration.
 ou déboguer des choses, quand l'utilisateur veut exécuter le programme et son fichier de configuration.
