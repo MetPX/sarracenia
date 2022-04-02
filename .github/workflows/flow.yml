@@ -60,7 +60,6 @@ jobs:
       - name: Limit ${{ matrix.which_test }} test.
         run: |
           cd ${HOME}/sr_insects/${{ matrix.which_test }}; ./flow_limit.sh
-          if [ ${{ matrix.WHICH_TEST }} == flakey_broker ]; then sleep 120s; fi
 
       - name: Check results of ${{ matrix.which_test }} test.
         run: |
@@ -70,6 +69,7 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
+          sr3 stop
           cd ${HOME}/.cache/sr3/log/
           tar -czf ${HOME}/logs.tar.gz *
       
