@@ -1,7 +1,8 @@
-metpx-sr3 (3.00.16b3) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.16) UNRELEASED; urgency=medium
 
   * wrapped all calls to callbacks with try/except and error messaging.
   * more obvious errors when extra dependencies are missing.
+  * more documentation improvements.
 
  -- Peter Silva <peter.silva@ssc-spc.gc.ca>  Sat, 02 Apr 2022 10:47:21 -0400
 
@@ -19,7 +20,7 @@ metpx-sr3 (3.00.15b2) unstable; urgency=medium
   * #480 sr3 status display problem not ignoring files that are not .conf ones.
   * #477 sr3 edit of default.conf, credentials.conf, admin.conf work again.
 
- -- Peter Silva <peter@ssc-spc.gc.ca>  Wed, 30 Mar 2022 22:04:37 -0400
+ -- Peter Silva <peter.silva@ssc-spc.gc.ca>  Wed, 30 Mar 2022 22:04:37 -0400
 
 metpx-sr3 (3.00.014b1) unstable; urgency=medium
 
