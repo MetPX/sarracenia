@@ -184,14 +184,23 @@ class Flow:
     def loadCallbacks(self, plugins_to_load):
 
         for m in self.o.imports:
-            importlib.import_module(m)
+            try:
+                importlib.import_module(m)
+            except Exception as ex:
+                logger.critical( f"python module import {m} load failed: {ex}" )
+                logger.debug( "details:", exc_info=True )
+                return False
 
-        logger.info('plugins to load: %s' % (plugins_to_load))
+        logger.info('flowCallback plugins to load: %s' % (plugins_to_load))
         for c in plugins_to_load:
+            try:
+                plugin = sarracenia.flowcb.load_library(c, self.o)
+            except Exception as ex:
+                logger.critical( f"flowCallback plugin {c} did not load: {ex}" )
+                logger.debug( "details:", exc_info=True )
+                return False
 
-            plugin = sarracenia.flowcb.load_library(c, self.o)
-
-            logger.debug('plugin loading: %s an instance of: %s' % (c, plugin))
+            logger.debug('flowCallback plugin loading: %s an instance of: %s' % (c, plugin))
             for entry_point in sarracenia.flowcb.entry_points:
                 if hasattr(plugin, entry_point):
                     fn = getattr(plugin, entry_point)
@@ -208,16 +217,26 @@ class Flow:
 
         logger.debug('complete')
         self.o.check_undeclared_options()
+        return True
 
     def _runCallbacksWorklist(self, entry_point):
 
         if hasattr(self, 'plugins') and (entry_point in self.plugins):
             for p in self.plugins[entry_point]:
-                p(self.worklist)
+                try:
+                    p(self.worklist)
+                except Exception as ex:
+                    logger.error( f'flowCallback plugin {p}/{entry_point} crashed: {ex}' )
+                    logger.debug( "details:", exc_info=True )
 
     def _runCallbacksTime(self, entry_point):
         for p in self.plugins[entry_point]:
-            p()
+            try:
+                p()
+            except Exception as ex:
+                logger.error( f'flowCallback plugin {p}/{entry_point} crashed: {ex}' )
+                logger.debug( "details:", exc_info=True )
+
 
     def has_vip(self):
 
@@ -268,7 +287,11 @@ class Flow:
     def ack(self, mlist) -> None:
         if "ack" in self.plugins:
             for p in self.plugins["ack"]:
-                p(mlist)
+                try:
+                    p(mlist)
+                except Exception as ex:
+                    logger.error( f'flowCallback plugin {p}/ack crashed: {ex}' )
+                    logger.debug( "details:", exc_info=True )
 
     def run(self):
         """
@@ -277,7 +300,8 @@ class Flow:
           check if stop_requested once in a while, but never return otherwise.
         """
 
-        self.loadCallbacks(self.plugins['load'])
+        if not self.loadCallbacks(self.plugins['load']):
+           return
 
         logger.debug("working directory: %s" % os.getcwd())
 
@@ -556,7 +580,12 @@ class Flow:
 
     def gather(self):
         for p in self.plugins["gather"]:
-            new_incoming = p()
+            try:
+                new_incoming = p()
+            except Exception as ex:
+                logger.error( f'flowCallback plugin {p} crashed: {ex}' )
+                logger.debug( "details:", exc_info=True )
+
             if len(new_incoming) > 0:
                 self.worklist.incoming.extend(new_incoming)
 
@@ -575,7 +604,12 @@ class Flow:
     def post(self):
 
         for p in self.plugins["post"]:
-            p(self.worklist)
+            try:
+                p(self.worklist)
+            except Exception as ex:
+                logger.error( f'flowCallback plugin {p} crashed: {ex}' )
+                logger.debug( "details:", exc_info=True )
+
         self.worklist.ok = []
 
     def report(self):
@@ -1104,7 +1138,12 @@ class Flow:
 
         if 'download' in self.plugins and len(self.plugins['download']) > 0:
             for plugin in self.plugins['download']:
-                ok = plugin(msg)
+                try:
+                    ok = plugin(msg)
+                except Exception as ex:
+                    logger.error( f'flowCallback plugin {p} crashed: {ex}' )
+                    logger.debug( "details:", exc_info=True )
+
                 if not ok: return False
             return True
 
@@ -1316,7 +1355,12 @@ class Flow:
 
         if len(self.plugins['send']) > 0:
             for plugin in self.plugins['send']:
-                ok = plugin(msg)
+                try:
+                    ok = plugin(msg)
+                except Exception as ex:
+                    logger.error( f'flowCallback plugin {p} crashed: {ex}' )
+                    logger.debug( "details:", exc_info=True )
+
                 if not ok: return False
             return True
 
