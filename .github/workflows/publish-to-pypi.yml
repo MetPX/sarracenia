@@ -3,7 +3,7 @@ name: Publish a Python package to PyPI
 on:
   push:
     branches:
-      - v03_wip
+      - main
 
 jobs:
   build-n-publish:
