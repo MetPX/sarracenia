@@ -295,7 +295,7 @@ class Flow:
 
     def run(self):
         """
-          This is the core routine of of the algorithm, with most important data driven 
+          This is the core routine of the algorithm, with most important data driven
           loop in it. This implements the General Algorithm (as described in the Concepts Explanation Guide) 
           check if stop_requested once in a while, but never return otherwise.
         """
@@ -607,15 +607,12 @@ class Flow:
                      (len(self.worklist.ok), self._stop_requested))
 
     def post(self):
-
         for p in self.plugins["post"]:
             try:
                 p(self.worklist)
             except Exception as ex:
                 logger.error( f'flowCallback plugin {p} crashed: {ex}' )
                 logger.debug( "details:", exc_info=True )
-
-        self.worklist.ok = []
 
     def report(self):
         # post reports
