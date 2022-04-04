@@ -1427,7 +1427,7 @@ class Flow:
                     len_written = self.proto[self.scheme].putAccelerated( msg, local_file, new_inflight_path)
                 else:
                     len_written = self.proto[self.scheme].put(msg, local_file, new_inflight_path)
-                self.proto.rename(new_inflight_path, new_file)
+                self.proto[self.scheme].rename(new_inflight_path, new_file)
             elif options.inflight[-1] == '/':
                 try:
                     self.proto[self.scheme].cd_forced(
