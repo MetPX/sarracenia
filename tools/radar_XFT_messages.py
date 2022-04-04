@@ -12,8 +12,8 @@
 import amqplib.client_0_8 as amqp
 import os, sys, time
 
-print "RADARS are every 10 MINS... "
-print "It may take that time to have something shown"
+print("RADARS are every 10 MINS... ")
+print("It may take that time to have something shown")
 
 machine = "amqp.weather.gc.ca"
 #machine       = "dd.weather.gc.ca"
