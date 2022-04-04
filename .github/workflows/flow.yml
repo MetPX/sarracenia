@@ -23,21 +23,15 @@ jobs:
       fail-fast: false
       matrix:
        which_test: [ static_flow, flakey_broker, dynamic_flow ]
-       pyver: [ "3.6", "3.7", "3.8", "3.9", "3.10" ]
        osver: [ "ubuntu-18.04", "ubuntu-20.04"]
 
     runs-on: ${{ matrix.osver }}
   
-    name: ${{ matrix.which_test }} test, using Python ${{ matrix.pyver }} on ${{ matrix.osver }}
+    name: ${{ matrix.which_test }} test on ${{ matrix.osver }}
     timeout-minutes: 30
     
     steps:
       - uses: actions/checkout@v2
-
-      - name: Set up Python ${{ matrix.pyver }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.pyver }}
 
       - name: Install dependencies
         run: |
@@ -78,5 +72,5 @@ jobs:
         uses: actions/upload-artifact@v3
         continue-on-error: true
         with:
-          name: sr3_${{ matrix.which_test }}_${{ matrix.osver }}_python_${{ matrix.pyver }}_logs_${{ github.sha }}
+          name: sr3_${{ matrix.which_test }}_${{ matrix.osver }}_logs_${{ github.sha }}
           path: ~/logs.tar.gz
