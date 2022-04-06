@@ -6,6 +6,23 @@ lists all changes between versions.
 
 **git repo**
 
+**2.21.10**
+
+  * bugfix #378 python3-pyxattr module breaking xattr support.
+  * bugfix #366 polling of old files much improved.
+  * bugfix from @junmtl about plugins/msg_fdelay.py
+  * new #465 simulation mode for testing senders.
+
+**2.21.08**
+
+  * bugfix #386 not honouring environment variables.
+  * bugfix #377 not interpreting sum n properly.
+  * bugfix #374 not interpreting sundew_extension properly.
+  * bugfix #366 polling of old files when date format on remote server changes.
+  * bugfix #371 sr_audit should not kill 'edit' sessions as strays.
+  * hmm.. charset in ftp.. defaults to iso8859-1, changed to utf-8.
+    noticed caused some issues in newer tests that use accented characters. 
+  
 **2.21.04**
 
   * bugfix for regression, failure to use BASIC authentication on https sites. 

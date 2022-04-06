@@ -1,4 +1,4 @@
-metpx-sarracenia (2.21.10) UNRELEASED; urgency=medium
+metpx-sarracenia (2.21.10) stable; urgency=medium
 
   * bugfix #378 python3-pyxattr module breaking xattr support.
   * bugfix #366 polling of old files much improved.
