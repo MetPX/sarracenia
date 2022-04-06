@@ -15,6 +15,7 @@ from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
 
+
 class PostHourTree(FlowCB):
     def __init__(self, options):
         self.o = options
@@ -25,8 +26,9 @@ class PostHourTree(FlowCB):
             datestr = time.strftime('%H', time.localtime())  # pick the hour
             # insert the hour into the rename header of the message to be posted.
             new_fname = message['headers']['rename'].split('/')
-            message['headers']['rename'] = '/'.join(new_fname[0:-1]) + '/' + datestr + '/' + new_fname[-1]
-            logger.info("post_hour_tree: rename: %s" % message['headers']['rename'])
+            message['headers']['rename'] = '/'.join(
+                new_fname[0:-1]) + '/' + datestr + '/' + new_fname[-1]
+            logger.info("post_hour_tree: rename: %s" %
+                        message['headers']['rename'])
             new_incoming.append(message)
         worklist.incoming = new_incoming
-

@@ -13,7 +13,6 @@ import logging
 import os
 import stat
 
-
 from sarracenia.flowcb import FlowCB
 from sarracenia import timestr2flt, nowflt
 
@@ -44,13 +43,14 @@ class FDelay(FlowCB):
 
     def after_accept(self, worklist):
         # Prepare msg delay test
-        logger.info('FIXME: fdelay? setting: %f ' % self.o.fdelay )
+        logger.info('FIXME: fdelay? setting: %f ' % self.o.fdelay)
         outgoing = []
         for m in worklist.incoming:
             # Test msg delay
             elapsedtime = nowflt() - timestr2flt(m['pubTime'])
 
-            logger.info('FIXME: message[pubTime]=%s elapsed: %f ' % (m['pubTime'], elapsedtime ) )
+            logger.info('FIXME: message[pubTime]=%s elapsed: %f ' %
+                        (m['pubTime'], elapsedtime))
             if m['integrity']['method'] == 'remove':
                 # 'remove' msg will be removed by itself
                 worklist.rejected.append(m)

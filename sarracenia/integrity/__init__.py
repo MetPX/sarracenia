@@ -81,7 +81,6 @@ class Integrity:
         return b64encode(self.filehash.digest()).decode('utf-8')
 
 
-
 import sarracenia.integrity.arbitrary
 import sarracenia.integrity.md5name
 import sarracenia.integrity.md5

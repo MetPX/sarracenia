@@ -16,6 +16,7 @@ import logging
 from sarracenia.flowcb import FlowCB
 logger = logging.getLogger(__name__)
 
+
 class HttpToHttps(FlowCB):
     def __init__(self, options):
         self.o = options
@@ -31,5 +32,3 @@ class HttpToHttps(FlowCB):
             new_incoming.append(message)
 
         worklist.incoming = new_incoming
-
-

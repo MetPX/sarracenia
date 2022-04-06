@@ -31,7 +31,6 @@ from urllib.parse import unquote
 logger = logging.getLogger(__name__)
 
 
-
 class Ftp(Transfer):
     """
     File Transfer Protocol (FTP)  ( https://datatracker.ietf.org/doc/html/rfc959 )
@@ -41,13 +40,15 @@ class Ftp(Transfer):
     * accelFtpgetCommand (default: '/usr/bin/ncftpget %s %d' )
 
     built using: ftplib ( https://docs.python.org/3/library/ftplib.html )
-    """ 
+    """
     def __init__(self, proto, options):
 
         super().__init__(proto, options)
 
-        self.o.add_option('accelFtpputCommand', 'str', '/usr/bin/ncftpput %s %d')
-        self.o.add_option('accelFtpgetCommand', 'str', '/usr/bin/ncftpget %s %d')
+        self.o.add_option('accelFtpputCommand', 'str',
+                          '/usr/bin/ncftpput %s %d')
+        self.o.add_option('accelFtpgetCommand', 'str',
+                          '/usr/bin/ncftpget %s %d')
 
         logger.debug("sr_ftp __init__")
         self.connected = False
@@ -180,7 +181,7 @@ class Ftp(Transfer):
 
             if not self.tls:
                 ftp = ftplib.FTP()
-                ftp.encoding='utf-8'
+                ftp.encoding = 'utf-8'
                 ftp.connect(self.host, self.port, timeout=expire)
                 ftp.login(self.user, unquote(self.password))
             else:
@@ -189,7 +190,7 @@ class Ftp(Transfer):
                                      self.user,
                                      unquote(self.password),
                                      timeout=expire)
-                ftp.encoding='utf-8'
+                ftp.encoding = 'utf-8'
                 if self.prot_p: ftp.prot_p()
                 # needed only if prot_p then set back to prot_c
                 #else          : ftp.prot_c()
@@ -304,8 +305,8 @@ class Ftp(Transfer):
         arg1 = arg1.replace(' ', '\ ')
         arg2 = local_file
 
-        cmd = self.o.accelFtpgetCommand.replace( '%s', arg1 )
-        cmd = cmd.replace( '%d', arg2 ).split()
+        cmd = self.o.accelFtpgetCommand.replace('%s', arg1)
+        cmd = cmd.replace('%d', arg2).split()
 
         logger.info("accel_ftp:  %s" % ' '.join(cmd))
         p = subprocess.Popen(cmd)
@@ -418,8 +419,9 @@ class Ftp(Transfer):
         self.ftp.mkd(remote_dir)
         alarm_cancel()
         alarm_set(self.o.timeout)
-        self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(self.o.permDirDefault) +
-                         ' ' + remote_dir)
+        self.ftp.voidcmd('SITE CHMOD ' +
+                         "{0:o}".format(self.o.permDirDefault) + ' ' +
+                         remote_dir)
         alarm_cancel()
 
     # put
@@ -458,7 +460,7 @@ class Ftp(Transfer):
         arg2 = arg2.replace(' ', '\ ')
         arg1 = local_file
 
-        cmd = self.o.accelFtpputCommand.replace( '%s', arg1)
+        cmd = self.o.accelFtpputCommand.replace('%s', arg1)
         cmd = cmd.replace('%d', arg2).split()
 
         logger.info("accel_ftp:  %s" % ' '.join(cmd))
@@ -469,7 +471,6 @@ class Ftp(Transfer):
         # FIXME: faking success... not sure how to check really.
         sz = int(msg['size'])
         return sz
-
 
     # rename
     def rename(self, remote_old, remote_new):

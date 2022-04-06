@@ -29,25 +29,28 @@ class Message(FlowCB):
                 'exchange': self.o.post_exchange,
                 'topicPrefix': self.o.post_topicPrefix,
             })
-            if hasattr( self.o, 'post_exchangeSplit' ):
+            if hasattr(self.o, 'post_exchangeSplit'):
                 props.update({
                     'exchangeSplit': self.o.post_exchangeSplit,
                 })
-            self.poster = sarracenia.moth.Moth.pubFactory(self.o.post_broker, props)
+            self.poster = sarracenia.moth.Moth.pubFactory(
+                self.o.post_broker, props)
 
     def post(self, worklist):
 
-        still_ok=[]
+        still_ok = []
         for m in worklist.ok:
             if self.poster.putNewMessage(m):
                 still_ok.append(m)
             else:
                 worklist.failed.append(m)
-        worklist.ok=still_ok 
+        worklist.ok = still_ok
 
     def on_housekeeping(self):
         m = self.poster.metricsReport()
-        logger.info( f"messages: good: {m['txGoodCount']} bad: {m['txBadCount']} bytes: {m['txByteCount']}" )
+        logger.info(
+            f"messages: good: {m['txGoodCount']} bad: {m['txBadCount']} bytes: {m['txByteCount']}"
+        )
         self.poster.metricsReset()
 
     def on_stop(self):

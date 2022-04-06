@@ -123,9 +123,9 @@ class File(Transfer):
 
         #logger.debug( "get %s %s (cwd: %s) %d" % (remote_path,local_file,os.getcwd(), local_offset))
 
-        if not os.path.exists( remote_path ):
-           logger.warning( "file to read not found %s" % (remote_path) )
-           return -1
+        if not os.path.exists(remote_path):
+            logger.warning("file to read not found %s" % (remote_path))
+            return -1
 
         src = self.local_read_open(remote_path, remote_offset)
         dst = self.local_write_open(local_file, local_offset)
@@ -150,8 +150,8 @@ class File(Transfer):
         arg1 = arg1.replace(' ', '\ ')
         arg2 = local_file
 
-        cmd = self.o.accelCpCommand.replace( '%s', arg1 ) 
-        cmd = cmd.replace( '%d', arg2 ).split()
+        cmd = self.o.accelCpCommand.replace('%s', arg1)
+        cmd = cmd.replace('%d', arg2).split()
 
         logger.info("accel_cp:  %s" % ' '.join(cmd))
         p = subprocess.Popen(cmd)
@@ -160,7 +160,6 @@ class File(Transfer):
             return -1
         sz = os.stat(arg2).st_size
         return sz
-
 
     def getcwd(self):
         return os.getcwd()
@@ -182,7 +181,7 @@ class File(Transfer):
             relpath = dst.replace(self.root, '', 1)
             if relpath[0] == '/': relpath = relpath[1:]
 
-            self.entries[relpath] = os.stat(dst) 
+            self.entries[relpath] = os.stat(dst)
 
 
 # file_insert
@@ -353,8 +352,7 @@ def file_write_length(req, msg, bufsize, filesize, options):
                  times=(timestr2flt(h['atime']), timestr2flt(h['mtime'])))
 
     if chk:
-        msg.onfly_checksum = "{},{}".format(chk.registered_as(),
-                                            chk.value)
+        msg.onfly_checksum = "{},{}".format(chk.registered_as(), chk.value)
 
     return True
 
@@ -380,7 +378,7 @@ def file_truncate(options, msg):
             fp.truncate(msg.filesize)
             fp.close()
 
-        msg['subtopic'] =  msg['relPath'].split(os.sep)[1:-1]
+        msg['subtopic'] = msg['relPath'].split(os.sep)[1:-1]
         #msg.set_topic(options.post_topicPrefix,msg.target_relpath)
 
     except:

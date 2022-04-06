@@ -1,9 +1,9 @@
 from sarracenia.integrity import Integrity
 
-
 default_value = "None"
 
-def set_default_value( value ):
+
+def set_default_value(value):
     global default_value
     default_value = value
 

@@ -35,7 +35,6 @@ import logging, telnetlib, sys, os, stat, time
 from sarracenia import nowflt
 
 
-
 class LESSender(object):
     def __init__(self, parent):
         parent.declare_option('file_send_egc_les_telnet')

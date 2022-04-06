@@ -12,6 +12,7 @@ import os
 
 logger = logging.getLogger(__name__)
 
+
 class Md5name(Integrity):
     """
         *Fake* checksum... the md5 value being applied to the name of the file.
@@ -28,8 +29,8 @@ class Md5name(Integrity):
 
     def set_path(self, path):
         self.filename = os.path.basename(path)
-        self.update( None )
-         
-    def update(self, chunk ):
+        self.update(None)
+
+    def update(self, chunk):
         self.filehash = md5()
-        self.filehash.update( bytes(self.filename, 'utf-8') )
+        self.filehash.update(bytes(self.filename, 'utf-8'))

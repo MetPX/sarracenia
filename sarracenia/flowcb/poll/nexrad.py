@@ -25,7 +25,7 @@ usage:
 status: working.
 """
 
-import boto3 
+import boto3
 from botocore import UNSIGNED
 from botocore.client import Config
 import datetime
@@ -37,15 +37,16 @@ import urllib.request
 
 logger = logging.getLogger(__name__)
 
+
 class Nexrad(FlowCB):
     def __init__(self, options):
 
         self.o = options
-        self.o.add_option('poll_nexrad_day', 'str', "" )
+        self.o.add_option('poll_nexrad_day', 'str', "")
         self.minutetracker = datetime.datetime.utcnow() + datetime.timedelta(
             minutes=-7)
 
-    def poll(self ):
+    def poll(self):
 
         # If a valid day wasn't specified, it just won't return any keys or throw an error here ¯\_(ツ)_/¯
         day = self.o.poll_nexrad_day
@@ -132,14 +133,14 @@ class Nexrad(FlowCB):
         # To download a file, you'd append the key to the end of the bucket link, e.g:
         # https://s3.amazonaws.com/noaa-nexrad-level2/2018/06/09/KARX/KARX20180609_000228_V06
         i = 0
-        gathered_messages=[]
+        gathered_messages = []
         while i < len(keys):
             logger.info("poll_nexrad: key received {}".format(keys[i]))
 
             fakeStat = paramiko.SFTPAttributes()
             fakeStat.st_size = keysizes[i]
-            
-            m= sarracenia.Message.fromFileInfo( keys[i], self.o, fakeStat )
+
+            m = sarracenia.Message.fromFileInfo(keys[i], self.o, fakeStat)
             gathered_messages.append(m)
             i += 1
         return gathered_messages

@@ -31,7 +31,6 @@ so that normalk downloader works, so only the poll one needed.
 
 """
 
-
 import copy
 import datetime
 import logging
@@ -44,21 +43,20 @@ import xml.etree.ElementTree as ET
 
 logger = logging.getLogger(__name__)
 
-class Noaa_hydrometric(FlowCB):
 
+class Noaa_hydrometric(FlowCB):
     def __init__(self, options):
 
         self.o = options
 
         # these options are only for the poll.
-        self.o.add_option( option='poll_noaa_stn_file', kind='str' )
+        self.o.add_option(option='poll_noaa_stn_file', kind='str')
         self.o.add_option( option='retPathPattern', kind='str', \
               default_value='datagetter?range=1&station={0:}&product={1:}&units=metric&time_zone=gmt&application=web_services&format=csv' )
 
         if self.o.integrity_method.startswith('cod,'):
             m, v = self.o.integrity_method.split(',')
-            self.integrity = { 'method':m, 'value':v }
-
+            self.integrity = {'method': m, 'value': v}
 
     def poll(self) -> list:
 
@@ -86,39 +84,39 @@ class Noaa_hydrometric(FlowCB):
             for child in root:
                 sitecodes.append(child.attrib['ID'])
 
-        incoming_message_list=[]
+        incoming_message_list = []
         # Every hour, form the link of water level/temp data to post
         for site in sitecodes:
 
             retPath = self.o.retPathPattern.format(site, 'water_temperature')
-            url = self.o.destination + retPath 
-            logger.info( f'polling {site}, polling: {url}' )
+            url = self.o.destination + retPath
+            logger.info(f'polling {site}, polling: {url}')
             # Water temp request
-            resp = urllib.request.urlopen( url ).getcode()
-            logger.info( f"poll_noaa file posted: {url} %s" )
+            resp = urllib.request.urlopen(url).getcode()
+            logger.info(f"poll_noaa file posted: {url} %s")
             mtime = datetime.datetime.utcnow().strftime('%Y%m%d_%H%M')
 
-            fname = f'noaa_{mtime}_{site}_WT.csv' 
-            m = sarracenia.Message.fromFileInfo( fname, self.o )
-            m['integrity'] = self.integrity
-            m['retPath' ] = retPath 
-            m['new_file' ] = fname 
-         
-            incoming_message_list.append(m)
- 
-            # Water level request
-            retPath = self.o.retPathPattern.format(site, 'water_level') +'&datum=STND'
-            url =  self.o.destination + retPath
-            resp = urllib.request.urlopen( url ).getcode()
-            logger.info( f"poll_noaa file posted: {url}" )
-
-            fname = f'noaa_{mtime}_{site}_WL.csv' 
-            m = sarracenia.Message.fromFileInfo( fname, self.o )
+            fname = f'noaa_{mtime}_{site}_WT.csv'
+            m = sarracenia.Message.fromFileInfo(fname, self.o)
             m['integrity'] = self.integrity
             m['retPath'] = retPath
-            m['new_file']  = fname
+            m['new_file'] = fname
+
+            incoming_message_list.append(m)
+
+            # Water level request
+            retPath = self.o.retPathPattern.format(
+                site, 'water_level') + '&datum=STND'
+            url = self.o.destination + retPath
+            resp = urllib.request.urlopen(url).getcode()
+            logger.info(f"poll_noaa file posted: {url}")
+
+            fname = f'noaa_{mtime}_{site}_WL.csv'
+            m = sarracenia.Message.fromFileInfo(fname, self.o)
+            m['integrity'] = self.integrity
+            m['retPath'] = retPath
+            m['new_file'] = fname
 
             incoming_message_list.append(m)
 
         return incoming_message_list
-

@@ -85,6 +85,7 @@ from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger('__name__')
 
+
 class Wmo2msc(FlowCB):
     def __init__(self, options):
         self.o = options
@@ -93,9 +94,11 @@ class Wmo2msc(FlowCB):
             logger.error("filter_wmo2msc_replace_dir setting is mandatory")
             return
 
-        (self.o.filter_olddir, self.o.filter_newdir) = self.o.filter_wmo2msc_replace_dir[0].split(',')
+        (self.o.filter_olddir, self.o.filter_newdir
+         ) = self.o.filter_wmo2msc_replace_dir[0].split(',')
 
-        logger.info( "filter_wmo2msc old-dir=%s, newdir=%s" % ( self.o.filter_olddir, self.o.filter_newdir ) )
+        logger.info("filter_wmo2msc old-dir=%s, newdir=%s" %
+                    (self.o.filter_olddir, self.o.filter_newdir))
         if hasattr(self.o, 'filter_wmo2msc_uniquify'):
             logger.info('filter_wmo2msc, override')
             self.o.uniquify = self.o.filter_wmo2msc_uniquify[0]
@@ -118,8 +121,7 @@ class Wmo2msc(FlowCB):
             self.o.convert2msc = self.o.isTrue(self.o.filter_convert[0])
 
         if hasattr(self.o, 'filter_use_symlink'):
-            self.o.use_symlink = self.o.isTrue(
-                self.o.filter_use_symlink[0])
+            self.o.use_symlink = self.o.isTrue(self.o.filter_use_symlink[0])
 
         self.trimre = re.compile(b" +\n")
         logger.info('filter_wmo2msc initialized, uniquify=%s bad_ahls=%s' % \
@@ -133,7 +135,8 @@ class Wmo2msc(FlowCB):
            - sundew stored it as a series of lines, so replaceChar implementation changed.
 
         """
-        self.bintxt = self.bintxt.replace(bytearray(oldchar, 'latin_1'), bytearray(newchar, 'latin_1'))
+        self.bintxt = self.bintxt.replace(bytearray(oldchar, 'latin_1'),
+                                          bytearray(newchar, 'latin_1'))
 
     def doSpecificProcessing(self):
         """doSpecificProcessing()
@@ -147,7 +150,10 @@ class Wmo2msc(FlowCB):
         ahl2 = self.bulletin[0][:2].decode('ascii')
         ahl4 = self.bulletin[0][:4].decode('ascii')
 
-        if ahl2 in ['SD', 'SO', 'WS', 'SR', 'SX', 'FO', 'WA', 'AC', 'FA', 'FB', 'FD']:
+        if ahl2 in [
+                'SD', 'SO', 'WS', 'SR', 'SX', 'FO', 'WA', 'AC', 'FA', 'FB',
+                'FD'
+        ]:
             self.replaceChar('\x1e', '')
 
         if ahl2 in ['SR', 'SX']:
@@ -217,33 +223,37 @@ class Wmo2msc(FlowCB):
         new_incoming = []
         for message in worklist.incoming:
             if message['baseUrl'] != 'file:':
-                logger.error('filter_wmo2msc needs local files invalid url: %s ' % 
-                             (message['baseUrl'] + message['relPath']))
+                logger.error(
+                    'filter_wmo2msc needs local files invalid url: %s ' %
+                    (message['baseUrl'] + message['relPath']))
                 worklist.rejected.append(message)
                 continue
-    
+
             input_file = message['relPath']
-    
+
             # read once to get headers and type.
-    
+
             logger.debug('filter_wmo2msc reading file: %s' % (input_file))
-    
+
             with open(input_file, 'rb') as s:
                 self.bulletin = [s.readline(), s.read(4)]
-    
-            AHLfn = (self.bulletin[0].replace(b' ', b'_').strip()).decode('ascii')
-    
+
+            AHLfn = (self.bulletin[0].replace(b' ',
+                                              b'_').strip()).decode('ascii')
+
             if len(AHLfn) < 18:
-                logger.error('filter_wmo2msc: not a WMO bulletin, malformed header: (%s)' % (AHLfn))
+                logger.error(
+                    'filter_wmo2msc: not a WMO bulletin, malformed header: (%s)'
+                    % (AHLfn))
                 worklist.rejected.append(message)
                 continue
-    
+
             # read second time for the body in one string.
             with open(input_file, 'rb') as s:
                 self.bintxt = s.read()
-    
+
             logger.debug('filter_wmo2msc read twice: %s ' % (input_file))
-    
+
             # Determine file format (fmt) and apply transformation.
             if self.bulletin[1].lstrip()[:4] in ['BUFR', 'GRIB', '\211PNG']:
                 fmt = 'wmo-binary'
@@ -251,20 +261,21 @@ class Wmo2msc(FlowCB):
             elif self.bulletin[0][:11] in ['SFUK45 EGRR']:
                 # This file is encoded in an indecipherably non-standard format.
                 fmt = 'unknown-binary'
-    
+
                 #self.replaceChar('\r','',2) replace only the first 2 carriage returns.
-                self.bintxt = self.bintxt.replace( bytearray('\r','latin_1'), bytearray('','latin_1'), 2)
+                self.bintxt = self.bintxt.replace(bytearray('\r', 'latin_1'),
+                                                  bytearray('', 'latin_1'), 2)
             else:
                 fmt = 'wmo-alphanumeric'
                 if self.o.convert2msc:
                     self.doSpecificProcessing()
-    
+
             # apply 'd' checksum (md5)
 
             s = hashlib.md5()
             s.update(self.bintxt)
             sumstr = ''.join(format(x, '02x') for x in s.digest())
-    
+
             # Determine local file name.
             if self.o.uniquify in ['time']:
 
@@ -273,64 +284,67 @@ class Wmo2msc(FlowCB):
             elif self.o.uniquify in ['hash']:
                 #AHLfn += '_%s' % ''.join( format(x, '02x') for x in s.digest() )
                 AHLfn += '_' + sumstr
-    
+
             if self.o.treeify:
                 d = os.path.dirname(input_file)
-                logger.debug('filter_wmo2msc check %s start match: %s' % (d, self.o.filter_olddir))
+                logger.debug('filter_wmo2msc check %s start match: %s' %
+                             (d, self.o.filter_olddir))
                 d = d.replace(self.o.filter_olddir, self.o.filter_newdir)
                 logger.debug('filter_wmo2msc check %s after replace' % (d))
                 if not os.path.isdir(d):
                     os.makedirs(d, self.o.chmod_dir, True)
-    
+
                 d = d + os.sep + self.bulletin[0][0:2].decode('ascii')
                 d = d + os.sep + self.bulletin[0][7:11].decode('ascii')
                 logger.debug('filter_wmo2msc check %s' % (d))
                 if not os.path.isdir(d):
                     os.makedirs(d, self.o.chmod_dir, True)
-    
+
                 d = d + os.sep + self.bulletin[0][14:16].decode('ascii')
                 logger.debug('filter_wmo2msc check %s' % (d))
                 if not os.path.isdir(d):
                     os.makedirs(d, self.o.chmod_dir, True)
-    
+
                 local_file = d + os.sep + AHLfn
             else:
                 local_file = self.o.currentDir + os.sep + AHLfn
-    
+
             # write the data.
             fileOK = False
-    
+
             if not self.o.convert2msc:
                 try:
                     os.link(input_file, local_file)
                     fileOK = True
                 except:
                     pass
-    
+
             if self.o.convert2msc or not fileOK:
                 d = open(local_file, 'wb+')
                 d.write(self.bintxt)
                 d.close()
-    
-            logger.debug('filter_wmo2msc %s -> %s (%s)' % (input_file, local_file, fmt))
-    
+
+            logger.debug('filter_wmo2msc %s -> %s (%s)' %
+                         (input_file, local_file, fmt))
+
             # set how the file will be announced
-    
+
             baseDir = self.o.base_dir
             if baseDir == None: baseDir = self.o.post_base_dir
-    
+
             relPath = local_file
             if baseDir != None: relPath = local_file.replace(baseDir, '')
-    
+
             baseUrl = 'file:'
             # from tolocal.py if used
             if 'savedUrl' in message.keys(): baseUrl = message['savedUrl']
             # from tolocalfile.py if used
-            if 'saved_baseUrl' in message.keys(): baseUrl = message['saved_baseUrl']
-    
+            if 'saved_baseUrl' in message.keys():
+                baseUrl = message['saved_baseUrl']
+
             relPath = relPath.replace('//', '/')
             logger.debug('filter_wmo2msc relPath %s' % relPath)
-    
+
             message['set_topic'](self.o.topic_prefix, relPath)
             message['set_notice'](baseUrl, relPath)
             new_incoming.append(message)

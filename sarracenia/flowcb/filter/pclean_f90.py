@@ -32,7 +32,8 @@ class PClean_F90(PClean):
     """
     def after_accept(self, worklist):
 
-        logger.info("start len(worklist.incoming) = %d" % len(worklist.incoming))
+        logger.info("start len(worklist.incoming) = %d" %
+                    len(worklist.incoming))
 
         outgoing = []
 
@@ -44,12 +45,12 @@ class PClean_F90(PClean):
             path_dict = self.build_path_dict(self.all_fxx_dirs[2:],
                                              '/' + msg['relPath'])
             ext = self.get_extension('/' + msg['relPath'])
-            logger.info( 'looking at: %s' % msg['relPath'] )
-            logger.info( 'path_dict: %s' % path_dict )
+            logger.info('looking at: %s' % msg['relPath'])
+            logger.info('path_dict: %s' % path_dict)
 
             for fxx_dir, path in path_dict.items():
                 # f90 test
-                logger.info( 'for looping: %s' % path )
+                logger.info('for looping: %s' % path)
                 if not os.path.exists(path):
                     # propagation check to all path except f20 which is the origin
                     err_msg = "file not in folder {} with {:.3f}s elapsed"
@@ -71,14 +72,14 @@ class PClean_F90(PClean):
                     diff = Differ().compare(f20_lines, f_lines)
                     diff = [d for d in diff
                             if d[0] != ' ']  # Diffs without context
-                    logger.info("a: len(%s) = %d" %
-                                 (f20_path, len(f20_lines)))
+                    logger.info("a: len(%s) = %d" % (f20_path, len(f20_lines)))
                     logger.info("b: len(%s) = %d" % (path, len(f_lines)))
                     logger.info("diffs found:\n{}".format("".join(diff)))
 
             if ext not in self.test_extension_list:
                 # prepare next f90 test
-                test_extension = self.test_extension_list[ self.ext_count % len(self.test_extension_list) ]
+                test_extension = self.test_extension_list[self.ext_count % len(
+                    self.test_extension_list)]
                 self.ext_count += 1
                 # pick one test identified by file extension
                 src = '/' + msg['relPath']  # src file is in f30 dir
@@ -89,13 +90,13 @@ class PClean_F90(PClean):
                 try:
                     if test_extension == '.slink':
                         os.symlink(src, dest)
-                        logger.info('symlinked %s %s' % (src, dest) )
+                        logger.info('symlinked %s %s' % (src, dest))
                     elif test_extension == '.hlink':
                         os.link(src, dest)
-                        logger.info('hlinked %s %s' % (src, dest) )
+                        logger.info('hlinked %s %s' % (src, dest))
                     elif test_extension == '.moved':
                         os.rename(src, dest)
-                        logger.info('moved %s %s' % (src, dest) )
+                        logger.info('moved %s %s' % (src, dest))
                     else:
                         logger.error("test '{}' is not supported".format(
                             test_extension))

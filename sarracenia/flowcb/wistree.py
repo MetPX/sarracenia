@@ -9,7 +9,6 @@ import GTStoWIS2
 logger = logging.getLogger(__name__)
 
 
-
 class Wistree(FlowCB):
     """
        Given a file whose name begins with a WMO GTS AHL
@@ -19,7 +18,6 @@ class Wistree(FlowCB):
        So when downloading, instead of writing the file to a single directory, it is
        written to a WIS-compliant folder structure.
     """
-
     def __init__(self, options):
 
         # FIXME: should a logging module have a logLevel setting?
@@ -29,14 +27,13 @@ class Wistree(FlowCB):
         else:
             logger.setLevel(logging.INFO)
 
-        self.topic_builder=GTStoWIS2.GTStoWIS2()
+        self.topic_builder = GTStoWIS2.GTStoWIS2()
         self.o = options
-        self.date_pattern= re.compile("^[0-9]{8}$")
-
+        self.date_pattern = re.compile("^[0-9]{8}$")
 
     def after_accept(self, worklist):
 
-        new_incoming=[]
+        new_incoming = []
 
         for msg in worklist.incoming:
 
@@ -44,36 +41,48 @@ class Wistree(FlowCB):
 
             try:
                 # fix file name suffix.
-                type_suffix = self.topic_builder.mapAHLtoExtension(msg['new_file'][0:2] )
+                type_suffix = self.topic_builder.mapAHLtoExtension(
+                    msg['new_file'][0:2])
 
                 # /20181218/UCAR-UNIDATA/WMO-BULLETINS/IX/21/IXTD99_KNES_182147_9d73fc80e12fca52a06bf41c716cd718.cap
-                tpfx=msg['subtopic']
-    
+                tpfx = msg['subtopic']
+
                 # input has relpath=/YYYYMMDD/... + pubTime
                 # need to move the date from relPath to BaseDir, adding the T hour from pubTime.
                 if self.date_pattern.match(tpfx[0]):
-                    new_baseSubDir=tpfx[0]+msg['pubTime'][8:11]
+                    new_baseSubDir = tpfx[0] + msg['pubTime'][8:11]
                 else:
                     # or default to using pubTime...
-                    new_baseSubDir=msg['pubTime'][0:11]
+                    new_baseSubDir = msg['pubTime'][0:11]
 
                 new_baseDir = msg['new_dir'] + os.sep + new_baseSubDir
-                new_relDir = 'WIS' + os.sep + self.topic_builder.mapAHLtoTopic(msg['new_file'])
+                new_relDir = 'WIS' + os.sep + self.topic_builder.mapAHLtoTopic(
+                    msg['new_file'])
 
                 if msg['new_file'][-len(type_suffix):] != type_suffix:
-                   new_file = msg['new_file']+type_suffix
+                    new_file = msg['new_file'] + type_suffix
                 else:
-                   new_file = msg['new_file']
+                    new_file = msg['new_file']
 
-                msg.updatePaths( self.o, new_baseDir + os.sep + new_relDir, new_file )
+                msg.updatePaths(self.o, new_baseDir + os.sep + new_relDir,
+                                new_file)
 
             except Exception as ex:
-                logger.error( "failed to map %s to a topic, skipped." % msg['new_file'] , exc_info=True )
+                logger.error("failed to map %s to a topic, skipped." %
+                             msg['new_file'],
+                             exc_info=True)
                 worklist.failed.append(msg)
                 continue
-    
+
             # remove some legacy fields in the messages, to de-clutter.
-            msg['_deleteOnPost'] |= set( [ 'from_cluster', 'sum', 'to_clusters', 'sundew_extension', 'filename', 'source',  ] )
+            msg['_deleteOnPost'] |= set([
+                'from_cluster',
+                'sum',
+                'to_clusters',
+                'sundew_extension',
+                'filename',
+                'source',
+            ])
             new_incoming.append(msg)
 
-        worklist.incoming=new_incoming 
+        worklist.incoming = new_incoming

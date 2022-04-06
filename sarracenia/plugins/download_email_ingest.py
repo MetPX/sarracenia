@@ -26,6 +26,7 @@ usage:
 
 import poplib, imaplib, datetime, logging, email
 
+
 class Fetcher(object):
     def __init__(self, parent):
         parent.logger.info("download_email_ingest init")

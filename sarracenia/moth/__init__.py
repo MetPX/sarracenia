@@ -25,9 +25,22 @@ default_options = {
         'failure_duration': '5m'
     },
     'message_ttl': 0,
-    'topicPrefix' : [ 'v03' ],
-    'tls_rigour'  : 'normal'
-    }
+    'topicPrefix': ['v03'],
+    'tlsRigour': 'normal'
+}
+
+def ProtocolPresent(p) -> bool:
+    if ( p in ['amqp', 'amqps' ] ) and sarracenia.extras['amqp']['present']:
+       return True
+    if ( p in ['mqtt', 'mqtts' ] ) and sarracenia.extras['mqtt']['present']:
+       return True
+    if p in sarracenia.extras:
+        logger.critical( f"support for {p} missing, please install python packages: {' '.join(sarracenia.extras[p]['modules_needed'])}" )
+    else:
+        logger.critical( f"Protocol scheme {p} unsupported for communications with message brokers" )
+
+    sys.exit(1)
+    return False
 
 
 class Moth():
@@ -183,6 +196,8 @@ class Moth():
     """
     @staticmethod
     def subFactory(broker, props) -> 'Moth':
+        if not ProtocolPresent(broker.url.scheme):
+           return None
         if broker and broker.url:
             for sc in Moth.__subclasses__():
                 if (broker.url.scheme == sc.__name__.lower()) or (
@@ -195,6 +210,8 @@ class Moth():
 
     @staticmethod
     def pubFactory(broker, props) -> 'Moth':
+        if not ProtocolPresent(broker.url.scheme):
+           return None
         if broker and broker.url:
             for sc in Moth.__subclasses__():
                 if (broker.url.scheme == sc.__name__.lower()) or (
@@ -218,9 +235,9 @@ class Moth():
         self.metricsReset()
 
         if (sys.version_info.major == 3) and (sys.version_info.minor < 7):
-            self.o={}
-            for k in default_options: 
-                if k== 'masks':
+            self.o = {}
+            for k in default_options:
+                if k == 'masks':
                     self.o[k] = default_options[k]
                 else:
                     self.o[k] = copy.deepcopy(default_options[k])
@@ -243,7 +260,7 @@ class Moth():
         logging.basicConfig(format=self.o['logFormat'],
                             level=getattr(logging, self.o['logLevel'].upper()))
 
-    def ack(self, message ) -> None:
+    def ack(self, message) -> None:
         """
           tell broker that a given message has been received.
 
@@ -258,8 +275,8 @@ class Moth():
 
         """
         return Moth.__default_options
-    
-    def getNewMessage(self) -> sarracenia.Message :
+
+    def getNewMessage(self) -> sarracenia.Message:
         """
         If there is one new message available, return it. Otherwise return None. Do not block.
 
@@ -299,12 +316,12 @@ class Moth():
         return False
 
     def metricsReset(self) -> None:
-        self.metrics['rxByteCount']=0
-        self.metrics['rxGoodCount']=0
-        self.metrics['rxBadCount']=0
-        self.metrics['txByteCount']=0
-        self.metrics['txGoodCount']=0
-        self.metrics['txBadCount']=0
+        self.metrics['rxByteCount'] = 0
+        self.metrics['rxGoodCount'] = 0
+        self.metrics['rxBadCount'] = 0
+        self.metrics['txByteCount'] = 0
+        self.metrics['txGoodCount'] = 0
+        self.metrics['txBadCount'] = 0
 
     def metricsReport(self) -> tuple:
         return self.metrics
@@ -319,24 +336,13 @@ class Moth():
         """
           get rid of server-side resources associated with a client. (queues/id's, etc...)
         """
-        if self.is_subscriber:  
+        if self.is_subscriber:
             self.getCleanUp()
-        else:  
+        else:
             self.putCleanUp()
 
-
-
-
-import importlib.util
-
-if importlib.util.find_spec("amqp"):
+if sarracenia.extras['amqp']['present']:
     import sarracenia.moth.amqp
 
-if importlib.util.find_spec("paho"):
+if sarracenia.extras['mqtt']['present']:
     import sarracenia.moth.mqtt
-
-if importlib.util.find_spec("proton"):
-    import sarracenia.moth.amq1
-
-if importlib.util.find_spec("paho"):
-    import sarracenia.moth.pika

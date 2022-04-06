@@ -9,7 +9,7 @@
 # Code originally contributed by:
 #  Michel Grenier - Shared Services Canada
 #  first shot     : Wed Jan 10 16:06:16 UTC 2018
-#  re-factored beyond recognition by PSilva 2021. Don't blame Michel 
+#  re-factored beyond recognition by PSilva 2021. Don't blame Michel
 #
 
 import os, sys, time
@@ -75,7 +75,7 @@ class DiskQueue():
     """
     def __init__(self, options, name):
 
-        logger.debug(" %s __init__" % name )
+        logger.debug(" %s __init__" % name)
 
         self.o = options
 
@@ -86,13 +86,13 @@ class DiskQueue():
 
         #logging.basicConfig(format=self.o.logFormat,
         #                    level=getattr(logging, self.o.logLevel.upper()))
-        logger.setLevel(getattr( logging, self.o.logLevel.upper()))
+        logger.setLevel(getattr(logging, self.o.logLevel.upper()))
 
-        logger.debug('name=%s logLevel=%s' % (self.name, self.o.logLevel) )
+        logger.debug('name=%s logLevel=%s' % (self.name, self.o.logLevel))
 
         # initialize all retry path if retry_path is provided
-        self.working_dir=os.path.dirname(self.o.pid_filename)
-        self.queue_file= self.working_dir + os.sep + 'diskqueue_' + name
+        self.working_dir = os.path.dirname(self.o.pid_filename)
+        self.queue_file = self.working_dir + os.sep + 'diskqueue_' + name
         self.now = nowflt()
 
         # retry messages
@@ -118,8 +118,7 @@ class DiskQueue():
             new_age = os.stat(self.new_path).st_mtime
             if retry_age > new_age: os.unlink(self.new_path)
 
-
-    def put(self,message_list):
+    def put(self, message_list):
         """
           add messages to the end of the queue.
         """
@@ -129,7 +128,7 @@ class DiskQueue():
 
         for message in message_list:
             logger.debug("DEBUG add to new file %s %s" %
-                 (os.path.basename(self.new_path), message))
+                         (os.path.basename(self.new_path), message))
             self.new_fp.write(self.msgToJSON(message))
         self.new_fp.flush()
 
@@ -180,10 +179,11 @@ class DiskQueue():
 
         """
 
-        ml=[]
-        count=0
-        while count < maximum_messages_to_get : 
-            self.queue_fp, message = self.msg_get_from_file( self.queue_fp, self.queue_file)
+        ml = []
+        count = 0
+        while count < maximum_messages_to_get:
+            self.queue_fp, message = self.msg_get_from_file(
+                self.queue_fp, self.queue_file)
 
             # FIXME MG as discussed with Peter
             # no housekeeping in get ...
@@ -197,18 +197,18 @@ class DiskQueue():
                 self.queue_fp = None
                 #logger.debug("MG DEBUG retry get return None")
                 break
-            
+
             if self.is_expired(message):
                 #logger.error("MG invalid %s" % message)
                 continue
 
             message['isRetry'] = True
             if 'ack_id' in message:
-               del message['ack_id']
-               message['_deleteOnPost'].remove('ack_id')
+                del message['ack_id']
+                message['_deleteOnPost'].remove('ack_id')
 
             ml.append(message)
-            count +=1
+            count += 1
         return ml
 
     def in_cache(self, message) -> bool:
@@ -241,7 +241,7 @@ class DiskQueue():
         msg_age = self.now - msg_time
 
         # expired ?
-        return  msg_age > self.o.retry_ttl
+        return msg_age > self.o.retry_ttl
 
     def needs_requeuing(self, message) -> bool:
         """
@@ -250,12 +250,14 @@ class DiskQueue():
            * False otherwise.   
         """
         if self.in_cache(message):
-            logger.info("discarding duplicate message (in %s cache) %s" % (self.name, message) )
+            logger.info("discarding duplicate message (in %s cache) %s" %
+                        (self.name, message))
             return False
 
         # log is info... it is good to log a retry message that expires
         if self.is_expired(message):
-            logger.info("discarding expired message in (%s): %s" % (self.name, message) )
+            logger.info("discarding expired message in (%s): %s" %
+                        (self.name, message))
             return False
 
         return True
@@ -302,7 +304,9 @@ class DiskQueue():
         # finish retry before reshuffling all retries entries
 
         if os.path.isfile(self.queue_file) and self.queue_fp != None:
-            logger.info("have not finished retry list. Resuming retries with %s" % self.queue_file )
+            logger.info(
+                "have not finished retry list. Resuming retries with %s" %
+                self.queue_file)
             return
 
         self.now = nowflt()
@@ -324,9 +328,10 @@ class DiskQueue():
             last = None
 
             fp = self.queue_fp
-            self.housekeeping_fp=open( self.housekeeping_path, 'a')
+            self.housekeeping_fp = open(self.housekeeping_path, 'a')
 
-            logger.debug("FIXME DEBUG has queue %s" % os.path.isfile(self.queue_file))
+            logger.debug("FIXME DEBUG has queue %s" %
+                         os.path.isfile(self.queue_file))
 
             # remaining of retry to housekeeping
             while True:
@@ -362,7 +367,8 @@ class DiskQueue():
             except:
                 pass
 
-            logger.debug("FIXME DEBUG took %d out of the %d retry" % (N - j, i))
+            logger.debug("FIXME DEBUG took %d out of the %d retry" %
+                         (N - j, i))
 
             self.housekeeping_fp.close()
 
@@ -396,5 +402,3 @@ class DiskQueue():
 
         elapse = nowflt() - self.now
         logger.info("on_housekeeping elapse %f" % elapse)
-
-

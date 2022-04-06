@@ -1,5 +1,3 @@
-import sarracenia.moth
-import copy
 from sarracenia.flow import Flow
 import logging
 
@@ -35,5 +33,6 @@ class Watch(Flow):
 
         super().__init__(options)
         logger.info('watching!')
-        self.plugins['load'].insert(0,'sarracenia.flowcb.gather.file.File')
-        self.plugins['load'].insert(0,'sarracenia.flowcb.post.message.Message')
+        self.plugins['load'].insert(0, 'sarracenia.flowcb.gather.file.File')
+        self.plugins['load'].insert(0,
+                                    'sarracenia.flowcb.post.message.Message')

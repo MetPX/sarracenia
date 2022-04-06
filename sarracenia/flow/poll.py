@@ -4,23 +4,11 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, 2008-2021
 #
 
-import sarracenia.moth
-import copy
-import dateparser
-import datetime
-import logging
-import os
-import paramiko
-
-import sarracenia 
-import sarracenia.config
+import sarracenia
 from sarracenia.flow import Flow
-import sarracenia.transfer
-import stat
-import pytz
-import sys, time
+import sys
 
-
+import logging
 
 logger = logging.getLogger(__name__)
 
@@ -44,10 +32,9 @@ default_options = {
     'rename': None,
     'post_on_start': False,
     'sleep': -1,
-    'nodupe_ttl': 7*60*60,
-    'nodupe_fileAgeMax': 30*24*60*60,
+    'nodupe_ttl': 7 * 60 * 60,
+    'nodupe_fileAgeMax': 30 * 24 * 60 * 60,
 }
-
 
 #  'sumflg': 'cod,md5',
 
@@ -73,10 +60,16 @@ class Poll(Flow):
             self.plugins['load'].append('sarracenia.flowcb.poll.Poll')
 
         if options.vip:
-            self.plugins['load'].insert(0,'sarracenia.flowcb.gather.message.Message')
+            self.plugins['load'].insert(
+                0, 'sarracenia.flowcb.gather.message.Message')
 
-        self.plugins['load'].insert(0,'sarracenia.flowcb.post.message.Message')
+        self.plugins['load'].insert(0,
+                                    'sarracenia.flowcb.post.message.Message')
 
+        if not sarracenia.extras['ftppoll']['present']:
+            if hasattr( self.o, 'destination' ) and ( self.o.destination.startswith('ftp') ):
+                logger.critical( f"attempting to configure an FTP poll destination={self.o.destination}, but missing python modules: {' '.join(sarracenia.extras['ftppoll']['modules_needed'])}" )
+                sys.exit(1)
 
     def gather(self):
 
@@ -87,6 +80,3 @@ class Poll(Flow):
                 new_incoming = plugin()
                 if len(new_incoming) > 0:
                     self.worklist.incoming.extend(new_incoming)
-
-       
-

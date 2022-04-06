@@ -26,19 +26,26 @@ from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger('__name__')
 
+
 class Save(FlowCB):
     def __init__(self, options):
         self.o = options
 
         if not hasattr(self.o, "msgSaveFile"):
-            logger.error("msg_save: setting msg_save_path setting is mandatory")
+            logger.error(
+                "msg_save: setting msg_save_path setting is mandatory")
 
-        self.o.msgSaveFile = open(self.o.msgSaveFile + self.o.save_path[-10:], "a")
+        self.o.msgSaveFile = open(self.o.msgSaveFile + self.o.save_path[-10:],
+                                  "a")
         logger.debug("msg_save initialized")
 
     def after_accept(self, worklist):
         for message in worklist.incoming:
-            self.o.msgSaveFile.write(json.dumps([message['topic'], message['headers'], message['notice']]) + '\n')
+            self.o.msgSaveFile.write(
+                json.dumps([
+                    message['topic'], message['headers'], message['notice']
+                ]) + '\n')
             self.o.msgSaveFile.flush()
-            logger.info("msg_save saving msg with topic:%s (aborting further processing)" % message['topic'])
-
+            logger.info(
+                "msg_save saving msg with topic:%s (aborting further processing)"
+                % message['topic'])

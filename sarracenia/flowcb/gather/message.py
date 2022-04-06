@@ -21,7 +21,7 @@ class Message(FlowCB):
     def __init__(self, options):
 
         self.o = options
-        logger.setLevel( getattr( logging, self.o.logLevel.upper() ) )
+        logger.setLevel(getattr(logging, self.o.logLevel.upper()))
 
         if hasattr(self.o, 'broker'):
             od = sarracenia.moth.default_options
@@ -42,12 +42,12 @@ class Message(FlowCB):
 
     def on_housekeeping(self):
         m = self.consumer.metricsReport()
-        average = (m['rxByteCount']/m['rxGoodCount'] if m['rxGoodCount'] != 0 else 0)
+        average = (m['rxByteCount'] /
+                   m['rxGoodCount'] if m['rxGoodCount'] != 0 else 0)
         logger.info( f"messages: good: {m['rxGoodCount']} bad: {m['rxBadCount']} " +\
            f"bytes: {humanize.naturalsize(m['rxByteCount'],binary=True)} " +\
            f"average: {humanize.naturalsize(average, binary=True)}" )
         self.consumer.metricsReset()
-
 
     def on_stop(self):
         self.consumer.close()

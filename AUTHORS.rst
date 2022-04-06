@@ -6,17 +6,19 @@ Peter Silva <peter.silva@canada.ca>
   added the 'plugin' model to v2. Main blame for sr3.
   
 
-Cléa Aumont for refactoring of FTP processing to fix timezone support.
+Cléa Aumont 
+  refactoring of FTP processing to fix timezone support.
   porting many plugins from v2 to sr3. Resolved issued with xattr python modules
   several fixes to status... hmm...
   how about issues: #447, #438, #435, #433, #433, #381, #378, #366, #350
 
-Reid Sunderland Added SASL authentication and vhost support.
+Reid Sunderland 
+  Added SASL authentication and vhost support.
   Extensive work getting flow tests working with sr3.
   worked on some refactoring as well.
 
-Cody Au fixes #413, #387,  #348. working on sr process management.
-
+Cody Au 
+  fixes #413, #387,  #348. working on sr process management.
 
 Michel Grenier <michel.grenier@IamRetiredNow.ca> (Retired)
   dd_subscribe, sr_subscribe, sr_sarra, sr_post, 

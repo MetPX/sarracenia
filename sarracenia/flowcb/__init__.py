@@ -11,15 +11,13 @@ import importlib
 import logging
 import sys
 
-
 entry_points = [
     'ack', 'do_poll', 'download', 'gather', 'after_accept', 'after_work',
-    'on_housekeeping', 'on_report', 'on_start', 'on_stop', 'poll', 'post', 
+    'on_housekeeping', 'on_report', 'on_start', 'on_stop', 'poll', 'post',
     'send', 'please_stop'
 ]
 
 logger = logging.getLogger(__name__)
-
 
 
 class FlowCB:
@@ -178,7 +176,6 @@ class FlowCB:
          before the full stop happens.
 
     """
-
     def __init__(self, options):
         self.o = options
 
@@ -208,8 +205,10 @@ def load_library(factory_path, options):
     """
 
     if not '.' in factory_path:
-       logger.error('flowCallback <file>.<Class> no dot... missing something from: %s' % factory_path )
-       return None
+        logger.error(
+            'flowCallback <file>.<Class> no dot... missing something from: %s'
+            % factory_path)
+        return None
 
     packagename, classname = factory_path.rsplit('.', 1)
 

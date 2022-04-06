@@ -35,6 +35,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class Sftp(Transfer):
     """
     SecSH File Transfer Protocol (SFTP)  ( https://filezilla-project.org/specs/draft-ietf-secsh-filexfer-02.txt )
@@ -44,7 +45,6 @@ class Sftp(Transfer):
 
     The module uses the paramiko library for python SecSH support ( https://www.paramiko.org/ )
     """
-
     def __init__(self, proto, options):
 
         super().__init__(proto, options)
@@ -366,8 +366,8 @@ class Sftp(Transfer):
         arg1 = arg1.replace(' ', '\ ')
         arg2 = local_file
 
-        cmd = self.o.accelScpCommand.replace( '%s', arg1 )
-        cmd = cmd.replace( '%d', arg2 ).split()
+        cmd = self.o.accelScpCommand.replace('%s', arg1)
+        cmd = cmd.replace('%d', arg2).split()
         logger.info("accel_sftp:  %s" % ' '.join(cmd))
         p = subprocess.Popen(cmd)
         p.wait()
@@ -424,12 +424,12 @@ class Sftp(Transfer):
         for index in range(len(dir_attr)):
             attr = dir_attr[index]
             line = attr.__str__()
-            self.line_callback(line,attr)
+            self.line_callback(line, attr)
         #logger.debug("sr_sftp ls = %s" % self.entries )
         return self.entries
 
     # line_callback: ls[filename] = 'stripped_file_description'
-    def line_callback(self, iline,attr):
+    def line_callback(self, iline, attr):
         #logger.debug("sr_sftp line_callback %s" % iline)
 
         oline = iline
@@ -537,8 +537,8 @@ class Sftp(Transfer):
         arg2 = arg2.replace(' ', '\ ')
         arg1 = local_file
 
-        cmd = self.o.accelScpCommand.replace( '%s', arg1 )
-        cmd = cmd.replace( '%d', arg2 ).split()
+        cmd = self.o.accelScpCommand.replace('%s', arg1)
+        cmd = cmd.replace('%d', arg2).split()
 
         logger.info("accel_sftp:  %s" % ' '.join(cmd))
         p = subprocess.Popen(cmd)

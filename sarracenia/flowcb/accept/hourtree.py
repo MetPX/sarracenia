@@ -16,6 +16,7 @@ from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
 
+
 class HourTree(FlowCB):
     def __init__(self, options):
         self.o = options
@@ -24,13 +25,13 @@ class HourTree(FlowCB):
         new_incoming = []
         for message in worklist.incoming:
             datestr = time.strftime('%H', time.localtime())  # pick the hour.
-            message['new_dir'] += '/' + datestr  # append the hourly element to the directory tree.
-    
+            message[
+                'new_dir'] += '/' + datestr  # append the hourly element to the directory tree.
+
             # insert the additional hourly directory into the path of the file to be written.
             new_fname = message['new_file'].split('/')
-            message['new_file'] = '/'.join(new_fname[0:-1]) + '/' + datestr + '/' + new_fname[-1]
+            message['new_file'] = '/'.join(
+                new_fname[0:-1]) + '/' + datestr + '/' + new_fname[-1]
             new_incoming.append(message)
 
         worklist.incoming = new_incoming
-
-

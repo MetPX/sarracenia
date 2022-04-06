@@ -78,6 +78,7 @@ from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger('__name__')
 
+
 class ToLocalFile(FlowCB):
     def __init__(self, options):
         self.o = options
@@ -88,18 +89,18 @@ class ToLocalFile(FlowCB):
             if message['baseUrl'] == 'file:':
                 new_incoming.append(message)
                 continue
-    
+
             message['saved_baseUrl'] = message['baseUrl']
             message['saved_relPath'] = message['relPath']
             message['baseUrl'] = 'file:'
-    
-            if self.o.baseDir and not message['relPath'].startswith(self.o.baseDir):
+
+            if self.o.baseDir and not message['relPath'].startswith(
+                    self.o.baseDir):
                 message['relPath'] = self.o.baseDir + '/' + message['relPath']
                 message['relPath'].replace('//', '/')
                 new_incoming.append(message)
                 continue
             else:
                 worklist.rejected.append(message)
-    
-        worklist.incoming = new_incoming
 
+        worklist.incoming = new_incoming

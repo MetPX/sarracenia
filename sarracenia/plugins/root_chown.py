@@ -30,6 +30,7 @@ from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
 
+
 class ROOT_CHOWN(FlowCB):
     def __init__(self, options):
         self.o = options
@@ -59,7 +60,6 @@ class ROOT_CHOWN(FlowCB):
         except:
             logger.error("ROOT_CHOWN problem when parsing %s" % mf_path)
 
-
     def after_accept(self, worklist):
         logger.debug("ROOT_CHOWN after_accept")
         new_incoming = []
@@ -70,7 +70,8 @@ class ROOT_CHOWN(FlowCB):
 
             # if remove ...
 
-            if message['headers']['sum'].startswith('R,') and not 'newname' in message['headers']:
+            if message['headers']['sum'].startswith(
+                    'R,') and not 'newname' in message['headers']:
                 # FIXME should we append to new_incoming here? or worklist.reject.  Also don't see 'headers' as an entry in the message dict
                 continue
 
@@ -81,7 +82,8 @@ class ROOT_CHOWN(FlowCB):
             if 'ownership' in message['headers']:
                 ug = message['headers']['ownership']
                 if ug in self.mapping:
-                    logger.debug("ROOT_CHOWN mapping from %s to %s" %(ug, self.mapping[ug]))
+                    logger.debug("ROOT_CHOWN mapping from %s to %s" %
+                                 (ug, self.mapping[ug]))
                     message['headers']['ownership'] = self.mapping[ug]
                     new_incoming.append(message)
 
@@ -98,15 +100,18 @@ class ROOT_CHOWN(FlowCB):
 
                 # check for mapping switch
                 if ug in self.mapping:
-                    logger.debug("ROOT_CHOWN mapping from %s to %s" % (ug, self.mapping[ug]))
+                    logger.debug("ROOT_CHOWN mapping from %s to %s" %
+                                 (ug, self.mapping[ug]))
                     ug = self.mapping[ug]
 
                 message['headers']['ownership'] = ug
                 new_incoming.append(message)
-                logger.debug("ROOT_CHOWN set ownership in headers %s" % message['headers']['ownership'])
+                logger.debug("ROOT_CHOWN set ownership in headers %s" %
+                             message['headers']['ownership'])
 
             except:
-                logger.error("ROOT_CHOWN could not set ownership  %s" % local_file)
+                logger.error("ROOT_CHOWN could not set ownership  %s" %
+                             local_file)
                 #FIXME should we do worklist.reject here?
 
     def after_work(self, worklist):
@@ -124,7 +129,8 @@ class ROOT_CHOWN(FlowCB):
 
             ug = message['headers']['ownership']
             if ug in self.mapping:
-                logger.debug("received ownership %s mapped to %s" % (ug, self.mapping[ug]))
+                logger.debug("received ownership %s mapped to %s" %
+                             (ug, self.mapping[ug]))
                 ug = self.mapping[ug]
 
             # try getting/setting ownership info to local_file
@@ -140,9 +146,10 @@ class ROOT_CHOWN(FlowCB):
                 gid = grp.getgrnam(group).pw_gid
 
                 os.chown(local_file, uid, gid)
-                logger.info("ROOT_CHOWN set ownership %s to %s" % (ug, local_file))
+                logger.info("ROOT_CHOWN set ownership %s to %s" %
+                            (ug, local_file))
                 #FIXME not sure if we add to worklist.ok here
 
             except:
-                logger.error("ROOT_CHOWN could not set %s to %s" % (ug, local_file))
-
+                logger.error("ROOT_CHOWN could not set %s to %s" %
+                             (ug, local_file))

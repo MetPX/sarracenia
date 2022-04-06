@@ -31,10 +31,9 @@ import json
 import logging
 
 from urllib.parse import unquote
-import sarracenia 
+import sarracenia
 from sarracenia.flowcb import v2wrapper
 from sarracenia.moth import Moth
-
 
 import time
 
@@ -61,7 +60,7 @@ default_options = {
     'reset': False,
     'subtopic': [],
     'messageDebugDump': False,
-    'topicPrefix': [ 'v03' ],
+    'topicPrefix': ['v03'],
     'vhost': '/',
 }
 
@@ -80,34 +79,36 @@ class AMQP(Moth):
        queueDeclare     - declare queue before use.
 
     """
-
-    def _msgRawToDict(self, raw_msg) -> sarracenia.Message :
+    def _msgRawToDict(self, raw_msg) -> sarracenia.Message:
         if raw_msg is not None:
             body = raw_msg.body
 
             if self.o['messageDebugDump']:
-                if not ( 'content_type' in raw_msg.properties ):
+                if not ('content_type' in raw_msg.properties):
                     logger.warning('message is missing content-type header')
-                logger.debug('raw message body: type: %s (%d bytes) %s' % (type(body), len(body) , body))
+                logger.debug('raw message body: type: %s (%d bytes) %s' %
+                             (type(body), len(body), body))
                 logger.debug('raw message properties:' % raw_msg.properties)
 
             if type(body) is bytes:
                 try:
-                    body= raw_msg.body.decode("utf8")
+                    body = raw_msg.body.decode("utf8")
                 except Exception as ex:
-                    logger.warning('expected utf8 encoded message, decode error: %s' % ex)
+                    logger.warning(
+                        'expected utf8 encoded message, decode error: %s' % ex)
                     logger.debug('Exception details: ', exc_info=True)
                     return None
 
-            if (( 'content_type' in raw_msg.properties ) and ( raw_msg.properties['content_type'] == 'application/json')) or ( body[0] == '{' ): # used as key to indicate version 3.
+            if (('content_type' in raw_msg.properties) and
+                (raw_msg.properties['content_type'] == 'application/json')
+                ) or (body[0] == '{'):  # used as key to indicate version 3.
                 msg = sarracenia.Message()
                 try:
-                    msg.copyDict( json.loads(body) )
+                    msg.copyDict(json.loads(body))
                 except Exception as ex:
-                   logger.warning('expected json, decode error: %s' % ex)
-                   logger.debug('Exception details: ', exc_info=True)
-                   return None
-
+                    logger.warning('expected json, decode error: %s' % ex)
+                    logger.debug('Exception details: ', exc_info=True)
+                    return None
                 """
                   observed Sarracenia v2.20.08p1 and earlier have 'parts' header in v03 messages.
                   bug, or implementation did not keep up. Applying Postel's Robustness principle: normalizing messages.
@@ -127,7 +128,7 @@ class AMQP(Moth):
                             'remainder': int(r),
                             'number': int(n)
                         }
-    
+
                     del msg['parts']
                 elif ('size' in msg):
                     if (type(msg['size']) is str):
@@ -137,28 +138,29 @@ class AMQP(Moth):
                     msg = v2wrapper.v02tov03message(
                         body, raw_msg.headers,
                         raw_msg.delivery_info['routing_key'],
-                         self.o['topicPrefix'] )
+                        self.o['topicPrefix'])
                 except Exception as ex:
-                   logger.warning('expected v2 encoded message, decode error: %s' % ex)
-                   logger.debug('Exception details: ', exc_info=True)
-                   return None
-    
-            topic = raw_msg.delivery_info['routing_key'].replace('%23','#').replace('%22','*')
+                    logger.warning(
+                        'expected v2 encoded message, decode error: %s' % ex)
+                    logger.debug('Exception details: ', exc_info=True)
+                    return None
+
+            topic = raw_msg.delivery_info['routing_key'].replace(
+                '%23', '#').replace('%22', '*')
             msg['exchange'] = raw_msg.delivery_info['exchange']
             msg['subtopic'] = topic.split('.')[len(self.o['topicPrefix']):]
             msg['ack_id'] = raw_msg.delivery_info['delivery_tag']
             msg['local_offset'] = 0
-            msg['_deleteOnPost'] = set( [ 'ack_id', 'exchange', 'local_offset', 'subtopic' ] )
-            if not msg.validate(): 
+            msg['_deleteOnPost'] = set(
+                ['ack_id', 'exchange', 'local_offset', 'subtopic'])
+            if not msg.validate():
                 self.channel.basic_ack(msg['ack_id'])
                 logger.error('message acknowledged and discarded: %s' % msg)
-                msg=None
+                msg = None
         else:
             msg = None
-    
+
         return msg
-
-
 
     # length of an AMQP short string (used for headers and many properties)
     amqp_ss_maxlen = 255
@@ -180,14 +182,14 @@ class AMQP(Moth):
 
         self.first_setup = True
 
-        me = "%s.%s" % ( __class__.__module__ , __class__.__name__ )
+        me = "%s.%s" % (__class__.__module__, __class__.__name__)
 
         if ('settings' in self.o) and (me in self.o['settings']):
             for s in self.o['settings'][me]:
                 self.o[s] = self.o['settings'][me][s]
 
             if 'logLevel' in self.o['settings'][me]:
-                logger.setLevel( self.o['logLevel'].upper() )
+                logger.setLevel(self.o['logLevel'].upper())
 
         if self.is_subscriber:  #build_consumer
             self.__getSetup()
@@ -220,7 +222,8 @@ class AMQP(Moth):
 
         self.connection = amqp.Connection(host=host,
                                           userid=broker.url.username,
-                                          password=unquote(broker.url.password),
+                                          password=unquote(
+                                              broker.url.password),
                                           login_method=broker.login_method,
                                           virtual_host=vhost,
                                           ssl=(broker.url.scheme[-1] == 's'))
@@ -281,7 +284,7 @@ class AMQP(Moth):
                 if self.o['queueBind']:
                     for tup in self.o['bindings']:
                         exchange, prefix, subtopic = tup
-                        topic = '.'.join( prefix + subtopic )
+                        topic = '.'.join(prefix + subtopic)
                         logger.info('binding %s with %s to %s (as: %s)' % \
                             ( self.o['queueName'], topic, exchange, broker_str ) )
                         self.channel.queue_bind(self.o['queueName'], exchange,
@@ -292,7 +295,9 @@ class AMQP(Moth):
                 return
 
             except Exception as err:
-                logger.error( f'connecting to: {self.o["queueName"]}, durable: {self.o["durable"]}, expire: {self.o["expire"]}, auto_delete={self.o["auto_delete"]}' )
+                logger.error(
+                    f'connecting to: {self.o["queueName"]}, durable: {self.o["durable"]}, expire: {self.o["expire"]}, auto_delete={self.o["auto_delete"]}'
+                )
                 logger.error("AMQP getSetup failed to {} with {}".format(
                     self.broker.url.hostname, err))
                 logger.debug('Exception details: ', exc_info=True)
@@ -340,8 +345,10 @@ class AMQP(Moth):
                 return
 
             except Exception as err:
-                logger.error("AMQP putSetup failed to declare exchanges {}@{} on {}: {}".format(
-                    self.o['exchange'], self.o['broker'].url.username, self.o['broker'].url.hostname, err))
+                logger.error(
+                    "AMQP putSetup failed to declare exchanges {}@{} on {}: {}"
+                    .format(self.o['exchange'], self.o['broker'].url.username,
+                            self.o['broker'].url.hostname, err))
                 logger.debug('Exception details: ', exc_info=True)
 
             if not self.o['message_strategy']['stubborn']: return
@@ -370,7 +377,7 @@ class AMQP(Moth):
                 self.o['broker'].url.hostname, err))
             logger.debug('Exception details: ', exc_info=True)
 
-    def newMessages(self) -> list :
+    def newMessages(self) -> list:
 
         if not self.is_subscriber:  #build_consumer
             logger.error("getting from a publisher")
@@ -390,7 +397,7 @@ class AMQP(Moth):
 
         return ml
 
-    def getNewMessage(self) -> sarracenia.Message :
+    def getNewMessage(self) -> sarracenia.Message:
 
         if not self.is_subscriber:  #build_consumer
             logger.error("getting from a publisher")
@@ -403,7 +410,7 @@ class AMQP(Moth):
                 if (raw_msg is None) and (self.connection.connected):
                     return None
                 else:
-                    self.metrics['rxByteCount'] += len(raw_msg.body) 
+                    self.metrics['rxByteCount'] += len(raw_msg.body)
                     msg = self._msgRawToDict(raw_msg)
                     if msg is None:
                         self.metrics['rxBadCount'] += 1
@@ -416,7 +423,7 @@ class AMQP(Moth):
                     logger.debug("new msg: %s" % msg)
                     return msg
             except Exception as err:
-                logger.warning("moth.amqp.getNewMessage: failed %s: %s" %
+                logger.warning("failed %s: %s" %
                                (self.o['queueName'], err))
                 logger.debug('Exception details: ', exc_info=True)
 
@@ -425,7 +432,8 @@ class AMQP(Moth):
 
             logger.warning('lost connection to broker')
             self.close()
-            self.__getSetup() # will only return when a connection is successful.
+            self.__getSetup(
+            )  # will only return when a connection is successful.
 
     def ack(self, m) -> None:
         """
@@ -436,8 +444,8 @@ class AMQP(Moth):
             return
 
         # silent success. retry messages will not have an ack_id, and so will not require acknowledgement.
-        if not 'ack_id' in m: 
-            return 
+        if not 'ack_id' in m:
+            return
 
         ebo = 1
         while True:
@@ -458,9 +466,9 @@ class AMQP(Moth):
 
             if ebo < 60: ebo *= 2
 
-            logger.info("Sleeping {} seconds before re-trying ack...".format(ebo))
+            logger.info(
+                "Sleeping {} seconds before re-trying ack...".format(ebo))
             time.sleep(ebo)
-
 
     def putNewMessage(self,
                       body,
@@ -475,7 +483,7 @@ class AMQP(Moth):
             return False
 
         #body = copy.deepcopy(bd)
-        topic = '.'.join( self.o['topicPrefix'] + body['subtopic'] )
+        topic = '.'.join(self.o['topicPrefix'] + body['subtopic'])
         topic = topic.replace('#', '%23')
         topic = topic.replace('*', '%22')
 
@@ -517,7 +525,8 @@ class AMQP(Moth):
                 exchange = self.o['exchange']
 
         if self.o['message_ttl']:
-            ttl = "%d" * int(sarracenia.durationToSeconds(self.o['message_ttl']) * 1000)
+            ttl = "%d" * int(
+                sarracenia.durationToSeconds(self.o['message_ttl']) * 1000)
         else:
             ttl = "0"
 
@@ -533,7 +542,8 @@ class AMQP(Moth):
                     del v2m.headers[h]
 
             for k in v2m.headers:
-                if (type(v2m.headers[k]) is str) and (len(v2m.headers[k]) >= amqp_ss_maxlen):
+                if (type(v2m.headers[k]) is str) and (len(v2m.headers[k]) >=
+                                                      amqp_ss_maxlen):
                     logger.error("message header %s too long, dropping" % k)
                     return False
             AMQP_Message = amqp.Message(v2m.notice,
@@ -541,13 +551,13 @@ class AMQP(Moth):
                                         application_headers=v2m.headers,
                                         expire=ttl,
                                         delivery_mode=2)
-            body=v2m.notice
-            headers=v2m.headers
+            body = v2m.notice
+            headers = v2m.headers
         else:  #assume v03
 
             raw_body = json.dumps(body)
             self.metrics['txByteCount'] += len(raw_body)
-            headers=None
+            headers = None
             AMQP_Message = amqp.Message(raw_body,
                                         content_type='application/json',
                                         application_headers=headers,
@@ -558,8 +568,9 @@ class AMQP(Moth):
             try:
                 self.channel.basic_publish(AMQP_Message, exchange, topic)
                 self.channel.tx_commit()
-                logger.debug("published body: {} headers: {} to {} under: {} ".format(
-                    body, headers, exchange, topic))
+                logger.debug(
+                    "published body: {} headers: {} to {} under: {} ".format(
+                        body, headers, exchange, topic))
                 self.metrics['txGoodCount'] += 1
                 return True  # no failure == success :-)
 

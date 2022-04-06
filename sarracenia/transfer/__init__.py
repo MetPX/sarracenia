@@ -134,9 +134,10 @@ class Transfer():
         else:
             ll = self.o.logLevel
 
-        logger.setLevel( getattr( logging, ll.upper() ))
+        logger.setLevel(getattr(logging, ll.upper()))
 
-        logger.debug("class=%s , subclasses=%s" % ( type(self).__name__, Transfer.__subclasses__()))
+        logger.debug("class=%s , subclasses=%s" %
+                     (type(self).__name__, Transfer.__subclasses__()))
         self.init()
 
     def init(self):
@@ -229,7 +230,6 @@ class Transfer():
 
         #FIXME ... need to re-enable on_data plugins... not sure how they should work.
         # sub-classing of transfer class?
-        
 
     def read_write(self, src, dst, length=0):
         logger.debug("sr_proto read_write")
@@ -318,7 +318,7 @@ class Transfer():
 
         # warn if length mismatch without transformation.
 
-        if  length != 0 and rw_length != length:
+        if length != 0 and rw_length != length:
             logger.error(
                 "util/writelocal mismatched file length writing %s. Message said to expect %d bytes.  Got %d bytes."
                 % (local_file, length, rw_length))
@@ -387,7 +387,9 @@ class Transfer():
         if span > rspan:
             stime = span - rspan
             if stime > 10:
-                logger.info( f"exceeded byteRateMax: {self.o.byteRateMax} sleeping for {stime:.2f}" )
+                logger.info(
+                    f"exceeded byteRateMax: {self.o.byteRateMax} sleeping for {stime:.2f}"
+                )
             time.sleep(stime)
 
     # write_chunk
@@ -413,8 +415,9 @@ class Transfer():
         self.rw_length = 0
         if self.o.timeout: alarm_set(self.o.timeout)
 
-
-import sarracenia.transfer.ftp
-import sarracenia.transfer.sftp
-import sarracenia.transfer.https
+# batteries included.
 import sarracenia.transfer.file
+import sarracenia.transfer.ftp
+import sarracenia.transfer.https
+import sarracenia.transfer.sftp
+

@@ -20,6 +20,7 @@ import urllib.request
 from sarracenia.flowcb import FlowCB
 logger = logging.getLogger(__name__)
 
+
 class DownloadBaseUrl(FlowCB):
     def __init__(self, options):
         self.o = options
@@ -35,7 +36,3 @@ class DownloadBaseUrl(FlowCB):
             with open(keypath + '/' + key, 'wb') as f:
                 with urllib.request.urlopen(message['baseUrl']) as k:
                     f.write(k.read())
-
-
-
-

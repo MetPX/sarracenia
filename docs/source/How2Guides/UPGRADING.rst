@@ -40,6 +40,46 @@ git
 ---
 
 
+3.0.15
+------
+
+*NOTICE*: re-instating debian and windows packages by removing hard requirements for python modules
+    which are difficult to satisfy. From 3.0.15, dependencies are modular. 
+
+*CHANGE*: there are now four "extras" configured for pip packages for metpx-sr3.
+
+  * amqp - ability to communicate with AMQP (rabbitmq) brokers
+
+  * mqtt - ability to communicate with MQTT brokers
+
+  * ftppoll - ability to poll FTP servers
+
+  * vip  - enable vip (Virtual IP) settings to implement singleton processing for high availability support.
+
+  with pip installation, one can include all the extras via::
+
+      pip install metpx-sr3[amqp,mqtt,ftppoll,vip]
+
+  with Linux packages, install the corresponding native packages to activate the corresponding features
+
+  on Ubuntu, respectively::
+
+      apt install python3-amqp 
+      apt install python3-paho-mqtt 
+      apt install python3-dateparser python3-tz
+      apt install python3-netifaces
+
+  sr3 looks for the relevant modules on startup and automatically enables support for the relevant features.
+
+3.0.14
+------
+
+initial beta.
+
+*NOTICE*: only pip packages currently work. No Debian packages on launchpad.net
+          nor any windows packages.
+
+
 V2 to Sr3
 ---------
 

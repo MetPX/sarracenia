@@ -43,29 +43,29 @@ class Script(FlowCB):
             logger.setLevel(logging.INFO)
 
         self.o = options
-        self.o.add_option( 'script_gather', 'str' )
-        self.o.add_option( 'script_filter', 'str' )
-        self.o.add_option( 'script_work', 'str' )
-        self.o.add_option( 'script_post', 'str' )
-        self.o.add_option( 'script_start', 'str' )
-        self.o.add_option( 'script_stop', 'str' )
-        self.o.add_option( 'script_housekeeping', 'str' )
+        self.o.add_option('script_gather', 'str')
+        self.o.add_option('script_filter', 'str')
+        self.o.add_option('script_work', 'str')
+        self.o.add_option('script_post', 'str')
+        self.o.add_option('script_start', 'str')
+        self.o.add_option('script_stop', 'str')
+        self.o.add_option('script_housekeeping', 'str')
 
-    def run_script( self, script ):
-        try: 
-            subprocess.run( script, check=True )
+    def run_script(self, script):
+        try:
+            subprocess.run(script, check=True)
         except Exception as err:
             logging.error("subprocess.run failed err={}".format(err))
             logging.debug("Exception details:", exc_info=True)
 
-
-    def gather(self ):
+    def gather(self):
         """
            FIXME: this does not make sense. need to figure out how to get the 
            messages back from the script, perhaps using a json file reader?
         """
-        if hasattr( self.o, 'script_gather') and self.o.script_gather is not None :
-            self.run_script( self.o.script_gather )
+        if hasattr(self.o,
+                   'script_gather') and self.o.script_gather is not None:
+            self.run_script(self.o.script_gather)
         return []
 
     def after_accept(self, worklist):
@@ -73,34 +73,35 @@ class Script(FlowCB):
            FIXME: this does not make sense. need to figure out how to feed the
            files to the script... command line argument? 
         """
-        if hasattr( self.o, 'script_filter') and self.o.script_filter is not None :
-            self.run_script( self.o.script_filter )
+        if hasattr(self.o,
+                   'script_filter') and self.o.script_filter is not None:
+            self.run_script(self.o.script_filter)
 
     def after_work(self, worklist):
         """
            FIXME: this does not make sense. need to figure out how to feed the
            files to the script... command line argument? 
         """
-        if hasattr( self.o, 'script_work') and self.o.script_work is not None :
-            self.run_script( self.o.script_work )
+        if hasattr(self.o, 'script_work') and self.o.script_work is not None:
+            self.run_script(self.o.script_work)
 
     def post(self, worklist):
         """
            FIXME: this does not make sense. need to figure out how to feed the
            messages to the script... command line argument? 
         """
-        if hasattr( self.o, 'script_post') and self.o.script_post is not None :
-            self.run_script( self.o.script_post )
+        if hasattr(self.o, 'script_post') and self.o.script_post is not None:
+            self.run_script(self.o.script_post)
 
     def on_start(self):
-        if hasattr( self.o, 'script_start') and self.o.script_start is not None :
-            self.run_script( self.o.script_start )
+        if hasattr(self.o, 'script_start') and self.o.script_start is not None:
+            self.run_script(self.o.script_start)
 
     def on_stop(self):
-        if hasattr( self.o, 'script_stop') and self.o.script_stop is not None :
-            self.run_script( self.o.script_stop )
+        if hasattr(self.o, 'script_stop') and self.o.script_stop is not None:
+            self.run_script(self.o.script_stop)
 
     def housekeeping(self):
-        if hasattr( self.o, 'script_housekeeping') and self.o.script_housekeeping is not None :
-            self.run_script( self.o.script_housekeeping )
-
+        if hasattr(self.o, 'script_housekeeping'
+                   ) and self.o.script_housekeeping is not None:
+            self.run_script(self.o.script_housekeeping)

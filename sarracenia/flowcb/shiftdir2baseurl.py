@@ -1,4 +1,3 @@
-
 import os
 
 import urllib.parse
@@ -18,20 +17,23 @@ class ShiftDir2baseUrl(FlowCB):
            baseDir=https://a  relPath=b/c/d/e subtopic=b/c/d -->  baseDir=https://a/b/c  relPath=d/e  subtopic=d
 
     """
- 
-    def __init__( self, options ):
+    def __init__(self, options):
 
         self.o = options
-        self.o.add_option( 'shiftDir2baseUrl', 'count', 1 )
+        self.o.add_option('shiftDir2baseUrl', 'count', 1)
 
-
-    def after_work( self, worklist ):
+    def after_work(self, worklist):
         for m in worklist.ok:
-            logger.debug("before: base_url=%s, subtopic=%s relPath=%s" % ( m['baseUrl'], m['subtopic'], m['relPath'] ) )
- 
-            dirs2shift = '/'.join( m['subtopic'][0:self.o.shiftDir2baseUrl] )
-            m['subtopic'] = m['subtopic'][self.o.shiftDir2baseUrl:] 
-            m['baseUrl'] = m['baseUrl'] + '/' + dirs2shift
-            m['relPath'] = '/'.join( m['relPath'].split('/')[self.o.shiftDir2baseUrl:] )
+            logger.debug("before: base_url=%s, subtopic=%s relPath=%s" %
+                         (m['baseUrl'], m['subtopic'], m['relPath']))
 
-            logger.info("shifted %d done: base_url=%s, subtopic=%s relPath=%s" % ( self.o.shiftDir2baseUrl, m['baseUrl'], m['subtopic'], m['relPath'] ) )
+            dirs2shift = '/'.join(m['subtopic'][0:self.o.shiftDir2baseUrl])
+            m['subtopic'] = m['subtopic'][self.o.shiftDir2baseUrl:]
+            m['baseUrl'] = m['baseUrl'] + '/' + dirs2shift
+            m['relPath'] = '/'.join(
+                m['relPath'].split('/')[self.o.shiftDir2baseUrl:])
+
+            logger.info(
+                "shifted %d done: base_url=%s, subtopic=%s relPath=%s" %
+                (self.o.shiftDir2baseUrl, m['baseUrl'], m['subtopic'],
+                 m['relPath']))

@@ -33,6 +33,7 @@ from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
 
+
 class Mail(FlowCB):
     def __init__(self, options):
 
@@ -66,7 +67,7 @@ class Mail(FlowCB):
             else:
                 port = 110
 
-        gathered_messages=[]
+        gathered_messages = []
         if "imap" in protocol:
             if protocol == "imaps":
                 try:
@@ -98,7 +99,7 @@ class Mail(FlowCB):
                 msg_subject = email.message_from_string(msg).get('Subject')
                 msg_filename = msg_subject + datetime.datetime.now().strftime(
                     '%Y%m%d_%H%M%s_%f')
-                m = sarracenia.Message.fromFileInfo( msg_filename, self.o ) 
+                m = sarracenia.Message.fromFileInfo(msg_filename, self.o)
                 gathered_messages.append(m)
 
             mailman.close()
@@ -138,7 +139,7 @@ class Mail(FlowCB):
                 msg_subject = email.message_from_string(msg).get('Subject')
                 msg_filename = msg_subject + datetime.datetime.now().strftime(
                     '%Y%m%d_%H%M%s_%f')
-                m = sarracenia.Message.fromFileInfo( msg_filename, self.o ) 
+                m = sarracenia.Message.fromFileInfo(msg_filename, self.o)
                 gathered_messages.append(m)
 
             mailman.quit()

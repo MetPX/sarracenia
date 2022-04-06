@@ -43,6 +43,7 @@ import re
 import urllib, urllib.parse
 import sys
 
+
 class Credential:
     """An object that holds information about a credential, read from a 
 
@@ -94,16 +95,16 @@ class Credential:
         if False:
             s += self.url.geturl()
         else:
-            s += self.url.scheme + '://' 
+            s += self.url.scheme + '://'
             if self.url.username:
-               s += self.url.username 
+                s += self.url.username
             #if self.url.password:
-            #   s += ':' + self.url.password 
+            #   s += ':' + self.url.password
             s += '@' + self.url.hostname
             if self.url.port:
-               s+= ':' + self.url.port
+                s += ':' + self.url.port
             if self.url.path:
-              s += self.url.path
+                s += self.url.path
 
         s += " %s" % self.ssh_keyfile
         s += " %s" % self.passive
@@ -117,10 +118,10 @@ class Credential:
 
 # class CredentialDB
 
+
 class CredentialDB:
     """ Parses, stores and manages Credential objects.
     """
-
     def __init__(self, Unused_logger=None):
         """
            logger argument no longer used... left there for API compat with old calls.

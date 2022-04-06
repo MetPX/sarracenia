@@ -14,6 +14,7 @@ import urllib
 from sarracenia.flowcb import FlowCB
 logger = logging.getLogger(__name__)
 
+
 class ToHttp(FlowCB):
     def __init__(self, options):
         self.o = options
@@ -28,13 +29,11 @@ class ToHttp(FlowCB):
         new_incoming = []
         for message in worklist.incoming:
             logger.debug("msg_2http input: urlstr: %s" % message['urlstr'])
-            message['urlstr'] = self.o.hurlre.sub(message['savedurl'], message['urlstr'])
+            message['urlstr'] = self.o.hurlre.sub(message['savedurl'],
+                                                  message['urlstr'])
             message['url'] = urllib.parse.urlparse(message['urlstr'])
             message['set_notice_url'](message['url'])
             logger.debug("msg_2http baseDir=%s " % (self.o.baseDir))
             logger.info("msg_2http output: urlstr: %s" % message['urlstr'])
             new_incoming.append(message)
         worklist.incoming = new_incoming
-
-
-
