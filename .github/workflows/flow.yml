@@ -6,6 +6,9 @@ on:
   push:
     branches:
       - v03_wip
+      - v2_dev
+      - main
+      - v2_stable
 
   workflow_dispatch:
     inputs:
