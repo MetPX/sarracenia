@@ -1861,7 +1861,6 @@ class sr_GlobalState:
                     if k in synonyms:
                         k = synonyms[k]
                         v3_cfg.write(k + ' ' + ' '.join(line[1:]))
-                        print(k + ' ' + ' '.join(line[1:]))
                         continue
 
                     if k in convert_to_v3:
@@ -1872,16 +1871,13 @@ class sr_GlobalState:
                                 k = line[0]
                                 if 'continue' in line:
                                     logger.info("obsolete v2")
+                                    continue
                         else:
                             line = convert_to_v3[k]
                             k = line[0]
                             v = line[1]
-
-                        if k == 'continue':
-                            continue
                         v3_cfg.write(k + ' ' + v)
-                        print(k + ' ' + v)
-
+                    v3_cfg.write(k + ' ' + ' '.join(line[1:]))
 
 
 

@@ -151,6 +151,7 @@ convert_to_v3 = {
         ['flowCallback', 'sarracenia.flowcb.filter.pclean_f92.PClean_F92'],
         'accel_wget': ['continue'],
         'accel_scp': ['continue'],
+        'msg_total_save': ['continue']
     },
     'do_send': {
        'file_email' : [ 'flowCallback', 'sarracenia.flowcb.send.email.Email' ],
@@ -191,7 +192,6 @@ convert_to_v3 = {
 	'msg_by_user': ['continue'],
 	'msg_dump': ['continue'],
 	'msg_total': ['continue'],
-	'msg_total_save': ['continue'],
 	'post_total': ['continue'],
 	'post_total_save': ['continue'],
         'wmo2msc': [ 'flow_callback', 'sarracenia.flowcb.filter.wmo2msc.Wmo2Msc'],
