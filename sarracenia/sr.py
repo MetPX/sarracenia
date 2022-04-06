@@ -1841,10 +1841,15 @@ class sr_GlobalState:
 
     def config_converter(self):
         c_v2, cfg_v2 = self.v2_config[0].split(os.sep)
-        v2_config = c_v2 + os.sep + cfg_v2 + '.conf'
+        if cfg_v2[-5:] == '.conf': v2_config = c_v2 + os.sep + cfg_v2
+        else: v2_config = c_v2 + os.sep + cfg_v2 + '.conf'
 
         v2_config_path = self.user_config_dir.replace('sr3', 'sarra') + os.sep + v2_config
         v3_config_path = self.user_config_dir + os.sep + v2_config
+
+        if not os.path.exists(v2_config_path):
+            logging.info('Invalid config %s' % v2_config)
+            return
 
         synonyms = sarracenia.config.Config.synonyms
         with open(v3_config_path, 'w') as v3_cfg:
