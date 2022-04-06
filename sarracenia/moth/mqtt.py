@@ -450,17 +450,10 @@ class MQTT(Moth):
             self.metrics['rxGoodCount'] += 1
             return message
         else:
-<<<<<<< HEAD
            self.metrics['rxBadCount'] += 1
            self.client.ack(message['ack_id'])
            logger.error('message acknowledged and discarded: %s' % message)
            return None
-=======
-            self.metrics['rxBadCount'] += 1
-            self.client.ack(msg['ack_id'])
-            logger.error('message acknowledged and discarded: %s' % msg)
-            return None
->>>>>>> origin/v03_wip
 
     def newMessages(self, blocking=False) -> list:
         """
