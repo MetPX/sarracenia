@@ -41,7 +41,7 @@ import subprocess
 import sys
 import time
 
-import sarracenia.config
+from sarracenia.config import *
 import sarracenia.moth
 import sarracenia.rabbitmq_admin
 
@@ -1842,42 +1842,39 @@ class sr_GlobalState:
     def config_converter(self):
         c_v2, cfg_v2 = self.v2_config[0].split(os.sep)
         v2_config = c_v2 + os.sep + cfg_v2 + '.conf'
+
         v2_config_path = self.user_config_dir.replace('sr3', 'sarra') + os.sep + v2_config
         v3_config_path = self.user_config_dir + os.sep + v2_config
 
-        print(v2_config_path)
-        print(v3_config_path)
-
-        from sarracenia.config import convert_to_v3
         synonyms = sarracenia.config.Config.synonyms
         with open(v3_config_path, 'w') as v3_cfg:
             with open(v2_config_path, 'r') as v2_cfg:
                 for line in v2_cfg.readlines():
-                    if (len(line) < 1) or (line[0].startswith('#')) or (line == '\n'):
+                    if len(line.strip()) < 1:
+                        v3_cfg.write('\n')
+                        continue
+                    if line[0].startswith('#'):
                         v3_cfg.write(line)
                         continue
                     line = line.strip().split()
                     k = line[0]
                     if k in synonyms:
                         k = synonyms[k]
-                        v3_cfg.write(k + ' ' + ' '.join(line[1:]))
+                        v3_cfg.write(k + ' ' + ' '.join(line[1:]) + '\n')
                         continue
-
                     if k in convert_to_v3:
                         if len(line) > 1:
                             v = line[1].replace('.py', '', 1)
                             if v in convert_to_v3[k]:
                                 line = convert_to_v3[k][v]
-                                k = line[0]
+                                # k = line[0]
                                 if 'continue' in line:
-                                    logger.info("obsolete v2")
+                                    logger.info("obsolete v2: " + v)
                                     continue
-                        else:
-                            line = convert_to_v3[k]
-                            k = line[0]
-                            v = line[1]
-                        v3_cfg.write(k + ' ' + v)
-                    v3_cfg.write(k + ' ' + ' '.join(line[1:]))
+                                else:
+                                    v3_cfg.write(' '.join(line) + '\n')
+                    v3_cfg.write(k + ' ' + ' '.join(line[1:])+'\n')
+        logging.info('converting %s from v2 to v3 ' % v2_config)
 
 
 
