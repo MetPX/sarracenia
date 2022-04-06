@@ -334,12 +334,12 @@ class Flow:
                 if stopping:
                     logger.info('clean stop from run loop')
                     self.close()
+                    break
                 else:
                     logger.info(
                         'starting last pass (without gather) through loop for cleanup.'
                     )
                     stopping = True
-                break
 
             self.have_vip = self.has_vip()
             if (self.o.component == 'poll') or self.have_vip:
@@ -421,20 +421,19 @@ class Flow:
 
             if (self.o.messageCountMax > 0) and (total_messages >=
                                                  self.o.messageCountMax):
-                self.close()
-                break
+                self.please_stop()
 
             current_rate = total_messages / run_time
             elapsed = now - last_time
 
             if (last_gather_len == 0) and (self.o.sleep < 0):
-                self.close()
-                break
+                self.please_stop()
 
             if spamming and (current_sleep < 5):
                 current_sleep *= 2
 
-            if now > next_housekeeping:
+            # Run housekeeping based on time, and before stopping to ensure it's run at least once
+            if now > next_housekeeping or stopping:
                 logger.info(
                     f'on_housekeeping pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}'
                 )
