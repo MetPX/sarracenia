@@ -1878,7 +1878,8 @@ class sr_GlobalState:
                                     continue
                                 else:
                                     v3_cfg.write(' '.join(line) + '\n')
-                    v3_cfg.write(k + ' ' + ' '.join(line[1:])+'\n')
+                    else:
+                        v3_cfg.write(k + ' ' + ' '.join(line[1:])+'\n')
         logging.info('converting %s from v2 to v3 ' % v2_config)
 
 
