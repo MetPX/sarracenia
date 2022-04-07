@@ -56,17 +56,18 @@ class Credential:
          sftp://alice@herhost/ ssh_keyfile=/home/myself/mykeys/.ssh.id_dsa
          ftp://georges:Gpass@hishost/  passive = True, binary = True
 
-        (passive true and binary true are credentials default and may be omitted)
-        Attributes:
-        - url: urllib.parse.ParseResult object with URL, password, etc.
-        - ssh_keyfile: path to SSH key file for SFTP
-        - passive: use passive FTP mode
-        - binary: use binary FTP mode
-        - tls: use FTPS with TLS
-        - prot_p: use a secure data connection for TLS
-        - bearer_token: bearer token for HTTP authentication
-        - login_method: force a specific login method for AMQP (PLAIN, AMQPLAIN,
-          EXTERNAL or GSSAPI)
+       Attributes:
+          url: urllib.parse.ParseResult object with URL, password, etc.
+          ssh_keyfile: path to SSH key file for SFTP
+          passive: use passive FTP mode
+            default=true
+          binary: use binary FTP mode
+            default=true
+          tls: use FTPS with TLS
+          prot_p: use a secure data connection for TLS
+          bearer_token: bearer token for HTTP authentication
+          login_method: force a specific login method for AMQP (PLAIN, AMQPLAIN,
+            EXTERNAL or GSSAPI)
 
     """
     def __init__(self, urlstr=None):
