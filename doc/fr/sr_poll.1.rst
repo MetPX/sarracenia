@@ -97,6 +97,7 @@ notifié et où il doit être notifié il sera placé, et sous quel nom.
 - **chmod     <integer>        (défaut: 0o400)**
 - **poll_without_vip <on|off>  (défaut: on)**
 - **file_time_limit <integer> (défaut: 60d)**
+- **destination_timezone      (défaut: 'UTC')**
 
 L'option *filename* peut être utilisée pour définir un renommage global des produits.
 Ex.. :
@@ -162,7 +163,8 @@ Ceci peut réduire la charge sur les noeuds de facon significative (mésuré à 
 moins de charge dans un cas exemplaire.)  C´est donc utile de le choisir quand 
 l´efficacité de la configuration global est une enjeu.
 
-Par défaut, les fichiers qui sont datés d'il y a plus de deux mois ne seront pas publiés. Il est possible de modifier cette limite de temps en le spécifiant dans une configuration avec *file_date_limit <integer>*. Par défaut, ce temps sera en secondes, sauf si préciser autrement, avec 1h, 1d, ou 1w par exemple, pour heure, jour et semaine respectivement. 
+Par défaut, les fichiers qui sont datés d'il y a plus de deux mois ne seront pas publiés. Il est possible de modifier cette limite de temps en le spécifiant dans une configuration avec *file_date_limit <integer>*. Par défaut, ce temps sera en secondes, sauf si préciser autrement, avec 1h, 1d, ou 1w par exemple, pour heure, jour et semaine respectivement. On peut également spécifier le fuseau horaire de tels fichiers en ajoutant l'option *destination_timezone '<TIMEZONE>'* dans les configurations pour convertir le temps des fichiers au fuseau horaire 'UTC'. Par défaut, le fuseau horaire de destination_timezone est 'UTC' mais on peut spécifier un autre fuseau horaire avec le format: '<TIMEZONE>' tel que 'PST' ou 'EST'.
+
 
 SPÉCIFICATIONS DE PUBLICATION
 -----------------------------

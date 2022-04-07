@@ -35,6 +35,7 @@
 import amqp
 
 from sarra.sr_util import *
+from urllib.parse import unquote
 
 # ======= amqp alternative libraries ========
 try:
@@ -132,18 +133,18 @@ class HostConnect:
                 self.logger.debug("%s://%s:<pw>@%s%s ssl=%s" % (self.protocol, self.user, host, self.vhost, self.ssl))
                 if self.use_amqp:
                     self.logger.info("Using amqp module (AMQP 0-9-1)")
-                    self.connection = amqp.Connection(host, userid=self.user, password=self.password,
+                    self.connection = amqp.Connection(host, userid=self.user, password=unquote(self.password),
                                                       virtual_host=self.vhost, ssl=self.ssl)
                     if hasattr(self.connection, 'connect'):
                         # check for amqp 1.3.3 and 1.4.9 because connect doesn't exist in those older versions
                         self.connection.connect()
                 elif self.use_amqplib:
                     self.logger.info("Using amqplib module (mostly AMQP 0-8)")
-                    self.connection = amqplib_0_8.Connection(host, userid=self.user, password=self.password,
+                    self.connection = amqplib_0_8.Connection(host, userid=self.user, password=unquote(self.password),
                                                              virtual_host=self.vhost, ssl=self.ssl)
                 elif self.use_pika:
                     self.logger.info("Using pika module (AMQP 0-9-1)")
-                    credentials = pika.PlainCredentials(self.user, self.password)
+                    credentials = pika.PlainCredentials(self.user, unquote(self.password))
                     parameters = pika.connection.ConnectionParameters(self.host, virtual_host=self.vhost,
                                                                       credentials=credentials, ssl=self.ssl)
                     self.connection = pika.BlockingConnection(parameters)

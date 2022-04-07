@@ -68,7 +68,7 @@
 
 import os, sys, time
 import datetime
-
+from dateparser import parse
 # ============================================================
 # DECLARE TRICK for false self.poster
 
@@ -144,48 +144,6 @@ class sr_poll(sr_post):
             self.pulls[maskDir].append(mask)
 
 
-    def _file_date_exceed_limit(self, date, time_limit):
-        """comments:
-            This method compares today's date to the file's date by creating a date time object
-            Three formats are acceptd so far, more can be added if needed (format on https://strftime.org/ )
-            Files with future dates are processed as long as the (future date - todays date) is < time_limit.
-            FIXME: french input like Fev will not work - only Feb is accepted for the month
-            If year is not provided, this means that the file is < 6 months old, so depending on todays date,
-                assign appropriate year (for jan-jun -> assign prev year, for jul-dec assign current year)
-            Note: is it possible for a file to be more than 6 months old and have the format Mo Day TIME ? (problematic)
-        """
-        time_limit=int(time_limit)
-        current_date = datetime.datetime.now()
-        try:
-            date_temp = datetime.datetime.strptime(date, '%d %b %H:%M')
-            if date_temp.month - current_date.month >= 6:
-                file_date = date_temp.replace(year=(current_date.year - 1))
-            else:
-                file_date = date_temp.replace(year=current_date.year)
-            self.logger.info("File date is: " + str(file_date) +
-                             " > File is " + str(abs((file_date - current_date).seconds))+" seconds old")
-            return abs((file_date - current_date).seconds) < time_limit
-        except Exception as e:
-            try:
-                date_temp = datetime.datetime.strptime(date, '%b %d %H:%M')
-                if date_temp.month - current_date.month >= 6:
-                    file_date = date_temp.replace(year=(current_date.year - 1))
-                else:
-                    file_date = date_temp.replace(year=current_date.year)
-                self.logger.info("File date is: " + str(file_date) +
-                                 " > File is " + str(abs((file_date - current_date).seconds))+" seconds old")
-                return abs((file_date - current_date).seconds) < time_limit
-            except Exception as e:
-                try:
-                    file_date = datetime.datetime.strptime(date, '%b %d %Y')
-                    self.logger.info("File date is: " + str(file_date) +
-                                     " > File is " + str(abs((file_date - current_date).seconds)) + " seconds old")
-                    return abs((file_date - current_date).seconds) < time_limit
-                except Exception as e:
-                    warning_msg = str(e)
-                    print("%s" % warning_msg)
-                    return False
-
     # find differences between current ls and last ls
     # only the newer or modified files will be kept...
 
@@ -200,6 +158,7 @@ class sr_poll(sr_post):
 
         old_ls = self.load_ls_file(lspath)
 
+        file_within_date_limit = True
         # compare
 
         filelst = []
@@ -208,34 +167,33 @@ class sr_poll(sr_post):
         for f in new_lst:
             # self.logger.debug("checking %s (%s)" % (f,ls[f]))
             try:
-                str1 = ls[f]
-                str2 = str1.split()
-                # specify input for this routine.
-                # ls[f] format controlled by online plugin (line_mode.py)
-                # this format could change depending on plugin
-                # line_mode.py format "-rwxrwxr-x 1 1000 1000 8123 24 Mar 22:54 2017-03-25-0254-CL2D-AUTO-minute-swob.xml"
-                date = str2[5] + " " + str2[6] + " " + str2[7]
-                if self._file_date_exceed_limit(date, self.file_time_limit):
-                    self.logger.info("File should be processed")
-                    # execute rest of code
-                    # keep a newer entry
-                    if not f in old_ls:
-                        # self.logger.debug("IS NEW %s" % f)
-                        filelst.append(f)
-                        desclst[f] = ls[f]
-                        continue
-
-                    # keep a modified entry
-                    if ls[f] != old_ls[f]:
-                        # self.logger.debug("IS DIFFERENT %s from (%s,%s)" % (f,old_ls[f],ls[f]))
-                        filelst.append(f)
-                        desclst[f] = ls[f]
-                        continue
-                else:
-                    self.logger.info("File should be skipped")
-                    # ignore rest of code and re iterate
+                line_split = ls[f].split()
+                date = line_split[5] + " " + line_split[6]
+                file_date = parse(date)
+                current_date = datetime.datetime.now()
+                file_within_date_limit = abs((file_date - current_date).seconds) < self.file_time_limit
             except:
+                self.logger.error("Assuming ok, incorrect date format for line:  %s" % ls[f])
                 pass
+            if file_within_date_limit:
+                self.logger.debug("File should be processed")
+                # execute rest of code
+                # keep a newer entry
+                if not f in old_ls:
+                    # self.logger.debug("IS NEW %s" % f)
+                    filelst.append(f)
+                    desclst[f] = ls[f]
+                    continue
+
+                # keep a modified entry
+                if ls[f] != old_ls[f]:
+                    # self.logger.debug("IS DIFFERENT %s from (%s,%s)" % (f,old_ls[f],ls[f]))
+                    filelst.append(f)
+                    desclst[f] = ls[f]
+                    continue
+            else:
+                self.logger.debug("File should be skipped")
+                # ignore rest of code and re iterate
             # self.logger.debug("IS IDENTICAL %s" % f)
 
         return filelst, desclst
@@ -752,3 +710,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

@@ -23,6 +23,7 @@ from functools import partial
 
 import appdirs
 import copy
+import errno
 import getpass
 import logging
 import os
@@ -95,7 +96,17 @@ class sr_GlobalState:
 
             lfn += os.sep + 'log' + os.sep + 'sr_' + c + '_' + cfg + "_%02d" % i + '.log'
 
-        os.makedirs(os.path.dirname(lfn), exist_ok=True)
+        dir_not_there = not os.path.exists( os.path.dirname(lfn) )
+
+        while dir_not_there:
+            try:
+                os.makedirs(os.path.dirname(lfn), exist_ok=True)
+                dir_not_there=False
+            except Exception as Ex:
+                print( 'makedirs %s failed: %s' % ( os.path.dirname(lfn), ex ) )
+                if ex.errno == errno.EEXIST: 
+                     dir_not_there=False
+       
 
         if c[0] != 'c':  # python components
             if cfg is None:

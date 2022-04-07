@@ -51,114 +51,129 @@
   x.persist() <- write metadata back to file, if necessary.
 
 """
+import sys
+import json
 
+supports_alternate_data_streams = False
+xattr_disabled = False
+supports_pyxattr = False
+STREAM_NAME = 'sr_.json'
+
+
+def disable_xattr():
+    global xattr_disabled
+    xattr_disabled = True
 
 try:
     import xattr
-    supports_extended_attributes=True
-
+    supports_extended_attributes = True
+    # xattr will have both attributes xattr and listxattr
+    # pyxattr will have only listxattr, and not xattr
+    if not hasattr(xattr, 'xattr'):
+        supports_pyxattr = True
+        # pyxattr is installed, disable xattr for now
+        # disable_xattr()
+        print("pyxattr module in use, xattr disabled")
 except:
-    supports_extended_attributes=False
-    
-import sys
-
-supports_alternate_data_streams=False
+    # neither pyxattr or xattr installed
+    disable_xattr()
 
 if sys.platform == 'win32':
     try:
         from sarra.pyads import ADS
-        supports_alternate_data_streams=True
-
+        supports_alternate_data_streams = True
     except:
         pass
 
-import json
-
-STREAM_NAME = 'sr_.json'
-
-xattr_disabled=False
-
-def disable_xattr():
-     global xattr_disabled
-     xattr_disabled=True
 
 class sr_xattr:
 
-   def __init__(self,path):
+    def __init__(self, path):
 
-       global supports_alternate_data_streams
-       global supports_extended_attributes
+        global supports_alternate_data_streams
+        global supports_extended_attributes
 
-       self.path = path
-       self.x = {}
-       self.dirty = False
+        self.path = path
+        self.x = {}
+        self.dirty = False
 
-       if xattr_disabled:
-           supports_alternate_data_streams=False
-           supports_extended_attributes=False
-           return
 
-       if supports_alternate_data_streams:
-           self.ads = ADS(path)
-           s = list(self.ads)
-           if STREAM_NAME in s:
-              self.x = json.loads( self.ads.get_stream_content(STREAM_NAME).decode('utf-8')  )
+        if xattr_disabled:
+            supports_alternate_data_streams = False
+            supports_extended_attributes = False
+            return
 
-       if supports_extended_attributes:
-          d = xattr.xattr(path)
-          for i in d:
-              if not i.startswith('user.sr_'):
-                 continue
-              k= i.replace('user.sr_','') 
-              v= d[i].decode('utf-8')
-              self.x[k] = v
+        if supports_alternate_data_streams:
+            self.ads = ADS(path)
+            s = list(self.ads)
+            if STREAM_NAME in s:
+                self.x = json.loads(self.ads.get_stream_content(STREAM_NAME).decode('utf-8'))
 
-   def __del__(self):
-       self.persist()
+        if supports_extended_attributes:
+            try:
+                d = xattr.xattr(path)
+                for i in d:
+                    if not i.startswith('user.sr_'):
+                       continue
+                    k= i.replace('user.sr_','') 
+                    v= d[i].decode('utf-8')
+                    self.x[k] = v
+            except:
+                # FIXME.. some weird error reading xattr happens once in a while.
+                #   just ignore it, we won't get xattrs from this file. so sad.
+                #   I think it is a race condition when two poll processes are posting the same
+                #   tree, and one is writing attributes while the other is reading.
+                #   unlikely to be a difficulty in real life? but perhaps worthy of an error message.
+                pass
 
-   """
+    def __del__(self):
+        self.persist()
+
+    """
      return a dictionary of extended attributes.
 
    """
-   def list(self):
-       return self.x.keys()
 
-   def get(self,name):
-       if name in self.x.keys():
-           return self.x[ name ]
-       return None
+    def list(self):
+        return self.x.keys()
 
-   def set(self,name,value):
-       self.dirty = True
-       self.x[ name ] = value      
+    def get(self, name):
+        if name in self.x.keys():
+            return self.x[name]
+        return None
 
-   def persist(self):
+    def set(self, name, value):
+        self.dirty = True
+        self.x[name] = value
 
-       global supports_alternate_data_streams
-       global supports_extended_attributes
+    def persist(self):
 
-       if not self.dirty:
-          return
+        global supports_alternate_data_streams
+        global supports_extended_attributes
 
-       try: 
-           if supports_alternate_data_streams:
+        if not self.dirty:
+            return
 
-              #replace STREAM_NAME with json.dumps(self.x)
-              s = list(self.ads)
-              if STREAM_NAME in s: 
-                   self.ads.delete_stream(STREAM_NAME)
+        try:
+            if supports_alternate_data_streams:
 
-              self.ads.add_stream_from_string(STREAM_NAME,bytes(json.dumps(self.x,indent=4),'utf-8'))
+                # replace STREAM_NAME with json.dumps(self.x)
+                s = list(self.ads)
+                if STREAM_NAME in s:
+                    self.ads.delete_stream(STREAM_NAME)
 
-           if supports_extended_attributes:
-              #set the attributes in the list. encoding utf8...
-              for i in self.x:
-                  xattr.setxattr( self.path, 'user.sr_' + i, bytes( self.x[i], 'utf-8' ) )
-       except:
-          # not really sure what to do in the exception case...
-          # permission would be a normal thing and just silently fail...
-          # could also be on windows, but not on an NTFS file system.
-          # silent failure means it falls back to using other means.
-          pass
+                self.ads.add_stream_from_string(STREAM_NAME, bytes(json.dumps(self.x, indent=4), 'utf-8'))
 
-       self.dirty = False
+            if supports_extended_attributes:
+                # set the attributes in the list. encoding utf8...
+                for i in self.x:
+                    xattr.setxattr(self.path, 'user.sr_' + i, bytes(self.x[i], 'utf-8'))
+        except Exception as ex:
+            # not really sure what to do in the exception case...
+            # permission would be a normal thing and just silently fail...
+            # could also be on windows, but not on an NTFS file system.
+            # silent failure means it falls back to using other means.
+
+            pass
+
+        self.dirty = False

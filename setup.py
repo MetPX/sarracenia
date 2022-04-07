@@ -72,6 +72,7 @@ setup(
     "watchdog", 
     "netifaces", 
     "humanize",
-    "psutil" ]
+    "psutil",
+    "dateparser"]
 
 )

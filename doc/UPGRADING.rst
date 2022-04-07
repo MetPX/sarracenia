@@ -39,6 +39,12 @@ git
 2.21.08
 -------
 
+*BUG*: sr_poll unreliable/broken in the following sense:
+when 2.21.08 does not recognize a date, and it only recognizes a few formats,
+it rejects the file. This can cause it to ignore many files at destination.
+This release contains a code to address: https://github.com/MetPX/sarracenia/issues/366
+but it causes more issues than are resolved.
+
 *CHANGES*: BUGFIXED by this release: https://github.com/MetPX/sarracenia/issues/374
 
 sundew_extension was not appended to file name in patter match. This means patterns

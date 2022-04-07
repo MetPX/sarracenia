@@ -32,6 +32,8 @@
 #
 #
 
+from urllib.parse import unquote
+
 import os, sarra, ssl, urllib.request, urllib.error, ssl, sys
 
 try :
@@ -228,9 +230,12 @@ class sr_http(sr_proto):
                    if self.password != None :                          
                       cred        = self.user + ':' + self.password +'@'
                       self.urlstr = self.urlstr.replace(cred,'')
+                      pw=unquote(self.password)
+                   else:
+                      pw=None
 
                    # continue with authentication
-                   password_mgr.add_password(None, self.urlstr,self.user,self.password)
+                   password_mgr.add_password(None, self.urlstr,self.user,pw)
                    auth_handler = urllib.request.HTTPBasicAuthHandler(password_mgr)
             
                    #hctx = ssl.create_default_context()
