@@ -46,7 +46,7 @@ jobs:
          
       - name: Setup ${{ matrix.which_test }} test.
         run: |
-          cd ${HOME}; pwd; ls ; 
+          cd ${HOME}; pwd; ls ; echo "testing sarra version: $sarra_py_version"
           cd ${HOME}/sr_insects/${{ matrix.which_test }}; ./flow_setup.sh
 
       # Enable tmate debugging of manually-triggered workflows if the input option was provided
