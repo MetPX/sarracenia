@@ -69,7 +69,7 @@ jobs:
         continue-on-error: true
         run: |
           sr stop
-          cd ${HOME}/.cache/sr3/log/
+          cd ${HOME}/.cache/sarra/log/
           tar -czf ${HOME}/logs.tar.gz *
       
       - name: Save run artifacts
@@ -77,5 +77,5 @@ jobs:
         uses: actions/upload-artifact@v3
         continue-on-error: true
         with:
-          name: sr3_${{ matrix.which_test }}_${{ matrix.osver }}_logs_${{ github.sha }}
+          name: SarraV2_${{ matrix.which_test }}_${{ matrix.osver }}_logs_${{ github.sha }}
           path: ~/logs.tar.gz
