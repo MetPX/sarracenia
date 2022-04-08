@@ -4,3 +4,4 @@ jupyter
 pyclamd
 docutils
 jinja2==3.0.3
+sphinx-rtd-theme
