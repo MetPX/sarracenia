@@ -1483,7 +1483,7 @@ class Config:
         if self.sourceFromExchange and self.exchange:
            self.source = self.get_source_from_exchange(self.exchange)
 
-        if self.broker is not None and self.broker.url is not None:
+        if self.broker and self.broker.url and self.broker.url.username:
 
             self._resolve_exchange()
 
