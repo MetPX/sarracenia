@@ -410,6 +410,10 @@ class Message(dict):
         msg = Message()
 
         #FIXME no variable substitution... o.set_dir_pattern ?
+        if hasattr(o,'post_topicPrefix') and o.post_topicPrefix[0] in [ 'v02', 'v03', 'v04' ]:
+            msg['version'] = o.post_topicPrefix[0]
+        else:
+            msg['version'] = 'v03'
 
         if hasattr(o, 'post_exchange'):
             msg['exchange'] = o.post_exchange

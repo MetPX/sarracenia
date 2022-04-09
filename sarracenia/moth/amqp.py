@@ -103,6 +103,7 @@ class AMQP(Moth):
                 (raw_msg.properties['content_type'] == 'application/json')
                 ) or (body[0] == '{'):  # used as key to indicate version 3.
                 msg = sarracenia.Message()
+                msg["version"] = 'v03'
                 try:
                     msg.copyDict(json.loads(body))
                 except Exception as ex:
@@ -133,12 +134,32 @@ class AMQP(Moth):
                 elif ('size' in msg):
                     if (type(msg['size']) is str):
                         msg['size'] = int(msg['size'])
+            elif raw_msg.properties['content_type'] == 'application/geo+json' :
+                msg = sarracenia.Message()
+                msg["version"] = 'v04'
+
+                try:
+                    GeoJSONBody=json.loads(body)
+                except Exception as ex:
+                    logger.warning('expected geojson, decode error: %s' % ex)
+                    logger.debug('Exception details: ', exc_info=True)
+                    return None
+
+                for literal in [ 'geometry', 'properties' ]:
+                    if literal in GeoJSONBody:
+                        msg[literal] = GeoJSONBody[literal]
+                for h in GeoJSONBody['properties']:
+                    if h not in [ 'geometry', 'properties' ]:
+                        msg[h] = GeoJSONBody['properties'][h]
+                del msg['type']
+                msg['relPath'] = GeoJSONBody['id']
             else:
                 try:
                     msg = v2wrapper.v02tov03message(
                         body, raw_msg.headers,
                         raw_msg.delivery_info['routing_key'],
                         self.o['topicPrefix'])
+                    msg["version"] = 'v02'
                 except Exception as ex:
                     logger.warning(
                         'expected v2 encoded message, decode error: %s' % ex)
@@ -152,7 +173,7 @@ class AMQP(Moth):
             msg['ack_id'] = raw_msg.delivery_info['delivery_tag']
             msg['local_offset'] = 0
             msg['_deleteOnPost'] = set(
-                ['ack_id', 'exchange', 'local_offset', 'subtopic'])
+                ['ack_id', 'exchange', 'local_offset', 'subtopic', 'version'])
             if not msg.validate():
                 self.channel.basic_ack(msg['ack_id'])
                 logger.error('message acknowledged and discarded: %s' % msg)
@@ -483,6 +504,7 @@ class AMQP(Moth):
             return False
 
         #body = copy.deepcopy(bd)
+        version=body['version']
         topic = '.'.join(self.o['topicPrefix'] + body['subtopic'])
         topic = topic.replace('#', '%23')
         topic = topic.replace('*', '%22')
@@ -530,7 +552,7 @@ class AMQP(Moth):
         else:
             ttl = "0"
 
-        if topic.startswith('v02'):  #unless explicitly otherwise
+        if version == 'v02':  #unless explicitly otherwise
             v2m = v2wrapper.Message(body)
 
             # v2wrapp
@@ -553,13 +575,28 @@ class AMQP(Moth):
                                         delivery_mode=2)
             body = v2m.notice
             headers = v2m.headers
-        else:  #assume v03
+        elif version == 'v03':
 
             raw_body = json.dumps(body)
             self.metrics['txByteCount'] += len(raw_body)
             headers = None
             AMQP_Message = amqp.Message(raw_body,
                                         content_type='application/json',
+                                        application_headers=headers,
+                                        expire=ttl,
+                                        delivery_mode=2)
+        elif version == 'v04':
+            GeoJSONBody={ 'id': body['relPath'], 'type': 'Feature', 'geometry': None, 'properties':{} }
+            for literal in [ 'geometry', 'properties' ]:
+                if literal in body:
+                    GeoJSONBody[literal] = body[literal]
+            for h in body:
+                if h not in [ 'geometry', 'relPath', 'properties' ]:
+                    GeoJSONBody['properties'][h] = body[h]
+            self.metrics['txByteCount'] += len(GeoJSONBody)
+            headers = None
+            AMQP_Message = amqp.Message(raw_body,
+                                        content_type='application/geo+json',
                                         application_headers=headers,
                                         expire=ttl,
                                         delivery_mode=2)
