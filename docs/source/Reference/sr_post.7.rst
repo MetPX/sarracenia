@@ -72,6 +72,11 @@ The headers are an array of name:value pairs::
 
   OPTIONAL:
 
+          for GeoJSON compatibility:
+          "type": "Feature"
+          "geometry": RFC 7946 (geoJSON) compatible geographic specification.
+
+
           "size"          - the number of bytes being advertised.
           "blocks"        - if the file being advertised is partitioned, then:
           {
