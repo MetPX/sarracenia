@@ -99,72 +99,14 @@ class AMQP(Moth):
                     logger.debug('Exception details: ', exc_info=True)
                     return None
 
-            if (('content_type' in raw_msg.properties) and
-                (raw_msg.properties['content_type'] == 'application/json')
-                ) or (body[0] == '{'):  # used as key to indicate version 3.
-                msg = sarracenia.Message()
-                msg["version"] = 'v03'
-                try:
-                    msg.copyDict(json.loads(body))
-                except Exception as ex:
-                    logger.warning('expected json, decode error: %s' % ex)
-                    logger.debug('Exception details: ', exc_info=True)
-                    return None
-                """
-                  observed Sarracenia v2.20.08p1 and earlier have 'parts' header in v03 messages.
-                  bug, or implementation did not keep up. Applying Postel's Robustness principle: normalizing messages.
-                """
-                if ('parts' in msg
-                    ):  # bug in v2 code makes v03 messages with parts header.
-                    (m, s, c, r, n) = msg['parts'].split(',')
-                    if m == '1':
-                        msg['size'] = int(s)
-                    else:
-                        if m == 'i': m = 'inplace'
-                        elif m == 'p': m = 'partitioned'
-                        msg['blocks'] = {
-                            'method': m,
-                            'size': int(s),
-                            'count': int(c),
-                            'remainder': int(r),
-                            'number': int(n)
-                        }
-
-                    del msg['parts']
-                elif ('size' in msg):
-                    if (type(msg['size']) is str):
-                        msg['size'] = int(msg['size'])
-            elif raw_msg.properties['content_type'] == 'application/geo+json' :
-                msg = sarracenia.Message()
-                msg["version"] = 'v04'
-
-                try:
-                    GeoJSONBody=json.loads(body)
-                except Exception as ex:
-                    logger.warning('expected geojson, decode error: %s' % ex)
-                    logger.debug('Exception details: ', exc_info=True)
-                    return None
-
-                for literal in [ 'geometry', 'properties' ]:
-                    if literal in GeoJSONBody:
-                        msg[literal] = GeoJSONBody[literal]
-                for h in GeoJSONBody['properties']:
-                    if h not in [ 'geometry', 'properties' ]:
-                        msg[h] = GeoJSONBody['properties'][h]
-                del msg['type']
-                msg['relPath'] = GeoJSONBody['id']
+            if 'content_type' in raw_msg.properties:
+                content_type = raw_msg.properties['content_type']
             else:
-                try:
-                    msg = v2wrapper.v02tov03message(
-                        body, raw_msg.headers,
-                        raw_msg.delivery_info['routing_key'],
-                        self.o['topicPrefix'])
-                    msg["version"] = 'v02'
-                except Exception as ex:
-                    logger.warning(
-                        'expected v2 encoded message, decode error: %s' % ex)
-                    logger.debug('Exception details: ', exc_info=True)
-                    return None
+                content_type = None
+
+            msg = self.decodeMessageBody( body, raw_msg.headers, content_type, raw_msg.delivery_info['routing_key'], self.o['topicPrefix'] )
+            if not msg:
+                return None
 
             topic = raw_msg.delivery_info['routing_key'].replace(
                 '%23', '#').replace('%22', '*')
@@ -552,32 +494,25 @@ class AMQP(Moth):
         else:
             ttl = "0"
 
-        if version == 'v02':  #unless explicitly otherwise
-            v2m = v2wrapper.Message(body)
-
-            # v2wrapp
-            for h in [
-                    'pubTime', 'baseUrl', 'relPath', 'size', 'blocks',
-                    'content', 'integrity'
-            ]:
-                if h in v2m.headers:
-                    del v2m.headers[h]
-
-            for k in v2m.headers:
-                if (type(v2m.headers[k]) is str) and (len(v2m.headers[k]) >=
+        raw_body =  self.encodeMessageBody( body, version )
+        if self.o['messageDebugDump']:
+            logger.debug('raw message body: type: %s (%d bytes) %s' %
+                             (type(body), len(body), body))
+        if version == 'v02':  
+            for k in raw_body.headers:
+                if (type(raw_body.headers[k]) is str) and (len(raw_body.headers[k]) >=
                                                       amqp_ss_maxlen):
                     logger.error("message header %s too long, dropping" % k)
                     return False
-            AMQP_Message = amqp.Message(v2m.notice,
+            AMQP_Message = amqp.Message(raw_body.notice,
                                         content_type='text/plain',
-                                        application_headers=v2m.headers,
+                                        application_headers=raw_body.headers,
                                         expire=ttl,
                                         delivery_mode=2)
-            body = v2m.notice
-            headers = v2m.headers
+            body = raw_body.notice
+            headers = raw_body.headers
+            self.metrics['txByteCount'] += len(raw_body.notice) + len(''.join(str(raw_body.headers)))
         elif version == 'v03':
-
-            raw_body = json.dumps(body)
             self.metrics['txByteCount'] += len(raw_body)
             headers = None
             AMQP_Message = amqp.Message(raw_body,
@@ -586,20 +521,17 @@ class AMQP(Moth):
                                         expire=ttl,
                                         delivery_mode=2)
         elif version == 'v04':
-            GeoJSONBody={ 'id': body['relPath'], 'type': 'Feature', 'geometry': None, 'properties':{} }
-            for literal in [ 'geometry', 'properties' ]:
-                if literal in body:
-                    GeoJSONBody[literal] = body[literal]
-            for h in body:
-                if h not in [ 'geometry', 'relPath', 'properties' ]:
-                    GeoJSONBody['properties'][h] = body[h]
-            self.metrics['txByteCount'] += len(GeoJSONBody)
+            self.metrics['txByteCount'] += len(raw_body)
             headers = None
             AMQP_Message = amqp.Message(raw_body,
                                         content_type='application/geo+json',
                                         application_headers=headers,
                                         expire=ttl,
                                         delivery_mode=2)
+        else:
+             logger.error( f'unsupported message format version: {version}. Discarded' )
+             return False
+
         ebo = 1
         while True:
             try:
