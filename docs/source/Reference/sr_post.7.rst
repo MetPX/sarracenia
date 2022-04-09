@@ -13,24 +13,12 @@ Sarracenia v03 Post Message Format/Protocol
 :Manual group: MetPX-Sarracenia
 
 
-STATUS: EXPERIMENTAL
---------------------
+STATUS: Default
+---------------
 
 Sarracenia version 2 messages are the current standard, used for terabytes
 and millions of files per day of transfers. Version 3 is a proposal for a next
-iteration of Sarracenia messages, but it is not fully implemented, and 
-not in use anywhere, and may never be used. It is also not frozen yet
-and subject to change.
-
-Most fields and their meaning is the same in version 3 as it was in version 2. 
-Some fields are changing as the protocol is exposed to wider review than previously.
-It is implementing changes the `World Meteorological Organization <www.wmo.int>`_
-for use in a renewed `WIS/Global Telecommunications System <http://www.wmo.int/pages/prog/www/WIS/>`_
-This format will track work done in the `WMO mesh <https://www.github.com/MetPX/wmo_mesh>`_
-
-The change in payload protocol is targetted at simplifying future implementations
-and enabling use by messaging protocols other than pre-1.0 AMQP.
-See `v03 Changes <../Explanations/History/messages_v03.html>`_ for more details.
+iteration of Sarracenia messages.  
 
 To generate messages in v03 format, use following setting::
 
@@ -110,6 +98,9 @@ The headers are an array of name:value pairs::
           "report" { "code": 999  - HTTP style response code. 
                      "message" :  - status report message documented in `Report Messages`_
                    }
+
+          "type": "Feature"   - used for geoJSON compatibility.
+          "geometry" : ... as per RFC7946  GoJSON compatibility.
 
           additional user defined name:value pairs are permitted.
 
