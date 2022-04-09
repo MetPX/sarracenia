@@ -87,6 +87,8 @@ The headers are an array of name:value pairs::
               "number"    : "9999", - which block is this.
           }
           "rename"        - name to write file locally.
+          "retPath"       - relative retrieval path can be catenated to <base_url> to override relPath
+                            used for API cases.
           "topic"         - copy of topic from AMQP header (usually omitted)
           "source"        - the originating entity of the message. 
           "from_cluster"  - the originating cluster of a message.
