@@ -113,7 +113,10 @@ class MQTT(Moth):
         """
 
         super().__init__(broker, options, is_subscriber)
-        self.o = options
+
+        # setting this is wrong and breaks things, was already set in super-class init, doing this here overwites
+        #  interpretation of options done in superclass.
+        #self.o = options
         self.o.update(default_options)
         self.o.update(options)
 
