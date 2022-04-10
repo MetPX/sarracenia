@@ -13,12 +13,19 @@ Sarracenia v03 Post Message Format/Protocol
 :Manual group: MetPX-Sarracenia
 
 
-STATUS: Default
----------------
+STATUS: Stable/Default
+----------------------
 
-Sarracenia version 2 messages are the current standard, used for terabytes
+Sarracenia version 2 messages are the previous standard, used for terabytes
 and millions of files per day of transfers. Version 3 is a proposal for a next
-iteration of Sarracenia messages.  
+iteration of Sarracenia messages.
+
+Most fields and their meaning is the same in version 3 as it was in version 2. 
+Some fields are changing as the protocol is exposed to wider review than previously.
+
+The change in payload protocol is targetted at simplifying future implementations
+and enabling use by messaging protocols other than pre-1.0 AMQP.
+See `v03 Changes <../Explanations/History/messages_v03.html>`_ for more details.
 
 To generate messages in v03 format, use following setting::
 
@@ -39,7 +46,7 @@ Version 03 format of file change announcements for sr_post.
 An sr_post message consists of a topic, and the *BODY* 
 
 **AMQP Topic:** *<version>.{<dir>.}*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
@@ -64,6 +71,11 @@ The headers are an array of name:value pairs::
           }
 
   OPTIONAL:
+
+          for GeoJSON compatibility:
+          "type": "Feature"
+          "geometry": RFC 7946 (geoJSON) compatible geographic specification.
+
 
           "size"          - the number of bytes being advertised.
           "blocks"        - if the file being advertised is partitioned, then:
