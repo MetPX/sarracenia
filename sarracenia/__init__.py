@@ -356,13 +356,24 @@ class Message(dict):
 
         if msg is None: return ""
 
-        s = "{ "
+        if msg['version'] == 'v04':
+            s = f"{{ 'relpath/id': '{msg['relPath']}', 'type':'Feature', 'geometry':{msg['geometry']} 'properties':{{ "
+        else:
+            s = "{ "
+
         for k in sorted(msg.keys()):
+
+            if msg['version'] == 'v04' and k in [ 'relPath', 'type', 'geometry' ]:
+               continue
+            
             if type(msg[k]) is dict:
-                v = "{ "
+                if k != 'properties':
+                    v = "{ "
                 for kk in sorted(msg[k].keys()):
                     v += " '%s':'%s'," % (kk, msg[k][kk])
-                v = v[:-1] + " }"
+                v = v[:-1] 
+                if k != 'properties':
+                   c += " }"
             else:
                 try:
                     v = "%s" % msg[k]
@@ -374,7 +385,10 @@ class Message(dict):
                 if v[0] == '{':
                     v += '}'
 
-            s += " '%s':'%s'," % (k, v)
+            s += f" '{k}':'{v}'," 
+
+        if msg['version'] == 'v04':
+            s += ' } '
 
         s = s[:-1] + " }"
         return s
