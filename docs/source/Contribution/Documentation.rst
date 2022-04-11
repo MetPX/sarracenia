@@ -126,7 +126,7 @@ pick and stick to a default header hierarchy (ie : = > ~ > - > ... for title > h
 Code Style
 ----------
 
-We generally follow `PEP 8 <https://peps.python.org/pep-0008/>`_ standards for code formatting, and use `YAPF <https://github.com/google/yapf>`_ to automatically re-format code.
+We generally follow `PEP 8 <https://peps.python.org/pep-0008/>`_ standards for code formatting, and use `YAPF <https://github.com/google/yapf>`_ to automatically re-format code. One exception to PEP 8 is that we use a 119 character line length.
 
 For docstrings in code, we are following the Google Style Guide. These docstrings will be parsed into formatted documentation by Sphinx. 
 
