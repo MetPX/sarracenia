@@ -123,6 +123,64 @@ Important notes:
 
 pick and stick to a default header hierarchy (ie : = > ~ > - > ... for title > h1 > h2 > h3... etc)
 
+Code Style
+----------
+
+We generally follow `PEP 8 <https://peps.python.org/pep-0008/>`_ standards for code formatting, and use `YAPF <https://github.com/google/yapf>`_ to automatically re-format code.
+
+For docstrings in code, we are following the Google Style Guide. These docstrings will be parsed into formatted documentation by Sphinx. 
+
+Detailed examples can be found in the `Napoleon Sphinx plugin's docs <https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html>`_ and the `Google Python Style Guide <https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings>`_.
+
+Selected examples from ``credentials.py``:
+
+.. code-block:: python
+
+    class Credential:
+        """An object that holds information about a credential, read from a 
+        credential file, which has one credential per line, format::
+            url option1=value1, option2=value2
+            
+        Examples::
+            sftp://alice@herhost/ ssh_keyfile=/home/myself/mykeys/.ssh.id_dsa
+            ftp://georges:Gpass@hishost/  passive = True, binary = True
+            
+        `Format Documentation. <https://metpx.github.io/sarracenia/Reference/sr3_credentials.7.html>`_
+
+        Attributes:
+            url (urllib.parse.ParseResult): object with URL, password, etc.
+            ssh_keyfile (str): path to SSH key file for SFTP
+            passive (bool): use passive FTP mode, defaults to ``True``
+            binary (bool): use binary FTP mode, defaults to ``True``
+            tls (bool): use FTPS with TLS, defaults to ``False``
+            prot_p (bool): use a secure data connection for TLS
+            bearer_token (str): bearer token for HTTP authentication
+            login_method (str): force a specific login method for AMQP (PLAIN,
+                AMQPLAIN, EXTERNAL or GSSAPI)
+        """
+
+        def __init__(self, urlstr=None):
+            """Create a Credential object.
+
+                Args:
+                    urlstr (str): a URL in string form to be parsed.
+            """
+
+
+.. code-block:: python
+    
+    def isValid(self, url, details=None):
+        """Validates a URL and Credential object. Checks for empty passwords, schemes, etc.
+            
+        Args:
+            url (urllib.parse.ParseResult): ParseResult object for a URL.
+            details (sarracenia.credentials.Credential): sarra Credential object containing additional details about
+                the URL.
+
+        Returns:
+            bool: ``True`` if a URL is valid, ``False`` if not.
+        """
+
 Why rST?
 --------
 
