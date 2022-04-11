@@ -585,6 +585,7 @@ class Flow:
             except Exception as ex:
                 logger.error( f'flowCallback plugin {p} crashed: {ex}' )
                 logger.debug( "details:", exc_info=True )
+                continue
 
             if len(new_incoming) > 0:
                 self.worklist.incoming.extend(new_incoming)

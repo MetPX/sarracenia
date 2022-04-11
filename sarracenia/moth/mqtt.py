@@ -424,20 +424,24 @@ class MQTT(Moth):
         """
            decode MQTT message (protocol specific thingamabob) into sr3 one (python dictionary)
         """
-        try:
-            message = sarracenia.Message()
-            self.metrics['rxByteCount'] += len(mqttMessage.payload)
-            message.copyDict(json.loads(mqttMessage.payload.decode('utf-8')))
-        except Exception as ex:
-            logger.error("ignored malformed message: %s" % mqttMessage.payload)
-            logger.error("decode error" % ex)
-            logger.error('Exception details: ', exc_info=True)
-            self.metrics['rxBadCount'] += 1
-            return None
-
         subtopic = mqttMessage.topic.replace('%23',
                                              '#').replace('%2b',
                                                           '+').split('/')
+        self.metrics['rxByteCount'] += len(mqttMessage.payload)
+        try:
+            message = self.decodeMessageBody( 
+                mqttMessage.payload, 
+                None, # headers
+                mqttMessage.properties.ContentType,  
+                subtopic,
+                self.o['topicPrefix'] )
+
+        except Exception as ex:
+            logger.error("ignored malformed message: %s" % mqttMessage.payload)
+            logger.error("decode error: %s" % ex)
+            logger.error('Exception details: ', exc_info=True)
+            self.metrics['rxBadCount'] += 1
+            return None
 
         if subtopic[0] != self.o['topicPrefix'][0]:
             message['exchange'] = subtopic[0]
@@ -572,10 +576,17 @@ class MQTT(Moth):
         props = Properties(PacketTypes.PUBLISH)
         # https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901111
         props.PayloadFormatIndicator = 1  # designates UTF-8
-        props.ContentType = 'application/json'
+
+        if body['version'] == 'v03':
+            props.ContentType = 'application/json'
+        elif body['version'] == 'v04':
+            props.ContentType = 'application/geo+json'
+        else:
+            props.ContentType = 'text/plain' #assume v2.
+       
         while True:
             try:
-                raw_body = json.dumps(body)
+                raw_body = self.encodeMessageBody( body, body['version'] )
                 self.metrics['txByteCount'] += len(raw_body)
                 info = self.client.publish(topic=topic,
                                            payload=raw_body,
