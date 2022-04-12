@@ -341,7 +341,6 @@ class Moth():
                     msg[h] = GeoJSONBody['properties'][h]
             if 'type' in msg:
                 del msg['type']
-            msg['relPath'] = GeoJSONBody['id']
  
         elif content_type == 'application/json' or body[0] == '{':  # used as key to indicate version 3.
             msg = sarracenia.Message()
@@ -415,12 +414,12 @@ class Moth():
 
         elif version == 'v04': # GeoJSON version.
 
-            GeoJSONBody={ 'id': body['relPath'], 'type': 'Feature', 'geometry': None, 'properties':{} }
+            GeoJSONBody={ 'type': 'Feature', 'geometry': None, 'properties':{} }
             for literal in [ 'geometry', 'properties' ]:
                 if literal in body:
                     GeoJSONBody[literal] = body[literal]
             for h in body:
-                if h not in [ 'geometry', 'relPath', 'properties' ]:
+                if h not in [ 'geometry', 'properties' ]:
                     GeoJSONBody['properties'][h] = body[h]
             raw_body = json.dumps(GeoJSONBody)
         logger.critical( f' raw_body: {raw_body}' )
