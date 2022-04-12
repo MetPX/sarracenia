@@ -1848,7 +1848,7 @@ class sr_GlobalState:
         v3_config_path = self.user_config_dir + os.sep + v2_config
 
         if not os.path.exists(v2_config_path):
-            logging.info('Invalid config %s' % v2_config)
+            logging.error('Invalid config %s' % v2_config)
             return
 
         synonyms = sarracenia.config.Config.synonyms
@@ -1872,7 +1872,6 @@ class sr_GlobalState:
                             v = line[1].replace('.py', '', 1)
                             if v in convert_to_v3[k]:
                                 line = convert_to_v3[k][v]
-                                # k = line[0]
                                 if 'continue' in line:
                                     logger.info("obsolete v2: " + v)
                                     continue
