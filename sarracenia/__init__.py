@@ -357,10 +357,14 @@ class Message(dict):
         if msg is None: return ""
 
         if msg['version'] == 'v04':
+            s = '{ '
             if 'id' in msg:
-                 s = f"{{ 'id': '{msg['id']}', 'type':'Feature', 'geometry':{msg['geometry']} 'properties':{{ "
+                s += f"{{ 'id': '{msg['id']}', 'type':'Feature', "
+            if 'geometry' in msg:
+                s += f"'geometry':{msg['geometry']} 'properties':{{ "
             else:
-                 s=  f"{{ 'type':'Feature', 'geometry':{msg['geometry']} 'properties':{{ "
+                s += "'geometry': None, 'properties':{ "
+
         else:
             s = "{ "
 
@@ -376,7 +380,7 @@ class Message(dict):
                     v += " '%s':'%s'," % (kk, msg[k][kk])
                 v = v[:-1] 
                 if k != 'properties':
-                   c += " }"
+                   v += " }"
             else:
                 try:
                     v = "%s" % msg[k]
@@ -712,7 +716,7 @@ class Message(dict):
         """
 
         msg['_deleteOnPost'] |= set([
-            'new_dir', 'new_file', 'new_relPath', 'new_baseUrl', 'new_subtopic'
+            'new_dir', 'new_file', 'new_relPath', 'new_baseUrl', 'new_subtopic', 'post_version'
         ])
         msg['new_dir'] = new_dir
         msg['new_file'] = new_file
@@ -728,6 +732,14 @@ class Message(dict):
                 logger.error('missing post_baseUrl setting')
                 return
 
+        if options.post_topicPrefix:
+            msg['post_version'] = options.post_topicPrefix[0]
+        elif options.topicPrefix != msg['version']:
+            logger.warning( f"received message in {msg['version']} format, expected {options.post_topicPrefix} " )
+            msg['post_version'] = options.topicPrefix[0]
+        else:
+            msg['post_version'] = msg['version']
+           
         if hasattr(options, 'post_baseDir') and ( type(options.post_baseDir) is str ) \
             and ( len(options.post_baseDir) > 1):
             pbd_str = options.set_dir_pattern(options.post_baseDir, msg)

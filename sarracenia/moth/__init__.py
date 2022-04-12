@@ -390,7 +390,7 @@ class Moth():
 
 
 
-    def encodeMessageBody( self, body, version ):
+    def encodeMessageBody( self, body, version ) -> str:
         """
           given an in memory sarracenia.Message dictionary, convert it to a the message body
           for sending, in fhe format appropriate for the given version.
@@ -422,7 +422,9 @@ class Moth():
                 if h not in [ 'geometry', 'properties' ]:
                     GeoJSONBody['properties'][h] = body[h]
             raw_body = json.dumps(GeoJSONBody)
-        logger.critical( f' raw_body: {raw_body}' )
+        
+        else:
+            logger.error( f"unsupported message format {version}" )
         return raw_body
         
  

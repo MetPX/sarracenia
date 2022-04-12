@@ -396,6 +396,9 @@ class Flow:
                                                      m['new_relPath']):
                             m['relPath'] = m['new_relPath']
                             m['subtopic'] = m['new_subtopic']
+                        if ('version' in m) and ( m['version'] != 
+                                                  m['post_version']):
+                            m['version'] = m['post_version']
 
                     self._runCallbacksWorklist('after_work')
 
@@ -599,7 +602,7 @@ class Flow:
         # mark all remaining messages as done.
         self.worklist.ok = self.worklist.incoming
         self.worklist.incoming = []
-        logger.debug('processing %d messages worked! (stop reuqested: %s)' %
+        logger.debug('processing %d messages worked! (stop requested: %s)' %
                      (len(self.worklist.ok), self._stop_requested))
 
     def post(self):

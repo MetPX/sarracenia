@@ -587,6 +587,9 @@ class MQTT(Moth):
         while True:
             try:
                 raw_body = self.encodeMessageBody( body, body['version'] )
+                if self.o['messageDebugDump']:
+                     logger.info("Message to publish: %s %s" % (topic, raw_body))
+                        
                 self.metrics['txByteCount'] += len(raw_body)
                 info = self.client.publish(topic=topic,
                                            payload=raw_body,
