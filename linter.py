@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from subprocess import run
 from sys import executable
 
