@@ -29,7 +29,3 @@ Compared to v2, Sr3 brings:
 * Newly added GitHub Discussion module, for questions, and community-driven
   clarification: https://github.com/MetPX/sarracenia/discussions
 
-* Native support for the emerging World Meteorological Organization (WMO) standards from the task team on message queueing protocols standards for international meteorological data exchange: https://github.com/wmo-im/GTStoWIS2
-
-* A core component of: `wis2box WMO demonstration project <https://wis2box.readthedocs.io/en/latest>`_
-
