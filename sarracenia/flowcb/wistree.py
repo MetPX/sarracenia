@@ -62,13 +62,21 @@ class Wistree(FlowCB):
                 new_baseDir = msg['new_dir'] + os.sep + new_baseSubDir
                 new_relDir = str(uuid.uuid4()).replace('-','/')
                 msg['topic'] = 'WIS' + os.sep + self.topic_builder.mapAHLtoTopic( msg['new_file'])
-                msg['new_file'] = msg['id']
+                msg['new_file'] = str(uuid.uuid4())
 
                 if msg['new_file'][-len(type_suffix):] != type_suffix:
                     new_file = msg['new_file'] + type_suffix
                 else:
                     new_file = msg['new_file']
 
+                if type_suffix == 'bufr' :
+                    mtype='application/x-bufr'
+                elif type_suffix == 'grib':
+                    mtype='application/x-grib'
+                else:
+                    mtype='unknown'
+
+                msg['links'] =  { "href": msg['baseUrl'] + '/' + msg['relPath'], 'rel':'canonical', 'type': mtype }
                 msg.updatePaths(self.o, new_baseDir + os.sep + new_relDir,
                                 new_file)
 
