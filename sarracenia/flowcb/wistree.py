@@ -5,6 +5,7 @@ import re
 
 from sarracenia.flowcb import FlowCB
 import GTStoWIS2
+import uuid
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +48,8 @@ class Wistree(FlowCB):
                 # /20181218/UCAR-UNIDATA/WMO-BULLETINS/IX/21/IXTD99_KNES_182147_9d73fc80e12fca52a06bf41c716cd718.cap
                 tpfx = msg['subtopic']
 
+                msg['id']= str(uuid.uuid4())
+
                 # input has relpath=/YYYYMMDD/... + pubTime
                 # need to move the date from relPath to BaseDir, adding the T hour from pubTime.
                 if self.date_pattern.match(tpfx[0]):
@@ -55,9 +58,11 @@ class Wistree(FlowCB):
                     # or default to using pubTime...
                     new_baseSubDir = msg['pubTime'][0:11]
 
+
                 new_baseDir = msg['new_dir'] + os.sep + new_baseSubDir
-                new_relDir = 'WIS' + os.sep + self.topic_builder.mapAHLtoTopic(
-                    msg['new_file'])
+                new_relDir = str(uuid.uuid4()).replace('-','/')
+                msg['topic'] = 'WIS' + os.sep + self.topic_builder.mapAHLtoTopic( msg['new_file'])
+                msg['new_file'] = msg['id']
 
                 if msg['new_file'][-len(type_suffix):] != type_suffix:
                     new_file = msg['new_file'] + type_suffix
