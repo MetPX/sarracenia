@@ -32,7 +32,7 @@ class Encoding:
           return the message as a normalized v03 message.
        """
         for sc in Encoding.__subclasses__():
-            logger.error( f" sc={sc}, scct={sc.content_type()}, content_type={content_type} " )
+            #logger.info( f" sc={sc}, scct={sc.content_type()}, content_type={content_type} " )
             if sc.mine(payload, headers, content_type):
                 return sc.decode(payload, headers, topic, topicPrefix)
         return None

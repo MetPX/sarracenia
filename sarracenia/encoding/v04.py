@@ -56,7 +56,7 @@ class V04(Encoding):
             return msg
 
     @staticmethod
-    def encode(msg) -> (str, dict, str):
+    def encode(body) -> (str, dict, str):
             """
            given a v03 (internal) message, produce an encoded version.
        """

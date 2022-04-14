@@ -98,7 +98,7 @@ class V02(Encoding):
         return msg
 
     @staticmethod
-    def encode(msg) -> (str, dict, str):
+    def encode(body) -> (str, dict, str):
         """
            given a v03 (internal) message, produce an encoded version.
        """
@@ -111,4 +111,4 @@ class V02(Encoding):
         ]:
             if h in v2m.headers:
                     del v2m.headers[h]
-        return v2m.body, v2m.headers, V02.content_type()
+        return v2m.notice, v2m.headers, V02.content_type()

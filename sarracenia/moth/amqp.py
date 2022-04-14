@@ -498,10 +498,10 @@ class AMQP(Moth):
         #raw_body =  self.encodeMessageBody( body, version )
         raw_body, headers, content_type = Encoding.encode( body, version )
         if self.o['messageDebugDump']:
-            logger.info('raw message body: type: %s %s' %
-                             (type(raw_body),  raw_body))
+            logger.info('raw message body: version: %s type: %s %s' %
+                             (version, type(raw_body),  raw_body))
         if version == 'v02':  
-            for k in raw_body.headers:
+            for k in headers:
                 if (type(headers[k]) is str) and (len(headers[k]) >=
                                                       amqp_ss_maxlen):
                     logger.error("message header %s too long, dropping" % k)
@@ -511,9 +511,7 @@ class AMQP(Moth):
                                         application_headers=headers,
                                         expire=ttl,
                                         delivery_mode=2)
-            body = raw_body.notice
-            headers = raw_body.headers
-            self.metrics['txByteCount'] += len(raw_body.notice) + len(''.join(str(raw_body.headers)))
+            self.metrics['txByteCount'] += len(raw_body) + len(''.join(str(headers)))
         elif version == 'v03':
             self.metrics['txByteCount'] += len(raw_body)
             AMQP_Message = amqp.Message(raw_body,
