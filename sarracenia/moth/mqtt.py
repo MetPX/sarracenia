@@ -577,18 +577,11 @@ class MQTT(Moth):
         # https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901111
         props.PayloadFormatIndicator = 1  # designates UTF-8
 
-        if body['version'] == 'v03':
-            props.ContentType = 'application/json'
-        elif body['version'] == 'v04':
-            props.ContentType = 'application/geo+json'
-        else:
-            props.ContentType = 'text/plain' #assume v2.
-       
+        props.ContentType = Encoding.content_type( body['version'] )
+
         while True:
             try:
-                #raw_body = self.encodeMessageBody( body, body['version'] )
                 raw_body = Encoding.encodeMessageBody( body, body['version'] )
-             
                 if self.o['messageDebugDump']:
                      logger.info("Message to publish: %s %s" % (topic, raw_body))
                         

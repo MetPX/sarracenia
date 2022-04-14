@@ -104,7 +104,6 @@ class AMQP(Moth):
             else:
                 content_type = None
 
-            #msg = self.decodeMessageBody( body, raw_msg.headers, content_type, raw_msg.delivery_info['routing_key'], self.o['topicPrefix'] )
             msg = Encoding.decode( body, raw_msg.headers, content_type, raw_msg.delivery_info['routing_key'], self.o['topicPrefix'] )
             if not msg:
                 return None
@@ -495,40 +494,25 @@ class AMQP(Moth):
         else:
             ttl = "0"
 
-        #raw_body =  self.encodeMessageBody( body, version )
         raw_body, headers, content_type = Encoding.encode( body, version )
         if self.o['messageDebugDump']:
             logger.info('raw message body: version: %s type: %s %s' %
                              (version, type(raw_body),  raw_body))
-        if version == 'v02':  
+        if headers :  
             for k in headers:
                 if (type(headers[k]) is str) and (len(headers[k]) >=
                                                       amqp_ss_maxlen):
                     logger.error("message header %s too long, dropping" % k)
                     return False
-            AMQP_Message = amqp.Message(raw_body,
+
+        AMQP_Message = amqp.Message(raw_body,
                                         content_type=content_type,
                                         application_headers=headers,
                                         expire=ttl,
                                         delivery_mode=2)
-            self.metrics['txByteCount'] += len(raw_body) + len(''.join(str(headers)))
-        elif version == 'v03':
-            self.metrics['txByteCount'] += len(raw_body)
-            AMQP_Message = amqp.Message(raw_body,
-                                        content_type=content_type,
-                                        application_headers=headers,
-                                        expire=ttl,
-                                        delivery_mode=2)
-        elif version == 'v04':
-            self.metrics['txByteCount'] += len(raw_body)
-            AMQP_Message = amqp.Message(raw_body,
-                                        content_type=content_type,
-                                        application_headers=headers,
-                                        expire=ttl,
-                                        delivery_mode=2)
-        else:
-             logger.error( f'unsupported message format version: {version}. Discarded' )
-             return False
+        self.metrics['txByteCount'] += len(raw_body) 
+        if headers:
+            self.metrics['txByteCount'] += len(''.join(str(headers)))
 
         body=raw_body
         ebo = 1

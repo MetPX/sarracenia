@@ -1,7 +1,6 @@
 import json
 import logging
 import sarracenia
-from sarracenia.flowcb import v2wrapper
 from sarracenia.encoding import Encoding
 
 logger = logging.getLogger(__name__)

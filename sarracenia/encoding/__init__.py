@@ -22,7 +22,12 @@ class Encoding:
             returns a tuple to be passed to mqp apis.
     """
 
-    def content_type():
+    def content_type(encoding_format):
+        for sc in Encoding.__subclasses__():
+            if encoding_format == sc.__name__.lower():
+                return sc.content_type() 
+        return None
+
         return self.mimetype
 
     @staticmethod
