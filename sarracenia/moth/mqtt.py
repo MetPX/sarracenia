@@ -33,7 +33,7 @@ from paho.mqtt.packettypes import PacketTypes
 import paho.mqtt.client
 
 import sarracenia
-
+from sarracenia.encoding import Encoding
 from sarracenia.moth import Moth
 import ssl
 import threading
@@ -429,7 +429,7 @@ class MQTT(Moth):
                                                           '+').split('/')
         self.metrics['rxByteCount'] += len(mqttMessage.payload)
         try:
-            message = self.decodeMessageBody( 
+            message = Encoding.decode( 
                 mqttMessage.payload, 
                 None, # headers
                 mqttMessage.properties.ContentType,  
@@ -586,7 +586,9 @@ class MQTT(Moth):
        
         while True:
             try:
-                raw_body = self.encodeMessageBody( body, body['version'] )
+                #raw_body = self.encodeMessageBody( body, body['version'] )
+                raw_body = Encoding.encodeMessageBody( body, body['version'] )
+             
                 if self.o['messageDebugDump']:
                      logger.info("Message to publish: %s %s" % (topic, raw_body))
                         

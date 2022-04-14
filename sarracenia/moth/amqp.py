@@ -32,7 +32,7 @@ import logging
 
 from urllib.parse import unquote
 import sarracenia
-from sarracenia.flowcb import v2wrapper
+from sarracenia.encoding import Encoding
 from sarracenia.moth import Moth
 
 import time
@@ -104,7 +104,8 @@ class AMQP(Moth):
             else:
                 content_type = None
 
-            msg = self.decodeMessageBody( body, raw_msg.headers, content_type, raw_msg.delivery_info['routing_key'], self.o['topicPrefix'] )
+            #msg = self.decodeMessageBody( body, raw_msg.headers, content_type, raw_msg.delivery_info['routing_key'], self.o['topicPrefix'] )
+            msg = Encoding.decode( body, raw_msg.headers, content_type, raw_msg.delivery_info['routing_key'], self.o['topicPrefix'] )
             if not msg:
                 return None
 
@@ -494,19 +495,20 @@ class AMQP(Moth):
         else:
             ttl = "0"
 
-        raw_body =  self.encodeMessageBody( body, version )
+        #raw_body =  self.encodeMessageBody( body, version )
+        raw_body, headers, content_type = Encoding.encode( body, version )
         if self.o['messageDebugDump']:
             logger.info('raw message body: type: %s %s' %
                              (type(raw_body),  raw_body))
         if version == 'v02':  
             for k in raw_body.headers:
-                if (type(raw_body.headers[k]) is str) and (len(raw_body.headers[k]) >=
+                if (type(headers[k]) is str) and (len(headers[k]) >=
                                                       amqp_ss_maxlen):
                     logger.error("message header %s too long, dropping" % k)
                     return False
-            AMQP_Message = amqp.Message(raw_body.notice,
-                                        content_type='text/plain',
-                                        application_headers=raw_body.headers,
+            AMQP_Message = amqp.Message(raw_body,
+                                        content_type=content_type,
+                                        application_headers=headers,
                                         expire=ttl,
                                         delivery_mode=2)
             body = raw_body.notice
@@ -514,17 +516,15 @@ class AMQP(Moth):
             self.metrics['txByteCount'] += len(raw_body.notice) + len(''.join(str(raw_body.headers)))
         elif version == 'v03':
             self.metrics['txByteCount'] += len(raw_body)
-            headers = None
             AMQP_Message = amqp.Message(raw_body,
-                                        content_type='application/json',
+                                        content_type=content_type,
                                         application_headers=headers,
                                         expire=ttl,
                                         delivery_mode=2)
         elif version == 'v04':
             self.metrics['txByteCount'] += len(raw_body)
-            headers = None
             AMQP_Message = amqp.Message(raw_body,
-                                        content_type='application/geo+json',
+                                        content_type=content_type,
                                         application_headers=headers,
                                         expire=ttl,
                                         delivery_mode=2)
@@ -532,6 +532,7 @@ class AMQP(Moth):
              logger.error( f'unsupported message format version: {version}. Discarded' )
              return False
 
+        body=raw_body
         ebo = 1
         while True:
             try:
