@@ -429,7 +429,7 @@ class MQTT(Moth):
                                                           '+').split('/')
         self.metrics['rxByteCount'] += len(mqttMessage.payload)
         try:
-            message = Encoding.decode( 
+            message = Encoding.importAny( 
                 mqttMessage.payload, 
                 None, # headers
                 mqttMessage.properties.ContentType,  
@@ -581,7 +581,7 @@ class MQTT(Moth):
 
         while True:
             try:
-                raw_body = Encoding.encodeMessageBody( body, body['version'] )
+                raw_body = Encoding.exportAny( body, body['version'] )
                 if self.o['messageDebugDump']:
                      logger.info("Message to publish: %s %s" % (topic, raw_body))
                         

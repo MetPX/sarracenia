@@ -28,7 +28,7 @@ class V04(Encoding):
         return False
 
     @staticmethod
-    def decode(body, headers, topic, topicPrefix) -> sarracenia.Message:
+    def importMine(body, headers, topic, topicPrefix) -> sarracenia.Message:
             """
           given a message in a wire format, with the given properties (or headers) in a dictionary,
           return the message as a normalized v03 message.
@@ -55,7 +55,7 @@ class V04(Encoding):
             return msg
 
     @staticmethod
-    def encode(body) -> (str, dict, str):
+    def exportMine(body) -> (str, dict, str):
             """
            given a v03 (internal) message, produce an encoded version.
        """

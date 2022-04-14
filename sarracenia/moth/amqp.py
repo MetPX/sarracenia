@@ -104,7 +104,7 @@ class AMQP(Moth):
             else:
                 content_type = None
 
-            msg = Encoding.decode( body, raw_msg.headers, content_type, raw_msg.delivery_info['routing_key'], self.o['topicPrefix'] )
+            msg = Encoding.importAny( body, raw_msg.headers, content_type, raw_msg.delivery_info['routing_key'], self.o['topicPrefix'] )
             if not msg:
                 return None
 
@@ -494,7 +494,7 @@ class AMQP(Moth):
         else:
             ttl = "0"
 
-        raw_body, headers, content_type = Encoding.encode( body, version )
+        raw_body, headers, content_type = Encoding.exportAny( body, version )
         if self.o['messageDebugDump']:
             logger.info('raw message body: version: %s type: %s %s' %
                              (version, type(raw_body),  raw_body))
