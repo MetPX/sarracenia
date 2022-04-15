@@ -27,7 +27,6 @@ class V02(Encoding):
         """
           return true if the message is in this encoding.
        """
-        logger.error( f'asking for: {content_type}, comparing to {V02.content_type()}' )
         if content_type == V02.content_type() :
             return True
         return False
