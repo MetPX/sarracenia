@@ -13,7 +13,7 @@ Revision Record
 Do you already have it?
 -----------------------
 
-If you are on a server with it already installed, you can invoke it like so::
+If sarracenia is already installed you may invoke it like with::
 
     fractal% sr3 status
     status: 
@@ -22,9 +22,8 @@ If you are on a server with it already installed, you can invoke it like so::
           total running configs:   0 ( processes: 0 missing: 0 stray: 0 )
     fractal%
 
-It that works, then you don't need to install it. Assuming it isn't already
-installed, does the package need to be installed system-wide? or only for 
-one user?  For use by a single user, the python `<#PIP>`_ method should work,
+Sarracenia can be installed system-wide or only for one user.  For use by a single 
+user installation, the python `<#PIP>`_ method should work,
 giving access to sr3 any all libraries needed for programmatic access.
 
 For operational use, administrative access may be needed for package installation,
@@ -47,7 +46,7 @@ will be installed by the package manager automatically.
 Ubuntu/Debian (apt/dpkg) **Recommended**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-On Ubuntu 22.04 and derivatives of same::
+On Ubuntu 22.04 and derivatives::
 
   sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx
   sudo apt update
@@ -58,14 +57,14 @@ On Ubuntu 22.04 and derivatives of same::
   sudo apt install python3-netifaces # optionally support the vip directive (HA failover.)
   sudo apt install python3-dateparser python3-pytz # optionally support ftp polling.
 
-If packages are not available, the one can substitute by using python install package (pip)
+If packages are not available, then one can substitute by using python install package (pip).
 Currently, only the debian packages include man pages. The guides are only 
 available in the source repository. For earlier ubuntu versions, install 
 via pip is required because of missing dependencies in the python environment 
 shipped with earlier operating systems.
 
 If an option is not installed, but is needed for a given configuration, then sr3 will
-detect and complain, and one needs to install the missing support::
+detect it and complain, and one needs to install the missing support::
 
     fractal% sr3 foreground subscribe/data-ingest
     .2022-04-01 13:44:48,551 [INFO] 2428565 sarracenia.flow loadCallbacks plugins to load: ['sarracenia.flowcb.post.message.Message', 'sarracenia.flowcb.gather.message.Message', 'sarracenia.flowcb.retry.Retry', 'sarracenia.flowcb.housekeeping.resources.Resources', 'sarracenia.flowcb.log.Log']
@@ -100,8 +99,8 @@ detect and complain, and one needs to install the missing support::
     Setting up python3-amqp (5.0.9-1) ...
     fractal% 
     
-One can satisfy missing requirements using either Debian or pip packages.  to use mqtt brokers with
-ubuntu 18.04, one must obtain the library via pip, because the debian packages are for a version that is too old.::
+One can satisfy missing requirements using either Debian or pip packages. To use mqtt brokers with
+ubuntu 18.04, one must obtain the library via pip because the debian packages are for a version that is too old.::
 
     fractal% pip3 install paho-mqtt
     Defaulting to user installation because normal site-packages is not writeable
@@ -127,7 +126,7 @@ For example, on fedora 28 mandatories::
 
 Optional ones::
 
-  $ sudo dnf install python3-amqp   # optionally support rabbitmq brokers
+  $ sudo dnf install python3-amqp      # optionally support rabbitmq brokers
   $ sudo dnf install python3-netifaces # optionally support vip directive for HA.
   $ sudo dnf install python3-paho-mqtt # optionally support mqtt brokers
 
@@ -146,11 +145,12 @@ Once the dependencies are in place, one can build an RPM file using ``setuptools
 This procedure installs only the python application (not the C one.)
 No man pages nor other documentation is installed either.
 
+
 PIP
 ~~~
 
-On Windows or linux distributions where system packages are not 
-available, or other special cases, such as if using python in virtual env, where
+On Windows or Linux distributions where system packages are not 
+available or other special cases, such as if using python in virtual env, where
 it is more practical to install the package using pip (python install package) 
 from `<http://pypi.python.org/>`_.
 
@@ -171,6 +171,7 @@ and to upgrade after the initial installation::
 NOTE:: 
 
   On many systems where both pythons 2 and 3 are installed, you may need to specify pip3 rather than pip.
+
 
 System Startup and Shutdown
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -288,4 +289,3 @@ sarrac's dependency. For other architectures or distributions, one can build fro
 
 on any linux system, as long as librabbitmq dependency is satisfied. Note that the package does
 not build or run on non-linux systems.
-
