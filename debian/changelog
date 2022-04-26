@@ -1,3 +1,9 @@
+metpx-sarracenia (2.22.04) UNRELEASED; urgency=medium
+
+  * #516 bugfix
+
+ -- Peter Silva <peter.silva@ssc-spc.gc.ca>  Mon, 25 Apr 2022 13:07:41 -0400
+
 metpx-sarracenia (2.21.10) stable; urgency=medium
 
   * bugfix #378 python3-pyxattr module breaking xattr support.
