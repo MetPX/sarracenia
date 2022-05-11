@@ -55,7 +55,6 @@ from sarracenia.flow.sarra import default_options as sarradefopts
 import sarracenia.integrity.arbitrary
 
 import sarracenia.moth
-import sarracenia.moth.amqp
 import sarracenia.integrity
 
 default_options = {
@@ -72,6 +71,7 @@ default_options = {
     'inlineOnly': False,
     'integrity_method': 'sha512',
     'logStdout': False,
+    'nodupe_ttl': 0,
     'overwrite': True,
     'permDefault': 0,
     'permDirDefault': 0o775,
@@ -81,7 +81,7 @@ default_options = {
     'post_baseUrl': None,
     'realpath_post': False,
     'report': False,
-    'nodupe_ttl': 0
+    'sourceFromExchange': False
 }
 
 count_options = [
@@ -592,6 +592,7 @@ class Config:
         self.post_exchanges = []
 	#self.post_topicPrefix = None
         self.pstrip = False
+        self.queueName = None
         self.randomize = False
         self.rename = None
         self.randid = "%04x" % randint(0, 65536)
@@ -1388,8 +1389,10 @@ class Config:
                 if (not hasattr(self,'broker') or not self.broker):
                     self.broker = self.post_broker
 
-        if self.broker is not None and self.broker.url is not None:
+        if self.sourceFromExchange and self.exchange:
+           self.source = self.get_source_from_exchange(self.exchange)
 
+        if self.broker and self.broker.url and self.broker.url.username:
             self._resolve_exchange()
 
             queuefile = appdirs.user_cache_dir(
@@ -1490,9 +1493,13 @@ class Config:
 
         if self.messageCountMax > 0:
             if self.batch > self.messageCountMax:
-               self.batch = self.messageCountMax
-               logger.info( 'overriding batch for consistency with messageCountMax: %d' % self.batch )
-
+                self.batch = self.messageCountMax
+                logger.info(
+                    'overriding batch for consistency with messageCountMax: %d'
+                    % self.batch)
+        if self.vip and not sarracenia.extras['vip']['present']:
+            logger.critical( f"vip feature requested, but library: {' '.join(sarracenia.extras['vip']['modules_needed'])} " )
+            sys.exit(1)
 
     def check_undeclared_options(self):
 
@@ -2102,7 +2109,8 @@ def default_config():
     cfg.currentDir = None
     cfg.override(default_options)
     cfg.override(sarracenia.moth.default_options)
-    cfg.override(sarracenia.moth.amqp.default_options)
+    if sarracenia.extras['amqp']['present']:
+        cfg.override(sarracenia.moth.amqp.default_options)
     cfg.override(sarracenia.flow.default_options)
 
     for g in ["admin.conf", "default.conf"]:
@@ -2122,7 +2130,8 @@ def no_file_config():
     cfg.currentDir = None
     cfg.override(default_options)
     cfg.override(sarracenia.moth.default_options)
-    cfg.override(sarracenia.moth.amqp.default_options)
+    if sarracenia.extras['amqp']['present']:
+        cfg.override(sarracenia.moth.amqp.default_options)
     cfg.override(sarracenia.flow.default_options)
     cfg.cfg_run_dir = '.'
     cfg.retry_path = '.'

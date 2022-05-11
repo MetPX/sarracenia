@@ -1,4 +1,5 @@
 import copy
+import json
 import logging
 import sys
 import sarracenia
@@ -28,6 +29,19 @@ default_options = {
     'topicPrefix': ['v03'],
     'tlsRigour': 'normal'
 }
+
+def ProtocolPresent(p) -> bool:
+    if ( p in ['amqp', 'amqps' ] ) and sarracenia.extras['amqp']['present']:
+       return True
+    if ( p in ['mqtt', 'mqtts' ] ) and sarracenia.extras['mqtt']['present']:
+       return True
+    if p in sarracenia.extras:
+        logger.critical( f"support for {p} missing, please install python packages: {' '.join(sarracenia.extras[p]['modules_needed'])}" )
+    else:
+        logger.critical( f"Protocol scheme {p} unsupported for communications with message brokers" )
+
+    sys.exit(1)
+    return False
 
 
 class Moth():
@@ -183,6 +197,8 @@ class Moth():
     """
     @staticmethod
     def subFactory(broker, props) -> 'Moth':
+        if not ProtocolPresent(broker.url.scheme):
+           return None
         if broker and broker.url:
             for sc in Moth.__subclasses__():
                 if (broker.url.scheme == sc.__name__.lower()) or (
@@ -195,6 +211,8 @@ class Moth():
 
     @staticmethod
     def pubFactory(broker, props) -> 'Moth':
+        if not ProtocolPresent(broker.url.scheme):
+           return None
         if broker and broker.url:
             for sc in Moth.__subclasses__():
                 if (broker.url.scheme == sc.__name__.lower()) or (
@@ -252,7 +270,7 @@ class Moth():
         logger.error("ack unimplemented")
 
     @property
-    def default_options() -> dict:
+    def default_options(self) -> dict:
         """
         get default properties to override, used by client for validation. 
 
@@ -324,17 +342,8 @@ class Moth():
         else:
             self.putCleanUp()
 
-
-import importlib.util
-
-if importlib.util.find_spec("amqp"):
+if sarracenia.extras['amqp']['present']:
     import sarracenia.moth.amqp
 
-if importlib.util.find_spec("paho"):
+if sarracenia.extras['mqtt']['present']:
     import sarracenia.moth.mqtt
-
-if importlib.util.find_spec("proton"):
-    import sarracenia.moth.amq1
-
-if importlib.util.find_spec("paho"):
-    import sarracenia.moth.pika

@@ -25,11 +25,12 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 #
-__version__ = "3.00.014"
+__version__ = "3.00.16"
 
 from base64 import b64decode, b64encode
 import calendar
 import datetime
+import importlib.util
 import logging
 import os
 import os.path
@@ -42,6 +43,7 @@ import urllib
 import urllib.request
 
 logger = logging.getLogger(__name__)
+
 
 
 class Sarracenia:
@@ -354,13 +356,31 @@ class Message(dict):
 
         if msg is None: return ""
 
-        s = "{ "
+        if msg['version'] == 'v04':
+            s = '{ '
+            if 'id' in msg:
+                s += f"{{ 'id': '{msg['id']}', 'type':'Feature', "
+            if 'geometry' in msg:
+                s += f"'geometry':{msg['geometry']} 'properties':{{ "
+            else:
+                s += "'geometry': None, 'properties':{ "
+
+        else:
+            s = "{ "
+
         for k in sorted(msg.keys()):
+
+            if msg['version'] == 'v04' and k in [ 'id', 'type', 'geometry' ]:
+               continue
+            
             if type(msg[k]) is dict:
-                v = "{ "
+                if k != 'properties':
+                    v = "{ "
                 for kk in sorted(msg[k].keys()):
                     v += " '%s':'%s'," % (kk, msg[k][kk])
-                v = v[:-1] + " }"
+                v = v[:-1] 
+                if k != 'properties':
+                   v += " }"
             else:
                 try:
                     v = "%s" % msg[k]
@@ -372,7 +392,10 @@ class Message(dict):
                 if v[0] == '{':
                     v += '}'
 
-            s += " '%s':'%s'," % (k, v)
+            s += f" '{k}':'{v}'," 
+
+        if msg['version'] == 'v04':
+            s += ' } '
 
         s = s[:-1] + " }"
         return s
@@ -408,6 +431,10 @@ class Message(dict):
         msg = Message()
 
         #FIXME no variable substitution... o.set_dir_pattern ?
+        if hasattr(o,'post_topicPrefix') and o.post_topicPrefix[0] in [ 'v02', 'v03', 'v04' ]:
+            msg['version'] = o.post_topicPrefix[0]
+        else:
+            msg['version'] = 'v03'
 
         if hasattr(o, 'post_exchange'):
             msg['exchange'] = o.post_exchange
@@ -689,7 +716,7 @@ class Message(dict):
         """
 
         msg['_deleteOnPost'] |= set([
-            'new_dir', 'new_file', 'new_relPath', 'new_baseUrl', 'new_subtopic'
+            'new_dir', 'new_file', 'new_relPath', 'new_baseUrl', 'new_subtopic', 'post_version'
         ])
         msg['new_dir'] = new_dir
         msg['new_file'] = new_file
@@ -705,6 +732,14 @@ class Message(dict):
                 logger.error('missing post_baseUrl setting')
                 return
 
+        if options.post_topicPrefix:
+            msg['post_version'] = options.post_topicPrefix[0]
+        elif options.topicPrefix != msg['version']:
+            logger.warning( f"received message in {msg['version']} format, expected {options.post_topicPrefix} " )
+            msg['post_version'] = options.topicPrefix[0]
+        else:
+            msg['post_version'] = msg['version']
+           
         if hasattr(options, 'post_baseDir') and ( type(options.post_baseDir) is str ) \
             and ( len(options.post_baseDir) > 1):
             pbd_str = options.set_dir_pattern(options.post_baseDir, msg)
@@ -789,3 +824,53 @@ class Message(dict):
 
         with urllib.request.urlopen(retUrl) as response:
             return response.read()
+
+"""
+  Extra Feature Scanning and Enablement.
+
+  checking for extra dependencies, not "hard" dependencies ("requires")
+  listed as extras in setup.py and omitted entirely from debian packaging.
+  this allows installation with fewer dependencies ahead of time, and then
+  provide some messaging to users when they "need" an optional dependency.
+ 
+  optional extras can be enabled using pip install metpx-sr3[extra]
+  where extra is one of the features listed below. Alternatively,
+  one can just install the modules that are needed and the functionality
+  will be enabled after a component restart.
+  
+  amqp - ability to communicate with AMQP (rabbitmq) brokers
+  mqtt - ability to communicate with MQTT brokers
+  ftppoll - ability to poll FTP servers
+  vip  - enable vip (Virtual IP) settings to implement singleton processing
+         for high availability support.
+
+"""
+extras = { 
+   'amqp' : { 'modules_needed': [ 'amqp' ], 'present': False },
+   'ftppoll' : { 'modules_needed': ['dateparser', 'pytz'], 'present': False },
+   'mqtt' : { 'modules_needed': ['paho.mqtt.client'], 'present': False },
+   'vip'  : { 'modules_needed': ['netifaces'] , 'present': False }
+}
+
+for x in extras:
+   
+   extras[x]['present']=True
+   for y in  extras[x]['modules_needed']:
+       try:
+           if importlib.util.find_spec( y ):
+               #logger.debug( f'found feature {y}, enabled') 
+               pass
+           else:
+               logger.debug( f"extra feature {x} needs missing module {y}. Disabled" ) 
+               extras[x]['present']=False
+       except:
+           logger.debug( f"extra feature {x} needs missing module {y}. Disabled" ) 
+           extras[x]['present']=False
+
+
+if extras['mqtt']['present']:
+   import paho.mqtt.client
+   if not hasattr( paho.mqtt.client, 'MQTTv5' ):
+       # without v5 support, mqtt is not useful.
+       extras['mqtt']['present'] = False
+

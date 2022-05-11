@@ -1033,7 +1033,7 @@ class sr_GlobalState:
             else:
                 subprocess.run(cmd_list, check=True)
         except subprocess.CalledProcessError as err:
-            logging.error("subprocess.run failed err={}".format(err))
+            logging.critical("subprocess.run failed err={}".format(err))
             logging.debug("Exception details:", exc_info=True)
         except KeyboardInterrupt:
             logging.info("KeyboardInterrupt...")

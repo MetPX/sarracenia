@@ -12,9 +12,11 @@ import logging
 import sys
 
 entry_points = [
-    'ack', 'do_poll', 'download', 'gather', 'after_accept', 'after_work',
-    'on_housekeeping', 'on_report', 'on_start', 'on_stop', 'poll', 'post',
-    'send', 'please_stop'
+
+    'ack', 'do_poll', 'download', 'gather', 'after_accept', 'after_post',
+    'after_work', 'on_housekeeping', 'on_report', 'on_start', 'on_stop',
+    'poll', 'post', 'send', 'please_stop'
+
 ]
 
 logger = logging.getLogger(__name__)

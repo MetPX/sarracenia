@@ -9,6 +9,8 @@ Usage:
 """
 import logging
 import re
+import urllib
+
 from sarracenia.flowcb import FlowCB
 logger = logging.getLogger(__name__)
 

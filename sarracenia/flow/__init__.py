@@ -1,12 +1,12 @@
 import copy
 import importlib
 import logging
-import netifaces
 import os
 
 # v3 plugin architecture...
 import sarracenia.flowcb
 import sarracenia.integrity
+import sarracenia.transfer
 
 import stat
 import time
@@ -56,6 +56,9 @@ default_options = {
     'topicPrefix': ['v03'],
     'vip': None
 }
+
+if sarracenia.extras['vip']['present']:
+    import netifaces
 
 
 class Flow:
@@ -181,14 +184,23 @@ class Flow:
     def loadCallbacks(self, plugins_to_load):
 
         for m in self.o.imports:
-            importlib.import_module(m)
+            try:
+                importlib.import_module(m)
+            except Exception as ex:
+                logger.critical( f"python module import {m} load failed: {ex}" )
+                logger.debug( "details:", exc_info=True )
+                return False
 
-        logger.info('plugins to load: %s' % (plugins_to_load))
+        logger.info('flowCallback plugins to load: %s' % (plugins_to_load))
         for c in plugins_to_load:
+            try:
+                plugin = sarracenia.flowcb.load_library(c, self.o)
+            except Exception as ex:
+                logger.critical( f"flowCallback plugin {c} did not load: {ex}" )
+                logger.debug( "details:", exc_info=True )
+                return False
 
-            plugin = sarracenia.flowcb.load_library(c, self.o)
-
-            logger.debug('plugin loading: %s an instance of: %s' % (c, plugin))
+            logger.debug('flowCallback plugin loading: %s an instance of: %s' % (c, plugin))
             for entry_point in sarracenia.flowcb.entry_points:
                 if hasattr(plugin, entry_point):
                     fn = getattr(plugin, entry_point)
@@ -205,18 +217,31 @@ class Flow:
 
         logger.debug('complete')
         self.o.check_undeclared_options()
+        return True
 
     def _runCallbacksWorklist(self, entry_point):
 
         if hasattr(self, 'plugins') and (entry_point in self.plugins):
             for p in self.plugins[entry_point]:
-                p(self.worklist)
+                try:
+                    p(self.worklist)
+                except Exception as ex:
+                    logger.error( f'flowCallback plugin {p}/{entry_point} crashed: {ex}' )
+                    logger.debug( "details:", exc_info=True )
 
     def _runCallbacksTime(self, entry_point):
         for p in self.plugins[entry_point]:
-            p()
+            try:
+                p()
+            except Exception as ex:
+                logger.error( f'flowCallback plugin {p}/{entry_point} crashed: {ex}' )
+                logger.debug( "details:", exc_info=True )
+
 
     def has_vip(self):
+
+        if not sarracenia.extras['vip']['present']: return True
+
         # no vip given... standalone always has vip.
         if self.o.vip == None:
             return True
@@ -262,16 +287,21 @@ class Flow:
     def ack(self, mlist) -> None:
         if "ack" in self.plugins:
             for p in self.plugins["ack"]:
-                p(mlist)
+                try:
+                    p(mlist)
+                except Exception as ex:
+                    logger.error( f'flowCallback plugin {p}/ack crashed: {ex}' )
+                    logger.debug( "details:", exc_info=True )
 
     def run(self):
         """
-          This is the core routine of of the algorithm, with most important data driven 
+          This is the core routine of the algorithm, with most important data driven
           loop in it. This implements the General Algorithm (as described in the Concepts Explanation Guide) 
           check if stop_requested once in a while, but never return otherwise.
         """
 
-        self.loadCallbacks(self.plugins['load'])
+        if not self.loadCallbacks(self.plugins['load']):
+           return
 
         logger.debug("working directory: %s" % os.getcwd())
 
@@ -304,12 +334,12 @@ class Flow:
                 if stopping:
                     logger.info('clean stop from run loop')
                     self.close()
+                    break
                 else:
                     logger.info(
                         'starting last pass (without gather) through loop for cleanup.'
                     )
                     stopping = True
-                break
 
             self.have_vip = self.has_vip()
             if (self.o.component == 'poll') or self.have_vip:
@@ -366,6 +396,9 @@ class Flow:
                                                      m['new_relPath']):
                             m['relPath'] = m['new_relPath']
                             m['subtopic'] = m['new_subtopic']
+                        if ('version' in m) and ( m['version'] != 
+                                                  m['post_version']):
+                            m['version'] = m['post_version']
 
                     self._runCallbacksWorklist('after_work')
 
@@ -374,6 +407,7 @@ class Flow:
                     self.ack(self.worklist.failed)
 
                     self.post()
+                    self._runCallbacksWorklist('after_post')
 
                     self.report()
 
@@ -387,20 +421,19 @@ class Flow:
 
             if (self.o.messageCountMax > 0) and (total_messages >=
                                                  self.o.messageCountMax):
-                self.close()
-                break
+                self.please_stop()
 
             current_rate = total_messages / run_time
             elapsed = now - last_time
 
             if (last_gather_len == 0) and (self.o.sleep < 0):
-                self.close()
-                break
+                self.please_stop()
 
             if spamming and (current_sleep < 5):
                 current_sleep *= 2
 
-            if now > next_housekeeping:
+            # Run housekeeping based on time, and before stopping to ensure it's run at least once
+            if now > next_housekeeping or stopping:
                 logger.info(
                     f'on_housekeeping pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}'
                 )
@@ -550,7 +583,13 @@ class Flow:
 
     def gather(self):
         for p in self.plugins["gather"]:
-            new_incoming = p()
+            try:
+                new_incoming = p()
+            except Exception as ex:
+                logger.error( f'flowCallback plugin {p} crashed: {ex}' )
+                logger.debug( "details:", exc_info=True )
+                continue
+
             if len(new_incoming) > 0:
                 self.worklist.incoming.extend(new_incoming)
 
@@ -563,14 +602,16 @@ class Flow:
         # mark all remaining messages as done.
         self.worklist.ok = self.worklist.incoming
         self.worklist.incoming = []
-        logger.debug('processing %d messages worked! (stop reuqested: %s)' %
+        logger.debug('processing %d messages worked! (stop requested: %s)' %
                      (len(self.worklist.ok), self._stop_requested))
 
     def post(self):
-
         for p in self.plugins["post"]:
-            p(self.worklist)
-        self.worklist.ok = []
+            try:
+                p(self.worklist)
+            except Exception as ex:
+                logger.error( f'flowCallback plugin {p} crashed: {ex}' )
+                logger.debug( "details:", exc_info=True )
 
     def report(self):
         # post reports
@@ -1098,7 +1139,12 @@ class Flow:
 
         if 'download' in self.plugins and len(self.plugins['download']) > 0:
             for plugin in self.plugins['download']:
-                ok = plugin(msg)
+                try:
+                    ok = plugin(msg)
+                except Exception as ex:
+                    logger.error( f'flowCallback plugin {p} crashed: {ex}' )
+                    logger.debug( "details:", exc_info=True )
+
                 if not ok: return False
             return True
 
@@ -1310,7 +1356,12 @@ class Flow:
 
         if len(self.plugins['send']) > 0:
             for plugin in self.plugins['send']:
-                ok = plugin(msg)
+                try:
+                    ok = plugin(msg)
+                except Exception as ex:
+                    logger.error( f'flowCallback plugin {p} crashed: {ex}' )
+                    logger.debug( "details:", exc_info=True )
+
                 if not ok: return False
             return True
 
@@ -1442,7 +1493,7 @@ class Flow:
                 if ('blocks' in msg) and (
                         msg['blocks']['method'] == 'inplace'):
                     block_length = msg['blocks']['size']
-                    str_range = 'bytes=%d-%d' % (remote_offset, remote_offset +
+                    str_range = 'bytes=%d-%d' % (new_offset, new_offset +
                                                  block_length - 1)
 
             str_range = ''
@@ -1486,9 +1537,8 @@ class Flow:
                     len_written = self.proto[self.scheme].putAccelerated(
                         msg, local_file, new_inflight_path)
                 else:
-                    len_written = self.proto[self.scheme].put(
-                        msg, local_file, new_inflight_path)
-                proto.rename(new_inflight_path, new_file)
+                    len_written = self.proto[self.scheme].put(msg, local_file, new_inflight_path)
+                self.proto[self.scheme].rename(new_inflight_path, new_file)
             elif options.inflight[-1] == '/':
                 try:
                     self.proto[self.scheme].cd_forced(

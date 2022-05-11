@@ -19,6 +19,8 @@ class Md5name(Integrity):
         suitable when files with the same name should be considered the same,
         even if they contain different bytes.
       """
+
+    @staticmethod
     def registered_as():
         """
             v2name.

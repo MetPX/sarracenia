@@ -32,7 +32,7 @@ import logging
 
 from urllib.parse import unquote
 import sarracenia
-from sarracenia.flowcb import v2wrapper
+from sarracenia.encoding import Encoding
 from sarracenia.moth import Moth
 
 import time
@@ -86,9 +86,9 @@ class AMQP(Moth):
             if self.o['messageDebugDump']:
                 if not ('content_type' in raw_msg.properties):
                     logger.warning('message is missing content-type header')
-                logger.debug('raw message body: type: %s (%d bytes) %s' %
+                logger.info('raw message body: type: %s (%d bytes) %s' %
                              (type(body), len(body), body))
-                logger.debug('raw message properties:' % raw_msg.properties)
+                logger.info('raw message properties:' % raw_msg.properties)
 
             if type(body) is bytes:
                 try:
@@ -99,51 +99,14 @@ class AMQP(Moth):
                     logger.debug('Exception details: ', exc_info=True)
                     return None
 
-            if (('content_type' in raw_msg.properties) and
-                (raw_msg.properties['content_type'] == 'application/json')
-                ) or (body[0] == '{'):  # used as key to indicate version 3.
-                msg = sarracenia.Message()
-                try:
-                    msg.copyDict(json.loads(body))
-                except Exception as ex:
-                    logger.warning('expected json, decode error: %s' % ex)
-                    logger.debug('Exception details: ', exc_info=True)
-                    return None
-                """
-                  observed Sarracenia v2.20.08p1 and earlier have 'parts' header in v03 messages.
-                  bug, or implementation did not keep up. Applying Postel's Robustness principle: normalizing messages.
-                """
-                if ('parts' in msg
-                    ):  # bug in v2 code makes v03 messages with parts header.
-                    (m, s, c, r, n) = msg['parts'].split(',')
-                    if m == '1':
-                        msg['size'] = int(s)
-                    else:
-                        if m == 'i': m = 'inplace'
-                        elif m == 'p': m = 'partitioned'
-                        msg['blocks'] = {
-                            'method': m,
-                            'size': int(s),
-                            'count': int(c),
-                            'remainder': int(r),
-                            'number': int(n)
-                        }
-
-                    del msg['parts']
-                elif ('size' in msg):
-                    if (type(msg['size']) is str):
-                        msg['size'] = int(msg['size'])
+            if 'content_type' in raw_msg.properties:
+                content_type = raw_msg.properties['content_type']
             else:
-                try:
-                    msg = v2wrapper.v02tov03message(
-                        body, raw_msg.headers,
-                        raw_msg.delivery_info['routing_key'],
-                        self.o['topicPrefix'])
-                except Exception as ex:
-                    logger.warning(
-                        'expected v2 encoded message, decode error: %s' % ex)
-                    logger.debug('Exception details: ', exc_info=True)
-                    return None
+                content_type = None
+
+            msg = Encoding.importAny( body, raw_msg.headers, content_type, raw_msg.delivery_info['routing_key'], self.o['topicPrefix'] )
+            if not msg:
+                return None
 
             topic = raw_msg.delivery_info['routing_key'].replace(
                 '%23', '#').replace('%22', '*')
@@ -152,7 +115,7 @@ class AMQP(Moth):
             msg['ack_id'] = raw_msg.delivery_info['delivery_tag']
             msg['local_offset'] = 0
             msg['_deleteOnPost'] = set(
-                ['ack_id', 'exchange', 'local_offset', 'subtopic'])
+                ['ack_id', 'exchange', 'local_offset', 'subtopic', 'version'])
             if not msg.validate():
                 self.channel.basic_ack(msg['ack_id'])
                 logger.error('message acknowledged and discarded: %s' % msg)
@@ -418,12 +381,12 @@ class AMQP(Moth):
                         self.metrics['rxGoodCount'] += 1
                     if hasattr(self.o, 'fixed_headers'):
                         for k in self.o.fixed_headers:
-                            m[k] = self.o.fixed_headers[k]
+                            msg[k] = self.o.fixed_headers[k]
 
                     logger.debug("new msg: %s" % msg)
                     return msg
             except Exception as err:
-                logger.warning("moth.amqp.getNewMessage: failed %s: %s" %
+                logger.warning("failed %s: %s" %
                                (self.o['queueName'], err))
                 logger.debug('Exception details: ', exc_info=True)
 
@@ -482,7 +445,20 @@ class AMQP(Moth):
             logger.error("publishing from a consumer")
             return False
 
-        #body = copy.deepcopy(bd)
+        # Check connection and channel status, try to reconnect if not connected
+        if (self.connection is None) or (not self.connection.connected) or (not self.channel.is_open):
+            try:
+                self.close()
+                self.__putSetup()
+            except Exception as err:
+                logger.warning(f"failed, connection was closed/broken and could not be re-opened {exchange}: {err}")
+                logger.debug('Exception details: ', exc_info=True)
+                # Returning False here would prevent looping when retry queues are not in use
+
+        # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
+        body = copy.deepcopy(body)
+
+        version = body['version']
         topic = '.'.join(self.o['topicPrefix'] + body['subtopic'])
         topic = topic.replace('#', '%23')
         topic = topic.replace('*', '%22')
@@ -530,39 +506,27 @@ class AMQP(Moth):
         else:
             ttl = "0"
 
-        if topic.startswith('v02'):  #unless explicitly otherwise
-            v2m = v2wrapper.Message(body)
-
-            # v2wrapp
-            for h in [
-                    'pubTime', 'baseUrl', 'relPath', 'size', 'blocks',
-                    'content', 'integrity'
-            ]:
-                if h in v2m.headers:
-                    del v2m.headers[h]
-
-            for k in v2m.headers:
-                if (type(v2m.headers[k]) is str) and (len(v2m.headers[k]) >=
+        raw_body, headers, content_type = Encoding.exportAny( body, version )
+        if self.o['messageDebugDump']:
+            logger.info('raw message body: version: %s type: %s %s' %
+                             (version, type(raw_body),  raw_body))
+        if headers :  
+            for k in headers:
+                if (type(headers[k]) is str) and (len(headers[k]) >=
                                                       amqp_ss_maxlen):
                     logger.error("message header %s too long, dropping" % k)
                     return False
-            AMQP_Message = amqp.Message(v2m.notice,
-                                        content_type='text/plain',
-                                        application_headers=v2m.headers,
-                                        expire=ttl,
-                                        delivery_mode=2)
-            body = v2m.notice
-            headers = v2m.headers
-        else:  #assume v03
 
-            raw_body = json.dumps(body)
-            self.metrics['txByteCount'] += len(raw_body)
-            headers = None
-            AMQP_Message = amqp.Message(raw_body,
-                                        content_type='application/json',
+        AMQP_Message = amqp.Message(raw_body,
+                                        content_type=content_type,
                                         application_headers=headers,
                                         expire=ttl,
                                         delivery_mode=2)
+        self.metrics['txByteCount'] += len(raw_body) 
+        if headers:
+            self.metrics['txByteCount'] += len(''.join(str(headers)))
+
+        body=raw_body
         ebo = 1
         while True:
             try:

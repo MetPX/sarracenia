@@ -68,7 +68,7 @@ class SundewPxRoute(FlowCB):
         new_incoming = []
 
         for message in worklist.incoming:
-            ahl = msg.new_file.split('/')[-1][0:11]
+            ahl = message.new_file.split('/')[-1][0:11]
 
             if (len(ahl) < 11) or (ahl[6] != '_'):
                 logger.debug("sundew_pxroute not an AHL: %s, " % ahl)

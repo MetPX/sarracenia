@@ -4,6 +4,7 @@
 import pika
 import sys
 
+
 HOST = sys.argv[1]
 ADMIN = sys.argv[2]
 PW = sys.argv[3]

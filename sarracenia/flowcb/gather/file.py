@@ -7,7 +7,7 @@
 # Sarracenia repository: https://github.com/MetPX/sarracenia
 # Documentation: https://github.com/MetPX/sarracenia
 #
-
+import copy
 from base64 import b64decode, b64encode
 from collections import *
 from hashlib import sha512
@@ -309,7 +309,7 @@ class File(FlowCB):
             # complete  message
 
             msg['integrity'] = sumstr
-            messages.extend(copy(deepcopy(msg)))
+            messages.extend(copy.deepcopy(msg))
 
         return messages
 

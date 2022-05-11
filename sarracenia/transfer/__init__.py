@@ -415,8 +415,9 @@ class Transfer():
         self.rw_length = 0
         if self.o.timeout: alarm_set(self.o.timeout)
 
-
-import sarracenia.transfer.ftp
-import sarracenia.transfer.sftp
-import sarracenia.transfer.https
+# batteries included.
 import sarracenia.transfer.file
+import sarracenia.transfer.ftp
+import sarracenia.transfer.https
+import sarracenia.transfer.sftp
+

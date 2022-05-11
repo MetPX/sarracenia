@@ -95,6 +95,8 @@ class Https(Transfer):
     def check_is_connected(self):
         logger.debug("sr_http check_is_connected")
 
+        if not self.connected : return False
+
         if self.destination != self.o.destination:
             self.close()
             return False
@@ -340,15 +342,18 @@ class Https(Transfer):
                 'Server couldn\'t fulfill the request. Error code: %s, %s' %
                 (e.code, e.reason))
             alarm_cancel()
+            self.connected = False
             raise
         except urllib.error.URLError as e:
             logger.error('Download failed 5 %s ' % self.urlstr)
             logger.error('Failed to reach server. Reason: %s' % e.reason)
             alarm_cancel()
+            self.connected = False
             raise
         except:
             logger.warning("unable to open %s" % self.urlstr)
             logger.debug('Exception details: ', exc_info=True)
+            self.connected = False
             alarm_cancel()
             raise
 

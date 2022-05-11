@@ -22,4 +22,3 @@ debuild -us -uc
 sudo dpkg -i ../metpx-sr*.deb
 #missing deps result...
 sudo apt -y install -f 
-

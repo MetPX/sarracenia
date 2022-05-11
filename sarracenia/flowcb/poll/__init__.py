@@ -6,7 +6,8 @@
 
 import sarracenia.moth
 import copy
-import dateparser
+
+
 import datetime
 import html.parser
 import logging
@@ -14,11 +15,15 @@ import os
 import paramiko
 
 import sarracenia
+
+if sarracenia.extras['ftppoll']['present']:
+    import dateparser
+    import pytz
+
 import sarracenia.config
 from sarracenia.flowcb import FlowCB
 import sarracenia.transfer
 import stat
-import pytz
 import sys, time
 
 logger = logging.getLogger(__name__)
@@ -258,6 +263,11 @@ class Poll(FlowCB):
         return False
 
     def filedate(self, line):
+
+        if not sarracenia.extras['ftppoll']['present']:
+           logger.error('need dateparser library to deal with polling of ftp servers, no date parsed')
+           return 0
+
         line_split = line.split()
         file_date = line_split[5] + " " + line_split[6] + " " + line_split[7]
         current_date = datetime.datetime.now(pytz.utc)
@@ -267,8 +277,7 @@ class Poll(FlowCB):
             file_date,
             settings={
                 'RELATIVE_BASE': datetime.datetime(current_date.year, 1, 1),
-                'TIMEZONE': self.o.
-                timezone,  #turn this into an option - should be EST for mtl
+                'TIMEZONE': self.o.timezone,  #turn this into an option - should be EST for mtl
                 'TO_TIMEZONE': 'UTC'
             })
         if standard_date_format is not None:
@@ -289,7 +298,7 @@ class Poll(FlowCB):
             sftp_obj = line
         elif type(line) is str and len(line.split()) > 7:
             parts = line.split()
-            sftp_obj = SFTPAttributes()
+            sftp_obj = paramiko.SFTPAttributes()
             sftp_obj.st_mode = self.filemode(parts[0])
             sftp_obj.st_uid = self.fileid(parts[2])
             sftp_obj.st_gid = self.fileid(parts[3])

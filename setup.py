@@ -50,7 +50,7 @@ setup(
         ]
     },
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Intended Audience :: Developers',
         'Intended Audience :: Science/Research',
@@ -59,13 +59,21 @@ setup(
         'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Topic :: Communications :: File Sharing',
         'Topic :: System :: Logging',
     ],
     install_requires=[
-        "amqp", "appdirs", "dateparser", "humanfriendly", "humanize", "jsonpickle", "netifaces", 
-        "paho-mqtt>=1.5.1", "paramiko", "psutil>=5.3.0", "watchdog"
-    ])
+        "appdirs", "humanfriendly", "humanize", "jsonpickle", "paramiko",
+        "psutil>=5.3.0", "watchdog"
+    ],
+    extras_require = {
+       'amqp' : [ "amqp" ],
+       'ftppoll' : ['dateparser' ],
+       'mqtt': [ 'paho.mqtt>=1.5.1' ],
+       'vip': [ 'netifaces' ]
+    }) 

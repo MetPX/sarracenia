@@ -46,35 +46,32 @@ import sys
 
 class Credential:
     """An object that holds information about a credential, read from a 
+    credential file, which has one credential per line, format::
+        url option1=value1, option2=value2
+       
+    Examples::
+        sftp://alice@herhost/ ssh_keyfile=/home/myself/mykeys/.ssh.id_dsa
+        ftp://georges:Gpass@hishost/  passive = True, binary = True
+       
+    `Format Documentation. <https://metpx.github.io/sarracenia/Reference/sr3_credentials.7.html>`_
 
-       credential file, which has one credential per line, format::
-
-             url option1=value1, option2=value2
-
-       examples::
-
-         sftp://alice@herhost/ ssh_keyfile=/home/myself/mykeys/.ssh.id_dsa
-         ftp://georges:Gpass@hishost/  passive = True, binary = True
-
-        (passive true and binary true are credentials default and may be omitted)
-        Attributes:
-        - url: urllib.parse.ParseResult object with URL, password, etc.
-        - ssh_keyfile: path to SSH key file for SFTP
-        - passive: use passive FTP mode
-        - binary: use binary FTP mode
-        - tls: use FTPS with TLS
-        - prot_p: use a secure data connection for TLS
-        - bearer_token: bearer token for HTTP authentication
-        - login_method: force a specific login method for AMQP (PLAIN, AMQPLAIN,
-          EXTERNAL or GSSAPI)
-
+    Attributes:
+        url (urllib.parse.ParseResult): object with URL, password, etc.
+        ssh_keyfile (str): path to SSH key file for SFTP
+        passive (bool): use passive FTP mode, defaults to ``True``
+        binary (bool): use binary FTP mode, defaults to ``True``
+        tls (bool): use FTPS with TLS, defaults to ``False``
+        prot_p (bool): use a secure data connection for TLS
+        bearer_token (str): bearer token for HTTP authentication
+        login_method (str): force a specific login method for AMQP (PLAIN,
+            AMQPLAIN, EXTERNAL or GSSAPI)
     """
+
     def __init__(self, urlstr=None):
         """Create a Credential object.
 
-        Args:
-            urlstr: a URL in string form to be parsed.
-
+            Args:
+                urlstr (str): a URL in string form to be parsed.
         """
 
         if urlstr is not None:
@@ -91,6 +88,9 @@ class Credential:
         self.login_method = None
 
     def __str__(self):
+        """Returns attributes of the Credential object as a readable string.
+        """
+
         s = ''
         if False:
             s += self.url.geturl()
@@ -116,15 +116,18 @@ class Credential:
         return s
 
 
-# class CredentialDB
-
-
 class CredentialDB:
-    """ Parses, stores and manages Credential objects.
+    """Parses, stores and manages Credential objects.
+
+    Attributes:
+        credentials (dict): contains all sarracenia.credentials.Credential objects managed by the CredentialDB.
     """
+
     def __init__(self, Unused_logger=None):
-        """
-           logger argument no longer used... left there for API compat with old calls.
+        """Create a CredentialDB.
+
+        Args:
+            Unused_logger: logger argument no longer used... left there for API compat with old calls.
         """
         self.credentials = {}
         self.pwre = re.compile(':[^/:]*@')
@@ -132,6 +135,13 @@ class CredentialDB:
         logger.debug("__init__")
 
     def add(self, urlstr, details=None):
+        """Add a new credential to the DB.
+
+        Args:
+            urlstr (str): string-formatted URL to be parsed and added to DB.
+            details (sarracenia.credentials.Credential): a Credential object can be passed in, otherwise one is
+                created by parsing urlstr.
+        """
 
         # need to create url object
         if details == None:
@@ -141,6 +151,20 @@ class CredentialDB:
         self.credentials[urlstr] = details
 
     def get(self, urlstr):
+        """Retrieve a Credential from the DB by urlstr. If the Credential is valid, but not already cached, it will be
+        added to the CredentialDB.
+
+        Args:
+            urlstr (str): credentials as URL string to be parsed.
+        
+        Returns:
+            tuple: containing
+                cache_result (bool): ``True`` if the credential was retrieved from the CredentialDB cache, ``False``
+                    if it was not in the cache. Note that ``False`` does not imply the Credential or urlstr is
+                    invalid.
+                credential (sarracenia.credentials.Credential): the Credential
+                    object matching the urlstr, ``None`` if urlstr is invalid.
+        """
         #logger.debug("CredentialDB get %s" % urlstr)
 
         # already cached
@@ -178,15 +202,35 @@ class CredentialDB:
         return False, self.credentials[urlstr]
 
     def has(self, urlstr):
+        """Return ``True`` if the Credential matching the urlstr is already in the CredentialDB.
+        
+        Args:
+            urlstr(str): credentials in a URL string.
+        """
         logger.debug("has %s" % urlstr)
         return urlstr in self.credentials
 
     def isTrue(self, S):
+        """Returns ``True`` if s is ``true``, ``yes``, ``on`` or ``1``.
+
+        Args:
+            S (str): string to check if true.
+        """
         s = S.lower()
         if s == 'true' or s == 'yes' or s == 'on' or s == '1': return True
         return False
 
     def isValid(self, url, details=None):
+        """Validates a URL and Credential object. Checks for empty passwords, schemes, etc.
+            
+        Args:
+            url (urllib.parse.ParseResult): ParseResult object for a URL.
+            details (sarracenia.credentials.Credential): sarra Credential object containing additional details about
+                the URL.
+
+        Returns:
+            bool: ``True`` if a URL is valid, ``False`` if not.
+        """
 
         # network location
         if url.netloc == '':
@@ -229,6 +273,11 @@ class CredentialDB:
         return True
 
     def parse(self, line):
+        """Parse a line of a credentials file, add it to the CredentialDB.
+
+        Args:
+            line (str): line to be parsed.
+        """
         #logger.debug("parse %s" % self.pwre.sub(':<secret!>@', line, count=1) )
 
         try:
@@ -300,6 +349,12 @@ class CredentialDB:
             logger.debug('Exception details: ', exc_info=True)
 
     def read(self, path):
+        """Read in a file containing credentials (e.g. credentials.conf). All credentials are parsed and added to the
+        CredentialDB.
+
+        Args:
+            path (str): path of file to be read.
+        """
         logger.debug("read")
 
         # read in provided credentials (not mandatory)
@@ -316,6 +371,20 @@ class CredentialDB:
         #logger.debug("Credentials = %s\n" % self.credentials)
 
     def resolve(self, urlstr, url=None):
+        """Resolve credentials for AMQP vhost from ones passed as a string, and optionally a urllib.parse.ParseResult
+        object, into a sarracenia.credentials.Credential object.
+
+        Args:
+            urlstr (str): credentials in a URL string.
+            url (urllib.parse.ParseResult): ParseResult object with creds.
+
+        Returns:
+            tuple: containing
+                result (bool): ``False`` if the creds were not in the CredentialDB. ``True`` if they were.
+                details (sarracenia.credentials.Credential): the updated Credential object, or ``None``.
+                
+
+        """
 
         # create url object if needed
 

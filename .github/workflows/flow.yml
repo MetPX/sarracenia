@@ -6,6 +6,9 @@ on:
   push:
     branches:
       - v03_wip
+      - v2_dev
+      - main
+      - v2_stable
 
   workflow_dispatch:
     inputs:
@@ -23,24 +26,18 @@ jobs:
       fail-fast: false
       matrix:
        which_test: [ static_flow, flakey_broker, dynamic_flow ]
-       pyver: [ "3.6", "3.7", "3.8", "3.9", "3.10" ]
+       osver: [ "ubuntu-18.04", "ubuntu-20.04" ]
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.osver }}
   
-    name: ${{ matrix.which_test }} test, using Python ${{ matrix.pyver }}
+    name: ${{ matrix.which_test }} test on ${{ matrix.osver }}
     timeout-minutes: 30
     
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Python ${{ matrix.pyver }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.pyver }}
-
       - name: Install dependencies
         run: |
-          pip3 install .
           travis/flow_autoconfig.sh
           travis/ssh_localhost.sh
          
@@ -60,16 +57,23 @@ jobs:
       - name: Limit ${{ matrix.which_test }} test.
         run: |
           cd ${HOME}/sr_insects/${{ matrix.which_test }}; ./flow_limit.sh
-          if [ ${{ matrix.WHICH_TEST }} == flakey_broker ]; then sleep 120s; fi
 
       - name: Check results of ${{ matrix.which_test }} test.
         run: |
           cd ${HOME}/sr_insects/${{ matrix.which_test }}; ./flow_check.sh
         
+      - name: Compress log files for artifacts
+        if: always()
+        continue-on-error: true
+        run: |
+          sr3 stop
+          cd ${HOME}/.cache/sr3/log/
+          tar -czf ${HOME}/logs.tar.gz *
+      
       - name: Save run artifacts
         if: always()
         uses: actions/upload-artifact@v3
         continue-on-error: true
         with:
-          name: sr3_${{ matrix.which_test }}_python_${{ matrix.pyver }}_logs_${{ github.sha }}
-          path: ~/.cache/sr3/log/
+          name: sr3_${{ matrix.which_test }}_${{ matrix.osver }}_logs_${{ github.sha }}
+          path: ~/logs.tar.gz

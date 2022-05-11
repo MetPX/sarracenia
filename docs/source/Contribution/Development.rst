@@ -37,9 +37,9 @@ Things that will be installed by automated setup:
 
 after you have cloned the source code::
 
-    git clone -b v03_wip https://github.com/MetPX/sarracenia metpx-sr3
+    git clone -b v03_wip https://github.com/MetPX/sarracenia sr3
     git clone -b v03 https://github.com/MetPX/sarrac sr3c
-    git clone -b v03_wip https://github.com/MetPX/sr_insects insects
+    git clone https://github.com/MetPX/sr_insects insects
     cd sr3
 
 The rest of the Guide takes the above for granted.
@@ -71,11 +71,11 @@ Development is most commonly done on Ubuntu >=18.04 platform.
 v2 Workflow
 ~~~~~~~~~~~
 
-Finished development work for version 2 is committed to on the main branch, which is used
-to produce daily snapshots. One should not normally commit changes to the main branch,
+Finished development work for version 2 is committed to on the v2_dev branch, which is used
+to produce daily snapshots. One should not normally commit changes to the v2_dev branch,
 but rather merge them from a working branch.
 
-Development branches are named after the issue they are meant to address "issue365", for
+Development branches are named after the issue they are meant to address "v2_issue365", for
 example. If there are multiple attempts to address a given issue, then use the issue
 as a name prefix. For example, there could be issue365, but if we decide that isn't
 a good way to address the issue, there could be an issue365_methodB branch.
@@ -88,18 +88,26 @@ Once satisfied with the nature of the patch, the second developer should pull th
 and run the flow tests again (the same three) to confirm.  Only after the flow tests
 have been run on multiple machines should a change be merged to main.
 
-issues unique to v2 may be tagged *v2only*.
+issues unique to v2 should be tagged *v2only*.
+on Launchpad.net:
+
+ * daily repository packages of v2 will be build from v2_dev 
+
+ * pre-release repository packages of v2 will be build from v2_dev 
+
+ * release repository packages are generated from v2_stable.
+
 
 v3 Workflow
 ~~~~~~~~~~~
 
-The upcoming version of Sarracenia is maintained in the v03_wip (work in progress) branch.
-As the major refactor is substantially complete, the remaining work is now entirely constructive
-and all development is co-ordinated through issues exactly as v2 is.  Issues unique to v3,
-be they regressions or enhancements that don't make sense to add to v2, have the tag *v3only*.
+The upcoming version of Sarracenia is developed in the v03_wip (work in progress) branch.
+As the major refactor is substantially complete, the remaining work is now entirely constructive 
+and all development is co-ordinated through issues exactly as v2 is. Issues unique to v3, be 
+they regressions or enhancements that don't make sense to add to v2, have the tag *v3only*. 
 Issues that are common between the releases are tagged *v3*.
 
-The workflow with v3 is similar to v2 but with different branches.  New development work should
+The workflow with v3 is similar to v2 but with different branches. New development work should
 have a v03\_ prefix, such as v03\_issue401. Having all the flow tests complete fairly successfully
 is one criterion for acceptance into v03_wip.
 
@@ -107,14 +115,20 @@ To run the sr_insects tests, the repository must be cloned with the v03_wip bran
 A gate for merging to v03_wip is for a second developer to run the flow_tests.
 **For v03, these tests must run:  static_flow, flakey_broker, dynamic_flow, transform_flow**
 
+Planned by 2022/04/11:
+
+ * main will be merged from v03_wip, so the default branch for new arrivals will be sr3.
+
+ * launchpad will have new recipes to produce sr3 packages from the main branch. 
+
+
 
 sr_insects
 ~~~~~~~~~~
 
-the sr_insects repository has it's own issues DB, and work on sr_insects is encouraged.
-Both v2 and v3 are supported on the v03_wip branch of sr_insects.  That branch should be
-used to support all development in both versions.... hmm... perhaps should make v03_wip
-the main branch?
+The sr_insects repository has it's own issues DB, and work on sr_insects is encouraged.
+Both v2 and v3 are supported on the main branch of sr_insects.  That branch should be
+used to support all development in both versions.... 
 
 
 Local Installation
@@ -301,13 +315,13 @@ The options are detailed below:
 Committing Code
 ~~~~~~~~~~~~~~~
 
-What should be done prior to committing to the master branch?
+What should be done prior to committing to the main branch?
 Checklist:
 
 - do development on some other branch. Usually the branch will be named after the issue being
   addressed. Example: issue240, if we give up on an initial approach and start another one, 
   there may be issue240_2 for a second attempt. There may also be feature branches, such as v03.
-- **sr_insects tests works** (See Testing) The master branch should always be functional, do not commit code if the sr_insects tests are not working.
+- **sr_insects tests works** (See Testing) The main branch should always be functional, do not commit code if the sr_insects tests are not working.
 - Natural consequence: if the code changes means tests need to change, include the test change in the commit.
 - **update doc/** manual pages should get their updates ideally at the same time as the code.
 
@@ -318,7 +332,7 @@ to issue a pull request. Eventually, we get to `Commits to the Main Branch`_
 sr_insects Tests Description
 ----------------------------
 
-Before committing code to the master branch, as a Quality Assurance measure, one should run 
+Before committing code to the main branch, as a Quality Assurance measure, one should run 
 all available self-tests. It is assumed that the specific changes in the code have already been unit
 tested. Please add self-tests as appropriate to this process to reflect the new ones.
 Generally speaking one should solve problems at the first test that fails as each test
@@ -395,7 +409,7 @@ tests are good before proceeding to the next test.
 Note that the development system must be configured for the sr_insects tests to run successfully. See the next
 section for configuration instructions. For development with a fresh OS installation,
 the configuration steps have been automated and can be applied with the flow_autoconfig.sh
-script in sr_insects (https://github.com/MetPX/sr_insects/blob/master/flow_autoconfig.sh). Blind 
+script in sr_insects (https://github.com/MetPX/sr_insects/blob/main/flow_autoconfig.sh). Blind 
 execution of this script on a working system may lead to undesirable side effects; you have been warned!
 
 
@@ -524,14 +538,17 @@ Running Flow Tests
 
 This section documents these steps in much more detail.  
 Before one can run the sr_insects tests, some pre-requisites must be taken care of.
-note that there is travis-ci.com integration for at least the master branch
-to verify functionality on a variety of python version.  Consulte::
+Note that there is Github Actions integration for at least the main branch
+to verify functionality on a variety of python version.  Consult::
 
-   https://travis-ci.com/MetPX/sarracenia
+   https://github.com/MetPX/sarracenia/actions
 
-for the latest test results.
+.. Note::
 
-
+  for the latest test results. Note that the results include dozens of tests, and are
+  a bit unreliable, typically it may take a few retries for it to work completely
+  (3 or 4 fail after initial attempt, then re-run the failed ones, and then
+  perhaps 1 or two will be left, and on the third pass the last one passes.)
 
 
 Install Servers on Workstation
@@ -641,7 +658,7 @@ It also tests the C components, which need to have been already installed as wel
 and defines some fixed test clients that will be used during self-tests::
 
     cd 
-    git clone -b v03_wip https://github.com/MetPX/sr_insects
+    git clone https://github.com/MetPX/sr_insects
     cd sr_insects
     cd static_flow
     . ./flow_setup.sh
@@ -784,7 +801,7 @@ Then check show it went with flow_check.sh::
 
 If the flow_check.sh passes, then one has a reasonable confidence in the overall functionality of the 
 python application, but the test coverage is not exhaustive. This is the lowest gate for committing
-changes to thy python code into the master branch. It is more qualitative sampling of the most
+changes to thy python code into the main branch. It is more qualitative sampling of the most
 common use cases rather than a thorough examination of all functionality. While not
 thorough, it is good to know the flows are working.
 
@@ -1148,8 +1165,8 @@ Commits to the Main Branch
 Aside from typos, language fixups in the documentation, and incrementing
 the version, developers are not expected to commit to main. All work 
 happens on development branches, and all testing is expected to pass before 
-one considers affecting master. Once the branch development is complete, 
-or a unit of work-in-progress is felt to be worth merging to master, one 
+one considers affecting main. Once the branch development is complete, 
+or a unit of work-in-progress is felt to be worth merging to main, one 
 must summarize the changes from the branch for the debian change log, 
 request on github.
 
@@ -1168,31 +1185,34 @@ A Second developer will review the pull request and the reviewer will decide on 
 merging is appropriate. The developer is expected to examine each commit, and 
 understand it to some degree.
 
-The Travis CI test looks at pull requests and will run them as if it were merged.
+The github Actions looks at pull requests and will flow tests on them.
 If the tests pass, then that is good qualitative indicator, however the tests are a bit
 fragile at the moment, so if they fail, it would be ideal for the reviewer to run
 the tests in their own development environment. If it passes in the local developer
-environment one can approve a merge in spite of Travis' complaints.  
+environment one can approve a merge in spite of Github Actions' complaints.  
 
 
 Main Branches
 -------------
 
 There is a long running discussion about `Which Version is stable <https://github.com/MetPX/sarracenia/issues/139>`_
-The current set up is that there are three main branches:
+The current set up is that there are four main branches:
 
-* main  ... the main branch is used to build `Daily <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily>`_
+* main branch is the release version of sr3, merging from v03_wip. used to build sr3 packages in the
+  `MetPX <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx>`_ repository.
+
+* v03_wip ... The `version 3 <v03.rst>`_ work in progress branch is a next version of sarracenia in development.
+  the v03_wip branch is used to build sr3 packages for the `Daily <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily>`_
   and `Pre-Release <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-pre-release>`_ repositories on launchpad.net.
 
-* issue branches to be merged to main should be called issueXXX.
-
-* v2_stable ... generally this branch gets code via merges from master, after the pre-release has been tested on a
-  as many systems as possible. used to build the stable: `MetPX <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx>`_
-
-* v03_wip ... The `version 3 <v03.rst>`_ work in progress branch is a next generation version of sarracenia in development.
-  It is quite different and currently not usable at all. Do not try it, unless specifically invited. IT DOES NOT WORK.
-
 * issue branches to be merged to v03_wip, it should be called v3_issueXXX
+
+* v2_dev ... the integration branch for v2 maintenance used prior to promotion to v2_stable.
+
+* v2_stable ... generally this branch gets code via merges from v2_dev, after the pre-release has been tested on a
+  as many systems as possible. used to build packages on the stable: `MetPX <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx>`_
+  
+* issue branches to be merged to main should be called issueXXX.
   
 
 Repositories
@@ -1206,15 +1226,15 @@ and allow automated patching to upgrade them as needed.
 Repositories:
 
 * Daily https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily (living on the edge... )
-  automated daily build from *master* branch.
+  automated daily build of sr3 packages happens from *v03_wip* branch.
 
 * Pre-Release https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-pre-release (for newest features.)
-  from *master* branch. Developers manually trigger builds here when it seems appropriate (testing out
+  from *v03_wip* branch. Developers manually trigger builds here when it seems appropriate (testing out
   code that is ready for release.)
 
 * Release https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx (for maximum stability)
   from *v2_stable* branch.  After testing in systems subscribed to pre-releases, Developers
-  merge from master branch into v2_stable one, and manually trigger a build.
+  merge from v2_dev branch into v2_stable one, and manually trigger a build.
 
 for more discussion see `Which Version is stable <https://github.com/MetPX/sarracenia/issues/139>`_
 
@@ -1238,7 +1258,7 @@ To publish a release one needs to:
 - upload the release to launchpad.net, so that the installation of debian packages
   using the repository succeeds.
 - upload the release notes and binaries to github.com.
-- increment the version for future commits to master.
+- increment the version for future commits to v2_dev or v03_wip.
 
 Versioning Scheme
 ~~~~~~~~~~~~~~~~~
@@ -1258,10 +1278,19 @@ Where:
   X.Y     # Final release
   X.ypostN #ack! patched release.
 
+Currently, 3.00 is still stabilizing, so the year/month convention is not being applied.
+Releases are currently  3.00.iibj
+where:
+  * ii -- incremental number of pre-releases of 3.00
+  * j -- beta increment.
+
+At some point 3.00 will be complete & solid enough that the we will
+resume the year/month convention, hopefully 3.22.
+ 
 Releases are classified as follows:
 
 Alpha
-  Snapshot releases taken directly from master, with no other qualitative guarantees.
+  Snapshot releases taken directly from v03_wip, with no other qualitative guarantees.
   No guarantee of functionality, some components may be partially implemented, some
   breakage may occur.
   No bug-fixes, issues addressed by subsequent version.
@@ -1307,7 +1336,7 @@ Set the Version
 
 This is done to *start* development on a version.
 
-* git checkout master
+* git checkout v03_wip
 * Edit ``sarracenia/__init__.py`` manually and set the version number.
 * Edit CHANGES.rst to add a section for the version.
 * run dch to start the changelog for the current version. 
@@ -1316,8 +1345,8 @@ This is done to *start* development on a version.
 
 If development continues and the time passes without the release occurring, then
 the version needs to be set to again (or overwritten).  For example, a development
-cycle begins in August, the version in master will be 2.19.08b1... but if development
-continues into September, one should use this procedure the change the version to 2.19.09b1.
+cycle begins in August, the version in main will be 3.19.08b1... but if development
+continues into September, one should use this procedure the change the version to 3.19.09b1.
 
 
 
@@ -1329,15 +1358,21 @@ When development for a version is complete. The following should occur:
 
 A tag should be created to identify the end of the cycle::
 
-   git checkout master
-   git tag -a sarra-v2.16.01a01 -m "release 2.16.01a01"
+   git checkout v03_wip
+   git tag -a sarra-v3.16.01a01 -m "release 3.16.01a01"
    git push
-   git push origin sarra-v2.16.01a01
+   git push origin sarra-v3.16.01a01
 
-then need to update the various distribution methods: `PyPI`_, and `Launchpad`_
+Once the tag is there in the v03_wip branch, one can promote it to main::
+
+   git checkout main
+   git merge v03_wip
+
+Once in main, the docker images will be automatically upgraded, but
+we then need to update the various distribution methods: `PyPI`_, and `Launchpad`_
 
 Once package generation is complete, one should `Set the Version`_
-in master to the next logical increment to ensure no further development
+in v03_wip to the next logical increment to ensure no further development
 occurs that is identified as the released version.    
 
 
@@ -1379,8 +1414,8 @@ Automated Build
 * Ensure the code mirror is updated by checking the **Import details** by checking `this page for sarracenia <https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/+git/trunk>`_
 * if the code is out of date, do **Import Now** , and wait a few minutes while it is updated.
 * once the repository is upto date, proceed with the build request.
-* NOTE: **for some repositories, the builds are based on the master branch, for the MetPX repository, it is based on v2_stable.**
 * Go to the `sarracenia release <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/sarracenia-release>`_ recipe
+* Go to the `sr3 release <https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sr3-release>`_ recipe
 * Click on the **Request build(s)** button to create a new release
 * for Sarrac, follow the procedure `here <https://github.com/MetPX/sarrac#release-process>`_
 * The built packages will be available in the `metpx ppa <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx>`_
@@ -1416,7 +1451,7 @@ Building a Windows Installer
 ++++++++++++++++++++++++++++
 
 One can also build a Windows installer with that 
-`script <https://github.com/MetPX/sarracenia/blob/master/generate-win-installer.sh>`_.
+`script <https://github.com/MetPX/sarracenia/blob/main/generate-win-installer.sh>`_.
 It needs to be run from a Linux OS (preferably Ubuntu 18) in the root directory of Sarracenia's git. 
 Then, from the shell, run::
 

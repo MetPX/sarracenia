@@ -20,8 +20,8 @@ logger = logging.getLogger(__name__)
 class Message:
     def __init__(self, h):
         """
-         in v3, a message is just a dictionary. in v2 it is an object.
-         build from sr_message.
+         builds the in-memory representation of a message as expected by v2 plugins.
+         In v3, a message is just a dictionary. in v2 it is an object.
 
          assign everything, except topic... because the topic is stored outside the body in v02.
         """
@@ -117,69 +117,9 @@ class Message:
     def get_elapse(self):
         return nowflt() - timestr2flt(self.pubtime)
 
-    def set_parts():
+    def set_parts(self):
         logger.info("set_parts not implemented")
         pass
-
-
-def v02tov03message(body, headers, topic, topicPrefix):
-    msg = sarracenia.Message()
-    msg.copyDict(headers)
-
-    msg['subtopic'] = topic.split('.')[len(topicPrefix):]
-    if not '_deleteOnPost' in msg:
-        msg['_deleteOnPost'] = set()
-    msg['_deleteOnPost'] |= set(['subtopic'])
-
-    pubTime, baseUrl, relPath = body.split(' ')[0:3]
-    msg['pubTime'] = timev2tov3str(pubTime)
-    msg['baseUrl'] = baseUrl.replace('%20', ' ').replace('%23', '#')
-    msg['relPath'] = relPath
-    msg['subtopic'] = relPath.split('/')
-    for t in ['atime', 'mtime']:
-        if t in msg:
-            msg[t] = timev2tov3str(msg[t])
-
-    if 'sum' in msg:
-        sum_algo_map = {
-            "a": "arbitrary",
-            "d": "md5",
-            "s": "sha512",
-            "n": "md5name",
-            "0": "random",
-            "L": "link",
-            "R": "remove",
-            "z": "cod"
-        }
-        sm = sum_algo_map[msg["sum"][0]]
-        if sm in ['random', 'arbitrary']:
-            sv = msg["sum"][2:]
-        elif sm in ['cod']:
-            sv = sum_algo_map[msg["sum"][2:]]
-        else:
-            sv = encode(decode(msg["sum"][2:], 'hex'),
-                        'base64').decode('utf-8').strip()
-        msg["integrity"] = {"method": sm, "value": sv}
-        del msg['sum']
-
-    if 'parts' in msg:
-        (style, chunksz, block_count, remainder,
-         current_block) = msg['parts'].split(',')
-        if style in ['i', 'p']:
-            msg['blocks'] = {}
-            msg['blocks']['method'] = {
-                'i': 'inplace',
-                'p': 'partitioned'
-            }[style]
-            msg['blocks']['size'] = int(chunksz)
-            msg['blocks']['count'] = int(block_count)
-            msg['blocks']['remainder'] = int(remainder)
-            msg['blocks']['number'] = int(current_block)
-        else:
-            msg['size'] = int(chunksz)
-        del msg['parts']
-
-    return msg
 
 
 class V2Wrapper(FlowCB):

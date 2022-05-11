@@ -8,7 +8,7 @@
 sudo apt-key adv --keyserver "hkps.pool.sks-keyservers.net" --recv-keys "0x6B73A36E6026DFCA"
 sudo add-apt-repository -y ppa:ssc-hpc-chp-spc/metpx-daily
 sudo apt-get update
-sudo apt -y install openssh-server rabbitmq-server erlang-nox metpx-sr3c librabbitmq4 metpx-libsr3c metpx-libsr3c-dev git python3-pip net-tools findutils xattr
+sudo apt -y install openssh-server erlang-nox erlang-diameter erlang-eldap rabbitmq-server metpx-sr3c librabbitmq4 metpx-libsr3c metpx-libsr3c-dev git python3-pip python3-setuptools net-tools findutils xattr
 
 pip3 install -U pip
 pip3 install -e .
@@ -35,7 +35,7 @@ declare env FLOWBROKER=localhost
 declare env SFTPUSER=${USER}
 declare env TESTDOCROOT=${HOME}/sarra_devdocroot
 declare env MQP=amqp
-logEvents after_accept,after_work,on_housekeeping,post
+logEvents after_accept,after_work,on_housekeeping,post,after_post
 EOF
 cp ~/.config/sarra/default.conf ~/.config/sr3
 
@@ -96,5 +96,5 @@ echo
 # Configure users
 sr3 --users declare
 echo "dir: +${PWD}+"
-git clone -b v03_wip https://github.com/MetPX/sr_insects
+git clone https://github.com/MetPX/sr_insects
 

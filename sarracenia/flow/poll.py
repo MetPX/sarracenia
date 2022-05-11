@@ -4,21 +4,11 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, 2008-2021
 #
 
-import sarracenia.moth
-import copy
-import dateparser
-import datetime
-import logging
-import os
-import paramiko
-
 import sarracenia
-import sarracenia.config
 from sarracenia.flow import Flow
-import sarracenia.transfer
-import stat
-import pytz
-import sys, time
+import sys
+
+import logging
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +65,11 @@ class Poll(Flow):
 
         self.plugins['load'].insert(0,
                                     'sarracenia.flowcb.post.message.Message')
+
+        if not sarracenia.extras['ftppoll']['present']:
+            if hasattr( self.o, 'destination' ) and ( self.o.destination.startswith('ftp') ):
+                logger.critical( f"attempting to configure an FTP poll destination={self.o.destination}, but missing python modules: {' '.join(sarracenia.extras['ftppoll']['modules_needed'])}" )
+                sys.exit(1)
 
     def gather(self):
 

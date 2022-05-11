@@ -13,20 +13,15 @@ Sarracenia v03 Post Message Format/Protocol
 :Manual group: MetPX-Sarracenia
 
 
-STATUS: EXPERIMENTAL
---------------------
+STATUS: Stable/Default
+----------------------
 
-Sarracenia version 2 messages are the current standard, used for terabytes
+Sarracenia version 2 messages are the previous standard, used for terabytes
 and millions of files per day of transfers. Version 3 is a proposal for a next
-iteration of Sarracenia messages, but it is not fully implemented, and 
-not in use anywhere, and may never be used. It is also not frozen yet
-and subject to change.
+iteration of Sarracenia messages.
 
 Most fields and their meaning is the same in version 3 as it was in version 2. 
 Some fields are changing as the protocol is exposed to wider review than previously.
-It is implementing changes the `World Meteorological Organization <www.wmo.int>`_
-for use in a renewed `WIS/Global Telecommunications System <http://www.wmo.int/pages/prog/www/WIS/>`_
-This format will track work done in the `WMO mesh <https://www.github.com/MetPX/wmo_mesh>`_
 
 The change in payload protocol is targetted at simplifying future implementations
 and enabling use by messaging protocols other than pre-1.0 AMQP.
@@ -51,7 +46,7 @@ Version 03 format of file change announcements for sr_post.
 An sr_post message consists of a topic, and the *BODY* 
 
 **AMQP Topic:** *<version>.{<dir>.}*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
@@ -77,6 +72,11 @@ The headers are an array of name:value pairs::
 
   OPTIONAL:
 
+          for GeoJSON compatibility:
+          "type": "Feature"
+          "geometry": RFC 7946 (geoJSON) compatible geographic specification.
+
+
           "size"          - the number of bytes being advertised.
           "blocks"        - if the file being advertised is partitioned, then:
           {
@@ -87,6 +87,8 @@ The headers are an array of name:value pairs::
               "number"    : "9999", - which block is this.
           }
           "rename"        - name to write file locally.
+          "retPath"       - relative retrieval path can be catenated to <base_url> to override relPath
+                            used for API cases.
           "topic"         - copy of topic from AMQP header (usually omitted)
           "source"        - the originating entity of the message. 
           "from_cluster"  - the originating cluster of a message.
@@ -108,6 +110,9 @@ The headers are an array of name:value pairs::
           "report" { "code": 999  - HTTP style response code. 
                      "message" :  - status report message documented in `Report Messages`_
                    }
+
+          "type": "Feature"   - used for geoJSON compatibility.
+          "geometry" : ... as per RFC7946  GoJSON compatibility.
 
           additional user defined name:value pairs are permitted.
 
