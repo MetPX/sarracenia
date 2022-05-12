@@ -181,6 +181,9 @@ class Flow:
 
         self.plugins['load'].extend(self.o.plugins_late)
 
+        # metrics - dictionary with names of plugins as the keys
+        self.metrics = {}
+
     def loadCallbacks(self, plugins_to_load):
 
         for m in self.o.imports:
@@ -237,6 +240,18 @@ class Flow:
                 logger.error( f'flowCallback plugin {p}/{entry_point} crashed: {ex}' )
                 logger.debug( "details:", exc_info=True )
 
+    def _runCallbackMetrics(self):
+        """Collect metrics from plugins with a ``metrics_report`` entry point.
+
+        Expects the plugin to return a dictionary containing metrics, which is saved to ``self.metrics[plugin_name]``.
+        """
+        for p in self.plugins["metrics_report"]:
+            try:
+                plugin_name = p.__qualname__.replace('.metrics_report', '')
+                self.metrics[plugin_name] = p()
+            except Exception as ex:
+                logger.error( f'flowCallback plugin {p}/metrics_report crashed: {ex}' )
+                logger.debug( "details:", exc_info=True )
 
     def has_vip(self):
 
@@ -410,6 +425,8 @@ class Flow:
                     self._runCallbacksWorklist('after_post')
 
                     self.report()
+
+                    self._runCallbackMetrics()
 
                     self.worklist.ok = []
                     self.worklist.directories_ok = []
@@ -1148,7 +1165,7 @@ class Flow:
                 try:
                     ok = plugin(msg)
                 except Exception as ex:
-                    logger.error( f'flowCallback plugin {p} crashed: {ex}' )
+                    logger.error( f'flowCallback plugin {plugin} crashed: {ex}' )
                     logger.debug( "details:", exc_info=True )
 
                 if not ok: return False
@@ -1365,7 +1382,7 @@ class Flow:
                 try:
                     ok = plugin(msg)
                 except Exception as ex:
-                    logger.error( f'flowCallback plugin {p} crashed: {ex}' )
+                    logger.error( f'flowCallback plugin {plugin} crashed: {ex}' )
                     logger.debug( "details:", exc_info=True )
 
                 if not ok: return False

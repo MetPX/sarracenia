@@ -15,7 +15,7 @@ entry_points = [
 
     'ack', 'do_poll', 'download', 'gather', 'after_accept', 'after_post',
     'after_work', 'on_housekeeping', 'on_report', 'on_start', 'on_stop',
-    'poll', 'post', 'send', 'please_stop'
+    'poll', 'post', 'send', 'please_stop', 'metrics_report',
 
 ]
 
@@ -133,6 +133,9 @@ class FlowCB:
          return Boolean success indicator.  if False, download  will be attempted again and/or
          appended to retry queue.
 
+    def metrics_report(self) -> dict:
+
+        Return a dictionary of metrics. Example: number of messages remaining in retry queues.
 
     def on_housekeeping(self) -> None::
 
