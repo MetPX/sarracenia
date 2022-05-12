@@ -81,6 +81,7 @@ default_options = {
     'post_baseUrl': None,
     'realpath_post': False,
     'report': False,
+    'retryEmptyBeforeExit': False,
     'sourceFromExchange': False
 }
 
@@ -95,7 +96,7 @@ flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'baseUrl_relPath', 'cache
     'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logStdout', 'logReject', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
     'permCopy', 'pump_flag', 'queueBind', 'queueDeclare', 'randomize', 'realpath_post', 'reconnect', \
-    'report', 'reset', 'retry_mode', 'save', 'set_passwords', 'sourceFromExchange', \
+    'report', 'reset', 'retry_mode', 'retryEmptyBeforeExit', 'save', 'set_passwords', 'sourceFromExchange', \
     'statehost', 'users'
                 ]
 

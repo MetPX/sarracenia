@@ -427,7 +427,13 @@ class Flow:
             elapsed = now - last_time
 
             if (last_gather_len == 0) and (self.o.sleep < 0):
-                self.please_stop()
+                if (self.o.retryEmptyBeforeExit and "Retry" in self.metrics
+                    and self.metrics['Retry']['msgs_in_post_retry'] > 0):
+                    logger.info("Not exiting because there are still messages in the post retry queue.")
+                    # Sleep for a while. Messages can't be retried before housekeeping has run...
+                    current_sleep = 60
+                else:
+                    self.please_stop()
 
             if spamming and (current_sleep < 5):
                 current_sleep *= 2
