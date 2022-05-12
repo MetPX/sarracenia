@@ -104,6 +104,14 @@ class Retry(FlowCB):
         self.post_retry.put(worklist.failed)
         worklist.failed=[]
 
+    def metrics_report(self) -> dict:
+        """Returns the number of messages in the download_retry and post_retry queues.
+
+        Returns:
+            dict: containing metrics: ``{'msgs_in_download_retry': (int), 'msgs_in_post_retry': (int)}``
+        """
+        return {'msgs_in_download_retry': len(self.download_retry), 'msgs_in_post_retry': len(self.post_retry)}
+
     def on_housekeeping(self) -> None:
         logger.info("on_housekeeping")
 
