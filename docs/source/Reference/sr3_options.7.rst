@@ -1354,6 +1354,13 @@ the reception cache is also discarded.
 The AMQP protocol defines other queue options which are not exposed
 via sarracenia, because sarracenia itself picks appropriate values.
 
+
+retryEmptyBeforeExit: <boolean> (default: False)
+------------------------------------------------
+
+Used for sr_insects flow tests. Prevents Sarracenia from exiting while there are messages remaining in the retry queue(s). By default, a post will cleanly exit once it has created and attempted to publish messages for all files in the specified directory. If any messages are not successfully published, they will be saved to disk to retry later. If a post is only run once, as in the flow tests, these messages will never be retried unless retryEmptyBeforeExit is set to True.
+
+
 retry_ttl <duration> (default: same as expire)
 ----------------------------------------------
 
