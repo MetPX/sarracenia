@@ -3,7 +3,6 @@ import json
 import logging
 import sys
 import sarracenia
-from sarracenia.flowcb import v2wrapper
 
 logger = logging.getLogger(__name__)
 
@@ -316,119 +315,6 @@ class Moth():
         """
         logger.error("putNewMessage unimplemented")
         return False
-
-    def decodeMessageBody( self, body, headers, content_type, topic, topicPrefix ): 
-        """
-            given a raw_message payload construct the corresponging Sarracenia.Message
-
-        """
-        if content_type == 'application/geo+json' :
-            msg = sarracenia.Message()
-            msg["version"] = 'v04'
-
-            try:
-                GeoJSONBody=json.loads(body)
-            except Exception as ex:
-                logger.warning('expected geojson, decode error: %s' % ex)
-                logger.debug('Exception details: ', exc_info=True)
-                return None
-
-            for literal in [ 'geometry', 'properties' ]:
-                if literal in GeoJSONBody:
-                    msg[literal] = GeoJSONBody[literal]
-            for h in GeoJSONBody['properties']:
-                if h not in [ 'geometry', 'properties' ]:
-                    msg[h] = GeoJSONBody['properties'][h]
-            if 'type' in msg:
-                del msg['type']
-            msg['relPath'] = GeoJSONBody['id']
- 
-        elif content_type == 'application/json' or body[0] == '{':  # used as key to indicate version 3.
-            msg = sarracenia.Message()
-            msg["version"] = 'v03'
-            try:
-                msg.copyDict(json.loads(body))
-            except Exception as ex:
-                logger.warning('expected json, decode error: %s' % ex)
-                logger.debug('Exception details: ', exc_info=True)
-                return None
-            """
-              observed Sarracenia v2.20.08p1 and earlier have 'parts' header in v03 messages.
-              bug, or implementation did not keep up. Applying Postel's Robustness principle: normalizing messages.
-            """
-            if ('parts' in msg
-                ):  # bug in v2 code makes v03 messages with parts header.
-                (m, s, c, r, n) = msg['parts'].split(',')
-                if m == '1':
-                    msg['size'] = int(s)
-                else:
-                    if m == 'i': m = 'inplace'
-                    elif m == 'p': m = 'partitioned'
-                    msg['blocks'] = {
-                        'method': m,
-                        'size': int(s),
-                        'count': int(c),
-                        'remainder': int(r),
-                        'number': int(n)
-                    }
-
-                del msg['parts']
-            elif ('size' in msg):
-                if (type(msg['size']) is str):
-                    msg['size'] = int(msg['size'])
-        else:
-            try:
-                msg = v2wrapper.v02tov03message(
-                    body, headers, topic, topicPrefix )
-                msg["version"] = 'v02'
-            except Exception as ex:
-                logger.warning(
-                    'expected v2 encoded message, decode error: %s' % ex)
-                logger.debug('Exception details: ', exc_info=True)
-                return None
-
-        return msg 
-
-
-
-    def encodeMessageBody( self, body, version ):
-        """
-          given an in memory sarracenia.Message dictionary, convert it to a the message body
-          for sending, in fhe format appropriate for the given version.
-
-        """
-        if version == 'v02': # body has a notice, and header...
-            v2m = v2wrapper.Message(body)
-
-            # v2wrapp
-            for h in [
-                    'pubTime', 'baseUrl', 'relPath', 'size', 'blocks',
-                    'content', 'integrity'
-            ]:
-                if h in v2m.headers:
-                    del v2m.headers[h]
-            return v2m
-
-        elif version == 'v03':  # JSON version.
-
-            raw_body = json.dumps(body)
-
-        elif version == 'v04': # GeoJSON version.
-
-            GeoJSONBody={ 'id': body['relPath'], 'type': 'Feature', 'geometry': None, 'properties':{} }
-            for literal in [ 'geometry', 'properties' ]:
-                if literal in body:
-                    GeoJSONBody[literal] = body[literal]
-            for h in body:
-                if h not in [ 'geometry', 'relPath', 'properties' ]:
-                    GeoJSONBody['properties'][h] = body[h]
-            raw_body = json.dumps(GeoJSONBody)
-        logger.critical( f' raw_body: {raw_body}' )
-        return raw_body
-        
- 
-    
-
 
     def metricsReset(self) -> None:
         self.metrics['rxByteCount'] = 0

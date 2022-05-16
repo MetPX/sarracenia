@@ -295,7 +295,7 @@ class Flow:
 
     def run(self):
         """
-          This is the core routine of of the algorithm, with most important data driven 
+          This is the core routine of the algorithm, with most important data driven
           loop in it. This implements the General Algorithm (as described in the Concepts Explanation Guide) 
           check if stop_requested once in a while, but never return otherwise.
         """
@@ -334,12 +334,12 @@ class Flow:
                 if stopping:
                     logger.info('clean stop from run loop')
                     self.close()
+                    break
                 else:
                     logger.info(
                         'starting last pass (without gather) through loop for cleanup.'
                     )
                     stopping = True
-                break
 
             self.have_vip = self.has_vip()
             if (self.o.component == 'poll') or self.have_vip:
@@ -396,6 +396,9 @@ class Flow:
                                                      m['new_relPath']):
                             m['relPath'] = m['new_relPath']
                             m['subtopic'] = m['new_subtopic']
+                        if ('version' in m) and ( m['version'] != 
+                                                  m['post_version']):
+                            m['version'] = m['post_version']
 
                     self._runCallbacksWorklist('after_work')
 
@@ -404,6 +407,7 @@ class Flow:
                     self.ack(self.worklist.failed)
 
                     self.post()
+                    self._runCallbacksWorklist('after_post')
 
                     self.report()
 
@@ -417,20 +421,19 @@ class Flow:
 
             if (self.o.messageCountMax > 0) and (total_messages >=
                                                  self.o.messageCountMax):
-                self.close()
-                break
+                self.please_stop()
 
             current_rate = total_messages / run_time
             elapsed = now - last_time
 
             if (last_gather_len == 0) and (self.o.sleep < 0):
-                self.close()
-                break
+                self.please_stop()
 
             if spamming and (current_sleep < 5):
                 current_sleep *= 2
 
-            if now > next_housekeeping:
+            # Run housekeeping based on time, and before stopping to ensure it's run at least once
+            if now > next_housekeeping or stopping:
                 logger.info(
                     f'on_housekeeping pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}'
                 )
@@ -599,19 +602,16 @@ class Flow:
         # mark all remaining messages as done.
         self.worklist.ok = self.worklist.incoming
         self.worklist.incoming = []
-        logger.debug('processing %d messages worked! (stop reuqested: %s)' %
+        logger.debug('processing %d messages worked! (stop requested: %s)' %
                      (len(self.worklist.ok), self._stop_requested))
 
     def post(self):
-
         for p in self.plugins["post"]:
             try:
                 p(self.worklist)
             except Exception as ex:
                 logger.error( f'flowCallback plugin {p} crashed: {ex}' )
                 logger.debug( "details:", exc_info=True )
-
-        self.worklist.ok = []
 
     def report(self):
         # post reports

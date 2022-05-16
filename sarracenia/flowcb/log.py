@@ -95,6 +95,11 @@ class Log(FlowCB):
                 logger.info("accepted: (lag: %.2f ) %s " %
                             (lag, self._messageStr(msg)))
 
+    def after_post(self, worklist):
+        if set(['after_post', 'all']) & self.o.logEvents:
+            for msg in worklist.ok:
+                logger.info("posted %s" % msg)
+
     def after_work(self, worklist):
         self.rejectCount += len(worklist.rejected)
         self.transferCount += len(worklist.ok)
@@ -163,8 +168,3 @@ class Log(FlowCB):
             self.stats()
             logger.info("housekeeping")
         self.__reset()
-
-    def post(self, worklist):
-        if set(['post', 'all']) & self.o.logEvents:
-            for msg in worklist.ok:
-                logger.info("posted %s" % msg)

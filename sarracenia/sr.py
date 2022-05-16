@@ -41,7 +41,7 @@ import subprocess
 import sys
 import time
 
-import sarracenia.config
+from sarracenia.config import *
 import sarracenia.moth
 import sarracenia.rabbitmq_admin
 
@@ -56,17 +56,15 @@ def ageoffile(lf):
     """
     return 0
 
-
-def signal_pid(pid, sig):
+def signal_pid( pid, sig ):
     """
         wrap os.kill in a try/except for cleaner error messages and avoid control jumping somewhere
         unexpected.
     """
     try:
-        os.kill(pid, sig)
+       os.kill(pid, sig)
     except Exception as ex:
-        logger.warning('sending kill signal to pid:%s failed: %s' % (pid, ex))
-
+       logger.warning('sending kill signal to pid:%s failed: %s' % ( pid, ex))
 
 # noinspection PyArgumentList
 class sr_GlobalState:
@@ -118,19 +116,19 @@ class sr_GlobalState:
 
                 lfn += os.sep + 'log' + os.sep + c + '_' + cfg + "_%02d" % i + '.log'
 
-                dir_not_there = not os.path.exists(os.path.dirname(lfn))
+                dir_not_there = not os.path.exists( os.path.dirname(lfn) )
 
                 while dir_not_there:
                     try:
                         os.makedirs(os.path.dirname(lfn), exist_ok=True)
-                        dir_not_there = False
+                        dir_not_there = False 
                     except FileExistsError:
-                        dir_not_there = False
+                        dir_not_there = False 
                     except Exception as ex:
                         logging.error( "makedirs {} failed err={}".format(os.path.dirname(lfn),ex))
                         logging.debug("Exception details:", exc_info=True)
                         os.sleep(1)
-
+                
         if c in [
                 'poll', 'post', 'report', 'sarra', 'sender', 'shovel',
                 'subscribe', 'watch', 'winnow'
@@ -169,9 +167,9 @@ class sr_GlobalState:
             else:
                 with open(lfn, "a") as lf:
                     subprocess.Popen(cmd,
-                                     stdin=subprocess.DEVNULL,
-                                     stdout=lf,
-                                     stderr=subprocess.STDOUT)
+                                 stdin=subprocess.DEVNULL,
+                                 stdout=lf,
+                                 stderr=subprocess.STDOUT)
         except Exception as ex:
             print("failed to launch: %s >%s >2&1 (reason: %s) " %
                   (' '.join(cmd), lfn, ex))
@@ -194,7 +192,7 @@ class sr_GlobalState:
     def _filter_sr_proc(self, p):
 
         #print( 'sr0? name=%s, pid=%s, cmdline=%s' % ( p['name'], p['pid'], p['cmdline'] ) )
-        if self.me != p['username']:
+        if self.me != p['username'] :
             return
 
         # process name 'python3' is not helpful, so overwrite...
@@ -205,12 +203,12 @@ class sr_GlobalState:
             if n == 'instance.py':
                 n = 'sr3_' + p['cmdline'][-1].split(os.sep)[0] + '.py'
             p['name'] = n
-
-        if p['name'][0:2] != 'sr':
+        
+        if p['name'][0:2] != 'sr' :
             return
 
         #print( 'sr? name=%s, pid=%s, cmdline=%s' % ( p['name'], p['pid'], p['cmdline'] ) )
-        if (sys.platform == 'win32') and (p['name'][-4:].lower() == '.exe'):
+        if ( sys.platform == 'win32') and ( p['name'][-4:].lower() == '.exe' ):
             # on windows, it seems to fork .exe and then there is a -script.py which is the right pid
             # .e.g sr_subscribe.exe -> sr_subscribe-script.py ... If you kill the -script, the .exe goes away.
             return
@@ -254,7 +252,7 @@ class sr_GlobalState:
                     proc.as_dict(
                         ['pid', 'cmdline', 'name', 'username', 'create_time']))
             except:
-                pass  # the process went away while iterating. avoid spurious message.
+                pass # the process went away while iterating. avoid spurious message.
 
     def _read_configs(self):
         # read in configurations.
@@ -291,47 +289,45 @@ class sr_GlobalState:
                         state = 'include'
                         continue
                     else:
-                        # No need to store the file as a config if it doesn't end in .conf or .inc
-                        continue
+                        cbase = cfg
+                        state = 'unknown'
 
                     self.configs[c][cbase] = {}
                     self.configs[c][cbase]['status'] = state
-                    cfgbody = copy.deepcopy(self.default_cfg)
-                    cfgbody.override({
-                        'component': c,
-                        'config': cbase,
-                        'directory': '${PWD}'
-                    })
-                    cfgbody.applyComponentDefaults(c)
-                    cfgbody.parse_file(cfg)
-                    cfgbody.fill_missing_options(c, cfg)
-                    self.configs[c][cbase]['options'] = cfgbody
-                    # ensure there is a known value of instances to run.
-                    if c in ['poll', 'post', 'cpost']:
-                        if hasattr(cfgbody, 'sleep') and cfgbody.sleep not in [
-                                '-', '0'
-                        ]:
+                    if state != 'unknown':
+                        cfgbody = copy.deepcopy(self.default_cfg)
+                        cfgbody.override({
+                            'component': c,
+                            'config': cbase,
+                            'directory': '${PWD}'
+                        })
+                        cfgbody.applyComponentDefaults( c )
+                        cfgbody.parse_file(cfg)
+                        cfgbody.fill_missing_options(c, cfg)
+                        self.configs[c][cbase]['options'] = cfgbody
+                        # ensure there is a known value of instances to run.
+                        if c in ['poll', 'post', 'cpost']:
+                            if hasattr(cfgbody,
+                                       'sleep') and cfgbody.sleep not in [
+                                           '-', '0'
+                                       ]:
+                                numi = 1
+                        elif hasattr(cfgbody, 'instances'):
+                            numi = int(cfgbody.instances)
+                        else:
                             numi = 1
-                    elif hasattr(cfgbody, 'instances'):
-                        numi = int(cfgbody.instances)
-                    else:
-                        numi = 1
-                    if ( numi > 1 ) and \
-                       hasattr(cfgbody,'exchangeSplit'):
-                        print( 'exchange: %s split: %d' % \
-                           (cfgbody.exchange, numi) )
-                        l = []
-                        for i in range(0, numi):
-                            l.append(cfgbody.exchange + '%02d' % i)
-                        cfgbody.exchange = l
+                        if ( numi > 1 ) and \
+                           hasattr(cfgbody,'exchangeSplit'):
+                            print( 'exchange: %s split: %d' % \
+                               (cfgbody.exchange, numi) )
+                            l = []
+                            for i in range(0, numi):
+                                l.append(cfgbody.exchange + '%02d' % i)
+                            cfgbody.exchange = l
 
                     self.configs[c][cbase]['instances'] = numi
 
                 os.chdir('..')
-        self.basic_configs = []
-        for cfg in os.listdir():
-            if os.path.isfile(cfg):
-                self.basic_configs.append(cfg)
 
     def _cleanse_credentials(self, savename):
         """
@@ -502,7 +498,7 @@ class sr_GlobalState:
                 os.chdir(c)
                 for cfg in os.listdir():
                     if cfg[0] == '.': continue
-
+                    
                     if cfg not in self.configs[c]: continue
 
                     if os.path.isdir(cfg):
@@ -513,8 +509,8 @@ class sr_GlobalState:
                                 i = int(filename[-6:-4])
                                 if i != 0:
                                     p = pathlib.Path(filename)
-                                    if sys.version_info[
-                                            0] > 3 or sys.version_info[1] > 4:
+                                    if sys.version_info[0] > 3 or sys.version_info[
+                                            1] > 4:
                                         t = p.read_text().strip()
                                     else:
                                         with p.open() as f:
@@ -525,18 +521,13 @@ class sr_GlobalState:
                                             missing.append([c, cfg, i])
                                     else:
                                         missing.append([c, cfg, i])
-                        if (len(self.states[c][cfg]['instance_pids']) >
-                                0) or (len(missing) > 0):
+                        if ( len(self.states[c][cfg]['instance_pids']) > 0 ) or ( len(missing) > 0 ) :
                             # look for instances that should be running, but no pid file exists.
-                            for i in range(
-                                    1,
-                                    int(self.configs[c][cfg]['instances']) +
-                                    1):
-                                if not i in self.states[c][cfg][
-                                        'instance_pids']:
+                            for i in range(1, int(self.configs[c][cfg]['instances'])+1 ):
+                                if not i in self.states[c][cfg]['instance_pids']:
                                     if i not in self.procs:
                                         if i != 0:
-                                            missing.append([c, cfg, i])
+                                            missing.append([c,cfg,i])
                         os.chdir('..')
                 os.chdir('..')
 
@@ -607,7 +598,7 @@ class sr_GlobalState:
                 lff = lf.split('_')
                 if len(lff) > 2:
                     c = lff[0]
-                    if (c == 'sr') or (c not in self.components):
+                    if ( c == 'sr' ) or ( c not in self.components): 
                         continue  # old or inapplicable log, ignore.
                     cfg = '_'.join(lff[1:-1])
 
@@ -735,9 +726,7 @@ class sr_GlobalState:
                                     self.brokers[host]['exchanges'][x].append(
                                         'declared')
 
-                if hasattr(
-                        o, 'broker'
-                ) and o.broker is not None and o.broker.url is not None:
+                if hasattr(o, 'broker') and o.broker is not None and o.broker.url is not None:
                     host = self._init_broker_host(o.broker.url.netloc)
 
                     xl = self.__resolved_exchanges(c, cfg, o)
@@ -757,9 +746,7 @@ class sr_GlobalState:
                     else:
                         self.brokers[host]['queues'][q] = [name]
 
-                if hasattr(
-                        o, 'post_broker'
-                ) and o.post_broker is not None and o.post_broker.url is not None:
+                if hasattr(o, 'post_broker') and o.post_broker is not None and o.post_broker.url is not None:
                     host = self._init_broker_host(o.post_broker.url.netloc)
 
                     #o.broker = o.post_broker
@@ -802,19 +789,19 @@ class sr_GlobalState:
 
         self._resolve_brokers()
 
-        if not os.path.exists(self.user_cache_dir):
+        if not os.path.exists( self.user_cache_dir ):
             os.mkdir(self.user_cache_dir)
 
         # comparing states and configs to find missing instances, and correct state.
         for c in self.components:
-            if not os.path.exists(self.user_cache_dir + os.sep + c):
-                os.mkdir(self.user_cache_dir + os.sep + c)
+            if not os.path.exists( self.user_cache_dir + os.sep + c ):
+                os.mkdir(self.user_cache_dir + os.sep + c )
             if (c not in self.states) or (c not in self.configs):
                 continue
 
             for cfg in self.configs[c]:
                 if cfg not in self.states[c]:
-                    print('missing state for %s/%s' % (c, cfg))
+                    print('missing state for %s/%s' % (c,cfg))
                     os.mkdir(self.user_cache_dir + os.sep + c + os.sep + cfg)
                     # add config as state in .cache under right directory.
                     self.states[c][cfg] = {}
@@ -824,8 +811,7 @@ class sr_GlobalState:
                     self.states[c][cfg]['has_state'] = False
                     self.states[c][cfg]['retry_queue'] = 0
                     continue
-                if os.path.exists(self.user_cache_dir + os.sep + c + os.sep +
-                                  cfg + os.sep + 'disabled'):
+                if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'disabled'):
                     self.configs[c][cfg]['status'] = 'disabled'
                 if len(self.states[c][cfg]['instance_pids']) >= 0:
                     self.states[c][cfg]['missing_instances'] = []
@@ -839,24 +825,16 @@ class sr_GlobalState:
                             self.procs[self.states[c][cfg]['instance_pids']
                                        [i]]['claimed'] = True
 
-                    if observed_instances < int(
-                            self.configs[c][cfg]['instances']):
-                        if (c == 'post') and (
-                            ('sleep' not in self.states[c][cfg])
-                                or self.states[c][cfg]['sleep'] <= 0):
+                    if observed_instances < int(self.configs[c][cfg]['instances']):
+                        if (c == 'post') and (('sleep' not in self.states[c][cfg]) or self.states[c][cfg]['sleep'] <= 0):
                             if self.configs[c][cfg]['status'] != 'disabled':
                                 self.configs[c][cfg]['status'] = 'stopped'
                         else:
                             if observed_instances > 0:
                                 self.configs[c][cfg]['status'] = 'partial'
-                                for i in range(
-                                        1,
-                                        int(self.configs[c][cfg]['instances'])
-                                        + 1):
-                                    if not i in self.states[c][cfg][
-                                            'instance_pids']:
-                                        self.states[c][cfg][
-                                            'missing_instances'].append(i)
+                                for i in range(1, int(self.configs[c][cfg]['instances'])+1 ):
+                                    if not i in self.states[c][cfg]['instance_pids']:
+                                         self.states[c][cfg]['missing_instances'].append(i)
                             else:
                                 if self.configs[c][cfg]['status'] != 'disabled':
                                     self.configs[c][cfg]['status'] = 'stopped'
@@ -881,6 +859,10 @@ class sr_GlobalState:
         if (patterns is None) or (patterns == []):
             patterns = ['*' + os.sep + '*']
 
+        if self.options.action == 'convert':
+            self.v2_config = patterns
+            return
+
         candidates = ['audit']
         for c in self.components:
             if (c not in self.configs):
@@ -888,9 +870,6 @@ class sr_GlobalState:
             for cfg in self.configs[c]:
                 fcc = c + os.sep + cfg
                 candidates.append(fcc)
-
-        for c in self.basic_configs:
-            candidates.append(c)
 
         for p in patterns:
             leftover_matches[p] = 0
@@ -998,11 +977,11 @@ class sr_GlobalState:
                   self.appname)
 
         self.components = [
-            'cpost', 'cpump', 'poll', 'post', 'report', 'sarra', 'sender',
-            'shovel', 'subscribe', 'watch', 'winnow'
+            'cpost', 'cpump', 'poll', 'post', 'report', 'sarra',
+            'sender', 'shovel', 'subscribe', 'watch', 'winnow'
         ]
         self.status_values = [
-            'disabled', 'include', 'stopped', 'partial', 'running'
+            'disabled', 'include', 'stopped', 'partial', 'running', 'unknown'
         ]
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
@@ -1137,9 +1116,7 @@ class sr_GlobalState:
                     o.post_broker, {
                         'broker': o.post_broker,
                         'exchange': o.resolved_exchanges,
-                        'message_strategy': {
-                            'stubborn': True
-                        }
+                        'message_strategy': { 'stubborn':True }
                     })
                 xdc.close()
 
@@ -1185,19 +1162,17 @@ class sr_GlobalState:
                     f.write('')
                 logging.info(c + '/' + cfg)
 
+
     def edit(self):
 
         for f in self.filtered_configurations:
-            if f == 'audit':
-                continue
-            if f in self.basic_configs:
-                cfgfile = self.user_config_dir + os.sep + f
-            else:
-                (c, cfg) = f.split(os.sep)
-                if not 'options' in self.configs[c][cfg]:
-                    continue
-                cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
+            if f == 'audit': continue
+            (c, cfg) = f.split(os.sep)
 
+            if not 'options' in self.configs[c][cfg]:
+                continue
+
+            cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
             editor = os.environ.get('EDITOR')
 
             if not editor:
@@ -1205,8 +1180,8 @@ class sr_GlobalState:
                     editor = 'notepad'
                 else:
                     editor = 'vi'
-                logger.info('using %s. Set EDITOR variable pick another one.' %
-                            editor)
+                logger.info(
+                    'using %s. Set EDITOR variable pick another one.' % editor)
 
             self.run_command([editor, cfgfile])
 
@@ -1268,7 +1243,7 @@ class sr_GlobalState:
                 cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
 
                 if c in [
-                        'poll', 'post', 'report', 'sarra', 'sender', 'shovel',
+                        'poll', 'post', 'report', 'sarra', 'sender', 'shovel', 
                         'subscribe', 'watch', 'winnow'
                 ]:
                     component_path = os.path.dirname(
@@ -1283,9 +1258,7 @@ class sr_GlobalState:
                     if cfg is None:
                         cmd = [sys.executable, component_path, 'foreground']
                     else:
-                        cmd = [
-                            sys.executable, component_path, 'foreground', cfg
-                        ]
+                        cmd = [sys.executable, component_path, 'foreground', cfg]
                 else:  # C components
                     cmd = [component_path, 'foreground', cfg]
 
@@ -1317,9 +1290,7 @@ class sr_GlobalState:
                         'queueBind': False,
                         'broker': o.broker,
                         'queueName': o.resolved_qname,
-                        'message_strategy': {
-                            'stubborn': True
-                        }
+                        'message_strategy': { 'stubborn':True }
                     })
                 qdc.getCleanUp()
                 qdc.close()
@@ -1343,9 +1314,7 @@ class sr_GlobalState:
                                     'declare': False,
                                     'exchange': x,
                                     'broker': self.brokers[h]['admin'],
-                                    'message_strategy': {
-                                        'stubborn': True
-                                    }
+                                    'message_strategy': { 'stubborn':True }
                                 })
                             if qdc:
                                 qdc.putCleanUp()
@@ -1451,8 +1420,7 @@ class sr_GlobalState:
                         os.path.normpath(self.package_lib_dir + os.sep +
                                          'examples' + os.sep + c), c)
             elif self.leftovers[0] in ['flow_callback', 'flowcb', 'fcb']:
-                print('Provided callback classes: ( %s ) ' %
-                      self.package_lib_dir)
+                print('Provided callback classes: ( %s ) ' % self.package_lib_dir)
                 self.print_configdir2(
                     " of callback classes: ",
                     os.path.normpath(self.package_lib_dir + os.sep + 'flowcb'),
@@ -1518,14 +1486,13 @@ class sr_GlobalState:
 
             if ('instance_pids' in self.states[c][cfg]) and len(
                     self.states[c][cfg]['instance_pids']) > 0:
-                logging.error("cannot remove %s/%s while it is running! " %
-                              (c, cfg))
+                logging.error("cannot remove %s/%s while it is running! " % ( c, cfg ) )
                 continue
 
             cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
             statefile = self.user_cache_dir + os.sep + c + os.sep + cfg
 
-            logging.info('removing %s/%s ' % (c, cfg))
+            logging.info('removing %s/%s ' % ( c, cfg ))
             os.unlink(cfgfile)
             shutil.rmtree(statefile)
 
@@ -1562,6 +1529,8 @@ class sr_GlobalState:
         for p in plist:
             (outs, errs) = p.communicate()
             print(outs.decode('utf8'))
+
+ 
 
     def sanity(self):
         """ Run sanity by finding and starting missing instances
@@ -1664,7 +1633,7 @@ class sr_GlobalState:
                     #    ( c, cfg, i, self.states[c][cfg]['instance_pids'][i] ) )
                     if self.states[c][cfg]['instance_pids'][i] in self.procs:
                         signal_pid(self.states[c][cfg]['instance_pids'][i],
-                                   signal.SIGTERM)
+                                signal.SIGTERM)
                         print('.', end='', flush=True)
                         pcount += 1
 
@@ -1721,7 +1690,7 @@ class sr_GlobalState:
                         print("signal_pid( %s, SIGKILL )" %
                               self.states[c][cfg]['instance_pids'][i])
                         signal_pid(self.states[c][cfg]['instance_pids'][i],
-                                   signal.SIGKILL)
+                                signal.SIGKILL)
                         print('.', end='')
 
         for pid in self.procs:
@@ -1870,6 +1839,53 @@ class sr_GlobalState:
                 if self.exchange_summary[h][x] == 0:
                     print("exchange with no bindings: %s-%s " % (h, x), end='')
 
+    def config_converter(self):
+        c_v2, cfg_v2 = self.v2_config[0].split(os.sep)
+        if cfg_v2[-5:] == '.conf': v2_config = c_v2 + os.sep + cfg_v2
+        else: v2_config = c_v2 + os.sep + cfg_v2 + '.conf'
+
+        v2_config_path = self.user_config_dir.replace('sr3', 'sarra') + os.sep + v2_config
+        v3_config_path = self.user_config_dir + os.sep + v2_config
+
+        if not os.path.exists(v2_config_path):
+            logging.error('Invalid config %s' % v2_config)
+            return
+
+        synonyms = sarracenia.config.Config.synonyms
+        with open(v3_config_path, 'w') as v3_cfg:
+            with open(v2_config_path, 'r') as v2_cfg:
+                for line in v2_cfg.readlines():
+                    if len(line.strip()) < 1:
+                        v3_cfg.write('\n')
+                        continue
+                    if line[0].startswith('#'):
+                        v3_cfg.write(line)
+                        continue
+                    line = line.strip().split()
+                    k = line[0]
+                    if k in synonyms:
+                        k = synonyms[k]
+                        v3_cfg.write(k + ' ' + ' '.join(line[1:]) + '\n')
+                        continue
+                    if k in convert_to_v3:
+                        if len(line) > 1:
+                            v = line[1].replace('.py', '', 1)
+                            if v in convert_to_v3[k]:
+                                line = convert_to_v3[k][v]
+                                if 'continue' in line:
+                                    logger.info("obsolete v2: " + v)
+                                    continue
+                                else:
+                                    v3_cfg.write(' '.join(line) + '\n')
+                    else:
+                        v3_cfg.write(k + ' ' + ' '.join(line[1:])+'\n')
+        logging.info('converting %s from v2 to v3 ' % v2_config)
+
+
+
+
+
+
     def overview(self):
         """ v2 Printing statuses for each component/configs found
 
@@ -1973,8 +1989,7 @@ def main():
     """
     logger = logging.getLogger()
     logging.basicConfig(
-        format=
-        '%(asctime)s %(process)d [%(levelname)s] %(name)s %(funcName)s %(message)s',
+        format='%(asctime)s %(process)d [%(levelname)s] %(name)s %(funcName)s %(message)s',
         level=logging.DEBUG)
     logger.setLevel(logging.INFO)
 
@@ -1985,7 +2000,7 @@ def main():
             logger.setLevel(logging.INFO)
 
     actions = [
-        'declare', 'devsnap', 'dump', 'edit', 'log', 'restart', 'sanity',
+        'convert', 'declare', 'devsnap', 'dump', 'edit', 'log', 'restart', 'sanity',
         'setup', 'show', 'status', 'overview', 'stop'
     ]
 
@@ -2011,10 +2026,8 @@ def main():
     action = cfg.action
 
     if cfg.logStdout:
-        logging.basicConfig(
-            format=
-            '%(asctime)s [%(levelname)s] %(process)d %{processName}s %(name)s %(funcName)s %(message)s'
-        )
+       logging.basicConfig(
+           format= '%(asctime)s [%(levelname)s] %(process)d %{processName}s %(name)s %(funcName)s %(message)s' )
 
     gs = sr_GlobalState(cfg, cfg.configurations)
 
@@ -2065,6 +2078,9 @@ def main():
 
     if action == 'log':
         gs.log()
+
+    if action == 'convert':
+        gs.config_converter()
 
     if action == 'remove':
         gs.remove()

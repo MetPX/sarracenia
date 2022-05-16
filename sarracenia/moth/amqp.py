@@ -32,7 +32,7 @@ import logging
 
 from urllib.parse import unquote
 import sarracenia
-from sarracenia.flowcb import v2wrapper
+from sarracenia.encoding import Encoding
 from sarracenia.moth import Moth
 
 import time
@@ -86,9 +86,9 @@ class AMQP(Moth):
             if self.o['messageDebugDump']:
                 if not ('content_type' in raw_msg.properties):
                     logger.warning('message is missing content-type header')
-                logger.debug('raw message body: type: %s (%d bytes) %s' %
+                logger.info('raw message body: type: %s (%d bytes) %s' %
                              (type(body), len(body), body))
-                logger.debug('raw message properties:' % raw_msg.properties)
+                logger.info('raw message properties:' % raw_msg.properties)
 
             if type(body) is bytes:
                 try:
@@ -104,7 +104,7 @@ class AMQP(Moth):
             else:
                 content_type = None
 
-            msg = self.decodeMessageBody( body, raw_msg.headers, content_type, raw_msg.delivery_info['routing_key'], self.o['topicPrefix'] )
+            msg = Encoding.importAny( body, raw_msg.headers, content_type, raw_msg.delivery_info['routing_key'], self.o['topicPrefix'] )
             if not msg:
                 return None
 
@@ -445,8 +445,20 @@ class AMQP(Moth):
             logger.error("publishing from a consumer")
             return False
 
-        #body = copy.deepcopy(bd)
-        version=body['version']
+        # Check connection and channel status, try to reconnect if not connected
+        if (self.connection is None) or (not self.connection.connected) or (not self.channel.is_open):
+            try:
+                self.close()
+                self.__putSetup()
+            except Exception as err:
+                logger.warning(f"failed, connection was closed/broken and could not be re-opened {exchange}: {err}")
+                logger.debug('Exception details: ', exc_info=True)
+                # Returning False here would prevent looping when retry queues are not in use
+
+        # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
+        body = copy.deepcopy(body)
+
+        version = body['version']
         topic = '.'.join(self.o['topicPrefix'] + body['subtopic'])
         topic = topic.replace('#', '%23')
         topic = topic.replace('*', '%22')
@@ -494,44 +506,27 @@ class AMQP(Moth):
         else:
             ttl = "0"
 
-        raw_body =  self.encodeMessageBody( body, version )
+        raw_body, headers, content_type = Encoding.exportAny( body, version )
         if self.o['messageDebugDump']:
-            logger.debug('raw message body: type: %s (%d bytes) %s' %
-                             (type(body), len(body), body))
-        if version == 'v02':  
-            for k in raw_body.headers:
-                if (type(raw_body.headers[k]) is str) and (len(raw_body.headers[k]) >=
+            logger.info('raw message body: version: %s type: %s %s' %
+                             (version, type(raw_body),  raw_body))
+        if headers :  
+            for k in headers:
+                if (type(headers[k]) is str) and (len(headers[k]) >=
                                                       amqp_ss_maxlen):
                     logger.error("message header %s too long, dropping" % k)
                     return False
-            AMQP_Message = amqp.Message(raw_body.notice,
-                                        content_type='text/plain',
-                                        application_headers=raw_body.headers,
-                                        expire=ttl,
-                                        delivery_mode=2)
-            body = raw_body.notice
-            headers = raw_body.headers
-            self.metrics['txByteCount'] += len(raw_body.notice) + len(''.join(str(raw_body.headers)))
-        elif version == 'v03':
-            self.metrics['txByteCount'] += len(raw_body)
-            headers = None
-            AMQP_Message = amqp.Message(raw_body,
-                                        content_type='application/json',
-                                        application_headers=headers,
-                                        expire=ttl,
-                                        delivery_mode=2)
-        elif version == 'v04':
-            self.metrics['txByteCount'] += len(raw_body)
-            headers = None
-            AMQP_Message = amqp.Message(raw_body,
-                                        content_type='application/geo+json',
-                                        application_headers=headers,
-                                        expire=ttl,
-                                        delivery_mode=2)
-        else:
-             logger.error( f'unsupported message format version: {version}. Discarded' )
-             return False
 
+        AMQP_Message = amqp.Message(raw_body,
+                                        content_type=content_type,
+                                        application_headers=headers,
+                                        expire=ttl,
+                                        delivery_mode=2)
+        self.metrics['txByteCount'] += len(raw_body) 
+        if headers:
+            self.metrics['txByteCount'] += len(''.join(str(headers)))
+
+        body=raw_body
         ebo = 1
         while True:
             try:
