@@ -18,11 +18,11 @@ English
    Any application which can subscribe to an AMQP service can
    receive notification of products being published and then retrieve
    them in real time via http. Message format is fully described here:
-   ( https://github.com/MetPX/sarracenia/blob/master/doc/sr_post.1.rst )
+   ( https://metpx.github.io/sarracenia/Reference/sr3_post.1.html )
 
 3. Datamart clients.
 
-   * Sarracenia ( http://github.com/MetPX/sarracenia ) a complete reference implementation in Python >= 3.4. 
+   * Sarracenia ( https://metpx.github.io/sarracenia ) a complete reference implementation in Python >= 3.4. 
      It runs on Linux, Mac, and Windows. This is the best choice to use, if you can.
    * Sarrac ( https://github.com/MetPX/sarrac ) is a C implementation of data insertion (post & watch.) 
      It is Linux only. There is also a libcshim to be able to tranparently implement data insertion with 
@@ -32,12 +32,8 @@ English
      impractical (example: high performance computing environments.), or where memory & cpu is usage
      is particularly important such as in embedded systems.
    * node-sarra ( https://github.com/darkskyapp/node-sarra ) An embryonic implementation for node.js.
-   * dd_subscribe is a python2 program that uses python-amqplib to receive these amqp notification 
-     messages, retrieve the products from the datamart via HTTP and place them in a 
-     chosen local directory. More info: ( https://github.com/MetPX/sarracenia/blob/master/doc/dd_subscribe.rst , 
-     https://github.com/MetPX/sarracenia/blob/master/doc/dd_subscribe.1.rst )
 
-6. Under samples/config you will find working configuration files for sarracenia, provided as is,
+4. Under samples/config you will find working configuration files for sarracenia, provided as is,
    without warranty. Under samples/program you will find other programs we played with.
 
 
@@ -72,11 +68,8 @@ FRANCAIS
     facilement disponible (exemple: environnement de haute performance, tel Cray), ou bien ou on veut 
     minimiser la consommation de ressources (systèmes embarqué.) 
   * node-sarra ( https://github.com/darkskyapp/node-sarra ) client en javascript pour node.js.
-  * dd_subscribe un client en python2, ancêtre de Sarracenia, une autre option quand python 3 n´est 
-    pas utilisable. 
-    plus d´infos (anglais): ( https://github.com/MetPX/sarracenia/blob/master/doc/dd_subscribe.rst )
 
-6. Dans le répertoire samples/config vous trouverez des fichiers de
+4. Dans le répertoire samples/config vous trouverez des fichiers de
    configuration pour Sarracenia qui devraient fonctionner tels quels (sans
    garantie). Sous samples/program vous trouverez d'autres programmes
    avec lesquels nous avons expérimenté.
