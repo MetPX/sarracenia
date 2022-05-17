@@ -29,8 +29,8 @@ page web / homepage: https://metpx.github.io/sarracenia
     :target: https://github.com/MetPX/sarracenia/actions/workflows/flow.yml
 
 +----------------------------------------------------------------+------------------------------------------------------------------------+
-| [ `Guides <https://metpx.github.io/sarracenia>`_ ]             | 
-| [ `Man Pages<https://metpx.github.io/sarracenia/Reference>`_ ] | 
+| [ `Guides <https://metpx.github.io/sarracenia>`_ ]             |                                                                        | 
+| [ `Man Pages<https://metpx.github.io/sarracenia/Reference>`_ ] |                                                                        | 
 +----------------------------------------------------------------+------------------------------------------------------------------------+
 |                                                                |                                                                        |
 |MetPX-sr3 (Sarracenia v3) is a data duplication                 |MetPX-sr3 (Sarracenia v3) est un engin de copie et de                   |
