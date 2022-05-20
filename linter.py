@@ -21,10 +21,10 @@ def dust():
                       "--format=\033[1;31m %(path)s:%(row)d|%(col)d\033[0m:[%(code)s] %(text)s",
                       "."]).returncode
 
-    # Return non-zero to trigger Git pre-commit hook/GitHub Actions?
     if (returnCode > 0):
         print("\033[0;30;41m Please Correct the above pep8 errors prior to commiting. \033[0m")
-        exit(returnCode)
+
+    exit(returnCode)
 
 
 # If someone attempts to run it as a script, dust the lint.
