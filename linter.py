@@ -17,7 +17,7 @@ def dust(files=[]):
         exit(1)
 
     returnCode = run([executable, "-m", "flake8",
-                      "--format=\033[1;31m %(path)s:%(row)d|%(col)d\033[0m:[%(code)s] %(text)s"
+                      "--format=\033[1;31m %(path)s:%(row)d|%(col)d\033[0m:[https://flake8rules.com/rules/%(code)s.html] %(text)s"  # NoQA
                       ] + files).returncode
 
     if (returnCode > 0):
