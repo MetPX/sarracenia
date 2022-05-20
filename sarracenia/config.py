@@ -24,7 +24,8 @@ import shutil
 import socket
 import sys
 import time
-import urllib, urllib.parse
+import urllib
+import urllib.parse
 
 from random import randint
 
@@ -33,15 +34,13 @@ if sys.version_info[0] >= 3 and sys.version_info[1] < 8:
         'extend' action not included in argparse prior to python 3.8
         https://stackoverflow.com/questions/41152799/argparse-flatten-the-result-of-action-append
     """
- 
+
     class ExtendAction(argparse.Action):
 
         def __call__(self, parser, namespace, values, option_string=None):
             items = getattr(namespace, self.dest) or []
             items.extend(values)
             setattr(namespace, self.dest, items)
-
-
 
 
 import sarracenia
@@ -90,16 +89,15 @@ count_options = [
 ]
 
 # all the boolean settings.
-flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'baseUrl_relPath', 'cache_stat', 'debug', \
-    'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchangeSplit', 'logReject', 'realpath_filter', \
-    'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logStdout', 'logReject', 'restore', \
-    'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
-    'permCopy', 'pump_flag', 'queueBind', 'queueDeclare', 'randomize', 'realpath_post', 'reconnect', \
-    'report', 'reset', 'retry_mode', 'save', 'set_passwords', 'sourceFromExchange', \
-    'statehost', 'users'
-                ]
+flag_options = ['acceptSizeWrong', 'acceptUnmatched', 'baseUrl_relPath', 'cache_stat', 'debug',
+                'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchangeSplit',
+                'logReject', 'realpath_filter', 'follow_symlinks', 'force_polling', 'inline', 'inlineOnly',
+                'inplace', 'logStdout', 'logReject', 'restore', 'messageDebugDump', 'mirror', 'timeCopy',
+                'notify_only', 'overwrite', 'post_on_start', 'permCopy', 'pump_flag', 'queueBind', 'queueDeclare',
+                'randomize', 'realpath_post', 'reconnect', 'report', 'reset', 'retry_mode', 'save', 'set_passwords',
+                'sourceFromExchange', 'statehost', 'users']
 
-float_options = [ ]
+float_options = []
 
 duration_options = [
     'expire', 'housekeeping', 'message_ttl', 'nodupe_fileAgeMax', 'retry_ttl',
@@ -109,16 +107,16 @@ duration_options = [
 list_options = []
 
 # set, valid values of the set.
-set_options = [ 'logEvents', 'fileEvents' ]
+set_options = ['logEvents', 'fileEvents']
 
-set_choices = { 
-    'logEvents': sarracenia.flowcb.entry_points + [ 'reject', 'all' ],
-    'fileEvents': set( [ 'create', 'delete', 'link', 'modify' ] )
- }
+set_choices = {
+    'logEvents': sarracenia.flowcb.entry_points + ['reject', 'all'],
+    'fileEvents': set(['create', 'delete', 'link', 'modify'])
+}
 # FIXME: doesn't work... wonder why?
 #    'fileEvents': sarracenia.flow.allFileEvents
- 
-perm_options = [ 'permDefault', 'permDirDefault' ]
+
+perm_options = ['permDefault', 'permDirDefault']
 
 size_options = ['accelThreshold', 'blocksize', 'bufsize', 'byteRateMax', 'inlineByteMax']
 
@@ -131,7 +129,7 @@ str_options = [
     'nodupe_basis', 'tls_rigour', 'vip'
 ]
 """
-   for backward compatibility, 
+   for backward compatibility,
 
    convert some old plugins that are hard to get working with
    v2wrapper, into v3 plugin.
@@ -142,7 +140,7 @@ str_options = [
    accelerators and rate limiting are now built-in, no plugin required.
 """
 convert_to_v3 = {
-    'ls_file_index' : [ 'continue' ],
+    'ls_file_index': ['continue'],
     'plugin': {
         'msg_fdelay': ['flowCallback', 'sarracenia.flowcb.filter.fdelay.FDelay'],
         'msg_pclean_f90':
@@ -155,55 +153,55 @@ convert_to_v3 = {
         'post_total_save': ['continue']
     },
     'do_send': {
-       'file_email' : [ 'flowCallback', 'sarracenia.flowcb.send.email.Email' ],
+        'file_email': ['flowCallback', 'sarracenia.flowcb.send.email.Email'],
     },
-    'no_download': [ 'download', 'False' ],
-    'notify_only': [ 'download', 'False' ],
+    'no_download': ['download', 'False'],
+    'notify_only': ['download', 'False'],
     'on_message': {
-        'msg_print_lag': [ 'flow_callback', 'sarracenia.flowcb.accept.printlag.PrintLag'],
-        'msg_skip_old': [ 'flow_callback', 'sarracenia.flowcb.accept.skipold.SkipOld'],
-        'msg_test_retry': [ 'flow_callback', 'sarracenia.flowcb.accept.testretry.TestRetry'],
-        'msg_to_clusters': [ 'flow_callback', 'sarracenia.flowcb.accept.toclusters.ToClusters'],
-        'msg_save': [ 'flow_callback', 'sarracenia.flowcb.accept.save.Save'],
-        'msg_2localfile': [ 'flow_callback', 'sarracenia.flowcb.accept.tolocalfile.ToLocalFile'],
-        'msg_rename_whatfn': [ 'flow_callback', 'sarracenia.flowcb.accept.renamewhatfn.RenameWhatFn'],
-        'msg_rename_dmf': [ 'flow_callback', 'sarracenia.flowcb.accept.renamedmf.RenameDMF'],
-        'msg_hour_tree': [ 'flow_callback', 'sarracenia.flowcb.accept.hourtree.HourTree'],
-        'msg_renamer': [ 'flow_callback', 'sarracenia.flowcb.accept.renamer.Renamer'],
-        'msg_2http': [ 'flow_callback', 'sarracenia.flowcb.accept.tohttp.ToHttp'],
-        'msg_2local': [ 'flow_callback', 'sarracenia.flowcb.accept.tolocal.ToLocal'],
-        'msg_http_to_https': [ 'flow_callback', 'sarracenia.flowcb.accept.httptohttps.HttpToHttps'],
-        'msg_speedo': [ 'flow_callback', 'sarracenia.flowcb.accept.speedo.Speedo'],
-        'msg_WMO_type_suffix': [ 'flow_callback', 'sarracenia.flowcb.accept.wmotypesuffix.WmoTypeSuffix'],
-        'msg_sundew_pxroute': [ 'flow_callback', 'sarracenia.flowcb.accept.sundewpxroute.SundewPxRoute'],
-        'msg_rename4jicc': [ 'flow_callback', 'sarracenia.flowcb.accept.rename4jicc.Rename4Jicc'],
-        'post_override': [ 'flow_callback', 'sarracenia.flowcb.accept.postoverride.PostOverride'],
-        'post_hour_tree': [ 'flow_callback', 'sarracenia.flowcb.accept.posthourtree.PostHourTree'],
-        'post_long_flow': [ 'flow_callback', 'sarracenia.flowcb.accept.longflow.LongFLow'],
-        'msg_delay': [ 'flow_callback', 'sarracenia.flowcb.accept.messagedelay.MessageDelay'],
-        'msg_download_baseurl': [ 'flow_callback', 'sarracenia.flowcb.accept.downloadbaseurl.DownloadBaseUrl'],
-	'msg_from_cluster': ['continue'],
-	'msg_stdfiles': ['continue'],
-	'msg_fdelay': ['continue'],
-	'msg_stopper': ['continue'],
-	'msg_overwrite_sum': ['continue'],
-	'msg_gts2wistopic': ['continue'],
-	'msg_download': ['continue'],
-	'msg_by_source': ['continue'],
-	'msg_by_user': ['continue'],
-	'msg_dump': ['continue'],
-	'msg_total': ['continue'],
-	'post_total': ['continue'],
-        'wmo2msc': [ 'flow_callback', 'sarracenia.flowcb.filter.wmo2msc.Wmo2Msc'],
-        'msg_delete': [ 'flow_callback', 'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles'],
+        'msg_print_lag': ['flow_callback', 'sarracenia.flowcb.accept.printlag.PrintLag'],
+        'msg_skip_old': ['flow_callback', 'sarracenia.flowcb.accept.skipold.SkipOld'],
+        'msg_test_retry': ['flow_callback', 'sarracenia.flowcb.accept.testretry.TestRetry'],
+        'msg_to_clusters': ['flow_callback', 'sarracenia.flowcb.accept.toclusters.ToClusters'],
+        'msg_save': ['flow_callback', 'sarracenia.flowcb.accept.save.Save'],
+        'msg_2localfile': ['flow_callback', 'sarracenia.flowcb.accept.tolocalfile.ToLocalFile'],
+        'msg_rename_whatfn': ['flow_callback', 'sarracenia.flowcb.accept.renamewhatfn.RenameWhatFn'],
+        'msg_rename_dmf': ['flow_callback', 'sarracenia.flowcb.accept.renamedmf.RenameDMF'],
+        'msg_hour_tree': ['flow_callback', 'sarracenia.flowcb.accept.hourtree.HourTree'],
+        'msg_renamer': ['flow_callback', 'sarracenia.flowcb.accept.renamer.Renamer'],
+        'msg_2http': ['flow_callback', 'sarracenia.flowcb.accept.tohttp.ToHttp'],
+        'msg_2local': ['flow_callback', 'sarracenia.flowcb.accept.tolocal.ToLocal'],
+        'msg_http_to_https': ['flow_callback', 'sarracenia.flowcb.accept.httptohttps.HttpToHttps'],
+        'msg_speedo': ['flow_callback', 'sarracenia.flowcb.accept.speedo.Speedo'],
+        'msg_WMO_type_suffix': ['flow_callback', 'sarracenia.flowcb.accept.wmotypesuffix.WmoTypeSuffix'],
+        'msg_sundew_pxroute': ['flow_callback', 'sarracenia.flowcb.accept.sundewpxroute.SundewPxRoute'],
+        'msg_rename4jicc': ['flow_callback', 'sarracenia.flowcb.accept.rename4jicc.Rename4Jicc'],
+        'post_override': ['flow_callback', 'sarracenia.flowcb.accept.postoverride.PostOverride'],
+        'post_hour_tree': ['flow_callback', 'sarracenia.flowcb.accept.posthourtree.PostHourTree'],
+        'post_long_flow': ['flow_callback', 'sarracenia.flowcb.accept.longflow.LongFLow'],
+        'msg_delay': ['flow_callback', 'sarracenia.flowcb.accept.messagedelay.MessageDelay'],
+        'msg_download_baseurl': ['flow_callback', 'sarracenia.flowcb.accept.downloadbaseurl.DownloadBaseUrl'],
+        'msg_from_cluster': ['continue'],
+        'msg_stdfiles': ['continue'],
+        'msg_fdelay': ['continue'],
+        'msg_stopper': ['continue'],
+        'msg_overwrite_sum': ['continue'],
+        'msg_gts2wistopic': ['continue'],
+        'msg_download': ['continue'],
+        'msg_by_source': ['continue'],
+        'msg_by_user': ['continue'],
+        'msg_dump': ['continue'],
+        'msg_total': ['continue'],
+        'post_total': ['continue'],
+        'wmo2msc': ['flow_callback', 'sarracenia.flowcb.filter.wmo2msc.Wmo2Msc'],
+        'msg_delete': ['flow_callback', 'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles'],
         'msg_log': ['logEvents', 'after_accept'],
         'msg_rawlog': ['logEvents', 'after_accept']
     },
     'on_post': {
         'post_log': ['logEvents', 'after_work']
     },
-    'windows_run': [ 'continue' ],
-    'xattr_disable': [ 'continue' ]
+    'windows_run': ['continue'],
+    'xattr_disable': ['continue']
 }
 
 logger = logging.getLogger(__name__)
@@ -217,7 +215,8 @@ logger = logging.getLogger(__name__)
 
 def isTrue(S):
     s = S.lower()
-    if s == 'true' or s == 'yes' or s == 'on' or s == '1': return True
+    if s == 'true' or s == 'yes' or s == 'on' or s == '1':
+        return True
     return False
 
 
@@ -232,7 +231,7 @@ def get_site_config_dir():
 
 def get_user_cache_dir(hostdir):
     """
-      hostdir = None if statehost is false, 
+      hostdir = None if statehost is false,
     """
     ucd = appdirs.user_cache_dir(Config.appdir_stuff['appname'],
                                  Config.appdir_stuff['appauthor'])
@@ -312,7 +311,8 @@ def wget_config(urlstr, path, remote_config_url=False):
             fp.write(bytes("remote_config_url %s\n" % urlstr, 'utf-8'))
         while True:
             chunk = resp.read(8192)
-            if not chunk: break
+            if not chunk:
+                break
             fp.write(chunk)
         fp.close()
 
@@ -373,14 +373,16 @@ def config_path(subdir, config, mandatory=True, ctype='conf'):
     """
     logger.debug("config_path = %s %s" % (subdir, config))
 
-    if config == None: return False, None
+    if config is None:
+        return False, None
 
     # remote config
 
     if config.startswith('http:'):
         urlstr = config
         name = os.path.basename(config)
-        if not name.endswith(ctype): name += '.' + ctype
+        if not name.endswith(ctype):
+            name += '.' + ctype
         path = get_user_config_dir() + os.sep + subdir + os.sep + name
         config = name
 
@@ -402,7 +404,8 @@ def config_path(subdir, config, mandatory=True, ctype='conf'):
     config_file = os.path.basename(config)
     config_name = re.sub(r'(\.inc|\.conf|\.py)', '', config_file)
     ext = config_file.replace(config_name, '')
-    if ext == '': ext = '.' + ctype
+    if ext == '':
+        ext = '.' + ctype
     config_path = config_name + ext
 
     # priority 1.5: config file given without extenion...
@@ -438,7 +441,8 @@ def config_path(subdir, config, mandatory=True, ctype='conf'):
 
     # return bad file ...
     if mandatory:
-        if subdir == 'plugins': logger.error("script not found %s" % config)
+        if subdir == 'plugins':
+            logger.error("script not found %s" % config)
         elif config_name != 'plugins':
             logger.error("file not found %s" % config)
 
@@ -451,7 +455,9 @@ class Config:
 
     """
 
-    port_required = [ 'on_line', 'on_html_page' ]
+    port_required = [
+        'on_line', 'on_html_page'
+    ]
 
     v2entry_points = [
         'do_download', 'do_get', 'do_poll', 'do_put', 'do_send', 'on_message',
@@ -489,8 +495,8 @@ class Config:
         'document_root': 'documentRoot',
         'caching': 'nodupe_ttl',
         'cache_basis': 'nodupe_basis',
-        'e' : 'fileEvents',
-        'events' : 'fileEvents',
+        'e': 'fileEvents',
+        'events': 'fileEvents',
         'exchange_split': 'exchangeSplit',
         'instance': 'instances',
         'chmod': 'permDefault',
@@ -499,11 +505,11 @@ class Config:
         'default_dir_mode': 'permDirDefault',
         'chmod_log': 'permLog',
         'default_log_mode': 'permLog',
-        'file_time_limit' : 'nodupe_fileAgeMax', 
+        'file_time_limit': 'nodupe_fileAgeMax',
         'heartbeat': 'housekeeping',
-        'hb_memory_baseline_file' : 'MemoryBaseLineFile',
-        'hb_memory_max' : 'MemoryMax',
-        'hb_memory_multiplier' : 'MemoryMultiplier',
+        'hb_memory_baseline_file': 'MemoryBaseLineFile',
+        'hb_memory_max': 'MemoryMax',
+        'hb_memory_multiplier': 'MemoryMultiplier',
         'log_format': 'logFormat',
         'll': 'logLevel',
         'loglevel': 'logLevel',
@@ -519,16 +525,16 @@ class Config:
         'post_document_root': 'post_documentRoot',
         'post_exchange_split': 'post_exchangeSplit',
         'post_rate_limit': 'messageRateMax',
-        'post_topic_prefix' : 'post_topicPrefix',
-        'preserve_mode' : 'permCopy',
-        'preserve_time' : 'timeCopy',
-        'queue_name' : 'queueName', 
+        'post_topic_prefix': 'post_topicPrefix',
+        'preserve_mode': 'permCopy',
+        'preserve_time': 'timeCopy',
+        'queue_name': 'queueName',
         'report_back': 'report',
-        'source_from_exchange': 'sourceFromExchange', 
-        'sum' : 'integrity',  
-        'suppress_duplicates' : 'nodupe_ttl',
-        'suppress_duplicates_basis' : 'nodupe_basis', 
-        'topic_prefix' : 'topicPrefix'
+        'source_from_exchange': 'sourceFromExchange',
+        'sum': 'integrity',
+        'suppress_duplicates': 'nodupe_ttl',
+        'suppress_duplicates_basis': 'nodupe_basis',
+        'topic_prefix': 'topicPrefix'
     }
     credentials = None
 
@@ -543,8 +549,8 @@ class Config:
 
         if Config.credentials is None:
             Config.credentials = sarracenia.credentials.CredentialDB()
-            Config.credentials.read(get_user_config_dir() + os.sep +
-                                    "credentials.conf")
+            Config.credentials.read(get_user_config_dir() + os.sep
+                                    + "credentials.conf")
         # FIXME... Linux only for now, no appdirs
         self.directory = None
 
@@ -557,16 +563,16 @@ class Config:
         self.bufsize = 1024 * 1024
         self.byteRateMax = 0
 
-        self.nodupe_fileAgeMax = 0 # disabled.
+        self.nodupe_fileAgeMax = 0  # disabled.
         self.timezone = 'UTC'
         self.debug = False
         self.declared_exchanges = []
         self.destfn_script = None
-        self.env_declared = []  # list of variable that are "declared env"'d 
+        self.env_declared = []  # list of variable that are "declared env"'d
         self.v2plugins = {}
         self.v2plugin_options = []
         self.imports = []
-        self.logEvents = set(['after_accept', 'after_work', 'on_housekeeping' ])
+        self.logEvents = set(['after_accept', 'after_work', 'on_housekeeping'])
         self.plugins_late = []
         self.plugins_early = []
         self.exchange = None
@@ -590,7 +596,7 @@ class Config:
         self.mirror = False
         self.messageAgeMax = 0
         self.post_exchanges = []
-	#self.post_topicPrefix = None
+    # self.post_topicPrefix = None
         self.pstrip = False
         self.queueName = None
         self.randomize = False
@@ -601,7 +607,7 @@ class Config:
         self.strip = 0
         self.timeout = 300
         self.tls_rigour = 'normal'
-        self.topicPrefix = [ 'v03', 'post' ]
+        self.topicPrefix = ['v03', 'post']
         self.undeclared = []
         self.declared_users = {}
         self.users = False
@@ -609,7 +615,7 @@ class Config:
 
     def __deepcopy__(self, memo) -> 'Configuration':
         """
-            code for this from here: https://stackoverflow.com/questions/1500718/how-to-override-the-copy-deepcopy-operations-for-a-python-object
+            from: https://stackoverflow.com/questions/1500718/how-to-override-the-copy-deepcopy-operations-for-a-python-object # NoQA: E501
             Needed for python < 3.7ish? (ubuntu 18) found this bug: https://bugs.python.org/issue10076
             deepcopy fails for objects with re's in them?
             ok on ubuntu 20.04
@@ -619,18 +625,18 @@ class Config:
         memo[id(self)] = result
         for k, v in self.__dict__.items():
             if k == 'masks':
-                v2=[]
+                v2 = []
                 for m in v:
-                    v2.append(tuple(list(copy.deepcopy(m[0:3]))+ [m[3]] + list(copy.deepcopy(m[4:]))))
+                    v2.append(tuple(list(copy.deepcopy(m[0:3])) + [m[3]] + list(copy.deepcopy(m[4:]))))
 
                 setattr(result, k, v2)
             else:
                 setattr(result, k, copy.deepcopy(v, memo))
         return result
 
-    def _validate_urlstr(self, urlstr) -> tuple :
+    def _validate_urlstr(self, urlstr) -> tuple:
         """
-           returns a tuple ( bool, expanded_url ) 
+           returns a tuple ( bool, expanded_url )
            the bool is whether the expansion worked, and the expanded_url is one with
            the added necessary authentication details from sarracenia.Credentials.
 
@@ -645,7 +651,7 @@ class Config:
             return False, cred_details
         return True, cred_details
 
-    def applyComponentDefaults( self, component ):
+    def applyComponentDefaults(self, component):
         """
           overlay defaults options for the given component to the given configuration.
         """
@@ -709,23 +715,27 @@ class Config:
             return word
         elif type(word) in [bool, int, float]:
             return word
-        elif not '$' in word:
+        elif '$' not in word:
             return word
 
         result = word
-        if (('${BROKER_USER}' in word) and hasattr(self, 'broker') and self.broker is not None and
-                self.broker.url is not None and hasattr(self.broker.url, 'username')):
+        if (('${BROKER_USER}' in word)                      # Shut up linter for now
+                and hasattr(self, 'broker')                 # NoQA: W503
+                and self.broker is not None                 # NoQA: W503
+                and self.broker.url is not None             # NoQA: W503
+                and hasattr(self.broker.url, 'username')):  # NoQA: W503
             result = result.replace('${BROKER_USER}', self.broker.url.username)
             # FIXME: would this work also automagically if BROKER.USERNAME ?
 
-        if not '$' in result:
+        if '$' not in result:
             return result
 
         elst = []
         plst = result.split('}')
         for parts in plst:
             try:
-                if '{' in parts: elst.append((parts.split('{'))[1])
+                if '{' in parts:
+                    elst.append((parts.split('{'))[1])
             except:
                 pass
         for E in elst:
@@ -766,7 +776,8 @@ class Config:
         pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
 
         s = 'accept' if accepting else 'reject'
-        if pstrip : strip=pstrip
+        if pstrip:
+            strip = pstrip
         strip = '' if strip == 0 else f' strip:{strip}'
         fn = '' if (maskFileOption == 'WHATFN') else f' filename:{maskFileOption}'
         flatten = '' if flatten == '/' else f' flatten:{flatten}'
@@ -775,21 +786,22 @@ class Config:
 
     def add_option(self, option, kind='list', default_value=None):
         """
-           options can be declared in any plugin. There are various *kind* of options, where the declared type modifies the parsing.
-           
-           'count'      integer count type. 
+           options can be declared in any plugin.
+           There are various *kinds* of options, where the declared type modifies the parsing.
+
+           'count'      integer count type.
            'duration'   a floating point number indicating a quantity of seconds (0.001 is 1 milisecond)
-                        modified by a unit suffix ( m-minute, h-hour, w-week ) 
+                        modified by a unit suffix ( m-minute, h-hour, w-week )
            'flag'       boolean (True/False) option.
            'float'      a simple floating point number.
            'list'       a list of string values, each succeeding occurrence catenates to the total.
                         all v2 plugin options are declared of type list.
            'set'        a set of string values, each succeeding occurrence is unioned to the total.
            'size'       integer size. Suffixes k, m, and g for kilo, mega, and giga (base 2) multipliers.
-           'str'        an arbitrary string value, as will all of the above types, each succeeding occurrence overrides the previous one.
-    
+           'str'        an arbitrary string value, as will all of the above types,
+                        each succeeding occurrence overrides the previous one.
         """
-        #Blindly add the option to the list if it doesn't already exist
+        # Blindly add the option to the list if it doesn't already exist
         if not hasattr(self, option):
             setattr(self, option, default_value)
 
@@ -812,28 +824,28 @@ class Config:
             float_options.append(option)
             if type(v) is not float:
                 setattr(self, option, float(v))
-        elif kind == 'list':  
-            list_options.append( option )
+        elif kind == 'list':
+            list_options.append(option)
             if type(v) is not list:
                 setattr(self, option, [v])
-        elif kind == 'set':  
+        elif kind == 'set':
             set_options.append(option)
-            sv=set()
+            sv = set()
             if type(v) is list:
-                sv=set(v)
+                sv = set(v)
             elif type(v) is set:
-                sv=v
+                sv = v
             elif type(v) is str:
-                if v == 'None': 
+                if v == 'None':
                     delattr(self, option)
                 else:
-                    v=v.replace('|',',')
-                    if ',' in v: 
-                        sv=set(v.split(','))
-                    else: 
-                        sv=set([v])
+                    v = v.replace('|', ',')
+                    if ',' in v:
+                        sv = set(v.split(','))
+                    else:
+                        sv = set([v])
             if hasattr(self, option):
-                sv= getattr(self,option) | sv
+                sv = getattr(self, option) | sv
             setattr(self, option, sv)
 
         elif kind == 'size':
@@ -846,10 +858,10 @@ class Config:
             if type(v) is not str:
                 setattr(self, option, str(v))
         else:
-            logger.error('invalid kind: %s for option: %s, ignored' % ( kind, option ) )
+            logger.error('invalid kind: %s for option: %s, ignored' % (kind, option))
             return
 
-        logger.debug('%s declared as type:%s value:%s' % (option, type(getattr(self,option)), v))
+        logger.debug('%s declared as type:%s value:%s' % (option, type(getattr(self, option)), v))
 
     def dump(self):
         """ print out what the configuration looks like.
@@ -858,33 +870,33 @@ class Config:
         term = shutil.get_terminal_size((80, 20))
 
         # for python > 3.7
-        #c = copy.deepcopy(self.dictify())
+        # c = copy.deepcopy(self.dictify())
         # but older python needs:
         c = self.dictify()
-        d={}
+        d = {}
         for k in c:
             if k == 'masks':
-                i=0
+                i = 0
                 d['masks'] = []
                 while i < len(c['masks']):
-                   d['masks'].append( self.mask_ppstr(c['masks'][i]) )
-                   i+=1
+                    d['masks'].append(self.mask_ppstr(c['masks'][i]))
+                    i += 1
             else:
                 d[k] = copy.deepcopy(c[k])
 
-        for omit in [ 'env' ] :
+        for omit in ['env']:
             del d[omit]
 
         for k in d:
-            if type(d[k]) is sarracenia.credentials.Credential :
+            if type(d[k]) is sarracenia.credentials.Credential:
                 d[k] = str(d[k])
 
-        pprint.pprint( d, width=term.columns, compact=True )
+        pprint.pprint(d, width=term.columns, compact=True)
         return
 
     def dictify(self):
         """
-      return a dict version of the cfg... 
+      return a dict version of the cfg...
       """
         cd = self.__dict__
 
@@ -907,12 +919,12 @@ class Config:
                 setattr(self, key, value)
 
     def merge(self, oth):
-        """ 
-       merge to lists of options.
+        """
+        merge to lists of options.
 
-       merge two lists of options if one is cumulative then merge, 
-       otherwise if not None, then take value from oth
-       """
+        merge two lists of options if one is cumulative then merge,
+        otherwise if not None, then take value from oth
+        """
 
         if type(oth) == dict:
             for k in oth.keys():
@@ -951,10 +963,10 @@ class Config:
            sets self.exchange.
         """
         if not hasattr(self, 'exchange') or self.exchange is None:
-            #if hasattr(self, 'post_broker') and self.post_broker is not None and self.post_broker.url is not None:
-            #    self.exchange = 'xs_%s' % self.post_broker.url.username
-            #else:
-            if not hasattr(self.broker.url,'username') or ( self.broker.url.username == 'anonymous' ):
+            # if hasattr(self, 'post_broker') and self.post_broker is not None and self.post_broker.url is not None:
+            #     self.exchange = 'xs_%s' % self.post_broker.url.username
+            # else:
+            if not hasattr(self.broker.url, 'username') or (self.broker.url.username == 'anonymous'):
                 self.exchange = 'xpublic'
             else:
                 self.exchange = 'xs_%s' % self.broker.url.username
@@ -977,14 +989,14 @@ class Config:
 
         if type(subtopic_string) is str:
             if not hasattr(self, 'broker') or self.broker is None or self.broker.url is None:
-                logger.error( 'broker needed before subtopic' )
+                logger.error('broker needed before subtopic')
                 return
 
-            if self.broker.url.scheme == 'amq' :
+            if self.broker.url.scheme == 'amq':
                 subtopic = subtopic_string.split('.')
             else:
                 subtopic = subtopic_string.split('/')
-            
+
         if hasattr(self, 'exchange') and hasattr(self, 'topicPrefix'):
             self.bindings.append((self.exchange, self.topicPrefix, subtopic))
 
@@ -993,12 +1005,12 @@ class Config:
        config file parsing for a v2 plugin.
 
        """
-        if not entryPoint in Config.v2entry_points:
+        if entryPoint not in Config.v2entry_points:
             logging.error(
                 "undefined entry point: {} skipped".format(entryPoint))
             return
 
-        if not entryPoint in self.v2plugins:
+        if entryPoint not in self.v2plugins:
             self.v2plugins[entryPoint] = [value]
         else:
             self.v2plugins[entryPoint].append(value)
@@ -1019,20 +1031,19 @@ class Config:
     def _parse_setting(self, opt, value):
         """
           v3 plugin accept options for specific modules.
-    
+
           parsed from:
           set sarracenia.flowcb.log.filter.Log.level debug
 
-          example:   
+          example:
           opt= sarracenia.flowcb.log.filter.Log.level  value = debug
 
           results in:
           self.settings[ sarracenia.flowcb.log.filter.Log ][level] = debug
 
           options should be fed to plugin class on instantiation.
-          stripped of class... 
+          stripped of class...
                options = { 'level' : 'debug' }
-    
 
        """
         opt_class = '.'.join(opt.split('.')[:-1])
@@ -1052,11 +1063,10 @@ class Config:
             value = value[2:]
             self.integrity_method = 'cod,'
         elif (value[0:2] == 'a,'):
-            self.integrity_method = 'arbitrary' 
+            self.integrity_method = 'arbitrary'
             self.integrity_arbitrary_value = value[2:]
         else:
             self.integrity_method = ''
-
 
         for sc in sarracenia.integrity.Integrity.__subclasses__():
             if self.integrity_method == sc.__name__.lower():
@@ -1068,15 +1078,14 @@ class Config:
         self.integrity_method = 'invalid'
 
     def parse_file(self, cfg):
-        """ add settings from a given config file to self 
+        """ add settings from a given config file to self
        """
-        lineno=0
-        for l in open(cfg, "r").readlines():
-            l = l.strip()
-            lineno+=1
-            line = l.split()
+        lineno = 0
+        for rawLine in open(cfg, "r").readlines():
+            lineno += 1
+            line = rawLine.strip().split()
 
-            #print('FIXME parsing %s:%d %s' % (cfg, lineno, line ))
+            # print('FIXME parsing %s:%d %s' % (cfg, lineno, line ))
 
             if (len(line) < 1) or (line[0].startswith('#')):
                 continue
@@ -1085,27 +1094,27 @@ class Config:
             if k in Config.synonyms:
                 k = Config.synonyms[k]
 
-            if (k in convert_to_v3): 
+            if (k in convert_to_v3):
                 self.log_flowcb_needed |= '_log' in k
-                   
+
                 if (len(line) > 1):
                     v = line[1].replace('.py', '', 1)
                     if (v in convert_to_v3[k]):
                         line = convert_to_v3[k][v]
                         k = line[0]
                         if 'continue' in line:
-                            logger.info( f'{cfg}:{lineno} obsolete v2: \"{l}\" ignored' )
+                            logger.info(f'{cfg}:{lineno} obsolete v2: \"{rawLine}\" ignored')
                         else:
-                            logger.info( f'{cfg}:{lineno} obsolete v2:\"{l}\" converted to sr3:\"{" ".join(line)}\"' )
+                            logger.info(f'{cfg}:{lineno} obsolete v2:\"{rawLine}\" converted to sr3:\"{" ".join(line)}\"')
                 else:
                     line = convert_to_v3[k]
-                    k=line[0]
-                    v=line[1] 
+                    k = line[0]
+                    v = line[1]
 
             if k == 'continue':
                 continue
-            
-            #FIXME: note for Clea, line conversion to v3 complete here.
+
+            # FIXME: note for Clea, line conversion to v3 complete here.
 
             line = list(map(lambda x: self._varsub(x), line))
 
@@ -1124,16 +1133,16 @@ class Config:
                 continue
 
             if len(line) < 2:
-                logger.error('%s:%d %s missing argument(s) ' % ( cfg, lineno, k ) )
+                logger.error('%s:%d %s missing argument(s) ' % (cfg, lineno, k))
                 continue
             if k in ['accept', 'reject', 'get']:
                 self.masks.append(self._build_mask(k, line[1:]))
-            elif k in [ 'callback', 'cb' ]:
+            elif k in ['callback', 'cb']:
                 vv = v.split('.')
                 v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
                 if v not in self.plugins_late:
                     self.plugins_late.append(v)
-            elif k in [ 'callback_prepend', 'cbp' ]:
+            elif k in ['callback_prepend', 'cbp']:
                 vv = v.split('.')
                 v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
                 if v not in self.plugins_early:
@@ -1154,35 +1163,35 @@ class Config:
             elif k in ['subtopic']:
                 self._parse_binding(v)
             elif k in ['topicPrefix']:
-                if '/' in v :
+                if '/' in v:
                     self.topicPrefix = v.split('/')
                 else:
                     self.topicPrefix = v.split('.')
             elif k in ['post_topicPrefix']:
-                #if (not self.post_broker.url) or self.post_broker.url.scheme[0:3] == 'amq':
-                if '/' in v :
+                # if (not self.post_broker.url) or self.post_broker.url.scheme[0:3] == 'amq':
+                if '/' in v:
                     self.post_topicPrefix = v.split('/')
                 else:
                     self.post_topicPrefix = v.split('.')
             elif k in ['import']:
                 self.imports.append(v)
-            elif k in ['flow_callback', 'flowcb', 'fcb', 'flowCallback' ]:
+            elif k in ['flow_callback', 'flowcb', 'fcb', 'flowCallback']:
                 if v not in self.plugins_late:
                     self.plugins_late.append(v)
-            elif k in ['flow_callback_prepend', 'flowcb_prepend', 'fcbp', 'flowCallbackPrepend' ]:
+            elif k in ['flow_callback_prepend', 'flowcb_prepend', 'fcbp', 'flowCallbackPrepend']:
                 if v not in self.plugins_early:
-                    self.plugins_early.append( v )
+                    self.plugins_early.append(v)
             elif k in ['set', 'setting', 's']:
                 self._parse_setting(line[1], line[2:])
             elif k in ['integrity']:
                 self._parse_sum(v)
             elif k in Config.port_required:
-                logger.error( f' {k} {v} not supported in v3, consult porting guide. Option ignored.' )
-                logger.error( f' porting guide: https://github.com/MetPX/sarracenia/blob/v03_wip/docs/How2Guides/v2ToSr3.rst ' )
+                logger.error(f' {k} {v} not supported in v3, consult porting guide. Option ignored.')
+                logger.error(' porting guide: https://metpx.github.io/sarracenia/How2Guides/v2ToSr3.html')
                 continue
             elif k in Config.v2entry_points:
-                #if k in self.plugins:
-                #    self.plugins.remove(v)
+                # if k in self.plugins:
+                #     self.plugins.remove(v)
                 self._parse_v2plugin(k, v)
             elif k in ['no-import']:
                 self._parse_v3unplugin(v)
@@ -1198,7 +1207,7 @@ class Config:
                 """
                2020/08/26 - PAS
                strip in config file gets translated into two separate attributes: strip and pstrip.
-                 strip is the numeric variety (0-n) and if the supplied option in a regex pattern, 
+                 strip is the numeric variety (0-n) and if the supplied option in a regex pattern,
                  then instead pstrip is set, and strip is set to 0.
 
                I don't know why it is done this way... just documenting/conforming to existing state.
@@ -1214,21 +1223,21 @@ class Config:
                     self.strip = 0
             elif k in duration_options:
                 if len(line) == 1:
-                    logger.error( 
+                    logger.error(
                         '%s:%d  %s is a duration option requiring a decimal number of seconds value'
-                        % ( cfg, lineno, line[0]) )
+                        % (cfg, lineno, line[0]))
                     continue
                 setattr(self, k, durationToSeconds(v))
             elif k in float_options:
                 try:
                     setattr(self, k, float(v))
                 except (ValueError, TypeError) as e:
-                    logger.error(f'Ignored "{i}": {e}')
+                    logger.error(f'Ignored "{lineno}": {e}')
             elif k in perm_options:
                 if v.isdigit():
                     setattr(self, k, int(v, base=8))
                 else:
-                    logger.error('%s setting to %s ignored: only numberic modes supported' % ( k, v ) )
+                    logger.error('%s setting to %s ignored: only numberic modes supported' % (k, v))
             elif k in size_options:
                 setattr(self, k, humanfriendly.parse_size(v))
             elif k in count_options:
@@ -1240,24 +1249,24 @@ class Config:
                     setattr(self, k, getattr(self, k).append(' '.join(line[1:])))
             elif k in set_options:
                 vs = set(v.split(','))
-                if v=='None':
-                   setattr(self, k, set([]))
-                   continue
+                if v == 'None':
+                    setattr(self, k, set([]))
+                    continue
 
                 if not hasattr(self, k):
-                    setattr(self, k, vs )
+                    setattr(self, k, vs)
                 else:
                     setattr(self, k, getattr(self, k) | vs)
-                if hasattr(self, k) and (k in set_choices) :
-                   for i in getattr(self,k):
-                       if i not in set_choices[k]:
-                          logger.error('invalid entry for %s:  %s. Must be one of: %s' % ( k, i, set_choices[k] ) )
+                if hasattr(self, k) and (k in set_choices):
+                    for i in getattr(self, k):
+                        if i not in set_choices[k]:
+                            logger.error('invalid entry for %s:  %s. Must be one of: %s' % (k, i, set_choices[k]))
             elif k in str_options:
                 v = ' '.join(line[1:])
                 setattr(self, k, v)
             else:
-                #FIXME: with _options lists for all types and addition of declare, this is probably now dead code.
-                #logger.info('FIXME: zombie is alive? %s' % line )
+                # FIXME: with _options lists for all types and addition of declare, this is probably now dead code.
+                # logger.info('FIXME: zombie is alive? %s' % line )
                 v = ' '.join(line[1:])
                 if hasattr(self, k):
                     if type(getattr(self, k)) is float:
@@ -1269,7 +1278,7 @@ class Config:
                     elif type(getattr(self, k)) is str:
                         setattr(self, k, [getattr(self, k), v])
                     elif type(getattr(self, k)) is list:
-                        newv=getattr(self,k)
+                        newv = getattr(self, k)
                         newv.append(v)
                         setattr(self, k, newv)
                 else:
@@ -1278,9 +1287,9 @@ class Config:
                     self.undeclared.append(k)
 
     def fill_missing_options(self, component, config):
-        """ 
-         There are default options that apply only if they are not overridden... 
-       """
+        """
+         There are default options that apply only if they are not overridden...
+        """
 
         if hasattr(self, 'nodupe_ttl'):
             if (type(self.nodupe_ttl) is str):
@@ -1322,13 +1331,13 @@ class Config:
             if hasattr(self, f) and (type(getattr(self, f)) is str):
                 setattr(self, f, float(getattr(self, f)))
 
-        if hasattr(self,'logReject'):
+        if hasattr(self, 'logReject'):
             if self.logReject:
-                self.logEvents |= set( ['reject'] )
+                self.logEvents |= set(['reject'])
 
-        if ( (len(self.logEvents) > 0 ) or self.log_flowcb_needed) :
-            if not 'sarracenia.flowcb.log.Log' in self.plugins_late:
-                self.plugins_late.append( 'sarracenia.flowcb.log.Log' )
+        if ((len(self.logEvents) > 0) or self.log_flowcb_needed):
+            if 'sarracenia.flowcb.log.Log' not in self.plugins_late:
+                self.plugins_late.append('sarracenia.flowcb.log.Log')
 
         # patch, as there is no 'none' level in python logging module...
         #    mapping so as not to break v2 configs.
@@ -1337,11 +1346,11 @@ class Config:
                 self.logLevel = 'critical'
 
         if hasattr(self, 'nodupe_basis'):
-            if self.nodupe_basis == 'data': 
-                self.plugins_early.append( 'sarracenia.flowcb.nodupe.data.Data' )
-            elif self.nodupe_basis == 'name': 
-                self.plugins_early.append( 'sarracenia.flowcb.nodupe.name.Name' )
-            delattr( self, 'nodupe_basis' )
+            if self.nodupe_basis == 'data':
+                self.plugins_early.append('sarracenia.flowcb.nodupe.data.Data')
+            elif self.nodupe_basis == 'name':
+                self.plugins_early.append('sarracenia.flowcb.nodupe.name.Name')
+            delattr(self, 'nodupe_basis')
 
         # FIXME: note that v2 *user_cache_dir* is, v3 called:  cfg_run_dir
         if config[-5:] == '.conf':
@@ -1350,13 +1359,13 @@ class Config:
             cfg = config
 
         if not hasattr(self, 'post_topicPrefix'):
-           self.post_topicPrefix = self.topicPrefix
+            self.post_topicPrefix = self.topicPrefix
 
-        if not hasattr(self, 'retry_ttl' ):
-           self.retry_ttl = self.expire
+        if not hasattr(self, 'retry_ttl'):
+            self.retry_ttl = self.expire
 
         if self.retry_ttl == 0:
-           self.retry_ttl = None
+            self.retry_ttl = None
 
         if not hasattr(self, 'cfg_run_dir'):
             if self.statehost:
@@ -1375,22 +1384,22 @@ class Config:
                 self.post_exchange += '_%s' % self.post_exchange_suffix
 
             if hasattr(self, 'post_exchangeSplit'):
-                l = []
+                tmpList = []
                 for i in range(0, int(self.post_exchangeSplit)):
                     y = self.post_exchange + '%02d' % i
-                    l.append(y)
-                self.post_exchange = l
+                    tmpList.append(y)
+                self.post_exchange = tmpList
             else:
                 self.post_exchange = [self.post_exchange]
 
-            if (component in ['poll' ]) and (hasattr(self,'vip') and self.vip):
-                if (not hasattr(self,'exchange') or not self.exchange):
+            if (component in ['poll']) and (hasattr(self, 'vip') and self.vip):
+                if (not hasattr(self, 'exchange') or not self.exchange):
                     self.exchange = self.post_exchange[0]
-                if (not hasattr(self,'broker') or not self.broker):
+                if (not hasattr(self, 'broker') or not self.broker):
                     self.broker = self.post_broker
 
         if self.sourceFromExchange and self.exchange:
-           self.source = self.get_source_from_exchange(self.exchange)
+            self.source = self.get_source_from_exchange(self.exchange)
 
         if self.broker and self.broker.url and self.broker.url.username:
             self._resolve_exchange()
@@ -1417,24 +1426,24 @@ class Config:
                     f = open(queuefile, 'r')
                     self.queueName = f.read()
                     f.close()
-                    #logger.info('FIXME: read queueName %s from queue state file' % self.queueName )
+                    # logger.info('FIXME: read queueName %s from queue state file' % self.queueName )
                     if len(self.queueName) < 1:
-                          #logger.info('FIXME: queue name too short, try again' )
-                          self.queueName=None
-                if hasattr(self,'no') and self.no > 1:
-                    time.sleep(randint(1,4))
+                        # logger.info('FIXME: queue name too short, try again' )
+                        self.queueName = None
+                if hasattr(self, 'no') and self.no > 1:
+                    time.sleep(randint(1, 4))
                 else:
                     break
 
-            #if the queuefile is corrupt, then will need to guess anyways.
-            if ( self.queueName is None ) or ( self.queueName == '' ):
+            # if the queuefile is corrupt, then will need to guess anyways.
+            if (self.queueName is None) or (self.queueName == ''):
                 queueName = 'q_' + self.broker.url.username + '_' + component + '.' + cfg
                 if hasattr(self, 'queue_suffix'):
                     queueName += '.' + self.queue_suffix
                 queueName += '.' + str(randint(0, 100000000)).zfill(8)
                 queueName += '.' + str(randint(0, 100000000)).zfill(8)
                 self.queueName = queueName
-                #logger.info('FIXME: defaulted queueName  %s ' % self.queueName )
+                # logger.info('FIXME: defaulted queueName  %s ' % self.queueName )
 
                 if not os.path.isdir(os.path.dirname(queuefile)):
                     pathlib.Path(os.path.dirname(queuefile)).mkdir(parents=True,
@@ -1442,7 +1451,7 @@ class Config:
 
                 # only lead instance (0-forground, 1-start, or none in the case of 'declare')
                 # should write the state file.
-                if (self.queueName is not None) and (not hasattr(self,'no') or (self.no < 2)):
+                if (self.queueName is not None) and (not hasattr(self, 'no') or (self.no < 2)):
                     f = open(queuefile, 'w')
                     f.write(self.queueName)
                     f.close()
@@ -1456,9 +1465,8 @@ class Config:
                                                  self.no)
             self.retry_path = self.pid_filename.replace('.pid', '.retry')
 
-
         if (self.bindings == [] and hasattr(self, 'exchange')):
-            self.bindings = [(self.exchange, self.topicPrefix, [ '#' ])]
+            self.bindings = [(self.exchange, self.topicPrefix, ['#'])]
 
         if hasattr(self, 'documentRoot') and (self.documentRoot is not None):
             path = os.path.abspath(self.documentRoot)
@@ -1490,7 +1498,6 @@ class Config:
                 self.post_baseDir = self.baseDir
                 logger.debug("defaulting post_baseDir to same as baseDir")
 
-
         if self.messageCountMax > 0:
             if self.batch > self.messageCountMax:
                 self.batch = self.messageCountMax
@@ -1498,30 +1505,32 @@ class Config:
                     'overriding batch for consistency with messageCountMax: %d'
                     % self.batch)
         if self.vip and not sarracenia.extras['vip']['present']:
-            logger.critical( f"vip feature requested, but library: {' '.join(sarracenia.extras['vip']['modules_needed'])} " )
+            logger.critical(f"vip feature requested, but library: \
+                            {' '.join(sarracenia.extras['vip']['modules_needed'])} ")
             sys.exit(1)
 
     def check_undeclared_options(self):
 
-        alloptions = str_options + flag_options + float_options + list_options + set_options + count_options + size_options + duration_options
+        alloptions = str_options + flag_options + float_options + list_options + set_options + count_options\
+            + size_options + duration_options
         # FIXME: confused about this...  commenting out for now...
         for u in self.undeclared:
             if u not in alloptions:
                 logger.error("undeclared option: %s" % u)
 
-        no_defaults=set()
+        no_defaults = set()
         for u in alloptions:
-             if not hasattr(self,u):
-                no_defaults.add( u )
+            if not hasattr(self, u):
+                no_defaults.add(u)
 
         logger.debug("missing defaults: %s" % no_defaults)
 
     """
       2020/05/26 FIXME here begins sheer terror.
-      following routines are taken verbatim from v2. 
+      following routines are taken verbatim from v2.
       trying not to touch it... it is painful.
       setting new_ values for downloading etc...
-      sundew_* ... 
+      sundew_* ...
    """
 
     def sundew_basename_parts(self, pattern, basename):
@@ -1529,10 +1538,13 @@ class Config:
         modified from metpx SenderFTP
         """
 
-        if pattern == None: return []
+        if pattern is None:
+            return []
         parts = re.findall(pattern, basename)
-        if len(parts) == 2 and parts[1] == '': parts.pop(1)
-        if len(parts) != 1: return None
+        if len(parts) == 2 and parts[1] == '':
+            parts.pop(1)
+        if len(parts) != 1:
+            return None
 
         lst = []
         if isinstance(parts[0], tuple):
@@ -1556,7 +1568,8 @@ class Config:
         ndestDir = ""
         DD = destDir.split("/")
         for ddword in DD:
-            if ddword == "": continue
+            if ddword == "":
+                continue
 
             nddword = ""
             DW = ddword.split("$")
@@ -1570,7 +1583,8 @@ class Config:
         # if destDir does not start with a / ... it does not need one
 
         if (len(destDir) > 0) and (destDir[0] != '$') and (destDir[0] != '/'):
-            if ndestDir[0] == '/': ndestDir = ndestDir[1:]
+            if ndestDir[0] == '/':
+                ndestDir = ndestDir[1:]
 
         return ndestDir
 
@@ -1578,7 +1592,7 @@ class Config:
         """
         modified from sundew client
 
-        WHATFN         -- First part (':') of filename 
+        WHATFN         -- First part (':') of filename
         HEADFN         -- Use first 2 fields of filename
         NONE           -- Use the entire filename
         TIME or TIME:  -- TIME stamp appended
@@ -1586,7 +1600,8 @@ class Config:
 
         ex: mask[2] = 'NONE:TIME'
         """
-        if currentFileOption == None: return filename
+        if currentFileOption is None:
+            return filename
 
         timeSuffix = ''
         satnet = ''
@@ -1610,8 +1625,10 @@ class Config:
                     destFileName = headParts[0]
             elif spec == 'SENDER' and 'SENDER=' in filename:
                 i = filename.find('SENDER=')
-                if i >= 0: destFileName = filename[i + 7:].split(':')[0]
-                if destFileName[-1] == ':': destFileName = destFileName[:-1]
+                if i >= 0:
+                    destFileName = filename[i + 7:].split(':')[0]
+                if destFileName[-1] == ':':
+                    destFileName = destFileName[:-1]
             elif spec == 'NONE':
                 if 'SENDER=' in filename:
                     i = filename.find('SENDER=')
@@ -1624,7 +1641,8 @@ class Config:
                         if len(parts[4]) != 1:
                             destFileName = ':'.join(parts[:5])
                 # extra trailing : removed if present
-                if destFileName[-1] == ':': destFileName = destFileName[:-1]
+                if destFileName[-1] == ':':
+                    destFileName = destFileName[:-1]
             elif spec == 'NONESENDER':
                 if 'SENDER=' in filename:
                     i = filename.find('SENDER=')
@@ -1638,7 +1656,8 @@ class Config:
                         if len(parts[4]) != 1:
                             destFileName = ':'.join(parts[:5])
                 # extra trailing : removed if present
-                if destFileName[-1] == ':': destFileName = destFileName[:-1]
+                if destFileName[-1] == ':':
+                    destFileName = destFileName[:-1]
             elif re.compile('SATNET=.*').match(spec):
                 satnet = ':' + spec
             elif re.compile('DESTFN=.*').match(spec):
@@ -1650,12 +1669,15 @@ class Config:
                 self.destfn_script = None
                 script = spec[13:]
                 self.execfile('destfn_script', script)
-                if self.destfn_script != None:
-                    ok = self.destfn_script(self)
+                # FIXME: Determine code path reasoning here and remove/refactor
+                if self.destfn_script is not None:
+                    ok = self.destfn_script(self) # NoQA: F841
                 destFileName = msg['new_file']
                 self.destfn_script = old_destfn_script
                 msg['new_file'] = saved_new_file
-                if destFileName == None: destFileName = old_destFileName
+                # FIXME URGENT: WHERE IS old_destFileName SUPPOSED TO BE SET?
+                if destFileName is None:
+                    destFileName = old_destFileName # NoQA: F821
             elif spec == 'TIME':
                 timeSuffix = ':' + time.strftime("%Y%m%d%H%M%S", time.gmtime())
                 if 'pubTime' in msg:
@@ -1678,17 +1700,27 @@ class Config:
     def sundew_matchPattern(self, BN, EN, BP, keywd, defval):
 
         BN6 = time.strftime("%Y%m%d%H%M%S", time.gmtime())
-        if len(BN) >= 7: BN6 = BN[6]
+        if len(BN) >= 7:
+            BN6 = BN[6]
 
-        if keywd[:4] == "{T1}": return (EN[0])[0:1] + keywd[4:]
-        elif keywd[:4] == "{T2}": return (EN[0])[1:2] + keywd[4:]
-        elif keywd[:4] == "{A1}": return (EN[0])[2:3] + keywd[4:]
-        elif keywd[:4] == "{A2}": return (EN[0])[3:4] + keywd[4:]
-        elif keywd[:4] == "{ii}": return (EN[0])[4:6] + keywd[4:]
-        elif keywd[:6] == "{CCCC}": return EN[1] + keywd[6:]
-        elif keywd[:4] == "{YY}": return (EN[2])[0:2] + keywd[4:]
-        elif keywd[:4] == "{GG}": return (EN[2])[2:4] + keywd[4:]
-        elif keywd[:4] == "{Gg}": return (EN[2])[4:6] + keywd[4:]
+        if keywd[:4] == "{T1}":
+            return (EN[0])[0:1] + keywd[4:]
+        elif keywd[:4] == "{T2}":
+            return (EN[0])[1:2] + keywd[4:]
+        elif keywd[:4] == "{A1}":
+            return (EN[0])[2:3] + keywd[4:]
+        elif keywd[:4] == "{A2}":
+            return (EN[0])[3:4] + keywd[4:]
+        elif keywd[:4] == "{ii}":
+            return (EN[0])[4:6] + keywd[4:]
+        elif keywd[:6] == "{CCCC}":
+            return EN[1] + keywd[6:]
+        elif keywd[:4] == "{YY}":
+            return (EN[2])[0:2] + keywd[4:]
+        elif keywd[:4] == "{GG}":
+            return (EN[2])[2:4] + keywd[4:]
+        elif keywd[:4] == "{Gg}":
+            return (EN[2])[4:6] + keywd[4:]
         elif keywd[:5] == "{BBB}":
             return (EN[3])[0:3] + keywd[5:]
             # from pds'datetime suffix... not sure
@@ -1707,49 +1739,50 @@ class Config:
 
         # Matching with basename parts if given
 
-        if BP != None:
+        if BP is not None:
             for i, v in enumerate(BP):
                 kw = '{' + str(i) + '}'
                 lkw = len(kw)
-                if keywd[:lkw] == kw: return v + keywd[lkw:]
+                if keywd[:lkw] == kw:
+                    return v + keywd[lkw:]
 
         return defval
 
-    def set_dir_pattern(self, cdir, message=None ):
+    def set_dir_pattern(self, cdir, message=None):
 
-        if not '$' in cdir:
+        if '$' not in cdir:
             return cdir
 
         new_dir = cdir
 
-        if '${BD}' in cdir and self.baseDir != None:
+        if '${BD}' in cdir and self.baseDir is not None:
             new_dir = new_dir.replace('${BD}', self.baseDir, 1)
 
-        if ( '${BUP}' in cdir ) and ( 'baseUrl' in message ):
-            u = urllib.parse.urlparse( message['baseUrl'] )
-            new_dir = new_dir.replace('${BUP}', u.path, 1 )
+        if ('${BUP}' in cdir) and ('baseUrl' in message):
+            u = urllib.parse.urlparse(message['baseUrl'])
+            new_dir = new_dir.replace('${BUP}', u.path, 1)
 
-        if ( '${baseUrlPath}' in cdir ) and ( 'baseUrl' in message ):
-            u = urllib.parse.urlparse( message['baseUrl'] )
+        if ('${baseUrlPath}' in cdir) and ('baseUrl' in message):
+            u = urllib.parse.urlparse(message['baseUrl'])
             new_dir = new_dir.replace('${baseUrlPath}', u.path, 1)
 
-        if ( '${BUPL}' in cdir ) and ( 'baseUrl' in message ):
-            u = urllib.parse.urlparse( message['baseUrl'] )
-            new_dir = new_dir.replace('${BUPL}', os.path.basename(u.path), 1 )
+        if ('${BUPL}' in cdir) and ('baseUrl' in message):
+            u = urllib.parse.urlparse(message['baseUrl'])
+            new_dir = new_dir.replace('${BUPL}', os.path.basename(u.path), 1)
 
-        if ( '${baseUrlPathLast}' in cdir )  and ( 'baseUrl' in message ):
-            u = urllib.parse.urlparse( message['baseUrl'] )
-            new_dir = new_dir.replace('${baseUrlPathLast}', os.path.basename(u.path), 1 )
+        if ('${baseUrlPathLast}' in cdir) and ('baseUrl' in message):
+            u = urllib.parse.urlparse(message['baseUrl'])
+            new_dir = new_dir.replace('${baseUrlPathLast}', os.path.basename(u.path), 1)
 
-        if '${PBD}' in cdir and self.post_baseDir != None:
+        if '${PBD}' in cdir and self.post_baseDir is not None:
             new_dir = new_dir.replace('${PBD}', self.post_baseDir, 1)
 
-        if '${DR}' in cdir and self.documentRoot != None:
+        if '${DR}' in cdir and self.documentRoot is not None:
             logger.warning(
                 "DR = documentRoot should be replaced by BD for base_dir")
             new_dir = new_dir.replace('${DR}', self.documentRoot, 1)
 
-        if '${PDR}' in cdir and self.post_baseDir != None:
+        if '${PDR}' in cdir and self.post_baseDir is not None:
             logger.warning(
                 "PDR = post_documentRoot should be replaced by PBD for post_baseDir"
             )
@@ -1793,7 +1826,7 @@ class Config:
 
             epoch = time.mktime(time.gmtime()) - seconds
             YYYY1D = time.strftime("%Y", time.localtime(epoch))
-            new_dir = re.sub('\$\{YYYY-\d+\D\}', YYYY1D, new_dir)
+            new_dir = re.sub(r'\$\{YYYY-\d+\D\}', YYYY1D, new_dir)
 
         # ${MM-[number][time_unit]}
         offset_check = re.search(r'\$\{MM-(\d+)(\D)\}', cdir)
@@ -1803,7 +1836,7 @@ class Config:
 
             epoch = time.mktime(time.gmtime()) - seconds
             MM1D = time.strftime("%m", time.localtime(epoch))
-            new_dir = re.sub('\$\{MM-\d+\D\}', MM1D, new_dir)
+            new_dir = re.sub(r'\$\{MM-\d+\D\}', MM1D, new_dir)
 
         # ${JJJ-[number][time_unit]}
         offset_check = re.search(r'\$\{JJJ-(\d+)(\D)\}', cdir)
@@ -1813,7 +1846,7 @@ class Config:
 
             epoch = time.mktime(time.gmtime()) - seconds
             JJJ1D = time.strftime("%j", time.localtime(epoch))
-            new_dir = re.sub('\$\{JJJ-\d+\D\}', JJJ1D, new_dir)
+            new_dir = re.sub(r'\$\{JJJ-\d+\D\}', JJJ1D, new_dir)
 
         # ${YYYYMMDD-[number][time_unit]}
         offset_check = re.search(r'\$\{YYYYMMDD-(\d+)(\D)\}', cdir)
@@ -1823,15 +1856,14 @@ class Config:
 
             epoch = time.mktime(time.gmtime()) - seconds
             YYYYMMDD = time.strftime("%Y%m%d", time.localtime(epoch))
-            new_dir = re.sub('\$\{YYYYMMDD-\d+\D\}', YYYYMMDD, new_dir)
+            new_dir = re.sub(r'\$\{YYYYMMDD-\d+\D\}', YYYYMMDD, new_dir)
 
         new_dir = self._varsub(new_dir)
 
         return new_dir
 
-
     """
-       2020/05/26 PAS... FIXME: end of sheer terror. 
+       2020/05/26 PAS... FIXME: end of sheer terror.
 
        the parts below used be part of the sheer terror... but have been
        tamed a bit.
@@ -1861,10 +1893,10 @@ class Config:
                 return
 
             if type(namespace.topicPrefix) is str:
-               if namespace.broker.scheme[0:3] == 'amq':
-                   topicPrefix = namespace.topicPrefix.split('.')
-               else:
-                   topicPrefix = namespace.topicPrefix.split('/')
+                if namespace.broker.scheme[0:3] == 'amq':
+                    topicPrefix = namespace.topicPrefix.split('.')
+                else:
+                    topicPrefix = namespace.topicPrefix.split('/')
 
             namespace.bindings.append(
                 (namespace.exchange, topicPrefix, values))
@@ -1888,22 +1920,22 @@ class Config:
            ( if you have 'store_true' then default needed, for broker, just a string, it ignores if not present.)
            This has the effect of overriding settings in the file parsed before the arguments.
            Therefore: often supply defaults... but... sigh...
-           
+
            but there is another consideration stopping me from supplying defaults, wish I remembered what it was.
            I think it is:
-           FIXME #2: 
+           FIXME #2:
            arguments are parsed twice: once to get basic stuff (loglevel, component, action)
-           and if the parsing fails there, the usage will print the wrong defaults... 
+           and if the parsing fails there, the usage will print the wrong defaults...
 
         """
 
-        parser=argparse.ArgumentParser( \
-             description='version: %s\nSarracenia flexible tree copy entry point' % sarracenia.__version__ ,\
-             formatter_class=argparse.ArgumentDefaultsHelpFormatter )
+        parser = argparse.ArgumentParser(
+            description='version: %s\nSarracenia flexible tree copy entry point' % sarracenia.__version__,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
         if sys.version_info[0] >= 3 and sys.version_info[1] < 8:
             parser.register('action', 'extend', ExtendAction)
-        
+
         parser.add_argument('--acceptUnmatched',
                             default=self.acceptUnmatched,
                             type=bool,
@@ -1935,18 +1967,16 @@ class Config:
             '--blocksize',
             type=int,
             nargs='?',
-            help=
-            'size to partition files. 0-guess, 1-never, any other number: that size'
+            help='size to partition files. 0-guess, 1-never, any other number: that size'
         )
         """
            FIXME:  Most of this is gobblygook place holder stuff, by copying from wmo-mesh example.
            Don't really need this to work right now, so just leaving it around as-is.  Challenges:
 
            -- sizing units,  K, M, G,  (should have humanfriendly based parsing.)
-           -- time units s,h,m,d 
+           -- time units s,h,m,d
            -- what to do with verbs.
            -- accept/reject whole mess requires extension deriving a class from argparse.Action.
-           
         """
         parser.add_argument('--broker',
                             nargs='?',
@@ -1969,11 +1999,12 @@ class Config:
                             help='root of the topic tree to subscribe to')
         """
         FIXME: header option not implemented in argparsing: should add to the fixed_header dictionary.
-          
         """
         """
-        FIXME: in previous parser, exchange is a modifier for bindings, can have several different values for different subtopic bindings.
-           as currently coded, just a single value that over-writes previous setting, so only binding to a single exchange is possible.
+        FIXME: in previous parser, exchange is a modifier for bindings,
+           can have several different values for different subtopic bindings.
+           as currently coded, just a single value that over-writes previous setting,
+           so only binding to a single exchange is possible.
         """
 
         parser.add_argument('--inline',
@@ -2021,7 +2052,7 @@ class Config:
         parser.add_argument('--post_broker',
                             nargs='?',
                             help='broker to post downloaded files to')
-        #parser.add_argument('--post_baseUrl', help='base url of the files announced')
+        # parser.add_argument('--post_baseUrl', help='base url of the files announced')
         parser.add_argument('--post_exchange',
                             nargs='?',
                             help='root of the topic tree to announce')
@@ -2033,17 +2064,15 @@ class Config:
         parser.add_argument(
             '--post_topicPrefix',
             nargs='?',
-            help=
-            'allows simultaneous use of multiple versions and types of messages'
+            help='allows simultaneous use of multiple versions and types of messages'
         )
         parser.add_argument(
             '--topicPrefix',
             nargs='?',
             default=self.topicPrefix,
-            help=
-            'allows simultaneous use of multiple versions and types of messages'
+            help='allows simultaneous use of multiple versions and types of messages'
         )
-        #FIXME: select/accept/reject in parser not implemented.
+        # FIXME: select/accept/reject in parser not implemented.
         parser.add_argument(
             '--select',
             nargs=1,
@@ -2053,8 +2082,7 @@ class Config:
             '--subtopic',
             nargs=1,
             action=Config.addBinding,
-            help=
-            'server-side filtering: MQTT subtopic, wilcards # to match rest, + to match one topic'
+            help='server-side filtering: MQTT subtopic, wilcards # to match rest, + to match one topic'
         )
         parser.add_argument('--users',
                             default=False,
@@ -2065,8 +2093,7 @@ class Config:
             '-v',
             action='version',
             version='%s' % sarracenia.__version__,
-            help=
-            'server-side filtering: MQTT subtopic, wilcards # to match rest, + to match one topic'
+            help='server-side filtering: MQTT subtopic, wilcards # to match rest, + to match one topic'
         )
 
         if isPost:
@@ -2097,8 +2124,7 @@ class Config:
         if hasattr(args, 'config') and (args.config is not None):
             args.configurations = [args.config]
 
-        #FIXME need to apply _varsub
-
+        # FIXME need to apply _varsub
 
         self.merge(args)
 
@@ -2118,6 +2144,7 @@ def default_config():
             cfg.parse_file(get_user_config_dir() + os.sep + g)
 
     return cfg
+
 
 def no_file_config():
     """
@@ -2149,12 +2176,12 @@ def one_config(component, config, isPost=False):
       parse arguments from command line.
       return config instance item.
 
-      
+
       appdir_stuff can be to override file locations for testing during development.
 
     """
     default_cfg = default_config()
-    #default_cfg.override(  { 'component':component, 'directory': os.getcwd(), 'acceptUnmatched':True, 'no':0 } )
+    # default_cfg.override(  { 'component':component, 'directory': os.getcwd(), 'acceptUnmatched':True, 'no':0 } )
     default_cfg.override({
         'component': component,
         'config': config,
@@ -2164,7 +2191,7 @@ def one_config(component, config, isPost=False):
 
     cfg = copy.deepcopy(default_cfg)
 
-    cfg.applyComponentDefaults( component )
+    cfg.applyComponentDefaults(component)
 
     store_pwd = os.getcwd()
 
@@ -2177,21 +2204,21 @@ def one_config(component, config, isPost=False):
         fname = config
 
     if os.path.exists(fname):
-         cfg.parse_file(fname)
+        cfg.parse_file(fname)
     else:
-         logger.error('config %s not found' % fname )
-         return None
+        logger.error('config %s not found' % fname)
+        return None
 
     os.chdir(store_pwd)
 
     cfg.parse_args(isPost)
 
-    #logger.error( 'after args' )
-    #print( 'after args' )
-    #cfg.dump()
-    if component in ['poll' ]:
-        if not hasattr(cfg,'broker') or (cfg.broker is None):
-             cfg.broker = cfg.post_broker
+    # logger.error( 'after args' )
+    # print( 'after args' )
+    # cfg.dump()
+    if component in ['poll']:
+        if not hasattr(cfg, 'broker') or (cfg.broker is None):
+            cfg.broker = cfg.post_broker
 
     cfg.fill_missing_options(component, config)
 
@@ -2204,8 +2231,8 @@ def one_config(component, config, isPost=False):
                 cfg.postpath.append(cfg.path)
             logger.debug('path is : %s' % cfg.path)
             logger.debug('postpath is : %s' % cfg.postpath)
-    #pp = pprint.PrettyPrinter(depth=6)
-    #pp.pprint(cfg)
+    # pp = pprint.PrettyPrinter(depth=6)
+    # pp.pprint(cfg)
 
     return cfg
 
@@ -2213,5 +2240,5 @@ def one_config(component, config, isPost=False):
 # add directory to python front of search path for plugins.
 
 plugin_dir = get_user_config_dir() + os.sep + "plugins"
-if os.path.isdir(plugin_dir) and not plugin_dir in sys.path:
+if os.path.isdir(plugin_dir) and plugin_dir not in sys.path:
     sys.path.insert(0, plugin_dir)
