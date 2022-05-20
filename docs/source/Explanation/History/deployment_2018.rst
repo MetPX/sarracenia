@@ -181,7 +181,7 @@ HPC Mirroring
 
 All through 2017, work was proceeding to implement high speed mirroring between the supercomputer site stores
 to permit failover. That work is now in a final deployment phase, and should be in operations by spring 2018.
-For more details see: `HPC Mirroring Use Case <hpc_mirroring_use_case.rst>`_
+For more details see: `HPC Mirroring Use Case <HPC_Mirroring_Use_Case.html>`_
 
 
 Application Changes in 2017
