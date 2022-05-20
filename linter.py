@@ -5,22 +5,19 @@ from sys import executable
 
 
 def dust():
-    # Confirm pyCodeStyle Module is installed
+    '''
+    Runs a flake8 lint wrapping pyCodeStyle (used to be pep8)
+    '''
+    # Confirm flake8 Module is installed
     try:
-        import pycodestyle
+        __import__('importlib').import_module('flake8')
     except ImportError:
-        print("PyCodeStyle module not found,\033[1;32m please run \033[0;30;42mpip install pycodestyle\033[0m")
+        print("\033[1;31mFlake8 module not found, please run \033[0;30;42mpip install flake8\033[0m")
         exit(1)
 
-    # Run pep8 linter
-    # To enforce style, see ./setup.cfg
-    returnCode = run([executable,
-                      "-m",
-                      "pycodestyle",
-                      "--show-source",
-                      "--format=\033[1;31m %(path)s:%(row)d|%(col)d\033[0m:[%(code)s] %(text)s",
-                      "."]).returncode
-
+    returnCode = run([executable, "-m", "flake8",
+                      "--format=\033[1;31m %(path)s:%(row)d|%(col)d\033[0m:[%(code)s] %(text)s"]).returncode
+ 
     if (returnCode > 0):
         print("\033[0;30;41m Please Correct the above pep8 errors prior to commiting. \033[0m")
 
