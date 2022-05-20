@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
 from subprocess import run
+from sys import argv
 from sys import executable
 
 
-def dust():
+def dust(files=[]):
     '''
     Runs a flake8 lint wrapping pyCodeStyle (used to be pep8)
     '''
@@ -16,8 +17,9 @@ def dust():
         exit(1)
 
     returnCode = run([executable, "-m", "flake8",
-                      "--format=\033[1;31m %(path)s:%(row)d|%(col)d\033[0m:[%(code)s] %(text)s"]).returncode
- 
+                      "--format=\033[1;31m %(path)s:%(row)d|%(col)d\033[0m:[%(code)s] %(text)s"
+                      ] + files).returncode
+
     if (returnCode > 0):
         print("\033[0;30;41m Please Correct the above pep8 errors prior to commiting. \033[0m")
 
@@ -26,4 +28,4 @@ def dust():
 
 # If someone attempts to run it as a script, dust the lint.
 if __name__ == '__main__':
-    dust()
+    dust(argv[1:])
