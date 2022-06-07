@@ -1839,17 +1839,25 @@ class sr_GlobalState:
                 if self.exchange_summary[h][x] == 0:
                     print("exchange with no bindings: %s-%s " % (h, x), end='')
 
-    def config_converter(self):
-        c_v2, cfg_v2 = self.v2_config[0].split(os.sep)
-        if cfg_v2[-5:] == '.conf': v2_config = c_v2 + os.sep + cfg_v2
-        else: v2_config = c_v2 + os.sep + cfg_v2 + '.conf'
-
-        v2_config_path = self.user_config_dir.replace('sr3', 'sarra') + os.sep + v2_config
-        v3_config_path = self.user_config_dir + os.sep + v2_config
-
-        if not os.path.exists(v2_config_path):
-            logging.error('Invalid config %s' % v2_config)
-            return
+    def convert(self):
+        cfg = self.v2_config[0]
+        base_v2 = self.user_config_dir.replace('sr3', 'sarra') + os.sep
+        base_v3 = self.user_config_dir + os.sep
+        if os.path.exists(base_v2 + cfg):
+            v2_config_path = base_v2 + cfg
+            v3_config_path = base_v3 + cfg
+        else:
+            v2_config_path_inc = base_v2 + cfg + '.inc'
+            v2_config_path_conf = base_v2 + cfg + '.conf'
+            if os.path.exists(v2_config_path_conf):
+                v2_config_path = v2_config_path_conf
+                v3_config_path = base_v3 + cfg + '.conf'
+            elif os.path.exists(v2_config_path_inc):
+                v2_config_path = v2_config_path_inc
+                v3_config_path = base_v3 + cfg + '.inc'
+            else:
+                logging.error('Invalid config %s' % cfg)
+                return
 
         synonyms = sarracenia.config.Config.synonyms
         with open(v3_config_path, 'w') as v3_cfg:
@@ -1865,8 +1873,6 @@ class sr_GlobalState:
                     k = line[0]
                     if k in synonyms:
                         k = synonyms[k]
-                        v3_cfg.write(k + ' ' + ' '.join(line[1:]) + '\n')
-                        continue
                     if k in convert_to_v3:
                         if len(line) > 1:
                             v = line[1].replace('.py', '', 1)
@@ -1875,15 +1881,14 @@ class sr_GlobalState:
                                 if 'continue' in line:
                                     logger.info("obsolete v2: " + v)
                                     continue
-                                else:
-                                    v3_cfg.write(' '.join(line) + '\n')
-                    else:
-                        v3_cfg.write(k + ' ' + ' '.join(line[1:])+'\n')
-        logging.info('converting %s from v2 to v3 ' % v2_config)
-
-
-
-
+                        else:
+                            line = convert_to_v3[k]
+                            k = line[0]
+                            v = line[1]
+                    if k == 'continue':
+                        continue
+                    v3_cfg.write(k + ' ' + ' '.join(line[1:])+'\n')
+        logging.info('converting %s from v2 to v3 ' % cfg)
 
 
     def overview(self):
@@ -2080,7 +2085,7 @@ def main():
         gs.log()
 
     if action == 'convert':
-        gs.config_converter()
+        gs.convert()
 
     if action == 'remove':
         gs.remove()
