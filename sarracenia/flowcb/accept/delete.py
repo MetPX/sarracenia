@@ -32,7 +32,6 @@ class Delete(FlowCB):
                 logger.debug("Exception details:", exc_info=True)
                 self.o.consumer.sleep_now = self.o.consumer.sleep_min
                 self.o.consumer.msg_to_retry()
-                message['isRetry'] = False
                 worklist.rejected.append(message)
 
             new_incoming.append(message)
