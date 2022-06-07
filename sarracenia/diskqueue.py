@@ -249,7 +249,6 @@ class DiskQueue():
                 #logger.error("MG invalid %s" % message)
                 continue
 
-            message['isRetry'] = True
             if 'ack_id' in message:
                 del message['ack_id']
                 message['_deleteOnPost'].remove('ack_id')

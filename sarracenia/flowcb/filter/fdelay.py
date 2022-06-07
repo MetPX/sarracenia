@@ -63,8 +63,6 @@ class FDelay(FlowCB):
                 dbg_msg = "message not old enough, sleeping for {:.3f} seconds"
                 logger.debug(
                     dbg_msg.format(elapsedtime, self.o.fdelay - elapsedtime))
-                m['isRetry'] = False
-                m['_deleteOnPost'] |= set(['isRetry'])
                 worklist.failed.append(m)
                 logger.debug('marked failed 1 (message not old enough)')
                 continue
@@ -88,8 +86,6 @@ class FDelay(FlowCB):
                 dbg_msg = "file not old enough, sleeping for {:.3f} seconds"
                 logger.debug(
                     dbg_msg.format(elapsedtime, self.o.fdelay - elapsedtime))
-                m['isRetry'] = False
-                m['_deleteOnPost'] |= set(['isRetry'])
                 worklist.failed.append(m)
                 logger.debug('marked failed 3 file not old enough')
                 continue
