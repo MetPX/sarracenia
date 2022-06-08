@@ -118,7 +118,7 @@ set_choices = {
 # FIXME: doesn't work... wonder why?
 #    'fileEvents': sarracenia.flow.allFileEvents
  
-perm_options = [ 'permDefault', 'permDirDefault' ]
+perm_options = [ 'permDefault', 'permDirDefault','permLog']
 
 size_options = ['accelThreshold', 'blocksize', 'bufsize', 'byteRateMax', 'inlineByteMax']
 
