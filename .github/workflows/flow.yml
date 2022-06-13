@@ -45,10 +45,20 @@ jobs:
         run: |
           cd ${HOME}; pwd; ls ; 
           echo hoho
+          mkdir -p ${HOME}/.config/sr3/cpost
+          mkdir -p ${HOME}/.config/sr3/cpump
+          mkdir -p ${HOME}/.config/sr3/plugins
+          mkdir -p ${HOME}/.config/sr3/poll
+          mkdir -p ${HOME}/.config/sr3/post
+          mkdir -p ${HOME}/.config/sr3/report
+          mkdir -p ${HOME}/.config/sr3/sarra
+          mkdir -p ${HOME}/.config/sr3/sender
+          mkdir -p ${HOME}/.config/sr3/shovel
+          mkdir -p ${HOME}/.config/sr3/subscribe
+          mkdir -p ${HOME}/.config/sr3/watch
+          mkdir -p ${HOME}/.config/sr3/winnow
           sed -i 's/# ensure users have exchanges:/echo CONFDIR is ${CONFDIR}/g' ${HOME}/sr_insects/${{ matrix.which_test }}/flow_setup.sh
-          cd ${HOME}/sr_insects/${{ matrix.which_test }}; timeout 180 ./flow_setup.sh || true
-          echo "CONFDIR IS ${CONFDIR}"
-          printenv
+          cd ${HOME}/sr_insects/${{ matrix.which_test }}; ./flow_setup.sh
 
       # Enable tmate debugging of manually-triggered workflows if the input option was provided
       # https://github.com/marketplace/actions/debugging-with-tmate
