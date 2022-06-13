@@ -45,7 +45,7 @@ jobs:
         run: |
           cd ${HOME}; pwd; ls ; 
           echo hoho
-          cd ${HOME}/sr_insects/${{ matrix.which_test }}; timeout 60 ./flow_setup.sh
+          cd ${HOME}/sr_insects/${{ matrix.which_test }}; timeout 60 ./flow_setup.sh || true
           echo ${CONFDIR}
           printenv
 
