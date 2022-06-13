@@ -45,7 +45,9 @@ jobs:
         run: |
           cd ${HOME}; pwd; ls ; 
           echo hoho
-          cd ${HOME}/sr_insects/${{ matrix.which_test }}; ./flow_setup.sh
+          cd ${HOME}/sr_insects/${{ matrix.which_test }}; timeout 60 ./flow_setup.sh
+          echo ${CONFDIR}
+          printenv
 
       # Enable tmate debugging of manually-triggered workflows if the input option was provided
       # https://github.com/marketplace/actions/debugging-with-tmate
