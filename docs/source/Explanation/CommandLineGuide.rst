@@ -105,9 +105,9 @@ temporarily.
 
 The **convert** action is used to translate a configuration file written with version 2
 options into version 3 options. The v2 configuration file must be placed in the
-_~/.config/sarra/component/v2_config_ directory and the translated version will be placed in
-the _~/.config/sr3/component/v3_config_ directory. For example, one would invoke this action
-with _sr3 convert poll/config_.
+*~/.config/sarra/component/v2_config.conf* directory and the translated version will be placed in
+the *~/.config/sr3/component/v3_config.conf* directory. For example, one would invoke this action
+with *sr3 convert component/config*.
 
 
 ACTIONS
