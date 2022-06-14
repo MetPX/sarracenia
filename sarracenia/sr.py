@@ -1841,6 +1841,7 @@ class sr_GlobalState:
 
     def convert(self):
         cfg = self.v2_config[0]
+        component = cfg.split('/')[0]
         base_v2 = self.user_config_dir.replace('sr3', 'sarra') + os.sep
         base_v3 = self.user_config_dir + os.sep
         if os.path.exists(base_v2 + cfg):
@@ -1858,6 +1859,9 @@ class sr_GlobalState:
             else:
                 logging.error('Invalid config %s' % cfg)
                 return
+
+        if not os.path.isdir(base_v3 + component):
+            os.mkdir(base_v3 + component)
 
         synonyms = sarracenia.config.Config.synonyms
         with open(v3_config_path, 'w') as v3_cfg:
