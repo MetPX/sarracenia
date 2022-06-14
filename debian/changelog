@@ -1,6 +1,7 @@
 metpx-sarracenia (2.22.04) UNRELEASED; urgency=medium
 
   * #516 bugfix
+  * #526 bugfix ... supports_extended_attributes not declared bug.
 
  -- Peter Silva <peter.silva@ssc-spc.gc.ca>  Mon, 25 Apr 2022 13:07:41 -0400
 
