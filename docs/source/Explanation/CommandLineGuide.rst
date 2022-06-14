@@ -62,14 +62,15 @@ the broker, or manage the configurations.
  - declare:       creates the component's resources on the server.
  - setup:         like declare, additionally does queue bindings.
  - add:           copy to the list of available configurations.
- - list:          list all the configurations available. 
+ - list:          list all the configurations available.
  - list plugins:  list all the plugins available. 
- - list examples:  list all the plugins available. 
+ - list examples:  list all the examples available.
  - show           view an interpreted version of a configuration file.
  - edit:          modify an existing configuration.
  - remove:        remove a configuration.
  - disable:       mark a configuration as ineligible to run. 
- - enable:        mark a configuration as eligible to run. 
+ - enable:        mark a configuration as eligible to run.
+ - convert:       converts a v2 config to a v3 config.
 
 
 For example:  *sr3 foreground subscribe/dd* runs the subscribe component with
@@ -101,6 +102,12 @@ one can work on a particular configuration.  A *disabled* configuration will not
 started or restarted by the **start**,  
 **foreground**, or **restart** actions. It can be used to set aside a configuration
 temporarily. 
+
+The **convert** action is used to translate a configuration file written with version 2
+options into version 3 options. The v2 configuration file must be placed in the
+_~/.config/sarra/component/v2_config_ directory and the translated version will be placed in
+the _~/.config/sr3/component/v3_config_ directory. For example, one would invoke this action
+with _sr3 convert poll/config_.
 
 
 ACTIONS
