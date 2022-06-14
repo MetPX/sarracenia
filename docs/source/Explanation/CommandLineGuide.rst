@@ -103,8 +103,8 @@ started or restarted by the **start**,
 **foreground**, or **restart** actions. It can be used to set aside a configuration
 temporarily. 
 
-The **convert** action is used to translate a configuration file written with version 2
-options into version 3 options. The v2 configuration file must be placed in the
+The **convert** action is used to translate a configuration file written with Sarracenia version 2
+options into Sarracenia version 3 options. The v2 configuration file must be placed in the
 *~/.config/sarra/component/v2_config.conf* directory and the translated version will be placed in
 the *~/.config/sr3/component/v3_config.conf* directory. For example, one would invoke this action
 with *sr3 convert component/config*.
