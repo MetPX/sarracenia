@@ -385,9 +385,8 @@ View all configuration settings (the result of all parsing... what the flow comp
 convert
 ~~~~~
 
-Converting a config: both formats are accepted, as well as include files
+Converting a config: both formats are accepted, as well as include files::
 
-```
   $ sr3 convert poll/sftp_f62
     2022-06-14 15:00:00,762 1093345 [INFO] root convert converting poll/sftp_f62 from v2 to v3
 
@@ -396,7 +395,6 @@ Converting a config: both formats are accepted, as well as include files
 
   $ sr3 convert shovel/no_trouble_f00.inc
     2022-06-14 15:03:29,918 1093655 [INFO] root convert converting shovel/no_trouble_f00.inc from v2 to v3
-```
 
 start
 ~~~~~
