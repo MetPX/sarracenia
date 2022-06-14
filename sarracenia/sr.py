@@ -499,7 +499,7 @@ class sr_GlobalState:
                 for cfg in os.listdir():
                     if cfg[0] == '.': continue
                     
-                    if cfg not in self.configs[c]: continue
+                    if cfg not in self.configs: continue
 
                     if os.path.isdir(cfg):
                         os.chdir(cfg)
