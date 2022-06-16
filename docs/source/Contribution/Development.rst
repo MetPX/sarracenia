@@ -273,6 +273,10 @@ for local installation on a computer with a python wheel for testing and develop
 
     python3 setup.py bdist_wheel
 
+or... on newer systems, using build instead::
+
+    python3 -m build --no-isolation
+
 Should build a wheel in the dist sub-directory.
 then as root install that new package::
 
@@ -1389,6 +1393,11 @@ Assuming pypi upload credentials are in place, uploading a new release used to b
 
     python3 setup.py bdist_wheel upload
 
+on older systems, or on newer ones::
+
+   python3 -m build --no-isolation
+   twine upload dist/metpx_sarracenia-2.22.6-py3-none-any.whl
+
 Note that the CHANGES.rst file is in restructured text and is parsed by pypi.python.org
 on upload.  
 
@@ -1403,6 +1412,7 @@ on upload.
 
      pip3 install --upgrade metpx-sarracenia==2.16.03a9
 
+   command line use of setup.py is deprecated.  Replaced by build and twine.
 
 
 Launchpad
