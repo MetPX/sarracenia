@@ -1,6 +1,8 @@
-metpx-sarracenia (2.22.06) UNRELEASED; urgency=medium
+metpx-sarracenia (2.22.06) stable; urgency=medium
 
   * #526 bugfix ... supports_extended_attributes not declared bug.
+  * #524 bugfix
+  * #523 bugfix
 
  -- Peter Silva <peter.silva@ssc-spc.gc.ca>  Mon, 25 Apr 2022 13:07:41 -0400
 
