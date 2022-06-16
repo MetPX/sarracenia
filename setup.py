@@ -23,9 +23,7 @@ setup(
     name='metpx-sarracenia',
     version=sarra.__version__,
     description='Subscribe, Acquire, and Re-Advertise products.',
-    long_description=(read('README.rst') + '\n\n' +
-                      read('CHANGES.rst') + '\n\n' +
-                      read('AUTHORS.rst')),
+    long_description=(read('README.rst')),
     url='https://github.com/MetPX/sarracenia',
     license='GPLv2',
     author='Shared Services Canada, Supercomputing, Data Interchange',
