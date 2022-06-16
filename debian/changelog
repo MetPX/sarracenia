@@ -1,3 +1,15 @@
+metpx-sarracenia (2.22.06) UNRELEASED; urgency=medium
+
+  * #526 bugfix ... supports_extended_attributes not declared bug.
+
+ -- Peter Silva <peter.silva@ssc-spc.gc.ca>  Mon, 25 Apr 2022 13:07:41 -0400
+
+metpx-sarracenia (2.22.04) UNRELEASED; urgency=medium
+
+  * #516 bugfix
+
+ -- Peter Silva <peter.silva@ssc-spc.gc.ca>  Mon, 25 Apr 2022 13:07:41 -0400
+
 metpx-sarracenia (2.21.10) stable; urgency=medium
 
   * bugfix #378 python3-pyxattr module breaking xattr support.
@@ -16,7 +28,6 @@ metpx-sarracenia (2.21.08) stable; urgency=medium
   * bugfix #371 sr_audit should not kill 'edit' sessions as strays.
   * hmm.. charset in ftp.. defaults to iso8859-1, changed to utf-8.
     noticed caused some issues in newer tests that use accented characters. 
-  * 
 
  -- Peter Silva <peter@fractal>  Sat, 24 Apr 2021 12:52:19 -0400
 

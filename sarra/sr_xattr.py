@@ -55,6 +55,7 @@ import sys
 import json
 
 supports_alternate_data_streams = False
+supports_extended_attributes = False
 xattr_disabled = False
 supports_pyxattr = False
 STREAM_NAME = 'sr_.json'

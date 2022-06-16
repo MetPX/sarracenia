@@ -598,7 +598,7 @@ class sr_transport():
         try:    curdir = os.getcwd()
         except: curdir = None
 
-        if not self.simulate and curdir != local_dir:
+        if not self.parent.simulate and curdir != local_dir:
            os.chdir(local_dir)
         try :
 
@@ -680,7 +680,7 @@ class sr_transport():
                 #=================================
 
                 # the file does not exist... warn, sleep and return false for the next attempt
-                if not self.simulate and not os.path.exists(local_file):
+                if not self.parent.simulate and not os.path.exists(local_file):
                    self.logger.warning("product collision or base_dir not set, file %s does not exist" % local_file)
                    time.sleep(0.01)
                    return False

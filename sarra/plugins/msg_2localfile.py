@@ -108,7 +108,7 @@ class Msg_2LocalFile():
        
         if parent.base_dir and not m.relpath.startswith(parent.base_dir) :
            m.relpath = parent.base_dir + '/' + m.relpath
-           m.relpath.replace('//','/')
+           m.relpath = m.relpath.replace('//','/')
 
         return True
 

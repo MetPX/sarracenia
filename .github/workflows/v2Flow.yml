@@ -1,13 +1,11 @@
-name: sr_insects Flow Tests.
+name: v2 sr_insects Flow Tests.
 
 on:
   pull_request:
     types: [opened, edited, reopened]
   push:
     branches:
-      - v03_wip
       - v2_dev
-      - main
       - v2_stable
 
   workflow_dispatch:
@@ -19,6 +17,7 @@ on:
 
 env:
    sarra_py_version: 2.22
+   V2SKIP_KNOWN_BAD: yes
 
 jobs:
 
