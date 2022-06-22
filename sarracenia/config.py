@@ -562,6 +562,7 @@ class Config:
         self.debug = False
         self.declared_exchanges = []
         self.destfn_script = None
+        self.dry_run = False
         self.env_declared = []  # list of variable that are "declared env"'d 
         self.v2plugins = {}
         self.v2plugin_options = []
@@ -1962,7 +1963,11 @@ class Config:
         parser.add_argument('--debug',
                             action='store_true',
                             default=self.debug,
-                            help='pring debugging output (very verbose)')
+                            help='print debugging output (very verbose)')
+        parser.add_argument('--dry_run',
+                            action='store_true',
+                            default=self.dry_run,
+                            help='print simulation mode output')
         parser.add_argument('--exchange',
                             nargs='?',
                             default=self.exchange,

@@ -62,14 +62,15 @@ the broker, or manage the configurations.
  - declare:       creates the component's resources on the server.
  - setup:         like declare, additionally does queue bindings.
  - add:           copy to the list of available configurations.
- - list:          list all the configurations available. 
+ - list:          list all the configurations available.
  - list plugins:  list all the plugins available. 
- - list examples:  list all the plugins available. 
+ - list examples:  list all the examples available.
  - show           view an interpreted version of a configuration file.
  - edit:          modify an existing configuration.
  - remove:        remove a configuration.
  - disable:       mark a configuration as ineligible to run. 
- - enable:        mark a configuration as eligible to run. 
+ - enable:        mark a configuration as eligible to run.
+ - convert:       converts a v2 config to a v3 config.
 
 
 For example:  *sr3 foreground subscribe/dd* runs the subscribe component with
@@ -101,6 +102,12 @@ one can work on a particular configuration.  A *disabled* configuration will not
 started or restarted by the **start**,  
 **foreground**, or **restart** actions. It can be used to set aside a configuration
 temporarily. 
+
+The **convert** action is used to translate a configuration file written with Sarracenia version 2
+options into Sarracenia version 3 options. The v2 configuration file must be placed in the
+*~/.config/sarra/component/v2_config.conf* directory and the translated version will be placed in
+the *~/.config/sr3/component/v3_config.conf* directory. For example, one would invoke this action
+with *sr3 convert component/config*.
 
 
 ACTIONS
@@ -374,6 +381,20 @@ View all configuration settings (the result of all parsing... what the flow comp
     
     % 
 
+
+convert
+~~~~~
+
+Converting a config: both formats are accepted, as well as include files::
+
+  $ sr3 convert poll/sftp_f62
+    2022-06-14 15:00:00,762 1093345 [INFO] root convert converting poll/sftp_f62 from v2 to v3
+
+  $ sr3 convert poll/sftp_f62.conf
+    2022-06-14 15:01:11,766 1093467 [INFO] root convert converting poll/sftp_f62.conf from v2 to v3
+
+  $ sr3 convert shovel/no_trouble_f00.inc
+    2022-06-14 15:03:29,918 1093655 [INFO] root convert converting shovel/no_trouble_f00.inc from v2 to v3
 
 start
 ~~~~~
