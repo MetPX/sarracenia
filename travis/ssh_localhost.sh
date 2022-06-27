@@ -1,3 +1,8 @@
+check_wsl=$(ps --no-headers -o comm 1)
+
+if [[ $(($check_wsl == "init")) ]]; then
+	sudo service ssh start
+fi
 
 ssh localhost /bin/true
 ssh_works=$?
