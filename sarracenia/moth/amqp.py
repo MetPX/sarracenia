@@ -543,8 +543,12 @@ class AMQP(Moth):
                 logger.debug('Exception details: ', exc_info=True)
 
             self.metrics['txBadCount'] += 1
-            if not self.o['message_strategy']['stubborn']:
-                return False
+            # Issue #466: commenting this out until message_strategy stubborn is working correctly (Issue #537)
+            # Always return False when an error occurs and use the DiskQueues to retry, instead of looping. This should
+            # eventually be configurable with message_strategy stubborn
+            # if True or not self.o['message_strategy']['stubborn']:
+            #     return False
+            return False # instead of looping
 
             self.close()
             self.__putSetup()
