@@ -75,6 +75,13 @@ class Poll(Flow):
 
         super().gather()
 
+        if len(self.worklist.incoming) > 0:
+            logger.info('ingesting %d postings into duplicate suppression cache' % len(self.worklist.incoming) )
+            self.worklist.catching_up = True
+            return 
+        else:
+            self.worklist.catching_up = False
+
         if self.have_vip:
             for plugin in self.plugins['poll']:
                 new_incoming = plugin()

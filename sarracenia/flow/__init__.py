@@ -156,6 +156,10 @@ class Flow:
         self.worklist.failed = []
         self.worklist.directories_ok = []
 
+        # for poll only, mark if we are catching up on posted messages
+        #
+        self.worklist.catching_up = False
+
         # Witness the creation of this list
         self.plugins['load'] = self.o.plugins_early + [
             'sarracenia.flowcb.retry.Retry',
@@ -325,7 +329,7 @@ class Flow:
         current_rate = 0
         total_messages = 1
         start_time = nowflt()
-
+        had_vip = False
         current_sleep = self.o.sleep
         last_time = start_time
 
@@ -395,7 +399,14 @@ class Flow:
                     # this for duplicate cache synchronization.
                     self.ack(self.worklist.incoming)
                     self.worklist.incoming = []
+                    if had_vip:
+                        logger.info("now passive on vip %s" % self.o.vip )
+                        had_vip=False
                 else:
+                    if not had_vip:
+                        logger.info("now active on vip %s" % self.o.vip )
+                        had_vip=True
+
                     # normal processing, when you are active.
                     self.do()
 
@@ -476,6 +487,9 @@ class Flow:
                     % (current_rate, self.o.messageRateMax))
             else:
                 stime = 0
+
+            if self.worklist.catching_up:
+               continue
 
             if (current_sleep > 0):
                 if elapsed < current_sleep:
