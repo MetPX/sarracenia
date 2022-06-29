@@ -7,7 +7,7 @@ sr3 Sarracenia CLI
 ------------------
 
 :Manual section: 1 
-:Date: |today|
+:Date: |aujourd'hui|
 :Version: |release|
 :Manual group: MetPX-Sarracenia
 
@@ -15,95 +15,95 @@ sr3 Sarracenia CLI
 SYNOPSIS
 ========
 
-**sr3** *options* *action* [ *component/config* ... ] 
+**sr3** *options* *action* [ *composant/config* ... ]
 
 DESCRIPTION
 ===========
-Sr3 est un outil pour gerer une flotte de démons, ou les resultats du programme est principalement
-dans les fichiers logs. Sr3 permet a l'utilisateur de commencer, arreter, et se reseigner sur
-le statut d'un flow de sarracenia deja configure. C'est le point d'entrée principal de la ligne de commande pour
-Sarracénia 3 ( https://metpx.github.io/sarracenia/ )
+Sr3 est un outil pour gérer une flotte de démons, ou les résultats/sortie du programme est principalement
+dans les fichiers logs. Sr3 permet à l'utilisateur de commencer, arrêter, et se renseigner sur
+le statut d'un flux de sarracenia déjà configuré. C'est le point d'entrée principal de la ligne de commande pour
+Sarracenia 3 ( https://metpx.github.io/sarracenia/ )
 
-Lorsque sr3 est démarré, l’intégralité des configurations sont lu et on peut faire une requete sur l’état
-de tous les flux, avec *sr3 status* par example. Lorsque *component/config* est utilise, sr3 doit
+Lorsque sr3 est démarré, l’intégralité des configurations sont lu et on peut faire une requête sur l’état
+de tous les flux, avec *sr3 status* par exemple. Lorsque *composant/config* est utilisé, sr3 doit
 fonctionner sur un sous-ensemble de toutes les configurations présentes.
 
-* Si vous etes deja familier Sarracenia et que vous cherchez de l'information specifique par rapport a des
+* Si vous êtes déjà familier avec Sarracenia et que vous cherchez de l'information spécifique par rapport a des
   options ou des directives, il vaut mieux regarder `sr3 Options (7) <sr3_options.7.html>`_
-* Pour commencer plus facilement, jetez un coup d’oeil sur `the Subscriber Guide on github <../How2Guides/subscriber.html>`_
+* Pour commencer plus facilement, jetez un coup d’œil sur `the Subscriber Guide on GitHub <../How2Guides/subscriber.html>`_
 * Pour un guide général de l’interface : voir le `Command Line Guide <../Explanation/CommandLineGuide.html>`_
 
-La ligne de commande a trois elements majeurs:
+La ligne de commande a trois éléments importants:
 * options
 * action
-* component/config
+* composant/config
 
-A flow is a group of processes running using a common component/config.
-Un flux est un groupe de processus qui roule en utlisant une composant/config c
+Un flux est un groupe de processus qui roule en utilisant un composant/config commun.
 OPTIONS
 =======
+La majorité des options son stockés dans des fichiers de configuration. Ceci est dénoté
+par *compsant/config* indiqué par le nom du fichier, mais de temps en temps, on peut utiliser la ligne
+de commande pour remplacer une valeur dans le fichier de configuration. Les options sont défini
+`Sr3 Options (7) <sr3_options.7.html>`_ Reportez-vous à cette page de manuel pour une discussion complète.
+Il y a une exception ::
 
-Most options are stored in configuration files referred to by the *component/config* indicated
-by the listing file, but on occasion, one may wish to use command line to override
-values in the configuration file.  Options are defined in `Sr3 Options (7) <sr3_options.7.html>`_
-Refer to that manual page for a full discussion. There is one exception::
+   -h (or --help)
 
-   -h (or --help) 
 
-The help option is only available on the command line. It is used to get a prompt
-describing the subset of options available to override config file values.
-
+L'option d'aide est seulement disponible sur la ligne de commande. Elle est utilisée pour obtenir
+une description d'une sélection d'options disponible pour remplacer les valeurs du fichier
+de configuration.
 
 ACTIONS
 =======
-
-The type of action to take. One of:
+Les types d'actions disponible. Une seule parmi:
 
  - add:           copier a la liste de configurations disponible.
- - cleanup:       supprimes les resources des componantes sur le serveur.
- - convert:       copie et mets a jour une configuration de v2 dans le reportoire sr3.
- - declare:       creates les resources d'un componant sur le serveur.
- - disbale:       marquer une configuration comme non-eligible a executer.
+ - cleanup:       supprimer les ressources des composants sur le serveur.
+ - convert:       copie et mets à jour une configuration de v2 dans le répertoire sr3.
+ - declare:       crée les ressources d'un composant sur le serveur.
+ - disbale:       marquer une configuration comme non-éligible à exécuter.
  - edit:          modifier une configuration existante.
- - enable:        marquer une configuration comme eligible a executer.
- - foreground:    rouler une single instance in the foreground logging to stderr
- - list:          lister toutes les configurations disponible.
- - list plugins:  lister tout les plugins disponible.
+ - enable:        marquer une configuration comme éligible à exécuter.
+ - foreground:    rouler une seule instance avec le mode foreground avec des logs sur stderr
+ - liste:          lister toutes les configurations disponible.
+ - liste plugins:  lister tout les plugins disponible.
  - list examples: lister tout les examples disponible.
  - remove:        supprimer une configuration.
- - restart:       arreter et ensuite commencer une configuration.
- - sanity:        cherche des instances qui sont perdus/coicees/en panne  et les redemarres.
- - setup:         comme declare, fait egalement des queue bindings.
- - show           view an interpreted version of a configuration file.
+ - restart:       arrêter et ensuite commencer une configuration.
+ - sanity:        cherche des instances qui sont perdus/coincées/en panne et les redémarres.
+ - setup:         comme declare, et fait également des queue bindings.
+ - show           afficher une version interprétée d’un fichier de configuration.
  - start:         commencer une configuration
- - status:        verifier si une configuration est en train de rouler
- - stop:          arreter une configuration en cours d'execution
+ - status:        vérifier si une configuration est en train de rouler.
+ - stop:          arrêter une configuration en cours d'exécution.
 
-    
 
-COMPONENTS
+
+COMPOSANTS
 ==========
 
-`The Flow Algorithm <../Explanation/Concepts.html#the-flow-algorithm>`_ is what is
-run by all sr3 processes. The flow algorithm's behaviour is customized by options,
-some of which control optional modules (flowcallbacks) Each component has a 
-different set of default option settings to cover a common use case. 
+`The Flow Algorithme <../Explanation/Concepts.html#the-flow-algorithm>`_ est ce qui est exécuté
+par tout les processus de sr3. Le comportement de l'algorithme du flux est adaptable aves les options,
+dont certaines contrôlent des modules optionnels (flowcallbacks). Chaque composant possède de
+différents ensembles de paramètres d’options par défaut pour couvrir un cas d’utilisation courant.
 
-* `cpump <../Explanation/CommandLineGuide.html#cpump>`_ - copy messages from one pump another second one (a C implementation of shovel.)
-* `poll <../Explanation/CommandLineGuide.html#poll>`_ - poll a non-sarracenia web or file server to create messages for processing.
-* `post|sr3_post|sr_cpost|watch <../Explanation/CommandLineGuide.html#post-or-watch>`_ - create messages for files for processing.
-* `sarra <../Explanation/CommandLineGuide.html#sarra>`_ - download file from a remote server to the local one, and re-post them for others.
-* `sender <../Explanation/CommandLineGuide.html#sender>`_ - send files from a local server to a remote one.
-* `shovel <../Explanation/CommandLineGuide.html#shovel>`_ - copy messages, only, not files.
-* `watch <../Explanation/CommandLineGuide.html#watch>`_ - create messages for each new file that arrives in a directory, or at a set path.
-* `winnow <../Explanation/CommandLineGuide.html#winnow>`_ - copy messages, suppressing duplicates.
+
+* `cpump <../Explanation/CommandLineGuide.html#cpump>`_ - copier un message d'une pompe a une deuxième pompe (une implémentation C d'un shovel.)
+* `poll <../Explanation/CommandLineGuide.html#poll>`_ - poller une page web non-sarracenia ou des fichiers sur un serveur pour créer des messages pour un traitement.
+* `post|sr3_post|sr_cpost|watch <../Explanation/CommandLineGuide.html#post-or-watch>`_ - créer es messages pour les fichiers qui doivent être traités.
+* `sarra <../Explanation/CommandLineGuide.html#sarra>`_ - télécharger un fichier d’un serveur distant vers un serveur local et les republier pour les autres.
+* `sender <../Explanation/CommandLineGuide.html#sender>`_ - envoyer des fichiers d’un serveur local à un serveur distant.
+* `shovel <../Explanation/CommandLineGuide.html#shovel>`_ - copier seulement des messages et non des fichiers.
+* `watch <../Explanation/CommandLineGuide.html#watch>`_ - crée un message pour chaque nouveau fichier qui arrive dans un répertoire.
+* `winnow <../Explanation/CommandLineGuide.html#winnow>`_ - copier des messages et supprime les doublons.
 
 
 CONFIGURATIONS
 ==============
 
-When a *component/configuration* pair is specified on the command line,
-It is actually building the effective configuration from:
+Quand une paire de *composant/configuration* et spécifiée sur la ligne de commande,
+la configuration se fait construire a partir de:
 
  1. default.conf
 
@@ -113,88 +113,93 @@ It is actually building the effective configuration from:
 
  4. <component>/<config>.conf
 
-Settings in an individual .conf file are read in after the default.conf
-file, and so can override defaults. Options specified on
-the command line override configuration files.
+Les paramètres d'un fichier .conf sont lu après le fichier default.conf,
+et les valeurs initiales choisi par défaut peuvent éventuellement être replacer.
+Les options spécifiées sur la ligne de commande remplacent les options spécifiées dans le
+fichier de configuration.
 
-While one can manage configuration files using the *add*, *remove*,
-*list*, *edit*, *disable*, and *enable* actions, one can also do all
-of the same activities manually by manipulating files in the settings
-directory. The configuration files for an sr3 configuration
-called *myflow* would be here:
+Les fichiers de configurations peuvent être gérer en utilisant les actions *add*, *remove*,
+*list*, *edit*, *disable*, et *enable*. Il est également possible de faire
+les mêmes activités manuellement en manipulant les fichiers dans le répertoire des paramètres.
+Les fichiers de configuration pour une configuration de sr3 appelé *myflow*
+se trouverait ici:
 
- - linux: ~/.config/sarra/subscribe/myflow.conf (as per: `XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.rst>`_ )
+ - linux: ~/.config/sarra/subscribe/myflow.conf (selon: `XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.rst>`_ )
 
- - Windows: %AppDir%/science.gc.ca/sarra/myflow.conf , this might be:
+ - Windows: %AppDir%/science.gc.ca/sarra/myflow.conf , ca pourrait être:
    C:\Users\peter\AppData\Local\science.gc.ca\sarra\myflow.conf
 
  - MAC: FIXME.
 
-The top of the tree has  *~/.config/sarra/default.conf* which contains settings that
-are read as defaults for any component on start up.  In the same
-directory, *~/.config/sarra/credentials.conf* contains credentials (passwords) to
-be used by sarracenia ( `CREDENTIALS`_ for details. )
+A la base, le répertoires *~/.config/sarra/default.conf* contient des paramètres
+qui sont lus par défaut pour tout composant au démarrage. Dans le même répertoire,
+*~/.config/sarra/credentials.conf*, il y a les identifiants (mots de passe) qui doivent
+être utilisé par sarracenia ( `CREDENTIALS`_ pour plus de détails ).
 
-One can also set the XDG_CONFIG_HOME environment variable to override default placement, or
-individual configuration files can be placed in any directory and invoked with the
-complete path. When components are invoked, the provided file is interpreted as a
-file path (with a .conf suffix assumed.) If it is not found as a file path, then the
-component will look in the component's config directory ( **config_dir** / **component** )
-for a matching .conf file.
+Il est également possible de définir la valeur de la variable XDG_CONFIG_HOME pour remplacer
+le répertoire de base, ou sinon un fichier de configuration peut être placé dans n'importe quel
+répertoire est peut être invoqué en utilisant le chemin du fichier au complet.
+Quand un composant est invoqué, le fichier fourni est interprété en tant que chemin de fichier
+(il est assumé que l'extension .conf est employé.) Si le chemin du fichier est introuvable,
+le composant va regarder dans le répertoire de configuration du composant
+( **repertoire_config** / **composant** ) pour un fichier .conf correspondant.
 
-If it is still not found, it will look for it in the site config dir
-(linux: /usr/share/default/sarra/**component**).
+Si il est toujours introuvable, il le recherchera dans le répertoire de configuration du site
+(linux : /usr/share/default/sarra/**composant**).
 
-Finally, if the user has set option **remote_config** to True and if he has
-configured web sites where configurations can be found (option **remote_config_url**),
-The program will try to download the named file from each site until it finds one.
-If successful, the file is downloaded to **config_dir/Downloads** and interpreted
-by the program from there.  There is a similar process for all *plugins* that can
-be interpreted and executed within sarracenia components.  Components will first
-look in the *plugins* directory in the users config tree, then in the site
-directory, then in the sarracenia package itself, and finally it will look remotely.
+Finalement, si l’utilisateur a défini l’option **remote_config** a True et si il y a des
+sites Web configurés où les configurations peuvent être trouvées (option **remote_config_url**),
+le programme essaiera de télécharger le fichier à partir de chaque site jusqu’à ce qu’il en trouve un.
 
-Remote Configurations
----------------------
 
-One can specify URI's as configuration files, rather than local files. Example:
+En cas de succès, le fichier est téléchargé sur **repertoire_config/Téléchargements** et interprété
+par le programme à partir de là.  Il existe un processus similaire pour tous les *plugins* qui peuvent
+être interprétés et exécutés dans les composants de sarracenia.  Les composants vont d’abord
+regarder dans le répertoire *plugins* dans l’arborescence de configuration des utilisateurs, puis dans le site,
+ensuite dans le paquet sarracenia lui-même, et enfin il regardera à distance.
+
+
+Configurations a Distance
+-------------------------
+
+Il est possible de spécifier des URI en tant que fichiers de configuration, plutôt que des fichiers locaux. Exemple:
 
   - **--config http://dd.weather.gc.ca/alerts/doc/cap.conf**
 
-On startup, sr3 checks if the local file cap.conf exists in the
-local configuration directory.  If it does, then the file will be read to find
-a line like so:
+Au démarrage, sr3 vérifie si le fichier local cap.conf existe dans le
+répertoire de configuration local.  Si c’est le cas, le fichier sera lu pour trouver
+une ligne comme celle-ci :
 
   - **--remote_config_url http://dd.weather.gc.ca/alerts/doc/cap.conf**
 
-In which case, it will check the remote URL and compare the modification time
-of the remote file against the local one. The remote file is not newer, or cannot
-be reached, then the component will continue with the local file.
+Dans ce cas, il vérifiera l’URL distant et comparera le temps de modification
+du fichier distant par rapport au fichier local. Si le fichier distant n’est pas plus récent ou ne peut pas
+être atteint, le composant continuera avec le fichier local.
 
-If either the remote file is newer, or there is no local file, it will be downloaded,
-and the remote_config_url line will be prepended to it, so that it will continue
-to self-update in future.
+Si le fichier distant est plus récent ou s’il n’y a pas de fichier local, le fichier distant sera téléchargé,
+et la ligne remote_config_url sera rajouté, de sorte qu’elle continuera
+de se mettre à jour automatiquement à l’avenir.
 
 
 Logs
 ----
-
-for the logs, look in ~/.cache/sr3/logs (on linux. Other platforms, will vary.)
-To find them on any platform::
+Pour les fichiers de logs, il faut regarder dans ~/.cache/sr3/logs (pour linux. Cela va varier sur d'autres
+plateformes.)
+Pour les trouver sur n'importe quel plateforme::
 
     fractal% sr3 list
     User Configurations: (from: /home/peter/.config/sr3 )
-    admin.conf                       credentials.conf                 default.conf                     
+    admin.conf                       credentials.conf                 default.conf
     logs are in: /home/peter/.cache/sr3/log
 
-Last line indicates the directory.
+La dernière ligne indique le répertoire.
 
 
 
-EXAMPLES
+EXEMPLES
 ========
 
-Here is a short complete example configuration file:: 
+Voici un exemple complet de fichier de configuration::
 
   broker amqps://dd.weather.gc.ca/
 
@@ -203,40 +208,40 @@ Here is a short complete example configuration file::
 
 This above file will connect to the dd.weather.gc.ca broker, connecting as
 anonymous with password anonymous (defaults) to obtain announcements about
-files in the http://dd.weather.gc.ca/model_gem_global/25km/grib2 directory.
-All files which arrive in that directory or below it will be downloaded 
-into the current directory (or just printed to standard output if -n option 
-was specified.) 
+Ce fichier se connectera au broker dd.weather.gc.ca en tant qu'anonyme avec mot de passe
+anonyme (par défaut) pour obtenir des annonces à propos des fichiers dans le répertoire
+http://dd.weather.gc.ca/model_gem_global/25km/grib2.
+Tous les fichiers qui arrivent dans ce répertoire ou en dessous seront téléchargés
+dans le répertoire courant (ou simplement imprimé en sortie standard si l'option -n
+a été spécifié.)
 
-A variety of example configuration files are available here:
+Divers exemples de fichiers de configuration sont disponibles ici :
 
  `https://github.com/MetPX/sarracenia/tree/master/sarra/examples <https://github.com/MetPX/sarracenia/tree/master/sarra/examples>`_
 
 
 
+VOIR AUSSI
+==========
 
 
-SEE ALSO
-========
+**Commande de l'utilisateur:**
 
+`sr3_post(1) <sr3_post.1.html>`_ - poste des annoncements de fichiers (implémentation en Python.)
 
-**User Commands:**
+`sr3_cpost(1) <sr3_cpost.1.html>`_ - poste des annoncements de fichiers (implémentation en C.)
 
-`sr3_post(1) <sr3_post.1.html>`_ - post file announcements (python implementation.)
-
-`sr3_cpost(1) <sr3_cpost.1.html>`_ - post file announcemensts (C implementation.)
-
-`sr3_cpump(1) <sr3_cpump.1.html>`_ - C implementation of the shovel component. (copy messages)
+`sr3_cpump(1) <sr3_cpump.1.html>`_ - implémentation en C du composant shovel. (copie des messages)
 
 **Formats:**
 
-`sr3_credentials(7) <sr3_credentials.7.html>`_ - Convert logfile lines to .save Format for reload/resend.
+`sr3_credentials(7) <sr3_credentials.7.html>`_ - Convertir les lignes du fichier log au format .save pour le rechargement/le renvoi.
 
-`sr3_options(7) <sr3_options.7.html>`_ - Convert logfile lines to .save Format for reload/resend.
+`sr3_options(7) <sr3_options.7.html>`_ -  Convertir les lignes du fichier log au format .save pour le rechargement/le renvoi.
 
-`sr3_post(7) <sr3_post.7.html>`_ - The format of announcement messages.
+`sr3_post(7) <sr3_post.7.html>`_ - Format des messages d’annonce.
 
-**Home Page:**
+**Page d'acceuil:**
 
-`https://metpx.github.io/sarracenia <https://metpx.github.io/sarracenia>`_ - Sarracenia: a real-time pub/sub data sharing management toolkit
+`https://metpx.github.io/sarracenia <https://metpx.github.io/sarracenia>`_ - Sarracenia : une boîte à outils de gestion du partage de données pub/sub en temps réel
 
