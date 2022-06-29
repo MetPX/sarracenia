@@ -11,5 +11,6 @@ GLOSSARY
 - Remote.........Distant
 - Run............Rouler/Exécuter
 - Tree...........Arborescence
+- String.........Chaine (?)
 
 
