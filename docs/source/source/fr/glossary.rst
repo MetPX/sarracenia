@@ -12,5 +12,6 @@ GLOSSARY
 - Run............Rouler/Exécuter
 - Tree...........Arborescence
 - String.........Chaine (?)
-
-
+- keyword........mot-clé(?)
+- scope..........porté (global scope?)
+- regexp pattern...Modèle regexp
