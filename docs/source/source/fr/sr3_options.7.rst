@@ -315,65 +315,65 @@ est reconnu comme consommé par le broker et est ignoré.
 Celui qui correspond à un modèle **accept** est traité par le composant.
 
 Dans de nombreuses configurations, les options **accept** et **reject** sont melange
-avec l’option **directory**.  Ils relatent ensuite les messages acceptés
-à la valeur **directory** sous laquelle ils sont spécifiés.
+avec l’option **directory**.  Ces options associent les messages acceptés
+à la valeur du **directory** sous laquelle ils sont spécifiés.
 
+Une fois que toutes les options **accept** / **reject** sont traitées, normalement
+le message est reconnu comme consommé et ignoré. Pour remplacer ce comportement,
+il est possible de definir **acceptUnmatched** en ettant True. Les paramètres de **accept/reject**
+sont interprétés dans l’ordre. Chaque option est traitée de manière ordonnée
+de haut en bas. Par exemple:
 
-In many configurations, **accept** and **reject** options are mixed
-with the **directory** option.  They then relate accepted messages
-to the **directory** value they are specified under.
-
-After all **accept** / **reject**  options are processed, normally
-the message is acknowledged as consumed and skipped. To override that
-defaut, set **acceptUnmatched** to True. The **accept/reject**
-settings are interpreted in order. Each option is processed orderly
-from top to bottom. For example:
-
-sequence #1::
+séquence #1::
 
   reject .*\.gif
   accept .*
 
-sequence #2::
+séquence #2::
 
   accept .*
   reject .*\.gif
 
 
-In sequence #1, all files ending in 'gif' are rejected.  In sequence #2, the accept .* (which
-accepts everything) is encountered before the reject statement, so the reject has no effect.
+Dans la séquence #1, tous les fichiers se terminant par 'gif' sont rejetés.  Dans la séquence #2,
+le accept .* (qui accepte tout) est rencontré avant la déclaration de rejet, de sorte que le rejet n’a aucun effet.
 
-It is best practice to use server side filtering to reduce the number of announcements sent
-to the component to a small superset of what is relevant, and perform only a fine-tuning with the
+Il est recommandé d’utiliser le filtrage côté serveur pour réduire le nombre d’annonces envoyées
+au composant, et a la place, en envoyer un surensemble de ce qui est pertinent.
+Aussi, et n’effectuez qu’un réglage #FIXME and perform only a fine-tuning with the
 client side mechanisms, saving bandwidth and processing for all. More details on how
 to apply the directives follow:
 
-The  **accept**  and  **reject**  options use regular expressions (regexp) to match URL.
-These options are processed sequentially.
-The URL of a file that matches a  **reject**  pattern is not published.
-Files matching an  **accept**  pattern are published.
-Again a *rename*  can be added to the *accept* option... matching products
-for that *accept* option would get renamed as described... unless the *accept* matches
-one file, the *rename* option should describe a directory into which the files
-will be placed (prepending instead of replacing the file name).
+Plus de détails sur les directives:
 
-The **permdefault** option allows users to specify a linux-style numeric octal
-permission mask::
+Les options **accept** et **reject** utilisent des expressions régulières (regexp) pour trouver
+une correspondance avec l’URL.
+Ces options sont traitées séquentiellement.
+L’URL d’un fichier qui correspond à un modèle **reject** n’est pas publiée.
+Les fichiers correspondant à un modèle **accept** sont publiés.
+Encore une fois, un *rename* peut être ajouté à l’option *accept*... les produits qui correspondent
+a l'option *accept* seront renommé comme décrit... à moins que le *accept* corresponde a
+un fichier, l’option *rename* doit décrire un répertoire dans lequel les fichiers
+seront placé (en prefix au lieu de remplacer le nom du fichier).
+
+L’option **permdefault** permet aux utilisateurs de spécifier un masque d'autorisation octal numérique
+de style Linux::
 
   permdefault 040
 
-means that a file will not be posted unless the group has read permission
-(on an ls output that looks like: ---r-----, like a chmod 040 <file> command).
-The **permdefault** options specifies a mask, that is the permissions must be
-at least what is specified.
 
-The **modèle regexp** can be used to set directory parts if part of the message is put
-to parenthesis. **sender** can use these parts to build the directory name. The
-rst enclosed parenthesis strings will replace keyword **${0}** in the directory name...
-the second **${1}** etc.
 
-Example of use::
+signifie qu’un fichier ne sera pas publié à moins que le groupe ait l’autorisation de lecture
+(sur une sortie ls qui ressemble à : ---r-----, comme une commande chmod 040 <fichier> ).
+Les options **permdefault** spécifient un masque, c’est-à-dire que les autorisations doivent être
+au moins ce qui est spécifié.
 
+Le **regexp pattern** peut être utilisé pour définir des parties du répertoire si une partie du message est placée
+entre parenthèses. **sender** peut utiliser ces parties pour générer le nom du répertoire.
+Les chaînes de parenthèses entre les guillemets rst remplaceront le mot-clé **${0}** dans le nom du répertoire...
+le second **{1} $ ** etc.
+
+Exemple d’utilisation ::
 
       filename NONE
 
@@ -392,15 +392,15 @@ Example of use::
       accept .*(2016....).*(RAW.*GRIB).*
 
 
-A selected message by the first accept would be delivered unchanged to the first directory.
+Un message sélectionné par le premier *accept* sera remis inaltérée dans le premier répertoire.
 
-A selected message by the second accept would be delivered unchanged to the second directory.
+Un message sélectionné par le deuxième *accept* sera remis inaltérée dans deuxième répertoire.
 
-A selected message by the third accept would be renamed "file_of_type3" in the second directory.
+Un message sélectionné par le troisième *accept sera renommé « file_of_type3 » dans le deuxième répertoire.
 
-A selected message by the forth accept would be delivered unchanged to a directory.
+Un message sélectionné par le quatrième *accept* sera remis inaltérée à un répertoire.
 
-It's named  */this/20160123/pattern/RAW_MERGER_GRIB/directory* if the message would have a notice like:
+Ca sera appelé  */this/20160123/pattern/RAW_MERGER_GRIB/directory* si la notice du message ressemble a cela:
 
 **20150813161959.854 http://this.pump.com/ relative/path/to/20160123_product_RAW_MERGER_GRIB_from_CMC**
 
@@ -408,11 +408,10 @@ It's named  */this/20160123/pattern/RAW_MERGER_GRIB/directory* if the message wo
 acceptSizeWrong: <boolean> (defaut: False)
 -------------------------------------------
 
-When a file is downloaded and its size does not match the one advertised, it is
-normally rejected, as a failure. This option accepts the file even with the wrong
-size. helpful when file is changing frequently, and there is some queueing, so
-the file is changed by the time it is retrieved.
-
+Lorsqu’un fichier est téléchargé et que sa taille ne correspond pas à celle annoncée, il est
+normalement rejeté, comme un échec. Cette option accepte le fichier même avec la mauvaise
+taille. Cela est utile lorsque le fichier change fréquemment et qu’il y a une certaine file d’attente, donc
+le fichier est modifié au moment de sa récupération.
 
 attempts <count> (defaut: 3)
 -----------------------------
