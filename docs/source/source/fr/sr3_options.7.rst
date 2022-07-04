@@ -416,63 +416,64 @@ le fichier est modifié au moment de sa récupération.
 attempts <count> (defaut: 3)
 -----------------------------
 
-The **attempts** option indicates how many times to
-attempt downloading the data before giving up.  The defaut of 3 should be appropriate
-in most cases.  When the **retry** option is false, the file is then dropped immediately.
+L’option **attempts** indique combien de fois il faut tenter le téléchargement des données avant d’abandonner.
+Le défaut de 3 tentatives est approprié
+dans la plupart des cas.  Lorsque l’option **retry** a la valeur false, le fichier est immédiatement supprimé.
 
-When The **retry** option is set (defaut), a failure to download after prescribed number
-of **attempts** (or send, in a sender) will cause the message to be added to a queue file
-for later retry.  When there are no messages ready to consume from the AMQP queue,
-the retry queue will be queried.
+Lorsque l’option **attempts** est utilisé, un échec de téléchargement après le numéro prescrit
+des **attempts** (ou d’envoi, pour un sender) va entrainer l’ajout du message à un fichier de file d’attente
+pour une nouvelle tentative plus tard.  Lorsque aucun message n’est prêt à être consommé dans la file d’attente AMQP,
+les requetes se feront avec la file d’attente de "retry".
 
-
-baseDir <path> (defaut: /)
+baseDir <chemin> (defaut: /)
 ----------------------------
 
-**baseDir** supplies the directory path that, when combined with the relative
-one in the selected notification gives the absolute path of the file to be sent.
-The defaut is None which means that the path in the notification is the absolute one.
+**baseDir** fournit le chemin d’accès au répertoire, et lorsqu’il est combiné avec le chemin d'acces relatif
+de la notification sélectionnée, **baseDir** donne le chemin absolu du fichier à envoyer.
+Le defaut est None, ce qui signifie que le chemin dans la notification est le chemin absolu.
 
-Sometimes senders subscribe to local xpublic, which are http url's, but sender
-needs a localfile, so the local path is built by concatenating::
+Parfois, les senders s’abonnent à xpublic local, qui sont des URL http, mais le sender
+a besoin d’un fichier local, alors le chemin d’accès local est construit en concaténant::
 
-   baseDir + relative path in the baseUrl + relPath
+   baseDir + chemin d'acces relatif dans le baseUrl + relPath
 
 
 baseUrl_relPath <flag> (defaut: off)
 -------------------------------------
 
-Normally, the relative path (baseUrl_relPath is False, appended to the base directory) for 
-files which are downloaded will be set according to the relPath header included 
-in the message. If *baseUrl_relPath* is set, however, the message's relPath will
-be prepended with the sub-directories from the message's baseUrl field.
+Normalement, le chemin d’accès relatif (baseUrl_relPath est False, ajouté au répertoire de base) pour
+les fichiers téléchargés seront définis en fonction de l’en-tête relPath inclus
+dans le message. Toutefois, si *baseUrl_relPath* est défini, le relPath du message va
+être précédé des sous-répertoires du champ baseUrl du message.
 
 
 batch <count> (defaut: 100)
 ----------------------------
 
-The **batch** option is used to indicate how many files should be transferred
-over a connection, before it is torn down, and re-established.  On very low
-volume transfers, where timeouts can occur between transfers, this should be
-lowered to 1.  For most usual situations the defaut is fine. For higher volume
-cases, one could raise it to reduce transfer overhead. It is only used for file
-transfer protocols, not HTTP ones at the moment.
+L’option **batch** est utilisée pour indiquer le nombre de fichiers à transférer
+sur une connexion, avant qu’elle ne soit démolie et rétablie.  Sur de très bas volume de
+transferts, où des délais d’attente peuvent se produire entre les transferts, cela devrait être
+ajuster à 1.  Pour la plupart des situations, le defaut est bien. Pour un volume plus élevé,
+on pourrait l’augmenter pour réduire les frais généraux de transfert. Cette option est utilisé que pour les
+protocoles de transfert de fichiers, pas non HTTP pour le moment.
 
 blocksize <size> defaut: 0 (auto)
 -----------------------------------
 
-NOTE: **NOT IMPLEMENTEDin sr3, expected to return in future version**
-This **blocksize** option controls the partitioning strategy used to post files.
-The value should be one of::
+REMARQUE: **NON IMPLEMENTÉ pour sr3, devrait revenir dans la version future**
+Cette option **blocksize** contrôle la stratégie de partitionnement utilisée pour publier des fichiers.
+La valeur doit être l’une des suivantes ::
 
-   0 - autocompute an appropriate partitioning strategy (defaut)
-   1 - always send entire files in a single part.
-   <blocksize> - used a fixed partition size (example size: 1M )
+   0 - calcul automatiquement une stratégie de partitionnement appropriée (defaut).
+   1 - envoyez toujours des fichiers entiers en une seule partie.
+   <blocksize> - utilisé une taille de partition fixe (taille d’exemple : 1M ).
 
-Files can be announced as multiple parts.  Each part has a separate checksum.
-The parts and their checksums are stored in the cache. Partitions can traverse
-the network separately, and in parallel.  When files change, transfers are
-optimized by only sending parts which have changed.
+Les fichiers peuvent être annoncés en plusieurs parties.  Chaque partie a un checksum distinct (somme de contrôle).
+Les parties et leurs checksums sont stockées dans la cache. Les partitions peuvent traverser
+le réseau séparément et en parallèle.  Lorsque les fichiers changent, les transferts sont
+optimisé en n’envoyant que les pièces qui ont changé.
+
+
 
 The *outlet* option allows the final output to be other than a post.
 See `sr3_cpump(1) <sr3_cpump.1.html>`_ for details.
@@ -663,9 +664,15 @@ These options are useful on brokers that do not permit users to declare their ex
 
 expire <duration> (defaut: 5m  == five minutes. RECOMMEND OVERRIDING)
 ----------------------------------------------------------------------
+L'option *expire* est exprimee sous forme d'une duration... Ca fixe combien de temps
+une file d’attente devrait vivre sans connexions.
 
-The  **expire**  option is expressed as a duration... it sets how long should live
-a queue without connections.
+Un entier brut est exprimé en secondes, si un des suffixe m,h,d,w
+sont utilisés, puis l’intervalle est en minutes, heures, jours ou semaines. Après l’expiration de la file d’attente,
+le contenu est supprimé et des differences peuvent donc survenir dans le flux de données de téléchargement.  Une valeur de
+1d (jour) ou 1w (semaine) peut être approprié pour éviter la perte de données. Cela dépend de combien de temps
+l’abonné devrait s’arrêter et ne pas subir de perte de données.
+
 
 A raw integer is expressed in seconds, if the suffix m,h,d,w
 are used, then the interval is in minutes, hours, days, or weeks. After the queue expires,
