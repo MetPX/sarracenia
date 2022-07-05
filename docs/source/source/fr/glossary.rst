@@ -6,7 +6,7 @@ GLOSSARY
 - Component......Composant
 - File Path......Chemin de Fichier (?)
 - Flow...........Flux
-- Logs...........Sortie d'éxécution/loggi (?)
+- Logs...........Sortie d'éxécution/loggig (?)
 - Poll...........(?)
 - Remote.........Distant
 - Run............Rouler/Exécuter
@@ -18,3 +18,4 @@ GLOSSARY
 - checksum........ checkscum (somme de controle?)
 - Plugins........Plugins(?)
 - Post...........Article
+- topic......thème

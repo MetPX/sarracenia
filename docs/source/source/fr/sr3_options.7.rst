@@ -473,123 +473,126 @@ Les parties et leurs checksums sont stockées dans la cache. Les partitions peuv
 le réseau séparément et en parallèle.  Lorsque les fichiers changent, les transferts sont
 optimisé en n’envoyant que les pièces qui ont changé.
 
-
-
-The *outlet* option allows the final output to be other than a post.
-See `sr3_cpump(1) <sr3_cpump.1.html>`_ for details.
+L’option *outlet* permet à la sortie finale d’être autre qu’un post.
+Voir `sr3_cpump(1) <sr3_cpump.1.html>`_ pour plus de détails.
 
 broker
 ------
 
-**broker [amqp|mqtt]{s}://<user>:<password>@<brokerhost>[:port]/<vhost>**
+**broker [amqp|mqtt]{s}://<utilisateur>:<most-de-passe>@<brokerhost>[:port]/<vhost>**
 
-A URI is used to configure a connection to a message pump, either
-an MQTT or an AMQP broker. Some Sarracenia components set a reasonable defaut for
-that option.  provide the normal user,host,port of connections. In most configuration files,
-the password is missing. The password is normally only included in the 
-`credentials.conf <sr3_credentials.7.html>`_ file.
+Un URI est utilisé pour configurer une connexion à une pompe de messages, soit
+un broker MQTT ou AMQP. Certains composants de Sarracenia fixent un defaut raisonnable pour
+cette option. Il faut fournir l’utilisateur normal, l’hôte, le port des connexions.
+Dans la plupart des fichiers de configurations,
+le mot de passe est manquant. Le mot de passe est normalement inclus seulement dans le fichier
+`credentials.conf <sr3_credentials.7.html>`_.
 
-Sarracenia work has not used vhosts, so **vhost** should almost always be **/**.
+Le travail de Sarracenia n’a pas utilisé de vhosts, donc **vhost** devrait presque toujours être **/**.
 
-for more info on the AMQP URI format: ( https://www.rabbitmq.com/uri-spec.html )
+pour plus d’informations sur le format URI AMQP: ( https://www.rabbitmq.com/uri-spec.html )
 
+soit dans le fichier default.conf, soit dans chaque fichier de configuration spécifique.
+L’option broker indique à chaque composant quel broker contacter.
 
-either in the defaut.conf or each specific configuration file.
-The broker option tell each component which broker to contact.
-
-**broker [amqp|mqtt]{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
+**courtier [amqp|mqtt]{s}://<utilisateur>:<mot-de-passe>@<brokerhost>[:port]/<vhost>**
 
 ::
-      (defaut: None and it is mandatory to set it )
+      (defaut: None et il est obligatoire de le définir )
 
-Once connected to an AMQP broker, the user needs to bind a queue
-to exchanges and topics to determine the messages of interest.
+Une fois connecté à un courtier AMQP, l’utilisateur doit lier une file d’attente
+aux échanges et aux thèmes pour déterminer le messages en question.
 
 
 byteRateMax <size> (defaut: 0)
 --------------------------------
 
-**byteRateMax** is greater than 0, the process attempts to respect this delivery
-speed in kilobytes per second... ftp,ftps,or sftp)
+**byteRateMax** est supérieur à 0, le processus tente de respecter cette vitesse delivraison
+ en kilo-octets par seconde... ftp,ftps,ou sftp)
 
-**FIXME**: byteRateMax... only implemented by sender? or subscriber as well, data only, or messages also?
+**FIXME**: byteRateMax... uniquement implémenté par le sender ? ou subscriber aussi, données uniquement, ou messages aussi ?
 
 
 declare 
 -------
 
 env NAME=Value
-  On can also reference environment variables in configuration files,
-  using the *${ENV}* syntax.  If Sarracenia routines needs to make use
-  of an environment variable, then they can be set in configuration files::
+  On peut également référer a des variables d’environnement dans des fichiers de configuration,
+  en utilisant la syntaxe *${ENV}*.  Si une routine de Sarracenia doit utiliser
+  une variable d’environnement, elles peuvent être définis dans un fichier de configuration ::
 
     declare env HTTP_PROXY=localhost
 
 exchange exchange_name
-  using the admin url, declare the exchange with *exchange_name*
+  à l’aide de l’URL d’administration, déclarez l’échange avec *exchange_name*
 
 subscriber
-  A subscriber is user that can only subscribe to data and return report messages. Subscribers are
-  not permitted to inject data.  Each subscriber has an xs_<user> named exchange on the pump,
-  where if a user is named *Acme*, the corresponding exchange will be *xs_Acme*.  This exchange
-  is where an subscribe process will send its report messages.
+  Un abonné (subsciber) est un utilisateur qui peut seulement s’abonner aux données et renvoyer des messages de rapport.
+  Les abonnés n'ont pas le droit d’injecter des données.  Chaque abonné dispose d’un xs_<utilisateur> qui
+  s'appelle "exchange" sur
+  la pompe. Si un utilisateur est nommé *Acme*, l’échange correspondant sera *xs_Acme*.  Cet échange
+  est l’endroit où un processus d’abonnement enverra ses messages de rapport.
 
-  By convention/defaut, the *anonymous* user is created on all pumps to permit subscription without
-  a specific account.
+  Par convention/defaut, l’utilisateur *anonyme* est créé sur toutes les pompes pour permettre l’abonnement sans abonnement
+  a un compte spécifique.
+
 
 source
-  A user permitted to subscribe or originate data.  A source does not necessarily represent
-  one person or type of data, but rather an organization responsible for the data produced.
-  So if an organization gathers and makes available ten kinds of data with a single contact
-  email or phone number for questions about the data and its availability, then all of
-  those collection activities might use a single 'source' account.
+  Un utilisateur autorisé à s’abonner ou à générer des données. Une source ne représente pas nécessairement
+  une personne ou un type de données, mais plutôt une organisation responsable des données produites.
+  Donc, si une organisation recueille et met à disposition dix types de données avec un seul contact,
+  e-mail, ou numéro de téléphone, toute question sur les données et leur disponibilité par rapport aux
+  activités de collect epeuvent alors en utilisant seul compte "source".
 
-  Each source gets a xs_<user> exchange for injection of data posts, and, similar to a subscriber
-  to send report messages about processing and receipt of data. Source may also have an xl_<user>
-  exchange where, as per report routing configurations, report messages of consumers will be sent.
+  Chaque source reçoit un échange xs_<utilisateur> pour l’injection de publications de données. Cela est comme un abonné
+  pour envoyer des messages de rapport sur le traitement et la réception des données. La source peut également avoir
+  un échange xl_<utilsateur> où, selon les configurations de routage des rapports, les messages de rapport des
+  consommateurs seront envoyés.
 
 feeder
-  A user permitted to write to any exchange. Sort of an administrative flow user, meant to pump
-  messages when no ordinary source or subscriber is appropriate to do so.  Is to be used in
-  preference to administrator accounts to run flows.
+  Un utilisateur autorisé à écrire à n’importe quel échange. Une sorte d’utilisateur de flux administratif, destiné à pomper
+  des messages lorsque aucune source ou abonné ordinaire n’est approprié pour le faire. Doit être utilisé de
+  préférence au lieu de comptes d’administrateur pour exécuter des flux.
 
-User credentials are placed in the `credentials.conf <sr3_credentials.7.html>`_ 
-file, and *sr3 --users declare* will update
-the broker to accept what is specified in that file, as long as the admin password is
-already correct.
+Les informations d’identification de l’utilisateur sont placées dans le `credentials.conf <sr3_credentials.7.html>`_
+et *sr3 --users declare* sera mis à jour
+le courtier pour accepter ce qui est spécifié dans ce fichier, tant que le mot de passe d'administrateur est
+déjà correct.
+
 
 debug
 -----
 
-Setting option debug is identical to use  **logLevel debug**
-
+Definir l'option debug est identique a utilisé **logLevel debug**
 
 delete <boolean> (defaut: off)
 -------------------------------
 
-When the **delete** option is set, after a download has completed successfully, the subscriber
-will delete the file at the upstream source.  defaut is false.
+Lorsque l’option **delete** est définie, une fois le téléchargement terminé avec succès, l’abonné
+supprimera le fichier à la source. Par defaut l'option est false.
+
 
 discard <boolean> (defaut: off)
 --------------------------------
 
-The  **discard**  option,if set to true, deletes the file once downloaded. This option can be
-usefull when debugging or testing a configuration.
+L’option **discard**, si elle est définie a true, supprime le fichier une fois téléchargé. Cette option peut être
+utile lors du débogage ou pour tester une configuration.
+
 
 directory <path> (defaut: .)
 -----------------------------
 
-The *directory* option defines where to put the files on your server.
-Combined with  **accept** / **reject**  options, the user can select the
-files of interest and their directories of residence (see the  **mirror**
-option for more directory settings).
+L’option *directory* définit où placer les fichiers sur votre serveur.
+Combiné avec les options **accept** / **reject**, l’utilisateur peut sélectionner
+les fichiers d’intérêt et leurs répertoires de résidence (voir le **mirror**
+pour plus de paramètres de répertoire).
 
-The  **accept**  and  **reject**  options use regular expressions (regexp) to match URL.
-These options are processed sequentially.
-The URL of a file that matches a  **reject**  pattern is never downloaded.
-One that matches an  **accept**  pattern is downloaded into the directory
-declared by the closest  **directory**  option above the matching  **accept** option.
-**acceptUnmatched** is used to decide what to do when no reject or accept clauses matched.
+Les options **accept** et **reject** utilisent des expressions régulières (regexp) pour trouver une correspondance avec l’URL.
+Ces options sont traitées séquentiellement.
+L’URL d’un fichier qui correspond à un modèle **reject** n’est jamais téléchargée.
+Celui qui correspond à un modèle **accept** est téléchargé dans le répertoire
+déclaré par l’option **directory** la plus proche au-dessus de l’option **accept** correspondante.
+**acceptUnmatched** est utilisé pour décider quoi faire lorsque aucune clause de rejet ou d’acceptation n’est correspondante.
 
 ::
 
@@ -604,10 +607,10 @@ declared by the closest  **directory**  option above the matching  **accept** op
 destfn_script <script> (defaut:None)
 -------------------------------------
 
-This Sundew compatibility option defines a script to be run when everything is ready
-for the delivery of the product.  The script receives the sender class
-instance.  The script takes the parent as an argument, and for example, any
-modification to  **parent.msg.new_file**  will change the name of the file written locally.
+L'option de compatibilité Sundew définit un script à exécuter lorsque tout est prêt
+pour la livraison du produit.  Le script reçoit une instance de la classe sender.
+Le script prend le parent comme argument, et par exemple, une
+modification de **parent.msg.new_file** changera le nom du fichier écrit localement.
 
 download <flag> (defaut: True)
 --------------------------------
