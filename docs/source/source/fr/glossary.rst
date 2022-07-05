@@ -6,7 +6,7 @@ GLOSSARY
 - Component......Composant
 - File Path......Chemin de Fichier (?)
 - Flow...........Flux
-- Logs...........Sortie d'éxécution/loggi (?)
+- Logs...........Sortie d'éxécution/loggig (?)
 - Poll...........(?)
 - Remote.........Distant
 - Run............Rouler/Exécuter
@@ -15,4 +15,5 @@ GLOSSARY
 - keyword........mot-clé(?)
 - scope..........porté (global scope?)
 - regexp pattern...Modèle regexp
-- checksum........ checkscum (somme de controle?)
+- checksum........ checksum (somme de controle?)
+- topic......thème
