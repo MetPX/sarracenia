@@ -609,63 +609,65 @@ destfn_script <script> (defaut:None)
 
 L'option de compatibilité Sundew définit un script à exécuter lorsque tout est prêt
 pour la livraison du produit.  Le script reçoit une instance de la classe sender.
-Le script prend le parent comme argument, et par exemple, une
+Le script prends le parent comme argument, et par exemple, une
 modification de **parent.msg.new_file** changera le nom du fichier écrit localement.
 
 download <flag> (defaut: True)
 --------------------------------
 
-used to disable downloading in subscribe and/or sarra component.
-set False by defaut in shovel or winnow components.
+utilisé pour désactiver le téléchargement dans le composant subscribe et/ou sarra.
+Se definit a False par defaut dans les composants de pelle (shovel) ou de vanne (winnow).
 
 
 durable <flag> (defaut: True)
 ----------------------------------
 
-The AMQP **durable** option, on queue declarations. If set to True, 
-the broker will preserve the queue across broker reboots.
-It means writes the queue is on disk if the broker is restarted.
+L’option AMQP **durable**, sur les déclarations de file d’attente. Si la valeur est True,
+le courtier conservera la file d’attente lors des redémarrages du courtier.
+Cela signifie que la file d’attente est sur le disque si le courtier est redémarré.
 
-fileEvents <event,event,...>
+
+fileEvents <evenement,evenement,...>
 ----------------------------
 
-A comma separated list of file event types to monitor.
-Available file events:  create, delete, link, modify
+Liste séparée par des virgules de types d'événements de fichiers à surveiller.
+Événements de fichiers disponibles : créer, supprimer, lier, modifier
 
-The *create*, *modify*, and *delete* events reflect what is expected: a file being created, modified, or deleted.
-If *link* is set, symbolic links will be posted as links so that consumers can choose
-how to process them. If it is not set, then no symbolic link events will ever be posted.
+Les événements *create*, *modify* et *delete* reflètent ce qui est attendu : un fichier en cours de création,
+de modification ou de suppression.
+Si *link* est défini, des liens symboliques seront publiés sous forme de liens afin que les consommateurs puissent choisir
+comment les traiter. S’il n’est pas défini, aucun événement de lien symbolique sera publié.
 
 .. note::
-   move or rename events result in a special double post pattern, with one post as the old name
-   and a field *newname* set, and a second post with the new name, and a field *oldname* set. 
-   This allows subscribers to perform an actual rename, and avoid triggering a download when possible.
+   déplacer ou renommer des événements entraîne un modèle spécial de double publication, avec une publication en
+   utilisant l'ancien nom et definissant le champ *newname*, et un deuxième message avec le nouveau nom, et un champ *oldname*.
+   Cela permet aux abonnés d’effectuer un renommage réel et d’éviter de déclencher un téléchargement lorsque cela est possible.
 
-   FIXME: rename algorithm improved in v3 to avoid use of double post... just
+FIXME : algorithme de renommage amélioré en v3 pour éviter l’utilisation de double post... juste
 
-exchange <name> (defaut: xpublic) and exchange_suffix
+
+exchange <nom> (defaut: xpublic) et exchange_suffix
 ------------------------------------------------------
 
-The convention on data pumps is to use the *xpublic* exchange. Users can establish
-private data flow for their own processing. Users can declare their own exchanges
-that always begin with *xs_<username>*, so to save having to specify that each
-time, one can just set *exchange_suffix kk* which will result in the exchange
-being set to *xs_<username>_kk* (overriding the *xpublic* defaut).
-These settings must appear in the configuration file before the corresponding
-*topicPrefix* and *subtopic* settings.
+La norme pour les pompes de données est d’utiliser l’échange *xpublic*. Les utilisateurs peuvent établir un
+flux de données privées pour leur propre traitement. Les utilisateurs peuvent déclarer leurs propres échanges
+qui commencent toujours par *xs_<nom-d'utilisatueur>*. Pour éviter d’avoir à le spécifier a chaque
+fois, on peut simplement régler *exchange_suffix kk* qui entraînera l’échange
+a etre défini a *xs_<nom-d'utilisatueur>_kk* (en remplaçant le defaut *xpublic*).
+Ces paramètres doivent apparaître dans le fichier de configuration avant le
+Paramètres *topicPrefix* et *subtopic*.
 
 
 exchangeDeclare <flag>
 ----------------------
 
-On startup, by defaut, Sarracenia redeclares resources and bindings to ensure they
-are uptodate. If the exchange already exists, this flag can be set to False, 
-so no attempt to exchange the queue is made, or it´s bindings.
-These options are useful on brokers that do not permit users to declare their exchanges.
+Au démarrage, par defaut, Sarracenia redéclare les ressources et les liaisons pour s’assurer qu’elles
+sont à jour. Si l’échange existe déjà, cet indicateur peut être défini a False,
+donc aucune tentative d’échange de la file d’attente n’est faite, ou il s’agit de liaisons.
+Ces options sont utiles sur les courtiers qui ne permettent pas aux utilisateurs de déclarer leurs échanges.
 
 
-
-expire <duration> (defaut: 5m  == five minutes. RECOMMEND OVERRIDING)
+expire <duration> (defaut: 5m  == cinq minutes. RECOMMENDE DE REMPLACER)
 ----------------------------------------------------------------------
 L'option *expire* est exprimee sous forme d'une duration... Ca fixe combien de temps
 une file d’attente devrait vivre sans connexions.
@@ -674,73 +676,67 @@ Un entier brut est exprimé en secondes, si un des suffixe m,h,d,w
 sont utilisés, puis l’intervalle est en minutes, heures, jours ou semaines. Après l’expiration de la file d’attente,
 le contenu est supprimé et des differences peuvent donc survenir dans le flux de données de téléchargement.  Une valeur de
 1d (jour) ou 1w (semaine) peut être approprié pour éviter la perte de données. Cela dépend de combien de temps
-l’abonné devrait s’arrêter et ne pas subir de perte de données.
+l’abonné est sensé s’arrêter et ne pas subir de perte de données.
+
+si aucune unité n’est donnée, un nombre décimal de secondes peut être fourni, tel que
+0,02 pour spécifier une durée de 20 millisecondes.
+
+Le paramètre **expire** doit être remplacé pour une utilisation opérationnelle.
+Le defaut est défini par une valeur basse car il définit combien de temps les ressources vont etre
+assigne au courtier, et dans les premières utilisations (lorsque le defaut etait de de 1 semaine), les courtiers
+étaient souvent surchargés de très longues files d’attente pour les tests restants.
 
 
-A raw integer is expressed in seconds, if the suffix m,h,d,w
-are used, then the interval is in minutes, hours, days, or weeks. After the queue expires,
-the contents are dropped, and so gaps in the download data flow can arise.  A value of
-1d (day) or 1w (week) can be appropriate to avoid data loss. It depends on how long
-the subscriber is expected to shutdown, and not suffer data loss.
-
-if no units are given, then a decimal number of seconds can be provided, such as
-to indicate 0.02 to specify a duration of 20 milliseconds.
-
-The **expire** setting must be overridden for operational use.
-The defaut is set low because it defines how long resources on the broker will be assigned,
-and in early use (when defaut was 1 week) brokers would often get overloaded with very
-long queues for left-over experiments.
-
-
-filename <keyword> (defaut:WHATFN)
+filename <mots-clés> (defaut:WHATFN)
 -----------------------------------
 
-From **metpx-sundew**, the support of this option give all sorts of possibilities
-for setting the remote filename. Some **keywords** are based on the fact that
-**metpx-sundew** filenames are five (to six) fields strings separated by for colons.
+De **metpx-sundew**, le support de cette option donne toutes sortes de possibilités
+pour définir le nom de fichier distant. Certains **keywords** sont basés sur le fait que
+les noms de fichiers **metpx-sundew** ont cinq (à six) champs de strings séparées par des deux-points.
 
-The defaut value on Sundew is NONESENDER, but in the interest of discouraging use
-of colon separation in files, the defaut in Sarracenia is WHATFN
+La valeur par defaut sur Sundew est NONESENDER, mais dans l’intérêt de décourager l’utilisation
+de la séparation par des deux-points dans les fichiers, le defaut dans Sarracenia est WHATFN
 
-The possible keywords are :
-
+Les mots-clés possibles sont :
 
 **WHATFN**
- - the first part of the Sundew filename (string before first :)
+ - la première partie du nom de fichier Sundew (chaîne avant la première :)
 
 **HEADFN**
- - HEADER part of the sundew filename
+ - Partie EN-TETE du nom de fichier sundew
 
 **SENDER**
- - the Sundew filename may end with a string SENDER=<string> in this case the <string> will be the remote filename
+ - le nom de fichier Sundew peut se terminer par une chaîne SENDER=<string> dans ce cas,
+   la <string> sera le nom de fichier distant
 
 **NONE**
- - deliver with the complete Sundew filename (without :SENDER=...)
+ -  livrer avec le nom du fichier Sundew complet (sans :SENDER=...)
 
 **NONESENDER**
- - deliver with the complete Sundew filename (with :SENDER=...)
+ -  livrer avec le nom de fichier Sundew complet (avec :SENDER=...)
 
 **TIME**
- - time stamp appended to filename. Example of use: WHATFN:TIME
+ - horodatage ajouté au nom de fichier. Exemple d’utilisation : WHATFN:TIME
 
 **DESTFN=str**
- - direct filename declaration str
+ - déclaration str direct du nom de fichier
 
 **SATNET=1,2,3,A**
- - cmc internal satnet application parameters
+ - Paramètres d’application satnet interne cmc
 
 **DESTFNSCRIPT=script.py**
- - invoke a script (same as destfn_script) to generate the name of the file to write
+ - appeler un script (identique à destfn_script) pour générer le nom du fichier à écrire
 
 
 
 flatten <string> (defaut: '/')
 -------------------------------
 
-The  **flatten**  option is use to set a separator character. The defaut value ( '/' )
-nullifies the effect of this option.  This character replaces the '/' in the url
-directory and create a "flatten" filename from its dd.weather.gc.ca path.
-For example retrieving the following url, with options::
+L’option **flatten** permet de définir un caractère de séparation. La valeur par defaut ( '/' )
+annule l’effet de cette option.  Ce caractère remplace le '/' dans l’url
+et crée un nom de fichier « flatten » à partir de son chemin d’accès dd.weather.gc.ca.
+Par exemple, récupérer l’URL suivante, avec les options ::
+
 
  http://dd.weather.gc.ca/model_gem_global/25km/grib2/lat_lon/12/015/CMC_glb_TMP_TGL_2_latlon.24x.24_2013121612_P015.grib2
 
@@ -748,138 +744,136 @@ For example retrieving the following url, with options::
    directory /mylocaldirectory
    accept    .*model_gem_global.*
 
-would result in the creation of the filepath::
+entraînerait la création du chemin d’accès au fichier::
 
  /mylocaldirectory/model_gem_global-25km-grib2-lat_lon-12-015-CMC_glb_TMP_TGL_2_latlon.24x.24_2013121612_P015.grib2
 
 follow_symlinks <flag>
 ----------------------
 
-The *follow_symlinks* option causes symbolic links to be traversed.  If *follow_symlinks* is set
-and the destination of a symbolic link is a file, then that destination file should be posted as well as the link.
-If the destination of the symbolic link is a directory, then the directory should be added to those being
-monitored by watch.   If *follow_symlinks* is false, then no action related to the destination of the symbolic
-link is taken.
-
+L’option *follow_symlinks* entraîne la traversée de liens symboliques. Si *follow_symlinks* est défini
+et la destination d’un lien symbolique est un fichier, alors ce fichier de destination doit être publié ainsi que le lien.
+Si la destination du lien symbolique est un répertoire, le répertoire doit être ajouté à ceux qui sont
+surveillé par "watch". Si *follow_symlinks* est faux, alors aucune action liée à la destination du
+lien symbolique est prise.
 
 force_polling <flag> (defaut: False)
 -------------------------------------
 
-By defaut, watch selects an (OS dependent) optimal method to watch a
-directory. 
+Par defaut, "watch" sélectionne une méthode optimale (dépendante du système d’exploitation) pour regarder un
+répertoire.
 
-For large trees, the optimal method can be manyfold (10x or even
-100x) faster to recognize when a file has been modified. In some cases,
-however, platform optimal methods do not work (such as with some network
-shares, or distributed file systems), so one must use a slower but more
-reliable and portable polling method.  The *force_polling* keyword causes
-watch to select the polling method in spite of the availability of a
-normally better one.  
+Pour les grandes arborescence, la méthode optimale peut être plusieur fois (10x ou même
+100x) plus rapide à reconnaître lorsqu’un fichier a été modifié. Dans certains cas
+cependant, les méthodes optimales de plateforme ne fonctionnent pas (comme avec certains réseaux,
+partages, ou systèmes de fichiers distribués), il faut donc utiliser un système plus lent mais avec une methode
+de "polling" plus fiable et portable.  Le mot-clé *force_polling* oblige "watch" a sélectionner
+la méthode de "polling" malgré la fait qu'il y ait une meilleur option de disponible.
 
-For a detailed discussion, see: `Detecting File Changes <../Explanation/DetectFileHasChanged.html>`_
+Pour une discussion détaillée, voir:
+ `Detecting File Changes <../Explanation/DetectFileHasChanged.html>`_
 
 NOTE::
 
-  When directories are consumed by processes using the subscriber *delete* option, they stay empty, and
-  every file should be reported on every pass.  When subscribers do not use *delete*, watch needs to
-  know which files are new.  It does so by noting the time of the beginning of the last polling pass.
-  File are posted if their modification time is newer than that.  This will result in many multiple posts
-  by watch, which can be minimized with the use of cache.   One could even depend on the cache
-  entirely and turn on the *delete* option, which will have watch attempt to post the entire tree
-  every time (ignoring mtime).
+  Lorsque les répertoires sont consommés par des processus en utilisant l’option *delete* de l’abonné, ils restent vides, et
+  chaque fichier doit être signalé à chaque passage.  Lorsque les abonnés n’utilisent pas *delete*, "watch" doit
+  savoir quels fichiers sont nouveaux.  Il le fait en notant l’heure du début de la dernière passe du "polling".
+  Les fichiers sont publiés si leur heure de modification est plus récente que cela. Cela se traduira par de
+  nombreux posts de "watch", qui peuvent être minimisés avec l’utilisation de la cache. On pourrait même dépendre
+  de la cache entièrement et activez l’option *delete*, ou "watch" pourra tenter de publier l’arborescence entiere
+  à chaque fois (en ignorant mtime).
 
-  **KNOWN LIMITATION**: When *force_polling* is set, the *sleep* setting should be
-  at least 5 seconds. It is not currently clear why.
+  **LIMITATION CONNUE** : Lorsque *force_polling* est défini, le paramètre *sleep* doit être
+  au moins 5 secondes. À l’heure actuelle, on ne sait pas pourquoi.
 
-header <name>=<value>
+header <name>=<valeur>
 ---------------------
 
-Add a <name> header with the given value to advertisements. Used to pass strings as metadata in the
-advertisements to improve decision making for consumers.  Should be used sparingly. There are limits
-on how many headers can be used, and minimizing the size of messages has important performance
-impacts.
+Ajoutez une en-tête <name> avec la valeur donnée aux publicités. Utilisé pour transmettre des strings en tant
+que métadonnées dans les publicités pour améliorer la prise de décision des consommateurs.  Doit être utilisé
+avec parcimonie. Il y a des limites sur le nombre d’en-têtes pouvant être utilisés, et la réduction de la
+taille des messages a des impacts importants sur la performance.
 
-
-housekeeping <interval> (defaut: 300 seconds)
+housekeeping <interval> (defaut: 300 secondes)
 ----------------------------------------------
 
-The **housekeeping** option sets how often to execute periodic processing as determined by
-the list of on_housekeeping plugins. By defaut, it prints a log message every houskeeping interval.
+L’option **housekeeping** définit la fréquence d’exécution du traitement périodique tel que déterminé par
+la liste des plugins on_housekeeping. Par defaut, il imprime un message de journal à chaque intervalle de housekeeping.
 
 include config
 --------------
 
-include another configuration within this configuration.
+inclure une autre configuration dans cette configuration.
 
 
-inflight <string> (defaut: .tmp or NONE if post_broker set)
+inflight <string> (defaut: .tmp ou NONE si post_broker est definit)
 ------------------------------------------------------------
 
-The  **inflight**  option sets how to ignore files when they are being transferred
-or (in mid-flight betweeen two systems). Incorrect setting of this option causes
-unreliable transfers, and care must be taken.  See `Delivery Completion <../Explanation/FileCompletion.html>`_
-for more details.
+L’option **inflight** définit comment ignorer les fichiers lorsqu’ils sont transférés
+ou (en plein vol entre deux systèmes). Un réglage incorrect de cette option provoque des
+transferts peu fiables, et des précautions doivent être prises.  Voir
+`Delivery Completion <../Explanation/FileCompletion.html>`_ pour plus de détails.
 
-The value can be a file name suffix, which is appended to create a temporary name during
-the transfer.  If **inflight**  is set to **.**, then it is a prefix, to conform with
-the standard for "hidden" files on unix/linux.
-If **inflight**  ends in / (example: *tmp/* ), then it is a prefix, and specifies a
-sub-directory of the destination into which the file should be written while in flight.
+La valeur peut être un suffixe de nom de fichier, qui est ajouté pour créer un nom temporaire pendant
+le transfert.  Si **inflight** est défini a **.**, alors il s’agit d’un préfixe pour se conformer à
+la norme des fichiers « cachés » sur unix/linux.
+Si **inflight** se termine par / (exemple : *tmp/* ), alors il s’agit d’un préfixe, et spécifie un
+sous-répertoire de la destination dans lequel le fichier doit être écrit pendant qu'il est en vol.
 
-Whether a prefix or suffix is specified, when the transfer is
-complete, the file is renamed to its permanent name to allow further processing.
+Si un préfixe ou un suffixe est spécifié, lorsque le transfert est
+terminé, le fichier est renommé à son nom permanent pour permettre un traitement ultérieur.
 
-When posting a file with sr3_post, sr3_cpost, or sr3_watch, the  **inflight**  option
-can also be specified as a time interval, for example, 10 for 10 seconds.
-When set to a time interval, file posting process ensures that it waits until
-the file has not been modified in that interval. So a file will
-not be processed until it has stayed the same for at least 10 seconds.
-If you see the error message::
+Lors de la publication d’un fichier avec sr3_post, sr3_cpost ou sr3_watch, l’option **inflight**
+peut également être spécifié comme une intervalle de temps, par exemple, 10 pour 10 secondes.
+Lorsque l'option est défini sur une intervalle de temps, le processus de publication de fichiers attends
+jusqu’à ce que le fichier n’ai pas été modifié pendant cet intervalle. Ainsi, un fichier
+ne peux pas être traité tant qu’il n’est pas resté le même pendant au moins 10 secondes.
+Si le message d’erreur suivant s’affiche ::
 
     inflight setting: 300, not for remote
 
-It is because the time interval setting is only supported by sr3_post/sr3_cpost/sr3_watch.
-in looking at local files before generating a post, it is not used as say, a means
-of delaying sending files.
+C'est parce que le paramètre d’intervalle de temps n’est pris en charge que par sr3_post/sr3_cpost/sr3_watch.
+En regardant les fichiers locaux avant de générer un message, il n’est pas utilisé comme prescrit, un moyen
+de retarder l’envoi des fichiers.
 
-Lastly, **inflight** can be set to *NONE*, which case the file is written directly
-with the final name, where the recipient will wait to receive a post notifying it
-of the file's arrival.  This is the fastest, lowest overhead option when it is available.
-It is also the defaut when a *post_broker* is given, indicating that some
-other process is to be notified after delivery.
-
+Enfin, **inflight** peut être réglé a *NONE*. Dans ce cas, le fichier est écrit directement
+avec le nom final, où le destinataire attendra pour recevoir un post pour notifier l’arrivée du fichier.
+Il s’agit de l’option la plus rapide et la moins coûteuse lorsqu’elle est disponible.
+C’est aussi le defaut lorsqu’un *post_broker* est donné, indiquant qu'un autre processus doit être
+notifié après la livraison.
 
 inline <flag> (defaut: False)
 ------------------------------
 
-When posting messages, The **inline** option is used to have the file content
-included in the post. This can be efficient when sending small files over high
-latency links, a number of round trips can be saved by avoiding the retrieval
-of the data using the URL.  One should only inline relatively small files,
-so when **inline** is active, only files smaller than **inlineByteMax** bytes
-(defaut: 1024) will actually have their content included in the post messages.
-If **inlineOnly** is set, and a file is larger than inlineByteMax, the file
-will not be posted.
+Lors de la publication de messages, l’option **inline** est utilisée pour avoir le contenu du fichier
+inclus dans le post. Cela peut être efficace lors de l’envoi de petits fichiers sur un niveau élevé de
+liens de latence, un certain nombre d’allers-retours peuvent être enregistrés en évitant la récupération
+des données utilisant l’URL.  On ne devrait seulement utiliser *inline* pour des fichiers relativement petits.
+Lorsque **inline** est actif, seuls les fichiers inférieurs à **inlineByteMax** octets
+(defaut: 1024) auront reelement leur contenu inclus dans les messages de post.
+Si **inlineOnly** est défini et qu’un fichier est plus volumineux que inlineByteMax, le fichier
+ne sera pas affiché.
 
 inlineByteMax <size>
 --------------------
-
-the maximums size of messages to inline.
+la taille maximale des messages à envoyer inline.
 
 inlineOnly
 ----------
-
-discard messages if the data is not inline.
-
+ignorer les messages si les données ne sont pas inline.
 
 inplace <flag> (defaut: On)
 ----------------------------
 
-Large files may be sent as a series of parts, rather than all at once.
-When downloading, if **inplace** is true, these parts will be appended to the file
-in an orderly fashion. Each part, after it is inserted in the file, is announced to subscribers.
-This can be set to false for some deployments of sarracenia where one pump will
-only ever see a few parts, and not the entirety, of multi-part files.
+Les fichiers volumineux peuvent être envoyés en plusieurs parties, plutôt que de tout en même temps.
+Lors du téléchargement, si **inplace** est True, ces parties seront rajoutées au fichier
+de manière ordonnée. Chaque partie, après avoir été insérée dans le fichier, est annoncée aux abonnés.
+Cela peut être défini a False pour certains déploiements de sarracenia où une pompe
+ne voie que quelques parties, et non l’intégralité de fichiers en plusieurs parties.
+
+L’option **inplace** est True par defaut.
+Dependamment de **inplace** et si le message était une partie, le chemin peut
+modifier à nouveau (en ajoutant un suffixe de pièce si nécessaire).
 
 The **inplace** option defauts to True.
 Depending of **inplace** and if the message was a part, the path can
