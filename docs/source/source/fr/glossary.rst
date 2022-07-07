@@ -19,3 +19,4 @@ GLOSSARY
 - Plugins........Plugins(?)
 - Post...........Article
 - topic......thème
+- mirror ....

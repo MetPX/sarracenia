@@ -873,149 +873,143 @@ ne voie que quelques parties, et non l’intégralité de fichiers en plusieurs 
 
 L’option **inplace** est True par defaut.
 Dependamment de **inplace** et si le message était une partie, le chemin peut
-modifier à nouveau (en ajoutant un suffixe de pièce si nécessaire).
-
-The **inplace** option defauts to True.
-Depending of **inplace** and if the message was a part, the path can
-change again (adding a part suffix if necessary).
-
+encore changer (en ajoutant un suffixe de pièce si nécessaire).
 
 Instances
 ---------
 
-Sometimes one instance of a component and configuration is not enough to process & send all available notifications.
+Parfois, une instance d’un composant et d’une configuration ne suffit pas pour traiter et envoyer toutes
+les notifications disponibles.
 
-**instances      <integer>     (defaut:1)**
+**instances <entier> (defaut:1)**
 
-The instance option allows launching several instances of a component and configuration.
-When running sender for example, a number of runtime files are created.
-In the ~/.cache/sarra/sender/configName directory::
+L’option d’instance permet de lancer plusieurs instances d’un composant et d’une configuration.
+Lors de l’exécution de sender par exemple, un nombre de fichiers d’exécution sont créés dans
+le répertoire ~/.cache/sarra/sender/configName ::
 
-  A .sender_configname.state         is created, containing the number instances.
-  A .sender_configname_$instance.pid is created, containing the PID  of $instance process.
+  A .sender_configname.state         est créé, contenant le nombre d’instances.
+  A .sender_configname_$instance.pid est créé, contenant le PID du processus $instance .
 
-In directory ~/.cache/sarra/log::
+Dans le reportoire ~/.cache/sarra/log::
 
-  A .sender_configname_$instance.log  is created as a log of $instance process.
+  Un .sender_configname_$instance.log  est créé en tant que journal du processus $instance.
 
 .. Note::
 
-  While the brokers keep the queues available for some time, queues take resources on 
-  brokers, and are cleaned up from time to time. A queue which is not accessed 
-  and has too many (implementation defined) files queued will be destroyed.
-  Processes which die should be restarted within a reasonable period of time to avoid
-  loss of notifications. A queue which is not accessed for a long (implementation dependent)
-  period will be destroyed. 
+  Alors que les courtiers gardent les files d’attente disponibles pendant un certain temps, les files d’attente
+  prennent des ressources sur les courtiers, et sont nettoyés de temps en temps. Une file d’attente qu'on
+  n’accède pas et a trop de fichiers (définis par l’implémentation) en file d’attente seront détruits.
+  Les processus qui meurent doivent être redémarrés dans un délai raisonnable pour éviter la
+  perte de notifications. Une file d’attente qu'on n’accède pas pendant une longue période
+  (dépendant de l’implémentation) sera détruite.
 
 integrity <string>
 ------------------
 
-All file posts include a checksum.  It is placed in the amqp message header will have as an
-entry *sum* with defaut value 'd,md5_checksum_on_data'.
-The *sum* option tell the program how to calculate the checksum.
-In v3, they are called Integrity methods::
+Tous les posts de fichiers incluent une somme de contrôle. Elle est placée dans l’en-tête du message amqp
+et aura comme entrée *sum* avec la valeur de defaut 'd,md5_checksum_on_data'.
+L’option *sum* indique au programme comment calculer la somme de contrôle.
+Dans la v3, elles sont appelées Integrity methods (méthodes d’intégrité) ::
 
-         cod,x      - Calculate On Download applying x
-         sha512     - do SHA512 on file content  (defaut)
-         md5        - do md5sum on file content
-         md5name    - do md5sum checksum on filename 
-         random     - invent a random value for each post.
-         arbitrary  - apply the literal fixed value.
+         cod,x      - Calcuer On Download en appliquant x
+         sha512     - faire SHA512 sur le contenu du fichier (defaut)
+         md5        - faire md5sum sur le contenu du fichier
+         md5name    - faire la somme de controle md5sum sur le nom du fichier
+         random     - inveter une valeur aleatoire pour chaque poste.
+         arbitrary  - appliquer la valeur fixe littérale.
 
-v2 options are a comma separated string.  Valid checksum flags are :
+Les options v2 sont une string séparée par des virgules.  Les indicateurs de somme de contrôle valides sont :
 
-* 0 : no checksum... value in post is a random integer (only for testing/debugging.)
-* d : do md5sum on file content 
-* n : do md5sum checksum on filename
-* p : do SHA512 checksum on filename and partstr [#]_
-* s : do SHA512 on file content (defaut)
-* z,a : calculate checksum value using algorithm a and assign after download.
+* 0 : aucune somme de contrôle... la valeur dans le post est un entier aléatoire (uniquement pour tester/débogger).
+* d : faire md5sum sur le contenu du fichier
+* n : faire la somme de controle md5sum sur le nom du fichier
+* p : faire la somme de controle SHA512 sur le nom du fichier et sur partstr [#]_
+* s : faire SHA512 sur le contenu du fichier (defaut)
+* z,a : calculer la valeur de la somme de controle en utilisant l'algorithme a et l'assigner apres le telechargement.
 
-.. [#] only implemented in C. ( see https://github.com/MetPX/sarracenia/issues/117 )
+.. [#] seulement implementer en C. ( voir https://github.com/MetPX/sarracenia/issues/117 )
 
 
 logEvents ( defaut: after_accept,after_work,on_housekeeping )
 --------------------------------------------------------------
 
-emit standard log messages at the given points in message processing.
-other values: on_start, on_stop, post, gather, ... etc...
+émettre des messages de journal standard au moment approprie du traitement des messages.
+autres valeurs : on_start, on_stop, post, gather, ... etc...
 
 logLevel ( defaut: info )
 --------------------------
-
-The level of logging as expressed by python's logging. Possible values are :  critical, error, info, warning, debug.
+Niveau de journalisation exprimé par la journalisation de python. Les valeurs possibles sont :
+critical, error, info, warning, debug.
 
 logReject ( defaut: False )
 ----------------------------
 
-Normally, messages rejection is done silently. When logReject is True, a log message will be generated for
-each message rejected, and indicating the basis for the rejection.
+Normalement, le rejet des messages se fait en silence. Lorsque logReject a la valeur True, un message
+de journal est généré pour chaque message rejeté et indiquant la raison du rejet.
 
 logStdout ( defaut: False )
 ----------------------------
 
-The *logStdout* disables log management. Best used on the command line, as there is
-some risk of creating stub files before the configurations are completely parsed::
+*logStdout* désactive la gestion des journaux. Il vaut mieux l'utilisé sur la ligne de commande, car il y a
+certains risques de créer des fichiers stub avant que les configurations ne soient complètement analysées ::
 
        sr3 --logStdout start
 
-All launched processes inherit their file descriptors from the parent. so all output is like an interactive session.
+Tous les processus lancés héritent leurs descripteurs de fichier du parent. Donc toutes les sorties sont
+comme une session interactive.
 
-This is in contrast to the normal case, where each instance takes care of its logs, rotating and purging periodically.
-In some cases, one wants to have other software take care of logs, such as in docker, where it is preferable for all
-logging to be to standard output.
+Cela contraste avec le cas normal, où chaque instance prend soin de ses journaux, en tournant et en purgeant
+périodiquement. Dans certains cas, on veut que d’autres logiciels s’occupent de la journalisation, comme dans docker,
+où c’est préférable que toute la journalisation soit une sortie standard.
 
-It has not been measured, but there is a reasonable likelihood that use of *logStdout* with large configurations (dozens
-of configured instances/processes) will cause either corruption of logs, or limit the speed of execution of all processes
-writing to stdout.
-
+Ca n’a pas été mesuré, mais il est probable que l’utilisation de *logStdout* avec de grandes configurations
+(des dizaines d'instances configurés/processus) entraînera soit une corruption des journaux, ou limitera
+la vitesse d’exécution de tous les processus qui ecrivent à stdout.
 
 logRotateCount <max_logs> ( defaut: 5 )
 ----------------------------------------
 
-Maximum number of logs archived.
+Nombre maximal de journaux archivés.
 
-logRotateInterval <interval>[<time_unit>] ( defaut: 1d )
+logRotateInterval <intervale>[<unite_de_temps>] ( defaut: 1d )
 ---------------------------------------------------------
 
-The duration of the interval with an optionel time unit (ie 5m, 2h, 3d)
-
+La durée de l’intervalle avec une unité de temps optionel (soit 5m, 2h, 3d)
 
 messageCountMax <count> (defaut: 0)
 ------------------------------------
 
-If **messageCountMax** is greater than zero, the flow will exit after processing the given
-number of messages.  This is normally used only for debugging.
+Si **messageCountMax** est supérieur à zéro, le flux se ferme après avoir traite le nombre de messages specifiee.
+Ceci est normalement utilisé pour le débogage uniquement.
 
 messageRateMax <float> (defaut: 0)
 -------------------------------------
 
-if **messageRateMax** is greater than zero, the flow attempts to respect this delivery
-speed in terms of messages per second. Note that the throttle is on messages obtained or generated
-per second, prior to accept/reject filtering. the flow will sleep to limit the processing rate.
+Si **messageRateMax** est supérieur à zéro, le flux essaye de respecter cette vitesse de livraison en termes de
+messages par seconde. Notez que la limitation est sur les messages obtenus ou générés par seconde, avant le
+filtrage accept/reject. Le flux va dormir pour limiter le taux de traitement.
 
 
 messageRateMin <float> (defaut: 0)
 -------------------------------------
 
-if **messageRateMin** is greater than zero, and the flow detected is lower than this rate,
-a warning message will be produced:
-
+Si **messageRateMin** est supérieur à zéro et que le flux détecté est inférieur à ce taux,
+un message d’avertissement sera produit :
 
 message_ttl <duration>  (defaut: None)
 ---------------------------------------
 
-The  **message_ttl**  option set the time a message can live in the queue.
-Past that time, the message is taken out of the queue by the broker.
+L’option **message_ttl** définit un temps pour laquel un message peut vivre dans la file d’attente.
+Apres ce temps, le message est retiré de la file d’attente par le courtier.
 
 mirror <flag> (defaut: off)
 ----------------------------
 
-The  **mirror**  option can be used to mirror the dd.weather.gc.ca tree of the files.
-If set to  **True**  the directory given by the  **directory**  option
-will be the basename of a tree. Accepted files under that directory will be
-placed under the subdirectory tree leaf where it resides under dd.weather.gc.ca.
-For example retrieving the following url, with options::
+L’option **miroir** peut être utilisée pour mettre en miroir l’arborescence des fichiers de dd.weather.gc.ca.
+Si l'option est défini a **True** le répertoire donné par l’option **directory** sera le nom de base
+de l'arborescence. Les fichiers acceptés sous ce répertoire seront placé sous le sous-répertoire
+de l'arborescence où il réside dans dd.weather.gc.ca.
+Par exemple, récupérer l’URL suivante, avec des options::
 
  http://dd.weather.gc.ca/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
 
@@ -1023,57 +1017,64 @@ For example retrieving the following url, with options::
    directory /mylocaldirectory
    accept    .*RADAR.*
 
-would result in the creation of the directories and the file
+entraînerait la création des répertoires et du fichier
 /mylocaldirectory/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
-mirror settings can be changed between directory options.
+Les paramètres de mirror peuvent être modifiés entre les options de répertoire.
 
 no <count>
 ----------
 
-Present on instances started by the sr3 management interface.
-The no option is only used on the command line, and not intended for users.
-It is an option for use by sr3 when spawning instances to inform each process
-which instance it is. e.g instance 3 will be spawned with --no 3 
-
+Présent sur les instances démarrées par l’interface de gestion sr3.
+L’option no est seulement utilisée sur la ligne de commande et n’est pas destinée aux utilisateurs.
+Il s’agit d’une option à utiliser par sr3 lors de la génération (spawning) d’instances pour informer chaque processus
+de quelle instance il s’agit. Par exemple, l’instance 3 sera générée avec --no 3
  
 nodupe_ttl <off|on|999[smhdw]> 
 ------------------------------
 
-When **nodupe_ttl** (also **suppress_duplicates*, and **cache** ) is set to a non-zero time 
-interval, each new message is compared against ones received within that interval, to see if 
-it is a duplicate. Duplicates are not processed further. What is a duplicate? A file with 
-the same name (including parts header) and checksum. Every *hearbeat* interval, a cleanup 
-process looks for files in the cache that have not been referenced in **cache** seconds, 
-and deletes them, in order to keep the cache size limited. Different settings are 
-appropriate for different use cases.
 
-A raw integer interval is in seconds, if the suffix m,h,d, or w are used, then the interval
-is in minutes, hours, days, or weeks. After the interval expires the contents are
-dropped, so duplicates separated by a large enough interval will get through.
-A value of 1d (day) or 1w (week) can be appropriate.  Setting the option without specifying
-a time will result in 300 seconds (or 5 minutes) being the expiry interval.
-
-**Use of the cache is incompatible with the defaut *parts 0* strategy**, one must specify an
-alternate strategy.  One must use either a fixed blocksize, or always never partition files.
-One must avoid the dynamic algorithm that will change the partition size used as a file grows.
-
-**Note that the duplicate suppresion store is local to each instance**. When N
-instances share a queue, the first time a posting is received, it could be
-picked by one instance, and if a duplicate one is received it would likely
-be picked up by another instance. **For effective duplicate suppression with instances**,
-one must **deploy two layers of subscribers**. Use
-a **first layer of subscribers (shovels)** with duplicate suppression turned
-off and output with *post_exchangeSplit*, which route posts by checksum to
-a **second layer of subscibers (winnow) whose duplicate suppression caches are active.**
+Lorsque **nodupe_ttl** (également **suppress_duplicates* et **cache** ) est défini a une intervalle de temps
+qui est différente de zéro, chaque nouveau message est comparé à ceux reçus dans cet intervalle, pour verifier si
+c’est un doublon. Les doublons ne sont pas traités ultérieurement. Qu’est-ce qu’un doublon ? Un fichier avec
+le même nom (y compris l’en-tête des pièces) et la meme somme de contrôle. A chaque intervalle de *hearbeat*, un
+processus de nettoyage recherche les fichiers dans la cache qui n’ont pas été referee en **cache** secondes,
+et les supprime, afin de limiter la taille du cache. Différents paramètres sont
+cela est approprié pour différents cas d’utilisation.
 
 
-nodupe_basis <data|name|path> (defaut: path)
+Une intervalle d'entier brut est en secondes sauf si le suffixe m, h, d ou w est utilisé. Dans ce cas l’intervalle
+est en minutes, heures, jours ou semaines respectivement. Après l’expiration de l’intervalle, le contenu est
+abandonné, de sorte que les doublons séparés par une intervalle suffisamment grande passeront.
+Une valeur de 1d (jour) ou 1w (semaine) est appropriée.  Définir l’option sans spécifier
+un temps correspondra a 300 secondes (ou 5 minutes) comme intervalle d’expiration.
+
+**L’utilisation de la cache est incompatible avec la stratégie de defaut *parts 0***, il faut spécifier une
+stratégie alternative.  Il faut utiliser soit une taille de bloc fixe, ou ne jamais partitionner les fichiers.
+Il faut éviter l’algorithme dynamique qui modifiera la taille de la partition utilisée au fur et à
+mesure qu’un fichier grandit.
+
+FIXME:
+**Notez que le storage de suppresion de doublons est local à chaque instance**. Lorsque un nombre N d'instances partagent
+une file d’attente, la première fois qu’une publication est reçue, elle peut se faire choisir par une instance,
+et si un doublon est ensuite reçu, il sera probablement choisi par une autre instance.
+**Pour une suppression efficace des doublons avec les instances**, il faut **déployer deux couches d’abonnés**.
+Utiliser une **première couche d’abonnés (shovels)** avec la suppression de doublons etteinte et
+utliser *post_exchangeSplit* pour la sortie. Cela achemine les publications en utilisant la somme de contrôle vers
+une **deuxième couche d’abonnés (winnow) dont les caches de suppression des doublons sont actives.**
+
+
+nodupe_basis <donnes|nom|chemin> (defaut: chemin)
 ---------------------------------------------
 
-A keyword option (alternative: *cache_basis* ) to identify which files are compared for
-duplicate suppression purposes. Normally, the duplicate suppression uses the entire path
-to identify files which have not changed. This allows for files with identical
-content to be posted in different directories and not be suppressed. In some
+Une option sous forme de mot-clé (alternative: *cache_basis* ) pour identifier quels fichiers sont comparés
+à des fins de suppression des doublons. Normalement, la suppression des doublons utilise l’intégralité du
+chemin d’accès pour identifier les fichiers qui n’ont pas été modifiés. Cela permet aux fichiers avec un contenu
+identique d'être publié dans différents répertoires et de ne pas être supprimé. Dans certains cas
+cas, la suppression de fichiers identiques devrait être effectuée quel que soit l’endroit où se trouve
+le fichier.  Définissez 'nom' pour les fichiers de nom identique, mais dans
+différents répertoires à considérer comme des doublons. Définissez sur 'données' pour n’importe quel fichier,
+quel que soit le nom, à considérer comme un doublon si la somme de contrôle correspond.
+
 cases, suppression of identical files should be done regardless of where in
 the tree the file resides.  Set 'name' for files of identical name, but in
 different directories to be considered duplicates. Set to 'data' for any file,
