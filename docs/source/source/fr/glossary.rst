@@ -17,3 +17,4 @@ GLOSSARY
 - regexp pattern...Modèle regexp
 - checksum........ checksum (somme de controle?)
 - topic......thème
+- mirror ....
