@@ -442,7 +442,7 @@ class Message(dict):
             msg['exchange'] = o.exchange
 
         msg['local_offset'] = 0
-        msg['_deleteOnPost'] = set(['exchange', 'local_offset', 'subtopic'])
+        msg['_deleteOnPost'] = set(['exchange', 'local_offset', 'subtopic', 'version'])
 
         # notice
         msg['pubTime'] = timeflt2str(time.time())
