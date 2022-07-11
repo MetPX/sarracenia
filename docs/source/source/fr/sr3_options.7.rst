@@ -1071,381 +1071,368 @@ Une option sous forme de mot-clé (alternative: *cache_basis* ) pour identifier 
 chemin d’accès pour identifier les fichiers qui n’ont pas été modifiés. Cela permet aux fichiers avec un contenu
 identique d'être publié dans différents répertoires et de ne pas être supprimé. Dans certains cas
 cas, la suppression de fichiers identiques devrait être effectuée quel que soit l’endroit où se trouve
-le fichier.  Définissez 'nom' pour les fichiers de nom identique, mais dans
-différents répertoires à considérer comme des doublons. Définissez sur 'données' pour n’importe quel fichier,
-quel que soit le nom, à considérer comme un doublon si la somme de contrôle correspond.
+le fichier.  Définissez 'nom' pour les fichiers de nom identique, mais qui sont dans des répertoires
+différents pour qu'ils puissent etre considérer comme des doublons. Définissez 'données' pour n’importe quel fichier,
+quel que soit le nom, pour qu'il puisse etre considére comme un doublon si la somme de contrôle correspond.
 
-cases, suppression of identical files should be done regardless of where in
-the tree the file resides.  Set 'name' for files of identical name, but in
-different directories to be considered duplicates. Set to 'data' for any file,
-regardless of name, to be considered a duplicate if the checksum matches.
-
-This is implemented as an alias for:
+Ceci est implémenté en tant qu’alias pour :
 
  callback_prepend nodupe.name
 
-or:
+ou:
 
  callback_prepend nodupe.data
 
 nodupe_fileAgeMax
 -----------------
 
-If files are older than this setting (defaut: 30d), then ignore them, they are too
-old to post.
-
+Si les fichiers sont plus anciens que ce paramètre (defaut: 30d), ignorez-les, ils sont trop
+ancien pour qu'il puisse etre postee.
 
 outlet post|json|url (defaut: post)
 ------------------------------------
 
-The **outlet** option is used to allow writing of posts to file instead of
-posting to a broker. The valid argument values are:
+L’option **outlet** est utilisée pour permettre l’écriture d'un poste a un fichier au lieu de
+l'afficher à un courtier. Les valeurs d’argument valides sont les suivantes :
+
 
 **post:**
 
-  post messages to an post_exchange
+  poster un messages a un post_exchange
 
-  **post_broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
-  **post_exchange     <name>         (MANDATORY)**
+  **post_broker amqp{s}://<utilisateur>:<mot-de-passe>@<brokerhost>[:port]/<vhost>**
+  **post_exchange     <nom>         (OBLIGATOIRE)**
   **post_topicPrefix <string>       (defaut: "v03")**
   **on_post           <script>       (defaut: None)**
 
-  The **post_broker** defauts to the input broker if not provided.
-  Just set it to another broker if you want to send the notifications
-  elsewhere.
+  Si aucun courtier n'est fourni, le **post_broker** sera defini par le courtier d'entrer par defaut.
+  Il suffit de définir l'option a un autre courtier si vous souhaitez envoyer les notifications
+  ailleurs.
 
-  The **post_exchange** must be set by the user. This is the exchange under
-  which the notifications will be posted.
+  Le **post_exchange** doit être défini par l’utilisateur. C’est l’échange sous lequel
+  les notifications seront publiées.
 
 **json:**
 
-  write each message to standard output, one per line in the same json format used for
-  queue save/restore by the python implementation.
+  écrire chaque message en sortie standard, un par ligne dans le même format json que celui utilisé pour
+  l'enregistrement et la restauration de la file d’attente par l’implémentation python.
 
 **url:**
 
-  just output the retrieval URL to standard output.
+  il suffit de sortir l’URL de récupération vers la sortie standard.
 
-FIXME: The **outlet** option came from the C implementation ( *sr3_cpump*  ) and it has not
-been used much in the python implementation.
+FIXME: L’option **outlet** provient de l’implémentation C ( *sr3_cpump* ) et elle n’a pas
+a été beaucoup utilisé dans l’implémentation python.
+
 
 overwrite <flag> (defaut: off)
 -------------------------------
 
-The  **overwrite**  option,if set to false, avoid unnecessary downloads under these conditions :
+L’option **overwrite**, si définie a false, évite les téléchargements inutiles sous ces conditions :
 
-1- the file to be downloaded is already on the user's file system at the right place and
+1- le fichier à télécharger se trouve déjà dans le système de fichiers de l’utilisateur et est au bon endroit
 
-2- the checksum of the amqp message matched the one of the file.
+2- la somme de contrôle du message amqp correspond à celle du fichier.
 
-The defaut is False.
+Le defaut est False.
 
-path <path>
+path <chemin>
 -----------
 
-**post** evaluates the filesystem path from the **path** option
-and possibly the **post_baseDir** if the option is used.
+**post** évalue le chemin d’accès du système de fichiers à partir de l’option **path**
+et éventuellement **post_baseDir** si cette option est utilisée.
 
-If a path defines a file then this file is watched.
+Si un chemin d’accès définit un fichier, ce fichier est surveillé.
 
-If a path defines a directory then all files in that directory are
-watched...
+Si ce chemin définit un répertoire, tous les fichiers de ce répertoire sont
+surveillé et si **watch** trouve un (ou plusieurs) répertoire(s), il
+les regarde de manière récursive jusqu’à ce que toute l'arborescence soit scanné.
 
-If this path defines a directory, all files in that directory are
-watched and should **watch** find one (or more) directory(ies), it
-watches it(them) recursively until all the tree is scanned.
-
-The AMQP announcements are made of the tree fields, the announcement time,
-the **url** option value and the resolved paths to which were withdrawn
+Les annonces AMQP consistent des champs de l’arborescence, de l’heure d’annonce,
+la valeur de l’option **url**, et FIXME: and the resolved paths to which were withdrawn
 the *post_baseDir* present and needed.
 
 
 permdefault, permDirdefault, permLog, permCopy
 ----------------------------------------------
 
-Permission bits on the destination files written are controlled by the *permCopy* directives.
-*permCopy* will apply the mode permissions posted by the source of the file.
-If no source mode is available, the *permdefault* will be applied to files, and the
-*permLog* will be applied to directories. If no defaut is specified,
-then the operating system  defauts (on linux, controlled by umask settings)
-will determine file permissions. (Note that the *chmod* option is interpreted as a synonym
-for *permdefault*, and *chmod_dir* is a synonym for *permDirdefault*).
+Les bits d’autorisation sur les fichiers de destination écrits sont contrôlés par les directives *permCopy*.
+*permCopy* appliquera les autorisations de mode publiées par la source du fichier.
+Si aucun mode de source est disponible, le *permdefault* sera appliqué aux fichiers et le
+*permLog* sera appliqué aux répertoires. Si aucun défaut est spécifié, les defauts du système d’exploitation
+(sur linux, contrôlé par les paramètres umask) déterminera les autorisations du fichier.
+(Notez que l’option *chmod* est interprétée comme un synonyme pour *permdefault*,
+et *chmod_dir* est un synonyme de *permDirdefault*).
 
-When set in a posting component, permCopy has the effect of including or excluding
-the *mode* header from the messages.
+Lorsqu’il est défini dans un composant de posting, permCopy peut soit inclure ou exclure
+l’en-tête *mode* des messages.
 
-when set in a polling component, permdefault has the of setting minimum permissions for
-a file to be accepted.
-(on an ls output that looks like: ---r-----, like a chmod 040 <file> command).
-The **permdefault** options specifies a mask, that is the permissions must be
-at least what is specified.
+lorsqu’il est défini dans un composant de polling, permdefault definit les autorisations minimales pour
+qu'un dossier puis etre accepte.
 
+(sur une sortie ls qui ressemble à : ---r-----, comme une commande chmod 040 <fichier> ).
+Les options **permdefault** spécifient un masque, c’est-à-dire que les autorisations doivent être
+au moins ce qui est spécifié.
 
-post_baseDir <path> 
+post_baseDir <chemin>
 -------------------
 
-The *post_baseDir* option supplies the directory path that, when combined (or found)
-in the given *path*, gives the local absolute path to the data file to be posted.
-The *post_baseDir* part of the path will be removed from the posted announcement.
-For sftp urls it can be appropriate to specify a path relative to a user account.
-Example of that usage would be: --post_baseDir ~user --url sftp:user@host
-For file: url's, baseDir is usually not appropriate. To post an absolute path,
-omit the --post_baseDir setting, and just specify the complete path as an argument.
+L’option *post_baseDir* fournit le chemin d’accès au répertoire qui, lorsqu’il est combiné (ou trouvé)
+dans le *path* donné, donne le chemin absolu local au fichier de données à publier.
+La partie *post_baseDir* du chemin d’accès sera supprimée de l’annonce publiée.
+Pour les URL sftp, il peut être approprié de spécifier un chemin d’accès relatif à un compte d’utilisateur.
+Exemple de cette utilisation serait: --post_baseDir ~utilisateur --url sftp:utilisateur@hote
+Pour les fichiers : url, baseDir n’est généralement pas approprié. Pour publier un chemin absolu,
+omettez le paramètre --post_baseDir et spécifiez simplement le chemin d’accès complet en tant qu’argument.
 
 post_baseUrl <url>
 ------------------
 
-The **post_baseUrl** option sets how to get the file... it defines the protocol,
-host, port, and optionelly, the user. It is best practice to not include
-passwords in urls.
+L’option **post_baseUrl** définit comment obtenir le fichier... il définit le protocole,
+l'hôte, le port et, l’utilisateur (facultatif). Il est recommandé de ne pas inclure de
+mots de passe dans les urls.
 
 post_broker <url>
 -----------------
 
-the broker url to post messages to see `broker <#broker>`_ for details
+l’URL du courtier pour publier des messages. voir `broker <#broker>`_ pour plus de détails.
 
 post_exchange <name> (defaut: xpublic)
 ---------------------------------------
 
-The **post_exchange** option set under which exchange the new notification
-will be posted. when publishing to a pump as an administrator, a common
-choice for post_exchange is 'xpublic'.
+L’option **post_exchange** définie sous quelle échange la nouvelle notification
+sera affiché. Lors de la publication sur une pompe en tant qu’administrateur, un
+choix commun pour post_exchange est 'xpublic'.
 
-When publishing a product, a user can trigger a script, using
-flow callback entry_points such as **after_accept**, and **after_work** 
-to modify messages generated about files prior to posting.
+Lors de la publication d’un produit, un utilisateur peut démarrer un script en utilisant
+un point d'entree de rappel de flux (flow callback) tels que **after_accept** et **after_work**
+pour modifier les messages générés à propos des fichiers avant leur publication.
+
 
 post_exchangeSplit <count> (defaut: 0)
 ---------------------------------------
 
-The **post_exchangeSplit** option appends a two digit suffix resulting from
-hashing the last character of the checksum to the post_exchange name,
-in order to divide the output amongst a number of exchanges.  This is currently used
-in high traffic pumps to allow multiple instances of winnow, which cannot be
-instanced in the normal way.  Example::
+L’option **post_exchangeSplit** ajoute un suffixe à deux chiffres qui est creer en hachant le dernier caractère
+de la somme de contrôle avec le nom de post_exchange, afin de répartir la production entre un certain nombre d’échanges.
+Ceci est actuellement utilisé dans les pompes à trafic elevee pour avoir plusieurs instances de winnow,
+qui ne peuvent pas être instancié de la manière normale.  Exemple::
 
     post_exchangeSplit 5
     post_exchange xwinnow
 
-will result in posting messages to five exchanges named: xwinnow00, xwinnow01,
-xwinnow02, xwinnow03 and xwinnow04, where each exchange will receive only one fifth
-of the total flow.
+entraînera la publication de messages sur cinq échanges nommés : xwinnow00, xwinnow01,
+xwinnow02, xwinnow03 et xwinnow04, où chaque échange ne recevra qu’un cinquième
+du flux total.
 
 post_on_start
 -------------
 
-When starting watch, one can either have the program post all the files in the directories watched
-or not.
+Lors du démarrage de watch, on peut soit demander au programme de publier tous les fichiers dans les répertoires
+surveillés, ou pas.
 
 post_topicPrefix (defaut: topicPrefix)
 ---------------------------------------
 
-Prepended to the sub-topic to form a complete topic hierarchy. 
-This option applies to publishing.  Denotes the version of messages published 
-in the sub-topics. (v03 refers to `<sr3_post.7.html>`_) defauts to whatever
-was received. 
-
+Rajouter au sous-sujet pour former une hiérarchie complète des sujets.
+Cette option s’applique à la publication.  Elle indique la version des messages publiés
+dans les sous-thèmes. (v03 fait référence à `<sr3_post.7.html>`_) Cette valeur par defaut est defini par tout ce qui
+a été reçue.
 
 prefetch <N> (defaut: 1)
 -------------------------
 
-The **prefetch** option sets the number of messages to fetch at one time.
-When multiple instances are running and prefetch is 4, each instance will obtain up to four
-messages at a time.  To minimize the number of messages lost if an instance dies and have
-optimal load sharing, the prefetch should be set as low as possible.  However, over long
-haul links, it is necessary to raise this number, to hide round-trip latency, so a setting
-of 10 or more may be needed.
+L’option **prefetch** définit le nombre de messages à récupérer en même temps.
+Lorsque plusieurs instances sont en cours d’exécution et que prefetch est égale à 4, chaque instance obtient jusqu’à quatre
+messages à la fois.  Pour réduire le nombre de messages perdus si une instance meurt et qu'elle a le
+partage de charge optimal, prefetch doit être réglée le plus bas possible.  Cependant, sur des long haul links (FIXME),
+il faut augmenter ce nombre pour masquer la latence d'aller-retour, donc un réglage
+de 10 ou plus est nécessaire.
 
 queueName|queue|queue_name|qn 
 -----------------------------
 
-* queueName <name>
+* queueName <nom>
 
-By defaut, components create a queue name that should be unique. The
-defaut queue_name components create follows the following convention:
+Par defaut, les composants créent un nom de file d’attente qui doit être unique. Le
+la queue_name par défaut créée par les composants suit la convention suivante :
 
-   **q_<brokerUser>.<programName>.<configName>.<random>.<random>**
+   **q_<utilisateurDeCourtier>.<nomDuProgramme>.<nomDeConfig>.<aléatoire>.<aléatoire>**
 
 Where:
 
-* *brokerUser* is the username used to connect to the broker (often: *anonymous* )
+* *utilisateurDeCourtier* est le nom d’utilisateur utilisé pour se connecter au courtier (souvent: *anonymous* )
 
-* *programName* is the component using the queue (e.g. *subscribe* ),
+* *nomDuProgramme* est le composant qui utilise la file d’attente (par exemple *subscribe* ),
 
-* *configName* is the configuration file used to tune component behaviour.
+* *nomDeConfig* est le fichier de configuration utilisé pour régler le comportement des composants.
 
-* *random* is just a series of characters chosen to avoid clashes from multiple
-  people using the same configurations
+* *aléatoire* n’est qu’une série de characteres choisis pour éviter les affrontements quand plusieurs
+  personnes utilisent les mêmes configurations
 
-Users can override the defaut provided that it starts with **q_<brokerUser>**.
+Les utilisateurs peuvent remplacer le defaut à condition qu’il commence par **q_<utilisateurDeCourtier>**.
 
-When multiple instances are used, they will all use the same queue, for trivial
-multi-tasking. If multiple computers have a shared home file system, then the
-queue_name is written to:
+Lorsque plusieurs instances sont utilisées, elles utilisent toutes la même file d’attente, pour faire plusieurs
+taches simples a la fois. Si plusieurs ordinateurs disposent d’un système de fichiers domestique partagé, le
+queue_name est écrit à :
 
- ~/.cache/sarra/<programName>/<configName>/<programName>_<configName>_<brokerUser>.qname
+ ~/.cache/sarra/<nomDuProgramme>/<nomDeConfig>/<nomDuProgramme>_<nomDeConfig>_<utilisateurDeCourtier>.qname
 
-Instances started on any node with access to the same shared file will use the
-same queue. Some may want use the *queue_name* option as a more explicit method
-of sharing work across multiple nodes.
+Les instances démarrées sur n’importe quel nœud ayant accès au même fichier partagé utiliseront la
+même file d’attente. Certains voudront peut-être utiliser l’option *queue_name* comme méthode plus explicite
+de partager le travail sur plusieurs nœuds.
 
 queueBind
 ---------
 
-On startup, by defaut, Sarracenia redeclares resources and bindings to ensure they
-are uptodate.  If the queue already exists, These flags can be
-set to False, so no attempt to declare the queue is made, or it´s bindings.
-These options are useful on brokers that do not permit users to declare their queues.
-
+Au démarrage, par defaut, Sarracenia redéclare les ressources et les liaisons pour s’assurer qu’elles sont à jour.
+Si la file d’attente existe déjà, ces indicateurs peuvent être défini a False, afin qu’aucune tentative de déclaration
+ne soit effectuée pour file d’attente ou pour ses liaisons.
+Ces options sont utiles sur les courtiers qui ne permettent pas aux utilisateurs de déclarer leurs files d’attente.
 
 queueDeclare
 ------------
 
-On startup, by defaut, Sarracenia redeclares resources and bindings to ensure they
-are uptodate.  If the queue already exists, These flags can be
-set to False, so no attempt to declare the queue is made, or it´s bindings.
-These options are useful on brokers that do not permit users to declare their queues.
+FIXME
 
 randomize <flag>
 ----------------
 
-Active if *-r|--randomize* appears in the command line... or *randomize* is set
-to True in the configuration file used. If there are several posts because the 
-file is posted by block (the *blocksize* option was set), the block posts 
-are randomized meaning that they will not be posted
+Actif si *-r|--randomize* apparaît dans la ligne de commande... ou *randomize* est défini
+à True dans le fichier de configuration utilisé. S’il y a plusieurs postes parce que le
+le fichier est publié par bloc (l’option *blocksize* a été définie), les messages de bloc
+sont randomisés, ce qui signifie qu’ils ne seront pas affichés
 
 realpath <flag>
 ---------------
 
-The realpath option resolves paths given to their canonical ones, eliminating
-any indirection via symlinks. The behaviour improves the ability of watch to
-monitor trees, but the trees may have completely different paths than the arguments
-given. This option also enforces traversing of symbolic links.
+L’option realpath résout les chemins donnés à leurs chemins canoniques, éliminant ainsi
+toute indirection via des liens symboliques. Le comportement améliore la capacité de watch à
+surveiller l'arborescence, mais l'arborescence peut avoir des chemins complètement différents de ceux des arguments
+donné. Cette option impose également la traversée de liens symboliques.
 
 reconnect <flag>
 ----------------
 
-Active if *-rc|--reconnect* appears in the command line... or
-*reconnect* is set to True in the configuration file used.
-*If there are several posts because the file is posted
-by block because the *blocksize* option was set, there is a
-reconnection to the broker everytime a post is to be sent.
+Actif si *-rc|--reconnect* apparaît dans la ligne de commande... ou
+*reconnect* est défini a True dans le fichier de configuration utilisé.
+*S’il y a plusieurs messages parce que le fichier est publié
+par bloc parce que l’option *blocksize* a été définie, il y a une
+reconnexion au courtier a chaque fois qu’un message doit être envoyé.
 
-rename <path>
+rename <chemin>
 -------------
 
-With the *rename* option, the user can
-suggest a destination path for its files. If the given
-path ends with '/' it suggests a directory path...
-If it doesn't, the option specifies a file renaming.
+Avec l’option *renommer*, l’utilisateur peut
+suggérer un chemin de destination pour ses fichiers. Si le
+chemin se termine par '/' il suggère un chemin de répertoire...
+Si ce n’est pas le cas, l’option spécifie un changement de nom de fichier.
 
+report et report_exchange
+-------------------------
 
-report and report_exchange
---------------------------
+REMARQUE: **PAS IMPLEMENTE dans sr3, devrait revenir dans la version future**
+Pour chaque téléchargement, par defaut, un message de rapport amqp est renvoyé au broker.
+Cela se fait avec l’option :
 
-NOTE: **NOT IMPLEMENTEDin sr3, expected to return in future version**
-For each download, by defaut, an amqp report message is sent back to the broker.
-This is done with option :
+- **rapport <flag> (defaut: True)**
+- **report_exchange <report_exchangename> (defaut: xreport|xs_*nomUtilisateur* )**
 
-- **report <flag>  (defaut: True)**
-- **report_exchange <report_exchangename> (defaut: xreport|xs_*username* )**
+Lorsqu’un rapport est généré, il est envoyé au *report_exchange* configuré. Les composants sdministratifs
+publient directement sur *xreport*, tandis que les composants d'utilisateur publient sur leur
+échanges (xs_*nomUtilisateur*). Les démons de rapport copient ensuite les messages dans *xreport* après validation.
 
-When a report is generated, it is sent to the configured *report_exchange*. Administrative
-components post directly to *xreport*, whereas user components post to their own
-exchanges (xs_*username*). The report daemons then copy the messages to *xreport* after validation.
-
-These reports are used for delivery tuning and for data sources to generate statistical information.
-Set this option to **False**, to prevent generation of reports.
-
+Ces rapports sont utilisés pour le réglage de la livraison et pour les sources de données afin de générer des informations statistiques.
+Définissez cette option a **False**, pour empêcher la génération de ces rapports.
 
 reset <flag> (defaut: False)
 -----------------------------
 
-When **reset** is set, and a component is (re)started, its queue is
-deleted (if it already exists) and recreated according to the component's
-queue options.  This is when a broker option is modified, as the broker will
-refuse access to a queue declared with options that differ from what was
-set at creation.  It can also be used to discard a queue quickly when a receiver
-has been shut down for a long period. If duplicate suppression is active, then
-the reception cache is also discarded.
+Lorsque **reset** est défini et qu’un composant est (re)démarré, sa file d’attente est
+supprimé (si elle existe déjà) et recréé en fonction des options de file d’attente.
+C’est à ce moment-là qu’une option de courtier est modifiée, car le courtier refusera
+l’accès à une file d’attente déclarée avec des options différentes de celles qui étaient
+défini à la création.  Cette option peut également être utilisé pour supprimer rapidement une file d’attente
+lorsqu’un récepteur a été fermé pendant une longue période de temps. Si la suppression des doublons est active, alors
+la cache de réception est également supprimé.
 
-The AMQP protocol defines other queue options which are not exposed
-via sarracenia, because sarracenia itself picks appropriate values.
-
+Le protocole AMQP définit d’autres options de file d’attente qui ne sont pas exposées
+via sarracenia, parce que sarracenia choisit soi-même des valeurs appropriées.
 
 retryEmptyBeforeExit: <boolean> (defaut: False)
 ------------------------------------------------
 
-Used for sr_insects flow tests. Prevents Sarracenia from exiting while there are messages remaining in the retry queue(s). By defaut, a post will cleanly exit once it has created and attempted to publish messages for all files in the specified directory. If any messages are not successfully published, they will be saved to disk to retry later. If a post is only run once, as in the flow tests, these messages will never be retried unless retryEmptyBeforeExit is set to True.
+Utilisé pour les tests de flux de sr_insects. Empêche Sarracenia de quitter lorsqu’il reste des messages dans la file
+d’attente de nouvelles tentatives (retry queue). Par defaut, une publication quitte proprement une fois qu’elle a
+créé et tenté de publier des messages pour tous les fichiers du répertoire spécifié. Si des messages ne sont pas
+publiés avec succès, ils seront enregistrés sur le disque pour réessayer ultérieurement. Si une publication n’est
+exécutée qu’une seule fois, comme dans les tests de flux, ces messages ne seront jamais réessayés, sauf si
+retryEmptyBeforeExit est défini a True.
 
-
-retry_ttl <duration> (defaut: same as expire)
+retry_ttl <duration> (defaut: identique à expire)
 ----------------------------------------------
 
-The **retry_ttl** (retry time to live) option indicates how long to keep trying to send
-a file before it is aged out of a the queue.  defaut is two days.  If a file has not
-been transferred after two days of attempts, it is discarded.
+L’option **retry_ttl** (nouvelle tentative de durée de vie) indique combien de temps il faut continuer à essayer d’envoyer
+un fichier avant qu’il ne soit  rejete de la file d’attente.  Le defaut est de deux jours.  Si un fichier n’a pas
+a été transféré après deux jours de tentatives, il est jeté.
 
-sanity_log_dead <interval> (defaut: 1.5*housekeeping)
+sanity_log_dead <intervale> (defaut: 1.5*housekeeping)
 ------------------------------------------------------
 
-The **sanity_log_dead** option sets how long to consider too long before restarting
-a component.
-
+L’option **sanity_log_dead** définit la durée à prendre en compte avant de redémarrer
+un composant.
 
 shim_defer_posting_to_exit (EXPERIMENTAL)
 -----------------------------------------
 
-  (option specific to libsrshim)
-  Postpones file posting until the process exits.
-  In cases where the same file is repeatedly opened and appended to, this
-  setting can avoid redundant posts.  (defaut: False)
+  (option spécifique à libsrshim)
+  Reporte la publication des fichiers jusqu’à ce que le processus se ferme.
+  Dans les cas où le même fichier est ouvert et modifiee à plusieurs reprises, ceci
+  peut éviter les publications redondantes.  (defaut: Faux)
 
 shim_post_minterval *interval* (EXPERIMENTAL)
 ---------------------------------------------
 
-  (option specific to libsrshim)
-  If a file is opened for writing and closed multiple times within the interval,
-  it will only be posted once. When a file is written to many times, particularly
-  in a shell script, it makes for many posts, and shell script affects performance.
-  subscribers will not be able to make copies quickly enough in any event, so
-  there is little benefit, in say, 100 posts of the same file in the same second.
-  It is wise set an upper limit on the frequency of posting a given file. (defaut: 5s)
-  Note: if a file is still open, or has been closed after its previous post, then
-  during process exit processing it will be posted again, even if the interval
-  is not respected, in order to provide the most accurate final post.
-
+  (option spécifique à libsrshim)
+  Si un fichier est ouvert pour écriture et fermé plusieurs fois dans l’intervalle,
+  il ne sera affiché qu’une seule fois. Lorsqu’on ecrit dans un fichier plusieurs fois, en particulier
+  dans un script shell, de nombreux posts sont crées, et les scripts shell affecte la performance.
+  Dans tous les cas, les abonnés ne seront pas en mesure de faire des copies assez rapidement, donc
+  il y a peu d’avantages a avoir 100 messages du même fichier dans la même seconde pa exemple.
+  Il est prudent de fixer une limite maximale à la fréquence de publication d’un fichier donné. (defaut: 5s)
+  Remarque: si un fichier est toujours ouvert ou a été fermé après son post précédent, alors
+  pendant le traitement de sortie du processus, il sera à nouveau publié, même si l’intervalle
+  n’est pas respecté, afin de fournir le message final le plus précis.
 
 shim_skip_parent_open_files (EXPERIMENTAL)
 ------------------------------------------
 
-  (option specific to libsrshim)
-  The shim_skip_ppid_open_files option means that a process checks
-  whether the parent process has the same file open, and does not
-  post if that is the case. (defaut: True)
+  (option spécifique à libsrshim)
+  L’option shim_skip_ppid_open_files signifie qu’un processus vérifie
+  si le processus parent a le même fichier ouvert et ne
+  poste pas si c’est le cas. (defaut: Vrai)
 
-sleep <time>
+sleep <temps>
 ------------
 
-The time to wait between generating events.  When files are written frequently, it is counter productive
-to produce a post for every change, as it can produce a continuous stream of changes where the transfers
-cannot be done quickly enough to keep up.  In such circumstances, one can group all changes made to a file
-in *sleep* time, and produce a single post.
+Temps d’attente entre la génération d’événements. Lorsqu'on écrit fréquemment a des fichiers, c’est contre-productif
+de produire un poste pour chaque changement, car il peut produire un flux continu de changements où les transferts
+ne peut pas être fait assez rapidement pour suivre le rythme.  Dans de telles circonstances, on peut regrouper toutes
+les modifications apportées à un fichier pendant le temps de *sleep*, et produire un seul post.
 
-statehost <False|True> ( defaut: False )
+statehost <boolean> ( defaut: False )
 -----------------------------------------
 
-In large data centres, the home directory can be shared among thousands of
-nodes. Statehost adds the node name after the cache directory to make it
-unique to each node. So each node has it's own statefiles and logs.
-example, on a node named goofy,  ~/.cache/sarra/log/ becomes ~/.cache/sarra/goofy/log.
+Dans les grands centres de données, le repertoire de base peut être partagé entre des milliers de
+nœuds. Statehost ajoute le nom du nœud après le répertoire de cache pour le rendre
+unique à chaque nœud. Ainsi, chaque nœud a ses propres fichiers d’état et journaux.
+Par exemple, sur un nœud nommé goofy, ~/.cache/sarra/log/ devient ~/.cache/sarra/goofy/log/.
 
 strip <count|regexp> (defaut: 0)
 ---------------------------------
 
-You can modify the relative mirrored directories with the **strip** option.
-If set to N  (an integer) the first 'N' directories from the relative path
-are removed. For example::
+Il est possible de modifier les répertoires en miroir relatifs à l’aide de l’option **strip**.
+S’il est défini a N (un entier), les premiers répertoires 'N' du chemin relatif
+sont supprimés. Par exemple::
 
  http://dd.weather.gc.ca/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
 
@@ -1454,214 +1441,201 @@ are removed. For example::
    directory /mylocaldirectory
    accept    .*RADAR.*
 
-would result in the creation of the directories and the file
-/mylocaldirectory/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
-when a regexp is provide in place of a number, it indicates a pattern to be removed
-from the relative path.  For example if::
+entraînerait la création des répertoires et du fichier
+/mylocaldirectory/WGJ/201312141900_WGJ_PRECIP_SNOW.gif.
+Lorsqu’un regexp est fourni à la place d’un nombre, cela indique un modèle à supprimer
+du chemin relatif.  Par exemple, si ::
 
    strip  .*?GIF/
 
-Will also result in the file being placed the same location.
-Note that strip settings can be changed between directory options.
+Le fichier sera aussi placé au même emplacement.
+Notez que les paramètres de strip peuvent être modifiés entre les options de répertoire.
 
-NOTE::
-    with **strip**, use of **?** modifier (to prevent regular expression *greediness* ) is often helpful. 
-    It ensures the shortest match is used.
+REMARQUE::
+    avec **strip**, l’utilisation du modificateur **?** (pour éviter l’expression régulière *greediness*) est souvent utile.
+    Cela garantit que le match le plus court est utilisé.
 
-    For example, given a file name:  radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.GIF
-    The expression:  .*?GIF   matches: radar/PRECIP/GIF
-    whereas the expression: .*GIF matches the entire name.
+    Par exemple, avec un nom de fichier : radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.GIF
+    L’expression : .*?GIF correspond à : radar/PRECIP/GIF
+    alors que l’expression : .*GIF correspond au nom entier.
 
 sourceFromExchange <flag> (defaut: off)
 ------------------------------------------
 
-The **sourceFromExchange** option is mainly for use by administrators.
-If messages received are posted directly from a source, the exchange used
-is 'xs_<brokerSourceUsername>'. Such messages could be missing *source* and *from_cluster*
-headings, or a malicious user may set the values incorrectly.
-To protect against both problems, administrators should set the **sourceFromExchange** option.
+L’option **sourceFromExchange** est principalement destinée aux administrateurs.
+Si les messages reçus sont postés directement à partir d’une source, l’échange utilisé
+est «xs_<nomUtilisateurSourceDuCourtier>». Ces messages pourraient manquer les en-tetes *source* et *from_cluster*,
+ou un utilisateur malveillant peut définir des valeurs incorrectes.
+Pour se protéger contre ces deux problèmes, les administrateurs doivent définir l’option **sourceFromExchange**.
 
-When the option is set, values in the message for the *source* and *from_cluster* headers will then be overridden::
+Lorsque l’option est définie, les valeurs des en-têtes de *source* et *from_cluster* du message seront alors remplacées ::
 
-  self.msg.headers['source']       = <brokerUser>
+  self.msg.headers['source']       = <utilsateurDuCourtier>
   self.msg.headers['from_cluster'] = cluster
 
-replacing any values present in the message. This setting should always be used when ingesting data from a
-user exchange. These fields are used to return reports to the origin of injected data.
-It is commonly combined with::
+Cela va remplacer toutes les valeurs présentes dans le message. Ce paramètre doit toujours être utilisé lors de l’ingestion de données à partir d’un
+échange d’utilisateur. Ces champs sont utilisés pour renvoyer les rapports à l’origine des données injectées.
+Cela est généralement combiné avec::
 
        *mirror true*
        *sourceFromExchange true*
        *directory ${PBD}/${YYYYMMDD}/${SOURCE}*
 
-To have data arrive in the standard format tree.
+Pour que les données arrivent dans l’arborescence de format standard.
 
-
-subtopic <amqp pattern> (defaut: #)
+subtopic <modèle  amqp> (defaut: #)
 ------------------------------------
 
-Within an exchange's postings, the subtopic setting narrows the product selection.
-To give a correct value to the subtopic,
-one has the choice of filtering using **subtopic** with only AMQP's limited wildcarding and
-length limited to 255 encoded bytes, or the more powerful regular expression
-based  **accept/reject**  mechanisms described below. The difference being that the
-AMQP filtering is applied by the broker itself, saving the notices from being delivered
-to the client at all. The  **accept/reject**  patterns apply to messages sent by the
-broker to the subscriber. In other words,  **accept/reject**  are client side filters,
-whereas **subtopic** is server side filtering.
+Dans les publications d’un échange, le paramètre de sous-sujet restreint la sélection du produit.
+Pour donner la bonne valeur au sous-sujet, on a le choix de filtrer en utilisant **subtopic** seulement avec le
+wildcarding limité d’AMQP et une longueur limitée à 255 octets encodés, ou de maniere plus puissante, les expressions régulière
+basés sur les mécanismes **accept/reject** décrits ci-dessous. La différence est que le
+le filtrage AMQP est appliqué par le courtier lui-même, ce qui évite que les avis soient livrés.
+au clients. Les modèles **accept/reject** s’appliquent aux messages envoyés par le
+courtier à l’abonné. En d’autres termes, **accept/reject** sont des filtres côté client,
+alors que **subtopic** est le filtrage côté serveur.
 
-It is best practice to use server side filtering to reduce the number of announcements sent
-to the client to a small superset of what is relevant, and perform only a fine-tuning with the
-client side mechanisms, saving bandwidth and processing for all.
+Il est recommandé d’utiliser le filtrage côté serveur pour réduire le nombre d’annonces envoyées
+au client et envoyer seulement ce qui est pertinent, et seulement regler les mécanismes côté client,
+économisant du bandwidth et du traitement pour tous.
 
-topicPrefix is primarily of interest during protocol version transitions,
-where one wishes to specify a non-defaut protocol version of messages to
-subscribe to.
+topicPrefix est principalement utilise lors des transitions de version de protocole,
+où l’on souhaite spécifier une version de protocole non-commune des messages auquels s’abonner.
 
-Usually, the user specifies one exchange, and several subtopic options.
-**Subtopic** is what is normally used to indicate messages of interest.
-To use the subtopic to filter the products, match the subtopic string with
-the relative path of the product.
+Normalment, l’utilisateur spécifie un échange et plusieurs options de subtopic.
+**subtopic** est ce qui est normalement utilisé pour indiquer les messages d’intérêt.
+Pour utiliser **subtopic** pour filtrer les produits, il faut que la string subtopic corresponde au chemin relatif du produit.
 
-For example, consuming from DD, to give a correct value to subtopic, one can
-browse the our website  **http://dd.weather.gc.ca** and write down all directories
-of interest.  For each directory tree of interest, write a  **subtopic**
-option as follow:
-
- **subtopic  directory1.*.subdirectory3.*.subdirectory5.#**
+Par exemple, en consommant à partir de DD, pour donner la bonne valuer au subtopic, il est possible de
+parcourir le site Web **http://dd.weather.gc.ca** et noter tous les répertoires
+d’intérêt.  Pour chaque arborescence de répertoires d’intérêt, il faut ecrire une option de **subtopic**
+comme cela:
+ **subtopic  repertoire1.*.sous-repertoire3.*.sous-repertoire5.#**
 
 ::
 
- where:  
-       *                matches a single directory name 
-       #                matches any remaining tree of directories.
+ ou:
+       *                correspond à un nom de répertoire unique
+       #                correspond à toute arborescence de répertoires restante
 
-note:
-  When directories have these wild-cards, or spaces in their names, they
-  will be URL-encoded ( '#' becomes %23 )
-  When directories have periods in their name, this will change
-  the topic hierarchy.
+remarque:
+  Lorsque les répertoires ont ces wild-cards, ou espaces dans leurs noms, ils
+  sera encodé par l'URL ( '#' devient %23 ).
+  Lorsque les répertoires ont des points dans leur nom, cela changera
+  la hiérarchie des sujets.
 
   FIXME:
-      hash marks are URL substituted, but did not see code for other values.
-      Review whether asterisks in directory names in topics should be URL-encoded.
-      Review whether periods in directory names in topics should be URL-encoded.
+      les marques de hachage sont substituées à l’URL, mais n’ont pas vu le code pour les autres valeurs.
+      Vérifiez si les astérisques dans les noms de répertoire dans les rubriques doivent être encodés par l'URL.
+      Vérifiez si les points dans les noms de répertoire dans les rubriques doivent être encodés par l'URL.
 
-One can use multiple bindings to multiple exchanges as follows::
+On peut utiliser plusieurs liaisons à plusieurs échanges comme cela::
 
-  exchange A
-  subtopic directory1.*.directory2.#
+  échange A
+  subtopic repertoire1.*.repertoire2.#
 
-  exchange B
-  subtopic *.directory4.#
+  échange B
+  subtopic *.repertoire4.#
 
-Will declare two separate bindings to two different exchanges, and two different file trees.
-While defaut binding is to bind to everything, some brokers might not permit
-clients to set bindings, or one might want to use existing bindings.
-One can turn off queue binding as follows::
+Cela va declarer deux liaisons differentes à deux échanges différents et deux arborescences de fichiers différentes.
+Alors que la liaison par defaut consiste à se lier à tout, certains courtiers pourraient ne pas permettre aux
+clients a définir des liaisons, ou on peut vouloir utiliser des liaisons existantes.
+On peut désactiver la liaison de file d’attente comme cela::
 
   subtopic None
 
-(False, or off will also work.)
+(False, ou off marchera aussi.)
 
 
 timeCopy (defaut: on)
 ----------------------
 
-On unix-like systems, when the *ls* commend or a file browser shows modification or
-access times, it is a display of the posix *st_atime*, and *st_ctime* elements of a
-struct struct returned by stat(2) call.  When *timeCopy* is on, headers
-reflecting these values in the messages are used to restore the access and modification
-times respectively on the subscriber system. To document delay in file reception,
-this option can be turned off, and then file times on source and destination compared.
+Sur les systèmes de type unix, lorsque la commande *ls* ou un navigateur de fichiers affiche une modification ou un
+temps d’accès, il s’agit d’un affichage des éléments posix *st_atime* et *st_ctime* d’un
+struct renvoyé par l’appel stat(2).  Lorsque *timeCopy* est activé, les en-têtes
+qui reflétent ces valeurs dans les messages sont utilisés pour restaurer l’accès et la modification
+des heures respectivement sur le système de l'abonné. Pour documenter le retard de la réception des fichiers,
+cette option peut être désactivée, puis les temps du fichier sur la source et la destination sont comparés.
 
-When set in a posting component, it has the effect of eliding the *atime* and *mtime*
-headers from the messages.
+Lorsqu’il est défini dans un composant de publication, les en-têtes *atime* et *mtime* des messages sont élimines.
 
-
-timeout <interval> (defaut: 0)
+timeout <intervale> (defaut: 0)
 -------------------------------
 
-The **timeout** option, sets the number of seconds to wait before aborting a
-connection or download transfer (applied per buffer during transfer).
-
+L’option **timeout** définit le nombre de secondes à attendre avant d’interrompre un
+transfert de connexion ou de téléchargement (appliqué pendant le transfert).
 
 tlsRigour (defaut: medium)
 ---------------------------
 
-tlsRigour can be set to: *lax, medium, or strict*, and gives a hint to the
-application of how to configure TLS connections. TLS, or Transport Level
-Security (used to be called Secure Socket Layer (SSL)) is the wrapping of
-normal TCP sockets in standard encryption. There are many aspects of TLS
-negotiations, hostname checking, Certificate checking, validation, choice of
-ciphers. What is considered secure evolves over time, so settings which, a few
-years ago, were considered secure, are currently aggressively deprecated. This
-situation naturally leads to difficulties in communication due to different
-levels of compliance with whatever is currently defined as rigourous encryption.
+*tlsRigour* peut être réglé a : *lax, medium ou strict*, et donne un indice à l'application par rapport a la
+configuration des connexions TLS. TLS, ou Transport Layer Security (autrefois appelée Secure Socket Layer (SSL))
+est l’encapsulation de sockets TCP normales en cryptage standard. Il existe de nombreux aspects de
+négociations TLS, vérification du nom d’hôte, vérification des certificats, validation, choix de
+chiffrement. Ce qui est considéré comme securitaire évolue au fil du temps, de sorte que les paramètres
+qui étaient considérés comme securitaire il y a quelques années, sont actuellement déconseillés.
+Ceci mene naturellement à des difficultés de communication a cause de différents
+niveaux de conformité par rapport a ce qui est couramment defini comme un cryptage rigoureux.
 
-If a site being connected to, has, for example, and expired certificate, and
-it is nevertheless necessary to use it, then set tlsRigour to *lax* and
-the connection should succeed regardless.
-
+Par exemple, si on se connecte a un site et que son certificat est expiré, et
+qu'il est quand meme nécessaire de l’utiliser, alors definir tlsRigour a *lax* pourra
+permettre la connexion de réussir.
 
 topicPrefix (defaut: v03)
 --------------------------
 
-prepended to the sub-topic to form a complete topic hierarchy. 
-This option applies to subscription bindings.
-Denotes the version of messages received in the sub-topics. (v03 refers to `<sr3_post.7.html>`_)
+rajouter au sub-topic pour former une hiérarchie complète de themes (topics).
+Cette option s’applique aux liaisons d’abonnement.
+Indique la version des messages reçus dans les subtopics. (v03 fait référence à `<sr3_post.7.html>`_)
 
 users <flag> (defaut: false)
 -----------------------------
 
-As an adjunct when the *declare* action is used, to ask sr3 to declare users
-on the broker, as well as queues and exchanges.
+Utiliser commer complément lorsque l’action *declare* est utilisée, pour demander à sr3 de déclarer des utilisateurs
+sur le courtier, ainsi que les files d’attente et les échanges.
 
-
-vip - ACTIVE/PASSIVE OPTIONS
+vip - OPTIONS ACTIVE/PASSIVE
 ----------------------------
 
-The **vip** option indicates that a configuration must be active on only 
-a single node in a cluster at a time, a singleton. This is typically 
-required for a poll component, but it can be used in senders or other
-cases.
+L’option **vip** indique qu’une configuration doit être active uniquement sur
+un seul nœud dans un cluster à la fois, un singleton. C’est typiquement
+requis pour un composant de poll, mais cela peut être utilisé avec un sender ou avec d'autres cas.
 
-**subscribe** can be used on a single server node, or multiple nodes
-could share responsibility. Some other, separately configured, high availability
-software presents a **vip** (virtual ip) on the active server. Should
-the server go down, the **vip** is moved on another server, and processing
-then happens using the new server that now has the vip active.
-Both servers would run an **sr3 instance**::
+**subscribe** peut être utilisé sur un seul nœud de serveur ou plusieurs nœuds
+pourrait partager les responsabilités. Un autre logiciel de haute disponibilité et configurée séparément
+présente un **vip** (ip virtuelle) sur le serveur actif. Si jamais
+le serveur tombe en panne, le **vip** est déplacé sur un autre serveur et le traitement
+se produit en utilisant le nouveau serveur qui a maintenant le VIP actif.
+Les deux serveurs exécuteraient une instance **sr3**::
 
  - **vip          <string>          (None)**
 
-When you run only one **sr3 instance** on one server, these options are not set,
-and subscribe will run in 'standalone mode'.
+Lorsq'une seule instance **sr3** est exécutee  sur un serveur, ces options ne sont pas définies,
+et l’abonnement fonctionnera en « mode autonome » (standalone mode).
 
-In the case of clustered brokers, you would set the options for the
-moving vip.
+Dans le cas des courtiers en cluster, les options doivent etre définit en fonction du
+vip qui change.
 
 **vip 153.14.126.3**
 
-When an **sr3 instance** does not find the vip, it sleeps for 5 seconds and retries.
-If it does, it consumes and processes a message and than rechecks for the vip.
+Lorsqu’une **instance sr3** ne trouve pas l’adresse IP, elle se met en veille pendant 5 secondes et tente à nouveau.
+Si c’est le cas, elle consomme et traite un message et re-vérifie pour le vip.
 
 SEE ALSO
 ========
 
-`sr3(1) <sr3.1.html>`_ - Sarracenia main command line interface.
+`sr3(1) <sr3.1.html>`_ - Sarracenia ligne de commande principale.
 
-`sr3_post(1) <sr3_post.1.html>`_ - post file announcements (python implementation.)
+`sr3_post(1) <sr3_post.1.html>`_ - poste des annoncements de fichiers (implémentation en Python.)
 
-`sr3_cpost(1) <sr3_cpost.1.html>`_ - post file announcemensts (C implementation.)
+`sr3_cpost(1) <sr3_cpost.1.html>`_ - poste des annoncements de fichiers (implémentation en C.)
 
-`sr3_cpump(1) <sr3_cpump.1.html>`_ - C implementation of the shovel component. (copy messages)
+`sr3_cpump(1) <sr3_cpump.1.html>`_ - implémentation en C du composant shovel. (Copie des messages)
 
 **Formats:**
 
-`sr3_post(7) <sr_post.7.html>`_ - the format of announcements.
+`sr3_post(7) <sr_post.7.html>`_ - Le formats des annonces.
 
-**Home Page:**
+**Page d'Accueil:**
 
-`https://metpx.github.io/sarracenia <https://metpx.github.io/sarracenia>`_ - Sarracenia: a real-time pub/sub data sharing management toolkit
-
+`https://metpx.github.io/sarracenia <https://metpx.github.io/sarracenia>`_ - Sarracenia : une boîte à outils de gestion du partage de données pub/sub en temps réel
