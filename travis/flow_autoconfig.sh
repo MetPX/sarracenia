@@ -68,8 +68,14 @@ cp ~/.config/sarra/admin.conf ~/.config/sr3
 
 echo
 
+check_wsl=$(ps --no-headers -o comm 1)
+
 # Manage RabbitMQ
-sudo systemctl restart rabbitmq-server
+if [[$(($check_wsl == "init" )) ]]; then
+	sudo service rabbitmq-server restart
+else
+	sudo systemctl restart rabbitmq-server
+fi
 sudo rabbitmq-plugins enable rabbitmq_management
 
 sudo rabbitmqctl delete_user guest
@@ -84,7 +90,12 @@ sudo rabbitmqctl set_user_tags bunnymaster administrator
 
 echo
 
-sudo systemctl restart rabbitmq-server
+if [[ $(($check_wsl == "init")) ]]; then
+	sudo service rabbitmq-server restart
+else
+	sudo systemctl restart rabbitmq-server
+fi
+
 cd /usr/local/bin
 sudo mv rabbitmqadmin rabbitmqadmin.1
 sudo wget http://localhost:15672/cli/rabbitmqadmin
