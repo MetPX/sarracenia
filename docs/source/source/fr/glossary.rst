@@ -16,10 +16,12 @@ GLOSSARY
 - Remote.........Distant
 - Run............Rouler/Exécuter
 - scope..........porté (global scope?)
+<<<<<<< HEAD
 - regexp pattern...Modèle regexp
 - checksum........ checkscum (somme de controle?)
 - Plugins........Plugins(?)
 - Post...........Article
+- String.........chaîne de caractères
 - topic......thème
 - mirror ....
 - String.........Chaine (?)
