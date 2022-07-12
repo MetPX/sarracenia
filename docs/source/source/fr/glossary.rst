@@ -16,7 +16,7 @@ GLOSSARY
 - Remote.........Distant
 - Run............Rouler/Exécuter
 - scope..........porté (global scope?)
-- String.........Chaine (?)
+- String.........chaîne de caractères
 - topic......thème
 - Tree...........Arborescence
 - wildcards....(?)
