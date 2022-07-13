@@ -1282,6 +1282,7 @@ These options are useful on brokers that do not permit users to declare their qu
 
 queueDeclare
 ------------
+FIXME: same as above.. is this normal?
 
 On startup, by default, Sarracenia redeclares resources and bindings to ensure they
 are uptodate.  If the queue already exists, These flags can be
