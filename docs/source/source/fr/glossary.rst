@@ -16,3 +16,5 @@ GLOSSARY
 - scope..........porté (global scope?)
 - regexp pattern...Modèle regexp
 - checksum........ checkscum (somme de controle?)
+- Plugins........Plugins(?)
+- Post...........Article
