@@ -17,7 +17,7 @@ SYNOPSIS
 **sr3_post|sr3_cpost** [ *OPTIONS* ][ *-pb|--post_broker broker* ][ *-pbu|--post_baseUrl url[,url]...** ] 
 [ *-p|--path ] path1 path2...pathN* ]
 
-( also **libsrshim.so** )
+( aussi **libsrshim.so** )
 
 DESCRIPTION
 ===========
@@ -450,6 +450,7 @@ Voir aussi
 `sr3_cpost(1) <sr3_cpost.1.html>`_ - publication des annonces de fichiers (implémentation c.)
 
 `sr3_cpump(1) <sr3_cpump.1.html>`_ - implémentation en c du composant shovel. (copier les messages)
+
 **Formats:**
 
 `sr3_credentials(7) <sr3_credentials.7.html>`_ - Convertir les lignes du fichier journal au format .save pour recharger/renvoyer.
@@ -458,9 +459,9 @@ Voir aussi
 
 `sr3_post(7) <sr_post.7.html>`_ - le format des annonces
 
-**Home Page:**
+**Page d'acceuil:**
 
-`https://metpx.github.io/sarracenia <https://metpx.github.io/sarracenia>`_ - Sarracenia: a real-time pub/sub data sharing management toolkit
+`https://metpx.github.io/sarracenia <https://metpx.github.io/sarracenia>`_ - Sarracenia: une boîte à outils de gestion du partage de données pub/sub en temps réel
 
 
 
