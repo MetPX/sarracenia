@@ -1,113 +1,114 @@
-======================
-SR3 Command Line Guide
-======================
+==============================
+SR3 Guide De Ligne De Commande
+==============================
 
 
-SR3 - Everything
-================
+SR3 - Tout
+==========
 
-**sr3** is a command line tool to manage `Sarracenia <https://github.com/MetPX/sarracenia>`_ 
-configurations, individually or in groups. For the current user, it reads on all
-of the configuration files, state files, and consults the process table to determine 
-the state of all components. It then makes the change requested.
+**sr3* est un outil de ligne de commande pour gérer les configurations
+`Sarracenia <https://github.com/MetPX/sarracenia>`_ individuellement ou en groupe. Pour l’utilisateur actuel,
+il lit sur tous les fichiers de configuration, des fichiers d’état et consulte la table de processus pour déterminer
+l’état de tous les composants. Il effectue ensuite la modification demandée.
 
-  **sr3** *options* *action* [ *component/configuration* ... ]
+  **sr3** *options* *action* [ *composant/configuration* ... ]
 
-sr3 components are used to publish to and download files from websites or file servers 
-that provide `sr3_post(7) <../Reference/sr3_post.7.rst>`_ protocol notifications. Such sites 
-publish messages for each file as soon as it is available. Clients connect to a
-*broker* (often the same as the server itself) and subscribe to the notifications.
-The *sr3_post* notifications provide true push notices for web-accessible folders (WAF),
-and are far more efficient than either periodic polling of directories, or ATOM/RSS style 
-notifications. Sr_subscribe can be configured to post messages after they are downloaded,
-to make them available to consumers for further processing or transfers.
+Les composants sr3 sont utilisés pour publier et télécharger des fichiers à partir de sites Web ou de serveurs de fichiers
+qui fournissent des `sr3_post(7) <.. Notifications du protocole /Reference/sr3_post.7.rst>`_. Ces sites
+publient des messages pour chaque fichier dès qu’il est disponible. Les clients se connectent à un
+*broker* (souvent le même que le serveur) et s'abonnent aux notifications.
+Les notifications *sr3_post* fournissent de véritables notifications push pour les dossiers accessibles sur le Web (WAF),
+et sont beaucoup plus efficaces que l’interrogation périodique des répertoires ou le style ATOM/RSS
+de notifications. Sr_subscribe peut être configuré pour publier des messages après leur téléchargement,
+les mettre à la disposition des consommateurs pour un traitement ultérieur ou des transferts.
 
-**sr3** can also be used for purposes other than downloading, (such as for 
-supplying to an external program) specifying the -n (equal to: *download off*) will
-suppress the download behaviour and only post the URL on standard output. The standard
-output can be piped to other processes in classic UNIX text filter style.  
+**sr3** peut également être utilisé à des fins autres que le téléchargement (par exemple, pour
+fourniture à un programme externe) en spécifiant le -n (égal à : *download off*)
+supprimer le comportement de téléchargement et publier uniquement l’URL sur la sortie standard. La
+sortie standard peut être redirigée vers d’autres processus dans le style de filtre de texte UNIX classique.
 
-The components of sarracenia are groups of defaults on the main algorithm,
-to reduce the size of individual components.  The components are:
+Les composants de sarracenia sont des groupes de valeurs choisi par défaut sur l’algorithme principal,
+pour réduire la taille des composants individuels.  Les composants sont les suivants :
 
- - cpump - copy messages from one pump another second one (a C implementation of shovel.)
- - poll  - poll a non-sarracenia web or file server to create messages for processing.
- - post & watch - create messages for files for processing.
- - sarra _ - download file from a remote server to the local one, and re-post them for others.
- - sender - send files from a local server to a remote one.
- - shovel - copy messages, only, not files.
- - watch - create messages for each new file that arrives in a directory, or at a set path.
- - winnow - copy messages, suppressing duplicates.
- 
-All of these components accept the same options, with the same effects.
-There is also `sr3_cpump(1) <../Reference/sr3_cpump.1.rst>`_ which is a C version that implements a
-subset of the options here, but where they are implemented, they have the same effect.
+ - cpump - copier des messages d'une pompe a une autre (une implémentation C d'un shovel.)
+ - poll  - interroger un serveur Web ou de fichiers non sarracenia pour créer des messages à traiter.
+ - post & watch - créer des messages pour les fichiers à traiter.
+ - sarra  - télécharger le fichier d’un serveur distant vers le serveur local et les republier pour d’autres.
+ - sender - envoyer des fichiers d’un serveur local à un serveur distant.
+ - shovel - copier des messages, uniquement, pas des fichiers.
+ - watch - créer des messages pour chaque nouveau fichier qui arrive dans un répertoire ou à un chemin défini.
+ - winnow - copier des messages, en supprimant les doublons.
 
-The **sr3** command usually takes two arguments: an action followed by a list
-of configuration files. When any component is invoked, an operation and a 
-configuration file are specified. If the configuration is omitted, it means to
-apply the action to all configurations. The action is one of:
+Tous ces composants acceptent les mêmes options, avec les mêmes effets.
+Il existe également des `sr3_cpump(1). <../Reference/sr3_cpump.1.rst>`_ qui est une version C qui implémente un
+sous-ensemble des options ici, mais là où elles sont implémentées, elles ont le même effet.
 
- - foreground: run a single instance in the foreground logging to stderr
- - restart: stop and then start the configuration.
- - sanity: looks for instances which have crashed or gotten stuck and restarts them.
- - start:  start the configuration running
- - status: check if the configuration is running.
- - stop: stop the configuration from running
+La commande **sr3** prend généralement deux arguments : une action suivie d’une liste
+de fichiers de configuration. Lorsqu’un composant est appelé, une opération et un
+fichier de configuration sont spécifiés. Si la configuration est omise, cela signifie que
+l’action s'applique à toutes les configurations. L’action est l’une des suivantes :
 
-The remaining actions manage the resources (exchanges, queues) used by the component on
-the broker, or manage the configurations.
+ - foreground: exécuter une seule instance au premier plan, écrivant le journal à l´erreur standard.
+ - restart: arrêter puis démarrer la configuration.
+ - sanity: recherche les instances qui se sont plantées ou ont bloqué et les redémarre.
+ - start:  démarrer la configuration
+ - status: vérifier si la configuration est en cours d'exécution.
+ - stop: arrêter la configuration.
 
- - cleanup:       deletes the component's resources on the server.
- - declare:       creates the component's resources on the server.
- - setup:         like declare, additionally does queue bindings.
- - add:           copy to the list of available configurations.
- - list:          list all the configurations available.
- - list plugins:  list all the plugins available. 
- - list examples:  list all the examples available.
- - show           view an interpreted version of a configuration file.
- - edit:          modify an existing configuration.
- - remove:        remove a configuration.
- - disable:       mark a configuration as ineligible to run. 
- - enable:        mark a configuration as eligible to run.
- - convert:       converts a v2 config to a v3 config.
+Les actions restantes gèrent les ressources (échanges, files d’attente) utilisées par le composant sur
+le courtier ou pour gérer les configurations.
 
+ - cleanup:       supprime les ressources du composant sur le serveur
+ - declare:       crée les ressources du composant sur le serveur.
+ - setup:         comme declare, fait en plus des liaisons de file d'attente.
+ - add:           copie une configuration à la liste des configurations disponibles.
+ - list:          Énumérer toutes les configurations disponibles.
+ - list plugins:  Énumérer toutes les *plugins* disponibles.
+ - list examples: Énumérer toutes les exemples disponibles.
+ - show           voir une version interpreté d'un fichier de configuration.
+ - edit:          modifier une configuration existante.
+ - remove:        Supprimer une configuration
+ - disable:       marquer une configuration comme non éligible à l'exécution.
+ - enable:        marquer une configuration comme éligible à l'exécution.
+ - convert:       convertir une configuration de la version2 à la version3
 
-For example:  *sr3 foreground subscribe/dd* runs the subscribe component with
-the dd configuration as a single foreground instance.
+Par exemple: *sr_subscribe foreground dd* exécute une instance du composant sr_subscribe en avant plan
+en se servant de la configuration dd.
 
-The **foreground** action is used when building a configuration or for debugging.
-The **foreground** instance will run regardless of other instances which are currently
-running.  Should instances be running, it shares the same message queue with them.
-A user stop the **foreground** instance by simply using <ctrl-c> on linux
-or use other means to kill the process.
+L'action **foreground** est utilisée lors de la construction d'une
+configuration ou pour le débogage. L'instance **foreground** sera exécutée
+indépendamment des autres instances qui sont en cours d'exécution.
+Si des instances sont en cours d'exécution, il partage la même file d'attente
+d'avis avec eux. Un utilisateur arrête l'instance **foreground** en
+utilisant simplement <ctrl-c> sur linux. ou utilise d'autres moyens pour tuer le processus.
 
-After a configuration has been refined, *start* to launch the component as a background 
-service (daemon or fleet of daemons whose number is controlled by the *instances* option.) 
-If multiple configurations and components need to be run together, the entire fleet 
-can be similarly controlled using the `sr3(1) <../Reference/sr3.1.html>`_ command. 
+Une fois qu’une configuration a été affinée, *start* lance le composant en tant que service d'arrière-plan
+(démon ou flotte de démons dont le numéro est contrôlé par l’option *instances*).
+Si plusieurs configurations et composants doivent être exécutés ensemble, l’ensemble de la flotte
+peut être contrôlé de la même manière à l’aide de la commande `sr3(1). <../Reference/sr3.1.html>'`_.
 
-To have components run all the time, on Linux one can use `systemd <https://www.freedesktop.org/wiki/Software/systemd/>`_ integration,
-as described in the `Admin Guide <../How2Guides/Admin.rst>`_ On Windows, one can configure a service,
-as described in the `Windows user manual <../Tutorials/Windows.html>`_
+Pour que les composants roulent tous en meme temps,sur Linux on peut utiliser l'intégration
+`systemd <https://www.freedesktop.org/wiki/Software/systemd/>`_ , comme décrit dans
+`Admin Guide <../How2Guides/Admin.rst>`_ . Sur Windows, il est possible de configurer un service,
+comme décrit dans `Windows user manual <../Tutorials/Windows.html>`_
 
-The actions **cleanup**, **declare**, **setup** can be used to manage resources on
-the rabbitmq server. The resources are either queues or exchanges. **declare** creates
-the resources. **setup** creates and additionally binds the queues.
+Les actions **cleanup**, **declare**, **setup** peuvent être utilisées pour gérer les
+ressources sur le courtier rabbitmq. Les ressources sont soit des files d'attente,
+soit des échanges. **declare** crée les ressources. **setup** crée les files
+d'attente et les liaisons.
 
-The **add, remove, list, edit, enable & disable** actions are used to manage the list 
-of configurations.  One can see all of the configurations available using the **list**
-action.   to view available plugins use **list plugins**.  Using the **edit** option, 
-one can work on a particular configuration.  A *disabled* configuration will not be 
-started or restarted by the **start**,  
-**foreground**, or **restart** actions. It can be used to set aside a configuration
-temporarily. 
+Les actions **add, remove, list, edit, enable & disable** sont utilisées pour gérer la liste
+de configurations et *plugins*. On peut voir toutes les configurations disponibles en utilisant l´action **list**.
+et les *plugins* disponibles avec **list plugins**.
+En utilisant l'option **edit**, on peut travailler sur une configuration particulière.
+Une configuration **disabled** ne sera pas démarrée ou redémarrée par les actions **start**
+ou **restart**. Cela peut être utilisé pour mettre une configuration temporairement de côté.
 
-The **convert** action is used to translate a configuration file written with Sarracenia version 2
-options into Sarracenia version 3 options. The v2 configuration file must be placed in the
-*~/.config/sarra/component/v2_config.conf* directory and the translated version will be placed in
-the *~/.config/sr3/component/v3_config.conf* directory. For example, one would invoke this action
-with *sr3 convert component/config*.
+L'option **convert** est utilisé pour traduire une configuration écrite avec des options de la version2
+de Sarracenia, avec des options de la version3. Le fichier de configuration de la version2 doit etre
+placé dans le réportoire *~/.config/sarra/composant/v2_config.conf* et la version traduite sera placé
+dans le répertoire *~/.config/sr3/composant/v3_config.conf*. Pas exemple, cette action serais invoqué avec
+*sr3 convert composant/config*.
 
 
 ACTIONS
@@ -116,7 +117,7 @@ ACTIONS
 declare|setup
 ~~~~~~~~~~~~~
 
-Call the corresponding function for each configuration::
+Appeler la fonction correspondante pour chacune des configurations::
 
   $ sr3 declare
     declare: 2020-09-06 23:22:18,043 [INFO] root declare looking at cpost/pelle_dd1_f04 
@@ -134,8 +135,9 @@ Call the corresponding function for each configuration::
     2020-09-06 23:22:18,111 [INFO] root declare looking at cpump/xvan_f15 
     2020-09-06 23:22:18,115 [INFO] sarra.moth.amqp __getSetup queue declared q_tfeed.sr_cpump.xvan_f15.50074940.98161482 (as: amqp://tfeed@localhost/) 
 
-Declares the queues and exchanges related to each configuration.
-One can also invoke it with --users, so that it will declare users as well as exchanges and queues::
+
+Déclare les files d’attente et les échanges liés à chaque configuration.
+On peut également l’appeler avec --users, afin qu’il déclare les utilisateurs ainsi que les échanges et les files d’attente::
 
   $ sr3 --users declare
     2020-09-06 23:28:56,211 [INFO] sarra.rabbitmq_admin add_user permission user 'ender' role source  configure='^q_ender.*|^xs_ender.*' write='^q_ender.*|^xs_ender.*' read='^q_ender.*|^x[lrs]_ender.*|^x.*public$' 
@@ -145,15 +147,15 @@ One can also invoke it with --users, so that it will declare users as well as ex
 dump
 ~~~~
 
-print the three data structure used by sr.  There are three lists:  
+imprimer les trois structures de données utilisées par sr.  Il existe trois listes :
 
-* processes thought to be related to sr.
+* processus considérés comme liés à sr.
 
-* configurations present
+* configurations présentes
 
-* contents of the state files.
+* contenu des fichiers d’état.
 
-**dump** is used for debugging or to get more detail than provided by status:: 
+**dump** est utilisé pour le débogage ou pour obtenir plus de détails que ce qui est fourni par status::
 
     Running Processes
          4238: name:sr_poll.py cmdline:['/usr/bin/python3', '/home/peter/src/sarracenia/sarra/sr_poll.py', '--no', '1', 'start', 'pulse']
@@ -171,9 +173,9 @@ print the three data structure used by sr.  There are three lists:
     Missing
        
 
-It is quite long, and so a bit too much information to look at in a raw state.
-Usually used in conjunction with linux filters, such as grep.
-for example::
+C’est assez long, et donc un peu trop d’informations à regarder à l’état brut.
+Généralement utilisé en conjonction avec des filtres Linux, tels que grep.
+par exemple::
 
   $ sr3 dump  | grep stopped
     WMO_mesh_post : {'status': 'stopped', 'instances': 0}
@@ -184,9 +186,9 @@ for example::
     amqp_f30.conf : {'status': 'disabled', 'instances': 5}
 
 
-provides easy method to determine which configurations are in a particular state.
-Another example, if *sr status* reports sender/tsource2send_f50 as being partial, then 
-one can use dump to get more detail::
+fournit une méthode simple pour déterminer quelles configurations sont dans un état particulier.
+Autre exemple, si *sr status* signale que l’expéditeur/tsource2send_f50 est partiel, alors
+on peut utiliser dump pour obtenir plus de détails::
 
   $ sr3 dump | grep sender/tsource2send_f50
     49308: name:sr3_sender.py cmdline:['/usr/bin/python3', '/usr/lib/python3/dist-packages/sarracenia/instance.py', '--no', '1', 'start', 'sender/tsource2send_f50']
@@ -196,12 +198,12 @@ one can use dump to get more detail::
 foreground
 ~~~~~~~~~~
 
-run a single instance of a single configuration as an interactive process logging to the current stderr/terminal output.
-for debugging.
+exécuter une seule instance d’une configuration unique en tant que processus interactif de journalisation à la sortie stderr/terminal actuelle.
+pour le débogage.
 
-**list** 
+**list**
 
-shows the user the configuration files present::
+montre à l’utilisateur les fichiers de configuration présents ::
 
   $ sr3 list
     User Configurations: (from: /home/peter/.config/sarra )
@@ -216,10 +218,10 @@ shows the user the configuration files present::
     credentials.conf                 default.conf                     
     logs are in: /home/peter/.cache/sarra/log
     
-The last line says which directory the log files are in.
+La dernière ligne indique dans quel répertoire se trouvent les fichiers journaux.
 
-Also *list examples* shows included configuration templates available as starting points with the *add* action::
-    
+*list examples* montre également les modèles de configuration inclus disponibles comme points de départ avec l’action *add* ::
+
   $ sr3 list examples
     Sample Configurations: (from: /home/peter/Sarracenia/v03_wip/sarra/examples )
     cpump/cno_trouble_f00.inc        poll/aws-nexrad.conf             poll/pollingest.conf             
@@ -243,17 +245,17 @@ Also *list examples* shows included configuration templates available as startin
     add: 2021-01-24 18:04:57,018 [INFO] sarracenia.sr add copying: /usr/lib/python3/dist-packages/sarracenia/examples/subscribe/dd_all.conf to /home/peter/.config/sr3/subscribe/dd_all.conf 
   $ sr3 edit dd_all.conf
 
-The **add, remove, list, edit, enable & disable** actions are used to manage the list
-of configurations.  One can see all of the configurations available using the **list**
-action.   to view available plugins use **list plugins**.  Using the **edit** option,
-one can work on a particular configuration.  A *disabled* sets a configuration aside
-(by adding *.off* to the name) so that it will not be started or restarted by 
-the **start**, **foreground**, or **restart** actions. 
+Les actions **add, remove, list, edit, enable & disable** sont utilisées pour gérer la liste
+des configurations.  On peut voir toutes les configurations disponibles en utilisant l'action **list**.
+Pour afficher les plugins disponibles, utilisez **list plugins**. À l’aide de l’option **edit**,
+on peut travailler sur une configuration particulière.  Un *disabled* met une configuration de côté
+(en ajoutant *.off* au nom) afin qu’elle ne soit pas démarrée ou redémarrée par
+les actions **start**, **foreground** ou **restart**.
 
 show
 ~~~~
 
-View all configuration settings (the result of all parsing... what the flow components actually see)::
+Afficher tous les paramètres de configuration (le résultat de toutes les analyses... ce que les composants du flux voient réellement) ::
 
     
     % sr3 show subscribe/q_f71
@@ -385,7 +387,7 @@ View all configuration settings (the result of all parsing... what the flow comp
 convert
 ~~~~~
 
-Converting a config: both formats are accepted, as well as include files::
+Conversion d’une configuration : les deux formats sont acceptés, ainsi que les fichiers d’inclusion (.inc) ::
 
   $ sr3 convert poll/sftp_f62
     2022-06-14 15:00:00,762 1093345 [INFO] root convert converting poll/sftp_f62 from v2 to v3
@@ -399,7 +401,7 @@ Converting a config: both formats are accepted, as well as include files::
 start
 ~~~~~
 
-launch all configured components::
+lancer tous les composants configurés::
 
   $ sr3 start
     gathering global state: procs, configs, state files, logs, analysis - Done. 
@@ -409,7 +411,7 @@ launch all configured components::
 stop
 ~~~~
 
-stop all processes::
+arrêter tous les processus::
 
   $ sr3 stop
     gathering global state: procs, configs, state files, logs, analysis - Done. 
@@ -422,7 +424,7 @@ stop all processes::
 status
 ~~~~~~
 
-Sample OK status (sr is running)::
+Exemple d’état OK (sr est en cours d’exécution) ::
 
   $ sr3 status
     status: 
@@ -456,21 +458,21 @@ Sample OK status (sr is running)::
           total running configs:  15 ( processes: 15 missing: 3 stray: 0 )
 
 
-The configurations are listed on the left. For each configuraion, the state
-will be:
+Les configurations sont répertoriées sur la gauche. Pour chaque configuration, l’état
+sera :
 
-* stopped:  no processes are running.
-* running:  all processes are running. 
-* partial:  some processes are running.
-* disabled: configured not to run.
+* stopped:  aucun processus n’est en cours d’exécution.
+* running:  tout les processus sont en cours d’exécution.
+* partial:  certains processus sont en cours d’exécution.
+* disabled: configuré pour ne pas s’exécuter.
 
-The columns to the right give more information, detailing how many processes are Running, and Missing ones.
-The Expected entry lists how many processes should be running based on the configuration, and whether it is stopped
-or not.  The contents of the Run and Miss columns should always add up to what is in the Exp column.
+Les colonnes à droite donnent plus d’informations, détaillant le nombre de processus en cours d’exécution et les processus manquants.
+L’entrée attendu indique le nombre de processus à exécuter en fonction de la configuration et indique si elle est arrêtée
+ou pas.  Le contenu des colonnes Run et Miss doit toujours correspondre à ce qui se trouve dans la colonne Exp.
 
-The last column is the number of messages stored in the local retry queue, indicating what channels are having
-processing difficulties. Here is an example of seeing that a single configuration is running, stopping it, 
-cleaning it out::
+La dernière colonne est le nombre de messages stockés dans la file d’attente de nouvelles tentatives locale, indiquant quels
+channels ont des difficultés de traitement. Voici un exemple d’une seule configuration qui est en cours d’exécution, en l’arrêtant, et
+en la nettoyant::
 
   $ sr3 status
     status: 
@@ -505,26 +507,31 @@ cleaning it out::
 CONSUMER
 ========
 
-Most Metpx Sarracenia components loop on reception and consumption of sarracenia 
-AMQP messages. Usually, the messages are `sr3_post(7) <../Reference/sr3_post.7.html>`_ messages, 
-announcing the availability of a file by publishing its URL ( or a part 
-of a file ), but there are also report messages which can be processed using the 
-same tools. AMQP messages are published to an exchange 
-on a broker (AMQP server). The exchange delivers messages to queues. To receive 
-messages, one must provide the credentials to connect to the broker. Once 
-connected, a consumer needs to create a queue to hold pending messages.
-The consumer must then bind the queue to one or more exchanges so that they put 
-messages in its queue.
+La plupart des composants Metpx Sarracenia boucle sur la réception et la
+consommation de messages AMQP. Habituellement, les messages d'intérêt sont
+dans le format d´une *avis* `sr_post(7) <sr_post.7.rst>`_, annonçant la disponibilité
+d'un fichier en publiant l'URL pour l´accéder (ou une partie de celle-ci).
+Il y a également le format *rappor* `sr_report(7) <sr_report.7.rst>`_ qui peuvent
+être traités avec les mêmes outils. Les messages AMQP sont publiés avec
+un *exchange* comme destinataire.  Sur un courtier (serveur AMQP.) L'exchange
+délivre des messages aux files d'attente. Pour recevoir de messages,
+on doit fournir les informations d'identification pour se connecter au
+courtier (message AMQP).  Une fois connecté, un consommateur doit créer
+une file d'attente pour retenir les messages en attente. Le consommateur
+doit ensuite lier la file d'attente à une ou plusieurs échanges de manière
+à ce qu'il mette dans sa file d'attente.
 
-Once the bindings are set, the program can receive messages. When a message is received,
-further filtering is possible using regular expressions onto the AMQP messages.
-After a message passes this selection process, and other internal validation, the
-component can run an **after_accept** plugin script to perform additional message 
-processing. If this plugin returns False, the message is discarded. If True, 
-processing continues.
+Une fois les liaisons (anglais: *bindings*) établies, le programme peut
+recevoir des messages. Lorsqu'un message est reçu, un filtrage
+supplémentaire est possible en utilisant des expressions régulières sur
+les messages AMQP. Après qu'un message a passé avec succès ce processus
+de sélection et d'autres validations internes, le processus peut exécuter
+un script de plugin **on_message** pour traiter le message davantage
+de façon spécialisé. Si ce plugin retourne False comme résultat, le
+message est rejeté. Si c'est vrai, le traitement du message se poursuit.
 
-The following sections explains all the options to set this "consuming" part of
-sarracenia programs.
+Les sections suivantes expliquent toutes les options pour régler cette
+partie " consommateur " de les programmes de Sarracenia.
 
 
 
@@ -533,125 +540,129 @@ Setting the Broker
 
 **broker [amqp|mqtt]{s}://<user>:<password>@<brokerhost>[:port]/<vhost>**
 
-A URI is used to configure a connection to a message pump, either
-an MQTT or an AMQP broker. Some Sarracenia components set a reasonable default for 
-that option.  provide the normal user,host,port of connections. In most configuration files,
-the password is missing. The password is normally only included in the credentials.conf file.
+Un URI AMQP est utilisé pour configurer une connexion à une pompe à messages
+(AMQP broker). Certains composants de Sarracenia définissent une valeur par
+défaut raisonnable pour cette option. Vous fournissez l'utilisateur normal,
+l'hôte, le port des connexions. Dans la plupart des fichiers de configuration,
+le mot de passe est manquant. Le mot de passe n'est normalement inclus que dans
+le fichier credentials.conf.
 
-Sarracenia work has not used vhosts, so **vhost** should almost always be **/**.
+L´application Sarracenia n'a pas utilisé vhosts, donc **vhost** devrait toujours être **/**.
 
-for more info on the AMQP URI format: ( https://www.rabbitmq.com/uri-spec.html )
+pour plus d'informations sur le format URI de l'AMQP : ( https://www.rabbitmq.com/uri-spec.html))
 
 
-either in the default.conf or each specific configuration file.
-The broker option tell each component which broker to contact.
+soit dans le fichier default.conf, soit dans chaque fichier de configuration spécifique.
+L'option courtier indique à chaque composante quel courtier contacter.
 
 **broker [amqp|mqtt]{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
 ::
-      (default: None and it is mandatory to set it ) 
+      (par défaut : Aucun et il est obligatoire de le définir)
 
-Once connected to an AMQP broker, the user needs to bind a queue
-to exchanges and topics to determine the messages of interest.
+Une fois connecté à un courtier AMQP, l'utilisateur doit lier une file d'attente.
+à l´*exchange* et aux thèmes (*topics*) pour déterminer les messages intérêsseants.
 
 Creating the Queue
 ------------------
 
-Once connected to an AMQP broker, the user needs to create a queue.
-Common settings for the queue on broker :
+Une fois connecté à un courtier AMQP, l'utilisateur doit créer une file d'attente.
 
-- **queue         <name>         (default: q_<brokerUser>.<programName>.<configName>)**
-- **expire        <duration>      (default: 5m  == five minutes. RECOMMEND OVERRIDING)**
-- **message_ttl   <duration>      (default: None)**
-- **prefetch      <N>            (default: 1)**
+Mise en file d'attente sur broker :
+
+- **queue <nom> (par défaut : q_<brokerUser>.<programName>.<configName>.<configName>)**
+- **expire <durée> (par défaut : 5m == cinq minutes. À OUTREPASSER)**
+- **message_ttl <durée> (par défaut : Aucun)**
+- **prefetch <N> (par défaut : 1)**
 
 
-Usually components guess reasonable defaults for all these values
-and users do not need to set them.  For less usual cases, the user
-may need to override the defaults.  The queue is where the notifications
-are held on the server for each subscriber.
+Habituellement, les composants devinent des valeurs par défaut raisonnables pour
+toutes ces valeurs et les utilisateurs n'ont pas besoin de les définir.  Pour
+les cas moins habituels, l'utilisateur peut avoir besoin a remplacer les valeurs
+par défaut. La file d'attente est l'endroit où les avis sont conservés
+sur le serveur pour chaque abonné.
 
 [ queue|queue_name|qn <name>]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-By default, components create a queue name that should be unique. The 
-default queue_name components create follows the following convention: 
+Par défaut, les composants créent un nom de file d’attente qui doit être unique. Le
+queue_name par défaut créé par les composants et suit la convention suivante :
 
    **q_<brokerUser>.<programName>.<configName>.<random>.<random>** 
 
-Where:
+Ou:
 
-* *brokerUser* is the username used to connect to the broker (often: *anonymous* )
+* *brokerUser* est le nom d’utilisateur utilisé pour se connecter au courtier (souvent: *anonymous* )
 
-* *programName* is the component using the queue (e.g. *sr_subscribe* ),
+* *programName* est le composant qui utilise la file d’attente (par exemple *sr_subscribe* )
 
-* *configName* is the configuration file used to tune component behaviour.
+* *configName* est le fichier de configuration utilisé pour régler le comportement des composants
 
-* *random* is just a series of characters chosen to avoid clashes from multiple
-  people using the same configurations
+* *random* n’est qu’une série de caractères choisis pour éviter les affrontements de plusieurs
+  personnes qui utilisent les mêmes configurations
 
-Users can override the default provided that it starts with **q_<brokerUser>**.
+Les utilisateurs peuvent remplacer la valeur par défaut à condition qu’elle commence par **q_<brokerUser>**.
 
-When multiple instances are used, they will all use the same queue, for trivial
-multi-tasking. If multiple computers have a shared home file system, then the
-queue_name is written to: 
+Lorsque plusieurs instances sont utilisées, elles utilisent toutes la même file d’attente, pour du multi-tasking simple.
+Si plusieurs ordinateurs disposent d’un système de fichiers domestique partagé, le
+queue_name est écrit à :
 
  ~/.cache/sarra/<programName>/<configName>/<programName>_<configName>_<brokerUser>.qname
 
-Instances started on any node with access to the same shared file will use the
-same queue. Some may want use the *queue_name* option as a more explicit method
-of sharing work across multiple nodes.
-
+Les instances démarrées sur n’importe quel nœud ayant accès au même fichier partagé utiliseront la
+même file d’attente. Certains voudront peut-être utiliser l’option *queue_name* comme méthode plus explicite
+de partager le travail sur plusieurs nœuds.
 
 AMQP QUEUE BINDINGS
 -------------------
 
-Once one has a queue, it must be bound to an exchange.
-Users almost always need to set these options. Once a queue exists
-on the broker, it must be bound to an exchange. Bindings define which
-messages (URL notifications) the program receives. The root of the topic
-tree is fixed to indicate the protocol version and type of the
-message (but developers can override it with the **topicPrefix**
+Une fois qu'on a une file d'attente, elle doit être liée à un échange (exchange.)
+Les utilisateurs ont presque toujours besoin de définir ces options. Une
+fois qu'une file d'attente existe sur le courtier, il doit être lié (*bound*) à
+une échange. Les liaisons (*bindings*) définissent ce que l'on entend par
+les avis que le programme reçoit. La racine du thème
+est fixe, indiquant la version du protocole et le type de l'arborescence.
+(mais les développeurs peuvent l'écraser avec le **topic_prefix*.
 option.)
 
-These options define which messages (URL notifications) the program receives:
+Ces options définissent les messages (notifications URL) que le programme reçoit :
 
- - **exchange      <name>         (default: xpublic)** 
- - **exchange_suffix      <name>  (default: None)** 
- - **topicPrefix  <amqp pattern> (default: v03 -- developer option)** 
- - **subtopic      <amqp pattern> (no default, must appear after exchange)** 
-
+ - **exchange      <name>         (défaut: xpublic)**
+ - **exchange_suffix      <name>  (défaut: None)**
+ - **topic_prefix  <amqp pattern> (défaut: 03 -- developer option)**
+ - **subtopic      <amqp pattern> (pas de défaut, doit apparaitre apres exchange)**
 
 subtopic <amqp pattern> (default: #)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Within an exchange's postings, the subtopic setting narrows the product selection.
-To give a correct value to the subtopic,
-one has the choice of filtering using **subtopic** with only AMQP's limited wildcarding and
-length limited to 255 encoded bytes, or the more powerful regular expression 
-based  **accept/reject**  mechanisms described below. The difference being that the 
-AMQP filtering is applied by the broker itself, saving the notices from being delivered 
-to the client at all. The  **accept/reject**  patterns apply to messages sent by the 
-broker to the subscriber. In other words,  **accept/reject**  are client side filters, 
-whereas **subtopic** is server side filtering.  
+Dans les publications d’un échange, le paramètre de sous-thème restreint la sélection de produits.
+Pour donner une valeur correcte au sous-thème, on a le choix de filtrer en utilisant **subtopic**
+avec seulement le wildcard limité d’AMQP et à longueur limitée à 255 octets codés, ou l’expression
+régulière la plus puissante basés sur les mécanismes  **accept/reject** décrits ci-dessous.
+La différence étant que le Le filtrage AMQP est appliqué par le courtier lui-même, ce qui évite
+que les avis ne soient livrés au client du tout. Les modèles **accept/reject** s’appliquent
+aux messages envoyés par le courtier à l’abonné. En d’autres termes,  **accept/reject** sont
+des filtres côté client, alors que **subtopic** est le filtrage côté serveur.
 
-It is best practice to use server side filtering to reduce the number of announcements sent
-to the client to a small superset of what is relevant, and perform only a fine-tuning with the 
-client side mechanisms, saving bandwidth and processing for all.
+Il est préférable d'utiliser le filtrage côté serveur pour réduire le nombre
+de avis envoyées au client à un petit sur-ensemble de ce qui est pertinent,
+et n'effectuer qu'un réglage fin avec l'outil mécanismes côté client, économisant
+la bande passante et le traitement pour tous.
 
-topicPrefix is primarily of interest during protocol version transitions, 
-where one wishes to specify a non-default protocol version of messages to 
-subscribe to. 
+topic_prefix est principalement d'intérêt pendant les transitions de version
+de protocole, où l'on souhaite spécifier une version sans protocole par défaut
+des messages auxquels s'abonner, ou bien pour manipuler des rapports de disposition,
+au lieu d'avis.
 
-Usually, the user specifies one exchange, and several subtopic options.
-**Subtopic** is what is normally used to indicate messages of interest.
-To use the subtopic to filter the products, match the subtopic string with
-the relative path of the product.
+Habituellement, l'utilisateur spécifie un échange et plusieurs options de sous-thèmes.
+**subtopic** est ce qui est normalement utilisé pour indiquer les messages d'intérêt.
+Pour utiliser le sous-thème pour filtrer les produits, faites correspondre la
+chaîne de sous-thèmes avec le chemin relatif dans l´arborescence de répertoires sur le serveur.
 
-For example, consuming from DD, to give a correct value to subtopic, one can
-browse the our website  **http://dd.weather.gc.ca** and write down all directories
-of interest.  For each directory tree of interest, write a  **subtopic**
-option as follow:
+Par exemple, en consommant à partir de DD, pour donner une valeur correcte au sous-thème, on peut
+Parcourez notre site Web **http://dd.weather.gc.ca** et notez tous les annuaires.
+d'intérêt.  Pour chaque arborescence de répertoires d'intérêt, écrivez un **subtopic**.
+comme suit :
 
  **subtopic  directory1.*.subdirectory3.*.subdirectory5.#**
 
@@ -661,18 +672,17 @@ option as follow:
        *                matches a single directory name 
        #                matches any remaining tree of directories.
 
-note:
-  When directories have these wild-cards, or spaces in their names, they 
-  will be URL-encoded ( '#' becomes %23 )
-  When directories have periods in their name, this will change
-  the topic hierarchy.
+remarque:
+  Lorsque les répertoires ont des wildcards, ou espaces dans leurs noms, ils
+  seront encodé par l'URL ou ( '#' devient %23 ). Lorsque les répertoires ont
+  des points dans leur nom, cela changera la hiérarchie des thèmes.
 
   FIXME: 
-      hash marks are URL substituted, but did not see code for other values.
-      Review whether asterisks in directory names in topics should be URL-encoded.
-      Review whether periods in directory names in topics should be URL-encoded.
+      les marques de hachage sont substituées à l’URL, mais n’ont pas vu le code pour les autres valeurs.
+      Vérifiez si les astérisques dans les noms de répertoire dans les rubriques doivent être encodés par l'URL.
+      Vérifiez si les points dans les noms de répertoire dans les rubriques doivent être encodés par l'URL.
  
-One can use multiple bindings to multiple exchanges as follows::
+On peut utiliser plusieurs liaisons à plusieurs échanges comme cela::
 
   exchange A
   subtopic directory1.*.directory2.#
@@ -680,14 +690,14 @@ One can use multiple bindings to multiple exchanges as follows::
   exchange B
   subtopic *.directory4.#
 
-Will declare two separate bindings to two different exchanges, and two different file trees.
-While default binding is to bind to everything, some brokers might not permit
-clients to set bindings, or one might want to use existing bindings.
-One can turn off queue binding as follows::
+Cela va déclarer deux liaisons différentes à deux échanges différents et deux arborescences de fichiers différentes.
+Alors que la liaison par défaut consiste à se lier à tout, certains courtiers pourraient ne pas permettre aux
+clients à définir des liaisons, ou on peut vouloir utiliser des liaisons existantes.
+On peut désactiver la liaison de file d’attente comme cela::
 
   subtopic None
 
-(False, or off will also work.)
+(False, ou off marchera aussi.)
 
 
 
@@ -696,36 +706,34 @@ One can turn off queue binding as follows::
 Client-side Filtering
 ---------------------
 
-We have selected our messages through **exchange**, **subtopic** and
-perhaps patterned  **subtopic** with AMQP's limited wildcarding which
-is all done by the broker (server-side). The broker puts the 
-corresponding messages in our queue. The subscribed component 
-downloads these messages.  Once the message is downloaded, Sarracenia 
-clients apply more flexible client side filtering using regular expressions.
+Nous avons sélectionné nos messages via **exchange**, **subtopic** et **subtopic**.
+Le courtier met les messages correspondants dans notre file d'attente (*queue*).
+Le composant télécharge ces messages.
+
+Les clients Sarracenia implémentent un filtrage plus flexible côté client
+en utilisant les expressions régulières.
 
 Brief Introduction to Regular Expressions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Regular expressions are a very powerful way of expressing pattern matches. 
-They provide extreme flexibility, but in these examples we will only use a
-very trivial subset: The . is a wildcard matching any single character. If it
-is followed by an occurrence count, it indicates how many letters will match
-the pattern. The * (asterisk) character, means any number of occurrences.
-So:
+Les expressions régulières sont un moyen très puissant d'exprimer les correspondances de motifs.
+Ils offrent une flexibilité extrême, mais dans ces exemples, nous utiliserons seulement un
+petit sous-ensemble : Le point (.) est un joker qui correspond à n'importe quel caractère
+unique. S'il est suivi d'un nombre d'occurrences, il indique le nombre de lettres
+qui correspondent. Le caractère * (astérisque), signifie un nombre quelconque d'occurrences.
+alors :
 
- - .* means any sequence of characters of any length. In other words, match anything.
+ - .* signifie n'importe quelle séquence de caractères de n'importe quelle longueur.
+   En d'autres termes, faire correspondre n'importe quoi.
+ - cap.* signifie toute séquence de caractères commençant par cap.
+ - .*CAP.* signifie n'importe quelle séquence de caractères avec CAP quelque part dedans.
+ - .*CAP signifie toute séquence de caractères qui se termine par CAP.
+ - Dans le cas où plusieurs portions de la chaîne de caractères pourraient correspondre, la plus longue est sélectionnée.
+ - .*?CAP comme ci-dessus, mais *non-greedy*, ce qui signifie que le match le plus court est choisi.
+ - noter que l'implantaions de regexp en C n'inclu pas le *greediness*, alors certains expressions
+   ne seront pas interpretés pareilles par les outils implanté en C: sr_cpost, sr_cpump, où libsrshim.
 
- - cap.* means any sequence of characters that starts with cap.
-
- - .*CAP.* means any sequence of characters with CAP somewhere in it. 
-
- - .*cap means any sequence of characters that ends with CAP.  In the case 
-   where multiple portions of the string could match, the longest one is selected.
-
- - .*?cap same as above, but *non-greedy*, meaning the shortest match is chosen.
-
-Please consult various internet resources for more information on the full
-variety of matching possible with regular expressions:
+Veuillez consulter diverses ressources Internet pour obtenir de plus amples renseignements:
 
  - https://docs.python.org/3/library/re.html
  - https://en.wikipedia.org/wiki/Regular_expression
@@ -735,28 +743,31 @@ variety of matching possible with regular expressions:
 accept, reject and accept_unmatch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- **accept    <regexp pattern> (optional)**
-- **reject    <regexp pattern> (optional)**
-- **acceptUnmatched   <boolean> (default: False)**
-- **baseUrl_relPath   <boolean> (default: False)**
+- **accept    <expression régulière (regexp)>  (facultatif)**
+- **reject    <expression régulière (regexp)>  (facultatif)**
+- **acceptUnmatched   <booléen> (par défaut: False)**
+- **baseUrl_relPath   <booléen> (par défaut: False)**
 
-The  **accept**  and  **reject**  options process regular expressions (regexp).
-The regexp is applied to the the message's URL for a match.
+Les options **accept** et **reject** traitent des expressions régulières (regexp).
+La regexp est appliquée à l'URL du message pour détecter une correspondance.
 
-If the message's URL of a file matches a **reject**  pattern, the message
-is acknowledged as consumed to the broker and skipped.
+Si l'URL du message d'un fichier correspond à un motif **reject**, on informe
+le courtier que le message a été consommé et on abandonne son traitement.
 
-One that matches an **accept** pattern is processed by the component.
+Celui qui correspond à un motif **accept** est traité par le composant.
 
-In many configurations, **accept** and **reject** options are mixed
-with the **directory** option.  They then relate accepted messages
-to the **directory** value they are specified under.
+Dans de nombreuses configurations, les options **accept** et **reject**
+sont spécifiés ensembles, et avec l'option **directory**.  Ils relient
+ensuite les messages acceptés à la valeur **directory** sous laquelle
+ils sont spécifiés.
 
-After all **accept** / **reject**  options are processed, normally
-the message is acknowledged as consumed and skipped. To override that
-default, set **accept_unmatch** to True. The **accept/reject** 
-settings are interpreted in order. Each option is processed orderly 
-from top to bottom. For example:
+Après que toutes les options **accept** / **reject** sont traitées normalement.
+l'accusé de réception du message tel qu'il a été consommé et ignoré. Pour
+outrepasser ce comportement de défaut, définissez **accept_unmatch** à True.
+
+Les **accept/rejet** sont interprétés dans l'ordre qu´ils apparaissent
+dans le fichier de configuration.  Chaque option est traitée en ordre
+de haut en bas.  par exemple :
 
 sequence #1::
 
@@ -769,56 +780,56 @@ sequence #2::
   reject .*\.gif
 
 
-In sequence #1, all files ending in 'gif' are rejected.  In sequence #2, the accept .* (which
-accepts everything) is encountered before the reject statement, so the reject has no effect.
+Dans la séquence #1, tous les fichiers se terminant par 'gif' sont rejetés.
+Dans la séquence #2, l'option accept .* (regexp qui veut dire accepte tout) est
+rencontré avant la déclaration de rejet, de sorte que le rejet n'a aucun effet.
 
-It is best practice to use server side filtering to reduce the number of announcements sent
-to the component to a small superset of what is relevant, and perform only a fine-tuning with the
-client side mechanisms, saving bandwidth and processing for all. More details on how
-to apply the directives follow:
+Il est préférable d'utiliser le filtrage côté serveur pour réduire le nombre
+de avis envoyées au composant à un petit sur-ensemble de ce qui est
+pertinent, et n'effectuer qu'un réglage fin avec les mécanismes *accept/reject*
+côté client, économisant la bande passante et le traitement pour tous.
 
-Normally the relative path (appended to the base directory) for files which are downloaded
-will be set according to the relPath header included in the message.  if *baseUrl_relPath*
-is set, however, the message's relPath will be prepended with the sub-directories from
-the message's baseUrl field.
+Plus de détails sur la façon d’appliquer les directives suivent:
 
+Normalement, le chemin d’accès relatif (baseUrl_relPath est False, ajouté au répertoire de base) pour
+les fichiers téléchargés seront définis en fonction de l’en-tête relPath inclus
+dans le message. Toutefois, si *baseUrl_relPath* est défini, le relPath du message va
+être précédé des sous-répertoires du champ baseUrl du message.
 
 NAMING QUEUES
 -------------
 
-While in most common cases, a good value is generated by the application, in some cases
-there may be a need to override those choices with an explicit user specification.
-To do that, one needs to be aware of the rules for naming queues:
 
-1. queue names start with q\_
-2. this is followed by <amqpUserName> (the owner/user of the queue's broker username)
-3. followed by a second underscore ( _ )
-4. followed by a string of the user's choice.
+Alors que dans la plupart des cas, une bonne valeur est générée par l'application, dans certains cas,
+c´est nécessaire de remplacer ces choix par une spécification utilisateur explicite.
+Pour ce faire, il faut connaître les règles de nommage des files d'attente :
 
-The total length of the queue name is limited to 255 bytes of UTF-8 characters.
+1. les noms de file d'attente commencent par q\_.
+2. ceci est suivi de <amqpUserName> (le propriétaire/utilisateur du nom d'utilisateur du courtier de la file d'attente).
+3. suivi d'un deuxième tiret de soulignement ( _ )
+4. suivi d'une chaîne de caractères au choix de l'utilisateur.
 
-
-
+La longueur totale du nom de la file d'attente est limitée à 255 octets de caractères UTF-8.
 
 POSTING
 =======
 
-Just as many components consumer a stream of messages, many components
-(often the same ones) also product an output stream of messages.  To make files
-available to subscribers, a poster publishes the announcements to an AMQP or 
-MQTT server, also called a broker. The post_broker option sets all the 
-credential information to connect to the output **AMQP** broker.
+Comme de nombreux composants consomment un flux de messages, de nombreux composants
+(souvent les mêmes) produisent également un flux de sortie de messages.  Pour créer des fichiers
+disponible pour les abonnés, une affiche publie les annonces à un AMQP ou
+Serveur MQTT, également appelé broker. L’option post_broker définit toutes les
+informations d’identification pour se connecter au courtier de sortie **AMQP**.
 
 **post_broker [amqp|mqtt]{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
-Once connected to the source AMQP broker, the program builds notifications after
-the download of a file has occurred. To build the notification and send it to
-the next hop broker, the user sets these options :
+Une fois connecté au courtier de source AMQP, le programme génère des notifications après que
+le téléchargement d’un fichier a eu lieu. Pour générer la notification et l’envoyer au
+courtier au saut suivant, l’utilisateur définit ces options :
 
-* **post_baseDir     <path>    (optional)**
-* **post_topicPrefix <pfx> (default: 'v03')**
-* **post_exchange    <name>         (default: xpublic)**
-* **post_baseUrl     <url>     (MANDATORY)**
+* **post_baseDir     <path>    (facultatif)**
+* **post_topicPrefix <pfx> (par défaut: 'v03')**
+* **post_exchange    <name>         (par défaut: xpublic)**
+* **post_baseUrl     <url>     (OBLIGATOIRE)**
 
 FIXME: Examples of what these are for, what they do...
 
@@ -826,28 +837,27 @@ FIXME: Examples of what these are for, what they do...
 NAMING EXCHANGES
 ----------------
 
-1. Exchange names start with x
-2. Exchanges that end in *public* are accessible (for reading) by any authenticated user.
-3. Users are permitted to create exchanges with the pattern:  xs_<amqpUserName>_<whatever> such exchanges can be written to only by that user. 
-4. The system (sr_audit or administrators) create the xr_<amqpUserName> exchange as a place to send reports for a given user. It is only readable by that user.
-5. Administrative users (admin or feeder roles) can post or subscribe anywhere.
+1. Les noms d’échange commencent par x
+2. Les échanges qui se terminent par *public* sont accessibles (pour lecture) par tout utilisateur authentifié.
+3. Les utilisateurs sont autorisés à créer des échanges avec le modèle: xs_<amqpUserName>_<whatever>. ces échanges ne peuvent être écrits que par cet utilisateur.
+4. Le système (sr_audit ou administrateurs) crée l’échange de xr_<amqpUserName> comme un lieu d’envoi de rapports pour un utilisateur. Il n’est lisible que par cet utilisateur.
+5. Les utilisateurs administratifs (rôles d’administrateur ou de feeder) peuvent publier ou s’abonner n’importe où.
 
-For example, xpublic does not have xs\_ and a username pattern, so it can only be posted to by admin or feeder users.
-Since it ends in public, any user can bind to it to subscribe to messages posted.
-Users can create exchanges such as xs_<amqpUserName>_public which can be written to by that user (by rule 3), 
-and read by others (by rule 2.) A description of the conventional flow of messages through exchanges on a pump.  
-Subscribers usually bind to the xpublic exchange to get the main data feed. This is the default in sr_subscribe.
+Par exemple, xpublic n’a pas xs\_ et un modèle de nom d’utilisateur, de sorte qu’il ne peut être publié que par les utilisateurs administrateurs ou feeder.
+Puisqu’il se termine en public, tout utilisateur peut s’y lier pour s’abonner aux messages publiés.
+Les utilisateurs peuvent créer des échanges tels que xs_<amqpUserName>_public qui peuvent être écrits par cet utilisateur (selon la règle 3),
+et lu par d’autres (selon la règle 2.) Une description du flux conventionnel de messages à travers les échanges sur une pompe.
+Les abonnés se lient généralement à l’échange xpublic pour obtenir le flux de données principal. Il s’agit de la valeur par défaut dans sr_subscribe.
 
-Another example, a user named Alice will have at least two exchanges:
+Un autre exemple, un utilisateur nommé Alice aura au moins deux échanges :
 
-  - xs_Alice the exhange where Alice posts her file notifications and report messages (via many tools).
-  - xr_Alice the exchange where Alice reads her report messages from (via sr_shovel).
-  - Alice can create a new exchange by just posting to it (with sr3_post or sr_cpost) if it meets the naming rules.
+  - xs_Alice l’exhange où Alice poste ses notifications de fichiers et signale les messages (via de nombreux outils).
+  - xr_Alice l’échange d’où Alice lit ses messages de rapport (via sr_shovel).
+  - Alice peut créer un nouvel échange en publiant simplement dessus (avec sr3_post ou sr_cpost) s’il répond aux règles de nommage.
 
-Usually an sr_sarra run by a pump administrator will read from an exchange such as xs_Alice_mydata, 
-retrieve the data corresponding to Alice´s *post* message, and make it available on the pump, 
-by re-announcing it on the xpublic exchange.
-
+Habituellement, un sr_sarra exécuté par un administrateur de pompe lira à partir d’un échange tel que xs_Alice_mydata
+pour récupérer les données correspondant au message *post* d’Alice, et les rendre disponibles sur la pompe,
+en le ré-annonçant sur l’échange xpublic.
 
 POLLING
 =======
@@ -901,15 +911,15 @@ will be placed (prepending instead of replacing the file name).
 The directory can have some patterns. These supported patterns concern date/time .
 They are fixed...
 
-**${YYYY}         current year**
-**${MM}           current month**
-**${JJJ}          current julian**
-**${YYYYMMDD}     current date**
+**${YYYY}         année actuelle**
+**${MM}           mois actuel**
+**${JJJ}          julian actuelle**
+**${YYYYMMDD}     date actuelle**
 
-**${YYYY-1D}      current year   - 1 day**
-**${MM-1D}        current month  - 1 day**
-**${JJJ-1D}       current julian - 1 day**
-**${YYYYMMDD-1D}  current date   - 1 day**
+**${YYYY-1D}      année actuelle   - 1 jour**
+**${MM-1D}        mois actuel - 1 jour**
+**${JJJ-1D}       julian actuelle - 1 jour**
+**${YYYYMMDD-1D}  date actuelle   - 1 jour**
 
 ::
 
@@ -923,15 +933,15 @@ They are fixed...
         directory /mylocaldirectory/${YYYYMMDD}/mydailies
         accept    .*observations.*
 
-The **permDefault** option allows users to specify a linux-style numeric octal
-permission mask::
+L’option **permDefault** permet aux utilisateurs de spécifier un masque d'autorisation octal numérique
+de style Linux::
 
   permDefault 040
 
-means that a file will not be posted unless the group has read permission
-(on an ls output that looks like: ---r-----, like a chmod 040 <file> command).
-The **permDefault** options specifies a mask, that is the permissions must be
-at least what is specified.
+signifie qu’un fichier ne sera pas publié à moins que le groupe ait l’autorisation de lecture
+(sur une sortie ls qui ressemble à : ---r-----, comme une commande chmod 040 <fichier> ).
+Les options **permDefault** spécifient un masque, c’est-à-dire que les autorisations doivent être
+au moins ce qui est spécifié.
 
 As with all other components, the **vip** option can be used to indicate
 that a poll should be active on only a single node in a cluster. Note that
@@ -1748,18 +1758,19 @@ Reasons to use newer style plugins:
 Environment Variables
 ---------------------
 
-On can also reference environment variables in configuration files,
-using the *${ENV}* syntax.  If Sarracenia routines needs to make use
-of an environment variable, then they can be set in configuration files::
+On peut aussi utiliser des variables d´environnement avec la syntax
+*${ENV}* ou *ENV* est le nom d´une variable d´environnement. S´il faut
+définir une variable d´environnement pour une utilisation par Sarracenia,
+on peut l´indiquer dans un fichier de configuration::
 
   declare env HTTP_PROXY=localhost
 
 
-LOGS and MONITORING
--------------------
+Fichiers journal et Suivi
+-------------------------
 
 - debug
-   Setting option debug is identical to use  **logLevel debug**
+   L'option de déboggage **debug** est identique à l'utilisation de **loglevel debug**.
 
 - logMessageDump  (default: off) boolean flag
   if set, all fields of a message are printed, rather than just a url/path reference.
@@ -1774,6 +1785,7 @@ LOGS and MONITORING
 - --logStdout ( default: False )  EXPERIMENTAL FOR DOCKER use case
 
    The *logStdout* disables log management. Best used on the command line, as there is 
+
    some risk of creating stub files before the configurations are completely parsed::
 
        sr3 --logStdout start
@@ -1815,27 +1827,28 @@ options and techniques.
 
 
 
-CREDENTIALS
------------
+CREDENTIALS (IDENTIFICATION)
+----------------------------
 
-One normally does not specify passwords in configuration files.  Rather they are placed 
-in the credentials file::
+Normalement, on ne spécifie pas de mots de passe dans les fichiers de
+configuration. Ils sont plutôt placés dans le fichier d´information d´identifcation::
 
    edit ~/.config/sr3/credentials.conf
 
-For every url specified that requires a password, one places 
-a matching entry in credentials.conf.
-The broker option sets all the credential information to connect to the  **RabbitMQ** server 
+Pour chaque url spécifié qui nécessite un mot de passe, on place une entrée
+correspondante dans *credentials.conf*. L'option broker définit toutes les
+informations d'identification pour se connecter au serveur **RabbitMQ**.
 
 - **broker amqp{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
 ::
 
-      (default: amqps://anonymous:anonymous@dd.weather.gc.ca/ )
+      (par défaut: amqps://anonymous:anonymous@dd.weather.gc.ca/ )
 
-For all **sarracenia** programs, the confidential parts of credentials are stored
-only in ~/.config/sarra/credentials.conf.  This includes the destination and the broker
-passwords and settings needed by components.  The format is one entry per line.  Examples:
+Pour tous les programmes de **sarracenia**, les parties confidentielles
+des justificatifs d'identité sont stockées uniquement dans
+~/.config/sarra/credentials.conf. Cela comprend les mots de passe pour la destination
+et le courtier ainsi que les paramètres requis par les composants.  Une entrée par ligne.  Exemples :
 
 - **amqp://user1:password1@host/**
 - **amqps://user2:password2@host:5671/dev**
@@ -1853,9 +1866,9 @@ passwords and settings needed by components.  The format is one entry per line. 
 - **https://ladsweb.modaps.eosdis.nasa.gov/ bearer_token=89APCBF0-FEBE-11EA-A705-B0QR41911BF4**
 
 
-In other configuration files or on the command line, the url simply lacks the
-password or key specification.  The url given in the other files is looked
-up in credentials.conf.
+Dans d'autres fichiers de configuration ou sur la ligne de commande, l'url
+n'inclut pas le mot de passe ou spécification de clé.  L'url donné dans les
+autres fichiers est utilisé comme clé de recherche pour credentials.conf.
 
 Credential Details
 ~~~~~~~~~~~~~~~~~~
@@ -2287,18 +2300,18 @@ See the `Programming Guide <../Explanation/SarraPluginDev.rst>`_ for more inform
 ROLES - feeder/admin/declare
 ----------------------------
 
-*of interest only to administrators*
+*d’intérêt que pour les administrateurs*
 
-Administrative options are set using::
+Les options d'administration sont définies à l'aide de::
 
   edit ~/.config/sr3/admin.conf
 
-The *feeder* option specifies the account used by default system transfers for components such as
-shovel, sarra and sender (when posting). 
+L'option *feeder* spécifie le compte utilisé par défaut pour les transferts
+système pour les composants tels que sr_shovel, sr_sarra et sr_sender (lors de publication).
 
-- **feeder    amqp{s}://<user>:<pw>@<post_brokerhost>[:port]/<vhost>**
 
-- **admin   <name>        (default: None)**
+-- **feeder amqp{s}://<user>:<pw>@<post_brokerhost>[:port]/<vhost>** (valeur par défaut : Aucun)
+-- **admin <nom> (par défaut : Aucun)**
 
 The admin user is used to do maintenance operations on the pump such as defining
 the other users. Most users are defined using the *declare* option. The feeder can also be declared in that
@@ -2309,79 +2322,85 @@ way.
 subscriber
 ~~~~~~~~~~
 
-  A subscriber is user that can only subscribe to data and return report messages. Subscribers are
-  not permitted to inject data.  Each subscriber has an xs_<user> named exchange on the pump,
-  where if a user is named *Acme*, the corresponding exchange will be *xs_Acme*.  This exchange
-  is where an subscribe process will send its report messages.
+  Un *subscriber* (abonné) est un utilisateur qui ne peut s'abonner qu'aux données
+  et renvoyer des messages de rapport. Les abonnés ne sont pas autorisés à injecter des données.
+  Chaque abonné a un central xs_<user>nommé sur la pompe, où si un utilisateur est
+  nommé *Acme*, l'échange correspondant sera *xs_Acme*.  Cet échange
+  est l'endroit où un processus sr_subscribe enverra ses messages de rapport.
 
-  By convention/default, the *anonymous* user is created on all pumps to permit subscription without
-  a specific account.
+  Par convention/défaut, l'utilisateur *anonyme* est créé sur toutes les pompes pour
+  permettre l'abonnement sans un compte spécifique.
 
 source
 ~~~~~~
 
-  A user permitted to subscribe or originate data.  A source does not necessarily represent
-  one person or type of data, but rather an organization responsible for the data produced.
-  So if an organization gathers and makes available ten kinds of data with a single contact
-  email or phone number for questions about the data and its availability, then all of
-  those collection activities might use a single 'source' account.
+  Un utilisateur autorisé à s’abonner ou à générer des données. Une source ne représente pas nécessairement
+  une personne ou un type de données, mais plutôt une organisation responsable des données produites.
+  Donc, si une organisation recueille et met à disposition dix types de données avec un seul contact,
+  e-mail, ou numéro de téléphone, toute question sur les données et leur disponibilité par rapport aux
+  activités de collecte peuvent alors utiliser un seul compte "source".
 
-  Each source gets a xs_<user> exchange for injection of data posts, and, similar to a subscriber
-  to send report messages about processing and receipt of data. Source may also have an xl_<user>
-  exchange where, as per report routing configurations, report messages of consumers will be sent.
+  Chaque source reçoit un échange xs_<utilisateur> pour l’injection de publications de données. Cela est comme un abonné
+  pour envoyer des messages de rapport sur le traitement et la réception des données. La source peut également avoir
+  un échange xl_<utilisateur> où, selon les configurations de routage des rapports, les messages de rapport des
+  consommateurs seront envoyés.
 
 feeder
 ~~~~~~
   
-  A user permitted to write to any exchange. Sort of an administrative flow user, meant to pump
-  messages when no ordinary source or subscriber is appropriate to do so.  Is to be used in
-  preference to administrator accounts to run flows.
+  Un utilisateur autorisé à écrire à n’importe quel échange. Une sorte d’utilisateur de flux administratif, destiné à pomper
+  des messages lorsque aucune source ou abonné ordinaire n’est approprié pour le faire. Doit être utilisé de
+  préférence au lieu de comptes d’administrateur pour exécuter des flux.
 
 
-User credentials are placed in the credentials files, and *audit* will update
-the broker to accept what is specified in that file, as long as the admin password is
-already correct.
+Les informations d’identification de l’utilisateur sont placées dans le `credentials.conf <sr3_credentials.7.html>`_
+et *sr3 --users declare* mettra à jour le courtier pour accepter ce qui est spécifié dans ce fichier, tant que le
+mot de passe de l'administrateur est déjà correct.
 
 
 CONFIGURATION FILES
 -------------------
 
-While one can manage configuration files using the *add*, *remove*,
-*list*, *edit*, *disable*, and *enable* actions, one can also do all
-of the same activities manually by manipulating files in the settings
-directory.  The configuration files for an sr_subscribe configuration 
-called *myflow* would be here:
+Alors qu'on peut gérer les fichiers de configuration à l'aide de la fonction *add*, *remove*,
+*list*, *edit*, *disable*, et *enable* actions, on peut aussi tout faire.
+des mêmes activités manuellement en manipulant les fichiers dans les paramètres.
+dans l'annuaire de l'entreprise.  Les fichiers de configuration pour une configuration sr_subscribe.
+appelé *myflow* serait ici :
 
- - linux: ~/.config/sarra/subscribe/myflow.conf (as per: `XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.rst>`_ ) 
+ - linux : ~/.config/sarra/subscribe/myflow.conf (selon : `XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.rst>`_ )
 
+ - Windows : %AppDir%/science.gc.ca/sarra/myflow.conf, cela pourrait être :
+   C:\Users\peter\AppData\Local\science.gc.ca\sarra\sarra\myflow.conf
 
- - Windows: %AppDir%/science.gc.ca/sarra/myflow.conf , this might be:
-   C:\Users\peter\AppData\Local\science.gc.ca\sarra\myflow.conf
+ - MAC : FIXME.
 
- - MAC: FIXME.
+Le sommet de l'arborescence a *~/.config/sarra/default.conf* qui contient les paramètres suivants
+sont lus par défaut pour tout composant au démarrage. Dans le même répertoire,
+*~/.config/sarra/credentials.conf* contient des informations d'identification
+(mots de passe) à utiliser par sarracenia (`CREDENTIALS`_ pour plus de détails. ).
 
-The top of the tree has  *~/.config/sarra/default.conf* which contains settings that
-are read as defaults for any component on start up.  In the same directory, *~/.config/sarra/credentials.conf* 
-contains credentials (passwords) to be used by sarracenia ( `CREDENTIALS`_ for details. )
+On peut également définir la variable d'environnement XDG_CONFIG_HOME pour remplacer
+le placement par défaut, ou bien Les fichiers de configuration individuels peuvent
+être placés dans n'importe quel répertoire et invoqués avec la commande chemin complet.
+Lorsque des composants sont invoqués, le fichier fourni est interprété comme un fichier
+(avec un suffixe.conf conf supposé.) S'il n'est pas trouvé comme chemin d'accès au
+fichier, alors l'option recherchera dans le répertoire de configuration du
+composant ( **config_dir** / **component**) pour un fichier.conf correspondant.
 
-One can also set the XDG_CONFIG_HOME environment variable to override default placement, or 
-individual configuration files can be placed in any directory and invoked with the 
-complete path.   When components are invoked, the provided file is interpreted as a 
-file path (with a .conf suffix assumed.)  If it is not found as a file path, then the 
-component will look in the component's config directory ( **config_dir** / **component** )
-for a matching .conf file.
+S'il n'est toujours pas trouvé, il le recherchera dans le répertoire de configuration du site.
+(linux : /usr/share/default/sarra/**component**).
 
-If it is still not found, it will look for it in the site config dir
-(linux: /usr/share/default/sarra/**component**).
-
-Finally, if the user has set option **remote_config** to True and if he has
-configured web sites where configurations can be found (option **remote_config_url**),
-The program will try to download the named file from each site until it finds one.
-If successful, the file is downloaded to **config_dir/Downloads** and interpreted
-by the program from there.  There is a similar process for all *plugins* that can
-be interpreted and executed within sarracenia components.  Components will first
-look in the *plugins* directory in the users config tree, then in the site
-directory, then in the sarracenia package itself, and finally it will look remotely.
+Enfin, si l'utilisateur a défini l'option **remote_config** sur True et s'il
+dispose de sites web configurés où l'on peut trouver des configurations
+(option **remote_config_config_url**), Le programme essaiera de télécharger
+le fichier nommé à partir de chaque site jusqu'à ce qu'il en trouve un.
+En cas de succès, le fichier est téléchargé dans **config_dir/Downloads** et
+interprété par le programme à partir de là.  Il y a un processus similaire
+pour tous les *plugins* qui peuvent être interprété et exécuté à l'intérieur
+des composantes de la Sarracenia.  Les composants chercheront en premier lieu
+dans le répertoire *plugins* dans l'arbre de configuration des
+utilisateurs, puis dans le site, puis dans le paquet sarracenia lui-même,
+et finalement il regardera à distance.
 
 
 
@@ -2398,46 +2417,45 @@ for the delivery of the product.  The script receives the sr_sender class
 instance.  The script takes the parent as an argument, and for example, any
 modification to  **parent.msg.new_file**  will change the name of the file written locally.
 
-filename <keyword> (default:WHATFN)
+filename <mots-clé> (défaut:WHATFN)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-From **metpx-sundew** the support of this option give all sorts of possibilities
-for setting the remote filename. Some **keywords** are based on the fact that
-**metpx-sundew** filenames are five (to six) fields strings separated by for colons.
+De **MetPX Sundew**, le support de cette option donne toutes sortes de possibilités
+pour définir le nom de fichier distant. Certains **keywords** sont basés sur le fait que
+les noms de fichiers **MetPX Sundew** ont cinq (à six) champs de chaîne de caractères séparés par des deux-points.
 
-The default value on Sundew is NONESENDER, but in the interest of discouraging use
-of colon separation in files, the default in Sarracenia is WHATFN
+La valeur par défaut sur Sundew est NONESENDER, mais dans l’intérêt de décourager l’utilisation
+de la séparation par des deux-points dans les fichiers, le défaut dans Sarracenia est WHATFN.
 
-The possible keywords are :
-
+Les mots-clés possibles sont :
 
 **WHATFN**
- - the first part of the Sundew filename (string before first :)
+ - la première partie du nom de fichier Sundew (chaîne de caractères avant le premier : )
 
 **HEADFN**
- - HEADER part of the sundew filename
+ - Partie EN-TETE du nom de fichier Sundew
 
 **SENDER**
- - the Sundew filename may end with a string SENDER=<string> in this case the <string> will be the remote filename
+ - le nom de fichier Sundew peut se terminer par une chaîne SENDER=<string> dans ce cas,
+   la <string> sera le nom de fichier distant
 
 **NONE**
- - deliver with the complete Sundew filename (without :SENDER=...)
+ -  livrer avec le nom du fichier Sundew complet (sans :SENDER=...)
 
 **NONESENDER**
- - deliver with the complete Sundew filename (with :SENDER=...)
+ -  livrer avec le nom de fichier Sundew complet (avec :SENDER=...)
 
 **TIME**
- - time stamp appended to filename. Example of use: WHATFN:TIME
+ - horodatage ajouté au nom de fichier. Exemple d’utilisation : WHATFN:TIME
 
 **DESTFN=str**
- - direct filename declaration str
+ - déclaration str direct du nom de fichier
 
 **SATNET=1,2,3,A**
- - cmc internal satnet application parameters
+ - Paramètres d’application satnet interne cmc
 
 **DESTFNSCRIPT=script.py**
- - invoke a script (same as destfn_script) to generate the name of the file to write
-
+ - appeler un script (identique à destfn_script) pour générer le nom du fichier à écrire
 
 **accept <regexp pattern> [<keyword>]**
 
