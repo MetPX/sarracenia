@@ -39,6 +39,7 @@ La ligne de commande a trois éléments importants:
 * composant/config
 
 Un flux est un groupe de processus qui roule en utilisant un composant/config commun.
+
 OPTIONS
 =======
 La majorité des options son stockés dans des fichiers de configuration. Ceci est dénoté
@@ -183,9 +184,9 @@ de se mettre à jour automatiquement à l’avenir.
 
 Logs
 ----
+
 Pour les fichiers de logs, il faut regarder dans ~/.cache/sr3/logs (pour linux. Cela va varier sur d'autres
-plateformes.)
-Pour les trouver sur n'importe quel plateforme::
+plateformes.) Pour les trouver sur n'importe quel plateforme::
 
     fractal% sr3 list
     User Configurations: (from: /home/peter/.config/sr3 )
@@ -206,8 +207,6 @@ Voici un exemple complet de fichier de configuration::
   subtopic model_gem_global.25km.grib2.#
   accept .*
 
-This above file will connect to the dd.weather.gc.ca broker, connecting as
-anonymous with password anonymous (defaults) to obtain announcements about
 Ce fichier se connectera au broker dd.weather.gc.ca en tant qu'anonyme avec mot de passe
 anonyme (par défaut) pour obtenir des annonces à propos des fichiers dans le répertoire
 http://dd.weather.gc.ca/model_gem_global/25km/grib2.

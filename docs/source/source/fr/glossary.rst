@@ -30,6 +30,7 @@ GLOSSARY
 - Tree...........Arborescence
 - wildcards....(?)
 
+message, advertisement, post, notification -> message, publicité? , annonce? , article?
 
 
 

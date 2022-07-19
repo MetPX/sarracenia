@@ -13,9 +13,9 @@ SR3 Credential: Format du Fichier
 :Manual group: MetPX-Sarracenia
 
 CONFIGURATION
-============
+=============
 
-Normalement, les mots de passe ne sont pas spécifiés dans les fichiers de configuration.  Ils sont plutôt placés
+Normalement, les mots de passe ne sont pas spécifiés dans les fichiers de configuration. Ils sont plutôt placés
 dans le fichier d'identification (credentials) ::
 
    edit ~/.config/sr3/credentials.conf
@@ -49,11 +49,11 @@ ainsi que les paramètres nécessaires aux composants.  Le format est d'une entr
 - **https://ladsweb.modaps.eosdis.nasa.gov/ bearer_token=89APCBF0-FEBE-11EA-A705-B0QR41911BF4**
 
 Dans d’autres fichiers de configuration ou sur la ligne de commande, l’url n’a tout simplement pas le
-spécification du mot de passe ou de la clé.  L’url donné dans les autres fichiers est recherchée
+spécification du mot de passe ou de la clé. L’url donné dans les autres fichiers est recherchée
 dans credentials.conf.
 
 Identifiants et Details
-----------------------
+-----------------------
 
 Vous devrez peut-être spécifier des options supplémentaires pour des identifiants
 spécifiques. Ces détails peuvent être ajoutés après la fin de l’URL, avec plusieurs
@@ -76,6 +76,7 @@ nécessaire si un broker prend en charge plusieurs méthodes et qu’une méthod
 sélectionnée.
 
 Note::
+
  Les informations d’identification SFTP sont facultatives. Sarracenia cherchera dans le répertoire .ssh
  et va utiliser les informations d’identification SSH normales qui s’y trouvent.
 

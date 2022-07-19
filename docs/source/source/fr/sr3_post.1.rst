@@ -2,9 +2,9 @@
 Sr3_Post
 ========
 
----------------------------------
+--------------------------------------------------
 Publie la Disponibilitée d'un fichier aux abonnés.
----------------------------------
+--------------------------------------------------
 
 :Manual section: 1 
 :Date: |today|
@@ -39,8 +39,8 @@ Les différences sont:
     il transforme sr_cpost en démon qui fonctionne comme le composant *watch*
     de `sr3(1) <sr3.1.html>`_.  
 
-Options obligatoire
-------------------
+Options obligatoires
+--------------------
 
 L'option *post_base_url url,url,...* spécifie l'emplacement
 où les abonnés téléchargeront le fichier. Il y a généralement un article (post) par fichier.

@@ -26,6 +26,7 @@ SYNOPSIS
 
 DESCRIPTION
 ===========
+
 Les options sont placées dans des fichiers de configuration, une par ligne, avec le format::
 
     option <valeur>
@@ -161,6 +162,7 @@ Notez que les paramètres de *flatten* peuvent être modifiés entre les options
 
 Substitutions Compatible Sundew
 -------------------------------
+
 Dans `MetPX Sundew <../Explanation/Glossary.html#sundew>`_, le format de la nomination de fichier est beaucoup plus
 stricte, et est spécialisée pour une utilisation aves les données du World Meteorological Organization (WMO).
 Notez que la convention du format des fichiers est antérieure, et n’a aucun rapport avec la convention de
@@ -176,7 +178,6 @@ La signification du cinquième champ est une priorité, et le dernier champ est 
 La signification des autres champs varie en fonction du contexte. Exemple de nom de fichier ::
 
    SACN43_CWAO_012000_AAA_41613:ncp1:CWAO:SA:3.A.I.E:3:20050201200339
-
 
 Si un fichier est envoyé à Sarracenia et qu’il est nommé selon les conventions de Sundew,
 les champs de substitution suivants seront disponibles::
@@ -223,14 +224,14 @@ count
     type de nombre entier.
 
 duration
-    un nombre à virgule flottante qui indique une quantité en secondes (0,001 est 1 milliseconde)
+    un nombre à virgule flottante qui indique une quantité en secondes (0.001 est 1 milliseconde)
     modifié par un suffixe unitaire ( m-minute, h-heure, w-semaine ).
 
 flag
-    une option qui a la valeur soit Vrai ou Faux (une valeur booléenne).
+    une option qui a la valeur soit Vrai (True ou on) ou Faux (False ou off) (une valeur booléenne).
 
 float
-    un nombre à virgule flottante.
+    un nombre à virgule flottante, (séparateur de décimale étant un point.)
 
 list
     une liste de chaîne de caractères, chaque occurrence successive se rajoute au total.
@@ -339,16 +340,15 @@ a l'option *accept* seront renommé comme décrit... à moins que le *accept* co
 un fichier, l’option *rename* doit décrire un répertoire dans lequel les fichiers
 seront placé (en préfix au lieu de remplacer le nom du fichier).
 
-L’option **permdefault** permet aux utilisateurs de spécifier un masque d'autorisation octal numérique
+L’option **permDefault** permet aux utilisateurs de spécifier un masque d'autorisation octal numérique
 de style Linux::
 
-  permdefault 040
-
+  permDefault 040
 
 
 signifie qu’un fichier ne sera pas publié à moins que le groupe ait l’autorisation de lecture
 (sur une sortie ls qui ressemble à : ---r-----, comme une commande chmod 040 <fichier> ).
-Les options **permdefault** spécifient un masque, c’est-à-dire que les autorisations doivent être
+Les options **permDefault** spécifient un masque, c’est-à-dire que les autorisations doivent être
 au moins ce qui est spécifié.
 
 Le **regexp pattern** peut être utilisé pour définir des parties du répertoire si une partie du message est placée
@@ -460,7 +460,7 @@ L’option *outlet* permet à la sortie finale d’être autre qu’un poste.
 Voir `sr3_cpump(1) <sr3_cpump.1.html>`_ pour plus de détails.
 
 Courtier (Broker)
---------
+-----------------
 
 **broker [amqp|mqtt]{s}://<utilisateur>:<mot-de-passe>@<hoteDuCourtier>[:port]/<vhost>**
 
@@ -488,7 +488,7 @@ aux échanges et aux thèmes pour déterminer le messages en question.
 
 
 byteRateMax <size> (défaut: 0)
---------------------------------
+------------------------------
 
 **byteRateMax** est supérieur à 0, le processus tente de respecter cette vitesse de livraison
  en kilo-octets par seconde... ftp,ftps,ou sftp)
@@ -553,14 +553,14 @@ supprimera le fichier à la source. Par défaut, l'option est false.
 
 
 discard <booléen> (défaut: off)
---------------------------------
+-------------------------------
 
 L’option **discard**, si elle est définie a true, supprime le fichier une fois téléchargé. Cette option peut être
 utile lors du débogage ou pour tester une configuration.
 
 
 directory <chemin> (défaut: .)
------------------------------
+------------------------------
 
 L’option *directory* définit où placer les fichiers sur votre serveur.
 Combiné avec les options **accept** / **reject**, l’utilisateur peut sélectionner
@@ -593,14 +593,14 @@ Le script prends le parent comme argument, et par exemple, une
 modification de **parent.msg.new_file** changera le nom du fichier écrit localement.
 
 download <flag> (défaut: True)
---------------------------------
+------------------------------
 
 utilisé pour désactiver le téléchargement dans le composant subscribe et/ou sarra.
 Se définit a False par défaut dans les composants de shovel ou de winnow.
 
 
 durable <flag> (défaut: True)
-----------------------------------
+-----------------------------
 
 L’option AMQP **durable**, sur les déclarations de file d’attente. Si la valeur est True,
 le courtier conservera la file d’attente lors des redémarrages du courtier.
@@ -608,7 +608,7 @@ Cela signifie que la file d’attente est sur le disque si le courtier est redé
 
 
 fileEvents <évènement, évènement,...>
-----------------------------
+-------------------------------------
 
 Liste séparée par des virgules de types d'événements de fichiers à surveiller.
 Événements de fichiers disponibles : créer, supprimer, lier, modifier
@@ -627,7 +627,7 @@ FIXME : algorithme de renommage amélioré en v3 pour éviter l’utilisation de
 
 
 exchange <nom> (défaut: xpublic) et exchange_suffix
-------------------------------------------------------
+---------------------------------------------------
 
 La norme pour les pompes de données est d’utiliser l’échange *xpublic*. Les utilisateurs peuvent établir un
 flux de données privées pour leur propre traitement. Les utilisateurs peuvent déclarer leurs propres échanges
@@ -657,7 +657,7 @@ des différences peuvent donc survenir dans le flux de données de téléchargem
 1d (jour) ou 1w (semaine) peut être approprié pour éviter la perte de données. Cela dépend de combien de temps
 l’abonné est sensé s’arrêter et ne pas subir de perte de données.
 
-si aucune unité n’est donnée, un nombre décimal de secondes peut être fourni, tel que
+Si aucune unité n’est donnée, un nombre décimal de secondes peut être fourni, tel que
 0,02 pour spécifier une durée de 20 millisecondes.
 
 Le paramètre **expire** doit être remplacé pour une utilisation opérationnelle.
@@ -769,7 +769,7 @@ header <nom>=<valeur>
 ---------------------
 
 Ajoutez un en-tête <nom> avec la valeur donnée aux publicités. Utilisé pour transmettre des chaîne de caractères en tant
-que métadonnées dans les publicités pour améliorer la prise de décision des consommateurs.  Doit être utilisé
+que métadonnées dans les publicités pour améliorer la prise de décision des consommateurs. Doit être utilisé
 avec parcimonie. Il y a des limites sur le nombre d’en-têtes pouvant être utilisés, et la réduction de la
 taille des messages a des impacts importants sur la performance.
 
@@ -822,19 +822,19 @@ C’est aussi le défaut lorsqu’un *post_broker* est donné, indiquant qu'un a
 notifié après la livraison.
 
 inline <flag> (défaut: False)
-------------------------------
+-----------------------------
 
 Lors de la publication de messages, l’option **inline** est utilisée pour avoir le contenu du fichier
 inclus dans le post. Cela peut être efficace lors de l’envoi de petits fichiers sur un niveau élevé de
 liens de latence, un certain nombre d’allers-retours peuvent être enregistrés en évitant la récupération
-des données utilisant l’URL.  On ne devrait seulement utiliser *inline* pour des fichiers relativement petits.
+des données utilisant l’URL. On ne devrait seulement utiliser *inline* pour des fichiers relativement petits.
 Lorsque **inline** est actif, seuls les fichiers inférieurs à **inlineByteMax** octets
 (défaut: 1024) auront réellement leur contenu inclus dans les messages de post.
 Si **inlineOnly** est défini et qu’un fichier est plus volumineux que inlineByteMax, le fichier
 ne sera pas affiché.
 
 inlineByteMax <taille>
---------------------
+----------------------
 la taille maximale des messages à envoyer inline.
 
 inlineOnly
@@ -916,18 +916,18 @@ logEvents ( défaut: after_accept,after_work,on_housekeeping )
 autres valeurs : on_start, on_stop, post, gather, ... etc...
 
 logLevel ( défaut: info )
---------------------------
+-------------------------
 Niveau de journalisation exprimé par la journalisation de python. Les valeurs possibles sont :
 critical, error, info, warning, debug.
 
 logReject ( défaut: False )
-----------------------------
+---------------------------
 
 Normalement, le rejet des messages se fait en silence. Lorsque logReject a la valeur True, un message
 de journal est généré pour chaque message rejeté et indiquant la raison du rejet.
 
 logStdout ( défaut: False )
-----------------------------
+---------------------------
 
 *logStdout* désactive la gestion des journaux. Il vaut mieux l’utiliser sur la ligne de commande, car il y a
 certains risques de créer des fichiers stub avant que les configurations ne soient complètement analysées ::
@@ -946,23 +946,23 @@ où c’est préférable que toute la journalisation soit une sortie standard.
 la vitesse d’exécution de tous les processus qui écrivent à stdout.
 
 logRotateCount <max_logs> ( défaut: 5 )
-----------------------------------------
+---------------------------------------
 
 Nombre maximal de journaux archivés.
 
 logRotateInterval <intervalle>[<unité_de_temps>] ( défaut: 1d )
----------------------------------------------------------
+---------------------------------------------------------------
 
 La durée de l’intervalle avec une unité de temps optionnel (soit 5m, 2h, 3d)
 
 messageCountMax <count> (défaut: 0)
-------------------------------------
+-----------------------------------
 
 Si **messageCountMax** est supérieur à zéro, le flux se ferme après avoir traité le nombre de messages spécifié.
 Ceci est normalement utilisé pour le débogage uniquement.
 
 messageRateMax <float> (défaut: 0)
--------------------------------------
+----------------------------------
 
 Si **messageRateMax** est supérieur à zéro, le flux essaye de respecter cette vitesse de livraison en termes de
 messages par seconde. Notez que la limitation est sur les messages obtenus ou générés par seconde, avant le
@@ -970,13 +970,13 @@ filtrage accept/reject. Le flux va dormir pour limiter le taux de traitement.
 
 
 messageRateMin <float> (défaut: 0)
--------------------------------------
+----------------------------------
 
 Si **messageRateMin** est supérieur à zéro et que le flux détecté est inférieur à ce taux,
 un message d’avertissement sera produit :
 
 message_ttl <duration>  (défaut: None)
----------------------------------------
+--------------------------------------
 
 L’option **message_ttl** définit un temps pour lequel un message peut vivre dans la file d’attente.
 Après ce temps, le message est retiré de la file d’attente par le courtier.
@@ -1041,7 +1041,7 @@ une **deuxième couche d’abonnés (winnow) dont les caches de suppression des 
 
 
 nodupe_basis <donnes|nom|chemin> (défaut: chemin)
----------------------------------------------
+-------------------------------------------------
 
 Une option sous forme de mot-clé (alternative: *cache_basis* ) pour identifier quels fichiers sont comparés
 à des fins de suppression des doublons. Normalement, la suppression des doublons utilise l’intégralité du
@@ -1067,8 +1067,9 @@ Si les fichiers sont plus anciens que ce paramètre (défaut: 30d), ignorez-les,
 ancien pour qu'il puisse être posté.
 
 outlet post|json|url (défaut: post)
-------------------------------------
+-----------------------------------
 
+REMARQUE: **PAS IMPLEMENTÉ dans sr3, devrait revenir dans la version future**
 L’option **outlet** est utilisée pour permettre l’écriture d'un poste a un fichier au lieu de
 l'afficher à un courtier. Les valeurs d’argument valides sont les suivantes :
 
@@ -1103,7 +1104,7 @@ a été beaucoup utilisé dans l’implémentation python.
 
 
 overwrite <flag> (défaut: off)
--------------------------------
+------------------------------
 
 L’option **overwrite**, si définie a false, évite les téléchargements inutiles sous ces conditions :
 
@@ -1114,7 +1115,7 @@ L’option **overwrite**, si définie a false, évite les téléchargements inut
 Le défaut est False.
 
 path <chemin>
------------
+-------------
 
 **post** évalue le chemin d’accès du système de fichiers à partir de l’option **path**
 et éventuellement **post_baseDir** si cette option est utilisée.
@@ -1130,25 +1131,25 @@ la valeur de l’option **url**, et FIXME: and the resolved paths to which were 
 the *post_baseDir* present and needed.
 
 
-permdefault, permDirdefault, permLog, permCopy
+permDefault, permDirDefault, permLog, permCopy
 ----------------------------------------------
 
 Les bits d’autorisation sur les fichiers de destination écrits sont contrôlés par les directives *permCopy*.
 *permCopy* appliquera les autorisations de mode publiées par la source du fichier.
-Si aucun mode de source est disponible, le *permdefault* sera appliqué aux fichiers et le
+Si aucun mode de source est disponible, le *permDefault* sera appliqué aux fichiers et le
 *permLog* sera appliqué aux répertoires. Si aucun défaut est spécifié, les défauts du système d’exploitation
 (sur linux, contrôlé par les paramètres umask) déterminera les autorisations du fichier.
-(Notez que l’option *chmod* est interprétée comme un synonyme pour *permdefault*,
-et *chmod_dir* est un synonyme de *permDirdefault*).
+(Notez que l’option *chmod* est interprétée comme un synonyme pour *permDefault*,
+et *chmod_dir* est un synonyme de *permDirDefault*).
 
 Lorsqu’il est défini dans un composant de posting, permCopy peut soit inclure ou exclure
 l’en-tête *mode* des messages.
 
-lorsqu’il est défini dans un composant de polling, permdefault définit les autorisations minimales pour
+lorsqu’il est défini dans un composant de polling, permDefault définit les autorisations minimales pour
 qu'un dossier puis être accepté.
 
 (sur une sortie ls qui ressemble à : ---r-----, comme une commande chmod 040 <fichier> ).
-Les options **permdefault** spécifient un masque, c’est-à-dire que les autorisations doivent être
+Les options **permDefault** spécifient un masque, c’est-à-dire que les autorisations doivent être
 au moins ce qui est spécifié.
 
 post_baseDir <chemin>
@@ -1265,10 +1266,12 @@ Si la file d’attente existe déjà, ces indicateurs peuvent être défini a Fa
 ne soit effectuée pour file d’attente ou pour ses liaisons. Ces options sont utiles sur les courtiers qui ne
 permettent pas aux utilisateurs de déclarer leurs files d’attente.
 
-queueDeclare
-------------
+queueDeclare <flag> (défaut: True)
+----------------------------------
 
-FIXME
+Avec l´option queueDeclare à *True*, un composant déclare un fil d´attente pour accumuler des messages lors
+de chaque démarrage. Des fois les permissions sont restrictifs sur les courtiers, alors on ne peut pas
+faire de tels déclarations de ressources. Dans ce cas, il faut supprimer cette déclaration.
 
 randomize <flag>
 ----------------
@@ -1296,7 +1299,7 @@ par bloc parce que l’option *blocksize* a été définie, il y a une
 reconnexion au courtier à chaque fois qu’un message doit être envoyé.
 
 rename <chemin>
--------------
+---------------
 
 Avec l’option *renommer*, l’utilisateur peut
 suggérer un chemin de destination pour ses fichiers. Si le
@@ -1321,7 +1324,7 @@ Ces rapports sont utilisés pour le réglage de la livraison et pour les sources
 informations statistiques. Définissez cette option a **False**, pour empêcher la génération de ces rapports.
 
 reset <flag> (défaut: False)
------------------------------
+----------------------------
 
 Lorsque **reset** est défini et qu’un composant est (re)démarré, sa file d’attente est
 supprimé (si elle existe déjà) et recréé en fonction des options de file d’attente.
@@ -1335,7 +1338,7 @@ Le protocole AMQP définit d’autres options de file d’attente qui ne sont pa
 via Sarracenia, parce que Sarracenia choisit soi-même des valeurs appropriées.
 
 retryEmptyBeforeExit: <booléen> (défaut: False)
-------------------------------------------------
+-----------------------------------------------
 
 Utilisé pour les tests de flux de sr_insects. Empêche Sarracenia de quitter lorsqu’il reste des messages dans la file
 d’attente de nouvelles tentatives (retry queue). Par défaut, une publication quitte proprement une fois qu’elle a
@@ -1345,48 +1348,48 @@ exécutée qu’une seule fois, comme dans les tests de flux, ces messages ne se
 retryEmptyBeforeExit est défini à True.
 
 retry_ttl <duration> (défaut: identique à expire)
-----------------------------------------------
+-------------------------------------------------
 
 L’option **retry_ttl** (nouvelle tentative de durée de vie) indique combien de temps il faut continuer à essayer d’envoyer
 un fichier avant qu’il ne soit  rejeté de la file d’attente.  Le défaut est de deux jours.  Si un fichier n’a pas
 été transféré après deux jours de tentatives, il est jeté.
 
 sanity_log_dead <interva;le> (défaut: 1.5*housekeeping)
-------------------------------------------------------
+-------------------------------------------------------
 
-L’option **sanity_log_dead** définit la durée à prendre en compte avant de redémarrerun composant.
+L’option **sanity_log_dead** définit la durée à prendre en compte avant de redémarrer un composant.
 
 shim_defer_posting_to_exit (EXPERIMENTAL)
 -----------------------------------------
 
-  (option spécifique à libsrshim)
-  Reporte la publication des fichiers jusqu’à ce que le processus se ferme.
-  Dans les cas où le même fichier est ouvert et modifiée à plusieurs reprises, ceci
-  peut éviter les publications redondantes.  (défaut: False)
+(option spécifique à libsrshim)
+Reporte la publication des fichiers jusqu’à ce que le processus se ferme.
+Dans les cas où le même fichier est ouvert et modifiée à plusieurs reprises, ceci
+peut éviter les publications redondantes.  (défaut: False)
 
 shim_post_minterval *interval* (EXPERIMENTAL)
 ---------------------------------------------
 
-  (option spécifique à libsrshim)
-  Si un fichier est ouvert pour écriture et fermé plusieurs fois dans l’intervalle,
-  il ne sera affiché qu’une seule fois. Lorsqu’on écrit dans un fichier plusieurs fois, en particulier
-  dans un script shell, de nombreux postes sont créés, et les scripts shell affecte la performance.
-  Dans tous les cas, les abonnés ne seront pas en mesure de faire des copies assez rapidement, donc
-  il y a peu d’avantages à avoir 100 messages du même fichier dans la même seconde pa exemple.
-  Il est prudent de fixer une limite maximale à la fréquence de publication d’un fichier donné. (défaut: 5s)
-  Remarque: si un fichier est toujours ouvert ou a été fermé après son post précédent, alors
-  pendant le traitement de sortie du processus, il sera à nouveau publié, même si l’intervalle
-  n’est pas respecté, afin de fournir le message final le plus précis.
+(option spécifique à libsrshim)
+Si un fichier est ouvert pour écriture et fermé plusieurs fois dans l’intervalle,
+il ne sera affiché qu’une seule fois. Lorsqu’on écrit dans un fichier plusieurs fois, en particulier
+dans un script shell, de nombreux postes sont créés, et les scripts shell affecte la performance.
+Dans tous les cas, les abonnés ne seront pas en mesure de faire des copies assez rapidement, donc
+il y a peu d’avantages à avoir 100 messages du même fichier dans la même seconde pa exemple.
+Il est prudent de fixer une limite maximale à la fréquence de publication d’un fichier donné. (défaut: 5s)
+Remarque: si un fichier est toujours ouvert ou a été fermé après son post précédent, alors
+pendant le traitement de sortie du processus, il sera à nouveau publié, même si l’intervalle
+n’est pas respecté, afin de fournir le message final le plus précis.
 
 shim_skip_parent_open_files (EXPERIMENTAL)
 ------------------------------------------
 
-  (option spécifique à libsrshim)
-  L’option shim_skip_ppid_open_files signifie qu’un processus vérifie si le processus parent a le même fichier
-  ouvert et ne poste pas si c’est le cas. (défaut: Vrai)
+(option spécifique à libsrshim)
+L’option shim_skip_ppid_open_files signifie qu’un processus vérifie si le processus parent a le même fichier
+ouvert et ne poste pas si c’est le cas. (défaut: Vrai)
 
 sleep <temps>
-------------
+-------------
 
 Temps d’attente entre la génération d’événements. Lorsqu'on écrit fréquemment à des fichiers, c’est inutile
 de produire un poste pour chaque changement, car il peut produire un flux continu de changements où les transferts
@@ -1394,7 +1397,7 @@ ne peut pas être fait assez rapidement pour suivre le rythme.  Dans de telles c
 les modifications apportées à un fichier pendant le temps de *sleep*, et produire un seul poste.
 
 statehost <booléen> ( défaut: False )
------------------------------------------
+-------------------------------------
 
 Dans les grands centres de données, le répertoire de base peut être partagé entre des milliers de
 nœuds. Statehost ajoute le nom du nœud après le répertoire de cache pour le rendre
@@ -1402,7 +1405,7 @@ unique à chaque nœud. Ainsi, chaque nœud a ses propres fichiers d’état et 
 Par exemple, sur un nœud nommé goofy, ~/.cache/sarra/log/ devient ~/.cache/sarra/goofy/log/.
 
 strip <count|regexp> (défaut: 0)
----------------------------------
+--------------------------------
 
 Il est possible de modifier les répertoires en miroir relatifs à l’aide de l’option **strip**.
 Si elle est défini à N (un entier), les premiers répertoires 'N' du chemin relatif
@@ -1434,7 +1437,7 @@ REMARQUE::
     alors que l’expression : .*GIF correspond au nom entier.
 
 sourceFromExchange <flag> (défaut: off)
-------------------------------------------
+---------------------------------------
 
 L’option **sourceFromExchange** est principalement destinée aux administrateurs.
 Si les messages reçus sont postés directement à partir d’une source, l’échange utilisé
@@ -1458,7 +1461,7 @@ les rapports à l’origine des données injectées. Cela est généralement com
 Pour que les données arrivent dans l’arborescence de format standard.
 
 subtopic <modèle  amqp> (défaut: #)
-------------------------------------
+-----------------------------------
 
 Dans les publications d’un échange, le paramètre de subtopic restreint la sélection du produit.
 Pour donner la bonne valeur au subtopic, on a le choix de filtrer en utilisant **subtopic** seulement avec le
@@ -1522,7 +1525,7 @@ On peut désactiver la liaison de file d’attente comme cela::
 
 
 timeCopy (défaut: on)
-----------------------
+---------------------
 
 Sur les systèmes de type Unix, lorsque la commande *ls* ou un navigateur de fichiers affiche une modification ou un
 temps d’accès, il s’agit d’un affichage des éléments posix *st_atime* et *st_ctime* d’un struct renvoyé par l’appel
@@ -1534,13 +1537,13 @@ source et la destination sont comparés.
 Lorsqu’il est défini dans un composant de publication, les en-têtes *atime* et *mtime* des messages sont éliminés.
 
 timeout <intervalle> (défaut: 0)
--------------------------------
+--------------------------------
 
 L’option **timeout** définit le nombre de secondes à attendre avant d’interrompre un
 transfert de connexion ou de téléchargement (appliqué pendant le transfert).
 
 tlsRigour (défaut: medium)
----------------------------
+--------------------------
 
 *tlsRigour* peut être réglé a : *lax, medium ou strict*, et donne un indice à l'application par rapport à la
 configuration des connexions TLS. TLS, ou Transport Layer Security (autrefois appelée Secure Socket Layer (SSL))
@@ -1556,14 +1559,14 @@ qu'il est quand même nécessaire de l’utiliser, alors définir tlsRigour a *l
 permettre la connexion de réussir.
 
 topicPrefix (défaut: v03)
---------------------------
+-------------------------
 
 rajouté au subtopic pour former une hiérarchie complète de thèmes (topics).
 Cette option s’applique aux liaisons d’abonnement.
 Indique la version des messages reçus dans les subtopics. (V03 fait référence à `<sr3_post.7.html>`_)
 
 users <flag> (défaut: false)
------------------------------
+----------------------------
 
 Utiliser comme complément lorsque l’action *declare* est utilisée, pour demander à sr3 de déclarer des utilisateurs
 sur le courtier, ainsi que les files d’attente et les échanges.
