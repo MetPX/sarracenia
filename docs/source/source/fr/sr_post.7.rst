@@ -260,20 +260,21 @@ L’URL que les consommateurs utiliseront pour télécharger les données. Exemp
 Champs supplémentaires :
 
 **from_cluster=<nom_du_cluster>**
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
    L’en-tête from_cluster définit le nom du cluster source où
    les données ont été introduites dans le réseau. Cela est utilisé pour renvoyer les journaux
    au cluster chaque fois que ses produits sont utilisés.
 
 **link=<valeur du lien symbolique>**
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
    Lorsque le fichier à transférer est un lien symbolique, l’en-tête 'link' est créé pour
    contenir sa valeur.
 
 **size and blocks**
 ~~~~~~~~~~~~~~~~~~~
+
 .. _parts:
 
 ::

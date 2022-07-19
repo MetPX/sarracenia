@@ -3,7 +3,7 @@
 ==========
 
 -----------------
-sr_shovel in C
+sr_shovel en C
 -----------------
 
 :Manual section: 1 
@@ -85,7 +85,7 @@ et la grammaire est légèrement différente de l'implémentation de python. Que
 ajustements peuvent être nécessaires.
 
 VARIABLES ENVIRONNEMENTALES
-=====================
+===========================
 
 Si la variable SR_CONFIG_EXAMPLES est définie, la directive *add* peut être utilisée
 pour copier des exemples dans le répertoire de l'utilisateur à des fins d'utilisation et/ou de personnalisation.
@@ -100,22 +100,22 @@ l'implémentation python.
 
 
 VOIR AUSSI
-========
+==========
 
 
 **User Commands:**
 
 `sr3(1) <sr3.1.html>`_ - Interface de ligne de commande principale de Sarracenia.
 
-`sr3_post(1) <sr3_post.1.html>`_ - publication des annonces de fichiers (implémentation python.)
+`sr3_post(1) <sr3_post.1.html>`_ - publication des annonces de fichiers (implémentation Python.)
 
-`sr3_cpost(1) <sr3_cpost.1.html>`_ - publication des annonces de fichiers (implémentation c.)
+`sr3_cpost(1) <sr3_cpost.1.html>`_ - publication des annonces de fichiers (implémentation C.)
 
 **Formats:**
 
-`sr3_credentials(7) <sr3_credentials.7.html>`_ - Convertir les lignes du fichier journal au format .save pour recharger/renvoyer.
+`sr3_credentials(7) <sr3_credentials.7.html>`_ - le format des informations d'authentification. 
 
-`sr3_options(7) <sr3_options.7.html>`_ - Convertir les lignes du fichier journal au format .save pour recharger/renvoyer.
+`sr3_options(7) <sr3_options.7.html>`_ - liste de toute les options dans la langue de configuration.
 
 `sr3_post(7) <sr3_post.7.html>`_ - le format des annonces
 
