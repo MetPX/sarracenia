@@ -668,9 +668,9 @@ comme suit :
 
 ::
 
- where:  
-       *                matches a single directory name 
-       #                matches any remaining tree of directories.
+ ou:
+       *                correspond a un seul nom de repertoire
+       #                correspond à toute arborescence de répertoires restante
 
 remarque:
   Lorsque les répertoires ont des wildcards, ou espaces dans leurs noms, ils
@@ -831,7 +831,7 @@ courtier au saut suivant, l’utilisateur définit ces options :
 * **post_exchange    <name>         (par défaut: xpublic)**
 * **post_baseUrl     <url>     (OBLIGATOIRE)**
 
-FIXME: Examples of what these are for, what they do...
+FIXME : Des exemples de ce à quoi ils servent, de ce qu’ils font...
 
 
 NAMING EXCHANGES
@@ -862,54 +862,54 @@ en le ré-annonçant sur l’échange xpublic.
 POLLING
 =======
 
-Polling is doing the same job as a post, except for files on a remote server.
-In the case of a poll, the post will have its url built from the *destination* 
-option, with the product's path (*directory*/"matched file").  There is one 
-post per file.  The file's size is taken from the directory "ls"... but its 
-checksum cannot be determined, so the "sum" header in the posting is set 
-to "0,0."
+Polling fait le même travail que post, sauf que les fichiers sont sur un serveur distant.
+Dans le cas d’un poll, l’URL de la publication sera générée à partir de la *destination*,
+avec le chemin d’accès du produit (*directory*/« fichier correspondant »).  Il y en a une publication
+par fichier.  La taille du fichier est prise dans le répertoire « ls »... mais sa somme
+de contrôle ne peut pas être déterminée, de sorte que l’en-tête « sum » dans la publication est défini
+à « 0,0 ».
 
-By default, sr_poll sends its post message to the broker with default exchange
-(the prefix *xs_* followed by the broker username). The *broker* is mandatory.
-It can be given incomplete if it is well defined in the credentials.conf file.
+Par défaut, sr_poll envoie son message de publication au courtier avec l'échange par défaut
+(le préfixe *xs_* suivi du nom d’utilisateur du courtier). Le *broker* est obligatoire.
+Il peut être incomplet s’il est bien défini dans le fichier credentials.conf.
 
-Refer to `sr3_post(1) <../Reference/sr3_post.1.html>`_ - to understand the complete notification process.
-Refer to `sr3_post(7) <../Reference/sr3_post.7.rst>`_ - to understand the complete notification format.
+Référez `sr3_post(1) <../Reference/sr3_post.1.html>`_ - pour comprendre l’ensemble du processus de notification.
+Référez `sr3_post(7) <../Reference/sr3_post.7.rst>`_ - pour comprendre le format complet de notification.
+
+Ces options définissent les fichiers pour lesquels l’utilisateur souhaite être averti et où
+ il sera placé, et sous quel nom.
+
+- **directory <path>           (par défaut: .)**
+- **accept    <regexp pattern> [rename=] (doit être défini)**
+- **reject    <regexp pattern> (facultatif)**
+- **permDefault     <integer>        (par défaut: 0o400)**
+- **nodupe_fileAgeMax <duration>   (par défaut 30d)**
 
 
-These options set what files the user wants to be notified for and where
- it will be placed, and under which name.
-
-- **directory <path>           (default: .)**
-- **accept    <regexp pattern> [rename=] (must be set)**
-- **reject    <regexp pattern> (optional)**
-- **permDefault     <integer>        (default: 0o400)**
-- **nodupe_fileAgeMax <duration>   (default 30d)**
-
-
-The option *filename* can be used to set a global rename to the products.
+L’option *filename* peut être utilisée pour définir un changement de nom global pour les produits.
 Ex.:
 
 **filename  rename=/naefs/grib2/**
 
-For all posts created, the *rename* option would be set to '/naefs/grib2/filename'
-because I specified a directory (path that ends with /).
+Pour tous les messages créés, l’option *rename* serait définie à '/naefs/grib2/filename'
+parce que j’ai spécifié un répertoire (chemin qui se termine par /).
 
-The option *directory*  defines where to get the files on the server.
-Combined with  **accept** / **reject**  options, the user can select the
-files of interest and their directories of residence.
+L’option *directory* définit où obtenir les fichiers sur le serveur.
+Combiné avec les options **accept** / **reject**, l’utilisateur peut sélectionner
+les fichiers d’intérêt et leurs répertoires de résidence.
 
-The  **accept**  and  **reject**  options use regular expressions (regexp) to match URL.
-These options are processed sequentially.
-The URL of a file that matches a  **reject**  pattern is not published.
-Files matching an  **accept**  pattern are published.
-Again a *rename*  can be added to the *accept* option... matching products
-for that *accept* option would get renamed as described... unless the *accept* matches
-one file, the *rename* option should describe a directory into which the files
-will be placed (prepending instead of replacing the file name).
+Les options **accept** et **reject** utilisent des expressions régulières (regexp) pour trouver
+une correspondance avec l’URL.
+Ces options sont traitées séquentiellement.
+L’URL d’un fichier qui correspond à un modèle **reject** n’est pas publiée.
+Les fichiers correspondant à un modèle **accept** sont publiés.
+Encore une fois, un *rename* peut être ajouté à l’option *accept*... les produits qui correspondent
+a l'option *accept* seront renommé comme décrit... à moins que le *accept* corresponde à
+un fichier, l’option *rename* doit décrire un répertoire dans lequel les fichiers
+seront placé (en préfix au lieu de remplacer le nom du fichier).
 
-The directory can have some patterns. These supported patterns concern date/time .
-They are fixed...
+Le répertoire peut avoir des modèles. Ces modèles pris en charge concernent la date/l’heure.
+Ils sont fixes...
 
 **${YYYY}         année actuelle**
 **${MM}           mois actuel**
@@ -943,279 +943,263 @@ signifie qu’un fichier ne sera pas publié à moins que le groupe ait l’auto
 Les options **permDefault** spécifient un masque, c’est-à-dire que les autorisations doivent être
 au moins ce qui est spécifié.
 
-As with all other components, the **vip** option can be used to indicate
-that a poll should be active on only a single node in a cluster. Note that
-other nodes participating in the poll, when they don't have the vip, 
-will subscribe to the output of the poll to keep their duplicate suppression 
-caches current.
+Comme pour tous les autres composants, l’option **vip** peut être utilisée pour indiquer
+qu’un poll doit être actif sur seulement un seul nœud d’un cluster. Notez que quand
+d’autres nœuds participant au poll et wu’ils n’ont pas le vip, ils
 
-files that are more than nodupe_fileAgeMax are ignored. However, this 
-can be modified to any specified time limit in the configurations by using 
-the option *nodupe_fileAgeMax <duration>*. By default in components
-other than poll, it is disabled by being set to zero (0). As it is a 
-duration option, units are in seconds by default, but minutes, hours, 
-days, and weeks, are available. In the poll component, nodupe_fileAgeMax
-defaults to 30 days.
+les fichiers qui sont plus vieux que nodupe_fileAgeMax sont ignorés. Cela
+peut être modifié à n’importe quelle limite de temps spécifiée dans les configurations en utilisant
+l’option *nodupe_fileAgeMax <duration>*. Par défaut, dans les composants
+autre que poll, cette option est désactivé en étant défini à zéro (0). Comme il s’agit d’une
+option de durée, les unités sont en secondes par défaut, mais il est possible de definir l'option
+en utilisant des minutes, heures, jours ou des semaines. Dans la composante de poll, nodupe_fileAgeMax
+est défini à 30 jours par défaut.
 
 Advanced Polling
 ----------------
 
-The built-in Poll lists remote directories and parses the lines returned building 
-paramiko.SFTPAttributes structures (similar to os.stat) for each file listed. 
-There is a wide variety of customization available because resources to poll 
-are so disparate:
+Le poll intégré liste les répertoires distants et analyse les lignes renvoyées par les structures
+paramiko.SFTPAttributes (similaires à os.stat) pour chaque fichier répertorié.
+Il existe une grande variété de personnalisations disponibles car les ressources à poller
+très différentes :
 
-* one can implement a *sarracenia.flowcb* callback with a *poll* routine 
-  to support such services, replacing the default poller.
+* on peut implémenter un rappel *sarracenia.flowcb* avec une routine *poll*
+  pour prendre en charge ces services, ce qui remplace le poll par défaut.
 
-* Some servers have non-standard results when listing files, so one can 
-  subclass a sarracenia.flowcb.poll callback with the **on_line**
-  entry point to normalize their responses and still be able to use the
-  builtin polling flow.
+* Certains serveurs ont des résultats non standard quand ils listent des fichiers, de sorte que l’on peut
+  sur-classer un rappel sarracenia.flowcb.poll avec le point d’entrée **on_line** pour normaliser leurs
+  réponses en utilisant quand même le flux de poll intégré.
 
-* There are many http servers that provide disparately formatted
-  listings of files, so that sometimes rather than reformatting individual
-  lines, a means of overriding the parsing of an entire page is needed.
-  The **on_html_page** entry point in sarracenia.flowcb.poll can be 
-  modified by subclassing as well.
+* Il existe de nombreux serveurs http qui fournissent des formats très différents quand ils
+  listent de fichiers, donc parfois, au lieu de reformater individuellement chaque ligne
+  ligne, il faut refaire l’analyse de la page au complet. Le point d’entrée **on_html_page**
+  dans sarracenia.flowcb.poll peut être modifié en la sur-classant également.
 
-* There are other servers that provide different services, not covered
-  buy the default poll. One can implement additional *sarracenia.transfer*
-  classes to add understanding of them to poll.
+* Il existe d’autres serveurs qui fournissent des services différents qui ne sont pas inclus
+  dans le poll par défaut. On peut implémenter une classe *sarracenia.transfer* supplémentaire
+  pour mieux comprendre le poll.
 
-The output of a poll is a list of messages built from the file names
-and SFTPAttributes records, which can then be filtered by elements
-after *gather* in the algorithm.
+La sortie d’un poll est une liste de messages créés à partir des noms de fichiers
+et les enregistrements SFTPAttributes, qui peuvent ensuite être filtrés par éléments
+après *gather* dans l’algorithme.
 
-
-COMPONENTS
+COMPOSANTS
 ==========
 
-All the components do some combination of polling, consuming, and posting.
-with variations that accomplish either forwarding of announcements or
-data transfers. The components all apply the same single algorithm,
-just starting from different default settings to match common use
-cases.
+Tous les composants effectuent une combinaison de poll, de consommation et de publication.
+avec des variations qui permettent soit la transmission d’annonces, ou soit aux
+transferts de données. Les composants appliquent tous le seul même algorithme,
+il suffit de commencer à partir de différents paramètres par défaut pour correspondre
+à un cas d'utilisation commun.
 
 CPUMP
 -----
 
-*cpump** is an implementation of the `shovel`_ component in C.
-On an individual basis, it should be faster than a single python downloader,
-with some limitations.
+*cpump** est une implémentation du composant `shovel`_ en C.
+Sur une base individuelle, il devrait être plus rapide qu’un seul téléchargeur python,
+avec certaines limitations.
 
- - doesn't download data, only circulates posts. (shovel, not subscribe)
- - runs as only a single instance (no multiple instances).
- - does not support any plugins.
- - does not support vip for high availability.
- - different regular expression library: POSIX vs. python.
- - does not support regex for the strip command (no non-greedy regex).
+ - ne télécharge pas de données, ne fait que diffuser des messages. (pelle, et non abonné)
+ - s’exécute en tant qu’instance unique (pas d’instances multiples).
+ - ne prend en charge aucun plugin.
+ - ne prend pas en charge vip pour la haute disponibilité.
+ - différentes bibliothèques d’expressions régulières : POSIX vs python.
+ - ne supporte pas regex pour la commande strip (pas de regex non-greedy).
 
-It can therefore usually, but not always, act as a drop-in replacement for `shovel`_ and `winnow`_
+Cela peut donc généralement, mais pas toujours, servir de substitution à l`shovel`_  et à `winnow`_.
 
-The C implementation may be easier to make available in specialized environments,
-such as High Performance Computing, as it has far fewer dependencies than the python version.
-It also uses far less memory for a given role.  Normally the python version
-is recommended, but there are some cases where use of the C implementation is sensible.
+L’implémentation C peut être plus facile à mettre à disposition dans des environnements spécialisés,
+comme l'informatique de haute performance, car il y a beaucoup moins de dépendances que la version python.
+Cela utilise également beaucoup moins de mémoire pour un rôle donné.  Normalement la version python
+est recommandé, mais il y a des cas où l’utilisation de l’implémentation C est raisonnable.
 
-**sr_cpump** connects to a *broker* (often the same as the posting broker)
-and subscribes to the notifications of interest. If _suppress_duplicates_ is active, 
-on reception of a post, it looks up the message's **integity** field in its cache.  If it is 
-found, the file has already come through, so the notification is ignored. If not, then 
-the file is new, and the **sum** is added to the cache and the notification is posted.
+**sr_cpump** se connecte à un *broker* (souvent le même que le courtier de post)
+et s'abonne aux notifications d’intérêt. Si _suppress_duplicates_ est actif,
+à la réception d’un message, il recherche le champ **integity** du message dans la cache.  Si le message est
+trouvé, le fichier est déjà passé, de sorte que la notification est ignorée. Si ce n’est pas le cas, alors
+le fichier est nouveau, et la **sum** est ajoutée à la cache et la notification est publiée.
 
 POLL
 ----
 
-**poll** is a component that connects to a remote server to
-check in various directories for some files. When a file is
-present, modified or created in the remote directory, the program will
-notify about the new product. 
+**poll** est un composant qui se connecte à un serveur distant pour
+vérifier divers répertoires pour certains fichiers. Lorsqu’un fichier est
+présent, modifié, ou créé dans le répertoire distant, le programme
+informe qu'il y a nouveau produit.
 
-The notification protocol is defined here `sr3_post(7) <../Reference/sr3_post.7.rst>`_
+Le protocle de notification est défini ici `sr3_post(7) <../Reference/sr3_post.7.rst>`_
 
-**poll** connects to a *broker*.  Every *sleep* seconds, it connects to
-a *destination* (sftp, ftp, ftps). For each of the *directory* defined, it lists
-the contents.  Polling is only intended to be used for recently modified
-files. The *nodupe_fileAgeMax* option eliminates files that are too old 
-from consideration. When a file is found that matches a pattern given 
-by *accept*, **poll** builds a notification message for that product.
+**poll** se connecte à un *broker*.  À toutes les secondes de *sleep*, il se connecte à
+une *destination* (sftp, ftp, ftps). Pour chacun des *directory* définis, les contenus sont listés.
+Le poll est seulement destinée à être utilisée pour les fichiers récemment modifiés.
+L’option *nodupe_fileAgeMax* élimine les fichiers trop anciens. Lorsqu’un fichier correspondant
+à un modèle donné est trouvé by *accept*, **poll** crée un message de notification pour ce produit.
 
-The message is then checked in the duplicate cache (time limited by
-nodupe_ttl option.) to prevent posting of files which have already
-been seen.
+Le message est ensuite verifié dans la cache dupliqué (limité en temps par l'option
+nodupe_ttl) pour empêcher la publication de fichiers qui ont déjà été vus.
 
-**poll** can be used to acquire remote files in conjunction with an `sarra`_
-subscribed to the posted notifications, to download and repost them from a data pump.
+**poll** peut être utilisé pour acquérir des fichiers distants en conjonction avec un `sarra`_ qui est
+abonné aux notifications d'un post, pour les télécharger et les republier à partir d’une pompe de données.
 
-The destination option specify what is needed to connect to the remote server
+L’option de destination spécifie ce qui est nécessaire pour se connecter au serveur distant
 
 **destination protocol://<user>@<server>[:port]**
 
 ::
-      (default: None and it is mandatory to set it )
+      (par défaut : Aucun et il est obligatoire de le définir )
 
-The *destination* should be set with the minimum required information...
-**sr_poll**  uses *destination* setting not only when polling, but also
-in the sr3_post messages produced.
+La *destination* doit être définie avec le minimum d’informations requises...
+**sr_poll** utilise le paramètre *destination* non seulement lors du poll, mais aussi
+dans messages sr3_post produits.
 
-For example, the user can set :
+Par exemple, l’utilisateur peut définir :
 
 **destination ftp://myself@myserver**
 
-And complete the needed information in the credentials file with the line  :
+Et compléter les informations nécessaires dans le fichier d’informations d’identification (credentials) avec la ligne :
 
 **ftp://myself:mypassword@myserver:2121  passive,binary**
 
+Poll rassemble des informations sur les fichiers distants, pour créer des messages à leur sujet.
+La méthode gather intégrée utilise les protocoles sarracenia.transfer. Actuellement sftp, ftp et http
+sont implémentés.
 
-Poll gathers information about remote files, to build messages about them.
-The gather method that is built-in uses sarracenia.transfer protocols,
-currently implemented are sftp, ftp, and http. 
+Scans répétés et VIP
+~~~~~~~~~~~~~~~~~~~~
 
-
-
-Repeated Scans and VIP
-~~~~~~~~~~~~~~~~~~~~~~
-
-When multiple servers are being co-operating to poll a remote server,
-the *vip* setting is used to decide which server will actually poll.
-All servers participating subscribe to where **poll** is posting,
-and use the results to fill in the duplicate suppression cache, so
-that if the VIP moves, the alternate servers have current indications
-of what was posted.
-
-
-
+Lorsque plusieurs serveurs coopèrent pour polller un serveur distant,
+le paramètre *vip* est utilisé pour décider quel serveur il faut réellement poller.
+Tous les serveurs participants s’abonnent à l’endroit où **poll** est publié,
+et utilisent les résultats pour remplir la cache de suppression des doublons, afin que
+que si l’adresse VIP se déplace, les serveurs alternatifs ont des indications actuelles
+de ce qui a été affiché.
 
 POST or WATCH
 -------------
 
-**sr3_post** posts the availability of a file by creating an announcement.
-In contrast to most other sarracenia components that act as daemons,
-sr3_post is a one shot invocation which posts and exits.
-To make files available to subscribers, **sr3_post** sends the announcements
-to an AMQP or MQTT server, also called a broker.
+**sr3_post** affiche la disponibilité d’un fichier en créant une annonce.
+Contrairement à la plupart des autres composants de sarracenia qui agissent comme des démons,
+sr3_post est une invocation qui poste et se termine en une seul fois.
+Pour mettre les fichiers à la disposition des abonnés, **sr3_post** envoie les annonces
+à un serveur AMQP ou MQTT, également appelé broker.
 
-There are many options for detection changes in directories, for
-a detailed discussion of options in Sarracenia, see `<DetectFileReady.rst>`_
+Il existe de nombreuses options pour la détection des modifications dans les répertoires, pour
+une discussion détaillée des options dans Sarracenia, voir `<DetectFileReady.rst>`_
 
-This manual page is primarily concerned with the python implementation,
-but there is also an implementation in C, which works nearly identically.
-Differences:
+Cette page de manuel concerne principalement l’implémentation de python,
+mais il y a aussi une implémentation en C, qui fonctionne presque pareille.
+Différences:
 
- - plugins are not supported in the C implementation.
- - C implementation uses POSIX regular expressions, python3 grammar is slightly different.
- - when the *sleep* option ( used only in the C implementation) is set to > 0,
-   it transforms sr_cpost into a daemon that works like `watch`_.
+ - les plugins ne sont pas pris en charge dans l’implémentation C.
+ - L’implémentation C utilise des expressions régulières POSIX, la grammaire python3 est légèrement différente.
+ - lorsque l’option *sleep* (utilisée uniquement dans l’implémentation C) est définie sur > 0,
+   cela transforme sr_cpost en un démon qui fonctionne comme un `watch`_.
 
-The *watch* component is used to monitor directories for new files. 
-It is equivalent to post (or cpost) with the *sleep* option set to >0.
+Le composant *watch* est utilisé pour surveiller les répertoires à la recherche de nouveaux fichiers.
+Cela est équivalent à poster (ou cpost) avec l’option *sleep* réglée sur >0.
 
-The [*-pbu|--post_baseUrl url,url,...*] option specifies the location
-subscribers will download the file from.  There is usually one post per file.
-Format of argument to the *post_baseUrl* option::
+L’option [*-pbu|--post_baseUrl url,url,...*] spécifie l’emplacement a partir d'ou
+les abonnés pourront télécharger.  Il y a généralement un message par fichier.
+Format de l’argument de l’option *post_baseUrl* ::
 
        [ftp|http|sftp]://[user[:password]@]host[:port]/
        or
        file:
 
-When several urls are given as a comma separated list to *post_baseUrl*, the
-url´s provided are used round-robin style, to provide a coarse form of load balancing.
+Lorsque plusieurs URL sont données sous forme de liste séparée par des virgules à *post_baseUrl*, les
+url fournies sont utilisées dans le style round-robin, pour fournir une forme d’équilibrage de charge.
 
-The [*-p|--path path1 path2 .. pathN*] option specifies the path of the files
-to be announced. There is usually one post per file.
-Format of argument to the *path* option::
+L’option [*-p|--path path1 path2 .. pathN*] spécifie le chemin d’accès des fichiers
+à annoncer. Il y a généralement un message par fichier.
+Format de l’argument de l’option *path* ::
 
        /absolute_path_to_the/filename
        or
        relative_path_to_the/filename
 
-The *-pipe* option can be specified to have sr3_post read path names from standard
-input as well.
+L’option *-pipe* peut être spécifiée pour que sr3_post lise les noms de chemin d’accès à partir de la norme
+d’entrée également.
 
-
-An example invocation of *sr3_post*::
+Exemple d’invocation de *sr3_post*::
 
  sr3_post -pb amqp://broker.com -pbu sftp://stanley@mysftpserver.com/ -p /data/shared/products/foo 
 
-By default, sr3_post reads the file /data/shared/products/foo and calculates its checksum.
-It then builds a post message, logs into broker.com as user 'guest' (default credentials)
-and sends the post  to defaults vhost '/' and default exchange. The default exchange
-is the prefix *xs_* followed by the broker username, hence defaulting to 'xs_guest'.
-A subscriber can download the file /data/shared/products/foo by authenticating as user stanley
-on mysftpserver.com using the sftp protocol to broker.com assuming he has proper credentials.
-The output of the command is as follows ::
+Par défaut, sr3_post lit le fichier /data/shared/products/foo et calcule sa somme de contrôle.
+Il crée ensuite un message de publication, se connecte à broker.com en tant qu’utilisateur « invité »
+(informations d’identification par défaut) et envoie la publication aux vhost '/' par défaut et à
+l’échange par défaut. L’échange par défaut est le préfixe *xs_* suivi du nom d’utilisateur du courtier,
+où la valeur par défaut 'xs_guest'. Un abonné peut télécharger le fichier /data/shared/products/foo en
+s’authentifiant en tant qu’utilisateur stanley sur mysftpserver.com en utilisant le protocole sftp pour
+broker.com en supposant qu’il dispose des informations d’identification appropriées.
+La sortie de la commande est la suivante ::
 
  [INFO] Published xs_guest v03.data.shared.products.foo '20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo' sum=d,82edc8eb735fd99598a1fe04541f558d parts=1,4574,1,0,0
 
-In MetPX-Sarracenia, each post is published under a certain topic.
-The log line starts with '[INFO]', followed by the **topic** of the
-post. Topics in *AMQP* are fields separated by dot. Note that MQTT topics use
-a slash (/) as the topic separator.  The complete topic starts with
-a topicPrefix (see option), version *v03*, 
-followed by a subtopic (see option) here the default, the file path separated with dots
-*data.shared.products.foo*. 
+Dans MetPX-Sarracenia, chaque article est publié sous un certain thème.
+La ligne du journal commence par '[INFO]', suivie du **topic** du post.
+Les thèmes dans *AMQP* sont des champs séparés par un point. Notez que les thèmes MQTT utilisent
+une barre oblique (/) comme séparateur de thème.  Le thème complet commence par
+a topicPrefix (voir option), version *v03*, suivi d’un sous-thème (voir option)
+ici la valeur par défaut, et le chemin du fichier séparé par des points
+*data.shared.products.foo*.
 
-The second field in the log line is the message notice.  It consists of a time
-stamp *20150813161959.854*, and the source URL of the file in the last 2 fields.
+Le deuxième champ de la ligne du journal est l’avis de message.  Il se compose d’un horodatage
+*20150813161959.854* et l’URL source du fichier dans les 2 derniers champs.
 
-The rest of the information is stored in AMQP message headers, consisting of key=value pairs.
-The *sum=d,82edc8eb735fd99598a1fe04541f558d* header gives file fingerprint (or checksum
-) information.  Here, *d* means md5 checksum performed on the data, and *82edc8eb735fd99598a1fe04541f558d*
-is the checksum value. The *parts=1,4574,1,0,0* state that the file is available in 1 part of 4574 bytes
-(the filesize.)  The remaining *1,0,0* is not used for transfers of files with only one part.
+Le reste des informations est stocké dans des en-têtes de message AMQP, constitués de paires clé=valeur.
+L’en-tête *sum=d,82edc8eb735fd99598a1fe04541f558d* donne l’empreinte du fichier (ou somme de contrôle).
+Ici, *d* signifie la somme de contrôle md5 effectuée sur les données et *82edc8eb735fd99598a1fe04541f558d*
+est la valeur de la somme de contrôle. Le *parts=1,4574,1,0,0* indique que le fichier est disponible en 1 partie de 4574 octets
+(la taille du fichier.)  Le *1,0,0* restant n’est pas utilisé pour les transferts de fichiers avec une seule partie.
 
-Another example::
+un autre exemple::
 
  sr3_post -pb amqp://broker.com -pbd /data/web/public_data -pbu http://dd.weather.gc.ca/ -p bulletins/alphanumeric/SACN32_CWAO_123456
 
-By default, sr3_post reads the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
-(concatenating the post_baseDir and relative path of the source url to obtain the local file path)
-and calculates its checksum. It then builds a post message, logs into broker.com as user 'guest'
-(default credentials) and sends the post to defaults vhost '/' and exchange 'xs_guest'.
+Par défaut, sr3_post lit le fichier /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
+(concaténation du chemin d’accès post_baseDir et relatif de l’URL source pour obtenir le chemin d’accès au fichier local)
+et calcule sa somme de contrôle. Il crée ensuite un message de publication, se connecte à broker.com en tant qu’utilisateur « invité »
+(informations d’identification par défaut) et envoie la publication aux hôtes par défaut '/' et échange 'xs_guest'.
 
-A subscriber can download the file http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 using http
-without authentication on dd.weather.gc.ca.
+Un abonné peut télécharger le fichier http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 à l’aide de http
+sans authentification sur dd.weather.gc.ca.
 
+Partitionnement de fichiers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-File Partitioning
-~~~~~~~~~~~~~~~~~
-
-use of the *blocksize* option has no effect in sr3.  It is used to do file partitioning,
-and it will become effective again in the future, with the same semantics.
-
+l’utilisation de l’option *blocksize* n’a aucun effet dans sr3.  Il est utilisé pour faire le partitionnement de fichiers,
+et il redeviendra efficace à l’avenir, avec la même sémantique.
 
 SARRA
 -----
 
-**sarra** is a program that Subscribes to file notifications,
-Acquires the files and ReAnnounces them at their new locations.
-The notification protocol is defined here `sr3_post(7) <../Reference/sr3_post.7.html>`_
+**sarra** est un programme qui s'abonne aux notifications de fichiers,
+acquiert les fichiers, et les réannonce à leurs nouveaux emplacements.
+Le protocole de notification est défini ici `sr3_post(7) <../Reference/sr3_post.7.html>`_
 
-**sarra** connects to a *broker* (often the same as the remote file server
-itself) and subscribes to the notifications of interest. It uses the notification
-information to download the file on the local server it's running on.
-It then posts a notification for the downloaded files on a broker (usually on the local server).
+**sarra** se connecte à un *broker* (souvent le même que le serveur de fichiers distant)
+et s'abonne aux notifications d’intérêt. Il utilise les informations de la notification
+permettant de télécharger le fichier sur le serveur local sur lequel il s’exécute.
+Il publie ensuite une notification pour les fichiers téléchargés sur un courtier (généralement sur le serveur local).
 
-**sarra** can be used to acquire files from `sr3_post(1) <../Reference/sr3_post.1.html>`_
-or `watch`_  or to reproduce a web-accessible folders (WAF),
-that announce its products.
+**sarra** peut être utilisé pour acquérir des fichiers auprès de `sr3_post(1) <../Reference/sr3_post.1.html>`_
+ou `watch`_ ou pour reproduire un dossier accessible sur le Web (WAF),
+qui annoncent ses produits.
 
-The **sr_sarra** is an `sr_subscribe(1) <#subscribe>`_  with the following presets::
+**sr_sarra** est un `sr_subscribe(1) <#subscribe>`_  aves les préréglages suivants::
 
    mirror True
 
 
-Specific Consuming Requirements
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Exigences spécifiques de consommation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If the messages are posted directly from a source, the exchange used is 'xs_<brokerSourceUsername>'.
-To protect against malicious users, administrators should set *sourceFromExchange* to **True**.
-Such messages may not contain a source nor an origin cluster fields
-or a malicious user may set the values incorrectly.
+Si les messages sont postés directement à partir d’une source  l’échange utilisé est 'xs_<brokerSourceUsername>'.
+Pour se protéger contre les utilisateurs malveillants, les administrateurs doivent définir *sourceFromExchange* à **True**.
+Ces messages ne peuvent pas contenir un champ cluster ou source d’origine
+ou un utilisateur malveillant peut définir les valeurs de manière incorrecte.
 
-
-- **sourceFromExchange  <boolean> (default: False)**
+- **sourceFromExchange  <booléan> (défaut: False)**
 
 Upon reception, the program will set these values in the parent class (here 
 cluster is the value of option **cluster** taken from default.conf):
@@ -1392,12 +1376,12 @@ the configured files, and then forward the messages with an altered baseUrl.
 WATCH
 -----
 
-Watches a directory and publishes posts when files in the directory change
-( added, modified, or deleted). Its arguments are very similar to  `sr3_post <../Reference/sr3_post.1.html>`_.
-In the MetPX-Sarracenia suite, the main goal is to post the availability and readiness
-of one's files. Subscribers use  *sr_subscribe*  to consume the post and download the files.
+Surveille un répertoire et publie des messages lorsque les fichiers dans le répertoire changent.
+Ses arguments sont très similaires à `sr_post <sr_post <sr_post.1.rst>`_.
+Dans la suite MetPX-Sarracenia, l'objectif principal est d'afficher la disponibilité et modifications
+de ses dossiers. Les abonnés utilisent *sr_subscribe* pour consommer le message et télécharger les fichiers changés.
 
-Posts are sent to an AMQP server, also called a broker, specified with the option [ *-pb|--post_broker broker_url* ].
+Les messages sont envoyés à un serveur AMQP, également appelé courtier, spécifié avec l'option [ *-pb|--post_broker broker_url* ].
 
 The [*-post_baseUrl|--pbu|--url url*] option specifies the protocol, credentials, host and port to which subscribers
 will connect to get the file.
@@ -1411,117 +1395,122 @@ Format of argument to the *url* option::
        file:
 
 
-The [*-p|--path path*] option tells *watch* what to look for.
-If the *path* specifies a directory, *watches* creates a post for any time
-a file in that directory is created, modified or deleted.
-If the *path* specifies a file,  *watch*  watches only that file.
-In the announcement, it is specified with the *path* of the product.
-There is usually one post per file.
+L'option[*-p|--chemin*] indique à *sr_watch* ce qu'il faut chercher.
+Si le *path* spécifie un répertoire, *sr_watches* crée un message quand
+un fichier dans ce répertoire qui est créé, modifié ou supprimé.
+Si le *path* spécifie un fichier, *sr_watch* surveille uniquement ce fichier.
+Dans l'avis, il est spécifié avec le *chemin* du produit.
+Il y a généralement un message par fichier.
 
-FIXME: in version 3 does it work at all without a configuration?
-perhaps we should just create the file if it isn't there?
 
-An example of an execution of  *watch*  checking a file::
+Un exemple d'une excution de *sr_watch* vérifiant un fichier::
 
  sr3 --post_baseUrl sftp://stanley@mysftpserver.com/ --path /data/shared/products/foo --post_broker amqp://broker.com start watch/myflow
 
-Here, *watch* checks events on the file /data/shared/products/foo.
-Default events settings reports if the file is modified or deleted.
-When the file gets modified, *watch* reads the file /data/shared/products/foo
-and calculates its checksum. It then builds a post message, logs into broker.com as user 'guest' (default credentials)
-and sends the post to defaults vhost '/' and post_exchange 'xs_stanley' (default exchange)
+Ici, *sr_watch* vérifie les événements sur le fichier /data/shared/products/foo.
+Les paramètres par défaut des rapports d'événements si le fichier le fichier est modifié ou supprimé.
+Lorsque le fichier est modifié, *sr_watch* lit le fichier /data/shared/products/foo.
+et calcule sa somme de contrôle.  Il construit ensuite un message, se connecte à broker.com
+en tant qu'utilisateur'guest' (informations d'identification par défaut).
+et envoie le message aux valeurs par défaut vhost '/' et échange 'xs_stanley' (échange par défaut)
 
-A subscriber can download the file /data/shared/products/foo  by logging as user stanley
-on mysftpserver.com using the sftp protocol to  broker.com assuming he has proper credentials.
+Un abonné peut télécharger le fichier /data/shared/products/foo en se connectant en tant qu'utilisateur stanley.
+sur mysftpserver.com en utilisant le protocole sftp à broker.com en supposant qu'il a les informations d'identification appropriées.
 
-The output of the command is as follows ::
+La sortie de la commande est la suivante::
 
  [INFO] v03.data.shared.products.foo '20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo'
        source=guest parts=1,256,1,0,0 sum=d,fc473c7a2801babbd3818260f50859de 
 
-In MetPX-Sarracenia, each post is published under a certain topic.
-After the '[INFO]' the next information gives the \fBtopic*  of the
-post. Topics in  *AMQP*  are fields separated by dot. In MetPX-Sarracenia
-it is made of a  *topicPrefix*  by default : version  *v03* , 
-followed by the  *subtopic*  by default : the file path separated with dots, here, *data.shared.products.foo*
+Dans MetPX-Sarracenia, chaque article est publié sous un certain thème.
+Après le '[INFO]', l'information suivante donne le \fBtopic* du fichier
+publié. Les thèmes dans *AMQP* sont un champ hierarchique, avec chaque sous-thème séparé par une points. Dans
+MetPX-Sarracénie il est constitué d'un *topic_prefix* par défaut : version *V02*, d'une action *post*..,
+suivi par *subtopic* par défaut : le chemin du fichier séparé par des points, ici, *data.shared.products.foo*.
 
-After the topic hierarchy comes the body of the notification.  It consists of a time  *20150813161959.854* ,
-and the source url of the file in the last 2 fields.
+Après la hiérarchie des thèmes vient le corps de l'avis.  Il se compose d'un temps *20150813161959.854*,
+et l'url source du fichier dans les 2 derniers champs.
 
-The remaining line gives informations that are placed in the amqp message header.
-Here it consists of  *source=guest* , which is the amqp user,  *parts=1,256,0,0,1* ,
-which suggests to download the file in 1 part of 256 bytes (the actual filesize), trailing 1,0,0
-gives the number of block, the remaining in bytes and the current
-block.  *sum=d,fc473c7a2801babbd3818260f50859de*  mentions checksum information,
+La ligne restante donne des informations qui sont placées dans l'en-tête du message amqp.
+Ici, il se compose de *source=guest*, qui est l'utilisateur amqp, *parts=1,256,0,0,0,1*..,
+qui proposent de télécharger le fichier en 1 partie de 256 octets (la taille réelle du fichier), suivi de 1,0,0,0.
+donne le nombre de blocs, le nombre d'octets restants et le nombre d'octets actuel.
+bloc.  *sum=d,fc473c7a2801babbd3818260f50859de* mentionne les informations de la somme de contrôle,
+ici, *d* signifie la somme de contrôle md5 effectuée sur les données, et *fc473c7a2801babbd3818260f50859de*.
+est la valeur de la somme de contrôle.  Lorsque l'événement sur un fichier est une suppression, sum=R,0 R
+signifie de supprimer un fichier.
 
-here,  *d*  means md5 checksum performed on the data, and  *fc473c7a2801babbd3818260f50859de*
-is the checksum value.  When the event on a file is a deletion, sum=R,0  R stands for remove.
-
-Another example watching a file::
+Un autre exemple avec un fichier::
 
  sr3 --post_baseDir /data/web/public_data --post_baseUrl http://dd.weather.gc.ca/ --path bulletins/alphanumeric/SACN32_CWAO_123456 -post_broker amqp://broker.com start watch/myflow
 
-By default, watch checks the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
-(concatenating the baseDir and relative path of the source url to obtain the local file path).
-If the file changes, it calculates its checksum. It then builds a post message, logs into broker.com as user 'guest'
-(default credentials) and sends the post to defaults vhost '/' and post_exchange 'sx_guest' (default post_exchange)
+Par défaut, sr_watch vérifie le fichier /data/web/public_data/bulletins/alphanumériques/SACN32_CWAO_123456
+(concaténer le répertoire base_dir et le chemin relatif de l'url source pour obtenir le chemin du fichier local).
+Si le fichier change, il calcule sa somme de contrôle. Il construit ensuite un message, se connecte à broker.com en tant qu'utilisateur'guest'.
+(informations d'identification par défaut) et envoie le message aux valeurs par défaut vhost'/' et exchange'sx_guest' (échange par défaut)
 
-A subscriber can download the file http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 using http
-without authentication on dd.weather.gc.ca.
+Un abonné peut télécharger le fichier http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_CWAO_123456 en utilisant http.
+sans authentification sur dd.weather.gc.ca.
 
-An example checking a directory::
+Un exemple de vérification d'un répertoire::
 
  sr3 -post_baseDir /data/web/public_data -post_baseUrl http://dd.weather.gc.ca/ --path bulletins/alphanumeric --post_broker amqp://broker.com start watch/myflow
 
-Here, watch checks for file creation(modification) in /data/web/public_data/bulletins/alphanumeric
-(concatenating the baseDir and relative path of the source url to obtain the directory path).
-If the file SACN32_CWAO_123456 is being created in that directory, watch calculates its checksum.
-It then builds a post message, logs into broker.com as user 'guest'
+Ici, sr_watch vérifie la création de fichiers (modification) dans /data/web/public_data/bulletins/alphanumérique.
+(concaténer le répertoire base_dir et le chemin relatif de l'url source pour obtenir le chemin du répertoire).
+Si le fichier SACN32_CWAO_123456 est créé dans ce répertoire, sr_watch calcule sa somme de contrôle.
+Il construit ensuite un message, se connecte à broker.com en tant qu'utilisateur'guest'.
+(informations d'identification par défaut) et envoie le message à exchange'amq.topic' (échange par défaut)
 
-A subscriber can download the created/modified file http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 using http
-without authentication on dd.weather.gc.ca.
-
-
-
+Un abonné peut télécharger le fichier créé/modifié http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_CWAO_123456 en utilisant http.
+sans authentification sur dd.weather.gc.ca.
 
 WINNOW
 ------
+**winnow** est un programme qui s'abonne aux notifications de fichiers,
+et réenregistre les notifications, en supprimant les notifications redondantes en comparant
+l'empreinte digitale d'un fichier (somme de contrôle) comme décrit ci-dessus dans la page
+de manuel `sr3_post(7) <../Reference/sr3_post.7.html>`_.
 
-the **winnow** component subscribes to file notifications and reposts them, suppressing redundant 
-ones by comparing their fingerprints (or checksums).  The **Integrity** header stores a file's 
-fingerprint as described in the `sr3_post(7) <../Reference/sr3_post.7.html>`_ man page.
-
-**winnow** has the following options forced::
+**winnow** a les options suivante forcés::
 
    no-download True  
    suppress_duplicates on
    accept_unmatch True
 
-The suppress_duplicates lifetime can be adjusted, but it is always on.
+La durée de vie des suppress_duplicates peut être ajustée, mais elle est toujours active.
 
-**winnow** connects to a *broker* (often the same as the posting broker)
-and subscribes to the notifications of interest. On reception of a notification,
-it looks up its **sum** in its cache.  If it is found, the file has already come through,
-so the notification is ignored. If not, then the file is new, and the **sum** is added
-to the cache and the notification is posted.
+**winnow** se connecte à un *broker* (souvent le même que le courtier d'affichage).
+et souscrit aux notifications d'intérêt. Sur réception d´un avis, il cherche sa **sum**
+dans son cache. s'il est trouvé, le fichier est déjà passé, de sorte que la notification
+est ignorée. Si ce n'est pas le cas, le fichier est nouveau, et le **sum** est ajouté.
+dans le cache et l'avis est affiché.
 
-**winnow** can be used to trim messages produced by  post, `sr3_post <../Reference/sr3_post.1.html>`_, sr3_cpost, `poll`_ or `watch`_ etc... It is
-used when there are multiple sources of the same data, so that clients only download the
-source data once, from the first source that posted it.
+**winnow** peut être utilisé pour couper les messages de `sr3_post <../Reference/sr3_post.1.html>`_,
+`sr_poll(1) <sr_poll.1.rst>`_ ou `sr_watch(1) <sr_watch.1.rst>`_ etc..... C'est
+utilisé lorsqu'il y a plusieurs sources de données identiques, de sorte que les
+clients ne téléchargent que le fichier une seule fois, à partir de la première
+source qui les a publié.
+
+**winnow** peut être utilisé pour couper les messages de post, `sr3_post <../Reference/sr3_post.1.html>`_,
+sr3_cpost_, `poll`_ ou `watch`_ etc... C'est utilisé lorsqu'il y a plusieurs sources de
+données identiques, de sorte que les clients ne téléchargent que le fichier une seule fois,
+à partir de la première source qui les a publié.
 
 
 Configurations
 ==============
 
-If one has a ready made configuration called *q_f71.conf*, it can be 
-added to the list of known ones with::
+Si on a une configuration prête à l'emploi appelée *q_f71.conf*, elle peut être
+ajoutée à la liste des noms connus avec ::
 
   subscribe add q_f71.conf
 
-In this case, xvan_f14 is included with examples provided, so *add* finds it in the examples
-directory and copies into the active configuration one. 
-Each configuration file manages the consumers for a single queue on
-the broker. To view the available configurations, use::
+Dans ce cas-ci, q_f71.conf est inclus avec les exemples fournis, donc *add* le trouve
+dans les exemples et le copie dans le répertoire des configurations actives.
+Chaque fichier de configuration gère les consommateurs pour une seule file
+d'attente sur le courtier. Pour visualiser les configurations disponibles,
+utilisez::
 
   $ subscribe list
 
@@ -1542,57 +1531,60 @@ the broker. To view the available configurations, use::
             t_f30.conf      u_sftp_f60.conf
 
 
-one can then modify it using::
+On peut ensuite le modifier à l'aide de ::
 
   $ subscribe edit q_f71.conf
 
-(The edit action uses the EDITOR environment variable, if present.)
-Once satisfied, one can start the the configuration running::
+(La commande d'édition utilise la variable d'environnement EDITOR, si elle est présente.
+Une fois les changements complétés, on peut démarrer la configuration avec ::
+
 
   $ subscibe foreground q_f71.conf
 
-What goes into the files? See next section:
+Que contiennent les fichiers ? Voir la section suivante :
 
 
-* The forward slash (/) as the path separator in Sarracenia configuration files on all 
-  operating systems. Use of the backslash character as a path separator (as used in the 
-  cmd shell on Windows) may not work properly. When files are read on Windows, the path
-  separator is immediately converted to the forward slash, so all pattern matching,
-  in accept, reject, strip etc... directives should use forward slashes when a path
-  separator is needed.
+* La barre oblique (/) est utilisée comme séparateur de chemin dans les fichiers de configuration Sarracenia sur tous les
+  systèmes d’exploitation. L'utilisation de la barre oblique inverse comme séparateur (\) (tel qu’utilisé dans la
+  cmd shell de Windows) risque de ne pas fonctionner correctement. Lorsque des fichiers sont lu dans Windows, le chemin d’accès
+  est immédiatement converti en utilisant la barre oblique. Ceci est pour s'assurer que les options *reject*, *accept*, et
+  *strip* peuvent filtrer des expressions correctement. C'est pour cela qu'il est toujours important d'utiliser la barre
+  oblique (/) quand un séparateur est nécessaire.
   
 Example::
 
     directory A
     accept X
 
-Places files matching X in directory A.
+Place les fichiers correspondant à X dans le répertoire A.
 
-vs::
+au lieu::
     accept X
     directory A
 
-Places files matching X in the current working directory, and the *directory A* setting 
-does nothing in relation to X.
+Place les fichiers correspondant à X dans le répertoire de travail actuel,
+et le paramètre *directory A* ne fait rien par rapport à X.
 
-To provide non-functional descriptions of configurations, or comments, use lines that begin with a **#**.
+Pour fournir une description non fonctionnelle de la configuration ou des
+commentaires, utilisez des lignes commençant par **#**.  Toutes les options
+sont sensibles aux majuscules et minuscules. **Debug** n'est pas le même
+que **debug** ou **DEBUG**. Il s'agit de trois options différentes (dont deux
+n'existent pas et n'auront aucun effet, mais devrait générer une
+avertissement ´unknown option´).
 
-**All options are case sensitive.**  **Debug** is not the same as **debug** nor **DEBUG**.
-Those are three different options (two of which do not exist and will have no effect,
-but should generate an ´unknown option warning´).
-
-Options and command line arguments are equivalent.  Every command line argument
-has a corresponding long version starting with '--'.  For example *-u* has the
-long form *--url*. One can also specify this option in a configuration file.
-To do so, use the long form without the '--', and put its value separated by a space.
-The following are all equivalent:
+Les options et les paramètres de ligne de commande sont équivalents.  Chaque
+paramètre de ligne de commande a une version longue correspondante commençant
+par'--'.  Par exemple, *-u* est la forme courte de *--url*. On peut
+aussi spécifier cette option dans un fichier de configuration. Pour ce faire,
+utilisez la forme longue sans le'--', suivi de sa valeur séparée par un
+espace. Les éléments suivants sont tous équivalents :
 
   - **url <url>**
   - **-u <url>**
   - **--url <url>**
 
-Settings are interpreted in order.  Each file is read from top to bottom.
-For example:
+Les réglages sont interprétés dans l'ordre.  Chaque fichier est lu de haut en bas.
+par exemple :
 
 sequence #1::
 
@@ -1606,17 +1598,18 @@ sequence #2::
   reject .*\.gif
 
 
-.. note::
-   FIXME: does this match only files ending in 'gif' or should we add a $ to it?
-   will it match something like .gif2 ? is there an assumed .* at the end?
+.. remarque::
+   FIXME : est-ce que cela ne correspond qu'aux fichiers se terminant par'gif' ou devrions-nous y ajouter un $ ?
+   correspondra-t-il à quelque chose comme.gif2 ? y a-t-il un .* supposé à la fin ?
 
 
-In sequence #1, all files ending in 'gif' are rejected. In sequence #2, the 
-accept .* (which accepts everything) is encountered before the reject statement, 
-so the reject has no effect.  Some options have global scope, rather than being
-interpreted in order.  for thoses cases, a second declaration overrides the first.
+Dans la séquence #1, tous les fichiers se terminant par 'gif' sont rejetés. Dans la séquence #2, le
+accept .* (qui accepte tout) est lu avant la déclaration du rejet,
+donc le rejet n’a aucun effet. Certaines options ont une portée globale, plutôt que d’être
+interprété dans l’ordre. Dans ces cas, la dernière déclaration remplace celle qu'il y avait plus tôt dans le fichier..
 
-Options to be reused in different config files can be grouped in an *include* file:
+Les options qui doivent être réutilié dans de fichier de config différents peuvent
+être groupés dans des fichiers *include*:
 
   - **--include <includeConfigPath>**
 
@@ -1628,12 +1621,11 @@ is detected.) See `Remote Configurations`_ for details.
 Environment variables, and some built-in variables can also be put on the
 right hand side to be evaluated, surrounded by ${..} The built-in variables are:
  
- - ${BROKER_USER} - the user name for authenticating to the broker (e.g. anonymous)
- - ${PROGRAM}     - the name of the component (subscribe, shovel, etc...)
- - ${CONFIG}      - the name of the configuration file being run.
- - ${HOSTNAME}    - the hostname running the client.
- - ${RANDID}      - a random id that will be consistent within a single invocation.
-
+ - ${BROKER_USER} - le nom d’utilisateur pour l’authentification auprès du courtier (par exemple, anonyme)
+ - ${PROGRAM}     - le nom du composant (subscribe, shovel, etc...)
+ - ${CONFIG}      - le nom du fichier de configuration en cours d'exécution.
+ - ${HOSTNAME}    - le hostname qui exécute le client.
+ - ${RANDID}      - Un ID aléatoire qui va être consistant pendant la duration d'une seule invocation.
 
 flowCallbacks
 =============
@@ -1779,8 +1771,8 @@ Fichiers journal et Suivi
    emit standard log messages at the given points in message processing. 
    other values: on_start, on_stop, post, gather, ... etc...
   
-- logLevel ( default: info )
-   The level of logging as expressed by python's logging. Possible values are :  critical, error, info, warning, debug.
+- loglevel ( défaut: info )
+   Le niveau de journalisation exprimé par la journalisation de python. Les valeurs possibles sont : critical, error, info, warning, debug.
 
 - --logStdout ( default: False )  EXPERIMENTAL FOR DOCKER use case
 
@@ -1800,8 +1792,9 @@ Fichiers journal et Suivi
    of configured instances/processes) will cause either corruption of logs, or limit the speed of execution of all processes
    writing to stdout.
 
-- log_reject <True|False> ( default: False )
-   print a log message when *rejecting* messages (choosing not to download the corresponding files)
+- log_reject <True|False> ( défaut: False )
+   afficher un ligne de journal pour chaque message rejeté.  Ceci peut produire des journeaux énorme.
+   D´habitude utilisé uniquement lors du debogage.
 
 - log <dir> ( default: ~/.cache/sarra/log ) (on Linux)
    The directory to store log files in.
@@ -2072,25 +2065,25 @@ In directory ~/.cache/sarra/log::
 vip - ACTIVE/PASSIVE OPTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**sr3** can be used on a single server node, or multiple nodes
-could share responsibility. Some other, separately configured, high availability
-software presents a **vip** (virtual ip) on the active server. Should
-the server go down, the **vip** is moved on another server.
-Both servers would run **sr3**. It is for that reason that the
-following options were implemented:
+**sr3** peut être utilisé sur un seul nœud de serveur ou sur plusieurs nœuds.
+pourrait partager la responsabilité. D'autres, configurés séparément, haute disponibilité
+présente un **vip** (ip virtuel) sur le serveur actif. Si
+le serveur tombe en panne, le **vip** est déplacé sur un autre serveur.
+Les deux serveurs fonctionneraient **sr3**. Les options suivants contrôle
+ce genre de comportement:
 
  - **vip          <string>          (None)**
 
-When you run only one **sr3** on one server, these options are not set,
-and sr3 will run in 'standalone mode'.
+Lorsque vous n'exécutez qu'un seul **sr3** sur un serveur, ces options ne
+sont pas définies et sr3 fonctionnera en mode 'standalone'.
 
-In the case of clustered brokers, you would set the options for the
-moving vip.
+Dans le cas des courtiers en grappe, vous devez définir les options pour l'option
+vip en mouvement.
 
 **vip 153.14.126.3**
 
-When **sr3** does not find the vip, it sleeps for 5 seconds and retries.
-If it does, it consumes and processes a message and than rechecks for the vip.
+Lorsque **sr3** ne trouve pas le vip, il dort pendant 5 secondes et réessaie.
+S´il possède le vip, il consomme et traite un message, puis revérifie le vip.
 
 
 [--blocksize <value>] (default: 0 (auto))
@@ -2099,81 +2092,86 @@ If it does, it consumes and processes a message and than rechecks for the vip.
 This **blocksize** option controls the partitioning strategy used to post files.
 The value should be one of::
 
-   0 - autocompute an appropriate partitioning strategy (default)
-   1 - always send entire files in a single part.
-   <blocksize> - used a fixed partition size (example size: 1M )
+   0 - calcul automatique d'une stratégie de partitionnement appropriée (par défaut)
+   1 - toujours envoyer des fichiers entiers en une seule partie.
+   <blocksize> - utilisation d'une taille de partition fixe (exemple : 1M)
 
-Files can be announced as multiple parts.  Each part has a separate checksum.
-The parts and their checksums are stored in the cache. Partitions can traverse
-the network separately, and in parallel.  When files change, transfers are
-optimized by only sending parts which have changed.
+Les fichiers peuvent être publiés en plusieurs parties.  Chaque partie
+a une somme de contrôle séparée. Les pièces et leurs sommes de contrôle sont
+stockées dans le cache. Les cloisons peuvent traverser le réseau séparément,
+et en parallèle.  Lorsque les fichiers changent, les transferts sont
+optimisé en n'envoyant que des portions qui ont changé.
 
-The *outlet* option allows the final output to be other than a post.  
-See `sr3_cpump(1) <sr3_cpump.1.rst>`_ for details.
+L'option *outlet*  permet la sortie finale d'être autre chose qu'un post.
+Voir `sr3_cpump(1) <sr3_cpump.1.rst>`_ pour plus de détails.
 
-[-pbd|--post_baseDir <path>] (optional)
+[-pbd|--post_baseDir <path>] (facultatif)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The *post_baseDir* option supplies the directory path that, when combined (or found) 
-in the given *path*, gives the local absolute path to the data file to be posted.
-The *post_baseDir* part of the path will be removed from the posted announcement.
-For sftp urls it can be appropriate to specify a path relative to a user account.
-Example of that usage would be:  -pbd ~user  -url sftp:user@host
-For file: url's, baseDir is usually not appropriate.  To post an absolute path,
-omit the -pbd setting, and just specify the complete path as an argument.
+L'option *post_baseDir* fournit le chemin du répertoire qui, lorsqu'il est
+combiné (ou trouvé) dans le chemin d'accès donné, donne le chemin absolu local
+vers le fichier de données à enregistrer. La *post_baseDir* du chemin sera
+supprimée du avis. Pour sftp : url's il peut être approprié de spécifier un
+chemin relatif à un compte utilisateur.  Un exemple de cette utilisation
+serait :  -pbd ~user -url sftp:user@host
+pour file : url's, baseDir n'est généralement pas approprié.  Pour publier
+un chemin absolu, omettez le paramètre -pbd, et spécifiez simplement le chemin
+complet en argument.
 
-post_baseUrl <url> (MANDATORY)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+post_baseUrl <url> (OBLIGATOIRE)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The **post_baseUrl** option sets how to get the file... it defines the protocol,
-host, port, and optionally, the user. It is best practice to not include 
-passwords in urls.
+L'option **post_baseUrl** définit comment obtenir le fichier.... il définit
+le protocole, hôte, port, et optionnellement, l'utilisateur.  C'est une
+bonne pratique de ne pas inclure les mots de passe dans l´URL.
 
 post_exchange <name> (default: xpublic)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The **post_exchange** option set under which exchange the new notification
-will be posted.  In most cases it is 'xpublic'.
+L'option **post_exchange**, qui permet d'échanger la nouvelle notification.
+sera publié.  Dans la plupart des cas, il s'agit d'un'xpublic'.
 
-Whenever a publish happens for a product, a user can set to trigger a script.
-The option **on_post** would be used to do such a setup.
+Chaque fois qu'une avis se produit pour un produit, un utilisateur peut
+définir de déclencher un script. L'option **on_post** serait utilisée pour faire
+une telle configuration.
 
-post_exchangeSplit   <number>   (default: 0)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+post_exchangeSplit   <number>   (défaut: 0)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The **post_exchangeSplit** option appends a two digit suffix resulting from 
-hashing the last character of the checksum to the post_exchange name,
-in order to divide the output amongst a number of exchanges.  This is currently used
-in high traffic pumps to allow multiple instances of winnow, which cannot be
-instanced in the normal way.  Example::
+L'option **post_exchangeSplit** ajoute un suffixe à deux chiffres résultant d'une
+division entière du dernier digit de la somme de contrôle, afin de répartir les
+avis entre un certain nombre d'échanges, selon la valeur de leur somme de contrôle.
+C'est utilisé dans les pompes à trafic élevé pour permettre des instances
+multiples de winnow, ce qui ne peut pas être instancié de la manière normale. exemple::
 
     post_exchangeSplit 5
     post_exchange xwinnow
 
-will result in posting messages to five exchanges named: xwinnow00, xwinnow01,
-xwinnow02, xwinnow03 and xwinnow04, where each exchange will receive only one fifth
-of the total flow.
+se traduira par l'envoi de messages à cinq échanges nommées xwinnow00, xwinnow01,
+xwinnow02, xwinnow03 et xwinnow04, où chaque échange ne recevra qu'un cinquième du flux total.
+xinnow01 recevra tous les messages dont la reste quand sa somme de contrôle est divisé par 5
+est 1.
 
 Remote Configurations
 ---------------------
 
-One can specify URI's as configuration files, rather than local files. Example:
+On peut spécifier des URI comme fichiers de configuration, plutôt que des fichiers locaux. Exemple :
 
   - **--config http://dd.weather.gc.ca/alerts/doc/cap.conf**
 
-On startup, subscribe checks if the local file cap.conf exists in the 
-local configuration directory.  If it does, then the file will be read to find
-a line like so:
+Au démarrage, sr3 vérifie si le fichier local cap.conf existe dans le répertoire
+répertoire de configuration local.  Si c'est le cas, alors le fichier sera lu pour trouver
+une ligne comme ça :
 
   - **--remote_config_url http://dd.weather.gc.ca/alerts/doc/cap.conf**
 
-In which case, it will check the remote URL and compare the modification time
-of the remote file against the local one. The remote file is not newer, or cannot
-be reached, then the component will continue with the local file.
+Dans ce cas, il vérifiera l'URL distante et comparera le temps de modification.
+du fichier distant contre le fichier local. Le fichier distant n'est pas plus récent ou ne peut pas être modifié.
+est atteint, alors le composant continuera avec le fichier local.
 
-If either the remote file is newer, or there is no local file, it will be downloaded, 
-and the remote_config_url line will be prepended to it, so that it will continue 
-to self-update in future.
+Si le fichier distant est plus récent ou s'il n'y a pas de fichier local, il sera téléchargé,
+et la ligne remote_config_url_config_url y sera pré-pendue, de façon à ce qu'elle continue
+pour se mettre à jour à l'avenir.
 
 Extensions
 ----------
@@ -2358,8 +2356,8 @@ et *sr3 --users declare* mettra à jour le courtier pour accepter ce qui est sp�
 mot de passe de l'administrateur est déjà correct.
 
 
-CONFIGURATION FILES
--------------------
+FICHIERS DE CONFIGURATION
+-------------------------
 
 Alors qu'on peut gérer les fichiers de configuration à l'aide de la fonction *add*, *remove*,
 *list*, *edit*, *disable*, et *enable* actions, on peut aussi tout faire.
@@ -2411,11 +2409,10 @@ For compatibility with Sundew, there are some additional delivery options which 
 
 destfn_script <script> (default:None)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-This option defines a script to be run when everything is ready
-for the delivery of the product.  The script receives the sr_sender class
-instance.  The script takes the parent as an argument, and for example, any
-modification to  **parent.msg.new_file**  will change the name of the file written locally.
+Cette option définit un script à exécuter lorsque tout est prêt
+pour la livraison du produit. Le script reçoit une instance de la classe sender.
+Le script prends le parent comme argument, et par exemple, une
+modification de **parent.msg.new_file** changera le nom du fichier écrit localement.
 
 filename <mots-clé> (défaut:WHATFN)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2463,12 +2460,12 @@ keyword can be added to the **accept** option. The keyword is any one of the **f
 options.  A message that matched against the accept regexp pattern, will have its remote_file
 plied this keyword option.  This keyword has priority over the preceeding **filename** one.
 
-The **regexp pattern** can be use to set directory parts if part of the message is put
-to parenthesis. **sr_sender** can use these parts to build the directory name. The
-rst enclosed parenthesis strings will replace keyword **${0}** in the directory name...
-the second **${1}** etc.
+Le **regexp pattern** peut être utilisé pour définir des parties du répertoire si une partie du message est placée
+entre parenthèses. **sender** peut utiliser ces parties pour générer le nom du répertoire.
+Les chaînes de parenthèses entre les guillemets rst remplaceront le mot-clé **${0}** dans le nom du répertoire...
+le second **{1} $ ** etc.
 
-Example of use::
+Exemple d’utilisation ::
 
 
       filename NONE
@@ -2488,58 +2485,60 @@ Example of use::
       accept .*(2016....).*(RAW.*GRIB).*
 
 
-A selected message by the first accept would be delivered unchanged to the first directory.
+Un message sélectionné par le premier *accept* sera remis inaltérée dans le premier répertoire.
 
-A selected message by the second accept would be delivered unchanged to the second directory.
+Un message sélectionné par le deuxième *accept* sera remis inaltérée dans deuxième répertoire.
 
-A selected message by the third accept would be renamed "file_of_type3" in the second directory.
+Un message sélectionné par le troisième *accept sera renommé « fichier_de_type3 » dans le deuxième répertoire.
 
-A selected message by the forth accept would be delivered unchanged to a directory.
+Un message sélectionné par le quatrième *accept* sera remis inaltérée à un répertoire.
 
-It's named  */this/20160123/pattern/RAW_MERGER_GRIB/directory* if the message would have a notice like:
+Ça sera appelé  */ce/20160123/modèle/RAW_MERGER_GRIB/répertoire* si la notice du message ressemble à cela:
 
 **20150813161959.854 http://this.pump.com/ relative/path/to/20160123_product_RAW_MERGER_GRIB_from_CMC**
 
 
+
+
 Field Replacements
 ~~~~~~~~~~~~~~~~~~
-
-In MetPX Sundew, there is a much more strict file naming standard, specialised for use with 
-World Meteorological Organization (WMO) data.   Note that the file naming convention predates, and 
-bears no relation to the WMO file naming convention currently approved, but is strictly an internal 
-format.   The files are separated into six fields by colon characters.  The first field, DESTFN, 
-gives the WMO (386 style) Abbreviated Header Line (AHL) with underscores replacing blanks::
+Dans MetPX Sundew, le format de la nomination de fichier est beaucoup plus
+stricte, et est spécialisée pour une utilisation aves les données du World Meteorological Organization (WMO).
+Notez que la convention du format des fichiers est antérieure, et n’a aucun rapport avec la convention de
+dénomination des fichiers de WMO actuellement approuvée, et est utilisé strictement comme format interne. Les fichiers sont
+séparés en six champs avec deux points. Le premier champ, DESTFN, est le "Abbreviated Header Line (AHL)" de WMO
+(style 386) ou les blancs sont remplacé avec des traits de soulignement ::
 
    TTAAii CCCC YYGGGg BBB ...  
 
-(see WMO manuals for details) followed by numbers to render the product unique (as in practice, 
-though not in theory, there are a large number of products which have the same identifiers).
-The meanings of the fifth field is a priority, and the last field is a date/time stamp.  
-The other fields vary in meaning depending on context.  A sample file name::
+(voir le manuel de WMO pour plus de détails) suivis de chiffres pour rendre le produit unique (cela est vrai en
+théorie, mais pas en pratique vu qu'il existe un grand nombre de produits qui ont les mêmes identifiants).
+La signification du cinquième champ est une priorité, et le dernier champ est un horodatage.
+La signification des autres champs varie en fonction du contexte. Exemple de nom de fichier ::
 
    SACN43_CWAO_012000_AAA_41613:ncp1:CWAO:SA:3.A.I.E:3:20050201200339
 
-If a file is sent to sarracenia and it is named according to the Sundew conventions, then the 
-following substitution fields are available::
+Si un fichier est envoyé à Sarracenia et qu’il est nommé selon les conventions de Sundew,
+les champs de substitution suivants seront disponibles::
 
-  ${T1}    replace by bulletin's T1
-  ${T2}    replace by bulletin's T2
-  ${A1}    replace by bulletin's A1
-  ${A2}    replace by bulletin's A2
-  ${ii}    replace by bulletin's ii
-  ${CCCC}  replace by bulletin's CCCC
-  ${YY}    replace by bulletin's YY   (obs. day)
-  ${GG}    replace by bulletin's GG   (obs. hour)
-  ${Gg}    replace by bulletin's Gg   (obs. minute)
-  ${BBB}   replace by bulletin's bbb
-  ${RYYYY} replace by reception year
-  ${RMM}   replace by reception month
-  ${RDD}   replace by reception day
-  ${RHH}   replace by reception hour
-  ${RMN}   replace by reception minutes
-  ${RSS}   replace by reception second
+  ${T1}    remplacer par le bulletin T1
+  ${T2}    remplacer par le bulletin T2
+  ${A1}    remplacer par le bulletin A1
+  ${A2}    remplacer par le bulletin A2
+  ${ii}    remplacer par le bulletin ii
+  ${CCCC}  remplacer par le bulletin CCCC
+  ${YY}    remplacer par le bulletin YY   (obs. jour)
+  ${GG}    remplacer par le bulletin GG   (obs. heure)
+  ${Gg}    remplacer par le bulletin Gg   (obs. minute)
+  ${BBB}   remplacer par le bulletin bbb
+  ${RYYYY} remplacer par l'année de réception
+  ${RMM}   remplacer par le mois de réception
+  ${RDD}   remplacer par le jour de réception
+  ${RHH}   remplacer par l'heure de réception
+  ${RMN}   remplacer par la minute de réception
+  ${RSS}   remplacer par la seconde de réception
 
-The 'R' fields come from the sixth field, and the others come from the first one.
-When data is injected into sarracenia from Sundew, the *sundew_extension* message header
-will provide the source for these substitions even if the fields have been removed
-from the delivered file names.
+Les champs 'R' proviennent du sixième champ, et les autres viennent du premier champ.
+Lorsque des données sont injectées dans Sarracenia à partir de Sundew, l’en-tête du message *sundew_extension*
+fournira la source de ces substitions même si ces champs ont été supprimés des fichiers livrés.
+
