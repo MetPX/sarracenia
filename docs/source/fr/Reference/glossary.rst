@@ -27,9 +27,13 @@ GLOSSARY
 - Tree...........Arborescence
 - wildcards....(?)
 
-message, advertisement, post, notification -> message, publicité? , annonce? , article?
+message, advertisement, post, notification, announcement -> message, publicité? , annonce? , article?
 
+The canonical term is now:
 
+"notification message" in English, and "message d'annonce" in French.
+
+Please replace with the canonical term when you find it.
 
 
 
