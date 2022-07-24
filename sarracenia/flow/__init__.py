@@ -666,11 +666,12 @@ class Flow:
         # cannot have both (see setting of option strip in sr_config)
 
         if strip > 0:
-            try:
+
+            if strip < len(token):
                 token = token[strip:]
 
             # strip too much... keep the filename
-            except:
+            else:
                 token = [filename]
 
             logger.info(' 015 token=%s fname=%s' %(token, filename) )
@@ -679,17 +680,9 @@ class Flow:
         elif pstrip:
 
             #MG FIXME Peter's wish to have replacement in pstrip (ex.:${SOURCE}...)
-            if type(pstrip) == str:
-                pstrip=re.compile(pstrip)
 
-            try:
-                relstrip = re.sub(pstrip, '', relPath, 1)
-                logger.info(' 016 relstrip=%s fname=%s' %(relstrip, filename) )
-            except:
-                relstrip = relPath
-                logger.info(' 017 relstrip=%s fname=%s' %(relstrip, filename) )
+            relstrip = re.sub(pstrip, '', relPath, 1)
 
-            # if filename dissappear... same as numeric strip, keep the filename
             if not filename in relstrip: relstrip = filename
             token = relstrip.split('/')
 
@@ -701,13 +694,8 @@ class Flow:
             token[-1] = [filename]
 
         if maskFileOption is not None:
-            try:
-                filename = self.sundew_getDestInfos(msg, maskFileOption,
+            filename = self.sundew_getDestInfos(msg, maskFileOption,
                                                        filename)
-            except:
-                logger.error("problem with accept file option %s" %
-                             maskFileOption)
-
             token[-1] = [filename]
 
         # not mirroring
