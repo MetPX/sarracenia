@@ -649,19 +649,6 @@ class Message(dict):
                              maskFileOption)
             token[-1] = [filename]
 
-        # MG this was taken from the sr_sender when not derived from sr_subscribe.
-        # if a desftn_script is set in a plugin, it is going to be applied on all file
-        # this might be confusing
-
-        if options.destfn_script:
-            options.new_file = filename
-            ok = options.destfn_script(options)
-            if filename != options.new_file:
-                logger.debug("destfn_script : %s becomes %s " %
-                             (filename, options.new_file))
-                filename = options.new_file
-                token[-1] = [filename]
-
         # not mirroring
 
         if not mirror:
