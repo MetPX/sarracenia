@@ -2,6 +2,7 @@ import copy
 import importlib
 import logging
 import os
+import re
 
 # v3 plugin architecture...
 import sarracenia.flowcb
@@ -319,7 +320,7 @@ class Flow:
           check if stop_requested once in a while, but never return otherwise.
         """
 
-        if not self.loadCallbacks(self.plugins['load']):
+        if not self.loadCallbacks(self.plugins['load']+self.o.destfn_scripts):
            return
 
         logger.debug("working directory: %s" % os.getcwd())
@@ -513,6 +514,224 @@ class Flow:
 
                 last_time = now
 
+
+    def sundew_getDestInfos(self, msg, currentFileOption, filename):
+        """
+        modified from sundew client
+
+        WHATFN         -- First part (':') of filename 
+        HEADFN         -- Use first 2 fields of filename
+        NONE           -- Use the entire filename
+        TIME or TIME:  -- TIME stamp appended
+        DESTFN=fname   -- Change the filename to fname
+
+        ex: mask[2] = 'NONE:TIME'
+        """
+        if currentFileOption == None: return filename
+
+        timeSuffix = ''
+        satnet = ''
+        parts = filename.split(':')
+        firstPart = parts[0]
+
+        if 'sundew_extension' in msg.keys():
+            parts = [parts[0]] + msg['sundew_extension'].split(':')
+            filename = ':'.join(parts)
+
+        destFileName = filename
+
+        for spec in currentFileOption.split(':'):
+            if spec == 'WHATFN':
+                destFileName = firstPart
+            elif spec == 'HEADFN':
+                headParts = firstPart.split('_')
+                if len(headParts) >= 2:
+                    destFileName = headParts[0] + '_' + headParts[1]
+                else:
+                    destFileName = headParts[0]
+            elif spec == 'SENDER' and 'SENDER=' in filename:
+                i = filename.find('SENDER=')
+                if i >= 0: destFileName = filename[i + 7:].split(':')[0]
+                if destFileName[-1] == ':': destFileName = destFileName[:-1]
+            elif spec == 'NONE':
+                if 'SENDER=' in filename:
+                    i = filename.find('SENDER=')
+                    destFileName = filename[:i]
+                else:
+                    if len(parts) >= 6:
+                        # PX default behavior : keep 6 first fields
+                        destFileName = ':'.join(parts[:6])
+                        #  PDS default behavior  keep 5 first fields
+                        if len(parts[4]) != 1:
+                            destFileName = ':'.join(parts[:5])
+                # extra trailing : removed if present
+                if destFileName[-1] == ':': destFileName = destFileName[:-1]
+            elif spec == 'NONESENDER':
+                if 'SENDER=' in filename:
+                    i = filename.find('SENDER=')
+                    j = filename.find(':', i)
+                    destFileName = filename[:i + j]
+                else:
+                    if len(parts) >= 6:
+                        # PX default behavior : keep 6 first fields
+                        destFileName = ':'.join(parts[:6])
+                        #  PDS default behavior  keep 5 first fields
+                        if len(parts[4]) != 1:
+                            destFileName = ':'.join(parts[:5])
+                # extra trailing : removed if present
+                if destFileName[-1] == ':': destFileName = destFileName[:-1]
+            elif re.compile('SATNET=.*').match(spec):
+                satnet = ':' + spec
+            elif re.compile('DESTFN=.*').match(spec):
+                destFileName = spec[7:]
+            elif re.compile('DESTFNSCRIPT=.*').match(spec):
+                scriptclass = spec[13:].split('.')[-1]
+                for dfm in self.plugins['destfn']:
+                    if scriptclass == dfm.__qualname__.split('.')[0] :
+                         destFileName = dfm(msg)
+            elif spec == 'TIME':
+                timeSuffix = ':' + time.strftime("%Y%m%d%H%M%S", time.gmtime())
+                if 'pubTime' in msg:
+                    timeSuffix = ":" + msg['pubTime'].split('.')[0]
+                if 'pubTime' in msg:
+                    timeSuffix = ":" + msg['pubtime'].split('.')[0]
+                    timeSuffix = timeSuffix.replace('T', '')
+                # check for PX or PDS behavior ...
+                # if file already had a time extension keep his...
+                if len(parts[-1]) == 14 and parts[-1][0] == '2':
+                    timeSuffix = ':' + parts[-1]
+
+            else:
+                logger.error("Don't understand this DESTFN parameter: %s" %
+                             spec)
+                return (None, None)
+        return destFileName + satnet + timeSuffix
+
+
+    # ==============================================
+    # how will the download file land on this server
+    # with all options, this is really tricky
+    # ==============================================
+
+    def updateFieldsAccepted(self, msg, urlstr, pattern, maskDir,
+                             maskFileOption, mirror, strip, pstrip, flatten):
+        """
+           Set new message fields according to values when the message is accepted.
+           
+           * urlstr: the urlstr being matched (baseUrl+relPath+sundew_extension)
+           * pattern: the regex that was matched.
+           * maskDir: the current directory to base the relPath from.
+           * maskFileOption: filename option value (sundew compatibility options.)
+           * strip: number of path entries to strip from the left side of the path.
+           * pstrip: pattern strip regexp to apply instead of a count.
+           * flatten: a character to replace path separators with toe change a multi-directory 
+             deep file name into a single long file name
+        """
+
+        # relative path by default mirror
+        if type(maskDir) is str:
+            # trying to subtract maskDir if present in relPath...
+            # occurs in polls a lot.
+            if maskDir in msg['relPath']:
+                relPath = '%s' % msg['relPath'].replace(maskDir, '', 1)
+
+            # sometimes the same, just the leading / is missing.
+            elif maskDir[1:] in msg['relPath']:
+                relPath = '%s' % msg['relPath'].replace(maskDir[1:], '', 1)
+            else:
+                relPath = '%s' % msg['relPath']
+        else:
+            relPath = '%s' % msg['relPath']
+
+        if self.o.baseUrl_relPath:
+            u = urllib.parse.urlparse(msg['baseUrl'])
+            relPath = u.path[1:] + '/' + relPath
+
+        # FIXME... why the % ? why not just assign it to copy the value?
+        if 'rename' in msg: relPath = '%s' % msg['rename']
+
+        token = relPath.split('/')
+        filename = token[-1]
+
+        # if provided, strip (integer) ... strip N heading directories
+        #         or  pstrip (pattern str) strip regexp pattern from relPath
+        # cannot have both (see setting of option strip in sr_config)
+
+        if strip > 0:
+
+            if strip < len(token):
+                token = token[strip:]
+
+            # strip too much... keep the filename
+            else:
+                token = [filename]
+
+            logger.info(' 015 token=%s fname=%s' %(token, filename) )
+        # strip using a pattern
+
+        elif pstrip:
+
+            #MG FIXME Peter's wish to have replacement in pstrip (ex.:${SOURCE}...)
+
+            relstrip = re.sub(pstrip, '', relPath, 1)
+
+            if not filename in relstrip: relstrip = filename
+            token = relstrip.split('/')
+
+        # if flatten... we flatten relative path
+        # strip taken into account
+
+        if flatten != '/':
+            filename = flatten.join(token)
+            token[-1] = [filename]
+
+        if maskFileOption is not None:
+            filename = self.sundew_getDestInfos(msg, maskFileOption,
+                                                       filename)
+            token[-1] = [filename]
+
+        # not mirroring
+
+        if not mirror:
+            token = [filename]
+
+        # uses current dir
+
+        #if self.o.currentDir : new_dir = self.o.currentDir
+        if maskDir:
+            new_dir = self.o.set_dir_pattern(maskDir, msg)
+        else:
+            new_dir = ''
+
+        if self.o.baseDir:
+            if new_dir:
+                d = new_dir
+            elif self.o.post_baseDir:
+                d = self.o.set_dir_pattern(self.o.post_baseDir, msg)
+            else:
+                d = None
+
+            if d:
+                for f in ['link', 'oldname', 'newname']:
+                    if f in msg:
+                        msg[f] = msg[f].replace(self.o.baseDir, d, 1)
+
+        # add relPath
+
+        if len(token) > 1:
+            new_dir = new_dir + '/' + '/'.join(token[:-1])
+
+        new_dir = self.o.set_dir_pattern(new_dir, msg)
+        # resolution of sundew's dirPattern
+
+        tfname = filename
+        # when sr_sender did not derived from sr_subscribe it was always called
+        new_dir = self.o.sundew_dirPattern(pattern, urlstr, tfname, new_dir)
+
+        msg.updatePaths(self.o, new_dir, filename)
+
+
+
     def filter(self):
 
         logger.debug(
@@ -580,7 +799,7 @@ class Flow:
                                 (str(mask), strip, urlToMatch))
                         break
 
-                    m.updateFieldsAccepted(self.o, url, pattern, maskDir,
+                    self.updateFieldsAccepted(m, url, pattern, maskDir,
                                            maskFileOption, mirror, strip,
                                            pstrip, flatten)
 
@@ -594,7 +813,7 @@ class Flow:
                         m['_deleteOnPost'] |= set(['renameUnlink'])
                     logger.debug("rename deletion 2 %s" % (m['oldname']))
                     filtered_worklist.append(m)
-                    m.updateFieldsAccepted(self.o, url, None,
+                    self.updateFieldsAccepted(m, url, None,
                                            default_accept_directory,
                                            self.o.filename, self.o.mirror,
                                            self.o.strip, self.o.pstrip,
@@ -604,7 +823,7 @@ class Flow:
                 if self.o.acceptUnmatched:
                     logger.debug("accept: unmatched pattern=%s" % (url))
                     # FIXME... missing dir mapping with mirror, strip, etc...
-                    m.updateFieldsAccepted(self.o, url, None,
+                    self.updateFieldsAccepted(m, url, None,
                                            default_accept_directory,
                                            self.o.filename, self.o.mirror,
                                            self.o.strip, self.o.pstrip,

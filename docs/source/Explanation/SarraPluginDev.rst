@@ -220,7 +220,7 @@ Use the _sr3_ _show_ command to view all active settings resulting from a config
     auto_delete=False, baseDir=None, batch=1, bind=True, bindings=[('v03', 'xsarra', '#')], bufsize=1048576, bytes_per_second=None, bytes_ps=0,
     cfg_run_dir='/home/peter/.cache/sr3/sarra/download_f20', chmod=0, chmod_dir=509, chmod_log=384, config='download_f20', currentDir=None, debug=False,
     declare=True, declared_exchanges=['xpublic', 'xcvan01'], declared_users="...rce', 'anonymous': 'subscriber', 'ender': 'source', 'eggmeister': 'subscriber'}",
-    delete=False, destfn_script=None, directory='/home/peter/sarra_devdocroot', documentRoot=None, download=False, durable=True, exchange=['xflow_public'],
+    delete=False, directory='/home/peter/sarra_devdocroot', documentRoot=None, download=False, durable=True, exchange=['xflow_public'],
     expire=25200.0, feeder=amqp://tfeed@localhost, filename=None, fixed_headers={}, flatten='/', hostdir='fractal', hostname='fractal', housekeeping=60.0,
     imports=[], inflight=None, inline=False, inlineEncoding='guess', inlineByteMax=4096, instances=1,
     logFormat='%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s', logLevel='info', log_reject=True, lr_backupCount=5, lr_interval=1,
@@ -542,11 +542,10 @@ for detailed information about call signatures and return values, etc...
 |                     | download has completed.                            |
 |                     |                                                    |
 +---------------------+----------------------------------------------------+
-|                     | change msg['new_file'] to taste.                   |
-| destfn_script       | called when renaming the file from inflight to     |
+| destfn(self,msg):   | called when renaming the file from inflight to     |
 |                     | permanent name.                                    |
 |                     |                                                    |
-|                     | NOT IMPLEMENTED? FIXME?                            |
+|                     | return the new name for the downloaded/sent file.  |
 +---------------------+----------------------------------------------------+
 | download(self,msg)  | replace built-in downloader return true on success |
 |                     | takes message as argument.                         |
@@ -590,6 +589,31 @@ for detailed information about call signatures and return values, etc...
 | send(self,msg)      | replace the built-in send routine.                 |
 |                     |                                                    |
 +---------------------+----------------------------------------------------+
+
+DESTFNSCRIPTS
+~~~~~~~~~~~~~
+
+As a compatibility layer with the ancestor MetPX Sundew, Sarracenia implements
+*Destination File Naming Scripts*, where the one can create a flowcallback
+class with a *destfn* entry point, and then use that to set the name of
+the file that will be downloaded. 
+
+In the configuration file, one can use the filename option like so::
+
+  filename DESTFNSCRIPT=sarracenia.flowcb.destfn.sample.Sample
+
+To identify a class containing the destfn entry point to be applied.
+using the filename directive applies it to all files. One can also
+do it selectively in the configuration file's accept clause::
+
+  accept k.* DESTFNSCRIPT=sarracenia.flowcb.destfn.sample.Sample
+
+which has it call the routine to rename only selected files (starting with *k*
+as per the accept clause) 
+
+The destfn routine takes the message as an argument and should return
+the new file name as a string.
+
 
 
 Flow Callback Poll Customization
