@@ -562,13 +562,13 @@ class Config:
         self.timezone = 'UTC'
         self.debug = False
         self.declared_exchanges = []
-        self.destfn_script = None
         self.dry_run = False
         self.env_declared = []  # list of variable that are "declared env"'d 
         self.v2plugins = {}
         self.v2plugin_options = []
         self.imports = []
         self.logEvents = set(['after_accept', 'after_work', 'on_housekeeping' ])
+        self.destfn_scripts = []
         self.plugins_late = []
         self.plugins_early = []
         self.exchange = None
@@ -756,6 +756,9 @@ class Config:
             fn = arguments[1]
         else:
             fn = self.filename
+        if re.compile('DESTFNSCRIPT=.*').match(fn):
+            script=fn[13:]
+            self.destfn_scripts.append(script)
 
         return (arguments[0], self.directory, fn, regex,
                 option.lower() in ['accept', 'get'], self.mirror, self.strip,

@@ -320,7 +320,7 @@ class Flow:
           check if stop_requested once in a while, but never return otherwise.
         """
 
-        if not self.loadCallbacks(self.plugins['load']):
+        if not self.loadCallbacks(self.plugins['load']+self.o.destfn_scripts):
            return
 
         logger.debug("working directory: %s" % os.getcwd())
@@ -585,18 +585,12 @@ class Flow:
             elif re.compile('DESTFN=.*').match(spec):
                 destFileName = spec[7:]
             elif re.compile('DESTFNSCRIPT=.*').match(spec):
-                old_destfn_script = self.destfn_script
-                saved_new_file = msg['new_file']
-                msg['new_file'] = destFileName
-                self.destfn_script = None
-                script = spec[13:]
-                self.execfile('destfn_script', script)
-                if self.destfn_script != None:
-                    ok = self.destfn_script(self)
-                destFileName = msg['new_file']
-                self.destfn_script = old_destfn_script
-                msg['new_file'] = saved_new_file
-                if destFileName == None: destFileName = old_destFileName
+                scriptclass = spec[13:].split('.')[-1]
+                logger.info( 'looking for: %s in %s' % ( scriptclass, self.plugins['destfn'] ) ) 
+                for dfm in self.plugins['destfn']:
+                    logger.info( 'type(cl)=%s' % dfm.__qualname__ )
+                    if scriptclass == dfm.__qualname__.split('.')[0] :
+                         destFileName = dfm(msg)
             elif spec == 'TIME':
                 timeSuffix = ':' + time.strftime("%Y%m%d%H%M%S", time.gmtime())
                 if 'pubTime' in msg:
