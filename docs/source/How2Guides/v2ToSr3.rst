@@ -2,6 +2,7 @@
 =========================
 Porting V2 Plugins to Sr3
 =========================
+
 This is a guide to porting plugins from Sarracenia version 2.X (metpx-sarracenia) to 
 Sarracenia version 3.x (metpx-sr3)
 
@@ -135,6 +136,11 @@ convention in v3::
 
 the individual routine plugin declarations on_message, on_file, etc... are not a way of
 doing things in v3. You declare callbacks, and have them contain the entry points you need.
+
+* DESTFNSCRIPT work similar in v3 to v2, but the API is made to match v3 flowCallbacks,
+the new routines, one returns the new filename as output, instead of modifying a field
+in the message.
+
 
 
 Coding Differences between plugins in v2 vs. Sr3
@@ -773,6 +779,89 @@ create a flowCallback class with a *download* entry point.
   The ported result sets the new field *retPath* ( retrieval path ) instead of new_dir and new_file 
   fields, and normal processing of the *retPath* field in the message will do a good download, no
   plugin required. 
+
+
+DESTFNSCRIPT
+~~~~~~~~~~~~
+
+DESTFNSCRIPT is re-cast as a flowcb entry point, where the directive is now formatted
+similarly to the flowcallback in the configuration
+
+
+v2 configuration::
+
+    accept .*${HOSTNAME}.*AWCN70_CWUL.*       DESTFNSCRIPT=sender_renamer_add_date.py
+
+v2 plugin code::
+
+    import sys, os, os.path, time, stat
+
+    # this renamer takes file name like : AACN01_CWAO_160316___00009:cmcin:CWAO:AA:1:Direct:20170316031754 
+    # and returns :                       AACN01_CWAO_160316___00009_20170316031254
+
+    class Renamer(object):
+
+      def __init__(self) :
+          pass
+
+      def perform(self,parent):
+ 
+          path = parent.new_file
+          tok=path.split(":")
+
+          datestr = time.strftime('%Y%m%d%H%M%S',time.gmtime())
+          #parent.logger.info('Valeur_path: %s' % datstr)
+
+          new_path=tok[0] + '_' + datestr
+          parent.new_file = new_path
+          return True 
+
+    renamer=Renamer()
+    self.destfn_script=renamer.perform
+
+
+Turns into sr3
+
+sr3 configuration::
+
+   accept .*${HOSTNAME}.*AWCN70_CWUL.*       DESTFNSCRIPT=sender_renamer_add_date.Sender_Renamer_Add_Date
+ 
+In sr3, as for any flowcallback invocation, one needs to use a traditional python class invocation
+and add to it the name of the class within the file.  This notation is equivalent to python *from*
+statement *from sender_renamer_add_date import Sender_Renamer_Add_Date*
+
+flow callback code::
+
+   import logging,time
+
+   from sarracenia.flowcb import FlowCB
+
+   logger = logging.getLogger(__name__)
+
+   class Sender_Renamer_Add_Date(FlowCB):
+
+      def __init__(self,options):
+          self.o = options
+          pass
+
+      def destfn(self,msg) -> str:
+
+          logger.info('before: m=%s' % msg )
+          relPath = msg["relPath"].split('/')
+          datestr = time.strftime('%Y%m%d%H%M%S',time.gmtime())
+          return relPath[-1] + '_' + datestr
+
+Example of debugging sr3 destfn functions::
+
+    fractal% python3
+    Python 3.10.4 (main, Jun 29 2022, 12:14:53) [GCC 11.2.0] on linux
+    Type "help", "copyright", "credits" or "license" for more information.
+    >>> from sender_renamer_add_date import Sender_Renamer_Add_Date
+    >>> fb=Sender_Renamer_Add_Date(None)
+    >>> msg = { 'relPath' : 'relative/path/to/file.txt' }
+    >>> fb.destfn(msg)
+    'file.txt_20220725130328'
+    >>> 
 
 
 

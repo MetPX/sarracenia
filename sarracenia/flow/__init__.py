@@ -586,9 +586,7 @@ class Flow:
                 destFileName = spec[7:]
             elif re.compile('DESTFNSCRIPT=.*').match(spec):
                 scriptclass = spec[13:].split('.')[-1]
-                logger.info( 'looking for: %s in %s' % ( scriptclass, self.plugins['destfn'] ) ) 
                 for dfm in self.plugins['destfn']:
-                    logger.info( 'type(cl)=%s' % dfm.__qualname__ )
                     if scriptclass == dfm.__qualname__.split('.')[0] :
                          destFileName = dfm(msg)
             elif spec == 'TIME':
