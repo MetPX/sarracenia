@@ -83,7 +83,11 @@ class NoDupe(FlowCB):
         self.last_time = self.now
         self.last_count = new_count
 
-    def check(self, key, relpath):
+    def in_cache(self, key, relpath) -> bool:
+        """  return True if the given key=relpath value is already in the cache,
+                    False otherwise
+             side effect: add it to the cache if it isn't there.
+        """
         # not found
         self.cache_hit = None
         qpath = urllib.parse.quote(relpath)
@@ -115,11 +119,20 @@ class NoDupe(FlowCB):
 
         return True
 
-    def check_message(self, msg):
+    def check_message(self, msg) -> bool :
+        """
+           derive keys to be looked up in cache of messages already seen.
+           then look them up in the cache, 
+
+           return True if msg already in cache,
+                  False if msg is new.
+        """
 
         if ('nodupe_override' in msg) and ('key' in msg['nodupe_override']):
             key = msg['nodupe_override']['key']
-        else:
+        elif 'link' in msg:
+            key = msg['link']
+        elif 'integrity' in msg:
             key = msg['integrity']['method'] + ',' + msg['integrity'][
                 'value'].replace('\n', '')
 
@@ -128,6 +141,12 @@ class NoDupe(FlowCB):
                     key = "%s,%s" % (msg['integrity']['method'], msg['mtime'])
                 elif 'size' in msg:
                     key = "%s,%s" % (msg['integrity']['method'], msg['size'])
+        elif 'mtime' in msg:
+            key = msg['mtime']
+        elif 'size' in msg:
+            key = msg['size']
+        else: 
+            key = msg['pubTime']
 
         if ('nodupe_override' in msg) and ('path' in msg['nodupe_override']):
             path = msg['nodupe_override']['path']
@@ -139,7 +158,7 @@ class NoDupe(FlowCB):
             path = msg['relPath'].lstrip('/')
 
         logger.debug("NoDupe calling check( %s, %s )" % (key, path))
-        return self.check(key, path)
+        return self.in_cache(key, path)
 
     def after_accept(self, worklist):
         new_incoming = []
