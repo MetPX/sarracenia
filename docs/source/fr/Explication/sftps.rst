@@ -2,334 +2,287 @@
  Pourquoi SFTP est plus souvent choisi que FTPS
 =========================================
 Il y a eu des discussions sur l’endroit où placer un S afin de
-transferts de fichiers sécurisés. Parmi une variété de technologies concurrentes, il y a
-sont deux qui peuvent sembler assez équivalents : SFTP et FTPS. Les deux
-les technologies sont candidates pour remplacer la vénérable méthode FTP
+transferts de fichiers sécurisés. Parmi une variété de technologies concurrentes, il y en
+a deux qui peuvent sembler assez équivalents : SFTP et FTPS. Les deux
+technologies sont des candidates pour remplacer la vénérable méthode FTP
 de transfert de fichiers.
 
-Il est pertinent d’examiner les raisons pour lesquelles sfTP a été choisi à la place de FTPS.
+Il est pertinent d’examiner les raisons pour lesquelles SFTP a été choisi à la place de FTPS.
 Dans cette discussion, veuillez garder à l’esprit :
 
 - Je ne suis pas un expert en sécurité, cela reflète simplement ma compréhension actuelle
-- Nous n’avons pas déployé FTPS, nous avons donc peu d’expérience avec lui.
+- Nous n’avons pas déployé FTPS, nous avons donc peu d’expérience avec cela.
 
 S’il y a des malentendus, alors nous serions heureux d’apprendre
 à leur sujet.
 
 
-There has been some discussion around where to place an S in order to
-secure file transfers. Among a variety of competing technologies, there
-are two that may appear fairly equivalent: SFTP and FTPS. Both of these
-technologies are candidates to replace the venerable FTP method
-of transferring files.
-
-It is pertinent to review the reasons why SFTP was chosen in place of FTPS.
-In this discussion please keep in mind:
-
-- I am not a security expert, this just reflects my current understanding
-- We have not deployed FTPS, therefore we have little experience with it.
-
-If there are some misapprehensions, then we would be pleased to learn
-about them.
-
-
 FTP
 ---
 
-In the early days of the internet, before even the advent
-of the world-wide web, one of the earliest applications was
-file transfer, as first defined by the Internet Engineering Task
-Force standard Request for Comments (original IETF RFC 114,
-dating from 1971 ). It evolved over the following decades with
-the same basic ideas.  On the internet, every device
-has an internet address, and for every address there is
-on the order of 65,000 ports available (kind of sub-addresses).
-
-du World Wide Web, l’une des premières applications était
-transfert de fichiers, tel que défini pour la première fois par la tâche d’ingénierie Internet
-Forcer la demande de commentaires standard (IETF RFC 114 d’origine,
+Dans les premiers jours d’Internet, avant même l’avènement
+du World Wide Web, l’une des premières applications était un
+transfert de fichiers, tel que défini pour la première fois par Internet Engineering Task
+Force standard Request for Comments (IETF RFC 114 d’origine,
 datant de 1971 ). Il a évolué au cours des décennies suivantes avec
 les mêmes idées de base.  Sur Internet, tous les appareils
-a une adresse Internet, et pour chaque adresse il y a
+ont une adresse internet, et pour chaque adresse il y a
 de l’ordre de 65 000 ports disponibles (type de sous-adresses).
-
-If Alice wants to communicate with Bob, she initiates
-a connection to Bob's device on port 21.  Bob indicates he
-is ready to receive the file, and then they agree on a second
-connection that is established over which the file data actually
-flows. How the second connection is established has varied a lot
-over time. The information to set up the data path naturally
-passes over the control path previously set up.
-
-In those early days, Alice and Bob would have two servers
-directly on the internet. The internet was a collegial place, and
-firewalls did not exist. Fast-forward thirty years, and the reality is
-quite different.
 
 Si Alice veut communiquer avec Bob, elle initie
 une connexion à l’appareil de Bob sur le port 21.  Bob indique qu’il
 est prêt à recevoir le dossier, puis ils se mettent d’accord sur une seconde
-connexion établie sur laquelle les données du fichier sont réellement établies
-Flux. La façon dont la deuxième connexion est établie a beaucoup varié
+connexion établie sur laquelle les données du fichier sont réellement établies.
+La façon dont la deuxième connexion est établie a beaucoup varié
 au fil du temps. Les informations pour configurer le chemin de données naturellement
 passe sur le chemin de contrôle précédemment configuré.
 
 À cette époque, Alice et Bob avaient deux serveurs.
 directement sur internet. Internet était un lieu collégial, et
-les pare-feu n’existaient pas. Avance rapide de trente ans, et la réalité est
+les firewall n’existaient pas. Trente ans plus tard, et la réalité est
 tout à fait différent.
 
 
+Échangeurs de produits : prise en charge d’un grand nombre de transferts
+------------------------------------------------------------------------
 
-Product Exchangers: Supporting Large Numbers of Transfers
----------------------------------------------------------
-
-In modern times, if one is transferring hundreds of thousands or millions
-of files, there will likely be a large number of network devices
-between Alice and Bob's servers.  The following diagram is a typical
-simple case one is likely to meet in reality:
+Dans les temps modernes, si l’on transfère des centaines de milliers ou des millions
+de fichiers, il y aura probablement un grand nombre d'appareils de réseau
+entre les serveurs d’Alice et bob.  Le diagramme suivant est un diagramme typique
+d'un cas simple que l’on est susceptible de rencontrer dans la réalité:
 
 .. image::  sftps/ftp_proxy_today.svg
   :align: center
 
-To send large numbers of files and withstand failures of
-individual servers, there will typically be an array of servers
-to send files. Let's call them a product exchange array.
-The purpose of such arrays of servers is to process and/or
-transfer more data than could be transferred in a given time
-by a single server, and to provide transparent redundancy
-for component failures.
+Pour envoyer un grand nombre de fichiers et résister aux défaillances de
+serveurs individuels, il y aura généralement un tableau de serveurs
+pour envoyer des fichiers. Appelons-les un tableau d’échange de produits.
+Le but de ces tableaux de serveurs est de traiter et/ou
+transférer plus de données que ce qui pourrait être transféré dans un temps donné
+par un seul serveur, et pour fournir une redondance transparente
+pour les défaillances de composants.
 
-To make it look to outsiders as a single server, there will
-be a load balancer in front of the real servers.  When initiating
-connections or receiving inbound ones, the load balancer
-will map the real servers' actual addresses to a public facing
-one. The load balancer maintains a table of who is connected
-to whom, so that when a packet is received from an external
-server, it can map it back to the correct real server.
-This is called Network Address Translation, or NAT.
+Pour faire paraître aux étrangers qu'un serveur est unique, il y aura
+un équilibreur de charge devant les vrais serveurs.  Lors de la
+connexion initiale ou la réception de connexions entrantes, l’équilibreur de charge
+mappera les adresses réelles des serveurs réels à un serveur public.
+L’équilibreur de charge maintient une table des personnes connectées
+à qui, de sorte que lorsqu’un paquet est reçu d’un serveur externe,
+peut le mapper au bon serveur réel.
+C’est ce qu’on appelle la traduction d’adresses réseau, ou NAT.
 
-Recall that there are 65,000 ports available, so several servers
-could choose, from their real addresses, to use the same source
-port to initiate their connection. When the load balancer
-maps the connection to an publically visible address, you could
-have more than one server claiming the same source port.
-So the load balancer has to map ports as well as just addresses.
-This is called Port Address Translation, or PAT.
+Rappelons qu’il y a 65 000 ports disponibles, donc plusieurs serveurs
+pourraient choisir, à partir de leurs adresses réelles, d’utiliser la même source
+pour initier leur connexion. Lorsque l’équilibreur de charge
+mappe la connexion à une adresse visible publiquement, vous pouvez
+avoir plusieurs serveurs revendiquant le même port de source.
+L’équilibreur de charge doit donc mapper les ports ainsi que les adresses.
+C’est ce qu’on appelle la traduction d’adresse de port, ou PAT.
 
-So there is a table stored in some fashion (on higher end devices
-in content addressable memory, or CAM)
+Il y a donc une table stockée d’une manière ou d’une autre (sur les appareils haut de gamme)
+dans la mémoire adressable de contenu, ou CAM)
+
 
 +-------------+----------------+
 | 10.2.3.4:67 | 134.67.7.8:45  |
 +-------------+----------------+
 
-Which maintains the mapping of a private address & port to a public
-address & port for every connection traversing a given device.
+Qui maintient le mappage d’une adresse et d'un port à une adresse et un port public
+pour chaque connexion traversant un appareil donné.
 
-When we get to a firewall, especially when organizations use
-private addressing, the process is repeated. So the address
-and port might get re-mapped to different ones again.
+Lorsque nous arrivons à un firewall, en particulier lorsque les organisations utilisent un
+adressage privé, le processus est répété. Donc l’adresse
+et le port peuvent être à nouveau re-mappé à des différents.
 
-The same operations happen at the other end, with the firewall
-and the load balancer maintaining tables of who is connected
-to what, and mapping addresses and port numbers in order
-to allow the servers at each end to communicate.
+Les mêmes opérations se produisent à l’autre extrémité, avec le firewall
+et l’équilibreur de charge qui gère les tables des personnes connectées
+à quoi, et mappe des adresses et des numéros de port dans l’ordre
+pour permettre aux serveurs à chaque extrémité de communiquer.
 
-With a straight-forward protocol, like Secure Shell, or Hypertext
-Transfer Protocol, there is only a single channel and only a single
-table entry in each of these devices is necessary per connection.
-The algorithmic complexity of such operations is a small
-constant amount, small in terms of memory and cpu.
+Avec un protocole simple, comme Secure Shell ou Hypertext
+Protocole de transfert, il n’y a qu’un seul canal et une seul
+entrée de table dans chacun de ces périphériques qui est nécessaire par connexion.
+La complexité algorithmique de telles opérations est constante et minime,
+et petite en termes de mémoire et de processeur.
 
-Recall that the control path indicates the method by which the data
-connection is established.  In order to have the FTP data channel connect the
-two servers, each firewall or load balancer between the two servers
-ideally observes the control path, looks for the data port specification,
-and proactively creates a mapping for it, creating a second pair of relationships
-to manage in the table for every connection.  This activity is termed
-FTP proxying.  A proxy should be run at any point where network or port
-translation occurs, with at least double the (still small) memory overhead
-of other protocols, but the cpu work is about the same (just using
-two entries in mapping tables instead of one).  Optimally, some sort of
-proxy or watcher on firewalls is able to adjust firewall rules
-dynamically to permit only specific data connections in use through
-when they need to, minimizing exposure to the internet to only double
-that of other protocols.
+Rappelez-vous que le chemin de contrôle indique la méthode par laquelle la connexion de données est établie.
+Afin que le canal de données FTP connecte les deux serveurs, chaque firewall ou équilibreur de charge entre les deux serveurs
+observe le chemin de contrôle, recherche la spécification du port de données,
+et crée de manière proactive une cartographie pour cela, créant une deuxième paire de relations
+à gérer dans le tableau pour chaque connexion.
+Cette activité est appelée proxy FTP.
+Un proxy doit être exécuté à n’importe quel point où la traduction du réseau ou du port se produit, avec au moins le double de la surcharge de mémoire (encore petite)
+que d’autres protocoles, mais le travail du processeur est à peu près le même (il suffit d’utiliser
+deux entrées dans les tables de mappage au lieu d’une).  De manière optimale, une sorte de
+proxy ou observateur sur les firewall est capable d’ajuster les règles de firewall
+dynamiquement pour n’autoriser que des connexions de données spécifiques en cours d’utilisation
+quand ils en ont besoin, minimisant l’exposition à internet pour ne doubler que
+celle des autres protocoles.
 
-In practice, there may be many NAT/PAT firewalls between A
-and B, and neither Alice nor Bob will be in charge of the configuration
-of all of the intervening devices. Because the FTP control path
-is easily inspected, there is just a bit of proxy code commonly
-implemented on network devices to cover this special case.
-
+En pratique, il peut y avoir de nombreux firewall NAT/PAT entre A
+et B, et ni Alice ni Bob ne seront en charge de la configuration
+de tous les dispositifs intervenants. Parce que le chemin d’accès du contrôle FTP
+est facilement inspecté, il y a juste un peu de code proxy couramment
+mis en œuvre sur les périphériques réseau pour couvrir ce cas particulier.
 
 FTPS
 ----
 
-FTPS - is FTP with Transport Level Security added to it.
-The control path is now encrypted, and thus not available
-to proxies on each of the firewalls and load balancers (such
-as LVS (linux virtual server), or standard products from F5, barracuda or
-a number of others). The straightforward answer to that problem is to
-terminate the encryption on each firewall and load balancer, so that
-the control traffic can be viewed to obtain the needed port numbers,
-and then re-encrypted. Essentially one would need to decrypt and
-re-encrypt the control information at least four times in between
-the source and destination servers.
+FTPS - est FTP avec la sécurité de niveau de transport ajoutée.
+Le chemin de contrôle est maintenant chiffré et n’est donc pas disponible
+aux proxys sur chacun des firewall et équilibreurs de charge (tels que
+LVS (serveur virtuel linux), ou produits standard de F5, barracuda ou
+d’autres). La réponse simple à ce problème est de
+mettre fin au chiffrement de chaque firewall et équilibreur de charge, de sorte que
+le trafic de contrôle peut être visualisé pour obtenir les numéros de port nécessaires,
+puis rechiffré. Essentiellement, il faudrait décrypter et
+rechiffrer les informations de contrôle au moins quatre fois entre les serveurs source et destination.
 
-Ideally one would decrypt only the control path, the router would intercept
-connection requests and return a local encryption response. But if the data path
-is not also intercepted, then the server will have one encryption key for the control
-path and another for the data path, which will break TLS. So most likely,
-each intervening router and firewall is obligated to decrypt and re-encrypt
-all the data going through as well.
+Idéalement, on ne déchiffrerait que le chemin de contrôle, le routeur intercepterait la
+demande de connexion et renvoie une réponse de chiffrement local. Mais si le chemin de données
+n’est pas également intercepté, alors le serveur aura une clé de chiffrement pour le contrôle
+et une autre pour le chemin de données, qui cassera TLS. Donc, très probablement,
+chaque routeur et firewall intervenant est obligé de déchiffrer et de rechiffrer
+toutes les données qui passent aussi.
 
-Essentially, this means that Alice and Bob accept that every
-NAT/PAT device between them is allowed to impersonate the other
-entity (performing what is known as a man-in-the-middle attack).
-This is the only way to traverse a long chain of NAT/PAT devices.
+Essentiellement, cela signifie qu’Alice et Bob acceptent que chaque
+périphérique NAT / PAT entre eux est autorisé à usurper l’identité de l’autre
+entité (effectuant ce que l’on appelle une attaque de l’homme du milieu).
+C’est la seule façon de traverser une longue chaîne de périphériques NAT/PAT.
 
-As the above is quite onerous, my supposition is that those deploying FTPS
-do not do *correct* proxying as described above. Instead, they
-reserve a port range for these types of traffic and put some static NAT/PAT
-rules in place, likely reserving a port range per node behind a load balancer.
-That is cumbersome and difficult to manage, and works for one level deep, but
-it does not generalize. Further, the port reservation increases the surface area of
-attack to outsiders, as ports are opened permanently, rather than
-mapping specific ports at specific times, because the firewall
-cannot read the control path traffic.
+Comme ce qui précède est assez onéreux, ma supposition est que ceux qui déploient FTPS
+ne *corrige* pas le proxy comme décrit ci-dessus. Au lieu de cela, ils
+réservent une plage de ports pour ces types de trafic et mettent un PEU DE règles NAT/PAT statique
+en place, réservant probablement une plage de ports par nœud derrière un équilibreur de charge.
+C’est lourd et difficile à gérer, et cela fonctionne pour un niveau profond, mais
+il ne se généralise pas. En outre, la réservation de ports augmente la superficie d'une
+attaque contre des étrangers, car les ports sont ouverts en permanence, plutôt que d'avoir un
+mappage de ports spécifiques à des moments spécifiques, car le firewall
+ne peux pas lire le trafic du chemin de contrôle.
 
-In the original *active* case of FTPS, the client initiates the control
-connection, and the server initiates the data connection, requiring the
-client firewall to permit an arbitrary inbound connection. This method
-is basically limited to functioning where there no NAT at all, and extremely
-limited firewalling in both directions for a transfer to occur at all.
+Dans le cas *actif* d’origine de FTPS, le client initie le contrôle
+et le serveur initie la connexion de données, nécessitant le
+firewall du client pour autoriser une connexion entrante arbitraire. Cette méthode
+est essentiellement limité au fonctionnement où il n’y a pas de NAT du tout, et
+du firewalling extrêmement limité dans les deux sens pour qu’un transfert ait meme lieu.
 
-The *passive* case, where the client initiates both control and data
-connections, is much more common in modern environments. That one
-complicates NAT/PAT and the use of load balancers on the
-destination server side. When setting up two way exchanges,
-FTPS complicates  both sides' use of load balancers or NAT
-and reduces the effectiveness of firewalling measures available.
+Le cas *passif*, où le client initie à la fois le contrôle et les données de
+connexions, est beaucoup plus commun dans les environnements modernes. Celui-là
+complique le NAT/PAT et l’utilisation d’équilibreurs de charge sur le
+côté serveur de la destination. Lors de la mise en place d’échanges bidirectionnels,
+FTPS complique l’utilisation par les deux parties des équilibreurs de charge ou NAT
+et réduit l’efficacité des mesures de firewall disponibles.
 
-FTPS is fundamentally more difficult to configure for many common configurations. One
-has to build a cluster differently, and arguably *worse*, because standard
-mechanisms used for other protocols do not work. That lowers a variety of
-configuration choices available only to support FTPS, with less protection
-than is afforded when using other protocols.
+FTPS est fondamentalement plus difficile à configurer pour de nombreuses configurations courantes. Il faut
+construire un cluster différemment, et sans doute *pire*, parce que les mécanismes standard
+utilisés pour d’autres protocoles ne fonctionnent pas. Cela réduit une variété de
+choix de configuration disponibles uniquement pour prendre en charge FTPS, avec moins de protection
+de que ce qui est offert lors de l’utilisation d’autres protocoles.
 
-Lastly, all of the peers one exchanges traffic with will face the same
-issues and will find it difficult to deploy. It is rare to
-find a peer that prefers FTPS.
+Enfin, tous les pairs avec lesquels on échange du trafic seront confrontés à la même chose
+et auront du mal à le déployer. Il est rare de trouver une pair qui préfère FTPS.
 
-
-
-Cost
+Coût
 ----
 
-If one assumes that the control path alone can be intercepted, leaving
-the data path alone, then from the point of view of computational complexity,
-the control path, rather than simply passing packets through each NAT/PAT device
-must be decrypted, and re-encrypted, which is likely still small, but much larger overhead
-than other protocols require. This places a higher load on load balancers and firewalls,
-which are more complex to parallellize and generally more expensive than
-the general purpose servers used in a product exchange array. This effect will
-be more pronounced for short sessions (primarily related to connection
-establishment, rather than sustained transfer).
+Si l’on suppose que le chemin de contrôle seul peut être intercepté, en laissant
+le chemin des données, alors du point de vue de la complexité computationnelle,
+le chemin de contrôle, plutôt que de simplement passer des paquets à travers chaque périphérique NAT/PAT
+doit être déchiffré et rechiffré, ce qui est probablement encore petit, mais beaucoup plus important
+que d’autres protocoles exigent. Cela place une charge plus élevée sur les équilibreurs de charge et les firewall,
+qui sont plus complexes à paralléliser et généralement plus chers que
+les serveurs à usage général utilisés dans une baie d’échange de produits. Cet effet
+est plus prononcé pour les sessions courtes (principalement liées à la connexion
+d'établissement, plutôt que de transfert durable).
 
-In actuality, it is more likely that the data must be re-encrypted as well
-as the control path, in which case the capacity for encryption of an array
-of servers must be equalled by the network device to prevent a bottleneck forming.
-The purpose of a product exchange array is to distribute computational load
-across a variety of low cost servers. The processing power in the commodity
-servers is several orders of magnitude beyond what is available to
-network devices. In the encryption offload case, the load imposed on the
-network devices is exponentially higher than what is required for
-other protocols.
+En réalité, il est plus probable que les données doivent également être rechiffrées
+comme chemin de contrôle, dans ce cas la capacité de chiffrement de plusieurs
+serveurs doivent être égalés au périphérique du réseau pour éviter la formation d’un bottleneck.
+Le but d’un tableau d’échange de produits est de distribuer la charge de calcul
+sur une variété de serveurs à faible coût. La puissance de traitement dans les
+serveurs de commodité est de plusieurs ordres de grandeur au-delà de ce qui est disponible pour
+les périphériques réseau. Dans le cas du déchargement du chiffrement, la charge imposée sur
+les périphériques réseau sont exponentiellement plus élevés que ce qui est requis pour
+d’autres protocoles.
 
-Network equipment vendors may tout encryption offloading, but what that amounts
-to in practice, is offloading cpu work from an array of cheap redundant
-servers, to a large relatively expensive and proprietary box.
+Les fournisseurs d’équipements réseau peuvent vanter le déchargement du cryptage, mais ce que cela représente
+dans la pratique, est de décharger le travail du processeur à partir d’un éventail de serveurs redondants,
+à une grande boîte relativement chère et propriétaire.
 
-One can avoid the cost of encryption and decryption on network devices
-by limiting all configuration to being placed in a DMZ with no load balancer,
-or a load balancer with static port maps per real server, and lesser firewall
-protection. In which case the cost of equipment is likely no different,
-but the maintenance load will be slightly heavier (more frequent credential
-updates, need to maintain additional static maps, more firewall monitoring).
+On peut éviter le coût du cryptage et du décryptage sur les périphériques réseau
+en limitant toute la configuration à être placée dans un DMZ sans équilibreur de charge,
+ou un équilibreur de charge avec des mappages de ports statiques par serveur réel et une protection de firewall inférieur.
+Dans ce cas, le coût de l’équipement n’est probablement pas différent,
+mais la charge de maintenance sera légèrement plus lourde (informations d’identification plus fréquentes),
+mises à jour, besoin de maintenir des cartes statiques supplémentaires, plus de surveillance de firewall).
 
+Fonctionnalité: Plages d’octets
+-------------------------------
 
+En plus de la complexité beaucoup plus grande de la prise en charge du firewall pour
+FTPS, et la charge supplémentaire sur les firewall coûteux, il y a également uen fonctionnalité réduite
+disponible par rapport aux protocoles plus récents,
+tels que le protocole de transfert SSH et HTTP(S). Les deux sont sécurisés en
+utilisant les mêmes algorithmes de chiffrement que FTPS, mais sont à canal unique,
+et ils offrent tous deux la possibilité de récupérer des plages d’octets
+dans les fichiers. Certaines technologies de transfert plus récentes utilisent des plages d’octets fournies
+par HTTP et SFTP pour permettre le transfert de fichiers par plusieurs flux parallèles,
+ce qui n’est pas possible avec FTP ou FTPS.
 
-
-Functionality: Byte Ranges
---------------------------
-
-In addition to the much greater complexity of firewall support for
-FTPS, and the added load on expensive firewalls, there is also reduced
-functionality available when compared to newer protocols,
-such as SSH transfer protocol, and HTTP(S). Both of these are secured
-using the same encryption algorithms as FTPS, but are single channel
-protocols, and they both provide the ability to retrieve byte ranges
-within files. Some newer transfer technologies use byte ranges provided
-by HTTP and SFTP to permit files to be transferred by multiple parallel
-streams, which is not possible with FTP or FTPS.
-
-
-Security/Vulnerability
+Sécurité/Vulnérabilité
 ----------------------
 
-FTPS, like FTP, is usually authenticated using passwords which are secret.
-If the peer in an exchange suffers an intrusion, the hash of the password,
-which can be used to obtain the password itself using so-called brute
-force methods in a reasonable period of time because of its limited
-complexity. Most passwords are much shorter than the keys typical of
+FTPS, comme FTP, est généralement authentifié à l’aide de mots de passe secrets.
+Si la pair dans un échange subit une intrusion, le hachage du mot de passe
+peut être utilisé pour obtenir le mot de passe lui-même en utilisant ce que l’on appelle la méthode brute
+de force dans un délai raisonnable en raison de sa complexité limité.
+La plupart des mots de passe sont beaucoup plus courts que les clés typiques de
 SSH.
 
-One also faces the problem of intercepting the secret when it is shared.
-This problem is compounded by modern security standards which force
-changing of these secrets at frequent intervals, increasing the opportunity
-for interception, as well as imposing extra workload on the staff
-for maintenance.
+On est également confronté au problème de l’interception du secret lorsqu’il est partagé.
+Ce problème est aggravé par les normes de sécurité modernes qui forcent le
+changement de ces secrets à des intervalles fréquentes, augmentant l’opportunité
+de l’interception, ainsi que pour imposer une charge de travail supplémentaire au personnel
+pour l’entretien.
 
-There are configurations where passwords are permitted with SSH/SFTP, but for
-data transfer applications these options are routinely disabled, which
-is possible in a clean and simple manner. Usually, data exchange
-involves the exchange of public keys (no secrets need be exchanged at all.)
-Public keys are stronger than passwords, and most security organizations
-permit much longer intervals before a change of credentials is required.
+Il existe des configurations où les mots de passe sont autorisés avec SSH/SFTP, mais pour des
+applications de transfert de données ces options sont systématiquement désactivées, ce qui
+est possible de manière propre et simple. Habituellement, l’échange de données
+implique l’échange de clés publiques (aucun secret n’a besoin d’être échangé.)
+Les clés publiques sont plus fortes que les mots de passe, et la plupart des organisations de sécurité
+permettent des intervalles beaucoup plus longues avant qu’un changement d’informations d’identification ne soit requis.
 
-With SSH, if a remote server is compromised, the malicious party
-obtains only the public key.  Since it is already public, the attacker has
-gained nothing of value. As the keys are substantially longer
-than a password, the traffic is more likely to be secure in transit (though
-in practice there are many details which may render this point moot.)
+Avec SSH, si un serveur distant est compromis, la partie malveillante
+obtient uniquement la clé publique.  Comme elle est déjà public, l’attaquant
+n’a rien gagné de valeur. Comme les touches sont beaucoup plus longues
+qu’un mot de passe, le trafic est plus susceptible d’être sécurisé en transit (bien que
+dans la pratique, il existe de nombreux détails qui peuvent rendre ce point discutable.)
 
-As per IETF RFC 2228, FTPS servers can be FTP servers with enhanced
-security available when explicitly requested, so called *explicit* mode.
-It is therefore possible to connect to FTPS servers and transfer in FTP
-(unsecured mode). Careful configuration of servers is required to
-ensure this is not inadvertantly permitted.
+Selon IETF RFC 2228, les serveurs FTPS peuvent être des serveurs FTP avec plus de
+sécurité disponible sur demande explicite, appelée le mode *explicite*.
+Il est donc possible de se connecter à des serveurs FTPS et de transférer en FTP
+(mode non sécurisé). Une configuration minutieuse des serveurs est nécessaire pour
+s’assurer que cela n’est pas permis par inadvertance.
 
-On receiving systems, it is true that a default OpenSSH configuration permits
-shell level access, however the use of restricted shells and chroot jails is
-commonplace in both FTP and SFTP based configurations. There is no practical
-difference between FTPS and SFTP from the server account point of view.
+Sur les systèmes récepteurs, il est vrai qu’une configuration OpenSSH par défaut permet
+l’accès au niveau du shell, mais l’utilisation restreinte de shells et de prisons chroot est
+courante dans les configurations FTP et SFTP. Il n’y a pas de pratique
+différente entre FTPS et SFTP du point de vue du compte serveur.
 
-In terms of firewalling, assuming the static port mapping method is used, then
-a relatively simple attack on an FTPS server with that sort of configuration
-would be to DDOS the data ports. Assuming the ability to watch the traffic at
-some point between the ends points, an evildoer could determine the port range
-mapped, and then constantly send traffic to the data ports with either incorrect
-data, or to close the connection immediately preventing actual data transfer.
-This is additional surface area to defend when compared to other protocols.
+En termes de firewall, en supposant que la méthode de mappage de port statique est utilisée, alors
+une attaque relativement simple sur un serveur FTPS avec ce type de configuration
+serait de DDOS les ports de données. En supposant la capacité de surveiller le trafic à
+un point entre les points d’extrémité, un malfaiteur pourrait déterminer la plage de ports
+mappé, puis envoyer constamment du trafic vers les ports de données avec des données incorrecte,
+ou pour fermer immédiatement la connexion empêchant le transfert de données réel.
+Il s’agit d’une surface supplémentaire à défendre par rapport à d’autres protocoles.
 
-The use of the encrypted second port, where the port range used is variable
-from site to site, means that most normal firewalls operating at the TCP level
-will less easily distinguish file transfer traffic from web or other traffic
-as there is no specific port number involved. For example, note this
-bug report from checkpoint which says that to permit FTPS to traverse it,
-one must disable various checks::
+L’utilisation du deuxième port chiffré, où la plage de ports utilisée est variable
+d’un site à l’autre, signifie que la plupart des firewall normaux fonctionnant au niveau TCP
+distinguera moins facilement le trafic de transfert de fichiers du trafic Web ou autre
+car il n’y a pas de numéro de port spécifique impliqué. Par exemple, notez ce
+rapport de bug du point de contrôle qui dit que pour permettre à FTPS de le traverser,
+il faut désactiver diverses vérifications::
 
   "FTP over SSL is not supported.
 
@@ -345,103 +298,106 @@ one must disable various checks::
 .. [*] https://supportcenter.checkpoint.com/supportcenter/portal?eventSubmit_doGoviewsolutiondetails=&solutionid=sk39793
 
 
-Reliability/Complexity
-----------------------
+Fiabilité/Complexité
+--------------------
 
-There are several modes of FTP:  ascii/binary, active/passive, that create more cases to allow for.
-FTPS adds more cases: explicit/implicit to the number to allow for. Encryption can be
-enabled and disabled at various points in the control and data paths.
+Il existe plusieurs modes de FTP: ascii / binaire, actif / passif, qui créent plus de cas.
+FTPS ajoute plus de cas: explicite / implicite au nombre à autoriser. Le cryptage peut être
+activé et désactivé à différents points de chemins de contrôle et de données.
 
-Example of the mode causing additional complexity: active or passive? Very common issue. Yes, the question
-can be answered in practice, but one must ask: why does this question need to be answered? No other protocol
-needs it.
+Exemple du mode causant une complexité supplémentaire : actif ou passif ? Problème très courant. Oui, la question
+peut être répondu en pratique, mais il faut se demander: pourquoi faut-il répondre à cette question? Aucun autre protocole
+en a besoin.
 
-Example of mode causing complexity from a decade ago: a common FTP server on linux systems is set by
-default to ignore the 'ascii' setting on ftp sessions for performance reasons. It took quite a
-while to understand why data acquisition from VAX/VMS machines were failing.
+Exemple de mode causant de la complexité d’il y a dix ans: un serveur FTP commun sur les systèmes Linux est défini par
+défaut, ignorez le paramètre 'ascii' sur les sessions ftp pour des raisons de performances. Il a fallu beaucoup de temps
+pour comprendre pourquoi l’acquisition de données à partir de machines VAX/VMS échouait.
 
-The inherent requirement for all the intervening NAT/PAT devices to be configured *just so*
-to support FTPS makes it, in practice less likely to be reliable. Even in cases when
-everything is correctly configured, there is room for difficulties. Recall that for FTP and FTPS,
-tables need to be maintained to associate control and data connections with the correct end points.
-When connections are closed, the entries have to be shutdown.
+L’exigence inhérente pour tous les périphériques NAT/PAT intervenants d’être configurés *juste ainsi*
+pour prendre en charge FTPS le rend, en pratique, moins susceptible d’être fiable. Même dans les cas où
+tout est correctement configuré, il y a de la place pour les difficultés. Rappel que pour FTP et FTPS,
+les tables doivent être maintenues pour associer les connexions de contrôle et de données aux points de terminaison corrects.
+Lorsque les connexions sont fermées, les entrées doivent être arrêtées.
 
-Example of correct configuration still having issues: in our experience, very rarely, the mapping tables get
-confused. At the main Canadian weather data product exchange array, occasionally with one file out of many millions,
-the file name would not match the file content. Although neither the file name, nor the content was corrupted,
-the data set did not correspond to the name given the file. Many possible sources were examined, but the suspected
-cause was some sort of timing issue with ports being re-used and the mapping on load balancers, where the
-file name flows over the control path, and the data flows over the other port. As a test, the transfers
-were migrated to SFTP, and the symptoms disappeared.
-
-
-Summary
--------
-
-Either FTPS proxying is done in a fully general manner:
-
-- the intervening devices must perform man-in-the-middle
-  decryption on at least the control path, which is quite undesirable from
-  a security perspective. Decryption of only the control path is likely not
-  possible without breaking TLS, so the entire data stream must
-  be decrypted and re-encrypted at each firewall or load balancer.
-
-- FTPS requires complex configuration of all intervening devices
-  that are common in modern configurations. In many cases, the
-  owners of the intervening devices will refuse to support the technology.
-
-- FTPS imposes a higher computational load on all intervening
-  devices than most alternatives available. By imposing an increased load
-  on specialized devices, it is generally more expensive to deploy at scale.
-
-- Since the above is impractical and undesirable, it is rarely done.
-  There are therefore commonplace situations where one simply cannot deploy
-  the protocol.
-
-Or, if only static port mapping is done:
-
-- Usual FTPS firewall configurations leave a larger surface of attack for
-  evildoers because the lack of visibility into the control path forces
-  the firewall to open more ports than is strictly necessary, increasing
-  surface area for attack.
-- The static data port mapping per real-server on load balancers is more
-  complex to maintain than what is required for other protocols.
-
-In either case:
-
-- One generally uses passwords, which tend to be of limited length, reducing
-  the overall security when compared to SSH/SFTP where use of long public/private key pairs
-  is commonplace, and lengthening the key length requirement is straight-forward.
-- FTPS does not support byte ranges which are useful in some applications,
-  and is supported by SFTP and HTTP (with or without (S)).
-- In the event of a compromise of a remote server, the password of the account
-  is easily determined. While best practice would mean this password is of little
-  or no value, some bad habits, such as password re-use, may mean the password has
-  some value. Contrast with SFTP: only already public information is disclosed.
-- Some FTPS server software has fall-back mechanisms and options that may cause
-  users or administrators to unintentionally send unencrypted information.
-  This could result in revealing passwords. In SFTP, the passwords are usually
-  not sent, the keys are an element of encryption, so there are no passwords
-  to intercept.
-- FTPS is inherently more complex making it more difficult to deploy and operate.
-- The limitations of supported configurations constrains firewalling approaches,
-  likely reducing the protection afforded internet facing servers.
+Exemple de configuration correcte ayant encore des problèmes: selon notre expérience, très rarement, les tables de mappage se
+confondes. Dans le réseau principal canadien d’échange de produits de données météorologiques, parfois,  un fichier sur plusieurs millions,
+le nom du fichier ne correspondrait pas au contenu du fichier. Bien que ni le nom du fichier, ni le contenu n’aient été corrompus,
+l’ensemble de données ne correspondait pas au nom donné au fichier. De nombreuses sources possibles ont été examinées, mais les sources suspectées
+de la cause était une sorte de problème de synchronisation avec les ports réutilisés et le mappage sur les équilibreurs de charge, où le
+nom de fichier circule sur le chemin de contrôle et les données circulent sur l’autre port. À titre de test, les transferts
+ont été migrés vers SFTP et les symptômes ont disparu.
 
 
-In contrast to FTPS, SFTP:
 
-- will traverse any number of NAT/PAT points on an intervening network without difficulty.
-- works behind any type of load balancers, making scaling of product exchange arrays simple.
-- does not require any intervening party to decrypt anything.
-- puts less load (both cpu and memory) on intervening network devices.
-- has similar commonplace methods for securing accounts on servers (e.g. restricted shells in chroot jails).
-- supports byte ranges, which are useful.
-- is simpler, with fewer options, therefore more reliable.
-- is simpler to monitor and firewall, and permits more constrained firewall configurations.
-- is much more common (e.g. Microsoft announcing built-in support in an upcoming Windows version [*]_ ).
-- normally uses public/private key pairs, which are usually considered *stronger* than passwords.
-- does not require any shared secrets (or a mechanism to send them.), and usually the credentials need to be replaced less
-  often.
+
+
+Résumé
+------
+
+Soit le proxy FTPS est effectué de manière entièrement générale :
+
+- les dispositifs intervenants doivent effectuer un décryptage de l’homme du milieu
+  sur au moins le chemin de contrôle, ce qui est tout à fait indésirable d'une
+  perspective de sécurité. Le déchiffrement du seul chemin de contrôle n’est probablement pas
+  possible sans casser TLS, de sorte que l’ensemble du flux de données doit
+  être déchiffré et rechiffré à chaque firewall ou équilibreur de charge.
+
+- FTPS nécessite une configuration complexe de tous les périphériques intervenants
+  qui sont courants dans les configurations modernes. Dans de nombreux cas,
+  les propriétaires des appareils intervenants refuseront de soutenir la technologie.
+
+- FTPS impose une charge de calcul plus élevée à tous les intervenants
+  que la plupart des alternatives disponibles. En imposant une charge accrue
+  sur les appareils spécialisés, il est généralement plus coûteux à déployer à grande échelle.
+
+- Étant donné que ce qui précède est peu pratique et indésirable, il est rarement fait.
+  Il existe donc des situations banales où l’on ne peut tout simplement pas déployer
+  le protocole.
+
+Ou, si seul le mappage de port statique est effectué :
+
+- Les configurations de firewall FTPS habituelles laissent une plus grande surface d’attaque pour
+  les malfaiteurs parce que le manque de visibilité sur le chemin de contrôle force
+  le firewall à ouvrir plus de ports que ce qui est strictement nécessaire, augmentant la
+  surface d’attaque.
+- Le mappage de port de données statique par serveur réel sur les équilibreurs de charge est plus
+  complexe à maintenir que ce qui est requis pour d’autres protocoles.
+
+Dans les deux cas :
+
+- On utilise généralement des mots de passe, qui ont tendance à être de longueur limitée, réduisant
+  la sécurité globale par rapport à SSH/SFTP où l’utilisation de longues paires de clés publiques/privées
+  est monnaie courante, et l’allongement de l’exigence de longueur de clé est simple.
+- FTPS ne prend pas en charge les plages d’octets qui sont utiles dans certaines applications,
+  et est pris en charge par SFTP et HTTP (avec ou sans (S)).
+- En cas d'un serveur distant compromis, le mot de passe du compte
+  est facile à déterminer. Alors que la meilleure pratique signifierait que ce mot de passe est de peu
+  ou aucune valeur, certaines mauvaises habitudes, telles que la réutilisation du mot de passe, peuvent signifier que le mot de passe a
+  une certaine valeur. Contraste avec SFTP: seules des informations déjà publiques sont divulguées.
+- Certains logiciels de serveur FTPS ont des mécanismes et des options de secours qui peuvent causer des
+  utilisateurs ou administrateurs à envoyer involontairement des informations non chiffrées.
+  Cela pourrait entraîner la révélation de mots de passe. Dans SFTP, les mots de passe sont généralement
+  non envoyé, les clés sont un élément de cryptage, il n’y a donc pas de mots de passe
+  pour intercepter.
+- FTPS est intrinsèquement plus complexe, ce qui le rend plus difficile à déployer et à exploiter.
+- Les limites des configurations prises en charge limitent les approches de firewall,
+  réduisant probablement la protection offerte aux serveurs internet.
+
+Contrairement à FTPS, SFTP :
+
+- parcourra n’importe quel nombre de points NAT/PAT sur un réseau intermédiaire sans difficulté.
+- fonctionne derrière tout type d’équilibreurs de charge, ce qui simplifie la mise à l’échelle des tableaux d’échange de produits.
+- n’exige aucune partie intervenante pour déchiffrer quoi que ce soit.
+- met moins de charge (à la fois cpu et mémoire) sur les périphériques réseau intermédiaires.
+- a des méthodes courantes similaires pour sécuriser les comptes sur les serveurs (par exemple, des shells restreints dans les prisons chroot).
+- prend en charge les plages d’octets, qui sont utiles.
+- est plus simple, avec moins d’options, donc plus fiable.
+- est plus simple à surveiller et à firewaller, et permet des configurations de firewall plus limitées.
+- est beaucoup plus courant (par exemple, Microsoft annonçant le support intégré dans une prochaine version de Windows [*]_ ).
+- utilise normalement des paires de clés publiques / privées, qui sont généralement considérées comme *plus fortes* que les mots de passe.
+- ne nécessite aucun secret partagé (ou un mécanisme pour les envoyer), et généralement les informations d’identification doivent être remplacées moins
+  souvent.
+
 
 .. [*] http://blogs.msdn.com/b/powershell/archive/2015/06/03/looking-forward-microsoft-support-for-secure-shell-ssh.aspx
 
