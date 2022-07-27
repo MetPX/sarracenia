@@ -424,7 +424,7 @@ arrêter tous les processus::
 status
 ~~~~~~
 
-Exemple d’état OK (sr est en cours d’exécution) ::
+Exemple d’état OK (sr3 est en cours d’exécution) ::
 
   $ sr3 status
     status: 
@@ -531,7 +531,7 @@ de façon spécialisé. Si ce plugin retourne False comme résultat, le
 message est rejeté. Si c'est vrai, le traitement du message se poursuit.
 
 Les sections suivantes expliquent toutes les options pour régler cette
-partie " consommateur " de les programmes de Sarracenia.
+partie "consommateur" de les programmes de Sarracenia.
 
 
 
@@ -955,8 +955,8 @@ option de durée, les unités sont en secondes par défaut, mais il est possible
 en utilisant des minutes, heures, jours ou des semaines. Dans la composante de poll, nodupe_fileAgeMax
 est défini à 30 jours par défaut.
 
-Advanced Polling
-----------------
+Sondage avancé (Advanced Polling)
+---------------------------------
 
 Le poll intégré liste les répertoires distants et analyse les lignes renvoyées par les structures
 paramiko.SFTPAttributes (similaires à os.stat) pour chaque fichier répertorié.
@@ -1201,122 +1201,117 @@ ou un utilisateur malveillant peut définir les valeurs de manière incorrecte.
 
 - **sourceFromExchange  <booléan> (défaut: False)**
 
-Upon reception, the program will set these values in the parent class (here 
-cluster is the value of option **cluster** taken from default.conf):
+À la réception, le programme définira ces valeurs dans la classe parente (ici
+cluster est la valeur de l’option **cluster** tirée de default.conf) :
 
 msg['source']       = <brokerUser>
 msg['from_cluster'] = cluster
 
-overriding any values present in the message. This setting
-should always be used when ingesting data from a
-user exchange.
-
+remplacer toutes les valeurs présentes dans le message. Ce paramètre
+doit toujours être utilisé lors de l’ingestion de données provenant d’un
+échange d’utilisateurs.
 
 SENDER
 ------
 
-**sender** is a component derived from `subscribe`_
-used to send local files to a remote server using a file transfer protocol, primarily SFTP.
-**sender** is a standard consumer, using all the normal AMQP settings for brokers, exchanges,
-queues, and all the standard client side filtering with accept, reject, and after_accept.
+**sender** est un composant dérivé de `subscribe`_
+utilisé pour envoyer des fichiers locaux à un serveur distant à l’aide d’un protocole de transfert de fichiers, principalement SFTP.
+**sender** est un consommateur standard, utilisant tous les paramètres AMQP normaux pour les courtiers, les échanges,
+et toutes les files d'attente, et tout les filtres standard côté client avec accept, reject et after_accept.
 
-Often, a broker will announce files using a remote protocol such as HTTP,
-but for the sender it is actually a local file.  In such cases, one will
-see a message: **ERROR: The file to send is not local.**
-An after_accept plugin will convert the web url into a local file one::
+Souvent, un courtier annoncera des fichiers à l’aide d’un protocole distant tel que HTTP,
+mais pour l’expéditeur, il s’agit en fait d’un fichier local.  Dans de tels cas, on
+voir un message : **ERROR: The file to send is not local.**
+Un plugin after_accept convertira l’URL Web en un fichier local::
 
   baseDir /var/httpd/www
   flowcb sarracenia.flowcb.tolocalfile.ToLocalFile
 
-This after_accept plugin is part of the default settings for senders, but one
-still needs to specify baseDir for it to function.
+Ce plugin after_accept fait partie des paramètres par défaut pour les expéditeurs, mais
+doit encore spécifier baseDir pour qu’il fonctionne.
 
-If a **post_broker** is set, **sender** checks if the clustername given
-by the **to** option if found in one of the message's destination clusters.
-If not, the message is skipped.
+Si un **post_broker** est défini, **sender** vérifie si le nom du cluster est donné
+par l’option **to** si elle se trouve dans l’un des clusters de destination du message.
+Si ce n’est pas le cas, le message est ignoré.
 
+CONFIGURATION 1 : RÉPLICATION POMPE À POMPE
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Pour la réplication de la pompe, **mirror** est défini sur True (valeur par défaut).
 
-SETUP 1 : PUMP TO PUMP REPLICATION 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**baseDir** fournit le chemin d’accès au répertoire qui, lorsqu’il est combiné avec le chemin relatif
+dans la notification sélectionnée, donne le chemin absolu du fichier à envoyer.
+La valeur par défaut est Aucun, ce qui signifie que le chemin d’accès dans la notification est le chemin absolu.
 
-For pump replication, **mirror** is set to True (default).
+Dans un subscriber, baseDir représente le préfixe du chemin relatif en amont,
+et est utilisé comme modèle pour se faire remplacer dans le répertoire de base actuellement sélectionné
+(à partir d’une option *baseDir* ou *directory*) dans les champs de message : 'link', 'oldname', 'newname'
+qui sont utilisés lors de la mise en miroir de liens symboliques ou de fichiers renommés.
 
-**baseDir** supplies the directory path that, when combined with the relative
-one in the selected notification gives the absolute path of the file to be sent.
-The default is None which means that the path in the notification is the absolute one.
+La **destination** définit le protocole et le serveur à utiliser pour livrer les produits.
+Sa forme est un url partiel, par exemple : **ftp://myuser@myhost**.
+Le programme utilise le fichier ~/.conf/sarra/credentials.conf pour obtenir les détails restants
+(mot de passe et options de connexion).  Les protocoles pris en charge sont ftp, ftps et sftp.
+Si l’utilisateur doit implémenter un autre mécanisme d’envoi, il fournirait le script du plugin
+par l’option **do_send**.
 
-In a subscriber, the baseDir represents the prefix to the relative path on the upstream
-server, and is used as a pattern to be replaced in the currently selected base directory
-(from a *baseDir* or *directory* option) in the message fields: 'link', 'oldname', 'newname'
-which are used when mirroring symbolic links, or files that are renamed.
+Sur le site distant, le **post_baseDir** sert à la même chose que le
+**baseDir** sur ce serveur.  La valeur par défaut est None, ce qui signifie que le chemin d’accès livré
+est l’absolu.
 
-The **destination** defines the protocol and server to be used to deliver the products.
-Its form is a partial url, for example:  **ftp://myuser@myhost**
-The program uses the file ~/.conf/sarra/credentials.conf to get the remaining details
-(password and connection options).  Supported protocol are ftp, ftps and sftp. Should the
-user need to implement another sending mechanism, he would provide the plugin script
-through option **do_send**.
-
-On the remote site, the **post_baseDir** serves the same purpose as the
-**baseDir** on this server.  The default is None which means that the delivered path
-is the absolute one.
-
-Now we are ready to send the product... for example, if the selected notification looks like this :
+Maintenant, nous sommes prêts à envoyer le produit... par exemple, si la notification sélectionnée ressemble à ceci :
 
 **20150813161959.854 http://this.pump.com/ relative/path/to/IMPORTANT_product**
 
-**sr_sender**  performs the following pseudo-delivery:
+**sr_sender**  effectue la pseudo-livraison suivante :
 
-Sends local file [**baseDir**]/relative/path/to/IMPORTANT_product
-to    **destination**/[**post_baseDir**]/relative/path/to/IMPORTANT_product
-(**kbytes_ps** is greater than 0, the process attempts to respect
-this delivery speed... ftp,ftps,or sftp)
+Envoie le fichier locale [**baseDir**]/relative/path/to/IMPORTANT_product
+à    **destination**/[**post_baseDir**]/relative/path/to/IMPORTANT_product
+(**kbytes_ps** est supérieur à 0, le processus tente de respecter
+cette vitesse de livraison... ftp,ftps,ou sftp)
 
-At this point, a pump-to-pump setup needs to send the remote notification...
-(If the post_broker is not set, there will be no posting... just products replication)
+À ce stade, une configuration de pompe à pompe doit envoyer la notification à distance...
+(Si la post_broker n’est pas définie, il n’y aura pas d’affichage... juste la réplication des produits)
 
-The selected notification contains all the right information
-(topic and header attributes) except for url field in the
-notice... in our example :  **http://this.pump.com/**
+La notification sélectionnée contiennent toutes les bonnes informations
+(attributs de thème et d’en-tête) à l’exception du champ url dans l'avis... dans notre exemple : **http://this.pump.com/**
 
-By default, **sr_sender** puts the **destination** in that field.
-The user can overwrite this by specifying the option **post_baseUrl**. For example:
+Par défaut, **sr_sender** place la **destination** dans ce champ.
+L’utilisateur peut l’écraser en spécifiant l’option **post_baseUrl**. Par exemple:
 
 **post_baseUrl http://remote.apache.com**
 
-The user can provide an **on_post** script. Just before the message is
-published on the **post_broker**  and **post_exchange**, the
-**on_post** script is called... with the **sr_sender** class instance as an argument.
-The script can perform whatever you want... if it returns False, the message will not
-be published. If True, the program will continue processing from there.
+L’utilisateur peut fournir un script **on_post**. Juste avant que le message ne soit
+publié sur les **post_broker** et **post_exchange**, le
+**on_post** script s’appelle... avec l’instance de classe **sr_sender** comme argument.
+Le script peut effectuer ce que vous voulez... s’il renvoie False, le message ne sera pas
+publié. Si la valeur est True, le programme poursuivra le traitement à partir de là.
 
-FIXME: Missing example configuration.
+FIXME : Exemple de configuration manquant.
 
 
+CONFIGURATION DE DESTINATION 2 : DIFFUSION DE TYPE METPX-SUNDEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-DESTINATION SETUP 2 : METPX-SUNDEW LIKE DISSEMINATION
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Dans ce type d’utilisation, nous n’aurions généralement pas reposté... mais si le
+**post_broker** et **post_exchange** (**url**,**on_post**) sont définis,
+le produit sera annoncé (avec son éventuel nouvel emplacement et son nouveau nom).
+Réintroduisons les options dans un ordre différent
+avec quelques nouveaux pour faciliter l’explication.
 
-In this type of usage, we would not usually repost... but if the
-**post_broker** and **post_exchange** (**url**,**on_post**) are set,
-the product will be announced (with its possibly new location and new name).
-Let's reintroduce the options in a different order
-with some new ones to ease explanation.
+Il y a 2 différences avec le cas précédent :
+les options **directory** et **filename**.
 
-There are 2 differences with the previous case :
-the **directory**, and the **filename** options.
+Le **baseDir** est le même, tout comme la
+**destination** et les options **post_baseDir**.
 
-The **baseDir** is the same, and so are the
-**destination**  and the **post_baseDir** options.
+L’option **répertoire** définit un autre « chemin relatif » pour le produit
+à destination.  Il est marqué aux options **accept** définies après lui.
+Si une autre séquence de **directory**/**accept** suit dans le fichier de configuration,
+le deuxième répertoire est marqué pour les acceptations suivantes et ainsi de suite.
 
-The **directory** option defines another "relative path" for the product
-at its destination.  It is tagged to the **accept** options defined after it.
-If another sequence of **directory**/**accept** follows in the configuration file,
-the second directory is tagged to the following accepts and so on.
-
-The  **accept/reject**  patterns apply to message notice url as above.
-Here is an example, here some ordered configuration options :
+Les modèles **accept/reject** s’appliquent à l’URL de notification du message comme ci-dessus.
+Voici un exemple, voici quelques options de configuration ordonnées :
 
 ::
 
@@ -1328,22 +1323,22 @@ Here is an example, here some ordered configuration options :
 
   accept .*
 
-If the notification selected is, as above, this :
+Si la notification sélectionnée est, comme ci-dessus, ceci :
 
 **20150813161959.854 http://this.pump.com/ relative/path/to/IMPORTANT_product**
 
-It was selected by the first **accept** option. The remote relative path becomes
-**/my/new/important_location** ... and **sr_sender**  performs the following pseudo-delivery:
+Il a été sélectionné par la première option **accept**. Le chemin relatif distant devient
+**/my/new/important_location** ... et **sr_sender**  effectue la pseudo-livraison suivante :
 
-sends local file [**baseDir**]/relative/path/to/IMPORTANT_product
-to    **destination**/[**post_baseDir**]/my/new/important_location/IMPORTANT_product
+envoie le fichier local [**baseDir**]/relative/path/to/IMPORTANT_product
+à    **destination**/[**post_baseDir**]/my/new/important_location/IMPORTANT_product
 
 
-Usually this way of using **sr_sender** would not require posting of the product.
-But if **post_broker** and **post_exchange** are provided, and **url** , as above, is set to
-**http://remote.apache.com**,  then **sr_sender** would reconstruct :
+Habituellement, cette façon d’utiliser **sr_sender** n’exigerait pas l’affichage du produit.
+Mais si **post_broker** and **post_exchange** sont fournis, et **url** , comme ci-dessus, est défini sur
+**http://remote.apache.com**,  alors **sr_sender** reconstruirait :
 
-Topic: **v03.my.new.important_location.IMPORTANT_product**
+Thème: **v03.my.new.important_location.IMPORTANT_product**
 
 Notice: **20150813161959.854 http://remote.apache.com/ my/new/important_location/IMPORTANT_product**
 
@@ -1351,16 +1346,15 @@ Notice: **20150813161959.854 http://remote.apache.com/ my/new/important_location
 
 SHOVEL
 ------
+shovel copie les messages sur un courtier (donné par l’option *broker*) à
+un autre (donné par l’option *post_broker*) soumis au filtrage
+par (*exchange*, *subtopic*, et éventuellement, *accept*/*reject*.)
 
-shovel copies messages on one broker (given by the *broker* option) to
-another (given by the *post_broker* option.) subject to filtering
-by (*exchange*, *subtopic*, and optionally, *accept*/*reject*.)
+L’option *topicPrefix* doit être définie sur :
 
-The *topicPrefix* option must to be set to:
+ - pour pelleter les messages `sr3_post(7) <../Reference/sr3_post.7.html>`_
 
- - to shovel `sr3_post(7) <../Reference/sr3_post.7.html>`_ messages
-
-shovel is a flow with the following presets::
+shovel est un flux avec les préréglages suivants :
    
    no-download True
    suppress_duplicates off
@@ -1369,9 +1363,8 @@ shovel is a flow with the following presets::
 SUBSCRIBE
 ---------
 
-Subscribe is the normal downloading flow component, that will connect to a broker, download
-the configured files, and then forward the messages with an altered baseUrl.
-
+Subscribe est le composant de flux de téléchargement normal, qui se connectera à un courtier, télécharger
+les fichiers configurés, puis transférer les messages avec une baseUrl modifiée.
 
 WATCH
 -----
@@ -1630,18 +1623,18 @@ right hand side to be evaluated, surrounded by ${..} The built-in variables are:
 flowCallbacks
 =============
 
-Sarracenia makes extensive use of small python code snippets that customize
-processing called *flowCallback* Flow_callbacks define and use additional settings::
+Sarracenia utilise largement de petits extraits de code python qui personnalisent le
+traitement appelé *flowCallback*. Flow_callbacks définit et utiliser des paramètres supplémentaires ::
 
   flowCallback sarracenia.flowcb.log.Log
 
-There is also a shorter form to express the same thing::
+Il existe également une forme plus courte pour exprimer la même chose::
 
   callback log
 
-Either way, the module refers to the sarracenia/flowcb/msg/log.py file in the
-installed package. In that file, the Log class is the one searched for entry
-points. The log.py file included in the package is like this::
+Quoi qu’il en soit, le module fait référence au fichier sarracenia/flowcb/msg/log.py dans le
+package installé. Dans ce fichier, la classe Log est celle qui a été recherchée pour le point d'entré.
+Le fichier log.py inclus dans le package est le suivant::
 
   from sarracenia.flowcb import FlowCB
   import logging
@@ -1655,46 +1648,45 @@ points. The log.py file included in the package is like this::
             logger.info( "msg/log received: %s " % msg )
         return worklist
 
-It's a normal python class, declared as a child of the sarracenia.flowcb.FlowCB
-class. The methods (function names) in the plugin describe when
-those routines will be called. For more details consult the 
+C’est une classe python normale, déclarée comme enfant de la classe sarracenia.flowcb.FlowCB.
+Les méthodes (noms de fonction) dans le plugin décrivent quand
+ces routines seront appelées. Pour plus de détails, consultez le
 `Programmer's Guide <../Explanation/SarraPluginDev.rst>`_
 
-To add special processing of messages, create a module in the python
-path, and have it include entry points. 
+Pour ajouter un traitement spécial des messages, créez un module en python
+et faites-le inclure des points d’entrée.
 
-There is also *flowCallbackPrepend* which adds a flowCallback class to the front
-of the list (which determines relative execution order among flowCallback classes.)
+Il existe également *flowCallbackPrepend* qui ajoute une classe flowCallback à l’avant
+de la liste (qui détermine l’ordre d’exécution relatif entre les classes flowCallback.)
 
-   
-callback options
+
+Options callback
 ----------------
 
-callbacks that are delivered with metpx-sr3 follow the following convention:
+les rappels livrés avec metpx-sr3 suivent la convention suivante :
 
-* they are placed in the sarracenia/flowcb  directory tree.
-* the name of the primary class is the same as the name of file containing it.
+* ils sont placés dans l’arborescence du répertoire sarracenia/flowcb.
+* le nom de la classe principale est le même que le nom du fichier qui la contient.
 
-so we provide the following syntactic sugar::
+nous fournissons donc le sucre syntaxique suivant::
 
   callback log    (is equivalent to *flowCallback sarracenia.flowcb.log.Log* )
 
-There is similarly a *callback_prepend* to fill in.  
+Il y a de même un *callback_prepend* à remplir.
 
-Importing Extensions
---------------------
+Importation d’extensions
+------------------------
 
-The *import* option works in a way familiar to Python developers,
-Making them available for use by the Sarracenia core, or flowCallback.
-Developers can add additional protocols for messages or 
-file transfer.  For example::
+L’option *import* fonctionne d’une manière familière aux développeurs Python,
+qui les rends disponibles pour une utilisation par le noyau Sarracenia, ou flowCallback.
+Les développeurs peuvent ajouter des protocoles supplémentaires pour les messages ou
+transfert de fichiers.  Par exemple::
 
   import torr
 
-would be a reasonable name for a Transfer protocol to retrieve
-resources with bittorrent protocol. A skeleton of such a thing
-would look like this:: 
-
+serait un nom raisonnable pour un protocole de transfert pour récupérer des
+ressources avec le protocole bittorrent. Un squelette d’une telle chose
+ressemblerait à ceci ::
 
   import logging
 
@@ -1707,45 +1699,43 @@ would look like this::
 
   logger.warning("loading")
 
-For more details on implementing extensions, consult the
+Pour plus de détails sur la mise en œuvre des prolongations, consultez le
 `Programmer's Guide <../Explanation/SarraPluginDev.rst>`_
 
-Deprecated v2 plugins
----------------------
+Plugins v2 Obsolètes
+--------------------
 
-There is and older (v2) style of plugins as well. That are usually 
-prefixed with the name of the plugin::
+Il existe également un style de plugins plus ancien (v2). Qui sont généralement
+précédé du nom du plugin ::
 
   msg_to_clusters DDI
   msg_to_clusters DD
 
   on_message msg_to_clusters
 
-A setting 'msg_to_clusters' is needed by the *msg_to_clusters* plugin
-referenced in the *on_message* the v2 plugins are a little more
-cumbersome to write. They are included here for completeness, but
-people should use version 3 (either flowCallback, or extensions
-discussed next) when possible.
+Un paramètre 'msg_to_clusters' est nécessaire par le plugin *msg_to_clusters*
+référencés dans le *on_message* les plugins v2 sont un peu plus
+encombrant à écrire. Ils sont inclus ici pour être complets, mais
+les utilisateurs doivent utiliser la version 3 (flowCallback ou extensions)
+discuté ensuite) lorsque cela est possible.
 
-Reasons to use newer style plugins:
+Raisons d’utiliser des plugins de style plus récents:
 
-* Support for running v2 plugins is accomplished using a flowcb
-  called v2wrapper. It performs a lot of processing to wrap up
-  the v3 data structures to look like v2 ones, and then has
-  to propagate the changes back. It's a bit expensive.
+* La prise en charge de l’exécution des plugins v2 est réalisée à l’aide d’un flowcb
+  appelé v2wrapper. Il effectue beaucoup de traitement pour conclure
+  les structures de données v3 pour ressembler à celles de la v2, puis a
+  pour propager les modifications. C’est un peu cher.
 
-* newer style extensions are ordinary python modules, unlike
-  v2 ones which require minor magic incantations.
+* les extensions de style plus récentes sont des modules python ordinaires, contrairement à
+  v2 qui nécessitent des incantations magiques mineures.
 
-* when a v3 (flowCallback or imported) module has a syntax error,
-  all the tools of the python interpreter apply, providing
-  a lot more feedback is given to the coder. with v2, it just
-  says there is something wrong, much more difficult to debug.
+* lorsqu’un module v3 (flowCallback ou importé) présente une erreur de syntaxe,
+  tous les outils de l’interpréteur python s’appliquent, ce qui donne
+  beaucoup plus de commentaires au codeur. Avec la v2, il
+  dit seulement qu’il y a quelque chose qui ne va pas, beaucoup plus difficile à déboguer.
 
-* v3 api is strictly more powerful than v2, as it works
-  on groups of messages, rather than individual ones.
-
-
+* l’api v3 est strictement plus puissante que la v2, car elle fonctionne
+  sur des groupes de messages, plutôt que sur des messages individuels.
 
 Environment Variables
 ---------------------
@@ -1764,63 +1754,59 @@ Fichiers journal et Suivi
 - debug
    L'option de déboggage **debug** est identique à l'utilisation de **loglevel debug**.
 
-- logMessageDump  (default: off) boolean flag
-  if set, all fields of a message are printed, rather than just a url/path reference.
+- logMessageDump  (défaut: off) booléen flag
+  s’il est défini, tous les champs d’un message sont imprimés, plutôt qu’une simple référence url/chemin.
 
-- logEvents ( default after_accept,after_work,on_housekeeping )
-   emit standard log messages at the given points in message processing. 
-   other values: on_start, on_stop, post, gather, ... etc...
+- logEvents ( défaut after_accept,after_work,on_housekeeping )
+   émettre des messages de journal standard aux points donnés du traitement des messages.
+   autres valeurs : on_start, on_stop, post, gather, ... etc...
   
 - loglevel ( défaut: info )
    Le niveau de journalisation exprimé par la journalisation de python. Les valeurs possibles sont : critical, error, info, warning, debug.
 
-- --logStdout ( default: False )  EXPERIMENTAL FOR DOCKER use case
+- --logStdout ( défaut: False )  CAS D’UTILISATION EXPÉRIMENTAL POUR DOCKER
 
-   The *logStdout* disables log management. Best used on the command line, as there is 
-
-   some risk of creating stub files before the configurations are completely parsed::
+   *logStdout* désactive la gestion des journaux. Mieux utilisé sur la ligne de commande, car il y a
+   certains risques de créer des fichiers stub avant que les configurations ne soient complètement analysées ::
 
        sr3 --logStdout start
 
-   All launched processes inherit their file descriptors from the parent. so all output is like an interactive session.
+   Tous les processus lancés héritent de leurs descripteurs de fichier du parent, donc toutes les sorties sont comme une session interactive.
 
-   This is in contrast to the normal case, where each instance takes care of its logs, rotating and purging periodically. 
-   In some cases, one wants to have other software take care of logs, such as in docker, where it is preferable for all 
-   logging to be to standard output.
+   Cela contraste avec le cas normal, où chaque instance prend soin de ses journaux, en tournant et en purgeant périodiquement.
+   Dans certains cas, on veut que d’autres logiciels s’occupent des logs, comme dans docker, où c’est préférable pour tous
+   que la journalisation soie en sortie standard.
 
-   It has not been measured, but there is a reasonable likelihood that use of *logStdout* with large configurations (dozens
-   of configured instances/processes) will cause either corruption of logs, or limit the speed of execution of all processes
-   writing to stdout.
+   Il n’a pas été mesuré, mais il y a une probabilité raisonnable que l’utilisation de *logStdout* avec de grandes configurations (des dizaines
+   d'instances/processus configurés) entraînera soit une corruption des journaux, soit limitera la vitesse d’exécution de tous les processus
+   à écrire à stdout.
 
 - log_reject <True|False> ( défaut: False )
    afficher un ligne de journal pour chaque message rejeté.  Ceci peut produire des journeaux énorme.
-   D´habitude utilisé uniquement lors du debogage.
+   D’habitude utilisé uniquement lors du debogage.
 
-- log <dir> ( default: ~/.cache/sarra/log ) (on Linux)
-   The directory to store log files in.
+- log <dir> ( défaut: ~/.cache/sarra/log ) (sur Linux)
+   Répertoire dans lequel stocker les fichiers journaux.
 
-- statehost <False|True> ( default: False )
-   In large data centres, the home directory can be shared among thousands of 
-   nodes. Statehost adds the node name after the cache directory to make it 
-   unique to each node. So each node has it's own statefiles and logs.
-   example, on a node named goofy,  ~/.cache/sarra/log/ becomes ~/.cache/sarra/goofy/log.
+- statehost <False|True> ( défaut: False )
+   Dans les grands centres de données, l’annuaire de base peut être partagé entre des milliers de
+   Nœuds. Statehost ajoute le nom du nœud après le répertoire de cache pour le rendre
+   unique à chaque nœud. Ainsi, chaque nœud a ses propres fichiers d’état et journaux.
+   Par exemple, sur un nœud nommé goofy, ~/.cache/sarra/log/ devient ~/.cache/sarra/goofy/log.
 
-- logRotate <max_logs> ( default: 5 )
-   Maximum number of logs archived.
+- logRotate <max_logs> ( défaut: 5 )
+   Nombre maximal de journaux archivés.
 
-- logRotate_interval <duration>[<time_unit>] ( default: 1 )
-   The duration of the interval with an optional time unit (ie 5m, 2h, 3d)
+- logRotate_interval <duration>[<time_unit>] ( défaut: 1 )
+   La durée de l’intervalle avec une unité de temps optionnelle (c’est-à-dire 5m, 2h, 3d)
 
-- permLog ( default: 0600 )
-   The permission bits to set on log files.
+- permLog ( défaut: 0600 )
+   Bits d’autorisation à définir sur les fichiers journaux.
 
-See the `Subscriber Guide <../How2Guides/subscriber.rst>` for a more detailed discussion of logging
-options and techniques.
+Voir le `Subscriber Guide <../How2Guides/subscriber.rst>` pour une discussion plus détaillée sur les
+options de journalisations et de techniques.
 
-
-
-
-CREDENTIALS (IDENTIFICATION)
+IDENTIFICATION (CREDENTIALS)
 ----------------------------
 
 Normalement, on ne spécifie pas de mots de passe dans les fichiers de
@@ -1863,116 +1849,111 @@ Dans d'autres fichiers de configuration ou sur la ligne de commande, l'url
 n'inclut pas le mot de passe ou spécification de clé.  L'url donné dans les
 autres fichiers est utilisé comme clé de recherche pour credentials.conf.
 
-Credential Details
-~~~~~~~~~~~~~~~~~~
+Details d'Identifiants
+~~~~~~~~~~~~~~~~~~~~~~
 
-You may need to specify additional options for specific credential entries. These details can be added after the end of the URL, with multiple details separated by commas (see examples above).
+Vous devrez peut-être spécifier des options supplémentaires pour des entrées d’informations d’identification spécifiques.
+Ces détails peuvent être ajoutés après la fin de l’URL, avec plusieurs détails séparés par des virgules (voir les exemples ci-dessus).
 
-Supported details:
+Détails pris en charge ::
 
-- ``ssh_keyfile=<path>`` - (SFTP) Path to SSH keyfile
-- ``passive`` - (FTP) Use passive mode
-- ``active`` - (FTP) Use active mode
-- ``binary`` - (FTP) Use binary mode
-- ``ascii`` - (FTP) Use ASCII mode
-- ``ssl`` - (FTP) Use SSL/standard FTP
-- ``tls`` - (FTP) Use FTPS with TLS
-- ``prot_p`` - (FTPS) Use a secure data connection for TLS connections (otherwise, clear text is used)
-- ``bearer_token=<token>`` (or ``bt=<token>``) - (HTTP) Bearer token for authentication
-- ``login_method=<PLAIN|AMQPLAIN|EXTERNAL|GSSAPI>`` - (AMQP) By default, the login method will be automatically determined. This can be overriden by explicity specifying a login method, which may be required if a broker supports multiple methods and an incorrect one is automatically selected.
+- ``ssh_keyfile=<path>`` - (SFTP) Chemin d’accès au fichier de clés SSH
+- ``passive`` - (FTP) Utiliser le mode passif
+- ``active`` - (FTP) Utiliser le mode actif
+- ``binary`` - (FTP) Utiliser le mode binaire
+- ``ascii`` - (FTP) Utiliser le mode ASCII
+- ``ssl`` - (FTP) Utiliser SSL/FTP standard
+- ``tls`` - (FTP) Utiliser FTPS avec TLS
+- ``prot_p`` - (FTPS) Utiliser une connexion de données sécurisée pour les connexions TLS (sinon, du texte clair est utilisé)
+- ``bearer_token=<token>`` (or ``bt=<token>``) - (HTTP) Jeton de porteur pour l’authentification
+- ``login_method=<PLAIN|AMQPLAIN|EXTERNAL|GSSAPI>`` - (AMQP) Par défaut, la méthode de connexion sera automatiquement déterminée. Cela peut être remplacé en spécifiant explicitement une méthode de connexion, ce qui peut être nécessaire si un courtier prend en charge plusieurs méthodes et qu’une méthode incorrecte est automatiquement sélectionnée.
 
-Note::
- SFTP credentials are optional, in that sarracenia will look in the .ssh directory
- and use the normal SSH credentials found there.
+Remarque::
+ Les informations d’identification SFTP sont facultatives, car sarracenia cherchera dans le répertoire .ssh
+ et utilisera les informations d’identification SSH normales qui s’y trouvent.
 
- These strings are URL encoded, so if an account has a password with a special 
- character, its URL encoded equivalent can be supplied.  In the last example above, 
- **%2f** means that the actual password isi: **/dot8**
- The next to last password is:  **De:olonize**. ( %3a being the url encoded value for a colon character. )
+ Ces chaînes sont codées en URL, donc si un compte a un mot de passe avec un caractère spécial,
+ son équivalent codé par l'URL peut être fourni.  Dans le dernier exemple ci-dessus,
+ **%2f** signifie que le mot de passe réel est: **/dot8**
+ L’avant-dernier mot de passe est : **De:olonize**. ( %3a étant la valeur codée url pour un caractère deux-points. )
 
+TRAITEMENT PÉRIODIQUE
+=====================
 
+La plupart des traitements ont lieu à la réception d’un message, mais il y a une maintenance périodique
+qui se produit à chaque intervalle *housekeeping* (la valeur par défaut est de 5 minutes.)  À chaque *housekeeping* tous les
+les plugins *on_housekeeping* configurés sont exécutés. Par défaut, trois sont présents :
 
+* log - imprime « housekeeping » dans le journal.
+ * nodupe - vieillit les anciennes entrées dans le cache de réception, afin de minimiser sa taille.
+ * memory - vérifie l’utilisation de la mémoire du processus et redémarre si elle est trop grande.
 
-PERIODIC PROCESSING
-===================
+Le journal contiendra des messages des trois plugins à chaque intervalle de housekeeping, et
+si un traitement périodique supplémentaire est nécessaire, l’utilisateur peut configurer d'autres
+plugins à exécuter avec l’option *on_housekeeping*.
 
-Most processing occurs on receipt of a message, but there is some periodic maintenance
-work that happens every *housekeeping* interval (default is 5 minutes.)  Evey housekeeping, all of the
-configured *on_housekeeping* plugins are run. By default there are three present:
+sanity_log_dead <interval> (défaut: 1.5*housekeeping)
+-----------------------------------------------------
 
- * log - prints "housekeeping" in the log.
- * nodupe - ages out old entries in the reception cache, to minimize its size.
- * memory - checks the process memory usage, and restart if too big.
+L’option **sanity_log_dead** définit la durée à prendre en compte avant de redémarrer
+un composant.
 
-The log will contain messages from all three plugins every housekeeping interval, and
-if additional periodic processing is needed, the user can configure addition
-plugins to run with the *on_housekeeping* option. 
+nodup_ttl <off|on|999> (défaut: off)
+------------------------------------
 
-sanity_log_dead <interval> (default: 1.5*housekeeping)
-------------------------------------------------------
+Le nettoyage des éléments expirés dans la store de suppression des doublons se produit à chaque housekeeping.
 
-The **sanity_log_dead** option sets how long to consider too long before restarting
-a component.
+RÉCUPÉRATION D’ERREUR
+=====================
 
-nodup_ttl <off|on|999> (default: off)
--------------------------------------
+Les outils sont conçus pour fonctionner bien sans surveillance, et donc lorsque des erreurs transitoires se produisent, ils
+essayent de récupérer élégamment.  Il y a des délais d’attente sur toutes les opérations, et en cas de défaillance
+détectée, le problème est noté pour une nouvelle tentative.  Des erreurs peuvent se produire à plusieurs reprises :
 
-The cleanup of expired elements in the duplicate suppression store happens at
-each housekeeping.
+ * Établir une connexion avec le courtier.
+ * perte d’une connexion avec le courtier
+ * établir une connexion au serveur de fichiers pour un fichier (à télécharger).
+ * perte d’une connexion au serveur.
+ * pendant le transfert de données.
 
+Initialement, les programmes essaient de télécharger (ou d’envoyer) un fichier un nombre de fois fixe (*tentatives*, par défaut: 3).
+Si les trois tentatives de traitement du fichier échouent, le fichier est placé dans "réessayer".
+Le programme poursuit ensuite le traitement des nouveaux éléments. Lorsqu’il n’y a pas de nouveaux éléments,
+le programme recherche un fichier à traiter dans la file d’attente de nouvelles tentatives. Il vérifie ensuite si le fichier
+est vieux, au-delà du *retry_expire* (par défaut : 2 jours). Si le fichier n’a pas expiré, alors
+il déclenche une nouvelle série de tentatives de traitement du fichier. Si les tentatives échouent, il revient en arrière
+dans la file d’attente de nouvelles tentatives.
 
-ERROR RECOVERY
-==============
+Cet algorithme garantit que les programmes ne restent pas bloqués sur un seul mauvais produit qui empêche
+le reste de la file d’attente en cours de traitement, et permet une récupération raisonnable et progressive,
+permettant aux nouvelles données de circuler et en envoyant les anciennes données de manière opportuniste
+lorsqu’il y a des lacunes.
 
-The tools are meant to work well unattended, and so when transient errors occur, they do
-their best to recover elegantly.  There are timeouts on all operations, and when a failure
-is detected, the problem is noted for retry.  Errors can happen at many times:
- 
- * Establishing a connection to the broker.
- * losing a connection to the broker
- * establishing a connection to the file server for a file (for download or upload.)
- * losing a connection to the server.
- * during data transfer.
- 
-Initially, the programs try to download (or send) a file a fixed number (*attempts*, default: 3) times.
-If all three attempts to process the file are unsuccessful, then the file is placed in an instance's
-retry file. The program then continues processing of new items. When there are no new items to
-process, the program looks for a file to process in the retry queue. It then checks if the file
-is so old that it is beyond the *retry_expire* (default: 2 days). If the file is not expired, then
-it triggers a new round of attempts at processing the file. If the attempts fail, it goes back
-on the retry queue.
+Bien qu’un traitement rapide de bonnes données soit très souhaitable, il est important de ralentir en cas d’erreur.
+Souvent, les erreurs sont liées à la charge, et une nouvelle tentative rapide ne fera qu’empirer les choses.
+Sarracenia utilise le back-off exponentiel à de nombreux endroits pour éviter de surcharger un serveur lorsqu’il y a
+des erreurs. Le back-off peut s’accumuler au point où les nouvelles tentatives peuvent être séparées d’une minute
+ou deux. Une fois que le serveur recommence à répondre normalement, les programmes reviendront à la
+vitesse normale de traitement.
 
-This algorithm ensures that programs do not get stuck on a single bad product that prevents
-the rest of the queue from being processed, and allows for reasonable, gradual recovery of 
-service, allowing fresh data to flow preferentially, and sending old data opportunistically
-when there are gaps.
-
-While fast processing of good data is very desirable, it is important to slow down when errors
-start occurring. Often errors are load related, and retrying quickly will just make it worse.
-Sarracenia uses exponential back-off in many points to avoid overloading a server when there
-are errors. The back-off can accumulate to the point where retries could be separated by a minute
-or two. Once the server begins responding normally again, the programs will return to normal
-processing speed.
-
-
-EXAMPLES
+EXEMPLES
 ========
 
-Here is a short complete example configuration file:: 
+Voici un court exemple complet de fichier de configuration ::
 
   broker amqps://dd.weather.gc.ca/
 
   subtopic model_gem_global.25km.grib2.#
   accept .*
 
-This above file will connect to the dd.weather.gc.ca broker, connecting as
-anonymous with password anonymous (defaults) to obtain announcements about
-files in the http://dd.weather.gc.ca/model_gem_global/25km/grib2 directory.
-All files which arrive in that directory or below it will be downloaded 
-into the current directory (or just printed to standard output if -n option 
-was specified.) 
+Ce fichier ci-dessus se connectera au courtier dd.weather.gc.ca, se connectant en tant qu'anonyme
+avec mot de passe anonyme (par défaut) pour obtenir des annonces a propos de fichiers dans le
+répertoire http://dd.weather.gc.ca/model_gem_global/25km/grib2.
+Tous les fichiers qui arrivent dans ce répertoire ou en dessous seront téléchargés
+dans le répertoire actif (ou simplement imprimé en sortie standard si l'option -n
+a été spécifié.)
 
-A variety of example configuration files are available here:
+Divers exemples de fichiers de configuration sont disponibles ici :
 
  `https://github.com/MetPX/sarracenia/tree/master/sarra/examples <https://github.com/MetPX/sarracenia/tree/master/sarra/examples>`_
 
@@ -1981,86 +1962,81 @@ A variety of example configuration files are available here:
 QUEUES and MULTIPLE STREAMS
 ---------------------------
 
-When executed,  **subscribe**  chooses a queue name, which it writes
-to a file named after the configuration file given as an argument to **subscribe**
-with a .queue suffix ( ."configfile".queue). 
-If subscribe is stopped, the posted messages continue to accumulate on the 
-broker in the queue.  When the program is restarted, it uses the queuename 
-stored in that file to connect to the same queue, and not lose any messages.
+Lorsqu’il est exécuté, **subscribe** choisit un nom de file d’attente, ou il écrit
+à un fichier nommé d’après le fichier de configuration donné comme argument pour **subscribe**
+avec un suffixe .queue ( ."configfile".queue).
+Si l’abonnement est arrêté, les messages publiés continuent de s’accumuler sur le
+broker dans la file d’attente.  Lorsque le programme est redémarré, il utilise le nom de la file d’attente
+stocké dans ce fichier pour se connecter à la même file d’attente et ne perd aucun message.
 
-File downloads can be parallelized by running multiple subscribes using
-the same queue.  The processes will share the queue and each download 
-part of what has been selected.  Simply launch multiple instances
-of subscribe in the same user/directory using the same configuration file. 
+Les téléchargements de fichiers peuvent être parallélisés en exécutant plusieurs abonnements à l’aide de
+la même file d’attente.  Les processus partageront la file d’attente et téléchargerons
+une partie de ce qui a été sélectionné.  Il suffit de lancer plusieurs instances
+d'abonnement dans le même utilisateur/répertoire à l’aide du même fichier de configuration.
 
-You can also run several subscribe with different configuration files to
-have multiple download streams delivering into the the same directory,
-and that download stream can be multi-streamed as well.
+Vous pouvez également exécuter plusieurs abonnements avec différents fichiers de configuration pour
+avoir plusieurs flux de téléchargement dans le même répertoire,
+et ce flux de téléchargement peut également être multi-flux.
 
-.. Note::
+.. REMARQUE::
 
-  While the brokers keep the queues available for some time, Queues take resources on 
-  brokers, and are cleaned up from time to time.  A queue which is not accessed for 
-  a long (implementation dependent) period will be destroyed.  A queue which is not
-  accessed and has too many (implementation defined) files queued will be destroyed.
-  Processes which die should be restarted within a reasonable period of time to avoid
-  loss of notifications.
+  Alors que les courtiers gardent les files d’attente disponibles pendant un certain temps, les files d’attente prennent des ressources sur
+  les courtiers, et sont nettoyés de temps en temps.  Une file d’attente à laquelle on n’accède pas pour
+  une longue période (dépendante de la mise en œuvre) sera détruite.  Une file d’attente qui n’est pas
+  accédé et ayant trop de fichiers (définis par l’implémentation) en file d’attente seront détruits.
+  Les processus qui meurent doivent être redémarrés dans un délai raisonnable pour éviter la
+  perte de notifications.
 
+report et report_exchange
+-------------------------
 
-report and report_exchange
--------------------------------
+Pour chaque téléchargement, par défaut, un message de rapport amqp est renvoyé au broker.
+Cela se fait avec l’option :
 
-For each download, by default, an amqp report message is sent back to the broker.
-This is done with option :
+- **report <booléen>        (défaut: True)**
+- **report_exchange <report_exchangename> (défaut: xreport|xs_*username* )**
 
-- **report <boolean>        (default: True)** 
-- **report_exchange <report_exchangename> (default: xreport|xs_*username* )**
+Lorsqu’un rapport est généré, il est envoyé au *report_exchange* configuré. Les composants administratifs
+publient directement sur *xreport*, tandis que les composants d'utilisateur publient sur le leur
+échanges (xs_*nom d’utilisateur*). Les démons de rapport copient ensuite les messages dans *xreport* après validation.
 
-When a report is generated, it is sent to the configured *report_exchange*. Administrative
-components post directly to *xreport*, whereas user components post to their own 
-exchanges (xs_*username*). The report daemons then copy the messages to *xreport* after validation.
-
-These reports are used for delivery tuning and for data sources to generate statistical information.
-Set this option to **False**, to prevent generation of reports.
-
+Ces rapports sont utilisés pour le réglage de la livraison et pour les sources de données afin de générer des informations statistiques.
+Définissez cette option sur **False**, pour empêcher la génération de rapports.
 
 INSTANCES
 ---------
 
-Sometimes one instance of a component and configuration is not enough to process & send all available notifications.
+Parfois, une instance d’un composant et d’une configuration ne suffit pas pour traiter et envoyer toutes les notifications disponibles.
 
-**instances      <integer>     (default:1)**
+**instances      <integer>     (défaut:1)**
 
-The instance option allows launching several instances of a component and configuration.
-When running sender for example, a number of runtime files are created.
-In the ~/.cache/sarra/sender/configName directory::
+L’option d’instance permet de lancer plusieurs instances d’un composant et d’une configuration.
+Lors de l’exécution de sender par exemple, un certain nombre de fichiers d’exécution sont créés.
+Dans le répertoire ~/.cache/sarra/sender/configName ::
 
-  A .sender_configname.state         is created, containing the number instances.
-  A .sender_configname_$instance.pid is created, containing the PID  of $instance process.
+  A .sender_configname.state         est créé, contenant le nombre d’instances.
+  A .sender_configname_$instance.pid est créé, contenant le PID du processus $instance.
 
-In directory ~/.cache/sarra/log::
+Dans le répertoire ~/.cache/sarra/log::
 
-  A .sender_configname_$instance.log  is created as a log of $instance process.
+  Un .sender_configname_$instance.log  est créé en tant que journal du processus $instance.
 
 .. NOTE::
-  known bug in the management interface `sr <sr.8.rst>_`  means that instance should
-  always be in the .conf file (not a .inc) and should always be an number 
-  (not a substituted variable or other more complex value.
+  Un bug connu dans l’interface de gestion '`sr <sr.8.rst>_` signifie que l’instance doit
+  toujours être dans le fichier .conf (pas un .inc) et doit toujours être un nombre
+  (pas une variable substituée ou une autre valeur plus complexe.
 
-.. note::  
-  FIXME: indicate Windows location also... dot files on Windows?
+.. note::
+  FIXME: indiquez également l’emplacement de Windows... fichiers dot sur Windows?
 
 
 .. Note::
-
-  While the brokers keep the queues available for some time, Queues take resources on 
-  brokers, and are cleaned up from time to time.  A queue which is not
-  accessed and has too many (implementation defined) files queued will be destroyed.
-  Processes which die should be restarted within a reasonable period of time to avoid
-  loss of notifications.  A queue which is not accessed for a long (implementation dependent)
-  period will be destroyed. 
-
-          
+  Alors que les courtiers gardent les files d’attente disponibles pendant un certain temps, les files d’attente prennent des ressources sur les
+  courtiers, et sont nettoyés de temps en temps.  Une file d’attente qui n’est pas
+  accédé et ayant trop de fichiers en file d’attente (définis par l’implémentation) seront détruits.
+  Les processus qui meurent doivent être redémarrés dans un délai raisonnable pour éviter la
+  perte de notifications.  Une file d’attente à laquelle on n’accède pas pendant une longue période (dépendant de l’implémentation)
+  sera détruite.
 
 vip - ACTIVE/PASSIVE OPTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2176,10 +2152,11 @@ pour se mettre à jour à l'avenir.
 Extensions
 ----------
 
-One can override or add functionality with python scripting.
+On peut remplacer ou ajouter des fonctionnalités avec des scripts python.
 
-Sarracenia comes with a variety of example plugins, and uses some to implement base functionality,
-such as logging (implemented by default use of msg_log, file_log, post_log plugins)::
+Sarracenia est livré avec une variété d’exemples de plugins, et en utilise certains pour implémenter des fonctionnalités de base,
+tels que la journalisation (implémentée par défaut en utilisant des plugins msg_log, file_log post_log)::
+
   
   $ sr3 list fcb
   Provided callback classes: ( /home/peter/Sarracenia/sr3/sarracenia ) 
@@ -2190,20 +2167,20 @@ such as logging (implemented by default use of msg_log, file_log, post_log plugi
   flowcb/work/rxpipe.py            
   $ 
 
-Users can place their own scripts in the script sub-directory of their config directory 
-tree ( on Linux, the ~/.config/sarra/plugins).  
+Les utilisateurs peuvent placer leurs propres scripts dans le sous-répertoire de script dans leur répertoire de configuration
+( sur Linux, le ~/.config/sarra/plugins).
 
-flowCallback and flowCallbackPrepend <class>
+flowCallback et flowCallbackPrepend <class>
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The flowCallback directive takes a class to load can scan for entry points as an argument::
+La directive flowCallback prend une classe à charger et peut analyser les points d’entrée comme argument ::
 
     flowCallback sarracenia.flowcb.log.Log
    
-With this directive in a configuration file, the Log class found in installed package will be used.
-That module logs messages *after_accept* (after messages have passed through the accept/reject masks.)
-and the *after_work* (after the file has been downloaded or sent). Here is the source code 
-for that callback class::
+Avec cette directive dans un fichier de configuration, la classe Log trouvée dans le package installé sera utilisée.
+Ce module enregistre les messages *after_accept* (après que les messages sont passé par les masques d’accept/reject)
+et le *after_work* (après le téléchargement ou l’envoi du fichier). Voici le code source
+pour cette classe de rappel ::
 
   import json
   import logging
@@ -2230,19 +2207,19 @@ for that callback class::
         for msg in worklist.ok:
             logger.info("worked successfully: %s " % msg.dumps() )
 
-If you have multiple callbacks configured, they will be called in the same order they are 
-configuration file. components in sr3 are often differentiated by the callbacks configured.
-For example, a *watch* is a flow with sarracenia.flowcb.gather.file.File class that
-is used to scan directories. A Common need when a data source is not easily accessed
-with python scripts is to use the script callback::
+Si vous avez plusieurs rappels configurés, ils seront appelés dans le même ordre que dans
+fichier de configuration. Les composants de sr3 sont souvent différenciés par les rappels configurés.
+Par exemple, un *watch* est un flux avec la classe sarracenia.flowcb.gather.file.File qui
+est utilisé pour analyser les répertoires. Un besoin courant lorsqu’une source de données n’est pas facilement accessible
+avec les scripts python est d’utiliser le rappel de script::
 
    flowCallbackPrepend sarracenia.flowcb.script.Script
 
    script_gather get_weird_data.sh
 
-Using the *_prepend* variant of the *flowCallback* option, will have the Script callback
-class's entry point, before the File callback... So A script will be executed, and then
-the directory will be checked for new files.  Here is part of the Script callback class::
+En utilisant la variante *_prepend* de l’option *flowCallback*, le rappel de script aura le
+point d’entrée de la classe, avant le rappel de fichier... Donc, un script sera exécuté, puis
+le répertoire sera vérifié pour les nouveaux fichiers.  Voici une partie de la classe de rappel Script ::
     
     import logging
     from sarracenia.flowcb import FlowCB
@@ -2274,24 +2251,25 @@ the directory will be checked for new files.  Here is part of the Script callbac
 Integrity
 ---------
 
-One can use the *import* directive to add new checksum algorithms by sub-classing
+On peut utiliser la directive *import* pour ajouter de nouveaux algorithmes de somme de contrôle en sous-classant
 sarracenia.integrity.Integrity.
+
 
 Transfer 
 --------
 
-One can add support for additional methods of downloading data by sub-classing
+On peut ajouter la prise en charge de méthodes supplémentaires de téléchargement de données par sous-classification
 sarracenia.transfer.Transfer.
 
-Transfer protocol scripts should be declared using the **import** option.
-Aside the targetted built-in function(s), a module **registered_as** that defines
-a list of protocols that these functions provide.  Example :
+Les scripts de protocole de transfert doivent être déclarés à l’aide de l’option **import**.
+sauf pour les fonctions intégrées ciblées, un module **registered_as** qui définit
+une liste des protocoles fournis par ces fonctions.  Exemple:
 
 def registered_as(self) :
        return ['ftp','ftps']
 
 
-See the `Programming Guide <../Explanation/SarraPluginDev.rst>`_ for more information on Extension development.
+Voir le `Programming Guide <../Explanation/SarraPluginDev.rst>`_ pour plus d’informations sur le développement d’extensions.
 
 
 
@@ -2311,11 +2289,11 @@ système pour les composants tels que sr_shovel, sr_sarra et sr_sender (lors de 
 -- **feeder amqp{s}://<user>:<pw>@<post_brokerhost>[:port]/<vhost>** (valeur par défaut : Aucun)
 -- **admin <nom> (par défaut : Aucun)**
 
-The admin user is used to do maintenance operations on the pump such as defining
-the other users. Most users are defined using the *declare* option. The feeder can also be declared in that
-way.
+L’utilisateur administrateur est utilisé pour effectuer des opérations de maintenance sur la pompe, telles que la définition
+des autres utilisateurs. La plupart des utilisateurs sont définis à l’aide de l’option *declare*. Le chargeur peut également être déclaré de cette
+manière.
 
-- **declare <role> <name>   (no defaults)**
+- **declare <role> <name>   (pas de défaut)**
 
 subscriber
 ~~~~~~~~~~
@@ -2402,12 +2380,13 @@ et finalement il regardera à distance.
 
 
 
-SUNDEW COMPATIBILITY OPTIONS
-----------------------------
+OPTIONS DE COMPATIBILITÉ SUNDEW
+-------------------------------
 
-For compatibility with Sundew, there are some additional delivery options which can be specified.
+Pour la compatibilité avec Sundew, il existe des options de livraison supplémentaires qui peuvent être spécifiées.
 
-destfn_script <script> (default:None)
+
+destfn_script <script> (défaut:None)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Cette option définit un script à exécuter lorsque tout est prêt
 pour la livraison du produit. Le script reçoit une instance de la classe sender.
@@ -2456,9 +2435,9 @@ Les mots-clés possibles sont :
 
 **accept <regexp pattern> [<keyword>]**
 
-keyword can be added to the **accept** option. The keyword is any one of the **filename**
-options.  A message that matched against the accept regexp pattern, will have its remote_file
-plied this keyword option.  This keyword has priority over the preceeding **filename** one.
+Keyword peut être ajouté à l’option **accept**. Le keyword est une des options **filename**.
+Un message qui correspond au modèle accept regexp aura son remote_file
+appliqué à cette option de mot-clé.  Ce mot-clé a la priorité sur le précédent **nom de fichier**.
 
 Le **regexp pattern** peut être utilisé pour définir des parties du répertoire si une partie du message est placée
 entre parenthèses. **sender** peut utiliser ces parties pour générer le nom du répertoire.
