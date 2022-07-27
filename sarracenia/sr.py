@@ -954,7 +954,7 @@ class sr_GlobalState:
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
         self.package_lib_dir = os.path.dirname(
             inspect.getfile(sarracenia.config.Config))
-        self.appauthor = 'science.gc.ca'
+        self.appauthor = 'MetPX'
         self.options = opt
         self.appname = os.getenv('SR_DEV_APPNAME')
         self.hostname = socket.getfqdn()

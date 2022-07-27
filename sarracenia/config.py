@@ -228,7 +228,7 @@ def get_package_lib_dir():
 
 def get_site_config_dir():
     return appdirs.site_config_dir(Config.appdir_stuff['appname'],
-                                   Config.appdir_stuff['appauthor'])
+                                   Config.appdir_stuff['MetPX'])
 
 
 def get_user_cache_dir(hostdir):
@@ -472,7 +472,7 @@ class Config:
     ]
 
     # lookup in dictionary, respond with canonical version.
-    appdir_stuff = {'appauthor': 'science.gc.ca', 'appname': 'sr3'}
+    appdir_stuff = {'appauthor': 'MetPX', 'appname': 'sr3'}
 
     # Correct name on the right, old name on the left.
     synonyms = {
