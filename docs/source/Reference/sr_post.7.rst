@@ -64,18 +64,37 @@ The headers are an array of name:value pairs::
           "pubTime"       - YYYYMMDDTHHMMSS.ss - UTC date/timestamp.
           "baseUrl"       - root of the url to download.
           "relPath"       - relative path can be catenated to <base_url>
-          "integrity"     - WMO version of v02 sum field, under development.
+
+     one of:
+
+          "integrity"     - for changes in file contents, an integrity checksum.
           {
-             "method" : "md5" | "sha512" | "md5name" | "link" | "remove" | "cod" | "random" ,
+             "method" : "md5" | "sha512" | "cod" | "random" ,
              "value"  : "base64 encoded checksum value"
           }
+    or:
+          "fileOp"   - toe describe for non-data update operations.
+          {            
+             "link" : link value string, - for symbolic links.
+             "remove"     - flag present when removing a file.
+          }
+    or:
+         nothing... If neither of these is present, then duplication
+         suppression will rely on supplied meta data, such as the modification
+	 time, the size, and the publication Time to prevent loops.
+         It is strongly recommended that all data services provide integrity
+         checksums. Failure to do so results on a data service than cannot
+         be reliably replicated.
+
+    both may be present in cases where file content is being updated, as
+    well as metadata.     
 
   OPTIONAL:
 
           for GeoJSON compatibility:
-          "type": "Feature"
-          "geometry": RFC 7946 (geoJSON) compatible geographic specification.
 
+          "type": "Feature",
+          "geometry": RFC 7946 (geoJSON) compatible geographic specification.
 
           "size"          - the number of bytes being advertised.
           "blocks"        - if the file being advertised is partitioned, then:
@@ -86,6 +105,11 @@ The headers are an array of name:value pairs::
               "remainder" : "9999", - the size of the last block.
               "number"    : "9999", - which block is this.
           }
+          "oldname" : oldname string, - used in file renaming.
+          "newname" : newname string  - used in file renaming.
+          "atime" : date string - last access time of a file (optional)
+          "mtime" : date string - last modification time of a file (optional)
+          "mode"  : mode string - permission bits (optional)
           "rename"        - name to write file locally.
           "retPath"       - relative retrieval path can be catenated to <base_url> to override relPath
                             used for API cases.
@@ -93,10 +117,6 @@ The headers are an array of name:value pairs::
           "source"        - the originating entity of the message. 
           "from_cluster"  - the originating cluster of a message.
           "to_clusters"   - a destination specification.
-          "link"          - value of a symbolic link. (if sum starts with L)
-          "atime"         - last access time of a file (optional)
-          "mtime"         - last modification time of a file (optional)
-          "mode"          - permission bits (optional)
 
           "content"       - for smaller files, the content may be embedded.
           {
@@ -110,9 +130,6 @@ The headers are an array of name:value pairs::
           "report" { "code": 999  - HTTP style response code. 
                      "message" :  - status report message documented in `Report Messages`_
                    }
-
-          "type": "Feature"   - used for geoJSON compatibility.
-          "geometry" : ... as per RFC7946  GoJSON compatibility.
 
           additional user defined name:value pairs are permitted.
 
@@ -384,12 +401,6 @@ if they have already downloaded the product from elsewhere.
  |  arbitrary | arbitrary, application defined value which cannot be calculated     |
  +------------+---------------------------------------------------------------------+
  |  md5       | Checksum the entire data (MD-5 as per IETF RFC 1321)                |
- +------------+---------------------------------------------------------------------+
- |  link      | Linked: SHA512 sum of link value                                    |
- +------------+---------------------------------------------------------------------+
- |  md5name   | Checksum the file name (MD-5 as per IETF RFC 1321)                  |
- +------------+---------------------------------------------------------------------+
- |  remove    | Removed: SHA512 of file name.                                       |
  +------------+---------------------------------------------------------------------+
  |  sha512    | Checksum the entire data (SHA512 as per IETF RFC 6234)              |
  +------------+---------------------------------------------------------------------+

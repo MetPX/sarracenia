@@ -128,10 +128,13 @@ class NoDupe(FlowCB):
                   False if msg is new.
         """
 
+        key=None
         if ('nodupe_override' in msg) and ('key' in msg['nodupe_override']):
             key = msg['nodupe_override']['key']
-        elif 'link' in msg:
-            key = msg['link']
+        elif 'fileOp' in msg :
+            if 'link' in msg['fileOp']:
+                key = msg['fileOp']['link']
+            #elif 'remove' in msg['fileOp']: // falls through to pubTime
         elif 'integrity' in msg:
             key = msg['integrity']['method'] + ',' + msg['integrity'][
                 'value'].replace('\n', '')
@@ -145,7 +148,8 @@ class NoDupe(FlowCB):
             key = msg['mtime']
         elif 'size' in msg:
             key = msg['size']
-        else: 
+
+        if not key:
             key = msg['pubTime']
 
         if ('nodupe_override' in msg) and ('path' in msg['nodupe_override']):
@@ -156,6 +160,9 @@ class NoDupe(FlowCB):
             # will be priming their recently used with posts, and the posts are relative... so lstrip here...
             # perhaps there is a better answer.
             path = msg['relPath'].lstrip('/')
+
+        msg['noDupe'] = { 'key': key, 'path': path }
+        msg['_deleteOnPost'] |= set(['noDupe'])
 
         logger.debug("NoDupe calling check( %s, %s )" % (key, path))
         return self.in_cache(key, path)

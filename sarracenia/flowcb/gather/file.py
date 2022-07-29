@@ -130,19 +130,10 @@ class File(FlowCB):
 
         msg = sarracenia.Message.fromFileInfo(path, self.o, None)
 
-        # sumstr
-        hash = sha512()
-        hash.update(bytes(os.path.basename(path), encoding='utf-8'))
-        sumstr = {
-            'method': 'remove',
-            'value': b64encode(hash.digest()).decode('utf-8')
-        }
+        msg['fileOp'] = { 'remove' }
 
         # partstr
         partstr = None
-
-        # completing headers
-        msg['integrity'] = sumstr
 
         # used when moving a file
         if key != None:
@@ -354,17 +345,8 @@ class File(FlowCB):
 
         partstr = None
 
-        # sumstr
-
-        hash = sha512()
-        hash.update(bytes(link, encoding='utf-8'))
-        msg['integrity'] = {
-            'method': 'link',
-            'value': b64encode(hash.digest()).decode('utf-8')
-        }
-
         # complete headers
-        msg['link'] = link
+        msg['fileOp'] = { 'link' : link }
 
         # used when moving a file
 

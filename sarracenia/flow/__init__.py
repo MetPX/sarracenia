@@ -1071,14 +1071,19 @@ class Flow:
                         msg['new_path'], new_mtime - old_mtime, new_mtime,
                         old_mtime))
 
-        if msg['integrity']['method'] in ['random', 'md5name', 'cod']:
-            logger.debug("content_match %s sum 0/n/z never matches" %
+        if 'integrity' in msg and msg['integrity']['method'] in ['random', 'cod']:
+            logger.debug("content_match %s sum 0/z never matches" %
                          (msg['new_path']))
             return True
 
         if end > fsiz:
             logger.debug(
-                "content_match file not big enough... considered different")
+                "new file not big enough... considered different")
+            return True
+
+        if not 'integrity' in msg: 
+            # FIXME... should there be a setting to assume them the same? use cases may vary.
+            logger.debug( "no checksum available, assuming different" )
             return True
 
         try:
@@ -1153,12 +1158,12 @@ class Flow:
           imported from v2/subscribe/doit_download "link event, try to link the local product given by message"
         """
         logger.debug("message is to link %s to %s" %
-                     (msg['new_file'], msg['link']))
+                     (msg['new_file'], msg['fileOp']['link']))
 
         # redundant, check is done in caller.
         #if not 'link' in self.o.fileEvents:
         #    logger.info("message to link %s to %s ignored (events setting)" %  \
-        #                                    ( msg['new_file'], msg[ 'link' ] ) )
+        #                                    ( msg['new_file'], msg['filOp'][ 'link' ] ) )
         #    return False
 
         if not os.path.isdir(msg['new_dir']):
@@ -1176,12 +1181,12 @@ class Flow:
             if os.path.isfile(path): os.unlink(path)
             if os.path.islink(path): os.unlink(path)
             if os.path.isdir(path): os.rmdir(path)
-            os.symlink(msg['link'], path)
-            logger.info("%s symlinked to %s " % (msg['new_file'], msg['link']))
+            os.symlink(msg['filOp']['link'], path)
+            logger.info("%s symlinked to %s " % (msg['new_file'], msg['fileOp']['link']))
         except:
             ok = False
             logger.error("symlink of %s %s failed." %
-                         (msg['new_file'], msg['link']))
+                         (msg['new_file'], msg['fileOp']['link']))
             logger.debug('Exception details:', exc_info=True)
 
         return ok
@@ -1228,25 +1233,29 @@ class Flow:
                         msg.setReport(201, 'renamed')
                         continue
 
-            elif (msg['integrity']['method'] == 'remove') and (
-                    'delete' in self.o.fileEvents):
-                if self.removeOneFile(new_path):
-                    msg.setReport(201, 'removed')
-                    self.worklist.ok.append(msg)
-                else:
-                    #FIXME: should this really be queued for retry? or just permanently failed?
-                    # in rejected to avoid retry, but wondering if failed and deferred
-                    # should be separate lists in worklist...
-                    self.reject(msg, 500, "remove %s failed" % new_path)
-                continue
+            elif 'fileOp' in msg:
+                if ('remove' in msg['fileOp']) and ('delete' in self.o.fileEvents):
+                    if self.removeOneFile(new_path):
+                        msg.setReport(201, 'removed')
+                        self.worklist.ok.append(msg)
+                    else:
+                        #FIXME: should this really be queued for retry? or just permanently failed?
+                        # in rejected to avoid retry, but wondering if failed and deferred
+                        # should be separate lists in worklist...
+                        self.reject(msg, 500, "remove %s failed" % new_path)
+                    continue
 
-            if 'link' in msg.keys() and ('link' in self.o.fileEvents):
-                if self.link1file(msg):
-                    msg.setReport(201, 'linked')
-                    self.worklist.ok.append(msg)
-                else:
-                    # as above...
-                    self.reject(msg, 500, "link %s failed" % msg['link'])
+                if 'link' in msg['fileOp'] and ('link' in self.o.fileEvents):
+                    if self.link1file(msg):
+                        msg.setReport(201, 'linked')
+                        self.worklist.ok.append(msg)
+                    else:
+                        # as above...
+                        self.reject(msg, 500, "link %s failed" % msg['fileOp']['link'])
+                    continue
+
+                # FIXME? should we pass through unknown ops transparently? (do nothing with them?)
+                self.reject(msg, 500, "msg with unknown file operation (%s) ignored" ) 
                 continue
 
             # establish new_inflight_path which is the file to download into initially.
@@ -1705,26 +1714,26 @@ class Flow:
             # delete event
             #=================================
 
-            if msg['integrity']['method'] == 'remove':
-                if hasattr(self.proto[self.scheme], 'delete'):
-                    logger.debug("message is to remove %s" % new_file)
-                    self.proto[self.scheme].delete(new_file)
-                    return True
-                logger.error("%s, delete not supported" % self.scheme)
-                return False
+            if 'fileOp' in msg:
+                if 'remove' in msg['fileOp'] :
+                    if hasattr(self.proto[self.scheme], 'delete'):
+                        logger.debug("message is to remove %s" % new_file)
+                        self.proto[self.scheme].delete(new_file)
+                        return True
+                    logger.error("%s, delete not supported" % self.scheme)
+                    return False
 
-            #=================================
-            # link event
-            #=================================
+                #=================================
+                # link event
+                #=================================
 
-            if 'link' in msg:
-                if hasattr(self.proto[self.scheme], 'symlink'):
-                    logger.debug("message is to link %s to: %s" %
-                                 (new_file, msg['link']))
-                    self.proto[self.scheme].symlink(msg['link'], new_file)
-                    return True
-                logger.error("%s, symlink not supported" % self.scheme)
-                return False
+                if 'link' in msg['fileOp']:
+                    if hasattr(self.proto[self.scheme], 'symlink'):
+                        logger.debug("message is to link %s to: %s" % (new_file, msg['fileOp']['link']))
+                        self.proto[self.scheme].symlink(msg['fileOp']['link'], new_file)
+                        return True
+                    logger.error("%s, symlink not supported" % self.scheme)
+                    return False
 
             #=================================
             # send event

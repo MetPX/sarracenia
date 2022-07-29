@@ -117,8 +117,11 @@ class Log(FlowCB):
                 self.fileBytes += msg['size']
 
             if set(['after_work', 'all']) & self.o.logEvents:
-                if msg['integrity']['method'] in ['link', 'remove']:
-                    verb = msg['integrity']['method']
+                if 'fileOp' in msg :
+                    if 'link' in msg['fileOp']:
+                        verb = 'linked'
+                    elif 'remove' in msg['fileOp'] and 'remove' in msg['fileOp']:
+                        verb = 'removed'
                 elif self.action_verb in ['downloaded'] and 'content' in msg:
                     verb = 'written from message'
                 else:

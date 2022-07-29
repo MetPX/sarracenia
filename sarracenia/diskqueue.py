@@ -267,7 +267,15 @@ class DiskQueue():
 
         """
         urlstr = message['baseUrl'] + '/' + message['relPath']
-        sumstr = jsonpickle.encode(message['integrity'])
+
+        if 'noDupe' in message:
+            sumstr = jsonpickle.encode(message['noDupe']['key'])
+        elif 'integrity' in message:
+            sumstr = jsonpickle.encode(message['integrity'])
+        else:
+            logger.error('no key found for message, cannot add')
+            return False
+
         cache_key = urlstr + ' ' + sumstr
 
         if 'parts' in message:
