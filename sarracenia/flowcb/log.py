@@ -120,7 +120,7 @@ class Log(FlowCB):
                 if 'fileOp' in msg :
                     if 'link' in msg['fileOp']:
                         verb = 'linked'
-                    elif 'remove' in msg['fileOp'] and 'remove' in msg['fileOp']:
+                    elif 'remove' in msg['fileOp']:
                         verb = 'removed'
                 elif self.action_verb in ['downloaded'] and 'content' in msg:
                     verb = 'written from message'

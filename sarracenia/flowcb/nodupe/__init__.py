@@ -144,13 +144,14 @@ class NoDupe(FlowCB):
                     key = "%s,%s" % (msg['integrity']['method'], msg['mtime'])
                 elif 'size' in msg:
                     key = "%s,%s" % (msg['integrity']['method'], msg['size'])
-        elif 'mtime' in msg:
-            key = msg['mtime']
-        elif 'size' in msg:
-            key = msg['size']
 
         if not key:
-            key = msg['pubTime']
+            if 'mtime' in msg:
+                key = msg['mtime']
+            elif 'size' in msg:
+                key = msg['size']
+            else:
+                key = msg['pubTime']
 
         if ('nodupe_override' in msg) and ('path' in msg['nodupe_override']):
             path = msg['nodupe_override']['path']
