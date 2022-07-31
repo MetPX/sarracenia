@@ -15,6 +15,7 @@ import json
 import logging
 from mimetypes import guess_type
 import os
+import os.path
 import random
 from random import choice
 
@@ -159,7 +160,7 @@ class File(FlowCB):
 
         # check the value of blocksize
 
-        fsiz = lstat[stat.ST_SIZE]
+        fsiz = lstat.st_size
         blksz = self.set_blocksize(self.o.blocksize, fsiz)
 
         # if we should send the file in parts
@@ -221,7 +222,7 @@ class File(FlowCB):
 
         # check the value of blocksize
 
-        fsiz = lstat[stat.ST_SIZE]
+        fsiz = lstat.st_size
         chunksize = self.set_blocksize(self.blocksize, fsiz)
 
         # count blocks and remainder
@@ -372,7 +373,7 @@ class File(FlowCB):
 
         if os.path.isfile(dst):
             messages.extend(self.post_delete(src, 'newname', dst))
-            messages.extend(self.post_file(dst, os.stat(dst), 'oldname', src))
+            messages.extend(self.post_file(dst, sarracenia.stat(dst), 'oldname', src))
             return messages
 
         # link
@@ -423,7 +424,8 @@ class File(FlowCB):
                     return messages
 
                 lstat = None
-                if os.path.exists(rpath): lstat = os.stat(rpath)
+                if os.path.exists(rpath): 
+                   lstat = sarracenia.stat(rpath)
 
                 messages.extend(self.post1file(rpath, lstat))
 
@@ -500,7 +502,8 @@ class File(FlowCB):
 
         # file : must be old enough
 
-        lstat = os.stat(src)
+        lstat = sarracenia.stat(src)
+
         if self.path_inflight(src, lstat): return []
 
         # post it
@@ -580,7 +583,7 @@ class File(FlowCB):
 
             # add path created
             if os.path.exists(path):
-                messages.extend(self.post1file(path, os.stat(path)))
+                messages.extend(self.post1file(path, sarracenia.stat(path)))
         return messages
 
     def walk_priming(self, p):
@@ -602,7 +605,7 @@ class File(FlowCB):
             d = p
 
         try:
-            fs = os.stat(d)
+            fs = sarracenia.stat(d)
             dir_dev_id = '%s,%s' % (fs.st_dev, fs.st_ino)
             if dir_dev_id in self.inl:
                 return True
@@ -730,7 +733,7 @@ class File(FlowCB):
             elif os.path.islink(d):
                 messages.extend(self.post1file(d, None))
             elif os.path.isfile(d):
-                messages.extend(self.post1file(d, os.stat(d)))
+                messages.extend(self.post1file(d, sarracenia.stat(d)))
             else:
                 logger.error("could not post %s (exists %s)" %
                              (d, os.path.exists(d)))
