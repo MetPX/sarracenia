@@ -158,6 +158,15 @@ class TimeConversions:
 
 
 def stat( path ) -> paramiko.SFTPAttributes:
+    """
+       os.stat call replacement which improves on it by returning
+       and SFTPAttributes structure, in place of the OS stat one,
+       featuring:
+ 
+       * mtime and ctime with subsecond accuracy 
+       * fields that can be overridden (not immutable.)
+
+    """
     native_stat = os.stat( path )
     
     sa = paramiko.SFTPAttributes()
