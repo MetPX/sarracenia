@@ -1889,9 +1889,7 @@ class Flow:
             if self.o.timeCopy and 'mtime' in msg and msg['mtime']:
                 x.set('mtime', msg['mtime'])
             else:
-                st = os.stat(local_file)
-                mtime = sarracenia.timeflt2str(st.st_mtime)
-                x.set('mtime', mtime)
+                x.set('mtime', sarracenia.timeflt2str(os.path.getmtime(local_file)))
             x.persist()
 
         mode = 0

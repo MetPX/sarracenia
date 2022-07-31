@@ -11,6 +11,7 @@
 """
 import logging
 import os
+import os.path
 import stat
 
 from sarracenia.flowcb import FlowCB
@@ -75,8 +76,7 @@ class FDelay(FlowCB):
                 continue
 
             # Test file delay
-            fos = os.stat(f)
-            filetime = fos.st_mtime
+            filetime = os.path.getmtime(f)
             elapsedtime = nowflt() - filetime
             if elapsedtime < self.o.fdelay:
                 dbg_msg = "file not old enough, sleeping for {:.3f} seconds"

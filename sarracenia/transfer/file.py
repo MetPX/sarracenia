@@ -373,7 +373,7 @@ def file_truncate(options, msg):
 
     try:
         lstat = sarracenia.stat(msg['target_file'])
-        fsiz = lstat[stat.ST_SIZE]
+        fsiz = lstat.st_size
 
         if fsiz > msg.filesize:
             fp = open(msg['target_file'], 'r+b')
