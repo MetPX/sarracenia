@@ -25,6 +25,8 @@
 
 from sarracenia.transfer import Transfer
 
+import sarracenia
+
 import os, stat, subprocess, sys, time
 
 import logging
@@ -181,7 +183,7 @@ class File(Transfer):
             relpath = dst.replace(self.root, '', 1)
             if relpath[0] == '/': relpath = relpath[1:]
 
-            self.entries[relpath] = os.stat(dst)
+            self.entries[relpath] = sarracenia.stat(dst)
 
 
 # file_insert
@@ -370,7 +372,7 @@ def file_truncate(options, msg):
     if (not options.randomize) and (not msg.lastchunk): return
 
     try:
-        lstat = os.stat(msg['target_file'])
+        lstat = sarracenia.stat(msg['target_file'])
         fsiz = lstat[stat.ST_SIZE]
 
         if fsiz > msg.filesize:

@@ -34,6 +34,7 @@ import importlib.util
 import logging
 import os
 import os.path
+import paramiko
 import re
 import sarracenia.filemetadata
 import stat
@@ -43,7 +44,6 @@ import urllib
 import urllib.request
 
 logger = logging.getLogger(__name__)
-
 
 
 class Sarracenia:
@@ -156,6 +156,23 @@ class TimeConversions:
     """
     pass
 
+
+def stat( path ) -> paramiko.SFTPAttributes:
+    native_stat = os.stat( path )
+    
+    sa = paramiko.SFTPAttributes()
+    sa.st_mode = native_stat.st_mode
+    sa.st_ino = native_stat.st_ino
+    sa.st_dev  = native_stat.st_dev 
+    sa.st_nlink  = native_stat.st_nlink 
+    sa.st_uid  = native_stat.st_uid 
+    sa.st_gid  = native_stat.st_gid 
+    sa.st_size  = native_stat.st_size 
+
+    sa.st_mtime = os.path.getmtime(path)    
+    sa.st_atime = os.path.getctime(path)    
+    sa.st_ctime = native_stat.st_atime
+    return sa
 
 def nowflt():
     return timestr2flt(nowstr())
@@ -298,12 +315,17 @@ class Message(dict):
         else:
             calc_method = o.integrity_method
 
+        logger.debug('FIXME calc_method: %s' % calc_method )
+
         xattr.set('mtime', msg['mtime'])
 
         #logger.debug("sum set by compute_sumstr")
 
         if calc_method[:4] == 'cod,' and len(calc_method) > 2:
             sumstr = calc_method
+        elif calc_method in [ 'md5name', 'invalid' ]:
+            xattr.persist()  # persist the mtime, at least...
+            return  # no checksum needed for md5name. 
         elif calc_method == 'arbitrary':
             sumstr = {
                 'method': 'arbitrary',
@@ -532,7 +554,7 @@ class Message(dict):
         if hasattr(o, 'chmod') and o.chmod:
             os.chmod(path, o.chmod)
 
-        return sarracenia.Message.fromFileData(path, o, os.stat(path))
+        return sarracenia.Message.fromFileData(path, o, stat(path))
 
     def setReport(msg, code, text=None):
         """

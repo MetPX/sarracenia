@@ -1026,8 +1026,8 @@ class Flow:
         """
         # assert
 
-        lstat = os.stat(msg['new_path'])
-        fsiz = lstat[stat.ST_SIZE]
+        lstat = sarracenia.stat(msg['new_path'])
+        fsiz = lstat.st_size
 
         # FIXME... local_offset... offset within the local file... partitioned... who knows?
         #   part of partitioning deferral.
@@ -1482,10 +1482,13 @@ class Flow:
 
             if self.o.integrity_method.startswith('cod,'):
                 download_algo = self.o.integrity_method[4:]
-            else:
+            elif 'integrity' in msg:
                 download_algo = msg['integrity']['method']
+            else:
+                download_algo = None
 
-            self.proto[self.scheme].set_sumalgo(download_algo)
+            if download_algo:
+                self.proto[self.scheme].set_sumalgo(download_algo)
 
             if download_algo == 'arbitrary':
                 self.proto[self.scheme].set_sumArbitrary(
@@ -1553,15 +1556,15 @@ class Flow:
 
                     msg['size'] = len_written
 
-            msg['onfly_checksum'] = self.proto[self.scheme].get_sumstr()
-            msg['data_checksum'] = self.proto[self.scheme].data_checksum
+            if download_algo:
+                msg['onfly_checksum'] = self.proto[self.scheme].get_sumstr()
+                msg['data_checksum'] = self.proto[self.scheme].data_checksum
 
-            if self.o.integrity_method.startswith('cod,') and not accelerated:
-                msg['integrity'] = msg['onfly_checksum']
+                if self.o.integrity_method.startswith('cod,') and not accelerated:
+                    msg['integrity'] = msg['onfly_checksum']
 
-            msg['_deleteOnPost'] |= set(['onfly_checksum'])
-
-            msg['_deleteOnPost'] |= set(['data_checksum'])
+                msg['_deleteOnPost'] |= set(['onfly_checksum'])
+                msg['_deleteOnPost'] |= set(['data_checksum'])
 
             # fix message if no partflg (means file size unknown until now)
             #if not 'blocks' in msg:
@@ -1866,13 +1869,13 @@ class Flow:
         # if the file is not partitioned, the the onfly_checksum is for the whole file.
         # cache it here, along with the mtime.
         if (not 'blocks' in msg):
-            if 'onfly_checksum' in msg:
-                sumstr = msg['onfly_checksum']
-            else:
-                sumstr = msg['integrity']
-
             x = sarracenia.filemetadata.FileMetadata(local_file)
-            x.set('integrity', sumstr)
+
+            # FIXME ... what to do when checksums don't match?
+            if 'onfly_checksum' in msg: 
+                x.set( 'integrity', msg['onfly_checksum'] )
+            elif 'integrity' in msg:
+                x.set('integrity', msg['integrity'] )
 
             if self.o.timeCopy and 'mtime' in msg and msg['mtime']:
                 x.set('mtime', msg['mtime'])

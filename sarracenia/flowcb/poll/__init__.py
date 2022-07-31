@@ -400,7 +400,7 @@ class Poll(FlowCB):
         if self.o.post_baseUrl.startswith('file:'):
             if os.path.isfile(path):
                 try:
-                    lstat = os.stat(path)
+                    lstat = sarracenia.stat(path)
                 except:
                     lstat = None
                 ok = sarracenia.Message.fromFileInfo(path, self.o, lstat)
