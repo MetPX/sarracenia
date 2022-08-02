@@ -482,9 +482,6 @@ class File(FlowCB):
         """
         #logger.debug("process_event %s %s %s " % (event,src,dst) )
 
-        done = True
-        later = False
-
         # delete
 
         if event == 'delete':
@@ -566,16 +563,13 @@ class File(FlowCB):
         messages = []
         for key in self.cur_events:
             event, src, dst = self.cur_events[key]
-            done = False
             try:
                 messages.extend(self.process_event(event, src, dst))
             except OSError as err:
-                logger.error("could not process event({}): {}".format(
+                logger.error("skipping event that could not be processed: ({}): {}".format(
                     event, err))
                 logger.debug("Exception details:", exc_info=True)
-                self.left_events.pop(key)
-            if done:
-                self.left_events.pop(key)
+            self.left_events.pop(key)
         return messages
 
     def walk(self, src):
