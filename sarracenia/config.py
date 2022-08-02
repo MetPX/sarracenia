@@ -228,7 +228,7 @@ def get_package_lib_dir():
 
 def get_site_config_dir():
     return appdirs.site_config_dir(Config.appdir_stuff['appname'],
-                                   Config.appdir_stuff['MetPX'])
+                                   Config.appdir_stuff['appauthor'])
 
 
 def get_user_cache_dir(hostdir):
