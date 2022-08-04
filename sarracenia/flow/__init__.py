@@ -395,6 +395,7 @@ class Flow:
                 self.worklist.ok = []
                 self.ack(self.worklist.rejected)
                 self.worklist.rejected = []
+                self.ack(self.worklist.failed)
 
                 if (self.o.component == 'poll') and not self.have_vip:
                     # this for duplicate cache synchronization.

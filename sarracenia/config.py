@@ -1154,8 +1154,9 @@ class Config:
             elif k in ['include', 'config']:
                 try:
                     self.parse_file(v)
-                except:
-                    print("failed to parse: %s" % v)
+                except Exception as ex:
+                    logger.error('file %s failed to parse:  %s' % (v, ex))
+                    logger.debug('Exception details: ', exc_info=True)
             elif k in ['subtopic']:
                 self._parse_binding(v)
             elif k in ['topicPrefix']:

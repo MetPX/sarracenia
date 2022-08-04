@@ -28,18 +28,14 @@ class FDelay(FlowCB):
                             level=getattr(logging, self.o.logLevel.upper()))
 
         logger.debug('hoho! FIXME init')
+
+        self.o.add_option('msg_fdelay', 'duration', 60)
+        self.o.add_option('fdelay', 'duration', 60)
+
         #parent.declare_option('fdelay')
         if hasattr(self.o, 'msg_fdelay'):
             self.o.fdelay = self.o.msg_fdelay
 
-        if not hasattr(self.o, 'fdelay'):
-            self.o.fdelay = 60
-
-        if type(self.o.fdelay) is list:
-            self.o.fdelay = self.o.fdelay[0]
-
-        if type(self.o.fdelay) not in [int, float]:
-            self.o.fdelay = float(self.o.fdelay)
 
     def after_accept(self, worklist):
         # Prepare msg delay test
