@@ -1891,7 +1891,7 @@ class sr_GlobalState:
                             v = line[1]
                     if k == 'continue':
                         continue
-                    v3_cfg.write(k + ' ' + ' '.join(line[1:])+'\n')
+                    v3_cfg.write(' '.join(line)+'\n')
         logging.info('converting %s from v2 to v3 ' % cfg)
 
 
