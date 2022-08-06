@@ -113,7 +113,6 @@ class PClean_F90(PClean):
                     result = False
             else:
                 logger.info('ext not in test_extenion_list')
-                result = False
 
             if 'toolong' in msg:
                 # cleanup
