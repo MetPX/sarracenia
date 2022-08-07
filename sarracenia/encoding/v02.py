@@ -73,7 +73,16 @@ class V02(Encoding):
             else:
                 sv = encode(decode(msg["sum"][2:], 'hex'),
                             'base64').decode('utf-8').strip()
-            msg["integrity"] = {"method": sm, "value": sv}
+            if sm == 'remove':
+                msg['fileOp'] = { 'remove' }
+            elif 'link' in msg:
+                msg['fileOp'] = { 'link': msg['link'] }
+                del msg['link']
+            elif sm == 'md5name':
+                pass
+            else:
+                msg["integrity"] = {"method": sm, "value": sv}
+
             del msg['sum']
     
         if 'parts' in msg:
