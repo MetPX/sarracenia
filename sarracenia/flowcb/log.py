@@ -79,8 +79,8 @@ class Log(FlowCB):
             for msg in worklist.rejected:
                 if 'report' in msg:
                     logger.info(
-                        "rejected: %d %s " %
-                        (msg['report']['code'], msg['report']['message']))
+                        "%s rejected: %d %s " %
+                        (msg['relPath'], msg['report']['code'], msg['report']['message']))
                 else:
                     logger.info("rejected: %s " % self._messageStr(msg))
 
