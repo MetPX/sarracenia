@@ -2,31 +2,62 @@
 GLOSSARY
 ===================
 
-- Data Pump .....Pompe de données
-- Broker.........Broker (?)
-- checksum........ checksum (somme de controle?)
-- Component......Composant
-- File Path......Chemin de Fichier (?)
-- Flow...........Flux
-- keyword........mot-clé(?)
-- load balancing.... équilibrage de charge
-- Logs...........Sortie d'éxécution/loggig (?)
-- mirror ....
-- pattern...modèle
-- payload... charge utile
-- Poll...........(?)
-- regexp pattern...Modèle regexp
-- Remote.........Distant
-- Run............Rouler/Exécuter
-- scope..........porté (global scope?)
-- regexp pattern...Modèle regexp
-- checksum........ checkscum (somme de controle?)
-- Plugins........Plugins(?)
-- Post...........Article
-- String.........chaîne de caractères
-- topic......thème
-- Tree...........Arborescence
-- wildcards....(?)
++----------------+-------------------------------------------+
+| English        | French                                    |
++================+===========================================+
+| Advertisement  | publication                               |
++----------------+-------------------------------------------+
+| Data Pump      | Pompe de données                          |
++----------------+-------------------------------------------+
+| Broker         | Courtier                                  |
++----------------+-------------------------------------------+
+| checksum       | checksum (somme de controle?)             |
++----------------+-------------------------------------------+
+| Component      | Composant                                 |
++----------------+-------------------------------------------+
+| File Path      | Chemin d'accès                            |
++----------------+-------------------------------------------+
+| Flow           | Flux                                      |
++----------------+-------------------------------------------+
+| keyword        | mot-clé(?)                                |
++----------------+-------------------------------------------+
+| load balancing | équilibrage de charge                     |
++----------------+-------------------------------------------+
+| Logs           | Journaux                                  |
++----------------+-------------------------------------------+
+| mirror         | miroir                                    |
++----------------+-------------------------------------------+
+| pattern        | modèle                                    |
++----------------+-------------------------------------------+
+| payload        | charge utile                              |
++----------------+-------------------------------------------+
+| Poll           | scrutin                                   |
++----------------+-------------------------------------------+
+| regexp pattern | Modèle regexp                             |
++----------------+-------------------------------------------+
+| Remote         | Distant                                   |
++----------------+-------------------------------------------+
+| Run            | Exécuter                                  |
++----------------+-------------------------------------------+
+| scope          | portée (global scope? portée globale)     |
++----------------+-------------------------------------------+
+| checksum       | somme de controle                         |
++----------------+-------------------------------------------+
+| Plugins        | modules externes                          |
++----------------+-------------------------------------------+
+| Post           | Publier                                   |
++----------------+-------------------------------------------+
+| String         | chaîne de caractères                      |
++----------------+-------------------------------------------+
+| topic          | thème                                     |
++----------------+-------------------------------------------+
+| Tree           | Arborescence                              |
++----------------+-------------------------------------------+
+| wildcards      | caractère de remplacement                 |
++----------------+-------------------------------------------+
+| message        | message d'annonce (notification message)  |
++----------------+-------------------------------------------+
+
 
 message, advertisement, post, notification, announcement -> message, publicité? , annonce? , article?
 
