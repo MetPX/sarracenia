@@ -2,6 +2,7 @@
 GLOSSARY
 ===================
 
+- Data Pump .....???
 - Broker.........Broker (?)
 - checksum........ checksum (somme de controle?)
 - Component......Composant
