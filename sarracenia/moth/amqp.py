@@ -369,12 +369,16 @@ class AMQP(Moth):
         while True:
             try:
                 raw_msg = self.channel.basic_get(self.o['queueName'])
-
                 if (raw_msg is None) and (self.connection.connected):
                     return None
                 else:
                     self.metrics['rxByteCount'] += len(raw_msg.body)
-                    msg = self._msgRawToDict(raw_msg)
+                    try: 
+                        msg = self._msgRawToDict(raw_msg)
+                    except Exception as err:
+                        logger.warning("message decode failed. message: %s" % raw_msg.body )
+                        logger.debug('Exception details: ', exc_info=True)
+                        msg = None
                     if msg is None:
                         self.metrics['rxBadCount'] += 1
                     else:

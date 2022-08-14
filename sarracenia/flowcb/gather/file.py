@@ -131,7 +131,7 @@ class File(FlowCB):
 
         msg = sarracenia.Message.fromFileInfo(path, self.o, None)
 
-        msg['fileOp'] = { 'remove' }
+        msg['fileOp'] = { 'remove':'' }
 
         # partstr
         partstr = None
@@ -209,9 +209,13 @@ class File(FlowCB):
         # used when moving a file
 
         if key != None:
-            msg[key] = value
-            if key == 'oldname' and self.o.post_baseDir:
-                msg[key] = value.replace(self.o.post_baseDir, '')
+            if not 'fileOp' in msg:
+                msg['fileOp'] = { key : value }
+            else:
+                msg['fileOp'][key] = value
+
+            if self.o.post_baseDir:
+                msg['fileOp'][key] = value.replace(self.o.post_baseDir, '')
 
         return [msg]
 
@@ -333,25 +337,24 @@ class File(FlowCB):
 
         return [msg]
 
-    def post_link(self, path, key=None, value=None):
+    def post_link(self, path, key='link', value=None):
         #logger.debug("post_link %s" % path )
 
         msg = sarracenia.Message.fromFileInfo(path, self.o, None)
 
         # resolve link
 
-        link = os.readlink(path)
+        if key == 'link':
+            value = os.readlink(path)
 
-        # partstr
-
-        partstr = None
-
-        # complete headers
-        msg['fileOp'] = { 'link' : link }
+        if self.o.post_baseDir:
+            value = value.replace(self.o.post_baseDir, '')
 
         # used when moving a file
-
-        if key != None: msg[key] = value
+        if not 'fileOp' in msg:
+           msg['fileOp'] = { key: value }
+        else:
+           msg['fileOp'][key] = value
 
         return [msg]
 
@@ -373,14 +376,14 @@ class File(FlowCB):
 
         if os.path.isfile(dst):
             messages.extend(self.post_delete(src, 'newname', dst))
-            messages.extend(self.post_file(dst, sarracenia.stat(dst), 'oldname', src))
+            messages.extend(self.post_file(dst, sarracenia.stat(dst), 'rename', src))
             return messages
 
         # link
 
         if os.path.islink(dst):
             messages.extend(self.post_delete(src, 'newname', dst))
-            messages.extend(self.post_link(dst, 'oldname', src))
+            messages.extend(self.post_link(dst, 'rename', src))
             return messages
 
         # directory

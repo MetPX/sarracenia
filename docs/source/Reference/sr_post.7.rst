@@ -75,8 +75,10 @@ The headers are an array of name:value pairs::
     or:
           "fileOp"   - toe describe for non-data update operations.
           {            
-             "link" : link value string, - for symbolic links.
-             "remove"     - flag present when removing a file.
+             "link" : "symbolic link value (target) string"
+             "remove" : ""     - flag present when removing a file (argument ignored.)
+             "hlink" : "hardlink value string (file being linked to.)"
+             "rename" : "name of file before rename."
           }
     or:
          nothing... If neither of these is present, then duplication
@@ -105,8 +107,6 @@ The headers are an array of name:value pairs::
               "remainder" : "9999", - the size of the last block.
               "number"    : "9999", - which block is this.
           }
-          "oldname" : oldname string, - used in file renaming.
-          "newname" : newname string  - used in file renaming.
           "atime" : date string - last access time of a file (optional)
           "mtime" : date string - last modification time of a file (optional)
           "mode"  : mode string - permission bits (optional)
@@ -291,8 +291,8 @@ Additional fields:
    data was introduced into the network. It is used to return the logs back 
    to the cluster whenever its products are used.
 
-**link=<value of symbolic link>**
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**fileOp { 'link': <value of symbolic link>**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
    When file to transfer is a symbolic link, the 'link' header is created to 
    contain its value.
@@ -365,8 +365,8 @@ Additional fields:
 
  The relative path from the current directory in which to place the file.
 
-**oldname=<path>** / **newname=<path>**
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**fileOp { 'rename':<path> ... }** 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
  when a file is renamed at the source, to send it to subscribers, two posts 
  result: one message is announced with the new name as the base_url, 
@@ -377,7 +377,7 @@ Additional fields:
  matches a *reject*  clause, or a file removal if the new name
  matches a *reject* clause.
 
- Hard links are also handled as an ordinary post of the file with a *oldname*
+ Hard links are also handled as an ordinary post of the file with a *hlink*
  header set.
 
 **integrity**
