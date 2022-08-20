@@ -94,8 +94,8 @@ class AMQP(Moth):
                 try:
                     body = raw_msg.body.decode("utf8")
                 except Exception as ex:
-                    logger.warning(
-                        'expected utf8 encoded message, decode error: %s' % ex)
+                    logger.error(
+                        'ignoring message. UTF8 encoding expected. raw message received: %s' % ex)
                     logger.debug('Exception details: ', exc_info=True)
                     return None
 
@@ -376,7 +376,7 @@ class AMQP(Moth):
                     try: 
                         msg = self._msgRawToDict(raw_msg)
                     except Exception as err:
-                        logger.warning("message decode failed. message: %s" % raw_msg.body )
+                        logger.error("message decode failed. raw message: %s" % raw_msg.body )
                         logger.debug('Exception details: ', exc_info=True)
                         msg = None
                     if msg is None:
