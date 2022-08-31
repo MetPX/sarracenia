@@ -548,9 +548,10 @@ class AMQP(Moth):
             # eventually be configurable with message_strategy stubborn
             # if True or not self.o['message_strategy']['stubborn']:
             #     return False
-            return False # instead of looping
 
             self.close()
+            return False # instead of looping
+
             self.__putSetup()
 
             if ebo < 60: ebo *= 2

@@ -99,6 +99,8 @@ class Log(FlowCB):
         if set(['after_post', 'all']) & self.o.logEvents:
             for msg in worklist.ok:
                 logger.info("posted %s" % msg)
+            for msg in worklist.failed:
+                logger.info("failed to post, queued to retry %s" % msg)
 
     def after_work(self, worklist):
         self.rejectCount += len(worklist.rejected)
