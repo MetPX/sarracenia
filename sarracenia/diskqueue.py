@@ -107,9 +107,10 @@ class DiskQueue():
 
         # initialize ages and message counts
 
+        self.msg_count = 0
+        self.msg_count_new = 0
+
         if not os.path.isfile(self.queue_file):
-            self.msg_count = 0
-            self.msg_count_new = 0
             return
 
         retry_age = os.path.getmtime(self.queue_file)
@@ -119,7 +120,6 @@ class DiskQueue():
             new_age = os.path.getmtime(self.new_path)
             if retry_age > new_age:
                 os.unlink(self.new_path)
-                self.msg_count_new = 0
             else:
                 self.msg_count_new = self._count_msgs(self.new_path)
 
