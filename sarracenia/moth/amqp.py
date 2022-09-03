@@ -514,6 +514,7 @@ class AMQP(Moth):
         if self.o['messageDebugDump']:
             logger.info('raw message body: version: %s type: %s %s' %
                              (version, type(raw_body),  raw_body))
+            logger.info('raw message headers: type: %s value: %s' % (type(headers),  headers))
         if headers :  
             for k in headers:
                 if (type(headers[k]) is str) and (len(headers[k]) >=
