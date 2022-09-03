@@ -99,24 +99,31 @@ class Message:
             h["sum"] = sa + ',' + sv
             self.sumflg = sa
             self.sumstr = h["sum"]
-        else: 
-            # fileOp case... link, and remove need different treatment.
-            if 'fileOp' in h:
-               if 'link' in h['fileOp']:
-                   hash = sha512()
-                   hash.update( bytes( h['fileOp']['link'], encoding='utf-8' ) )
-                   self.sumstr = 'L,%s' % hash.hexdigest()
-                   self.sumflg = 'L'
-               elif 'remove' in h['fileOp']:
-                   hash   = sha512()
-                   hash.update(bytes(os.path.basename(h['relPath']), encoding='utf-8'))
-                   self.sumstr = 'R,%s' % hash.hexdigest()
-                   self.sumflg = 'R'
-            else:
-                # FIXME ... md5name case.
-                self.sumstr = 'N,%s' % md5(bytes(os.path.basename(h['relPath']),'utf-8')).hexdigest()
-                self.sumflg = 'N'
+        else:
+            # FIXME ... md5name case.
+            self.sumstr = 'N,%s' % md5(bytes(os.path.basename(h['relPath']),'utf-8')).hexdigest()
+            self.sumflg = 'N'
+            h["sum"] = self.sumstr
 
+        # fileOp case... link, and remove need different treatment.
+        if 'fileOp' in h:
+            if 'link' in h['fileOp']:
+                hash = sha512()
+                hash.update( bytes( h['fileOp']['link'], encoding='utf-8' ) )
+                self.sumstr = 'L,%s' % hash.hexdigest()
+                self.sumflg = 'L'
+                h["sum"] = self.sumstr
+            elif 'remove' in h['fileOp']:
+                hash   = sha512()
+                hash.update(bytes(os.path.basename(h['relPath']), encoding='utf-8'))
+                self.sumstr = 'R,%s' % hash.hexdigest()
+                self.sumflg = 'R'
+                h["sum"] = self.sumstr
+            elif 'rename' in h['fileOp']:
+                h['oldname'] = h['fileOp']['rename']
+            else:
+                logger.error('unknown fileOp: %s' % h['fileOp'] )
+       
         self.headers = h
         self.hdrstr = str(h)
         self.isRetry = False
