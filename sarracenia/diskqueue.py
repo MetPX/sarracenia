@@ -267,10 +267,14 @@ class DiskQueue():
 
         if 'noDupe' in message:
             sumstr = jsonpickle.encode(message['noDupe']['key'])
+        elif 'fileOp' in message:
+            sumstr = jsonpickle.encode(message['fileOp'])
         elif 'integrity' in message:
             sumstr = jsonpickle.encode(message['integrity'])
+        elif 'pubTime' in message:
+            sumstr = jsonpickle.encode(message['pubTime'])
         else:
-            logger.error('no key found for message, cannot add')
+            logger.info('no key found for message, cannot add')
             return False
 
         cache_key = urlstr + ' ' + sumstr
