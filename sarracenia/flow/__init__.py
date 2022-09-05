@@ -1241,23 +1241,23 @@ class Flow:
             new_path = msg['new_dir'] + os.path.sep + msg['new_file']
             new_file = msg['new_file']
 
-            if 'fileOp' in msg and 'rename' in msg['fileOp']:
-                if 'renameUnlink' in msg:
-                    self.removeOneFile(msg['fileOp']['rename'])
-                    msg.setReport(201, 'old unlinked %s' % msg['fileOp']['rename'])
-                    self.worklist.ok.append(msg)
-                else:
-                    # actual rename...
-                    ok = self.renameOneItem(msg['fileOp']['rename'], new_path)
-                    # if rename succeeds, fall through to download object to find if the file renamed
-                    # actually matches the one advertised, and potentially download it.
-                    # if rename fails, recover by falling through to download the data anyways.
-                    if ok:
+            if 'fileOp' in msg :
+                if 'rename' in msg['fileOp']:
+                    if 'renameUnlink' in msg:
+                        self.removeOneFile(msg['fileOp']['rename'])
+                        msg.setReport(201, 'old unlinked %s' % msg['fileOp']['rename'])
                         self.worklist.ok.append(msg)
-                        msg.setReport(201, 'renamed')
-                        continue
+                    else:
+                        # actual rename...
+                        ok = self.renameOneItem(msg['fileOp']['rename'], new_path)
+                        # if rename succeeds, fall through to download object to find if the file renamed
+                        # actually matches the one advertised, and potentially download it.
+                        # if rename fails, recover by falling through to download the data anyways.
+                        if ok:
+                            self.worklist.ok.append(msg)
+                            msg.setReport(201, 'renamed')
+                            continue
 
-            elif 'fileOp' in msg:
                 if ('remove' in msg['fileOp']) and ('delete' in self.o.fileEvents):
                     if self.removeOneFile(new_path):
                         msg.setReport(201, 'removed')
@@ -1404,6 +1404,10 @@ class Flow:
             remote_file = token[-1]
             urlstr = msg['baseUrl'] + '/' + msg['relPath']
 
+        istr =msg['integrity']  if ('integrity' in msg) else "None"
+        fostr = msg['fileOp'] if ('fileOp' in msg ) else "None"
+
+        logger.debug( 'integrity: %s, fileOp: %s' % ( istr, fostr ) ) 
         new_inflight_path = ''
 
         new_dir = msg['new_dir']
