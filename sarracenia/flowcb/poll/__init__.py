@@ -408,7 +408,7 @@ class Poll(FlowCB):
                 if os.path.islink(path):
                     if 'size' in msg:
                         del msg['size']
-                    if not self.o.follow_links:
+                    if not self.o.follow_symlinks:
                         try: 
                             ok['fileOp'] = { 'link': os.readlink(path) } 
                             if 'Integrity' in msg:
@@ -438,7 +438,7 @@ class Poll(FlowCB):
         msg = sarracenia.Message.fromFileInfo(post_relPath, self.o, desc)
 
         if stat.S_ISLNK(desc.st_mode):
-            if not self.o.follow_links:
+            if not self.o.follow_symlinks:
                 if True: #try: 
                     msg['fileOp'] = { 'link': self.dest.readlink(path) }
                 else: #except:
