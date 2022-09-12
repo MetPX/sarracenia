@@ -214,9 +214,6 @@ class File(FlowCB):
             else:
                 msg['fileOp'][key] = value
 
-            if self.o.post_baseDir:
-                msg['fileOp'][key] = value.replace(self.o.post_baseDir, '')
-
         return [msg]
 
     def post_file_in_parts(self, path, lstat):
@@ -346,9 +343,6 @@ class File(FlowCB):
 
         if key == 'link':
             value = os.readlink(path)
-
-        if self.o.post_baseDir:
-            value = value.replace(self.o.post_baseDir, '')
 
         # used when moving a file
         if not 'fileOp' in msg:

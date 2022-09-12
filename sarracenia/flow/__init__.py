@@ -729,7 +729,7 @@ class Flow:
                 d = None
 
             if d:
-                if 'fileop' in msg:
+                if 'fileOp' in msg:
                     for f in ['link', 'hlink', 'rename']:
                         if f in msg['fileOp']:
                              msg['fileOp'][f] = msg['fileOp'][f].replace(self.o.baseDir, d, 1)
