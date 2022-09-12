@@ -1278,10 +1278,6 @@ class Flow:
                         self.reject(msg, 500, "link %s failed" % msg['fileOp'])
                     continue
 
-                # FIXME? should we pass through unknown ops transparently? (do nothing with them?)
-                self.reject(msg, 500, "msg with unknown file operation (%s) ignored" % msg['fileOp'] ) 
-                continue
-
             # establish new_inflight_path which is the file to download into initially.
             if self.o.inflight == None or (
                 ('blocks' in msg) and (msg['blocks']['method'] == 'inplace')):
