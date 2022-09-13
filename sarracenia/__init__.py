@@ -34,6 +34,7 @@ import importlib.util
 import logging
 import os
 import os.path
+import paramiko
 import re
 import sarracenia.filemetadata
 import stat
@@ -43,7 +44,6 @@ import urllib
 import urllib.request
 
 logger = logging.getLogger(__name__)
-
 
 
 class Sarracenia:
@@ -156,6 +156,32 @@ class TimeConversions:
     """
     pass
 
+
+def stat( path ) -> paramiko.SFTPAttributes:
+    """
+       os.stat call replacement which improves on it by returning
+       and SFTPAttributes structure, in place of the OS stat one,
+       featuring:
+ 
+       * mtime and ctime with subsecond accuracy 
+       * fields that can be overridden (not immutable.)
+
+    """
+    native_stat = os.stat( path )
+    
+    sa = paramiko.SFTPAttributes()
+    sa.st_mode = native_stat.st_mode
+    sa.st_ino = native_stat.st_ino
+    sa.st_dev  = native_stat.st_dev 
+    sa.st_nlink  = native_stat.st_nlink 
+    sa.st_uid  = native_stat.st_uid 
+    sa.st_gid  = native_stat.st_gid 
+    sa.st_size  = native_stat.st_size 
+
+    sa.st_mtime = os.path.getmtime(path)    
+    sa.st_atime = os.path.getctime(path)    
+    sa.st_ctime = native_stat.st_atime
+    return sa
 
 def nowflt():
     return timestr2flt(nowstr())
@@ -279,7 +305,7 @@ class Message(dict):
            set the file's extended attributes for the new value.
            the method of checksum calculation is from options.integrity_method.
            
-           return the checksum value.
+           sets the message 'integrity' field if appropriate.
         """
         xattr = sarracenia.filemetadata.FileMetadata(path)
 
@@ -291,12 +317,15 @@ class Message(dict):
         elif 'integrity' in xattr.x and 'mtime' in xattr.x:
             if xattr.get('mtime') >= msg['mtime']:
                 logger.debug("mtime remembered by xattr")
-                return xattr.get('integrity')
+                msg['integrity'] = xattr.get('integrity')
+                return
             else:
                 logger.debug("xattr sum too old")
                 calc_method = o.integrity_method
         else:
             calc_method = o.integrity_method
+
+        logger.debug('FIXME calc_method: %s' % calc_method )
 
         xattr.set('mtime', msg['mtime'])
 
@@ -304,6 +333,9 @@ class Message(dict):
 
         if calc_method[:4] == 'cod,' and len(calc_method) > 2:
             sumstr = calc_method
+        elif calc_method in [ 'md5name', 'invalid' ]:
+            xattr.persist()  # persist the mtime, at least...
+            return  # no checksum needed for md5name. 
         elif calc_method == 'arbitrary':
             sumstr = {
                 'method': 'arbitrary',
@@ -330,9 +362,9 @@ class Message(dict):
             checksum = sumalgo.value
             sumstr = {'method': calc_method, 'value': checksum}
 
+        msg['integrity'] = sumstr
         xattr.set('integrity', sumstr)
         xattr.persist()
-        return sumstr
 
     def copyDict(msg, d):
         """
@@ -407,7 +439,7 @@ class Message(dict):
             returns a well-formed message, or none.
         """
         m = sarracenia.Message.fromFileInfo(path, o, lstat)
-        m['integrity'] = m.__computeIntegrity(path, o)
+        m.__computeIntegrity(path, o)
         return m
 
     @staticmethod
@@ -442,7 +474,7 @@ class Message(dict):
             msg['exchange'] = o.exchange
 
         msg['local_offset'] = 0
-        msg['_deleteOnPost'] = set(['exchange', 'local_offset'])
+        msg['_deleteOnPost'] = set(['exchange', 'local_offset', 'subtopic', 'version'])
 
         # notice
         msg['pubTime'] = timeflt2str(time.time())
@@ -493,13 +525,14 @@ class Message(dict):
                 'method': 'cod',
                 'value': o.integrity_method[4:]
             }
-        elif o.integrity_method in ['md5name', 'random']:
+        elif o.integrity_method in ['random']:
             algo = sarracenia.integrity.Integrity.factory(o.integrity_method)
             algo.set_path(post_relPath)
             msg['integrity'] = {
                 'method': o.integrity_method,
                 'value': algo.value
             }
+        # for md5name/aka None aka omit integrity... should just fall through.
 
         if lstat is None: return msg
 
@@ -532,7 +565,7 @@ class Message(dict):
         if hasattr(o, 'chmod') and o.chmod:
             os.chmod(path, o.chmod)
 
-        return sarracenia.Message.fromFileData(path, o, os.stat(path))
+        return sarracenia.Message.fromFileData(path, o, stat(path))
 
     def setReport(msg, code, text=None):
         """
@@ -560,147 +593,6 @@ class Message(dict):
 
         msg['_deleteOnPost'] |= set(['report'])
         msg['report'] = {'code': code, 'message': text}
-
-    # ==============================================
-    # how will the download file land on this server
-    # with all options, this is really tricky
-    # ==============================================
-
-    def updateFieldsAccepted(msg, options, urlstr, pattern, maskDir,
-                             maskFileOption, mirror, strip, pstrip, flatten):
-        """
-           Set new message fields according to values when the message is accepted.
-           
-           * options: the sarracenia.config instance giving all the current configuration.
-           * urlstr: the urlstr being matched (baseUrl+relPath+sundew_extension)
-           * pattern: the regex that was matched.
-           * maskDir: the current directory to base the relPath from.
-           * maskFileOption: filename option value (sundew compatibility options.)
-           * strip: number of path entries to strip from the left side of the path.
-           * pstrip: pattern strip regexp to apply instead of a count.
-           * flatten: a character to replace path separators with toe change a multi-directory 
-             deep file name into a single long file name
-        """
-
-        # relative path by default mirror
-        if type(maskDir) is str:
-            # trying to subtract maskDir if present in relPath...
-            # occurs in polls a lot.
-            if maskDir in msg['relPath']:
-                relPath = '%s' % msg['relPath'].replace(maskDir, '', 1)
-
-            # sometimes the same, just the leading / is missing.
-            elif maskDir[1:] in msg['relPath']:
-                relPath = '%s' % msg['relPath'].replace(maskDir[1:], '', 1)
-            else:
-                relPath = '%s' % msg['relPath']
-        else:
-            relPath = '%s' % msg['relPath']
-
-        if options.baseUrl_relPath:
-            u = urllib.parse.urlparse(msg['baseUrl'])
-            relPath = u.path[1:] + '/' + relPath
-
-        # FIXME... why the % ? why not just assign it to copy the value?
-        if 'rename' in msg: relPath = '%s' % msg['rename']
-
-        token = relPath.split('/')
-        filename = token[-1]
-
-        # if provided, strip (integer) ... strip N heading directories
-        #         or  pstrip (pattern str) strip regexp pattern from relPath
-        # cannot have both (see setting of option strip in sr_config)
-
-        if strip > 0:
-            try:
-                token = token[strip:]
-
-            # strip too much... keep the filename
-            except:
-                token = [filename]
-
-        # strip using a pattern
-
-        elif pstrip != None:
-
-            #MG FIXME Peter's wish to have replacement in pstrip (ex.:${SOURCE}...)
-            try:
-                relstrip = re.sub(pstrip, '', relPath, 1)
-            except:
-                relstrip = relPath
-
-            # if filename dissappear... same as numeric strip, keep the filename
-            if not filename in relstrip: relstrip = filename
-            token = relstrip.split('/')
-
-        # if flatten... we flatten relative path
-        # strip taken into account
-
-        if flatten != '/':
-            filename = flatten.join(token)
-            token[-1] = [filename]
-
-        if maskFileOption is not None:
-            try:
-                filename = options.sundew_getDestInfos(msg, maskFileOption,
-                                                       filename)
-            except:
-                logger.error("problem with accept file option %s" %
-                             maskFileOption)
-            token[-1] = [filename]
-
-        # MG this was taken from the sr_sender when not derived from sr_subscribe.
-        # if a desftn_script is set in a plugin, it is going to be applied on all file
-        # this might be confusing
-
-        if options.destfn_script:
-            options.new_file = filename
-            ok = options.destfn_script(options)
-            if filename != options.new_file:
-                logger.debug("destfn_script : %s becomes %s " %
-                             (filename, options.new_file))
-                filename = options.new_file
-                token[-1] = [filename]
-
-        # not mirroring
-
-        if not mirror:
-            token = [filename]
-
-        # uses current dir
-
-        #if options.currentDir : new_dir = options.currentDir
-        if maskDir:
-            new_dir = options.set_dir_pattern(maskDir, msg)
-        else:
-            new_dir = ''
-
-        if options.baseDir:
-            if new_dir:
-                d = new_dir
-            elif options.post_baseDir:
-                d = options.set_dir_pattern(options.post_baseDir, msg)
-            else:
-                d = None
-
-            if d:
-                for f in ['link', 'oldname', 'newname']:
-                    if f in msg:
-                        msg[f] = msg[f].replace(options.baseDir, d, 1)
-
-        # add relPath
-
-        if len(token) > 1:
-            new_dir = new_dir + '/' + '/'.join(token[:-1])
-
-        new_dir = options.set_dir_pattern(new_dir, msg)
-        # resolution of sundew's dirPattern
-
-        tfname = filename
-        # when sr_sender did not derived from sr_subscribe it was always called
-        new_dir = options.sundew_dirPattern(pattern, urlstr, tfname, new_dir)
-
-        msg.updatePaths(options, new_dir, filename)
 
     def updatePaths(msg, options, new_dir, new_file):
         """
@@ -782,13 +674,10 @@ class Message(dict):
             return False
 
         res = True
-        for required_key in ['pubTime', 'baseUrl', 'relPath', 'integrity']:
+        for required_key in ['pubTime', 'baseUrl', 'relPath']:
             if not required_key in msg:
                 logger.error('missing key: %s' % required_key)
                 res = False
-        if msg['integrity']['method'] in ['unknown']:
-            logger.error(f"invalid integrity: {msg['integrity']} ")
-            res = False
 
         if not timeValidate(msg['pubTime']):
             res = False

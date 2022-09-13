@@ -499,7 +499,7 @@ class sr_GlobalState:
                 for cfg in os.listdir():
                     if cfg[0] == '.': continue
                     
-                    if cfg not in self.configs: continue
+                    if cfg not in self.configs[c]: continue
 
                     if os.path.isdir(cfg):
                         os.chdir(cfg)
@@ -954,7 +954,7 @@ class sr_GlobalState:
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
         self.package_lib_dir = os.path.dirname(
             inspect.getfile(sarracenia.config.Config))
-        self.appauthor = 'science.gc.ca'
+        self.appauthor = 'MetPX'
         self.options = opt
         self.appname = os.getenv('SR_DEV_APPNAME')
         self.hostname = socket.getfqdn()
@@ -1891,7 +1891,7 @@ class sr_GlobalState:
                             v = line[1]
                     if k == 'continue':
                         continue
-                    v3_cfg.write(k + ' ' + ' '.join(line[1:])+'\n')
+                    v3_cfg.write(' '.join(line)+'\n')
         logging.info('converting %s from v2 to v3 ' % cfg)
 
 

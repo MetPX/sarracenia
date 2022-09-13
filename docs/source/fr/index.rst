@@ -1,15 +1,13 @@
 
-Subscribe and Replicate 3
-=========================
+S´abonner et répliquer
+======================
 
-Subscribe and Replicate 3 (Sr3) is version 3 of Sarracenia:
-a *real-time* pub/sub data sharing management toolkit for
-command line, python, and C users.
+S´abonner et répliquer 3 (Sr3) est la version 3 de Sarracenia : une boîte à outils de gestion de partage de données pub/sub en temps réel pour les utilisateurs en ligne de commande, python et C.
 
-Home page: https://metpx.github.io/sarracenia 
+Page d'accueil: https://metpx.github.io/sarracenia 
 
 Discussions: https://github.com/MetPX/sarracenia/discussions
-Source Repo: https://github.com/MetPX/sarracenia/tree/v03_wip
+Source: https://github.com/MetPX/sarracenia/tree/v03_wip
 
 .. image:: https://img.shields.io/pypi/v/metpx-sarracenia?style=flat
   :alt: PyPI version
@@ -37,35 +35,28 @@ CI/CD:
     :alt: flow tests status
     :target: https://github.com/MetPX/sarracenia/actions/workflows/flow.yml
 
-Caveats: 
+Mises en garde :
 
-* meteorological *real-time* (seconds to minutes.) not electronic real-time (microseconds)
+* temps réel météorologique (secondes à minutes.) pas en temps réel électronique (microsecondes)
 
-*  This new web-site is for version 3 currently under development in the v03_wip branch.
-   Users of stable version 2 should go https://github.com/MetPX/sarracenia/tree/v2_stable
-   instead. 
+* Ce nouveau site web est pour la version 3 actuellement en développement dans la branche v03_wip. Les utilisateurs de la version stable 2 devraient plutôt aller sur https://github.com/MetPX/sarracenia/tree/v2_stable .
+
+
+
 
 .. toctree::
    :maxdepth: 1
    :caption: Contents:
 
-   Explanation/Overview.rst
 
+cibles de traduction::
+
+   Reference/index  (priorité 1)
+
+   Explanation/Overview.rst (priorité 2)
    Tutorials/index
    How2Guides/index
 
-   Explanation/index
-   Reference/index
-   Contribution/index
+   Explanation/index  (priorité 3: 1st level, lower levels later.)
 
-   api-documentation
-
-   fr/index
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   Contribution (even lower.)

@@ -43,7 +43,7 @@ class Https(Transfer):
     HyperText Transfer Protocol (HTTP)  ( https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol ) 
     sarracenia transfer protocol subclass supports/uses additional custom options:
 
-    * accelWgetCommand (default: '/usr/bin/wget %s -O %d' )
+    * accelWgetCommand (default: '/usr/bin/wget %s -o - -O %d' )
 
     built with: 
          urllib.request ( https://docs.python.org/3/library/urllib.request.html )
@@ -52,7 +52,7 @@ class Https(Transfer):
 
         super().__init__(proto, options)
 
-        self.o.add_option('accelWgetCommand', 'str', '/usr/bin/wget %s -O %d')
+        self.o.add_option('accelWgetCommand', 'str', '/usr/bin/wget %s -o - -O %d')
 
         logger.debug("sr_http __init__")
 
@@ -188,6 +188,7 @@ class Https(Transfer):
         p = subprocess.Popen(cmd)
         p.wait()
         if p.returncode != 0:
+            logger.warning("binary accelerator %s returned: %d" % ( cmd, p.returncode ) )
             return -1
         # FIXME: length is not validated.
         return length

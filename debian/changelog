@@ -3,6 +3,7 @@ metpx-sr3 (3.00.16) UNRELEASED; urgency=medium
   * wrapped all calls to callbacks with try/except and error messaging.
   * more obvious errors when extra dependencies are missing.
   * more documentation improvements.
+  * change appauthor from 'science.gc.ca' to 'MetPX'
 
  -- Peter Silva <peter.silva@ssc-spc.gc.ca>  Sat, 02 Apr 2022 10:47:21 -0400
 

@@ -12,12 +12,9 @@
 #  re-factored beyond recognition by PSilva 2021. Don't blame Michel
 #
 
-import os, sys, time
 from _codecs import decode, encode
 
-import jsonpickle
-
-from sarracenia import nowflt, timestr2flt
+import jsonpickle, os, os.path, sarracenia, sys, time
 
 import logging
 
@@ -93,7 +90,7 @@ class DiskQueue():
         # initialize all retry path if retry_path is provided
         self.working_dir = os.path.dirname(self.o.pid_filename)
         self.queue_file = self.working_dir + os.sep + 'diskqueue_' + name
-        self.now = nowflt()
+        self.now = sarracenia.nowflt()
 
         # retry messages
 
@@ -110,19 +107,19 @@ class DiskQueue():
 
         # initialize ages and message counts
 
+        self.msg_count = 0
+        self.msg_count_new = 0
+
         if not os.path.isfile(self.queue_file):
-            self.msg_count = 0
-            self.msg_count_new = 0
             return
 
-        retry_age = os.stat(self.queue_file).st_mtime
+        retry_age = os.path.getmtime(self.queue_file)
         self.msg_count = self._count_msgs(self.queue_file)
 
         if os.path.isfile(self.new_path):
-            new_age = os.stat(self.new_path).st_mtime
+            new_age = os.path.getmtime(self.new_path)
             if retry_age > new_age:
                 os.unlink(self.new_path)
-                self.msg_count_new = 0
             else:
                 self.msg_count_new = self._count_msgs(self.new_path)
 
@@ -267,7 +264,19 @@ class DiskQueue():
 
         """
         urlstr = message['baseUrl'] + '/' + message['relPath']
-        sumstr = jsonpickle.encode(message['integrity'])
+
+        if 'noDupe' in message:
+            sumstr = jsonpickle.encode(message['noDupe']['key'])
+        elif 'fileOp' in message:
+            sumstr = jsonpickle.encode(message['fileOp'])
+        elif 'integrity' in message:
+            sumstr = jsonpickle.encode(message['integrity'])
+        elif 'pubTime' in message:
+            sumstr = jsonpickle.encode(message['pubTime'])
+        else:
+            logger.info('no key found for message, cannot add')
+            return False
+
         cache_key = urlstr + ' ' + sumstr
 
         if 'parts' in message:
@@ -286,7 +295,7 @@ class DiskQueue():
         if self.o.retry_ttl <= 0: return False
 
         # compute message age
-        msg_time = timestr2flt(message['pubTime'])
+        msg_time = sarracenia.timestr2flt(message['pubTime'])
         msg_age = self.now - msg_time
 
         # expired ?
@@ -358,7 +367,7 @@ class DiskQueue():
                 self.queue_file)
             return
 
-        self.now = nowflt()
+        self.now = sarracenia.nowflt()
         self.retry_cache = {}
         N = 0
 
@@ -451,5 +460,5 @@ class DiskQueue():
         except:
             pass
 
-        elapse = nowflt() - self.now
+        elapse = sarracenia.nowflt() - self.now
         logger.info("on_housekeeping elapse %f" % elapse)

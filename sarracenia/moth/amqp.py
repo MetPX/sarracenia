@@ -94,8 +94,8 @@ class AMQP(Moth):
                 try:
                     body = raw_msg.body.decode("utf8")
                 except Exception as ex:
-                    logger.warning(
-                        'expected utf8 encoded message, decode error: %s' % ex)
+                    logger.error(
+                        'ignoring message. UTF8 encoding expected. raw message received: %s' % ex)
                     logger.debug('Exception details: ', exc_info=True)
                     return None
 
@@ -369,12 +369,16 @@ class AMQP(Moth):
         while True:
             try:
                 raw_msg = self.channel.basic_get(self.o['queueName'])
-
                 if (raw_msg is None) and (self.connection.connected):
                     return None
                 else:
                     self.metrics['rxByteCount'] += len(raw_msg.body)
-                    msg = self._msgRawToDict(raw_msg)
+                    try: 
+                        msg = self._msgRawToDict(raw_msg)
+                    except Exception as err:
+                        logger.error("message decode failed. raw message: %s" % raw_msg.body )
+                        logger.debug('Exception details: ', exc_info=True)
+                        msg = None
                     if msg is None:
                         self.metrics['rxBadCount'] += 1
                     else:
@@ -510,6 +514,7 @@ class AMQP(Moth):
         if self.o['messageDebugDump']:
             logger.info('raw message body: version: %s type: %s %s' %
                              (version, type(raw_body),  raw_body))
+            logger.info('raw message headers: type: %s value: %s' % (type(headers),  headers))
         if headers :  
             for k in headers:
                 if (type(headers[k]) is str) and (len(headers[k]) >=
@@ -548,9 +553,10 @@ class AMQP(Moth):
             # eventually be configurable with message_strategy stubborn
             # if True or not self.o['message_strategy']['stubborn']:
             #     return False
-            return False # instead of looping
 
             self.close()
+            return False # instead of looping
+
             self.__putSetup()
 
             if ebo < 60: ebo *= 2

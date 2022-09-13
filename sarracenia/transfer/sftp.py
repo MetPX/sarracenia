@@ -318,9 +318,16 @@ class Sftp(Transfer):
 
         alarm_cancel()
 
+    def readlink(self, link):
+        logger.debug("%s" % (link))
+        alarm_set(self.o.timeout)
+        value = self.sftp.readlink(link)
+        alarm_cancel()
+        return value
+
     # symlink
     def symlink(self, link, path):
-        logger.debug("sr_sftp symlink %s %s" % (link, path))
+        logger.debug("%s %s" % (link, path))
         alarm_set(self.o.timeout)
         self.sftp.symlink(link, path)
         alarm_cancel()

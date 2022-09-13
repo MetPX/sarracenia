@@ -3,6 +3,8 @@ from codecs import decode, encode
 
 import copy
 import logging
+from hashlib import md5
+from hashlib import sha512
 import os
 import sarracenia.config
 import time
@@ -68,6 +70,7 @@ class Message:
         #else:
         #    self.partstr = None
 
+
         if 'integrity' in h:
             sum_algo_v3tov2 = {
                 "arbitrary": "a",
@@ -81,7 +84,9 @@ class Message:
             }
             sa = sum_algo_v3tov2[h["integrity"]["method"]]
 
+
             self.sumflag = sa
+
             # transform sum value
             if sa in ['0', 'a']:
                 sv = h["integrity"]["value"]
@@ -95,9 +100,30 @@ class Message:
             self.sumflg = sa
             self.sumstr = h["sum"]
         else:
-            self.sumstr = None
-            self.sumflg = None
+            # FIXME ... md5name case.
+            self.sumstr = 'N,%s' % md5(bytes(os.path.basename(h['relPath']),'utf-8')).hexdigest()
+            self.sumflg = 'N'
+            h["sum"] = self.sumstr
 
+        # fileOp case... link, and remove need different treatment.
+        if 'fileOp' in h:
+            if 'link' in h['fileOp']:
+                hash = sha512()
+                hash.update( bytes( h['fileOp']['link'], encoding='utf-8' ) )
+                self.sumstr = 'L,%s' % hash.hexdigest()
+                self.sumflg = 'L'
+                h["sum"] = self.sumstr
+            elif 'remove' in h['fileOp']:
+                hash   = sha512()
+                hash.update(bytes(os.path.basename(h['relPath']), encoding='utf-8'))
+                self.sumstr = 'R,%s' % hash.hexdigest()
+                self.sumflg = 'R'
+                h["sum"] = self.sumstr
+            elif 'rename' in h['fileOp']:
+                h['oldname'] = h['fileOp']['rename']
+            else:
+                logger.error('unknown fileOp: %s' % h['fileOp'] )
+       
         self.headers = h
         self.hdrstr = str(h)
         self.isRetry = False
@@ -343,7 +369,14 @@ class V2Wrapper(FlowCB):
 
     def restoreMsg(self, m, v2msg):
 
-        for h in ['oldname', 'newname', 'link']:
+        if ('link' in v2msg.headers):
+            if not 'fileOp' in m:
+               m['fileOp'] = {}
+
+            if m['fileOp']['link'] != v2msg.headers['link']:
+                m['fileOp']['link'] = v2msg.headers['link']
+            
+        for h in ['oldname', 'newname' ]:
             if (h in v2msg.headers) and ((h not in m) or
                                          (v2msg.headers[h] != m[h])):
                 m[h] = v2msg.headers[h]

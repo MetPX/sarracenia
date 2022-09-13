@@ -11,6 +11,7 @@
 """
 import logging
 import os
+import os.path
 import stat
 
 from sarracenia.flowcb import FlowCB
@@ -28,18 +29,14 @@ class FDelay(FlowCB):
                             level=getattr(logging, self.o.logLevel.upper()))
 
         logger.debug('hoho! FIXME init')
+
+        self.o.add_option('msg_fdelay', 'duration', 60)
+        self.o.add_option('fdelay', 'duration', 60)
+
         #parent.declare_option('fdelay')
         if hasattr(self.o, 'msg_fdelay'):
             self.o.fdelay = self.o.msg_fdelay
 
-        if not hasattr(self.o, 'fdelay'):
-            self.o.fdelay = 60
-
-        if type(self.o.fdelay) is list:
-            self.o.fdelay = self.o.fdelay[0]
-
-        if type(self.o.fdelay) not in [int, float]:
-            self.o.fdelay = float(self.o.fdelay)
 
     def after_accept(self, worklist):
         # Prepare msg delay test
@@ -51,7 +48,7 @@ class FDelay(FlowCB):
 
             logger.info('FIXME: message[pubTime]=%s elapsed: %f ' %
                         (m['pubTime'], elapsedtime))
-            if m['integrity']['method'] == 'remove':
+            if 'fileOp' in m and 'remove' in m['fileOp'] :
                 # 'remove' msg will be removed by itself
                 worklist.rejected.append(m)
                 logger.debug('marked rejected 0 (file removal)')
@@ -79,8 +76,7 @@ class FDelay(FlowCB):
                 continue
 
             # Test file delay
-            fos = os.stat(f)
-            filetime = fos.st_mtime
+            filetime = os.path.getmtime(f)
             elapsedtime = nowflt() - filetime
             if elapsedtime < self.o.fdelay:
                 dbg_msg = "file not old enough, sleeping for {:.3f} seconds"

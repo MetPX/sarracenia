@@ -82,7 +82,6 @@ class Integrity:
 
 
 import sarracenia.integrity.arbitrary
-import sarracenia.integrity.md5name
 import sarracenia.integrity.md5
 import sarracenia.integrity.random
 import sarracenia.integrity.sha512

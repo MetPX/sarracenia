@@ -472,7 +472,7 @@ class Config:
     ]
 
     # lookup in dictionary, respond with canonical version.
-    appdir_stuff = {'appauthor': 'science.gc.ca', 'appname': 'sr3'}
+    appdir_stuff = {'appauthor': 'MetPX', 'appname': 'sr3'}
 
     # Correct name on the right, old name on the left.
     synonyms = {
@@ -562,13 +562,13 @@ class Config:
         self.timezone = 'UTC'
         self.debug = False
         self.declared_exchanges = []
-        self.destfn_script = None
         self.dry_run = False
         self.env_declared = []  # list of variable that are "declared env"'d 
         self.v2plugins = {}
         self.v2plugin_options = []
         self.imports = []
         self.logEvents = set(['after_accept', 'after_work', 'on_housekeeping' ])
+        self.destfn_scripts = []
         self.plugins_late = []
         self.plugins_early = []
         self.exchange = None
@@ -756,6 +756,9 @@ class Config:
             fn = arguments[1]
         else:
             fn = self.filename
+        if re.compile('DESTFNSCRIPT=.*').match(fn):
+            script=fn[13:]
+            self.destfn_scripts.append(script)
 
         return (arguments[0], self.directory, fn, regex,
                 option.lower() in ['accept', 'get'], self.mirror, self.strip,
@@ -1096,9 +1099,9 @@ class Config:
                         line = convert_to_v3[k][v]
                         k = line[0]
                         if 'continue' in line:
-                            logger.info( f'{cfg}:{lineno} obsolete v2: \"{l}\" ignored' )
+                            logger.debug( f'{cfg}:{lineno} obsolete v2: \"{l}\" ignored' )
                         else:
-                            logger.info( f'{cfg}:{lineno} obsolete v2:\"{l}\" converted to sr3:\"{" ".join(line)}\"' )
+                            logger.debug( f'{cfg}:{lineno} obsolete v2:\"{l}\" converted to sr3:\"{" ".join(line)}\"' )
                 else:
                     line = convert_to_v3[k]
                     k=line[0]
@@ -1151,8 +1154,9 @@ class Config:
             elif k in ['include', 'config']:
                 try:
                     self.parse_file(v)
-                except:
-                    print("failed to parse: %s" % v)
+                except Exception as ex:
+                    logger.error('file %s failed to parse:  %s' % (v, ex))
+                    logger.debug('Exception details: ', exc_info=True)
             elif k in ['subtopic']:
                 self._parse_binding(v)
             elif k in ['topicPrefix']:
@@ -1575,106 +1579,6 @@ class Config:
             if ndestDir[0] == '/': ndestDir = ndestDir[1:]
 
         return ndestDir
-
-    def sundew_getDestInfos(self, msg, currentFileOption, filename):
-        """
-        modified from sundew client
-
-        WHATFN         -- First part (':') of filename 
-        HEADFN         -- Use first 2 fields of filename
-        NONE           -- Use the entire filename
-        TIME or TIME:  -- TIME stamp appended
-        DESTFN=fname   -- Change the filename to fname
-
-        ex: mask[2] = 'NONE:TIME'
-        """
-        if currentFileOption == None: return filename
-
-        timeSuffix = ''
-        satnet = ''
-        parts = filename.split(':')
-        firstPart = parts[0]
-
-        if 'sundew_extension' in msg.keys():
-            parts = [parts[0]] + msg['sundew_extension'].split(':')
-            filename = ':'.join(parts)
-
-        destFileName = filename
-
-        for spec in currentFileOption.split(':'):
-            if spec == 'WHATFN':
-                destFileName = firstPart
-            elif spec == 'HEADFN':
-                headParts = firstPart.split('_')
-                if len(headParts) >= 2:
-                    destFileName = headParts[0] + '_' + headParts[1]
-                else:
-                    destFileName = headParts[0]
-            elif spec == 'SENDER' and 'SENDER=' in filename:
-                i = filename.find('SENDER=')
-                if i >= 0: destFileName = filename[i + 7:].split(':')[0]
-                if destFileName[-1] == ':': destFileName = destFileName[:-1]
-            elif spec == 'NONE':
-                if 'SENDER=' in filename:
-                    i = filename.find('SENDER=')
-                    destFileName = filename[:i]
-                else:
-                    if len(parts) >= 6:
-                        # PX default behavior : keep 6 first fields
-                        destFileName = ':'.join(parts[:6])
-                        #  PDS default behavior  keep 5 first fields
-                        if len(parts[4]) != 1:
-                            destFileName = ':'.join(parts[:5])
-                # extra trailing : removed if present
-                if destFileName[-1] == ':': destFileName = destFileName[:-1]
-            elif spec == 'NONESENDER':
-                if 'SENDER=' in filename:
-                    i = filename.find('SENDER=')
-                    j = filename.find(':', i)
-                    destFileName = filename[:i + j]
-                else:
-                    if len(parts) >= 6:
-                        # PX default behavior : keep 6 first fields
-                        destFileName = ':'.join(parts[:6])
-                        #  PDS default behavior  keep 5 first fields
-                        if len(parts[4]) != 1:
-                            destFileName = ':'.join(parts[:5])
-                # extra trailing : removed if present
-                if destFileName[-1] == ':': destFileName = destFileName[:-1]
-            elif re.compile('SATNET=.*').match(spec):
-                satnet = ':' + spec
-            elif re.compile('DESTFN=.*').match(spec):
-                destFileName = spec[7:]
-            elif re.compile('DESTFNSCRIPT=.*').match(spec):
-                old_destfn_script = self.destfn_script
-                saved_new_file = msg['new_file']
-                msg['new_file'] = destFileName
-                self.destfn_script = None
-                script = spec[13:]
-                self.execfile('destfn_script', script)
-                if self.destfn_script != None:
-                    ok = self.destfn_script(self)
-                destFileName = msg['new_file']
-                self.destfn_script = old_destfn_script
-                msg['new_file'] = saved_new_file
-                if destFileName == None: destFileName = old_destFileName
-            elif spec == 'TIME':
-                timeSuffix = ':' + time.strftime("%Y%m%d%H%M%S", time.gmtime())
-                if 'pubTime' in msg:
-                    timeSuffix = ":" + msg['pubTime'].split('.')[0]
-                if 'pubTime' in msg:
-                    timeSuffix = ":" + msg['pubtime'].split('.')[0]
-                    timeSuffix = timeSuffix.replace('T', '')
-                # check for PX or PDS behavior ...
-                # if file already had a time extension keep his...
-                if len(parts[-1]) == 14 and parts[-1][0] == '2':
-                    timeSuffix = ':' + parts[-1]
-
-            else:
-                logger.error("Don't understand this DESTFN parameter: %s" %
-                             spec)
-                return (None, None)
-        return destFileName + satnet + timeSuffix
 
     # modified from metpx SenderFTP
     def sundew_matchPattern(self, BN, EN, BP, keywd, defval):

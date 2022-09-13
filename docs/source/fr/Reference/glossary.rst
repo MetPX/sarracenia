@@ -58,7 +58,6 @@ GLOSSARY
 | message        | message d'annonce (notification message)  |
 +----------------+-------------------------------------------+
 
-
 message, advertisement, post, notification, announcement -> message, publicité? , annonce? , article?
 
 The canonical term is now:
@@ -66,7 +65,3 @@ The canonical term is now:
 "notification message" in English, and "message d'annonce" in French.
 
 Please replace with the canonical term when you find it.
-
-
-
-
