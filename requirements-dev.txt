@@ -1,4 +1,5 @@
 Sphinx
+paramiko
 nbsphinx
 jupyter
 pyclamd
