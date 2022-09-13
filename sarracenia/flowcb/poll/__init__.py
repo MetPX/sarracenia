@@ -398,12 +398,25 @@ class Poll(FlowCB):
 
         # posting a localfile
         if self.o.post_baseUrl.startswith('file:'):
-            if os.path.isfile(path):
+            if os.path.isfile(path) or os.path.islink(path):
                 try:
                     lstat = sarracenia.stat(path)
                 except:
                     lstat = None
+
                 ok = sarracenia.Message.fromFileInfo(path, self.o, lstat)
+                if os.path.islink(path):
+                    if 'size' in msg:
+                        del msg['size']
+                    if not self.o.follow_symlinks:
+                        try: 
+                            ok['fileOp'] = { 'link': os.readlink(path) } 
+                            if 'Integrity' in msg:
+                                 del ok['Integrity']
+                        except:
+                            logger.error("cannot read link %s message dropped" % path)
+                            logger.debug('Exception details: ', exc_info=True)
+                            ok=None
                 return ok
 
         post_relPath = destDir + '/' + remote_file
@@ -424,9 +437,25 @@ class Poll(FlowCB):
 
         msg = sarracenia.Message.fromFileInfo(post_relPath, self.o, desc)
 
+        if stat.S_ISLNK(desc.st_mode):
+            if not self.o.follow_symlinks:
+                if True: #try: 
+                    msg['fileOp'] = { 'link': self.dest.readlink(path) }
+                else: #except:
+                    logger.error("cannot read link %s message dropped" % post_relPath)
+                    logger.debug('Exception details: ', exc_info=True)
+                    return None
+
         if self.o.integrity_method and (',' in self.o.integrity_method):
             m, v = self.o.integrity_method.split(',')
             msg['integrity'] = {'method': m, 'value': v}
+
+        # If there is a file operation, and it isn't a rename, then some fields are irrelevant/wrong.
+        if 'fileOp' in msg and 'rename' not in msg['fileOp']: 
+            if 'Integrity' in msg:
+                del msg['Integrity']
+            if 'size' in msg:
+                del msg['size']
 
         this_rename = self.o.rename
 
@@ -452,7 +481,10 @@ class Poll(FlowCB):
 
         for idx, remote_file in enumerate(filelst):
             desc = desclst[remote_file]
-            msgs.extend(self.poll_file_post(desc, destDir, remote_file))
+ 
+            new_msgs = self.poll_file_post(desc, destDir, remote_file)
+            if new_msgs:
+                msgs.extend(new_msgs)
         return msgs
 
     # =============

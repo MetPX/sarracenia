@@ -305,7 +305,7 @@ class Message(dict):
            set the file's extended attributes for the new value.
            the method of checksum calculation is from options.integrity_method.
            
-           return the checksum value.
+           sets the message 'integrity' field if appropriate.
         """
         xattr = sarracenia.filemetadata.FileMetadata(path)
 
@@ -317,7 +317,8 @@ class Message(dict):
         elif 'integrity' in xattr.x and 'mtime' in xattr.x:
             if xattr.get('mtime') >= msg['mtime']:
                 logger.debug("mtime remembered by xattr")
-                return xattr.get('integrity')
+                msg['integrity'] = xattr.get('integrity')
+                return
             else:
                 logger.debug("xattr sum too old")
                 calc_method = o.integrity_method
@@ -361,9 +362,9 @@ class Message(dict):
             checksum = sumalgo.value
             sumstr = {'method': calc_method, 'value': checksum}
 
+        msg['integrity'] = sumstr
         xattr.set('integrity', sumstr)
         xattr.persist()
-        return sumstr
 
     def copyDict(msg, d):
         """
@@ -438,7 +439,7 @@ class Message(dict):
             returns a well-formed message, or none.
         """
         m = sarracenia.Message.fromFileInfo(path, o, lstat)
-        m['integrity'] = m.__computeIntegrity(path, o)
+        m.__computeIntegrity(path, o)
         return m
 
     @staticmethod
@@ -524,13 +525,14 @@ class Message(dict):
                 'method': 'cod',
                 'value': o.integrity_method[4:]
             }
-        elif o.integrity_method in ['md5name', 'random']:
+        elif o.integrity_method in ['random']:
             algo = sarracenia.integrity.Integrity.factory(o.integrity_method)
             algo.set_path(post_relPath)
             msg['integrity'] = {
                 'method': o.integrity_method,
                 'value': algo.value
             }
+        # for md5name/aka None aka omit integrity... should just fall through.
 
         if lstat is None: return msg
 
@@ -672,13 +674,10 @@ class Message(dict):
             return False
 
         res = True
-        for required_key in ['pubTime', 'baseUrl', 'relPath', 'integrity']:
+        for required_key in ['pubTime', 'baseUrl', 'relPath']:
             if not required_key in msg:
                 logger.error('missing key: %s' % required_key)
                 res = False
-        if msg['integrity']['method'] in ['unknown']:
-            logger.error(f"invalid integrity: {msg['integrity']} ")
-            res = False
 
         if not timeValidate(msg['pubTime']):
             res = False

@@ -131,19 +131,10 @@ class File(FlowCB):
 
         msg = sarracenia.Message.fromFileInfo(path, self.o, None)
 
-        # sumstr
-        hash = sha512()
-        hash.update(bytes(os.path.basename(path), encoding='utf-8'))
-        sumstr = {
-            'method': 'remove',
-            'value': b64encode(hash.digest()).decode('utf-8')
-        }
+        msg['fileOp'] = { 'remove':'' }
 
         # partstr
         partstr = None
-
-        # completing headers
-        msg['integrity'] = sumstr
 
         # used when moving a file
         if key != None:
@@ -218,9 +209,10 @@ class File(FlowCB):
         # used when moving a file
 
         if key != None:
-            msg[key] = value
-            if key == 'oldname' and self.o.post_baseDir:
-                msg[key] = value.replace(self.o.post_baseDir, '')
+            if not 'fileOp' in msg:
+                msg['fileOp'] = { key : value }
+            else:
+                msg['fileOp'][key] = value
 
         return [msg]
 
@@ -342,34 +334,21 @@ class File(FlowCB):
 
         return [msg]
 
-    def post_link(self, path, key=None, value=None):
+    def post_link(self, path, key='link', value=None):
         #logger.debug("post_link %s" % path )
 
         msg = sarracenia.Message.fromFileInfo(path, self.o, None)
 
         # resolve link
 
-        link = os.readlink(path)
-
-        # partstr
-
-        partstr = None
-
-        # sumstr
-
-        hash = sha512()
-        hash.update(bytes(link, encoding='utf-8'))
-        msg['integrity'] = {
-            'method': 'link',
-            'value': b64encode(hash.digest()).decode('utf-8')
-        }
-
-        # complete headers
-        msg['link'] = link
+        if key == 'link':
+            value = os.readlink(path)
 
         # used when moving a file
-
-        if key != None: msg[key] = value
+        if not 'fileOp' in msg:
+           msg['fileOp'] = { key: value }
+        else:
+           msg['fileOp'][key] = value
 
         return [msg]
 
@@ -391,14 +370,14 @@ class File(FlowCB):
 
         if os.path.isfile(dst):
             messages.extend(self.post_delete(src, 'newname', dst))
-            messages.extend(self.post_file(dst, sarracenia.stat(dst), 'oldname', src))
+            messages.extend(self.post_file(dst, sarracenia.stat(dst), 'rename', src))
             return messages
 
         # link
 
         if os.path.islink(dst):
             messages.extend(self.post_delete(src, 'newname', dst))
-            messages.extend(self.post_link(dst, 'oldname', src))
+            messages.extend(self.post_link(dst, 'rename', src))
             return messages
 
         # directory

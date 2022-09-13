@@ -79,8 +79,8 @@ class Log(FlowCB):
             for msg in worklist.rejected:
                 if 'report' in msg:
                     logger.info(
-                        "rejected: %d %s " %
-                        (msg['report']['code'], msg['report']['message']))
+                        "%s rejected: %d %s " %
+                        (msg['relPath'], msg['report']['code'], msg['report']['message']))
                 else:
                     logger.info("rejected: %s " % self._messageStr(msg))
 
@@ -119,8 +119,15 @@ class Log(FlowCB):
                 self.fileBytes += msg['size']
 
             if set(['after_work', 'all']) & self.o.logEvents:
-                if msg['integrity']['method'] in ['link', 'remove']:
-                    verb = msg['integrity']['method']
+                if 'fileOp' in msg :
+                    if 'link' in msg['fileOp']:
+                        verb = 'linked'
+                    elif 'remove' in msg['fileOp']:
+                        verb = 'removed'
+                    elif 'rename' in msg['fileOp']:
+                        verb = 'renamed'
+                    else:
+                        verb = ','.join(msg['fileOp'].keys())
                 elif self.action_verb in ['downloaded'] and 'content' in msg:
                     verb = 'written from message'
                 else:

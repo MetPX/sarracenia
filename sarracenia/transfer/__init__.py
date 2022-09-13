@@ -129,8 +129,8 @@ class Transfer():
     def __init__(self, proto, options):
 
         self.o = options
-        if 'sarracenia.transfer.Transfer.logLevel' in self.o.settings:
-            ll = self.o.settings[sarracenia.transfer.Transfer.logLevel]
+        if 'sarracenia.transfer.Transfer' in self.o.settings and 'logLevel' in self.o.settings:
+            ll = self.o.settings['sarracenia.transfer.Transfer']['logLevel']
         else:
             ll = self.o.logLevel
 

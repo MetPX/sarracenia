@@ -73,7 +73,20 @@ class V02(Encoding):
             else:
                 sv = encode(decode(msg["sum"][2:], 'hex'),
                             'base64').decode('utf-8').strip()
-            msg["integrity"] = {"method": sm, "value": sv}
+            if 'oldname' in msg:
+                msg['fileOp'] = { 'rename': msg['oldname'] }
+                del msg['oldname']
+                msg["integrity"] = {"method": sm, "value": sv}
+            elif sm == 'remove':
+                msg['fileOp'] = { 'remove': '' }
+            elif 'link' in msg:
+                msg['fileOp'] = { 'link': msg['link'] }
+                del msg['link']
+            elif sm == 'md5name':
+                pass
+            else:
+                msg["integrity"] = {"method": sm, "value": sv}
+
             del msg['sum']
     
         if 'parts' in msg:
@@ -105,8 +118,8 @@ class V02(Encoding):
 
         # v2wrapp
         for h in [
-                    'pubTime', 'baseUrl', 'relPath', 'size', 'blocks',
-                    'content', 'integrity'
+                    'pubTime', 'baseUrl', 'fileOp', 'relPath', 'size', 
+                    'blocks', 'content', 'integrity'
         ]:
             if h in v2m.headers:
                     del v2m.headers[h]

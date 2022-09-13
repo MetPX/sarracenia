@@ -42,7 +42,7 @@ class Delete(FlowCB):
         for message in worklist.ok:
 
             # don't remove files that have already been removed.
-            if message['integrity']['method'] == 'remove':
+            if 'fileOp' in message and 'remove' in message['fileOp']:
                 continue
 
             files_to_delete = []

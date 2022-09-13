@@ -1099,9 +1099,9 @@ class Config:
                         line = convert_to_v3[k][v]
                         k = line[0]
                         if 'continue' in line:
-                            logger.info( f'{cfg}:{lineno} obsolete v2: \"{l}\" ignored' )
+                            logger.debug( f'{cfg}:{lineno} obsolete v2: \"{l}\" ignored' )
                         else:
-                            logger.info( f'{cfg}:{lineno} obsolete v2:\"{l}\" converted to sr3:\"{" ".join(line)}\"' )
+                            logger.debug( f'{cfg}:{lineno} obsolete v2:\"{l}\" converted to sr3:\"{" ".join(line)}\"' )
                 else:
                     line = convert_to_v3[k]
                     k=line[0]

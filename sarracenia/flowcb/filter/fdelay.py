@@ -48,7 +48,7 @@ class FDelay(FlowCB):
 
             logger.info('FIXME: message[pubTime]=%s elapsed: %f ' %
                         (m['pubTime'], elapsedtime))
-            if m['integrity']['method'] == 'remove':
+            if 'fileOp' in m and 'remove' in m['fileOp'] :
                 # 'remove' msg will be removed by itself
                 worklist.rejected.append(m)
                 logger.debug('marked rejected 0 (file removal)')

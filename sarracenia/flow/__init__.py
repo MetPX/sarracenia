@@ -131,11 +131,12 @@ class Flow:
 
         self.o = cfg
 
-        if 'sarracenia.flow.Flow.logLevel' in self.o.settings:
+        if 'sarracenia.flow.Flow' in self.o.settings and 'logLevel' in self.o.settings['sarracenia.flow.Flow']:
             logger.setLevel(
                 getattr(
                     logging,
-                    self.o.settings['sarracenia.flow.Flow.logLevel'].upper()))
+                    self.o.settings['sarracenia.flow.Flow']['logLevel'].upper()))
+            logger.warning('FIXME! class specific logLevel Override')
         else:
             logger.setLevel(getattr(logging, self.o.logLevel.upper()))
 
@@ -231,19 +232,25 @@ class Flow:
 
         if hasattr(self, 'plugins') and (entry_point in self.plugins):
             for p in self.plugins[entry_point]:
-                try:
+                if self.o.logLevel.lower() == 'debug' :
                     p(self.worklist)
-                except Exception as ex:
-                    logger.error( f'flowCallback plugin {p}/{entry_point} crashed: {ex}' )
-                    logger.debug( "details:", exc_info=True )
+                else:
+                    try:
+                        p(self.worklist)
+                    except Exception as ex:
+                        logger.error( f'flowCallback plugin {p}/{entry_point} crashed: {ex}' )
+                        logger.debug( "details:", exc_info=True )
 
     def _runCallbacksTime(self, entry_point):
         for p in self.plugins[entry_point]:
-            try:
+            if self.o.logLevel.lower() == 'debug' :
                 p()
-            except Exception as ex:
-                logger.error( f'flowCallback plugin {p}/{entry_point} crashed: {ex}' )
-                logger.debug( "details:", exc_info=True )
+            else:
+                try:
+                    p()
+                except Exception as ex:
+                    logger.error( f'flowCallback plugin {p}/{entry_point} crashed: {ex}' )
+                    logger.debug( "details:", exc_info=True )
 
     def _runCallbackMetrics(self):
         """Collect metrics from plugins with a ``metrics_report`` entry point.
@@ -251,12 +258,16 @@ class Flow:
         Expects the plugin to return a dictionary containing metrics, which is saved to ``self.metrics[plugin_name]``.
         """
         for p in self.plugins["metrics_report"]:
-            try:
+            if self.o.logLevel.lower() == 'debug' :
                 plugin_name = p.__qualname__.replace('.metrics_report', '')
                 self.metrics[plugin_name] = p()
-            except Exception as ex:
-                logger.error( f'flowCallback plugin {p}/metrics_report crashed: {ex}' )
-                logger.debug( "details:", exc_info=True )
+            else:
+                try:
+                    plugin_name = p.__qualname__.replace('.metrics_report', '')
+                    self.metrics[plugin_name] = p()
+                except Exception as ex:
+                    logger.error( f'flowCallback plugin {p}/metrics_report crashed: {ex}' )
+                    logger.debug( "details:", exc_info=True )
 
     def has_vip(self):
 
@@ -307,11 +318,14 @@ class Flow:
     def ack(self, mlist) -> None:
         if "ack" in self.plugins:
             for p in self.plugins["ack"]:
-                try:
+                if self.o.logLevel.lower() == 'debug' :
                     p(mlist)
-                except Exception as ex:
-                    logger.error( f'flowCallback plugin {p}/ack crashed: {ex}' )
-                    logger.debug( "details:", exc_info=True )
+                else:
+                    try:
+                        p(mlist)
+                    except Exception as ex:
+                        logger.error( f'flowCallback plugin {p}/ack crashed: {ex}' )
+                        logger.debug( "details:", exc_info=True )
 
     def run(self):
         """
@@ -414,6 +428,8 @@ class Flow:
 
                     # need to acknowledge here, because posting will delete message-id
                     self.ack(self.worklist.ok)
+                    self.ack(self.worklist.rejected)
+                    self.ack(self.worklist.failed)
 
                     # adjust message after action is done, but before 'after_work' so adjustment is possible.
                     for m in self.worklist.ok:
@@ -713,9 +729,10 @@ class Flow:
                 d = None
 
             if d:
-                for f in ['link', 'oldname', 'newname']:
-                    if f in msg:
-                        msg[f] = msg[f].replace(self.o.baseDir, d, 1)
+                if 'fileOp' in msg:
+                    for f in ['link', 'hlink', 'rename']:
+                        if f in msg['fileOp']:
+                             msg['fileOp'][f] = msg['fileOp'][f].replace(self.o.baseDir, d, 1)
 
         # add relPath
 
@@ -758,9 +775,9 @@ class Flow:
                     (lag, m['new_file']))
                 continue
 
-            if 'oldname' in m:
+            if 'fileOp' in m and 'rename' in m['fileOp']:
                 url = self.o.set_dir_pattern(m['baseUrl'],
-                                             m) + os.sep + m['oldname']
+                                             m) + os.sep + m['fileOp']['rename']
                 if 'sundew_extension' in m and url.count(":") < 1:
                     urlToMatch = url + ':' + m['sundew_extension']
                 else:
@@ -787,13 +804,13 @@ class Flow:
                 if mask_regexp.match(urlToMatch):
                     matched = True
                     if not accepting:
-                        if ('oldname' in m) and oldname_matched:
+                        if 'fileOp' in m and 'rename' in m['fileOp'] and oldname_matched:
                             # deletion rename case... need to accept with an extra field...
                             if not 'renameUnlink' in m:
                                 m['renameUnlink'] = True
                                 m['_deleteOnPost'] |= set(['renameUnlink'])
                             logger.debug("rename deletion 1 %s" %
-                                         (m['oldname']))
+                                         (m['fileOp']['rename']))
                         else:
                             self.reject(
                                 m, 304, "mask=%s strip=%s url=%s" %
@@ -808,11 +825,11 @@ class Flow:
                     break
 
             if not matched:
-                if ('oldname' in m) and oldname_matched:
+                if 'fileOp' in m and ('rename' in m['fileOp']) and oldname_matched:
                     if not 'renameUnlink' in m:
                         m['renameUnlink'] = True
                         m['_deleteOnPost'] |= set(['renameUnlink'])
-                    logger.debug("rename deletion 2 %s" % (m['oldname']))
+                    logger.debug("rename deletion 2 %s" % (m['fileOp']['rename']))
                     filtered_worklist.append(m)
                     self.updateFieldsAccepted(m, url, None,
                                            default_accept_directory,
@@ -1071,14 +1088,19 @@ class Flow:
                         msg['new_path'], new_mtime - old_mtime, new_mtime,
                         old_mtime))
 
-        if msg['integrity']['method'] in ['random', 'md5name', 'cod']:
-            logger.debug("content_match %s sum 0/n/z never matches" %
+        if 'integrity' in msg and msg['integrity']['method'] in ['random', 'cod']:
+            logger.debug("content_match %s sum 0/z never matches" %
                          (msg['new_path']))
             return True
 
         if end > fsiz:
             logger.debug(
-                "content_match file not big enough... considered different")
+                "new file not big enough... considered different")
+            return True
+
+        if not 'integrity' in msg: 
+            # FIXME... should there be a setting to assume them the same? use cases may vary.
+            logger.debug( "no checksum available, assuming different" )
             return True
 
         try:
@@ -1120,7 +1142,7 @@ class Flow:
 
     def renameOneItem(self, old, path):
         """
-            for messages with an oldname, it is to rename a file.
+            for messages with an rename file operation, it is to rename a file.
         """
         ok = True
         if not os.path.isfile(old):
@@ -1146,19 +1168,20 @@ class Flow:
             ok = False
         return ok
 
-    def link1file(self, msg):
+    def link1file(self, msg, symbolic=True):
         """        
-          perform a symbolic link of a single file, based on a message, returning boolean success
+          perform a link of a single file, based on a message, returning boolean success
+          if it's Symbolic, then do that. else do a hard link.
 
           imported from v2/subscribe/doit_download "link event, try to link the local product given by message"
         """
         logger.debug("message is to link %s to %s" %
-                     (msg['new_file'], msg['link']))
+                     (msg['new_file'], msg['fileOp']['link']))
 
         # redundant, check is done in caller.
         #if not 'link' in self.o.fileEvents:
         #    logger.info("message to link %s to %s ignored (events setting)" %  \
-        #                                    ( msg['new_file'], msg[ 'link' ] ) )
+        #                                    ( msg['new_file'], msg['fileOp'][ 'link' ] ) )
         #    return False
 
         if not os.path.isdir(msg['new_dir']):
@@ -1176,12 +1199,18 @@ class Flow:
             if os.path.isfile(path): os.unlink(path)
             if os.path.islink(path): os.unlink(path)
             if os.path.isdir(path): os.rmdir(path)
-            os.symlink(msg['link'], path)
-            logger.info("%s symlinked to %s " % (msg['new_file'], msg['link']))
+
+            if 'hlink' in msg['fileOp'] :
+                os.link(msg['fileOp']['hlink'], path)
+                logger.info("%s hard-linked to %s " % (msg['new_file'], msg['fileOp']['hlink']))
+            else:
+                os.symlink(msg['fileOp']['link'], path)
+                logger.info("%s sym-linked to %s " % (msg['new_file'], msg['fileOp']['link']))
+
         except:
             ok = False
-            logger.error("symlink of %s %s failed." %
-                         (msg['new_file'], msg['link']))
+            logger.error("link of %s %s failed." %
+                         (msg['new_file'], msg['fileOp']))
             logger.debug('Exception details:', exc_info=True)
 
         return ok
@@ -1212,42 +1241,42 @@ class Flow:
             new_path = msg['new_dir'] + os.path.sep + msg['new_file']
             new_file = msg['new_file']
 
-            if 'oldname' in msg:
-                if 'renameUnlink' in msg:
-                    self.removeOneFile(msg['oldname'])
-                    msg.setReport(201, 'old unlinked %s' % msg['oldname'])
-                    self.worklist.ok.append(msg)
-                else:
-                    # actual rename...
-                    ok = self.renameOneItem(msg['oldname'], new_path)
-                    # if rename succeeds, fall through to download object to find if the file renamed
-                    # actually matches the one advertised, and potentially download it.
-                    # if rename fails, recover by falling through to download the data anyways.
-                    if ok:
+            if 'fileOp' in msg :
+                if 'rename' in msg['fileOp']:
+                    if 'renameUnlink' in msg:
+                        self.removeOneFile(msg['fileOp']['rename'])
+                        msg.setReport(201, 'old unlinked %s' % msg['fileOp']['rename'])
                         self.worklist.ok.append(msg)
-                        msg.setReport(201, 'renamed')
-                        continue
+                    else:
+                        # actual rename...
+                        ok = self.renameOneItem(msg['fileOp']['rename'], new_path)
+                        # if rename succeeds, fall through to download object to find if the file renamed
+                        # actually matches the one advertised, and potentially download it.
+                        # if rename fails, recover by falling through to download the data anyways.
+                        if ok:
+                            self.worklist.ok.append(msg)
+                            msg.setReport(201, 'renamed')
+                            continue
 
-            elif (msg['integrity']['method'] == 'remove') and (
-                    'delete' in self.o.fileEvents):
-                if self.removeOneFile(new_path):
-                    msg.setReport(201, 'removed')
-                    self.worklist.ok.append(msg)
-                else:
-                    #FIXME: should this really be queued for retry? or just permanently failed?
-                    # in rejected to avoid retry, but wondering if failed and deferred
-                    # should be separate lists in worklist...
-                    self.reject(msg, 500, "remove %s failed" % new_path)
-                continue
+                if ('remove' in msg['fileOp']) and ('delete' in self.o.fileEvents):
+                    if self.removeOneFile(new_path):
+                        msg.setReport(201, 'removed')
+                        self.worklist.ok.append(msg)
+                    else:
+                        #FIXME: should this really be queued for retry? or just permanently failed?
+                        # in rejected to avoid retry, but wondering if failed and deferred
+                        # should be separate lists in worklist...
+                        self.reject(msg, 500, "remove %s failed" % new_path)
+                    continue
 
-            if 'link' in msg.keys() and ('link' in self.o.fileEvents):
-                if self.link1file(msg):
-                    msg.setReport(201, 'linked')
-                    self.worklist.ok.append(msg)
-                else:
-                    # as above...
-                    self.reject(msg, 500, "link %s failed" % msg['link'])
-                continue
+                if 'link' in msg['fileOp'] or 'hlink' in msg['fileOp'] and ('link' in self.o.fileEvents):
+                    if self.link1file(msg):
+                        msg.setReport(201, 'linked')
+                        self.worklist.ok.append(msg)
+                    else:
+                        # as above...
+                        self.reject(msg, 500, "link %s failed" % msg['fileOp'])
+                    continue
 
             # establish new_inflight_path which is the file to download into initially.
             if self.o.inflight == None or (
@@ -1371,6 +1400,10 @@ class Flow:
             remote_file = token[-1]
             urlstr = msg['baseUrl'] + '/' + msg['relPath']
 
+        istr =msg['integrity']  if ('integrity' in msg) else "None"
+        fostr = msg['fileOp'] if ('fileOp' in msg ) else "None"
+
+        logger.debug( 'integrity: %s, fileOp: %s' % ( istr, fostr ) ) 
         new_inflight_path = ''
 
         new_dir = msg['new_dir']
@@ -1708,26 +1741,33 @@ class Flow:
             # delete event
             #=================================
 
-            if msg['integrity']['method'] == 'remove':
-                if hasattr(self.proto[self.scheme], 'delete'):
-                    logger.debug("message is to remove %s" % new_file)
-                    self.proto[self.scheme].delete(new_file)
-                    return True
-                logger.error("%s, delete not supported" % self.scheme)
-                return False
+            if 'fileOp' in msg:
+                if 'remove' in msg['fileOp'] :
+                    if hasattr(self.proto[self.scheme], 'delete'):
+                        logger.debug("message is to remove %s" % new_file)
+                        self.proto[self.scheme].delete(new_file)
+                        return True
+                    logger.error("%s, delete not supported" % self.scheme)
+                    return False
 
-            #=================================
-            # link event
-            #=================================
+                #=================================
+                # link event
+                #=================================
 
-            if 'link' in msg:
-                if hasattr(self.proto[self.scheme], 'symlink'):
-                    logger.debug("message is to link %s to: %s" %
-                                 (new_file, msg['link']))
-                    self.proto[self.scheme].symlink(msg['link'], new_file)
-                    return True
-                logger.error("%s, symlink not supported" % self.scheme)
-                return False
+                if 'hlink' in msg['fileOp']:
+                    if hasattr(self.proto[self.scheme], 'link'):
+                        logger.debug("message is to link %s to: %s" % (new_file, msg['fileOp']['hlink']))
+                        self.proto[self.scheme].link(msg['fileOp']['hlink'], new_file)
+                        return True
+                    logger.error("%s, hardlinks not supported" % self.scheme)
+                    return False
+                elif 'link' in msg['fileOp']:
+                    if hasattr(self.proto[self.scheme], 'symlink'):
+                        logger.debug("message is to link %s to: %s" % (new_file, msg['fileOp']['link']))
+                        self.proto[self.scheme].symlink(msg['fileOp']['link'], new_file)
+                        return True
+                    logger.error("%s, symlink not supported" % self.scheme)
+                    return False
 
             #=================================
             # send event
