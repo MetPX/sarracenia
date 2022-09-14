@@ -10,6 +10,7 @@ The best way for data transfers to occur is to avoid polling, thus limiting unne
 
 Generally speaking, Linux is the main deployment platform, and the only platform on which server configurations are deployed and tested. Other platforms are used as client end points (Windows, etc.). This isn´t a limitation, it is just what is used and tested. Implementations of the pump on Windows should work, they just are not officially tested.
 
+Sarracenia pumps can be built on a single server or an array of them, (see `Deployment Consideration <DeploymentConsiderations.rst>` for more details ) .but all the concepts discussed below apply.
 
 The Flow Algorithm
 ------------------
@@ -317,3 +318,6 @@ A corresponding credentials.conf would look like::
   amqps://feeder:feederpw@blacklab/
   amqps://goldenlab:puppypw@blacklab/
   amqps://anonymous:anonymous@blacklab/
+
+
+

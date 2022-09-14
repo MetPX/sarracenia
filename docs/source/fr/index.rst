@@ -48,15 +48,8 @@ Mises en garde :
    :maxdepth: 1
    :caption: Contents:
 
+   Reference/index  
 
-cibles de traduction::
-
-   Reference/index  (priorité 1)
-
-   Explanation/Overview.rst (priorité 2)
-   Tutorials/index
+   Explication/Overview.rst 
+   Tutoriels/index
    How2Guides/index
-
-   Explanation/index  (priorité 3: 1st level, lower levels later.)
-
-   Contribution (even lower.)
