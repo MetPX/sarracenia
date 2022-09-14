@@ -369,7 +369,7 @@ servers that provide message publish and subscribe services, with
 robust queuing support, and hierarchical topic based exchanges.
 
 Each Server runs a broker to advertise their own contribution, and they subscribes to 
-each others' advertisements. Advertisements are transitive, in that each 
+each others' notification messages. Advertisements are transitive, in that each 
 node can advertise whatever it has downloaded from any other node so that other
 nodes connected to it can consume them. This implements mesh networking 
 amongst all NC/DCPC/GISCs.
@@ -530,7 +530,7 @@ Simple/Scalable Peer Configurations for Nations
 Assume a mesh of national nodes with arbitrary connectivity among them.
 Nodes download from the first neighbour to advertise data, transfers
 follow the speed of downloading from each node. If one node slows,
-neighbours will get advertisements from other nodes that present
+neighbours will get notification messages from other nodes that present
 new data earlier. So the network should balance bandwidth naturally.
 
 National centres can have as much, or as little, information locally as
@@ -557,7 +557,7 @@ on other countries' behalf. Redundancy for uploading could also be accomplished
 by uploading to multiple initial sites.
 
 If there are nodes that, for some reason, do not want to directly 
-communicate, they do not subscribe to each others advertisements directly. Each
+communicate, they do not subscribe to each others notification messages directly. Each
 can acquire data safely through intermediaries that each is comfortable with. 
 As long as there is a single path that leads between the two nodes, data will
 arrive at each node eventually. No explicit action by intermediaries is needed

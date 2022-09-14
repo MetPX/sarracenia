@@ -68,15 +68,15 @@ and seem helpful. We should get rid of any that are not helpful.
    The source can obtain any information about themselves::
 
 	- when status changed:  start,stop,drop.
-	- when announcements are accepted.
+	- when notification messages are accepted.
 	- when data is pulled by a consumer (a scope layer, or a end point.)
 
 
 2. AMQP brokers do not transfer any user data, just metadata.
 
    reasoning:
-   need to keep the messages small so that the forwarding rate is high.
-   large messages will gum up the works.  also permissions become interesting.
+   need to keep the notification messages small so that the forwarding rate is high.
+   large notification messages will gum up the works.  also permissions become interesting.
    end up with a 'maximum size' threshold, and implementing two methods for everything.
 
 3. Config changes should propagate, not be unique to a host

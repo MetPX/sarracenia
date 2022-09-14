@@ -22,11 +22,11 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-**sr3_post** posts the availability of a file by creating an announcement.
+**sr3_post** posts the availability of a file by creating an notification message.
 In contrast to most other sarracenia components that act as daemons,
 sr3_post is a one shot invocation which posts and exits.
 To make files 
-available to subscribers, **sr3_post** sends the announcements 
+available to subscribers, **sr3_post** sends the notification messages 
 to an AMQP server, also called a broker.  
 
 This manual page is primarily concerned with the python implementation,
@@ -137,7 +137,7 @@ post_baseDir <path>
   The *base_dir* option supplies the directory path that,
   when combined (or found) in the given *path*, 
   gives the local absolute path to the data file to be posted.
-  The document root part of the local path will be removed from the posted announcement.
+  The document root part of the local path will be removed from the posted notification message.
   For sftp URLs: it can be appropriate to specify a path relative to a user account.
   Example of that usage would be:  -dr ~user  -post_base_url sftp:user@host  
   For file URLs: base_dir is usually not appropriate.  To post an absolute path, 
@@ -197,11 +197,11 @@ post_baseUrl <url>
 The **url** option sets the protocol, credentials, host and port under
 which the product can be fetched.
 
-The AMQP announcememet is made of the three fields, the announcement time,
+The AMQP announcememet is made of the three fields, the notification message time,
 this **url** value and the given **path** to which was withdrawn from the *base_dir*
 if necessary.
 
-The concatenation of the two last fields of the announcement defines
+The concatenation of the two last fields of the notification message defines
 what the subscribers will use to download the product. 
 
 reset
@@ -228,16 +228,16 @@ shim_defer_posting_to_exit EXPERIMENTAL
 
   Postpones file posting until the process exits.
   In cases where the same file is repeatedly opened and appended to, this
-  setting can avoid redundant posts.  (default: False)
+  setting can avoid redundant notification messages.  (default: False)
 
 shim_post_minterval *interval* EXPERIMENTAL
 -------------------------------------------
 
   If a file is opened for writing and closed multiple times within the interval,
   it will only be posted once. When a file is written to many times, particularly 
-  in a shell script, it makes for many posts, and shell script affects performance.  
+  in a shell script, it makes for many notification messages, and shell script affects performance.  
   subscribers will not be able to make copies quickly enough in any event, so
-  there is little benefit, in say, 100 posts of the same file in the same second.
+  there is little benefit, in say, 100 notification messages of the same file in the same second.
   It is wise set an upper limit on the frequency of posting a given file. (default: 5s)
   Note: if a file is still open, or has been closed after its previous post, then
   during process exit processing it will be posted again, even if the interval
@@ -293,7 +293,7 @@ nodupe_ttl on|off|999
 integrity <method>[,<value>]
 ----------------------------
 
-All file posts include a checksum. The *sum* option specifies how to calculate the it.
+All file notification messages include a checksum. The *sum* option specifies how to calculate the it.
 It is a comma separated string. Valid Integrity methods are ::
 
          cod,x      - Calculate On Download applying x
@@ -321,7 +321,7 @@ topicPrefix <key>
 header <name>=<value>
 ---------------------
 
-  Add a <name> header with the given value to advertisements. Used to pass strings as metadata.
+  Add a <name> header with the given value to notification messages. Used to pass strings as metadata.
 
 
 SHIM LIBRARY USAGE
@@ -449,7 +449,7 @@ SEE ALSO
 
 `sr3(1) <sr3.1.html>`_ - Sarracenia main command line interface.
 
-`sr3_post(1) <sr3_post.1.html>`_ - post file announcements (python implementation.)
+`sr3_post(1) <sr3_post.1.html>`_ - post file notification messages (python implementation.)
 
 `sr3_cpost(1) <sr3_cpost.1.html>`_ - post file announcemensts (C implementation.)
 
@@ -461,7 +461,7 @@ SEE ALSO
 
 `sr3_options(7) <sr_options.7.html>`_ - the configuration options
 
-`sr3_post(7) <sr_post.7.html>`_ - the format of announcements.
+`sr3_post(7) <sr_post.7.html>`_ - the format of notification messages.
 
 **Home Page:**
 

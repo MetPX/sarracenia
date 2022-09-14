@@ -16,9 +16,9 @@ the `sarracenia.flowcb <../../sarracenia/flowcb/__init__.py>`_ class.
 
 Briefly, the algorithm has the following steps:
 
-* **gather** -- passively collect messages to be processed.
-* **poll** -- actively collect messages to be processed.
-* **filter** -- apply accept/reject regular expression matches to the message list.
+* **gather** -- passively collect notification messages to be processed.
+* **poll** -- actively collect notification messages to be processed.
+* **filter** -- apply accept/reject regular expression matches to the notification message list.
 
   * *after_accept* callback entry point
 
@@ -77,24 +77,24 @@ Worklists
 ---------
 
 Besides option, the other main argument to after_accept and after_work callback
-routines is the worklist. The worklist is given to entry points occurring during message
-processing, and is a number of worklists of messages::
+routines is the worklist. The worklist is given to entry points occurring during notification message
+processing, and is a number of worklists of notification messages::
 
-    worklist.incoming --> messages to process (either new or retries.)
+    worklist.incoming --> notification messages to process (either new or retries.)
     worklist.ok       --> successfully processed
-    worklist.rejected --> messages to not be further processed.
-    worklist.failed   --> messages for which processing failed.
-                          failed messages will be retried.
+    worklist.rejected --> notification messages to not be further processed.
+    worklist.failed   --> notification messages for which processing failed.
+                          failed notification messages will be retried.
 
-Initially, all messages are placed in worklists.incoming.
+Initially, all notification messages are placed in worklists.incoming.
 if a plugin decides:
 
-- a message is not relevant, moved it to the rejected worklist. 
-- a no further processing of the message is needed, move it to ok worklist. 
+- a notification message is not relevant, moved it to the rejected worklist. 
+- a no further processing of the notification message is needed, move it to ok worklist. 
 - an operation failed and it should be retried later, move to failed worklist. 
 
-Do not remove from all lists, only move messages between the worklists.
-it is necessary to put rejected messages in the appropriate worklist
+Do not remove from all lists, only move notification messages between the worklists.
+it is necessary to put rejected notification messages in the appropriate worklist
 so that they are acknowledged as received. Messages can only removed 
 after the acknowledgement has been taken care of.
 
@@ -112,17 +112,17 @@ for the source file::
 
   logger = logging.getLogger(__name__)
 
-As is normal with the Python logging module, messages can then 
+As is normal with the Python logging module, notification messages can then 
 be posted to the log::
 
   logger.debug('got here')
 
-Each message in the log will be prefixed with the class and routine 
-emitting the log message, as well as the date/time.
+Each notification message in the log will be prefixed with the class and routine 
+emitting the log notification message, as well as the date/time.
 
 One can also implement a per module override to log levels.
 See sarracenia/moth/amqp.py as and example. For that module,
-the message logging level is upped to warning by default.
+the notification message logging level is upped to warning by default.
 One can override it with a config file setting::
 
    set sarracenia.moth.amqp.AMQP.logLevel info
@@ -190,24 +190,24 @@ Other entry_points, extracted from sarracenia/flowcb/__init__.py ::
         Task: return the name of a plugin for reference purposes. (automatically there)
 
     def ack(self,messagelist):
-        Task: acknowledge messages from a gather source.
+        Task: acknowledge notification messages from a gather source.
 
     def gather(self):
-        Task: gather messages from a source... return a list of messages.
+        Task: gather notification messages from a source... return a list of notification messages.
         return []
 
     """
       application of the accept/reject clauses happens here, so after_accept callbacks
-      run on a filtered set of messages.
+      run on a filtered set of notification messages.
 
     """
 
     def after_accept(self,worklist):
         """
-         Task: just after messages go through accept/reject masks,
-               operate on worklist.incoming to help decide which messages to process further.
-               and move messages to worklist.rejected to prevent further processing.
-               do not delete any messages, only move between worklists.
+         Task: just after notification messages go through accept/reject masks,
+               operate on worklist.incoming to help decide which notification messages to process further.
+               and move notification messages to worklist.rejected to prevent further processing.
+               do not delete any notification messages, only move between worklists.
         """
     def do_poll(self):
         Task: build worklist.incoming, a form of gather()
@@ -222,7 +222,7 @@ Other entry_points, extracted from sarracenia/flowcb/__init__.py ::
 
     def post(self,worklist):
          Task: operate on worklist.ok, and worklist.failed. modifies them appropriately.
-               message acknowledgement has already occurred before they are called.
+               notification message acknowledgement has already occurred before they are called.
 
     def on_housekeeping(self):
          do periodic processing.
@@ -237,7 +237,7 @@ Other entry_points, extracted from sarracenia/flowcb/__init__.py ::
 
     def on_start(self):
          After the connection is established with the broker and things are instantiated, but
-         before any message transfer occurs.
+         before any notification message transfer occurs.
 
     def on_stop(self):
 
@@ -306,17 +306,17 @@ https://github.com/wmo-im/GTStoWIS2) ::
 The *after_accept* routine is one of the two most common ones in use.
 
 The after_accept routine has an outer loop that cycles through the entire
-list of incoming messages. The normal processing is that is builds a new list of 
-incoming messages, appending all the rejected ones to *worklist.failed.* The 
-list is just a list of messages, where each message is a python dictionary with
-all the fields stored in a v03 format message. In the message there are, 
+list of incoming notification messages. The normal processing is that is builds a new list of 
+incoming notification messages, appending all the rejected ones to *worklist.failed.* The 
+list is just a list of notification messages, where each notification message is a python dictionary with
+all the fields stored in a v03 format notification message. In the notification message there are, 
 for example, *baseURL* and *relPath* fields:
 
 * baseURL - the baseURL of the resource from which a file would be obtained.
 * relPath - the relative path to append to the baseURL to get the complete download URL.
 
 This is happenning before transfer (download or sent, or processing) of the file
-has occurred, so one can change the behaviour by modifying fields in the message.
+has occurred, so one can change the behaviour by modifying fields in the notification message.
 Normally, the download paths (called new_dir, and new_file) will reflect the intent
 to mirror the original source tree. so if you have *a/b/c.txt*  on the source tree, and
 are downloading in to directory *mine* on the local system, the new_dir would be
@@ -329,12 +329,12 @@ placement, so best to use::
 
    msg.updatePaths( self.o, new_dir, new_file )
 
-to update all necessary fields in the message properly. It will update 
+to update all necessary fields in the notification message properly. It will update 
 'new_baseURL', 'new_relPath', 'new_subtopic' for use when posting.
 
 The try/except part of the routine deals with the case that, should
 a file arrive with a name from which a topic tree cannot be built, then an exception
-may occur, and the message is added to the failed worklist, and will not be
+may occur, and the notification message is added to the failed worklist, and will not be
 processed by later plugins.
 
 Other Examples
@@ -352,19 +352,19 @@ It's a good idea to look at the sarracenia source code itself. For example:
 * *sarracenia.flowcb.gather.file.File*  is a class that implements 
   file posting and directory watching, in the sense of a callback that 
   implements the *gather* entry point, by reading a file system and building a
-  list of messages for processing.
+  list of notification messages for processing.
 
 * *sarracenia.flowcb.gather.message.Message* is a class that implements
-  reception of messages from message queue protocol flows.
+  reception of notification messages from message queue protocol flows.
 
 * *sarracenia.flowcb.nodupe.NoDupe* This modules removes duplicates from message
   flows based on Integrity checksums.
 
 * *sarracenia.flowcb.post.message.Message* is a class that implements posting
-  messages to Message queue protocol flows
+  notification messages to Message queue protocol flows
 
 * *sarracenia.flowcb.retry.Retry* when the transfer of a file fails,
-  Sarracenia needs to persist the relevant message to a state file for 
+  Sarracenia needs to persist the relevant notification message to a state file for 
   a later time when it can be tried again.  This class implements
   that functionality.
 

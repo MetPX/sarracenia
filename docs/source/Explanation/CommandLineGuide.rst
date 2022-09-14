@@ -15,11 +15,11 @@ the state of all components. It then makes the change requested.
 
 sr3 components are used to publish to and download files from websites or file servers 
 that provide `sr3_post(7) <../Reference/sr3_post.7.rst>`_ protocol notifications. Such sites 
-publish messages for each file as soon as it is available. Clients connect to a
+publish notification messages for each file as soon as it is available. Clients connect to a
 *broker* (often the same as the server itself) and subscribe to the notifications.
 The *sr3_post* notifications provide true push notices for web-accessible folders (WAF),
 and are far more efficient than either periodic polling of directories, or ATOM/RSS style 
-notifications. Sr_subscribe can be configured to post messages after they are downloaded,
+notifications. Sr_subscribe can be configured to post notification messages after they are downloaded,
 to make them available to consumers for further processing or transfers.
 
 **sr3** can also be used for purposes other than downloading, (such as for 
@@ -30,14 +30,14 @@ output can be piped to other processes in classic UNIX text filter style.
 The components of sarracenia are groups of defaults on the main algorithm,
 to reduce the size of individual components.  The components are:
 
- - cpump - copy messages from one pump another second one (a C implementation of shovel.)
- - poll  - poll a non-sarracenia web or file server to create messages for processing.
- - post & watch - create messages for files for processing.
+ - cpump - copy notification messages from one pump another second one (a C implementation of shovel.)
+ - poll  - poll a non-sarracenia web or file server to create notification messages for processing.
+ - post & watch - create notification messages for files for processing.
  - sarra _ - download file from a remote server to the local one, and re-post them for others.
  - sender - send files from a local server to a remote one.
- - shovel - copy messages, only, not files.
- - watch - create messages for each new file that arrives in a directory, or at a set path.
- - winnow - copy messages, suppressing duplicates.
+ - shovel - copy notification messages, only, not files.
+ - watch - create notification messages for each new file that arrives in a directory, or at a set path.
+ - winnow - copy notification messages, suppressing duplicates.
  
 All of these components accept the same options, with the same effects.
 There is also `sr3_cpump(1) <../Reference/sr3_cpump.1.rst>`_ which is a C version that implements a
@@ -78,7 +78,7 @@ the dd configuration as a single foreground instance.
 
 The **foreground** action is used when building a configuration or for debugging.
 The **foreground** instance will run regardless of other instances which are currently
-running.  Should instances be running, it shares the same message queue with them.
+running.  Should instances be running, it shares the same notification message queue with them.
 A user stop the **foreground** instance by simply using <ctrl-c> on linux
 or use other means to kill the process.
 
@@ -468,7 +468,7 @@ The columns to the right give more information, detailing how many processes are
 The Expected entry lists how many processes should be running based on the configuration, and whether it is stopped
 or not.  The contents of the Run and Miss columns should always add up to what is in the Exp column.
 
-The last column is the number of messages stored in the local retry queue, indicating what channels are having
+The last column is the number of notification messages stored in the local retry queue, indicating what channels are having
 processing difficulties. Here is an example of seeing that a single configuration is running, stopping it, 
 cleaning it out::
 
@@ -506,21 +506,21 @@ CONSUMER
 ========
 
 Most Metpx Sarracenia components loop on reception and consumption of sarracenia 
-AMQP messages. Usually, the messages are `sr3_post(7) <../Reference/sr3_post.7.html>`_ messages, 
+AMQP messages. Usually, the notification messages are `sr3_post(7) <../Reference/sr3_post.7.html>`_ notification messages, 
 announcing the availability of a file by publishing its URL ( or a part 
 of a file ), but there are also report messages which can be processed using the 
 same tools. AMQP messages are published to an exchange 
-on a broker (AMQP server). The exchange delivers messages to queues. To receive 
-messages, one must provide the credentials to connect to the broker. Once 
-connected, a consumer needs to create a queue to hold pending messages.
+on a broker (AMQP server). The exchange delivers notification messages to queues. To receive 
+notification messages, one must provide the credentials to connect to the broker. Once 
+connected, a consumer needs to create a queue to hold pending notification messages.
 The consumer must then bind the queue to one or more exchanges so that they put 
-messages in its queue.
+notification messages in its queue.
 
-Once the bindings are set, the program can receive messages. When a message is received,
+Once the bindings are set, the program can receive notification messages. When a notification message is received,
 further filtering is possible using regular expressions onto the AMQP messages.
-After a message passes this selection process, and other internal validation, the
-component can run an **after_accept** plugin script to perform additional message 
-processing. If this plugin returns False, the message is discarded. If True, 
+After a notification message passes this selection process, and other internal validation, the
+component can run an **after_accept** plugin script to perform additional notification message 
+processing. If this plugin returns False, the notification message is discarded. If True, 
 processing continues.
 
 The following sections explains all the options to set this "consuming" part of
@@ -533,7 +533,7 @@ Setting the Broker
 
 **broker [amqp|mqtt]{s}://<user>:<password>@<brokerhost>[:port]/<vhost>**
 
-A URI is used to configure a connection to a message pump, either
+A URI is used to configure a connection to a notification message pump, either
 an MQTT or an AMQP broker. Some Sarracenia components set a reasonable default for 
 that option.  provide the normal user,host,port of connections. In most configuration files,
 the password is missing. The password is normally only included in the credentials.conf file.
@@ -552,7 +552,7 @@ The broker option tell each component which broker to contact.
       (default: None and it is mandatory to set it ) 
 
 Once connected to an AMQP broker, the user needs to bind a queue
-to exchanges and topics to determine the messages of interest.
+to exchanges and topics to determine the notification messages of interest.
 
 Creating the Queue
 ------------------
@@ -609,12 +609,12 @@ AMQP QUEUE BINDINGS
 Once one has a queue, it must be bound to an exchange.
 Users almost always need to set these options. Once a queue exists
 on the broker, it must be bound to an exchange. Bindings define which
-messages (URL notifications) the program receives. The root of the topic
+notification messages (URL notifications) the program receives. The root of the topic
 tree is fixed to indicate the protocol version and type of the
-message (but developers can override it with the **topicPrefix**
+notification message (but developers can override it with the **topicPrefix**
 option.)
 
-These options define which messages (URL notifications) the program receives:
+These options define which notification messages (URL notifications) the program receives:
 
  - **exchange      <name>         (default: xpublic)** 
  - **exchange_suffix      <name>  (default: None)** 
@@ -631,20 +631,20 @@ one has the choice of filtering using **subtopic** with only AMQP's limited wild
 length limited to 255 encoded bytes, or the more powerful regular expression 
 based  **accept/reject**  mechanisms described below. The difference being that the 
 AMQP filtering is applied by the broker itself, saving the notices from being delivered 
-to the client at all. The  **accept/reject**  patterns apply to messages sent by the 
+to the client at all. The  **accept/reject**  patterns apply to notification messages sent by the 
 broker to the subscriber. In other words,  **accept/reject**  are client side filters, 
 whereas **subtopic** is server side filtering.  
 
-It is best practice to use server side filtering to reduce the number of announcements sent
+It is best practice to use server side filtering to reduce the number of notification messages sent
 to the client to a small superset of what is relevant, and perform only a fine-tuning with the 
 client side mechanisms, saving bandwidth and processing for all.
 
 topicPrefix is primarily of interest during protocol version transitions, 
-where one wishes to specify a non-default protocol version of messages to 
+where one wishes to specify a non-default protocol version of notification messages to 
 subscribe to. 
 
 Usually, the user specifies one exchange, and several subtopic options.
-**Subtopic** is what is normally used to indicate messages of interest.
+**Subtopic** is what is normally used to indicate notification messages of interest.
 To use the subtopic to filter the products, match the subtopic string with
 the relative path of the product.
 
@@ -696,11 +696,11 @@ One can turn off queue binding as follows::
 Client-side Filtering
 ---------------------
 
-We have selected our messages through **exchange**, **subtopic** and
+We have selected our notification messages through **exchange**, **subtopic** and
 perhaps patterned  **subtopic** with AMQP's limited wildcarding which
 is all done by the broker (server-side). The broker puts the 
-corresponding messages in our queue. The subscribed component 
-downloads these messages.  Once the message is downloaded, Sarracenia 
+corresponding notification messages in our queue. The subscribed component 
+downloads these notification messages.  Once the notification message is downloaded, Sarracenia 
 clients apply more flexible client side filtering using regular expressions.
 
 Brief Introduction to Regular Expressions
@@ -741,19 +741,19 @@ accept, reject and accept_unmatch
 - **baseUrl_relPath   <boolean> (default: False)**
 
 The  **accept**  and  **reject**  options process regular expressions (regexp).
-The regexp is applied to the the message's URL for a match.
+The regexp is applied to the the notification message's URL for a match.
 
-If the message's URL of a file matches a **reject**  pattern, the message
+If the notification message's URL of a file matches a **reject**  pattern, the notification message
 is acknowledged as consumed to the broker and skipped.
 
 One that matches an **accept** pattern is processed by the component.
 
 In many configurations, **accept** and **reject** options are mixed
-with the **directory** option.  They then relate accepted messages
+with the **directory** option.  They then relate accepted notification messages
 to the **directory** value they are specified under.
 
 After all **accept** / **reject**  options are processed, normally
-the message is acknowledged as consumed and skipped. To override that
+the notification message is acknowledged as consumed and skipped. To override that
 default, set **accept_unmatch** to True. The **accept/reject** 
 settings are interpreted in order. Each option is processed orderly 
 from top to bottom. For example:
@@ -772,15 +772,15 @@ sequence #2::
 In sequence #1, all files ending in 'gif' are rejected.  In sequence #2, the accept .* (which
 accepts everything) is encountered before the reject statement, so the reject has no effect.
 
-It is best practice to use server side filtering to reduce the number of announcements sent
+It is best practice to use server side filtering to reduce the number of notification messages sent
 to the component to a small superset of what is relevant, and perform only a fine-tuning with the
 client side mechanisms, saving bandwidth and processing for all. More details on how
 to apply the directives follow:
 
 Normally the relative path (appended to the base directory) for files which are downloaded
-will be set according to the relPath header included in the message.  if *baseUrl_relPath*
-is set, however, the message's relPath will be prepended with the sub-directories from
-the message's baseUrl field.
+will be set according to the relPath header included in the notification message.  if *baseUrl_relPath*
+is set, however, the notification message's relPath will be prepended with the sub-directories from
+the notification message's baseUrl field.
 
 
 NAMING QUEUES
@@ -803,9 +803,9 @@ The total length of the queue name is limited to 255 bytes of UTF-8 characters.
 POSTING
 =======
 
-Just as many components consumer a stream of messages, many components
-(often the same ones) also product an output stream of messages.  To make files
-available to subscribers, a poster publishes the announcements to an AMQP or 
+Just as many components consumer a stream of notification messages, many components
+(often the same ones) also product an output stream of notification messages.  To make files
+available to subscribers, a poster publishes the notification messages to an AMQP or 
 MQTT server, also called a broker. The post_broker option sets all the 
 credential information to connect to the output **AMQP** broker.
 
@@ -833,9 +833,9 @@ NAMING EXCHANGES
 5. Administrative users (admin or feeder roles) can post or subscribe anywhere.
 
 For example, xpublic does not have xs\_ and a username pattern, so it can only be posted to by admin or feeder users.
-Since it ends in public, any user can bind to it to subscribe to messages posted.
+Since it ends in public, any user can bind to it to subscribe to notification messages posted.
 Users can create exchanges such as xs_<amqpUserName>_public which can be written to by that user (by rule 3), 
-and read by others (by rule 2.) A description of the conventional flow of messages through exchanges on a pump.  
+and read by others (by rule 2.) A description of the conventional flow of notification messages through exchanges on a pump.  
 Subscribers usually bind to the xpublic exchange to get the main data feed. This is the default in sr_subscribe.
 
 Another example, a user named Alice will have at least two exchanges:
@@ -845,7 +845,7 @@ Another example, a user named Alice will have at least two exchanges:
   - Alice can create a new exchange by just posting to it (with sr3_post or sr_cpost) if it meets the naming rules.
 
 Usually an sr_sarra run by a pump administrator will read from an exchange such as xs_Alice_mydata, 
-retrieve the data corresponding to Alice´s *post* message, and make it available on the pump, 
+retrieve the data corresponding to Alice´s *post* notification message, and make it available on the pump, 
 by re-announcing it on the xpublic exchange.
 
 
@@ -859,7 +859,7 @@ post per file.  The file's size is taken from the directory "ls"... but its
 checksum cannot be determined, so the "sum" header in the posting is set 
 to "0,0."
 
-By default, sr_poll sends its post message to the broker with default exchange
+By default, sr_poll sends its post notification message to the broker with default exchange
 (the prefix *xs_* followed by the broker username). The *broker* is mandatory.
 It can be given incomplete if it is well defined in the credentials.conf file.
 
@@ -973,7 +973,7 @@ are so disparate:
   buy the default poll. One can implement additional *sarracenia.transfer*
   classes to add understanding of them to poll.
 
-The output of a poll is a list of messages built from the file names
+The output of a poll is a list of notification messages built from the file names
 and SFTPAttributes records, which can then be filtered by elements
 after *gather* in the algorithm.
 
@@ -982,7 +982,7 @@ COMPONENTS
 ==========
 
 All the components do some combination of polling, consuming, and posting.
-with variations that accomplish either forwarding of announcements or
+with variations that accomplish either forwarding of notification messages or
 data transfers. The components all apply the same single algorithm,
 just starting from different default settings to match common use
 cases.
@@ -1010,7 +1010,7 @@ is recommended, but there are some cases where use of the C implementation is se
 
 **sr_cpump** connects to a *broker* (often the same as the posting broker)
 and subscribes to the notifications of interest. If _suppress_duplicates_ is active, 
-on reception of a post, it looks up the message's **integity** field in its cache.  If it is 
+on reception of a post, it looks up the notification message's **integity** field in its cache.  If it is 
 found, the file has already come through, so the notification is ignored. If not, then 
 the file is new, and the **sum** is added to the cache and the notification is posted.
 
@@ -1031,7 +1031,7 @@ files. The *nodupe_fileAgeMax* option eliminates files that are too old
 from consideration. When a file is found that matches a pattern given 
 by *accept*, **poll** builds a notification message for that product.
 
-The message is then checked in the duplicate cache (time limited by
+The notification message is then checked in the duplicate cache (time limited by
 nodupe_ttl option.) to prevent posting of files which have already
 been seen.
 
@@ -1047,7 +1047,7 @@ The destination option specify what is needed to connect to the remote server
 
 The *destination* should be set with the minimum required information...
 **sr_poll**  uses *destination* setting not only when polling, but also
-in the sr3_post messages produced.
+in the sr3_post notification messages produced.
 
 For example, the user can set :
 
@@ -1058,7 +1058,7 @@ And complete the needed information in the credentials file with the line  :
 **ftp://myself:mypassword@myserver:2121  passive,binary**
 
 
-Poll gathers information about remote files, to build messages about them.
+Poll gathers information about remote files, to build notification messages about them.
 The gather method that is built-in uses sarracenia.transfer protocols,
 currently implemented are sftp, ftp, and http. 
 
@@ -1080,10 +1080,10 @@ of what was posted.
 POST or WATCH
 -------------
 
-**sr3_post** posts the availability of a file by creating an announcement.
+**sr3_post** posts the availability of a file by creating an notification message.
 In contrast to most other sarracenia components that act as daemons,
 sr3_post is a one shot invocation which posts and exits.
-To make files available to subscribers, **sr3_post** sends the announcements
+To make files available to subscribers, **sr3_post** sends the notification messages
 to an AMQP or MQTT server, also called a broker.
 
 There are many options for detection changes in directories, for
@@ -1129,7 +1129,7 @@ An example invocation of *sr3_post*::
  sr3_post -pb amqp://broker.com -pbu sftp://stanley@mysftpserver.com/ -p /data/shared/products/foo 
 
 By default, sr3_post reads the file /data/shared/products/foo and calculates its checksum.
-It then builds a post message, logs into broker.com as user 'guest' (default credentials)
+It then builds a notification message, logs into broker.com as user 'guest' (default credentials)
 and sends the post  to defaults vhost '/' and default exchange. The default exchange
 is the prefix *xs_* followed by the broker username, hence defaulting to 'xs_guest'.
 A subscriber can download the file /data/shared/products/foo by authenticating as user stanley
@@ -1146,7 +1146,7 @@ a topicPrefix (see option), version *v03*,
 followed by a subtopic (see option) here the default, the file path separated with dots
 *data.shared.products.foo*. 
 
-The second field in the log line is the message notice.  It consists of a time
+The second field in the log line is the notification message notice.  It consists of a time
 stamp *20150813161959.854*, and the source URL of the file in the last 2 fields.
 
 The rest of the information is stored in AMQP message headers, consisting of key=value pairs.
@@ -1161,7 +1161,7 @@ Another example::
 
 By default, sr3_post reads the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
 (concatenating the post_baseDir and relative path of the source url to obtain the local file path)
-and calculates its checksum. It then builds a post message, logs into broker.com as user 'guest'
+and calculates its checksum. It then builds a notification message, logs into broker.com as user 'guest'
 (default credentials) and sends the post to defaults vhost '/' and exchange 'xs_guest'.
 
 A subscriber can download the file http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 using http
@@ -1199,9 +1199,9 @@ The **sr_sarra** is an `sr_subscribe(1) <#subscribe>`_  with the following prese
 Specific Consuming Requirements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If the messages are posted directly from a source, the exchange used is 'xs_<brokerSourceUsername>'.
+If the notification messages are posted directly from a source, the exchange used is 'xs_<brokerSourceUsername>'.
 To protect against malicious users, administrators should set *sourceFromExchange* to **True**.
-Such messages may not contain a source nor an origin cluster fields
+Such notification messages may not contain a source nor an origin cluster fields
 or a malicious user may set the values incorrectly.
 
 
@@ -1213,7 +1213,7 @@ cluster is the value of option **cluster** taken from default.conf):
 msg['source']       = <brokerUser>
 msg['from_cluster'] = cluster
 
-overriding any values present in the message. This setting
+overriding any values present in the notification message. This setting
 should always be used when ingesting data from a
 user exchange.
 
@@ -1228,7 +1228,7 @@ queues, and all the standard client side filtering with accept, reject, and afte
 
 Often, a broker will announce files using a remote protocol such as HTTP,
 but for the sender it is actually a local file.  In such cases, one will
-see a message: **ERROR: The file to send is not local.**
+see a notification message: **ERROR: The file to send is not local.**
 An after_accept plugin will convert the web url into a local file one::
 
   baseDir /var/httpd/www
@@ -1238,8 +1238,8 @@ This after_accept plugin is part of the default settings for senders, but one
 still needs to specify baseDir for it to function.
 
 If a **post_broker** is set, **sender** checks if the clustername given
-by the **to** option if found in one of the message's destination clusters.
-If not, the message is skipped.
+by the **to** option if found in one of the notification message's destination clusters.
+If not, the notification message is skipped.
 
 
 
@@ -1254,7 +1254,7 @@ The default is None which means that the path in the notification is the absolut
 
 In a subscriber, the baseDir represents the prefix to the relative path on the upstream
 server, and is used as a pattern to be replaced in the currently selected base directory
-(from a *baseDir* or *directory* option) in the message fields: 'link', 'oldname', 'newname'
+(from a *baseDir* or *directory* option) in the notification message fields: 'link', 'oldname', 'newname'
 which are used when mirroring symbolic links, or files that are renamed.
 
 The **destination** defines the protocol and server to be used to deliver the products.
@@ -1291,10 +1291,10 @@ The user can overwrite this by specifying the option **post_baseUrl**. For examp
 
 **post_baseUrl http://remote.apache.com**
 
-The user can provide an **on_post** script. Just before the message is
+The user can provide an **on_post** script. Just before the notification message is
 published on the **post_broker**  and **post_exchange**, the
 **on_post** script is called... with the **sr_sender** class instance as an argument.
-The script can perform whatever you want... if it returns False, the message will not
+The script can perform whatever you want... if it returns False, the notification message will not
 be published. If True, the program will continue processing from there.
 
 FIXME: Missing example configuration.
@@ -1321,7 +1321,7 @@ at its destination.  It is tagged to the **accept** options defined after it.
 If another sequence of **directory**/**accept** follows in the configuration file,
 the second directory is tagged to the following accepts and so on.
 
-The  **accept/reject**  patterns apply to message notice url as above.
+The  **accept/reject**  patterns apply to notification message notice url as above.
 Here is an example, here some ordered configuration options :
 
 ::
@@ -1358,13 +1358,13 @@ Notice: **20150813161959.854 http://remote.apache.com/ my/new/important_location
 SHOVEL
 ------
 
-shovel copies messages on one broker (given by the *broker* option) to
+shovel copies notification messages on one broker (given by the *broker* option) to
 another (given by the *post_broker* option.) subject to filtering
 by (*exchange*, *subtopic*, and optionally, *accept*/*reject*.)
 
 The *topicPrefix* option must to be set to:
 
- - to shovel `sr3_post(7) <../Reference/sr3_post.7.html>`_ messages
+ - to shovel `sr3_post(7) <../Reference/sr3_post.7.html>`_ notification messages
 
 shovel is a flow with the following presets::
    
@@ -1376,7 +1376,7 @@ SUBSCRIBE
 ---------
 
 Subscribe is the normal downloading flow component, that will connect to a broker, download
-the configured files, and then forward the messages with an altered baseUrl.
+the configured files, and then forward the notification messages with an altered baseUrl.
 
 
 WATCH
@@ -1405,7 +1405,7 @@ The [*-p|--path path*] option tells *watch* what to look for.
 If the *path* specifies a directory, *watches* creates a post for any time
 a file in that directory is created, modified or deleted.
 If the *path* specifies a file,  *watch*  watches only that file.
-In the announcement, it is specified with the *path* of the product.
+In the notification message, it is specified with the *path* of the product.
 There is usually one post per file.
 
 FIXME: in version 3 does it work at all without a configuration?
@@ -1418,7 +1418,7 @@ An example of an execution of  *watch*  checking a file::
 Here, *watch* checks events on the file /data/shared/products/foo.
 Default events settings reports if the file is modified or deleted.
 When the file gets modified, *watch* reads the file /data/shared/products/foo
-and calculates its checksum. It then builds a post message, logs into broker.com as user 'guest' (default credentials)
+and calculates its checksum. It then builds a notification message, logs into broker.com as user 'guest' (default credentials)
 and sends the post to defaults vhost '/' and post_exchange 'xs_stanley' (default exchange)
 
 A subscriber can download the file /data/shared/products/foo  by logging as user stanley
@@ -1453,7 +1453,7 @@ Another example watching a file::
 
 By default, watch checks the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
 (concatenating the baseDir and relative path of the source url to obtain the local file path).
-If the file changes, it calculates its checksum. It then builds a post message, logs into broker.com as user 'guest'
+If the file changes, it calculates its checksum. It then builds a notification message, logs into broker.com as user 'guest'
 (default credentials) and sends the post to defaults vhost '/' and post_exchange 'sx_guest' (default post_exchange)
 
 A subscriber can download the file http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 using http
@@ -1466,7 +1466,7 @@ An example checking a directory::
 Here, watch checks for file creation(modification) in /data/web/public_data/bulletins/alphanumeric
 (concatenating the baseDir and relative path of the source url to obtain the directory path).
 If the file SACN32_CWAO_123456 is being created in that directory, watch calculates its checksum.
-It then builds a post message, logs into broker.com as user 'guest'
+It then builds a notification message, logs into broker.com as user 'guest'
 
 A subscriber can download the created/modified file http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456 using http
 without authentication on dd.weather.gc.ca.
@@ -1495,7 +1495,7 @@ it looks up its **sum** in its cache.  If it is found, the file has already come
 so the notification is ignored. If not, then the file is new, and the **sum** is added
 to the cache and the notification is posted.
 
-**winnow** can be used to trim messages produced by  post, `sr3_post <../Reference/sr3_post.1.html>`_, sr3_cpost, `poll`_ or `watch`_ etc... It is
+**winnow** can be used to trim notification messages produced by  post, `sr3_post <../Reference/sr3_post.1.html>`_, sr3_cpost, `poll`_ or `watch`_ etc... It is
 used when there are multiple sources of the same data, so that clients only download the
 source data once, from the first source that posted it.
 
@@ -1658,7 +1658,7 @@ class. The methods (function names) in the plugin describe when
 those routines will be called. For more details consult the 
 `Programmer's Guide <../Explanation/SarraPluginDev.rst>`_
 
-To add special processing of messages, create a module in the python
+To add special processing of notification messages, create a module in the python
 path, and have it include entry points. 
 
 There is also *flowCallbackPrepend* which adds a flowCallback class to the front
@@ -1684,7 +1684,7 @@ Importing Extensions
 
 The *import* option works in a way familiar to Python developers,
 Making them available for use by the Sarracenia core, or flowCallback.
-Developers can add additional protocols for messages or 
+Developers can add additional protocols for notification messages or 
 file transfer.  For example::
 
   import torr
@@ -1741,7 +1741,7 @@ Reasons to use newer style plugins:
   says there is something wrong, much more difficult to debug.
 
 * v3 api is strictly more powerful than v2, as it works
-  on groups of messages, rather than individual ones.
+  on groups of notification messages, rather than individual ones.
 
 
 
@@ -1762,10 +1762,10 @@ LOGS and MONITORING
    Setting option debug is identical to use  **logLevel debug**
 
 - logMessageDump  (default: off) boolean flag
-  if set, all fields of a message are printed, rather than just a url/path reference.
+  if set, all fields of a notification message are printed, rather than just a url/path reference.
 
 - logEvents ( default after_accept,after_work,on_housekeeping )
-   emit standard log messages at the given points in message processing. 
+   emit standard log messages at the given points in notification message processing. 
    other values: on_start, on_stop, post, gather, ... etc...
   
 - logLevel ( default: info )
@@ -1789,7 +1789,7 @@ LOGS and MONITORING
    writing to stdout.
 
 - log_reject <True|False> ( default: False )
-   print a log message when *rejecting* messages (choosing not to download the corresponding files)
+   print a log message when *rejecting* notification messages (choosing not to download the corresponding files)
 
 - log <dir> ( default: ~/.cache/sarra/log ) (on Linux)
    The directory to store log files in.
@@ -1890,7 +1890,7 @@ Note::
 PERIODIC PROCESSING
 ===================
 
-Most processing occurs on receipt of a message, but there is some periodic maintenance
+Most processing occurs on receipt of a notification message, but there is some periodic maintenance
 work that happens every *housekeeping* interval (default is 5 minutes.)  Evey housekeeping, all of the
 configured *on_housekeeping* plugins are run. By default there are three present:
 
@@ -1898,7 +1898,7 @@ configured *on_housekeeping* plugins are run. By default there are three present
  * nodupe - ages out old entries in the reception cache, to minimize its size.
  * memory - checks the process memory usage, and restart if too big.
 
-The log will contain messages from all three plugins every housekeeping interval, and
+The log will contain notification messages from all three plugins every housekeeping interval, and
 if additional periodic processing is needed, the user can configure addition
 plugins to run with the *on_housekeeping* option. 
 
@@ -1960,7 +1960,7 @@ Here is a short complete example configuration file::
   accept .*
 
 This above file will connect to the dd.weather.gc.ca broker, connecting as
-anonymous with password anonymous (defaults) to obtain announcements about
+anonymous with password anonymous (defaults) to obtain notification messages about
 files in the http://dd.weather.gc.ca/model_gem_global/25km/grib2 directory.
 All files which arrive in that directory or below it will be downloaded 
 into the current directory (or just printed to standard output if -n option 
@@ -1978,9 +1978,9 @@ QUEUES and MULTIPLE STREAMS
 When executed,  **subscribe**  chooses a queue name, which it writes
 to a file named after the configuration file given as an argument to **subscribe**
 with a .queue suffix ( ."configfile".queue). 
-If subscribe is stopped, the posted messages continue to accumulate on the 
+If subscribe is stopped, the posted notification messages continue to accumulate on the 
 broker in the queue.  When the program is restarted, it uses the queuename 
-stored in that file to connect to the same queue, and not lose any messages.
+stored in that file to connect to the same queue, and not lose any notification messages.
 
 File downloads can be parallelized by running multiple subscribes using
 the same queue.  The processes will share the queue and each download 
@@ -2012,7 +2012,7 @@ This is done with option :
 
 When a report is generated, it is sent to the configured *report_exchange*. Administrative
 components post directly to *xreport*, whereas user components post to their own 
-exchanges (xs_*username*). The report daemons then copy the messages to *xreport* after validation.
+exchanges (xs_*username*). The report daemons then copy the notification messages to *xreport* after validation.
 
 These reports are used for delivery tuning and for data sources to generate statistical information.
 Set this option to **False**, to prevent generation of reports.
@@ -2077,7 +2077,7 @@ moving vip.
 **vip 153.14.126.3**
 
 When **sr3** does not find the vip, it sleeps for 5 seconds and retries.
-If it does, it consumes and processes a message and than rechecks for the vip.
+If it does, it consumes and processes a notification message and than rechecks for the vip.
 
 
 [--blocksize <value>] (default: 0 (auto))
@@ -2103,7 +2103,7 @@ See `sr3_cpump(1) <sr3_cpump.1.rst>`_ for details.
 
 The *post_baseDir* option supplies the directory path that, when combined (or found) 
 in the given *path*, gives the local absolute path to the data file to be posted.
-The *post_baseDir* part of the path will be removed from the posted announcement.
+The *post_baseDir* part of the path will be removed from the posted notification message.
 For sftp urls it can be appropriate to specify a path relative to a user account.
 Example of that usage would be:  -pbd ~user  -url sftp:user@host
 For file: url's, baseDir is usually not appropriate.  To post an absolute path,
@@ -2137,7 +2137,7 @@ instanced in the normal way.  Example::
     post_exchangeSplit 5
     post_exchange xwinnow
 
-will result in posting messages to five exchanges named: xwinnow00, xwinnow01,
+will result in posting notification messages to five exchanges named: xwinnow00, xwinnow01,
 xwinnow02, xwinnow03 and xwinnow04, where each exchange will receive only one fifth
 of the total flow.
 
@@ -2190,7 +2190,7 @@ The flowCallback directive takes a class to load can scan for entry points as an
     flowCallback sarracenia.flowcb.log.Log
    
 With this directive in a configuration file, the Log class found in installed package will be used.
-That module logs messages *after_accept* (after messages have passed through the accept/reject masks.)
+That module logs messages *after_accept* (after notification messages have passed through the accept/reject masks.)
 and the *after_work* (after the file has been downloaded or sent). Here is the source code 
 for that callback class::
 
@@ -2334,7 +2334,7 @@ feeder
 ~~~~~~
   
   A user permitted to write to any exchange. Sort of an administrative flow user, meant to pump
-  messages when no ordinary source or subscriber is appropriate to do so.  Is to be used in
+  notification messages when no ordinary source or subscriber is appropriate to do so.  Is to be used in
   preference to administrator accounts to run flows.
 
 
@@ -2442,10 +2442,10 @@ The possible keywords are :
 **accept <regexp pattern> [<keyword>]**
 
 keyword can be added to the **accept** option. The keyword is any one of the **filename**
-options.  A message that matched against the accept regexp pattern, will have its remote_file
+options.  A notification message that matched against the accept regexp pattern, will have its remote_file
 plied this keyword option.  This keyword has priority over the preceeding **filename** one.
 
-The **regexp pattern** can be use to set directory parts if part of the message is put
+The **regexp pattern** can be use to set directory parts if part of the notification message is put
 to parenthesis. **sr_sender** can use these parts to build the directory name. The
 rst enclosed parenthesis strings will replace keyword **${0}** in the directory name...
 the second **${1}** etc.
@@ -2470,15 +2470,15 @@ Example of use::
       accept .*(2016....).*(RAW.*GRIB).*
 
 
-A selected message by the first accept would be delivered unchanged to the first directory.
+A selected notification message by the first accept would be delivered unchanged to the first directory.
 
-A selected message by the second accept would be delivered unchanged to the second directory.
+A selected notification message by the second accept would be delivered unchanged to the second directory.
 
-A selected message by the third accept would be renamed "file_of_type3" in the second directory.
+A selected notification message by the third accept would be renamed "file_of_type3" in the second directory.
 
-A selected message by the forth accept would be delivered unchanged to a directory.
+A selected notification message by the forth accept would be delivered unchanged to a directory.
 
-It's named  */this/20160123/pattern/RAW_MERGER_GRIB/directory* if the message would have a notice like:
+It's named  */this/20160123/pattern/RAW_MERGER_GRIB/directory* if the notification message would have a notice like:
 
 **20150813161959.854 http://this.pump.com/ relative/path/to/20160123_product_RAW_MERGER_GRIB_from_CMC**
 
@@ -2522,6 +2522,6 @@ following substitution fields are available::
   ${RSS}   replace by reception second
 
 The 'R' fields come from the sixth field, and the others come from the first one.
-When data is injected into sarracenia from Sundew, the *sundew_extension* message header
+When data is injected into sarracenia from Sundew, the *sundew_extension* notification message header
 will provide the source for these substitions even if the fields have been removed
 from the delivered file names.

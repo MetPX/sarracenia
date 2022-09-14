@@ -140,11 +140,11 @@ The root of the topic tree is the version of the message payload. This allows si
 to easily support multiple versions of the protocol at the same time during transitions. v02
 is the third iteration of the protocol and existing servers routinely support previous versions
 simultaneously in this way. The second topic in the topic tree defines the type of message.
-at the time of writing:  v02.post is the topic prefix for current post messages.
+at the time of writing:  v02.post is the topic prefix for current notification messages.
 
-The AMQP messages contain announcements, no actual file data. AMQP is optimized for and assumes
+The AMQP messages contain notification messages, no actual file data. AMQP is optimized for and assumes
 small messages. Keeping the messages small allows for maximum message throughtput and permits
-clients to use priority mechanisms based on transfer of data, rather than the announcements.
+clients to use priority mechanisms based on transfer of data, rather than the notification messages.
 Accomodating large messages would create many practical complications, and inevitably require
 the definition of a maximum file size to be included in the message itself, resulting in
 complexity to cover multiple cases.
@@ -175,7 +175,7 @@ Aspects of AMQP use can be either constraints or features:
 Application 
 -----------
 
-Description of application logic relevant to discussion. There is a ´control plane´ where posts about new 
+Description of application logic relevant to discussion. There is a ´control plane´ where notification messages about new 
 data available are made, and log messages reporting status of transfers of the same data are routed among 
 control plane users and pumps. A pump is an AMQP broker, and users authenticate to the broker. Data 
 may (most of the time does) have a different other authentication method.
@@ -203,7 +203,7 @@ There are very different security use cases for file transfer:
     Also dependent on the availability of the two end points throughout, so more difficult to assure in practice.
 
 Both public and private transfers are intended to support arbitrary chains of pumps between *source* and *consumer*.
-The cases depend on routing of posts and log messages. 
+The cases depend on routing of notification messages and log messages. 
 
 .. NOTE::
    forward routing...  Private and Public transfers... not yet clear, still considering.
@@ -229,16 +229,16 @@ on pumps:
 Routing
 -------
 
-There are two distinct flows to route: posts, and logs. 
+There are two distinct flows to route: notification messages, and logs. 
 The following header in messages relate to routing, which are set in all messages.
 
- - *source* - the user that injected the original post.
- - *source_cluster* - the cluster where the source injected the post.
+ - *source* - the user that injected the original notification messages.
+ - *source_cluster* - the cluster where the source injected the notification messages.
  - *to_clust* - the comma separated list of destination clusters.
  - *private* - the flag to indicate whether the data is private or public.
 
-An important goal of post routing is that the *source* decides where posts go, so 
-pumping of individual products must be done only on the contents of the posts, not
+An important goal of notification messages routing is that the *source* decides where notification messages go, so 
+pumping of individual products must be done only on the contents of the notification messages, not
 some administrator configuration.
 
 Administrators configure the inter pump connections (via SARRA and other components)
@@ -250,10 +250,10 @@ whenever a new pump is added to the network.
 Routing Posts
 ~~~~~~~~~~~~~
 
-Post routing is the routing of the post messages announced by data *sources*.
-The data corresponding to the source follows the same sequence of pumps as the posts
-themselves.  When a post is processed on a pump, it is downloaded, and then the posting
-is modified to reflect that´s availability from the next-hop pump.
+Post routing is the routing of the notification messages announced by data *sources*.
+The data corresponding to the source follows the same sequence of pumps as the notification messages
+themselves.  When a notification message is processed on a pump, it is downloaded, and then the 
+notification message is modified to reflect that´s availability from the next-hop pump.
 
 Post messages are defined in the sr_post(7) man page.  They are initially emitted by *sources*,
 published to xs_source.  After Pre-Validation, they go (with modifications described in Security) to 
@@ -261,7 +261,7 @@ either xPrivate or xPublic.
 
 .. note::
    FIXME: Tentative!?
-   if not separate exchange, then anyone can see any post (not the data, but yes the post)
+   if not separate exchange, then anyone can see any notification message (not the data, but yes the notification message)
    I think that´s not good.
 
 For Public data, *feeders* for downstream pumps connect to xPublic.
@@ -294,7 +294,7 @@ the xl_<user> exchange, and after log validation queued for the xlog exchange.
 Messages in xlog destined for other clusters are routed to destinations by 
 log2cluster component using log2cluster.conf configuration file.  log2cluster.conf 
 uses space separated fields: First field is the cluster name (set as per soclust in 
-post messages, the second is the destination to send the log messages for posting 
+notification messages, the second is the destination to send the log messages for posting 
 originating from that cluster to) Sample, log2cluster.conf::
 
       clustername amqp://user@broker/vhost exchange=xlog
@@ -315,7 +315,7 @@ Users, Queues & Exchanges
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Each user Alice, on a broker to which she has access:
- - has an exchange xs_Alice, where she writes her postings, and reads her logs from. 
+ - has an exchange xs_Alice, where she writes her notification messages, and reads her logs from. 
  - has an exchange xl_Alice, where she writes her log messages.
  - can create queues qs_Alice\_.* to bind to exchanges.
 
@@ -336,7 +336,7 @@ Pre-Validation
 ~~~~~~~~~~~~~~
 
 Pre-Validation refers to security and correctness checks performed on 
-the information provided by the post message before the data itself is downloaded.
+the information provided by the notification message before the data itself is downloaded.
 Some tools may refer to this as *message validation*
 
  - input sanitizing (looking for errors/malicious input.)
@@ -344,7 +344,7 @@ Some tools may refer to this as *message validation*
  - vary per configuration, and installation (sizes)
 
 When reading from a source:
- - a post message arrives on xs_Alice, from a user logged in as Alice.
+ - a notification message arrives on xs_Alice, from a user logged in as Alice.
  - overwrites the source to be Alice: source=Alice ... or reject?
  - sets some headers that we do not trust users to do: cluster=
  - set cluster header to local one.
@@ -370,7 +370,7 @@ Hold is for temporary failure type reasons, such as bandwidth of disk space reas
 as these reasons are independent of the particular message, hold applies for
 the entire queue, not just the message.
 
-After Pre-Processing, a component like sr_sarra assumes the post message is good,
+After Pre-Processing, a component like sr_sarra assumes the notification message is good,
 and just processes it.  That means it will fetch the data from the posting source.
 Once the data is downloaded, it goes through Post-Validation.
 
@@ -401,7 +401,7 @@ in creating log messages.
  - Messages in exchanges have no reliable means of determining who inserted them.
  - so users publish their log messages to sl_<user> exchange.
  - For each user, log reader reads the message, and overwrites the consuminguser to force match. (if reading a message from sl_Alice, it forces the consuminguser field to be Alice) see sr_log(7) for user field
- - sl_* are write-only for all users, they cannot read their own posts for that.
+ - sl_* are write-only for all users, they cannot read their own notification messages for that.
  - is there some check about consuminghost?
  - Accepting a log message means publishing on the xlog exchange.
  - Only admin functions can read from xlog.
@@ -507,12 +507,12 @@ Fingerprint Winnowing
       Each product has a checksum and size intended to identify it uniquely, referred to as
       as fingerprint.  If two products have the same fingerprint, they are considered 
       equivalent, and only one may be forwarded.  In cases where multiple sources of equivalent 
-      data are available but downstream consumers would prefer to receive single announcements 
+      data are available but downstream consumers would prefer to receive single notification messages 
       of products, processes may elect to publish notifications of the first product 
       with a given fingerprint, and ignore subsequent ones.
 
       This is the basis for the most robust strategy for high availability, but setting up
-      multiple sources for the same data, accepting announcements for all of them, but only
+      multiple sources for the same data, accepting notification messages for all of them, but only
       forwarding one downstream.  In normal operation, one source may be faster than the
       other, and so the second source's products are usually 'winnowed'. When one source 
       disappears, the other source's data is automatically selected, as the fingerprints 
@@ -613,7 +613,7 @@ DD: Data Dissemination Configuration (AKA: Data Mart)
 The sr deployment configuration is more of an end-point configuration.  Each node is expected to
 have a complete copy of all the data downloaded by all the nodes.   Giving a unified view makes
 it much more compatible with a variety of access methods, such as a file browser (over http,
-or sftp) rather than being limited to AMQP posts.  This is the type of view presented by
+or sftp) rather than being limited to AMQP notification messages.  This is the type of view presented by
 dd.weather.gc.ca.
 
 Given this view, all files must be fully reassembled on receipt, prior to announcing downstream

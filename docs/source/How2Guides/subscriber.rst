@@ -154,8 +154,8 @@ which will de-allocate the queue (and its bindings) on the server.
 
 Why? Whenever a subscriber is started, a queue is created on the data pump, with 
 the topic bindings set by the configuration file. If the subscriber is stopped, 
-the queue keeps getting messages as defined by subtopic selection, and when the 
-subscriber starts up again, the queued messages are forwarded to the client. 
+the queue keeps getting notification messages as defined by subtopic selection, and when the 
+subscriber starts up again, the queued notification messages are forwarded to the client. 
 So when the *subtopic* option is changed, since it is already defined on the 
 server, one ends up adding a binding rather than replacing it.  For example,
 if one has a subtopic that contains SATELLITE, and then stops the subscriber, 
@@ -166,7 +166,7 @@ subscriber will get both the SATELLITE and RADAR data even though the configurat
 no longer contains the former.
 
 Also, if one is experimenting, and a queue is to be stopped for a very long 
-time, it may accumulate a large number of messages. The total number of messages 
+time, it may accumulate a large number of notification messages. The total number of notification messages 
 on a data pump has an effect on the pump performance for all users. It is therefore 
 advisable to have the pump de-allocate resources when they will not be needed 
 for an extended periods, or when experimenting with different settings.
@@ -279,8 +279,8 @@ Refining Selection
   - broker at one end, and the subtopic apply there.  
   - client at the other end, and the accept/reject apply there.
 
-Pick *subtopics* ( which are applied on the broker with no message downloads ) to narrow
-the number of messages that traverse the network to get to the sarracenia client processes.
+Pick *subtopics* ( which are applied on the broker with no notification message downloads ) to narrow
+the number of notification messages that traverse the network to get to the sarracenia client processes.
 The *reject* and *accept* options are evaluated by the sr_subscriber processes themselves,
 providing regular expression based filtering of the posts which are transferred.  
 *accept* operates on the actual path (well, URL), indicating what files within the 
@@ -399,7 +399,7 @@ If transfers are going too slowly, the steps are as follows:
 Optimize File Selection per Process
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Often users specif # as their subtopic, meaning the accept/rejects do all the work. In many cases, users are only interested in a small fraction of the files being published.  For best performance, **Make *subtopic* as specific as possible** to have minimize sending messages that are send by the broker and arrive on the subscriber only to be rejected. (use *log_reject* option to find such products.)
+* Often users specif # as their subtopic, meaning the accept/rejects do all the work. In many cases, users are only interested in a small fraction of the files being published.  For best performance, **Make *subtopic* as specific as possible** to have minimize sending notification messages that are send by the broker and arrive on the subscriber only to be rejected. (use *log_reject* option to find such products.)
 
 * **Place *reject* statements as early as possible in the configuration**. As rejection saves processing of any later regex's in the configuration.
 
@@ -429,15 +429,15 @@ Optimize File Selection per Process
   threshold.
 
 * **increasing prefetch** can reduce the average latency (being amortised over
-  the number of messages prefetched.) It can improve performance over long 
-  distances or in high message rates within an data centre.
+  the number of notification messages prefetched.) It can improve performance over long 
+  distances or in high notification message rates within an data centre.
 
 * If you control the origin of a product stream, and the consumers will want a
   very large proportion of the products announced, and the products are small
   (a few K at most), then consider combining use of v03 with inlining for 
   optimal transfer of small files.  Note, if you have a wide variety of users
   who all want different data sets, inlining can be counter-productive. This
-  will also result in larger messages and mean much higher load on the broker.
+  will also result in larger notification messages and mean much higher load on the broker.
   It may optimize a few specific cases, while slowing the broker down overall.
 
 
@@ -451,10 +451,10 @@ number of instances that will increase performance will plateau at some point
 that varies depending on latency to broker, how fast the instances are at processing
 each file, the prefetch in use, etc...  One has to experiment.
 
-Examining instance logs, if they seem to be waiting for messages for a long time,
+Examining instance logs, if they seem to be waiting for notification messages for a long time,
 not actually doing any transfer, then one might have reached queue saturation.
 This often happens at around 40 to 75 instances. Rabbitmq manages a single queue
-with a single CPU, and there is a limit to how many messages a queue can process
+with a single CPU, and there is a limit to how many notification messages a queue can process
 in a given unit of time.
 
 If the queue becomes saturated, then we need to partition the subscriptions
@@ -473,7 +473,7 @@ One caveat to the use of *instances* is that *suppress_duplicates* is ineffectiv
 as the different occurrences of the same file will not be received by the same 
 instance, and so with n instances, roughly n-1/n duplicates will slip through. 
 
-In order to properly suppress duplicate file announcements in data streams 
+In order to properly suppress duplicate file notification messages in data streams 
 that need multiple instances, one uses winnowing with *post_exchangeSplit*.
 This option sends data to multiple post exchanges based on the data checksum,
 so that all duplicate files will be routed to the same winnow process.
@@ -692,7 +692,7 @@ logLevel, and logReject:
    The level of logging as expressed by python's logging. Possible values are :  critical, error, info, warning, debug.
 
 - log_reject <True|False> ( default: False )
-   print a log message when *rejecting* messages (choosing not to download the corresponding files)
+   print a log message when *rejecting* notification messages (choosing not to download the corresponding files)
 
    The rejection messages also indicate the reason for the rejection.
 
@@ -733,7 +733,7 @@ In addition to application-options, there is a flowcb that is used by default fo
 has additional options:
 
 - logMessageDump  (default: off) boolean flag
-  If set, all fields of a message are printed, at each event, rather than just a url/path reference.
+  If set, all fields of a notification message are printed, at each event, rather than just a url/path reference.
 
 - logEvents ( default after_accept,after_work,on_housekeeping )
    emit standard log messages at the given points in message processing.
@@ -756,7 +756,7 @@ One can explicitly set the debug option specifically for the messaging protocol 
     set sarracenia.moth.mqtt.MQTT.logLevel debug
 
 will make the messaging layer very verbose.
-Sometimes during interoperability testing, one must see the raw messages, before decoding by moth classes::
+Sometimes during interoperability testing, one must see the raw notification messages, before decoding by moth classes::
 
     messageDebugDump
 

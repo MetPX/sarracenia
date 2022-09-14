@@ -255,7 +255,7 @@ been testing for two years since the shim library was first implemented:
 
 * codes using the *exec* call ot `tcl/tk <www.tcl.tk>`_, by default considers any
   output to file descriptor 2 (standard error) as an error condition.
-  these messages can be labelled as INFO, or WARNING priority, but it will
+  these notification messages can be labelled as INFO, or WARNING priority, but it will
   cause the tcl caller to indicate a fatal error has occurred.  Adding
   *-ignorestderr*  to invocations of *exec* avoids such unwarranted aborts.
 

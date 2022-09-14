@@ -10,9 +10,9 @@ AMQP
 AMQP is the Advanced Message Queuing Protocol, which emerged from the financial trading industry and has gradually
 matured. Implementations first appeared in 2007, and there are now several open source ones. AMQP implementations
 are not JMS plumbing. JMS standardizes the API programmers use, but not the on-the-wire protocol. So
-typically, one cannot exchange messages between people using different JMS providers. AMQP standardizes
+typically, one cannot exchange notification messages between people using different JMS providers. AMQP standardizes
 for interoperability, and functions effectively as an interoperability shim for JMS, without being
-limited to Java. AMQP is language neutral, and message neutral. There are many deployments using
+limited to Java. AMQP is language neutral, and notification message neutral. There are many deployments using
 Python, C++, and Ruby. One could adapt WMO-GTS protocols very easily to function over AMQP. JMS
 providers are very Java oriented.
 
@@ -49,7 +49,7 @@ Dataless Pumps
 --------------
 
 There are some pumps that have no transport engine, they just mediate 
-transfers for other servers, by making messages available to clients and
+transfers for other servers, by making notification messages available to clients and
 servers in their network area.
 
 
@@ -62,7 +62,7 @@ Sometimes transfers through pumps are done without using local space on the pump
 Latency
 -------
 
-Time from the insertion of data into a network (the time the message about a file is first published)
+Time from the insertion of data into a network (the time the notification message about a file is first published)
 to the time it is made available on an end point.  We want to minimize latency in transfers,
 and high latency can indicate configuration or capacity issues.
 
@@ -101,7 +101,7 @@ Pump
 ----
 
 A pump is a host running Sarracenia, either a rabbitmq AMQP server or an MQTTT
-one such as mosquitto. The message queueing middleware is called a *broker.*
+one such as mosquitto. The notification message queueing middleware is called a *broker.*
 The pump has administrative users and manage the MQP broker
 as a dedicated resource. Some sort of transport engine, like an apache 
 server, or an openssh server, is used to support file transfers. SFTP, and 
@@ -140,18 +140,18 @@ Source
 
 Someone who wants to ship data to someone else. They do that by advertising a 
 trees of files that are copied from the starting point to one or more pumps
-in the network. The advertisement sources produced tell others exactly where 
+in the network. The notification message sources produced tell others exactly where 
 and how to download the files, and Sources have to say where they want the 
   data to go to.
 
 Sources use the `post <../Reference/sr3.1.html#post>`_,
 `sr_watch.1 <../Reference/sr3.1.html#watch>`_, and 
 `sr_poll(1) <../Reference/sr3.1.html#poll>`_ components to create 
-their advertisements.
+their notification messages.
 
 Subscribers
 -----------
-are those who examine advertisements about files that are available, and 
+are those who examine notification messages about files that are available, and 
 download the files they are interested in.
 
 Subscribers use `subscribe(1) <../Reference/sr3.1.html#subscribe>`_

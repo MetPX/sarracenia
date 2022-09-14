@@ -29,7 +29,7 @@ cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id
 est laborum. `sr_subscribe(7) <sr3.1.rst#subscribe>`_ 
 with some limitations.  
 
- - doesn't download data, only circulates posts.
+ - doesn't download data, only circulates notification messages.
  - runs as only a single instance (no multiple instances). 
  - does not support any plugins.
  - does not support vip for high availability.
@@ -38,11 +38,11 @@ with some limitations.
 
 It can therefore act as a drop-in replacement for:
 
-   `sr_report(1) <sr3.1.rst#report>`_ - process report messages.
+   `sr_report(1) <sr3.1.rst#report>`_ - process report notification messages.
 
-   `sr_shovel(8) <sr3.1.rst#shovel>`_ - process shovel messages.
+   `sr_shovel(8) <sr3.1.rst#shovel>`_ - process shovel notification messages.
 
-   `sr_winnow(8) <sr3.1.rst#winnow>`_ - process winnow messages.
+   `sr_winnow(8) <sr3.1.rst#winnow>`_ - process winnow notification messages.
 
 
 The **sr_cpump** command takes two arguments: an action start|stop|restart|reload|status... (self described)
@@ -100,9 +100,9 @@ SEE ALSO
 
 `sr3_report(1) <sr3.1.rst#report>`_ - process report messages.
 
-`sr3_post(1) <sr3_post.1.rst>`_ - post announcemensts of specific files.
+`sr3_post(1) <sr3_post.1.rst>`_ - post notification messages of specific files.
 
-`sr3_post(7) <sr_post.7.rst>`_ - the format of announcements.
+`sr3_post(7) <sr_post.7.rst>`_ - the format of notification messages.
 
 `sr3_subscribe(1) <sr3.1.rst#subscribe>`_ - the download client.
 

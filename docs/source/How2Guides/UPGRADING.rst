@@ -27,7 +27,7 @@ take the form:
 *SHOULD*
    Indicates recommended interventions that are recommended, but not mandatory. If prescribed activity is not done,
    the consequence is either a configuration line that has no effect (wasteful) or the application
-   may generate messages.  
+   may generate notification messages.  
    
 The sections in are entitled by the changes taking place at the level in question.
 
@@ -91,7 +91,7 @@ V2 to Sr3
           supports more features, and more naturally.
 
 **CHANGE**: log messages look completely different. Any log parsing will have to be reviewed.
-          New log format includes a prefix with process-id and the routine generating the message.
+          New log format includes a prefix with process-id and the routine generating the notification message.
 
 *NOTICE*: When migrating from v2 to sr3, simple configurations will mostly "just work."
           However, cases relying on user built plugins will require effort to port.
@@ -355,8 +355,8 @@ V2 to Sr3
 
 **CHANGE**: sr_retry became `retry.py <../Reference/flowcb.html#module-sarracenia.flowcb.retry>`_. 
           Any plugins accessing internal structures of sr_retry.py need to be re-written. 
-          This access is no longer necessary, as the API defines how to put messages on 
-          the retry queue (move messages to worklist.failed. )
+          This access is no longer necessary, as the API defines how to put notification messages on 
+          the retry queue (move notification messages to worklist.failed. )
 
 *NOTICE*: sr3 watch, with the *force_polling* option, is much less efficient 
           on sr3 than v2 for large directory trees (see issue #403 )

@@ -24,7 +24,7 @@ Abstract Goals of sr3:
 * multi-protocol support.
   ability to put in urls for mqtt, or different amqp libraries, perhaps others.
 
-* internally represent things in v03 messages, have something build
+* internally represent things in v03 notification messages, have something build
   v02 ones for compatibility, but operate in v03.
 
 * less code, simpler code.
@@ -36,7 +36,7 @@ goals of opportunity
 ~~~~~~~~~~~~~~~~~~~~
 
   * add stuff to make it work as an API?
-  * potentially new plugin api to allow groups (of messages and/or files.)
+  * potentially new plugin api to allow groups (of notification messages and/or files.)
   * Finish off log rotation. 
   * Assume python >= 3.4 remove old cruft.
   * Assume ubuntu >= 18.04 remove old cruft.
@@ -186,9 +186,9 @@ writing plugins is a lot harder than it should be.
 
 * inability to call from python code (no API.)
 
-* inability to *add* messages within a plugin (can only process the message you have.)
+* inability to *add* notification messages within a plugin (can only process the message you have.)
 
-* inability to process groups of messages at a time (say for concurrent sends or 
+* inability to process groups of notification messages at a time (say for concurrent sends or 
   downloads, rather than just one at time.
 
 * poor handling of message acknowledgements. v02 just ackowledges the previous message 
@@ -198,7 +198,7 @@ writing plugins is a lot harder than it should be.
   in a plugin, if you find self.setting==True  ... is that because the application set it somewhere, 
   or because an option was set by a client... is it a setting or a variable?
 
-* making changes to messages is a bit complicated, because they evolved over different message formats.
+* making changes to notification messages is a bit complicated, because they evolved over different message formats.
 
 
 Changes Done to Address Pain Points
@@ -219,21 +219,21 @@ Changes Done to Address Pain Points
   *  after_work(self,worklist) replaces on_part/on_file(self,parent)
 
 
-* messages are just python dictionaries. fields defined by json.loads( v03 payload format )
-  messages only contain the actual fields, no settings or other things...
+* notification messages are just python dictionaries. fields defined by json.loads( v03 payload format )
+  notification messages only contain the actual fields, no settings or other things...
   plain data.
  
-* callbacks move messages between worklists. A worklist is just a list of messages. There are four:
+* callbacks move notification messages between worklists. A worklist is just a list of notification messages. There are four:
 
-  * worklist.incoming -- messages yet to be processed.
-  * worklist.rejected -- message which are not to be further processed.
-  * worklist.ok -- messages which have been successfully processed.
-  * worklist.retry   -- messages for which processing was attempted, but it failed.
+  * worklist.incoming -- notification messages yet to be processed.
+  * worklist.rejected -- notification message which are not to be further processed.
+  * worklist.ok -- notification messages which have been successfully processed.
+  * worklist.retry   -- notification messages for which processing was attempted, but it failed.
 
   could add others... significant number of applications for something like *deferred*
 
 * acknowledgements done more pro-actively, as soon as a message is processed
-  (for rejected or failed messages, this is much sooner than in v2.)
+  (for rejected or failed notification messages, this is much sooner than in v2.)
 
 * add scoping mechanism to define plugin properties.
 
@@ -499,7 +499,7 @@ re-implemented Transfer get to have conventional return value as the number of b
 transferred, and if they differ, that signals an issue.
 
 sr_sender send now done, involved a lot more thinking about how to set new\_ fields
-in messages. but once that was done, was able to remove both the sender and sr_subscribe
+in notification messages. but once that was done, was able to remove both the sender and sr_subscribe
 (the parent class of most components) and allowed removal of sr_cache, sr_consumer, sr_file,
 sr_ftp, sr_http, sr_message, sr_retry, and sr_sftp, sum/\*, sr_util.
 
@@ -692,7 +692,7 @@ Probably need to be settled before having anyone else dive in.
 
 * changing recovery model, so that all retry/logic is in main loop,  #392
   and moth just returns immediately. Point being could have multiple
-  gathers for multiple upstreams, and get messages from whichever is
+  gathers for multiple upstreams, and get notification messages from whichever is
   live...  also end up with a single loop that way... cleaner.
   likely equivalent to async mode mentioned above.
 
@@ -736,7 +736,7 @@ FIXME are things left to the side that need to be seen to.
 
 * **RELEASE BLOCKER** logs of sr_poll and sr_watch tend to get humungous way too quickly. #389
 
-* try out jsonfile for building messages to post. can build json incrementally, #402
+* try out jsonfile for building notification messages to post. can build json incrementally, #402
   so you do not need to delete the _deleteOnPost elements (can just skip over them)
 
 * um... add the protocols.   mqtt and qpid-proton (amq1) #389
@@ -892,14 +892,14 @@ Features
 
 * sr show is now used to display the parsed configuration.
 
-* messages are acknowledged more quickly, should help with throughput.
+* notification messages are acknowledged more quickly, should help with throughput.
 
-* FlowCB plugin entry_points are now based on groups of messages, rather than individual ones, allowing people
+* FlowCB plugin entry_points are now based on groups of notification messages, rather than individual ones, allowing people
   to organize concurrent work.
 
 * integrity (checksums) are now plugins.
 
-* gather (inlet? sources of messages) are now plugins.
+* gather (inlet? sources of notification messages) are now plugins.
 
 * added typing to options settings, so plugins can declare: size, duration, string, or list.
 

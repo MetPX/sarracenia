@@ -98,8 +98,8 @@ Dataless With Sr_poll
 ~~~~~~~~~~~~~~~~~~~~~
 
 The sr_poll program can verify if products on a remote server are ready or modified.
-For each of the product, it emits an announcement on the local pump. One could use
-sr_subscribe anywhere, listen to announcements and get the products (provided the
+For each of the product, it emits an notification message on the local pump. One could use
+sr_subscribe anywhere, listen to notification messages and get the products (provided the
 credentials to access it)
 
 
@@ -191,18 +191,18 @@ for mis-use, and cleaning it up.
 Input Validation
 ~~~~~~~~~~~~~~~~
 
-Users such as Alice post their messages to their own exchange (xs_Alice). Processes which read from
+Users such as Alice post their notification messages to their own exchange (xs_Alice). Processes which read from
 user exchanges have a responsibility for validation. The process that reads xs_Alice (likely an sr_sarra)
-will overwrite any *source* or *cluster* heading written into the message with the correct values for
-the current cluster, and the user which posted the message.
+will overwrite any *source* or *cluster* heading written into the notification message with the correct values for
+the current cluster, and the user which posted the notification message.
 
 The checksum algorithm used must also be validated. The algorithm must be known. Similarly, if
-there is a malformed header of some kind, it should be rejected immediately. Only well-formed messages
+there is a malformed header of some kind, it should be rejected immediately. Only well-formed notification messages
 should be forwarded for further processing.
 
 In the case of sr_sarra, the checksum is re-calculated when downloading the data, it
-ensures it matches the message. If they do not match, an error report message is published.
-If the *recompute_checksum* option is True, the newly calculated checksum is put into the message.
+ensures it matches the notification message. If they do not match, an error report message is published.
+If the *recompute_checksum* option is True, the newly calculated checksum is put into the notification message.
 Depending on the level of confidence between a pair of pumps, the level of validation may be
 relaxed to improve performance.
 
@@ -213,7 +213,7 @@ constraints are a little different:
 - source doesn´t matter. (feeders can represent other users, so do not overwrite.)
 - ensure cluster is not local cluster (as that indicates either a loop or misuse.)
 
-If the message fails the non-local cluster test, it should be rejected, and logged (FIME: published ... hmm... clarify)
+If the notification message fails the non-local cluster test, it should be rejected, and logged (FIME: published ... hmm... clarify)
 
 .. NOTE::
  FIXME:
@@ -244,17 +244,17 @@ This glossary should make it easier to understand the rest of the documentation.
 Source
   Someone who wants to ship data to someone else. They do that by advertising a 
   trees of files that are copied from the starting point to one or more pumps
-  in the network. The advertisement sources produced tell others exactly where 
+  in the network. The notification message sources produced tell others exactly where 
   and how to download the files, and Sources have to say where they want the 
   data to go to.
 
   Sources use programs like `sr_post.1 <../Reference/sr3.1.html#post>`_, 
   `sr_watch.1 <../Reference/sr3.1.html#watch>`_, and `sr_poll(1) <../Reference/sr3.1.html#poll>`_ to create 
-  their advertisements.
+  their notification messages.
 
 
 Subscribers
-  are those who examine advertisements about files that are available, and 
+  are those who examine notification messages about files that are available, and 
   download the files they are interested in.
 
   Subscribers use `sr_subscribe(1) <../Reference/sr3.1.html#subscribe>`_
@@ -271,8 +271,8 @@ Post, Notice, Notification, Advertisement, Announcement
 
 Report messages
   These are AMQP messages (in `sr_post(7) <../Reference/sr3.1.html#post>`_ format, with _report_ 
-  field included) built by consumers of messages, to indicate what a given pump 
-  or subscriber decided to do with a message. They conceptually flow in the 
+  field included) built by consumers of notification messages, to indicate what a given pump 
+  or subscriber decided to do with a notification message. They conceptually flow in the 
   opposite direction of notifications in a network, to get back to the source.
 
 
@@ -296,7 +296,7 @@ Pump or broker
 
 Dataless Pumps
   There are some pumps that have no transport engine, they just mediate 
-  transfers for other servers, by making messages available to clients and
+  transfers for other servers, by making notification messages available to clients and
   servers in their network area.
 
 

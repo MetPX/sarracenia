@@ -394,8 +394,8 @@ Flakey Broker
 
 The *flakey_broker* tests are the same as the *static_flow*, but slowed down so that they last
 a few minutes, and the broker is shutdown and restarted while the posting is happenning.  
-Note that post_log prints before a message is posted (because post_log is an on_post plugin, and
-that action, allows one to modify the post, so it needs to be before the post actually happens.)
+Note that post_log prints before a notification message is posted (because post_log is an on_post plugin, and
+that action, allows one to modify the notification message, so it needs to be before the post actually happens.)
 
 
 Dynamic Flow
@@ -431,9 +431,9 @@ shows functionality covered.
 |                   |                                      |                                     | 
 +-------------------+--------------------------------------+-------------------------------------+
 | subscribe t_ddx   | copy from data mart to local broker  | read amqps public data mart (v02)   | 
-|                   | posting messages to local xwinnow00  | as ordinary user.                   | 
-|                   | and xwinnow01 exchanges.             |                                     | 
-|                   |                                      | shared queue and multiple processes | 
+|                   | posting notification messages to     | as ordinary user.                   | 
+|                   | local xwinno00 and xwinnow01         |                                     | 
+|                   | exchanges.                           | shared queue and multiple processes | 
 |                   |                                      | 3 instances download from each q    | 
 |                   |                                      |                                     | 
 |                   |                                      | post amqp to a local exchange (v02) | 
@@ -446,7 +446,8 @@ shows functionality covered.
 |                   |                                      |                                     | 
 |                   |                                      | complete caching (winnow) function  | 
 |                   | as two sources identical, only half  |                                     | 
-|                   | messages received are posted to next | post amqp v02 to local excchange.   | 
+|                   | notification messages are posted to  | post amqp v02 to local excchange.   | 
+|                   | next                                 |                                     | 
 +-------------------+--------------------------------------+-------------------------------------+
 | sarra download    | download the winnowed data from the  | read local amqp v02 (xsarra)        | 
 | f20               | data mart to a local directory       |                                     | 
@@ -476,8 +477,8 @@ shows functionality covered.
 |                   | memory ceiling set low               | auto restarting on memory ceiling.  | 
 |                   |                                      |                                     | 
 +-------------------+--------------------------------------+-------------------------------------+
-| sender            | read local file, send via sftp       | client consume v03 post.            | 
-| tsource2send      | to sent_by_tsource2send directory    |                                     | 
+| sender            | read local file, send via sftp       | client consume v03 notification     | 
+| tsource2send      | to sent_by_tsource2send directory    | messages.                           | 
 |                   |                                      | consumer read local file.           | 
 |                   | post to xs_tsource_output            |                                     | 
 |                   |                                      | send via sftp.                      | 
@@ -754,7 +755,7 @@ Run A Flow Test
 ~~~~~~~~~~~~~~~
 
 The flow_check.sh script reads the log files of all the components started, and compares the number
-of messages, looking for a correspondence within +- 10%   It takes a few minutes for the
+of notification messages, looking for a correspondence within +- 10%   It takes a few minutes for the
 configuration to run before there is enough data to do the proper measurements::
 
      ./flow_limit.sh
@@ -1040,7 +1041,7 @@ This test was fired up at the end of the day, as it takes several hours, and res
 High volume sample
 ~~~~~~~~~~~~~~~~~~
 
-Trying the flow test with higher volume of messages (ie. 100 000) is one step closer to the goal of having a flow test running continously. This is motivated by our testing purposes. 
+Trying the flow test with higher volume of notification messages (ie. 100 000) is one step closer to the goal of having a flow test running continously. This is motivated by our testing purposes. 
 
 Limitation
 ++++++++++
@@ -1061,7 +1062,7 @@ Then excute ``sysctl -p`` and the system should now support high volume of inoti
 
 Flow Test Stuck
 +++++++++++++++
-Sometimes flow tests (especially for large numbers) get stuck because of problems with the data stream (where multiple files get the same name) and so earlier versions remove later versions and then retries will always fail. Eventually, we will succeed in cleaning up the dd.weather.gc.ca stream, but for now sometimes a flow_check gets stuck 'Retrying.' The test has run all the messages required, and is at a phase of emptying out retries, but just keeps retrying forever with a variable number of items that never drops to zero.
+Sometimes flow tests (especially for large numbers) get stuck because of problems with the data stream (where multiple files get the same name) and so earlier versions remove later versions and then retries will always fail. Eventually, we will succeed in cleaning up the dd.weather.gc.ca stream, but for now sometimes a flow_check gets stuck 'Retrying.' The test has run all the notification messages required, and is at a phase of emptying out retries, but just keeps retrying forever with a variable number of items that never drops to zero.
 
 To recover from this state without discarding the results of a long test, do::
 
@@ -1271,7 +1272,7 @@ Each release will be versioned as ``<protocol version>.<YY>.<MM> <segment>``
 
 Where:
 
-- **protocol version** is the message version. In Sarra messages, they are all prefixed with v02 (at the moment).
+- **protocol version** is the message version. In Sarra notification messages, they are all prefixed with v02 (at the moment).
 - **YY** is the last two digits of the year of the initial release in the series.
 - **MM** is a TWO digit month number i.e. for April: 04.
 - **segment** is what would be used within a series.
@@ -1644,7 +1645,7 @@ They are not hard and fast rules, just guidance.
 When to Report
 ~~~~~~~~~~~~~~
 
-sr_report(7) messages should be emitted to indicate final disposition of the data itself, not
+sr_report(7) notification messages should be emitted to indicate final disposition of the data itself, not
 any notifications or report messages (don't report report messages, it becomes an infinite loop!)
 For debugging and other information, the local log file is used.  For example, sr_shovel does
 not emit any sr_report(7) messages, because no data is transferred, only messages.

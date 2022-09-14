@@ -58,7 +58,7 @@ GLOSSARY
 | message        | message d'annonce (notification message)  |
 +----------------+-------------------------------------------+
 
-message, advertisement, post, notification, announcement -> message, publicité? , annonce? , article?
+message, notification message, post, notification, announcement -> message, publicité? , annonce? , article?
 
 The canonical term is now:
 

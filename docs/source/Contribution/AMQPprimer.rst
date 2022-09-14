@@ -56,7 +56,7 @@ Named Exchanges and Queues
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In AMQP prior to 1.0, many different actors can define communication parameters, such as exchanges
-to publish to, queues where messages accumulate, and bindings between the two. Applications
+to publish to, queues where notification messages accumulate, and bindings between the two. Applications
 and users declare and user their exchanges, queues, and bindings. All of this was dropped
 in the move to 1.0 making topic based exchanges, an important underpinning of pub/sub patterns
 much more difficult.
@@ -97,14 +97,14 @@ The root of the topic tree is the version of the message payload.  This allows s
 to easily support multiple versions of the protocol at the same time during transitions.  *v02*,
 created in 2015, is the third iteration of the protocol and existing servers routinely support previous
 versions simultaneously in this way.  The second sub-topic defines the type of message.
-At the time of writing:  v02.post is the topic prefix for current post messages.
+At the time of writing:  v02.post is the topic prefix for current notification messages.
 
 Little Data 
 ~~~~~~~~~~~
 
-The AMQP messages contain announcements, no actual file data. AMQP is optimized for and assumes
+The AMQP messages contain notification messages, no actual file data. AMQP is optimized for and assumes
 small messages. Keeping the messages small allows for maximum message throughtput and permits
-clients to use priority mechanisms based on transfer of data, rather than the announcements.
+clients to use priority mechanisms based on transfer of data, rather than the notification messages.
 Accomodating large messages would create many practical complications, and inevitably require
 the definition of a maximum file size to be included in the message itself, resulting in
 complexity to cover multiple cases.
@@ -116,18 +116,18 @@ is no dialogue between publisher and subscriber. Each post is a stand-alone item
 is one message in a stream, which on receipt may be spread over a number of nodes.
 
 However, it is likely that, for small files over high latency links, it is
-more efficient to include the body of the files in the messages themselve,
+more efficient to include the body of the files in the notification messages themselves,
 rather than forcing a separate retrieval phase.  The relative advantage depends on:
 
 * relative coarseness of server side filtering means some filtering is done on
-  the client side.  Any data embedded for messages discarded on the client-side
+  the client side.  Any data embedded for notification messages discarded on the client-side
   are waste.
 
 * Sarracenia establishes long-lived connections for some protocols, such as SFTP,
   so the relative overhead for a retrieval may not be long.
 
 * One will achieve a higher messaging rate without data being embedded, and if the
-  messages are distributed to a number of workers, it is possible that the resulting
+  notification messages are distributed to a number of workers, it is possible that the resulting
   message rate is higher without embedded data (because of faster distribution for
   parallel download) than the savings from embedding.
 
@@ -136,7 +136,7 @@ rather than forcing a separate retrieval phase.  The relative advantage depends 
   transfers.
 
 Further work is needed to better clarify when it makes sense to embed content
-in messages. For now, the *content* header is included to allow such experiments
+in notification messages. For now, the *content* header is included to allow such experiments
 to occur.
 
 Other Parameters
@@ -150,10 +150,10 @@ is assured by making the right choices.
 * expiry (how long a queue should exist when no-one is consuming from it.  Default: a few
   minutes for development, but can set much longer for production)
 
-* message_ttl (the life-span of queued messages. Messages that are too old will not
+* message_ttl (the life-span of queued notification messages. Messages that are too old will not
   be delivered: default is forever.)
 
-* Pre-fetch is an AMQP tunable to determine how many messages a client will
+* Pre-fetch is an AMQP tunable to determine how many notification messages a client will
   retrieve from a broker at once, optimizing streaming. (default: 25)
 
 These are used in declarations of queues and exchanges to provide appropriate
@@ -176,7 +176,7 @@ Not trying to be rabbitmq specific, but management functions differ between impl
 So admin tasks require 'porting' while the main application elements do not.
 
 *Queues* are usually taken care of transparently, but you need to know
-   - A Consumer/subscriber creates a queue to receive messages.
+   - A Consumer/subscriber creates a queue to receive notification messages.
    - Consumer queues are *bound* to exchanges (AMQP-speak) 
 
 An *exchange* is a matchmaker between *publisher* and *consumer* queues.
@@ -186,12 +186,12 @@ An *exchange* is a matchmaker between *publisher* and *consumer* queues.
    - interested: compare message key to the bindings of *consumer queues*.
    - message is routed to interested *consumer queues*, or dropped if there aren't any.
    
-- Multiple processes can share a *queue*, they just take turns removing messages from it.
+- Multiple processes can share a *queue*, they just take turns removing notification messages from it.
    - This is used heavily for sr_sarra and sr_subcribe multiple instances.
 
 - *Queues* can be *durable*, so even if your subscription process dies, 
   if you come back in a reasonable time and you use the same queue, 
-  you will not have missed any messages.
+  you will not have missed any notification messages.
 
 - How to Decide if Someone is Interested.
    - For Sarracenia, we use (AMQP standard) *topic based exchanges*.
@@ -199,11 +199,11 @@ An *exchange* is a matchmaker between *publisher* and *consumer* queues.
    - Topics are just keywords separated by a dot. wildcards: # matches anything, * matches one word.
    - We create the topic hierarchy from the path name (mapping to AMQP syntax)
    - Resolution & syntax of server filtering is set by AMQP. (. separator, # and * wildcards)
-   - Server side filtering is coarse, messages can be further filtered after download using regexp on the actual paths (the reject/accept directives.)
+   - Server side filtering is coarse, notification messages can be further filtered after download using regexp on the actual paths (the reject/accept directives.)
 
 - topic prefix?  We start the topic tree with fixed fields
-     - v02 the version/format of sarracenia messages.
-     - post ... the message type, this is an announcement 
+     - v02 the version/format of sarracenia notification messages.
+     - post ... the message type, this is an notification message 
        of a file (or part of a file) being available.  
 
 
@@ -232,7 +232,7 @@ less AMQP specific.
    - use only one type of exchanges (Topic), take care of bindings.
    - naming conventions for exchanges and queues.
       - exchanges start with x. 
-        - xs_Weather - the exchange for the source (amqp user) named Weather to post messages
+        - xs_Weather - the exchange for the source (amqp user) named Weather to post notification messages
         - xpublic -- exchange used for most subscribers.
       - queues start with q
 
@@ -248,9 +248,9 @@ Review
 
 If you understood the rest of the document, this should make sense to you:
 
-An AMQP broker is a server process that houses exchanges and queues used to route messages 
-with very low latency. A publisher sends messages to an exchange, while a consumer reads 
-messages from their queue. Queues are *bound* to exchanges. Sarracenia links a broker
+An AMQP broker is a server process that houses exchanges and queues used to route notification messages 
+with very low latency. A publisher sends notification messages to an exchange, while a consumer reads 
+notification messages from their queue. Queues are *bound* to exchanges. Sarracenia links a broker
 to a web server to provide fast notifications, and uses topic exchanges to enable 
 consumers' server side filtering. The topic tree is based on the file tree you can 
 browse if you visit the corresponding web server.
@@ -312,7 +312,7 @@ one must standardize specific dialects.  Examples:
      - RSS/Atom, 
      - Common Alerting Protocol (CAP)
 
-AMQP brokers and the client software can connect and send messages, but without 
+AMQP brokers and the client software can connect and send notification messages, but without 
 additional standardization, applications will not communicate.  AMQP calls 
 those additional layers *applications*.  AMQP enables every conceivable message 
 pattern, so a **well formed application is** built by eliminating features from 

@@ -33,7 +33,7 @@ and implement, and are more flexible and powerful than the v2 mechanism.
  * Standard python imports; Syntax errors are detected and reported *the normal way*
  * v3 classes are designed to be usable outside the CLI itself (see jupyter notebook examples)
    callable by application programmers in their own code, like any other python library.
- * v3 classes can be sub-classed to add core functionality, like new message or file 
+ * v3 classes can be sub-classed to add core functionality, like new notification message or file 
    transport protocols.
  
 .. tip::
@@ -139,7 +139,7 @@ doing things in v3. You declare callbacks, and have them contain the entry point
 
 * DESTFNSCRIPT work similar in v3 to v2, but the API is made to match v3 flowCallbacks,
 the new routines, one returns the new filename as output, instead of modifying a field
-in the message.
+in the notification message.
 
 
 
@@ -193,7 +193,7 @@ In general, v3 plugins:
 
 * **v3 plugins can be used by application programmers.** The plugins aren't
   bolted on after the fact, but a core element, implementing duplicate 
-  suppression, reception and transmission of messages, file monitoring,
+  suppression, reception and transmission of notification messages, file monitoring,
   etc.. understanding v3 plugins gives people important clues to being
   able to work on sarracenia itself.
 
@@ -209,7 +209,7 @@ In general, v3 plugins:
 
       logger = logging.getLogger(__name__)
 
-      # To log a message:
+      # To log a notification message:
       logger.debug( ... )
       logger.info( ... )
       logger.warning( ... )
@@ -249,11 +249,11 @@ In general, v3 plugins:
   *  post_broker is unchanged. 
   *  post_base_url -> post_baseUrl
 
-* In v3 **messages are now python dictionaries** , so a v2 `msg.relpath` becomes `msg['relPath']` in v3.
-  v3 messages, as dictionaries are the default internal representation.
+* In v3 **notification messages are now python dictionaries** , so a v2 `msg.relpath` becomes `msg['relPath']` in v3.
+  v3 notification messages, as dictionaries are the default internal representation.
 
-* In v3 **plugins operate on batches of messages**. v2 *on_message* gets parent as a parameter,
-  and the message is in parent.message. In v3, *after_accept* has worklist as an
+* In v3 **plugins operate on batches of notification messages**. v2 *on_message* gets parent as a parameter,
+  and the notification message is in parent.message. In v3, *after_accept* has worklist as an
   option, which is python list of messages, maximum length being fixed by the
   *batch* option. So the general organization for after_accept, and after_work is::
 
@@ -275,17 +275,17 @@ In general, v3 plugins:
   * worklist.failed (transfers that failed.)
 
   In the case of receiving a .tar file and expanding into to individual files,
-  the *after_work* routine would change the worklist.ok to contain messages for
+  the *after_work* routine would change the worklist.ok to contain notification messages for
   the individual files, rather than the original collective .tar.
 
   .. Note:: on_file plugins that become after_work plugins should be placed in the
             /flowcb/after_work directory
   
-* v3 has **no Need to set message fields in plugins**
-  in v2, one would need to set partstr, and sumstr for v2 messages in plugins. 
-  This required an excessive understanding of message formats, and meant that 
-  changing message formats required modifying plugins (v03 message format is
-  not supported by most v2 plugins, for example). To build a message from a 
+* v3 has **no Need to set notification message fields in plugins**
+  in v2, one would need to set partstr, and sumstr for v2 notification messages in plugins. 
+  This required an excessive understanding of notification message formats, and meant that 
+  changing notification message formats required modifying plugins (v03 notification message format is
+  not supported by most v2 plugins, for example). To build a notification message from a 
   local file in a v3 plugin::
 
      import sarracenia
@@ -296,7 +296,7 @@ In general, v3 plugins:
 
 
 * v3 plugins **rarely, involve subclassing of moth or transfer classes.**
-  The sarracenia.moth class implements support for message queueing protocols
+  The sarracenia.moth class implements support for notification message queueing protocols
   that support topic hierarchy based subscriptions. There are currently
   two subclasses of Moth: amqp (for rabbitmq), and mqtt.  It would be
   great for someone to add an amq1 (for qpid amqp 1.0 support.)
@@ -405,12 +405,12 @@ for details.
 on_message, on_post --> after_accept
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-v2: receives one message, returns True/False
+v2: receives one notification message, returns True/False
 
 
 v3: receives worklist 
     modify worklist.incoming 
-    transferring rejected messages to worklist.rejected, or worklist.failed.
+    transferring rejected notification messages to worklist.rejected, or worklist.failed.
 
 Sample flow::
 
@@ -438,11 +438,11 @@ examples:
 on_file --> after_work
 ~~~~~~~~~~~~~~~~~~~~~~
 
-v2: receives one message, returns True/False
+v2: receives one notification message, returns True/False
 
 v3: receives worklist 
     modify worklist.ok (transfer has already happenned.) 
-    transferring rejected messages to worklist.rejected, or worklist.failed.
+    transferring rejected notification messages to worklist.rejected, or worklist.failed.
 
     can also be used to work on worklist.failed (retry logic does this.)
 
@@ -475,8 +475,8 @@ v2: call do_poll from plugin.
 
  * protocol to use the do_poll routine is identified by registered_as() entry point
     which is mandatory to provide.
- * requires manually constructing fields for messages, is message verison specific,
-   (generally do not support v03 messages.)
+ * requires manually constructing fields for notification messages, is notification message verison specific,
+   (generally do not support v03 notification messages.)
  * explicitly calls poll entry points.
  * runs, one must worry about whether one has the vip or not to decide what processing
    to do in each plugin.
@@ -491,12 +491,12 @@ v3: define poll in a flowcb class.
  * gather runs always, and is used to subscribe to post done by node that has the vip,
    allowing the nodupe cache to be kept uptodate.
 
- * api defined to build messages from file data regardless of message format.
+ * api defined to build notification messages from file data regardless of notification message format.
 
- * returns a list of messages to be filtered and posted.
+ * returns a list of notification messages to be filtered and posted.
 
 
-To build a message, without a local file, use fromFileInfo sarracenia.message factory::
+To build a notification message, without a local file, use fromFileInfo sarracenia.message factory::
   
      import dateparser
      import paramiko
@@ -506,7 +506,7 @@ To build a message, without a local file, use fromFileInfo sarracenia.message fa
 
      m = sarracenia.Message.fromFileInfo(sample_fileName, cfg)
 
-builds an message from scratch.
+builds an notification message from scratch.
 
 One can also build and supply a simulated stat record to fromFileInfo factory,
 using the *paramiko.SFTPAttributes()* class. For example, using the dateparser 
@@ -529,7 +529,7 @@ One should fill in the *SFTPAttributes* record if possible, since the duplicate
 cache use metadata if available. The better the metadata, the better the
 detection of changes to existing files.
 
-Once the message is built, append it to the list::
+Once the notification message is built, append it to the list::
 
      gathered_messages.append(m) 
   
@@ -747,7 +747,7 @@ do_download -> download:
 
 create a flowCallback class with a *download* entry point.
 
-* accepts a single message as an argument.
+* accepts a single notification message as an argument.
 
 * returns True if download succeeds.
 
@@ -760,7 +760,7 @@ create a flowCallback class with a *download* entry point.
 
 * might be a good idea to verify the checksum of the downloaded data.
   if the checksum of the file downloaded does not agree with what is in
-  the message, duplicate suppression fails, and looping results.
+  the notification message, duplicate suppression fails, and looping results.
    
 * one case of download is when retrievalURL is not a normal file download.
   in v03, there is a retPath fields for exactly this case. This new feature
@@ -777,7 +777,7 @@ create a flowCallback class with a *download* entry point.
       * https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/poll/noaa_hydrometric.py
 
   The ported result sets the new field *retPath* ( retrieval path ) instead of new_dir and new_file 
-  fields, and normal processing of the *retPath* field in the message will do a good download, no
+  fields, and normal processing of the *retPath* field in the notification message will do a good download, no
   plugin required. 
 
 
@@ -872,7 +872,7 @@ v3 only: post,gather
 The polling/posting is actually done in flow callback (flowcb) classes.
 The exit status does not matter, all such routines will be called in order.
 
-The return of a gather is a list of messages to be appended to worklist.incoming
+The return of a gather is a list of notification messages to be appended to worklist.incoming
 
 The return of post is undefined. The whole point is to create a side-effect
 that affects some other process or server.
@@ -880,8 +880,8 @@ that affects some other process or server.
 
 examples: 
  * flowcb/gather/file.py - read files from disk (for post and watch)
- * flowcb/gather/message.py - how messages are received by all components
- * flowcb/post/message.py - how messages are posted by all components.
+ * flowcb/gather/message.py - how notification messages are received by all components
+ * flowcb/post/message.py - how notification messages are posted by all components.
  * flowcb/poll/nexrad.py - this polls NOAA's AWS server for data.
    install a configuration to use it with *sr3 add poll/aws-nexrad.conf* 
 
@@ -902,7 +902,7 @@ duplicate suppression in v3, has:
 flowcb/retry 
 ~~~~~~~~~~~~
 
-  * has an after_accept function to append messages to the 
+  * has an after_accept function to append notification messages to the 
     incoming queue, in order to trigger another attempt to process them.
   * has an after_work routine doing something unknown... FIXME.
   * has a post function to take failed downloads and put them

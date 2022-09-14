@@ -72,7 +72,7 @@ providing you give it permission. We describe that case first.
    *subtopic* directive is meant to provide coarse classification,  and
    use of *accept/reject* is meant for more detailed work.   *accept/reject* clauses
    do not rely on AMQP headers, using path names stored in the body of the
-   message, and so are not affected by this limit.
+   notification message, and so are not affected by this limit.
 
 
 SFTP Injection
@@ -233,7 +233,7 @@ Polling External Sources
 Some sources are inherently remote, and we are unable to interest or affect them.
 One can configure sr_poll to pull in data from external sources, typically web sites.
 The sr_poll command typically runs as a singleton that tracks what is new at a source tree
-and creates source messages for the pump network to process.
+and creates source notification messages for the pump network to process.
 
 External servers, especially web servers often have different ways of posting their
 product listings, so custom processing of the list is often needed. That is why sr_poll
@@ -276,7 +276,7 @@ Large Files
 Larger files are not sent as a single block. They are sent in parts, and each
 part is fingerprinted, so that when files are updated, unchanged portions are
 not sent again. There is a default threshold built into the sr\_ commands, above
-which partitioned announcements will be done by default. This threshold can
+which partitioned notification messages will be done by default. This threshold can
 be adjusted to taste using the *part_threshold* option.
 
 Different pumps along the route may have different maximum part sizes. To
@@ -297,10 +297,10 @@ To get reliability in a sarracenia network, multiple independent sources are pro
 Each source announces their products, and if they have the same name and fingerprint, then
 the products are considered the same.
 
-The sr_winnow component of sarracenia looks at incoming announcements and notes which products
+The sr_winnow component of sarracenia looks at incoming notification messages and notes which products
 are received (by file name and checksum). If a product is new, it is forwarded on to other components
-for processing. If a product is a duplicate, then the announcement is not forwarded further.
-Similarly, when sr_subscribe or sr_sarra components receive an announcement for a product that is already
+for processing. If a product is a duplicate, then the notification message is not forwarded further.
+Similarly, when sr_subscribe or sr_sarra components receive an notification message for a product that is already
 present on the local system, they will examine the fingerprint and not download the data unless it is different.
 Checksum methods need to be known across a network, as downstream components will re-apply them.
 
@@ -327,7 +327,7 @@ the network::
 
     u.py
 
-So downstream clients can obtain and apply the same algorithm to compare announcements
+So downstream clients can obtain and apply the same algorithm to compare notification messages
 from multiple sources.
 
 .. warning::
@@ -356,25 +356,25 @@ include in the filename hierarchy? How can data consumers know that information 
 to download the file in order to determine that it is uninteresting. An example would be
 weather warnings. The file names might include weather warnings for an entire country.  If consumers
 are only interested in downloading warnings that are local to them, then, a data source could
-use the on_post hook in order to add additional headers to the message.
+use the on_post hook in order to add additional headers to the notification message.
 
 .. note::
   With great flexibility comes great potential for harm. The path names should include as much information
   as possible as sarracenia is built to optimize routing using them.  Additional meta-data should be used
   to supplement, rather than replace, the built-in routing.
 
-To add headers to messages being posted, one can use header option. In a configuration
+To add headers to notification messages being posted, one can use header option. In a configuration
 file, add the following statements::
 
   header CAP_province=Ontario
   header CAP_area-desc=Uxbridge%20-%20Beaverton%20-%20Northern%20Durham%20Region
   header CAP_polygon=43.9984,-79.2175 43.9988,-79.219 44.2212,-79.3158 44.4664,-79.2343 44.5121,-79.1451 44.5135,-79.1415 44.5136,-79.1411 44.5137,-79.1407 44.5138,-79.14 44.5169,-79.0917 44.517,-79.0879 44.5169,-79.0823 44.218,-78.7659 44.0832,-78.7047 43.9984,-79.2175
 
-So that when a file advertisement is posted, it will include the headers with the given values.
+So that when a file notification message is posted, it will include the headers with the given values.
 This example is artificial in that it statically assigns the header values which is appropriate 
 to simple cases. For this specific case, it is likely more appropriate to implement a specialized 
 on_post plugin for Common Alerting Protocol files to extract the above header information and 
-place it in the message headers for each alert.
+place it in the notification message headers for each alert.
 
 
 
@@ -384,20 +384,20 @@ Efficiency Considerations
 
 It is not recommended to put overly complex logic in the plugin scripts, as they execute synchronously with
 post and receive operations. Note that the use of built-in facilities of AMQP (headers) is done to
-explicitly be as efficient as possible. As an extreme example, including encoded XML into messages
+explicitly be as efficient as possible. As an extreme example, including encoded XML into notification messages
 will not affect performance slightly, it will slow processing by orders of magnitude. One will not
 be able to compensate for with multiple instances, as the penalty is simply too large to overcome.
 
 Consider, for example, Common Alerting Protocol (CAP) messages for weather alerts.  These alerts routinely
-exceed 100 KBytes in size, wheras a sarracenia message is on the order of 200 bytes.  The sarracenia messages
+exceed 100 KBytes in size, wheras a sarracenia notification message is on the order of 200 bytes. The sarracenia notification messages
 go to many more recipients than the alert: anyone considering downloading an alert, as oppposed to just the ones
 the subscriber is actually interested in, and this metadata will also be included in the report messages,
 and so replicated in many additional locations where the data itself will not be present.
 
 Including all the information that is in the CAP would mean just in terms of pure transport 500 times
-more capacity used for a single message.  When there are many millions of messages to transfer, this adds up.
+more capacity used for a single notification message.  When there are many millions of notification messages to transfer, this adds up.
 Only the minimal information required by the subscriber to make the decision to download or not should be
-added to the message.  It should also be noted that in addition to the above, there is typically a 10x to
+added to the notification message.  It should also be noted that in addition to the above, there is typically a 10x to
 100x cpu and memory penalty parsing an XML data structure compared to plain text representation, which
 will affect the processing rate.
 
@@ -409,7 +409,7 @@ Quickly Announcing Very Large Trees On Linux
 To mirror very large trees (millions of files) in real time, it takes too long for tools like rsync 
 or find to traverse and generate lists of files to copy. On Linux, one can intercept calls for
 file operations using the well known shim library technique. This technique provides virtually
-real-time announcements of files regardless of the size of the tree, with minimal overhead as
+real-time notification messages of files regardless of the size of the tree, with minimal overhead as
 this technique imposes much less load than tree traversal mechanisms, and makes use of the
 C implementation of Sarracenia, which uses very little memory or processor resources.
 

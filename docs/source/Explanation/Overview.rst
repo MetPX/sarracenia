@@ -48,7 +48,7 @@ Longer Overview
 
 *  Since Sarracenia takes care of transient failures and queueing, your application just deals with normal cases.
 
-*  It uses message queueing protocols (currently AMQP and/or MQTT) to send file advertisements, and file transfers can be done over SFTP, HTTP, or any other web service.
+*  It uses message queueing protocols (currently AMQP and/or MQTT) to send file notification messages, and file transfers can be done over SFTP, HTTP, or any other web service.
 
 *  It does not depend on any proprietary technologies at all. Completely free to use for any purpose whatever.
 
@@ -98,7 +98,7 @@ recommend it highly for many use cases. But there are times when Sarracenia can 
 Rsync and other tools are comparison based (dealing with a single Source and Destination). Sarracenia, while it does not require or use multi-casting, is oriented towards delivery to multiple receivers, particularly when the source does not know who all the receivers are (pub/sub). Where rsync synchronization is typically done by walking a large tree, that means that the synchronization interval is inherently limited to the frequency at which you can do the file tree walks (in large trees, that can be a long time.) Each file tree walk reads the entire tree in order to generate signatures, so supporting larger numbers of clients causes 
 large overhead. Sarracenia avoids file tree walks by having writers calculate the checksums once, and signal their activity directly to readers by messages, reducing overhead by orders of magnitude. `Lsyncd <https://github.com/axkibe/lsyncd>`_ is a tool that leverages the INOTIFY features of Linux to achieve the same liveness, and it might be more suitable but it is obviously not portable. Doing this through the file system is thought to be cumbersome and less general than explicit middleware message passing, which also handles the logs in a straight-forward way.
 
-One of the design goals of Sarracenia is to be end-to-end. Rsync is point-to-point, meaning it does not support the *transitivity* of transfers across multiple data pumps that is desired. On the other hand, the first use case for Sarracenia is the distribution of new files. Updates to files were not common initially. `ZSync <https://zsync.moria.org.uk>`_ is much closer in spirit to this use case. Sarracenia now has a similar approach based on file partitions (or blocks), but with user selectable size (50M is a good choice), generally much larger than Zsync blocks (typically 4k), more amenable to acceleration. Using an announcement per checksummed block allows transfers to be accelerated more easily. 
+One of the design goals of Sarracenia is to be end-to-end. Rsync is point-to-point, meaning it does not support the *transitivity* of transfers across multiple data pumps that is desired. On the other hand, the first use case for Sarracenia is the distribution of new files. Updates to files were not common initially. `ZSync <https://zsync.moria.org.uk>`_ is much closer in spirit to this use case. Sarracenia now has a similar approach based on file partitions (or blocks), but with user selectable size (50M is a good choice), generally much larger than Zsync blocks (typically 4k), more amenable to acceleration. Using an notification message per checksummed block allows transfers to be accelerated more easily. 
 
 The use of the AMQP message bus enables use of flexible third party transfers, straight-forward system-wide monitoring and integration of other features such as security scanning within the flow.
 
