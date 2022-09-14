@@ -10,7 +10,7 @@ Explication
    GuideLigneDeCommande.rst
    StrategieDetectionFichiers.rst
    AssurerLaLivraison.rst
-   ConsiderationsDeployment
+   ConsiderationsDeployments
    SarraPluginDev
    Glossaire
    sftps

@@ -47,9 +47,7 @@ Mises en garde :
 .. toctree::
    :maxdepth: 1
    :caption: Contents:
-
-   Reference/index  
-
+   Reference/index.rst
    Explication/Overview.rst 
-   Tutoriels/index
-   How2Guides/index
+   Tutoriels/index.rst
+   How2Guides/index.rst
