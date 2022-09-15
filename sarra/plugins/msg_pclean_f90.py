@@ -61,10 +61,13 @@ class Msg_Pclean_F90(Msg_Pclean):
             try:
                 if test_extension == '.slink':
                     os.symlink(src, dest)
+                    parent.logger.info("pclean_f90_on_message symlinked %s to %s" % (dest, src ) )
                 elif test_extension == '.hlink':
                     os.link(src, dest)
+                    parent.logger.info("pclean_f90_on_message hard linked %s to %s" % (dest, src ) )
                 elif test_extension == '.moved':
                     os.rename(src, dest)
+                    parent.logger.info("pclean_f90_on_message moved %s to %s" % (src, dest ) )
                 else:
                     parent.logger.error("test '{}' is not supported".format(test_extension))
             except FileNotFoundError as err:
