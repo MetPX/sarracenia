@@ -90,14 +90,14 @@ dont certaines contrôlent des modules optionnels (flowcallbacks). Chaque compos
 différents ensembles de paramètres d’options par défaut pour couvrir un cas d’utilisation courant.
 
 
-* `cpump <../Explanation/CommandLineGuide.html#cpump>`_ - copier un message d'une pompe a une deuxième pompe (une implémentation C d'un shovel.)
-* `poll <../Explanation/CommandLineGuide.html#poll>`_ - poller une page web non-sarracenia ou des fichiers sur un serveur pour créer des messages pour un traitement.
-* `post|sr3_post|sr_cpost|watch <../Explanation/CommandLineGuide.html#post-or-watch>`_ - créer es messages pour les fichiers qui doivent être traités.
+* `cpump <../Explanation/CommandLineGuide.html#cpump>`_ - copier un message d'annonce d'une pompe a une deuxième pompe (une implémentation C d'un shovel.)
+* `poll <../Explanation/CommandLineGuide.html#poll>`_ - poller une page web non-sarracenia ou des fichiers sur un serveur pour créer des messages d'annonce pour un traitement.
+* `post|sr3_post|sr_cpost|watch <../Explanation/CommandLineGuide.html#post-or-watch>`_ - créer es messages d'annonce pour les fichiers qui doivent être traités.
 * `sarra <../Explanation/CommandLineGuide.html#sarra>`_ - télécharger un fichier d’un serveur distant vers un serveur local et les republier pour les autres.
 * `sender <../Explanation/CommandLineGuide.html#sender>`_ - envoyer des fichiers d’un serveur local à un serveur distant.
-* `shovel <../Explanation/CommandLineGuide.html#shovel>`_ - copier seulement des messages et non des fichiers.
-* `watch <../Explanation/CommandLineGuide.html#watch>`_ - crée un message pour chaque nouveau fichier qui arrive dans un répertoire.
-* `winnow <../Explanation/CommandLineGuide.html#winnow>`_ - copier des messages et supprime les doublons.
+* `shovel <../Explanation/CommandLineGuide.html#shovel>`_ - copier seulement des messages d'annonce et non des fichiers.
+* `watch <../Explanation/CommandLineGuide.html#watch>`_ - crée un message d'annonce pour chaque nouveau fichier qui arrive dans un répertoire.
+* `winnow <../Explanation/CommandLineGuide.html#winnow>`_ - copier des messages d'annonce et supprime les doublons.
 
 
 CONFIGURATIONS
@@ -230,7 +230,7 @@ VOIR AUSSI
 
 `sr3_cpost(1) <sr3_cpost.1.html>`_ - poste des annoncements de fichiers (implémentation en C.)
 
-`sr3_cpump(1) <sr3_cpump.1.html>`_ - implémentation en C du composant shovel. (copie des messages)
+`sr3_cpump(1) <sr3_cpump.1.html>`_ - copie les messages d'annonce ( implémentation en C du composant shovel. )
 
 **Formats:**
 

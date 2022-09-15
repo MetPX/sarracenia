@@ -136,7 +136,7 @@ intégrés:
 Il est également possible de spécifier des substitutions de variables sur les arguments du paramètre du *directory*
 en utilisant la notation *${..} * :
 
-* SOURCE   - l’utilisateur amqp qui a injecté des données (extraites du message).
+* SOURCE   - l’utilisateur amqp qui a injecté des données (extraites du message d'annonce).
 * BD       - le répertoire de base.
 * BUP      - le composant du chemin de baseUrl (ou : baseUrlPath).
 * BUPL     - le dernier élément du chemin du baseUrl. (ou: baseUrlPathLast).
@@ -200,7 +200,7 @@ les champs de substitution suivants seront disponibles::
   ${RSS}   remplacer par la seconde de réception
 
 Les champs 'R' proviennent du sixième champ, et les autres viennent du premier champ.
-Lorsque des données sont injectées dans Sarracenia à partir de Sundew, l’en-tête du message *sundew_extension*
+Lorsque des données sont injectées dans Sarracenia à partir de Sundew, l’en-tête du message d'annonce *sundew_extension*
 fournira la source de ces substitions même si ces champs ont été supprimés des fichiers livrés.
 
 SR_DEV_APPNAME
@@ -295,19 +295,19 @@ accept, reject et acceptUnmatched
 - **acceptUnmatched   <booléen> (défaut: False)**
 
 Les options **accept** et **reject** traitent les expressions régulières (regexp).
-Le regexp est appliqué à l’URL du message pour trouver une correspondance.
+Le regexp est appliqué à l’URL du message d'annonce pour trouver une correspondance.
 
-Si l’URL d’un fichier correspond à un modèle **reject**, le message
+Si l’URL d’un fichier correspond à un modèle **reject**, le message d'annonce
 est reconnu comme consommé par le courtier et est ignoré.
 
 Celui qui correspond à un modèle **accept** est traité par le composant.
 
 Dans de nombreuses configurations, les options **accept** et **reject** sont mélangé
-avec l’option **directory**.  Ces options associent les messages acceptés
+avec l’option **directory**.  Ces options associent les messages d'annonce acceptés
 à la valeur du **directory** sous laquelle elles sont spécifiées.
 
 Une fois que toutes les options **accept** / **reject** sont traitées, normalement
-le message est reconnu comme consommé et ignoré. Pour remplacer ce comportement,
+le message d'annonce est reconnu comme consommé et ignoré. Pour remplacer ce comportement,
 il est possible de définir **acceptUnmatched** en étant True. Les paramètres de **accept/reject**
 sont interprétés dans l’ordre. Chaque option est traitée de manière ordonnée
 de haut en bas. Par exemple:
@@ -351,7 +351,7 @@ signifie qu’un fichier ne sera pas publié à moins que le groupe ait l’auto
 Les options **permDefault** spécifient un masque, c’est-à-dire que les autorisations doivent être
 au moins ce qui est spécifié.
 
-Le **regexp pattern** peut être utilisé pour définir des parties du répertoire si une partie du message est placée
+Le **regexp pattern** peut être utilisé pour définir des parties du répertoire si une partie du message d'annonce est placée
 entre parenthèses. **sender** peut utiliser ces parties pour générer le nom du répertoire.
 Les chaînes de parenthèses entre les guillemets rst remplaceront le mot-clé **${0}** dans le nom du répertoire...
 le second **{1} $ ** etc.
@@ -375,15 +375,15 @@ Exemple d’utilisation ::
       accept .*(2016....).*(RAW.*GRIB).*
 
 
-Un message sélectionné par le premier *accept* sera remis inaltérée dans le premier répertoire.
+Un message d'annonce sélectionné par le premier *accept* sera remis inaltérée dans le premier répertoire.
 
-Un message sélectionné par le deuxième *accept* sera remis inaltérée dans deuxième répertoire.
+Un message d'annonce sélectionné par le deuxième *accept* sera remis inaltérée dans deuxième répertoire.
 
-Un message sélectionné par le troisième *accept sera renommé « fichier_de_type3 » dans le deuxième répertoire.
+Un message d'annonce sélectionné par le troisième *accept sera renommé « fichier_de_type3 » dans le deuxième répertoire.
 
-Un message sélectionné par le quatrième *accept* sera remis inaltérée à un répertoire.
+Un message d'annonce sélectionné par le quatrième *accept* sera remis inaltérée à un répertoire.
 
-Ça sera appelé  */ce/20160123/modèle/RAW_MERGER_GRIB/répertoire* si la notice du message ressemble à cela:
+Ça sera appelé  */ce/20160123/modèle/RAW_MERGER_GRIB/répertoire* si la notice du message d'annonce ressemble à cela:
 
 **20150813161959.854 http://this.pump.com/ relative/path/to/20160123_product_RAW_MERGER_GRIB_from_CMC**
 
@@ -404,8 +404,8 @@ Le défaut de 3 tentatives est approprié dans la plupart des cas.  Lorsque l’
 le fichier est immédiatement supprimé.
 
 Lorsque l’option **attempts** est utilisé, un échec de téléchargement après le numéro prescrit
-des **attempts** (ou d’envoi, pour un sender) va entrainer l’ajout du message à un fichier de file d’attente
-pour une nouvelle tentative plus tard.  Lorsque aucun message n’est prêt à être consommé dans la file d’attente AMQP,
+des **attempts** (ou d’envoi, pour un sender) va entrainer l’ajout du message d'annonce à un fichier de file d’attente
+pour une nouvelle tentative plus tard.  Lorsque aucun message d'annonce n’est prêt à être consommé dans la file d’attente AMQP,
 les requêtes se feront avec la file d’attente de "retry".
 
 baseDir <chemin> (défaut: /)
@@ -426,8 +426,8 @@ baseUrl_relPath <flag> (défaut: off)
 
 Normalement, le chemin d’accès relatif (baseUrl_relPath est False, ajouté au répertoire de base) pour
 les fichiers téléchargés seront définis en fonction de l’en-tête relPath inclus
-dans le message. Toutefois, si *baseUrl_relPath* est défini, le relPath du message va
-être précédé des sous-répertoires du champ baseUrl du message.
+dans le message d'annonce. Toutefois, si *baseUrl_relPath* est défini, le relPath du message d'annonce va
+être précédé des sous-répertoires du champ baseUrl du message d'annonce.
 
 
 batch <count> (défaut: 100)
@@ -464,7 +464,7 @@ Courtier (Broker)
 
 **broker [amqp|mqtt]{s}://<utilisateur>:<mot-de-passe>@<hoteDuCourtier>[:port]/<vhost>**
 
-Un URI est utilisé pour configurer une connexion à une pompe de messages, soit
+Un URI est utilisé pour configurer une connexion à une pompe de messages d'annonce, soit
 un courtier MQTT ou AMQP. Certains composants de Sarracenia fixent un défaut raisonnable pour
 cette option. Il faut fournir l’utilisateur normal, l’hôte, et le port de connexion.
 Dans la plupart des fichiers de configurations,
@@ -484,7 +484,7 @@ L’option broker indique à chaque composant quel courtier contacter.
       (défaut: None et il est obligatoire de le définir )
 
 Une fois connecté à un courtier AMQP, l’utilisateur doit lier une file d’attente
-aux échanges et aux thèmes pour déterminer le messages en question.
+aux échanges et aux thèmes pour déterminer le messages d'annonce en question.
 
 
 byteRateMax <size> (défaut: 0)
@@ -493,7 +493,7 @@ byteRateMax <size> (défaut: 0)
 **byteRateMax** est supérieur à 0, le processus tente de respecter cette vitesse de livraison
  en kilo-octets par seconde... ftp,ftps,ou sftp)
 
-**FIXME**: byteRateMax... uniquement implémenté par le sender ? ou subscriber aussi, données uniquement, ou messages aussi ?
+**FIXME**: byteRateMax... uniquement implémenté par le sender ? ou subscriber aussi, données uniquement, ou messages d'annonce aussi ?
 
 
 declare
@@ -533,7 +533,7 @@ source
 
 feeder
   Un utilisateur autorisé à écrire à n’importe quel échange. Une sorte d’utilisateur de flux administratif, destiné à pomper
-  des messages lorsque aucune source ou abonné ordinaire n’est approprié pour le faire. Doit être utilisé de
+  des messages d'annonce lorsque aucune source ou abonné ordinaire n’est approprié pour le faire. Doit être utilisé de
   préférence au lieu de comptes d’administrateur pour exécuter des flux.
 
 Les informations d’identification de l’utilisateur sont placées dans le `credentials.conf <sr3_credentials.7.html>`_
@@ -620,7 +620,7 @@ comment les traiter. S’il n’est pas défini, aucun événement de lien symbo
 
 .. remarque::
    déplacer ou renommer des événements entraîne un modèle spécial de double publication, avec une publication en
-   utilisant l'ancien nom et définissant le champ *newname*, et un deuxième message avec le nouveau nom, et un champ *oldname*.
+   utilisant l'ancien nom et définissant le champ *newname*, et un deuxième message d'annonce avec le nouveau nom, et un champ *oldname*.
    Cela permet aux abonnés d’effectuer un renommage réel et d’éviter de déclencher un téléchargement lorsque cela est possible.
 
 FIXME : algorithme de renommage amélioré en v3 pour éviter l’utilisation de double post...
@@ -771,7 +771,7 @@ header <nom>=<valeur>
 Ajoutez un en-tête <nom> avec la valeur donnée aux publicités. Utilisé pour transmettre des chaîne de caractères en tant
 que métadonnées dans les publicités pour améliorer la prise de décision des consommateurs. Doit être utilisé
 avec parcimonie. Il y a des limites sur le nombre d’en-têtes pouvant être utilisés, et la réduction de la
-taille des messages a des impacts importants sur la performance.
+taille des messages d'annonce a des impacts importants sur la performance.
 
 housekeeping <intervalle> (défaut: 300 secondes)
 ----------------------------------------------
@@ -824,22 +824,23 @@ notifié après la livraison.
 inline <flag> (défaut: False)
 -----------------------------
 
-Lors de la publication de messages, l’option **inline** est utilisée pour avoir le contenu du fichier
+Lors de la publication de messages d'annonce, l’option **inline** est utilisée pour avoir le contenu du fichier
 inclus dans le post. Cela peut être efficace lors de l’envoi de petits fichiers sur un niveau élevé de
 liens de latence, un certain nombre d’allers-retours peuvent être enregistrés en évitant la récupération
 des données utilisant l’URL. On ne devrait seulement utiliser *inline* pour des fichiers relativement petits.
 Lorsque **inline** est actif, seuls les fichiers inférieurs à **inlineByteMax** octets
-(défaut: 1024) auront réellement leur contenu inclus dans les messages de post.
+(défaut: 1024) auront réellement leur contenu inclus dans les messages d'annonce.
 Si **inlineOnly** est défini et qu’un fichier est plus volumineux que inlineByteMax, le fichier
 ne sera pas affiché.
 
 inlineByteMax <taille>
 ----------------------
-la taille maximale des messages à envoyer inline.
+
+la taille maximale des fichiers dont le contenu est à inclure dans un messages d'annonce (envoyé inline.)
 
 inlineOnly
 ----------
-ignorer les messages si les données ne sont pas inline.
+ignorer les messages d´annonce si les données ne sont pas inline.
 
 inplace <flag> (défaut: On)
 ----------------------------
@@ -851,7 +852,7 @@ Cela peut être défini a False pour certains déploiements de Sarracenia où un
 ne voie que quelques parties, et non l’intégralité de fichiers en plusieurs parties.
 
 L’option **inplace** est True par défaut.
-Dépendamment de **inplace** et si le message était une partie, le chemin peut
+Dépendamment de **inplace** et si le message d´annonce était une partie, le chemin peut
 encore changer (en ajoutant un suffixe de pièce si nécessaire).
 
 Instances
@@ -923,8 +924,8 @@ critical, error, info, warning, debug.
 logReject ( défaut: False )
 ---------------------------
 
-Normalement, le rejet des messages se fait en silence. Lorsque logReject a la valeur True, un message
-de journal est généré pour chaque message rejeté et indiquant la raison du rejet.
+Normalement, le rejet des messages d´annonce se fait en silence. Lorsque logReject a la valeur True, un message
+de journal est généré pour chaque message d´annonce rejeté et indiquant la raison du rejet.
 
 logStdout ( défaut: False )
 ---------------------------
@@ -958,14 +959,14 @@ La durée de l’intervalle avec une unité de temps optionnel (soit 5m, 2h, 3d)
 messageCountMax <count> (défaut: 0)
 -----------------------------------
 
-Si **messageCountMax** est supérieur à zéro, le flux se ferme après avoir traité le nombre de messages spécifié.
+Si **messageCountMax** est supérieur à zéro, le flux se ferme après avoir traité le nombre de messages d´annonce spécifié.
 Ceci est normalement utilisé pour le débogage uniquement.
 
 messageRateMax <float> (défaut: 0)
 ----------------------------------
 
 Si **messageRateMax** est supérieur à zéro, le flux essaye de respecter cette vitesse de livraison en termes de
-messages par seconde. Notez que la limitation est sur les messages obtenus ou générés par seconde, avant le
+messages d´annonce par seconde. Notez que la limitation est sur les messages d´annonce obtenus ou générés par seconde, avant le
 filtrage accept/reject. Le flux va dormir pour limiter le taux de traitement.
 
 
@@ -973,13 +974,13 @@ messageRateMin <float> (défaut: 0)
 ----------------------------------
 
 Si **messageRateMin** est supérieur à zéro et que le flux détecté est inférieur à ce taux,
-un message d’avertissement sera produit :
+un message d´annonce sera produit :
 
 message_ttl <duration>  (défaut: None)
 --------------------------------------
 
-L’option **message_ttl** définit un temps pour lequel un message peut vivre dans la file d’attente.
-Après ce temps, le message est retiré de la file d’attente par le courtier.
+L’option **message_ttl** définit un temps pour lequel un message d´annonce peut vivre dans la file d’attente.
+Après ce temps, le message d´annonce est retiré de la file d’attente par le courtier.
 
 mirror <flag> (défaut: off)
 ----------------------------
@@ -1013,7 +1014,7 @@ nodupe_ttl <off|on|999[smhdw]>
 
 
 Lorsque **nodupe_ttl** (également **suppress_duplicates* et **cache** ) est défini à une intervalle de temps
-qui est différente de zéro, chaque nouveau message est comparé à ceux reçus dans cette intervalle, pour vérifier si
+qui est différente de zéro, chaque nouveau message d´annonce est comparé à ceux reçus dans cette intervalle, pour vérifier si
 c’est un doublon. Les doublons ne sont pas traités ultérieurement. Qu’est-ce qu’un doublon ? Un fichier avec
 le même nom (y compris l’en-tête des pièces) et la même somme de contrôle. A chaque intervalle de *hearbeat*, un
 processus de nettoyage recherche les fichiers dans la cache qui n’ont pas été consultés pendant **cache** secondes,
@@ -1076,7 +1077,7 @@ l'afficher à un courtier. Les valeurs d’argument valides sont les suivantes :
 
 **post:**
 
-  poster un messages a un post_exchange
+  poster un messages d´annonce a un post_exchange
 
   **post_broker amqp{s}://<utilisateur>:<mot-de-passe>@<hoteDuCourtier>[:port]/<vhost>**
   **post_exchange     <nom>         (OBLIGATOIRE)**
@@ -1092,7 +1093,7 @@ l'afficher à un courtier. Les valeurs d’argument valides sont les suivantes :
 
 **json:**
 
-  écrire chaque message en sortie standard, un par ligne dans le même format json que celui utilisé pour
+  écrire chaque message d´annonce en sortie standard, un par ligne dans le même format json que celui utilisé pour
   l'enregistrement et la restauration de la file d’attente par l’implémentation python.
 
 **url:**
@@ -1143,7 +1144,7 @@ Si aucun mode de source est disponible, le *permDefault* sera appliqué aux fich
 et *chmod_dir* est un synonyme de *permDirDefault*).
 
 Lorsqu’il est défini dans un composant de posting, permCopy peut soit inclure ou exclure
-l’en-tête *mode* des messages.
+l’en-tête *mode* des messages d´annonce.
 
 lorsqu’il est défini dans un composant de polling, permDefault définit les autorisations minimales pour
 qu'un dossier puis être accepté.
@@ -1173,7 +1174,7 @@ mots de passe dans les URLs.
 post_broker <url>
 -----------------
 
-l’URL du courtier pour publier des messages. Voir `broker <#broker>`_ pour plus de détails.
+l’URL du courtier pour publier des messages d'annonce. Voir `broker <#broker>`_ pour plus de détails.
 
 post_exchange <name> (défaut: xpublic)
 ---------------------------------------
@@ -1184,7 +1185,7 @@ choix commun pour post_exchange est 'xpublic'.
 
 Lors de la publication d’un produit, un utilisateur peut démarrer un script en utilisant
 un point d'entrée de rappel de flux (flow callback) tels que **after_accept** et **after_work**
-pour modifier les messages générés à propos des fichiers avant leur publication.
+pour modifier les messages d'annonce générés à propos des fichiers avant leur publication.
 
 
 post_exchangeSplit <count> (défaut: 0)
@@ -1198,7 +1199,7 @@ qui ne peuvent pas être instancié de la manière normale.  Exemple::
     post_exchangeSplit 5
     post_exchange xwinnow
 
-entraînera la publication de messages sur cinq échanges nommés : xwinnow00, xwinnow01,
+entraînera la publication de messages d'annonce sur cinq échanges nommés : xwinnow00, xwinnow01,
 xwinnow02, xwinnow03 et xwinnow04, où chaque échange ne recevra qu’un cinquième
 du flux total.
 
@@ -1212,16 +1213,16 @@ post_topicPrefix (défaut: topicPrefix)
 ---------------------------------------
 
 Rajouter au subtopic pour former une hiérarchie complète des sujets.
-Cette option s’applique à la publication.  Elle indique la version des messages publiés
+Cette option s’applique à la publication.  Elle indique la version des messages d'annonce publiés
 dans les subtopics. (v03 fait référence à `<sr3_post.7.html>`_) Cette valeur par défaut est défini par tout ce qui
 a été reçue.
 
 prefetch <N> (défaut: 1)
 -------------------------
 
-L’option **prefetch** définit le nombre de messages à récupérer en même temps.
+L’option **prefetch** définit le nombre de messages d'annonce à récupérer en même temps.
 Lorsque plusieurs instances sont en cours d’exécution et que prefetch est égale à 4, chaque instance obtient jusqu’à quatre
-messages à la fois.  Pour réduire le nombre de messages perdus si une instance meurt et qu'elle a le
+messages d'annonce à la fois.  Pour réduire le nombre de messages d'annonce perdus si une instance meurt et qu'elle a le
 partage de charge optimal, prefetch doit être réglée le plus bas possible.  Cependant, sur des long haul links (FIXME),
 il faut augmenter ce nombre pour masquer la latence d'aller-retour, donc un réglage de 10 ou plus est nécessaire.
 
@@ -1269,7 +1270,7 @@ permettent pas aux utilisateurs de déclarer leurs files d’attente.
 queueDeclare <flag> (défaut: True)
 ----------------------------------
 
-Avec l´option queueDeclare à *True*, un composant déclare un fil d´attente pour accumuler des messages lors
+Avec l´option queueDeclare à *True*, un composant déclare un fil d´attente pour accumuler des messages d'annonce lors
 de chaque démarrage. Des fois les permissions sont restrictifs sur les courtiers, alors on ne peut pas
 faire de tels déclarations de ressources. Dans ce cas, il faut supprimer cette déclaration.
 
@@ -1278,7 +1279,7 @@ randomize <flag>
 
 Actif si *-r|--randomize* apparaît dans la ligne de commande... ou *randomize* est défini
 à True dans le fichier de configuration utilisé. S’il y a plusieurs postes parce que
-le fichier est publié par bloc (l’option *blocksize* a été définie), les messages de bloc
+le fichier est publié par bloc (l’option *blocksize* a été définie), les messages d'annonce de bloc
 sont randomisés, ce qui signifie qu’ils ne seront pas affichés.
 
 realpath <flag>
@@ -1294,9 +1295,9 @@ reconnect <flag>
 
 Actif si *-rc|--reconnect* apparaît dans la ligne de commande... ou
 *reconnect* est défini a True dans le fichier de configuration utilisé.
-*S’il y a plusieurs messages parce que le fichier est publié
+*S’il y a plusieurs messages d'annonce parce que le fichier est publié
 par bloc parce que l’option *blocksize* a été définie, il y a une
-reconnexion au courtier à chaque fois qu’un message doit être envoyé.
+reconnexion au courtier à chaque fois qu’un message d'annonce doit être envoyé.
 
 rename <chemin>
 ---------------
@@ -1340,11 +1341,11 @@ via Sarracenia, parce que Sarracenia choisit soi-même des valeurs appropriées.
 retryEmptyBeforeExit: <booléen> (défaut: False)
 -----------------------------------------------
 
-Utilisé pour les tests de flux de sr_insects. Empêche Sarracenia de quitter lorsqu’il reste des messages dans la file
+Utilisé pour les tests de flux de sr_insects. Empêche Sarracenia de quitter lorsqu’il reste des messages d'annonce dans la file
 d’attente de nouvelles tentatives (retry queue). Par défaut, une publication quitte proprement une fois qu’elle a
-créé et tenté de publier des messages pour tous les fichiers du répertoire spécifié. Si des messages ne sont pas
+créé et tenté de publier des messages d'annonce pour tous les fichiers du répertoire spécifié. Si des messages d'annonce ne sont pas
 publiés avec succès, ils seront enregistrés sur le disque pour réessayer ultérieurement. Si une publication n’est
-exécutée qu’une seule fois, comme dans les tests de flux, ces messages ne seront jamais réessayés, sauf si
+exécutée qu’une seule fois, comme dans les tests de flux, ces messages d'annonce ne seront jamais réessayés, sauf si
 retryEmptyBeforeExit est défini à True.
 
 retry_ttl <duration> (défaut: identique à expire)
@@ -1375,11 +1376,11 @@ Si un fichier est ouvert pour écriture et fermé plusieurs fois dans l’interv
 il ne sera affiché qu’une seule fois. Lorsqu’on écrit dans un fichier plusieurs fois, en particulier
 dans un script shell, de nombreux postes sont créés, et les scripts shell affecte la performance.
 Dans tous les cas, les abonnés ne seront pas en mesure de faire des copies assez rapidement, donc
-il y a peu d’avantages à avoir 100 messages du même fichier dans la même seconde pa exemple.
+il y a peu d’avantages à avoir 100 messages d'annonce du même fichier dans la même seconde pa exemple.
 Il est prudent de fixer une limite maximale à la fréquence de publication d’un fichier donné. (défaut: 5s)
 Remarque: si un fichier est toujours ouvert ou a été fermé après son post précédent, alors
 pendant le traitement de sortie du processus, il sera à nouveau publié, même si l’intervalle
-n’est pas respecté, afin de fournir le message final le plus précis.
+n’est pas respecté, afin de fournir le message d'annonce final le plus précis.
 
 shim_skip_parent_open_files (EXPERIMENTAL)
 ------------------------------------------
@@ -1440,17 +1441,17 @@ sourceFromExchange <flag> (défaut: off)
 ---------------------------------------
 
 L’option **sourceFromExchange** est principalement destinée aux administrateurs.
-Si les messages reçus sont postés directement à partir d’une source, l’échange utilisé
-est «xs_<nomUtilisateurSourceDuCourtier>». Ces messages pourraient manquer les en-têtes *source* et *from_cluster*,
+Si les messages d'annonce reçus sont postés directement à partir d’une source, l’échange utilisé
+est «xs_<nomUtilisateurSourceDuCourtier>». Ces messages d'annonce pourraient manquer les en-têtes *source* et *from_cluster*,
 ou un utilisateur malveillant peut définir des valeurs incorrectes.
 Pour se protéger contre ces deux problèmes, les administrateurs doivent définir l’option **sourceFromExchange**.
 
-Lorsque l’option est définie, les valeurs des en-têtes de *source* et *from_cluster* du message seront alors remplacées ::
+Lorsque l’option est définie, les valeurs des en-têtes de *source* et *from_cluster* du message d'annonce seront alors remplacées ::
 
   self.msg.headers['source']       = <utilsateurDuCourtier>
   self.msg.headers['from_cluster'] = cluster
 
-Cela va remplacer toutes les valeurs présentes dans le message. Ce paramètre doit toujours être utilisé
+Cela va remplacer toutes les valeurs présentes dans le message d'annonce. Ce paramètre doit toujours être utilisé
 lors de l’ingestion de données à partir d’un échange d’utilisateur. Ces champs sont utilisés pour renvoyer
 les rapports à l’origine des données injectées. Cela est généralement combiné avec::
 
@@ -1468,7 +1469,7 @@ Pour donner la bonne valeur au subtopic, on a le choix de filtrer en utilisant *
 wildcarding limité d’AMQP et une longueur limitée à 255 octets encodés, ou de manière plus puissante, les expressions régulière
 basés sur les mécanismes **accept/reject** décrits ci-dessous. La différence est que le
 le filtrage AMQP est appliqué par le courtier lui-même, ce qui évite que les avis soient livrés.
-aux clients. Les modèles **accept/reject** s’appliquent aux messages envoyés par le
+aux clients. Les modèles **accept/reject** s’appliquent aux messages d'annonce envoyés par le
 courtier à l’abonné. En d’autres termes, **accept/reject** sont des filtres côté client,
 alors que **subtopic** est le filtrage côté serveur.
 
@@ -1477,10 +1478,10 @@ au client et envoyer seulement ce qui est pertinent, et seulement régler les m�
 économisant du bandwidth et du traitement pour tous.
 
 topicPrefix est principalement utilisé lors des transitions de version de protocole,
-où l’on souhaite spécifier une version de protocole non-commune des messages auquel s’abonner.
+où l’on souhaite spécifier une version de protocole non-commune des messages d'annonce auquel s’abonner.
 
 Normalement, l’utilisateur spécifie un échange et plusieurs options de subtopic. **subtopic** est ce qui est
-normalement utilisé pour indiquer les messages d’intérêt. Pour utiliser **subtopic** pour filtrer les produits,
+normalement utilisé pour indiquer les messages d'annonce d'intérêt. Pour utiliser **subtopic** pour filtrer les produits,
 il faut que la chaîne de caractère subtopic corresponde au chemin relatif du produit.
 
 Par exemple, en consommant à partir de DD, pour donner la bonne valeur au subtopic, il est possible de
@@ -1529,12 +1530,12 @@ timeCopy (défaut: on)
 
 Sur les systèmes de type Unix, lorsque la commande *ls* ou un navigateur de fichiers affiche une modification ou un
 temps d’accès, il s’agit d’un affichage des éléments posix *st_atime* et *st_ctime* d’un struct renvoyé par l’appel
-stat(2).  Lorsque *timeCopy* est activé, les en-têtes qui reflètent ces valeurs dans les messages sont utilisés
+stat(2).  Lorsque *timeCopy* est activé, les en-têtes qui reflètent ces valeurs dans les messages d'annonce sont utilisés
 pour restaurer l’accès et la modification des heures respectivement sur le système de l'abonné. Pour documenter
 le retard de la réception des fichiers, cette option peut être désactivée, puis les temps du fichier sur la
 source et la destination sont comparés.
 
-Lorsqu’il est défini dans un composant de publication, les en-têtes *atime* et *mtime* des messages sont éliminés.
+Lorsqu’il est défini dans un composant de publication, les en-têtes *atime* et *mtime* des messages d'annonce sont éliminés.
 
 timeout <intervalle> (défaut: 0)
 --------------------------------
@@ -1563,7 +1564,7 @@ topicPrefix (défaut: v03)
 
 rajouté au subtopic pour former une hiérarchie complète de thèmes (topics).
 Cette option s’applique aux liaisons d’abonnement.
-Indique la version des messages reçus dans les subtopics. (V03 fait référence à `<sr3_post.7.html>`_)
+Indique la version des messages d'annonce reçus dans les subtopics. (V03 fait référence à `<sr3_post.7.html>`_)
 
 users <flag> (défaut: false)
 ----------------------------
@@ -1596,18 +1597,18 @@ vip qui change.
 **vip 153.14.126.3**
 
 Lorsqu’une **instance sr3** ne trouve pas l’adresse IP, elle se met en veille pendant 5 secondes et tente à nouveau.
-Si c’est le cas, elle consomme et traite un message et revérifie pour le vip.
+Si c’est le cas, elle consomme et traite un message d'annonce et revérifie pour le vip.
 
 SEE ALSO
 ========
 
 `sr3(1) <sr3.1.html>`_ - Sarracenia ligne de commande principale.
 
-`sr3_post(1) <sr3_post.1.html>`_ - poste des annoncements de fichiers (implémentation en Python.)
+`sr3_post(1) <sr3_post.1.html>`_ - émettre des messages d'annonce de fichiers (implémentation en Python.)
 
-`sr3_cpost(1) <sr3_cpost.1.html>`_ - poste des annoncements de fichiers (implémentation en C.)
+`sr3_cpost(1) <sr3_cpost.1.html>`_ - émettre des messages d´annonce de fichiers (implémentation en C.)
 
-`sr3_cpump(1) <sr3_cpump.1.html>`_ - implémentation en C du composant shovel. (Copie des messages)
+`sr3_cpump(1) <sr3_cpump.1.html>`_ - copie les messages d'annonce ( implémentation en C du composant shovel. )
 
 **Formats:**
 

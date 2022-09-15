@@ -73,7 +73,7 @@ The headers are an array of name:value pairs::
              "value"  : "base64 encoded checksum value"
           }
     or:
-          "fileOp"   - toe describe for non-data update operations.
+          "fileOp"   - to describe non-data file update operations.
           {            
              "link" : "symbolic link value (target) string"
              "remove" : ""     - flag present when removing a file (argument ignored.)
@@ -85,7 +85,7 @@ The headers are an array of name:value pairs::
          suppression will rely on supplied meta data, such as the modification
 	 time, the size, and the publication Time to prevent loops.
          It is strongly recommended that all data services provide integrity
-         checksums. Failure to do so results on a data service than cannot
+         checksums. Failure to do so results in a data service than cannot
          be reliably replicated.
 
     both may be present in cases where file content is being updated, as

@@ -27,7 +27,7 @@ Web du même serveur, mais cela n'est pas nécessaire. Le courtier pourrait
 La meilleure façon d'effectuer des transferts de données est d'éviter les
 sondages (examination récurrente de répertoires afin de détecter des
 changements de fichiers.) C'est plus efficace si les rédacteurs peuvent
-être amenés à émettre des messages sr_post (*avis*) appropriés. De même,
+être amenés à émettre des messages d'annonce en format sr_post appropriés. De même,
 lors de la livraison, il est idéal si les destinataires utilisent
 sr_subscribe, et un plugin on_file pour déclencher leur traitement ultérieur,
 de sorte que le fichier est qui leur a été remis sans sondage. C'est la façon
@@ -51,9 +51,9 @@ Chaque composant suit le même algorithme général, l'algorithme de Flux.
 Les étapes de l’algorithme Flux sont les suivantes :
 
 
-* Rassembler une liste de messages
+* Rassembler une liste de messages d'annonce
 * Filtrez-les avec des clauses d’accept/reject
-* Travailler sur les messages acceptés
+* Travailler sur les messages d'annonce acceptés
 * Afficher le travail accompli pour le prochain flux
 
 En plus de detail:
@@ -71,16 +71,17 @@ En plus de detail:
  |          | A partir: d'une file d’attente, un répertoire,              |
  |          | un script de polling.                                       |
  |          |                                                             |
- |          | Sortie: worklist.incoming rempli de messages.               |
+ |          | Sortie: worklist.incoming rempli de messages d'annonce.     |
  |          |                                                             |
- |          | Each message is a python dictionary.                        |
+ |          | Chaque messaged d'annonce est un dictionnaire en python     |
  +----------+-------------------------------------------------------------+
  | *Filter* | Réduir la liste de fichiers sur lesquels agir.              |
  |          |                                                             |
  |          | Appliquer les clauses accept/reject.                        |
  |          |                                                             |
  |          | callbacks after_accept                                      |
- |          | bouger les messages de worklist.incoming a worklist.rejected|
+ |          | déplacer les messages d´annonce de worklist.incoming à      |
+ |          | worklist.rejected                                           |
  |          |                                                             |
  |          | Ceux a éxécuter: flowcb/nodupe.py (suppresion des doublons.)|
  |          |                                                             |
@@ -213,7 +214,7 @@ continue:
 * after_accept
 
 Le gather (et/ou le sondage) du sondage s’abonne à l’échange ou d’autres
-participants qui ont le vip publient et met à jour sa cache à partir des messages, pour
+participants qui ont le vip publient et met à jour sa cache à partir des messages d´annonce, pour
 éviter que les autres sondages interrogent le même point de terminaison pour la
 même liste de fichiers.
 
@@ -243,20 +244,20 @@ les fonctions de gestion diffèrent d'une implémentation à l'autre.
 
 
 Les *Queues* (files d´attentes) sont généralement prises en charge de manière transparente, mais vous avez besoin de connaître
-   - Un consommateur/abonné crée une file d'attente pour recevoir des messages.
+   - Un consommateur/abonné crée une file d'attente pour recevoir des messages d'annonce.
    - Les files d'attente des consommateurs sont *liées* aux échanges (langage AMQP).
 
 Un *exchange* est un entremeteur entre *publisher* et les files d´attentes du
 *consumer*
 
-   - Un message arrive d'une source de données.
-   - l´avis passe à travers l'échange, est-ce que quelqu'un est intéressé par ce message ?
-   - dans un échange basé sur un *topic*, le thème du message fournit la *clé d'échange*.
-   - intéressé : comparer la clé de message aux liaison des *queues de consommateurs*.
-   - le message est acheminé vers les *files d'attente des consommateurs* intéressés, ou supprimé s'il n'y en a pas.
+   - Un message  d'annonce arrive d'une source de données.
+   - l´avis passe à travers l'échange, est-ce que quelqu'un est intéressé par ce message d'annonce?
+   - dans un échange basé sur un *topic*, le thème du message d'annonce fournit la *clé d'échange*.
+   - intéressé : comparer la clé de message d'annonce aux liaison des *queues de consommateurs*.
+   - le message d'annonce est acheminé vers les *files d'attente des consommateurs* intéressés, ou supprimé s'il n'y en a pas.
    - n’existe pas dans MQTT, utilisé comme racine de la hiérarchie des thèmes.
 
-Plusieurs processus peuvent partager une *queue*, ils enlèvent les messages à tour de rôle.
+Plusieurs processus peuvent partager une *queue*, d´ou ils prélève les messages d'annonce à tour de rôle.
    - Ceci est fortement utilisé pour sr_sarra et sr_subscribe multiples instances.
    - Le même concept est disponible en tant qu'*abonnements partagés* dans MQTT.
 
@@ -267,7 +268,7 @@ Comment décider si quelqu'un est intéressé.
    - Les thèmes sont juste des mots-clés séparés par un point. wildcards : # correspond à n'importe quoi, * correspond à un mot.
    - Nous créons la hiérarchie des thèmes à partir du nom du chemin d'accès (mappage à la syntaxe AMQP).
    - La résolution et la syntaxe du filtrage des serveurs sont définies par l'AMQP. (. séparateur, # et * caractères génériques)
-   - Le filtrage côté serveur est grossier, les messages peuvent être filtrés après le téléchargement en utilisant regexp
+   - Le filtrage côté serveur est grossier, les messages d'annonce peuvent être filtrés après le téléchargement en utilisant regexp
 
 
 AMQP v09 (Rabbitmq) Settings

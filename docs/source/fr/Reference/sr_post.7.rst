@@ -3,9 +3,9 @@
  SR_post
 =========
 
---------------------------------------
-Format/Protocole d´avis Sarracenia v03
---------------------------------------
+-------------------------------------------------
+Format/Protocole de messages d'annonce Sarracenia
+-------------------------------------------------
 
 :Manual section: 7
 :Date: |today|
@@ -16,9 +16,9 @@ Format/Protocole d´avis Sarracenia v03
 STATUS: Stable/Default
 ----------------------
 
-Les messages de Sarracenia version 2 sont la norme précédente, utilisée pour des téraoctets
-et des transferts de millions de fichiers par jour. La version 3 propose une prochaine
-itération des messages Sarracenia.
+Les messages de Sarracenia version 2 sont la format précédente, utilisée pour des transferts
+de téraoctets et de millions de fichiers par jour. La version 3 propose une prochaine
+itération du format des messages d'annonces Sarracenia.
 
 La plupart des champs et leur signification sont les mêmes dans la version 3 que dans la version 2.
 Certains champs changent parce que le protocole est exposé a une revision plus approfondi qu’auparavant.
@@ -34,7 +34,6 @@ Pour générer des messages en format v03, utilisez le paramètre suivant ::
 Pour sélectionner les messages à consommer dans ce format::
 
   topicPrefix v03
-
 
 
 SYNOPSIS
@@ -62,11 +61,31 @@ Les en-têtes sont un tableau de paires nom:valeur::
           "pubTime"       - YYYYMMDDTHHMMSS.ss - UTC date/horodatage.
           "baseUrl"       - racine de l’URL à télécharger.
           "relPath"       - Le chemin relatif peut être concaténé à <base_url>
+
+   un de:
           "integrity"     - Version WMO du champ de sum v02, en cours de développement.
           {
              "method" : "md5" | "sha512" | "md5name" | "link" | "remove" | "cod" | "random" ,
              "value"  : "base64 valeur de somme de contrôle encodée"
           }
+   ou:
+          "fileOp"   - pour décrire des opérations de fichiers sans transfert de données.
+          {            
+             "link" : "la valeur d´un lien symbolique"
+             "remove" : True/False     - un valeur pour indique que le fichier a été détruit
+             "hlink" : "fichier a cibler pour un lien dure (non-symbolique)¨
+             "rename" : "pour de renommage de fichier. valeur indique l´ancien nom."
+          }
+  ou:
+          rien. Si aucun des champs ci-haut sont inclus, la suppression des duplicats
+          se fiera sur d´autres champes, tel que la date de modification de fichier,
+          s´il y lieu, afin d´éviter des boucles. Il est fortement suggeré au fournisseurs
+          de données de fournir un algorithme de d´intégrité pour éviter la fragilisation
+          des services de réplication de données.
+
+  dans certains cas, les deux champs peuvent être présent, tel qu´un renommage de fichier,
+  ou ca se peut que la fichier a été modifié et renommé, par exemple.
+
 
   FACULTATIF:
 
@@ -88,8 +107,8 @@ Les en-têtes sont un tableau de paires nom:valeur::
           "retPath"       - le chemin de récupération relatif peut être concaténé avec <base_url> pour remplacer relPath -
                             utilisé pour les cas d’API.
           "topic"         - copie du sujet de l’en-tête AMQP (généralement omis)
-          "source"        - l’entité d’origine du message.
-          "from_cluster"  - le cluster d’origine d’un message.
+          "source"        - l’entité d’origine du message d´annonce.
+          "from_cluster"  - le cluster d’origine d’un message d´annonce.
           "to_clusters"   - une spécification de destination.
           "link"          - valeur d’un lien symbolique. (si 'sum' commence par L)
           "atime"         - heure du dernier accès à un fichier (facultatif)
@@ -120,16 +139,16 @@ REMARQUE:
 DESCRIPTION
 -----------
 
-Les sources créent des messages en format *sr_post* pour annoncer les modifications apportées aux fichiers.
+Les sources créent des messages d´annonce en format *sr_post* pour annoncer les modifications apportées aux fichiers.
 Les abonnés lisent le message pour décider si un téléchargement du contenu annoncé est justifié.  Cette page
-de manuel décrit entièrement le format de ces messages.  Les messages sont des charges utiles
+de manuel décrit entièrement le format de ces messages d´annonce.  Les messages d´annonce sont des charges utiles
 pour un bus de messages AMQP (Advanced Message Queuing Protocol), mais le transport de données de fichiers
 est séparé, utilisant des protocoles plus courants tels que SFTP, HTTP, HTTPS ou FTP (ou autre?).
 Les fichiers sont transportés sou forme de flux d'octets purs, aucune métadonnée au-delà du contenu du fichier
 n'est transporté (bits de permission, attributs étendus, etc....)
 
 Avec cette méthode, les messages AMQP fournissent un « plan de contrôle » pour les transferts de données.
-Alors que chaque message de publication est essentiellement point à point, les pompes de données peuvent
+Alors que chaque message d´annonce est essentiellement point à point, les pompes de données peuvent
 être reliées transitivement entre elles pour créer des réseaux arbitraires.  Chaque publication est consommée
 par le saut suivant de la chaîne. Chaque saut re-publie (crée un nouveau poste pour) les données des sauts ultérieurs.
 Les avis se déplacent dans le même sens que les données. Si les consommateurs le permettent, les messages de
@@ -139,7 +158,7 @@ de connaître l'ensemble de leur disposition.
 La couche minimale sur AMQP brut offre une fonctionnalité de transfert de fichiers plus complète :
 
 Filtrage des sources (utilisation des échanges `AMQP TOPIC`_)
-   Les messages utilisent les *topic exchanges* de l’AMQP, où les thèmes sont des hiérarchies
+   Les messages d´annonce utilisent les *topic exchanges* de l’AMQP, où les thèmes sont des hiérarchies
    destiné à représenter des thèmes d’intérêt pour un consommateur. Un consommateur peut télécharger le
    critères de sélection pour le courtier de sorte que seulement un petit sous-ensemble d’avis
    sont transmis au client.  Lorsqu’il y a beaucoup d’utilisateurs intéressés par seulement un
@@ -167,9 +186,9 @@ Fingerprint Winnowing (utilisation de l'en-tête integrity_)
    et/ou des deadlocks.
 
    *Fingerprint Winnowing* permet également le *mesh-like*, ou un réseau *any to any*, où l’on interconnecte simplement
-   un nœud avec d’autres et les messages se propagent. Leur chemin spécifique à travers le
+   un nœud avec d’autres et les messages d´annonce se propagent. Leur chemin spécifique à travers le
    le réseau n’est pas défini, mais chaque participant téléchargera chaque nouvelle référence à partir du premier
-   nœud qui le met à sa disposition. Garder les messages petits et séparés des données
+   nœud qui le met à sa disposition. Garder les messages d´annonce petits et séparés des données
    est optimal pour cet usage.
 
 Partitionnement (utilisation de l´entête parts_ )
@@ -185,10 +204,10 @@ Partitionnement (utilisation de l´entête parts_ )
 THÈME (TOPIC)
 -------------
 
-Dans les échanges basé par thèmes dans AMQP, chaque message a un en-tête de thème. AMQP définit le caractère '.'
+Dans les échanges basé par thèmes dans AMQP, chaque message d´annonce a un en-tête de thème. AMQP définit le caractère '.'
 en tant que séparateur hiérarchique (comme '\' dans un nom de chemin Windows, ou '/' dans Linux), il existe également une
 paire de caractères génériques définis par la norme : '*' correspond à un seul thème, '#' correspond au reste de
-la chaîne de caractère du thème. Pour permettre des modifications dans le corps du message à l’avenir, les
+la chaîne de caractère du thème. Pour permettre des modifications dans le corps du message d´annonce à l’avenir, les
 arborescences de thèmes commencent par le numéro de la version du protocole.
 
 AMQP permet le filtrage des thèmes côté serveur à l’aide de wildcards. Les abonnés spécifient les sujets d'intérêt
@@ -196,11 +215,11 @@ AMQP permet le filtrage des thèmes côté serveur à l’aide de wildcards. Les
 nombre de notifications envoyées du serveur au client.
 
 La racine de l’arborescence des thèmes est le spécificateur de version : « v03 ».  Ensuite il y a le spécificateur
-de type de message. Ces deux champs définissent le protocole utilisé pour le reste du message.
-Le type de message pour les messages de publication est « post ».  Après avoir fixé le préfixe du thème,
+de type de message. Ces deux champs définissent le protocole utilisé pour le reste du message d´annonce.
+Le type de message d´annonce pour les messages d´annonce est « post ». Après avoir fixé le préfixe du thème,
 les sous-thèmes restants sont les éléments de chemin d’accès du fichier sur le serveur Web.
 Par exemple, si un fichier est placé sur http://www.example.com/a/b/c/d/foo.txt,
-alors le thème complet du message sera : *v03.a.b.c.d*
+alors le thème complet du message d´annonce sera : *v03.a.b.c.d*
 Les champs AMQP sont limités à 255 caractères et les caractères du champ sont
 encodé en utf8, de sorte que la limite de longueur réelle peut être inférieure à cela.
 
@@ -212,7 +231,7 @@ REMARQUE::
   filtrage côté serveur. Pour éviter d’envoyer deux fois les mêmes informations, cet en-tête est
   omis de la charge utile JSON.
 
-  De nombreuses implémentations côté client, une fois le message chargé, définiront l’en-tête *topic*
+  De nombreuses implémentations côté client, une fois le message d´annonce chargé, définiront l’en-tête *topic*
   dans la structure en mémoire, il serait donc très imprudent de définir l’en-tête *topic*
   dans une application même si elle n’est pas visible dans la charge utile sur fil.
 
@@ -241,7 +260,7 @@ de l’échange à la racine de l'hiérarchie des thèmes pour obtenir le même 
 LES EN-TÊTES FIXES
 ------------------
 
-Le message est un tableau encodé en JSON unique, avec un ensemble obligatoire de champs, tout en permettant
+Le message d´annonce est un tableau encodé en JSON unique, avec un ensemble obligatoire de champs, tout en permettant
 l’utilisation d'autres champs arbitraires.  Les champs obligatoires doivent être présents dans chaque message:
 
  * "pubTime" : "*<horodatage>*" : la date de publication de l’affichage qui a été émis.  Format: YYYYMMDDTHHMMSS. *<decimalseconds>*
@@ -347,7 +366,7 @@ Champs supplémentaires :
 
  lorsqu’un fichier est renommé à la source, pour l’envoyer aux abonnés, il va y avoir deux posts: un message
  est annoncé avec le nouveau nom comme base_url, et l’en-tête *oldname* va prendre la valeur de l'ancien nom du fichier.
- Un autre message est envoyé avec l’ancien nom comme chemin src et le *newname*
+ Un autre message d´annonce est envoyé avec l’ancien nom comme chemin src et le *newname*
  comme en-tête.  Cela garantit que les clauses *accept/reject* sont correctement
  interprété, parce qu'un *rename* peut entraîner un téléchargement si l’ancien nom
  correspond à une clause *reject* ou à une suppression de fichier si le nouveau nom
@@ -409,7 +428,7 @@ Report Messages
 ---------------
 
 Certains clients peuvent renvoyer la télémétrie à l’origine des données téléchargées à des fins de dépannage
-et à des fins de statistiques. Ces messages ont le thème *v03.report* et ont un en-tête *report*
+et à des fins de statistiques. Ces messages d´annonce ont le thème *v03.report* et ont un en-tête *report*
 qui est un *object* JSON avec quatre champs :
 
  { "elapsedTime": <report_time>, "resultCode": <report_code>, "host": <report_host>, "user": <report_user>* }
@@ -461,7 +480,7 @@ Pour l’implémentation sarracenia, les codes suivants sont définis :
 +----------+--------------------------------------------------------------------------------------------+
 |   307    | Insertion différée (écriture dans une partie du fichier temporaire pour le moment.)        |
 +----------+--------------------------------------------------------------------------------------------+
-|   417    | Échec de l’attente : message non valide (en-têtes corrompus)                               |
+|   417    | Échec de l’attente : message d´annonce non valide (en-têtes corrompus)                     |
 +----------+--------------------------------------------------------------------------------------------+
 |   496    | failure: During send, other protocol failure.                                              |
 +----------+--------------------------------------------------------------------------------------------+
@@ -475,7 +494,7 @@ Pour l’implémentation sarracenia, les codes suivants sont définis :
 +----------+--------------------------------------------------------------------------------------------+
 |   503    | Protocole de transport spécifié dans la publication n'est pas pris en charge               |
 +----------+--------------------------------------------------------------------------------------------+
-|   xxx    | Les codes d’état de validation des messages et des fichiers dépendent du script            |
+|   xxx    | Les codes d’état de validation des messages d´annonce et des fichiers dépendent du script  |
 +----------+--------------------------------------------------------------------------------------------+
  FIXME: will 3 error codes that are the same cause confusion? ^
 
@@ -502,7 +521,7 @@ pour le cas d’utilisation de la mise en miroir de fichiers, des en-têtes supp
 
 **Les en-têtes qui sont inconnus à un courtier DOIVENT être transmis sans modification.**
 
-Sarracenia fournit un mécanisme permettant aux utilisateurs d’inclure d’autres en-têtes arbitraires dans les messages,
+Sarracenia fournit un mécanisme permettant aux utilisateurs d’inclure d’autres en-têtes arbitraires dans les messages d´annonce,
 pour amplifier les métadonnées pour une prise de décision plus détaillée sur le téléchargement de données.
 Par exemple::
 
@@ -529,8 +548,7 @@ EXEMPLE
     "rename": "NRDPS/GIF/", "parts":"p,457,1,0,0", "integrity" : { "method":"md5", "value":"<md5sum-base64>" }, "source": "ec_cmc" }
 
         - v03 - version du protocole
-        - post - indique le type du message
-        - la version et le type ensemble determine le format des thèmes qui suivent et du corps du message.
+        - la version et le type ensemble determine le format des thèmes qui suivent et du corps du message d'annonce.
 
         - blocksize est 457  (== taile du fichier)
         - block count est 1
@@ -558,7 +576,7 @@ Le post résultant de la commande de sr_watch suivante, a noter la création du 
  sr_watch -pbu sftp://stanley@mysftpserver.com/ -path /data/shared/products/foo -pb amqp://broker.com
 Ici, *sr_watch* vérifie si le fichier /data/shared/products/foo est modifié.
 Lorsque cela se produit, *sr_watch* lit le fichier /data/shared/products/foo et calcule sa somme de contrôle.
-Il crée ensuite un message de publication, se connecte à broker.com en tant qu’utilisateur « invité »
+Il crée ensuite un message d'annonce, se connecte à broker.com en tant qu’utilisateur « invité »
 (informations d’identification par défaut) et envoie la publication aux vhosts '/' par défaut et
 à l'échange 'sx_guest' (l'échange par défaut).
 
@@ -574,7 +592,7 @@ La sortie de la commande est la suivante ::
           "relPath": "/data/shared/products/foo", "parts":"1,256,1,0,0",
           "sum": "d,25d231ec0ae3c569ba27ab7a74dd72ce", "source":"guest" }
 
-Les posts sont publiés sur les échanges de thèmes AMQP, ce qui signifie que chaque message a un en-tête de thème.
+Les posts sont publiés sur les échanges de thèmes AMQP, ce qui signifie que chaque message d'annonce a un en-tête de thème.
 Le corps se compose d’un temps *20150813T161959.854*, suivi des deux parties de
 l'URL de récupération. Les en-têtes ont d’abord les *parts*, une taille en octets *256*,
 le nombre de blocs de cette taille *1*, les octets restants *0*, le
@@ -592,7 +610,7 @@ regroupant également des en-têtes fixes (l’en-tête 'body' peut contenir
 tous les champs fixes: « pubtime, baseurl, relpath, sum, parts », et un autre
 champ 'meta' pourrait contenir: atime, mtime, mode donc il y aurait moins de
 champs nommés et ca économiserais peut-être 40 octets de surcharge par avis. Mais
-tous les changements augmentent la complexité, et ca rends les messages plus difficile à analyser.
+tous les changements augmentent la complexité, et ca rends les messages d'annonce plus difficile à analyser.
 
 Standards
 ---------
@@ -630,7 +648,7 @@ VOIR AUSSI
 
 `sr3_cpost(1) <sr3_cpost.1.html>`_ - poste des annoncements de fichiers (implémentation en C.)
 
-`sr3_cpump(1) <sr3_cpump.1.html>`_ - C implementation of the shovel component. (copy messages)
+`sr3_cpump(1) <sr3_cpump.1.html>`_ - copie des messages d'annonce (implantation en C du composant "shovel".)
 
 **Formats:**
 

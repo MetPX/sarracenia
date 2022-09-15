@@ -4,7 +4,7 @@ Aperçu
 
 **MetPX-Sarracenia est une boîte à outils de gestion des publications/abonnements pour la publication de données en temps réel.**
 
-Sarracenia ajoute une couche de protocole de mise en file d’attente de messages de notifications de disponibilité de fichiers
+Sarracenia ajoute une couche de protocole de mise en file d’attente de messages d'annonce de disponibilité de fichiers
 aux serveurs de fichiers et Web pour piloter des flux de travail qui transfèrent et transforment les données en continu
 dans un contexte en temps réel et critique.
 
@@ -127,8 +127,8 @@ retour dans la version 3.1.
 Implémentations
 ---------------
 
-Une partie de Sarracénia définit un message d'application avec AMQP comme transport.
-Il y a des implémentations multiples qui acceptent ses messages:
+Une partie de Sarracénia définit un message d'annonce avec AMQP comme transport.
+Il y a des implémentations multiples qui acceptent ses messages d'annonce:
 
 
 - Sarracenia elle-même (http://github.com/MetPX/sarracenia)
