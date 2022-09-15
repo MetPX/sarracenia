@@ -1272,7 +1272,8 @@ class sr_subscribe(sr_instances):
         #=================================
 
         if self.msg.event == 'link' :
-           self.logger.debug("message is to link %s to %s" % ( self.msg.new_file, self.msg.headers[ 'link' ] ) )
+           do_hardlink = (self.msg.headers['sum'][0] == 'l')
+           self.logger.debug("message is to (hard?:%s) link %s to %s" % ( do_hardlink, self.msg.new_file, self.msg.headers[ 'link' ] ) )
            if not 'link' in self.events: 
               self.logger.info("message to link %s to %s ignored (events setting)" %  \
                                             ( self.msg.new_file, self.msg.headers[ 'link' ] ) )
@@ -1293,12 +1294,16 @@ class sr_subscribe(sr_instances):
                if os.path.isfile(path) : os.unlink(path)
                if os.path.islink(path) : os.unlink(path)
                if os.path.isdir (path) : os.rmdir (path)
-               os.symlink( self.msg.headers[ 'link' ], path )
-               self.logger.info("%s symlinked to %s " % (self.msg.new_file, self.msg.headers[ 'link' ]) )
+               if do_hardlink:
+                    os.link( self.msg.headers[ 'link' ], path )
+                    self.logger.info("%s hardlinked to %s " % (self.msg.new_file, self.msg.headers[ 'link' ]) )
+               else:
+                    os.symlink( self.msg.headers[ 'link' ], path )
+                    self.logger.info("%s symlinked to %s " % (self.msg.new_file, self.msg.headers[ 'link' ]) )
                if self.reportback: self.msg.report_publish(201,'linked')
            except:
                ok = False
-               self.logger.error("symlink of %s %s failed." % (self.msg.new_file, self.msg.headers[ 'link' ]) )
+               self.logger.error("link of %s %s failed." % (self.msg.new_file, self.msg.headers[ 'link' ]) )
                self.logger.debug('Exception details:', exc_info=True)
                if self.reportback: self.msg.report_publish(500, 'symlink failed')
 

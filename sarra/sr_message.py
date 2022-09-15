@@ -38,6 +38,8 @@ from sys import platform as _platform
 
 from codecs import decode,encode
 
+from hashlib import md5
+
 import json
 
 # AMQP limits headers to 'short string', or 255 characters, so truncate and warn.
@@ -281,6 +283,7 @@ class sr_message():
            self.topic     = msg.delivery_info['routing_key']
            self.topic     = self.topic.replace('%20',' ')
            self.topic     = self.topic.replace('%23','#')
+           sum_algo_v3tov2 = { "arbitrary":"a", "md5":"d", "sha512":"s", "md5name":"n", "random":"0", "link":"L", "remove":"R", "cod":"z" }
            if msg.body[0] == '[' :
                self.logger.debug("from_amqplib transitional v03" )
                self.pubtime, self.baseurl, self.relpath, self.headers = json.loads(msg.body)
@@ -294,7 +297,6 @@ class sr_message():
                self.relpath = self.headers[ "relPath" ]
                self.notice = "%s %s %s" % ( self.pubtime, self.baseurl, self.relpath )
                if "integrity" in self.headers.keys():
-                   sum_algo_v3tov2 = { "arbitrary":"a", "md5":"d", "sha512":"s", "md5name":"n", "random":"0", "link":"L", "remove":"R", "cod":"z" }
                    if type( self.headers[ "integrity" ] ) is str:
                        self.headers[ "integrity" ] = json.loads( self.headers[ "integrity" ] )
                    sa = sum_algo_v3tov2[ self.headers[ "integrity" ][ "method" ] ]
@@ -309,6 +311,8 @@ class sr_message():
                    # set event.
                    if sa == 'L' :
                        self.event = 'link'
+                   elif sa == 'l':
+                       self.event = 'link'
                    elif sa == 'R':
                        self.event = 'delete'
                    else:
@@ -316,7 +320,40 @@ class sr_message():
 
                    self.headers[ "sum" ] = sa + ',' + sv
                    self.sumstr = self.headers['sum']
+               else:
+                   sa='n'
+                   sv = md5(bytes(self.relpath,'utf-8')).hexdigest()
+                   self.headers[ "sum" ] = sa + ',' + sv
+                   self.sumstr = self.headers['sum']
+                   
+
+               if 'fileOp'in self.headers.keys():
+                   sv = md5(bytes(self.headers['relPath'],'utf-8')).hexdigest()
+                   
+                   if 'hlink' in self.headers['fileOp']:
+                       self.headers['link'] = self.headers['fileOp']['link']
+                       self.event = 'link'
+                       sa='l'
+                   elif 'slink' in self.headers['fileOp']:
+                       self.headers['link'] = self.headers['fileOp']['link']
+                       self.event = 'link'
+                       sa='L'
+                   elif 'remove' in self.headers['fileOp']:
+                       self.event = 'delete'
+                       sa='R'
+                   elif 'rename' in self.headers['fileOp']:
+                       self.headers['oldname'] = self.headers['fileOp']['rename']
+                       self.event = 'modify'
+                   else:
+                       self.event = 'modify'
+                   del self.headers['fileOp']
+
+                   self.headers[ "sum" ] = sa + ',' + sv
+                   self.sumstr = self.headers['sum']
+                   
+               if "integrity" in self.headers.keys():
                    del self.headers['integrity']
+                
                if 'blocks' in self.headers.keys():
                    parts_map = {'inplace': 'i', 'partitioned': 'p'}
                    self.set_parts(parts_map[self.headers['blocks']['method']], int(self.headers['blocks']['size']),
@@ -538,7 +575,7 @@ class sr_message():
            if 'content' in self.headers :
                del self.headers['content']
 
-        elif ( self.headers[ 'sum' ][0] in [ 'L', 'R' ] ) :
+        elif ( self.headers[ 'sum' ][0] in [ 'l', 'L', 'R' ] ) :
             # avoid inlining if it is a link or a remove.
             pass
         elif ( self.post_version == 'v03' ) and ( 'post' in self.post_topic_prefix ) \
@@ -630,14 +667,30 @@ class sr_message():
                
                sum_algo_map = { "a":"arbitrary", "d":"md5", "s":"sha512", "n":"md5name", "0":"random", "L":"link", "R":"remove", "z":"cod" }
                if 'sum' in self.headers:
-                   sm = sum_algo_map[ self.headers["sum"][0] ]
+                   sa = self.headers["sum"][0] 
+                   sm = sum_algo_map[ sa ]
                    if sm in [ 'random' ] :
                        sv = self.headers["sum"][2:]
+                       self.headers[ "integrity" ] = { "method": sm, "value": sv }
                    elif sm in [ 'cod' ] :
                        sv = sum_algo_map[ self.headers["sum"][2:] ]
+                       self.headers[ "integrity" ] = { "method": sm, "value": sv }
+                   elif sm in [ 'link', 'remove' ] :
+                       if sa == 'l' :
+                           self.headers['fileOp'] = { 'hlink': self.headers['link'] } 
+                           del self.headers['link']
+                       elif sa ==  'L':
+                           self.headers['fileOp'] = { 'link': self.headers['link'] } 
+                           del self.headers['link']
+                       elif sm in [ 'remove' ]:
+                           self.headers['fileOp'] = { 'remove': True } 
                    else:
                        sv = encode( decode( self.headers["sum"][2:], 'hex'), 'base64' ).decode('utf-8').strip()
-                   self.headers[ "integrity" ] = { "method": sm, "value": sv }
+                       self.headers[ "integrity" ] = { "method": sm, "value": sv }
+
+               if 'oldname' in self.headers.keys():
+                   self.headers['fileOp'] = { 'rename' : self.headers['oldname'] }
+                   del self.headers['oldname']
 
                if 'parts' in self.headers.keys():
                    self.set_parts_from_str(self.headers['parts'])
