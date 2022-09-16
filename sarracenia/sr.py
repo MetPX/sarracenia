@@ -962,6 +962,9 @@ class sr_GlobalState:
         self.users = opt.users
         self.declared_users = opt.declared_users
 
+        signal.signal(signal.SIGTERM, self._stop_signal)
+        signal.signal(signal.SIGINT, self._stop_signal)
+
         if self.appname is None:
             self.appname = 'sr3'
         else:
@@ -1017,6 +1020,11 @@ class sr_GlobalState:
             if component_path == '':
                 continue
             self._launch_instance(component_path, c, cfg, i)
+
+    def _stop_signal(self, signum, stack):
+        logging.info('signal %d received' % signum)
+        logging.info("Stopping config...")
+        # Signal is also sent to subprocesses. Once they exit, subprocess.run returns and sr.py should terminate.
 
     def run_command(self, cmd_list):
         sr_path = os.environ.get('SARRA_LIB')
