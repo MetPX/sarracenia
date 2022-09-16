@@ -42,6 +42,10 @@ n´est pas une limitation, c'est juste ce qui est utilisé et testé.
 Implémentations de la pompe sur Windows devrait fonctionner, ils ne
 sont tout simplement pas testés.
 
+Une pompe de données Sarracénia peut être implanté avec un seul serveur, ou bien une grappe, avec des rôles identiques ou spécialisés.
+Voir `Options de déploiement <ConsiderationDeployments.rst>` pour plus de détails. À l´intérieur d´une pompe, les conceptes décrites
+dans les sections suivantes s'appliquent.
+
 L'algorithme de Flux
 --------------------
 
@@ -73,9 +77,9 @@ En plus de detail:
  |          |                                                             |
  |          | Sortie: worklist.incoming rempli de messages d'annonce.     |
  |          |                                                             |
- |          | Chaque messaged d'annonce est un dictionnaire en python     |
+ |          | Chaque message d'annonce est un dictionnaire python         |
  +----------+-------------------------------------------------------------+
- | *Filter* | Réduir la liste de fichiers sur lesquels agir.              |
+ | *Filter* | Réduire la liste de fichiers sur lesquels agir.             |
  |          |                                                             |
  |          | Appliquer les clauses accept/reject.                        |
  |          |                                                             |
