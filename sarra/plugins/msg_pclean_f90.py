@@ -32,8 +32,10 @@ class Msg_Pclean_F90(Msg_Pclean):
         ext = self.get_extension(msg_relpath)
 
         for fxx_dir, path in path_dict.items():
+            parent.logger.info('pclean_f90 for looping: %s' % path)
+
             # f90 test
-            if not os.path.exists(path):
+            if not (os.path.isfile(path) or os.path.islink(path)):
                 # propagation check to all path except f20 which is the origin
                 err_msg = "file not in folder {} with {:.3f}s elapsed"
                 lag = nowflt() - timestr2flt(parent.msg.headers['pubTime'])
@@ -80,6 +82,8 @@ class Msg_Pclean_F90(Msg_Pclean):
                 parent.logger.error('skipping, found a moving target {}'.format(err))
                 parent.logger.debug("Exception details:", exc_info=True)
                 result=False
+        else:
+            parent.logger.info('pclean_f90 ext in test_extension_list... skipping.')
 
         if 'toolong' in parent.msg.headers:
             # cleanup
