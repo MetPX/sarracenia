@@ -566,8 +566,9 @@ class AMQP(Moth):
 
     def close(self) -> None:
         try:
-            self.connection.collect()
-            self.connection.close()
+            if self.connection:
+                self.connection.collect()
+                self.connection.close()
 
         except Exception as err:
             logger.error("sr_amqp/close 2: {}".format(err))
