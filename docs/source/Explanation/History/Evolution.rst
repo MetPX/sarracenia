@@ -23,7 +23,7 @@ such as message queueing protocols, starting in 2008. Versions of Sundew are
 generally labelled < 1.0
 
 The initial prototypes of Sarracenia leveraged MetPX Sundew, Sarracenia's ancestor. 
-Sundew plugins were developed to create announcements for files delivered by Sundew,
+Sundew plugins were developed to create notification messages for files delivered by Sundew,
 and Dd_subscribe was initially developed as a download client for **dd.weather.gc.ca**, an
 Environment Canada website where a wide variety of meteorological products are made
 available to the public. It is from the name of this site that the Sarracenia

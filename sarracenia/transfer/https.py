@@ -43,7 +43,7 @@ class Https(Transfer):
     HyperText Transfer Protocol (HTTP)  ( https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol ) 
     sarracenia transfer protocol subclass supports/uses additional custom options:
 
-    * accelWgetCommand (default: '/usr/bin/wget %s -O %d' )
+    * accelWgetCommand (default: '/usr/bin/wget %s -o - -O %d' )
 
     built with: 
          urllib.request ( https://docs.python.org/3/library/urllib.request.html )
@@ -52,7 +52,7 @@ class Https(Transfer):
 
         super().__init__(proto, options)
 
-        self.o.add_option('accelWgetCommand', 'str', '/usr/bin/wget %s -O %d')
+        self.o.add_option('accelWgetCommand', 'str', '/usr/bin/wget %s -o - -O %d')
 
         logger.debug("sr_http __init__")
 
@@ -94,6 +94,8 @@ class Https(Transfer):
     # for compatibility... always new connection with http
     def check_is_connected(self):
         logger.debug("sr_http check_is_connected")
+
+        if not self.connected : return False
 
         if self.destination != self.o.destination:
             self.close()
@@ -186,6 +188,7 @@ class Https(Transfer):
         p = subprocess.Popen(cmd)
         p.wait()
         if p.returncode != 0:
+            logger.warning("binary accelerator %s returned: %d" % ( cmd, p.returncode ) )
             return -1
         # FIXME: length is not validated.
         return length
@@ -340,15 +343,18 @@ class Https(Transfer):
                 'Server couldn\'t fulfill the request. Error code: %s, %s' %
                 (e.code, e.reason))
             alarm_cancel()
+            self.connected = False
             raise
         except urllib.error.URLError as e:
             logger.error('Download failed 5 %s ' % self.urlstr)
             logger.error('Failed to reach server. Reason: %s' % e.reason)
             alarm_cancel()
+            self.connected = False
             raise
         except:
             logger.warning("unable to open %s" % self.urlstr)
             logger.debug('Exception details: ', exc_info=True)
+            self.connected = False
             alarm_cancel()
             raise
 

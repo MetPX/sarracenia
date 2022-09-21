@@ -2,6 +2,7 @@ import copy
 import importlib
 import logging
 import os
+import re
 
 # v3 plugin architecture...
 import sarracenia.flowcb
@@ -130,11 +131,12 @@ class Flow:
 
         self.o = cfg
 
-        if 'sarracenia.flow.Flow.logLevel' in self.o.settings:
+        if 'sarracenia.flow.Flow' in self.o.settings and 'logLevel' in self.o.settings['sarracenia.flow.Flow']:
             logger.setLevel(
                 getattr(
                     logging,
-                    self.o.settings['sarracenia.flow.Flow.logLevel'].upper()))
+                    self.o.settings['sarracenia.flow.Flow']['logLevel'].upper()))
+            logger.warning('FIXME! class specific logLevel Override')
         else:
             logger.setLevel(getattr(logging, self.o.logLevel.upper()))
 
@@ -155,6 +157,10 @@ class Flow:
         self.worklist.rejected = []
         self.worklist.failed = []
         self.worklist.directories_ok = []
+
+        # for poll only, mark if we are catching up on posted messages
+        #
+        self.worklist.catching_up = False
 
         # Witness the creation of this list
         self.plugins['load'] = self.o.plugins_early + [
@@ -180,6 +186,9 @@ class Flow:
                 'sarracenia.flowcb.v2wrapper.V2Wrapper')
 
         self.plugins['load'].extend(self.o.plugins_late)
+
+        # metrics - dictionary with names of plugins as the keys
+        self.metrics = {}
 
     def loadCallbacks(self, plugins_to_load):
 
@@ -223,20 +232,42 @@ class Flow:
 
         if hasattr(self, 'plugins') and (entry_point in self.plugins):
             for p in self.plugins[entry_point]:
-                try:
+                if self.o.logLevel.lower() == 'debug' :
                     p(self.worklist)
+                else:
+                    try:
+                        p(self.worklist)
+                    except Exception as ex:
+                        logger.error( f'flowCallback plugin {p}/{entry_point} crashed: {ex}' )
+                        logger.debug( "details:", exc_info=True )
+
+    def _runCallbacksTime(self, entry_point):
+        for p in self.plugins[entry_point]:
+            if self.o.logLevel.lower() == 'debug' :
+                p()
+            else:
+                try:
+                    p()
                 except Exception as ex:
                     logger.error( f'flowCallback plugin {p}/{entry_point} crashed: {ex}' )
                     logger.debug( "details:", exc_info=True )
 
-    def _runCallbacksTime(self, entry_point):
-        for p in self.plugins[entry_point]:
-            try:
-                p()
-            except Exception as ex:
-                logger.error( f'flowCallback plugin {p}/{entry_point} crashed: {ex}' )
-                logger.debug( "details:", exc_info=True )
+    def _runCallbackMetrics(self):
+        """Collect metrics from plugins with a ``metrics_report`` entry point.
 
+        Expects the plugin to return a dictionary containing metrics, which is saved to ``self.metrics[plugin_name]``.
+        """
+        for p in self.plugins["metrics_report"]:
+            if self.o.logLevel.lower() == 'debug' :
+                plugin_name = p.__qualname__.replace('.metrics_report', '')
+                self.metrics[plugin_name] = p()
+            else:
+                try:
+                    plugin_name = p.__qualname__.replace('.metrics_report', '')
+                    self.metrics[plugin_name] = p()
+                except Exception as ex:
+                    logger.error( f'flowCallback plugin {p}/metrics_report crashed: {ex}' )
+                    logger.debug( "details:", exc_info=True )
 
     def has_vip(self):
 
@@ -287,20 +318,23 @@ class Flow:
     def ack(self, mlist) -> None:
         if "ack" in self.plugins:
             for p in self.plugins["ack"]:
-                try:
+                if self.o.logLevel.lower() == 'debug' :
                     p(mlist)
-                except Exception as ex:
-                    logger.error( f'flowCallback plugin {p}/ack crashed: {ex}' )
-                    logger.debug( "details:", exc_info=True )
+                else:
+                    try:
+                        p(mlist)
+                    except Exception as ex:
+                        logger.error( f'flowCallback plugin {p}/ack crashed: {ex}' )
+                        logger.debug( "details:", exc_info=True )
 
     def run(self):
         """
-          This is the core routine of of the algorithm, with most important data driven 
+          This is the core routine of the algorithm, with most important data driven
           loop in it. This implements the General Algorithm (as described in the Concepts Explanation Guide) 
           check if stop_requested once in a while, but never return otherwise.
         """
 
-        if not self.loadCallbacks(self.plugins['load']):
+        if not self.loadCallbacks(self.plugins['load']+self.o.destfn_scripts):
            return
 
         logger.debug("working directory: %s" % os.getcwd())
@@ -310,7 +344,7 @@ class Flow:
         current_rate = 0
         total_messages = 1
         start_time = nowflt()
-
+        had_vip = False
         current_sleep = self.o.sleep
         last_time = start_time
 
@@ -334,12 +368,12 @@ class Flow:
                 if stopping:
                     logger.info('clean stop from run loop')
                     self.close()
+                    break
                 else:
                     logger.info(
                         'starting last pass (without gather) through loop for cleanup.'
                     )
                     stopping = True
-                break
 
             self.have_vip = self.has_vip()
             if (self.o.component == 'poll') or self.have_vip:
@@ -375,17 +409,27 @@ class Flow:
                 self.worklist.ok = []
                 self.ack(self.worklist.rejected)
                 self.worklist.rejected = []
+                self.ack(self.worklist.failed)
 
                 if (self.o.component == 'poll') and not self.have_vip:
                     # this for duplicate cache synchronization.
                     self.ack(self.worklist.incoming)
                     self.worklist.incoming = []
+                    if had_vip:
+                        logger.info("now passive on vip %s" % self.o.vip )
+                        had_vip=False
                 else:
+                    if not had_vip:
+                        logger.info("now active on vip %s" % self.o.vip )
+                        had_vip=True
+
                     # normal processing, when you are active.
                     self.do()
 
                     # need to acknowledge here, because posting will delete message-id
                     self.ack(self.worklist.ok)
+                    self.ack(self.worklist.rejected)
+                    self.ack(self.worklist.failed)
 
                     # adjust message after action is done, but before 'after_work' so adjustment is possible.
                     for m in self.worklist.ok:
@@ -396,6 +440,9 @@ class Flow:
                                                      m['new_relPath']):
                             m['relPath'] = m['new_relPath']
                             m['subtopic'] = m['new_subtopic']
+                        if ('version' in m) and ( m['version'] != 
+                                                  m['post_version']):
+                            m['version'] = m['post_version']
 
                     self._runCallbacksWorklist('after_work')
 
@@ -404,8 +451,11 @@ class Flow:
                     self.ack(self.worklist.failed)
 
                     self.post()
+                    self._runCallbacksWorklist('after_post')
 
                     self.report()
+
+                    self._runCallbackMetrics()
 
                     self.worklist.ok = []
                     self.worklist.directories_ok = []
@@ -417,20 +467,25 @@ class Flow:
 
             if (self.o.messageCountMax > 0) and (total_messages >=
                                                  self.o.messageCountMax):
-                self.close()
-                break
+                self.please_stop()
 
             current_rate = total_messages / run_time
             elapsed = now - last_time
 
             if (last_gather_len == 0) and (self.o.sleep < 0):
-                self.close()
-                break
+                if (self.o.retryEmptyBeforeExit and "Retry" in self.metrics
+                    and self.metrics['Retry']['msgs_in_post_retry'] > 0):
+                    logger.info("Not exiting because there are still messages in the post retry queue.")
+                    # Sleep for a while. Messages can't be retried before housekeeping has run...
+                    current_sleep = 60
+                else:
+                    self.please_stop()
 
             if spamming and (current_sleep < 5):
                 current_sleep *= 2
 
-            if now > next_housekeeping:
+            # Run housekeeping based on time, and before stopping to ensure it's run at least once
+            if now > next_housekeeping or stopping:
                 logger.info(
                     f'on_housekeeping pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}'
                 )
@@ -450,6 +505,9 @@ class Flow:
                     % (current_rate, self.o.messageRateMax))
             else:
                 stime = 0
+
+            if self.worklist.catching_up:
+               continue
 
             if (current_sleep > 0):
                 if elapsed < current_sleep:
@@ -472,6 +530,225 @@ class Flow:
                     self.please_stop()
 
                 last_time = now
+
+
+    def sundew_getDestInfos(self, msg, currentFileOption, filename):
+        """
+        modified from sundew client
+
+        WHATFN         -- First part (':') of filename 
+        HEADFN         -- Use first 2 fields of filename
+        NONE           -- Use the entire filename
+        TIME or TIME:  -- TIME stamp appended
+        DESTFN=fname   -- Change the filename to fname
+
+        ex: mask[2] = 'NONE:TIME'
+        """
+        if currentFileOption == None: return filename
+
+        timeSuffix = ''
+        satnet = ''
+        parts = filename.split(':')
+        firstPart = parts[0]
+
+        if 'sundew_extension' in msg.keys():
+            parts = [parts[0]] + msg['sundew_extension'].split(':')
+            filename = ':'.join(parts)
+
+        destFileName = filename
+
+        for spec in currentFileOption.split(':'):
+            if spec == 'WHATFN':
+                destFileName = firstPart
+            elif spec == 'HEADFN':
+                headParts = firstPart.split('_')
+                if len(headParts) >= 2:
+                    destFileName = headParts[0] + '_' + headParts[1]
+                else:
+                    destFileName = headParts[0]
+            elif spec == 'SENDER' and 'SENDER=' in filename:
+                i = filename.find('SENDER=')
+                if i >= 0: destFileName = filename[i + 7:].split(':')[0]
+                if destFileName[-1] == ':': destFileName = destFileName[:-1]
+            elif spec == 'NONE':
+                if 'SENDER=' in filename:
+                    i = filename.find('SENDER=')
+                    destFileName = filename[:i]
+                else:
+                    if len(parts) >= 6:
+                        # PX default behavior : keep 6 first fields
+                        destFileName = ':'.join(parts[:6])
+                        #  PDS default behavior  keep 5 first fields
+                        if len(parts[4]) != 1:
+                            destFileName = ':'.join(parts[:5])
+                # extra trailing : removed if present
+                if destFileName[-1] == ':': destFileName = destFileName[:-1]
+            elif spec == 'NONESENDER':
+                if 'SENDER=' in filename:
+                    i = filename.find('SENDER=')
+                    j = filename.find(':', i)
+                    destFileName = filename[:i + j]
+                else:
+                    if len(parts) >= 6:
+                        # PX default behavior : keep 6 first fields
+                        destFileName = ':'.join(parts[:6])
+                        #  PDS default behavior  keep 5 first fields
+                        if len(parts[4]) != 1:
+                            destFileName = ':'.join(parts[:5])
+                # extra trailing : removed if present
+                if destFileName[-1] == ':': destFileName = destFileName[:-1]
+            elif re.compile('SATNET=.*').match(spec):
+                satnet = ':' + spec
+            elif re.compile('DESTFN=.*').match(spec):
+                destFileName = spec[7:]
+            elif re.compile('DESTFNSCRIPT=.*').match(spec):
+                scriptclass = spec[13:].split('.')[-1]
+                for dfm in self.plugins['destfn']:
+                    if scriptclass == dfm.__qualname__.split('.')[0] :
+                         destFileName = dfm(msg)
+            elif spec == 'TIME':
+                timeSuffix = ':' + time.strftime("%Y%m%d%H%M%S", time.gmtime())
+                if 'pubTime' in msg:
+                    timeSuffix = ":" + msg['pubTime'].split('.')[0]
+                if 'pubTime' in msg:
+                    timeSuffix = ":" + msg['pubtime'].split('.')[0]
+                    timeSuffix = timeSuffix.replace('T', '')
+                # check for PX or PDS behavior ...
+                # if file already had a time extension keep his...
+                if len(parts[-1]) == 14 and parts[-1][0] == '2':
+                    timeSuffix = ':' + parts[-1]
+
+            else:
+                logger.error("Don't understand this DESTFN parameter: %s" %
+                             spec)
+                return (None, None)
+        return destFileName + satnet + timeSuffix
+
+
+    # ==============================================
+    # how will the download file land on this server
+    # with all options, this is really tricky
+    # ==============================================
+
+    def updateFieldsAccepted(self, msg, urlstr, pattern, maskDir,
+                             maskFileOption, mirror, strip, pstrip, flatten):
+        """
+           Set new message fields according to values when the message is accepted.
+           
+           * urlstr: the urlstr being matched (baseUrl+relPath+sundew_extension)
+           * pattern: the regex that was matched.
+           * maskDir: the current directory to base the relPath from.
+           * maskFileOption: filename option value (sundew compatibility options.)
+           * strip: number of path entries to strip from the left side of the path.
+           * pstrip: pattern strip regexp to apply instead of a count.
+           * flatten: a character to replace path separators with toe change a multi-directory 
+             deep file name into a single long file name
+        """
+
+        # relative path by default mirror
+        if type(maskDir) is str:
+            # trying to subtract maskDir if present in relPath...
+            # occurs in polls a lot.
+            if maskDir in msg['relPath']:
+                relPath = '%s' % msg['relPath'].replace(maskDir, '', 1)
+
+            # sometimes the same, just the leading / is missing.
+            elif maskDir[1:] in msg['relPath']:
+                relPath = '%s' % msg['relPath'].replace(maskDir[1:], '', 1)
+            else:
+                relPath = '%s' % msg['relPath']
+        else:
+            relPath = '%s' % msg['relPath']
+
+        if self.o.baseUrl_relPath:
+            u = urllib.parse.urlparse(msg['baseUrl'])
+            relPath = u.path[1:] + '/' + relPath
+
+        # FIXME... why the % ? why not just assign it to copy the value?
+        if 'rename' in msg: relPath = '%s' % msg['rename']
+
+        token = relPath.split('/')
+        filename = token[-1]
+
+        # if provided, strip (integer) ... strip N heading directories
+        #         or  pstrip (pattern str) strip regexp pattern from relPath
+        # cannot have both (see setting of option strip in sr_config)
+
+        if strip > 0:
+
+            if strip < len(token):
+                token = token[strip:]
+
+            # strip too much... keep the filename
+            else:
+                token = [filename]
+
+            logger.info(' 015 token=%s fname=%s' %(token, filename) )
+        # strip using a pattern
+
+        elif pstrip:
+
+            #MG FIXME Peter's wish to have replacement in pstrip (ex.:${SOURCE}...)
+
+            relstrip = re.sub(pstrip, '', relPath, 1)
+
+            if not filename in relstrip: relstrip = filename
+            token = relstrip.split('/')
+
+        # if flatten... we flatten relative path
+        # strip taken into account
+
+        if flatten != '/':
+            filename = flatten.join(token)
+            token[-1] = [filename]
+
+        if maskFileOption is not None:
+            filename = self.sundew_getDestInfos(msg, maskFileOption,
+                                                       filename)
+            token[-1] = [filename]
+
+        # not mirroring
+
+        if not mirror:
+            token = [filename]
+
+        # uses current dir
+
+        #if self.o.currentDir : new_dir = self.o.currentDir
+        if maskDir:
+            new_dir = self.o.set_dir_pattern(maskDir, msg)
+        else:
+            new_dir = ''
+
+        if self.o.baseDir:
+            if new_dir:
+                d = new_dir
+            elif self.o.post_baseDir:
+                d = self.o.set_dir_pattern(self.o.post_baseDir, msg)
+            else:
+                d = None
+
+            if d:
+                if 'fileOp' in msg:
+                    for f in ['link', 'hlink', 'rename']:
+                        if f in msg['fileOp']:
+                             msg['fileOp'][f] = msg['fileOp'][f].replace(self.o.baseDir, d, 1)
+
+        # add relPath
+
+        if len(token) > 1:
+            new_dir = new_dir + '/' + '/'.join(token[:-1])
+
+        new_dir = self.o.set_dir_pattern(new_dir, msg)
+        # resolution of sundew's dirPattern
+
+        tfname = filename
+        # when sr_sender did not derived from sr_subscribe it was always called
+        new_dir = self.o.sundew_dirPattern(pattern, urlstr, tfname, new_dir)
+
+        msg.updatePaths(self.o, new_dir, filename)
+
+
 
     def filter(self):
 
@@ -498,9 +775,9 @@ class Flow:
                     (lag, m['new_file']))
                 continue
 
-            if 'oldname' in m:
+            if 'fileOp' in m and 'rename' in m['fileOp']:
                 url = self.o.set_dir_pattern(m['baseUrl'],
-                                             m) + os.sep + m['oldname']
+                                             m) + os.sep + m['fileOp']['rename']
                 if 'sundew_extension' in m and url.count(":") < 1:
                     urlToMatch = url + ':' + m['sundew_extension']
                 else:
@@ -527,20 +804,20 @@ class Flow:
                 if mask_regexp.match(urlToMatch):
                     matched = True
                     if not accepting:
-                        if ('oldname' in m) and oldname_matched:
+                        if 'fileOp' in m and 'rename' in m['fileOp'] and oldname_matched:
                             # deletion rename case... need to accept with an extra field...
                             if not 'renameUnlink' in m:
                                 m['renameUnlink'] = True
                                 m['_deleteOnPost'] |= set(['renameUnlink'])
                             logger.debug("rename deletion 1 %s" %
-                                         (m['oldname']))
+                                         (m['fileOp']['rename']))
                         else:
                             self.reject(
                                 m, 304, "mask=%s strip=%s url=%s" %
                                 (str(mask), strip, urlToMatch))
                         break
 
-                    m.updateFieldsAccepted(self.o, url, pattern, maskDir,
+                    self.updateFieldsAccepted(m, url, pattern, maskDir,
                                            maskFileOption, mirror, strip,
                                            pstrip, flatten)
 
@@ -548,13 +825,13 @@ class Flow:
                     break
 
             if not matched:
-                if ('oldname' in m) and oldname_matched:
+                if 'fileOp' in m and ('rename' in m['fileOp']) and oldname_matched:
                     if not 'renameUnlink' in m:
                         m['renameUnlink'] = True
                         m['_deleteOnPost'] |= set(['renameUnlink'])
-                    logger.debug("rename deletion 2 %s" % (m['oldname']))
+                    logger.debug("rename deletion 2 %s" % (m['fileOp']['rename']))
                     filtered_worklist.append(m)
-                    m.updateFieldsAccepted(self.o, url, None,
+                    self.updateFieldsAccepted(m, url, None,
                                            default_accept_directory,
                                            self.o.filename, self.o.mirror,
                                            self.o.strip, self.o.pstrip,
@@ -564,7 +841,7 @@ class Flow:
                 if self.o.acceptUnmatched:
                     logger.debug("accept: unmatched pattern=%s" % (url))
                     # FIXME... missing dir mapping with mirror, strip, etc...
-                    m.updateFieldsAccepted(self.o, url, None,
+                    self.updateFieldsAccepted(m, url, None,
                                            default_accept_directory,
                                            self.o.filename, self.o.mirror,
                                            self.o.strip, self.o.pstrip,
@@ -585,6 +862,7 @@ class Flow:
             except Exception as ex:
                 logger.error( f'flowCallback plugin {p} crashed: {ex}' )
                 logger.debug( "details:", exc_info=True )
+                continue
 
             if len(new_incoming) > 0:
                 self.worklist.incoming.extend(new_incoming)
@@ -598,19 +876,16 @@ class Flow:
         # mark all remaining messages as done.
         self.worklist.ok = self.worklist.incoming
         self.worklist.incoming = []
-        logger.debug('processing %d messages worked! (stop reuqested: %s)' %
+        logger.debug('processing %d messages worked! (stop requested: %s)' %
                      (len(self.worklist.ok), self._stop_requested))
 
     def post(self):
-
         for p in self.plugins["post"]:
             try:
                 p(self.worklist)
             except Exception as ex:
                 logger.error( f'flowCallback plugin {p} crashed: {ex}' )
                 logger.debug( "details:", exc_info=True )
-
-        self.worklist.ok = []
 
     def report(self):
         # post reports
@@ -768,8 +1043,8 @@ class Flow:
         """
         # assert
 
-        lstat = os.stat(msg['new_path'])
-        fsiz = lstat[stat.ST_SIZE]
+        lstat = sarracenia.stat(msg['new_path'])
+        fsiz = lstat.st_size
 
         # FIXME... local_offset... offset within the local file... partitioned... who knows?
         #   part of partitioning deferral.
@@ -813,14 +1088,19 @@ class Flow:
                         msg['new_path'], new_mtime - old_mtime, new_mtime,
                         old_mtime))
 
-        if msg['integrity']['method'] in ['random', 'md5name', 'cod']:
-            logger.debug("content_match %s sum 0/n/z never matches" %
+        if 'integrity' in msg and msg['integrity']['method'] in ['random', 'cod']:
+            logger.debug("content_match %s sum 0/z never matches" %
                          (msg['new_path']))
             return True
 
         if end > fsiz:
             logger.debug(
-                "content_match file not big enough... considered different")
+                "new file not big enough... considered different")
+            return True
+
+        if not 'integrity' in msg: 
+            # FIXME... should there be a setting to assume them the same? use cases may vary.
+            logger.debug( "no checksum available, assuming different" )
             return True
 
         try:
@@ -862,7 +1142,7 @@ class Flow:
 
     def renameOneItem(self, old, path):
         """
-            for messages with an oldname, it is to rename a file.
+            for messages with an rename file operation, it is to rename a file.
         """
         ok = True
         if not os.path.isfile(old):
@@ -888,19 +1168,20 @@ class Flow:
             ok = False
         return ok
 
-    def link1file(self, msg):
+    def link1file(self, msg, symbolic=True):
         """        
-          perform a symbolic link of a single file, based on a message, returning boolean success
+          perform a link of a single file, based on a message, returning boolean success
+          if it's Symbolic, then do that. else do a hard link.
 
           imported from v2/subscribe/doit_download "link event, try to link the local product given by message"
         """
         logger.debug("message is to link %s to %s" %
-                     (msg['new_file'], msg['link']))
+                     (msg['new_file'], msg['fileOp']['link']))
 
         # redundant, check is done in caller.
         #if not 'link' in self.o.fileEvents:
         #    logger.info("message to link %s to %s ignored (events setting)" %  \
-        #                                    ( msg['new_file'], msg[ 'link' ] ) )
+        #                                    ( msg['new_file'], msg['fileOp'][ 'link' ] ) )
         #    return False
 
         if not os.path.isdir(msg['new_dir']):
@@ -918,12 +1199,18 @@ class Flow:
             if os.path.isfile(path): os.unlink(path)
             if os.path.islink(path): os.unlink(path)
             if os.path.isdir(path): os.rmdir(path)
-            os.symlink(msg['link'], path)
-            logger.info("%s symlinked to %s " % (msg['new_file'], msg['link']))
+
+            if 'hlink' in msg['fileOp'] :
+                os.link(msg['fileOp']['hlink'], path)
+                logger.info("%s hard-linked to %s " % (msg['new_file'], msg['fileOp']['hlink']))
+            else:
+                os.symlink(msg['fileOp']['link'], path)
+                logger.info("%s sym-linked to %s " % (msg['new_file'], msg['fileOp']['link']))
+
         except:
             ok = False
-            logger.error("symlink of %s %s failed." %
-                         (msg['new_file'], msg['link']))
+            logger.error("link of %s %s failed." %
+                         (msg['new_file'], msg['fileOp']))
             logger.debug('Exception details:', exc_info=True)
 
         return ok
@@ -954,42 +1241,42 @@ class Flow:
             new_path = msg['new_dir'] + os.path.sep + msg['new_file']
             new_file = msg['new_file']
 
-            if 'oldname' in msg:
-                if 'renameUnlink' in msg:
-                    self.removeOneFile(msg['oldname'])
-                    msg.setReport(201, 'old unlinked %s' % msg['oldname'])
-                    self.worklist.ok.append(msg)
-                else:
-                    # actual rename...
-                    ok = self.renameOneItem(msg['oldname'], new_path)
-                    # if rename succeeds, fall through to download object to find if the file renamed
-                    # actually matches the one advertised, and potentially download it.
-                    # if rename fails, recover by falling through to download the data anyways.
-                    if ok:
+            if 'fileOp' in msg :
+                if 'rename' in msg['fileOp']:
+                    if 'renameUnlink' in msg:
+                        self.removeOneFile(msg['fileOp']['rename'])
+                        msg.setReport(201, 'old unlinked %s' % msg['fileOp']['rename'])
                         self.worklist.ok.append(msg)
-                        msg.setReport(201, 'renamed')
-                        continue
+                    else:
+                        # actual rename...
+                        ok = self.renameOneItem(msg['fileOp']['rename'], new_path)
+                        # if rename succeeds, fall through to download object to find if the file renamed
+                        # actually matches the one advertised, and potentially download it.
+                        # if rename fails, recover by falling through to download the data anyways.
+                        if ok:
+                            self.worklist.ok.append(msg)
+                            msg.setReport(201, 'renamed')
+                            continue
 
-            elif (msg['integrity']['method'] == 'remove') and (
-                    'delete' in self.o.fileEvents):
-                if self.removeOneFile(new_path):
-                    msg.setReport(201, 'removed')
-                    self.worklist.ok.append(msg)
-                else:
-                    #FIXME: should this really be queued for retry? or just permanently failed?
-                    # in rejected to avoid retry, but wondering if failed and deferred
-                    # should be separate lists in worklist...
-                    self.reject(msg, 500, "remove %s failed" % new_path)
-                continue
+                if ('remove' in msg['fileOp']) and ('delete' in self.o.fileEvents):
+                    if self.removeOneFile(new_path):
+                        msg.setReport(201, 'removed')
+                        self.worklist.ok.append(msg)
+                    else:
+                        #FIXME: should this really be queued for retry? or just permanently failed?
+                        # in rejected to avoid retry, but wondering if failed and deferred
+                        # should be separate lists in worklist...
+                        self.reject(msg, 500, "remove %s failed" % new_path)
+                    continue
 
-            if 'link' in msg.keys() and ('link' in self.o.fileEvents):
-                if self.link1file(msg):
-                    msg.setReport(201, 'linked')
-                    self.worklist.ok.append(msg)
-                else:
-                    # as above...
-                    self.reject(msg, 500, "link %s failed" % msg['link'])
-                continue
+                if 'link' in msg['fileOp'] or 'hlink' in msg['fileOp'] and ('link' in self.o.fileEvents):
+                    if self.link1file(msg):
+                        msg.setReport(201, 'linked')
+                        self.worklist.ok.append(msg)
+                    else:
+                        # as above...
+                        self.reject(msg, 500, "link %s failed" % msg['fileOp'])
+                    continue
 
             # establish new_inflight_path which is the file to download into initially.
             if self.o.inflight == None or (
@@ -1113,6 +1400,10 @@ class Flow:
             remote_file = token[-1]
             urlstr = msg['baseUrl'] + '/' + msg['relPath']
 
+        istr =msg['integrity']  if ('integrity' in msg) else "None"
+        fostr = msg['fileOp'] if ('fileOp' in msg ) else "None"
+
+        logger.debug( 'integrity: %s, fileOp: %s' % ( istr, fostr ) ) 
         new_inflight_path = ''
 
         new_dir = msg['new_dir']
@@ -1141,7 +1432,7 @@ class Flow:
                 try:
                     ok = plugin(msg)
                 except Exception as ex:
-                    logger.error( f'flowCallback plugin {p} crashed: {ex}' )
+                    logger.error( f'flowCallback plugin {plugin} crashed: {ex}' )
                     logger.debug( "details:", exc_info=True )
 
                 if not ok: return False
@@ -1224,10 +1515,13 @@ class Flow:
 
             if self.o.integrity_method.startswith('cod,'):
                 download_algo = self.o.integrity_method[4:]
-            else:
+            elif 'integrity' in msg:
                 download_algo = msg['integrity']['method']
+            else:
+                download_algo = None
 
-            self.proto[self.scheme].set_sumalgo(download_algo)
+            if download_algo:
+                self.proto[self.scheme].set_sumalgo(download_algo)
 
             if download_algo == 'arbitrary':
                 self.proto[self.scheme].set_sumArbitrary(
@@ -1295,15 +1589,15 @@ class Flow:
 
                     msg['size'] = len_written
 
-            msg['onfly_checksum'] = self.proto[self.scheme].get_sumstr()
-            msg['data_checksum'] = self.proto[self.scheme].data_checksum
+            if download_algo:
+                msg['onfly_checksum'] = self.proto[self.scheme].get_sumstr()
+                msg['data_checksum'] = self.proto[self.scheme].data_checksum
 
-            if self.o.integrity_method.startswith('cod,') and not accelerated:
-                msg['integrity'] = msg['onfly_checksum']
+                if self.o.integrity_method.startswith('cod,') and not accelerated:
+                    msg['integrity'] = msg['onfly_checksum']
 
-            msg['_deleteOnPost'] |= set(['onfly_checksum'])
-
-            msg['_deleteOnPost'] |= set(['data_checksum'])
+                msg['_deleteOnPost'] |= set(['onfly_checksum'])
+                msg['_deleteOnPost'] |= set(['data_checksum'])
 
             # fix message if no partflg (means file size unknown until now)
             #if not 'blocks' in msg:
@@ -1358,7 +1652,7 @@ class Flow:
                 try:
                     ok = plugin(msg)
                 except Exception as ex:
-                    logger.error( f'flowCallback plugin {p} crashed: {ex}' )
+                    logger.error( f'flowCallback plugin {plugin} crashed: {ex}' )
                     logger.debug( "details:", exc_info=True )
 
                 if not ok: return False
@@ -1447,26 +1741,33 @@ class Flow:
             # delete event
             #=================================
 
-            if msg['integrity']['method'] == 'remove':
-                if hasattr(self.proto[self.scheme], 'delete'):
-                    logger.debug("message is to remove %s" % new_file)
-                    self.proto[self.scheme].delete(new_file)
-                    return True
-                logger.error("%s, delete not supported" % self.scheme)
-                return False
+            if 'fileOp' in msg:
+                if 'remove' in msg['fileOp'] :
+                    if hasattr(self.proto[self.scheme], 'delete'):
+                        logger.debug("message is to remove %s" % new_file)
+                        self.proto[self.scheme].delete(new_file)
+                        return True
+                    logger.error("%s, delete not supported" % self.scheme)
+                    return False
 
-            #=================================
-            # link event
-            #=================================
+                #=================================
+                # link event
+                #=================================
 
-            if 'link' in msg:
-                if hasattr(self.proto[self.scheme], 'symlink'):
-                    logger.debug("message is to link %s to: %s" %
-                                 (new_file, msg['link']))
-                    self.proto[self.scheme].symlink(msg['link'], new_file)
-                    return True
-                logger.error("%s, symlink not supported" % self.scheme)
-                return False
+                if 'hlink' in msg['fileOp']:
+                    if hasattr(self.proto[self.scheme], 'link'):
+                        logger.debug("message is to link %s to: %s" % (new_file, msg['fileOp']['hlink']))
+                        self.proto[self.scheme].link(msg['fileOp']['hlink'], new_file)
+                        return True
+                    logger.error("%s, hardlinks not supported" % self.scheme)
+                    return False
+                elif 'link' in msg['fileOp']:
+                    if hasattr(self.proto[self.scheme], 'symlink'):
+                        logger.debug("message is to link %s to: %s" % (new_file, msg['fileOp']['link']))
+                        self.proto[self.scheme].symlink(msg['fileOp']['link'], new_file)
+                        return True
+                    logger.error("%s, symlink not supported" % self.scheme)
+                    return False
 
             #=================================
             # send event
@@ -1492,7 +1793,7 @@ class Flow:
                 if ('blocks' in msg) and (
                         msg['blocks']['method'] == 'inplace'):
                     block_length = msg['blocks']['size']
-                    str_range = 'bytes=%d-%d' % (remote_offset, remote_offset +
+                    str_range = 'bytes=%d-%d' % (new_offset, new_offset +
                                                  block_length - 1)
 
             str_range = ''
@@ -1536,9 +1837,8 @@ class Flow:
                     len_written = self.proto[self.scheme].putAccelerated(
                         msg, local_file, new_inflight_path)
                 else:
-                    len_written = self.proto[self.scheme].put(
-                        msg, local_file, new_inflight_path)
-                proto.rename(new_inflight_path, new_file)
+                    len_written = self.proto[self.scheme].put(msg, local_file, new_inflight_path)
+                self.proto[self.scheme].rename(new_inflight_path, new_file)
             elif options.inflight[-1] == '/':
                 try:
                     self.proto[self.scheme].cd_forced(
@@ -1609,20 +1909,18 @@ class Flow:
         # if the file is not partitioned, the the onfly_checksum is for the whole file.
         # cache it here, along with the mtime.
         if (not 'blocks' in msg):
-            if 'onfly_checksum' in msg:
-                sumstr = msg['onfly_checksum']
-            else:
-                sumstr = msg['integrity']
-
             x = sarracenia.filemetadata.FileMetadata(local_file)
-            x.set('integrity', sumstr)
+
+            # FIXME ... what to do when checksums don't match?
+            if 'onfly_checksum' in msg: 
+                x.set( 'integrity', msg['onfly_checksum'] )
+            elif 'integrity' in msg:
+                x.set('integrity', msg['integrity'] )
 
             if self.o.timeCopy and 'mtime' in msg and msg['mtime']:
                 x.set('mtime', msg['mtime'])
             else:
-                st = os.stat(local_file)
-                mtime = sarracenia.timeflt2str(st.st_mtime)
-                x.set('mtime', mtime)
+                x.set('mtime', sarracenia.timeflt2str(os.path.getmtime(local_file)))
             x.persist()
 
         mode = 0

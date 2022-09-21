@@ -33,7 +33,7 @@ class DeleteQueueNamed(object):
 
     def on_channel_open(self, channel):
         self._channel = channel
-        print self.queue
+        print(self.queue)
         self._channel.queue_delete(None,
                                    self.queue,
                                    if_unused=False,
@@ -53,8 +53,8 @@ def rabbitmqctl(options):
     (status, text) = commands.getstatusoutput(cmd)
     if len(text) == 0: return []
     if status != 0:
-        print "Error could not execute this:"
-        print cmd
+        print("Error could not execute this:")
+        print(cmd)
         sys.exit(1)
     return text.split('\n')
 
@@ -119,6 +119,6 @@ for q in queues:
         dq.run()
 
 datim = time.strftime("%Y-%m-%d %H:%M:%S,000", time.gmtime())
-print "%s queues  : %s " % (datim, queues.keys())
-print "%s deleted : %s " % (datim, qdeleted)
-print
+print("%s queues  : %s " % (datim, queues.keys()))
+print("%s deleted : %s " % (datim, qdeleted))
+print()

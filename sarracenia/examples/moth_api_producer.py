@@ -36,8 +36,7 @@ PMN
 sample_file.close()
 
 # you can supply msg_init with your files, it will build a message appropriate for it.
-m = sarracenia.Message.fromFileData(sample_fileName, cfg,
-                                    os.stat(sample_fileName))
+m = sarracenia.Message.fromFileData(sample_fileName, cfg, sarracenia.stat(sample_fileName))
 
 # here is the resulting message.
 print(m)

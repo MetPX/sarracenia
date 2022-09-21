@@ -79,8 +79,8 @@ class Log(FlowCB):
             for msg in worklist.rejected:
                 if 'report' in msg:
                     logger.info(
-                        "rejected: %d %s " %
-                        (msg['report']['code'], msg['report']['message']))
+                        "%s rejected: %d %s " %
+                        (msg['relPath'], msg['report']['code'], msg['report']['message']))
                 else:
                     logger.info("rejected: %s " % self._messageStr(msg))
 
@@ -94,6 +94,13 @@ class Log(FlowCB):
 
                 logger.info("accepted: (lag: %.2f ) %s " %
                             (lag, self._messageStr(msg)))
+
+    def after_post(self, worklist):
+        if set(['after_post', 'all']) & self.o.logEvents:
+            for msg in worklist.ok:
+                logger.info("posted %s" % msg)
+            for msg in worklist.failed:
+                logger.info("failed to post, queued to retry %s" % msg)
 
     def after_work(self, worklist):
         self.rejectCount += len(worklist.rejected)
@@ -112,8 +119,15 @@ class Log(FlowCB):
                 self.fileBytes += msg['size']
 
             if set(['after_work', 'all']) & self.o.logEvents:
-                if msg['integrity']['method'] in ['link', 'remove']:
-                    verb = msg['integrity']['method']
+                if 'fileOp' in msg :
+                    if 'link' in msg['fileOp']:
+                        verb = 'linked'
+                    elif 'remove' in msg['fileOp']:
+                        verb = 'removed'
+                    elif 'rename' in msg['fileOp']:
+                        verb = 'renamed'
+                    else:
+                        verb = ','.join(msg['fileOp'].keys())
                 elif self.action_verb in ['downloaded'] and 'content' in msg:
                     verb = 'written from message'
                 else:
@@ -163,8 +177,3 @@ class Log(FlowCB):
             self.stats()
             logger.info("housekeeping")
         self.__reset()
-
-    def post(self, worklist):
-        if set(['post', 'all']) & self.o.logEvents:
-            for msg in worklist.ok:
-                logger.info("posted %s" % msg)

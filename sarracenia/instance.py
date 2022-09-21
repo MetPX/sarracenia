@@ -154,8 +154,7 @@ class instance:
                 except FileExistsError:
                     dir_not_there = False
                 except Exception as ex:
-                    logging.error("makedirs {} failed err={}".format(
-                        os.path.dirname(logfilename), err))
+                    logging.error( "makedirs {} failed err={}".format(os.path.dirname(logfilename),ex))
                     logging.debug("Exception details:", exc_info=True)
                     os.sleep(1)
 

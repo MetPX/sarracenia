@@ -58,7 +58,7 @@ class Speedo(FlowCB):
             now = nowflt()
             self.o.msg_speedo_msgcount = self.o.msg_speedo_msgcount + 1
 
-            (method, psize, ptot, prem, pno) = msg['partstr'].split(',')
+            (method, psize, ptot, prem, pno) = message['partstr'].split(',')
 
             self.o.msg_speedo_bytecount = self.o.msg_speedo_bytecount + int(
                 psize)

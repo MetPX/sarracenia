@@ -36,9 +36,8 @@ class Message(FlowCB):
 
     def ack(self, mlist):
         for m in mlist:
-            # see plugin/retry.py
-            if not (('isRetry' in m) and m['isRetry']):
-                self.consumer.ack(m)
+            # messages being re-downloaded should not be re-acked, but they won't have an ack_id (see issue #466)
+            self.consumer.ack(m)
 
     def on_housekeeping(self):
         m = self.consumer.metricsReport()

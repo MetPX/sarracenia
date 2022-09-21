@@ -51,7 +51,7 @@ class PClean_F90(PClean):
             for fxx_dir, path in path_dict.items():
                 # f90 test
                 logger.info('for looping: %s' % path)
-                if not os.path.exists(path):
+                if not (os.path.isfile(path) or os.path.islink(path)):
                     # propagation check to all path except f20 which is the origin
                     err_msg = "file not in folder {} with {:.3f}s elapsed"
                     lag = nowflt() - timestr2flt(msg['pubTime'])

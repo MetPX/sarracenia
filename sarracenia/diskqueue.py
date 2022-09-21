@@ -12,12 +12,9 @@
 #  re-factored beyond recognition by PSilva 2021. Don't blame Michel
 #
 
-import os, sys, time
 from _codecs import decode, encode
 
-import jsonpickle
-
-from sarracenia import nowflt, timestr2flt
+import jsonpickle, os, os.path, sarracenia, sys, time
 
 import logging
 
@@ -93,7 +90,7 @@ class DiskQueue():
         # initialize all retry path if retry_path is provided
         self.working_dir = os.path.dirname(self.o.pid_filename)
         self.queue_file = self.working_dir + os.sep + 'diskqueue_' + name
-        self.now = nowflt()
+        self.now = sarracenia.nowflt()
 
         # retry messages
 
@@ -108,15 +105,25 @@ class DiskQueue():
         self.housekeeping_path = self.queue_file + '.hk'
         self.housekeeping_fp = None
 
-        # initialize ages.
+        # initialize ages and message counts
 
-        if not os.path.isfile(self.queue_file): return
+        self.msg_count = 0
+        self.msg_count_new = 0
 
-        retry_age = os.stat(self.queue_file).st_mtime
+        if not os.path.isfile(self.queue_file):
+            return
+
+        retry_age = os.path.getmtime(self.queue_file)
+        self.msg_count = self._count_msgs(self.queue_file)
 
         if os.path.isfile(self.new_path):
-            new_age = os.stat(self.new_path).st_mtime
-            if retry_age > new_age: os.unlink(self.new_path)
+            new_age = os.path.getmtime(self.new_path)
+            if retry_age > new_age:
+                os.unlink(self.new_path)
+            else:
+                self.msg_count_new = self._count_msgs(self.new_path)
+
+
 
     def put(self, message_list):
         """
@@ -130,6 +137,7 @@ class DiskQueue():
             logger.debug("DEBUG add to new file %s %s" %
                          (os.path.basename(self.new_path), message))
             self.new_fp.write(self.msgToJSON(message))
+            self.msg_count_new += 1
         self.new_fp.flush()
 
     def cleanup(self):
@@ -138,6 +146,7 @@ class DiskQueue():
         """
         if os.path.exists(self.queue_file):
             os.unlink(self.queue_file)
+        self.msg_count = 0
 
     def close(self):
         """
@@ -159,6 +168,41 @@ class DiskQueue():
         self.housekeeping_fp = None
         self.new_fp = None
         self.queue_fp = None
+        self.msg_count = 0
+        self.msg_count_new = 0
+
+    def _count_msgs(self, file_path) -> int:
+        """Count the number of messages (lines) in the queue file. This should be used only when opening an existing
+        file, because :func:`~sarracenia.diskqueue.DiskQueue.get` does not remove messages from the file.
+
+        Args:
+            file_path (str): path to the file to be counted.
+
+        Returns:
+            int: count of messages in file, -1 if the file could not be read.
+        """
+        count = -1
+
+        if os.path.isfile(file_path):
+            count = 0
+            with open(file_path, mode='r') as f:
+                for line in f:
+                    if "{" in line:
+                        count +=1
+
+        return count
+
+    def __len__(self) -> int:
+        """Returns the total number of messages in the DiskQueue.
+
+        Number of messages in the DiskQueue does not necessarily equal the number of messages available to ``get``.
+        Messages in the .new file are counted, but can't be retrieved until
+        :func:`~sarracenia.diskqueue.DiskQueue.on_housekeeping` has been run.
+
+        Returns:
+            int: number of messages in the DiskQueue.
+        """
+        return self.msg_count + self.msg_count_new
 
     def msgFromJSON(self, line):
         try:
@@ -202,13 +246,15 @@ class DiskQueue():
                 #logger.error("MG invalid %s" % message)
                 continue
 
-            message['isRetry'] = True
             if 'ack_id' in message:
                 del message['ack_id']
                 message['_deleteOnPost'].remove('ack_id')
 
             ml.append(message)
             count += 1
+
+        self.msg_count -= count
+
         return ml
 
     def in_cache(self, message) -> bool:
@@ -218,7 +264,19 @@ class DiskQueue():
 
         """
         urlstr = message['baseUrl'] + '/' + message['relPath']
-        sumstr = jsonpickle.encode(message['integrity'])
+
+        if 'noDupe' in message:
+            sumstr = jsonpickle.encode(message['noDupe']['key'])
+        elif 'fileOp' in message:
+            sumstr = jsonpickle.encode(message['fileOp'])
+        elif 'integrity' in message:
+            sumstr = jsonpickle.encode(message['integrity'])
+        elif 'pubTime' in message:
+            sumstr = jsonpickle.encode(message['pubTime'])
+        else:
+            logger.info('no key found for message, cannot add')
+            return False
+
         cache_key = urlstr + ' ' + sumstr
 
         if 'parts' in message:
@@ -237,7 +295,7 @@ class DiskQueue():
         if self.o.retry_ttl <= 0: return False
 
         # compute message age
-        msg_time = timestr2flt(message['pubTime'])
+        msg_time = sarracenia.timestr2flt(message['pubTime'])
         msg_age = self.now - msg_time
 
         # expired ?
@@ -309,7 +367,7 @@ class DiskQueue():
                 self.queue_file)
             return
 
-        self.now = nowflt()
+        self.now = sarracenia.nowflt()
         self.retry_cache = {}
         N = 0
 
@@ -389,16 +447,18 @@ class DiskQueue():
 
         else:
             logger.info("Number of messages in retry list %d" % N)
+            self.msg_count = N
             try:
                 os.rename(self.housekeeping_path, self.queue_file)
             except:
                 logger.error("Something went wrong with rename")
 
         # cleanup
+        self.msg_count_new = 0
         try:
             os.unlink(self.new_path)
         except:
             pass
 
-        elapse = nowflt() - self.now
+        elapse = sarracenia.nowflt() - self.now
         logger.info("on_housekeeping elapse %f" % elapse)

@@ -80,6 +80,7 @@ import re
 import time
 import hashlib
 import logging
+import random
 from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger('__name__')
@@ -313,7 +314,7 @@ class Wmo2msc(FlowCB):
 
             if not self.o.convert2msc:
                 try:
-                    os.link(input_file, localfile)
+                    os.link(input_file, local_file)
                     fileOK = True
                 except:
                     pass

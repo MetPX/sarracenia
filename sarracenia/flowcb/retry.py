@@ -25,8 +25,8 @@ logger = logging.getLogger(__name__)
 
 class Retry(FlowCB):
     """
-      overal goal:  When file transfers fail, retry them later.
-                    There is a second retry queue for failed posts, as well.
+      overall goal:  When file transfers fail, write the messages to disk to be retried later. There is also a second
+                     retry queue for failed posts.
 
       how it works:
       * the after_accept checks how many incoming messages we received.
@@ -62,7 +62,8 @@ class Retry(FlowCB):
 
     def after_accept(self, worklist) -> None:
         """
-          if there are only a few new messages, then get some from the retry list.
+          If there are only a few new messages, get some from the download retry queue and put them into
+          `worklist.incoming`.
         """
 
         qty = (self.o.batch / 2) - len(worklist.incoming)
@@ -78,15 +79,13 @@ class Retry(FlowCB):
 
     def after_work(self, worklist) -> None:
         """
-         worklist.failed should be put on the retry list.
+          Messages in `worklist.failed` should be put in the download retry queue. If there are only a few new
+          messages, get some from the post retry queue and put them into `worklist.ok`.
         """
-        if len(worklist.failed) == 0:
-            return
-
-        #logger.debug("putting %d messages into %s" % (len(worklist.failed),self.download_retry_name) )
-
-        self.download_retry.put(worklist.failed)
-        worklist.failed = []
+        if len(worklist.failed) != 0:
+            #logger.debug("putting %d messages into %s" % (len(worklist.failed),self.download_retry_name) )
+            self.download_retry.put(worklist.failed)
+            worklist.failed = []
 
         # retry posting...
         qty = (self.o.batch / 2) - len(worklist.ok)
@@ -99,9 +98,19 @@ class Retry(FlowCB):
             worklist.ok.extend(mlist)
 
     def after_post(self, worklist) -> None:
+        """
+        Messages in `worklist.failed` should be put in the post retry queue.
+        """
         self.post_retry.put(worklist.failed)
-        worklist.failed = []
-        pass
+        worklist.failed=[]
+
+    def metrics_report(self) -> dict:
+        """Returns the number of messages in the download_retry and post_retry queues.
+
+        Returns:
+            dict: containing metrics: ``{'msgs_in_download_retry': (int), 'msgs_in_post_retry': (int)}``
+        """
+        return {'msgs_in_download_retry': len(self.download_retry), 'msgs_in_post_retry': len(self.post_retry)}
 
     def on_housekeeping(self) -> None:
         logger.info("on_housekeeping")

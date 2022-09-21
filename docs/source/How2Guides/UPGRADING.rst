@@ -27,7 +27,7 @@ take the form:
 *SHOULD*
    Indicates recommended interventions that are recommended, but not mandatory. If prescribed activity is not done,
    the consequence is either a configuration line that has no effect (wasteful) or the application
-   may generate messages.  
+   may generate notification messages.  
    
 The sections in are entitled by the changes taking place at the level in question.
 
@@ -38,6 +38,19 @@ Installation Instructions
 
 git
 ---
+
+
+3.0.17
+------
+
+*CHANGE*: The "Vendor" string is now "MetPX" instead of "science.gc.ca".
+     This affects some file placement particularly on Windows.
+
+*CHANGE*: v03 notification message encoding changed: *Integrity* checksum is now optional.
+
+*CHANGE*: v03 notification message encoding changed for symbolic links, and file renames
+     and removals. There is now a 'fileOp' field for these dataless file operations.
+     The *Integrity* sum is now used exclusively for checksums.
 
 
 3.0.15
@@ -71,6 +84,11 @@ git
 
   sr3 looks for the relevant modules on startup and automatically enables support for the relevant features.
 
+**CHANGE**: file placement of denoting disabled configurations. it used to be that
+     ~/.config/sr3/component/x.conf would be renamed x.conf.off when disabling.
+     Now instead a file called ~/.cache/sr3/component/x/disabled is created.
+     Configuration files are no longer changed by this sort of routine intervention.
+
 3.0.14
 ------
 
@@ -91,7 +109,7 @@ V2 to Sr3
           supports more features, and more naturally.
 
 **CHANGE**: log messages look completely different. Any log parsing will have to be reviewed.
-          New log format includes a prefix with process-id and the routine generating the message.
+          New log format includes a prefix with process-id and the routine generating the notification message.
 
 *NOTICE*: When migrating from v2 to sr3, simple configurations will mostly "just work."
           However, cases relying on user built plugins will require effort to port.
@@ -355,8 +373,8 @@ V2 to Sr3
 
 **CHANGE**: sr_retry became `retry.py <../Reference/flowcb.html#module-sarracenia.flowcb.retry>`_. 
           Any plugins accessing internal structures of sr_retry.py need to be re-written. 
-          This access is no longer necessary, as the API defines how to put messages on 
-          the retry queue (move messages to worklist.failed. )
+          This access is no longer necessary, as the API defines how to put notification messages on 
+          the retry queue (move notification messages to worklist.failed. )
 
 *NOTICE*: sr3 watch, with the *force_polling* option, is much less efficient 
           on sr3 than v2 for large directory trees (see issue #403 )

@@ -1,7 +1,21 @@
-metpx-sr3 (3.00.16b3) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.17) UNRELEASED; urgency=medium
+
+  * #539 French documentation for sr3 now exists.
+  * #547, #504 v03 post format revised to separate checksums from non-data file operations.
+  * #466 retry queue for failed send, also post retry queue.
+  * improved documentation #552 
+  * #522 honor permLog 
+  * #465 simulation mode for sender (not yet complete.)
+  * #438 v2 to sr3 config converter added (still has some problems, but mostly working.)
+  * #513 improved shutdown on signal receipt.
+ -- Peter Silva <peter@fractal>  Wed, 21 Sep 2022 11:59:03 -0400
+
+metpx-sr3 (3.00.16) unstable; urgency=medium
 
   * wrapped all calls to callbacks with try/except and error messaging.
   * more obvious errors when extra dependencies are missing.
+  * more documentation improvements.
+  * change appauthor from 'science.gc.ca' to 'MetPX'
 
  -- Peter Silva <peter.silva@ssc-spc.gc.ca>  Sat, 02 Apr 2022 10:47:21 -0400
 
@@ -18,8 +32,9 @@ metpx-sr3 (3.00.15b2) unstable; urgency=medium
   * tls_rigour becomes tlsRigour (in implementation, was only documented that way before.)
   * #480 sr3 status display problem not ignoring files that are not .conf ones.
   * #477 sr3 edit of default.conf, credentials.conf, admin.conf work again.
+  * #447 sr3 disabled now with state file, not config.
 
- -- Peter Silva <peter@ssc-spc.gc.ca>  Wed, 30 Mar 2022 22:04:37 -0400
+ -- Peter Silva <peter.silva@ssc-spc.gc.ca>  Wed, 30 Mar 2022 22:04:37 -0400
 
 metpx-sr3 (3.00.014b1) unstable; urgency=medium
 

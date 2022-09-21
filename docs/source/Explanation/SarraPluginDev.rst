@@ -74,12 +74,12 @@ Examples are available using the list command::
 Worklists
 ~~~~~~~~~
 
-The worklist data structure is a set of lists of messages.  There are four:
+The worklist data structure is a set of lists of notification messages.  There are four:
 
-  * worklist.incoming -- messages yet to be processed. (built by gather)
-  * worklist.rejected -- message which are not to be further processed. (usually by filtering.)
-  * worklist.ok -- messages which have been successfully processed. (usually by work.)
-  * worklist.failed   -- messages for which processing was attempted, but it failed. 
+  * worklist.incoming -- notification messages yet to be processed. (built by gather)
+  * worklist.rejected -- notification message which are not to be further processed. (usually by filtering.)
+  * worklist.ok -- notification messages which have been successfully processed. (usually by work.)
+  * worklist.failed   -- notification messages for which processing was attempted, but it failed. 
 
 The worklist is passed to the *after_accept* and *after_work* plugins as detailed in the next section.
 
@@ -90,17 +90,17 @@ All of the components (post, subscribe, sarra, sender, shovel, watch, winnow)
 share substantial code and differ only in default settings.  The Flow
 algorithm is:
 
-* Gather a list of messages, from a file, or an upstream source of messages (a data pump.)
-  places new messages in _worklist.incoming_
+* Gather a list of notification messages, from a file, or an upstream source of notification messages (a data pump.)
+  places new notification messages in _worklist.incoming_
 
-* Filter them with accept/reject clauses, rejected messages are moved to _worklist.rejected_ .
+* Filter them with accept/reject clauses, rejected notification messages are moved to _worklist.rejected_ .
   after_accept callbacks further manipulate the worklists after initial accept/reject filtering.
 
-* Work on the remaining incoming messages, by doing the download, send or other work that creates new files.
-  when work for a message succeeds, the message is moved to the _worklist.ok_ .
-  work work for a message fails, the message is moved to the _worklist.failed_ .
+* Work on the remaining incoming notification messages, by doing the download, send or other work that creates new files.
+  when work for a notification message succeeds, the notification message is moved to the _worklist.ok_ .
+  work work for a notification message fails, the notification message is moved to the _worklist.failed_ .
   
-* (optional) Post the work accomplished (messages on _worklist.ok_ ) for the next flow to consume.
+* (optional) Post the work accomplished (notification messages on _worklist.ok_ ) for the next flow to consume.
 
 
 Flow Callbacks
@@ -134,12 +134,12 @@ That line cause Sarracenia to look in the Python search path for a class like:
         for msg in worklist.ok:
             logger.info("worked successfully: %s " % msg)
 
-The module will print each message accepted, and each message after work on it 
+The module will print each notification message accepted, and each notification message after work on it 
 has finished (download has occurred, for example.) To modify the callback class, 
 copy it from the directory listed in the *list fcb* command to somewher in the
 environment's PYTHONPATH, and then modify it for the intended purpose.
 
-One can also see which plugins are active in a configuration by looking at the messages on startup::
+One can also see which plugins are active in a configuration by looking at the notification messages on startup::
 
    blacklab% sr3 foreground subscribe/clean_f90
    2018-01-08 01:21:34,763 [INFO] sr_subscribe clean_f90 start
@@ -220,7 +220,7 @@ Use the _sr3_ _show_ command to view all active settings resulting from a config
     auto_delete=False, baseDir=None, batch=1, bind=True, bindings=[('v03', 'xsarra', '#')], bufsize=1048576, bytes_per_second=None, bytes_ps=0,
     cfg_run_dir='/home/peter/.cache/sr3/sarra/download_f20', chmod=0, chmod_dir=509, chmod_log=384, config='download_f20', currentDir=None, debug=False,
     declare=True, declared_exchanges=['xpublic', 'xcvan01'], declared_users="...rce', 'anonymous': 'subscriber', 'ender': 'source', 'eggmeister': 'subscriber'}",
-    delete=False, destfn_script=None, directory='/home/peter/sarra_devdocroot', documentRoot=None, download=False, durable=True, exchange=['xflow_public'],
+    delete=False, directory='/home/peter/sarra_devdocroot', documentRoot=None, download=False, durable=True, exchange=['xflow_public'],
     expire=25200.0, feeder=amqp://tfeed@localhost, filename=None, fixed_headers={}, flatten='/', hostdir='fractal', hostname='fractal', housekeeping=60.0,
     imports=[], inflight=None, inline=False, inlineEncoding='guess', inlineByteMax=4096, instances=1,
     logFormat='%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s', logLevel='info', log_reject=True, lr_backupCount=5, lr_interval=1,
@@ -294,12 +294,12 @@ logMessageDump
 ~~~~~~~~~~~~~~
 
 implemented by sarracenia.flowcb.log, at each logging event, print out the current content
-of the message being processed.
+of the notification message being processed.
 
 logReject
 ~~~~~~~~~
 
-print out a log message for each message rejected (normally silently ignored.)
+print out a log message for each notification message rejected (normally silently ignored.)
 
 
 messageDebugDump
@@ -386,7 +386,7 @@ And on startup, the logger message would print::
 
 
 
-Developers can add additional Transfer protocols for messages or 
+Developers can add additional Transfer protocols for notification messages or 
 data transport using the *import* directive to make the new class
 available::
 
@@ -401,13 +401,13 @@ Fields in Messages
 ------------------
 
 callbacks receive the parsed sarracenia.options as a parameter.  
-self is the message being processed. variables variables most used:
+self is the notification message being processed. variables variables most used:
 
 *msg['exchange']*  
-  The exchange through which the message is being posted or consumed.
+  The exchange through which the notification message is being posted or consumed.
 
 *msg['isRetry']*
-  If this is a subsequent attempt to send or download a message.
+  If this is a subsequent attempt to send or download a notification message.
 
 *msg['new_dir']*
   The directory which will contain *msg['new_file']*
@@ -426,7 +426,7 @@ self is the message being processed. variables variables most used:
   the file should be renamed to what is in *msg['new_file']*.
 
 *msg['pubTime']*
-  The time the message was originally inserted into the network (first field of a notice.)
+  The time the notification message was originally inserted into the network (first field of a notice.)
 
 *msg['baseUrl']*
   The root URL of the publication tree from which relative paths are constructed.
@@ -441,14 +441,14 @@ self is the message being processed. variables variables most used:
 *msg['subtopic']*
   list of strings (with the topic prefix stripped off)
 
-These are the message fields which are most often of interest, but many other 
+These are the notification message fields which are most often of interest, but many other 
 can be viewed by the following in a configuration::
 
    logMessageDump True
    callback log
 
 Which ensures the log flowcb class is active, and turns on the setting
-to print rawish messages during processing.
+to print rawish notification messages during processing.
 
 
 Accessing Options
@@ -498,7 +498,7 @@ for detailed information about call signatures and return values, etc...
 +---------------------+----------------------------------------------------+
 |  Name               | When/Why it is Called                              |
 +=====================+====================================================+
-|  ack                | acknowledge messages from a broker.                |
+|  ack                | acknowledge notification messages from a broker.   |
 |                     |                                                    |
 +---------------------+----------------------------------------------------+
 |                     | very freqently used.                               |
@@ -542,11 +542,10 @@ for detailed information about call signatures and return values, etc...
 |                     | download has completed.                            |
 |                     |                                                    |
 +---------------------+----------------------------------------------------+
-|                     | change msg['new_file'] to taste.                   |
-| destfn_script       | called when renaming the file from inflight to     |
+| destfn(self,msg):   | called when renaming the file from inflight to     |
 |                     | permanent name.                                    |
 |                     |                                                    |
-|                     | NOT IMPLEMENTED? FIXME?                            |
+|                     | return the new name for the downloaded/sent file.  |
 +---------------------+----------------------------------------------------+
 | download(self,msg)  | replace built-in downloader return true on success |
 |                     | takes message as argument.                         |
@@ -582,7 +581,7 @@ for detailed information about call signatures and return values, etc...
 |                     |                                                    |
 +---------------------+----------------------------------------------------+
 | poll(self)          | replace the built-in poll method.                  |
-|                     | return a list of messages.                         |
+|                     | return a list of notification messages.            |
 +---------------------+----------------------------------------------------+
 | post(self,worklist) | replace the built-in post routine.                 |
 |                     |                                                    |
@@ -590,6 +589,31 @@ for detailed information about call signatures and return values, etc...
 | send(self,msg)      | replace the built-in send routine.                 |
 |                     |                                                    |
 +---------------------+----------------------------------------------------+
+
+DESTFNSCRIPTS
+~~~~~~~~~~~~~
+
+As a compatibility layer with the ancestor MetPX Sundew, Sarracenia implements
+*Destination File Naming Scripts*, where the one can create a flowcallback
+class with a *destfn* entry point, and then use that to set the name of
+the file that will be downloaded. 
+
+In the configuration file, one can use the filename option like so::
+
+  filename DESTFNSCRIPT=sarracenia.flowcb.destfn.sample.Sample
+
+To identify a class containing the destfn entry point to be applied.
+using the filename directive applies it to all files. One can also
+do it selectively in the configuration file's accept clause::
+
+  accept k.* DESTFNSCRIPT=sarracenia.flowcb.destfn.sample.Sample
+
+which has it call the routine to rename only selected files (starting with *k*
+as per the accept clause) 
+
+The destfn routine takes the notification message as an argument and should return
+the new file name as a string.
+
 
 
 Flow Callback Poll Customization
@@ -787,16 +811,16 @@ Why v3 API should be used whenever possible
 
 * plural event callbacks replace singular ones.  after_accept replaces on_message
 
-* messages are just python dictionaries. fields defined by json.loads( v03 payload format )
-  messages only contain the actual fields, no settings or other things...
+* notification messages are just python dictionaries. fields defined by json.loads( v03 payload format )
+  notification messages only contain the actual fields, no settings or other things...
   plain data.
 
 * what used to be called plugins, are now only a type of plugins, called flowCallbacks.
-  They now move messages between worklists. 
+  They now move notification messages between worklists. 
 
 
 With this API, dealing with different numbers of input and output files becomes much
-more natural, when unpacking a tar file, messages for the unpacked files can be appended
+more natural, when unpacking a tar file, notification messages for the unpacked files can be appended
 to the ok list, so they will be posted when the flow arrives there.
 Similarly a large number of small files may be bucketed together to make one
 large file. so rather than transferring all the incoming files to the list,
@@ -837,14 +861,14 @@ local file is sufficient::
 There should be two files in the PYTHONPATH somewhere containing 
 classes derived from FlowCB with after_accept routines declared.
 The processing in those routines will be done on receipt of a batch
-of messages.  A message will correspond to a file.
+of notification messages.  A notification message will correspond to a file.
 
 the after_accept routins accept a worklist as an argument.  
 
 
 .. warning::
    **FIXME**: perhaps show a way of checking the parts header to
-   with an if statement in order to act on only the first part message
+   with an if statement in order to act on only the first part notification message
    for long files.
 
 
@@ -895,7 +919,7 @@ dictionary where each entry with an SFTPAttributes structure describing one file
 
 So the work in handle_data is just to fill an paramiko.SFTPAttributes structure. 
 Since the web site doesn't actually provide any metadata, it is just filled in with sensible
-default info, that provides enough information to build a message and run it through
+default info, that provides enough information to build a notification message and run it through
 duplicate suppression.
 
 Here it the complete poll callback::

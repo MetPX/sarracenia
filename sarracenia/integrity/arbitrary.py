@@ -7,7 +7,6 @@ def set_default_value(value):
     global default_value
     default_value = value
 
-
 class Arbitrary(Integrity):
     """
       For applications where there is no known way of determining equivalence, allow them to supply
@@ -27,6 +26,7 @@ class Arbitrary(Integrity):
     def value(self, value):
         self._value = value
 
+    @staticmethod
     def registered_as():
         return 'a'
 

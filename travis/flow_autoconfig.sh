@@ -8,7 +8,7 @@
 sudo apt-key adv --keyserver "hkps.pool.sks-keyservers.net" --recv-keys "0x6B73A36E6026DFCA"
 sudo add-apt-repository -y ppa:ssc-hpc-chp-spc/metpx-daily
 sudo apt-get update
-sudo apt -y install openssh-server erlang-nox erlang-diameter erlang-eldap rabbitmq-server metpx-sr3c librabbitmq4 metpx-libsr3c metpx-libsr3c-dev git python3-pip net-tools findutils xattr
+sudo apt -y install openssh-server erlang-nox erlang-diameter erlang-eldap rabbitmq-server metpx-sr3c librabbitmq4 metpx-libsr3c metpx-libsr3c-dev git python3-pip python3-setuptools net-tools findutils xattr
 
 pip3 install -U pip
 pip3 install -e .
@@ -35,7 +35,7 @@ declare env FLOWBROKER=localhost
 declare env SFTPUSER=${USER}
 declare env TESTDOCROOT=${HOME}/sarra_devdocroot
 declare env MQP=amqp
-logEvents after_accept,after_work,on_housekeeping,post
+logEvents after_accept,after_work,on_housekeeping,post,after_post
 EOF
 cp ~/.config/sarra/default.conf ~/.config/sr3
 
@@ -68,8 +68,14 @@ cp ~/.config/sarra/admin.conf ~/.config/sr3
 
 echo
 
+check_wsl=$(ps --no-headers -o comm 1)
+
 # Manage RabbitMQ
-sudo systemctl restart rabbitmq-server
+if [[ $(($check_wsl == "init" )) ]]; then
+	sudo service rabbitmq-server restart
+else
+	sudo systemctl restart rabbitmq-server
+fi
 sudo rabbitmq-plugins enable rabbitmq_management
 
 sudo rabbitmqctl delete_user guest
@@ -84,7 +90,12 @@ sudo rabbitmqctl set_user_tags bunnymaster administrator
 
 echo
 
-sudo systemctl restart rabbitmq-server
+if [[ $(($check_wsl == "init" )) ]]; then
+	sudo service rabbitmq-server restart
+else 
+	sudo systemctl restart rabbitmq-server
+fi
+
 cd /usr/local/bin
 sudo mv rabbitmqadmin rabbitmqadmin.1
 sudo wget http://localhost:15672/cli/rabbitmqadmin

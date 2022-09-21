@@ -12,9 +12,11 @@ import logging
 import sys
 
 entry_points = [
-    'ack', 'do_poll', 'download', 'gather', 'after_accept', 'after_work',
-    'on_housekeeping', 'on_report', 'on_start', 'on_stop', 'poll', 'post',
-    'send', 'please_stop'
+
+    'ack', 'after_accept', 'after_post', 'after_work', 'destfn', 'do_poll', 
+    'download', 'gather', 'on_housekeeping', 'on_report', 'on_start', 'on_stop',
+    'poll', 'post', 'send', 'please_stop', 'metrics_report',
+
 ]
 
 logger = logging.getLogger(__name__)
@@ -104,6 +106,14 @@ class FlowCB:
         worklist.failed processing should occur in here as it will be zeroed out after this step.
         The flowcb/retry.py plugin, for example, processes failed messages.
 
+    def destfn(self,msg) -> str::
+
+         Task: look at the fields in the message, and perhaps settings and
+               return a new file name for the target of the send or download.
+
+         kind of a last resort function, exists mostly for sundew compatibility.
+         can be used for selective renaming using accept clauses.
+
     def download(self,msg) -> bool::
 
          Task: looking at msg['new_dir'], msg['new_file'], msg['new_inflight_file'] 
@@ -131,6 +141,9 @@ class FlowCB:
          return Boolean success indicator.  if False, download  will be attempted again and/or
          appended to retry queue.
 
+    def metrics_report(self) -> dict:
+
+        Return a dictionary of metrics. Example: number of messages remaining in retry queues.
 
     def on_housekeeping(self) -> None::
 

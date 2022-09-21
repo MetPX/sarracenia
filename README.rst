@@ -1,6 +1,6 @@
-==================
- MetPX-Sarracenia
-==================
+==========================
+ Sarracenia v3 (MetPX-Sr3)
+==========================
 
 page web / homepage: https://metpx.github.io/sarracenia
 

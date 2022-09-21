@@ -34,12 +34,10 @@ Returns:
 """
 
 import logging
-from pickle import TRUE
 import humanize
 import os
 import psutil
 from sarracenia.flowcb import FlowCB
-from sarracenia.sr import sr_GlobalState
 import sys
 
 logger = logging.getLogger(__name__)

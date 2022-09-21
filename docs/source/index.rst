@@ -60,6 +60,8 @@ Caveats:
 
    api-documentation
 
+   En français <fr/index>
+
 
 Indices and tables
 ==================

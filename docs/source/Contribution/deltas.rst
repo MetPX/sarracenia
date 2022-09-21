@@ -20,7 +20,7 @@ discussions & notes.
 
 Algorithm used (regardless of tool):
 	- for each ´block´ (blocksize interesting) generate a signature.
-	- when a subscriber reads an announcement, it includes the signature.
+	- when a subscriber reads an notification message, it includes the signature.
 	- he compares the signatures on the file he already has, and updates it to match.
 
 the zsync algorithm is the right idea, can perhaps use it directly.
@@ -186,7 +186,7 @@ downside:  portability.
 	there is a Windows binary, made once in 2011... hmm...
 	have not seein it on Mac OS either... sigh...
 
-we send the signatures in the announcements, rather than posting on the site.
+we send the signatures in the notification messages, rather than posting on the site.
 If we set the blocksize high, then for files < 1 block, there is no signature.
 
 should sr_sarra post the signature to the site, for zsync compatibility? 

@@ -3,9 +3,9 @@
  SR_post 
 =========
 
--------------------------------------------
-Sarracenia v03 Post Message Format/Protocol
--------------------------------------------
+---------------------------------------------------
+Sarracenia v03 Notification Message Format/Protocol
+---------------------------------------------------
 
 :Manual section: 7
 :Date: |today|
@@ -13,30 +13,25 @@ Sarracenia v03 Post Message Format/Protocol
 :Manual group: MetPX-Sarracenia
 
 
-STATUS: EXPERIMENTAL
---------------------
+STATUS: Stable/Default
+----------------------
 
-Sarracenia version 2 messages are the current standard, used for terabytes
+Sarracenia version 2 notification messages are the previous standard, used for terabytes
 and millions of files per day of transfers. Version 3 is a proposal for a next
-iteration of Sarracenia messages, but it is not fully implemented, and 
-not in use anywhere, and may never be used. It is also not frozen yet
-and subject to change.
+iteration of Sarracenia notification messages.
 
 Most fields and their meaning is the same in version 3 as it was in version 2. 
 Some fields are changing as the protocol is exposed to wider review than previously.
-It is implementing changes the `World Meteorological Organization <www.wmo.int>`_
-for use in a renewed `WIS/Global Telecommunications System <http://www.wmo.int/pages/prog/www/WIS/>`_
-This format will track work done in the `WMO mesh <https://www.github.com/MetPX/wmo_mesh>`_
 
 The change in payload protocol is targetted at simplifying future implementations
 and enabling use by messaging protocols other than pre-1.0 AMQP.
 See `v03 Changes <../Explanations/History/messages_v03.html>`_ for more details.
 
-To generate messages in v03 format, use following setting::
+To generate notification messages in v03 format, use following setting::
 
   post_topicPrefix v03
 
-To select messages to consume in that format::
+To select notification messages to consume in that format::
 
   topicPrefix v03
 
@@ -46,17 +41,17 @@ SYNOPSIS
 --------
 
 
-Version 03 format of file change announcements for sr_post.  
+Version 03 format of file change notification messages for sr_post.  
 
-An sr_post message consists of a topic, and the *BODY* 
+An sr_post notification message consists of a topic, and the *BODY* 
 
 **AMQP Topic:** *<version>.{<dir>.}*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
            <version> = "v03" the version of the protocol or format.
-           "post" = the type of message within the protocol.
+           "post" = the type of notification message within the protocol.
            <dir> = a sub-directory leading to the file (perhaps many directories deep)
 
 **BODY:** *{ <headers> }* (JSON encoding.)
@@ -69,13 +64,39 @@ The headers are an array of name:value pairs::
           "pubTime"       - YYYYMMDDTHHMMSS.ss - UTC date/timestamp.
           "baseUrl"       - root of the url to download.
           "relPath"       - relative path can be catenated to <base_url>
-          "integrity"     - WMO version of v02 sum field, under development.
+
+     one of:
+
+          "integrity"     - for changes in file contents, an integrity checksum.
           {
-             "method" : "md5" | "sha512" | "md5name" | "link" | "remove" | "cod" | "random" ,
+             "method" : "md5" | "sha512" | "cod" | "random" ,
              "value"  : "base64 encoded checksum value"
           }
+    or:
+          "fileOp"   - to describe non-data file update operations.
+          {            
+             "link" : "symbolic link value (target) string"
+             "remove" : ""     - flag present when removing a file (argument ignored.)
+             "hlink" : "hardlink value string (file being linked to.)"
+             "rename" : "name of file before rename."
+          }
+    or:
+         nothing... If neither of these is present, then duplication
+         suppression will rely on supplied meta data, such as the modification
+	 time, the size, and the publication Time to prevent loops.
+         It is strongly recommended that all data services provide integrity
+         checksums. Failure to do so results in a data service than cannot
+         be reliably replicated.
+
+    both may be present in cases where file content is being updated, as
+    well as metadata.     
 
   OPTIONAL:
+
+          for GeoJSON compatibility:
+
+          "type": "Feature",
+          "geometry": RFC 7946 (geoJSON) compatible geographic specification.
 
           "size"          - the number of bytes being advertised.
           "blocks"        - if the file being advertised is partitioned, then:
@@ -86,15 +107,16 @@ The headers are an array of name:value pairs::
               "remainder" : "9999", - the size of the last block.
               "number"    : "9999", - which block is this.
           }
+          "atime" : date string - last access time of a file (optional)
+          "mtime" : date string - last modification time of a file (optional)
+          "mode"  : mode string - permission bits (optional)
           "rename"        - name to write file locally.
+          "retPath"       - relative retrieval path can be catenated to <base_url> to override relPath
+                            used for API cases.
           "topic"         - copy of topic from AMQP header (usually omitted)
-          "source"        - the originating entity of the message. 
-          "from_cluster"  - the originating cluster of a message.
+          "source"        - the originating entity of the notification message. 
+          "from_cluster"  - the originating cluster of a notification message.
           "to_clusters"   - a destination specification.
-          "link"          - value of a symbolic link. (if sum starts with L)
-          "atime"         - last access time of a file (optional)
-          "mtime"         - last modification time of a file (optional)
-          "mode"          - permission bits (optional)
 
           "content"       - for smaller files, the content may be embedded.
           {
@@ -102,7 +124,7 @@ The headers are an array of name:value pairs::
               "value"    " "encoded file content"
           }
 
-          For "v03.report" topic messages the following addtional
+          For "v03.report" topic notification messages the following addtional
           headers will be present:
   
           "report" { "code": 999  - HTTP style response code. 
@@ -119,19 +141,19 @@ NOTE:
 DESCRIPTION
 -----------
 
-Sources create messages in the *sr_post* format to announce file changes. Subscribers 
+Sources create notification messages in the *sr_post* format to announce file changes. Subscribers 
 read the post to decide whether a download of the content being announced is warranted.  This 
-manual page completely describes the format of those messages.  The messages are payloads 
+manual page completely describes the format of those notification messages.  The notification messages are payloads 
 for an Advanced Message Queuing Protocol (AMQP) message bus, but file data transport 
 is separate, using more common protocols such as SFTP, HTTP, HTTPS, or FTP (or other?).
 Files are transported as pure byte streams, no metadata beyond the file contents is 
 transported (permission bits, extended attributes, etc...). Permissions of files 
 on the destination system are upto the receiver to decide.
 
-With this method, AMQP messages provide a 'control plane' for data transfers.  While each post message 
+With this method, AMQP messages provide a 'control plane' for data transfers.  While each notification message 
 is essentially point to point, data pumps can be transitively linked together to make arbitrary 
 networks.  Each posting is consumed by the next hop in the chain. Each hop re-advertises 
-(creates a new post for) the data for later hops.  The posts flow in the same direction as the 
+(creates a new post for) the data for later hops.  The notification messages flow in the same direction as the 
 data.  If consumers permit it, report messages also flow through the control path, 
 but in the opposite direction, allowing sources to know the entire disposition of their 
 files through a network.  
@@ -139,7 +161,7 @@ files through a network.
 The minimal layer over raw AMQP provides more complete file transfer functionality:
 
 Source Filtering (use of TOPIC_ exchanges)
-   The messages make use of *topic exchanges* from AMQP, where topics are hierarchies
+   The notification messages make use of *topic exchanges* from AMQP, where topics are hierarchies
    meant to represent subjects of interest to a consumer. A consumer may upload the 
    selection criteria to the broker so that only a small subset of postings
    are forwarded to the client.  When there are many users interested in only 
@@ -149,14 +171,14 @@ Fingerprint Winnowing (use of the integrity_ header)
    Each product has an integrity fingerprint and size intended to identify it uniquely, 
    referred to as a *fingerprint*. If two files have the same fingerprint, they 
    are considered equivalent. In cases where multiple sources of equivalent data are 
-   available but downstream consumers would prefer to receive single announcements
+   available but downstream consumers would prefer to receive single notification messages
    of files, intermediate processes may elect to publish notifications of the first 
    product with a given fingerprint, and ignore subsequent ones. 
    Propagating only the first occurrence of a datum received downstream, based on
    its fingerprint, is termed: *Fingerprint Winnowing*.
 
    *Fingerprint Winnowing* is the basis for a robust strategy for high availability: setting up
-   multiple sources for the same data, consumers accept announcements from all of them, but only
+   multiple sources for the same data, consumers accept notification messages from all of them, but only
    forwarding the first one received downstream. In normal operation, one source may be faster 
    than the others, and so the other sources' files are usually 'winnowed'. When one source
    disappears, the other sources' data is automatically selected, as the fingerprints
@@ -168,9 +190,9 @@ Fingerprint Winnowing (use of the integrity_ header)
    and/or deadlocks.  
 
    *Fingerprint Winnowing* also permits *mesh-like*, or *any to any* networks, where one simply 
-   interconnects a node with others, and messages propagate. Their specific path through the 
+   interconnects a node with others, and notification messages propagate. Their specific path through the 
    network is not defined, but each participant will download each new datum from the first
-   node that makes it available to them. Keeping the messages small and separate from data 
+   node that makes it available to them. Keeping the notification messages small and separate from data 
    is optimal for this usage.
  
 Partitioning (use of the parts_ Header)
@@ -188,22 +210,22 @@ Partitioning (use of the parts_ Header)
 TOPIC
 -----
 
-In topic based AMQP exchanges, every message has a topic header. AMQP defines the '.' character 
+In topic based AMQP exchanges, every notification message has a topic header. AMQP defines the '.' character 
 as a hierarchical separator (like '\' in a windows path name, or '/' on linux) there is also a 
 pair of wildcards defined by the standard:  '*' matches a single topic, '#' matches the rest of 
-the topic string. To allow for changes in the message body in the future, topic trees begin with 
+the topic string. To allow for changes in the notification message body in the future, topic trees begin with 
 the version number of the protocol.   
 
 AMQP allows server side topic filtering using wildcards. Subscribers specify topics of 
 interest (which correspond to directories on the server), allowing them to pare down the 
 number of notifications sent from server to client.  
 
-The root of the topic tree is the version specifier: "v03".  Next comes the message type specifier.  
-These two fields define the protocol that is in use for the rest of the message.
-The message type for post messages is "post".  After the fixed topic prefix, 
+The root of the topic tree is the version specifier: "v03".  Next comes the notification message type specifier.  
+These two fields define the protocol that is in use for the rest of the notification message.
+The notification message type for notification messages is "post".  After the fixed topic prefix, 
 the remaining sub-topics are the path elements of the file on the web server.  
 For example, if a file is placed on http://www.example.com/a/b/c/d/foo.txt, 
-then the complete topic of the message will be:  *v03.a.b.c.d*
+then the complete topic of the notification message will be:  *v03.a.b.c.d*
 AMQP fields are limited to 255 characters, and the characters in the field are utf8 
 encoded, so actual length limit may be less than that. 
 
@@ -215,7 +237,7 @@ note::
   server-side filtering. To avoid sending the same information twice, this header is
   omitted from the JSON payload.
 
-  Many client-side implementation will, once the message is loaded, set the *topic* header 
+  Many client-side implementation will, once the notification message is loaded, set the *topic* header 
   in the in-memory structure, so it would be very unwise to to set the *topic* header
   in an application even though it isn't visible in the on-wire payload.
 
@@ -244,8 +266,8 @@ name at the root of the topic hierarchy to achieve the same effect::
 THE FIXED HEADERS
 -----------------
 
-The message is a single JSON encoded array, with a mandatory set of fields, while allowing
-for use of arbitrary other fields.  Mandatory fields must be present in every message, and
+The notification message is a single JSON encoded array, with a mandatory set of fields, while allowing
+for use of arbitrary other fields.  Mandatory fields must be present in every notification message, and
 
  * "pubTime" : "*<date stamp>*" : the publication date the posting was emitted.  Format: YYYYMMDDTHHMMSS. *<decimalseconds>*
 
@@ -269,8 +291,8 @@ Additional fields:
    data was introduced into the network. It is used to return the logs back 
    to the cluster whenever its products are used.
 
-**link=<value of symbolic link>**
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**fileOp { 'link': <value of symbolic link>**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
    When file to transfer is a symbolic link, the 'link' header is created to 
    contain its value.
@@ -343,19 +365,19 @@ Additional fields:
 
  The relative path from the current directory in which to place the file.
 
-**oldname=<path>** / **newname=<path>**
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**fileOp { 'rename':<path> ... }** 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
- when a file is renamed at the source, to send it to subscribers, two posts 
- result: one message is announced with the new name as the base_url, 
+ when a file is renamed at the source, to send it to subscribers, two notification messages 
+ result: one notification message is announced with the new name as the base_url, 
  and the oldname header set to the previous file name.
- Another message is sent with the old name as the src path, and the *newname* 
+ Another notification message is sent with the old name as the src path, and the *newname* 
  as a header.  This ensures that *accept/reject* clauses are correctly
  interpreted, as a *rename* may result in a download if the former name
  matches a *reject*  clause, or a file removal if the new name
  matches a *reject* clause.
 
- Hard links are also handled as an ordinary post of the file with a *oldname*
+ Hard links are also handled as an ordinary post of the file with a *hlink*
  header set.
 
 **integrity**
@@ -380,12 +402,6 @@ if they have already downloaded the product from elsewhere.
  +------------+---------------------------------------------------------------------+
  |  md5       | Checksum the entire data (MD-5 as per IETF RFC 1321)                |
  +------------+---------------------------------------------------------------------+
- |  link      | Linked: SHA512 sum of link value                                    |
- +------------+---------------------------------------------------------------------+
- |  md5name   | Checksum the file name (MD-5 as per IETF RFC 1321)                  |
- +------------+---------------------------------------------------------------------+
- |  remove    | Removed: SHA512 of file name.                                       |
- +------------+---------------------------------------------------------------------+
  |  sha512    | Checksum the entire data (SHA512 as per IETF RFC 6234)              |
  +------------+---------------------------------------------------------------------+
  |  cod       | Checksum on download, with algorithm as argument                    |
@@ -408,7 +424,7 @@ Report Messages
 ---------------
 
 Some clients may return telemetry to the origin of downloaded data for troubleshooting
-and statistical purposes. Such messages, have the *v03.report* topic, and have a *report*
+and statistical purposes. Such notification messages, have the *v03.report* topic, and have a *report*
 header which is a JSON *object* with four fields:
 
  { "elapsedTime": <report_time>, "resultCode": <report_code>, "host": <report_host>, "user": <report_user>* }
@@ -508,7 +524,7 @@ for the file mirroring use case, additional headers will be present:
 **Headers which are unknown to a given broker MUST be forwarded without modification.**
 
 Sarracenia provides a mechanism for users to include arbitrary other headers in
-messages, to amplify metadata for more detailed decision making about downloading data.
+notification messages, to amplify metadata for more detailed decision making about downloading data.
 For example::
 
   "PRINTER" : "name_of_corporate_printer",
@@ -535,8 +551,8 @@ EXAMPLE
     "rename": "NRDPS/GIF/", "parts":"p,457,1,0,0", "integrity" : { "method":"md5", "value":"<md5sum-base64>" }, "source": "ec_cmc" }
 
         - v03 - version of protocol
-        - post - indicates the type of message
-        - version and type together determine format of following topics and the message body.
+        - post - indicates the type of notification message
+        - version and type together determine format of following topics and the notification message body.
 
         - blocksize is 457  (== file size)
         - block count is 1
@@ -565,7 +581,7 @@ The post resulting from the following sr_watch command, noticing creation of the
 
 Here, *sr_watch* checks if the file /data/shared/products/foo is modified.
 When it happens, *sr_watch*  reads the file /data/shared/products/foo and calculates its checksum.
-It then builds a post message, logs into broker.com as user 'guest' (default credentials)
+It then builds a notification message, logs into broker.com as user 'guest' (default credentials)
 and sends the post to defaults vhost '/' and exchange 'sx_guest' (default exchange).
 
 A subscriber can download the file /data/shared/products/foo  by logging in as user stanley
@@ -579,7 +595,7 @@ The output of the command is as follows ::
           "relPath": "/data/shared/products/foo", "parts":"1,256,1,0,0", 
           "sum": "d,25d231ec0ae3c569ba27ab7a74dd72ce", "source":"guest" } 
 
-Posts are published on AMQP topic exchanges, meaning every message has a topic header.
+Posts are published on AMQP topic exchanges, meaning every notification message has a topic header.
 The body consists of a time *20150813T161959.854*, followed by the two parts of the 
 retrieval URL. The headers follow with first the *parts*, a size in bytes *256*,
 the number of block of that size *1*, the remaining bytes *0*, the
@@ -598,7 +614,7 @@ also grouping fixed headers together, ('body' header could contain
 all fixed fields: "pubtime, baseurl, relpath, sum, parts", and another
 field 'meta' could contain: atime, mtime, mode so there would be fewer
 named fields and save perhaps 40 bytes of overhead per notice. But
-all the changes increase complexity, make messages more involved to parse.
+all the changes increase complexity, make notification messages more involved to parse.
 
 
 
@@ -634,11 +650,11 @@ SEE ALSO
 
 `sr3(1) <sr3.1.html>`_ - Sarracenia main command line interface.
 
-`sr3_post(1) <sr3_post.1.html>`_ - post file announcements (python implementation.)
+`sr3_post(1) <sr3_post.1.html>`_ - post file notification messages (python implementation.)
 
 `sr3_cpost(1) <sr3_cpost.1.html>`_ - post file announcemensts (C implementation.)
 
-`sr3_cpump(1) <sr3_cpump.1.html>`_ - C implementation of the shovel component. (copy messages)
+`sr3_cpump(1) <sr3_cpump.1.html>`_ - C implementation of the shovel component. (copy notification messages)
 
 **Formats:**
 

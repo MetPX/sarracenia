@@ -10,6 +10,8 @@ class Md5(Integrity):
          use the (obsolete) Message Digest 5 (MD5) algorithm, applied on the content
          of a file, to generate an integrity signature.
       """
+
+    @staticmethod
     def registered_as():
         """
             v2name.

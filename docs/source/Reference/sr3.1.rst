@@ -89,14 +89,14 @@ run by all sr3 processes. The flow algorithm's behaviour is customized by option
 some of which control optional modules (flowcallbacks) Each component has a 
 different set of default option settings to cover a common use case. 
 
-* `cpump <../Explanation/CommandLineGuide.html#cpump>`_ - copy messages from one pump another second one (a C implementation of shovel.)
-* `poll <../Explanation/CommandLineGuide.html#poll>`_ - poll a non-sarracenia web or file server to create messages for processing.
-* `post|sr3_post|sr_cpost|watch <../Explanation/CommandLineGuide.html#post-or-watch>`_ - create messages for files for processing.
+* `cpump <../Explanation/CommandLineGuide.html#cpump>`_ - copy notification messages from one pump another second one (a C implementation of shovel.)
+* `poll <../Explanation/CommandLineGuide.html#poll>`_ - poll a non-sarracenia web or file server to create notification messages for processing.
+* `post|sr3_post|sr_cpost|watch <../Explanation/CommandLineGuide.html#post-or-watch>`_ - create notification messages for files for processing.
 * `sarra <../Explanation/CommandLineGuide.html#sarra>`_ - download file from a remote server to the local one, and re-post them for others.
 * `sender <../Explanation/CommandLineGuide.html#sender>`_ - send files from a local server to a remote one.
-* `shovel <../Explanation/CommandLineGuide.html#shovel>`_ - copy messages, only, not files.
-* `watch <../Explanation/CommandLineGuide.html#watch>`_ - create messages for each new file that arrives in a directory, or at a set path.
-* `winnow <../Explanation/CommandLineGuide.html#winnow>`_ - copy messages, suppressing duplicates.
+* `shovel <../Explanation/CommandLineGuide.html#shovel>`_ - copy notification messages, only, not files.
+* `watch <../Explanation/CommandLineGuide.html#watch>`_ - create notification messages for each new file that arrives in a directory, or at a set path.
+* `winnow <../Explanation/CommandLineGuide.html#winnow>`_ - copy notification messages, suppressing duplicates.
 
 
 CONFIGURATIONS
@@ -202,7 +202,7 @@ Here is a short complete example configuration file::
   accept .*
 
 This above file will connect to the dd.weather.gc.ca broker, connecting as
-anonymous with password anonymous (defaults) to obtain announcements about
+anonymous with password anonymous (defaults) to obtain notification messages about
 files in the http://dd.weather.gc.ca/model_gem_global/25km/grib2 directory.
 All files which arrive in that directory or below it will be downloaded 
 into the current directory (or just printed to standard output if -n option 
@@ -222,11 +222,11 @@ SEE ALSO
 
 **User Commands:**
 
-`sr3_post(1) <sr3_post.1.html>`_ - post file announcements (python implementation.)
+`sr3_post(1) <sr3_post.1.html>`_ - post file notification messages (python implementation.)
 
 `sr3_cpost(1) <sr3_cpost.1.html>`_ - post file announcemensts (C implementation.)
 
-`sr3_cpump(1) <sr3_cpump.1.html>`_ - C implementation of the shovel component. (copy messages)
+`sr3_cpump(1) <sr3_cpump.1.html>`_ - C implementation of the shovel component. (copy notification messages)
 
 **Formats:**
 
@@ -234,7 +234,7 @@ SEE ALSO
 
 `sr3_options(7) <sr3_options.7.html>`_ - Convert logfile lines to .save Format for reload/resend.
 
-`sr3_post(7) <sr3_post.7.html>`_ - The format of announcement messages.
+`sr3_post(7) <sr3_post.7.html>`_ - The format of notification messages.
 
 **Home Page:**
 

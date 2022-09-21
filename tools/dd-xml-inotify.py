@@ -245,13 +245,13 @@ for spath in SRC:
 
     entries = os.listdir(spath)
     wdd = wm.add_watch(spath, pyinotify.IN_CLOSE_WRITE, rec=True)
-    print "watching = " + spath
+    print( "watching = " + spath)
 
     for d in entries:
         currentDir = spath + '/' + d
         if os.path.isfile(currentDir): continue
         wdd = wm.add_watch(currentDir, pyinotify.IN_CLOSE_WRITE, rec=True)
-        print "watching = " + currentDir
+        print( "watching = " + currentDir)
 
 # start event loop
 asyncore.loop()

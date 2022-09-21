@@ -97,7 +97,7 @@ Frequent Configuration Errors
 **Setting NONE when delivering to non-Sarracenia destination.**
 
    NONE is to be used when there is some other means to figure out if a file is delivered.
-   For example, when sending to another pump, the sender will post the announcement to 
+   For example, when sending to another pump, the sender will post the notification message to 
    the destination after the file is complete, so there is no danger of it being 
    picked up early.
 

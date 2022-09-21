@@ -33,7 +33,7 @@ from paho.mqtt.packettypes import PacketTypes
 import paho.mqtt.client
 
 import sarracenia
-
+from sarracenia.encoding import Encoding
 from sarracenia.moth import Moth
 import ssl
 import threading
@@ -114,6 +114,9 @@ class MQTT(Moth):
 
         super().__init__(broker, options, is_subscriber)
 
+        # setting this is wrong and breaks things, was already set in super-class init, doing this here overwites
+        #  interpretation of options done in superclass.
+        #self.o = options
         self.o.update(default_options)
         self.o.update(options)
 
@@ -403,9 +406,9 @@ class MQTT(Moth):
             props = Properties(PacketTypes.CONNECT)
             props.SessionExpiryInterval = 1
             logger.info('cleanup sessions for instances')
-            for i in range(1, self.o['instances'] + 1):
-                icid = self.o['queueName'] + '%02d' % i
-                myclient = self.__clientSetup(options, icid)
+            for i in range(1,self.o['instances']+1):
+                icid= self.o['queueName'] + '%02d' % i 
+                myclient = self.__clientSetup( self.o, icid )
                 myclient.connect( self.broker.url.hostname, port=self.__sslClientSetup(), \
                    myclean_start=True, properties=props )
                 while not self.client.is_connected():
@@ -421,20 +424,24 @@ class MQTT(Moth):
         """
            decode MQTT message (protocol specific thingamabob) into sr3 one (python dictionary)
         """
-        try:
-            message = sarracenia.Message()
-            self.metrics['rxByteCount'] += len(mqttMessage.payload)
-            message.copyDict(json.loads(mqttMessage.payload.decode('utf-8')))
-        except Exception as ex:
-            logger.error("ignored malformed message: %s" % mqttMessage.payload)
-            logger.error("decode error" % ex)
-            logger.error('Exception details: ', exc_info=True)
-            self.metrics['rxBadCount'] += 1
-            return None
-
         subtopic = mqttMessage.topic.replace('%23',
                                              '#').replace('%2b',
                                                           '+').split('/')
+        self.metrics['rxByteCount'] += len(mqttMessage.payload)
+        try:
+            message = Encoding.importAny( 
+                mqttMessage.payload, 
+                None, # headers
+                mqttMessage.properties.ContentType,  
+                subtopic,
+                self.o['topicPrefix'] )
+
+        except Exception as ex:
+            logger.error("ignored malformed message: %s" % mqttMessage.payload)
+            logger.error("decode error: %s" % ex)
+            logger.error('Exception details: ', exc_info=True)
+            self.metrics['rxBadCount'] += 1
+            return None
 
         if subtopic[0] != self.o['topicPrefix'][0]:
             message['exchange'] = subtopic[0]
@@ -450,10 +457,10 @@ class MQTT(Moth):
             self.metrics['rxGoodCount'] += 1
             return message
         else:
-            self.metrics['rxBadCount'] += 1
-            self.client.ack(msg['ack_id'])
-            logger.error('message acknowledged and discarded: %s' % msg)
-            return None
+           self.metrics['rxBadCount'] += 1
+           self.client.ack(message['ack_id'])
+           logger.error('message acknowledged and discarded: %s' % message)
+           return None
 
     def newMessages(self, blocking=False) -> list:
         """
@@ -569,10 +576,15 @@ class MQTT(Moth):
         props = Properties(PacketTypes.PUBLISH)
         # https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901111
         props.PayloadFormatIndicator = 1  # designates UTF-8
-        props.ContentType = 'application/json'
+
+        props.ContentType = Encoding.content_type( body['version'] )
+
         while True:
             try:
-                raw_body = json.dumps(body)
+                raw_body = Encoding.exportAny( body, body['version'] )
+                if self.o['messageDebugDump']:
+                     logger.info("Message to publish: %s %s" % (topic, raw_body))
+                        
                 self.metrics['txByteCount'] += len(raw_body)
                 info = self.client.publish(topic=topic,
                                            payload=raw_body,

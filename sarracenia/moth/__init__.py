@@ -1,4 +1,5 @@
 import copy
+import json
 import logging
 import sys
 import sarracenia
@@ -269,7 +270,7 @@ class Moth():
         logger.error("ack unimplemented")
 
     @property
-    def default_options() -> dict:
+    def default_options(self) -> dict:
         """
         get default properties to override, used by client for validation. 
 

@@ -74,11 +74,11 @@ they are validated, forward the postings to the public exchanges for subscribers
 The processes that are typically run on a broker:
 
 - sr_audit  - purge useless queues, create exchanges and users, set user permissions according to their roles.
-- sr_poll   - for sources without advertisements, revert to explicit polling for initial injection.
+- sr_poll   - for sources without notification messages, revert to explicit polling for initial injection.
 - sr_sarra  - various configurations to pull data from other pumps to make it available from the local pump.
 - sr_sender - send data to clients or other pumps that cannot pull data (usually because of firewalls.)
 - sr_winnow - when there are multiple redundant sources of data, select the first one to arrive, and feed sr_sarra.
-- sr_shovel - copy advertisements from pump to another, usually to feed sr_winnow.
+- sr_shovel - copy notification messages from pump to another, usually to feed sr_winnow.
 
 As for any other user, there may be any number of configurations
 to set up, and all of them may need to run at once. To do so easily, one can invoke::
@@ -111,14 +111,14 @@ reboots. Clients often want to pick up where they left off, so the queues need t
 
 The rabbitmq broker will never destroy a queue that is not in auto-delete (or durable).  This means
 they will build up over time. We have a script that looks for unused queues, and cleans them out.
-Currently, the default is set that any unused queue having more than 25000 messages will be deleted.
+Currently, the default is set that any unused queue having more than 25000 notification messages will be deleted.
 One can change this limit by having option *max_queue_size 50000* in default.conf.
 
 
 Excess Queueing/Performance
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When rabbitmq has hundreds of thousands of messages queued, broker performance can suffer. Such
+When rabbitmq has hundreds of thousands of notification messages queued, broker performance can suffer. Such
 accumulations can occur when the destination of a sender is down for a prolonged period, or a 
 subscriber is unavailable for some reason. In many cases, one can simply shutdown the sender,
 and delete the queue on the broker. While that solves the broker performance issue, the user
@@ -127,7 +127,7 @@ will not receive the notifications.
 To avoid data loss, please consult the 
 `sr_sender(1) manual page *DESTINATION UNAVAILABLE* <../Reference/#sr3.1.rst#destination-unavailable>`_
 section for details of save and restore options. Briefly, when a sender is placed 
-in *save* mode, rather than attempting to send each file, the messages written 
+in *save* mode, rather than attempting to send each file, the notification messages written 
 to a disk file. When the remote user is back, one invokes *restore* mode, and 
 the disk file is read back, and the files are sent. In versions >= 2.18, there 
 is logic to automatically save failed transfers for later retry, offloading the
@@ -135,11 +135,11 @@ queue from the broker to the instances' cache storage, so no intervention is
 needed.
 
 In the case of components other than a sender, please consult the QUEUE Save/Restore section
-of the sr_shovel(8) manual page. There is a similar mechanism used to write messages queued
+of the sr_shovel(8) manual page. There is a similar mechanism used to write notification messages queued
 to disk, to avoid them overloading the broker. When the consumer is back in service, the
-*restore_to_queue* option can be used to recover missing messages.
+*restore_to_queue* option can be used to recover missing notification messages.
 
-If one gets to the point where traffic through a queue is excessive (several hundred messages
+If one gets to the point where traffic through a queue is excessive (several hundred notification messages
 per second to a single queue), especially if there are many instances sharing the same queue
 (if more than 40 instances to service a single queue) then one can run into a point where
 adding instances gives no improvement in the overall throughput. For example, rabbitmq uses
@@ -171,7 +171,7 @@ to be user by sender or sarra components to limit data transfers between pumps.
 For report routing, the *from_cluster* header is interpreted by the 
 *msg_from_cluster* plugin. Report messages are defined in the sr_report(7) man
 page. They are emitted by *consumers* at the end, as well as *feeders* as the 
-messages traverse pumps. Report messages are posted to the xs\_<user> exchange,
+notification messages traverse pumps. Report messages are posted to the xs\_<user> exchange,
 and after validation sent to the xreport exchange by the shovel component 
 configurations created by sr_audit.
 
@@ -562,10 +562,10 @@ In short, here are the permissions and exchanges *sr_audit* manages::
   admin/feeder users: have all permission over queues and exchanges
 
   subscribe user    : can write report messages to exchanged beginning with  xs_<brokerUser> 
-                      can read post messages from exchange xpublic
+                      can read notification messages from exchange xpublic
                       have all permissions on queue named  q_<brokerUser>*
 
-  source user       : can write post messages to exchanges beginning with xs_<brokerUser> 
+  source user       : can write notification messages to exchanges beginning with xs_<brokerUser> 
                       can read post messages from exchange  xpublic
                       can read  report messages from exchange  xl_<brokerUser> created for him
                       have all permissions on queue named   q_<brokerUser>*
@@ -616,7 +616,7 @@ add the password for the upstream pump to credentials.conf ::
 
   sarra@boule:~/.config/sarra$ echo "amqps://anonymous:anonymous@dd.weather.gc.ca/" >>../credentials.conf
 
-then do a short foreground run, to see if it is working. Hit Ctrl-C to stop it after a few messages::
+then do a short foreground run, to see if it is working. Hit Ctrl-C to stop it after a few notification messages::
 
   sarra@boule:~/.config/sarra$ sr_subscribe foreground dd
   2016-03-28 09:21:27,708 [INFO] sr_subscribe start
@@ -637,7 +637,7 @@ then do a short foreground run, to see if it is working. Hit Ctrl-C to stop it a
   sarra@boule:~/.config/sarra/subscribe$
 
 So the connection to upstream is functional. Connecting to the server means a queue is allocated on the server,
-and it will continue to accumulate messages, waiting for the client to connect again. This was just a test, so we
+and it will continue to accumulate notification messages, waiting for the client to connect again. This was just a test, so we
 want the server to discard the queue::
 
   sarra@boule:~/.config/sarra/subscribe$ sr_subscribe cleanup dd
@@ -747,7 +747,7 @@ upstream that data has been downloaded. Sr_audit helps with routing by creating 
  - for each subscriber, a shovel configuration named rr_<user>2xreport.conf is created
  - for each source, a shovel configuration named rr_xreport2<user>user.conf is created
 
-The *2xreport* shovels subscribes to messages posted in each user's xs\_ exchange and posts them to the common xreport exchange.
+The *2xreport* shovels subscribes to notification messages posted in each user's xs\_ exchange and posts them to the common xreport exchange.
 Sample configuration file::
 
   # Initial report routing configuration created by sr_audit, tune to taste.
@@ -772,7 +772,7 @@ Explanations:
   - report False  reduce unwanted reports (do sources want to understand shovel traffic?)
   - post to the xreport exchange.
 
-The *2<user>* shovels look at all the messages in the xreport exchange, and copy them to the users xr\_ exchange.
+The *2<user>* shovels look at all the notification messages in the xreport exchange, and copy them to the users xr\_ exchange.
 Sample::
 
   # Initial report routing to sources configuration, by sr_audit, tune to taste. 
@@ -834,7 +834,7 @@ Basically, the two sorts of shovels built automatically by sr_audit will do all 
 When there are volume issues, these configurations can be tweaked to increase the number of instances or use
 post_exchangeSplit where appropriate.
 
-Manual shovel configuration is also required to route messages between clusters. It is just a variation
+Manual shovel configuration is also required to route notification messages between clusters. It is just a variation
 of intra-cluster report routing.
 
 
@@ -1180,7 +1180,7 @@ replaced by Sarracenia. This information is only useful to those with an install
 to sarracenia. The early work on Sarracenia used only the subscribe client as a downloader, and the existing WMO switch module
 from MetPX as the data source. There was no concept of multiple users, as the switch operates as a single dissemination
 and routing tool. This section describes the kinds of *glue* used to feed Sarracenia subscribers from a Sundew source.
-It assumes a deep understanding of MetPX-Sundew. Currently, the dd_notify.py script creates messages for the
+It assumes a deep understanding of MetPX-Sundew. Currently, the dd_notify.py script creates notification messages for the
 protocol exp., v00. and v02 (latest sarracenia protocol version).
 
 

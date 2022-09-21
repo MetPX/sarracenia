@@ -103,7 +103,7 @@ SEE ALSO
 
 `sr3(1) <sr3.1.html>`_ - Sarracenia main command line interface.
 
-`sr3_post(1) <sr3_post.1.html>`_ - post file announcements (python implementation.)
+`sr3_post(1) <sr3_post.1.html>`_ - post file notification messages (python implementation.)
 
 `sr3_cpost(1) <sr3_cpost.1.html>`_ - post file announcemensts (C implementation.)
 
@@ -113,7 +113,7 @@ SEE ALSO
 
 `sr3_options(7) <sr3_options.7.html>`_ - Convert logfile lines to .save Format for reload/resend.
 
-`sr3_post(7) <sr3_post.7.html>`_ - The format of announcement messages.
+`sr3_post(7) <sr3_post.7.html>`_ - The format of notification message messages.
 
 **Home Page:**
 

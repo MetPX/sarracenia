@@ -5,6 +5,7 @@
 
 import logging
 
+from sarracenia import timestr2flt, nowflt
 from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,7 @@ class PClean(FlowCB):
     The posted message contains a tag in the header for the test performed which is the extension used for the test
     """
     def __init__(self, options):
+        self.o = options
         self.test_extension_list = ['.slink', '.hlink', '.moved']
         self.ext_key = 'pclean_ext'
         self.ext_count = 0

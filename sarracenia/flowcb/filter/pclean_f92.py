@@ -41,7 +41,7 @@ class PClean_F92(PClean):
                     os.unlink(f20_path)
                     logger.info("unlinked 1: %s" % f20_path)
                 except FileNotFoundError as err:
-                    logger.error("could not unlink in {}: {}".format(
+                    logger.error("could not unlink 1 in {}: {}".format(
                         f20_path, err))
                     logger.debug("Exception details:", exc_info=True)
                     result = False
@@ -57,7 +57,7 @@ class PClean_F92(PClean):
                             logger.info("unlinked 3: %s" %
                                         path.replace(ext, ''))
                     except OSError as err:
-                        logger.error("could not unlink in {}: {}".format(
+                        logger.error("could not unlink 2or3 in {}: {}".format(
                             fxx_dir, err))
                         logger.debug("Exception details:", exc_info=True)
                         result = False

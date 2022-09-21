@@ -142,11 +142,11 @@ Use of AMQP on DD (DDI, DD.BETA)
 
 We (Peter) wanted to do an implementation of AMQP in METPX.
 To do this, we use the python-amqplib library which implements the necessary functionality of AMQP in python.
-We have thus developped a pxSender of type amqp which is the producer of messages as well as a pxReceiver of type amqp which serves as a consumer of messages.
+We have thus developped a pxSender of type amqp which is the producer of notification messages as well as a pxReceiver of type amqp which serves as a consumer of notification messages.
 As a broker, we use rabbitmq-server which is a standard debian package of an AMQP broker.
 
 A pxSender of type amqp, reads the content of a file in its queue, makes a message to which it attaches a "topic" and sends it to the broker.
-A pxReceiver of type amqp will announce to the broker the "topic" for which it is interested to receive messages, and the broker will send it each message corresponding to its choice.
+A pxReceiver of type amqp will announce to the broker the "topic" for which it is interested to receive notification messages, and the broker will send it each message corresponding to its choice.
 
 As a message can be anything, at the level of the pxSender, we have also attached the name of the file from which the message comes.
 Thus in our pxReceiver, we can insure the content of the message in the corresponding file name.
@@ -239,7 +239,7 @@ queue_manager.py
 
 dd-xml-inotify.py
     On our public datamart, there are products that do not come directly from pds/px/pxatx.
-    As our notifications are made from the product delivery, we don't have messages for them.
+    As our notifications are made from the product delivery, we don't have notification messages for them.
     This is the case for the XML products under the directories: ``citypage_weather`` and ``marine_weather``.
     To overcome this situation, the daemon dd-xml-inotify.py has been created and installed.
     This python script uses inotify to monitor the modification of products under their directories.
@@ -308,12 +308,12 @@ On each of the machines run the utility ``dd_dispatcher.py``.
 This program verifies whether the vip bunny-op and proc�dera has its work only on the server where the vip lives.
 (If there is a switch, auto detection in 5 seconds and the queues remain unchanged)
 
-The utility dd_dispatcher.py subscribes to the messages ``v00.urp.input.#`` and thus redirects the messages from the 2 URP operative servers.
+The utility dd_dispatcher.py subscribes to the notification messages ``v00.urp.input.#`` and thus redirects the notification messages from the 2 URP operative servers.
 Upon reception of a first product, the product's md5dum is placed in a cache and the message is r�exp�di� but this time with ``v00.urp.notify`` as the exchange key.
 If another message arrives from ``v00.urp.input`` with the same md5sum as the first one, it is ignored, so the products announced from the exchange key ``v00.urp.notify`` are unique and represent the first arrival of the 2 operative URPs.
     
-PDS-OP receptions of dispatch messages, wget of radar products
---------------------------------------------------------------
+PDS-OP receptions of dispatch notification messages, wget of radar products
+---------------------------------------------------------------------------
 
 On pds-op, a pull_urp receiver, execute the fx_script pull_amqp_wget.py.
 In this script, the following command::
@@ -321,7 +321,7 @@ In this script, the following command::
     # shared queue : each pull receive 1 message (prefetch_count=1)
     self.channel.basic_qos(prefetch_size=0,prefetch_count=1,a_global=False)
 
-makes that the distribution of messages ``v00.urp.notify`` will be distributed equally across the 5 servers under pds-op.
+makes that the distribution of notification messages ``v00.urp.notify`` will be distributed equally across the 5 servers under pds-op.
 We therefore guarantee a distributed pull.
 For each message of the form::
 

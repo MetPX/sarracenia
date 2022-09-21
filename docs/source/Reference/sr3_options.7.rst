@@ -135,7 +135,7 @@ built-in ones:
 One can also specify variable substitutions to be performed on arguments to the directory
 option, with the use of *${..}* notation:
 
-* SOURCE   - the amqp user that injected data (taken from the message.)
+* SOURCE   - the amqp user that injected data (taken from the notification message.)
 * BD       - the base directory
 * BUP      - the path component of the baseUrl (or: baseUrlPath) 
 * BUPL     - the last element of the baseUrl path. (or: baseUrlPathLast)
@@ -200,7 +200,7 @@ following substitution fields are available::
   ${RSS}   replace by reception second
 
 The 'R' fields come from the sixth field, and the others come from the first one.
-When data is injected into sarracenia from Sundew, the *sundew_extension* message header
+When data is injected into sarracenia from Sundew, the *sundew_extension* notification message header
 will provide the source for these substitions even if the fields have been removed
 from the delivered file names.
 
@@ -298,19 +298,19 @@ accept, reject and acceptUnmatched
 - **acceptUnmatched   <boolean> (default: False)**
 
 The  **accept**  and  **reject**  options process regular expressions (regexp).
-The regexp is applied to the the message's URL for a match.
+The regexp is applied to the the notification message's URL for a match.
 
-If the message's URL of a file matches a **reject**  pattern, the message
+If the notification message's URL of a file matches a **reject**  pattern, the notification message
 is acknowledged as consumed to the broker and skipped.
 
 One that matches an **accept** pattern is processed by the component.
 
 In many configurations, **accept** and **reject** options are mixed
-with the **directory** option.  They then relate accepted messages
+with the **directory** option.  They then relate accepted notification messages
 to the **directory** value they are specified under.
 
 After all **accept** / **reject**  options are processed, normally
-the message is acknowledged as consumed and skipped. To override that
+the notification message is acknowledged as consumed and skipped. To override that
 default, set **acceptUnmatched** to True. The **accept/reject**
 settings are interpreted in order. Each option is processed orderly
 from top to bottom. For example:
@@ -329,7 +329,7 @@ sequence #2::
 In sequence #1, all files ending in 'gif' are rejected.  In sequence #2, the accept .* (which
 accepts everything) is encountered before the reject statement, so the reject has no effect.
 
-It is best practice to use server side filtering to reduce the number of announcements sent
+It is best practice to use server side filtering to reduce the number of notification messages sent
 to the component to a small superset of what is relevant, and perform only a fine-tuning with the
 client side mechanisms, saving bandwidth and processing for all. More details on how
 to apply the directives follow:
@@ -353,7 +353,7 @@ means that a file will not be posted unless the group has read permission
 The **permDefault** options specifies a mask, that is the permissions must be
 at least what is specified.
 
-The **regexp pattern** can be used to set directory parts if part of the message is put
+The **regexp pattern** can be used to set directory parts if part of the notification message is put
 to parenthesis. **sender** can use these parts to build the directory name. The
 rst enclosed parenthesis strings will replace keyword **${0}** in the directory name...
 the second **${1}** etc.
@@ -378,15 +378,15 @@ Example of use::
       accept .*(2016....).*(RAW.*GRIB).*
 
 
-A selected message by the first accept would be delivered unchanged to the first directory.
+A selected notification message by the first accept would be delivered unchanged to the first directory.
 
-A selected message by the second accept would be delivered unchanged to the second directory.
+A selected notification message by the second accept would be delivered unchanged to the second directory.
 
-A selected message by the third accept would be renamed "file_of_type3" in the second directory.
+A selected notification message by the third accept would be renamed "file_of_type3" in the second directory.
 
-A selected message by the forth accept would be delivered unchanged to a directory.
+A selected notification message by the forth accept would be delivered unchanged to a directory.
 
-It's named  */this/20160123/pattern/RAW_MERGER_GRIB/directory* if the message would have a notice like:
+It's named  */this/20160123/pattern/RAW_MERGER_GRIB/directory* if the notification message would have a notice like:
 
 **20150813161959.854 http://this.pump.com/ relative/path/to/20160123_product_RAW_MERGER_GRIB_from_CMC**
 
@@ -408,8 +408,8 @@ attempt downloading the data before giving up.  The default of 3 should be appro
 in most cases.  When the **retry** option is false, the file is then dropped immediately.
 
 When The **retry** option is set (default), a failure to download after prescribed number
-of **attempts** (or send, in a sender) will cause the message to be added to a queue file
-for later retry.  When there are no messages ready to consume from the AMQP queue,
+of **attempts** (or send, in a sender) will cause the notification message to be added to a queue file
+for later retry.  When there are no notification messages ready to consume from the AMQP queue,
 the retry queue will be queried.
 
 
@@ -431,8 +431,8 @@ baseUrl_relPath <flag> (default: off)
 
 Normally, the relative path (baseUrl_relPath is False, appended to the base directory) for 
 files which are downloaded will be set according to the relPath header included 
-in the message. If *baseUrl_relPath* is set, however, the message's relPath will
-be prepended with the sub-directories from the message's baseUrl field.
+in the notification message. If *baseUrl_relPath* is set, however, the notification message's relPath will
+be prepended with the sub-directories from the notification message's baseUrl field.
 
 
 batch <count> (default: 100)
@@ -469,7 +469,7 @@ broker
 
 **broker [amqp|mqtt]{s}://<user>:<password>@<brokerhost>[:port]/<vhost>**
 
-A URI is used to configure a connection to a message pump, either
+A URI is used to configure a connection to a notification message pump, either
 an MQTT or an AMQP broker. Some Sarracenia components set a reasonable default for
 that option.  provide the normal user,host,port of connections. In most configuration files,
 the password is missing. The password is normally only included in the 
@@ -489,7 +489,7 @@ The broker option tell each component which broker to contact.
       (default: None and it is mandatory to set it ) 
 
 Once connected to an AMQP broker, the user needs to bind a queue
-to exchanges and topics to determine the messages of interest.
+to exchanges and topics to determine the notification messages of interest.
 
 
 byteRateMax <size> (default: 0)
@@ -498,7 +498,7 @@ byteRateMax <size> (default: 0)
 **byteRateMax** is greater than 0, the process attempts to respect this delivery
 speed in kilobytes per second... ftp,ftps,or sftp)
 
-**FIXME**: byteRateMax... only implemented by sender? or subscriber as well, data only, or messages also?
+**FIXME**: byteRateMax... only implemented by sender? or subscriber as well, data only, or notification messages also?
 
 
 declare 
@@ -515,10 +515,10 @@ exchange exchange_name
   using the admin url, declare the exchange with *exchange_name*
 
 subscriber
-  A subscriber is user that can only subscribe to data and return report messages. Subscribers are
+  A subscriber is user that can only subscribe to data and return report notification messages. Subscribers are
   not permitted to inject data.  Each subscriber has an xs_<user> named exchange on the pump,
   where if a user is named *Acme*, the corresponding exchange will be *xs_Acme*.  This exchange
-  is where an subscribe process will send its report messages.
+  is where an subscribe process will send its report notification messages.
 
   By convention/default, the *anonymous* user is created on all pumps to permit subscription without
   a specific account.
@@ -530,13 +530,13 @@ source
   email or phone number for questions about the data and its availability, then all of
   those collection activities might use a single 'source' account.
 
-  Each source gets a xs_<user> exchange for injection of data posts, and, similar to a subscriber
-  to send report messages about processing and receipt of data. Source may also have an xl_<user>
-  exchange where, as per report routing configurations, report messages of consumers will be sent.
+  Each source gets a xs_<user> exchange for injection of data notification messages, and, similar to a subscriber
+  to send report notification messages about processing and receipt of data. Source may also have an xl_<user>
+  exchange where, as per report routing configurations, report notification messages of consumers will be sent.
 
 feeder
   A user permitted to write to any exchange. Sort of an administrative flow user, meant to pump
-  messages when no ordinary source or subscriber is appropriate to do so.  Is to be used in
+  notification messages when no ordinary source or subscriber is appropriate to do so.  Is to be used in
   preference to administrator accounts to run flows.
 
 User credentials are placed in the `credentials.conf <sr3_credentials.7.html>`_ 
@@ -760,7 +760,7 @@ NOTE::
   When directories are consumed by processes using the subscriber *delete* option, they stay empty, and
   every file should be reported on every pass.  When subscribers do not use *delete*, watch needs to
   know which files are new.  It does so by noting the time of the beginning of the last polling pass.
-  File are posted if their modification time is newer than that.  This will result in many multiple posts
+  File are posted if their modification time is newer than that.  This will result in many multiple notification messages
   by watch, which can be minimized with the use of cache.   One could even depend on the cache
   entirely and turn on the *delete* option, which will have watch attempt to post the entire tree
   every time (ignoring mtime).
@@ -771,8 +771,8 @@ NOTE::
 header <name>=<value>
 ---------------------
 
-Add a <name> header with the given value to advertisements. Used to pass strings as metadata in the
-advertisements to improve decision making for consumers.  Should be used sparingly. There are limits
+Add a <name> header with the given value to a notification message. Used to pass strings as metadata in the
+notification messages to improve decision making for consumers.  Should be used sparingly. There are limits
 on how many headers can be used, and minimizing the size of messages has important performance
 impacts.
 
@@ -893,7 +893,7 @@ In directory ~/.cache/sarra/log::
 integrity <string>
 ------------------
 
-All file posts include a checksum.  It is placed in the amqp message header will have as an
+All file notification messages include a checksum.  It is placed in the amqp message header will have as an
 entry *sum* with default value 'd,md5_checksum_on_data'.
 The *sum* option tell the program how to calculate the checksum.
 In v3, they are called Integrity methods::
@@ -1046,7 +1046,7 @@ picked by one instance, and if a duplicate one is received it would likely
 be picked up by another instance. **For effective duplicate suppression with instances**,
 one must **deploy two layers of subscribers**. Use
 a **first layer of subscribers (shovels)** with duplicate suppression turned
-off and output with *post_exchangeSplit*, which route posts by checksum to
+off and output with *post_exchangeSplit*, which route notification messages by checksum to
 a **second layer of subscibers (winnow) whose duplicate suppression caches are active.**
 
 
@@ -1080,7 +1080,7 @@ old to post.
 outlet post|json|url (default: post)
 ------------------------------------
 
-The **outlet** option is used to allow writing of posts to file instead of
+The **outlet** option is used to allow writing of notification messages to file instead of
 posting to a broker. The valid argument values are:
 
 **post:**
@@ -1137,7 +1137,7 @@ If this path defines a directory, all files in that directory are
 watched and should **watch** find one (or more) directory(ies), it
 watches it(them) recursively until all the tree is scanned.
 
-The AMQP announcements are made of the tree fields, the announcement time,
+The AMQP notification messages are made of the tree fields, the notification message time,
 the **url** option value and the resolved paths to which were withdrawn
 the *post_baseDir* present and needed.
 
@@ -1168,7 +1168,7 @@ post_baseDir <path>
 
 The *post_baseDir* option supplies the directory path that, when combined (or found)
 in the given *path*, gives the local absolute path to the data file to be posted.
-The *post_baseDir* part of the path will be removed from the posted announcement.
+The *post_baseDir* part of the path will be removed from the posted notification message.
 For sftp urls it can be appropriate to specify a path relative to a user account.
 Example of that usage would be: --post_baseDir ~user --url sftp:user@host
 For file: url's, baseDir is usually not appropriate. To post an absolute path,
@@ -1282,6 +1282,7 @@ These options are useful on brokers that do not permit users to declare their qu
 
 queueDeclare
 ------------
+FIXME: same as above.. is this normal?
 
 On startup, by default, Sarracenia redeclares resources and bindings to ensure they
 are uptodate.  If the queue already exists, These flags can be
@@ -1292,8 +1293,8 @@ randomize <flag>
 ----------------
 
 Active if *-r|--randomize* appears in the command line... or *randomize* is set
-to True in the configuration file used. If there are several posts because the 
-file is posted by block (the *blocksize* option was set), the block posts 
+to True in the configuration file used. If there are several notification messages because the 
+file is posted by block (the *blocksize* option was set), the block notification messages 
 are randomized meaning that they will not be posted
 
 realpath <flag>
@@ -1309,7 +1310,7 @@ reconnect <flag>
 
 Active if *-rc|--reconnect* appears in the command line... or
 *reconnect* is set to True in the configuration file used.
-*If there are several posts because the file is posted
+*If there are several notification messages because the file is posted
 by block because the *blocksize* option was set, there is a
 reconnection to the broker everytime a post is to be sent.
 
@@ -1354,6 +1355,13 @@ the reception cache is also discarded.
 The AMQP protocol defines other queue options which are not exposed
 via sarracenia, because sarracenia itself picks appropriate values.
 
+
+retryEmptyBeforeExit: <boolean> (default: False)
+------------------------------------------------
+
+Used for sr_insects flow tests. Prevents Sarracenia from exiting while there are messages remaining in the retry queue(s). By default, a post will cleanly exit once it has created and attempted to publish messages for all files in the specified directory. If any messages are not successfully published, they will be saved to disk to retry later. If a post is only run once, as in the flow tests, these messages will never be retried unless retryEmptyBeforeExit is set to True.
+
+
 retry_ttl <duration> (default: same as expire)
 ----------------------------------------------
 
@@ -1374,7 +1382,7 @@ shim_defer_posting_to_exit (EXPERIMENTAL)
   (option specific to libsrshim)
   Postpones file posting until the process exits.
   In cases where the same file is repeatedly opened and appended to, this
-  setting can avoid redundant posts.  (default: False)
+  setting can avoid redundant notification messages.  (default: False)
 
 shim_post_minterval *interval* (EXPERIMENTAL)
 ---------------------------------------------
@@ -1382,9 +1390,9 @@ shim_post_minterval *interval* (EXPERIMENTAL)
   (option specific to libsrshim)
   If a file is opened for writing and closed multiple times within the interval,
   it will only be posted once. When a file is written to many times, particularly
-  in a shell script, it makes for many posts, and shell script affects performance.
+  in a shell script, it makes for many notification messages, and shell script affects performance.
   subscribers will not be able to make copies quickly enough in any event, so
-  there is little benefit, in say, 100 posts of the same file in the same second.
+  there is little benefit, in say, 100 notification messages of the same file in the same second.
   It is wise set an upper limit on the frequency of posting a given file. (default: 5s)
   Note: if a file is still open, or has been closed after its previous post, then
   during process exit processing it will be posted again, even if the interval
@@ -1485,7 +1493,7 @@ to the client at all. The  **accept/reject**  patterns apply to messages sent by
 broker to the subscriber. In other words,  **accept/reject**  are client side filters,
 whereas **subtopic** is server side filtering.
 
-It is best practice to use server side filtering to reduce the number of announcements sent
+It is best practice to use server side filtering to reduce the number of notification messages sent
 to the client to a small superset of what is relevant, and perform only a fine-tuning with the
 client side mechanisms, saving bandwidth and processing for all.
 
@@ -1626,7 +1634,7 @@ SEE ALSO
 
 `sr3(1) <sr3.1.html>`_ - Sarracenia main command line interface.
 
-`sr3_post(1) <sr3_post.1.html>`_ - post file announcements (python implementation.)
+`sr3_post(1) <sr3_post.1.html>`_ - post file notification messages (python implementation.)
 
 `sr3_cpost(1) <sr3_cpost.1.html>`_ - post file announcemensts (C implementation.)
 
@@ -1634,7 +1642,7 @@ SEE ALSO
 
 **Formats:**
 
-`sr3_post(7) <sr_post.7.html>`_ - the format of announcements.
+`sr3_post(7) <sr_post.7.html>`_ - the format of notification messages.
 
 **Home Page:**
 

@@ -17,7 +17,7 @@ jobs:
         sudo update-locale
     - name: Install dependencies
       run: |
-        sudo apt-get update -y && sudo apt-get install -y pandoc dia
+        sudo apt-get update -y && sudo apt-get install -y pandoc dia python3-paramiko
     - name: Setup python
       uses: actions/setup-python@v2
     - name: Checkout
@@ -26,6 +26,7 @@ jobs:
         fetch-depth: 0
     - name: install Sarracenia
       run: |
+        pip install -r requirements.txt
         pip install .
     - name: Build and Commit
       uses: sphinx-notes/pages@v2
