@@ -325,18 +325,21 @@ class AMQP(Moth):
     def putCleanUp(self) -> None:
 
         try:
-            self.channel.exchange_delete(self.o['exchange'])
+            for x in self.o['exchange']:
+                logger.info("deleting exchange: %s" % x )
+                self.channel.exchange_delete(x)
         except Exception as err:
-            logger.error("AMQP putCleanup failed on {} with {}".format(
+            logger.error("failed on {} with {}".format(
                 self.o['broker'].url.hostname, err))
             logger.debug('Exception details: ', exc_info=True)
 
     def getCleanUp(self) -> None:
 
         try:
+            logger.info("deleteing queue %s" % self.o['queueName'] )
             self.channel.queue_delete(self.o['queueName'])
         except Exception as err:
-            logger.error("AMQP putCleanup failed to {} with {}".format(
+            logger.error("failed to {} with {}".format(
                 self.o['broker'].url.hostname, err))
             logger.debug('Exception details: ', exc_info=True)
 
