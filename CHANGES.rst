@@ -6,9 +6,24 @@ lists all changes between versions.
 
 **git repo**
 
-v03_wip ... still in development, too many changes to list.
-unstable, breaking changes possible, only for experimental use.
+**3.00.17**
 
+ * #539 French documentation for sr3 now exists.
+ * #547, #504 v03 post format revised to separate checksums from non-data file operations.
+ * above is a breaking change... old versions will not be able to understand v03 encoding of certain files.
+ * #466 retry queue for failed send, also post retry queue.
+ * improved documentation #552 
+ * #522 honor permLog 
+ * #465 simulation mode for sender (not yet complete.)
+ * #438 v2 to sr3 config converter added (still has some problems, but mostly working.)
+ * #513 improved shutdown on signal receipt.
+ * 
+
+**3.00.16**
+ * wrapped all calls to callbacks with try/except and error messaging.
+ * more obvious errors when extra dependencies are missing.
+ * more documentation improvements.
+ * change appauthor from 'science.gc.ca' to 'MetPX'
 
 **3.00.15b2**
 

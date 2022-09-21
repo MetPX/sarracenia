@@ -40,6 +40,19 @@ git
 ---
 
 
+3.0.17
+------
+
+*CHANGE*: The "Vendor" string is now "MetPX" instead of "science.gc.ca".
+     This affects some file placement particularly on Windows.
+
+*CHANGE*: v03 notification message encoding changed: *Integrity* checksum is now optional.
+
+*CHANGE*: v03 notification message encoding changed for symbolic links, and file renames
+     and removals. There is now a 'fileOp' field for these dataless file operations.
+     The *Integrity* sum is now used exclusively for checksums.
+
+
 3.0.15
 ------
 
@@ -70,6 +83,11 @@ git
       apt install python3-netifaces
 
   sr3 looks for the relevant modules on startup and automatically enables support for the relevant features.
+
+**CHANGE**: file placement of denoting disabled configurations. it used to be that
+     ~/.config/sr3/component/x.conf would be renamed x.conf.off when disabling.
+     Now instead a file called ~/.cache/sr3/component/x/disabled is created.
+     Configuration files are no longer changed by this sort of routine intervention.
 
 3.0.14
 ------

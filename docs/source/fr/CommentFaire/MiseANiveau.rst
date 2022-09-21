@@ -39,6 +39,20 @@ Installation Instructions
 git
 ---
 
+3.0.17
+------
+
+*CHANGE*: La chaine de charactères "Vendor" est changé de "science.gc.ca" à "MetPX". 
+     Ce changement modifie le placement des fichiers sur la platteforme *Windows*.
+
+*CHANGE*: l´encodage des messages d´annonce v03 est changé: *Integrity* est rendu optionnel.
+
+*CHANGE*: l'encodage des messages d'annonce v03 est changé: le champs *fileOp* est rajouté
+     pour séparer les operations sur des fichiers qui ne comprennent pas des transmissions
+     de données: créations de liens symboliques, renommage de fichier, suppression de fichiers.
+     Le champs *Integrity* est maintenant dédié au sommes de contrôle pour les données.
+
+
 
 3.0.15
 ------
@@ -70,6 +84,13 @@ git
       apt install python3-netifaces
 
   sr3 looks for the relevant modules on startup and automatically enables support for the relevant features.
+
+**CHANGE**: le placement des fichiers pour indiquer des configurations désactivées.
+     Avant, l´action *disable* ajoutait un *.off* au nom de fichier de configuration.
+     Maintenant, on crée à la place un fichier *disabled* dans le répertoire d´état.
+     Les fichiers de configuration ne sont plus modifié par la gestion routinière
+     d´activités.
+
 
 3.0.14
 ------
