@@ -317,8 +317,12 @@ class Message(dict):
         elif 'integrity' in xattr.x and 'mtime' in xattr.x:
             if xattr.get('mtime') >= msg['mtime']:
                 logger.debug("mtime remembered by xattr")
-                msg['integrity'] = xattr.get('integrity')
-                return
+                fxainteg = xattr.get('integrity')
+                if fxainteg['method'] == o.integrity_method: 
+                     msg['integrity'] = fxainteg
+                     return
+                logger.debug("xattr different method than on disk")
+                calc_method = o.integrity_method
             else:
                 logger.debug("xattr sum too old")
                 calc_method = o.integrity_method
@@ -326,6 +330,8 @@ class Message(dict):
             calc_method = o.integrity_method
 
         logger.debug('FIXME calc_method: %s' % calc_method )
+        if calc_method == None:
+            return
 
         xattr.set('mtime', msg['mtime'])
 
@@ -520,18 +526,23 @@ class Message(dict):
             for k in o.fixed_headers:
                 msg[k] = o.fixed_headers[k]
 
-        if o.integrity_method.startswith('cod,'):
-            msg['integrity'] = {
-                'method': 'cod',
-                'value': o.integrity_method[4:]
-            }
-        elif o.integrity_method in ['random']:
-            algo = sarracenia.integrity.Integrity.factory(o.integrity_method)
-            algo.set_path(post_relPath)
-            msg['integrity'] = {
-                'method': o.integrity_method,
-                'value': algo.value
-            }
+        if o.integrity_method:
+            if o.integrity_method.startswith('cod,'):
+                msg['integrity'] = {
+                    'method': 'cod',
+                    'value': o.integrity_method[4:]
+                }
+            elif o.integrity_method in ['random']:
+                algo = sarracenia.integrity.Integrity.factory(o.integrity_method)
+                algo.set_path(post_relPath)
+                msg['integrity'] = {
+                    'method': o.integrity_method,
+                    'value': algo.value
+                }
+        else:
+            if 'integrity' in msg:
+                   del msg['integrity']
+ 
         # for md5name/aka None aka omit integrity... should just fall through.
 
         if lstat is None: return msg

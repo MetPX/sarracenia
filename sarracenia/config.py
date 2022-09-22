@@ -125,7 +125,7 @@ size_options = ['accelThreshold', 'blocksize', 'bufsize', 'byteRateMax', 'inline
 
 str_options = [
     'admin', 'baseDir', 'broker', 'destination', 'directory', 'exchange',
-    'exchange_suffix', 'feeder', 'filename', 'header', 'logLevel', 'path',
+    'exchange_suffix', 'feeder', 'filename', 'header', 'integrity', 'logLevel', 'path',
     'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
     'post_exchange_suffix', 'queueName',
     'report_exchange', 'strip', 'timezone', 'nodupe_ttl',
@@ -550,6 +550,9 @@ class Config:
         self.directory = None
 
         self.env = copy.deepcopy(os.environ)
+
+        for k in default_options:
+            setattr(self, k, default_options[k])
 
         if parent is not None:
             for i in parent:
@@ -1048,9 +1051,15 @@ class Config:
         self.settings[opt_class][opt_var] = ' '.join(value)
 
     def _parse_sum(self, value):
+        #logger.error('input value: %s' % value)
+
+        if not value:
+            value = self.integrity_method
+
         if (value in sarracenia.integrity.known_methods) or (
                 value[0:4] == 'cod,'):
             self.integrity_method = value
+            #logger.error('returning 1: %s' % value)
             return
 
         if (value[0:2] == 'z,'):
@@ -1060,17 +1069,28 @@ class Config:
             self.integrity_method = 'arbitrary' 
             self.integrity_arbitrary_value = value[2:]
         else:
-            self.integrity_method = ''
+            self.integrity_method = value
 
+        if value in [ 'N', 'none' ]:
+            self.integrity_method = None
+            #logger.error('returning 1.1: %s' % 'none')
+            return 
 
         for sc in sarracenia.integrity.Integrity.__subclasses__():
+            #logger.error('against 3: %s' % sc.__name__.lower() )
             if self.integrity_method == sc.__name__.lower():
+                #logger.error('returning 2: %s' % self.integrity_method)
                 return
-            if hasattr(sc, 'registered_as') and (sc.registered_as() == value):
-                self.integrity_method += sc.__name__.lower()
-                return
+            if hasattr(sc, 'registered_as'):
+                #logger.error('against 3: %s' % sc.registered_as() )
+
+                if (sc.registered_as() == value):
+                    self.integrity_method = sc.__name__.lower()
+                    #logger.error('returning 3: %s' % self.integrity_method)
+                    return
         # FIXME this is an error return case, how to designate an invalid checksum?
         self.integrity_method = 'invalid'
+        #logger.error('returning 4: invalid' )
 
     def parse_file(self, cfg):
         """ add settings from a given config file to self 
@@ -1287,6 +1307,8 @@ class Config:
         """ 
          There are default options that apply only if they are not overridden... 
        """
+
+        self._parse_sum(None)
 
         if hasattr(self, 'nodupe_ttl'):
             if (type(self.nodupe_ttl) is str):
@@ -1905,6 +1927,10 @@ class Config:
             type=int,
             help='number of processes to run per configuration')
 
+        parser.add_argument('--integrity_method', '--integrity', '-s', '--sum',
+                            nargs='?',
+                            default=self.integrity_method,
+                            help='choose a different checksumming method for the files posted')
         if hasattr(self, 'bindings'):
             parser.set_defaults(bindings=self.bindings)
 
@@ -1946,13 +1972,6 @@ class Config:
             help=
             'allows simultaneous use of multiple versions and types of messages'
         )
-        parser.add_argument(
-            '--topicPrefix',
-            nargs='?',
-            default=self.topicPrefix,
-            help=
-            'allows simultaneous use of multiple versions and types of messages'
-        )
         #FIXME: select/accept/reject in parser not implemented.
         parser.add_argument(
             '--select',
@@ -1965,6 +1984,13 @@ class Config:
             action=Config.addBinding,
             help=
             'server-side filtering: MQTT subtopic, wilcards # to match rest, + to match one topic'
+        )
+        parser.add_argument(
+            '--topicPrefix',
+            nargs='?',
+            default=self.topicPrefix,
+            help=
+            'allows simultaneous use of multiple versions and types of messages'
         )
         parser.add_argument('--users',
                             default=False,
