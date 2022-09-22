@@ -78,6 +78,12 @@ configuration file from ~/.config/sarra to the corresponding location in ~/.conf
 
 The *show* command is new in sr3 and provides a way to view the configuration after 
 it has been parsed. Most of it should work, unless you have do_* plugins. 
+As an alternative to copying the old configuration file, one can use::
+
+  sr3 convert subscribe/X
+
+To do all the mechanical changes of directives, and to have a more sr3 centric 
+configuration file that will better match current documentation.
 
 Examples of things that should work:
 

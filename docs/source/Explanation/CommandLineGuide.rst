@@ -1477,9 +1477,11 @@ without authentication on dd.weather.gc.ca.
 WINNOW
 ------
 
-the **winnow** component subscribes to file notifications and reposts them, suppressing redundant 
-ones by comparing their fingerprints (or checksums).  The **Integrity** header stores a file's 
-fingerprint as described in the `sr3_post(7) <../Reference/sr3_post.7.html>`_ man page.
+the **winnow** component subscribes to file notification messages and reposts them, suppressing redundant 
+ones. How to decide which ones are redundant varies by use case. In the most straight-forward case,
+the messages have **Integrity** header stores a file's fingerprint as described in the `sr3_post(7) <../Reference/sr3_post.7.html>`_ man page,
+and header is used exclusively. There are many other use cases, though. discussed in the following section
+on `Duplicate Suppression <DuplicateSuppresion.html>`_
 
 **winnow** has the following options forced::
 
@@ -1488,6 +1490,9 @@ fingerprint as described in the `sr3_post(7) <../Reference/sr3_post.7.html>`_ ma
    accept_unmatch True
 
 The suppress_duplicates lifetime can be adjusted, but it is always on.
+Other components can use the same duplicate suppression logic.  The use of *winnow* components
+is purely to make it easier for analysts to understand a configuration at a glance.
+
 
 **winnow** connects to a *broker* (often the same as the posting broker)
 and subscribes to the notifications of interest. On reception of a notification,
@@ -1495,9 +1500,11 @@ it looks up its **sum** in its cache.  If it is found, the file has already come
 so the notification is ignored. If not, then the file is new, and the **sum** is added
 to the cache and the notification is posted.
 
-**winnow** can be used to trim notification messages produced by  post, `sr3_post <../Reference/sr3_post.1.html>`_, sr3_cpost, `poll`_ or `watch`_ etc... It is
-used when there are multiple sources of the same data, so that clients only download the
-source data once, from the first source that posted it.
+**winnow** can be used to trim notification messages produced by  post, `sr3_post <../Reference/sr3_post.1.html>`_, 
+sr3_cpost, `poll`_ or `watch`_ etc... It is used when there are multiple sources of the same data, so that clients 
+only download the source data once, from the first source that posted it.
+
+
 
 
 Configurations

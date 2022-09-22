@@ -1013,6 +1013,8 @@ mirror settings can be changed between directory options.
 no <count>
 ----------
 
+(normally not used by humans)
+
 Present on instances started by the sr3 management interface.
 The no option is only used on the command line, and not intended for users.
 It is an option for use by sr3 when spawning instances to inform each process
@@ -1053,7 +1055,7 @@ a **second layer of subscibers (winnow) whose duplicate suppression caches are a
 nodupe_basis <data|name|path> (default: path)
 ---------------------------------------------
 
-A keyword option (alternative: *cache_basis* ) to identify which files are compared for
+A keyword option to identify which files are compared for
 duplicate suppression purposes. Normally, the duplicate suppression uses the entire path
 to identify files which have not changed. This allows for files with identical
 content to be posted in different directories and not be suppressed. In some
@@ -1062,13 +1064,16 @@ the tree the file resides.  Set 'name' for files of identical name, but in
 different directories to be considered duplicates. Set to 'data' for any file,
 regardless of name, to be considered a duplicate if the checksum matches.
 
+
 This is implemented as an alias for:
 
- callback_prepend nodupe.name
+    callback_prepend nodupe.name
 
 or:
 
- callback_prepend nodupe.data
+    callback_prepend nodupe.data
+
+More information: `Duplicate Suppresion <../Explanation/DuplicateSuppression.html>`_
 
 nodupe_fileAgeMax
 -----------------

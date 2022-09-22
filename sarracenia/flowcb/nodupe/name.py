@@ -21,3 +21,4 @@ class Name(FlowCB):
                 m['nodupe_override'] = {}
 
             m['nodupe_override']['path'] = m['relPath'].split('/')[-1]
+            m['nodupe_override']['key'] = m['relPath'].split('/')[-1]

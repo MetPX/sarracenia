@@ -119,14 +119,7 @@ class NoDupe(FlowCB):
 
         return True
 
-    def check_message(self, msg) -> bool :
-        """
-           derive keys to be looked up in cache of messages already seen.
-           then look them up in the cache, 
-
-           return True if msg already in cache,
-                  False if msg is new.
-        """
+    def deriveKey(self, msg) -> str:
 
         key=None
         if ('nodupe_override' in msg) and ('key' in msg['nodupe_override']):
@@ -153,6 +146,21 @@ class NoDupe(FlowCB):
             else:
                 key = msg['pubTime']
 
+        return key
+
+
+
+    def check_message(self, msg) -> bool :
+        """
+           derive keys to be looked up in cache of messages already seen.
+           then look them up in the cache, 
+
+           return True if msg already in cache,
+                  False if msg is new.
+        """
+
+        key = self.deriveKey(msg)
+ 
         if ('nodupe_override' in msg) and ('path' in msg['nodupe_override']):
             path = msg['nodupe_override']['path']
         else:

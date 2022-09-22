@@ -121,6 +121,23 @@ V2 to Sr3
           Similar change on other platforms. The different placement
           allows to run both v2 and sr3 at the same time on the same server.
 
+*NOTICE*: to change configurations from v2 to sr3, rather than copying the file
+          from one directory to the other, use of the convert directive is recommended::
+
+              sr3 convert subscribe/mine.conf
+
+          will make all mechanical conversions of directive names from v2 to sr3 automatically.
+          only custom plugin work need to be manually ported, as described below.
+
+*NOTICE*: In sr3 the winnowing or duplicate suppression algorithm (implemented by sarracenia.flowcb.nodupe.NoDupe.py)
+          is separate from the data source's checksum algorithm. 
+
+          In v2, the checksum algorithm had to be harmonized with the 
+          data source checksum. In sr3 one can select any checksumming method,
+          and still customize how message key and path are selected to allow for 
+          full customization of duplicate suppression.
+          
+ 
 **CHANGE**: Command line interface (CLI) is different. There is only one main entry_point: sr3.
           so most invocations are different in a pattern like so::
 
@@ -131,7 +148,7 @@ V2 to Sr3
 
              sr3 start poll/airnow subscribe/airnow sender/cmqb
           
-**CHANGE**:  in sr3, use -- for full word options, like --config, or --broker.  In v2 you 
+**CHANGE**: in sr3, use -- for full word options, like --config, or --broker.  In v2 you 
            could use -config and -broker, but single dash is reserved for single character options.
            This is a result of sr3 using python standard ArgParse class::
 

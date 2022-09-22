@@ -1897,6 +1897,9 @@ class sr_GlobalState:
                             line = convert_to_v3[k]
                             k = line[0]
                             v = line[1]
+                    else:
+                       line[0] = k
+
                     if k == 'continue':
                         continue
                     v3_cfg.write(' '.join(line)+'\n')

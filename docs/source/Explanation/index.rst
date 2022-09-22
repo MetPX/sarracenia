@@ -9,6 +9,7 @@ Explanation
    Concepts
    CommandLineGuide.rst
    DetectFileReady.rst
+   DuplicateSuppression.rst
    FileCompletion.rst
    DeploymentConsiderations
    SarraPluginDev
