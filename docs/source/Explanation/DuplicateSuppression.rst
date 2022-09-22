@@ -142,11 +142,13 @@ could be a waste of bandwidth and processing.
 Weatheroffice citypages
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-there citypages are a compound product (derived from many separate upstream products.)
-the script that creates the citypage products seems to write a header, then some record,
-then at the very end, a trailer.  there were many cases of files being transmitted
-as *invalid xml* because the trailer was missing.  Need to wait until the script has
-finished writing the file before creating a notification message.
+( https://hpfx.collab.science.gc.ca/YYYYMMDD/WXO-DD/citypage_weather/ )
+
+The citypages are a compound product (derived from many separate upstream products.)
+The script that creates the citypage products seems to write a header, then some records,
+then at the very end, a footer.  there were many cases of files being transmitted
+as *invalid xml* because the footer is missing, leaving some XML entities incomplete.  
+One must wait until the script has finished writing the file before creating a notification message.
 
 HPC mirrorring
 ~~~~~~~~~~~~~~
