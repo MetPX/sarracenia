@@ -1460,10 +1460,14 @@ sans authentification sur dd.weather.gc.ca.
 
 WINNOW
 ------
+
 **winnow** est un programme qui s'abonne aux notifications de fichiers,
-et réenregistre les notifications, en supprimant les notifications redondantes en comparant
-l'empreinte digitale d'un fichier (somme de contrôle) comme décrit ci-dessus dans la page
-de manuel `sr3_post(7) <../Reference/sr3_post.7.html>`_.
+et réenregistre les notifications, en supprimant les notifications redondantes.
+
+La méthode de décider quels messages d´annonce sont redondants varient selon le cas d´usage.
+Normalement, les messages comprenned un champs *Integrity* qui avec une somme de contrôle
+du ficher, tel que décrit dans `sr_post(7) <../Reference/sr_post.7.html>`_
+Il y bien d´autres cas d´usage discutés dans `Supprimer les doublons <SupprimerLesDoublons.html>`_
 
 **winnow** a les options suivante forcés::
 

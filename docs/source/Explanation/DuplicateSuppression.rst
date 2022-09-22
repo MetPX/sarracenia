@@ -69,9 +69,8 @@ or::
     flowcb_prepend sarracenia.flowcb.nodupe.data.Data
 
 overrides the standard duplicate suppression key generation to include only the data 
-checksum. The *flowcb_prepend* directive is to insert this callback's calles they
-happen before the built-in duplicate suppression is run.  This module adjusts the
-path field that the standard duplicateion suppression field uses.
+checksum. This module adjusts the *path* field that the standard duplicateion suppression field uses.
+The *flowcb_prepend* directive ensures that it is called before the built-in duplicate suppression.
 
 products that are the same should have identical checksums, regardless of path. Used when
 multiple sources produce the same product. (Note: all zero-length files are identical,
@@ -152,6 +151,7 @@ finished writing the file before creating a notification message.
 HPC mirrorring
 ~~~~~~~~~~~~~~
 
+In the high speed mirroring of data between high performance computing clusters, 
 shell scripts often spend time appending records to files, perhaps hundreds of times per second.
 Once the script is complete, the file becomes read-only for consumers.  It is not useful
 to transmit these intermediate values. A 100 byte file monitored using the shim library

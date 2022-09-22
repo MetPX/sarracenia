@@ -9,6 +9,7 @@ Explication
    Concepts
    GuideLigneDeCommande.rst
    StrategieDetectionFichiers.rst
+   SupprimerLesDoublons.rst
    AssurerLaLivraison.rst
    ConsiderationsDeployments
    SarraPluginDev

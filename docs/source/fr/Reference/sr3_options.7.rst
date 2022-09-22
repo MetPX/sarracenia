@@ -1013,7 +1013,7 @@ nodupe_ttl <off|on|999[smhdw]>
 ------------------------------
 
 
-Lorsque **nodupe_ttl** (également **suppress_duplicates* et **cache** ) est défini à une intervalle de temps
+Lorsque **nodupe_ttl** est défini à une intervalle de temps
 qui est différente de zéro, chaque nouveau message d´annonce est comparé à ceux reçus dans cette intervalle, pour vérifier si
 c’est un doublon. Les doublons ne sont pas traités ultérieurement. Qu’est-ce qu’un doublon ? Un fichier avec
 le même nom (y compris l’en-tête des pièces) et la même somme de contrôle. A chaque intervalle de *hearbeat*, un
@@ -1060,6 +1060,9 @@ Ceci est implémenté en tant qu’alias pour :
 ou:
 
  callback_prepend nodupe.data
+
+
+Pour plus d´information: `Supprimer les doublons<../Explanation/SupprimerLesDoublons.html>`_
 
 nodupe_fileAgeMax
 -----------------
