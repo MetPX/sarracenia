@@ -141,8 +141,8 @@ des incompatibilités de somme de contrôle.) ou, si c'est assez rapide, copier 
 ne durera pas plus de quelques secondes pourrait être un gaspillage de bande passante et de traitement.
 
 
-Weatheroffice citypages
-~~~~~~~~~~~~~~~~~~~~~~~
+les citypages du site météo.gc.ca
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 ( https://hpfx.collab.science.gc.ca/YYYYMMDD/WXO-DD/citypage_weather/ )
@@ -153,8 +153,8 @@ puis à la toute fin, une bande-annonce. il y a eu de nombreux cas de transmissi
 comme *xml invalide* parce que la bande-annonce était manquante. Il faut attendre que le script ait
 fini d'écrire le fichier 
 
-HPC mirrorring
-~~~~~~~~~~~~~~
+Miroitage CHP
+~~~~~~~~~~~~~
 
 Dans la miroitage à grande vitesse des données entre des grappes de calcul haute performance, les programmes
 passent souvent du temps à ajouter des enregistrements aux fichiers, peut-être des centaines de fois par seconde.
@@ -165,8 +165,25 @@ déclenchant des centaines d'exemplaires. Il vaut mieux attendre la fin du proce
 pour que le fichier soit inactif, avant de poster un message d´annonce.
 
 
+Fichiers trop vieux
+-------------------
 
-Roll Your Own
+**method**: les messages à propos des fichiers trop vieux sont supprimés.
+
+dans les fichiers de configuration::
+
+    nodupe_fileAgeMax 600
+
+Les messages notificationsfichiers pour des fichiers qui sont agés de plus que 600 secondes (10 minutes) seront
+supprimés.
+
+Ceci est généralement utilisé avec des sondages (poll) qui ont des répertoires de très longue durée.
+Exemple : un serveur distant dispose d'une base de données permanente de fichiers distants. ca ne sert à rien
+de reexaminer de fichiers vieux de deux ans.
+
+
+
+A votre gout!
 -------------
 
 Dans le fichier de configuration::

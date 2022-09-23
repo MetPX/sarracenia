@@ -139,6 +139,7 @@ the time the consumer requests the file, it will be different (potentially causi
 or, if it is fast enough, copying a file that will not last more than a few seconds 
 could be a waste of bandwidth and processing.
 
+
 Weatheroffice citypages
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -160,6 +161,21 @@ to transmit these intermediate values. A 100 byte file monitored using the shim 
 or an sr_watch, could be modified hundreds of times, causing a copy for every modification potentially
 triggering hundreds of copies. It is better to wait for the end of the update process,
 for the file to be quiescent, before posting a notification message.
+
+
+Files That are Too Old
+----------------------
+
+**method**: files that are too old are dropped.
+
+in the configuration file::
+
+    nodupe_fileAgeMax 600
+
+Files which are older than 600 seconds (10 minutes) will not be considerred for transfer.
+
+This is usually used with polls that have very long lasting directories on a remote 
+server. example: a remote server has a permanent database of remote files.
 
 
 Roll Your Own
