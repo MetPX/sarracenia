@@ -186,15 +186,8 @@ Entry Points
 
 Other entry_points, extracted from sarracenia/flowcb/__init__.py ::
 
-    def name(self):
-        Task: return the name of a plugin for reference purposes. (automatically there)
-
     def ack(self,messagelist):
         Task: acknowledge notification messages from a gather source.
-
-    def gather(self):
-        Task: gather notification messages from a source... return a list of notification messages.
-        return []
 
     """
       application of the accept/reject clauses happens here, so after_accept callbacks
@@ -209,20 +202,24 @@ Other entry_points, extracted from sarracenia/flowcb/__init__.py ::
                and move notification messages to worklist.rejected to prevent further processing.
                do not delete any notification messages, only move between worklists.
         """
-    def do_poll(self):
-        Task: build worklist.incoming, a form of gather()
-
-    def on_data(self,data):
-        Task:  return data transformed in some way.
-
-        return new_data
 
     def after_work(self,worklist):
         Task: operate on worklist.ok (files which have arrived.)
 
-    def post(self,worklist):
-         Task: operate on worklist.ok, and worklist.failed. modifies them appropriately.
-               notification message acknowledgement has already occurred before they are called.
+    def download(self,msg) -> bool::
+
+         Task: looking at msg['new_dir'], msg['new_file'], msg['new_inflight_file'] 
+               and the self.o options perform a download of a single file.
+               return True on a successful transfer, False otherwise.
+
+
+    def gather(self):
+        Task: gather notification messages from a source... return a list of notification messages.
+        return []
+
+    def metrics_report(self) -> dict:
+
+        Return a dictionary of metrics. Example: number of messages remaining in retry queues.
 
     def on_housekeeping(self):
          do periodic processing.
@@ -240,6 +237,29 @@ Other entry_points, extracted from sarracenia/flowcb/__init__.py ::
          before any notification message transfer occurs.
 
     def on_stop(self):
+         cleanup processing when stopping.
+
+    def poll(self):
+        Task: build worklist.incoming, a form of gather()
+
+    def post(self,worklist):
+         Task: operate on worklist.ok, and worklist.failed. modifies them appropriately.
+               notification message acknowledgement has already occurred before they are called.
+
+   def send(self,msg) -> bool::
+
+         Task: looking at msg['new_dir'], msg['new_file'], and the self.o options perform a transfer
+               of a single file.
+               return True on a successful transfer, False otherwise.
+
+         This replaces built-in send functionality for individual files.
+
+    def stop_requested(self):
+         Pre-warn a flowcb that a stop has been requested, allowing processing to wrap up
+         before the full stop happens.
+
+
+
 
 
 
@@ -369,3 +389,45 @@ It's a good idea to look at the sarracenia source code itself. For example:
   that functionality.
 
 
+Modifying Files in Flight
+-------------------------
+
+The sarracenia.transfer class has an on_data entry point::
+
+    def on_data(self, chunk) -> bytes:
+        """
+            transform data as it is being read. 
+            Given a buffer, return the transformed buffer. 
+            Checksum calculation is based on pre transformation... likely need
+            a post transformation value as well.
+        """
+        # modify the chunk in this body...
+        return chunk
+
+   def registered_as():
+        return ['scr' ]
+
+   # copied from sarracenia.transfer.https
+
+   def connect(self):
+
+        if self.connected: self.close()
+
+        self.connected = False
+        self.destination = self.o.destination.replace('scr', 'https', 1)
+        self.timeout = self.o.timeout
+
+        if not self.credentials(): return False
+
+        return True
+        
+
+
+to perform inflight data modification, one can sub-class the relevant transfer class.
+Such a class (scr - strip carriage returns) can be added by putting an import in the configuration 
+file::
+
+    import scr.py
+
+then messages where the retrieval url is set to use the *scr* retrieval scheme will use this 
+custome transfer protocol.
