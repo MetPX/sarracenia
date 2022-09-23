@@ -7,10 +7,9 @@ Ce dossier documente les changements de comportement afin de fournir des conseil
 à partir d’une version précédente. Les sections sont intitulées pour indiquer les changements nécessaires lorsqu'il y a
 une mise à niveau vers cette version. Pour effectuer une mise à niveau sur plusieurs versions, il faut démarrer
 à la version après celle installée, et tenir compte de toutes les notifications pour la version intérim.
-Bien que la stabilité du langage de configuration soit importante
-, à l’occasion, les changements ne peuvent être évités. Ce fichier ne documente pas les nouveaux
-, mais uniquement les modifications qui posent problème lors des mises à niveau. Les avis
-prennent la forme :
+Bien que la stabilité du langage de configuration soit importante, à l’occasion, les changements ne peuvent
+être évités. Ce fichier ne documente pas les nouveaux, mais uniquement les modifications qui posent problème lors des
+mises à niveau. Les avis prennent la forme :
 
 **CHANGE**
    Indique où les fichiers de configuration doivent être modifiés pour obtenir le même comportement qu’avant la publication.
@@ -31,8 +30,8 @@ prennent la forme :
 
 Les sections sont intitulées par les changements intervenus au niveau en question.
 
-Installation Instructions
--------------------------
+Instructions d’installation
+---------------------------
 
 `Installation Guide <../Tutorials/Install.rst>`_
 
@@ -57,123 +56,103 @@ git
 3.0.15
 ------
 
-*NOTICE*: re-instating debian and windows packages by removing hard requirements for python modules
-    which are difficult to satisfy. From 3.0.15, dependencies are modular.
+*NOTICE*: rétablir les paquets Debian et Windows en supprimant les exigences matérielles pour les modules python
+    qui sont difficiles à satisfaire. À partir de la version 3.0.15, les dépendances sont modulaires.
 
-*CHANGE*: there are now four "extras" configured for pip packages for metpx-sr3.
 
-  * amqp - ability to communicate with AMQP (rabbitmq) brokers
+*CHANGE*: il y a maintenant quatre "extras" configurés pour les paquets pip pour metpx-sr3.
 
-  * mqtt - ability to communicate with MQTT brokers
+  * amqp - capacité de communiquer avec les courtiers AMQP (rabbitmq)
 
-  * ftppoll - ability to poll FTP servers
+  * mqtt - capacité à communiquer avec les courtiers MQTT
 
-  * vip  - enable vip (Virtual IP) settings to implement singleton processing for high availability support.
+  * ftppoll - possibilité d’interroger les serveurs FTP
 
-  with pip installation, one can include all the extras via::
+  * vip - activez les paramètres vip (Virtual IP) pour implémenter le traitement singleton pour la prise en charge de la haute disponibilité.
+
+  avec l’installation de pip, on peut inclure tous les extras via::
 
       pip install metpx-sr3[amqp,mqtt,ftppoll,vip]
 
-  with Linux packages, install the corresponding native packages to activate the corresponding features
+  avec les paquets Linux, installez les paquets natifs correspondants pour activer les fonctionnalités correspondantes
 
-  on Ubuntu, respectively::
+  sur Ubuntu, respectivement::
 
       apt install python3-amqp
       apt install python3-paho-mqtt
       apt install python3-dateparser python3-tz
       apt install python3-netifaces
 
-  sr3 looks for the relevant modules on startup and automatically enables support for the relevant features.
+  sr3 recherche les modules pertinents au démarrage et active automatiquement la prise en charge des fonctionnalités pertinentes.
 
 **CHANGE**: le placement des fichiers pour indiquer des configurations désactivées.
-     Avant, l´action *disable* ajoutait un *.off* au nom de fichier de configuration.
-     Maintenant, on crée à la place un fichier *disabled* dans le répertoire d´état.
+     Avant, l’action *disable* ajoutait un *.off* au nom de fichier de configuration.
+     Maintenant, on crée à la place un fichier *disabled* dans le répertoire d’état.
      Les fichiers de configuration ne sont plus modifié par la gestion routinière
-     d´activités.
-
+     d’activités.
 
 3.0.14
 ------
 
-initial beta.
+bêta initiale.
 
-*NOTICE*: only pip packages currently work. No Debian packages on launchpad.net
-          nor any windows packages.
+*NOTICE* : seuls les paquets pip fonctionnent actuellement. Pas de paquets Debian sur launchpad.net
+          ni aucun package Windows.
 
 
 V2 to Sr3
 ---------
 
-*NOTICE*: Sr3 is a very deep refactor of Sarracenia. For more detail on the nature
-          of the changes, `go here <../Contribution/v03.html>`_ Briefly, where v2
-          is an application written in python that had a small extension facility,
-          Sr3 is a toolkit that naturally provides an API and is far more
-          pythonic. Sr3 is built with less code, more maintainable code, and
-          supports more features, and more naturally.
+*NOTICE*: Sr3 est un refacteur très profond de Sarracenia. Pour plus de détails sur la nature
+          des changements, `allez ici <../Contribution/v03.html>`_ Brièvement, où v2
+          est une application écrite en python qui avait une petite installation d’extension,
+          Sr3 est une boîte à outils qui fournit naturellement une API et est beaucoup plus
+          pythonique. Sr3 est construit avec moins de code, plus de code maintenable, et
+          prend en charge plus de fonctionnalités, et plus naturellement.
 
-**CHANGE**: log messages look completely different. Any log parsing will have to be reviewed.
-          New log format includes a prefix with process-id and the routine generating the message.
+**CHANGE** : les messages de journal sont complètement différents. Toute analyse des journaux devra être examinée.
+          Le nouveau format de journal inclut un préfixe avec un process-id et la routine générant le message.
 
-*NOTICE*: When migrating from v2 to sr3, simple configurations will mostly "just work."
-          However, cases relying on user built plugins will require effort to port.
-          The built-in plugins provided with Sarracenia have been ported as updated
-          examples.
+*NOTICE* : Lors de la migration de la v2 vers la sr3, les configurations simples "fonctionneront simplement".
+          Cependant, les cas reposant sur des plugins construits par l’utilisateur nécessiteront des efforts de portage.
+          Les plugins intégrés fournis avec Sarracenia ont été portés comme des exemples.
 
-**CHANGE**: file placement. On Linux: ~/.cache/sarra -> ~/.cache/sr3
+**CHANGE**: placement du fichier. Sous Linux : ~/.cache/sarra -> ~/.cache/sr3
           ~/.config/sarra -> ~/.config/sr3
-          Similar change on other platforms. The different placement
-          allows to run both v2 and sr3 at the same time on the same server.
+          Changement similaire sur d’autres plateformes. Les différents placements
+          permettent d’exécuter v2 et sr3 en même temps sur le même serveur.
 
-*NOTICE*: to change configurations from v2 to sr3, rather than copying the file
-          from one directory to the other, use of the convert directive is recommended::
-
-              sr3 convert subscribe/mine.conf
-
-          will make all mechanical conversions of directive names from v2 to sr3 automatically.
-          only custom plugin work need to be manually ported, as described below.
-
-*NOTICE*: In sr3 the winnowing or duplicate suppression algorithm (implemented by sarracenia.flowcb.nodupe.NoDupe.py)
-          is separate from the data source's checksum algorithm. 
-
-          In v2, the checksum algorithm had to be harmonized with the 
-          data source checksum. In sr3 one can select any checksumming method,
-          and still customize how message key and path are selected to allow for 
-          full customization of duplicate suppression.
-          
-
-
-**CHANGE**: Command line interface (CLI) is different. There is only one main entry_point: sr3.
-          so most invocations are different in a pattern like so::
+**CHANGE**: L’interface de ligne de commande (CLI) est différente. Il n’y a qu’un seul entry_point principal : sr3.
+          donc la plupart des invocations sont différentes dans un modèle comme ci-dessous::
 
              sr_subscribe start config -> sr3 start subscribe/config
 
-          in sr3 one can specify a series of configurations to operate on in a single
-          command::
+          dans sr3, on peut spécifier une série de configurations sur lesquelles fonctionner avec une seule commande::
 
              sr3 start poll/airnow subscribe/airnow sender/cmqb
 
-**CHANGE**:  in sr3, use -- for full word options, like --config, or --broker.  In v2 you
-           could use -config and -broker, but single dash is reserved for single character options.
-           This is a result of sr3 using python standard ArgParse class::
+**CHANGE**: dans sr3, utilisez -- pour les options de mots complets, comme --config ou --broker.  Dans la v2, vous
+           pouvez utiliser -config et -broker, mais un tiret unique est réservé aux options à caractère unique.
+           Ceci est le résultat de sr3 utilisant la classe ArgParse standard python::
 
                 -config hoho.conf  -> in v2 refers to loading the hoho.conf file as a configuration.
 
-           In sr3, it will be interpreted as -c (config) load the onfig.conf file, and hoho.conf
-           is part of some subsequent option. in sr3::
+           Dans sr3, il sera interprété comme -c (config) charger le fichier config.conf, et hoho.conf
+           fait partie d’une option ultérieure. dans sr3::
 
                 --config hoho.conf
 
-           does that as intended.
+           le fait comme prévu.
 
-**CHANGE**: In general, underscores in options are replaced with camelCase. e.g.:
+**CHANGE**: En général, les traits de soulignement dans les options sont remplacés par camelCase. p. ex. :
 
           v2 loglevel -> sr3 logLevel
 
-          v2 options that are renamed will be understood, but an informational message will be produced on
-          startup. Underscore is still use for grouping purposes. Options which have changed:
+          Les options v2 qui sont renommées seront comprises, mais un message d’information sera produit au
+          démarrage. Le trait de soulignement est toujours utilisé à des fins de regroupement. Options qui ont changé :
 
           ========================= ==================
-          **v2 Option**             **v3 Option**
+          **Option v2**             **Option v3**
           ------------------------- ------------------
           accel_scp_threshold       accelThreshold
           accel_wget_threshold      accelThreshold
@@ -231,20 +210,20 @@ V2 to Sr3
           topic_prefix              topicPrefix
           ========================= ==================
 
-**CHANGE**: default topic_prefix v02.post -> topicPrefix  v03
-          may need to change configurations to override default to get
-          compatible configurations.
+**CHANGE** : topic_prefix v02.post par défaut -> topicPrefix v03
+          peut avoir besoin de modifier les configurations pour remplacer la valeur par défaut pour obtenir des
+          configurations compatibles.
 
-**CHANGE**: v2: *mirror* defaults to False on all components except sarra.
-          sr3: *mirror* defaults to True on all components except subscribe.
+**CHANGE**: v2 : *mirror* a la valeur false sur tous les composants à l’exception de sarra.
+          sr3 : la valeur par défaut de *mirror* est True sur tous les composants, à l’exception de subscribe.
 
-*NOTICE*: The most common v2 plugins are on_message, and on_file
-          (as per *plugin* and *on\_* directives in v2 configuration files) which can
-          be honoured via the `v2wrapper sr3 plugin class <../Reference/flowcb.html#module-sarracenia.flowcb.v2wrapper>`_
-          Many other plugins were ported, and the the configuration module
-          recognizes the old configuration settings and they are interpreted
-          in the new style. the known conversions can be viewed by starting
-          a python interpreter::
+*NOTICE* : Les plugins v2 les plus courants sont on_message, et on_file
+          (selon les directives *plugin* et *on\_* dans les fichiers de configuration v2) qui peuvent
+          être honoré via la classe de plugin `v2wrapper sr3 plugin class <../Reference/flowcb.html#module-sarracenia.flowcb.v2wrapper>`_
+          De nombreux autres plugins ont été portés, et le module de configuration
+          reconnaît les anciens paramètres de configuration et ils sont interprétés
+          dans le nouveau style. les conversions connues peuvent être visualisées en démarrant
+          un interpréteur python ::
 
 
             Python 3.8.10 (default, Nov 26 2021, 20:14:08)
@@ -349,55 +328,54 @@ V2 to Sr3
             }
             >>>
 
-          The options listed as 'continue' are obsolete ones, superceded by default processing, or rendered
-          unnecessary by changes in the implementation.
+          Les options répertoriées comme "continuer" sont obsolètes, remplacées par le traitement par défaut ou rendues
+          inutile par des changements dans la mise en œuvre.
 
-*NOTICE*: for API users and plugin writers, the v2 plugin format is entirely replaced by
-          the `Flow Callback <FlowCallbacks.html>`_ class. New plugin functionality
-          can mostly be implemented as plugins.
+*NOTICE* : pour les utilisateurs d’API et les rédacteurs de plugins, le format de plugin v2 est entièrement remplacé par
+          la classe `Flow Callback <FlowCallbacks.html>`_. La nouvelle fonctionnalité de plugin
+          peut principalement être implémenté sous forme de plugins.
 
-**CHANGE**: the v2 do_poll plugins must be replaced by subclassing for `poll <../Reference/flowcb.html#module-sarracenia.flowcb.poll>`_
-          Example in `plugin porting <v2ToSr3.html>`_
+**CHANGE**: les plugins do_poll v2 doivent être remplacés par une sous-classification pour `poll <../Reference/flowcb.html#module-sarracenia.flowcb.poll>`_
+          Exemple dans  `plugin porting <v2ToSr3.html>`_
 
-**CHANGE**: The v2 on_html_page plugins are also replaced by subclassing `poll <../Reference/flowcb.html#module-sarracenia.flowcb.poll>`_
+**CHANGE**: Les plugins on_html_page v2 sont également remplacés par la sous-classification `poll <.. /Reference/flowcb.html#module-sarracenia.flowcb.poll>`_
 
-**CHANGE**: v2 do_send replaced by send entrypoint in a Flowcb plugin `plugin porting <v2ToSr3.html>`_
+**CHANGE**: v2 do_send remplacé par send entrypoint dans un plugin Flowcb `plugin portage <v2ToSr3.html>`_
 
-*NOTICE*: the v2 accellerator plugins are replaced by built-in accelleration.
+*NOTICE* : les plugins d’accélérateur v2 sont remplacés par l’accélérateur intégré.
           accel_wget_command, accel_scp_command, accel_ftpget_command, accel_ftpput_command,
-          accel_scp_command, are now built-in options used by the
-          `Transfer <../Reference/flowcb.html#module-sarracenia.transfer>`_ class.
-          Adding new transfer protocols is done by sub-classing Transfer.
+          accel_scp_command, sont maintenant des options intégrées utilisées par la classe
+          `Transfer <../Reference/flowcb.html#module-sarracenia.transfer>`_.
+          L’ajout de nouveaux protocoles de transfert se fait en sous-classant Transfer.
 
-*SHOULD*: v2 on_message -> after_accept should be re-written `plugin porting <v2ToSr3.html>`_
+*SHOULD*: v2 on_message -> after_accept doit être réécrit `portage de plugin <v2ToSr3.html>`_
 
-*SHOULD*: v2 on_file -> after_work should be re-written `plugin porting <v2ToSr3.html>`_
+*SHOULD*: v2 on_file -> after_work devrait être réécrit `portage de plugin <v2ToSr3.html>`_
 
-*SHOULD*: v2 plugins should to be re-written.  `plugin porting <v2ToSr3.html>`_
-          there are many built-in plugins that are ported and automatically
-          converted, but external ones must be re-written.
+*SHOULD* : les plugins v2 doivent être réécrits. `portage de plugin <v2ToSr3.html>`_
+          il existe de nombreux plugins intégrés qui sont portés et automatiquement
+          convertis, mais les externes doivent être réécrits.
 
-          There are some performance consequences from this compatibility however, so high traffic
-          flows will run with less cpu and memory load if the plugins are ported to sr3.
-          To build native sr3 plugins, One should investigate the flowCallback (flowcb) class.
+          Cependant, cette compatibilité a des conséquences sur les performances, de sorte qu’un trafic élevé
+          de flux s’exécuteront avec moins de charge cpu et mémoire si les plugins sont portés sur sr3.
+          Pour créer des plugins sr3 natifs, il faut étudier la classe flowCallback (flowcb).
 
-**CHANGE**: on_watch plugins entry_point becomes an sr3 after_accept entrypoint in a flowcb in a watch.
+**CHANGE**: on_watch plugins devient entry_point un point d’entrée after_accept sr3 dans un flowcb dans un watch.
 
-*ACTION*: The **sr_audit component is gone**. Replaced by running *sr sanity* as a cron
-          job (or scheduled task on windows.) to make sure that necessary processes continue to run.
+*ACTION* : Le composant **sr_audit a disparu**. Remplacé par l’exécution de *sr sanity* en tant que cron
+          (ou tâche planifiée sous Windows) pour s’assurer que les processus nécessaires continuent de s’exécuter.
 
-**CHANGE**: obsolete settings: use_amqplib, use_pika. the new `sarracenia.moth.amqp <../Reference/code.html#module-sarracenia.moth.amqp>`_
-          uses the amqp library.  To use other libraries, one should create new subclasses of sarracenia.moth.
+**CHANGE** : paramètres obsolètes : use_amqplib, use_pika. Le nouveau `sarracenia.moth.amqp <../Reference/code.html#module-sarracenia.moth.amqp>`_
+          utilise la bibliothèque amqp.  Pour utiliser d’autres bibliothèques, il faut créer de nouvelles sous-classes de sarracenia.moth.
 
-**CHANGE**: statehost is now a boolean flag, fqdn option no longer implemented.
-          if this is a problem, submit an issue. It's just not considered worthwhile for now.
+**CHANGE**: statehost est maintenant un indicateur booléen, l’option fqdn n’est plus implémentée.
+          s’il s’agit d’un problème, soumettez un problème. Ce n’est tout simplement pas considéré comme intéressant pour l’instant.
 
-**CHANGE**: sr_retry became `retry.py <../Reference/flowcb.html#module-sarracenia.flowcb.retry>`_.
-          Any plugins accessing internal structures of sr_retry.py need to be re-written.
-          This access is no longer necessary, as the API defines how to put messages on
-          the retry queue (move messages to worklist.failed. )
+**CHANGEMENT**: sr_retry est devenu `retry.py <../Reference/flowcb.html#module-sarracenia.flowcb.retry>`_.
+          Tous les plugins accédant aux structures internes de sr_retry.py doivent être réécrits.
+          Cet accès n’est plus nécessaire, car l’API définit comment mettre des messages sur
+          la file d’attente de nouvelle tentative (déplacer les messages vers worklist.failed. )
 
-*NOTICE*: sr3 watch, with the *force_polling* option, is much less efficient
-          on sr3 than v2 for large directory trees (see issue #403 )
-          Ideally, one does not use *force_polling* at all.
-
+*CHANGE* : le watch sr3, avec l’option *force_polling*, est beaucoup moins efficace
+          sur sr3 que v2 pour les grandes arborescences de répertoires (voir numéro #403 )
+          Idéalement, on n’utilise pas du tout *force_polling*.

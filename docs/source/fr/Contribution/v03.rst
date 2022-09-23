@@ -752,15 +752,7 @@ alors une approche parallèle pourrait être nécessaire.
 Remplacement
 ~~~~~~~~~~~~
 
-The package has the same name as v2 ones (metpx-sarracenia) differing only in version number.
-Installing the new replaces the old completely. This requires that the new version be equal
-or better than the old in all aspects, or that installation be confined to test machines
-until that point is reached.
-
-This takes longer to get initial installation, but has much clearer demarcation (you know
-when you are done.)
-
-Le paquet a le même nom que ceux de la v2 (metpx-sarracenia) ne différant que par le numéro de version.
+Le paquet a le même nom que ceux de la v2 (metpx-sarracenia) qui différent que par le numéro de version.
 L’installation du nouveau remplace complètement l’ancien. Cela nécessite que la nouvelle version soit égale
 ou mieux que l’ancien dans tous les aspects, ou que l’installation soit limitée aux machines d’essai
 jusqu’à ce que ce point soit atteint.
@@ -772,131 +764,132 @@ lorsque vous avez terminé.)
 Parallel
 ~~~~~~~~
 
-Name the package metpx-sarra3 and have the python class directory be sarra3 (instead of sarra.)
-(also ~/.config/sr3 and ~/.cache/sr3. likely the .cache files must be different because
-retry files have different formats? validate. ) So one can copy configurations from old to
-new and run both versions in parallel. The central entry point would be sr3 (rather than
-sr), and to avoid confusion the other entry points (sr_subscribe etc...) would be omitted
-so that v2 code would work unchanged. Might require some tweaks to have the sr classes
-ignore instances from the other versions.
+Nommez le paquet metpx-sarra3 et demandez au répertoire de classe python d’être sarra3 (au lieu de sarra.)
+(aussi ~/.config/sr3 et ~/.cache/sr3. Les fichiers .cache doivent probablement être différents car
+les fichiers de nouvelle tentative ont des formats différents? valider. ) On peut donc copier des configurations de l’ancien vers
+le nouveau et exécuter les deux versions en parallèle. Le point d’entrée central serait sr3 (plutôt que
+sr), et pour éviter toute confusion, les autres points d’entrée (sr_subscribe etc...) seraient omis
+de sorte que le code v2 fonctionnerait inchangé. Peut nécessiter quelques ajustements pour que les classes sr
+ignorent les instances des autres versions.
 
-This is similar to python2 to python3 transition. Allows deployment of sr3 without having
-to convert entirely to it. Allows running some components, and building maturity slowly
-while others are not ready. It facilitates A:B testing, running the same configuration
-with one version or the other without having the install or use a different machine,
-facilitating verification of compatibility.
+Ceci est similaire à la transition de python2 vers python3. Cela permet le déploiement de sr3 sans avoir
+à s’y convertir entièrement. Cela permet d’exécuter certains composants et de gagner lentement en maturité
+tandis que d’autres ne sont pas prêts. Cela facilite les tests A:B, en exécutant la même configuration
+avec une version ou l’autre sans avoir l’installation ou l’utilisation d’une machine différente,
+ce qui facilite la vérification de la compatibilité.
 
 Conclusion
 ~~~~~~~~~~
 
-Have implemented Parallel model, with APPNAME=sr3 ( ~/.config/sr3, ~/.cache/sr3 )
-sr3\_ prefix replacing sr\_ for all commands, and changing the sarra Python class to
-the full sarracenia name to avoid clashing python classes.
+Avoir implémenté le modèle parallèle, avec APPNAME=sr3 ( ~/.config/sr3, ~/.cache/sr3 )
+le préfixe sr3\_ remplace sr\_ pour toutes les commandes et change la classe Python sarra au
+nom complet de sarracenia pour éviter les conflits entre les classes de python.
 
+Incompatibilités
+----------------
 
+Il n’est pas censé y en avoir. Il s’agit d’une liste en cours d’exécution de choses à corriger ou à documenter.
+gros changements:
 
-Incompatibilities
------------------
+* dans sr3, utilisez -- pour les options de mots complets, comme --config ou --broker.  Dans la v2, vous pouvez utiliser -config et -broker,
+  mais cela finira mal dans sr3.  Dans l’ancien analyseur de ligne de commande, -config et --config étaient identiques, ce qui
+  était idiosyncratique.  Le nouvel analyseur d’options de ligne de commande est construit sur
+  ArgParse et interprète un seul - comme préfixe une seule option où le
+  les lettres suivantes sont et argumentent.  Exemple:
 
-There are not supposed to be any. This is a running list of things to fix or document.
-breaking changes:
+  -config hoho.conf -> dans la v2 fait référence au chargement du fichier hoho.conf en tant que configuration.
 
+  dans sr3, il sera interprété comme -c (config) charger le fichier config.conf, et hoho.conf fait partie d’une option ultérieure.
 
-* in sr3, use -- for full word options, like --config, or --broker.  In v2 you could use -config and -broker,
-  but that will end badly in sr3.  In the old command line parser, -config, and --config were the same, which
-  was idiosyncratic.  The new
-  command line option parser is built on ArgParse, and interprets a single - as prefix a single option where the
-  the subsequent letters are and argument.  Example
+* loglevel none -> loglevel notset (maintenant on passe le paramètre directement au module de journalisation python, none n’est pas défini.)
 
-  -config hoho.conf  -> in v2 refers to loading the hoho.conf file as a configuration.
+* les messages de journal et la sortie en interactif seront complètement différents.
 
-  in sr3, it will be interpreted as -c (config) load the onfig.conf gile, and hoho.conf is part of some subsequent option.
+* paramètres abandonnés: use_amqplib, use_pika... remplacé par des bibliothèques d’implémentation
+  distinctes par protocole. amqp utilise la bibliothèque 'amqp' qui n’est ni l’une ni l’autre des choses ci-dessus.
+  ( commit 02fad37b89c2f51420e62f2f883a3828d2056de1 )
 
-* loglevel none -> loglevel notset (now passing loglevel setting directly to python logging module, none isn't defined.)
+* laissant tomber on_watch plugins. pour autant que je sache, personne ne les utilise.
+  La façon don’t v03 fonctionne, ce serait un after_accept pour un watch.
+  c’est plus logique de cette façon.
 
-* log messages and output in interactive, will be completely different.
+* les plugins qui accèdent aux internes de sr_retry doivent être réécrits, car la classe est maintenant plugin/retry.py.
+  la façon de mettre en file d’attente quelque chose pour une nouvelle tentative dans les plugins actuels consiste
+  à les ajouter à la file d’attente ayant échoué.
+  Ce n’est qu’un problème dans les tests de débit de sr_insects.
 
-* dropped settings: use_amqplib, use_pika... replaced by separate per protocol implementation libraries. amqp uses the 'amqp' library which is neither of the above. ( commit 02fad37b89c2f51420e62f2f883a3828d2056de1 )
+* do_download et do_send étaient 1er passage aux plugins *schemed*, je pense qu’ils devraient être déconseillés / remplacés
+  par do_get et do_put. Ca n’est plus clair si ils sont utiles (télécharger et envoyer des plugins sont
+  au mauvais niveau d’abstraction)
 
-* dropping on_watch plugins. afaict, no-one uses them.  The way v03 works it would be an after_accept for a watch.
-  makes more sense that way anyways.
+* do_download, do_send, do_get, do_put sont des téléchargements *schemed*... c’est-à-dire, plutôt que d’empiler de sorte que
+  tous sont appelés, ils sont enregistrés pour des protocoles particuliers.  Dans la v2, par exemple, les plugins accel_*
+  enregistrent le schéma "download". Un point d’entrée on_message modifierait le schéma de sorte que la routine do_*
+  serait invoqué. Dans la v2, la signature d’appel pour tous les plugins est la même (self, parent) mais pour
+  les cas do_get et do_put, c’est contre-productif. Ayez donc à la place une signature d’appel
+  identique au protocole intégré get/put... src_file, dst_file, src_offset, dst_offset, len )
+  Résolution: il suffit d’implémenter de nouvelles classes de transfert, ne s’intègre pas naturellement dans flowcb.
 
-* plugins that access internals of sr_retry need to be rewritten, as the class is now plugin/retry.py.
-  the way to queue something for retry in current plugins is to append them to the failed queue.
-  This is only an issue in the flow tests of sr_insects.
+* Dans la v2, les paramètres par défaut du miroir étaient False dans tous les composants, à l’exception de sr_sarra.
+  mais le réglage du miroir n’a pas été honoré dans shovel, et winnow (bug #358)
+  ce bogue est corrigé dans sr3, mais vous remarquez alors que la valeur par défaut est incorrecte.
 
-* do_download and do_send were 1st pass at *schemed* plugins, I think they should be deprecated/replaced
-  by do_get and do_put. unclear whether there is a need for these anymore (download and send plugins are
-  at wrong level of abstraction)
+  Dans sr3, la valeur par défaut pour mirror est remplacée par True pour tous les flux, à l’exception de subscribe, qui
+  est le comportement le moins surprenant étant donné que la valeur par défaut est False dans la v2.
 
-* do_download, do_send, do_get, do_put are *schemed* downloads... that is, rather than stacking so that
-  all are called, they are registered for particular protocols.  in v2, for example accel_* plugins would
-  register the "download" scheme. an on_message entry point would alter the scheme so that the do_* routine
-  would be invoked. In v2, the calling signature for all plugins is the same (self, parent) but for
-  these do_get and do_put cases, that is quite counter productive. so instead have a calling signature
-  identical to built-in protocol get/put... src_file, dst_file, src_offset, dst_offset, len )
-  Resolution: just implement new Transfer classes, does not naturally fit in flowcb.
+* dans la v2, le téléchargement ne vérifie pas la longueur d’un fichier pendant le téléchargement.
+  dans sr3, c’est le cas. Par exemple, lors de l’utilisation de sftp comme sondage, ls répertorie la taille d’un lien symbolique.
+  Lorsqu’il télécharge, il obtient le fichier réel, et non le lien symbolique, de sorte que la taille est différente.
 
-* In v2, mirror default settings used to be False in all components except sr_sarra.
-  but the mirror setting was not honoured in shovel, and winnow (bug #358)
-  this bug is corrected in sr3, but then you notice that the default is wrong.
-
-  In sr3, the default for mirror is changed to True for all flows except subscribe, which
-  is the least surprising behaviour given the default to False in v2.
-
-* in v2, download does not check the length of a file while it is downloading.
-  in sr3, it does. as an example, when using sftp as a poll, ls will list the size of a symbolic link.
-  When it downloads, it gets the actual file, and not the symlink, so the size is different.
-
-  Example from flow test::
+Exemple tiré du test de débit ::
 
        2021-04-03 10:13:07,310 [ERROR] sarracenia.transfer read_writelocal util/writelocal mismatched file length writing FCAS31_KWBC_031412___39224.slink. Message said to expect 135 bytes.  Got 114 bytes.
 
-  the file is 114 bytes, by the link path is 135 bytes...
-  both v2 and sr3 download the file and not the link, but sr3 produces this error message.
-  Thinking about this one...  is it a bug in poll?
+  le fichier est de 114 octets, mais le chemin de liaison est de 135 octets...
+  v2 et sr3 téléchargent le fichier et non le lien, mais sr3 produit ce message d’erreur.
+  En pensant à celui-ci...  est-ce un bug dans le poll?
 
-* In v2, if you delete a file, and then re-create it, an event will be created.
-  In sr3, if you do the same, the old entry will be in the nodupe cache, and the event will be suppressed.
-  I have noticed this difference, but not sure which version's behaviour is correct.
-  it could be fixed, if we decide the old behaviour is right.
-
-
-Features
---------
-
-* All the components are now derived from the *flow* class, and run the general algorithm already
-  designed as the basis of v2, but never implemented as such.
-
-* The extension API is now vanilla python with no magic settings. just standard classes, using standard import mechanism.
-  debugging should be much simpler now as the interpreter will provide much better error messages on startup.
-  The v2 style plugins are now called *flow callbacks*, and there are a number of classes (integrity, moth,
-  transfer, perhaps flow) that permit extension by straightforward sub-classing. This should make it much
-  easier to add additional protocols for transport and messages, as well checksum algorithms for new data types.
-
-* sarra.moth class abstracts away AMQP, so messaging protocol becomes pluggable.
-
-* use the sarracenia/ prefix (already present) to replace sr\_ prefix on modules.
-
-* API access to flows. (so can build entirely new programs in python by subclassing.)
-
-* properties/options for classes are now hierarchical, so can set debug to specific classes within app.
-
-* sr ability to select multiple components and configurations to operate on.
-
-* sr list examples is now used to display examples separate from the installed ones.
-
-* sr show is now used to display the parsed configuration.
-
-* notification messages are acknowledged more quickly, should help with throughput.
-
-* FlowCB plugin entry_points are now based on groups of notification messages, rather than individual ones, allowing people
-  to organize concurrent work.
-
-* integrity (checksums) are now plugins.
-
-* gather (inlet? sources of notification messages) are now plugins.
-
-* added typing to options settings, so plugins can declare: size, duration, string, or list.
+* Dans la v2, si vous supprimez un fichier, puis le recréez, un événement sera créé.
+  Dans sr3, si vous faites de même, l’ancienne entrée sera dans la cache nodupe et l’événement sera supprimé.
+  J’ai remarqué cette différence, mais je ne sais pas quelle version est correcte.
+  cela pourrait être corrigé, si nous décidons que l’ancien comportement est juste.
 
 
+Fonctionnalités
+---------------
+
+* Tous les composants sont maintenant dérivés de la classe *flow* et exécutent déjà l’algorithme général
+  conçu comme la base de la v2, mais jamais implémenté en tant que tel.
+
+* L’API d’extension est maintenant du python simple sans paramètres magiques. Juste des classes standard, en utilisant un mécanisme
+  d’importation standard. Le débogage devrait être beaucoup plus simple maintenant car l’interpréteur fournira de
+  bien meilleurs messages d’erreur au démarrage. Les plugins de style v2 sont maintenant appelés *flow callbacks*,
+  et il existe un certain nombre de classes (integrity, moth, transfert, peut-être flux) qui permettent l’extension
+  par une sous-classification simple. Cela devrait faire en sorte que ce soit beaucoup plus facile d’ajouter
+  des protocoles supplémentaires pour le transport et les messages, ainsi que des algorithmes de somme de
+  contrôle pour les nouveaux types de données.
+
+* La classe sarra.moth fait l'abstraction de l’AMQP, de sorte que le protocole de messagerie devient enfichable.
+
+* utiliser le préfixe sarracenia/ (déjà présent) pour remplacer le préfixe sr\_ sur les modules.
+
+* Un accès API aux flux. (ainsi on peut construire des programmes entièrement nouveaux en python en sous-classant.)
+
+* les propriétés/options des classes sont désormais hiérarchiques, de sorte qu’elles peuvent définir le débogage sur des classes spécifiques dans l’application.
+
+* sr ability pour sélectionner plusieurs composants et configurations sur lesquels on peut opérer.
+
+* sr list examples est maintenant utilisé pour afficher des exemples distincts de ceux installés.
+
+* sr show est maintenant utilisé pour afficher la configuration analysée.
+
+* les messages de notification sont accusés de réception plus rapidement, ce qui devrait aider au débit.
+
+* Les entry_points de plug-in FlowCB sont désormais basées sur des groupes de messages de notification, plutôt que sur des messages individuels, permettant aux gens
+  d'organiser le travail simultané.
+
+* l’intégrité (sommes de contrôle) sont maintenant des plugins.
+
+* gather (entrée ? sources de messages de notification) sont désormais des plugins.
+
+* ajout du typage des paramètres d’options, afin que les plugins puissent déclarer: taille, durée, chaîne ou liste.
