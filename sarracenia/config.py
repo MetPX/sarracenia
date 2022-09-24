@@ -162,6 +162,7 @@ convert_to_v3 = {
     'notify_only': [ 'download', 'False' ],
     'on_message': {
         'msg_print_lag': [ 'flow_callback', 'sarracenia.flowcb.accept.printlag.PrintLag'],
+        'msg_replace_new_dir': [ 'flow_callback sarracenia.flowcb.accept.adjustfileoppaths.Adjustfileoppaths' ],
         'msg_skip_old': [ 'flow_callback', 'sarracenia.flowcb.accept.skipold.SkipOld'],
         'msg_test_retry': [ 'flow_callback', 'sarracenia.flowcb.accept.testretry.TestRetry'],
         'msg_to_clusters': [ 'flow_callback', 'sarracenia.flowcb.accept.toclusters.ToClusters'],
@@ -512,6 +513,7 @@ class Config:
         'logdays': 'logRotateCount',
         'logRotate': 'logRotateCount',
         'logRotate_interval': 'logRotateInterval',
+        'msg_replace_new_dir' : 'adjustFileOpPaths',
         'no_duplicates': 'nodupe_ttl',
         'post_base_dir': 'post_baseDir',
         'post_basedir': 'post_baseDir',
@@ -1260,10 +1262,12 @@ class Config:
             elif k in count_options:
                 setattr(self, k, humanfriendly.parse_size(v))
             elif k in list_options:
+                logger.critical('k=%s is a list!' % k )
                 if not hasattr(self, k):
                     setattr(self, k, [' '.join(line[1:])])
                 else:
                     setattr(self, k, getattr(self, k).append(' '.join(line[1:])))
+                logger.critical('k=%s new value: %s' % getattr(self,k)  )
             elif k in set_options:
                 vs = set(v.split(','))
                 if v=='None':
