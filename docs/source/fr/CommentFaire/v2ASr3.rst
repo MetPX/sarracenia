@@ -1,0 +1,906 @@
+
+===============================
+Portage des plugins V2 vers Sr3
+==============================
+
+Ceci est un guide pour porter des plugins de Sarracenia version 2.X (metpx-sarracenia) vers
+Sarracenia version 3.x (metpx-sr3)
+
+.. Contenu::
+
+.. avertissement:: Si vous êtes nouveau sur Sarracenia, et que vous n’avez aucune expérience ou besoin de regarder les plugins v2,
+   ne lisez pas ceci. cela ne fera que vous confondre. **Ce guide s’adresse à ceux qui ont besoin de prendre des
+   Plugins v2 et les porter à Sr3.** Vous feriez mieux d’obtenir un nouveau regard en regardant le
+   `jupyter notebook examples <../Tutorials>`_ qui fournissent une introduction à la v3 sans
+   les références déroutantes à la v2.
+
+Les `exemples de jupyter notebook <.. /Tutorials>`_ sont probablement un bon pré-requis pour tout le monde,
+pour comprendre comment fonctionnent les plugins Sr3, avant d’essayer de porter ceux de la v2.
+
+`Exemple de plugin Sr3 <../Reference/flowcb.html#module-sarracenia.flowcb.log>`_
+
+D’une manière générale, les plugins v2 ont été rajouté sur le code existant pour permettre certaines modifications
+de comportement. Les plugins V2 de première génération n’avaient que des routines uniques déclarées
+(par exemple *on_message*), alors que ceux de la deuxième génération utilisaient des classes entières
+(par exemple *plugin*) ont été déclarés, mais toujours sur pilotis.
+
+Les plugins Sr3 sont des éléments de conception de base, composés ensemble pour implémenter une partie de
+Sarracenia. Les plugins V3 devraient être plus faciles à implémenté et à déboguer pour les programmeurs Python,
+et sont plus flexibles et puissants que le mécanisme de v2.
+
+ * v3 utilise la syntaxe standard de python, pas l’étrange *self.plugins*, *parent.logger*, de la v2,
+   et oh gee pourquoi *import* ne fonctionne-t-il pas?
+ * Importations python standard; Les erreurs de syntaxe sont détectées et signalées *de la manière normale*
+ * Les classes v3 sont conçues pour être utilisables en dehors de l’interface de ligne de commande elle-même
+   (voir les exemples de jupyter notebook)
+   appelable par les programmeurs d’applications dans leur propre code, comme toute autre bibliothèque python.
+ * Les classes v3 peuvent être sous-classées pour ajouter des fonctionnalités de base, comme un nouveau message
+   de notification ou un protocole de transport de fichier.
+
+.. astuce::
+  Il existe également quelques vidéos pas à pas sur Youtube montrant des ports simples v2 -> v3:
+   - `Sender (10 min) <https://www.youtube.com/watch?v=rUazjoGzPac>`_
+   - `Poll (20 min) <https://www.youtube.com/watch?v=P20M9ojn_Zw>`_
+
+Placement de Fichier
+--------------------
+
+v2 place les fichier de configuration sous ~/.config/sarra, et les fichiers d'état sous ~/.cache/sarra
+
+v3 place les fichier de configuration sous ~/.config/sr3, et les fichiers d'état sous ~/.cache/sr3
+
+v2 a une implémentation C de sarra appelée sarrac. L’implémentation C pour v3, est appelée sr3c,
+et est identique à celui de la v2, sauf qu’il utilise les emplacements de fichiers v3.
+
+Différence de ligne de commande
+-------------------------------
+
+En bref, le point d’entrée sr3 est utilisé pour démarrer / arrêter / évaluer les choses::
+
+  v2:  sr_*component* start config
+
+  v3:  sr3 start *component*/config
+
+Dans sr3, on peut également utiliser des spécifications de style de globbing de fichier pour demander qu'une commande
+soit invoqué sur un groupe de configurations, alors que dans la v2, on ne pouvait fonctionner que sur une à la fois.
+
+.. caution::
+  **sr3_post** est une exception à ce changement parce qu'il fonctionne comme sr_post de la v2, étant
+  un outil d’affichage interactif.
+
+Ce qui fonctionnera sans changement
+-----------------------------------
+
+La première étape du portage d’une configuration subscribe/X vers v3, consiste simplement à copier le
+fichier de configuration de ~/.config/sarra à l’emplacement correspondant dans ~/.config/sr3 et essayez::
+
+   sr3 show subscribe/X
+
+La commande *show* est nouvelle dans sr3 et permet d’afficher la configuration après
+avoir été analysé. La plupart d’entre eux devraient fonctionner, sauf si vous avez des plugins do_*.
+
+Exemples de choses qui devraient fonctionner:
+
+* tous les paramètres des fichiers de configuration v2 doivent être reconnus par l’analyseur d’options v3 et convertis
+  aux équivalents v3, c’est-à-dire :
+
+  ========================== ===============
+  Option v2                  Option v3
+  ========================== ===============
+  accept_scp_threshold       accel_threshold
+  heartbeat                  housekeeping
+  chmod_log                  permLog
+  loglevel                   logLevel
+  post_base_url              post_baseUrl
+  post_rate_limit            messageRateMax
+  cache, suppress_duplicates nodupe_ttl
+  topic_prefix               topicPrefix 
+  ========================== ===============
+
+  Pour la liste complète, consultez le `Release Notes <UPGRADING.html>`_
+
+  Le topic_prefix dans la v2 est 'v02.post' dans la v3, la valeur par défaut est 'v03'. Si topic_prefix est omis
+  vous devrez ajouter la ligne *topicPrefix v02.post* pour obtenir le même comportement que la v2. Pourrais
+  être également placé dans ~/.config/sr3/default.conf si le cas est trop courant.
+  Il se peut que l’on doive remplacer de la même manière la valeur par défaut sr3 pour post_topicPrefix.
+
+* toutes les routines on_message, on_file, on_post, on_heartbeat, fonctionneront, par sr3 en utilisant
+  le plugin flowcb/v2wrapper.py qui sera automatiquement appelé lorsque les plugins v2 sont
+  lu dans le fichier de configuration.
+
+.. Remarque:: Idéalement, v2wrapper est utilisé comme béquille pour permettre d’avoir une configuration fonctionnelle
+  rapidement. Il y a un succès de performance à l’utilisation de v2wrapper.
+
+
+Ce qui ne fonctionnera pas sans changement
+------------------------------------------
+
+* do_* ils sont juste fondamentalement différents dans la v3.
+
+Si vous avez une configuration avec un plugin do_*, vous avez besoin de ce guide, à partir du jour 1.
+pour définir une configuration pour utiliser un plugin, dans la v2 on utilisait l’option *plugin* ::
+
+   plugin <pluginName>
+
+L’équivalent de celui de la v3 est *callback*::
+
+   callback <pluginName>
+
+Pour que ce raccourci fonctionne, il devrait y avoir un fichier nommé <pluginName>.py quelque part dans le
+PYTHONPATH (~/.config/plugins est ajouté pour plus de commodité.) et ce fichier source python a besoin
+qu’une classe <PluginName> y soit déclarée (identique au nom du fichier mais avec la première lettre en majuscule).
+Si vous devez le nommer différemment, il existe un formulaire plus long qui permet de violer la
+convention dans v3::
+
+  flowCallback <pluginName>.MyFavouriteClass
+
+les déclarations de plugins de routine individuelles on_message, on_file, etc... ne sont pas un moyen de
+faire les choses dans la v3. Vous déclarez des rappels et leur demandez de contenir les points d’entrée dont vous avez besoin.
+
+* DESTFNSCRIPT fonctionne de manière similaire dans v3 à v2, mais l’API est faite pour correspondre v3 flowCallbacks,
+les nouvelles routines, ou on renvoie le nouveau nom de fichier en sortie, au lieu de modifier un champ
+dans le message de notification.
+
+
+Différences de codage entre les plugins dans v2 vs Sr3
+------------------------------------------------------
+
+L’API pour ajouter ou personnaliser des fonctionnalités dans sr3 est très différente de la v2.
+En général, les plugins v3:
+
+* **sont généralement sous-classés à partir de sarracenia.flowcb.FlowCB.**
+
+  Dans la v2, on déclarerait::
+
+      class Msg_Log(object): 
+
+  Les plugins v3 sont des fichiers sources python normaux (pas de magie à la fin.)
+  ils sont sous-classés à partir de sarracenia.flowcb::
+
+      from sarracenia.flowcb import FlowCB
+
+      class MyPlugin(FlowCB):
+        ...le reste de la classe de plugin..
+        
+         def after_accept(self, worklist):
+           ...code à exécuter dans callback...
+
+  Pour créer un plugin *after_accept* dans la classe *MyPlugin*, définissez une fonction
+  avec ce nom et la signature appropriée.
+
+* Les plugins v3 **sont pythoniques, pas bizarres** :
+  Dans la v2, vous avez besoin que la dernière ligne pour inclure quelque chose comme ::
+
+     self.plugin = 'Msg_Delay'
+
+  ceux de la première génération à la fin avaient quelque chose comme ceci pour attribuer explicitement des points d’entrée::
+
+      msg_2localfile = Msg_2LocalFile(None)
+      self.on_message = msg_2localfile.on_message
+
+  Quoi qu’il en soit, une partie python naïve du fichier échouerait invariablement sans qu’une sorte de
+  harnais de test ne soit enroulée autour d’elle.
+
+  .. Astuce:: Dans la v3, supprimez ces lignes (généralement situées au bas du fichier)
+
+  Dans la v2, il y avait des problèmes étranges avec les importations, ce qui a entraîné la mise en place
+  d'importer des instructions à l’intérieur des fonctions. Ce problème est résolu dans la v3, vous pouvez
+  vérifier votre syntaxe d’importation en faisant *import X* dans n’importe quel interpréteur python.
+
+  .. Astuce:: Placez les importations nécessaires au début du fichier, comme tout autre module python
+           **et supprimez les importations situées dans les fonctions lors du portage**.
+
+* **Les plugins v3 peuvent être utilisés par les programmeurs d’applications.** Les plugins ne sont pas
+  boulonné, mais un élément central, implémentant la suppression de doublon, réception et transmission de messages
+  de notification, surveillance de fichiers, etc.. comprendre les plugins v3 donne aux gens des indices
+  importants pour être capable de travailler sur sarracénia.
+
+  Les plugins v3 peuvent être *importés* dans des applications existantes pour ajouter la possibilité
+  d'interagir avec les pompes sarracenia sans utiliser l’interface de ligne de commande Sarracenia.
+  voir les tutoriels jupyter.
+
+* Les plugins v3 utilisent maintenant **la journalisation python standard** ::
+
+      import logging
+  
+  Assurez-vous que la déclaration d’enregistreur suivante se trouve après le **last _import_** en haut du plugin v3 ::
+
+      logger = logging.getLogger(__name__)
+
+      # To log a notification message:
+      logger.debug( ... )
+      logger.info( ... )
+      logger.warning( ... )
+      logger.error( ... )
+      logger.critical( ... )
+      
+  Lors du portage des plugins v2 -> v3 : *logger.x* remplace *parent.logger.x*.
+  Parfois, il y a aussi self.logger x... je ne sais pas pourquoi... ne demandez pas.
+  
+  .. Astuce:: Dans VI, vous pouvez utiliser le remplacement global pour effectuer un travail rapide lors du portage::
+  
+             :%s/parent.logger/logger/g
+
+* Les plugins v3 *ont des options comme argument pour le __init__ (self, options): routine* plutôt
+  que dans la v2 où ils se trouvaient dans l’objet parent. Par convention, dans la plupart des modules, la
+  fonction __init__ comprend un::
+
+       self.o = options
+       self.o.add_option('OptionName', Type, DefaultValue)
+       
+  .. Astuce:: Dans VI, vous pouvez utiliser le remplacement global::
+  
+             :%s/parent/self.o/g
+
+
+* **vous pouvez voir quelles options sont actives en démarrant un composant avec la commande 'show'** ::
+
+      sr3 show subscribe/myconf
+
+  ces paramètres sont accessibles à partir de self.o
+
+* Dans les paramètres sr3, **recherchez le remplacement de nombreux traits de soulignement par le camelCase**
+  conformément à la normalisation de WMO. l’exception étant post\_ où le trait de soulignement semble mieux
+  correspondre à l’intention.  ainsi:
+  *  custom_setting_thing -> customSettingThing
+  *  post_base_dir -> post_baseDir
+  *  post_broker est inchangé.
+  *  post_base_url -> post_baseUrl
+
+* Dans la v3 **les messages de notification sont maintenant des dictionnaires python** , donc `msg.relpath` dans v2
+  devient `msg['relPath']` dans la v3. Les messages de notification v3, car les dictionnaires sont la
+  représentation interne par défaut.
+
+* Dans la v3 **les plugins fonctionnent sur des lots de messages de notification**. v2 *on_message* obtient parent
+  comme paramètre, et le message de notification se trouve dans parent.message. Dans la v3, *after_accept* a worklist
+  comme option, qui est la liste python des messages, la longueur maximale étant fixée par l'option
+  *batch*. Donc, l’organisation générale pour after_accept, et after_work est::
+
+      new_incoming=[]
+      for message in old_list:
+          if good:
+             new_incoming.append(message)
+          if bad:
+             worklist.rejected.append(message)
+      worklist.incoming=new_incoming
+
+
+  .. Remarque:: les plugins doivent être déplacés du répertoire /plugins vers le répertoire /flowcb,
+            et plus précisément, les plugins on_message qui se transforment en plugins after_accept devraient être
+            placé dans le répertoire flowcb/accept (afin que les plugins similaires puissent être regroupés).
+
+  Dans *after_work*, le remplacement de *on_file* dans v2, les opérations sont sur :
+
+  * worklist.ok (transfert réussi.)
+  * worklist.failed (transferts ayant échoué.)
+
+  Dans le cas de la réception d’un fichier .tar et de l’extension à des fichiers individuels,
+  la routine *after_work* modifierait le fichier worklist.ok pour qu’il contienne des messages de notification pour
+  les fichiers individuels, plutôt que les .tar collectifs d’origine.
+
+  .. Remarque:: les plugins on_file qui deviennent des plugins after_work doivent être placés dans le
+            répertoire /flowcb/after_work
+
+* v3 a **pas besoin de définir des champs de message de notification dans les plugins**
+  dans la v2, il faudrait définir partstr, et sumstr pour les messages de notification v2 dans les plugins.
+  Cela nécessitait une compréhension excessive des formats de message de notification et signifiait que la
+  modification des formats de message de notification demande de modifier les plugins (le format de message de
+  notification v03 est non pris en charge par la plupart des plugins v2, par exemple). Pour créer un message de
+  notification à partir d’un fichier local dans un plugin v3 ::
+
+     import sarracenia
+
+     m = sarracenia.Message.fromFileData(sample_fileName, self.o, os.stat(sample_fileName) )
+
+  juste a regarder `do_poll -> poll`_
+
+* les plugins v3 **impliquent rarement la sous-classification des classes de Moth ou de Transfer.**
+  La classe sarracenia.moth implémente un support pour les protocoles de mise en file d’attente
+  des messages de notification qui prennent en charge les abonnements basés sur la hiérarchie des topics.
+  Il y a actuellement deux sous-classes de Moth: amqp (pour rabbitmq) et mqtt.  Ce serait
+  idéal pour quelqu’un d’ajouter un amq1 (pour le support qpid amqp 1.0.)
+
+  Il peut être raisonnable d’y ajouter une classe SMTP pour l’envoi d’e-mails,
+  Pas sûr.
+
+  Les classes sarracenia.transfer incluent http, ftp et sftp aujourd’hui.
+  Elles sont utilisés pour interagir avec des services distants qui fournissent une interface de fichier
+  (prise en charge de choses comme la liste des fichiers, le téléchargement et / ou l'envoi.)
+  D’autres sous-classes telles que S3, IPFS ou webdav, seraient des ajouts excellents.
+
+Fichiers de configuration
+-------------------------
+
+Dans la v2, l’option de configuration principale pour déclarer un plugin est ::
+
+   plugin X
+
+D’une manière générale, il devrait y avoir un fichier plugins/x.py
+avec une classe X.py dans ce fichier dans ~/.config/plugins
+ou dans le répertoire sarra/plugins dans le paquet lui-même.
+Il s’agit déjà d’un style de déclaration de plugin de deuxième génération
+dans Sarracenia. La version originale, une personne déclare des points d’entrée individuels ::
+
+    on_message, on_file, on_post, on_..., do_... 
+
+Dans Sr3, les entrées ci-dessus sont considérées comme des demandes pour des plugins de v2,
+et doit être utilisé que pour des raisons de continuité.
+Idéalement, on devrait appeler les plugins v3 comme suit::
+
+   callback x
+
+Où x sera une sous-classe de sarracenia.flowcb, qui
+contiendra une classe X (première lettre en majuscule) dans le
+fichier x.py quelque part dans le chemin de recherche python, ou dans le répertoire
+*sarracenia/flowcb* qui est inclus dans le package.
+Il s’agit en fait d’une version abrégée de l’importation python.
+Si vous devez déclarer un rappel qui n’obéit pas à cette
+convention, on peut aussi utiliser un manière plus flexible mais plus longue::
+
+  flowcb sarracenia.flowcb.x.X
+
+les deux ci-dessus sont équivalents. La version flowcb peut être utilisée pour importer des classes
+qui ne correspondent pas à la convention du x.X (un fichier nommé x.py contenant une classe appelée X)
+
+Mise à niveau de la configuration
+---------------------------------
+
+Une fois qu’un plugin est porté, on peut également faire en sorte que l’analyseur d’options v3 reconnaisse une
+invocation de plugin de v2 et la remplace par une invocation v3. En regardant dans /sarracenia/config.py#L144,
+il existe une structure de données *convert_to_v3*.  Voici un exemple d’entrée ::
+
+    .
+    .
+    .
+    'on_message' : {
+             'msg_delete': [ 'flowCallback': 'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles' ]
+    .
+    .
+    .
+
+
+Un fichier de configuration v2 contenant une ligne *on_message msg_delete* sera remplacé par l’analyseur avec ::
+
+    flowCallback sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles
+
+
+
+
+Options
+-------
+
+In v2, one would declare settings to be used by a plugin in the __init__ routine, with 
+the *declare_option*.::
+
+    parent.declare_option('poll_usgs_stn_file')
+
+The values are always of type *list*, so usually, one uses the value by picking the first value::
+
+    parent.poll_usgs_stn_file[0]
+
+In v3, that would be replaced with::
+
+    self.o.add_option( option='poll_usgs_stn_file', kind='str', default_value='hoho' )
+
+Where in v3 there are now types ( as seen in the sarracenia/config.py#L777 file) and default value setting included without additional 
+code. it would be referred to in other routines like so::
+
+    self.o.poll_usgs_stn_file
+
+
+
+    
+Mapping v2 Entry Points to v3 Callbacks 
+---------------------------------------
+
+for a comprehensive look at the v3 entry points, have a look at:
+
+https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/__init__.py
+
+for details.
+
+on_message, on_post --> after_accept
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+v2: receives one notification message, returns True/False
+
+
+v3: receives worklist 
+    modify worklist.incoming 
+    transferring rejected notification messages to worklist.rejected, or worklist.failed.
+
+Sample flow::
+
+  def after_accept(self, worklist):
+
+     ...
+
+     new_incoming=[]
+     for m in worklist.incoming:
+
+          if message is useful to us:
+             new_incoming.append(m)
+          else
+             worklist.rejected.append(m)        
+ 
+     worklist.incoming = new_incoming
+
+
+
+examples:
+  v2: plugins/msg_gts2wistopic.py
+  v3: flowcb/wistree.py
+
+
+on_file --> after_work
+~~~~~~~~~~~~~~~~~~~~~~
+
+v2: receives one notification message, returns True/False
+
+v3: receives worklist 
+    modify worklist.ok (transfer has already happenned.) 
+    transferring rejected notification messages to worklist.rejected, or worklist.failed.
+
+    can also be used to work on worklist.failed (retry logic does this.)
+
+examples:
+
+.. Danger:: THERE ARE NO EXAMPLES?!?! 
+            TODO: add some examples
+
+
+on_heartbeat -> on_housekeeping
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+v2: receives parent as argument.
+    will work unchanged.
+
+
+v3: only receives self (which should have self.o replacing parent)
+
+examples:
+
+  * v2: hb_cache.py -- cleans out cache (references sr_cache.)
+  * v3: flowcb/nodupe.py -- implements entire caching routine.
+
+
+
+do_poll -> poll
+~~~~~~~~~~~~~~~
+
+v2: call do_poll from plugin.
+
+ * protocol to use the do_poll routine is identified by registered_as() entry point
+    which is mandatory to provide.
+ * requires manually constructing fields for notification messages, is notification message verison specific,
+   (generally do not support v03 notification messages.)
+ * explicitly calls poll entry points.
+ * runs, one must worry about whether one has the vip or not to decide what processing
+   to do in each plugin.
+ * poll_without_vip setting available.
+
+v3: define poll in a flowcb class.
+
+ * poll only runs when has_vip is true.
+
+ * registered_as() entry point is moot.
+
+ * gather runs always, and is used to subscribe to post done by node that has the vip,
+   allowing the nodupe cache to be kept uptodate.
+
+ * api defined to build notification messages from file data regardless of notification message format.
+
+ * returns a list of notification messages to be filtered and posted.
+
+
+To build a notification message, without a local file, use fromFileInfo sarracenia.message factory::
+  
+     import dateparser
+     import paramiko
+     import sarracenia
+
+     gathered_messages=[]
+
+     m = sarracenia.Message.fromFileInfo(sample_fileName, cfg)
+
+builds an notification message from scratch.
+
+One can also build and supply a simulated stat record to fromFileInfo factory,
+using the *paramiko.SFTPAttributes()* class. For example, using the dateparser 
+routines to convert. However, the remote server lists the date and time, as well 
+as determines the file size and permissions in effect::
+
+
+     pollmtime = dateparser.parse( ... , settings={ ... TO_TIMEZONE='utc' } )
+     mtimestamp = time.mktime( pollmtime.timetuple() )
+
+     fsize = info_from_poll #about the size of the file to download
+     st = paramiko.SFTPAttributes()
+     st.st_mtime=mtimstamp
+     st.st_atime=mtimestamp
+     st.st_size=fsize
+     st.st_mode=0o666 
+     m = sarracenia.Message.fromFileInfo(sample_fileName, cfg, st)
+
+One should fill in the *SFTPAttributes* record if possible, since the duplicate
+cache use metadata if available. The better the metadata, the better the
+detection of changes to existing files.
+
+Once the notification message is built, append it to the list::
+
+     gathered_messages.append(m) 
+  
+and at the end::
+
+     return gathered_messages
+
+ 
+
+Virtual IP processing in poll
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In v2 if you have a vIP set, all participating nodes poll the upstream server
+and maintain the list of current files, they just don't publish the result.
+So if you have 8 servers sharing a vIP, all eight are polling, kind of sad.
+There is also the poll_no_vip setting, and plugins often have to check if they
+have the vIP or not.
+
+In v3, only the server with the vIP polls. The plugins don't need to check.
+The other participating servers subscribe to where the poll posts to,
+to update their recent_files cache.
+
+examples:
+ * flowcb/poll/airnow.py
+
+on_html_page -> subclass flowcb/poll
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Here is a v2 plugin nsa_mls_nrt.py:
+
+.. code-block:: python
+
+    #!/usr/bin/env python3                                                                                                                          
+                                                  
+    class Html_parser():                                                                                                                            
+                                                  
+        def __init__(self,parent):                                                                                                                  
+                                                  
+            parent.logger.debug("Html_parser __init__")
+            import html.parser
+    
+            self.parent = parent
+            self.logger = parent.logger
+    
+            self.parser = html.parser.HTMLParser()
+            self.parser.handle_starttag = self.handle_starttag
+            self.parser.handle_data     = self.handle_data
+    
+    
+        def handle_starttag(self, tag, attrs):
+            for attr in attrs:
+                c,n = attr
+                if c == "href" and n[-1] != '/':
+                   self.myfname = n.strip().strip('\t')
+    
+        def handle_data(self, data):
+            import time
+    
+            if 'MLS-Aura' in data:
+                   self.logger.debug("data %s" %data)
+                   self.entries[self.myfname] = '-rwxr-xr-x 1 101 10 ' +'_' + ' ' + 'Jan 1 00:01' + ' ' + data
+                   self.logger.debug("(%s) = %s" % (self.myfname,self.entries[self.myfname]))
+            if self.myfname == None : return
+            if self.myfname == data : return
+            ''' 
+            # at this point data is a filename like
+            name = data.strip().strip('\t')
+    
+            parts = name.split('_')
+            if len(parts) != 3 : return
+    
+            words = parts[1].split('.')
+            sdate  = ' '.join(words[:4])
+            t      = time.strptime(sdate,'%Y %j %H %M')
+    
+            # accept file if 1 month old in sec  60 sec* 60min * 24hr * 31days
+    
+            epochf = time.mktime(t)
+            now    = time.time()
+            elapse = now - epochf
+    
+            if elapse > self.month_in_secs : return
+    
+            # build an ls line from date in file ... size set to 0  since not provided
+    
+            mydate = time.strftime('%b %d %H:%M',t)
+     
+            mysize = '_'
+     
+            self.entries[self.myfname] = '-rwxr-xr-x 1 101 10 ' + mysize + ' ' + mydate + ' ' + data
+            self.logger.debug("(%s) = %s" % (self.myfname,self.entries[self.myfname]))
+            '''
+    
+        def parse(self,parent):
+            self.logger.debug("Html_parser parse")
+            self.entries = {}
+            self.myfname = None
+    
+            self.logger.debug("data %s" % parent.data)
+            self.parser.feed(parent.data)
+            self.parser.close()
+    
+            parent.entries = self.entries
+    
+            return True
+    
+    html_parser = Html_parser(self)
+    self.on_html_page = html_parser.parse
+
+The plugin has a main "parse" routine, which invokes the html.parser class, where data_handler
+is called for each line, gradually building the self.entries dictionary where each entry is
+a string constructed to resemble a line of *ls* command output.
+
+This plugin is a near exact copy of the html_page.py plugin used by default.
+The on_html_page entry point for plugins is replaced by a completely different
+mechanism. Most of the logic of v2 poll in sr3 is in the new sarracenia.FlowCB.Poll class.
+Logic from the v2 plugins/html_page.py, used by default, is now part of this 
+new Poll class, subclassed from flowcb, so basic HTML parsing is built-in.
+
+Another change from v2 is that there was far more string manipulation in the old
+version. in sr3 polls, most string maniupulation has been replaced by filling an 
+paramiko.SFTPAttributes structure as soon as possible.
+
+So the way to replace on_html_page in sr3 is by sub-classing Poll.  Here is an 
+sr3 version of same plugin (nasa_mls_nrt.py):
+
+.. code-block:: python
+
+    import logging
+    import paramiko
+    import sarracenia
+    from sarracenia import nowflt, timestr2flt
+    from sarracenia.flowcb.poll import Poll
+    
+    logger = logging.getLogger(__name__)
+    
+    class Nasa_mls_nrt(Poll):
+    
+        def handle_data(self, data):
+    
+            st = paramiko.SFTPAttributes()
+            st.st_mtime = 0
+            st.st_mode = 0o775
+            st.filename = data
+    
+            if 'MLS-Aura' in data:
+                   logger.debug("data %s" %data)
+                   #self.entries[self.myfname] = '-rwxr-xr-x 1 101 10 ' +'_' + ' ' + 'Jan 1 00:01' + ' ' + data
+                   self.entries[data]=st
+    
+                   logger.info("(%s) = %s" % (self.myfname,st))
+            if self.myfname == None : return
+            if self.myfname == data : return
+
+( https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/poll/nasa_mls_nrt.py )
+and matching config file provided here:
+( https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/examples/poll/nasa-mls-nrt.conf )
+
+The new class is declared as a subclass of Poll, and only the needed
+The HTML routine (handle_data) need be written to override the behaviour
+provided by the parent class.
+
+This solution is less than half the size of the v2 one, and permits
+all manner of flexibility by allowing replacement of any or all elements
+of the poll class.
+
+
+on_line -> poll subclassing
+---------------------------
+
+Similarly to on_html_page above, all uses of on_line in the previous version
+were about re-formatting lines to be parseable. the on_line routine can be
+similarly sub-classed to replace it.  One had to modify the parent.line
+string to be parseable by the built in *ls* style line parsing.
+
+In sr3, on_line is expected to return a populated paramiko.SFTPAttributes field, similar
+to the way on_html_page works (but only a single one instead of a dictionary of them.)
+With the more flexible date parsing in sr3, there has been no identified need for on_line
+on which to build an example.
+
+
+
+do_send -> send:
+----------------
+
+v2: do_send could be either a standalone routine, or associated with a protocol type
+
+* based on registered_as()  so the destination determines whether it is used or not.
+
+* accepts parent as an argument.
+ 
+* returns True on success, False on failure.
+
+* will typically have a registered_as() entry point to say which protocols to use a sender for.
+
+    
+v3: send(self,msg) 
+
+* use the provided msg to do sending.
+
+* returns True on success, False on failure.
+
+* registered as is not used anymore, can be deleted.
+
+* The send entry_point overrides all sends, and is not protocol specific.
+  To add support for new protocols, subclass sarracenia.transfer instead.
+
+
+examples:
+  * flowcb/send/email.py
+
+
+do_download -> download:
+------------------------
+
+create a flowCallback class with a *download* entry point.
+
+* accepts a single notification message as an argument.
+
+* returns True if download succeeds.
+
+* if it returns False, the retry logic applies (download will be called again
+  then placed on the retry queue.)
+
+* use msg['new_dir'], msg['new_file'], msg['new_inflight_path'] 
+  to respect settings such as *inflight* and place file properly.
+  (unless changing that is motivation for the plugin.)
+
+* might be a good idea to verify the checksum of the downloaded data.
+  if the checksum of the file downloaded does not agree with what is in
+  the notification message, duplicate suppression fails, and looping results.
+   
+* one case of download is when retrievalURL is not a normal file download.
+  in v03, there is a retPath fields for exactly this case. This new feature
+  can be used to eliminate the need for download plugins.  Example:
+
+  in v2:
+
+      * https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/poll_noaa.py 
+
+      * https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/download_noaa.py
+
+  is ported to sr3:
+
+      * https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/poll/noaa_hydrometric.py
+
+  The ported result sets the new field *retPath* ( retrieval path ) instead of new_dir and new_file 
+  fields, and normal processing of the *retPath* field in the notification message will do a good download, no
+  plugin required. 
+
+
+DESTFNSCRIPT
+~~~~~~~~~~~~
+
+DESTFNSCRIPT is re-cast as a flowcb entry point, where the directive is now formatted
+similarly to the flowcallback in the configuration
+
+
+v2 configuration::
+
+    accept .*${HOSTNAME}.*AWCN70_CWUL.*       DESTFNSCRIPT=sender_renamer_add_date.py
+
+v2 plugin code::
+
+    import sys, os, os.path, time, stat
+
+    # this renamer takes file name like : AACN01_CWAO_160316___00009:cmcin:CWAO:AA:1:Direct:20170316031754 
+    # and returns :                       AACN01_CWAO_160316___00009_20170316031254
+
+    class Renamer(object):
+
+      def __init__(self) :
+          pass
+
+      def perform(self,parent):
+ 
+          path = parent.new_file
+          tok=path.split(":")
+
+          datestr = time.strftime('%Y%m%d%H%M%S',time.gmtime())
+          #parent.logger.info('Valeur_path: %s' % datstr)
+
+          new_path=tok[0] + '_' + datestr
+          parent.new_file = new_path
+          return True 
+
+    renamer=Renamer()
+    self.destfn_script=renamer.perform
+
+
+Turns into sr3
+
+sr3 configuration::
+
+   accept .*${HOSTNAME}.*AWCN70_CWUL.*       DESTFNSCRIPT=sender_renamer_add_date.Sender_Renamer_Add_Date
+ 
+In sr3, as for any flowcallback invocation, one needs to use a traditional python class invocation
+and add to it the name of the class within the file.  This notation is equivalent to python *from*
+statement *from sender_renamer_add_date import Sender_Renamer_Add_Date*
+
+flow callback code::
+
+   import logging,time
+
+   from sarracenia.flowcb import FlowCB
+
+   logger = logging.getLogger(__name__)
+
+   class Sender_Renamer_Add_Date(FlowCB):
+
+      def __init__(self,options):
+          self.o = options
+          pass
+
+      def destfn(self,msg) -> str:
+
+          logger.info('before: m=%s' % msg )
+          relPath = msg["relPath"].split('/')
+          datestr = time.strftime('%Y%m%d%H%M%S',time.gmtime())
+          return relPath[-1] + '_' + datestr
+
+Example of debugging sr3 destfn functions::
+
+    fractal% python3
+    Python 3.10.4 (main, Jun 29 2022, 12:14:53) [GCC 11.2.0] on linux
+    Type "help", "copyright", "credits" or "license" for more information.
+    >>> from sender_renamer_add_date import Sender_Renamer_Add_Date
+    >>> fb=Sender_Renamer_Add_Date(None)
+    >>> msg = { 'relPath' : 'relative/path/to/file.txt' }
+    >>> fb.destfn(msg)
+    'file.txt_20220725130328'
+    >>> 
+
+
+
+
+v3 only: post,gather
+--------------------
+
+The polling/posting is actually done in flow callback (flowcb) classes.
+The exit status does not matter, all such routines will be called in order.
+
+The return of a gather is a list of notification messages to be appended to worklist.incoming
+
+The return of post is undefined. The whole point is to create a side-effect
+that affects some other process or server.
+
+
+examples: 
+ * flowcb/gather/file.py - read files from disk (for post and watch)
+ * flowcb/gather/message.py - how notification messages are received by all components
+ * flowcb/post/message.py - how notification messages are posted by all components.
+ * flowcb/poll/nexrad.py - this polls NOAA's AWS server for data.
+   install a configuration to use it with *sr3 add poll/aws-nexrad.conf* 
+
+
+v3 Complex Examples
+-------------------
+
+
+flowcb/nodupe
+~~~~~~~~~~~~~
+
+duplicate suppression in v3, has:
+
+*  an after_accept routing the prunes duplicates from worklist.incoming.
+   ( adding non-dupes to the reception cache.)
+
+
+flowcb/retry 
+~~~~~~~~~~~~
+
+  * has an after_accept function to append notification messages to the 
+    incoming queue, in order to trigger another attempt to process them.
+  * has an after_work routine doing something unknown... FIXME.
+  * has a post function to take failed downloads and put them
+    on the retry list for later consideration.
