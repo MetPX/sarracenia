@@ -1106,7 +1106,7 @@ class sr_GlobalState:
                                 sarracenia.rabbitmq_admin.add_user( \
                                     self.brokers[h]['admin'].url, \
                                     self.default_cfg.declared_users[u_url.username],
-                                    u_url.username, u_url.password, False )
+                                    u_url.username, u_url.password, self.options.dry_run )
 
         # declare exchanges first.
         for f in self.filtered_configurations:

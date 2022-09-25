@@ -599,6 +599,14 @@ utilisé pour désactiver le téléchargement dans le composant subscribe et/ou 
 Se définit a False par défaut dans les composants de shovel ou de winnow.
 
 
+dry_run <flag> (défaut: False)
+-------------------------------
+
+Exécuter en mode simulation par rapport aux transferts de fichiers. Se connecte toujours à un courtier et télécharge et traite
+les messages d´annonce, mais les transferts de fichiers corréspondants sont désactivés, à utiliser lors du test d'un expéditeur 
+ou d'un téléchargeur, par exemple pour s'exécuter en parallèle avec un fichier existant, et comparez les journaux pour voir 
+si l'expéditeur est configuré pour envoyer les mêmes fichiers que l'ancien (implémenté avec un autre système.)
+
 durable <flag> (défaut: True)
 -----------------------------
 

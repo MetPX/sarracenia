@@ -1895,10 +1895,10 @@ class Config:
                             action='store_true',
                             default=self.debug,
                             help='print debugging output (very verbose)')
-        parser.add_argument('--dry_run',
+        parser.add_argument('--dry_run', '--simulate', '--simulation', 
                             action='store_true',
                             default=self.dry_run,
-                            help='print simulation mode output')
+                            help='simulation mode (perform no file transfers, just print what would happen)')
         parser.add_argument('--exchange',
                             nargs='?',
                             default=self.exchange,

@@ -602,6 +602,15 @@ used to disable downloading in subscribe and/or sarra component.
 set False by default in shovel or winnow components.
 
 
+dry_run <flag> (default: False)
+-------------------------------
+
+Run in simulation mode with respect to file transfers. Still connects to a broker and downloads and processes
+messages, but transfers are disabled, for use when testing a sender, or a downloader, say to run in parallel
+with an existing one, and compare the logs to see if the sender is configured to send the same files as
+the old one (implemented with some other system.)
+
+
 durable <flag> (default: True)
 ----------------------------------
 
