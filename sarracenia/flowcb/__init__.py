@@ -120,6 +120,9 @@ class FlowCB:
                and the self.o options perform a download of a single file.
                return True on a successful transfer, False otherwise.
 
+               if self.o.dry_run is set, simulate the output of a download without
+               performing it.
+
          This replaces built-in download functionality, providing an override.
          for individual file transfers. ideally you set checksums as you download.
             
@@ -181,6 +184,9 @@ class FlowCB:
          Task: looking at msg['new_dir'], msg['new_file'], and the self.o options perform a transfer
                of a single file.
                return True on a successful transfer, False otherwise.
+
+               if self.o.dry_run is set, simulate the output of a send without
+               performing it.
 
          This replaces built-in send functionality for individual files.
 
