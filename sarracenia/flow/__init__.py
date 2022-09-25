@@ -1438,10 +1438,13 @@ class Flow:
                 if not ok: return False
             return True
 
-        try:
-            curdir = os.getcwd()
-        except:
-            curdir = None
+        if self.o.dry_run:
+            curdir = new_dir
+        else:
+            try:
+                curdir = os.getcwd()
+            except:
+                curdir = None
 
         if curdir != new_dir:
             # make sure directory exists, create it if not

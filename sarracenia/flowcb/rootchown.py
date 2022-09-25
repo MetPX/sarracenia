@@ -5,7 +5,9 @@ and change the owner/group of products at destination (on_file)
 
 Sample usage:
 
-  plugin root_chown.py
+rootChownMappingFile mapping.conf
+
+flowcb rootchown
 
 Options
 -------
@@ -31,15 +33,15 @@ from sarracenia.flowcb import FlowCB
 logger = logging.getLogger(__name__)
 
 
-class ROOT_CHOWN(FlowCB):
+class Rootchown(FlowCB):
     def __init__(self, options):
         self.o = options
-        self.o.declare_option('mapping_file')
+        self.o.declare_option('rootChownMappingFile')
         self.mapping = {}
 
     def on_start(self):
 
-        if not hasattr(self.o, "mapping_file"):
+        if not hasattr(self.o, "rootChownMappingFile"):
             self.o.mapping_file = [None]
             return True
 
@@ -62,7 +64,6 @@ class ROOT_CHOWN(FlowCB):
 
     def after_accept(self, worklist):
         logger.debug("ROOT_CHOWN after_accept")
-        new_incoming = []
 
         for message in worklist.incoming:
             new_dir = message['new_dir']
@@ -70,22 +71,19 @@ class ROOT_CHOWN(FlowCB):
 
             # if remove ...
 
-            if message['headers']['sum'].startswith(
-                    'R,') and not 'newname' in message['headers']:
-                # FIXME should we append to new_incoming here? or worklist.reject.  Also don't see 'headers' as an entry in the message dict
+            if 'fileOp' in message and ( ( 'remove' in message['fileOp'] ) or ( 'rename' in message['fileOp'] ) ):
                 continue
 
             # if move ... sr_watch sets new_dir new_file on destination file so we are ok
 
             # already set ... check for mapping switch
 
-            if 'ownership' in message['headers']:
-                ug = message['headers']['ownership']
+            if 'ownership' in message:
+                ug = message['ownership']
                 if ug in self.mapping:
                     logger.debug("ROOT_CHOWN mapping from %s to %s" %
                                  (ug, self.mapping[ug]))
-                    message['headers']['ownership'] = self.mapping[ug]
-                    new_incoming.append(message)
+                    message['ownership'] = self.mapping[ug]
 
             # need to add ownership in message
 
@@ -104,10 +102,9 @@ class ROOT_CHOWN(FlowCB):
                                  (ug, self.mapping[ug]))
                     ug = self.mapping[ug]
 
-                message['headers']['ownership'] = ug
-                new_incoming.append(message)
-                logger.debug("ROOT_CHOWN set ownership in headers %s" %
-                             message['headers']['ownership'])
+                message['ownership'] = ug
+                logger.debug("ROOT_CHOWN set ownership field %s" %
+                             message['ownership'])
 
             except:
                 logger.error("ROOT_CHOWN could not set ownership  %s" %
@@ -120,14 +117,14 @@ class ROOT_CHOWN(FlowCB):
         for message in worklist.ok:
             # the message does not have the requiered info
 
-            if not 'ownership' in message['headers']:
-                logger.info("ROOT_CHOWN no ownership in msg_headers")
+            if not 'ownership' in message:
+                logger.info("ROOT_CHOWN no ownership field in msg_headers")
                 # FIXME worklist.reject here?
                 continue
 
             # it does, check for mapping
 
-            ug = message['headers']['ownership']
+            ug = message['ownership']
             if ug in self.mapping:
                 logger.debug("received ownership %s mapped to %s" %
                              (ug, self.mapping[ug]))
