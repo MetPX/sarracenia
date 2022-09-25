@@ -162,7 +162,7 @@ convert_to_v3 = {
     'notify_only': [ 'download', 'False' ],
     'on_message': {
         'msg_print_lag': [ 'flow_callback', 'sarracenia.flowcb.accept.printlag.PrintLag'],
-        'msg_replace_new_dir': [ 'flow_callback sarracenia.flowcb.accept.adjustfileoppaths.Adjustfileoppaths' ],
+        'msg_replace_new_dir': [ 'flow_callback', 'sarracenia.flowcb.accept.adjustfileoppaths.Adjustfileoppaths' ],
         'msg_skip_old': [ 'flow_callback', 'sarracenia.flowcb.accept.skipold.SkipOld'],
         'msg_test_retry': [ 'flow_callback', 'sarracenia.flowcb.accept.testretry.TestRetry'],
         'msg_to_clusters': [ 'flow_callback', 'sarracenia.flowcb.accept.toclusters.ToClusters'],
