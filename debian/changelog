@@ -1,4 +1,11 @@
-metpx-sr3 (3.00.17) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.18) unstable; urgency=medium
+
+  * --dry_run now working for download and send.
+  * -s now working.
+
+ -- Peter Silva <peter@fractal>  Wed, 28 Sep 2022 08:39:06 -0400
+
+metpx-sr3 (3.00.17) unstable; urgency=medium
 
   * #539 French documentation for sr3 now exists.
   * #547, #504 v03 post format revised to separate checksums from non-data file operations.
@@ -7,8 +14,9 @@ metpx-sr3 (3.00.17) UNRELEASED; urgency=medium
   * #522 honor permLog 
   * #465 simulation mode for sender (not yet complete.)
   * #438 v2 to sr3 config converter added (still has some problems, but mostly working.)
-  * #513 improved shutdown on signal receipt.
- -- Peter Silva <peter@fractal>  Wed, 21 Sep 2022 11:59:03 -0400
+  * #513 improved shutdown on signal receipt.  * 
+
+ -- Peter Silva <peter@bsqt.homeip.net>  Wed, 21 Sep 2022 11:59:03 -0400
 
 metpx-sr3 (3.00.16) unstable; urgency=medium
 
