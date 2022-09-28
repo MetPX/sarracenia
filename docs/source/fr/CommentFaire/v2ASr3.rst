@@ -369,47 +369,41 @@ Un fichier de configuration v2 contenant une ligne *on_message msg_delete* sera 
 Options
 -------
 
-In v2, one would declare settings to be used by a plugin in the __init__ routine, with 
-the *declare_option*.::
+Dans la v2, on déclarerait les paramètres à utiliser par un plugin dans la routine __init__, avec
+le *declare_option*.::
 
     parent.declare_option('poll_usgs_stn_file')
 
-The values are always of type *list*, so usually, one uses the value by picking the first value::
+Les valeurs sont toujours de type *list*, donc généralement, on utilise la valeur en choisissant la première valeur::
 
     parent.poll_usgs_stn_file[0]
 
-In v3, that would be replaced with::
+Dans la v3, cela serait remplacé par ::
 
     self.o.add_option( option='poll_usgs_stn_file', kind='str', default_value='hoho' )
 
-Where in v3 there are now types ( as seen in the sarracenia/config.py#L777 file) and default value setting included without additional 
-code. it would be referred to in other routines like so::
+Dans la v3 il y a maintenant des types (comme on le voit dans le fichier sarracenia/config.py#L777) et le paramètre
+de valeur par défaut est inclus sans code supplémentaire. Il serait mentionné dans d’autres routines comme celle-ci::
 
     self.o.poll_usgs_stn_file
 
+Mappage des points d’entrée v2 aux Callbacks v3
+-----------------------------------------------
 
-
-    
-Mapping v2 Entry Points to v3 Callbacks 
----------------------------------------
-
-for a comprehensive look at the v3 entry points, have a look at:
-
+Pour un aperçu complet des points d’entrée v3, jetez un coup d’œil :
 https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/__init__.py
 
-for details.
+pour plus de détails.
 
 on_message, on_post --> after_accept
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+v2 : reçoit un message de notification, renvoie True/False
 
-v2: receives one notification message, returns True/False
+v3: reçoit worklist
+    modifie worklist.incoming
+    transfert des messages de notification rejetés vers worklist.rejected ou worklist.failed.
 
-
-v3: receives worklist 
-    modify worklist.incoming 
-    transferring rejected notification messages to worklist.rejected, or worklist.failed.
-
-Sample flow::
+Flux d’échantillon::
 
   def after_accept(self, worklist):
 
@@ -427,7 +421,7 @@ Sample flow::
 
 
 
-examples:
+exemples:
   v2: plugins/msg_gts2wistopic.py
   v3: flowcb/wistree.py
 
@@ -435,65 +429,65 @@ examples:
 on_file --> after_work
 ~~~~~~~~~~~~~~~~~~~~~~
 
-v2: receives one notification message, returns True/False
+v2 : reçoit un message de notification, renvoie True/False
 
-v3: receives worklist 
-    modify worklist.ok (transfer has already happenned.) 
-    transferring rejected notification messages to worklist.rejected, or worklist.failed.
+v3: reçoit worklist
+    modifie worklist.ok (transfer has already happenned.)
+    transfert des messages de notification rejetés vers worklist.rejected ou worklist.failed.
 
-    can also be used to work on worklist.failed (retry logic does this.)
+    peut également être utilisé pour travailler sur worklist.failed (la logique de retry le fait.)
 
-examples:
+exemples:
 
-.. Danger:: THERE ARE NO EXAMPLES?!?! 
-            TODO: add some examples
+.. Danger:: IL N’Y A PAS D’EXEMPLES?!?!
+            TODO: ajouter quelques exemples
 
 
 on_heartbeat -> on_housekeeping
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-v2: receives parent as argument.
-    will work unchanged.
+v2: reçoit le parent comme argument.
+    fonctionnera inchangé.
 
+v3: ne reçoit que self (qui devrait avoir self.o qui remplaçe le parent)
 
-v3: only receives self (which should have self.o replacing parent)
+exemples:
 
-examples:
-
-  * v2: hb_cache.py -- cleans out cache (references sr_cache.)
-  * v3: flowcb/nodupe.py -- implements entire caching routine.
+  * v2: hb_cache.py -- nettoie la cache (références sr_cache.)
+  * v3: flowcb/nodupe.py -- implémente toute la routine de mise en cache.
 
 
 
 do_poll -> poll
 ~~~~~~~~~~~~~~~
 
-v2: call do_poll from plugin.
+v2: appelez do_poll à partir du plugin.
 
- * protocol to use the do_poll routine is identified by registered_as() entry point
-    which is mandatory to provide.
- * requires manually constructing fields for notification messages, is notification message verison specific,
-   (generally do not support v03 notification messages.)
- * explicitly calls poll entry points.
- * runs, one must worry about whether one has the vip or not to decide what processing
-   to do in each plugin.
- * poll_without_vip setting available.
-
-v3: define poll in a flowcb class.
-
- * poll only runs when has_vip is true.
-
- * registered_as() entry point is moot.
-
- * gather runs always, and is used to subscribe to post done by node that has the vip,
-   allowing the nodupe cache to be kept uptodate.
-
- * api defined to build notification messages from file data regardless of notification message format.
-
- * returns a list of notification messages to be filtered and posted.
+ * le protocole d’utilisation de la routine do_poll est identifié par le point d’entrée registered_as()
+    qui est obligatoire à fournir.
+ * nécessite la construction manuelle de champs pour les messages de notification, est-ce que la vérification du message de notification est spécifique,
+   (ne prennent généralement pas en charge les messages de notification v03.)
+ * appelle explicitement les points d’entrée du poll.
+ * fonctionne, il faut s’inquiéter de savoir si on a le vip ou non pour décider quel traitement
+   à faire dans chaque plugin.
+ * paramètre poll_without_vip disponible.
 
 
-To build a notification message, without a local file, use fromFileInfo sarracenia.message factory::
+v3: définir poll dans une classe flowcb.
+
+ * le sondage n’est exécuté que lorsque has_vip est true.
+
+ * le point d’entrée registered_as() est discutable
+
+ * toujours rassembler les exécutions, et est utilisé pour s’abonner à post effectuée par le nœud qui a le vip,
+   permettant a la cache nodupe d’être maintenu à jour.
+
+ * API définie pour créer des messages de notification à partir de données de fichier, quel que soit le format du message de notification.
+
+ * renvoie une liste de messages de notification à filtrer et à publier.
+
+Pour créer un message de notification, sans fichier local, utilisez fromFileInfo sarracenia.message factory::
+
   
      import dateparser
      import paramiko
@@ -503,13 +497,12 @@ To build a notification message, without a local file, use fromFileInfo sarracen
 
      m = sarracenia.Message.fromFileInfo(sample_fileName, cfg)
 
-builds an notification message from scratch.
+génère un message de notification à partir de zéro.
 
-One can also build and supply a simulated stat record to fromFileInfo factory,
-using the *paramiko.SFTPAttributes()* class. For example, using the dateparser 
-routines to convert. However, the remote server lists the date and time, as well 
-as determines the file size and permissions in effect::
-
+On peut également construire et fournir un enregistrement de statistiques simulé à partir de l’usine fromFileInfo,
+en utilisant la classe *paramiko.SfTPAttributes()*. Par exemple, en utilisant
+les routines dateparser pour convertir. Toutefois, le serveur distant répertorie également la date et l’heure, et
+détermine la taille du fichier et les autorisations en vigueur ::
 
      pollmtime = dateparser.parse( ... , settings={ ... TO_TIMEZONE='utc' } )
      mtimestamp = time.mktime( pollmtime.timetuple() )
@@ -522,40 +515,39 @@ as determines the file size and permissions in effect::
      st.st_mode=0o666 
      m = sarracenia.Message.fromFileInfo(sample_fileName, cfg, st)
 
-One should fill in the *SFTPAttributes* record if possible, since the duplicate
-cache use metadata if available. The better the metadata, the better the
-detection of changes to existing files.
+Il faut remplir l’enregistrement *SFTPAttributes* si possible, puisque le doublon
+de cache utilise les métadonnées si elles sont disponibles. Plus les métadonnées sont bonnes, le mieux est la
+détection des modifications apportées aux fichiers existants.
 
-Once the notification message is built, append it to the list::
+Une fois le message de notification généré, ajoutez-le à la liste ::
 
      gathered_messages.append(m) 
   
-and at the end::
+et à la fin::
 
      return gathered_messages
 
- 
 
-Virtual IP processing in poll
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Traitement IP virtuel dans le poll
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In v2 if you have a vIP set, all participating nodes poll the upstream server
-and maintain the list of current files, they just don't publish the result.
-So if you have 8 servers sharing a vIP, all eight are polling, kind of sad.
-There is also the poll_no_vip setting, and plugins often have to check if they
-have the vIP or not.
+Dans la v2, si vous avez une séléction de vIP, tous les nœuds participants pollent le serveur en amont
+et maintiennent la liste des fichiers actuels, ils ne publient tout simplement pas le résultat.
+Donc, si vous avez 8 serveurs partageant un vIP, les huit sont des poll, un peu triste.
+Il y a aussi le paramètre poll_no_vip, et les plugins doivent souvent vérifier s’ils
+ont le vIP ou non.
 
-In v3, only the server with the vIP polls. The plugins don't need to check.
-The other participating servers subscribe to where the poll posts to,
-to update their recent_files cache.
+Dans la v3, seul le serveur avec le vIP peux poller. Les plugins n’ont pas besoin de vérifier.
+Les autres serveurs participants s’abonnent à l’endroit où le sondage est publié,
+pour mettre à jour leur cache recent_files.
 
-examples:
+exemples:
  * flowcb/poll/airnow.py
 
-on_html_page -> subclass flowcb/poll
+on_html_page -> sous-classement de flowcb/poll
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Here is a v2 plugin nsa_mls_nrt.py:
+Voici un plugin v2 nsa_mls_nrt.py:
 
 .. code-block:: python
 
@@ -636,22 +628,22 @@ Here is a v2 plugin nsa_mls_nrt.py:
     html_parser = Html_parser(self)
     self.on_html_page = html_parser.parse
 
-The plugin has a main "parse" routine, which invokes the html.parser class, where data_handler
-is called for each line, gradually building the self.entries dictionary where each entry is
-a string constructed to resemble a line of *ls* command output.
+Le plugin a une routine principale "parse", qui appelle la classe html.parser, où data_handler
+est appelé pour chaque ligne, en construisant progressivement le dictionnaire self.entries où chaque entrée est
+une chaîne construite pour ressembler à une ligne de sortie de commande *ls*.
 
-This plugin is a near exact copy of the html_page.py plugin used by default.
-The on_html_page entry point for plugins is replaced by a completely different
-mechanism. Most of the logic of v2 poll in sr3 is in the new sarracenia.FlowCB.Poll class.
-Logic from the v2 plugins/html_page.py, used by default, is now part of this 
-new Poll class, subclassed from flowcb, so basic HTML parsing is built-in.
+Ce plugin est une copie presque exacte du plugin html_page.py utilisé par défaut.
+Le point d’entrée on_html_page pour les plugins est remplacé par un mécanisme complètement différent.
+La plus grande partie de la logique du poll de v2 dans sr3 est dans la nouvelle  class sarracenia.FlowCB.Poll.
+La logique des plugins/html_page.py v2, utilisés par défaut, fait désormais partie de cette
+nouvelle classe Poll, sous-classée à partir de flowcb, de sorte que l’analyse HTML de base est intégrée.
 
-Another change from v2 is that there was far more string manipulation in the old
-version. in sr3 polls, most string maniupulation has been replaced by filling an 
-paramiko.SFTPAttributes structure as soon as possible.
+Un autre changement par rapport à la v2 est qu’il y avait beaucoup plus de manipulation de chaînes dans l’ancienne
+version. Dans les poll sr3, la plupart des maniupulations de chaînes ont été remplacées par le remplissage d’une
+structure paramiko.SFTPAttribute dès que possible.
 
-So the way to replace on_html_page in sr3 is by sub-classing Poll.  Here is an 
-sr3 version of same plugin (nasa_mls_nrt.py):
+Donc, la façon de remplacer on_html_page dans sr3 est de sous-classer Poll. Voici une
+version sr3 du même plugin (nasa_mls_nrt.py):
 
 .. code-block:: python
 
@@ -682,114 +674,106 @@ sr3 version of same plugin (nasa_mls_nrt.py):
             if self.myfname == data : return
 
 ( https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/poll/nasa_mls_nrt.py )
-and matching config file provided here:
+et le fichier de configuration correspondant fourni ici :
 ( https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/examples/poll/nasa-mls-nrt.conf )
 
-The new class is declared as a subclass of Poll, and only the needed
-The HTML routine (handle_data) need be written to override the behaviour
-provided by the parent class.
+La nouvelle classe est déclarée comme une sous-classe de Poll, et seule la classe nécessaire
+de routine HTML (handle_data) doit être écrite pour remplacer le comportement
+fourni par la classe parente.
 
-This solution is less than half the size of the v2 one, and permits
-all manner of flexibility by allowing replacement of any or all elements
-of the poll class.
+Cette solution est inférieure à la moitié de la taille de celle de la v2 et permet
+toutes sortes de flexibilité en permettant le remplacement de tout ou une seule partie des éléments
+de la classe de poll.
 
+on_line -> sous-classement de poll
+----------------------------------
 
-on_line -> poll subclassing
----------------------------
+Comme on_html_page ci-dessus, toutes les utilisations de on_line dans la version précédente
+concernaient le reformatage des lignes pour qu’elles puissent être analysées. La routine on_line peut être
+sous-classé de la même manière pour le remplacer.  Il fallait modifier la chaîne parent.line
+pour qu'elle soit analysable par l’analyse de ligne de style *ls* intégrée.
 
-Similarly to on_html_page above, all uses of on_line in the previous version
-were about re-formatting lines to be parseable. the on_line routine can be
-similarly sub-classed to replace it.  One had to modify the parent.line
-string to be parseable by the built in *ls* style line parsing.
-
-In sr3, on_line is expected to return a populated paramiko.SFTPAttributes field, similar
-to the way on_html_page works (but only a single one instead of a dictionary of them.)
-With the more flexible date parsing in sr3, there has been no identified need for on_line
-on which to build an example.
-
-
+Dans sr3, on_line devrait renvoyer un  champ paramiko.SFTPAttributes rempli, similaire
+à la façon dont on_html_page fonctionne (mais seulement un seul au lieu d’un dictionnaire d’entre eux.)
+Avec l’analyse de date plus flexible dans sr3, il n’y a pas le besoin d'identifié de on_line
+sur lequel construire un exemple.
 
 do_send -> send:
 ----------------
 
-v2: do_send could be either a standalone routine, or associated with a protocol type
+v2 : do_send peut être une routine autonome ou associée à un type de protocole
 
-* based on registered_as()  so the destination determines whether it is used or not.
+* basé sur registered_as() afin que la destination détermine si elle est utilisée ou non.
 
-* accepts parent as an argument.
- 
-* returns True on success, False on failure.
+* accepte parent comme argument.
 
-* will typically have a registered_as() entry point to say which protocols to use a sender for.
+* renvoie True en cas de réussite, False en cas d’échec.
 
-    
-v3: send(self,msg) 
+* aura généralement un point d’entrée registered_as() pour indiquer les protocoles pour lesquels utiliser un sender.
 
-* use the provided msg to do sending.
+v3: send(self,msg)
 
-* returns True on success, False on failure.
+* utilisez le msg fourni pour effectuer l’envoi.
 
-* registered as is not used anymore, can be deleted.
+* renvoie True en cas de réussite, False en cas d’échec.
 
-* The send entry_point overrides all sends, and is not protocol specific.
-  To add support for new protocols, subclass sarracenia.transfer instead.
+* registered_as n’est plus utilisé, peut être supprimé.
 
+* Le entry_point d’envoi remplace tous les envois et n’est pas spécifique au protocole.
+  Pour ajouter la prise en charge de nouveaux protocoles, il faut sous-classer sarracenia.transfer à la place.
 
-examples:
+exemples:
   * flowcb/send/email.py
 
 
 do_download -> download:
 ------------------------
+créer une classe flowCallback avec un point d’entrée *download*.
 
-create a flowCallback class with a *download* entry point.
+* accepte un seul message de notification comme argument.
 
-* accepts a single notification message as an argument.
+* renvoie la valeur True si le téléchargement réussit.
 
-* returns True if download succeeds.
+* s’il renvoie False, la logique de nouvelle tentative s’applique (le téléchargement sera appelé à nouveau
+  puis placé dans la file d’attente de nouvelles tentatives, retry queue.)
 
-* if it returns False, the retry logic applies (download will be called again
-  then placed on the retry queue.)
+* utiliser msg['new_dir'], msg['new_file'], msg['new_inflight_path']
+  pour respecter les paramètres tels que *inflight* et placer le fichier correctement.
+  (à moins que changer cela soit la motivation du plugin.)
 
-* use msg['new_dir'], msg['new_file'], msg['new_inflight_path'] 
-  to respect settings such as *inflight* and place file properly.
-  (unless changing that is motivation for the plugin.)
+* peut être une bonne idée de vérifier la somme de contrôle des données téléchargées.
+  Si la somme de contrôle du fichier téléchargé n’est pas en accord avec ce qui se trouve dans
+  le message de notification, la suppression des doublons échoue et ca boucle.
 
-* might be a good idea to verify the checksum of the downloaded data.
-  if the checksum of the file downloaded does not agree with what is in
-  the notification message, duplicate suppression fails, and looping results.
-   
-* one case of download is when retrievalURL is not a normal file download.
-  in v03, there is a retPath fields for exactly this case. This new feature
-  can be used to eliminate the need for download plugins.  Example:
+* un cas de téléchargement est lorsque retrievalURL n’est pas un téléchargement de fichier normal.
+  Dans v03, il existe des champs retPath pour exactement ce cas. Cette nouvelle fonctionnalité
+  peut être utilisé pour éliminer le besoin de plugins de téléchargement.  Exemple:
 
-  in v2:
+  Dans la v2:
 
       * https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/poll_noaa.py 
 
       * https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/download_noaa.py
 
-  is ported to sr3:
+  est porté sur sr3 :
 
       * https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/poll/noaa_hydrometric.py
 
-  The ported result sets the new field *retPath* ( retrieval path ) instead of new_dir and new_file 
-  fields, and normal processing of the *retPath* field in the notification message will do a good download, no
-  plugin required. 
-
+  Le résultat porté définit le nouveau champ *retPath* (chemin de récupération) au lieu de new_dir et new_file
+  et le traitement normal du champ *retPath* dans le message de notification fera un bon téléchargement, aucun
+  plugin est requis.
 
 DESTFNSCRIPT
 ~~~~~~~~~~~~
 
-DESTFNSCRIPT is re-cast as a flowcb entry point, where the directive is now formatted
-similarly to the flowcallback in the configuration
+DESTFNSCRIPT est refondu en tant que point d’entrée flowcb, où la directive est maintenant formatée d'une manière
+similaire au flowcallback dans la configuration
 
-
-v2 configuration::
+configuration V2::
 
     accept .*${HOSTNAME}.*AWCN70_CWUL.*       DESTFNSCRIPT=sender_renamer_add_date.py
 
-v2 plugin code::
+Code du plugin v2::
 
     import sys, os, os.path, time, stat
 
@@ -817,9 +801,9 @@ v2 plugin code::
     self.destfn_script=renamer.perform
 
 
-Turns into sr3
+Se transforme en sr3
 
-sr3 configuration::
+configuration SR3::
 
    accept .*${HOSTNAME}.*AWCN70_CWUL.*       DESTFNSCRIPT=sender_renamer_add_date.Sender_Renamer_Add_Date
  
@@ -827,7 +811,11 @@ In sr3, as for any flowcallback invocation, one needs to use a traditional pytho
 and add to it the name of the class within the file.  This notation is equivalent to python *from*
 statement *from sender_renamer_add_date import Sender_Renamer_Add_Date*
 
-flow callback code::
+Dans sr3, comme pour tout appel flowcallback, il faut utiliser un appel de classe python traditionnel
+et ajouter le nom de la classe dans le fichier. Cette notation est équivalente à l'instruction python *from*,
+*from sender_renamer_add_date import Sender_Renamer_Add_Date*
+
+code du flow callback::
 
    import logging,time
 
@@ -848,8 +836,7 @@ flow callback code::
           datestr = time.strftime('%Y%m%d%H%M%S',time.gmtime())
           return relPath[-1] + '_' + datestr
 
-Example of debugging sr3 destfn functions::
-
+Exemple de débogage des fonctions destfn sr3 ::
     fractal% python3
     Python 3.10.4 (main, Jun 29 2022, 12:14:53) [GCC 11.2.0] on linux
     Type "help", "copyright", "credits" or "license" for more information.
@@ -863,44 +850,44 @@ Example of debugging sr3 destfn functions::
 
 
 
-v3 only: post,gather
---------------------
+v3 seulement: post,gather
+------------------------
 
-The polling/posting is actually done in flow callback (flowcb) classes.
-The exit status does not matter, all such routines will be called in order.
+Le polling/posting est en fait effectuée dans des classes de rappel de flux (flowcb).
+Le statut de sortie n’a pas d’importance, toutes ces routines seront appelées dans l’ordre.
 
-The return of a gather is a list of notification messages to be appended to worklist.incoming
+Le retour d’un gather est une liste de messages de notification à ajouter à worklist.incoming
 
-The return of post is undefined. The whole point is to create a side-effect
-that affects some other process or server.
-
-
-examples: 
- * flowcb/gather/file.py - read files from disk (for post and watch)
- * flowcb/gather/message.py - how notification messages are received by all components
- * flowcb/post/message.py - how notification messages are posted by all components.
- * flowcb/poll/nexrad.py - this polls NOAA's AWS server for data.
-   install a configuration to use it with *sr3 add poll/aws-nexrad.conf* 
+Le retour d'un post n’est pas défini. Le but est de créer un effet secondaire
+qui affecte un autre processus ou serveur.
 
 
-v3 Complex Examples
--------------------
+exemples:
+ * flowcb/gather/file.py - lire des fichiers à partir du disque (pour le post et watch)
+ * flowcb/gather/message.py - comment les messages de notification sont reçus par tous les composants
+ * flowcb/post/message.py - comment les messages de notification sont publiés par tous les composants.
+ * flowcb/poll/nexrad.py - cela poll le serveur AWS de la NOAA pour les données.
+   installer une configuration pour l’utiliser avec *sr3 add poll/aws-nexrad.conf*
+
+
+v3 Exemples complexes
+---------------------
 
 
 flowcb/nodupe
 ~~~~~~~~~~~~~
 
-duplicate suppression in v3, has:
+suppression des doublons dans la v3, a:
 
-*  an after_accept routing the prunes duplicates from worklist.incoming.
-   ( adding non-dupes to the reception cache.)
+* un after_accept qui achemine les doublons à partir de worklist.incoming.
+   ( ajout de non-dupes à la cache de réception.)
 
 
 flowcb/retry 
 ~~~~~~~~~~~~
 
-  * has an after_accept function to append notification messages to the 
-    incoming queue, in order to trigger another attempt to process them.
-  * has an after_work routine doing something unknown... FIXME.
-  * has a post function to take failed downloads and put them
-    on the retry list for later consideration.
+  * dispose d’une fonction after_accept pour ajouter des messages de notification à la
+    file d’attente entrante, afin de déclencher une autre tentative de traitement.
+  * a une routine after_work faisant quelque chose d’inconnu ... FIXME.
+  * a une fonction de publication pour prendre les téléchargements échoués et les mettre
+    sur la liste des nouvelles tentatives pour un examen ultérieur.
