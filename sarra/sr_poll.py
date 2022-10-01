@@ -68,7 +68,15 @@
 
 import os, sys, time
 import datetime
-from dateparser import parse
+
+dateparser_available=False
+try:
+    from dateparser import parse
+    dateparser_available=False
+
+except:
+   print( 'Warning: dateparser not available')   
+
 # ============================================================
 # DECLARE TRICK for false self.poster
 
@@ -174,7 +182,9 @@ class sr_poll(sr_post):
                 file_within_date_limit = abs((file_date - current_date).seconds) < self.file_time_limit
             except:
                 self.logger.error("Assuming ok, incorrect date format for line:  %s" % ls[f])
-                pass
+                if not dateparser_available:
+                    self.logger.error("need to install dateparser module, perhspa via: pip install 'sarracenia[ftppoll]'" )
+
             if file_within_date_limit:
                 self.logger.debug("File should be processed")
                 # execute rest of code
@@ -353,6 +363,8 @@ class sr_poll(sr_post):
         except:
             self.logger.warning("dest.lsdir: Could not ls directory")
             self.logger.debug("Exception details:", exc_info=True)
+            if not dateparser_available:
+                self.logger.error("sr_poll requires the python dateparser module.")
 
         return False, {}, {}
 
