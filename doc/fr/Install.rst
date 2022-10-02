@@ -21,13 +21,59 @@ disponibles chez PyPI. Dans les deux cas, les autres paquets python (ou dépenda
 Ubuntu/Debian (apt/dpkg)
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sur la version Ubuntu 14.04/16.04/17.10/18.04 et dérivées:
+Sur la version Ubuntu >= 18.04 et dérivées::
 
   sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx
   sudo apt-get update
   sudo apt-get install python3-metpx-sarracenia  # supporte seulement HTTP/HTTPS
   sudo apt-get install python3-paramiko   # rajoute les transferts SFTP
   sudo apt-get install sarrac # client binaire (C) optionnel
+
+optionnel::
+
+  sudo apt install python3-dateparser 
+
+Ca se peut qu'avant 22.04 il n'y a pas de paquet debian pour date parser. Dans ce cas, on peut
+installer avec pip::
+
+  pip install dateparser
+
+Si dateparser n'est pas installé, le composant *poll* ne va pas être fonctionnel.  Mais le reste
+des composantes seront correctes.
+
+Redhat/Suse distros (rpm based)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Le module distutils de python ne génère, est ne gère pas bien les dépendences de paquets,
+alors il faut les installer manuelement::
+ 
+  sudo dnf install python3-amqplib
+  sudo dnf install python3-appdirs
+  sudo dnf install python3-watchdog
+  sudo dnf install python3-netifaces
+  sudo dnf install python3-humanize
+  sudo dnf install python3-psutil
+  sudo dnf install python3-paramiko   # rajoute SFTP 
+
+  sudo dnf install python3-dateparser # peux ne pas être disponible.
+
+  # dateparser le seul de ces paquets qui est optionnel. la manque va
+  # empêcher le composant *poll* de marcher, mais les reste des composants
+  * ne seront pas affectés.
+
+  sudo dnf install python3-setuptools # needed to build rpm package.
+
+Là, on peut générer le paquet RPM::
+
+  git clone https://github.com/MetPX/sarracenia
+  cd sarracenia
+
+  python3 setup.py bdist_rpm
+  sudo rpm -i dist/*.noarch.rpm
+
+Et voilà.  Le C manque à l´appel, par exemple.
+Veuillez consulter la documentation de l´implantation C pour de détails
+sur l´installation de celui-ci.
 
 PIP
 ~~~
@@ -45,9 +91,9 @@ et à mettre à jour après l'installation initiale::
 
 
 NOTE:: 
-
-  Sur de nombreux systèmes où les versions pythons 2 et 3 sont installées, vous pouvez avoir besoin de spécifier
-  pip3 plutôt que pip.
+    
+   Sur de nombreux systèmes où les versions pythons 2 et 3 sont installées, vous pouvez avoir besoin de spécifier
+   pip3 plutôt que pip.
 
 
 Windows

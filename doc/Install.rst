@@ -23,11 +23,12 @@ will be installed by the package manager automatically.
 Ubuntu/Debian (apt/dpkg)
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-On Ubuntu 16.04 or later... and derivatives of same::
+On Ubuntu 18.04 or later... and derivatives of same::
 
   sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx
   sudo apt-get update
   sudo apt-get install python3-paramiko   # required for SFTP support.
+  sudo apt install python3-dateparser # if this doesn't work (old ubuntu) try installing with pip.
   sudo apt-get install metpx-sarracenia  # only supports HTTP/HTTPS
   sudo apt-get install sarrac # optional C client.
 
@@ -47,11 +48,20 @@ On fedora 28::
   sudo dnf install python3-humanize
   sudo dnf install python3-psutil
   sudo dnf install python3-paramiko   # adds SFTP support.
-
   sudo dnf install python3-setuptools # needed to build rpm package.
 
+optional::
 
-Once the dependencies are in place, one can build an RPM file using setuptools::
+  sudo dnf install python3-dateparser 
+
+might not be available... if not, try::
+
+   pip install dateparser 
+
+Either way, dataparser is the only optional dependency. The poll 
+component will not work without it, but everything else will.
+
+One can then build an RPM file using setuptools::
 
   git clone https://github.com/MetPX/sarracenia
   cd sarracenia
@@ -61,6 +71,7 @@ Once the dependencies are in place, one can build an RPM file using setuptools::
 
 This procedured installs only the python application (not the C one.)
 No man pages or other documentation are installed either.
+See C component documentation for installation instructions.
 
 
 PIP
@@ -83,8 +94,8 @@ and to upgrade after the initial installation::
 
 NOTE:: 
 
-  On many systems where both pythons 2 and 3 are installed, you may need to specify
-  pip3 rather than pip.
+   On many systems where both pythons 2 and 3 are installed, you may need to specify
+   pip3 rather than pip.
 
 
 Windows

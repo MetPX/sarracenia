@@ -71,7 +71,7 @@ setup(
     "netifaces", 
     "humanize",
     "psutil" ],
-    extras_required = {
-      "ftppoll" : [ 'dateparser' ]
+    extras_require = {
+      "poll" : [ 'dateparser' ]
     }
 )
