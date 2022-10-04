@@ -1,0 +1,360 @@
+
+
+================================
+Écriture de plugins FlowCallback
+================================
+
+Tous les composants de Sarracenia implémentent l’algorithme *Flow*.
+La classe principale de Sarracenia est *sarracenia.flow* et
+la fonctionnalité de base est implémentée à l’aide de la classe créée pour ajouter un
+traitement personnalisé à un flux, la classe flowcb (flow callback).
+
+Pour une discussion détaillée de l’algorithme de flux elle-même, jetez un coup d’œil
+sur le manuel `Concepts <../Explanation/Concepts.rst>`_. Pour tout flux, on peut
+ajouter un traitement personnalisé à divers moments au cours du traitement en sous-classant
+la classe `sarracenia.flowcb <../../sarracenia/flowcb/__init__.py>`_.
+
+En bref, l’algorithme comporte les étapes suivantes :
+
+* **gather** -- collecter passivement les messages de notification à traiter.
+* **poll** -- collecter activement les messages de notification à traiter.
+* **filter** -- appliquer des correspondances d’expression régulière accept/reject à la liste des messages de notification.
+
+  * *after_accept* point d’entré de callback
+
+* **work** -- effectuer un transfert ou une transformation sur un fichier.
+
+  * *after_work* point d’entrée de callback
+
+* **post**  -- publier le résultat du travail effectué pour l’étape suivante.
+
+Un rappel de flux, est une classe python construite avec des routines nommées pour
+indiquer quand le programmeur veut qu’elles soient appelés.
+Pour ce faire, créez une routine qui sous-classe *sarracenia.flowcb.FlowCB*
+donc la classe aura normalement::
+
+   from sarracenia.flowcb import FlowCB
+
+parmi les importations.
+
+
+Entrées de fichier de configuration pour utiliser Flow_Callbacks
+----------------------------------------------------------------
+
+Pour ajouter un callback à un flux, une ligne est ajoutée au fichier de configuration ::
+
+    flowcb sarracenia.flowcb.log.Log
+
+Si vous suivez la convention et que le nom de la classe est une
+version en majuscules (Log) du nom de fichier (log), un raccourci est disponible ::
+
+   callback log
+
+Le constructeur de classe accepte un objet de classe sarracenia.config.Config,
+appelées options, qui stockent tous les paramètres à utiliser par le flux en cours d’exécution.
+Options est utilisé pour remplacer le comportement par défaut des flux et des callbacks.
+L’argument du flowcb est une classe python standard qui doit être
+dans le chemin python normal pour l'*import* python, et le dernier élément
+est le nom de la classe dans le fichier qui doit être instancié
+en tant qu’instance flowcb.
+
+un paramètre pour un callback est déclaré comme suit ::
+
+    set sarracenia.flowcb.filter.log.Log.logLevel debug
+
+(le préfixe du paramètre correspond à la hiérarchie de types dans flowCallback)
+
+lorsque le constructeur du callback est appelé, son argument options contiendra::
+
+    options.logLevel = 'debug'
+
+Si aucune substitution spécifique au module n’est présente, le paramètre le plus global est utilisé.
+
+
+Worklists
+---------
+
+Outre l'option, l’autre argument principal pour les routines de callbacks after_accept et after_work
+est worklist. Worklist est donnée aux points d’entrée qui se produisent pendant le traitement de message de
+notification, et est un certain nombre de worklist de messages de notification::
+
+    worklist.incoming --> messages de notification à traiter (nouveaux ou nouvelles tentatives).
+    worklist.ok       --> traité avec succès
+    worklist.rejected --> les messages de notification ne doivent pas être traités ultérieurement.
+    worklist.failed   --> messages de notification pour lesquels le traitement a échoué.
+                          les messages de notification ayant échoué seront réessayés.
+
+Initialement, tous les messages de notification sont placés dans worklists.incoming.
+si un plugin décide :
+
+- un message de notification n’est pas pertinent, déplacé vers la worklist rejetée.
+- aucun traitement supplémentaire du message de notification n’est nécessaire, déplacez-le vers worklist ok.
+- une opération a échoué et elle doit être réessayée plus tard, passez à la worklist échouée.
+
+Ne supprimez pas de toutes les listes, déplacez uniquement les messages de notification entre les worklists.
+Il est nécessaire de placer les messages de notification rejetés dans la worklist appropriée
+afin qu’ils soient reconnus comme reçus. Les messages ne peuvent être supprimés qu'une
+fois que l’accusé de réception a été pris en charge.
+
+Journalisation
+--------------
+
+Python a une excellente journalisation intégrée, et il faut simplement utiliser le module
+d’une manière normale, pythonique, avec::
+
+  import logging
+
+Après toutes les importations dans votre fichier source python, définissez un enregistreur
+pour le fichier source ::
+
+  logger = logging.getLogger(__name__)
+
+Comme c’est normal avec le module de journalisation Python, les messages de notification peuvent alors
+être affiché dans le journal ::
+
+  logger.debug('got here')
+
+Chaque message de notification dans le journal sera précédé de la classe et de la
+routine émettant le message de notification du journal, ainsi que de la date/heure.
+
+On peut également implémenter un remplacement par module pour les niveaux de journalisation.
+Voir sarracenia/moth/amqp.py comme exemple. Pour ce module,
+le niveau de journalisation des messages de notification est porté à l’avertissement par défaut.
+On peut le remplacer par un paramètre de fichier de configuration::
+
+   set sarracenia.moth.amqp.AMQP.logLevel info
+ 
+dans la fonction *__init__(self,options)* du callback,
+inclure les lignes::
+
+   me = "%s.%s" % ( __class__.__module__ , __class__.__name__ )
+   if 'logLevel' in self.o['settings'][me]:
+                logger.setLevel( self.o['logLevel'].upper() )
+
+
+
+Initialisation et paramètres
+----------------------------
+
+L’étape suivante consiste à déclarer une classe ::
+
+  class Myclass(FlowCB):
+
+en tant que sous-classe de FlowCB.  Les principales routines de la classe sont les points d’entrée
+qui seront appelés au moment où leur nom l’indique. S’il manque un point d’entrée donné à votre classe,
+elle ne sera tout simplement pas appelée. La classe __init__() est utilisée pour
+initialiser des éléments pour la classe de callback::
+
+    def __init__(self, options):
+
+        self.o = options
+
+        logging.basicConfig(format=self.o.logFormat,
+                            level=getattr(logging, self.o.logLevel.upper()))
+        logger.setLevel(getattr(logging, self.o.logLevel.upper()))
+
+        self.o.add_option( 'myoption', 'str', 'usuallythis')
+
+Les lignes de configuration de la journalisation dans __init__ permettent de définir un niveau de journalisation spécifique
+pour cette classe flowCallback. Une fois la journalisation passe-partout est terminée,
+la routine add_option pour définir les paramètres de la classe.
+les utilisateurs peuvent les inclure dans les fichiers de configuration, tout comme les options intégrées ::
+
+        myoption IsReallyNeeded
+
+Le résultat d’un tel réglage est que le *self.o.myoption = 'IsReallyNeeded'*.
+Si aucune valeur n’est définie dans la configuration, *self.o.myoption* sera par défaut *'usuallyThis'*
+Il existe différents *types* d’options, où le type déclaré modifie l’analyse::
+           
+   'count'    type de nombre entier.
+   'duration' un nombre à virgule flottante indiquant une quantité de secondes (0,001 est 1 miliseconde)
+              modifié par un suffixe unitaire ( m-minute, h-heure, w-semaine )
+   'flag'     option booléen (True/False).
+   'list'     une liste de valeurs de chaîne, chaque occurrence suivante se caténates au total.
+              toutes les options de plugin v2 sont déclarées de type list.
+   'size'     taille entière. Suffixes k, m et g pour les multiplicateurs kilo, mega et giga (base 2).
+   'str'      une valeur de chaîne arbitraire, comme tous les types ci-dessus,
+              chaque occurrence suivante remplace la précédente.
+
+Points d’entrée
+---------------
+Autres entry_points, extraits de sarracenia/flowcb/__init__.py ::
+
+    def name(self):
+        Task: return the name of a plugin for reference purposes. (automatically there)
+
+    def ack(self,messagelist):
+        Task: acknowledge notification messages from a gather source.
+
+    def gather(self):
+        Task: gather notification messages from a source... return a list of notification messages.
+        return []
+
+    """
+      application of the accept/reject clauses happens here, so after_accept callbacks
+      run on a filtered set of notification messages.
+
+    """
+
+    def after_accept(self,worklist):
+        """
+         Task: just after notification messages go through accept/reject masks,
+               operate on worklist.incoming to help decide which notification messages to process further.
+               and move notification messages to worklist.rejected to prevent further processing.
+               do not delete any notification messages, only move between worklists.
+        """
+    def do_poll(self):
+        Task: build worklist.incoming, a form of gather()
+
+    def on_data(self,data):
+        Task:  return data transformed in some way.
+
+        return new_data
+
+    def after_work(self,worklist):
+        Task: operate on worklist.ok (files which have arrived.)
+
+    def post(self,worklist):
+         Task: operate on worklist.ok, and worklist.failed. modifies them appropriately.
+               notification message acknowledgement has already occurred before they are called.
+
+    def on_housekeeping(self):
+         do periodic processing.
+
+    def on_html_page(self,page):
+         Task: modify an html page.
+
+    def on_line(self,line):
+         used in FTP polls, because servers have different formats, modify to canonical use.
+
+         Task: return modified line.
+
+    def on_start(self):
+         After the connection is established with the broker and things are instantiated, but
+         before any notification message transfer occurs.
+
+    def on_stop(self):
+
+
+
+Exemple de sous-classe Flowcb
+-----------------------------
+
+Il s’agit d’un exemple de fichier de classe de callback (gts2wis2.py) qui accepte les fichiers dont
+les noms commencent par ceux d’AHL et renomme l’arborescence des répertoires selon une norme différente,
+celui en évolution pour le WIS 2.0 de WMO (pour plus d’informations sur ce module :
+https://github.com/wmo-im/GTStoWIS2) ::
+
+  import json
+  import logging
+  import os.path
+
+  from sarracenia.flowcb import FlowCB
+  import GTStoWIS2
+
+  logger = logging.getLogger(__name__)
+
+
+  class GTS2WIS2(FlowCB):
+
+    def __init__(self, options):
+
+        if hasattr(options, 'logLevel'):
+            logger.setLevel(getattr(logging, options.logLevel.upper()))
+        else:
+            logger.setLevel(logging.INFO)
+        self.topic_builder=GTStoWIS2.GTStoWIS2()
+        self.o = options
+
+
+    def after_accept(self, worklist):
+
+        new_incoming=[]
+
+        for msg in worklist.incoming:
+
+            # fix file name suffix.
+            type_suffix = self.topic_builder.mapAHLtoExtension( msg['new_file'][0:2] )
+            tpfx=msg['subtopic']
+    
+            # input has relpath=/YYYYMMDD/... + pubTime
+            # need to move the date from relPath to BaseDir, adding the T hour from pubTime.
+            try:
+                new_baseSubDir=tpfx[0]+msg['pubTime'][8:11]
+                t='.'.join(tpfx[0:2])+'.'+new_baseSubDir
+                new_baseDir = msg['new_dir'] + os.sep + new_baseSubDir
+                new_relDir = 'WIS' + os.sep + self.topic_builder.mapAHLtoTopic(msg['new_file'])
+                msg['new_dir'] = new_baseDir + os.sep + new_relDir
+                msg.updatePaths( self.o, new_baseDir + os.sep + new_relDir, msg['new_file'] )
+
+            except Exception as ex:
+                logger.error( "skipped" , exc_info=True )
+                worklist.failed.append(msg)
+                continue
+    
+            msg['_deleteOnPost'] |= set( [ 'from_cluster', 'sum', 'to_clusters' ] )
+            new_incoming.append(msg)
+
+        worklist.incoming=new_incoming 
+
+La routine *after_accept* est l’une des deux plus courantes en cours d’utilisation.La routine *after_accept* est l’une des deux plus courantes en cours d’utilisation.
+
+La routine after_accept a une boucle externe qui parcourt l’ensemble de la
+liste des messages de notification entrants. Le traitement normal est qu’il construit une nouvelle liste de
+messages de notification entrants, en ajoutant tous les messages rejetés à *worklist.failed.* La
+liste est juste une liste de messages de notification, où chaque message de notification est un dictionnaire python avec
+tous les champs stockés dans un message de notification au format v03. Dans le message de notification, il y a,
+par exemple, les champs *baseURL* et *relPath* :
+
+* baseURL - baseURL de la ressource à partir duquel un fichier serait obtenu.
+* relPath - le chemin d’accès relatif à ajouter à baseURL pour obtenir l’URL de téléchargement complet.
+
+Cela se produit avant que le transfert (téléchargement ou envoi, ou traitement) du fichier
+se soit produit, de sorte que l’on peut changer le comportement en modifiant les champs dans le message de notification.
+Normalement, les chemins de téléchargement (appelés new_dir et new_file) refléteront l’intention
+pour faire un mirroir à l’arborescence de source d’origine. Donc si vous avez *a/b/c.txt* sur l’arborescence source, et
+vous téléchargez dans le répertoire *mine* sur le système local, la new_dir serait
+*mine/a/b* et new_file serait *c.txt*.
+
+Le plugin ci-dessus modifie la mise en page des fichiers à télécharger, en fonction de la classe
+`GTStoWIS <https://github.com/wmo-im/GTStoWIS>`_, qui prescrit une arborescence de répertoires
+différente en sortie.  Il y a beaucoup de champs à mettre à jour lors de la modification de placement de fichier,
+il est donc préférable d’utiliser::
+
+   msg.updatePaths( self.o, new_dir, new_file )
+
+pour mettre à jour correctement tous les champs nécessaires dans le message de notification. Cela mettra à jour
+'new_baseURL', 'new_relPath', 'new_subtopic' à utiliser lors de l’affichage.
+
+La partie try/except de la routine traite le cas ou un fichier pourrait arriver
+avec un nom à partir duquel une arborescence de topic ne peut pas être générée, puis une exception
+peut se produire et le message de notification est ajouté à la liste de travail ayant échoué et ne sera pas
+traité par des plugins ultérieurs.
+
+Autres exemples
+---------------
+
+La sous-classification de Sarracenia.flowcb est utilisée en interne pour effectuer beaucoup de travail de base.
+C’est une bonne idée de regarder le code source de sarracenia lui-même. Par exemple:
+
+* sr3 list fcb est une commande pour répertorier toutes les classes de rappel incluses dans le package metpx-sr3.
+
+* *sarracenia.flowcb* jetez un coup d’œil dans le fichier __init__.py qui s’y trouve,
+  qui fournit ces informations sur un format plus succinct.
+
+* *sarracenia.flowcb.gather.file.File* est une classe qui implémente la publication de fichiers
+  et la surveillance de répertoires, dans le sens d’un callback qui implémente le point d’entrée
+  *gather*, en lisant un système de fichiers et en créant une liste de messages de notification à traiter.
+
+* *sarracenia.flowcb.gather.message.Message* est une classe qui implémente la réception des messages
+  de notification à partir des flux de protocole de file d’attente de messages.
+
+* *sarracenia.flowcb.nodupe.NoDupe* Ce module supprime les doublons des flux de messages en fonction
+  des sommes de contrôle d’intégrité.
+
+* *sarracenia.flowcb.post.message.Message* est une classe qui implémente la publication de messages
+  de notification dans les flux de protocole de file d’attente de messages
+
+* *sarracenia.flowcb.retry.Retry* lorsque le transfert d’un fichier échoue, Sarracenia doit conserver
+  le message de notification correspondant dans un fichier d’état pour une période ultérieure lorsqu’il
+  pourra être réessayé. Cette classe implémente cette fonctionnalité.
