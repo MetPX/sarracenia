@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/
 #
 # This file is part of sarracenia.
 # The sarracenia suite is Free and is proudly provided by the Government of Canada
@@ -7,79 +7,81 @@
 
 """
 Sundew migration
-
 sarracenia.flowcb.send.am.AM is a sarracenia version 3 plugin used to encode and send messages with 
 the AM (Alpha numeric) protocol. This protocol is being migrated to mexpx-sr3 to retire sundew.
-
 By: André LeBlanc, Autumn 2022
 """
 
-import logging, socket, struct, time, sys
-
+import logging, socket, struct, time, sys, signal, os
+import urllib.parse
 from sarracenia.flowcb import FlowCB
-from sarracenia.flowcb.poll import am
-from sarracenia.config import Config
 
-#TODO: Change encoding format to ISO-8859-1?
 
-default_options = {'logFormat': '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s', 'logLevel': 'info'}
 logger = logging.getLogger(__name__)
-sys.setdefaultencoding('iso-8859-1')
 
 class AM(FlowCB):
     
     def __init__(self, options):
              
-        # self.o = super().__init__(options)
+        self.o = options
 
         # Set logger options
         if hasattr(options, 'logLevel'):
-            logger.setLevel(getattr(logging, self.o['logLevel'].upper()))
+            logger.setLevel(getattr(logging, self.o.logLevel.upper()))
         else:
             logger.setLevel(logging.INFO)
-        logging.basicConfig(format=self.o['logFormat']) 
+        logging.basicConfig(format=self.o.logFormat) 
 
-        # Initialise server variables
-        self.am = Config()
-        self.am.add_option('port', 'count', 0)
-        self.am.add_option('remoteHost', 'str', 'None') 
+        self.url = urllib.parse.urlparse(self.o.destination)
 
         # Initialise format variables
-        self.am.add_option('threadnum', 'count', 127)
-        self.am.add_option('patternAM', 'str', '80sII4sIIII20s')
+        self.threadnum = 255
+
+        self.host = self.url.netloc.split(':')[0]
+        self.port = int(self.url.netloc.split(':')[1])
+
+        # Add config options
+        self.o.add_option('patternAM', 'str', '80sII4siIII20s')
+        # FIXME: Does this make sens?
+        self.o.add_option('host', 'str', f'{self.host}')
+        self.o.add_option('port', 'int', f'{self.port}')
 
         # Initialise socket
         ## Create a TCP/IP socket
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-    def wrapmsg(self, msgdata): #TODO: Change msgdata with data 
+        signal.signal(signal.SIGTERM, signal.SIG_DFL)
+
+
+    def wrapmsg(self, sarra_msg): 
         """
         Overview: 
             Wrap message in appropriate bytes format, performing necessary byte swaps and wrap with AM header
-
         Pseudocode:
             Construct AM header
             Perform bite swaps AND init miscellaneous variables
             Wrap header with message
-
         Return:
             Message with AM header
         """
 
         # Establish connection and send bytes through socket
-        self.__establishconn__()
+        # self.__establishconn__()
 
-        logger.info("send/am.py: Commencing message wrap.")
+        logger.info("Commencing message wrap.")
 
-        s = struct.Struct(self.am.patternAM)
+        s = struct.Struct(self.o.patternAM)
         size = struct.calcsize('80s')
 
-        # debug
-        data = 'SACN31 CWAO 300651\nMETAR\nBGBW 131550Z 21010KT 8000 -RADZ BKN006 OVC012 03/00 Q1009 RMK 5SC\n     8SC=\n'
-        
+        msg_path = sarra_msg['new_relPath']
+        msg_file = open(os.sep + msg_path, 'rb')
+        data = msg_file.read()
+        msg_file.close()
+
         # Construct AM header
-        header = data[0:size]
+        strdata = data.decode('iso-8859-1')
+        header = strdata[0:size]
 
         ## Attach rest of header with NULLs and replace NULL w/ Carriage return
         nulheader = ['\0' for i in range(size)]
@@ -87,29 +89,31 @@ class AM(FlowCB):
         header = header + nulheaderstr[len(header):]
 
         ## Perform bite swaps AND init miscellaneous variables
-        length = socket.htonl(len(data))
+        length = socket.htonl(len(strdata.lstrip('\n')))
+
         firsttime = socket.htonl(int(time.time()))
         timestamp = socket.htonl(int(time.time()))
-        threadnum = chr(0) + chr(self.am.threadnum) + chr(0) + chr(0)
-        future = chr('\0')
+        threadnum = chr(0) + chr(self.threadnum) + chr(0) + chr(0)
+        future = '\0'
         start, src_inet, dst_inet = (0, 0, 0)
 
         # Wrap message
-        packedheader = s.pack(header.encode(), src_inet, dst_inet, threadnum.encode(), start
-                                   , length, firsttime, timestamp, future.encode())
+        packedheader = s.pack(header.replace('\n','\x00',1).encode('iso-8859-1'), src_inet, dst_inet, threadnum.encode('iso-8859-1'), start
+                                   , length, firsttime, timestamp, future.encode('iso-8859-1'))
         
         # Add message at the end of the header
-        msg = packedheader + data.replace('\x00','\n',1).encode()
+        msg = packedheader + data
 
-        logger.info("send/am.py: Message packed.")
+        logger.info("Message has been packed.")
+        # Debug
+        logger.info(f"Message contents: {msg}")
         
         return msg
 
-    def __establishconn__(self):
+    def __establishconn__(self): 
         """
         Overview: 
             Establish connection through socket (with specified host IP and port #)
-
         Pseudocode:
             Init socket
             while true:
@@ -117,42 +121,46 @@ class AM(FlowCB):
                 If error:
                     sleep 30 seconds
                     retry
-
         Return:
             Socket struct
         """       
 
-        logger.info("send/am.py: Binding socket to port %d",self.am.port)
+        logger.info("Binding socket to port %d",self.port)
 
-        if self.am.remoteHost == 'None':
-            logger.exception("send/am.py: No remote host specified. Connection will not be established")
-            raise Exception("send/am.py: No remote host specified. Connection will not be established")
+        if self.host == 'None':
+            raise Exception("No remote host specified. Connection will not be established")
 
-        logger.info("send/am.py: Trying to connect remote host %s", str(self.am.remoteHost) )
+        logger.info("Trying to connect remote host %s", str(self.host) )
 
         while True:
             try:
-                self.s.connect((socket.gethostbyname(self.am.remoteHost), self.am.port))
+                self.s.connect((socket.gethostbyname(self.host), self.port))
                 break
 
             except socket.error:
                     (type, value, tb) = sys.exc_info()
-                    logger.error("send/am.py: Type: %s, Value: %s, Sleeping 30 seconds ..." % (type, value))
+                    logger.error("Type: %s, Value: %s, Sleeping 30 seconds ..." % (type, value))
                     time.sleep(30)
 
-        logger.info("send/am.py: Connexion established with %s",str(self.am.remoteHost))
+        logger.info("Connection established with %s",str(self.host))
 
-    def send(self):
+    
+    def on_start(self):
+        self.__establishconn__()
+    
+    def on_stop(self):
+        self.s.close()
+
+
+    def send(self, msg):
         """
         Overview: 
             Send AM message through socket
-
         Pseudocode:
             Wrap message
             Send with socket
             If error arises:
                 retry sending to socket
-
         Return:
             0 on Failure
             1 on Success
@@ -162,44 +170,25 @@ class AM(FlowCB):
 
         try:
             # Wrap message
-            data = self.wrapmsg()
-            logger.info("send/am.py: First attempt at sending data.")
+            packed_msg = self.wrapmsg(msg)
 
             # Try to send data through socket. If can't raise an error and display error in logs.
             try:
-                # Establish connection and send bytes through socket
-                # s = self.__establishconn__()
-
-                bytesSent = self.s.send(data)
+                bytesSent = self.s.send(packed_msg)
 
                 # Check if went okay
-                if bytesSent != len(data):
-                    return(0, bytesSent)
+                if bytesSent != len(packed_msg):
+                    return False
                 else:
-                    return(1, bytesSent)
+                    return True
                 
             except socket.error as e:
-                logger.error("send/am.py: Message not sent: %s",str(e.args))
+                logger.error("Message not sent: %s",str(e.args))
 
                 # If could not send, try to reconnect to socket
-                logger.info("send/am.py: Closing socket connection.")
+                logger.info("Closing socket connection.")
                 self.s.close()
 
         except Exception as e:
-            logger.error("send/am.py: msg wrap error: %s", str(e.args))
-            raise e("send/am.py: msg wrap error: %s", str(e.args))
-
-# Debug
-if __name__ == '__main__':
-    am_recv_man = am.AM(default_options)
-    am_recv_man.am.poll = 5002 
-    am_recv_man.am.remoteHost = '127.0.0.1'
-    am_send_man = AM(default_options)
-    while True:
-        res = am_recv_man.poll()
-        recbytesnum = am_send_man.send()
-    
-
-
-
-
+            logger.error("msg wrap error: %s", str(e.args))
+            # raise Exception("msg wrap error: %s", str(e.args))
