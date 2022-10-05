@@ -29,21 +29,22 @@ from sys import platform as _platform
 import sys
 import time
 
-from watchdog.observers import Observer
-from watchdog.observers.polling import PollingObserver
-from watchdog.events import PatternMatchingEventHandler
+if sarracenia.extras['watch']['present']:
+    from watchdog.observers import Observer
+    from watchdog.observers.polling import PollingObserver
+    from watchdog.events import PatternMatchingEventHandler
 
 logger = logging.getLogger(__name__)
 
 
-class SimpleEventHandler(PatternMatchingEventHandler):
-    def __init__(self, parent):
-        self.on_created = parent.on_created
-        self.on_deleted = parent.on_deleted
-        self.on_modified = parent.on_modified
-        self.on_moved = parent.on_moved
-        super().__init__()
-
+if sarracenia.extras['watch']['present']:
+    class SimpleEventHandler(PatternMatchingEventHandler):
+        def __init__(self, parent):
+            self.on_created = parent.on_created
+            self.on_deleted = parent.on_deleted
+            self.on_modified = parent.on_modified
+            self.on_moved = parent.on_moved
+            super().__init__()
 
 class File(FlowCB):
     """
@@ -87,6 +88,9 @@ class File(FlowCB):
 
         self.o = options
 
+        if not sarracenia.extras['watch']['present']:
+            logger.critical("watchdog module must be installed to watch directories")
+            
         logger.setLevel(getattr(logging, self.o.logLevel.upper()))
 
         logger.debug("%s used to be overwrite_defaults" % self.o.component)
@@ -644,6 +648,10 @@ class File(FlowCB):
     def watch_dir(self, sld):
         logger.debug("watch_dir %s" % sld)
 
+        if not sarracenia.extras['watch']['present']:
+            logger.critical("sr_watch needs the python watchdog library to be installed.")
+            return []
+
         if self.o.force_polling:
             logger.info(
                 "sr_watch polling observer overriding default (slower but more reliable.)"
@@ -721,7 +729,10 @@ class File(FlowCB):
             logger.debug("postpath = %s" % d)
 
             if self.o.sleep > 0:
-                messages.extend(self.watch_dir(d))
+                if sarracenia.extras['watch']['present']:
+                    messages.extend(self.watch_dir(d))
+                else:
+                    logger.critical("watchdog missing! Cannot watch directory")
                 continue
 
             if os.path.isdir(d):

@@ -1,6 +1,7 @@
-import humanize
+
+
 import logging
-from sarracenia import nowflt, timeflt2str, timestr2flt, __version__
+from sarracenia import nowflt, timeflt2str, timestr2flt, __version__, naturalSize, naturalTime
 from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
@@ -149,15 +150,15 @@ class Log(FlowCB):
             rate = 0
 
         logger.info(
-            f"version: {__version__}, started: {humanize.naturaltime(nowflt()-self.started)}, last_housekeeping: {how_long:4.1f} seconds ago "
+            f"version: {__version__}, started: {naturalTime(nowflt()-self.started)}, last_housekeeping: {how_long:4.1f} seconds ago "
         )
         logger.info(
             "messages received: %d, accepted: %d, rejected: %d  %%accepted: %3.1f%% rate: %3.1f m/s"
             % (self.msgCount + self.rejectCount, self.msgCount,
                self.rejectCount, apc, rate))
         logger.info( f"files transferred: {self.transferCount} " +\
-             f"bytes: {humanize.naturalsize(self.fileBytes,binary=True)} " +\
-             f"rate: {humanize.naturalsize(self.fileBytes/how_long, binary=True)}/sec" )
+             f"bytes: {naturalSize(self.fileBytes)} " +\
+             f"rate: {naturalSize(self.fileBytes/how_long)}/sec" )
         if self.msgCount > 0:
             logger.info("lag: average: %.2f, maximum: %.2f " %
                         (self.lagTotal / self.msgCount, self.lagMax))

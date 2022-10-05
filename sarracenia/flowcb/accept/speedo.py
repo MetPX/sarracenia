@@ -9,9 +9,6 @@ Options:
     msgSpeedoInterval -> how often the speedometer is updated. (default: 5)
     msg_speedo_maxlag  -> if the message flow indicates that messages are 'late', emit warnings. (default 60)
 
-Dependency:
-    Requires python3-humanize module.
-
 Usage: 
     callback accept.speedo
     msgSpeedoInterval x
@@ -20,9 +17,9 @@ Usage:
 
 import os, stat, time
 import calendar
-import humanize
 import datetime
-from sarracenia import timestr2flt, nowflt
+
+from sarracenia import timestr2flt, nowflt, naturalSize, naturalTime
 import logging
 from sarracenia.flowcb import FlowCB
 logger = logging.getLogger(__name__)
@@ -72,17 +69,14 @@ class Speedo(FlowCB):
                 "speedo: %3d messages received: %5.2g msg/s, %s bytes/s, lag: %4.2g s"
                 % (self.o.msg_speedo_msgcount, self.o.msg_speedo_msgcount /
                    (now - self.o.msg_speedo_last),
-                   humanize.naturalsize(self.o.msg_speedo_bytecount /
-                                        (now - self.o.msg_speedo_last),
-                                        binary=True,
-                                        gnu=True), lag))
+                   naturalSize(self.o.msg_speedo_bytecount / (now - self.o.msg_speedo_last),), lag))
 
             # Set the maximum age, in seconds, of a message to retrieve.
 
             if lag > self.o.msg_speedo_maxlag:
                 logger.warning(
                     "speedo: Excessive lag! Messages posted %s " %
-                    humanize.naturaltime(datetime.timedelta(seconds=lag)))
+                    naturalTime(datetime.timedelta(seconds=lag)))
 
             self.o.msg_speedo_last = now
             self.o.msg_speedo_msgcount = 0

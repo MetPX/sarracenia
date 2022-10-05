@@ -5,9 +5,9 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2020
 #
 
-import humanize
 import logging
 
+from sarracenia import naturalSize
 import sarracenia.moth
 from sarracenia.flowcb import FlowCB
 
@@ -44,8 +44,8 @@ class Message(FlowCB):
         average = (m['rxByteCount'] /
                    m['rxGoodCount'] if m['rxGoodCount'] != 0 else 0)
         logger.info( f"messages: good: {m['rxGoodCount']} bad: {m['rxBadCount']} " +\
-           f"bytes: {humanize.naturalsize(m['rxByteCount'],binary=True)} " +\
-           f"average: {humanize.naturalsize(average, binary=True)}" )
+           f"bytes: {naturalSize(m['rxByteCount'])} " +\
+           f"average: {naturalSize(average)}" )
         self.consumer.metricsReset()
 
     def on_stop(self):

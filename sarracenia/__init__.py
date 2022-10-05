@@ -743,13 +743,16 @@ class Message(dict):
   ftppoll - ability to poll FTP servers
   vip  - enable vip (Virtual IP) settings to implement singleton processing
          for high availability support.
+  watch - monitor files or directories for changes.
 
 """
 extras = { 
    'amqp' : { 'modules_needed': [ 'amqp' ], 'present': False },
    'ftppoll' : { 'modules_needed': ['dateparser', 'pytz'], 'present': False },
+   'humanize' : { 'modules_needed': ['humanize' ], 'present': False },
    'mqtt' : { 'modules_needed': ['paho.mqtt.client'], 'present': False },
-   'vip'  : { 'modules_needed': ['netifaces'] , 'present': False }
+   'vip'  : { 'modules_needed': ['netifaces'] , 'present': False },
+   'watch'  : { 'modules_needed': ['watchdog'] , 'present': False }
 }
 
 for x in extras:
@@ -773,4 +776,23 @@ if extras['mqtt']['present']:
    if not hasattr( paho.mqtt.client, 'MQTTv5' ):
        # without v5 support, mqtt is not useful.
        extras['mqtt']['present'] = False
+
+# if humanize is not present, compensate...
+if extras['humanize']['present']:
+    import humanize
+
+    def naturalSize( num ):
+        return humanize.naturalsize(num,binary=True)
+
+    def naturalTime( dur ):
+        return humanize.naturaltime(dur)
+
+else:
+  
+    def naturalSize( num ):
+       return "%g" % num
+
+    def naturalTime( dur ):
+       return "%g" % dur
+
 

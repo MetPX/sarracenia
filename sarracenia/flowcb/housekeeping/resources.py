@@ -34,10 +34,11 @@ Returns:
 """
 
 import logging
-import humanize
+
 import os
 import psutil
 from sarracenia.flowcb import FlowCB
+from sarracenia import naturalSize, naturalTime
 import sys
 
 logger = logging.getLogger(__name__)
@@ -75,7 +76,7 @@ class Resources(FlowCB):
                         self.msgCount < self.o.MemoryBaseLineFile):
                     # Not enough files processed for steady state, continue to wait..
                     logger.info(
-                        f"Current mem usage: {humanize.naturalsize(mem, binary=True)}, accumulating count "
+                        f"Current mem usage: {naturalSize(mem)}, accumulating count "
                         f"({self.transferCount} or {self.msgCount}/{self.o.MemoryBaseLineFile} so far) "
                         f"before self-setting threshold")
                     return True
@@ -83,12 +84,12 @@ class Resources(FlowCB):
                 self.threshold = int(self.o.MemoryMultiplier * mem)
 
             logger.info(
-                f"Memory threshold set to: {humanize.naturalsize(self.threshold, binary=True)}"
+                f"Memory threshold set to: {naturalSize(self.threshold)}"
             )
 
         logger.info(
-            f"Current Memory usage: {humanize.naturalsize(mem, binary=True)} / "
-            f"{humanize.naturalsize(self.threshold, binary=True)} = {(mem/self.threshold):.2%}"
+            f"Current Memory usage: {naturalSize(mem)} / "
+            f"{naturalSize(self.threshold)} = {(mem/self.threshold):.2%}"
         )
 
         if mem > self.threshold:
