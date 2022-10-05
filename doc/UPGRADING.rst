@@ -36,6 +36,13 @@ Installation Instructions
 git
 ---
 
+2.22.09
+-------
+
+*CHANGES*: v03 format of notification messages revised as per https://github.com/MetPX/sarracenia/issues/547
+           old versions of metpx-sarracenia cannot process v03 message produced by later versions
+           after this point.
+
 2.21.08
 -------
 
