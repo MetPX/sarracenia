@@ -748,6 +748,7 @@ class Message(dict):
 """
 extras = { 
    'amqp' : { 'modules_needed': [ 'amqp' ], 'present': False },
+   'appdirs' : { 'modules_needed': [ 'appdirs' ], 'present': False },
    'ftppoll' : { 'modules_needed': ['dateparser', 'pytz'], 'present': False },
    'humanize' : { 'modules_needed': ['humanize' ], 'present': False },
    'mqtt' : { 'modules_needed': ['paho.mqtt.client'], 'present': False },
@@ -770,6 +771,7 @@ for x in extras:
            logger.debug( f"extra feature {x} needs missing module {y}. Disabled" ) 
            extras[x]['present']=False
 
+# Some sort of graceful fallback, or good messaging for when dependencies are missing.
 
 if extras['mqtt']['present']:
    import paho.mqtt.client
@@ -796,3 +798,27 @@ else:
        return "%g" % dur
 
 
+if extras['appdirs']['present']:
+    import appdirs
+
+    def site_config_dir( app, author ):
+        return appdirs.site_config_dir( app, author )
+
+    def user_config_dir( app, author ):
+        return appdirs.user_config_dir( app, author )
+
+    def user_cache_dir( app, author ):
+        return appdirs.user_cache_dir( app, author )
+else:
+    # if appdirs is missing, pretend we're on Linux.
+    import Pathlib
+
+    def site_config_dir( app, author ):
+        return '/etc/xdg/xdg-ubuntu-xorg/%s' % app
+
+    def user_config_dir( app, author ):
+        return str(Path.Home()) + '/.config/%s' % app
+ 
+    def user_cache_dir( app, author ):
+        return str(Path.Home()) + '/.cache/%s' % app
+ 

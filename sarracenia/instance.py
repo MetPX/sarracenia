@@ -15,7 +15,7 @@ import signal
 import sys
 import time
 
-import appdirs
+from sarracenia import user_config_dir
 import sarracenia.config
 from sarracenia.flow import Flow
 
@@ -70,7 +70,7 @@ class instance:
             level=logging.INFO)
 
         # FIXME: honour SR_ variable for moving preferences...
-        default_cfg_dir = appdirs.user_config_dir(
+        default_cfg_dir = sarracenia.user_config_dir(
             sarracenia.config.Config.appdir_stuff['appname'],
             sarracenia.config.Config.appdir_stuff['appauthor'])
 

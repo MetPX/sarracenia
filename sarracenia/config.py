@@ -9,7 +9,6 @@
 
 """
 
-import appdirs
 import argparse
 import copy
 import humanfriendly
@@ -45,7 +44,7 @@ if sys.version_info[0] >= 3 and sys.version_info[1] < 8:
 
 
 import sarracenia
-from sarracenia import durationToSeconds
+from sarracenia import durationToSeconds, site_config_dir, user_config_dir, user_cache_dir
 import sarracenia.credentials
 import sarracenia.flow
 import sarracenia.flowcb
@@ -228,7 +227,7 @@ def get_package_lib_dir():
 
 
 def get_site_config_dir():
-    return appdirs.site_config_dir(Config.appdir_stuff['appname'],
+    return sarracenia.site_config_dir(Config.appdir_stuff['appname'],
                                    Config.appdir_stuff['appauthor'])
 
 
@@ -236,7 +235,7 @@ def get_user_cache_dir(hostdir):
     """
       hostdir = None if statehost is false, 
     """
-    ucd = appdirs.user_cache_dir(Config.appdir_stuff['appname'],
+    ucd = sarracenia.user_cache_dir(Config.appdir_stuff['appname'],
                                  Config.appdir_stuff['appauthor'])
     if hostdir:
         ucd = os.path.join(ucd, hostdir)
@@ -244,7 +243,7 @@ def get_user_cache_dir(hostdir):
 
 
 def get_user_config_dir():
-    return appdirs.user_config_dir(Config.appdir_stuff['appname'],
+    return sarracenia.user_config_dir(Config.appdir_stuff['appname'],
                                    Config.appdir_stuff['appauthor'])
 
 
@@ -548,7 +547,6 @@ class Config:
             Config.credentials = sarracenia.credentials.CredentialDB()
             Config.credentials.read(get_user_config_dir() + os.sep +
                                     "credentials.conf")
-        # FIXME... Linux only for now, no appdirs
         self.directory = None
 
         self.env = copy.deepcopy(os.environ)
@@ -1427,7 +1425,7 @@ class Config:
         if self.broker and self.broker.url and self.broker.url.username:
             self._resolve_exchange()
 
-            queuefile = appdirs.user_cache_dir(
+            queuefile = sarracenia.user_cache_dir(
                 Config.appdir_stuff['appname'],
                 Config.appdir_stuff['appauthor'])
 

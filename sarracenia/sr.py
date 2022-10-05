@@ -20,7 +20,6 @@
 
 from functools import partial
 
-import appdirs
 import copy
 import fnmatch
 import getpass
@@ -41,6 +40,7 @@ import subprocess
 import sys
 import time
 
+from sarracenia import user_config_dir, user_cache_dir
 from sarracenia.config import *
 import sarracenia.moth
 import sarracenia.rabbitmq_admin
@@ -350,7 +350,7 @@ class sr_GlobalState:
         """ DEVELOPER only... copy configuration to an alternate tree 
         """
         os.chdir(self.user_config_dir)
-        other_config_dir = appdirs.user_config_dir(savename, self.appauthor)
+        other_config_dir = sarracenia.user_config_dir(savename, self.appauthor)
 
         if not os.path.exists(other_config_dir):
             os.mkdir(other_config_dir)
@@ -383,7 +383,7 @@ class sr_GlobalState:
         if not os.path.isdir(dir):
             return
         os.chdir(dir)
-        other_cache_dir = appdirs.user_cache_dir(savename, self.appauthor)
+        other_cache_dir = sarracenia.user_cache_dir(savename, self.appauthor)
         if os.path.basename(dir) == self.hostdir:
             other_cache_dir += os.sep + self.hostdir
 
@@ -940,9 +940,9 @@ class sr_GlobalState:
     @appname.setter
     def appname(self, n):
         self.__appname = n
-        self.user_config_dir = appdirs.user_config_dir(self.appname,
+        self.user_config_dir = sarracenia.user_config_dir(self.appname,
                                                        self.appauthor)
-        self.user_cache_dir = appdirs.user_cache_dir(self.appname,
+        self.user_cache_dir = sarracenia.user_cache_dir(self.appname,
                                                      self.appauthor)
 
     def __init__(self, opt, config_fnmatches=None):
