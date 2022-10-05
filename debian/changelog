@@ -1,3 +1,9 @@
+metpx-sr3 (3.00.19) unstable; urgency=medium
+
+  * detection/fallbacks for python libraries to get partial functionality.
+
+ -- Peter Silva <peter@bsqt.homeip.net>  Wed, 05 Oct 2022 10:12:09 -0400
+
 metpx-sr3 (3.00.18) unstable; urgency=medium
 
   * --dry_run now working for download and send.
