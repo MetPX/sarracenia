@@ -47,6 +47,7 @@ git
      This affects some file placement particularly on Windows.
 
 *CHANGE*: v03 notification message encoding changed: *Integrity* checksum is now optional.
+          (details: https://github.com/MetPX/sarracenia/issues/547 )
 
 *CHANGE*: v03 notification message encoding changed for symbolic links, and file renames
      and removals. There is now a 'fileOp' field for these dataless file operations.
