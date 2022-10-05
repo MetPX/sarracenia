@@ -1828,7 +1828,7 @@ class Config:
         """
 
         parser=argparse.ArgumentParser( \
-             description='version: %s\nSarracenia flexible tree copy entry point' % sarracenia.__version__ ,\
+             description='version: %s\nSarracenia flexible tree copy ( https://MetPX.github.io/sarracenia ) ' % sarracenia.__version__ ,\
              formatter_class=argparse.ArgumentDefaultsHelpFormatter )
 
         if sys.version_info[0] >= 3 and sys.version_info[1] < 8:
