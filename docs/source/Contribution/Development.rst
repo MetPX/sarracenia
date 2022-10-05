@@ -1431,31 +1431,6 @@ Automated Build
 * for Sarrac, follow the procedure `here <https://github.com/MetPX/sarrac#release-process>`_
 * The built packages will be available in the `metpx ppa <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx>`_
 
-Ubuntu 18.04
-++++++++++++
-
-For ubuntu 18.04 (bionic), there are a few wrinkles. The recipe is called: metpx-sr3-daily-bionic, and it
-takes source from a different branch: *v03_launchpda*  For every release, this branch needs to be rebased from
-*v03_wip*
-
-* git checkout v03_launchpad
-* git rebase v03_wip
-* git push
-* import souce
-* Request build from *metpx-sr3-daily-bionic* Recipe.
-
-What is different about this *v03_launchpad* branch? It:
-
-* removes the dependency on python3-paho-mqtt as the version in the repositories is too old.
-* removed the dependency on python3-dateparser, as that package is not available in the repository.
-* override the testing target un debian/rules, because testing without the 
-  dependencies fails::
-
-     override_dh_auto_test:
-   	echo "disable on 18.04... some deps must come from pip"
-
-The missing dependencies should be installed with pip3.
-
 
 
 Building a Windows Installer
