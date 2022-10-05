@@ -732,7 +732,7 @@ class File(FlowCB):
                 if sarracenia.extras['watch']['present']:
                     messages.extend(self.watch_dir(d))
                 else:
-                    logger.critical("watchdog missing! Cannot watch directory")
+                    logger.critical("python watchdog package missing! Cannot watch directory")
                 continue
 
             if os.path.isdir(d):

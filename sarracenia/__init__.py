@@ -747,13 +747,13 @@ class Message(dict):
 
 """
 extras = { 
-   'amqp' : { 'modules_needed': [ 'amqp' ], 'present': False },
-   'appdirs' : { 'modules_needed': [ 'appdirs' ], 'present': False },
-   'ftppoll' : { 'modules_needed': ['dateparser', 'pytz'], 'present': False },
-   'humanize' : { 'modules_needed': ['humanize' ], 'present': False },
-   'mqtt' : { 'modules_needed': ['paho.mqtt.client'], 'present': False },
-   'vip'  : { 'modules_needed': ['netifaces'] , 'present': False },
-   'watch'  : { 'modules_needed': ['watchdog'] , 'present': False }
+   'amqp' : { 'modules_needed': [ 'amqp' ], 'present': False, 'lament' : 'will not be able to connect to rabbitmq brokers' },
+   'appdirs' : { 'modules_needed': [ 'appdirs' ], 'present': False, 'lament' : 'will assume linux file placement under home dir' },
+   'ftppoll' : { 'modules_needed': ['dateparser', 'pytz'], 'present': False, 'lament' : 'will not be able to poll with ftp' },
+   'humanize' : { 'modules_needed': ['humanize' ], 'present': False, 'lament': 'humans will have to read larger, uglier numbers' },
+   'mqtt' : { 'modules_needed': ['paho.mqtt.client'], 'present': False, 'lament': 'will not be able to connect to mqtt brokers' },
+   'vip'  : { 'modules_needed': ['netifaces'] , 'present': False, 'lament': 'will not be able to use the vip option for high availability clustering' },
+   'watch'  : { 'modules_needed': ['watchdog'] , 'present': False, 'lament': 'cannot watch directories' }
 }
 
 for x in extras:
@@ -811,14 +811,14 @@ if extras['appdirs']['present']:
         return appdirs.user_cache_dir( app, author )
 else:
     # if appdirs is missing, pretend we're on Linux.
-    import Pathlib
+    import pathlib
 
     def site_config_dir( app, author ):
         return '/etc/xdg/xdg-ubuntu-xorg/%s' % app
 
     def user_config_dir( app, author ):
-        return str(Path.Home()) + '/.config/%s' % app
+        return str(pathlib.Path.home()) + '/.config/%s' % app
  
     def user_cache_dir( app, author ):
-        return str(Path.Home()) + '/.cache/%s' % app
+        return str(pathlib.Path.home()) + '/.cache/%s' % app
  

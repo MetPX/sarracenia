@@ -1576,6 +1576,9 @@ class sr_GlobalState:
                     signal_pid(pid, signal.SIGTERM)
         else:
             print('no missing processes found')
+        for l in sarracenia.extras.keys():
+            if not sarracenia.extras[l]['present']:
+                print( f"notice: python module {l} is missing: {sarracenia.extras[l]['lament']}" )
 
     def start(self):
         """ Starting all components
