@@ -76,6 +76,26 @@ The headers are an array of name:value pairs::
              "method" : "md5" | "sha512" | "md5name" | "link" | "remove" | "cod" | "random" ,
              "value"  : "base64 encoded checksum value"
           }
+    one of:
+
+          "integrity"     - for changes in file contents, an integrity checksum.
+          {
+             "method" : "md5" | "sha512" | "cod" | "random" ,
+             "value"  : "base64 encoded checksum value"
+          }
+    or:
+          "fileOp"   - to describe non-data file update operations.
+          {            
+             "link" : "symbolic link value (target) string"
+             "remove" : ""     - flag present when removing a file (argument ignored.)
+             "hlink" : "hardlink value string (file being linked to.)"
+             "rename" : "name of file before rename."
+          }
+    or:
+         nothing... If neither of these is present, 
+
+         the md5sum will be assumed and used to perform duplicate suppression.
+
 
   OPTIONAL:
 

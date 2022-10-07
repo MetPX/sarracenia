@@ -70,7 +70,8 @@ setup(
     "watchdog", 
     "netifaces", 
     "humanize",
-    "psutil",
-    "dateparser"]
-
+    "psutil" ],
+    extras_require = {
+      "poll" : [ 'dateparser' ]
+    }
 )

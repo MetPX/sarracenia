@@ -1,3 +1,15 @@
+metpx-sarracenia (2.22.10) UNRELEASED; urgency=medium
+
+  * v2 make dateparser dependency explicitly for poll, optional otherwise
+
+ -- Peter Silva <peter@bsqt.homeip.net>  Mon, 03 Oct 2022 11:56:46 -0400
+
+metpx-sarracenia (2.22.09) unstable; urgency=medium
+
+  * #547 updated v03 format. 
+
+ -- Peter Silva <peter@fractal>  Thu, 15 Sep 2022 23:07:03 -0400
+
 metpx-sarracenia (2.22.06) stable; urgency=medium
 
   * #526 bugfix ... supports_extended_attributes not declared bug.
@@ -19,7 +31,7 @@ metpx-sarracenia (2.21.10) stable; urgency=medium
   * bugfix from @junmtl about plugins/msg_fdelay.py
   * new #465 simulation mode for testing senders.
 
- -- Peter Silva <peter@fractal>  Thu, 02 Sep 2021 13:30:26 -0400
+ -- Peter Silva <peter@bsqt.homeip.net>  Thu, 02 Sep 2021 13:30:26 -0400
 
 metpx-sarracenia (2.21.08) stable; urgency=medium
 
@@ -31,7 +43,7 @@ metpx-sarracenia (2.21.08) stable; urgency=medium
   * hmm.. charset in ftp.. defaults to iso8859-1, changed to utf-8.
     noticed caused some issues in newer tests that use accented characters. 
 
- -- Peter Silva <peter@fractal>  Sat, 24 Apr 2021 12:52:19 -0400
+ -- Peter Silva <peter@bsqt.homeip.net>  Sat, 24 Apr 2021 12:52:19 -0400
 
 metpx-sarracenia (2.21.04) stable; urgency=medium
 

@@ -244,7 +244,15 @@ class sr_retry:
 
     def in_cache(self,message):
         relpath = '/'.join(message.body.split()[1:])
-        sumstr  = message.properties['application_headers']['sum']
+        if 'sum' in message.properties['application_headers']:
+            sumstr  = message.properties['application_headers']['sum']
+        elif 'integrity' in message.properties['application_headers']:
+            sumstr  = message.properties['application_headers']['integrity']
+        elif 'pubTime' in message.properties['application_headers']:
+            sumstr  = message.properties['application_headers']['pubTime']
+        else:
+            sumstr  = message.message.body.split()[0] 
+
         partstr = relpath
         if 'parts' in message.properties['application_headers'] :
             partstr = message.properties['application_headers']['parts']
