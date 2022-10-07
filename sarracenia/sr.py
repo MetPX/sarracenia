@@ -1008,6 +1008,8 @@ class sr_GlobalState:
         self._resolve()
         self._find_missing_instances()
         #print('analysis - Done. ', flush=True)
+        # True if the user did ``sr3 action`` with no configs/components specified
+        self._action_all_configs = (config_fnmatches is None or len(config_fnmatches) == 0)
         self._match_patterns(config_fnmatches)
         os.chdir(self.invoking_directory)
 
@@ -1597,6 +1599,9 @@ class sr_GlobalState:
 
             (c, cfg) = f.split(os.sep)
 
+            # exclude posts when ``sr3 start`` called without specific configs
+            if self._action_all_configs and c in ['post', 'cpost']: continue
+
             component_path = self._find_component_path(c)
             if component_path == '':
                 continue
@@ -1638,6 +1643,9 @@ class sr_GlobalState:
 
             (c, cfg) = f.split(os.sep)
 
+            # exclude posts and foreground instances when ``sr3 stop`` called without specific configs
+            if self._action_all_configs and (self._cfg_running_foreground(c, cfg) or c in ['post', 'cpost']): continue
+
             if self.configs[c][cfg]['status'] in ['running', 'partial']:
                 for i in self.states[c][cfg]['instance_pids']:
                     # print( "for %s/%s - %s signal_pid( %s, SIGTERM )" % \
@@ -1653,6 +1661,7 @@ class sr_GlobalState:
         attempts = 0
         attempts_max = 5
         now = time.time()
+
         while attempts < attempts_max:
             for pid in self.procs:
                 if (not self.procs[pid]['claimed']) and (
@@ -1678,6 +1687,9 @@ class sr_GlobalState:
             for f in self.filtered_configurations:
                 if f == 'audit': continue
                 (c, cfg) = f.split(os.sep)
+                # exclude posts and foreground instances when ``sr3 stop`` called without specific configs
+                if self._action_all_configs and (self._cfg_running_foreground(c, cfg) or c in ['post', 'cpost']):
+                    continue
                 running_pids += len(self.states[c][cfg]['instance_pids'])
 
             if running_pids == 0:
@@ -1695,6 +1707,8 @@ class sr_GlobalState:
         for f in self.filtered_configurations:
             if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
+            # exclude posts and foreground instances when ``sr3 stop`` called without specific configs
+            if self._action_all_configs and (self._cfg_running_foreground(c, cfg) or c in ['post', 'cpost']): continue
             if self.configs[c][cfg]['status'] in ['running', 'partial']:
                 for i in self.states[c][cfg]['instance_pids']:
                     if self.states[c][cfg]['instance_pids'][i] in self.procs:
@@ -1723,6 +1737,8 @@ class sr_GlobalState:
         for f in self.filtered_configurations:
             if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
+            # exclude posts and foreground instances when ``sr3 stop`` called without specific configs
+            if self._action_all_configs and (self._cfg_running_foreground(c, cfg) or c in ['post', 'cpost']): continue
             if self.configs[c][cfg]['status'] in ['running', 'partial']:
                 for i in self.states[c][cfg]['instance_pids']:
                     print("failed to kill: %s/%s instance: %s, pid: %s )" %
@@ -1799,9 +1815,9 @@ class sr_GlobalState:
     def status(self):
         """ v3 Printing prettier statuses for each component/configs found
         """
-        print("%-40s %-10s %5s %5s %5s %5s" %
+        print("%-40s %-15s %5s %5s %5s %5s" %
               ("Component/Config", "State", "Run", "Miss", "Exp", "Retry"))
-        print("%-40s %-10s %5s %5s %5s %5s" %
+        print("%-40s %-15s %5s %5s %5s %5s" %
               ("----------------", "-----", "---", "----", "---", "-----"))
         configs_running = 0
 
@@ -1830,9 +1846,12 @@ class sr_GlobalState:
 
                 retry = self.states[c][cfg]['retry_queue']
 
-                print("%-40s %-10s %5d %5d %5d %5d" %
-                      (f, self.configs[c][cfg]['status'], running, m, expected,
-                       retry))
+                cfg_status = self.configs[c][cfg]['status']
+                if cfg_status == "running" and self._cfg_running_foreground(c, cfg):
+                    cfg_status += ' (fg)'
+
+                print("%-40s %-15s %5d %5d %5d %5d" %
+                      (f, cfg_status, running, m, expected, retry))
         stray = 0
         for pid in self.procs:
             if not self.procs[pid]['claimed']:
@@ -2003,6 +2022,19 @@ class sr_GlobalState:
                     print("exchange with no bindings: %s-%s " % (h, x), end='')
 
         return bad
+
+    def _cfg_running_foreground(self, component, config):
+        """Returns True if the specified config is running in the foreground.
+        Args:
+            component: the config's component
+            config: config to check
+
+        Returns: True if foreground, False if not.
+        """
+        for pid in self.states[component][config]['instance_pids'].items():
+            if 'foreground' in self.procs[pid[1]]['cmdline']:
+                return True
+        return False
 
 
 def main():
