@@ -153,7 +153,7 @@ class Log(FlowCB):
             f"version: {__version__}, started: {naturalTime(nowflt()-self.started)}, last_housekeeping: {how_long:4.1f} seconds ago "
         )
         logger.info(
-            "messages received: %d, accepted: %d, rejected: %d  %%accepted: %3.1f%% rate: %3.1f m/s"
+            "messages received: %d, accepted: %d, rejected: %d   rate accepted: %3.1f%% or %3.1f m/s"
             % (self.msgCount + self.rejectCount, self.msgCount,
                self.rejectCount, apc, rate))
         logger.info( f"files transferred: {self.transferCount} " +\
