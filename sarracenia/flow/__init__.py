@@ -160,7 +160,7 @@ class Flow:
 
         # for poll only, mark if we are catching up on posted messages
         #
-        self.worklist.catching_up = False
+        self.worklist.poll_catching_up = False
 
         # Witness the creation of this list
         self.plugins['load'] = self.o.plugins_early + [
@@ -506,8 +506,8 @@ class Flow:
             else:
                 stime = 0
 
-            if self.worklist.catching_up:
-               continue
+            if self.worklist.poll_catching_up:
+                continue
 
             if (current_sleep > 0):
                 if elapsed < current_sleep:

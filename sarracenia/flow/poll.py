@@ -71,16 +71,34 @@ class Poll(Flow):
                 logger.critical( f"attempting to configure an FTP poll destination={self.o.destination}, but missing python modules: {' '.join(sarracenia.extras['ftppoll']['modules_needed'])}" )
                 sys.exit(1)
 
+    def do(self):
+        """
+            stub to do the work: does nothing, marking everything done.
+            to be replaced in child classes that do transforms or transfers.
+        """
+
+        # mark all remaining messages as rejected.
+        if self.worklist.poll_catching_up:
+            # in catchup mode, just reading previously posted messages.
+            self.worklist.rejected = self.worklist.incoming
+        else:
+            self.worklist.ok = self.worklist.incoming
+
+        logger.debug('processing %d messages worked! (stop requested: %s)' %
+                     (len(self.worklist.incoming), self._stop_requested))
+        self.worklist.incoming = []
+
+
     def gather(self):
 
         super().gather()
 
         if len(self.worklist.incoming) > 0:
             logger.info('ingesting %d postings into duplicate suppression cache' % len(self.worklist.incoming) )
-            self.worklist.catching_up = True
+            self.worklist.poll_catching_up = True
             return 
         else:
-            self.worklist.catching_up = False
+            self.worklist.poll_catching_up = False
 
         if self.have_vip:
             for plugin in self.plugins['poll']:
