@@ -460,7 +460,7 @@ class AMQP(Moth):
             except Exception as err:
                 logger.warning(f"failed, connection was closed/broken and could not be re-opened {exchange}: {err}")
                 logger.debug('Exception details: ', exc_info=True)
-                # Returning False here would prevent looping when retry queues are not in use
+                return False
 
         # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
         body = copy.deepcopy(body)
@@ -536,19 +536,18 @@ class AMQP(Moth):
 
         body=raw_body
         ebo = 1
-        while True:
-            try:
-                self.channel.basic_publish(AMQP_Message, exchange, topic)
-                self.channel.tx_commit()
-                logger.debug(
-                    "published body: {} headers: {} to {} under: {} ".format(
-                        body, headers, exchange, topic))
-                self.metrics['txGoodCount'] += 1
-                return True  # no failure == success :-)
+        try:
+            self.channel.basic_publish(AMQP_Message, exchange, topic)
+            self.channel.tx_commit()
+            logger.debug(
+                "published body: {} headers: {} to {} under: {} ".format(
+                    body, headers, exchange, topic))
+            self.metrics['txGoodCount'] += 1
+            return True  # no failure == success :-)
 
-            except Exception as err:
-                logger.warning("failed %s: %s" % (exchange, err))
-                logger.debug('Exception details: ', exc_info=True)
+        except Exception as err:
+            logger.warning("failed %s: %s" % (exchange, err))
+            logger.debug('Exception details: ', exc_info=True)
 
             self.metrics['txBadCount'] += 1
             # Issue #466: commenting this out until message_strategy stubborn is working correctly (Issue #537)
@@ -559,13 +558,6 @@ class AMQP(Moth):
 
             self.close()
             return False # instead of looping
-
-            self.__putSetup()
-
-            if ebo < 60: ebo *= 2
-
-            logger.info("Sleeping {} seconds ...".format(ebo))
-            time.sleep(ebo)
 
     def close(self) -> None:
         try:

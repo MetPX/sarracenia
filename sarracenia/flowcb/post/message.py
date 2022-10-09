@@ -39,10 +39,12 @@ class Message(FlowCB):
     def post(self, worklist):
 
         still_ok = []
+        all_good=True
         for m in worklist.ok:
-            if self.poster.putNewMessage(m):
+            if all_good and self.poster.putNewMessage(m):
                 still_ok.append(m)
             else:
+                all_good=False
                 worklist.failed.append(m)
         worklist.ok = still_ok
 
