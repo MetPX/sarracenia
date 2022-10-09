@@ -199,6 +199,7 @@ class NoDupe(FlowCB):
                 m.setReport(304, 'Not modified 1 (cache check)')
                 worklist.rejected.append(m)
 
+        logger.debug( f"items registered: {len(self.cache_dict.keys())}" )
         worklist.incoming = new_incoming
 
     def on_start(self):
@@ -209,7 +210,7 @@ class NoDupe(FlowCB):
         self.close()
 
     def clean(self, persist=False, delpath=None):
-        logger.debug("NoDupe clean")
+        logger.debug("start")
 
         # create refreshed dict
 
@@ -251,7 +252,7 @@ class NoDupe(FlowCB):
         self.cache_dict = new_dict
 
     def close(self, unlink=False):
-        logger.debug("NoDupe close")
+        logger.debug("start")
         try:
             self.fp.flush()
             self.fp.close()
@@ -272,7 +273,7 @@ class NoDupe(FlowCB):
         self.count = 0
 
     def delete_path(self, delpath):
-        logger.debug("NoDupe delete_path")
+        logger.debug("start")
 
         # close,remove file, open new empty file
         self.fp.close()
@@ -284,7 +285,7 @@ class NoDupe(FlowCB):
         self.clean(persist=True, delpath=delpath)
 
     def free(self):
-        logger.debug("NoDupe free")
+        logger.debug("start")
         self.cache_dict = {}
         self.count = 0
         try:
@@ -296,7 +297,7 @@ class NoDupe(FlowCB):
         self.fp = open(self.cache_file, 'w')
 
     def load(self):
-        logger.debug("NoDupe load")
+        logger.debug("start")
         self.cache_dict = {}
         self.count = 0
 
