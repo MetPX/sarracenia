@@ -197,31 +197,50 @@ class Moth():
     """
     @staticmethod
     def subFactory(broker, props) -> 'Moth':
-        if not ProtocolPresent(broker.url.scheme):
-           return None
-        if broker and broker.url:
-            for sc in Moth.__subclasses__():
-                if (broker.url.scheme == sc.__name__.lower()) or (
-                    (broker.url.scheme[0:-1] == sc.__name__.lower()) and
-                    (broker.url.scheme[-1] == 's')):
-                    return sc(broker, props, True)
-        else:
+
+        if not broker :
             logger.error('no broker specified')
             return None
 
+        if not hasattr(broker,'url'):
+            logger.error('invalid broker url')
+            return None
+
+        if not ProtocolPresent(broker.url.scheme):
+           logger.error('unknown broker scheme/protocol specified')
+           return None
+
+        for sc in Moth.__subclasses__():
+            if (broker.url.scheme == sc.__name__.lower()) or (
+                (broker.url.scheme[0:-1] == sc.__name__.lower()) and
+                (broker.url.scheme[-1] == 's')):
+                return sc(broker, props, True)
+        logger.error('broker intialization failure')
+        return None
+
     @staticmethod
     def pubFactory(broker, props) -> 'Moth':
-        if not ProtocolPresent(broker.url.scheme):
-           return None
-        if broker and broker.url:
-            for sc in Moth.__subclasses__():
-                if (broker.url.scheme == sc.__name__.lower()) or (
-                    (broker.url.scheme[0:-1] == sc.__name__.lower()) and
-                    (broker.url.scheme[-1] == 's')):
-                    return sc(broker, props, False)
-        else:
+        if not broker:
             logger.error('no broker specified')
             return None
+
+        if not hasattr(broker,'url'):
+            logger.error('invalid broker url')
+            return None
+
+        if not ProtocolPresent(broker.url.scheme):
+           logger.error('unknown broker scheme/protocol specified')
+           return None
+
+        for sc in Moth.__subclasses__():
+            if (broker.url.scheme == sc.__name__.lower()) or (
+                (broker.url.scheme[0:-1] == sc.__name__.lower()) and
+                (broker.url.scheme[-1] == 's')):
+                return sc(broker, props, False)
+
+        # ProtocolPresent test should ensure that we never get here...
+        logger.error('broker intialization failure')
+        return None
 
     def __init__(self, broker, props=None, is_subscriber=True) -> None:
         """

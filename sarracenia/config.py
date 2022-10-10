@@ -178,9 +178,6 @@ convert_to_v3 = {
         'msg_WMO_type_suffix': [ 'flow_callback', 'sarracenia.flowcb.accept.wmotypesuffix.WmoTypeSuffix'],
         'msg_sundew_pxroute': [ 'flow_callback', 'sarracenia.flowcb.accept.sundewpxroute.SundewPxRoute'],
         'msg_rename4jicc': [ 'flow_callback', 'sarracenia.flowcb.accept.rename4jicc.Rename4Jicc'],
-        'post_override': [ 'flow_callback', 'sarracenia.flowcb.accept.postoverride.PostOverride'],
-        'post_hour_tree': [ 'flow_callback', 'sarracenia.flowcb.accept.posthourtree.PostHourTree'],
-        'post_long_flow': [ 'flow_callback', 'sarracenia.flowcb.accept.longflow.LongFLow'],
         'msg_delay': [ 'flow_callback', 'sarracenia.flowcb.accept.messagedelay.MessageDelay'],
         'msg_download_baseurl': [ 'flow_callback', 'sarracenia.flowcb.accept.downloadbaseurl.DownloadBaseUrl'],
 	'msg_from_cluster': ['continue'],
@@ -198,7 +195,11 @@ convert_to_v3 = {
         'wmo2msc': [ 'flow_callback', 'sarracenia.flowcb.filter.wmo2msc.Wmo2Msc'],
         'msg_delete': [ 'flow_callback', 'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles'],
         'msg_log': ['logEvents', 'after_accept'],
-        'msg_rawlog': ['logEvents', 'after_accept']
+        'msg_rawlog': ['logEvents', 'after_accept'],
+        'post_hour_tree': [ 'flow_callback', 'sarracenia.flowcb.accept.posthourtree.PostHourTree'],
+        'post_long_flow': [ 'flow_callback', 'sarracenia.flowcb.accept.longflow.LongFLow'],
+        'post_override': [ 'flow_callback', 'sarracenia.flowcb.accept.postoverride.PostOverride'],
+	'post_rate_limit': ['continue']
     },
     'on_post': {
         'post_log': ['logEvents', 'after_work']
