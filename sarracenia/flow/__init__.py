@@ -411,10 +411,13 @@ class Flow:
                 self.worklist.rejected = []
                 self.ack(self.worklist.failed)
 
-                if (self.o.component == 'poll') and not self.have_vip:
-                    # this for duplicate cache synchronization.
+                # this for duplicate cache synchronization.
+                if self.worklist.poll_catching_up:
                     self.ack(self.worklist.incoming)
                     self.worklist.incoming = []
+                    continue
+
+                if (self.o.component == 'poll') and not self.have_vip:
                     if had_vip:
                         logger.info("now passive on vip %s" % self.o.vip )
                         had_vip=False
@@ -506,9 +509,6 @@ class Flow:
             else:
                 logger.debug( f" not throttling: limit: {self.o.messageRateMax} " )
                 stime = 0
-
-            if self.worklist.poll_catching_up:
-                continue
 
             if (current_sleep > 0):
                 if elapsed < current_sleep:

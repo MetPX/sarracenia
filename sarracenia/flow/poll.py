@@ -4,11 +4,12 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, 2008-2021
 #
 
+import logging
 import sarracenia
 from sarracenia.flow import Flow
 import sys
 
-import logging
+
 
 logger = logging.getLogger(__name__)
 
