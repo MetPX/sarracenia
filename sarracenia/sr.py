@@ -1599,8 +1599,8 @@ class sr_GlobalState:
 
             (c, cfg) = f.split(os.sep)
 
-            # exclude posts when ``sr3 start`` called without specific configs
-            if self._action_all_configs and c in ['post', 'cpost']: continue
+            # skip posts that cannot run as daemons
+            if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): continue
 
             component_path = self._find_component_path(c)
             if component_path == '':
@@ -1643,8 +1643,8 @@ class sr_GlobalState:
 
             (c, cfg) = f.split(os.sep)
 
-            # exclude posts and foreground instances when ``sr3 stop`` called without specific configs
-            if self._action_all_configs and (self._cfg_running_foreground(c, cfg) or c in ['post', 'cpost']): continue
+            # exclude foreground instances when ``sr3 stop`` called without specific configs
+            if self._action_all_configs and self._cfg_running_foreground(c, cfg): continue
 
             if self.configs[c][cfg]['status'] in ['running', 'partial']:
                 for i in self.states[c][cfg]['instance_pids']:
@@ -1687,9 +1687,8 @@ class sr_GlobalState:
             for f in self.filtered_configurations:
                 if f == 'audit': continue
                 (c, cfg) = f.split(os.sep)
-                # exclude posts and foreground instances when ``sr3 stop`` called without specific configs
-                if self._action_all_configs and (self._cfg_running_foreground(c, cfg) or c in ['post', 'cpost']):
-                    continue
+                # exclude foreground instances when ``sr3 stop`` called without specific configs
+                if self._action_all_configs and self._cfg_running_foreground(c, cfg): continue
                 running_pids += len(self.states[c][cfg]['instance_pids'])
 
             if running_pids == 0:
@@ -1707,8 +1706,8 @@ class sr_GlobalState:
         for f in self.filtered_configurations:
             if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
-            # exclude posts and foreground instances when ``sr3 stop`` called without specific configs
-            if self._action_all_configs and (self._cfg_running_foreground(c, cfg) or c in ['post', 'cpost']): continue
+            # exclude foreground instances when ``sr3 stop`` called without specific configs
+            if self._action_all_configs and self._cfg_running_foreground(c, cfg): continue
             if self.configs[c][cfg]['status'] in ['running', 'partial']:
                 for i in self.states[c][cfg]['instance_pids']:
                     if self.states[c][cfg]['instance_pids'][i] in self.procs:
@@ -1737,8 +1736,8 @@ class sr_GlobalState:
         for f in self.filtered_configurations:
             if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
-            # exclude posts and foreground instances when ``sr3 stop`` called without specific configs
-            if self._action_all_configs and (self._cfg_running_foreground(c, cfg) or c in ['post', 'cpost']): continue
+            # exclude foreground instances when ``sr3 stop`` called without specific configs
+            if self._action_all_configs and self._cfg_running_foreground(c, cfg): continue
             if self.configs[c][cfg]['status'] in ['running', 'partial']:
                 for i in self.states[c][cfg]['instance_pids']:
                     print("failed to kill: %s/%s instance: %s, pid: %s )" %
@@ -1848,7 +1847,7 @@ class sr_GlobalState:
 
                 cfg_status = self.configs[c][cfg]['status']
                 if cfg_status == "running" and self._cfg_running_foreground(c, cfg):
-                    cfg_status += ' (fg)'
+                    cfg_status = "foreground"
 
                 print("%-40s %-15s %5d %5d %5d %5d" %
                       (f, cfg_status, running, m, expected, retry))
@@ -2025,17 +2024,40 @@ class sr_GlobalState:
 
     def _cfg_running_foreground(self, component, config):
         """Returns True if the specified config is running in the foreground.
+        Possible cases:
+          * anything with ``foreground`` in its cmd_line is always foreground.
+          * anything with ``start`` in its cmd_line is always a daemon (not foreground).
+          * posts and cposts without ``start`` in the cmd_line are always foreground.
+          * other components without ``start`` or ``foreground`` will return False.
+
         Args:
             component: the config's component
             config: config to check
 
         Returns: True if foreground, False if not.
         """
-        for pid in self.states[component][config]['instance_pids'].items():
-            if 'foreground' in self.procs[pid[1]]['cmdline']:
+        for pid_id, pid in self.states[component][config]['instance_pids'].items():
+            if 'foreground' in self.procs[pid]['cmdline']:
+                return True
+            elif 'start' in self.procs[pid]['cmdline']:
+                return False
+            # Default behavior for sr3_(c)post is to run in the foreground
+            elif 'sr3_cpost' in self.procs[pid]['cmdline'] or 'sr3_post' in self.procs[pid]['cmdline']:
                 return True
         return False
 
+    def _post_can_be_daemon(self, component, config):
+        """Returns True if a post or cpost config can run as a daemon. Criteria is that a path and sleep value > 0 are
+        defined in the config. Configs with no sleep value get set to the default in config.py (0.1).
+
+        Args:
+            component: the config's component
+            config: config to check
+
+        Returns: True if the config can run as a daemon, False if not.
+        """
+        return (component in ['post', 'cpost'] and self.configs[component][config]['options'].sleep > 0.1 and
+                hasattr(self.configs[component][config]['options'], 'path'))
 
 def main():
     """ Main thread for sr dealing with parsing and action switch
