@@ -16,7 +16,7 @@ on:
         type: boolean
         description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'     
         required: false
-        default: true
+        default: false
 
 jobs:
 
