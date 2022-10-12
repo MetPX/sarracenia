@@ -1,0 +1,266 @@
+2022-10-07 17:15:30,266 gather/am.py: Socket binding with port 5002
+2022-10-07 17:15:31,259 gather/am.py: Socket binding with port 5002
+2022-10-07 17:15:31,260 gather/am.py: Bind failed.
+2022-10-07 17:15:41,270 gather/am.py: Bind failed.
+2022-10-07 17:15:51,279 gather/am.py: Bind failed.
+2022-10-07 17:16:01,289 gather/am.py: Bind failed.
+2022-10-07 17:16:11,291 gather/am.py: Bind failed.
+2022-10-07 17:16:21,291 gather/am.py: Bind failed.
+2022-10-07 17:18:17,645 gather/am.py: Socket binding with port 5002
+2022-10-07 17:18:18,268 gather/am.py: Socket binding with port 5002
+2022-10-07 17:18:18,268 gather/am.py: Bind failed. Retying.
+2022-10-07 17:18:28,279 gather/am.py: Bind failed. Retying.
+2022-10-07 17:18:38,289 gather/am.py: Bind failed. Retying.
+2022-10-07 17:18:48,299 gather/am.py: Bind failed. Retying.
+2022-10-07 17:18:58,303 gather/am.py: Bind failed. Retying.
+2022-10-07 17:19:08,303 gather/am.py: Bind failed. Retying.
+2022-10-07 17:19:18,304 gather/am.py: Bind failed. Retying.
+2022-10-07 17:20:47,440 gather/am.py: Socket binding with port 5002
+2022-10-12 13:02:08,258 gather/am.py: Socket binding with port 5002
+2022-10-12 13:02:08,258 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:03:36,740 gather/am.py: Socket binding with port 5002
+2022-10-12 13:03:36,741 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:03:46,751 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:03:56,759 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:04:06,767 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:04:16,768 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:04:57,666 gather/am.py: Socket binded on port 5002
+2022-10-12 13:04:57,666 gather/am.py: Checking next message for errors.
+2022-10-12 13:07:34,186 gather/am.py: Socket binding with port 5002
+2022-10-12 13:07:38,731 gather/am.py: Socket binded on port 5002
+2022-10-12 13:07:38,732 gather/am.py: Checking next message for errors.
+2022-10-12 13:07:38,733 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 13:08:57,476 gather/am.py: Socket binding with port 5002
+2022-10-12 13:08:58,680 gather/am.py: Socket binded on port 5002
+2022-10-12 13:08:58,680 gather/am.py: Checking next message for errors.
+2022-10-12 13:08:58,681 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 13:09:40,166 gather/am.py: Socket binding with port 5002
+2022-10-12 13:09:40,954 gather/am.py: Socket binded on port 5002
+2022-10-12 13:09:40,955 gather/am.py: Checking next message for errors.
+2022-10-12 13:09:40,955 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 13:10:45,837 gather/am.py: Socket binding with port 5002
+2022-10-12 13:10:48,390 gather/am.py: Socket binded on port 5002
+2022-10-12 13:10:48,390 gather/am.py: Checking next message for errors.
+2022-10-12 13:10:48,391 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 13:12:09,251 gather/am.py: Socket binding with port 5002
+2022-10-12 13:12:12,031 gather/am.py: Socket binded on port 5002
+2022-10-12 13:12:12,032 gather/am.py: Checking next message for errors.
+2022-10-12 13:12:12,032 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 13:13:52,764 gather/am.py: Socket binding with port 5002
+2022-10-12 13:13:54,171 gather/am.py: Socket binded on port 5002
+2022-10-12 13:13:54,172 gather/am.py: Checking next message for errors.
+2022-10-12 13:13:54,172 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 13:14:57,875 gather/am.py: Socket binding with port 5002
+2022-10-12 13:15:38,518 gather/am.py: Socket binding with port 5002
+2022-10-12 13:15:38,519 gather/am.py: Socket binded on port 5002
+2022-10-12 13:15:38,519 gather/am.py: Checking next message for errors.
+2022-10-12 13:15:38,519 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 13:16:07,636 gather/am.py: Socket binding with port 5002
+2022-10-12 13:16:07,637 gather/am.py: Socket binded on port 5002
+2022-10-12 13:16:07,638 gather/am.py: Checking next message for errors.
+2022-10-12 13:16:07,638 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 13:16:36,296 gather/am.py: Socket binding with port 5002
+2022-10-12 13:16:36,297 gather/am.py: Socket binded on port 5002
+2022-10-12 13:16:36,298 gather/am.py: Checking next message for errors.
+2022-10-12 13:16:36,298 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 13:17:04,824 gather/am.py: Socket binding with port 5002
+2022-10-12 13:17:04,825 gather/am.py: Socket binded on port 5002
+2022-10-12 13:17:04,825 gather/am.py: Checking next message for errors.
+2022-10-12 13:17:04,826 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 13:17:14,982 gather/am.py: Socket binding with port 5002
+2022-10-12 13:17:14,983 gather/am.py: Socket binded on port 5002
+2022-10-12 13:17:14,984 gather/am.py: Checking next message for errors.
+2022-10-12 13:17:14,984 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 13:18:18,211 gather/am.py: Socket binding with port 5002
+2022-10-12 13:18:18,212 gather/am.py: Socket binded on port 5002
+2022-10-12 13:18:18,212 gather/am.py: Checking next message for errors.
+2022-10-12 13:19:31,059 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 13:19:31,060 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 13:19:31,061 gather/am.py: Checking next message for errors.
+2022-10-12 13:20:25,014 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 13:20:25,015 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 13:20:25,015 gather/am.py: Checking next message for errors.
+2022-10-12 13:21:58,444 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 13:21:58,445 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 13:21:58,445 gather/am.py: Checking next message for errors.
+2022-10-12 13:21:58,445 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 13:22:45,933 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 13:22:45,934 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 13:22:45,935 gather/am.py: Checking next message for errors.
+2022-10-12 13:22:45,935 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 13:29:04,242 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 13:29:04,242 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:29:14,253 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:29:24,258 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:29:34,267 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:29:44,275 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:29:54,283 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:30:04,291 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:30:14,302 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 13:30:14,303 gather/am.py: Checking next message for errors.
+2022-10-12 13:30:14,304 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 13:30:35,655 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 13:30:35,655 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 13:30:35,656 gather/am.py: Checking next message for errors.
+2022-10-12 13:30:35,656 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 13:30:47,376 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 13:30:47,377 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 13:30:47,377 gather/am.py: Checking next message for errors.
+2022-10-12 13:30:48,741 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 13:30:56,957 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 13:30:56,958 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 13:30:56,958 gather/am.py: Checking next message for errors.
+2022-10-12 13:32:02,300 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 13:32:02,301 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 13:32:02,301 gather/am.py: Checking next message for errors.
+2022-10-12 13:32:34,764 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 13:32:34,764 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:32:44,775 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:32:54,786 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:33:04,796 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:33:14,807 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:33:24,811 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:33:34,822 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:33:41,750 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 13:33:41,751 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:34:36,357 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 13:34:36,358 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 13:34:36,359 gather/am.py: Checking next message for errors.
+2022-10-12 13:36:08,920 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 13:36:08,921 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 13:36:08,922 gather/am.py: Checking next message for errors.
+2022-10-12 13:37:07,405 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 13:37:07,406 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 13:37:07,406 gather/am.py: Checking next message for errors.
+2022-10-12 13:37:07,407 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 13:37:53,595 gather/am.py: Socket binding with IP 127.0.0.1 and port 32
+2022-10-12 13:37:53,596 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:38:03,606 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:38:13,614 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:38:23,625 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:38:33,635 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:38:43,642 gather/am.py: Bind failed. Retrying.
+2022-10-12 13:38:51,489 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 13:38:51,490 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 13:38:51,490 gather/am.py: Checking next message for errors.
+2022-10-12 13:38:51,491 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 13:48:30,576 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 13:48:30,577 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 13:48:30,577 gather/am.py: Checking next message for errors.
+2022-10-12 13:48:30,578 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 13:50:42,277 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 13:50:42,278 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 13:50:42,278 gather/am.py: Checking next message for errors.
+2022-10-12 13:50:42,278 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 13:52:17,359 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 13:52:17,360 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 13:52:17,361 gather/am.py: Checking next message for errors.
+2022-10-12 13:52:17,361 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 13:52:27,856 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 13:52:27,857 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 13:52:27,857 gather/am.py: Checking next message for errors.
+2022-10-12 13:52:27,858 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 13:53:20,438 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 13:53:20,439 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 13:53:20,439 gather/am.py: Checking next message for errors.
+2022-10-12 13:53:21,721 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 13:53:28,447 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 13:53:28,447 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 13:53:28,448 gather/am.py: Checking next message for errors.
+2022-10-12 13:55:36,944 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 13:55:36,945 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 13:55:36,945 gather/am.py: Checking next message for errors.
+2022-10-12 13:55:56,642 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 14:06:12,915 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 14:06:49,034 gather/am.py: Checking next message for errors.
+2022-10-12 14:06:49,035 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 14:08:02,297 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 14:09:20,269 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 14:09:30,341 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 14:09:51,998 gather/am.py: Checking next message for errors.
+2022-10-12 14:10:14,891 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 14:11:01,209 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 14:11:45,076 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 14:12:12,283 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 14:12:12,285 gather/am.py: Checking next message for errors.
+2022-10-12 14:12:20,199 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 14:13:41,829 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 14:13:46,708 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 14:13:46,709 gather/am.py: Checking next message for errors.
+2022-10-12 14:14:50,926 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 14:15:04,474 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 14:15:04,475 gather/am.py: Checking next message for errors.
+2022-10-12 14:17:21,002 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 14:17:35,904 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 14:17:35,905 gather/am.py: Checking next message for errors.
+2022-10-12 14:18:01,904 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 14:19:40,182 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 14:20:06,926 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 14:20:06,927 gather/am.py: Checking next message for errors.
+2022-10-12 14:20:06,927 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 14:21:17,943 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 14:21:34,044 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 14:21:34,045 gather/am.py: Checking next message for errors.
+2022-10-12 14:21:34,045 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 14:22:33,432 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 14:22:55,864 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 14:22:55,865 gather/am.py: Checking next message for errors.
+2022-10-12 14:22:55,865 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 14:24:51,706 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 14:25:07,675 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 14:25:07,676 gather/am.py: Checking next message for errors.
+2022-10-12 14:25:07,676 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 14:25:37,078 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 14:25:58,608 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 14:25:58,608 gather/am.py: Checking next message for errors.
+2022-10-12 14:25:58,609 Type: <class 'OSError'>, Value: [Errno 107] Transport endpoint is not connected, [socket.recv(32768)]
+2022-10-12 14:29:38,195 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 14:29:59,619 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 14:29:59,620 gather/am.py: Checking next message for errors.
+2022-10-12 14:30:44,275 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 14:31:05,260 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 14:31:05,260 gather/am.py: Checking next message for errors.
+2022-10-12 14:31:05,261 Data received from socket: b'SACN31 CWAO 300651\x00METAR\nBGBW 131550Z 21010KT 8000 -RADZ BKN006 OVC012 03/00 Q10\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00ecF\xcf\xa9cF\xcf\xa9\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00SACN31 CWAO 300651\nMETAR\nBGBW 131550Z 21010KT 8000 -RADZ BKN006 OVC012 03/00 Q1009 RMK 5SC\n     8SC=\n'
+2022-10-12 16:07:44,491 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 16:08:02,559 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 16:08:02,559 gather/am.py: Checking next message for errors.
+2022-10-12 16:08:02,560 Data received from socket: b'SACN31 CWAO 300651\x00METAR\nBGBW 131550Z 21010KT 8000 -RADZ BKN006 OVC012 03/00 Q10\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00ecF\xe6bcF\xe6b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00SACN31 CWAO 300651\nMETAR\nBGBW 131550Z 21010KT 8000 -RADZ BKN006 OVC012 03/00 Q1009 RMK 5SC\n     8SC=\n'
+2022-10-12 16:12:50,994 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 16:13:10,901 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 16:13:10,901 gather/am.py: Checking next message for errors.
+2022-10-12 16:13:10,902 Data received from socket: b'SACN31 CWAO 300651\x00METAR\nBGBW 131550Z 21010KT 8000 -RADZ BKN006 OVC012 03/00 Q10\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00ecF\xe7\x96cF\xe7\x96\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00SACN31 CWAO 300651\nMETAR\nBGBW 131550Z 21010KT 8000 -RADZ BKN006 OVC012 03/00 Q1009 RMK 5SC\n     8SC=\n'
+2022-10-12 16:13:10,903 send/am.py: Could not unpack struct, Type: None, Value: None
+2022-10-12 16:15:52,577 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 16:16:08,138 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 16:16:08,139 gather/am.py: Checking next message for errors.
+2022-10-12 16:16:08,139 Data received from socket: b'SACN31 CWAO 300651\x00METAR\nBGBW 131550Z 21010KT 8000 -RADZ BKN006 OVC012 03/00 Q10\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00ecF\xe8HcF\xe8H\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00SACN31 CWAO 300651\nMETAR\nBGBW 131550Z 21010KT 8000 -RADZ BKN006 OVC012 03/00 Q1009 RMK 5SC\n     8SC=\n'
+2022-10-12 16:18:39,574 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 16:19:05,959 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 16:19:05,960 gather/am.py: Checking next message for errors.
+2022-10-12 16:19:05,962 Data received from socket: b'SACN31 CWAO 300651\x00METAR\nBGBW 131550Z 21010KT 8000 -RADZ BKN006 OVC012 03/00 Q10\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00ecF\xe8\xf9cF\xe8\xf9\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00SACN31 CWAO 300651\nMETAR\nBGBW 131550Z 21010KT 8000 -RADZ BKN006 OVC012 03/00 Q1009 RMK 5SC\n     8SC=\n'
+2022-10-12 16:20:04,208 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 16:21:36,351 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 16:21:45,447 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 16:21:45,448 gather/am.py: Checking next message for errors.
+2022-10-12 16:21:45,450 Data received from socket: b'SACN31 CWAO 300651\x00METAR\nBGBW 131550Z 21010KT 8000 -RADZ BKN006 OVC012 03/00 Q10\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00ecF\xe9\x99cF\xe9\x99\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00SACN31 CWAO 300651\nMETAR\nBGBW 131550Z 21010KT 8000 -RADZ BKN006 OVC012 03/00 Q1009 RMK 5SC\n     8SC=\n'
+2022-10-12 16:24:12,157 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 16:24:41,907 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 16:24:41,908 gather/am.py: Checking next message for errors.
+2022-10-12 16:24:41,909 Data received from socket: b'SACN31 CWAO 300651\x00METAR\nBGBW 131550Z 21010KT 8000 -RADZ BKN006 OVC012 03/00 Q10\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00ecF\xeaIcF\xeaI\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00SACN31 CWAO 300651\nMETAR\nBGBW 131550Z 21010KT 8000 -RADZ BKN006 OVC012 03/00 Q1009 RMK 5SC\n     8SC=\n'
+2022-10-12 16:24:50,838 gather/am.py: Message complete. Proceeding to gather.
+2022-10-12 16:25:41,447 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 16:26:05,555 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 16:26:05,556 gather/am.py: Checking next message for errors.
+2022-10-12 16:26:05,557 Data received from socket: b'SACN31 CWAO 300651\x00METAR\nBGBW 131550Z 21010KT 8000 -RADZ BKN006 OVC012 03/00 Q10\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00ecF\xea\x9dcF\xea\x9d\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00SACN31 CWAO 300651\nMETAR\nBGBW 131550Z 21010KT 8000 -RADZ BKN006 OVC012 03/00 Q1009 RMK 5SC\n     8SC=\n'
+2022-10-12 16:26:12,085 gather/am.py: Message complete. Proceeding to gather.
+2022-10-12 16:33:36,539 gather/am.py: Socket binding with IP 127.0.0.1 and port 5002
+2022-10-12 16:34:00,517 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 16:34:00,517 gather/am.py: Verifying message integrity.
+2022-10-12 16:34:00,520 gather/am.py: Message length - 229 Data received from socket - b'SACN31 CWAO 300651\x00METAR\nBGBW 131550Z 21010KT 8000 -RADZ BKN006 OVC012 03/00 Q10\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00ecF\xecxcF\xecx\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00SACN31 CWAO 300651\nMETAR\nBGBW 131550Z 21010KT 8000 -RADZ BKN006 OVC012 03/00 Q1009 RMK 5SC\n     8SC=\n'
+2022-10-12 16:34:00,520 gather/am.py: Verification success. Proceeding to gather.
+2022-10-12 16:34:00,520 gather/am.py: Gather successful.
+2022-10-12 16:36:19,188 gather/am.py: Socket binding with IP 127.0.0.1, port 5002
+2022-10-12 16:36:43,151 gather/am.py: Socket binded to IP 127.0.0.1 and on port 5002
+2022-10-12 16:36:43,151 gather/am.py: Verifying message integrity.
+2022-10-12 16:36:43,152 gather/am.py: Message length - 229 Bytes, Data received from socket - b'SACN31 CWAO 300651\x00METAR\nBGBW 131550Z 21010KT 8000 -RADZ BKN006 OVC012 03/00 Q10\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00ecF\xed\x1bcF\xed\x1b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00SACN31 CWAO 300651\nMETAR\nBGBW 131550Z 21010KT 8000 -RADZ BKN006 OVC012 03/00 Q1009 RMK 5SC\n     8SC=\n'
+2022-10-12 16:36:43,153 gather/am.py: Gather successful.
