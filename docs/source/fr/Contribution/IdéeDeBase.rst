@@ -1,199 +1,188 @@
 
 Status: Approved-Draft1-20150608
 
-==========
-Basic Idea
-==========
+============
+Idée de Base
+============
 
-MetPX-Sarracenia is a data duplication or distribution engine that leverages existing 
-standard technologies (sftp and web servers and AMQP brokers) to achieve real-time message 
-delivery and end to end transparency in file transfers. Whereas in Sundew, each 
-pump is a standalone configuration which transforms data in complex ways, in 
-sarracenia, the data sources establish a structure which is carried through any 
-number of intervening pumps until they arrive at a client. The consumer can 
-provide explicit acknowledgement that propagates back through the network to the 
-source.  
+MetPX-Sarracenia est un moteur de duplication ou de distribution de données qui exploite des technologies
+standard existantes (serveurs sftp et Web et courtiers AMQP) pour obtenir des livraison de messages en temps réel
+et une transparence de bout en bout dans les transferts de fichiers. Alors qu’à Sundew, chaque
+pump est une configuration autonome qui transforme les données de manière complexe, dans
+sarracenia, les sources de données établissent une structure qui est réalisée à travers n’importe quel
+nombre de pompes intermédiaires jusqu’à ce qu’elles arrivent chez un client. Le consommateur peut
+fournir un accusé de réception explicite qui se propage à travers le réseau jusqu’a une
+source.
 
-Whereas traditional file pumping is a point-to-point affair where knowledge is only
-between each segment, in Sarracenia, information flows from end to end in both directions.
-At it's heart, sarracenia exposes a tree of web accessible folders (WAF), using 
-any standard HTTP server (tested with apache). Weather applications are soft real-time, 
-where data should be delivered as quickly as possible to the next hop, and 
-minutes, perhaps seconds, count. The standard web push technologies, ATOM, RSS, etc... 
-are actually polling technologies that when used in low latency applications consume a great 
-deal of bandwidth an overhead. For exactly these reasons, those standards 
-stipulate a minimum polling interval of five minutes. Advanced Message Queueing 
-Protocol (AMQP) messaging brings true push to notifications, and makes real-time 
-sending far more efficient.
+Alors que le pompage traditionnel des fichiers est une affaire de point à point où la connaissance n’est que
+entre chaque segment, dans Sarracenia, l’information circule de bout en bout dans les deux sens.
+À la base, sarracenia expose un arbre de dossiers accessibles sur le Web (WAF), en utilisant
+tout serveur HTTP standard (testé avec apache). Les applications météo sont douces en temps réel,
+où les données doivent être livrées le plus rapidement possible au tronçon suivant, et
+les minutes, peut-être les secondes, comptent. Les technologies standard de web push, ATOM, RSS, etc...
+sont en fait des technologies d’interrogation qui, lorsqu’elles sont utilisées dans des
+applications à faible latence, consomment beaucoup de bande passante et de surcharge.
+Pour exactement ces raisons, ces normes stipulent un intervalle d’interrogation de minimum cinq minutes.
+La mise en file d’attente avancée des messages (AMQP) apporte de véritables notifications push
+et rend l’envoi en temps réel beaucoup plus efficace.
 
-.. image:: ../Explanation/Concepts/e-ddsr-components.jpg
+.. image:: ../../Explanation/Concepts/e-ddsr-components.jpg
 
+Les sources de données annoncent leurs produits, les systèmes de pompage extraient les données sur leurs
+arbres WAF, puis annoncent leurs arbres pour les clients en aval. Lorsque les clients
+téléchargent des données, ils peuvent écrire un message de journal sur le serveur. Les serveurs sont configurés
+pour transférer ces messages du journal du client via les serveurs intermédiaires vers
+la source. La Source peut voir l’intégralité du chemin emprunté par les données pour accéder à chaque
+client. Avec les applications de pompage traditionnelles, les sources ne voient que ce qu’elles ont livré
+au premier saut d’une chaîne. Au-delà de ce premier saut, le routage est opaque et le traçage
+du chemin des données nécessite l’assistance des administrateurs de chaque système intervenant.
+Avec l’envoi de fichiers journaux de Sarracenia, le réseau de pompage est totalement transparent
+aux sources. Avec des journaux de bout en bout, des diagnostics sont grandement simplifiés pour tout le monde.
 
-Sources of data announce their products, pumping systems pull the data onto their 
-WAF trees, and then announce their trees for downstream clients. When clients 
-download data, they may write a log message back to the server. Servers are configured 
-to forward those client log messages back through the intervening servers back to 
-the source. The Source can see the entire path that the data took to get to each 
-client. With traditional pumping applications, sources only see that they delivered 
-to the first hop in a chain. Beyond that first hop, routing is opaque, and tracing
-the path of data required assistance from administrators of each intervening system.  
-With Sarracenia's log forwarding, the pumping network is completely transparent 
-to the sources, in that they can see where it went. With end to end logs, diagnostics 
-are vastly simplified for everyone.
+Pour les fichiers volumineux / hautes performances, les fichiers sont segmentés lors de l’ingestion
+s’ils sont suffisamment grand pour que cela en vaille la peine. Chaque fichier peut traverser le
+réseau de pompes indépendamment, et le remontage n’est nécessaire qu’aux points d’extrémité.
+Un fichier de taille suffisante annoncera sa disponibilité de plusieurs segments pour le transfert,
+et plusieurs threads ou de nœuds de transfert ramassera des segments et les transférera.
+Plus il y a de segments disponibles, plus le parallélisme du transfert. Sarracenia gère le
+parallélisme et l’utilisation du réseau sans intervention explicite de l’utilisateur. Comme les
+pompes intermédiaires ne stockent pas et ne transferent pas de fichiers entiers, la taille maximale
+du fichier pouvant traverser le réseau est maximisée.
 
-For large files / high performance, files are segmented on ingest if they are sufficiently 
-large to make this worthwhile. Each file can traverse the pump network independently, 
-and reassembly is only needed at end points. A file of sufficient size will announce 
-the availability of several segments for transfer, multiple threads or transfer nodes 
-will pick up segments and transfer them. The more segments available, the higher 
-the parallelism of the transfer. Sarracenia manages parallelism and network usage 
-without explicit user intervention. As intervening pumps do not store and 
-forward entire files, the maximum file size which can traverse the network is 
-maximized.  
+Ces concepts ci-dessous ne sont pas en ordre (encore?) peut-être que nous le ferons plus tard.
+Pas sûr des priorités, juste le nombre pour pouvoir s’y référer.
+Ils sont destinés à guider (réfléchir?) des décisions de conception / mise en œuvre:
 
+Pour chaque objectif/considération/conseil ci-dessous, voyez s’ils ont du sens,
+et semblent utiles. Nous devrions nous débarrasser de tout ce qui n’est pas utile.
 
-These concepts below are not in order (yet?) maybe we will do that later.
-not sure about priorities, just number to be able to refer to them.
-They are meant to help guide (reflect?) design/implementation decisions:
+1. La pompe est, ou n’importe quel nombre de pompes sont, transparentes.
+   En d’autres termes:
+   La source est en charge des données qu’elles fournissent.
 
-For each objective/consideration/advice below, see if they make sense, 
-and seem helpful. We should get rid of any that are not helpful.
-
-
-1. The pump is, or any number of pumps are, transparent.
-   Put another way:
-   The source is in charge of the data they provide.
-
-   The source determines the distribution (scope, and permissions)
-   The source can obtain any information about themselves::
-
-	- when status changed:  start,stop,drop.
-	- when notification messages are accepted.
-	- when data is pulled by a consumer (a scope layer, or a end point.)
+   La source détermine la distribution (étendue et autorisations)
+   La source peut obtenir n’importe quelle information sur elle-même::
 
 
-2. AMQP brokers do not transfer any user data, just metadata.
-
-   reasoning:
-   need to keep the notification messages small so that the forwarding rate is high.
-   large notification messages will gum up the works.  also permissions become interesting.
-   end up with a 'maximum size' threshold, and implementing two methods for everything.
-
-3. Config changes should propagate, not be unique to a host
-   you should not have to do dsh, or px-push.  
-   That sort of management is built in. the message bus is there for that.
-   might use 'scope' to have commands propagate through multiple clusters.
+	- quand le statut change:  start,stop,drop.
+	- quand les messages de notifications sont acceptés.
+	- lorsque les données sont extraites par un consommateur (scope layer ou end point.)
 
 
+2. Les courtiers AMQP ne transfèrent aucune donnée d'utilisateur, mais uniquement des métadonnées.
 
-4. Log is data.
+   raisonnement:
+   doivent garder les messages de notification petits afin que le taux de transfert soit élevé.
+   De grands messages de notification gommageront les travaux. Les autorisations deviennent également intéressantes.
+   se retrouvent avec un seuil de "taille maximale" et mettent en œuvre deux méthodes pour tout.
 
-   *It is not enough for justice to be done.  Justice must be seen to be done.*
+3. Les modifications de configuration doivent se propager et ne peuvent pas être uniques à un hôte
+   vous ne devriez pas avoir à faire dsh, ou px-push.
+   Ce genre de gestion est intégré. le bus de messages est là pour cela.
+   peut utiliser 'scope' pour que les commandes se propagent à travers plusieurs clusters.
 
-   It is not enough for data to be delivered.  That delivery must be logged,
-   and that log must be returned to the source.  While we want to supply
-   enough information to data sources, we do not want to drown the network
-   in meta data.  The local component logs will have much more information,
-   The log messages traverse the network to the source are ´final dispositions´
-   whenever an operation is either completed or finally abandoned.
-  
+4. Le journal est une donnée.
 
+   *Il ne suffit pas que justice soit faite.  Justice doit être perçue comme étant faite.*
 
-5. This is a data distribution tool, not a file tree replicator.
+   Il ne suffit pas que les données soient fournies.  Cette livraison doit être enregistrée,
+   et ce journal doit être renvoyé à la source.  Alors que nous voulons fournir
+   suffisamment d’informations pour les sources de données, nous ne voulons pas noyer le réseau
+   dans les métadonnées.  Les journaux des composants locaux auront beaucoup plus d’informations,
+   les messages de journal traversant le réseau jusqu’à la source sont des "dispositions finales"
+   chaque fois qu’une opération est terminée ou finalement abandonnée.
 
-   - we do not need to know what linux uid/gid owned it originally.
-   - we do not care when it was modified.
-   - we do not care about it's original permission bits.
-   - we do not care what ACL's it has (they aren't relevant on the destination.)
-   - we do not care about extended attributes. (portability, win,mac,lin,netapp?)
+5. Il s’agit d’un outil de distribution de données, pas d’un réplicateur d’arborescence de fichiers.
 
-   again doubtful about this one.  Does it help?
+   - nous n’avons pas besoin de savoir ce que linux uid/gid possédait à l’origine.
+   - nous ne nous soucions pas de savoir quand il a été modifié.
+   - nous ne nous soucions pas de ses bits d’autorisation d’origine.
+   - nous ne nous soucions pas du ACL qu'il a (ils ne sont pas pertinents sur la destination.)
+   - nous ne nous soucions pas des attributs étendus. (portabilité, win,mac,lin,netapp?)
 
-
-
-6. Not worried about performance in phase 1
-   - performance is enabled by the scalability of the design::
-
-        -- segmentation/re-assembly provides multi-threading.
-        -- segmentation means bigger files transfer with greater parallelism.
-           adds multiple streams when that is worthwhile, uses a single stream
-           when that makes sense.
-        -- validation provides source bandwidth limiting.
-
-   - need to prove all the moving parts work together first.
-
-   - much later, may return to see how to make each transfer engine
-     go faster.  
-
-7. This is not a web application, this is not an FTP server.
-
-   This application uses HTTP as one of the transport protocols, that's all.  
-   It is not trying to be a web site, any more than it is trying to be an sftp server.  
+   encore douteux à propos de celui-ci.  Est-ce que cela aide?
 
 
-8. Common management not needed, just pass logs around.
+6. Ne pas s’inquiéter de la performance dans la phase 1
+   - les performances sont rendues possibles par l’évolutivité de la conception ::
 
-   Different groups can manage different pumps.
-   when we interconnect pumps, they become a source for us.
-   log messages are routed to the data sources, so they get our logs on their
-   data.  (security can have something to say about that.)
+        -- la segmentation/réassemblage fournit le multi-threading.
+        - la segmentation signifie un transfert de fichiers plus volumineux avec un plus grand parallélisme.
+           ajoute plusieurs flux lorsque cela en vaut la peine, utilise un seul flux
+           quand cela a du sens.
+        -- la validation permet de limiter la bande passante de la source.
 
-9. It needs to run anywhere.
-   ubuntu,centos -- primary.
-   but windows also.
+   - il faut d’abord prouver que toutes les pièces mobiles fonctionnent ensemble.
 
-   We are trying to make a pump that others can easily adopt.
-   That means they can install and go.
+   - beaucoup plus tard, on peut revenir pour voir comment faire en sorte que chaque moteur de transfert aille plus vite.
 
-   It needs to be easy to set up, both client and server.
-	   (this aspect dealt with in packaging)
+7. Ce n’est pas une application web, ce n’est pas un serveur FTP.
 
+   Cette application utilise HTTP comme l’un des protocoles de transport, c’est tout.
+   Il n’essaie pas d’être un site Web, pas plus qu’il n’essaie d’être un serveur sftp.
 
-10. the application does not need to pursue absolute reliability.
+8. Une gestion commune n’est pas nécessaire, il suffit de passer des journaux.
 
-   Node failure is rare in a Data Centre environment.  
-   Working well in the normal case is the priority.  
-   if it breaks, information is never lost.
-   Worst case, just re-post, and the system will resend the missing parts
-   through the nodes that are left.
-
-   There might be some diagnostics to figure out which files are 'in flight'
-   when a given node goes down (deadman timers). But not sure that multiple 
-   acks with guarantees in the face of node failure is needed.
-   going faster and being simpler is likely more reliable in practice.
-
-   this is not a database, but a transfer engine.
+   Différents groupes peuvent gérer différentes pompes.
+   lorsque nous interconnectons des pompes, elles deviennent une source pour nous.
+   les messages de journal sont routés vers les sources de données, de sorte qu’elles obtiennent nos journaux sur leur
+   données.  (la sécurité peut avoir quelque chose à dire à ce sujet.)
 
 
-11. Bulletins getting less common, Files are larger... No file too large.
+9. Il doit fonctionner n’importe où.
+   ubuntu,centos -- primaire.
+   mais windows aussi.
 
-   old apps are used to tiny files (millions of them) in EC/MSC.  
-   but even in EC, files are getting bigger, and will likely grow a lot.
-   Satellite sensor data is now very critical, and that is substantially larger.
-   A traditional WMO format weather warning was limited to 15Kbytes (limited by internals 
-   systems to 32 Kbytes now) and those sizes were rarely reached.  It was more like 7-12K.
-   an average modern XML weather warning (CAP) is 60K so, so a five to eight fold increase.
-   WMO since raised the limit to 500,000 bytes for WMO-GTS messages. and other mechanisms,
-   such as FTP, have no fixed limit.  
+   Nous essayons de faire une pompe que d’autres peuvent facilement adopter.
+   Cela signifie qu’ils peuvent installer et démarrer.
 
-   Other scientific domains use very large files (measured in terabytes.) aim to be able
-   to flow those through the pumps.  Worth thinking about transporting huge files.
+   Il doit être facile à configurer, à la fois pour le client et le serveur.
+	   (cet aspect est traité dans l’emballage)
 
+10. l’application n’a pas besoin de rechercher une fiabilité absolue.
 
-12. Normal operation should not require programming knowledge.
+   La défaillance de nœud est rare dans un environnement de centre de données.
+   Bien travailler dans le cas normal est la priorité.
+   s’il se brise, l’information n’est jamais perdue.
+   Dans le pire des cas, il suffit de re-poster, et le système renverra les pièces manquantes
+   à travers les nœuds qui restent.
 
-  Configuratin and coding are distinct activities.  One should not have to modify scripts 
-  to configure standard elements of the application.  Software can be much simpler if it 
-  just leaves all features implemented as plug-in scripts.  leaving the local details 
-  for the scripts.  But most people will not be able to use it.
+   Il peut y avoir des diagnostics pour déterminer quels fichiers sont "en vol"
+   lorsqu’un nœud donné tombe en panne (minuteries deadman). Mais pas sûr que des acks multiples
+   avec des garanties en cas de défaillance du nœud sont nécessaires.
+   aller plus vite et être plus simple est probablement plus fiable dans la pratique.
 
-  Need to provide all core functionality through CLI at the very least.
-  config files are consiered part of the CLI, which is why we try to choose carefully 
-  there as well.   For programmers, difference between script and config is subtle,
-  not so for most other people.
+   il ne s’agit pas d’une base de données, mais d’un moteur de transfert.
 
-  Scripting should only be required to extend features beyond what is standard.
-  to provide added flexibility.  If the flexibility proves generally useful over time, 
-  then it should be brought out of scripts and into the configuration realm.
+11. Les bulletins deviennent moins courants, les fichiers sont plus volumineux... Pas de fichier trop volumineux.
+
+   les anciennes applications sont utilisées pour de minuscules fichiers (des millions d’entre eux) dans EC / MSC.
+   mais même dans EC, les fichiers deviennent de plus en plus volumineux et vont probablement beaucoup croître.
+   Les données des capteurs satellitaires sont maintenant très critiques, et elles sont beaucoup plus volumineuses.
+   Un avertissement météorologique traditionnel au format WMO était limité à 15 Koctets (limité par des données internes).
+   à 32 Ko maintenant) et ces tailles étaient rarement atteintes.  C’était plus comme 7-12K.
+   un avertissement météorologique XML moderne moyen (CAP) est de 60K donc, une augmentation de cinq à huit fois.
+   WMO a depuis relevé la limite à 500 000 octets pour les messages WMO-GTS. et d’autres mécanismes,
+   tels que FTP, n’ont pas de limite fixe.
+
+   D’autres domaines scientifiques utilisent des fichiers très volumineux (mesurés en téraoctets).
+   pour les faire circuler à travers les pompes.  Cela vaut la peine de penser à transporter d’énormes fichiers.
+
+12. Le fonctionnement normal ne devrait pas nécessiter de connaissances en programmation.
+
+  La configuration et le codage sont des activités distinctes.  Il ne faut pas avoir à modifier les scripts
+  pour configurer les éléments standard de l’application.  Le logiciel peut être beaucoup plus simple s’il
+  laisse simplement toutes les fonctionnalités implémentées sous forme de scripts de plug-in.
+  En laissant les détails locaux pour les scripts.  Mais la plupart des gens ne pourront pas l’utiliser.
+
+  Au moins besoin de fournir toutes les fonctionnalités de base via CLI.
+  Les fichiers de configuration font une partie intégrante de l’interface de ligne de commande,
+  c’est pourquoi nous essayons de choisir avec soin là aussi.
+  Pour les programmeurs, la différence entre script et la config est subtile,
+  ce n’est pas le cas pour la plupart des autres.
+
+  L’écriture de scripts est seulement requise pour étendre les fonctionnalités au-delà de ce qui est standard,
+  pour offrir plus de souplesse.  Si la flexibilité s’avère généralement utile au fil du temps,
+  alors, cela devrait être sorti des scripts et dans le domaine de la configuration.
 
 
