@@ -9,6 +9,7 @@ on:
       - v2_dev
       - main
       - v2_stable
+      - v03_wip_actionsrestartserver
 
   workflow_dispatch:
     inputs:
@@ -26,7 +27,7 @@ jobs:
       # Don't cancel the entire matrix when one job fails
       fail-fast: false
       matrix:
-       which_test: [ static_flow, flakey_broker, dynamic_flow ]
+       which_test: [ static_flow, flakey_broker, dynamic_flow, restart_server ]
        osver: [ "ubuntu-18.04", "ubuntu-20.04", "ubuntu-22.04" ]
 
     runs-on: ${{ matrix.osver }}
