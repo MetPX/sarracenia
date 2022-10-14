@@ -1,6 +1,7 @@
-metpx-sarracenia (2.22.10) UNRELEASED; urgency=medium
+metpx-sarracenia (2.22.10p1) UNRELEASED; urgency=medium
 
   * v2 make dateparser dependency explicitly for poll, optional otherwise
+  * v2 make watchdog dependency optional for sr_post (so post works even if watch doesn't)
 
  -- Peter Silva <peter@bsqt.homeip.net>  Mon, 03 Oct 2022 11:56:46 -0400
 
