@@ -48,9 +48,12 @@ from random import choice
 
 from collections import *
 
-from watchdog.observers         import Observer
-from watchdog.observers.polling import PollingObserver
-from watchdog.events            import PatternMatchingEventHandler
+try:
+    from watchdog.observers         import Observer
+    from watchdog.observers.polling import PollingObserver
+    from watchdog.events            import PatternMatchingEventHandler
+except:
+    pass
 
 try :    
          from sr_amqp            import *
@@ -71,14 +74,19 @@ except :
 
 #============================================================
 
-class SimpleEventHandler(PatternMatchingEventHandler):
+try: 
+    class SimpleEventHandler(PatternMatchingEventHandler):
 
-   def __init__(self,parent):
-       self.on_created  = parent.on_created
-       self.on_deleted  = parent.on_deleted
-       self.on_modified = parent.on_modified
-       self.on_moved    = parent.on_moved
-       super().__init__()
+       def __init__(self,parent):
+           self.on_created  = parent.on_created
+           self.on_deleted  = parent.on_deleted
+           self.on_modified = parent.on_modified
+           self.on_moved    = parent.on_moved
+           super().__init__()
+
+except:
+    pass
+    # fails if watchdog library is missing...
 
 #============================================================
 
