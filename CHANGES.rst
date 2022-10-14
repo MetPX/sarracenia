@@ -6,6 +6,9 @@ lists all changes between versions.
 
 **git repo**
 
+ * this is now out of date, the debian/changelog file is kept uptodate.
+   This has always been a duplicate of it.
+
 **3.00.17**
 
  * #539 French documentation for sr3 now exists.
