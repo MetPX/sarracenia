@@ -142,7 +142,7 @@ class NoDupe(FlowCB):
             else:
                 t = msg['pubTime']
             if 'size' in msg:
-                key = f"{msg['relPath']},{t},{size}"
+                key = f"{msg['relPath']},{t},{msg['size']}"
             else:
                 key = f"{msg['relPath']},{t}"
 
