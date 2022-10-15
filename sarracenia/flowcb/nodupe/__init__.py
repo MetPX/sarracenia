@@ -199,6 +199,8 @@ class NoDupe(FlowCB):
                 m.setReport(304, 'Not modified 1 (cache check)')
                 worklist.rejected.append(m)
 
+        if self.fp:
+            self.fp.flush()
         logger.debug( f"items registered: {len(self.cache_dict.keys())}" )
         worklist.incoming = new_incoming
 
