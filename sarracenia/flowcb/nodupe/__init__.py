@@ -129,22 +129,22 @@ class NoDupe(FlowCB):
                 key = msg['fileOp']['link']
             #elif 'remove' in msg['fileOp']: // falls through to pubTime
         elif 'integrity' in msg:
-            key = msg['integrity']['method'] + ',' + msg['integrity'][
-                'value'].replace('\n', '')
-
             if msg['integrity']['method'] in ['cod']:
-                if 'mtime' in msg:
-                    key = "%s,%s" % (msg['integrity']['method'], msg['mtime'])
-                elif 'size' in msg:
-                    key = "%s,%s" % (msg['integrity']['method'], msg['size'])
+                # if cod, revert to using the path.
+                key = msg['relPath']
+            else:
+                key = msg['integrity']['method'] + ',' + msg['integrity']['value'].replace('\n', '')
+
 
         if not key:
             if 'mtime' in msg:
-                key = msg['mtime']
-            elif 'size' in msg:
-                key = msg['size']
+                t = msg['mtime']
             else:
-                key = msg['pubTime']
+                t = msg['pubTime']
+            if 'size' in msg:
+                key = f"{msg['relPath']},{t},{size}"
+            else:
+                key = f"{msg['relPath']},{t}"
 
         return key
 
@@ -164,11 +164,19 @@ class NoDupe(FlowCB):
         if ('nodupe_override' in msg) and ('path' in msg['nodupe_override']):
             path = msg['nodupe_override']['path']
         else:
-            # FIXME:
-            # with SFTP sometimes relpaths are absolute, but other servers participating in poll (sharing the vip)
-            # will be priming their recently used with posts, and the posts are relative... so lstrip here...
-            # perhaps there is a better answer.
-            path = msg['relPath'].lstrip('/')
+            if 'integrity' in msg and msg['integrity']['method'] in ['cod']:
+                if 'mtime' in msg:
+                    path = msg['mtime']
+                elif 'size' in msg:
+                    path = msg['size']
+                else:
+                    path = msg['pubTime']
+            else: 
+                # FIXME:
+                # with SFTP sometimes relpaths are absolute, but other servers participating in poll (sharing the vip)
+                # will be priming their recently used with posts, and the posts are relative... so lstrip here...
+                # perhaps there is a better answer.
+                path = msg['relPath'].lstrip('/')
 
         msg['noDupe'] = { 'key': key, 'path': path }
         msg['_deleteOnPost'] |= set(['noDupe'])
@@ -201,7 +209,7 @@ class NoDupe(FlowCB):
 
         if self.fp:
             self.fp.flush()
-        logger.debug( f"items registered: {len(self.cache_dict.keys())}" )
+        logger.debug( f"items registered in duplicate suppression cache: {len(self.cache_dict.keys())}" )
         worklist.incoming = new_incoming
 
     def on_start(self):
