@@ -35,9 +35,9 @@ class V03(Encoding):
        """
         msg = sarracenia.Message()
         msg["version"] = 'v03'
-        if True: #try:
+        try:
             msg.copyDict(json.loads(body))
-        else: #except Exception as ex:
+        except Exception as ex:
             logger.warning('expected json, decode error: %s' % ex)
             logger.warning( f'body: {body}' )
             logger.debug('Exception details: ', exc_info=True)

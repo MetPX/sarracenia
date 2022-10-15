@@ -361,17 +361,14 @@ class Poll(FlowCB):
         ok, file_dict, dir_dict = self.lsdir()
         if not ok: return []
 
-        # when not sleeping
-        #if not self.sleeping :
-        if True:
-            filelst = file_dict.keys()
-            desclst = file_dict
+        filelst = file_dict.keys()
+        desclst = file_dict
 
-            logger.debug("poll_directory: new files found %d" % len(filelst))
+        logger.debug("poll_directory: new files found %d" % len(filelst))
 
-            # post poll list
+        # post poll list
 
-            msgs.extend(self.poll_list_post(pdir, desclst, filelst))
+        msgs.extend(self.poll_list_post(pdir, desclst, filelst))
 
         # poll in children directory
 
@@ -439,9 +436,9 @@ class Poll(FlowCB):
 
         if stat.S_ISLNK(desc.st_mode):
             if not self.o.follow_symlinks:
-                if True: #try: 
+                try: 
                     msg['fileOp'] = { 'link': self.dest.readlink(path) }
-                else: #except:
+                except:
                     logger.error("cannot read link %s message dropped" % post_relPath)
                     logger.debug('Exception details: ', exc_info=True)
                     return None

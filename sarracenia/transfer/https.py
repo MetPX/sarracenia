@@ -228,7 +228,7 @@ class Https(Transfer):
 
         # get html page for directory
 
-        if True:  #try:
+        try:
             dbuf = None
             while True:
                 alarm_set(self.o.timeout)
@@ -247,7 +247,7 @@ class Https(Transfer):
             #        logger.warning("something wrong")
             #        return self.entries
 
-        else:  #except:
+        except:
             logger.warning("sr_http/ls: unable to open %s" % self.urlstr)
             logger.debug('Exception details: ', exc_info=True)
 
