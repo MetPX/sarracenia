@@ -58,6 +58,7 @@ class PClean_F90(PClean):
                     logger.error(err_msg.format(fxx_dir, lag))
                     logger.debug("file missing={}".format(path))
                     result = False
+                    worklist.failed.append(msg)
                     break
                 elif ext not in self.test_extension_list and not filecmp.cmp(
                         f20_path, path):
@@ -75,6 +76,10 @@ class PClean_F90(PClean):
                     logger.info("a: len(%s) = %d" % (f20_path, len(f20_lines)))
                     logger.info("b: len(%s) = %d" % (path, len(f_lines)))
                     logger.info("diffs found:\n{}".format("".join(diff)))
+
+            if not result:
+                #queued for retry because propagation not done yet.
+                continue
 
             if ext not in self.test_extension_list:
                 # prepare next f90 test
