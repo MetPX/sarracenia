@@ -78,7 +78,7 @@ class PClean_F90(PClean):
                     logger.info("diffs found:\n{}".format("".join(diff)))
 
             if not result:
-                #queued for retry because propagation not done yet.
+                logger.info('queued for retry because propagation not done yet.')
                 continue
 
             if ext not in self.test_extension_list:
