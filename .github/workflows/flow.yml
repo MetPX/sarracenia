@@ -69,13 +69,13 @@ jobs:
         continue-on-error: true
         run: |
           sr3 stop
-          cd ${HOME}/.cache/sr3/log/
-          tar -czf ${HOME}/logs.tar.gz *
+          cd ${HOME}/.cache/sr3/
+          tar -czf ${HOME}/cache_sr3.tar.gz *
       
       - name: Save run artifacts
         if: always()
         uses: actions/upload-artifact@v3
         continue-on-error: true
         with:
-          name: sr3_${{ matrix.which_test }}_${{ matrix.osver }}_logs_${{ github.sha }}
-          path: ~/logs.tar.gz
+          name: sr3_${{ matrix.which_test }}_${{ matrix.osver }}_state_${{ github.sha }}
+          path: ~/cache_sr3.tar.gz
