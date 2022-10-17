@@ -1,0 +1,66 @@
+
+#
+# Ce fichier doit toujours contenir les instructions les plus simples pour
+# configurer un premier serveur sur un serveur debian/ubuntu.
+#
+
+# La configuration est pour la démonstration seulement, elle est totalement non sécurisée.
+# juste une démo.
+
+1. installer rabbitmq
+
+sudo apt-get install rabbitmq-server python3-amqplib
+# en utilisant la configuration entièrement par défaut: pas de configuration de rabbitmq du tout.
+
+
+2. Vérifiez que vous pouvez publier et vous abonner.
+
+# cd dans la racine de l’arbre sarracenia, où les notes de version sont...
+
+
+2.1 Générez la configuration pour dd_subscribe.
+
+cat >rawall.conf <<EOT 
+# c’est un flux brut de tout sur le courtier.
+
+host localhost
+
+# AMQP Exchange pour se connecter, sr_post le crée nommé d’après l’utilisateur qu’il utilise pour se connecter.
+exchange guest
+
+amqp-user guest
+amqp-password guest
+
+
+# Il s’agit de la clé de sujet AMQP pour l’échange.  # est un caractère générique pour signifier n’importe quoi.
+
+exchange_key #
+
+
+# il s’agit de la directive de filtre de style metpx, plus fine que la clé d’échange.
+# fonctionne sur les noms de fichiers eux-mêmes.  Il utilise des expressions régulières. .* est un caractère générique
+# ce qui signifie accepter n’importe quoi.
+
+accept .*
+EOT
+
+2.2 Démarrez l’abonné.
+bin/dd_subscribe -n all.conf
+
+
+2.3.  
+Démarrez un deuxième shell dans une deuxième fenêtre, cd dans le même dossier.
+
+python3 bin/sr_post  -b 12 `pwd` http://localhost/RELEASE_NOTES amqp://guest:guest@localhost/
+
+
+3. Resultat.
+
+dd_subscribe affichera les avis bruts reçus de sr_post.
+ 
+
+4. ajouter le serveur http.
+
+le fera une fois que le sr_sub2 fonctionnera avec les annonces v01.
+
+
