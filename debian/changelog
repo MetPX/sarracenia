@@ -1,3 +1,14 @@
+metpx-sr3 (3.00.20) UNRELEASED; urgency=medium
+
+  * dynamic flow CI/CD, for late propagation, use a retry_queue instead of blithely proceeding ( 6012c79105ee1f7c34f4bc81dc5e03271722a29b )
+  * fixing #566, co-ordination among polls sharing a vip, so no missing files, no double posts.
+  * fixing #566, better nodupe choices for performance with the cod integrity checksum case.
+  * fixing #555 and #369 clean shutdown assured by having start/stop ignore foreground tasks.
+  * fixes for postRateLimiting parsing, and invalid broker specifications.
+  * more documentation/web site information in French. 
+
+ -- Peter Silva <peter@bsqt.homeip.net>  Mon, 17 Oct 2022 11:40:52 -0400
+
 metpx-sr3 (3.00.19) unstable; urgency=medium
 
   * detection/fallbacks for python libraries to get partial functionality.

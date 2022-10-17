@@ -32,8 +32,6 @@ packages=
     pathtools
     pycparser
     watchdog
-files=CHANGES.txt
-    README.rst
+files=README.rst
     RELEASE_NOTES.rst
     VERSION.txt
-
