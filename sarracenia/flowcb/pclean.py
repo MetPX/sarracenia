@@ -67,13 +67,3 @@ class PClean(FlowCB):
         from pathlib import Path
 
         return Path(relpath).suffix
-
-    def log_msg_details(self, msg):
-        logger.error("message received is incorrect")
-        lag = nowflt() - timestr2flt(msg['pubTime'])
-
-        msg_params = (msg['pubTime'], msg['baseUrl'], msg['relPath'],
-                      msg['subtopic'], lag, msg.keys())
-        parent.logger.error(
-            "msg_log received: {} {}{} topic={} lag={:.3f} {}".format(
-                *msg_params))
