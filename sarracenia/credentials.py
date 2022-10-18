@@ -236,6 +236,7 @@ class CredentialDB:
         if url.netloc == '':
             # file (why here? anyway)
             if url.scheme == 'file': return True
+            logger.error( f'no network location, and not a file url' )
             return False
 
         # amqp... vhost not check: default /
@@ -251,12 +252,14 @@ class CredentialDB:
         # we have no user and no pasw (http normal, https... no cert,  sftp hope for .ssh/config)
         if not user and not pasw:
             if url.scheme in ['http', 'https', 'sftp']: return True
+            logger.error( f'unknown scheme: {url.scheme}')
             return False
 
         #  we have a pasw no user
         if pasw:
             # not sure... sftp hope to get user from .ssh/config
             if url.scheme == 'sftp': return True
+            logger.error( f'password with no username specified')
             return False
 
         #  we only have a user ... permitted only for sftp
@@ -266,7 +269,9 @@ class CredentialDB:
         #  sftp and an ssh_keyfile was provided... check that it exists
 
         if details and details.ssh_keyfile:
-            if not os.path.exists(details.ssh_keyfile): return False
+            if not os.path.exists(details.ssh_keyfile): 
+                logger.error( f'ssh_keyfile not found: {details.ssh_keyfile}')
+                return False
 
         #  sftp with a user (and perhaps a valid ssh_keyfile)
 
