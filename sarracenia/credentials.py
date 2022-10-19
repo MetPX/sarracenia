@@ -320,7 +320,7 @@ class CredentialDB:
                 keyword = parts[0].strip()
 
                 if keyword == 'ssh_keyfile':
-                    details.ssh_keyfile = parts[1].strip()
+                    details.ssh_keyfile = os.path.expandvars(os.path.expanduser(parts[1].strip()))
                 elif keyword == 'passive':
                     details.passive = True
                 elif keyword == 'active':

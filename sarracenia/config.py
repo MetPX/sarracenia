@@ -812,7 +812,7 @@ class Config:
         elif kind == 'duration':
             duration_options.append(option)
             if type(v) is not float:
-                setattr(self, option, durationToSeconds(v))
+                setattr(self, option, durationToSeconds(v,default_value))
         elif kind == 'flag':
             flag_options.append(option)
             if type(v) is not bool:
@@ -1319,7 +1319,7 @@ class Config:
                     self.nodupe_ttl = 300
                 else:
                     self.nodupe_ttl = durationToSeconds(
-                        self.nodupe_ttl)
+                        self.nodupe_ttl, default=300)
         else:
             self.nodupe_ttl = 0
 

@@ -236,7 +236,7 @@ def timev2tov3str(s):
         return s[0:8] + 'T' + s[8:]
 
 
-def durationToSeconds(str_value):
+def durationToSeconds(str_value, default=None) -> float:
     """
    this function converts duration to seconds.
    str_value should be a number followed by a unit [s,m,h,d,w] ex. 1w, 4d, 12h
@@ -252,6 +252,9 @@ def durationToSeconds(str_value):
 
     if str_value.lower() in [ 'off', 'false' ]:
         return 0.0
+
+    if default and str_value.lower() in [ 'on', 'true' ]:
+        return float(default)
 
     if str_value[-1] in 'sS': factor *= 1
     elif str_value[-1] in 'mM': factor *= 60
