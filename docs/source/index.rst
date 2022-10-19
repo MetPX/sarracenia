@@ -33,7 +33,7 @@ Source Repo: https://github.com/MetPX/sarracenia/tree/v03_wip
 
 CI/CD:
 
-.. image:: https://github.com/MetPX/sarracenia/actions/workflows/flow.yml/badge.svg
+.. image:: https://github.com/MetPX/sarracenia/actions/workflows/flow.yml/badge.svg?branch=v03_wip
     :alt: flow tests status
     :target: https://github.com/MetPX/sarracenia/actions/workflows/flow.yml
 

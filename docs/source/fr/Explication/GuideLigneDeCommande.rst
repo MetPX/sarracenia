@@ -297,7 +297,7 @@ Afficher tous les paramètres de configuration (le résultat de toutes les analy
      'env_declared': ['FLOWBROKER', 'MQP', 'SFTPUSER', 'TESTDOCROOT'],
      'exchange': 'xs_tsource_poll',
      'exchangeDeclare': True,
-     'exchange_suffix': 'poll',
+     'exchangeSuffix': 'poll',
      'expire': 1800.0,
      'feeder': ParseResult(scheme='amqp', netloc='tfeed@localhost', path='/', params='', query='', fragment=''),
      'fileEvents': {'create', 'link', 'modify', 'delete'},
@@ -628,7 +628,7 @@ option.)
 Ces options définissent les messages (notifications URL) que le programme reçoit :
 
  - **exchange      <name>         (défaut: xpublic)**
- - **exchange_suffix      <name>  (défaut: None)**
+ - **exchangeSuffix      <name>  (défaut: None)**
  - **topic_prefix  <amqp pattern> (défaut: 03 -- developer option)**
  - **subtopic      <amqp pattern> (pas de défaut, doit apparaitre apres exchange)**
 
