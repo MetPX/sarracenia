@@ -916,6 +916,29 @@ class Config:
 
         return cd
 
+    
+    def get_source_from_exchange(self,exchange):
+        #self.logger.debug("%s get_source_from_exchange %s" % (self.program_name,exchange))
+
+        source = None
+        if len(exchange) < 4 or not exchange.startswith('xs_') : return source
+
+        # check if source is a valid declared source user
+
+        len_u   = 0
+        try:
+                # look for user with role source
+                for u in self.declared_users :
+                    if self.declared_users[u] != 'source' : continue
+                    if exchange[3:].startswith(u) and len(u) > len_u :
+                       source = u
+                       len_u  = len(u)
+        except: pass
+
+        return source
+
+ 
+
     def _merge_field(self, key, value):
         if key == 'masks':
             self.masks += value
@@ -1216,7 +1239,7 @@ class Config:
             elif k in ['integrity']:
                 self._parse_sum(v)
             elif k in Config.port_required:
-                logger.error( f' {k} {v} not supported in v3, consult porting guide. Option ignored.' )
+                logger.error( f' {cfname}:{lineno} {k} {v} not supported in v3, consult porting guide. Option ignored.' )
                 logger.error( f' porting guide: https://github.com/MetPX/sarracenia/blob/v03_wip/docs/How2Guides/v2ToSr3.rst ' )
                 continue
             elif k in Config.v2entry_points:
