@@ -90,7 +90,7 @@ class Run(FlowCB):
 
         if hasattr(self.o, 'run_accept_item' ) and self.o.run_accept_item:
             for m in worklist.incoming:
-                cmd = f"{self.o.run_accept_item} {m['new_dir']}/{m['new_file']}" 
+                cmd = [ self.o.run_accept_item, f"{m['new_dir']}/{m['new_file']}"  ]
                 try:
                     p = subprocess.Popen( cmd )
                     p.wait()
@@ -112,7 +112,7 @@ class Run(FlowCB):
 
         if hasattr(self.o, 'run_work_item' ) and self.o.run_work_item:
             for m in worklist.ok:
-                cmd = f"{self.o.run_work_item} {m['new_dir']}/{m['new_file']}" 
+                cmd = [ self.o.run_work_item, f"{m['new_dir']}/{m['new_file']}"  ]
                 try:
                     p = subprocess.Popen( cmd )
                     p.wait()
