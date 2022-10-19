@@ -123,12 +123,12 @@ perm_options = [ 'permDefault', 'permDirDefault','permLog']
 size_options = ['accelThreshold', 'blocksize', 'bufsize', 'byteRateMax', 'inlineByteMax']
 
 str_options = [
-    'admin', 'baseDir', 'broker', 'destination', 'directory', 'exchange',
-    'exchange_suffix', 'feeder', 'filename', 'header', 'integrity', 'logLevel', 'path',
+    'admin', 'baseDir', 'broker', 'cluster', 'destination', 'directory', 'exchange',
+    'exchangeSuffix', 'feeder', 'filename', 'header', 'integrity', 'logLevel', 'path',
     'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
-    'post_exchange_suffix', 'queueName',
-    'report_exchange', 'strip', 'timezone', 'nodupe_ttl',
-    'nodupe_basis', 'tls_rigour', 'vip'
+    'post_exchangeSuffix', 'queueName',
+    'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl',
+    'nodupe_basis', 'tlsRigour', 'vip'
 ]
 """
    for backward compatibility, 
@@ -199,11 +199,14 @@ convert_to_v3 = {
         'post_hour_tree': [ 'flow_callback', 'sarracenia.flowcb.accept.posthourtree.PostHourTree'],
         'post_long_flow': [ 'flow_callback', 'sarracenia.flowcb.accept.longflow.LongFLow'],
         'post_override': [ 'flow_callback', 'sarracenia.flowcb.accept.postoverride.PostOverride'],
-	'post_rate_limit': ['continue']
+	'post_rate_limit': ['continue'],
+        'to': ['continue']
     },
     'on_post': {
         'post_log': ['logEvents', 'after_work']
     },
+    'recursive' : ['continue'],
+    'report_daemons': ['continue'],
     'windows_run': [ 'continue' ],
     'xattr_disable': [ 'continue' ]
 }
@@ -494,6 +497,7 @@ class Config:
         'e' : 'fileEvents',
         'events' : 'fileEvents',
         'exchange_split': 'exchangeSplit',
+        'exchange_suffix': 'exchangeSuffix',
         'instance': 'instances',
         'chmod': 'permDefault',
         'default_mode': 'permDefault',
@@ -511,6 +515,8 @@ class Config:
         'loglevel': 'logLevel',
         'log_reject': 'logReject',
         'logdays': 'logRotateCount',
+        'log_rotate': 'logRotateCount',
+        'logRotate': 'logRotateCount',
         'logRotate': 'logRotateCount',
         'logRotate_interval': 'logRotateInterval',
         'msg_replace_new_dir' : 'adjustFileOpPaths',
@@ -521,6 +527,7 @@ class Config:
         'post_baseurl': 'post_baseUrl',
         'post_document_root': 'post_documentRoot',
         'post_exchange_split': 'post_exchangeSplit',
+        'post_exchange_suffix': 'post_exchangeSuffix',
         'post_rate_limit': 'messageRateMax',
         'post_topic_prefix' : 'post_topicPrefix',
         'preserve_mode' : 'permCopy',
@@ -531,6 +538,7 @@ class Config:
         'sum' : 'integrity',  
         'suppress_duplicates' : 'nodupe_ttl',
         'suppress_duplicates_basis' : 'nodupe_basis', 
+        'tls_rigour' : 'tlsRigour', 
         'topic_prefix' : 'topicPrefix'
     }
     credentials = None
@@ -606,7 +614,7 @@ class Config:
         self.settings = {}
         self.strip = 0
         self.timeout = 300
-        self.tls_rigour = 'normal'
+        self.tlsRigour = 'normal'
         self.topicPrefix = [ 'v03', 'post' ]
         self.undeclared = []
         self.declared_users = {}
@@ -812,7 +820,7 @@ class Config:
         elif kind == 'duration':
             duration_options.append(option)
             if type(v) is not float:
-                setattr(self, option, durationToSeconds(v))
+                setattr(self, option, durationToSeconds(v,default_value))
         elif kind == 'flag':
             flag_options.append(option)
             if type(v) is not bool:
@@ -908,6 +916,29 @@ class Config:
 
         return cd
 
+    
+    def get_source_from_exchange(self,exchange):
+        #self.logger.debug("%s get_source_from_exchange %s" % (self.program_name,exchange))
+
+        source = None
+        if len(exchange) < 4 or not exchange.startswith('xs_') : return source
+
+        # check if source is a valid declared source user
+
+        len_u   = 0
+        try:
+                # look for user with role source
+                for u in self.declared_users :
+                    if self.declared_users[u] != 'source' : continue
+                    if exchange[3:].startswith(u) and len(u) > len_u :
+                       source = u
+                       len_u  = len(u)
+        except: pass
+
+        return source
+
+ 
+
     def _merge_field(self, key, value):
         if key == 'masks':
             self.masks += value
@@ -968,8 +999,8 @@ class Config:
             else:
                 self.exchange = 'xs_%s' % self.broker.url.username
 
-            if hasattr(self, 'exchange_suffix'):
-                self.exchange += '_%s' % self.exchange_suffix
+            if hasattr(self, 'exchangeSuffix'):
+                self.exchange += '_%s' % self.exchangeSuffix
 
             if hasattr(self, 'exchangeSplit') and hasattr(
                     self, 'no') and (self.no > 0):
@@ -1093,9 +1124,13 @@ class Config:
         self.integrity_method = 'invalid'
         #logger.error('returning 4: invalid' )
 
-    def parse_file(self, cfg):
+    def parse_file(self, cfg, component=None):
         """ add settings from a given config file to self 
        """
+        if component:
+            cfname = f'{component}/{cfg}'
+        else:
+            cfname = cfg
         lineno=0
         for l in open(cfg, "r").readlines():
             l = l.strip()
@@ -1120,9 +1155,9 @@ class Config:
                         line = convert_to_v3[k][v]
                         k = line[0]
                         if 'continue' in line:
-                            logger.debug( f'{cfg}:{lineno} obsolete v2: \"{l}\" ignored' )
+                            logger.debug( f'{cfname}:{lineno} obsolete v2: \"{l}\" ignored' )
                         else:
-                            logger.debug( f'{cfg}:{lineno} obsolete v2:\"{l}\" converted to sr3:\"{" ".join(line)}\"' )
+                            logger.debug( f'{cfname}:{lineno} obsolete v2:\"{l}\" converted to sr3:\"{" ".join(line)}\"' )
                 else:
                     line = convert_to_v3[k]
                     k=line[0]
@@ -1150,7 +1185,7 @@ class Config:
                 continue
 
             if len(line) < 2:
-                logger.error('%s:%d %s missing argument(s) ' % ( cfg, lineno, k ) )
+                logger.error('%s:%d %s missing argument(s) ' % ( cfname, lineno, k ) )
                 continue
             if k in ['accept', 'reject', 'get']:
                 self.masks.append(self._build_mask(k, line[1:]))
@@ -1171,7 +1206,7 @@ class Config:
                 self.declared_users[self.feeder.username] = 'feeder'
             elif k in ['header', 'h']:
                 (kk, vv) = line[1].split('=')
-                self.fixed_headers[kk] == vv
+                self.fixed_headers[kk] = vv
             elif k in ['include', 'config']:
                 try:
                     self.parse_file(v)
@@ -1204,7 +1239,7 @@ class Config:
             elif k in ['integrity']:
                 self._parse_sum(v)
             elif k in Config.port_required:
-                logger.error( f' {k} {v} not supported in v3, consult porting guide. Option ignored.' )
+                logger.error( f' {cfname}:{lineno} {k} {v} not supported in v3, consult porting guide. Option ignored.' )
                 logger.error( f' porting guide: https://github.com/MetPX/sarracenia/blob/v03_wip/docs/How2Guides/v2ToSr3.rst ' )
                 continue
             elif k in Config.v2entry_points:
@@ -1243,7 +1278,7 @@ class Config:
                 if len(line) == 1:
                     logger.error( 
                         '%s:%d  %s is a duration option requiring a decimal number of seconds value'
-                        % ( cfg, lineno, line[0]) )
+                        % ( cfname, lineno, line[0]) )
                     continue
                 setattr(self, k, durationToSeconds(v))
             elif k in float_options:
@@ -1286,7 +1321,7 @@ class Config:
                 setattr(self, k, v)
             else:
                 #FIXME: with _options lists for all types and addition of declare, this is probably now dead code.
-                #logger.info('FIXME: zombie is alive? %s' % line )
+                logger.debug('possibly undeclared option: %s' % line )
                 v = ' '.join(line[1:])
                 if hasattr(self, k):
                     if type(getattr(self, k)) is float:
@@ -1319,7 +1354,7 @@ class Config:
                     self.nodupe_ttl = 300
                 else:
                     self.nodupe_ttl = durationToSeconds(
-                        self.nodupe_ttl)
+                        self.nodupe_ttl, default=300)
         else:
             self.nodupe_ttl = 0
 
@@ -1402,8 +1437,8 @@ class Config:
                            'post_exchange') or self.post_exchange is None:
                 self.post_exchange = 'xs_%s' % self.post_broker.url.username
 
-            if hasattr(self, 'post_exchange_suffix'):
-                self.post_exchange += '_%s' % self.post_exchange_suffix
+            if hasattr(self, 'post_exchangeSuffix'):
+                self.post_exchange += '_%s' % self.post_exchangeSuffix
 
             if hasattr(self, 'post_exchangeSplit'):
                 l = []
@@ -2116,7 +2151,7 @@ def one_config(component, config, isPost=False):
         fname = config
 
     if os.path.exists(fname):
-         cfg.parse_file(fname)
+         cfg.parse_file(fname,component)
     else:
          logger.error('config %s not found' % fname )
          return None

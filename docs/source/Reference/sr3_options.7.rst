@@ -635,13 +635,13 @@ how to process them. If it is not set, then no symbolic link events will ever be
 
    FIXME: rename algorithm improved in v3 to avoid use of double post... just
 
-exchange <name> (default: xpublic) and exchange_suffix
+exchange <name> (default: xpublic) and exchangeSuffix
 ------------------------------------------------------
 
 The convention on data pumps is to use the *xpublic* exchange. Users can establish
 private data flow for their own processing. Users can declare their own exchanges
 that always begin with *xs_<username>*, so to save having to specify that each
-time, one can just set *exchange_suffix kk* which will result in the exchange
+time, one can just set *exchangeSuffix kk* which will result in the exchange
 being set to *xs_<username>_kk* (overriding the *xpublic* default).
 These settings must appear in the configuration file before the corresponding
 *topicPrefix* and *subtopic* settings.

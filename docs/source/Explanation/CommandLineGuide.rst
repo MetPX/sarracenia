@@ -295,7 +295,7 @@ View all configuration settings (the result of all parsing... what the flow comp
      'env_declared': ['FLOWBROKER', 'MQP', 'SFTPUSER', 'TESTDOCROOT'],
      'exchange': 'xs_tsource_poll',
      'exchangeDeclare': True,
-     'exchange_suffix': 'poll',
+     'exchangeSuffix': 'poll',
      'expire': 1800.0,
      'feeder': ParseResult(scheme='amqp', netloc='tfeed@localhost', path='/', params='', query='', fragment=''),
      'fileEvents': {'create', 'link', 'modify', 'delete'},
@@ -617,7 +617,7 @@ option.)
 These options define which notification messages (URL notifications) the program receives:
 
  - **exchange      <name>         (default: xpublic)** 
- - **exchange_suffix      <name>  (default: None)** 
+ - **exchangeSuffix      <name>  (default: None)** 
  - **topicPrefix  <amqp pattern> (default: v03 -- developer option)** 
  - **subtopic      <amqp pattern> (no default, must appear after exchange)** 
 

@@ -619,10 +619,10 @@ voici donc les choses restantes après la refactorisation:
 
 * ajouté le message "missing defaults", examiner la liste et voir si nous devons tous les définir.
   check_undeclared_options valeurs par défaut manquantes : {'discard', 'exchangeSplit',
-  'pipe', 'post_total_maxlag', 'exchange_suffix', 'destination', 'inplace',
+  'pipe', 'post_total_maxlag', 'exchangeSuffix', 'destination', 'inplace',
   'report_exchange', 'post_exchangeSplit', 'set_passwords', 'declare_exchange',
   'sanity_log_dead', 'report_daemons', 'realpath_filter', 'reconnect',
-  'post_exchange_suffix', 'save', 'pump_flag', 'cache_stat', 'declare_queue', 'restore',
+  'post_exchangeSuffix', 'save', 'pump_flag', 'cache_stat', 'declare_queue', 'restore',
   'bind_queue', 'dry_run', 'sourceFromExchange', 'retry_mode', 'poll_without_vip', 'header'}
   #405
 
