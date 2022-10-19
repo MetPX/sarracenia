@@ -123,11 +123,11 @@ perm_options = [ 'permDefault', 'permDirDefault','permLog']
 size_options = ['accelThreshold', 'blocksize', 'bufsize', 'byteRateMax', 'inlineByteMax']
 
 str_options = [
-    'admin', 'baseDir', 'broker', 'destination', 'directory', 'exchange',
+    'admin', 'baseDir', 'broker', 'cluster', 'destination', 'directory', 'exchange',
     'exchangeSuffix', 'feeder', 'filename', 'header', 'integrity', 'logLevel', 'path',
     'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
     'post_exchangeSuffix', 'queueName',
-    'report_exchange', 'strip', 'timezone', 'nodupe_ttl',
+    'report_exchange', 'source', 'strip', 'timezone', 'to', 'nodupe_ttl',
     'nodupe_basis', 'tls_rigour', 'vip'
 ]
 """
@@ -204,6 +204,8 @@ convert_to_v3 = {
     'on_post': {
         'post_log': ['logEvents', 'after_work']
     },
+    'recursive' : ['continue'],
+    'report_daemons': ['continue'],
     'windows_run': [ 'continue' ],
     'xattr_disable': [ 'continue' ]
 }
@@ -512,6 +514,8 @@ class Config:
         'loglevel': 'logLevel',
         'log_reject': 'logReject',
         'logdays': 'logRotateCount',
+        'log_rotate': 'logRotateCount',
+        'logRotate': 'logRotateCount',
         'logRotate': 'logRotateCount',
         'logRotate_interval': 'logRotateInterval',
         'msg_replace_new_dir' : 'adjustFileOpPaths',
@@ -1095,7 +1099,7 @@ class Config:
         self.integrity_method = 'invalid'
         #logger.error('returning 4: invalid' )
 
-    def parse_file(self, cfg):
+    def parse_file(self, cfg, component=None):
         """ add settings from a given config file to self 
        """
         lineno=0
@@ -1173,7 +1177,7 @@ class Config:
                 self.declared_users[self.feeder.username] = 'feeder'
             elif k in ['header', 'h']:
                 (kk, vv) = line[1].split('=')
-                self.fixed_headers[kk] == vv
+                self.fixed_headers[kk] = vv
             elif k in ['include', 'config']:
                 try:
                     self.parse_file(v)
@@ -1288,7 +1292,7 @@ class Config:
                 setattr(self, k, v)
             else:
                 #FIXME: with _options lists for all types and addition of declare, this is probably now dead code.
-                #logger.info('FIXME: zombie is alive? %s' % line )
+                logger.debug('possibly undeclared option: %s' % line )
                 v = ' '.join(line[1:])
                 if hasattr(self, k):
                     if type(getattr(self, k)) is float:
