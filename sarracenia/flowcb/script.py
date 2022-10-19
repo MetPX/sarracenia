@@ -22,9 +22,18 @@ class Script(FlowCB):
               using flowCallbackPrepend places it at the front of the flowcb list.
               ... script to run before gather (so gather.file will pick it up.)
  
-       script_filter ...
+       script_accept ...
 
+       script_accept_item ...
+               item scripts, instead of being invoked to replace all processing at a given time,
+               are invoked per item in the worklist. At the accept phase, these are in worklist.incoming.
+       
        script_work
+               invoked for the whole phase.
+
+       script_work_item
+                a script invoked to treat every file already transferred by going through the worklist.ok
+
 
        script_post
 
@@ -44,8 +53,10 @@ class Script(FlowCB):
 
         self.o = options
         self.o.add_option('script_gather', 'str')
-        self.o.add_option('script_filter', 'str')
+        self.o.add_option('script_accept', 'str')
+        self.o.add_option('script_accept_item', 'str')
         self.o.add_option('script_work', 'str')
+        self.o.add_option('script_work_item', 'str')
         self.o.add_option('script_post', 'str')
         self.o.add_option('script_start', 'str')
         self.o.add_option('script_stop', 'str')
@@ -74,8 +85,21 @@ class Script(FlowCB):
            files to the script... command line argument? 
         """
         if hasattr(self.o,
-                   'script_filter') and self.o.script_filter is not None:
-            self.run_script(self.o.script_filter)
+                   'script_accept') and self.o.script_accept:
+            self.run_script(self.o.script_accept)
+
+        if hasattr(self.o, 'script_accept_item' ) and self.o.script_accept_item:
+            for m in worklist.incoming:
+                cmd = f"{self.o.script_accept_item} {m['new_dir']}/{m['new_file']}" 
+                try:
+                    s,o = subprocess.getstatusoutput( cmd )
+                    if s == 0:
+                        logger.info( f"ran {cmd} successfully")
+                    else:
+                        logger.error( f"ran {cmd}: output: {o}")
+
+                except Exception as ex:
+                    logger.error( f"problem running {cmd}: {ex}" )
 
     def after_work(self, worklist):
         """
@@ -84,6 +108,19 @@ class Script(FlowCB):
         """
         if hasattr(self.o, 'script_work') and self.o.script_work is not None:
             self.run_script(self.o.script_work)
+
+        if hasattr(self.o, 'script_work_item' ) and self.o.script_work_item:
+            for m in worklist.ok:
+                cmd = f"{self.o.script_work_item} {m['new_dir']}/{m['new_file']}" 
+                try:
+                    s,o = subprocess.getstatusoutput( cmd )
+                    if s == 0:
+                        logger.info( f"ran {cmd} successfully")
+                    else:
+                        logger.error( f"ran {cmd}: output: {o}")
+
+                except Exception as ex:
+                    logger.error( f"problem running {cmd}: {ex}" )
 
     def post(self, worklist):
         """
