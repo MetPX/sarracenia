@@ -111,7 +111,7 @@ class Run(FlowCB):
         if hasattr(self.o, 'run_work') and self.o.run_work is not None:
             self.run_script(self.o.run_work)
 
-        if hasattr(self.o, 'run_work_item' ) and self.o.run_work_item:
+        if hasattr(self.o, 'run_work_item' ) and self.o.run_work_item is not None:
             for m in worklist.ok:
                 cmd = self.o.run_work_item.split()
                 cmd.append( f"{m['new_dir']}/{m['new_file']}" )

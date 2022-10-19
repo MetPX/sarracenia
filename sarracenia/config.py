@@ -860,7 +860,9 @@ class Config:
 
         elif kind == 'str':
             str_options.append(option)
-            if type(v) is not str:
+            if v is None:
+                setattr(self, option, None)
+            elif if type(v) is not str:
                 setattr(self, option, str(v))
         else:
             logger.error('invalid kind: %s for option: %s, ignored' % ( kind, option ) )
