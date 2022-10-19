@@ -634,13 +634,13 @@ comment les traiter. S’il n’est pas défini, aucun événement de lien symbo
 FIXME : algorithme de renommage amélioré en v3 pour éviter l’utilisation de double post...
 
 
-exchange <nom> (défaut: xpublic) et exchange_suffix
+exchange <nom> (défaut: xpublic) et exchangeSuffix
 ---------------------------------------------------
 
 La norme pour les pompes de données est d’utiliser l’échange *xpublic*. Les utilisateurs peuvent établir un
 flux de données privées pour leur propre traitement. Les utilisateurs peuvent déclarer leurs propres échanges
 qui commencent toujours par *xs_<nom-d'utilisatueur>*. Pour éviter d’avoir à le spécifier à chaque
-fois, on peut simplement régler *exchange_suffix kk* qui entraînera l’échange
+fois, on peut simplement régler *exchangeSuffix kk* qui entraînera l’échange
 à être défini a *xs_<nom-d'utilisatueur>_kk* (en remplaçant le défaut *xpublic*).
 Ces paramètres doivent apparaître dans le fichier de configuration avant les paramètres *topicPrefix* et *subtopic*.
 

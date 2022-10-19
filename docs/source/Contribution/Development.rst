@@ -488,7 +488,7 @@ shows functionality covered.
 |                   |                                      | posting sftp url.                   | 
 |                   |                                      | post v02 (converting v03 back.)     | 
 |                   |                                      |                                     | 
-|                   |                                      | test post_exchange_suffix option.   | 
+|                   |                                      | test post_exchangeSuffix option.    | 
 +-------------------+--------------------------------------+-------------------------------------+
 | subscribe         | download via sftp from localhost     | client sftp download.               | 
 | u_sftp_f60        | putting files in downloaded_by_sub_u |                                     | 
@@ -499,11 +499,11 @@ shows functionality covered.
 |                   | with ftp URL's in the                |                                     | 
 |                   | xs_tsource_poll exchange             | ftp URL posting.                    | 
 |                   |                                      |                                     | 
-|                   | (wrapper script calls post)          | post_exchange_suffix option         | 
+|                   | (wrapper script calls post)          | post_exchangeSuffix option          | 
 +-------------------+--------------------------------------+-------------------------------------+
 | poll f62          | poll sent_by_tsource2send directory  | polling                             | 
 |                   | posting sftp download URL's          |                                     | 
-|                   |                                      | post_exchange_suffix option         | 
+|                   |                                      | post_exchangeSuffix option          | 
 |                   |                                      |                                     | 
 +-------------------+--------------------------------------+-------------------------------------+
 | subscribe ftp_f70 | subscribe to test2_f61 ftp' posts.   | ftp url downloading.                | 
