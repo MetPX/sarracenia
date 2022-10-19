@@ -124,9 +124,9 @@ size_options = ['accelThreshold', 'blocksize', 'bufsize', 'byteRateMax', 'inline
 
 str_options = [
     'admin', 'baseDir', 'broker', 'destination', 'directory', 'exchange',
-    'exchange_suffix', 'feeder', 'filename', 'header', 'integrity', 'logLevel', 'path',
+    'exchangeSuffix', 'feeder', 'filename', 'header', 'integrity', 'logLevel', 'path',
     'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
-    'post_exchange_suffix', 'queueName',
+    'post_exchangeSuffix', 'queueName',
     'report_exchange', 'strip', 'timezone', 'nodupe_ttl',
     'nodupe_basis', 'tls_rigour', 'vip'
 ]
@@ -494,6 +494,7 @@ class Config:
         'e' : 'fileEvents',
         'events' : 'fileEvents',
         'exchange_split': 'exchangeSplit',
+        'exchange_suffix': 'exchangeSuffix',
         'instance': 'instances',
         'chmod': 'permDefault',
         'default_mode': 'permDefault',
@@ -521,6 +522,7 @@ class Config:
         'post_baseurl': 'post_baseUrl',
         'post_document_root': 'post_documentRoot',
         'post_exchange_split': 'post_exchangeSplit',
+        'post_exchange_suffix': 'post_exchangeSuffix',
         'post_rate_limit': 'messageRateMax',
         'post_topic_prefix' : 'post_topicPrefix',
         'preserve_mode' : 'permCopy',
@@ -968,8 +970,8 @@ class Config:
             else:
                 self.exchange = 'xs_%s' % self.broker.url.username
 
-            if hasattr(self, 'exchange_suffix'):
-                self.exchange += '_%s' % self.exchange_suffix
+            if hasattr(self, 'exchangeSuffix'):
+                self.exchange += '_%s' % self.exchangeSuffix
 
             if hasattr(self, 'exchangeSplit') and hasattr(
                     self, 'no') and (self.no > 0):
@@ -1402,8 +1404,8 @@ class Config:
                            'post_exchange') or self.post_exchange is None:
                 self.post_exchange = 'xs_%s' % self.post_broker.url.username
 
-            if hasattr(self, 'post_exchange_suffix'):
-                self.post_exchange += '_%s' % self.post_exchange_suffix
+            if hasattr(self, 'post_exchangeSuffix'):
+                self.post_exchange += '_%s' % self.post_exchangeSuffix
 
             if hasattr(self, 'post_exchangeSplit'):
                 l = []

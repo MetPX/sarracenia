@@ -653,8 +653,8 @@ class sr_GlobalState:
 
         x = 'xs_%s' % o.broker.url.username
 
-        if hasattr(o, 'exchange_suffix'):
-            x += '_%s' % o.exchange_suffix
+        if hasattr(o, 'exchangeSuffix'):
+            x += '_%s' % o.exchangeSuffix
 
         if hasattr(o, 'exchangeSplit'):
             l = []
@@ -754,8 +754,8 @@ class sr_GlobalState:
                         o.exchange = o.post_exchange
                     if hasattr(o, 'post_exchangeSplit'):
                         o.exchangeSplit = o.post_exchangeSplit
-                    if hasattr(o, 'post_exchange_suffix'):
-                        o.exchange_suffix = o.post_exchange_suffix
+                    if hasattr(o, 'post_exchangeSuffix'):
+                        o.exchangeSuffix = o.post_exchangeSuffix
 
                     xl = self.__resolved_exchanges(c, cfg, o)
 
