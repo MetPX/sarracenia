@@ -38,9 +38,9 @@ Tableau de Inflight
 |             |                                       |   post_broker                        |
 +-------------+---------------------------------------+--------------------------------------+
 |             |Fichier placés dans un sous-répertoire |Envoi à des systèmes qui n´acceptent  |
-| tmp/        |Déplacé au fin de transfert            |les suffixes                          |
-| (subdir)    |                                       |                                      |
-|             |Même performance que Suffixe           |                                      |
+| tmp/        |ou répertoire. Déplacé au fin de       |les suffixes                          |
+| (subdir)    |transfert                              |                                      |
+| /repertoie  |Même performance que Suffixe           |                                      |
 +-------------+---------------------------------------+--------------------------------------+
 |             |la convention Linux pour *masquer* les |Envoi à des systèmes qui n´acceptent  |
 | .           |fichiers. renommé au fin de transfert  |les suffixes                          |

@@ -1286,7 +1286,7 @@ class Flow:
             elif type(self.o.inflight) == str:
                 if self.o.inflight == '.':
                     new_inflight_path = '.' + new_file
-                elif self.o.inflight[-1] == '/':
+                elif (self.o.inflight[-1] == '/') or (self.o.inflight[0] == '/'):
                     if not self.o.dry_run and not os.path.isdir(self.o.inflight):
                         try:
                             os.mkdir(self.o.inflight)
@@ -1417,7 +1417,7 @@ class Flow:
         elif type(options.inflight) == str:
             if options.inflight == '.':
                 new_inflight_path = '.' + new_file
-            elif options.inflight[-1] == '/':
+            elif ( options.inflight[-1] == '/' ) or (options.inflight[0] == '/'):
                 new_inflight_path = options.inflight + new_file
             elif options.inflight[0] == '.':
                 new_inflight_path = new_file + options.inflight
@@ -1534,9 +1534,10 @@ class Flow:
                 self.proto[self.scheme].set_sumArbitrary(
                     msg['integrity']['value'])
 
-            if (type(options.inflight) == str) and (
-                    options.inflight[-1] == '/') and not os.path.exists(
-                        options.inflight):
+            if (type(options.inflight) == str) \
+                and (options.inflight[0] == '/' or options.inflight[-1] == '/') \
+                and not os.path.exists(options.inflight):
+
                 try:
                     if not self.o.dry_run:
                         os.mkdir(options.inflight)
