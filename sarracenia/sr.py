@@ -302,7 +302,7 @@ class sr_GlobalState:
                             'directory': '${PWD}'
                         })
                         cfgbody.applyComponentDefaults( c )
-                        cfgbody.parse_file(cfg)
+                        cfgbody.parse_file(cfg,c)
                         cfgbody.fill_missing_options(c, cfg)
                         self.configs[c][cbase]['options'] = cfgbody
                         # ensure there is a known value of instances to run.

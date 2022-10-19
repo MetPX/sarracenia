@@ -1104,6 +1104,10 @@ class Config:
     def parse_file(self, cfg, component=None):
         """ add settings from a given config file to self 
        """
+        if component:
+            cfname = f'{component}/{cfg}'
+        else:
+            cfname = cfg
         lineno=0
         for l in open(cfg, "r").readlines():
             l = l.strip()
@@ -1128,9 +1132,9 @@ class Config:
                         line = convert_to_v3[k][v]
                         k = line[0]
                         if 'continue' in line:
-                            logger.debug( f'{cfg}:{lineno} obsolete v2: \"{l}\" ignored' )
+                            logger.debug( f'{cfname}:{lineno} obsolete v2: \"{l}\" ignored' )
                         else:
-                            logger.debug( f'{cfg}:{lineno} obsolete v2:\"{l}\" converted to sr3:\"{" ".join(line)}\"' )
+                            logger.debug( f'{cfname}:{lineno} obsolete v2:\"{l}\" converted to sr3:\"{" ".join(line)}\"' )
                 else:
                     line = convert_to_v3[k]
                     k=line[0]
@@ -1158,7 +1162,7 @@ class Config:
                 continue
 
             if len(line) < 2:
-                logger.error('%s:%d %s missing argument(s) ' % ( cfg, lineno, k ) )
+                logger.error('%s:%d %s missing argument(s) ' % ( cfname, lineno, k ) )
                 continue
             if k in ['accept', 'reject', 'get']:
                 self.masks.append(self._build_mask(k, line[1:]))
@@ -1251,7 +1255,7 @@ class Config:
                 if len(line) == 1:
                     logger.error( 
                         '%s:%d  %s is a duration option requiring a decimal number of seconds value'
-                        % ( cfg, lineno, line[0]) )
+                        % ( cfname, lineno, line[0]) )
                     continue
                 setattr(self, k, durationToSeconds(v))
             elif k in float_options:
@@ -2124,7 +2128,7 @@ def one_config(component, config, isPost=False):
         fname = config
 
     if os.path.exists(fname):
-         cfg.parse_file(fname)
+         cfg.parse_file(fname,component)
     else:
          logger.error('config %s not found' % fname )
          return None
