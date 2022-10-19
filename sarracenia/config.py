@@ -127,7 +127,7 @@ str_options = [
     'exchangeSuffix', 'feeder', 'filename', 'header', 'integrity', 'logLevel', 'path',
     'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
     'post_exchangeSuffix', 'queueName',
-    'report_exchange', 'source', 'strip', 'timezone', 'to', 'nodupe_ttl',
+    'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl',
     'nodupe_basis', 'tls_rigour', 'vip'
 ]
 """
@@ -199,7 +199,8 @@ convert_to_v3 = {
         'post_hour_tree': [ 'flow_callback', 'sarracenia.flowcb.accept.posthourtree.PostHourTree'],
         'post_long_flow': [ 'flow_callback', 'sarracenia.flowcb.accept.longflow.LongFLow'],
         'post_override': [ 'flow_callback', 'sarracenia.flowcb.accept.postoverride.PostOverride'],
-	'post_rate_limit': ['continue']
+	'post_rate_limit': ['continue'],
+        'to': ['continue']
     },
     'on_post': {
         'post_log': ['logEvents', 'after_work']
