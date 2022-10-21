@@ -29,7 +29,7 @@ Les éléments qui seront installés par configuration automatisée :
 
 - Module Pyftpdlib python3, utilisé pour exécuter un serveur ftp sur un port élevé pendant le test de flux.
 
--git. afin de télécharger la source à partir du dépôt GitHub, et de préparer et soumettre
+- git. afin de télécharger la source à partir du dépôt GitHub, et de préparer et soumettre
   changements.
 
 - Un courtier RabbitMQ dédié, avec accès administratif, pour exécuter les tests sr_insects.
@@ -1571,6 +1571,7 @@ Cela échouera en essayant d’ouvrir un CHANGES.txt qui n'existe pas ... Une é
   **Commentez les deux lignes de setup.py utilisées pour définir le long_description**,
 
 Ces lignes::
+
    #long_description=(read('README.rst') + '\n\n' + read('CHANGES.rst') +
    #                   '\n\n' + read('AUTHORS.rst')),
  
