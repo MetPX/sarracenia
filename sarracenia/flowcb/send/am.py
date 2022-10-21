@@ -9,45 +9,47 @@
 Sundew migration
 
 sarracenia.flowcb.send.am.AM is a sarracenia version 3 plugin used to encode and send messages with 
-the AM protocol.
+the AM (Alpha numeric) protocol. This protocol is being migrated to mexpx-sr3 to retire sundew.
 
 By: André LeBlanc, Autumn 2022
 """
 
-import logging, socket, struct, copy, time, curses.ascii, sys
+import logging, socket, struct, time, sys, copy
 
 from sarracenia.flowcb import FlowCB
-from sarracenia.flowcb.poll import Poll
+from sarracenia.flowcb.poll import am
 from sarracenia.config import Config
 
-FORMAT ='%(asctime)s %(message)s'
-logging.basicConfig(filename='sarracenia/flowcb/send/sarra-am-send.log', format=FORMAT) #TODO change log path
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+#TODO: Change encoding format to ISO-8859-1?
 
+default_options = {'logFormat': '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s', 'logLevel': 'info'}
+logger = logging.getLogger(__name__)
+sys.setdefaultencoding('iso-8859-1')
 
 class AM(FlowCB):
     
-    def __init__(self, options):
+    def __init__(self, options, port=0, remoteHost=None):
              
-        self.o = options
+        self.o = super().__init__(options)
 
-        # Initialise port variables
+        # Set logger options
+        if hasattr(options, 'logLevel'):
+            logger.setLevel(getattr(logging, self.o['logLevel'].upper()))
+        else:
+            logger.setLevel(logging.INFO)
+        logging.basicConfig(format=self.o['logFormat']) 
+
+        # Initialise server variables
         self.am = Config()
-        self.am.add_option('port', 'count', 5002) # Put count because it's integer type - 5002 test value
-        self.am.add_option('connected', 'flag', False)
-        self.am.add_option('remoteHost', 'str', 'None') # localhost test value
+        self.am.add_option('port', 'count', port)
+        self.am.add_option('remoteHost', 'str', remoteHost) 
 
         # Initialise format variables
         self.am.add_option('threadnum', 'count', 127)
         self.am.add_option('patternAM', 'str', '80sII4sIIII20s')
 
-        ## Initialise methods
-        # self.am.add_option('__wrapmsg__', '', )
-        # self.am.add_option('__establishconn__', '', )
-        # self.am.add_option('__sendmsg__', '', )
-
         # Initialise socket
+        ## Create a TCP/IP socket
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
@@ -68,29 +70,23 @@ class AM(FlowCB):
             Message with AM header
         """
 
-        # TODO: Discard of messages of 32KB size
-
         # Fetch raw message (returns list type)
-        # Poller = Poll()
-        # msg = Poller.poll()
+        #Gather = am.AM()
+        #data = Gather.unwrapmsg()
+        #data = copy.deepcopy(data)
 
         logger.info("send/am.py: Commencing message wrap.")
 
-        s = struct.Struct(self.am.patternRec)
+        s = struct.Struct(self.am.patternAM)
         size = struct.calcsize('80s')
-        # data = copy.deepcopy(msg)
 
         # debug
-        data = 'SACN31 CWAO 300651\nMETAR\nBGBW 131550Z 21010KT 8000 -RADZ BKN006 OVC012 03/00 Q1009 RMK 5SC\n     8SC='
+        data = 'SACN31 CWAO 300651\nMETAR\nBGBW 131550Z 21010KT 8000 -RADZ BKN006 OVC012 03/00 Q1009 RMK 5SC\n     8SC=\n'
         
         # Construct AM header
-        ## Only keep data prior to first LF
-        """
-        ''.join(tmp)   
-        """
-        header = data.split('\n')[0]
+        header = data[0:size]
 
-        ## Attach rest of header with NULLs
+        ## Attach rest of header with NULLs and replace NULL w/ Carriage return
         nulheader = ['\0' for i in range(size)]
         nulheaderstr = ''.join(nulheader)
         header = header + nulheaderstr[len(header):]
@@ -100,15 +96,15 @@ class AM(FlowCB):
         firsttime = socket.htonl(int(time.time()))
         timestamp = socket.htonl(int(time.time()))
         threadnum = chr(0) + chr(self.am.threadnum) + chr(0) + chr(0)
-        future = chr(curses.ascii.NUL)
+        future = chr('\0')
         start, src_inet, dst_inet = (0, 0, 0)
 
         # Wrap message
-        packedheader = s.pack(header.encode('ascii'), src_inet, dst_inet, threadnum.encode('utf-8'), start
-                                   , length, firsttime, timestamp, future.encode('ascii'))
+        packedheader = s.pack(header.encode(), src_inet, dst_inet, threadnum.encode(), start
+                                   , length, firsttime, timestamp, future.encode())
         
         # Add message at the end of the header
-        msg = packedheader + data.encode('ascii')
+        msg = packedheader + data.replace('\x00','\n',1).encode()
 
         logger.info("send/am.py: Message packed.")
         
@@ -150,9 +146,8 @@ class AM(FlowCB):
                     time.sleep(30)
 
         logger.info("send/am.py: Connexion established with %s",str(self.am.remoteHost))
-        self.am.connected = True
 
-    def sendmsg(self):
+    def send(self):
         """
         Overview: 
             Send AM message through socket
@@ -184,14 +179,12 @@ class AM(FlowCB):
 
                 # Check if went okay
                 if bytesSent != len(data):
-                    self.am.connected = False
                     return(0, bytesSent)
                 else:
                     return(1, bytesSent)
                 
             except socket.error as e:
                 logger.error("send/am.py: Message not sent: %s",str(e.args))
-                self.am.connected = False
 
                 # If could not send, try to reconnect to socket
                 logger.info("send/am.py: Closing socket connection.")
@@ -201,38 +194,14 @@ class AM(FlowCB):
             logger.error("send/am.py: msg wrap error: %s", str(e.args))
             raise e("send/am.py: msg wrap error: %s", str(e.args))
 
-
-
 # Debug
-default_options = {
-    'accelThreshold': 0,
-    'batch': 100,
-    'acceptUnmatched': False,
-    'attempts': 3,
-    'byteRateMax': None,
-    'destination': None,
-    'discard': False,
-    'download': False,
-    'fileEvents': None,
-    'housekeeping': 300,
-    'logReject': False,
-    'logFormat':
-    '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
-    'logLevel': 'info',
-    'mirror': True,
-    'permCopy': True,
-    'timeCopy': True,
-    'messageCountMax': 0,
-    'messageRateMax': 0,
-    'messageRateMin': 0,
-    'sleep': 0.1,
-    'topicPrefix': ['v03'],
-    'vip': None
-}
-
-# Debug
-ammanager = AM(default_options)
-recbytesnum = ammanager.sendmsg()
+am_recv_man = am.AM(default_options)
+am_recv_man.am.poll = 5002 
+am_recv_man.am.remoteHost = '127.0.0.1'
+am_send_man = AM(default_options, am_recv_man.am.port, am_recv_man.am.remoteHost)
+while True:
+    res = am_recv_man.poll()
+    recbytesnum = am_send_man.send()
     
 
 
