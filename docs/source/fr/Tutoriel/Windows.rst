@@ -20,7 +20,7 @@ Cliquez sur Sarracenia (il exécutera *sr3.exe redémarrer*):
 
 Cela fera apparaître l’invite de commande de Sarracenia, démarrera les processus Sarracenia comme indiqué par vos configurations et affichera les informations de journalisation.
 
-.. image:: Windows/01_prompt_cmd.png
+.. image:: ../../Tutorials/Windows/01_prompt_cmd.png
 
 Gardez cette fenêtre en vie jusqu’à ce que vous en ayez fini avec Sarracenia. Le fermer ou taper ctrl-c tuera tous les
 processus Sarracenia. Vous pouvez également redémarrer Sarracenia qui arrêtera ces processus proprement.
@@ -31,11 +31,11 @@ Lancez une session Powershell |powershell| et tapez cette commande à l’invite
 
  sr3 restart
 
-.. |powershell| image:: Windows/powershell.png
+.. |powershell| image:: ../../Tutorials/Windows/powershell.png
 
 Cela démarrera les processus Sarracenia comme indiqué par vos configurations et affichera les informations de journalisation
 
-.. image:: Windows/02_prompt_powershell.png 
+.. image:: ../../Tutorials/Windows/02_prompt_powershell.png
 
 Gardez cette session Powershell en vie jusqu’à ce que vous ayez terminé avec Sarracenia. Pour arrêter Sarracenia, vous pouvez taper::
 
@@ -60,43 +60,43 @@ La façon évidente de le faire serait à partir du Planificateur de tâches.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Ouvrez le Planificateur de tâches :
 
-.. image:: Windows/03_task_scheduler.png
+.. image:: ../../Tutorials/Windows/03_task_scheduler.png
 
 Sélectionnez *Créer une tâche de base...* dans le panneau d’action à droite :
 
-.. image:: Windows/04_create_basic_task.png
+.. image:: ../../Tutorials/Windows/04_create_basic_task.png
 
 Cela lancera *l’assistant de création de tâche de base* où vous ...
 
  Remplissez le nom :
 
- .. image:: Windows/05_fill_the_name.png
+ .. image:: ../../Tutorials/Windows/05_fill_the_name.png
 
  Choisissez le déclencheur :
 
- .. image:: Windows/06_choose_trigger.png
+ .. image:: ../../Tutorials/Windows/06_choose_trigger.png
 
  Choisissez l’action :
  
- .. image:: Windows/07_choose_action.png
+ .. image:: ../../Tutorials/Windows/07_choose_action.png
  
  Définissez l’action :
  
- .. image:: Windows/08_define_action.png
+ .. image:: ../../Tutorials/Windows/08_define_action.png
  
  Passez en revue la tâche et choisissez *Terminer* :
  
- .. image:: Windows/09_finish.png
+ .. image:: ../../Tutorials/Windows/09_finish.png
 
 Ouvrez la boîte de *dialogue propriétés* et choisissez *Exécuter, que l’utilisateur soit connecté ou non* et
 *Exécuter avec les privilèges les plus élevés* :
  
-.. image:: Windows/10_properties_dialog.png
+.. image:: ../../Tutorials/Windows/10_properties_dialog.png
 
 La tâche doit maintenant apparaître dans votre *Bibliothèque du Planificateur de tâches* avec l’état *Prêt*.
 
-.. image:: Windows/12_task_scheduler_ready.png
+.. image:: ../../Tutorials/Windows/12_task_scheduler_ready.png
 
 Ensuite, vous pouvez l’exécuter immédiatement avec le bouton |run_action| .
 
-.. |run_action| image:: Windows/run_action.png
+.. |run_action| image:: ../../Tutorials/Windows/run_action.png
