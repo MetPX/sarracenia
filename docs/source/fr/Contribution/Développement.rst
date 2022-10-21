@@ -1348,7 +1348,7 @@ Stable devrait recevoir des corrections de bogues si nécessaire de temps en tem
 On peut construire des python Wheels, ou des paquets Debian à des fins de test local
 pendant le développement.
 
-.. Remarque::
+.. Note::
       Si vous modifiez les paramètres par défaut pour les échanges / files d’attente comme
       dans le cadre d’une nouvelle version, gardez à l’esprit que tous les composants doivent utiliser
       les mêmes paramètres ou la liaison échoueront et ils ne pourront pas
@@ -1429,7 +1429,7 @@ sur des systèmes plus anciens ou plus récents::
 
 Notez que le fichier CHANGES.rst est en texte restructuré et est analysé par pypi.python.org lors du téléchargement.
 
-.. Remarque::
+.. Note::
 
    Lors du téléchargement de packages en version préliminaire (alpha, bêta ou RC), PYpi ne les sert pas aux utilisateurs par défaut.
    Pour une mise à niveau transparente, les premiers testeurs doivent fournir le ``--pre`` switch à pip::
@@ -1652,7 +1652,7 @@ Local Python
 
 Utilisation d’une version non packagée :
 
-.. remarque::
+.. Note::
 
     python3 setup.py build
     python3 setup.py install
