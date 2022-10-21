@@ -103,7 +103,7 @@ précises, ces normes stipulent un intervalle minimal de sondage de cinq minutes
  (Advanced Message Queueing Protocol) pousse réellement les notifications et rend l'envoi en temps réel
 beaucoup plus efficace.
 
-.. image:: Concepts/sr3_flow_example.svg
+.. image:: ../../Explanation/Concepts/sr3_flow_example.svg
     :scale: 100%
     :align: center
 
