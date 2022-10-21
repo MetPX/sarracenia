@@ -16,7 +16,7 @@ Dans le menu Démarrer :
 ~~~~~~~~~~~~~~~~~~~~~~~
 Cliquez sur Sarracenia (il exécutera *sr3.exe redémarrer*):
 
-.. image:: Windows/start-menu-1.png
+.. image:: ../../Tutorials/Windows/start-menu-1.png
 
 Cela fera apparaître l’invite de commande de Sarracenia, démarrera les processus Sarracenia comme indiqué par vos configurations et affichera les informations de journalisation.
 

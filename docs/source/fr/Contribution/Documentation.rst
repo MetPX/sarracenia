@@ -102,7 +102,8 @@ pertinentes implémentées. Les how2guides et tutoriels devraient également êt
 ajouts ou des modifications apportés au nouveau composant.
 
 
-.. error:: Besoin de Peter pour identifier les informations importantes dans doc/design pour tirer sur le
+.. error::
+    Besoin de Peter pour identifier les informations importantes dans doc/design pour tirer sur le
     /docs/Explanation/Design/
 
 
@@ -111,7 +112,7 @@ Guide de Style
 
 L’exécution sur la ligne de commande doit être écrite dans le style suivant::
   
-  Un commentaire initial décrivant les étapes ou processus suivants ::
+Un commentaire initial décrivant les étapes ou processus suivants ::
 
     $ command 1
       relevant output
