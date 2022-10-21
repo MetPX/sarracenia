@@ -108,7 +108,7 @@ Exemples de choses qui devraient fonctionner:
   le plugin flowcb/v2wrapper.py qui sera automatiquement appelé lorsque les plugins v2 sont
   lu dans le fichier de configuration.
 
-.. Remarque:: Idéalement, v2wrapper est utilisé comme béquille pour permettre d’avoir une configuration fonctionnelle
+.. Note:: Idéalement, v2wrapper est utilisé comme béquille pour permettre d’avoir une configuration fonctionnelle
   rapidement. Il y a un succès de performance à l’utilisation de v2wrapper.
 
 
@@ -265,7 +265,7 @@ En général, les plugins v3:
       worklist.incoming=new_incoming
 
 
-  .. Remarque:: les plugins doivent être déplacés du répertoire /plugins vers le répertoire /flowcb,
+  .. Note:: les plugins doivent être déplacés du répertoire /plugins vers le répertoire /flowcb,
             et plus précisément, les plugins on_message qui se transforment en plugins after_accept devraient être
             placé dans le répertoire flowcb/accept (afin que les plugins similaires puissent être regroupés).
 
@@ -278,7 +278,7 @@ En général, les plugins v3:
   la routine *after_work* modifierait le fichier worklist.ok pour qu’il contienne des messages de notification pour
   les fichiers individuels, plutôt que les .tar collectifs d’origine.
 
-  .. Remarque:: les plugins on_file qui deviennent des plugins after_work doivent être placés dans le
+  .. Note:: les plugins on_file qui deviennent des plugins after_work doivent être placés dans le
             répertoire /flowcb/after_work
 
 * v3 a **pas besoin de définir des champs de message de notification dans les plugins**
