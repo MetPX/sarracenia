@@ -162,7 +162,7 @@ traitement des messages.  Cette liste n’est pas exhaustive.
 Mappage des concepts AMQP à Sarracenia
 --------------------------------------
 
-.. image:: ../Explanation/Concepts/AMQP4Sarra.svg
+.. image:: ../../Explanation/Concepts/AMQP4Sarra.svg
     :scale: 50%
     :align: center
 
@@ -286,7 +286,7 @@ Pile Intel/Cray HPC
 
 `Intel/Cray HPC stack <http://www.intel.com/content/www/us/en/high-performance-computing/aurora-fact-sheet.html>`_ 
 
-.. image:: AMQPprimer/IntelHPCStack.png
+.. image:: ../../Contribution/AMQPprimer/IntelHPCStack.png
     :scale: 50%
     :align: center
 
@@ -297,7 +297,7 @@ OpenStack
 `AMQP is the messaging technology chosen by the OpenStack cloud. <http://docs.openstack.org/developer/nova/rpc.html>`_
 
 
-.. image:: AMQPprimer/OpenStackArch.png
+.. image:: ../../Contribution/AMQPprimer/OpenStackArch.png
     :scale: 70%
     :align: center
 
