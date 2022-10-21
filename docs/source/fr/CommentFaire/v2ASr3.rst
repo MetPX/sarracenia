@@ -6,9 +6,9 @@ Portage des plugins V2 vers Sr3
 Ceci est un guide pour porter des plugins de Sarracenia version 2.X (metpx-sarracenia) vers
 Sarracenia version 3.x (metpx-sr3)
 
-.. Contenu::
+.. Contenu ::
 
-.. avertissement:: Si vous êtes nouveau sur Sarracenia, et que vous n’avez aucune expérience ou besoin de regarder les plugins v2,
+.. avertissement :: Si vous êtes nouveau sur Sarracenia, et que vous n’avez aucune expérience ou besoin de regarder les plugins v2,
    ne lisez pas ceci. cela ne fera que vous confondre. **Ce guide s’adresse à ceux qui ont besoin de prendre des
    Plugins v2 et les porter à Sr3.** Vous feriez mieux d’obtenir un nouveau regard en regardant le
    `jupyter notebook examples <../Tutorials>`_ qui fournissent une introduction à la v3 sans
