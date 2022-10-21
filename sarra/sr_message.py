@@ -326,7 +326,6 @@ class sr_message():
                    self.headers[ "sum" ] = sa + ',' + sv
                    self.sumstr = self.headers['sum']
                    
-
                if 'fileOp'in self.headers.keys():
                    sv = md5(bytes(self.headers['relPath'],'utf-8')).hexdigest()
                    
@@ -334,7 +333,7 @@ class sr_message():
                        self.headers['link'] = self.headers['fileOp']['link']
                        self.event = 'link'
                        sa='l'
-                   elif 'slink' in self.headers['fileOp']:
+                   elif 'link' in self.headers['fileOp']:
                        self.headers['link'] = self.headers['fileOp']['link']
                        self.event = 'link'
                        sa='L'
@@ -363,6 +362,8 @@ class sr_message():
                elif 'size' in self.headers.keys():
                    self.set_parts('1', int(self.headers['size']))
                    del self.headers['size']
+               else:
+                   self.set_parts('1',0)
 
 
            else:

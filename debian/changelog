@@ -1,4 +1,10 @@
-metpx-sarracenia (2.22.10p1) UNRELEASED; urgency=medium
+metpx-sarracenia (2.22.10p2) UNRELEASED; urgency=medium
+
+  * two small decode issues with v03 fileOp in v2 ( internal client issue.)
+
+ -- Peter Silva <peter@bsqt.homeip.net>  Thu, 20 Oct 2022 20:09:56 -0400
+
+metpx-sarracenia (2.22.10p1) unstable; urgency=medium
 
   * v2 make dateparser dependency explicitly for poll, optional otherwise
   * v2 make watchdog dependency optional for sr_post (so post works even if watch doesn't)
