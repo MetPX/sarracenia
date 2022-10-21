@@ -792,7 +792,7 @@ sample output::
         maximum of the shovels is: 1022
 
 
-Ensuite, vérifiez avec flow_check.sh::::
+Ensuite, vérifiez avec flow_check.sh::
 
     TYPE OF ERRORS IN LOG :
 
@@ -1348,7 +1348,8 @@ Stable devrait recevoir des corrections de bogues si nécessaire de temps en tem
 On peut construire des python Wheels, ou des paquets Debian à des fins de test local
 pendant le développement.
 
-.. Remarque:: Si vous modifiez les paramètres par défaut pour les échanges / files d’attente comme
+.. Remarque::
+      Si vous modifiez les paramètres par défaut pour les échanges / files d’attente comme
       dans le cadre d’une nouvelle version, gardez à l’esprit que tous les composants doivent utiliser
       les mêmes paramètres ou la liaison échoueront et ils ne pourront pas
       se connecter.  Si une nouvelle version déclare des paramètres de file d’attente ou d’échange différents,
@@ -1651,7 +1652,7 @@ Local Python
 
 Utilisation d’une version non packagée :
 
-remarque::
+.. remarque::
 
     python3 setup.py build
     python3 setup.py install
