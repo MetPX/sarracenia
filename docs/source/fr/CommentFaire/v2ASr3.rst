@@ -1,7 +1,7 @@
 
 ===============================
 Portage des plugins V2 vers Sr3
-==============================
+===============================
 
 Ceci est un guide pour porter des plugins de Sarracenia version 2.X (metpx-sarracenia) vers
 Sarracenia version 3.x (metpx-sr3)
