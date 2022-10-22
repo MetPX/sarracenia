@@ -378,8 +378,9 @@ class Flow:
             self.have_vip = self.has_vip()
             if (self.o.component == 'poll') or self.have_vip:
 
-                logger.info("current_rate (%.2f) vs. messageRateMax(%.2f)) " %
-                            (current_rate, self.o.messageRateMax))
+                if ( self.o.messageRateMax > 0 ) and (current_rate > 0.8*self.o.messageRateMax ):
+                    logger.info("current_rate (%.2f) vs. messageRateMax(%.2f)) " % (current_rate, self.o.messageRateMax))
+
                 self.worklist.incoming = []
 
                 if not stopping:
@@ -453,8 +454,9 @@ class Flow:
                     self.worklist.rejected = []
                     self.ack(self.worklist.failed)
 
-                    self.post()
-                    self._runCallbacksWorklist('after_post')
+                    if len(self.plugins["post"]) > 0:
+                        self.post()
+                        self._runCallbacksWorklist('after_post')
 
                     self.report()
 
