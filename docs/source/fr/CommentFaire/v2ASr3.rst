@@ -1,14 +1,14 @@
 
 ===============================
 Portage des plugins V2 vers Sr3
-==============================
+===============================
 
 Ceci est un guide pour porter des plugins de Sarracenia version 2.X (metpx-sarracenia) vers
 Sarracenia version 3.x (metpx-sr3)
 
-.. Contenu::
+.. Contenu ::
 
-.. avertissement:: Si vous êtes nouveau sur Sarracenia, et que vous n’avez aucune expérience ou besoin de regarder les plugins v2,
+.. avertissement :: Si vous êtes nouveau sur Sarracenia, et que vous n’avez aucune expérience ou besoin de regarder les plugins v2,
    ne lisez pas ceci. cela ne fera que vous confondre. **Ce guide s’adresse à ceux qui ont besoin de prendre des
    Plugins v2 et les porter à Sr3.** Vous feriez mieux d’obtenir un nouveau regard en regardant le
    `jupyter notebook examples <../Tutorials>`_ qui fournissent une introduction à la v3 sans
@@ -108,7 +108,7 @@ Exemples de choses qui devraient fonctionner:
   le plugin flowcb/v2wrapper.py qui sera automatiquement appelé lorsque les plugins v2 sont
   lu dans le fichier de configuration.
 
-.. Remarque:: Idéalement, v2wrapper est utilisé comme béquille pour permettre d’avoir une configuration fonctionnelle
+.. Note:: Idéalement, v2wrapper est utilisé comme béquille pour permettre d’avoir une configuration fonctionnelle
   rapidement. Il y a un succès de performance à l’utilisation de v2wrapper.
 
 
@@ -265,7 +265,7 @@ En général, les plugins v3:
       worklist.incoming=new_incoming
 
 
-  .. Remarque:: les plugins doivent être déplacés du répertoire /plugins vers le répertoire /flowcb,
+  .. Note:: les plugins doivent être déplacés du répertoire /plugins vers le répertoire /flowcb,
             et plus précisément, les plugins on_message qui se transforment en plugins after_accept devraient être
             placé dans le répertoire flowcb/accept (afin que les plugins similaires puissent être regroupés).
 
@@ -278,7 +278,7 @@ En général, les plugins v3:
   la routine *after_work* modifierait le fichier worklist.ok pour qu’il contienne des messages de notification pour
   les fichiers individuels, plutôt que les .tar collectifs d’origine.
 
-  .. Remarque:: les plugins on_file qui deviennent des plugins after_work doivent être placés dans le
+  .. Note:: les plugins on_file qui deviennent des plugins after_work doivent être placés dans le
             répertoire /flowcb/after_work
 
 * v3 a **pas besoin de définir des champs de message de notification dans les plugins**
