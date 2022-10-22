@@ -42,22 +42,17 @@ class WmoTypeSuffix(FlowCB):
         return '.txt'
 
     def after_accept(self, worklist):
-        new_incoming = []
         for message in worklist.incoming:
             type_suffix = self.find_type(message['new_file'][0:2])
             # FIXME confused as to how this could ever be true since find_type never returns "UNKNOWN"
             if type_suffix == 'UNKNOWN':
-                new_incoming.append(message)  #FIXME or should we reject here?
                 continue
 
             # file name already has suffix
             if message['new_file'][-len(type_suffix):] == type_suffix:
-                new_incoming.append(message)
                 continue
 
             message['new_file'] = message['new_file'] + type_suffix
             if 'rename' in message:
                 message['rename'] = message['rename'] + type_suffix
-            new_incoming.append(message)
             # TODO else -> worklist.rejected.append(message) ?? should this be happening at any point?
-        worklist.incoming = new_incoming

@@ -65,7 +65,6 @@ class ToLocal(FlowCB):
             self.o.lurlre = re.compile(self.o.toLocalUrl[0])
 
     def after_accept(self, worklist):
-        new_incoming = []
         for message in worklist.incoming:
             # TODO should all these be logger.error? should we append
             #  to worklist.rejected or worklist.failed at some point?
@@ -79,5 +78,3 @@ class ToLocal(FlowCB):
             logger.error("doc_root=%s " % (self.o.baseDir))
             logger.error("output: urlstr: %s saved url: %s" %
                          (message['urlstr'], message['savedurl']))
-            new_incoming.append(message)
-        worklist.incoming = new_incoming

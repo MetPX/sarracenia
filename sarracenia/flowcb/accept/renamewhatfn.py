@@ -24,7 +24,6 @@ class RenameWhatFn(FlowCB):
         self.o = options
 
     def after_accept(self, worklist):
-        new_incoming = []
         for message in worklist.incoming:
             parts = message['new_file'].split(':')
 
@@ -33,5 +32,3 @@ class RenameWhatFn(FlowCB):
             message['new_file'] = message['new_file'].replace(extra, '')
             message['headers']['rename'] = message['headers'][
                 'rename'].replace(extra, '')
-            new_incoming.append(message)
-        worklist.incoming = new_incoming

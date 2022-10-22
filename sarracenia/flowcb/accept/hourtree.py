@@ -22,7 +22,6 @@ class HourTree(FlowCB):
         self.o = options
 
     def after_accept(self, worklist):
-        new_incoming = []
         for message in worklist.incoming:
             datestr = time.strftime('%H', time.localtime())  # pick the hour.
             message[
@@ -32,6 +31,3 @@ class HourTree(FlowCB):
             new_fname = message['new_file'].split('/')
             message['new_file'] = '/'.join(
                 new_fname[0:-1]) + '/' + datestr + '/' + new_fname[-1]
-            new_incoming.append(message)
-
-        worklist.incoming = new_incoming

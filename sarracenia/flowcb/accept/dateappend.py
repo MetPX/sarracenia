@@ -17,6 +17,11 @@ Example:
 Usage:
     callback accept.dateappend
 
+    if installing where the plugin is not from the package itself, invocation is:
+
+    flowcallback dateappend.Dateappend
+
+
 """
 import logging
 import sys, os, os.path, time, stat

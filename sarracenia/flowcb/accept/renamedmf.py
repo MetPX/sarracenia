@@ -25,11 +25,7 @@ class RenameDMF(FlowCB):
         self.o = options
 
     def after_accept(self, worklist):
-        new_incoming = []
         for message in worklist.incoming:
             datestr = time.strftime(':%Y%m%d%H%M%S', time.localtime())
             message['new_file'] += datestr
             message['headers']['rename'] += datestr
-            new_incoming.append(message)
-
-        worklist.incoming = new_incoming
